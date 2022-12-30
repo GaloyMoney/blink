@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 import { Lightning } from "@app"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
 import LightningInvoice from "@graphql/admin/types/object/lightning-invoice"
+import { mapError } from "@graphql/error-map"
 
 const LightningInvoiceQuery = GT.Field({
   type: GT.NonNull(LightningInvoice),
@@ -13,7 +14,9 @@ const LightningInvoiceQuery = GT.Field({
 
     const lightningInvoice = await Lightning.lookupInvoiceByHash(hash)
 
-    if (lightningInvoice instanceof Error) throw lightningInvoice
+    if (lightningInvoice instanceof Error) {
+      throw mapError(lightningInvoice)
+    }
 
     return lightningInvoice
   },

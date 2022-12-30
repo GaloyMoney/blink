@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 import { Lightning } from "@app"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
 import LightningPayment from "@graphql/admin/types/object/lightning-payment"
+import { mapError } from "@graphql/error-map"
 import { LnPaymentsRepository } from "@services/mongoose"
 
 const LightningPaymentQuery = GT.Field({
@@ -16,7 +17,9 @@ const LightningPaymentQuery = GT.Field({
 
     if (lightningPayment instanceof Error || !lightningPayment.isCompleteRecord) {
       const lightningPaymentFromLnd = await Lightning.lookupPaymentByHash(hash)
-      if (lightningPaymentFromLnd instanceof Error) throw lightningPaymentFromLnd
+      if (lightningPaymentFromLnd instanceof Error) {
+        throw mapError(lightningPaymentFromLnd)
+      }
       const paymentRequest = !(lightningPayment instanceof Error)
         ? lightningPayment.paymentRequest
         : "paymentRequest" in lightningPaymentFromLnd

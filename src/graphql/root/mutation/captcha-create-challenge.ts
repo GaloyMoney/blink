@@ -1,3 +1,4 @@
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import CaptchaCreateChallengePayload from "@graphql/types/payload/captcha-create-challenge"
@@ -14,7 +15,7 @@ const CaptchaCreateChallengeMutation = GT.Field({
 
     if (registerCaptchaGeetest instanceof Error) {
       return {
-        errors: [{ message: registerCaptchaGeetest.message }],
+        errors: [mapAndParseErrorForGqlResponse(registerCaptchaGeetest)],
       }
     }
 

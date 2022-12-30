@@ -28,7 +28,9 @@ const AccountDefaultWalletQuery = GT.Field({
     }
 
     const wallets = await Wallets.listWalletsByAccountId(account.id)
-    if (wallets instanceof Error) throw wallets
+    if (wallets instanceof Error) {
+      throw mapError(wallets)
+    }
 
     if (!walletCurrency) {
       return wallets.find((wallet) => wallet.id === account.defaultWalletId)

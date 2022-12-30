@@ -40,7 +40,7 @@ authRouter.post("/browser", async (req, res) => {
     })
 
     if (kratosLoginResp instanceof Error) {
-      return res.send({ error: mapError(kratosLoginResp) })
+      return res.send({ error: mapError(kratosLoginResp).message })
     }
 
     res.send({ kratosUserId: data.identity.id, ...kratosLoginResp })

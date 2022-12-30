@@ -87,7 +87,9 @@ const GraphQLUser = GT.Object({
           account: domainAccount,
           contactUsername: username,
         })
-        if (contact instanceof Error) throw mapError(contact)
+        if (contact instanceof Error) {
+          throw mapError(contact)
+        }
 
         return contact
       },

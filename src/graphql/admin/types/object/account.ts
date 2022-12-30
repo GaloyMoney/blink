@@ -5,6 +5,7 @@ import Timestamp from "@graphql/types/scalar/timestamp"
 import Username from "@graphql/types/scalar/username"
 import { GraphQLObjectType } from "graphql"
 import Wallet from "@graphql/types/abstract/wallet"
+import { mapError } from "@graphql/error-map"
 
 import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
@@ -24,7 +25,9 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: async (source) => {
-        return Wallets.listWalletsByAccountId(source.id)
+        const result = await Wallets.listWalletsByAccountId(source.id)
+        if (result instanceof Error) throw mapError(result)
+        return result
       },
     },
     owner: {
@@ -38,7 +41,7 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
       resolve: async (source) => {
         const user = await Users.getUser(source.kratosUserId)
         if (user instanceof Error) {
-          throw user
+          throw mapError(user)
         }
 
         return user

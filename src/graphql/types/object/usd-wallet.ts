@@ -43,7 +43,9 @@ const UsdWallet = GT.Object<Wallet>({
           walletId: source.id,
           logger,
         })
-        if (balanceCents instanceof Error) throw mapError(balanceCents)
+        if (balanceCents instanceof Error) {
+          throw mapError(balanceCents)
+        }
         return Math.floor(balanceCents)
       },
     },
@@ -65,7 +67,9 @@ const UsdWallet = GT.Object<Wallet>({
           wallets: [source],
           paginationArgs,
         })
-        if (error instanceof Error) throw mapError(error)
+        if (error instanceof Error) {
+          throw mapError(error)
+        }
 
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
@@ -100,7 +104,9 @@ const UsdWallet = GT.Object<Wallet>({
           addresses: [address],
           paginationArgs,
         })
-        if (error instanceof Error) throw mapError(error)
+        if (error instanceof Error) {
+          throw mapError(error)
+        }
 
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error

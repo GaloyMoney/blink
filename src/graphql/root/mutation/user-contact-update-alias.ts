@@ -4,6 +4,7 @@ import ContactAlias from "@graphql/types/scalar/contact-alias"
 import Username from "@graphql/types/scalar/username"
 import { Accounts } from "@app"
 import { InputValidationError } from "@graphql/error"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const UserContactUpdateAliasInput = GT.Input({
   name: "UserContactUpdateAliasInput",
@@ -51,7 +52,7 @@ const UserContactUpdateAliasMutation = GT.Field<
     })
 
     if (contact instanceof Error) {
-      return { errors: [{ message: contact.message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(contact)] }
     }
 
     return {

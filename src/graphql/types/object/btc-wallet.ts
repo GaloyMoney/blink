@@ -44,7 +44,9 @@ const BtcWallet = GT.Object<Wallet>({
           walletId: source.id,
           logger,
         })
-        if (balanceSats instanceof Error) throw mapError(balanceSats)
+        if (balanceSats instanceof Error) {
+          throw mapError(balanceSats)
+        }
         return balanceSats
       },
     },
@@ -53,7 +55,9 @@ const BtcWallet = GT.Object<Wallet>({
       description: "An unconfirmed incoming onchain balance.",
       resolve: async (source) => {
         const balanceSats = await Wallets.getPendingOnChainBalanceForWallets([source])
-        if (balanceSats instanceof Error) throw mapError(balanceSats)
+        if (balanceSats instanceof Error) {
+          throw mapError(balanceSats)
+        }
         return normalizePaymentAmount(balanceSats[source.id]).amount
       },
     },
@@ -70,7 +74,9 @@ const BtcWallet = GT.Object<Wallet>({
           wallets: [source],
           paginationArgs,
         })
-        if (error instanceof Error) throw mapError(error)
+        if (error instanceof Error) {
+          throw mapError(error)
+        }
 
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
@@ -106,7 +112,9 @@ const BtcWallet = GT.Object<Wallet>({
           addresses: [address],
           paginationArgs,
         })
-        if (error instanceof Error) throw mapError(error)
+        if (error instanceof Error) {
+          throw mapError(error)
+        }
 
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error

@@ -1,5 +1,6 @@
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
+import { mapError } from "@graphql/error-map"
 
 import { Accounts } from "@app"
 
@@ -20,7 +21,7 @@ const UsernameAvailableQuery = GT.Field({
     const available = await Accounts.usernameAvailable(username)
 
     if (available instanceof Error) {
-      throw available
+      throw mapError(available)
     }
 
     return available
