@@ -30,7 +30,7 @@ import {
   waitFor,
   waitUntilSyncAll,
 } from "test/helpers"
-import { getBalanceHelper } from "test/helpers/wallet"
+import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 
 let walletIdA: WalletId
 let walletIdD: WalletId
@@ -74,9 +74,7 @@ type WalletState = {
 
 const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
   const balance = await getBalanceHelper(walletId)
-  const { result, error } = await Wallets.getTransactionsForWalletId({
-    walletId,
-  })
+  const { result, error } = await getTransactionsForWalletId(walletId)
   if (error instanceof Error || !result?.slice) {
     throw error
   }

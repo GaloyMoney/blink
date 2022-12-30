@@ -1,30 +1,17 @@
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { getCurrentPrice } from "@app/prices"
 import { PartialResult } from "@app/partial-result"
+import { getCurrentPrice } from "@app/prices"
 
-import { LedgerError } from "@domain/ledger"
-import { RepositoryError } from "@domain/errors"
-import { WalletTransactionHistory } from "@domain/wallets"
 import { TxFilter } from "@domain/bitcoin/onchain"
+import { LedgerError } from "@domain/ledger"
+import { WalletTransactionHistory } from "@domain/wallets"
 
-import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { baseLogger } from "@services/logger"
+import { AccountsRepository } from "@services/mongoose"
 
 import { getOnChainTxs } from "./private/get-on-chain-txs"
-
-// FIXME(nicolas): remove only used in tests
-export const getTransactionsForWalletId = async ({
-  walletId,
-}: {
-  walletId: WalletId
-}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletId)
-  if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
-  return getTransactionsForWallets({ wallets: [wallet] })
-}
 
 export const getTransactionsForWallets = async ({
   wallets,
