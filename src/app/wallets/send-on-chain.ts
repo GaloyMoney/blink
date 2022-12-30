@@ -46,11 +46,12 @@ import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { getMinerFeeAndPaymentFlow } from "./get-on-chain-fee"
+import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = NewDealerPriceService()
 
-export const payOnChainByWalletId = async <R extends WalletCurrency>({
+const payOnChainByWalletId = async <R extends WalletCurrency>({
   senderAccount,
   senderWalletId,
   amount: amountRaw,
@@ -176,6 +177,25 @@ export const payOnChainByWalletId = async <R extends WalletCurrency>({
     logger: onchainLogger,
   })
 }
+
+export const payOnChainByWalletIdForBtcWallet = async (
+  args: PayOnChainByWalletIdArgs,
+): Promise<PaymentSendStatus | ApplicationError> => {
+  const validated = await validateIsBtcWallet(args.senderWalletId)
+  return validated instanceof Error ? validated : payOnChainByWalletId(args)
+}
+
+export const payOnChainByWalletIdForUsdWallet = async (
+  args: PayOnChainByWalletIdArgs,
+): Promise<PaymentSendStatus | ApplicationError> => {
+  const validated = await validateIsUsdWallet(args.senderWalletId)
+  return validated instanceof Error ? validated : payOnChainByWalletId(args)
+}
+
+export const payAllOnChainByWalletId = async (
+  args: PayOnChainByWalletIdArgs,
+): Promise<PaymentSendStatus | ApplicationError> =>
+  payOnChainByWalletId({ ...args, sendAll: true })
 
 const executePaymentViaIntraledger = async <
   S extends WalletCurrency,

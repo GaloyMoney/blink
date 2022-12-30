@@ -1,7 +1,6 @@
 import { Accounts, Payments } from "@app"
 import { checkedToWalletId } from "@domain/wallets"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsBtcWallet } from "@app/wallets"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import Memo from "@graphql/types/scalar/memo"
@@ -43,11 +42,6 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       return { errors: [mapAndParseErrorForGqlResponse(senderWalletId)] }
     }
 
-    const btcWalletValidated = await validateIsBtcWallet(walletId)
-    if (btcWalletValidated instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
-    }
-
     const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
     if (recipientWalletIdChecked instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(recipientWalletIdChecked)] }
@@ -61,7 +55,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       return { errors: [mapAndParseErrorForGqlResponse(recipientUsername)] }
     }
 
-    const status = await Payments.intraledgerPaymentSendWalletId({
+    const status = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId,
       memo,
       amount,

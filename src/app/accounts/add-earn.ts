@@ -76,7 +76,12 @@ export const addEarn = async ({
   const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
   if (shouldGiveReward instanceof Error) return shouldGiveReward
 
-  const payment = await Payments.intraledgerPaymentSendWalletId({
+  const intraledgerPaymentSendFn =
+    funderWallet.currency === WalletCurrency.Btc
+      ? Payments.intraledgerPaymentSendWalletIdForBtcWallet
+      : Payments.intraledgerPaymentSendWalletIdForUsdWallet
+
+  const payment = await intraledgerPaymentSendFn({
     senderWalletId: funderWalletId,
     recipientWalletId,
     amount,

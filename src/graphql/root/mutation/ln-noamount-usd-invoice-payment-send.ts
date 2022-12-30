@@ -7,7 +7,6 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { InputValidationError } from "@graphql/error"
 import CentAmount from "@graphql/types/scalar/cent-amount"
-import { validateIsUsdWallet } from "@app/wallets"
 import dedent from "dedent"
 
 const LnNoAmountUsdInvoicePaymentInput = GT.Input({
@@ -68,12 +67,7 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    const usdWalletValidated = await validateIsUsdWallet(walletId)
-    if (usdWalletValidated instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
-    }
-
-    const status = await Payments.payNoAmountInvoiceByWalletId({
+    const status = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
       senderWalletId: walletId,
       uncheckedPaymentRequest: paymentRequest,
       memo: memo ?? null,

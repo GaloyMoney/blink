@@ -55,7 +55,7 @@ const OnChainPaymentSendAllMutation = GT.Field<
       return { errors: [{ message: targetConfirmations.message }] }
     }
 
-    const status = await Wallets.payOnChainByWalletId({
+    const status = await Wallets.payAllOnChainByWalletId({
       senderAccount: domainAccount,
       senderWalletId: walletId,
       amount: 0,

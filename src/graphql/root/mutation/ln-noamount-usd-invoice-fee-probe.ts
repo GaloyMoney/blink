@@ -8,7 +8,6 @@ import CentAmount from "@graphql/types/scalar/cent-amount"
 import CentAmountPayload from "@graphql/types/payload/cent-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsUsdWallet } from "@app/wallets"
 
 import { normalizePaymentAmount } from "."
 
@@ -38,13 +37,8 @@ const LnNoAmountUsdInvoiceFeeProbeMutation = GT.Field({
       }
     }
 
-    const usdWalletValidated = await validateIsUsdWallet(walletId)
-    if (usdWalletValidated instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
-    }
-
     const { result: feeSatAmount, error } =
-      await Payments.getNoAmountLightningFeeEstimation({
+      await Payments.getNoAmountLightningFeeEstimationForUsdWallet({
         walletId,
         amount,
         uncheckedPaymentRequest: paymentRequest,
