@@ -114,6 +114,8 @@ export class TradeIntraAccountLimitsExceededError extends LimitsExceededError {}
 export class LnRouteValidationError extends ValidationError {}
 export class BadAmountForRouteError extends LnRouteValidationError {}
 
+export class MismatchedCurrencyForWalletError extends ValidationError {}
+
 export class InvalidAccountStatusError extends ValidationError {}
 export class InactiveAccountError extends InvalidAccountStatusError {}
 export class InvalidNonHodlInvoiceError extends ValidationError {

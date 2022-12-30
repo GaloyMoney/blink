@@ -48,7 +48,9 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     }
 
     const usdWalletValidated = await validateIsUsdWalletForMutation(recipientWalletId)
-    if (usdWalletValidated != true) return usdWalletValidated
+    if (usdWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
+    }
 
     const invoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId,

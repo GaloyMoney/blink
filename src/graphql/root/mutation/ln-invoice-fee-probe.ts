@@ -41,7 +41,9 @@ const LnInvoiceFeeProbeMutation = GT.Field<{
       return { errors: [{ message: paymentRequest.message }] }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated !== true) return btcWalletValidated
+    if (btcWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
+    }
 
     const { result: feeSatAmount, error } = await Payments.getLightningFeeEstimation({
       walletId,

@@ -27,7 +27,9 @@ const OnChainAddressCreateMutation = GT.Field({
     }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
+    if (btcWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
+    }
 
     const address = await Wallets.createOnChainAddress(walletId)
     if (address instanceof Error) {

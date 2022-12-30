@@ -60,7 +60,9 @@ const OnChainPaymentSendMutation = GT.Field<
     }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
+    if (btcWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
+    }
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: domainAccount,

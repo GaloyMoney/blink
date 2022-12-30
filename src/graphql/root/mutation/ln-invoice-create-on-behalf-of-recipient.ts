@@ -43,7 +43,9 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(recipientWalletId)
-    if (btcWalletValidated != true) return btcWalletValidated
+    if (btcWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
+    }
 
     const invoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId,

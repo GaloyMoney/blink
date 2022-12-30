@@ -44,7 +44,9 @@ const IntraLedgerUsdPaymentSendMutation = GT.Field({
     }
 
     const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
-    if (usdWalletValidated != true) return usdWalletValidated
+    if (usdWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
+    }
 
     const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
     if (recipientWalletIdChecked instanceof Error) {

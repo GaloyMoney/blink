@@ -1,67 +1,28 @@
 import { WalletCurrency } from "@domain/shared"
+import { MismatchedCurrencyForWalletError } from "@domain/errors"
 
 import { WalletsRepository } from "@services/mongoose"
-import { baseLogger } from "@services/logger"
-
-import { mapAndParseErrorForGqlResponse, mapError } from "../../graphql/error-map"
-import { ValidationInternalError } from "../../graphql/error"
-
-const QueryDoesNotMatchWalletCurrencyErrorMessage = "QueryDoesNotMatchWalletCurrencyError"
-const QueryDoesNotMatchWalletCurrencyError = new ValidationInternalError({
-  message: QueryDoesNotMatchWalletCurrencyErrorMessage,
-  logger: baseLogger,
-})
-
-const MutationDoesNotMatchWalletCurrencyError = "MutationDoesNotMatchWalletCurrencyError"
 
 export const validateIsBtcWalletForMutation = async (
   walletId: WalletId,
-): Promise<true | { errors: [{ message: string }] }> => {
+): Promise<true | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
-  if (wallet instanceof Error) return { errors: [mapAndParseErrorForGqlResponse(wallet)] }
+  if (wallet instanceof Error) return wallet
 
   if (wallet.currency === WalletCurrency.Usd) {
-    return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
+    return new MismatchedCurrencyForWalletError()
   }
   return true
 }
 
 export const validateIsUsdWalletForMutation = async (
   walletId: WalletId,
-): Promise<true | { errors: [{ message: string }] }> => {
+): Promise<true | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
-  if (wallet instanceof Error) return { errors: [mapAndParseErrorForGqlResponse(wallet)] }
+  if (wallet instanceof Error) return wallet
 
   if (wallet.currency === WalletCurrency.Btc) {
-    return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
-  }
-  return true
-}
-
-export const notBtcWalletForQueryError: { errors: [{ message: string }] } = {
-  errors: [{ message: QueryDoesNotMatchWalletCurrencyErrorMessage }],
-}
-
-export const validateIsBtcWalletForQuery = async (
-  walletId: WalletId,
-): Promise<true | CustomApolloError> => {
-  const wallet = await WalletsRepository().findById(walletId)
-  if (wallet instanceof Error) return mapError(wallet)
-
-  if (wallet.currency !== WalletCurrency.Btc) {
-    return QueryDoesNotMatchWalletCurrencyError
-  }
-  return true
-}
-
-export const validateIsUsdWalletForQuery = async (
-  walletId: WalletId,
-): Promise<true | CustomApolloError> => {
-  const wallet = await WalletsRepository().findById(walletId)
-  if (wallet instanceof Error) return mapError(wallet)
-
-  if (wallet.currency !== WalletCurrency.Usd) {
-    return QueryDoesNotMatchWalletCurrencyError
+    return new MismatchedCurrencyForWalletError()
   }
   return true
 }

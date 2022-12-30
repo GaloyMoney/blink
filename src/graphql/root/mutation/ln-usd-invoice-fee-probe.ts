@@ -50,7 +50,9 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<{
       return { errors: [{ message: walletIdChecked.message }] }
 
     const usdWalletValidated = await validateIsUsdWalletForMutation(walletIdChecked)
-    if (usdWalletValidated != true) return usdWalletValidated
+    if (usdWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
+    }
 
     const { result: feeSatAmount, error } = await Payments.getLightningFeeEstimation({
       walletId,

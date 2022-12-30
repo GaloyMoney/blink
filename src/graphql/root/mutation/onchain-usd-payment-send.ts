@@ -60,7 +60,9 @@ const OnChainUsdPaymentSendMutation = GT.Field<
     }
 
     const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
-    if (usdWalletValidated != true) return usdWalletValidated
+    if (usdWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
+    }
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: domainAccount,

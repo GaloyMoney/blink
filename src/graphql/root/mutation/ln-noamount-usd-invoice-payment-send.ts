@@ -69,7 +69,9 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
     }
 
     const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
-    if (usdWalletValidated != true) return usdWalletValidated
+    if (usdWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
+    }
 
     const status = await Payments.payNoAmountInvoiceByWalletId({
       senderWalletId: walletId,

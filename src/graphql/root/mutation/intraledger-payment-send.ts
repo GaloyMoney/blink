@@ -44,7 +44,9 @@ const IntraLedgerPaymentSendMutation = GT.Field({
     }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
+    if (btcWalletValidated instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
+    }
 
     const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
     if (recipientWalletIdChecked instanceof Error) {
