@@ -160,7 +160,10 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       return new UnknownKratosError(err)
     }
 
-    if (identity.schema_id !== "phone_no_password_v0") {
+    if (
+      identity.schema_id !== "phone_no_password_v0" &&
+      identity.schema_id !== "phone_or_email_password_v0"
+    ) {
       return new IncompatibleSchemaUpgradeError()
     }
 

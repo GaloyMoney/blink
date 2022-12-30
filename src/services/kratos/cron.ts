@@ -1,7 +1,7 @@
 import { kratosAdmin } from "./private"
 
 // TODO: should be a param in yaml
-const schemaIdsToExtend = ["phone_no_password_v0"]
+const schemaIdsToExtend = ["phone_no_password_v0", "phone_or_email_password_v0"]
 
 // not all identities need to be extended
 // a schemaId attached to an itentity with Phone may need to be

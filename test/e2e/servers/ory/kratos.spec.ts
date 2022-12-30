@@ -339,7 +339,11 @@ it.skip("list schemas", async () => {
   const schemasIds = res.map((item) => item.id)
 
   // what is listed in kratos.yaml#identity.schemas
-  expect(schemasIds).toStrictEqual(["phone_no_password_v0", "phone_email_no_password_v0"])
+  expect(schemasIds).toStrictEqual([
+    "phone_no_password_v0",
+    "phone_email_no_password_v0",
+    "phone_or_email_password_v0",
+  ])
 })
 
 it("extend session", async () => {
