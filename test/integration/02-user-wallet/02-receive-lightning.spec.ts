@@ -84,7 +84,7 @@ describe("UserWallet - Lightning", () => {
     const sats = 50000
     const memo = "myMemo"
 
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdB as WalletId,
       amount: toSats(sats),
       memo,
@@ -200,7 +200,7 @@ describe("UserWallet - Lightning", () => {
     const cents = 1000
     const memo = "myUsdMemo"
 
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
       walletId: walletIdUsdB as WalletId,
       amount: toCents(cents),
       memo,
@@ -275,7 +275,7 @@ describe("UserWallet - Lightning", () => {
     const sats = 25000
     const memo = "myBtcMemo"
 
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdB as WalletId,
       amount: toSats(sats),
       memo,
@@ -356,7 +356,7 @@ describe("UserWallet - Lightning", () => {
     const cents = toCents(250)
     const memo = "myMemo"
 
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
       walletId: walletIdUsdB as WalletId,
       amount: cents,
       memo,
@@ -614,7 +614,7 @@ describe("UserWallet - Lightning", () => {
     expect(sats).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
 
     // process spam transaction
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdB as WalletId,
       amount: toSats(sats),
       memo,
@@ -677,7 +677,7 @@ describe("Invoice handling from trigger", () => {
       })
 
       // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelf({
+      const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
         walletId: walletIdF,
         amount: sats,
       })
@@ -697,7 +697,7 @@ describe("Invoice handling from trigger", () => {
 
     it("should process held invoice when trigger comes back up", async () => {
       // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelf({
+      const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
         walletId: walletIdF,
         amount: sats,
       })
@@ -737,7 +737,7 @@ describe("Invoice handling from trigger", () => {
 
     it("should process new invoice payment when trigger comes back up", async () => {
       // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelf({
+      const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
         walletId: walletIdF,
         amount: sats,
       })
@@ -777,7 +777,7 @@ describe("Invoice handling from trigger", () => {
       })
 
       // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelf({
+      const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
         walletId: walletIdUsdF,
         amount: cents,
       })
@@ -797,7 +797,7 @@ describe("Invoice handling from trigger", () => {
 
     it("should decline held invoice when trigger comes back up", async () => {
       // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelf({
+      const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
         walletId: walletIdUsdF,
         amount: cents,
       })
@@ -837,7 +837,7 @@ describe("Invoice handling from trigger", () => {
 
     it("should process new invoice payment when trigger comes back up", async () => {
       // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelf({
+      const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
         walletId: walletIdUsdF,
         amount: cents,
       })

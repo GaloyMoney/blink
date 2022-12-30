@@ -42,7 +42,7 @@ describe("UserWallet - getOnchainFee", () => {
   describe("from btc wallet", () => {
     it("returns a fee greater than zero for an external address", async () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const feeAmount = await Wallets.getOnChainFee({
+      const feeAmount = await Wallets.getOnChainFeeForBtcWallet({
         walletId: walletIdA,
         account: accountA,
         amount: defaultAmount,
@@ -64,9 +64,9 @@ describe("UserWallet - getOnchainFee", () => {
     })
 
     it("returns zero for an on us address", async () => {
-      const address = await Wallets.createOnChainAddress(walletIdB)
+      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdB)
       if (address instanceof Error) throw address
-      const feeAmount = await Wallets.getOnChainFee({
+      const feeAmount = await Wallets.getOnChainFeeForBtcWallet({
         walletId: walletIdA,
         account: accountA,
         amount: defaultAmount,
@@ -81,7 +81,7 @@ describe("UserWallet - getOnchainFee", () => {
     it("returns error for dust amount", async () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const amount = toSats(dustThreshold - 1)
-      const fee = await Wallets.getOnChainFee({
+      const fee = await Wallets.getOnChainFeeForBtcWallet({
         walletId: walletIdA,
         account: accountA,
         amount,
@@ -98,7 +98,7 @@ describe("UserWallet - getOnchainFee", () => {
     it("returns error for minimum amount", async () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const amount = toSats(1)
-      const fee = await Wallets.getOnChainFee({
+      const fee = await Wallets.getOnChainFeeForBtcWallet({
         walletId: walletIdA,
         account: accountA,
         amount,
@@ -115,7 +115,7 @@ describe("UserWallet - getOnchainFee", () => {
     it("returns error for balance too low", async () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const amount = toSats(1_000_000_000)
-      const fee = await Wallets.getOnChainFee({
+      const fee = await Wallets.getOnChainFeeForBtcWallet({
         walletId: walletIdA,
         account: accountA,
         amount,
@@ -136,7 +136,7 @@ describe("UserWallet - getOnchainFee", () => {
       const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
 
       // Fund empty USD wallet
-      const payResult = await Payments.intraledgerPaymentSendWalletId({
+      const payResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
         recipientWalletId: walletIdUsdA,
         memo: "",
         amount: defaultAmount + feeSats,
@@ -146,7 +146,7 @@ describe("UserWallet - getOnchainFee", () => {
       if (payResult instanceof Error) throw payResult
 
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const feeAmount = await Wallets.getOnChainFee({
+      const feeAmount = await Wallets.getOnChainFeeForUsdWallet({
         walletId: walletIdUsdA,
         account: accountA,
         amount: defaultUsdAmount,
@@ -177,9 +177,9 @@ describe("UserWallet - getOnchainFee", () => {
     })
 
     it("returns zero for an on us address", async () => {
-      const address = await Wallets.createOnChainAddress(walletIdB)
+      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdB)
       if (address instanceof Error) throw address
-      const feeAmount = await Wallets.getOnChainFee({
+      const feeAmount = await Wallets.getOnChainFeeForUsdWallet({
         walletId: walletIdUsdA,
         account: accountA,
         amount: defaultUsdAmount,
@@ -197,7 +197,7 @@ describe("UserWallet - getOnchainFee", () => {
       const usdAmount = await DealerPriceService().getCentsFromSatsForImmediateBuy(amount)
       if (usdAmount instanceof Error) throw usdAmount
 
-      const fee = await Wallets.getOnChainFee({
+      const fee = await Wallets.getOnChainFeeForUsdWallet({
         walletId: walletIdUsdA,
         account: accountA,
         amount: usdAmount,
@@ -215,7 +215,7 @@ describe("UserWallet - getOnchainFee", () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const usdAmount = toCents(1)
 
-      const fee = await Wallets.getOnChainFee({
+      const fee = await Wallets.getOnChainFeeForUsdWallet({
         walletId: walletIdUsdA,
         account: accountA,
         amount: usdAmount,
@@ -235,7 +235,7 @@ describe("UserWallet - getOnchainFee", () => {
       const usdAmount = await DealerPriceService().getCentsFromSatsForImmediateBuy(amount)
       if (usdAmount instanceof Error) throw usdAmount
 
-      const fee = await Wallets.getOnChainFee({
+      const fee = await Wallets.getOnChainFeeForUsdWallet({
         walletId: walletIdUsdA,
         account: accountA,
         amount: usdAmount,

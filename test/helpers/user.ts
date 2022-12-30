@@ -240,7 +240,11 @@ export const createAndFundNewWallet = async <S extends WalletCurrency>({
   if (wallet instanceof Error) throw wallet
   // Fund new wallet if a non-zero balance is passed
   if (balanceAmount.amount === 0n) return wallet
-  const lnInvoice = await Wallets.addInvoiceForSelf({
+  const addInvoiceFn =
+    wallet.currency === WalletCurrency.Btc
+      ? Wallets.addInvoiceForSelfForBtcWallet
+      : Wallets.addInvoiceForSelfForUsdWallet
+  const lnInvoice = await addInvoiceFn({
     walletId: wallet.id,
     amount: Number(balanceAmount.amount),
     memo: `Fund new wallet ${wallet.id}`,

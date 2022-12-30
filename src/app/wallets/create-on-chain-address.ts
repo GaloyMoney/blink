@@ -6,7 +6,7 @@ import { OnChainService } from "@services/lnd/onchain-service"
 import { WalletOnChainAddressesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
 
-import { validateIsBtcWallet } from "./validate"
+import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
 const createOnChainAddress = async (
   walletId: WalletId,
@@ -37,6 +37,13 @@ export const createOnChainAddressForBtcWallet = async (
   walletId: WalletId,
 ): Promise<OnChainAddress | ApplicationError> => {
   const validated = await validateIsBtcWallet(walletId)
+  return validated instanceof Error ? validated : createOnChainAddress(walletId)
+}
+
+export const createOnChainAddressForUsdWallet = async (
+  walletId: WalletId,
+): Promise<OnChainAddress | ApplicationError> => {
+  const validated = await validateIsUsdWallet(walletId)
   return validated instanceof Error ? validated : createOnChainAddress(walletId)
 }
 

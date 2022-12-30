@@ -168,7 +168,7 @@ const successLimitsPaymentTests = ({
     testSuccess: boolean
     btcPaymentAmount: BtcPaymentAmount
   }) => {
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: otherBtcWallet.id,
       amount: Number(btcPaymentAmount.amount),
     })
@@ -231,7 +231,11 @@ const successLimitsPaymentTests = ({
           receiveAmount: Number(usdPaymentAmount.amount),
         }
 
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const addInvoiceFn =
+      recipientWallet.currency === WalletCurrency.Btc
+        ? Wallets.addInvoiceForSelfForBtcWallet
+        : Wallets.addInvoiceForSelfForUsdWallet
+    const lnInvoice = await addInvoiceFn({
       walletId: recipientWallet.id,
       amount: receiveAmount,
     })
@@ -255,7 +259,11 @@ const successLimitsPaymentTests = ({
     }
 
     if (!testSuccess) {
-      const lnInvoice = await Wallets.addInvoiceForSelf({
+      const addInvoiceFn =
+        senderWallet.currency === WalletCurrency.Btc
+          ? Wallets.addInvoiceForSelfForBtcWallet
+          : Wallets.addInvoiceForSelfForUsdWallet
+      const lnInvoice = await addInvoiceFn({
         walletId: senderWallet.id,
         amount:
           senderWallet.currency === WalletCurrency.Btc
