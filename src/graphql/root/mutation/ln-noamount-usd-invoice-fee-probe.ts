@@ -8,7 +8,7 @@ import CentAmount from "@graphql/types/scalar/cent-amount"
 import CentAmountPayload from "@graphql/types/payload/cent-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsUsdWalletForMutation } from "@graphql/helpers"
+import { validateIsUsdWalletForMutation } from "@app/wallets"
 
 import { normalizePaymentAmount } from "."
 

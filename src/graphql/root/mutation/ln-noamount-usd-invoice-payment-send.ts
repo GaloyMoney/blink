@@ -7,7 +7,7 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { InputValidationError } from "@graphql/error"
 import CentAmount from "@graphql/types/scalar/cent-amount"
-import { validateIsUsdWalletForMutation } from "@graphql/helpers"
+import { validateIsUsdWalletForMutation } from "@app/wallets"
 import dedent from "dedent"
 
 const LnNoAmountUsdInvoicePaymentInput = GT.Input({

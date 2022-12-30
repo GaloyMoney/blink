@@ -2,7 +2,7 @@ import { Wallets } from "@app"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
-import { validateIsBtcWalletForQuery } from "@graphql/helpers"
+import { validateIsBtcWalletForQuery } from "@app/wallets"
 
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"

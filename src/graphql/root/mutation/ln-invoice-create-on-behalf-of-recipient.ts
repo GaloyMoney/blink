@@ -7,7 +7,7 @@ import Memo from "@graphql/types/scalar/memo"
 import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
+import { validateIsBtcWalletForMutation } from "@app/wallets"
 import dedent from "dedent"
 
 const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({

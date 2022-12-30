@@ -3,7 +3,7 @@ import { Wallets } from "@app"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
+import { validateIsBtcWalletForMutation } from "@app/wallets"
 
 const OnChainAddressCreateInput = GT.Input({
   name: "OnChainAddressCreateInput",

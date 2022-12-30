@@ -4,7 +4,7 @@ import {
   connectionFromPaginatedArray,
   checkedConnectionArgs,
 } from "@graphql/connections"
-import { notBtcWalletForQueryError } from "@graphql/helpers"
+import { notBtcWalletForQueryError } from "@app/wallets"
 import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"

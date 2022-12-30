@@ -13,6 +13,7 @@ export * from "./reimburse-fee"
 export * from "./send-on-chain"
 export * from "./update-on-chain-receipt"
 export * from "./update-pending-invoices"
+export * from "./validate"
 
 import { WalletsRepository } from "@services/mongoose"
 

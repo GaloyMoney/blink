@@ -7,7 +7,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
+import { validateIsBtcWalletForMutation } from "@app/wallets"
 
 import { normalizePaymentAmount } from "."
 

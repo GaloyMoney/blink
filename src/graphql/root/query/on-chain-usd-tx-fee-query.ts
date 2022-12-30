@@ -2,7 +2,7 @@ import { Wallets } from "@app"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
-import { validateIsUsdWalletForQuery } from "@graphql/helpers"
+import { validateIsUsdWalletForQuery } from "@app/wallets"
 
 import WalletId from "@graphql/types/scalar/wallet-id"
 import CentAmount from "@graphql/types/scalar/cent-amount"

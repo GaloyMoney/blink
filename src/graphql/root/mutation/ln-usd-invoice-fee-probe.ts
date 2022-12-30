@@ -7,7 +7,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import CentAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsUsdWalletForMutation } from "@graphql/helpers"
+import { validateIsUsdWalletForMutation } from "@app/wallets"
 
 import { checkedToWalletId } from "@domain/wallets"
 

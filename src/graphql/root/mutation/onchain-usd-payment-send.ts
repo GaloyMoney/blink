@@ -6,7 +6,7 @@ import CentAmount from "@graphql/types/scalar/cent-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
-import { validateIsUsdWalletForMutation } from "@graphql/helpers"
+import { validateIsUsdWalletForMutation } from "@app/wallets"
 import { Wallets } from "@app"
 
 const OnChainUsdPaymentSendInput = GT.Input({

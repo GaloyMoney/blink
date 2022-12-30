@@ -4,7 +4,7 @@ import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
+import { validateIsBtcWalletForMutation } from "@app/wallets"
 import { Wallets } from "@app"
 import dedent from "dedent"
 

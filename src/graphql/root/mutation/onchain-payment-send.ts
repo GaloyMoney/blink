@@ -6,7 +6,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
+import { validateIsBtcWalletForMutation } from "@app/wallets"
 import { Wallets } from "@app"
 
 const OnChainPaymentSendInput = GT.Input({

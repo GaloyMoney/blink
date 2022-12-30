@@ -3,8 +3,8 @@ import { WalletCurrency } from "@domain/shared"
 import { WalletsRepository } from "@services/mongoose"
 import { baseLogger } from "@services/logger"
 
-import { mapAndParseErrorForGqlResponse, mapError } from "./error-map"
-import { ValidationInternalError } from "./error"
+import { mapAndParseErrorForGqlResponse, mapError } from "../../graphql/error-map"
+import { ValidationInternalError } from "../../graphql/error"
 
 const QueryDoesNotMatchWalletCurrencyErrorMessage = "QueryDoesNotMatchWalletCurrencyError"
 const QueryDoesNotMatchWalletCurrencyError = new ValidationInternalError({
