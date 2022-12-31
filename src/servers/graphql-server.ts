@@ -381,6 +381,8 @@ export const startApolloServer = async ({
   }
 
   // new ws server
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   const context = async (ctx) => {
     const connectionParams = ctx.connectionParams as Record<string, string>
 
@@ -466,8 +468,6 @@ export const startApolloServer = async ({
         })
 
         httpServer.on("upgrade", (req, socket, head) => {
-          console.log(req, "updade")
-
           // extract websocket subprotocol from header
           const protocol = req.headers["sec-websocket-protocol"]
           const protocols = Array.isArray(protocol)
