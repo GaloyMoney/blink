@@ -26,7 +26,6 @@ const isLndUp = async (param: LndConnect): Promise<void> => {
   const { lndGrpcUnauth: lnd, socket, active: pastStateActive } = param
 
   try {
-    // will throw if there is an error
     const { is_active, is_ready } = await getWalletStatus({ lnd })
     active = !!is_active && !!is_ready
   } catch (err) {
@@ -34,23 +33,17 @@ const isLndUp = async (param: LndConnect): Promise<void> => {
     active = false
   }
 
-  const authParam = lndsConnect.find((p) => p.socket === socket)
-  if (!authParam) {
-    throw new Error("unreachable: this should not happen, authParam should not be null")
-  }
-
-  authParam.active = active
   param.active = active
 
   if (active && !pastStateActive) {
-    lndStatusEvent.emit("started", authParam)
+    lndStatusEvent.emit("started", param)
   }
 
   if (!active && pastStateActive) {
-    lndStatusEvent.emit("stopped", authParam)
+    lndStatusEvent.emit("stopped", param)
   }
 
-  baseLogger.debug({ socket, active }, "lnd pulse")
+  baseLogger.debug({ socket, active, pastStateActive }, "lnd pulse")
 }
 
 export const isUp = isLndUp
