@@ -1,5 +1,5 @@
 import { isUp, lndStatusEvent } from "@services/lnd/health"
-import { params } from "@services/lnd/unauth"
+import { params } from "@services/lnd/auth"
 
 import { clearAccountLocks } from "test/helpers/redis"
 

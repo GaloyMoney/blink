@@ -5,7 +5,6 @@ import { baseLogger } from "@services/logger"
 
 import { LND_HEALTH_REFRESH_TIME_MS } from "@config"
 
-import { params as unauthParams } from "./unauth"
 import { params as authParams } from "./auth"
 
 /*
@@ -14,7 +13,7 @@ import { params as authParams } from "./auth"
 
 const intervals: NodeJS.Timer[] = []
 
-const isUpLoop = async (param: LndParamsUnAuthed): Promise<void> => {
+const isUpLoop = async (param: LndParamsAuthed): Promise<void> => {
   await isUp(param)
   const interval = setInterval(async () => {
     await isUp(param)
@@ -22,9 +21,9 @@ const isUpLoop = async (param: LndParamsUnAuthed): Promise<void> => {
   intervals.push(interval)
 }
 
-const isLndUp = async (param: LndParamsUnAuthed): Promise<void> => {
+const isLndUp = async (param: LndParamsAuthed): Promise<void> => {
   let active = false
-  const { lnd, socket, active: pastStateActive } = param
+  const { lndGrpcUnauth: lnd, socket, active: pastStateActive } = param
 
   try {
     // will throw if there is an error
@@ -57,7 +56,7 @@ const isLndUp = async (param: LndParamsUnAuthed): Promise<void> => {
 export const isUp = isLndUp
 
 // launching a loop to update whether lnd are active or not
-export const activateLndHealthCheck = () => unauthParams.forEach(isUpLoop)
+export const activateLndHealthCheck = () => authParams.forEach(isUpLoop)
 
 export const stopLndHealthCheck = () => intervals.forEach(clearInterval)
 

@@ -1,4 +1,4 @@
-import { authenticatedLndGrpc } from "lightning"
+import { authenticatedLndGrpc, unauthenticatedLndGrpc } from "lightning"
 import { getLndParams } from "@config"
 import sortBy from "lodash.sortby"
 
@@ -11,6 +11,7 @@ const addProps = (array: LndParams[]) => {
       ...input,
       socket,
       lnd: authenticatedLndGrpc({ ...input, socket }).lnd,
+      lndGrpcUnauth: unauthenticatedLndGrpc({ ...input, socket }).lnd,
       active: false,
     }
   })
