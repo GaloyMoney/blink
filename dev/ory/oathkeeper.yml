@@ -13,15 +13,14 @@ authenticators:
     config:
       subject: anon
 
-  # TODO: for follow up PR and activating web wallet
-  # cookie_session:
-  #   enabled: true
-  #   config:
-  #     # TODO cluster-internal mTLS
-  #     check_session_url: http://kratos:4433/sessions/whoami
-  #     preserve_path: true
-  #     subject_from: identity.id
-  #     extra_from: identity.traits
+  cookie_session:
+    enabled: true
+    config:
+      # TODO cluster-internal mTLS
+      check_session_url: http://kratos:4433/sessions/whoami
+      preserve_path: true
+      subject_from: identity.id
+      extra_from: identity.traits
 
   unauthorized:
     enabled: true

@@ -17,6 +17,12 @@
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<.*>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
+    - handler: cookie_session
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
     - handler: bearer_token
       config:
         check_session_url: "http://e2e-tests:4012/auth/validatetoken"

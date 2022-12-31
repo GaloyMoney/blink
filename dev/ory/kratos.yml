@@ -7,13 +7,36 @@ serve:
     base_url: http://127.0.0.1:4433/
     cors:
       enabled: true
+      allow_credentials: true
+      allowed_origins:
+        - http://127.0.0.1:4433
+        - http://0.0.0.0:4434
+        - http://localhost:3000
+        - http://127.0.0.1:3000
+      allowed_methods:
+        - POST
+        - GET
+        - PUT
+        - PATCH
+        - DELETE
+      allowed_headers:
+        - Authorization
+        - Cookie
+        - Content-Type
+        - X-Session-Token
+      exposed_headers:
+        - Content-Type
+        - Set-Cookie
+      debug: true
+
   admin:
     base_url: http://0.0.0.0:4434/
 
 selfservice:
-  default_browser_return_url: http://127.0.0.1:4002/
+  default_browser_return_url: http://localhost:3000/
   allowed_return_urls:
-    - http://127.0.0.1:4002
+    - http://127.0.0.1:4002/
+    - http://localhost:3000/
 
   methods:
     oidc:
@@ -70,7 +93,7 @@ selfservice:
         default_browser_return_url: http://127.0.0.1:4002/login
 
     login:
-      ui_url: http://127.0.0.1:4002/login
+      ui_url: http://localhost:3000/login
       lifespan: 10m
 
       # this below make phone authentication fails even if there is no email in the schema
@@ -81,7 +104,7 @@ selfservice:
 
     registration:
       lifespan: 10m
-      ui_url: http://127.0.0.1:4002/registration
+      ui_url: http://localhost:3000/register
       after:
         password:
           hooks:
@@ -119,12 +142,14 @@ hashers:
     cost: 8
 
 identity:
-  default_schema_id: phone_no_password_v0
+  default_schema_id: phone_or_email_password_v0
   schemas:
     - id: phone_no_password_v0
       url: file:///home/ory/phone_v0.identity.schema.json
     - id: phone_email_no_password_v0
       url: file:///home/ory/phone_email_no_password_v0.identity.schema.json
+    - id: phone_or_email_password_v0
+      url: file:///home/ory/phone_or_email_password_v0.identity.schema.json
 
 courier:
   smtp:

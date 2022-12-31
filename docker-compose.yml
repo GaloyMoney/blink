@@ -290,7 +290,7 @@ services:
         source: dev/ory
         target: /home/ory
   kratos:
-    image: oryd/kratos:v0.11.0
+    image: ntheile/kratos:0.11.1
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:

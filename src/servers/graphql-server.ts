@@ -1,5 +1,6 @@
 import { createServer } from "http"
 
+import cors from "cors"
 import { Accounts } from "@app"
 import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev } from "@config"
 import Geetest from "@services/geetest"
@@ -47,6 +48,8 @@ import { sendOathkeeperRequest } from "@services/oathkeeper"
 import { ValidationError } from "@domain/shared"
 
 import { UsersRepository } from "@services/mongoose"
+
+import { validateKratosCookie } from "@services/kratos"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -187,6 +190,16 @@ export const startApolloServer = async ({
   const app = express()
   const httpServer = createServer(app)
 
+  if (isDev) {
+    // to support CORS on different localhost ports in dev
+    app.use(
+      cors({
+        credentials: true,
+        origin: true,
+      }),
+    )
+  }
+
   const apolloPlugins = [
     createComplexityPlugin({
       schema,
@@ -217,6 +230,18 @@ export const startApolloServer = async ({
     introspection: apolloConfig.playground,
     plugins: apolloPlugins,
     context: (context) => {
+      if (isDev) {
+        // To make CORS work for cookies "credentials": "include" in dev
+        // This needs to be manually added because localhost:3000 is seen
+        // as a different origin from localhost:4002 and the CORS wildcard
+        // "access-control-allow-origin": "*" setting cannot be used via W3C rules
+        // This should work in prod if sites are on the same top level domain
+        context.res.set({
+          "access-control-allow-credentials": "true",
+          "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
+          "access-control-allow-origin": context.req.headers.origin,
+        })
+      }
       return (context.req as RequestWithGqlContext).gqlContext
     },
     formatError: (err) => {
@@ -313,7 +338,22 @@ export const startApolloServer = async ({
 
               const authz = (connectionParams.authorization ||
                 connectionParams.Authorization) as string | undefined
+
               // TODO: also manage the case where there is a cookie in the request
+              // https://www.ory.sh/docs/oathkeeper/guides/proxy-websockets#configure-ory-oathkeeper-and-ory-kratos
+              const cookies = request.headers.cookie
+              if (cookies?.includes("ory_kratos_session")) {
+                const kratosCookieRes = await validateKratosCookie(cookies)
+                if (kratosCookieRes instanceof Error) return kratosCookieRes
+                const tokenPayload = {
+                  sub: kratosCookieRes.kratosUserId,
+                }
+                return sessionContext({
+                  tokenPayload,
+                  ip: request?.socket?.remoteAddress,
+                  body: null,
+                })
+              }
 
               // make request to oathkeeper
               const originalToken = authz?.slice(7) as
