@@ -5,7 +5,7 @@ module.exports = {
       .collection("accounts")
       .updateMany(
         {},
-        { $unset: { phone: 1, phoneMetadata: 1, language: 1, deviceTokens: 1 } },
+        { $unset: { phone: 1, twilio: 1, language: 1, deviceToken: 1 } },
         { multi: true },
       )
     console.log({ res }, `removing deprecated fields`)
