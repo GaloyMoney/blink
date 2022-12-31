@@ -5,7 +5,7 @@ import { baseLogger } from "@services/logger"
 
 import { LND_HEALTH_REFRESH_TIME_MS } from "@config"
 
-import { params as authParams } from "./auth"
+import { lndsConnect } from "./auth"
 
 /*
 	Check the status of the wallet and emit current state
@@ -13,7 +13,7 @@ import { params as authParams } from "./auth"
 
 const intervals: NodeJS.Timer[] = []
 
-const isUpLoop = async (param: LndParamsAuthed): Promise<void> => {
+const isUpLoop = async (param: LndConnect): Promise<void> => {
   await isUp(param)
   const interval = setInterval(async () => {
     await isUp(param)
@@ -21,7 +21,7 @@ const isUpLoop = async (param: LndParamsAuthed): Promise<void> => {
   intervals.push(interval)
 }
 
-const isLndUp = async (param: LndParamsAuthed): Promise<void> => {
+const isLndUp = async (param: LndConnect): Promise<void> => {
   let active = false
   const { lndGrpcUnauth: lnd, socket, active: pastStateActive } = param
 
@@ -34,7 +34,7 @@ const isLndUp = async (param: LndParamsAuthed): Promise<void> => {
     active = false
   }
 
-  const authParam = authParams.find((p) => p.socket === socket)
+  const authParam = lndsConnect.find((p) => p.socket === socket)
   if (!authParam) {
     throw new Error("unreachable: this should not happen, authParam should not be null")
   }
@@ -56,7 +56,7 @@ const isLndUp = async (param: LndParamsAuthed): Promise<void> => {
 export const isUp = isLndUp
 
 // launching a loop to update whether lnd are active or not
-export const activateLndHealthCheck = () => authParams.forEach(isUpLoop)
+export const activateLndHealthCheck = () => lndsConnect.forEach(isUpLoop)
 
 export const stopLndHealthCheck = () => intervals.forEach(clearInterval)
 

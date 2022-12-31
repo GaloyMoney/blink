@@ -9,7 +9,7 @@
  */
 
 import { isUp } from "@services/lnd/health"
-import { params as authParams } from "@services/lnd/auth"
+import { lndsConnect } from "@services/lnd/auth"
 import { PaymentNotFoundError, PaymentStatus } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
@@ -134,7 +134,7 @@ const migrateLnPayment = async (
 
 setupMongoConnection(false)
   .then(async (mongoose) => {
-    await Promise.all(authParams.map((lndParams) => isUp(lndParams)))
+    await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     if (mongoose) await mongoose.connection.close()
   })

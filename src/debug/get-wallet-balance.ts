@@ -5,7 +5,7 @@
  *
  * <wallet id>: Wallet id. Must be the last param
  */
-import { params as authParams } from "@services/lnd/auth"
+import { lndsConnect } from "@services/lnd/auth"
 import { setupMongoConnection } from "@services/mongodb"
 import { LedgerService } from "@services/ledger"
 import { isUp } from "@services/lnd/health"
@@ -28,7 +28,7 @@ const main = async () => {
 
 setupMongoConnection()
   .then(async (mongoose) => {
-    await Promise.all(authParams.map((lndParams) => isUp(lndParams)))
+    await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     if (mongoose) await mongoose.connection.close()
   })

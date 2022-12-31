@@ -40,7 +40,7 @@ import map from "lodash.map"
 import mapValues from "lodash.mapvalues"
 import sumBy from "lodash.sumby"
 
-import { params } from "./auth"
+import { lndsConnect } from "./auth"
 
 export const deleteExpiredWalletInvoice = async (): Promise<number> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
@@ -373,8 +373,8 @@ export const onChannelUpdated = async ({
 export const getLnds = ({
   type,
   active,
-}: { type?: NodeType; active?: boolean } = {}): LndParamsAuthed[] => {
-  let result = params
+}: { type?: NodeType; active?: boolean } = {}): LndConnect[] => {
+  let result = lndsConnect
 
   if (type) {
     result = result.filter((node) => node.type.some((nodeType) => nodeType === type))
@@ -390,7 +390,7 @@ export const getLnds = ({
 export const offchainLnds = getLnds({ type: "offchain" })
 
 // only returning the first one for now
-export const getActiveLnd = (): LndParamsAuthed | LightningServiceError => {
+export const getActiveLnd = (): LndConnect | LightningServiceError => {
   const lnds = getLnds({ active: true, type: "offchain" })
   if (lnds.length === 0) {
     return new OffChainServiceUnavailableError("no active lightning node (for offchain)")
@@ -402,7 +402,7 @@ export const getActiveLnd = (): LndParamsAuthed | LightningServiceError => {
   // return lnds[index]
 }
 
-export const getActiveOnchainLnd = (): LndParamsAuthed | OnChainServiceError => {
+export const getActiveOnchainLnd = (): LndConnect | OnChainServiceError => {
   const lnds = getLnds({ active: true, type: "onchain" })
   if (lnds.length === 0) {
     return new OnChainServiceUnavailableError("no active lightning node (for onchain)")
