@@ -297,9 +297,30 @@ export const startApolloServer = async ({
   app.use(
     PinoHttp({
       logger: graphqlLogger,
-      wrapSerializers: false,
+      wrapSerializers: true,
+      customProps: (req) => ({
+        /* eslint @typescript-eslint/ban-ts-comment: "off" */
+        // @ts-ignore-next-line no-implicit-any error
+        "body": req["body"],
+        // @ts-ignore-next-line no-implicit-any error
+        "token.sub": req["token"]?.sub,
+        // @ts-ignore-next-line no-implicit-any error
+        "gqlContext.user": req["gqlContext"]?.user,
+        // @ts-ignore-next-line no-implicit-any error
+        "gqlContext.domainAccount:": req["gqlContext"]?.domainAccount,
+      }),
       autoLogging: {
         ignore: (req) => req.url === "/healthz",
+      },
+      serializers: {
+        res: (res) => ({ statusCode: res.statusCode }),
+        req: (req) => ({
+          id: req.id,
+          method: req.method,
+          url: req.url,
+          remoteAddress: req.remoteAddress,
+          // headers: req.headers,
+        }),
       },
     }),
   )
