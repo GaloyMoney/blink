@@ -1,15 +1,14 @@
 import { createServer } from "http"
 
-import cors from "cors"
 import { Accounts } from "@app"
 import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import {
   ACCOUNT_USERNAME,
+  SemanticAttributes,
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
-  SemanticAttributes,
 } from "@services/tracing"
 import {
   ApolloServerPluginDrainHttpServer,
@@ -17,18 +16,24 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
+import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
-import { expressjwt, GetVerificationKey } from "express-jwt"
-import { execute, GraphQLError, GraphQLSchema, subscribe } from "graphql"
+import { GetVerificationKey, expressjwt } from "express-jwt"
+import { GraphQLError, GraphQLSchema, execute, subscribe } from "graphql"
 import { rule } from "graphql-shield"
+import { useServer } from "graphql-ws/lib/use/ws"
 import helmet from "helmet"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 import {
   ExecuteFunction,
+  GRAPHQL_WS,
   SubscribeFunction,
   SubscriptionServer,
 } from "subscriptions-transport-ws"
+import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from "graphql-ws"
+
+import { WebSocketServer } from "ws"
 
 import { AuthenticationError, AuthorizationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
@@ -53,10 +58,10 @@ import { validateKratosCookie } from "@services/kratos"
 
 import { playgroundTabs } from "../graphql/playground"
 
-import healthzHandler from "./middlewares/healthz"
 import authRouter from "./middlewares/auth-router"
-import { updateToken } from "./middlewares/update-token"
+import healthzHandler from "./middlewares/healthz"
 import kratosRouter from "./middlewares/kratos-router"
+import { updateToken } from "./middlewares/update-token"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -320,77 +325,167 @@ export const startApolloServer = async ({
 
   apolloServer.applyMiddleware({ app, path: "/graphql" })
 
+  // old legacy ws
+  const onConnect = async (
+    connectionParams: Record<string, unknown>,
+    webSocket: unknown,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    connectionContext: any,
+  ) => {
+    const { request } = connectionContext
+
+    const authz = (connectionParams.authorization || connectionParams.Authorization) as
+      | string
+      | undefined
+
+    // TODO: also manage the case where there is a cookie in the request
+    // https://www.ory.sh/docs/oathkeeper/guides/proxy-websockets#configure-ory-oathkeeper-and-ory-kratos
+    const cookies = request.headers.cookie
+    if (cookies?.includes("ory_kratos_session")) {
+      const kratosCookieRes = await validateKratosCookie(cookies)
+      if (kratosCookieRes instanceof Error) return kratosCookieRes
+      const tokenPayload = {
+        sub: kratosCookieRes.kratosUserId,
+      }
+      return sessionContext({
+        tokenPayload,
+        ip: request?.socket?.remoteAddress,
+        body: null,
+      })
+    }
+
+    // make request to oathkeeper
+    const originalToken = authz?.slice(7) as LegacyJwtToken | SessionToken | undefined
+
+    const newToken = await sendOathkeeperRequest(originalToken)
+    // TODO: see how returning an error affect the websocket connection
+    if (newToken instanceof Error) return newToken
+
+    const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
+
+    const tokenPayload = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
+      algorithms: jwtAlgorithms,
+    })
+
+    if (typeof tokenPayload === "string") {
+      throw new Error("tokenPayload should be an object")
+    }
+
+    return sessionContext({
+      tokenPayload,
+      ip: request?.socket?.remoteAddress,
+
+      // TODO: Resolve what's needed here
+      body: null,
+    })
+  }
+
+  // new ws server
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
+  const context = async (ctx) => {
+    const connectionParams = ctx.connectionParams as Record<string, string>
+
+    // TODO: check if nginx pass the ip to the header
+    // TODO: ip not been used currently for subscription.
+    // implement some rate limiting.
+    const ipString = isDev
+      ? connectionParams?.ip
+      : connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
+
+    const ip = parseIps(ipString)
+
+    const authz = (connectionParams.authorization || connectionParams.Authorization) as
+      | string
+      | undefined
+
+    // TODO: also manage the case where there is a cookie in the request
+    // https://www.ory.sh/docs/oathkeeper/guides/proxy-websockets#configure-ory-oathkeeper-and-ory-kratos
+    // const cookies = request.headers.cookie
+    // if (cookies?.includes("ory_kratos_session")) {
+    //   const kratosCookieRes = await validateKratosCookie(cookies)
+    //   if (kratosCookieRes instanceof Error) return kratosCookieRes
+    //   const tokenPayload = {
+    //     sub: kratosCookieRes.kratosUserId,
+    //   }
+    //   return sessionContext({
+    //     tokenPayload,
+    //     ip: request?.socket?.remoteAddress,
+    //     body: null,
+    //   })
+    // }
+
+    // make request to oathkeeper
+    const originalToken = authz?.slice(7) as LegacyJwtToken | SessionToken | undefined
+
+    const newToken = await sendOathkeeperRequest(originalToken)
+    // TODO: see how returning an error affect the websocket connection
+    if (newToken instanceof Error) return newToken
+
+    const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
+
+    const tokenPayload = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
+      algorithms: jwtAlgorithms,
+    })
+
+    if (typeof tokenPayload === "string") {
+      throw new Error("tokenPayload should be an object")
+    }
+
+    return sessionContext({
+      tokenPayload,
+      ip,
+
+      // TODO: Resolve what's needed here
+      body: null,
+    })
+  }
+
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
       if (startSubscriptionServer) {
-        const apolloSubscriptionServer = new SubscriptionServer(
+        const graphqlWs = new WebSocketServer({ noServer: true })
+        const serverCleanup = useServer(
+          { schema, execute, subscribe, context },
+          graphqlWs,
+        )
+
+        const subTransWs = new WebSocketServer({ noServer: true })
+        const apolloSubscriptionServer = SubscriptionServer.create(
           {
             execute: execute as unknown as ExecuteFunction,
             subscribe: subscribe as unknown as SubscribeFunction,
             schema,
-            async onConnect(
-              connectionParams: Record<string, unknown>,
-              webSocket: unknown,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              connectionContext: any,
-            ) {
-              const { request } = connectionContext
-
-              const authz = (connectionParams.authorization ||
-                connectionParams.Authorization) as string | undefined
-
-              // TODO: also manage the case where there is a cookie in the request
-              // https://www.ory.sh/docs/oathkeeper/guides/proxy-websockets#configure-ory-oathkeeper-and-ory-kratos
-              const cookies = request.headers.cookie
-              if (cookies?.includes("ory_kratos_session")) {
-                const kratosCookieRes = await validateKratosCookie(cookies)
-                if (kratosCookieRes instanceof Error) return kratosCookieRes
-                const tokenPayload = {
-                  sub: kratosCookieRes.kratosUserId,
-                }
-                return sessionContext({
-                  tokenPayload,
-                  ip: request?.socket?.remoteAddress,
-                  body: null,
-                })
-              }
-
-              // make request to oathkeeper
-              const originalToken = authz?.slice(7) as
-                | LegacyJwtToken
-                | SessionToken
-                | undefined
-
-              const newToken = await sendOathkeeperRequest(originalToken)
-              // TODO: see how returning an error affect the websocket connection
-              if (newToken instanceof Error) return newToken
-
-              const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
-
-              const tokenPayload = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
-                algorithms: jwtAlgorithms,
-              })
-
-              if (typeof tokenPayload === "string") {
-                throw new Error("tokenPayload should be an object")
-              }
-
-              return sessionContext({
-                tokenPayload,
-                ip: request?.socket?.remoteAddress,
-
-                // TODO: Resolve what's needed here
-                body: null,
-              })
-            },
+            onConnect,
           },
-          {
-            server: httpServer,
-            path: apolloServer.graphqlPath,
-          },
+          subTransWs,
         )
         ;["SIGINT", "SIGTERM"].forEach((signal) => {
-          process.on(signal, () => apolloSubscriptionServer.close())
+          process.on(signal, () => {
+            apolloSubscriptionServer.close()
+            serverCleanup.dispose()
+          })
+        })
+
+        httpServer.on("upgrade", (req, socket, head) => {
+          // extract websocket subprotocol from header
+          const protocol = req.headers["sec-websocket-protocol"]
+          const protocols = Array.isArray(protocol)
+            ? protocol
+            : protocol?.split(",").map((p) => p.trim())
+
+          // decide which websocket server to use
+          const wss =
+            protocols?.includes(GRAPHQL_WS) && // subscriptions-transport-ws subprotocol
+            !protocols.includes(GRAPHQL_TRANSPORT_WS_PROTOCOL) // graphql-ws subprotocol
+              ? subTransWs
+              : // graphql-ws will welcome its own subprotocol and
+                // gracefully reject invalid ones. if the client supports
+                // both transports, graphql-ws will prevail
+                graphqlWs
+          wss.handleUpgrade(req, socket, head, (ws) => {
+            wss.emit("connection", ws, req)
+          })
         })
       }
 
