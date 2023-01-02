@@ -5,8 +5,7 @@ import { baseLogger } from "@services/logger"
 
 import { LND_HEALTH_REFRESH_TIME_MS } from "@config"
 
-import { params as unauthParams } from "./unauth"
-import { params as authParams } from "./auth"
+import { lndsConnect } from "./auth"
 
 /*
 	Check the status of the wallet and emit current state
@@ -14,7 +13,7 @@ import { params as authParams } from "./auth"
 
 const intervals: NodeJS.Timer[] = []
 
-const isUpLoop = async (param: LndParamsUnAuthed): Promise<void> => {
+const isUpLoop = async (param: LndConnect): Promise<void> => {
   await isUp(param)
   const interval = setInterval(async () => {
     await isUp(param)
@@ -22,12 +21,11 @@ const isUpLoop = async (param: LndParamsUnAuthed): Promise<void> => {
   intervals.push(interval)
 }
 
-const isLndUp = async (param: LndParamsUnAuthed): Promise<void> => {
+const isLndUp = async (param: LndConnect): Promise<void> => {
   let active = false
-  const { lnd, socket, active: pastStateActive } = param
+  const { lndGrpcUnauth: lnd, socket, active: pastStateActive } = param
 
   try {
-    // will throw if there is an error
     const { is_active, is_ready } = await getWalletStatus({ lnd })
     active = !!is_active && !!is_ready
   } catch (err) {
@@ -35,29 +33,23 @@ const isLndUp = async (param: LndParamsUnAuthed): Promise<void> => {
     active = false
   }
 
-  const authParam = authParams.find((p) => p.socket === socket)
-  if (!authParam) {
-    throw new Error("unreachable: this should not happen, authParam should not be null")
-  }
-
-  authParam.active = active
   param.active = active
 
   if (active && !pastStateActive) {
-    lndStatusEvent.emit("started", authParam)
+    lndStatusEvent.emit("started", param)
   }
 
   if (!active && pastStateActive) {
-    lndStatusEvent.emit("stopped", authParam)
+    lndStatusEvent.emit("stopped", param)
   }
 
-  baseLogger.debug({ socket, active }, "lnd pulse")
+  baseLogger.debug({ socket, active, pastStateActive }, "lnd pulse")
 }
 
 export const isUp = isLndUp
 
 // launching a loop to update whether lnd are active or not
-export const activateLndHealthCheck = () => unauthParams.forEach(isUpLoop)
+export const activateLndHealthCheck = () => lndsConnect.forEach(isUpLoop)
 
 export const stopLndHealthCheck = () => intervals.forEach(clearInterval)
 

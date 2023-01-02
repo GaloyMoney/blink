@@ -6,7 +6,7 @@
  * <payment hash>: payment hash to void. Must be the last param
  */
 import { PaymentStatus } from "@domain/bitcoin/lightning"
-import { params as unauthParams } from "@services/lnd/unauth"
+import { lndsConnect } from "@services/lnd/auth"
 import { setupMongoConnection } from "@services/mongodb"
 import { LedgerService } from "@services/ledger"
 import { isUp } from "@services/lnd/health"
@@ -61,7 +61,7 @@ const main = async () => {
 
 setupMongoConnection()
   .then(async (mongoose) => {
-    await Promise.all(unauthParams.map((lndParams) => isUp(lndParams)))
+    await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     if (mongoose) await mongoose.connection.close()
   })

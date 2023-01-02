@@ -7,7 +7,7 @@ import { Accounts as AccountsWithSpans } from "@app"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { isUp } from "@services/lnd/health"
-import { params as unauthParams } from "@services/lnd/unauth"
+import { lndsConnect } from "@services/lnd/auth"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository } from "@services/mongoose"
 
@@ -38,7 +38,7 @@ const main = async () => {
 
 setupMongoConnection()
   .then(async (mongoose) => {
-    await Promise.all(unauthParams.map((lndParams) => isUp(lndParams)))
+    await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     return mongoose.connection.close()
   })

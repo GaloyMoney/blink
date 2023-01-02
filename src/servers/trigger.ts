@@ -468,7 +468,7 @@ const listenerSwapMonitor = async () => {
 }
 
 const main = () => {
-  lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }: LndParamsAuthed) => {
+  lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }: LndConnect) => {
     baseLogger.info({ socket }, "lnd started")
 
     if (type.indexOf("onchain") !== -1) {

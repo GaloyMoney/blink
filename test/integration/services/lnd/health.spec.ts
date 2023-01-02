@@ -1,5 +1,6 @@
 import { isUp, lndStatusEvent } from "@services/lnd/health"
-import { params } from "@services/lnd/unauth"
+
+import { lndsConnect } from "@services/lnd/auth"
 
 import { clearAccountLocks } from "test/helpers/redis"
 
@@ -11,7 +12,7 @@ describe("lndHealth", () => {
   // this is a test health checks on lnd
   it("should emit on started", async () => {
     const handler = jest.fn()
-    const node = params[0]
+    const node = lndsConnect[0]
     node.active = false
 
     lndStatusEvent.on("started", handler)

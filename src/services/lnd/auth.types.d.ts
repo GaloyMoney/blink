@@ -11,15 +11,9 @@ type LndParams = {
   name: string
 }
 
-type LndParamsAuthed = LndParams & {
+type LndConnect = LndParams & {
   lnd: AuthenticatedLnd
-  socket: string
-  active: boolean
-  priority: number
-}
-
-type LndParamsUnAuthed = LndParams & {
-  lnd: UnauthenticatedLnd
+  lndGrpcUnauth: UnauthenticatedLnd
   socket: string
   active: boolean
   priority: number

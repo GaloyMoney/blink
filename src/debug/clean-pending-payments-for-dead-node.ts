@@ -10,7 +10,7 @@
 import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
 
 import { isUp } from "@services/lnd/health"
-import { params as unauthParams } from "@services/lnd/unauth"
+import { lndsConnect } from "@services/lnd/auth"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { LedgerService, translateToLedgerTx } from "@services/ledger"
@@ -79,7 +79,7 @@ const main = async (): Promise<true | ApplicationError> => {
 
 setupMongoConnection(false)
   .then(async (mongoose) => {
-    await Promise.all(unauthParams.map((lndParams) => isUp(lndParams)))
+    await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     if (mongoose) await mongoose.connection.close()
   })

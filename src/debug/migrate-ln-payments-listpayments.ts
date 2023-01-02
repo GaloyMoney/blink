@@ -9,7 +9,7 @@
 
 import { getPayments } from "lightning"
 import { isUp } from "@services/lnd/health"
-import { params as unauthParams } from "@services/lnd/unauth"
+import { lndsConnect } from "@services/lnd/auth"
 
 import {
   CorruptLndDbError,
@@ -260,7 +260,7 @@ const getFirstIndex = async (pubkey: Pubkey): Promise<number | ApplicationError>
 
 setupMongoConnection(false)
   .then(async (mongoose) => {
-    await Promise.all(unauthParams.map((lndParams) => isUp(lndParams)))
+    await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     if (mongoose) await mongoose.connection.close()
   })
