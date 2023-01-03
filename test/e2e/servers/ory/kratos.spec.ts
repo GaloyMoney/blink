@@ -504,10 +504,10 @@ describe("phone+email schema", () => {
 
 describe("decoding link header", () => {
   const withNext =
-    '<http://0.0.0.0:4434/identities?page=1&per_page=1>; rel="next",<http://0.0.0.0:4434/identities?page=37&per_page=1>; rel="last"'
+    '<http://0.0.0.0:4434/identities?page=1&page_size=1&page_token=eyJvZmZzZXQiOiIxIiwidiI6Mn0&per_page=1>; rel="next",<http://0.0.0.0:4434/identities?page=1&page_size=1&page_token=eyJvZmZzZXQiOiIxIiwidiI6Mn0&per_page=1>; rel="last"'
 
   const withoutNext =
-    '<http://0.0.0.0:4434/identities?page=0&per_page=1>; rel="first",<http://0.0.0.0:4434/identities?page=46&per_page=1>; rel="prev"'
+    '<http://0.0.0.0:4434/identities?page=0&page_size=1&page_token=eyJvZmZzZXQiOiIwIiwidiI6Mn0&per_page=1>; rel="first",<http://0.0.0.0:4434/identities?page=0&page_size=1&page_token=eyJvZmZzZXQiOiIwIiwidiI6Mn0&per_page=1>; rel="prev"'
 
   it("try decoding link successfully", () => {
     expect(getNextPage(withNext)).toBe(1)
