@@ -15,7 +15,10 @@ export const getNextPage = (link: string): number | undefined => {
   if (!next) return undefined
 
   const nextSplit = next.split("page=")
-  const page = +nextSplit[1].replace(/\D+/g, "")
+  const splittingOnNumber = nextSplit[1].match(/^\d+&/)
+  if (splittingOnNumber === null) return undefined
+
+  const page = +splittingOnNumber[0].slice(0, -1)
   return page
 }
 
