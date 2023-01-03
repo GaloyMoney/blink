@@ -66,17 +66,6 @@ type LedgerTransactionWithMetadata<S extends WalletCurrency> = {
 } & LedgerTransaction<S> &
   LedgerTransactionMetadata
 
-type ReceiveOnChainTxArgs = {
-  walletId: WalletId
-  walletCurrency: WalletCurrency
-  txHash: OnChainTxHash
-  sats: Satoshis
-  fee: Satoshis
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  receivingAddress: OnChainAddress
-}
-
 type TxArgs = {
   walletId: WalletId
   walletCurrency: WalletCurrency
@@ -307,10 +296,6 @@ interface ILedgerService {
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
-
-  addOnChainTxReceive(
-    args: ReceiveOnChainTxArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
 
   setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
 
