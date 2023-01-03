@@ -6,14 +6,17 @@ import {
 } from "@config"
 
 import { getCurrentPrice } from "@app/prices"
+import { usdFromBtcMidPriceFn } from "@app/shared"
 
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { DepositFeeCalculator } from "@domain/wallets"
+import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 
 import { RedisCacheService } from "@services/cache"
 import { ColdStorageService } from "@services/cold-storage"
@@ -26,8 +29,12 @@ import {
   UsersRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
+import { NewDealerPriceService } from "@services/dealer-price"
+import * as LedgerFacade from "@services/ledger/facade"
 
 const redisCache = RedisCacheService()
+
+const dealer = NewDealerPriceService()
 
 export const updateOnChainReceipt = async ({
   scanDepth = ONCHAIN_SCAN_DEPTH,
@@ -140,20 +147,60 @@ const processTxForWallet = async (
             ratio: account.depositFeeRatio,
           })
 
-          const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-          const amountDisplayCurrency = converter.fromSats(sats)
-          const feeDisplayCurrency = converter.fromSats(fee)
-
-          const result = await ledger.addOnChainTxReceive({
-            walletId: wallet.id,
-            walletCurrency: wallet.currency,
-            txHash: tx.rawTx.txHash,
-            sats,
-            fee,
-            amountDisplayCurrency,
-            feeDisplayCurrency,
-            receivingAddress: address,
+          const receivedBtc = paymentAmountFromNumber({
+            amount: sats,
+            currency: WalletCurrency.Btc,
           })
+          if (receivedBtc instanceof Error) return receivedBtc
+
+          const feeBtc = paymentAmountFromNumber({
+            amount: fee,
+            currency: WalletCurrency.Btc,
+          })
+          if (feeBtc instanceof Error) return feeBtc
+
+          const walletAddressReceiver = await WalletAddressReceiver({
+            walletAddress: {
+              address,
+              recipientWalletDescriptor: wallet,
+            },
+            receivedBtc,
+            feeBtc,
+            usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+            usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+          })
+          if (walletAddressReceiver instanceof Error) return walletAddressReceiver
+
+          const feeDisplayCurrency = Number(
+            walletAddressReceiver.usdBankFee.amount,
+          ) as DisplayCurrencyBaseAmount
+
+          const amountDisplayCurrency = Number(
+            walletAddressReceiver.usdToCreditReceiver.amount,
+          ) as DisplayCurrencyBaseAmount
+
+          const metadata = LedgerFacade.OnChainReceiveLedgerMetadata({
+            onChainTxHash: tx.rawTx.txHash,
+            fee: walletAddressReceiver.btcBankFee,
+            feeDisplayCurrency,
+            amountDisplayCurrency,
+            payeeAddresses: [address],
+          })
+
+          const result = await LedgerFacade.recordReceive({
+            description: "",
+            recipientWalletDescriptor: wallet,
+            amountToCreditReceiver: {
+              usd: walletAddressReceiver.usdToCreditReceiver,
+              btc: walletAddressReceiver.btcToCreditReceiver,
+            },
+            bankFee: {
+              usd: walletAddressReceiver.usdBankFee,
+              btc: walletAddressReceiver.btcBankFee,
+            },
+            metadata,
+          })
+
           if (result instanceof Error) {
             logger.error({ error: result }, "Could not record onchain tx in ledger")
             return result
