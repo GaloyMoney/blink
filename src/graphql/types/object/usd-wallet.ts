@@ -4,12 +4,12 @@ import {
   connectionFromPaginatedArray,
   checkedConnectionArgs,
 } from "@graphql/connections"
-import { notBtcWalletForQueryError } from "@graphql/helpers"
 import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
+import { MismatchedCurrencyForWalletError } from "@domain/errors"
 
 import IWallet from "../abstract/wallet"
 
@@ -52,7 +52,9 @@ const UsdWallet = GT.Object<Wallet>({
     pendingIncomingBalance: {
       type: GT.NonNull(SignedAmount),
       description: "An unconfirmed incoming onchain balance.",
-      resolve: () => notBtcWalletForQueryError,
+      resolve: () => {
+        throw mapError(new MismatchedCurrencyForWalletError())
+      },
     },
     transactions: {
       type: TransactionConnection,

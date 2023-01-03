@@ -7,7 +7,6 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import CentAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 
 import { checkedToWalletId } from "@domain/wallets"
 
@@ -49,13 +48,11 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<{
     if (walletIdChecked instanceof Error)
       return { errors: [mapAndParseErrorForGqlResponse(walletIdChecked)] }
 
-    const usdWalletValidated = await validateIsUsdWalletForMutation(walletIdChecked)
-    if (usdWalletValidated != true) return usdWalletValidated
-
-    const { result: feeSatAmount, error } = await Payments.getLightningFeeEstimation({
-      walletId,
-      uncheckedPaymentRequest: paymentRequest,
-    })
+    const { result: feeSatAmount, error } =
+      await Payments.getLightningFeeEstimationForUsdWallet({
+        walletId,
+        uncheckedPaymentRequest: paymentRequest,
+      })
 
     if (feeSatAmount !== null && error instanceof Error) {
       return {

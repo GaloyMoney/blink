@@ -8,7 +8,9 @@ import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
 import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
 
-export const addInvoiceForSelf = async ({
+import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
+
+const addInvoiceForSelf = async ({
   walletId,
   amount,
   memo = "",
@@ -26,6 +28,26 @@ export const addInvoiceForSelf = async ({
         .withRecipientWallet(recipientWalletDescriptor)
         .withAmount(amount),
   })
+
+export const addInvoiceForSelfForBtcWallet = async (
+  args: AddInvoiceForSelfArgs,
+): Promise<LnInvoice | ApplicationError> => {
+  const walletIdChecked = checkedToWalletId(args.walletId)
+  if (walletIdChecked instanceof Error) return walletIdChecked
+
+  const validated = await validateIsBtcWallet(walletIdChecked)
+  return validated instanceof Error ? validated : addInvoiceForSelf(args)
+}
+
+export const addInvoiceForSelfForUsdWallet = async (
+  args: AddInvoiceForSelfArgs,
+): Promise<LnInvoice | ApplicationError> => {
+  const walletIdChecked = checkedToWalletId(args.walletId)
+  if (walletIdChecked instanceof Error) return walletIdChecked
+
+  const validated = await validateIsUsdWallet(walletIdChecked)
+  return validated instanceof Error ? validated : addInvoiceForSelf(args)
+}
 
 export const addInvoiceNoAmountForSelf = async ({
   walletId,
@@ -45,7 +67,7 @@ export const addInvoiceNoAmountForSelf = async ({
         .withoutAmount(),
   })
 
-export const addInvoiceForRecipient = async ({
+const addInvoiceForRecipient = async ({
   recipientWalletId,
   amount,
   memo = "",
@@ -64,6 +86,26 @@ export const addInvoiceForRecipient = async ({
         .withRecipientWallet(recipientWalletDescriptor)
         .withAmount(amount),
   })
+
+export const addInvoiceForRecipientForBtcWallet = async (
+  args: AddInvoiceForRecipientArgs,
+): Promise<LnInvoice | ApplicationError> => {
+  const walletIdChecked = checkedToWalletId(args.recipientWalletId)
+  if (walletIdChecked instanceof Error) return walletIdChecked
+
+  const validated = await validateIsBtcWallet(walletIdChecked)
+  return validated instanceof Error ? validated : addInvoiceForRecipient(args)
+}
+
+export const addInvoiceForRecipientForUsdWallet = async (
+  args: AddInvoiceForRecipientArgs,
+): Promise<LnInvoice | ApplicationError> => {
+  const walletIdChecked = checkedToWalletId(args.recipientWalletId)
+  if (walletIdChecked instanceof Error) return walletIdChecked
+
+  const validated = await validateIsUsdWallet(walletIdChecked)
+  return validated instanceof Error ? validated : addInvoiceForRecipient(args)
+}
 
 export const addInvoiceNoAmountForRecipient = async ({
   recipientWalletId,

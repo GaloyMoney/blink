@@ -6,7 +6,6 @@ import CentAmount from "@graphql/types/scalar/cent-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
-import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 import { Wallets } from "@app"
 
 const OnChainUsdPaymentSendInput = GT.Input({
@@ -59,10 +58,7 @@ const OnChainUsdPaymentSendMutation = GT.Field<
       return { errors: [{ message: targetConfirmations.message }] }
     }
 
-    const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
-    if (usdWalletValidated != true) return usdWalletValidated
-
-    const status = await Wallets.payOnChainByWalletId({
+    const status = await Wallets.payOnChainByWalletIdForUsdWallet({
       senderAccount: domainAccount,
       senderWalletId: walletId,
       amount,

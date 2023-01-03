@@ -32,6 +32,7 @@ import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import { Accounts } from "@app"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import {
   getPriceRatioForLimits,
@@ -41,7 +42,7 @@ import {
 
 const dealer = NewDealerPriceService()
 
-export const intraledgerPaymentSendWalletId = async ({
+const intraledgerPaymentSendWalletId = async ({
   recipientWalletId: uncheckedRecipientWalletId,
   senderAccount,
   amount: uncheckedAmount,
@@ -135,6 +136,20 @@ export const intraledgerPaymentSendWalletId = async ({
   }
 
   return paymentSendStatus
+}
+
+export const intraledgerPaymentSendWalletIdForBtcWallet = async (
+  args: IntraLedgerPaymentSendWalletIdArgs,
+): Promise<PaymentSendStatus | ApplicationError> => {
+  const validated = await validateIsBtcWallet(args.senderWalletId)
+  return validated instanceof Error ? validated : intraledgerPaymentSendWalletId(args)
+}
+
+export const intraledgerPaymentSendWalletIdForUsdWallet = async (
+  args: IntraLedgerPaymentSendWalletIdArgs,
+): Promise<PaymentSendStatus | ApplicationError> => {
+  const validated = await validateIsUsdWallet(args.senderWalletId)
+  return validated instanceof Error ? validated : intraledgerPaymentSendWalletId(args)
 }
 
 const validateIntraledgerPaymentInputs = async ({

@@ -12,10 +12,12 @@ import { OnChainService } from "@services/lnd/onchain-service"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
+
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = NewDealerPriceService()
 
-export const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>({
+const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>({
   walletId,
   account: senderAccount,
   amount,
@@ -32,8 +34,8 @@ export const getOnChainFee = async <S extends WalletCurrency, R extends WalletCu
   if (walletIdChecked instanceof Error) return walletIdChecked
 
   const walletsRepo = WalletsRepository()
-  const wallet = await walletsRepo.findById(walletIdChecked)
-  if (wallet instanceof Error) return wallet
+  const senderWallet = await walletsRepo.findById(walletIdChecked)
+  if (senderWallet instanceof Error) return senderWallet
 
   const checkedAddress = checkedToOnChainAddress({
     network: BTC_NETWORK,
@@ -48,9 +50,6 @@ export const getOnChainFee = async <S extends WalletCurrency, R extends WalletCu
   ) {
     return recipientWallet
   }
-
-  const senderWallet = await walletsRepo.findById(walletId)
-  if (senderWallet instanceof Error) return senderWallet
 
   const isExternalAddress = async () => recipientWallet instanceof CouldNotFindError
 
@@ -120,9 +119,9 @@ export const getOnChainFee = async <S extends WalletCurrency, R extends WalletCu
   if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
   const balance = await LedgerService().getWalletBalanceAmount<S>({
-    id: wallet.id,
-    currency: wallet.currency as S,
-    accountId: wallet.accountId,
+    id: senderWallet.id,
+    currency: senderWallet.currency as S,
+    accountId: senderWallet.accountId,
   })
   if (balance instanceof Error) return balance
 
@@ -173,4 +172,18 @@ export const getMinerFeeAndPaymentFlow = async <
   })
   if (minerFeeAmount instanceof Error) return minerFeeAmount
   return builder.withMinerFee(minerFeeAmount)
+}
+
+export const getOnChainFeeForBtcWallet = async <S extends WalletCurrency>(
+  args: GetOnChainFeeArgs,
+): Promise<PaymentAmount<S> | ApplicationError> => {
+  const validated = await validateIsBtcWallet(args.walletId)
+  return validated instanceof Error ? validated : getOnChainFee(args)
+}
+
+export const getOnChainFeeForUsdWallet = async <S extends WalletCurrency>(
+  args: GetOnChainFeeArgs,
+): Promise<PaymentAmount<S> | ApplicationError> => {
+  const validated = await validateIsUsdWallet(args.walletId)
+  return validated instanceof Error ? validated : getOnChainFee(args)
 }

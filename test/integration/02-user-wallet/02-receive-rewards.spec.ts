@@ -118,7 +118,7 @@ describe("UserWallet - addEarn", () => {
     if (funderWallet instanceof Error) throw funderWallet
     const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
     if (funderAccount instanceof Error) throw funderAccount
-    const payment = await Payments.intraledgerPaymentSendWalletId({
+    const payment = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       senderWalletId: funderWalletId,
       senderAccount: funderAccount,
       recipientWalletId: walletIdB,

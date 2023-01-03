@@ -110,13 +110,13 @@ describe("onchainBlockEventHandler", () => {
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
 
-    const address = await Wallets.createOnChainAddress(walletIdA)
+    const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
     if (address instanceof Error) throw address
 
     const output0 = {}
     output0[address] = sat2btc(amount)
 
-    const address2 = await Wallets.createOnChainAddress(walletIdD)
+    const address2 = await Wallets.createOnChainAddressForBtcWallet(walletIdD)
     if (address2 instanceof Error) throw address2
 
     const output1 = {}
@@ -199,7 +199,7 @@ describe("onchainBlockEventHandler", () => {
 
     const sats = toSats(500)
 
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdF,
       amount: toSats(sats),
     })

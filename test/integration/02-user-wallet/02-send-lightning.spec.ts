@@ -208,7 +208,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdC as WalletId,
       amount: amountInvoice,
       memo,
@@ -259,7 +259,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user an amount less than 1 cent", async () => {
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdC as WalletId,
       amount: toSats(1),
     })
@@ -282,7 +282,7 @@ describe("UserWallet - Lightning Pay", () => {
     const memo = "invoiceMemo"
     const memoPayer = "my memo as a payer"
 
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdC as WalletId,
       amount: amountInvoice,
       memo,
@@ -325,7 +325,7 @@ describe("UserWallet - Lightning Pay", () => {
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
       .mockImplementationOnce(() => ({ sendNotification }))
 
-    const res = await Payments.intraledgerPaymentSendWalletId({
+    const res = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId: walletIdA,
       memo: "",
       amount: amountInvoice,
@@ -408,7 +408,7 @@ describe("UserWallet - Lightning Pay", () => {
     )
     const txnCount1 = contact1?.transactionsCount || 0
 
-    const res2 = await Payments.intraledgerPaymentSendWalletId({
+    const res2 = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId: walletIdA,
       memo: "",
       amount: amountInvoice,
@@ -454,7 +454,7 @@ describe("UserWallet - Lightning Pay", () => {
     const revealedPreImage = secret as RevealedPreImage
 
     // Test payment is successful
-    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
       uncheckedPaymentRequest: request,
       memo: null,
       amount: amountInvoice,
@@ -577,7 +577,7 @@ describe("UserWallet - Lightning Pay", () => {
     const { request } = await createInvoice({ lnd: lndOutside1 })
 
     // Test payment is successful
-    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
       uncheckedPaymentRequest: request,
       memo: null,
       amount: toSats(1),
@@ -593,7 +593,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsBelow = 100
     const memoSpamBelowThreshold = "Spam BELOW threshold"
-    const resBelowThreshold = await Payments.intraledgerPaymentSendWalletId({
+    const resBelowThreshold = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId: walletIdA,
       memo: memoSpamBelowThreshold,
       amount: toSats(satsBelow),
@@ -604,7 +604,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsAbove = 1100
     const memoSpamAboveThreshold = "Spam ABOVE threshold"
-    const resAboveThreshold = await Payments.intraledgerPaymentSendWalletId({
+    const resAboveThreshold = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId: walletIdA,
       memo: memoSpamAboveThreshold,
       amount: toSats(satsAbove),
@@ -671,7 +671,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self", async () => {
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdB as WalletId,
       amount: amountInvoice,
       memo: "self payment",
@@ -689,7 +689,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    const paymentResult = await Payments.intraledgerPaymentSendWalletId({
+    const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId: walletIdB,
       memo: "",
       amount: amountInvoice,
@@ -737,7 +737,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if user sends balance amount without accounting for fee", async () => {
-    const res = await Payments.intraledgerPaymentSendWalletId({
+    const res = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId: walletIdH,
       memo: "",
       amount: toSats(1000),
@@ -760,7 +760,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends balance amount accounting for fee", async () => {
-    const res = await Payments.intraledgerPaymentSendWalletId({
+    const res = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       recipientWalletId: walletIdH,
       memo: "",
       amount: toSats(1000),
@@ -773,7 +773,7 @@ describe("UserWallet - Lightning Pay", () => {
     const balanceBefore = await getBalanceHelper(walletIdH)
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: balanceBefore })
 
-    const { result: fee, error } = await Payments.getLightningFeeEstimation({
+    const { result: fee, error } = await Payments.getLightningFeeEstimationForBtcWallet({
       walletId: walletIdH,
       uncheckedPaymentRequest: request,
     })
@@ -803,7 +803,7 @@ describe("UserWallet - Lightning Pay", () => {
     // Test that non-flagged destination calls feeProbe lightning service method
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: sats })
     let feeProbeCallsBefore = feeProbeCallCount()
-    const { result: fee, error } = await Payments.getLightningFeeEstimation({
+    const { result: fee, error } = await Payments.getLightningFeeEstimationForBtcWallet({
       walletId: walletIdH,
       uncheckedPaymentRequest: request,
     })
@@ -821,7 +821,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     feeProbeCallsBefore = feeProbeCallCount()
     const { result: feeMuun, error: errorMuun } =
-      await Payments.getLightningFeeEstimation({
+      await Payments.getLightningFeeEstimationForBtcWallet({
         walletId: walletIdH,
         uncheckedPaymentRequest: muunRequest,
       })
@@ -847,11 +847,15 @@ describe("UserWallet - Lightning Pay", () => {
           const wallet = await WalletsRepository().findById(walletId)
           if (wallet instanceof Error) throw wallet
 
-          const { result: feeFromProbe, error } =
-            await Payments.getLightningFeeEstimation({
-              walletId: walletId,
-              uncheckedPaymentRequest: input.invoice,
-            })
+          const getLightningFeeFn =
+            wallet.currency === WalletCurrency.Btc
+              ? Payments.getLightningFeeEstimationForBtcWallet
+              : Payments.getLightningFeeEstimationForUsdWallet
+
+          const { result: feeFromProbe, error } = await getLightningFeeFn({
+            walletId: walletId,
+            uncheckedPaymentRequest: input.invoice,
+          })
           if (error instanceof Error) throw error
           expect(feeFromProbe).not.toBeNull()
           if (feeFromProbe === null) throw new InvalidFeeProbeStateError()
@@ -974,7 +978,7 @@ describe("UserWallet - Lightning Pay", () => {
           const payerInitialBalance = await getBalanceHelper(walletIdPayer)
           const payeeInitialBalance = await getBalanceHelper(walletIdPayee)
 
-          const lnInvoice = await Wallets.addInvoiceForSelf({
+          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: walletIdPayee as WalletId,
             amount: amountInvoice,
           })
@@ -1483,7 +1487,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toCents(6)
 
-      const request = await Wallets.addInvoiceForSelf({
+      const request = await Wallets.addInvoiceForSelfForUsdWallet({
         walletId: walletIdUsdA,
         amount: amountPayment,
       })
@@ -1512,7 +1516,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toSats(60)
 
-      const request = await Wallets.addInvoiceForSelf({
+      const request = await Wallets.addInvoiceForSelfForBtcWallet({
         walletId: walletIdA,
         amount: amountPayment,
       })
@@ -1545,7 +1549,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toCents(3)
 
-      const request = await Wallets.addInvoiceForSelf({
+      const request = await Wallets.addInvoiceForSelfForUsdWallet({
         walletId: walletIdUsdB,
         amount: amountPayment,
       })
@@ -1587,7 +1591,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest: uncheckedPaymentRequest } = request
 
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
         uncheckedPaymentRequest,
         memo: null,
         senderWalletId: walletIdA,
@@ -1614,7 +1618,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toCents(100)
 
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
         uncheckedPaymentRequest: request,
         memo: null,
         amount: amountPayment,
@@ -1646,7 +1650,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest: uncheckedPaymentRequest } = request
 
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
         uncheckedPaymentRequest,
         memo: null,
         senderWalletId: walletIdUsdB,
@@ -1675,7 +1679,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest: uncheckedPaymentRequest } = request
 
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
         uncheckedPaymentRequest,
         memo: null,
         senderWalletId: walletIdUsdB,
@@ -1719,7 +1723,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest: uncheckedPaymentRequest } = request
 
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
         uncheckedPaymentRequest,
         memo: null,
         senderWalletId: walletIdA,
@@ -1753,7 +1757,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest: uncheckedPaymentRequest, paymentHash } = request
 
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
         uncheckedPaymentRequest,
         memo: null,
         senderWalletId: walletIdUsdA,
@@ -1804,7 +1808,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest: uncheckedPaymentRequest, paymentHash } = request
 
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
         uncheckedPaymentRequest,
         memo: null,
         senderWalletId: walletIdA,
@@ -1901,7 +1905,14 @@ describe("USD Wallets - Lightning Pay", () => {
       const senderInitBalance = toSats(await getBalanceHelper(senderWalletId))
       const recipientInitBalance = toSats(await getBalanceHelper(recipientWalletId))
 
-      const res = await Payments.intraledgerPaymentSendWalletId({
+      const senderWallet = await WalletsRepository().findById(senderWalletId)
+      if (senderWallet instanceof Error) throw senderWallet
+
+      const intraledgerPaymentSendFn =
+        senderWallet.currency === WalletCurrency.Btc
+          ? Payments.intraledgerPaymentSendWalletIdForBtcWallet
+          : Payments.intraledgerPaymentSendWalletIdForUsdWallet
+      const res = await intraledgerPaymentSendFn({
         recipientWalletId: recipientWalletId,
         memo: "",
         amount: senderAmountInvoice,
@@ -2060,7 +2071,7 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
     const revealedPreImage = secret as RevealedPreImage
 
     // Test payment is successful
-    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
       uncheckedPaymentRequest: request,
       memo: null,
       amount: amountInvoice,
@@ -2115,7 +2126,7 @@ it.skip("expired payment", async () => {
 
   const lnd = activeNode.lnd
 
-  const lnInvoice = await Wallets.addInvoiceForSelf({
+  const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
     walletId: walletIdB as WalletId,
     amount: amountInvoice,
     memo,

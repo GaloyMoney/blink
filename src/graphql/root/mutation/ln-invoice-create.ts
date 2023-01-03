@@ -4,7 +4,6 @@ import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import { Wallets } from "@app"
 import dedent from "dedent"
 
@@ -40,10 +39,7 @@ const LnInvoiceCreateMutation = GT.Field({
       }
     }
 
-    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
-
-    const lnInvoice = await Wallets.addInvoiceForSelf({
+    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId,
       amount,
       memo,

@@ -14,6 +14,7 @@
 
 import { Payments } from "@app"
 import { checkedToSats } from "@domain/bitcoin"
+import { WalletCurrency } from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
 import { setupMongoConnection } from "@services/mongodb"
@@ -50,7 +51,12 @@ const reimburse = async (reimbursements: Array<reimbursement>) => {
       continue
     }
 
-    const reimburseResult = await Payments.intraledgerPaymentSendWalletId({
+    const intraledgerPaymentSendFn =
+      bankOwnerWallet.currency === WalletCurrency.Btc
+        ? Payments.intraledgerPaymentSendWalletIdForBtcWallet
+        : Payments.intraledgerPaymentSendWalletIdForUsdWallet
+
+    const reimburseResult = await intraledgerPaymentSendFn({
       recipientWalletId,
       amount,
       senderWalletId: bankOwnerWalletId,

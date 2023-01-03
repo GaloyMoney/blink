@@ -7,7 +7,6 @@ import { Payments } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { InputValidationError } from "@graphql/error"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import dedent from "dedent"
 
 const LnNoAmountInvoicePaymentInput = GT.Input({
@@ -71,10 +70,7 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
-
-    const status = await Payments.payNoAmountInvoiceByWalletId({
+    const status = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
       senderWalletId: walletId,
       uncheckedPaymentRequest: paymentRequest,
       memo: memo ?? null,

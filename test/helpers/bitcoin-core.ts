@@ -1,5 +1,5 @@
 import BitcoindClient from "bitcoin-core-ts"
-import { createOnChainAddress } from "@app/wallets"
+import { Wallets } from "@app"
 import { getBitcoinCoreRPCConfig } from "@config"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
 import { LedgerService } from "@services/ledger"
@@ -95,7 +95,7 @@ export const fundWalletIdFromOnchain = async ({
   amountInBitcoin: number
   lnd: AuthenticatedLnd
 }): Promise<Satoshis> => {
-  const address = await createOnChainAddress(walletId)
+  const address = await Wallets.createOnChainAddressForBtcWallet(walletId)
   if (address instanceof Error) throw address
 
   await sendToAddressAndConfirm({

@@ -124,8 +124,14 @@ const usdAmount = toCents(105)
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 const targetConfirmations = toTargetConfs(1)
 
-const payOnChainForPromiseAll = async (args: PayOnChainByWalletIdArgs) => {
-  const res = await Wallets.payOnChainByWalletId(args)
+const payOnChainForPromiseAll = async (
+  args: { senderCurrency: WalletCurrency } & PayOnChainByWalletIdArgs,
+) => {
+  const { senderCurrency, ...payArgs } = args
+  const res =
+    senderCurrency === WalletCurrency.Btc
+      ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
+      : await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
   if (res instanceof Error) throw res
   return res
 }
@@ -158,11 +164,15 @@ const testExternalSend = async ({
     : amount
   if (amountToSend instanceof Error) return amountToSend
 
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
   let results
   try {
     results = await Promise.all([
       once(sub, "chain_transaction"),
       payOnChainForPromiseAll({
+        senderCurrency: senderWallet.currency,
         senderAccount,
         senderWalletId,
         address,
@@ -220,9 +230,6 @@ const testExternalSend = async ({
   ])
 
   await sleep(1000)
-
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
 
   {
     const txResult = await getTransactionsForWalletId(senderWalletId)
@@ -358,10 +365,14 @@ const testInternalSend = async ({
   const initialSenderBalance = await getBalanceHelper(senderWalletId)
   const initialRecipientBalance = await getBalanceHelper(recipientWalletId)
 
-  const address = await Wallets.createOnChainAddress(recipientWalletId)
+  const createAddressFn =
+    recipientCurrency === WalletCurrency.Btc
+      ? Wallets.createOnChainAddressForBtcWallet
+      : Wallets.createOnChainAddressForUsdWallet
+  const address = await createAddressFn(recipientWalletId)
   if (address instanceof Error) return address
 
-  const paid = await Wallets.payOnChainByWalletId({
+  const sendArgs = {
     senderAccount: senderAccount,
     senderWalletId: senderWalletId,
     address,
@@ -369,7 +380,11 @@ const testInternalSend = async ({
     targetConfirmations,
     memo,
     sendAll: false,
-  })
+  }
+  const paid =
+    senderWallet.currency === WalletCurrency.Btc
+      ? await Wallets.payOnChainByWalletIdForBtcWallet(sendArgs)
+      : await Wallets.payOnChainByWalletIdForUsdWallet(sendArgs)
   if (paid instanceof Error) return paid
 
   // Check balances for both wallets
@@ -484,7 +499,7 @@ describe("BtcWallet - onChainPay", () => {
   it("sends a successful payment with memo", async () => {
     const memo = "this is my onchain memo"
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-    const paymentResult = await Wallets.payOnChainByWalletId({
+    const paymentResult = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
@@ -567,13 +582,13 @@ describe("BtcWallet - onChainPay", () => {
   it("sends all with an on us transaction", async () => {
     const initialBalanceUserF = await getBalanceHelper(walletIdF)
 
-    const address = await Wallets.createOnChainAddress(walletIdD)
+    const address = await Wallets.createOnChainAddressForBtcWallet(walletIdD)
     if (address instanceof Error) throw address
 
     const initialBalanceUserD = await getBalanceHelper(walletIdD)
     const senderAccount = await getAccountByTestUserRef("F")
 
-    const paid = await Wallets.payOnChainByWalletId({
+    const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount,
       senderWalletId: walletIdF,
       address,
@@ -635,7 +650,7 @@ describe("BtcWallet - onChainPay", () => {
       const initialBalanceUserA = await getBalanceHelper(walletIdA)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
-      const result = await Wallets.payOnChainByWalletId({
+      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
         senderAccount: accountA,
         senderWalletId: walletIdA,
         address,
@@ -679,7 +694,7 @@ describe("BtcWallet - onChainPay", () => {
       const initialBalanceUserA = await getBalanceHelper(walletIdA)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
-      const result = await Wallets.payOnChainByWalletId({
+      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
         senderAccount: accountA,
         senderWalletId: walletIdA,
         address,
@@ -746,7 +761,7 @@ describe("BtcWallet - onChainPay", () => {
     })
     const initialBalanceUserG = await getBalanceHelper(walletIdG)
 
-    const status = await Wallets.payOnChainByWalletId({
+    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountG,
       senderWalletId: walletIdG,
       address,
@@ -779,7 +794,7 @@ describe("BtcWallet - onChainPay", () => {
         ),
     }))
 
-    const status = await Wallets.payOnChainByWalletId({
+    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountG,
       senderWalletId: walletIdG,
       address,
@@ -797,7 +812,7 @@ describe("BtcWallet - onChainPay", () => {
     const amount = -1000
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
-    const status = await Wallets.payOnChainByWalletId({
+    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
@@ -841,7 +856,7 @@ describe("BtcWallet - onChainPay", () => {
 
     const amount = add(subResult, toSats(100))
 
-    const status = await Wallets.payOnChainByWalletId({
+    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
@@ -857,7 +872,7 @@ describe("BtcWallet - onChainPay", () => {
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
 
-    const status = await Wallets.payOnChainByWalletId({
+    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
@@ -872,7 +887,7 @@ describe("BtcWallet - onChainPay", () => {
   it("fails if the amount is less than lnd on-chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
 
-    const status = await Wallets.payOnChainByWalletId({
+    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,

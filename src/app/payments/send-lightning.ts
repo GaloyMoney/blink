@@ -42,6 +42,7 @@ import * as LedgerFacade from "@services/ledger/facade"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
+import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
@@ -93,7 +94,7 @@ export const payInvoiceByWalletId = async ({
     : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
 }
 
-export const payNoAmountInvoiceByWalletId = async ({
+const payNoAmountInvoiceByWalletId = async ({
   uncheckedPaymentRequest,
   amount,
   memo,
@@ -130,6 +131,20 @@ export const payNoAmountInvoiceByWalletId = async ({
         memo,
       })
     : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
+}
+
+export const payNoAmountInvoiceByWalletIdForBtcWallet = async (
+  args: PayNoAmountInvoiceByWalletIdArgs,
+): Promise<PaymentSendStatus | ApplicationError> => {
+  const validated = await validateIsBtcWallet(args.senderWalletId)
+  return validated instanceof Error ? validated : payNoAmountInvoiceByWalletId(args)
+}
+
+export const payNoAmountInvoiceByWalletIdForUsdWallet = async (
+  args: PayNoAmountInvoiceByWalletIdArgs,
+): Promise<PaymentSendStatus | ApplicationError> => {
+  const validated = await validateIsUsdWallet(args.senderWalletId)
+  return validated instanceof Error ? validated : payNoAmountInvoiceByWalletId(args)
 }
 
 const validateInvoicePaymentInputs = async ({

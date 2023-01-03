@@ -1,8 +1,8 @@
 import { once } from "events"
 
 import { Wallets } from "@app"
-import { addInvoiceForSelf, getBalanceForWallet } from "@app/wallets"
 
+import { WalletCurrency } from "@domain/shared"
 import {
   offchainLnds,
   onchainLnds,
@@ -10,6 +10,7 @@ import {
   updateEscrows,
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
+import { WalletsRepository } from "@services/mongoose"
 import { sleep } from "@utils"
 
 import {
@@ -338,7 +339,13 @@ export const fundWalletIdFromLightning = async ({
   walletId: WalletId
   amount: number
 }) => {
-  const invoice = await addInvoiceForSelf({ walletId, amount })
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) throw wallet
+
+  const invoice =
+    wallet.currency === WalletCurrency.Btc
+      ? await Wallets.addInvoiceForSelfForBtcWallet({ walletId, amount })
+      : await Wallets.addInvoiceForSelfForUsdWallet({ walletId, amount })
   if (invoice instanceof Error) return invoice
 
   safePay({ lnd: lndOutside1, request: invoice.paymentRequest })
@@ -355,7 +362,7 @@ export const fundWalletIdFromLightning = async ({
     }),
   ).not.toBeInstanceOf(Error)
 
-  const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
+  const balance = await Wallets.getBalanceForWallet({ walletId, logger: baseLogger })
   if (balance instanceof Error) throw balance
 }
 

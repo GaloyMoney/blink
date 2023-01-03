@@ -13,6 +13,8 @@ import { WalletsRepository, PaymentFlowStateRepository } from "@services/mongoos
 import { NewDealerPriceService } from "@services/dealer-price"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
+
 import { PartialResult } from "../partial-result"
 
 import {
@@ -22,7 +24,7 @@ import {
   newCheckWithdrawalLimits,
 } from "./helpers"
 
-export const getLightningFeeEstimation = async ({
+const getLightningFeeEstimation = async ({
   walletId,
   uncheckedPaymentRequest,
 }: {
@@ -41,7 +43,33 @@ export const getLightningFeeEstimation = async ({
   })
 }
 
-export const getNoAmountLightningFeeEstimation = async ({
+export const getLightningFeeEstimationForBtcWallet = async (args: {
+  walletId: string
+  uncheckedPaymentRequest: string
+}): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
+  const walletIdChecked = checkedToWalletId(args.walletId)
+  if (walletIdChecked instanceof Error) return PartialResult.err(walletIdChecked)
+
+  const validated = await validateIsBtcWallet(walletIdChecked)
+  return validated instanceof Error
+    ? PartialResult.err(validated)
+    : getLightningFeeEstimation(args)
+}
+
+export const getLightningFeeEstimationForUsdWallet = async (args: {
+  walletId: string
+  uncheckedPaymentRequest: string
+}): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
+  const walletIdChecked = checkedToWalletId(args.walletId)
+  if (walletIdChecked instanceof Error) return PartialResult.err(walletIdChecked)
+
+  const validated = await validateIsUsdWallet(walletIdChecked)
+  return validated instanceof Error
+    ? PartialResult.err(validated)
+    : getLightningFeeEstimation(args)
+}
+
+const getNoAmountLightningFeeEstimation = async ({
   walletId,
   uncheckedPaymentRequest,
   amount,
@@ -63,6 +91,34 @@ export const getNoAmountLightningFeeEstimation = async ({
     invoice: decodedInvoice,
     uncheckedAmount: amount,
   })
+}
+
+export const getNoAmountLightningFeeEstimationForBtcWallet = async (args: {
+  walletId: string
+  uncheckedPaymentRequest: string
+  amount: number
+}): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
+  const walletIdChecked = checkedToWalletId(args.walletId)
+  if (walletIdChecked instanceof Error) return PartialResult.err(walletIdChecked)
+
+  const validated = await validateIsBtcWallet(walletIdChecked)
+  return validated instanceof Error
+    ? PartialResult.err(validated)
+    : getNoAmountLightningFeeEstimation(args)
+}
+
+export const getNoAmountLightningFeeEstimationForUsdWallet = async (args: {
+  walletId: string
+  uncheckedPaymentRequest: string
+  amount: number
+}): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
+  const walletIdChecked = checkedToWalletId(args.walletId)
+  if (walletIdChecked instanceof Error) return PartialResult.err(walletIdChecked)
+
+  const validated = await validateIsUsdWallet(walletIdChecked)
+  return validated instanceof Error
+    ? PartialResult.err(validated)
+    : getNoAmountLightningFeeEstimation(args)
 }
 
 const estimateLightningFee = async ({

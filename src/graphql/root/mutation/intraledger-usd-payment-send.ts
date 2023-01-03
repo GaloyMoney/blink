@@ -1,7 +1,6 @@
 import { Accounts, Payments } from "@app"
 import { checkedToWalletId } from "@domain/wallets"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import CentAmount from "@graphql/types/scalar/cent-amount"
@@ -43,9 +42,6 @@ const IntraLedgerUsdPaymentSendMutation = GT.Field({
       return { errors: [mapAndParseErrorForGqlResponse(senderWalletId)] }
     }
 
-    const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
-    if (usdWalletValidated != true) return usdWalletValidated
-
     const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
     if (recipientWalletIdChecked instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(recipientWalletIdChecked)] }
@@ -59,7 +55,7 @@ const IntraLedgerUsdPaymentSendMutation = GT.Field({
       return { errors: [mapAndParseErrorForGqlResponse(recipientUsername)] }
     }
 
-    const status = await Payments.intraledgerPaymentSendWalletId({
+    const status = await Payments.intraledgerPaymentSendWalletIdForUsdWallet({
       recipientWalletId,
       memo,
       amount,

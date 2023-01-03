@@ -8,7 +8,6 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 
 import { normalizePaymentAmount } from "."
 
@@ -38,11 +37,8 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
       }
     }
 
-    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
-
     const { result: feeSatAmount, error } =
-      await Payments.getNoAmountLightningFeeEstimation({
+      await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
         walletId,
         amount,
         uncheckedPaymentRequest: paymentRequest,
