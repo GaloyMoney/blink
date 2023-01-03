@@ -28,9 +28,43 @@ export const getInboundBalance = async (): Promise<Satoshis | ApplicationError> 
   if (offChainService instanceof Error) return offChainService
   const offChainChannelBalances = await offChainService.getInboundOutboundBalance()
   if (offChainChannelBalances instanceof Error) return offChainChannelBalances
-  const inbound = offChainChannelBalances.inbound
 
-  return inbound
+  const inboundOutboundBalance = await Promise.all(
+    offChainService
+      .listActivePubkeys()
+      .map((pubkey) => offChainService.getInboundOutboundBalance(pubkey)),
+  )
+
+  const inbound: Satoshis[] = []
+  inboundOutboundBalance.forEach((balance) => {
+    if ("inbound" in balance) {
+      inbound.push(balance.inbound)
+    }
+  })
+
+  return sumBalances(inbound)
+}
+
+export const getOutboundBalance = async (): Promise<Satoshis | ApplicationError> => {
+  const offChainService = LndService()
+  if (offChainService instanceof Error) return offChainService
+  const offChainChannelBalances = await offChainService.getInboundOutboundBalance()
+  if (offChainChannelBalances instanceof Error) return offChainChannelBalances
+
+  const inboundOutboundBalance = await Promise.all(
+    offChainService
+      .listActivePubkeys()
+      .map((pubkey) => offChainService.getInboundOutboundBalance(pubkey)),
+  )
+
+  const outbound: Satoshis[] = []
+  inboundOutboundBalance.forEach((balance) => {
+    if ("outbound" in balance) {
+      outbound.push(balance.outbound)
+    }
+  })
+
+  return sumBalances(outbound)
 }
 
 export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError> =>

@@ -346,3 +346,13 @@ createGauge({
     return balance
   },
 })
+
+createGauge({
+  name: "outboundBalance",
+  description: "How much outbound balance there is on the active nodes",
+  collect: async () => {
+    const balance = await Lightning.getOutboundBalance()
+    if (balance instanceof Error) return NaN
+    return balance
+  },
+})
