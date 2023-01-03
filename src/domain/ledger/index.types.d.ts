@@ -94,12 +94,6 @@ type OnChainTxArgs = TxArgs & {
   payeeAddress: OnChainAddress
 }
 
-type AddLnTxReceiveArgs = LnTxArgs & {
-  cents: UsdCents | undefined
-  feeInboundLiquidityDisplayCurrency: DisplayCurrencyBaseAmount
-  feeInboundLiquidity: Satoshis
-}
-
 type AddLnTxSendArgs = LnTxArgs & {
   cents?: UsdCents // move in upper property?
   pubkey: Pubkey
@@ -178,23 +172,6 @@ type AddOnChainIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs & {
 }
 
 type AddWalletIdIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs
-
-type AddLnFeeReeimbursementReceiveArgs<
-  S extends WalletCurrency,
-  R extends WalletCurrency,
-> = {
-  walletId: WalletId
-  walletCurrency: WalletCurrency
-  paymentHash: PaymentHash
-  sats: Satoshis
-  cents?: UsdCents
-  journalId: LedgerJournalId
-  revealedPreImage?: RevealedPreImage
-  paymentFlow: PaymentFlowState<S, R>
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
-}
 
 type FeeReimbursement = {
   getReimbursement(
@@ -333,12 +310,6 @@ interface ILedgerService {
 
   addOnChainTxReceive(
     args: ReceiveOnChainTxArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
-
-  addLnTxReceive(args: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError>
-
-  addLnFeeReimbursementReceive<S extends WalletCurrency, R extends WalletCurrency>(
-    args: AddLnFeeReeimbursementReceiveArgs<S, R>,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
