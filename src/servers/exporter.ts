@@ -26,7 +26,10 @@ import { LocalCacheService } from "@services/cache"
 import { toSeconds } from "@domain/primitives"
 import { timeout } from "@utils"
 
-import { getTotalPendingHtlcCount } from "@services/lnd/utils-ln-service"
+import {
+  getTotalPendingHtlcCountLnd1,
+  getTotalPendingHtlcCountLnd2,
+} from "@services/lnd/utils-ln-service"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -315,11 +318,21 @@ export const getBookingVersusRealWorldAssets = async () => {
 }
 
 createGauge({
-  name: "totalPendingHtlcCount",
-  description: "How many pending HTLCs there are in the channels of the active nodes",
+  name: "totalPendingHtlcCountLnd1",
+  description: "How many pending HTLCs there are in the channels of lnd1",
   collect: async () => {
-    const totalPendingHtlcCount = await getTotalPendingHtlcCount()
-    if (getTotalPendingHtlcCount instanceof Error) return NaN
+    const totalPendingHtlcCount = await getTotalPendingHtlcCountLnd1()
+    if (getTotalPendingHtlcCountLnd1 instanceof Error) return NaN
+    return totalPendingHtlcCount
+  },
+})
+
+createGauge({
+  name: "totalPendingHtlcCountLnd2",
+  description: "How many pending HTLCs there are in the channels of lnd2",
+  collect: async () => {
+    const totalPendingHtlcCount = await getTotalPendingHtlcCountLnd2()
+    if (getTotalPendingHtlcCountLnd2 instanceof Error) return NaN
     return totalPendingHtlcCount
   },
 })

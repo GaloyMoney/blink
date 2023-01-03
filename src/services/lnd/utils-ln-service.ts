@@ -25,7 +25,7 @@ async function getPendingHtlcCountLnd2(): Promise<{ [channelId: string]: number 
   return pendingHtlcCounts
 }
 
-async function getTotalPendingHtlcCountLnd1(): Promise<number> {
+export async function getTotalPendingHtlcCountLnd1(): Promise<number> {
   const pendingHtlcCounts = await getPendingHtlcCountLnd1()
   const totalPendingHtlcCount = Object.values(pendingHtlcCounts).reduce(
     (a, b) => a + b,
@@ -34,17 +34,11 @@ async function getTotalPendingHtlcCountLnd1(): Promise<number> {
   return totalPendingHtlcCount
 }
 
-async function getTotalPendingHtlcCountLnd2(): Promise<number> {
+export async function getTotalPendingHtlcCountLnd2(): Promise<number> {
   const pendingHtlcCounts = await getPendingHtlcCountLnd2()
   const totalPendingHtlcCount = Object.values(pendingHtlcCounts).reduce(
     (a, b) => a + b,
     0,
   )
   return totalPendingHtlcCount
-}
-
-export async function getTotalPendingHtlcCount(): Promise<number> {
-  const totalPendingHtlcCountLnd1 = await getTotalPendingHtlcCountLnd1()
-  const totalPendingHtlcCountLnd2 = await getTotalPendingHtlcCountLnd2()
-  return totalPendingHtlcCountLnd1 + totalPendingHtlcCountLnd2
 }
