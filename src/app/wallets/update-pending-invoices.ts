@@ -199,7 +199,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       amountDisplayCurrency: Number(
         walletInvoiceReceiver.usdToCreditReceiver.amount,
       ) as DisplayCurrencyBaseAmount,
-      pubkey: walletInvoiceReceiver.pubkey,
+      pubkey: walletInvoice.pubkey,
     })
 
     const recipientWallet = await WalletsRepository().findById(
@@ -216,7 +216,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     const result = await LedgerFacade.recordReceive({
       description,
       recipientWalletDescriptor: {
-        ...walletInvoiceReceiver.recipientWalletDescriptor,
+        ...walletInvoice.recipientWalletDescriptor,
         accountId: recipientAccount.id,
       },
       amountToCreditReceiver: {
