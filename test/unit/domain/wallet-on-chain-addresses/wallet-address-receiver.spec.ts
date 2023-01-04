@@ -57,7 +57,7 @@ describe("WalletAddressReceiver", () => {
 
       const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
       if (priceRatio instanceof Error) throw priceRatio
-      const feeUsd = priceRatio.convertFromBtc(feeBtc)
+      const feeUsd = priceRatio.convertFromBtcToCeil(feeBtc)
 
       expect(walletAddressAmounts).toEqual(
         expect.objectContaining({
@@ -92,7 +92,7 @@ describe("WalletAddressReceiver", () => {
 
       const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
       if (priceRatio instanceof Error) throw priceRatio
-      const feeUsd = priceRatio.convertFromBtc(feeBtc)
+      const feeUsd = priceRatio.convertFromBtcToCeil(feeBtc)
 
       expect(walletAddressAmounts).toEqual(
         expect.objectContaining({

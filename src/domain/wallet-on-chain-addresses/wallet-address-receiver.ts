@@ -24,7 +24,7 @@ export const WalletAddressReceiver = async <S extends WalletCurrency>({
   if (priceRatio instanceof Error) return priceRatio
 
   const bankFee = {
-    usdBankFee: priceRatio.convertFromBtc(feeBtc),
+    usdBankFee: priceRatio.convertFromBtcToCeil(feeBtc),
     btcBankFee: feeBtc,
   }
 
