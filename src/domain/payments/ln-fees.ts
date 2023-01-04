@@ -39,7 +39,7 @@ export const LnFees = (
   }
 
   const feeFromRawRoute = (rawRoute: RawRoute): BtcPaymentAmount | ValidationError => {
-    const amount = Math.ceil(rawRoute.fee)
+    const amount = Math.ceil(rawRoute.safe_fee)
     return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
   }
 
