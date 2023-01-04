@@ -10,7 +10,7 @@ export const WalletAddressReceiver = async <S extends WalletCurrency>({
   usdFromBtc,
   usdFromBtcMidPrice,
 }: WalletAddressReceiverArgs<S>): Promise<
-  WalletAddressReceiver<S> | DealerPriceServiceError | ValidationError
+  WalletAddressReceiver | DealerPriceServiceError | ValidationError
 > => {
   if (walletAddress.recipientWalletDescriptor.currency === WalletCurrency.Btc) {
     const receivedUsd = await usdFromBtcMidPrice(receivedBtc)
@@ -25,10 +25,8 @@ export const WalletAddressReceiver = async <S extends WalletCurrency>({
     }
 
     return {
-      ...walletAddress,
       btcToCreditReceiver: calc.sub(receivedBtc, feeBtc),
       usdToCreditReceiver: calc.sub(receivedUsd, bankFee.usdBankFee),
-      recipientWalletDescriptor: walletAddress.recipientWalletDescriptor,
       ...bankFee,
       receivedAmount: () =>
         walletAddress.recipientWalletDescriptor.currency === WalletCurrency.Btc
@@ -49,10 +47,8 @@ export const WalletAddressReceiver = async <S extends WalletCurrency>({
   }
 
   return {
-    ...walletAddress,
     btcToCreditReceiver: calc.sub(receivedBtc, feeBtc),
     usdToCreditReceiver: calc.sub(receivedUsd, bankFee.usdBankFee),
-    recipientWalletDescriptor: walletAddress.recipientWalletDescriptor,
     ...bankFee,
     receivedAmount: () =>
       walletAddress.recipientWalletDescriptor.currency === WalletCurrency.Btc

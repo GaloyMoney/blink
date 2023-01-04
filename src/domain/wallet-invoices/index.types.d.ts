@@ -89,7 +89,7 @@ type WalletInvoiceReceiver = {
   receivedAmount: () => BtcPaymentAmount | UsdPaymentAmount
 }
 
-type WalletAddressReceiver<S extends WalletCurrency> = WalletAddress<S> & {
+type WalletAddressReceiver = {
   usdToCreditReceiver: UsdPaymentAmount
   btcToCreditReceiver: BtcPaymentAmount
   usdBankFee: UsdPaymentAmount
