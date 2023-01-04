@@ -19,6 +19,7 @@ import * as CaptchaErrors from "@domain/captcha/errors"
 import * as AuthenticationErrors from "@domain/authentication/errors"
 
 import * as LedgerFacadeErrors from "@services/ledger/domain/errors"
+import * as KratosErrors from "@services/kratos/errors"
 
 export const ApplicationErrors = {
   ...SharedErrors,
@@ -41,5 +42,6 @@ export const ApplicationErrors = {
   ...CaptchaErrors,
   ...AuthenticationErrors,
 
+  ...KratosErrors,
   ...LedgerFacadeErrors,
 } as const
