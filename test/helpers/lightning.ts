@@ -243,7 +243,7 @@ export const closeAllChannels = async ({ lnd }) => {
   }
 }
 
-export const setChannelFees = async ({ lnd, channel, base = 1, rate = 1 }) => {
+export const setChannelFees = async ({ lnd, channel, base, rate }) => {
   const input = {
     fee_rate: rate,
     base_fee_mtokens: `${base * 1000}`,

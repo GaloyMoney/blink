@@ -1088,6 +1088,7 @@ describe("UserWallet - Lightning Pay", () => {
       })
 
       it("pay invoice routed to lnd outside2", async () => {
+        const amountInvoice = 199
         const { request } = await createInvoice({
           lnd: lndOutside2,
           tokens: amountInvoice,

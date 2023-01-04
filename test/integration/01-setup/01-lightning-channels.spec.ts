@@ -102,8 +102,8 @@ describe("Lightning channels", () => {
     expect(channels.length).toEqual(channelLengthOutside1 + 1)
     expect(channels.some((e) => e.is_private)).toBe(true)
 
-    await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
-    await setChannelFees({ lnd: lndOutside2, channel, base: 1, rate: 0 })
+    await setChannelFees({ lnd: lndOutside1, channel, base: 0, rate: 5000 })
+    await setChannelFees({ lnd: lndOutside2, channel, base: 0, rate: 5000 })
   })
 
   // FIXME: we need a way to calculate the closing fee
