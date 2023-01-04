@@ -583,6 +583,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
 
     const paymentDetailsArgs: PayViaPaymentDetailsArgs = {
+      outgoing_channel: "130x1x0",
       lnd: defaultLnd,
       id: decodedInvoice.paymentHash,
       destination: decodedInvoice.destination,
@@ -607,6 +608,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         paymentPromise,
         timeoutPromise,
       ])) as PayViaPaymentDetailsResult
+      console.log("HERE 10:", JSON.stringify(paymentResult, null, 2))
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,

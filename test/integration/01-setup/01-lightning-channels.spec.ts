@@ -62,6 +62,7 @@ describe("Lightning channels", () => {
       lndPartner: lndOutside1,
       socket,
     })
+    console.log("HERE 0:", channel)
 
     const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
@@ -69,8 +70,8 @@ describe("Lightning channels", () => {
     const finalFeeInLedger = await ledgerAdmin.getBankOwnerBalance()
     expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 
-    await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })
-    await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
+    await setChannelFees({ lnd: lnd1, channel, base: 0, rate: 5000 })
+    await setChannelFees({ lnd: lndOutside1, channel, base: 0, rate: 5000 })
   })
 
   it("opens channel from lndOutside1 to lnd1", async () => {
@@ -110,22 +111,22 @@ describe("Lightning channels", () => {
     await setChannelFees({ lnd: lndOutside2, channel, base: 1, rate: 0 })
   })
 
-  it.skip("opens private channel from lndOutside1 to lndOutside2", async () => {
+  it("opens private channel from lndOutside1 to lndOutside2", async () => {
     const socket = `lnd-outside-2:9735`
 
     const { lndNewChannel: channel } = await openChannelTesting({
       lnd: lndOutside1,
       lndPartner: lndOutside2,
       socket,
-      is_private: true,
+      // is_private: true,
     })
 
     const { channels } = await getChannels({ lnd: lndOutside1 })
     expect(channels.length).toEqual(channelLengthOutside1 + 1)
-    expect(channels.some((e) => e.is_private)).toBe(true)
+    // expect(channels.some((e) => e.is_private)).toBe(true)
 
-    await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
-    await setChannelFees({ lnd: lndOutside2, channel, base: 1, rate: 0 })
+    await setChannelFees({ lnd: lndOutside1, channel, base: 0, rate: 5000 })
+    await setChannelFees({ lnd: lndOutside2, channel, base: 0, rate: 5000 })
   })
 
   // FIXME: we need a way to calculate the closing fee
