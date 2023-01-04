@@ -36,4 +36,14 @@ describe("LnFees", () => {
       })
     })
   })
+
+  describe("feeFromRawRoute", () => {
+    it("returns the feeFromRawRoute", () => {
+      const rawRoute = { total_mtokens: "21000000", safe_fee: 210 } as RawRoute
+      expect(LnFees().feeFromRawRoute(rawRoute)).toEqual({
+        amount: 210n,
+        currency: WalletCurrency.Btc,
+      })
+    })
+  })
 })

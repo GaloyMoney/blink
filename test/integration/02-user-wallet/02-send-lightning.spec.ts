@@ -69,6 +69,8 @@ import {
   getAccountByTestUserRef,
   getAccountRecordByTestUserRef,
   getBalanceHelper,
+  getChannel,
+  getChannels,
   getDefaultWalletIdByTestUserRef,
   getHash,
   getInvoice,
@@ -1085,7 +1087,8 @@ describe("UserWallet - Lightning Pay", () => {
         )
       })
 
-      it("pay invoice to lnd outside2", async () => {
+      it("pay invoice routed to lnd outside2", async () => {
+        const amountInvoice = 199
         const { request } = await createInvoice({
           lnd: lndOutside2,
           tokens: amountInvoice,
@@ -1107,9 +1110,19 @@ describe("UserWallet - Lightning Pay", () => {
         expect(result).toBe(PaymentSendStatus.Success)
         const finalBalance = await getBalanceHelper(walletIdB)
 
-        // TODO: have a way to do this more programmatically?
-        // base rate: 1, fee Rate: 1
-        const fee = 0
+        // Calculate fee from routed payment
+        const { channels } = await getChannels({ lnd: lndOutside2 })
+        expect(channels && channels.length).toBeGreaterThan(0)
+        const { id } = channels[0]
+        const {
+          policies: [{ base_fee_mtokens: baseMilliSats, fee_rate: feeRatePpm }],
+        } = await getChannel({ id, lnd: lndOutside2 })
+        if (baseMilliSats === undefined || feeRatePpm === undefined) {
+          throw new Error("Undefined baseMilliSats or feeRatePpm")
+        }
+        const baseSats = Math.ceil(parseInt(baseMilliSats, 10) / 1000)
+        const feeRate = feeRatePpm / 1_000_000
+        const fee = baseSats + Math.ceil(amountInvoice * feeRate)
 
         expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
       })

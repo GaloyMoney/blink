@@ -33,8 +33,7 @@ afterEach(async () => {
 })
 
 // Setup the next network
-// lnd2 <- lnd1 <-> lndOutside1
-// lnd2 <- lnd1 -> lndOutside2
+// lnd2 <- lnd1 <-> lndOutside1 -> lndOutside2
 // this setup avoids close channels for routing fees tests
 describe("Lightning channels", () => {
   it("opens channel from lnd1 to lnd2", async () => {
@@ -89,28 +88,7 @@ describe("Lightning channels", () => {
     await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
   })
 
-  it("opens channel from lnd1 to lndOutside2", async () => {
-    const socket = `lnd-outside-2:9735`
-
-    const initFeeInLedger = await ledgerAdmin.getBankOwnerBalance()
-
-    const { lndNewChannel: channel } = await openChannelTesting({
-      lnd: lnd1,
-      lndPartner: lndOutside2,
-      socket,
-    })
-
-    const { channels } = await getChannels({ lnd: lnd1 })
-    expect(channels.length).toEqual(channelLengthMain + 1)
-
-    const finalFeeInLedger = await ledgerAdmin.getBankOwnerBalance()
-    expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
-
-    await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })
-    await setChannelFees({ lnd: lndOutside2, channel, base: 1, rate: 0 })
-  })
-
-  it.skip("opens private channel from lndOutside1 to lndOutside2", async () => {
+  it("opens private channel from lndOutside1 to lndOutside2", async () => {
     const socket = `lnd-outside-2:9735`
 
     const { lndNewChannel: channel } = await openChannelTesting({
@@ -124,8 +102,8 @@ describe("Lightning channels", () => {
     expect(channels.length).toEqual(channelLengthOutside1 + 1)
     expect(channels.some((e) => e.is_private)).toBe(true)
 
-    await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
-    await setChannelFees({ lnd: lndOutside2, channel, base: 1, rate: 0 })
+    await setChannelFees({ lnd: lndOutside1, channel, base: 0, rate: 5000 })
+    await setChannelFees({ lnd: lndOutside2, channel, base: 0, rate: 5000 })
   })
 
   // FIXME: we need a way to calculate the closing fee

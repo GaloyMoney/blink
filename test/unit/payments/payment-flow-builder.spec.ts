@@ -50,7 +50,7 @@ describe("LightningPaymentFlowBuilder", () => {
     userId: "recipientUserId" as UserId,
   }
   const pubkey = "pubkey" as Pubkey
-  const rawRoute = { total_mtokens: "21000000", fee: 210 } as RawRoute
+  const rawRoute = { total_mtokens: "21000000", safe_fee: 210 } as RawRoute
 
   // 0.02 ratio (0.02 cents/sat, or $20,000 USD/BTC)
   const midPriceRatio = 0.02
