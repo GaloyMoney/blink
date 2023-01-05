@@ -12,7 +12,6 @@ import {
 } from "@services/tracing"
 import { Account } from "@services/mongoose/schema"
 import { LedgerService } from "@services/ledger"
-import { getBosScore } from "@services/lnd/utils"
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import {
   getBankOwnerWalletId,
@@ -123,12 +122,6 @@ const main = async () => {
     name: "lndBalanceSync",
     description: "are lnd in syncs with our books",
     collect: getBookingVersusRealWorldAssets,
-  })
-
-  createGauge({
-    name: "bos",
-    description: "bos score",
-    collect: getBosScore,
   })
 
   createGauge({
