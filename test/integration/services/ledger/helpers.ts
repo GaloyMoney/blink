@@ -17,7 +17,10 @@ import {
 import { translateToLedgerJournal } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 
-export const recordReceiveLnPayment = async ({
+export const recordReceiveLnPayment = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   walletDescriptor,
   paymentAmount,
   bankFee,
@@ -26,10 +29,17 @@ export const recordReceiveLnPayment = async ({
 
   const metadata = LedgerFacade.LnReceiveLedgerMetadata({
     paymentHash,
-    fee: bankFee.btc,
+    pubkey: crypto.randomUUID() as Pubkey,
+    paymentFlow: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolFee: bankFee.btc,
+      usdProtocolFee: bankFee.usd,
+    } as PaymentFlowState<S, R>,
+
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
     amountDisplayCurrency: Number(paymentAmount.usd.amount) as DisplayCurrencyBaseAmount,
-    pubkey: crypto.randomUUID() as Pubkey,
+    displayCurrency: DisplayCurrency.Usd,
   })
 
   return LedgerFacade.recordReceive({
@@ -42,7 +52,10 @@ export const recordReceiveLnPayment = async ({
   })
 }
 
-export const recordReceiveOnChainPayment = async ({
+export const recordReceiveOnChainPayment = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   walletDescriptor,
   paymentAmount,
   bankFee,
@@ -51,9 +64,17 @@ export const recordReceiveOnChainPayment = async ({
 
   const metadata = LedgerFacade.OnChainReceiveLedgerMetadata({
     onChainTxHash,
-    fee: bankFee.btc,
+    paymentFlow: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolFee: bankFee.btc,
+      usdProtocolFee: bankFee.usd,
+    } as OnChainPaymentFlowState<S, R>,
+
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
     amountDisplayCurrency: Number(paymentAmount.usd.amount) as DisplayCurrencyBaseAmount,
+    displayCurrency: DisplayCurrency.Usd,
+
     payeeAddresses: ["address1" as OnChainAddress],
   })
 

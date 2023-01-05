@@ -111,52 +111,105 @@ export const OnChainSendLedgerMetadata = <
   return metadata
 }
 
-export const OnChainReceiveLedgerMetadata = ({
+export const OnChainReceiveLedgerMetadata = <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   onChainTxHash,
-  fee,
+  paymentFlow,
   feeDisplayCurrency,
   amountDisplayCurrency,
+  displayCurrency,
+
   payeeAddresses,
 }: {
   onChainTxHash: OnChainTxHash
-  fee: BtcPaymentAmount
+  paymentFlow: OnChainPaymentFlowState<S, R>
+
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
+
   payeeAddresses: OnChainAddress[]
 }) => {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
+  } = paymentFlow
+
   const metadata: OnChainReceiveLedgerMetadata = {
     type: LedgerTransactionType.OnchainReceipt,
     pending: false,
     hash: onChainTxHash,
-    fee: Number(fee.amount) as Satoshis,
+    payee_addresses: payeeAddresses,
+
+    fee: toSats(satsFee),
     feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
     usd: convertCentsToUsdAsDollars(
       (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
     ),
-    payee_addresses: payeeAddresses,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
+    satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   return metadata
 }
 
-export const LnReceiveLedgerMetadata = ({
+export const LnReceiveLedgerMetadata = <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   paymentHash,
-  fee,
+  pubkey,
+  paymentFlow,
+
   feeDisplayCurrency,
   amountDisplayCurrency,
+  displayCurrency,
 }: {
   paymentHash: PaymentHash
-  fee: BtcPaymentAmount
+  pubkey: Pubkey
+  paymentFlow: PaymentFlowState<S, R>
+
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
-  pubkey: Pubkey
+  displayCurrency: DisplayCurrency
 }) => {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
+  } = paymentFlow
+
   const metadata: LnReceiveLedgerMetadata = {
     type: LedgerTransactionType.Invoice,
     pending: false,
     hash: paymentHash,
-    fee: Number(fee.amount) as Satoshis,
+    pubkey,
+
+    fee: toSats(satsFee),
     feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
-    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
+    usd: convertCentsToUsdAsDollars(
+      (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
+    ),
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
+    satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   return metadata
 }

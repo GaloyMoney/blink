@@ -53,14 +53,17 @@ type NonIntraledgerLedgerMetadata = LedgerMetadata & {
   feeUsd: number // to be removed when "centFee" takes over
 }
 
-type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
-  hash: PaymentHash
-}
+type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata &
+  SendAmountsMetadata & {
+    hash: PaymentHash
+    pubkey: Pubkey
+  }
 
-type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
-  hash: OnChainTxHash
-  payee_addresses: OnChainAddress[]
-}
+type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata &
+  SendAmountsMetadata & {
+    hash: OnChainTxHash
+    payee_addresses: OnChainAddress[]
+  }
 
 type SendAmountsMetadata = {
   satsAmount: Satoshis
