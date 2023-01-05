@@ -21,7 +21,6 @@ import { DbMetadata } from "@services/mongoose/schema"
 
 import { timestampDaysAgo } from "@utils"
 
-import { default as axios } from "axios"
 import {
   deleteFailedPayAttempts,
   getChainBalance,
@@ -158,26 +157,6 @@ export const nodesStats = async () => {
   const data = offchainLnds.map(({ lnd }) => nodeStats(lnd))
   // TODO: try if we don't need a Promise.all()
   return Promise.all(data)
-}
-
-export async function getBosScore() {
-  try {
-    const { data } = await axios.get("https://bos.lightning.jorijn.com/data/export.json")
-
-    // FIXME: manage multiple nodes
-    const activeNode = getActiveLnd()
-    if (activeNode instanceof Error) return 0
-
-    const bosScore = data.data.find(
-      ({ publicKey }: { publicKey: string }) => publicKey === activeNode.pubkey,
-    )
-    if (!bosScore) {
-      baseLogger.info("key is not in bos list")
-    }
-    return bosScore.score
-  } catch (err) {
-    return 0
-  }
 }
 
 export const getRoutingFees = async ({
