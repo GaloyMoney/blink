@@ -2,8 +2,6 @@ import { GT } from "@graphql/index"
 
 import SafeInt from "../scalar/safe-int"
 
-import ExchangeCurrencyUnit from "../scalar/exchange-currency-unit"
-
 const Price = GT.Object({
   name: "Price",
   description:
@@ -11,7 +9,7 @@ const Price = GT.Object({
   fields: () => ({
     base: { type: GT.NonNull(SafeInt) },
     offset: { type: GT.NonNull(GT.Int) },
-    currencyUnit: { type: GT.NonNull(ExchangeCurrencyUnit) },
+    currencyUnit: { type: GT.NonNull(GT.String) },
     formattedAmount: { type: GT.NonNull(GT.String) },
   }),
 })
