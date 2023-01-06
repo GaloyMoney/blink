@@ -141,6 +141,46 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     return kratosUserId
   }
 
+  const updatePhone = async ({
+    kratosUserId,
+    phone,
+  }: {
+    kratosUserId: UserId
+    phone: PhoneNumber
+  }) => {
+    let identity: Identity
+
+    try {
+      ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
+    } catch (err) {
+      if (err.message === "Request failed with status code 400") {
+        return new LikelyUserAlreadyExistError(err)
+      }
+
+      return new UnknownKratosError(err)
+    }
+
+    if (identity.state === undefined)
+      throw new KratosError("state undefined, probably impossible state") // type issue
+
+    identity.traits = { phone }
+
+    const adminIdentity: UpdateIdentityBody = {
+      ...identity,
+      credentials: { password: { config: { password } } },
+      state: identity.state,
+    }
+
+    const { data: newIdentity } = await kratosAdmin.updateIdentity({
+      id: kratosUserId,
+      updateIdentityBody: adminIdentity,
+    })
+
+    // TODO: check if phone doesn't already exist
+
+    return toDomainIdentityPhone(newIdentity)
+  }
+
   const upgradeToPhoneAndEmailSchema = async ({
     kratosUserId,
     email,
