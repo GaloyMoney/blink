@@ -77,6 +77,7 @@ export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
 export class InvalidLedgerTransactionStateError extends ValidationError {}
+export class InvalidDisplayCurrencyError extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}
 export class SelfPaymentError extends ValidationError {}
 export class LessThanDustThresholdError extends ValidationError {}

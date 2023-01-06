@@ -17,6 +17,10 @@ type PriceCurrency = {
   readonly flag: string // currency country flag (emoji). E.g. 🇺🇸
 }
 
+type GetRealTimePriceArgs = {
+  currency: DisplayCurrency
+}
+
 type ListHistoryArgs = {
   range: PriceRange
   interval: PriceInterval
@@ -24,6 +28,8 @@ type ListHistoryArgs = {
 
 interface IPriceService {
   listCurrencies(): Promise<PriceCurrency[] | PriceServiceError>
-  getRealTimePrice(): Promise<DisplayCurrencyPerSat | PriceServiceError>
+  getRealTimePrice(
+    args: GetRealTimePriceArgs,
+  ): Promise<DisplayCurrencyPerSat | PriceServiceError>
   listHistory(args: ListHistoryArgs): Promise<Tick[] | PriceServiceError>
 }

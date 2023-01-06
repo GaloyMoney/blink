@@ -253,15 +253,20 @@ export const NotificationsService = (): INotificationsService => {
       txHash,
     })
 
-  const priceUpdate = (displayCurrencyPerSat: DisplayCurrencyPerSat) => {
-    const payload = { satUsdCentPrice: 100 * displayCurrencyPerSat }
-    pubsub.publish({ trigger: PubSubDefaultTriggers.PriceUpdate, payload })
-    pubsub.publish({
-      trigger: PubSubDefaultTriggers.UserPriceUpdate,
-      payload: {
-        price: payload,
-      },
+  const priceUpdate = ({ pricePerSat, displayCurrency }: PriceUpdateArgs) => {
+    const payload = { centsPerSat: 100 * pricePerSat, displayCurrency }
+
+    const priceUpdateTrigger = customPubSubTrigger({
+      event: PubSubDefaultTriggers.PriceUpdate,
+      suffix: displayCurrency,
     })
+    pubsub.publish({ trigger: priceUpdateTrigger, payload })
+
+    const userPriceUpdateTrigger = customPubSubTrigger({
+      event: PubSubDefaultTriggers.UserPriceUpdate,
+      suffix: displayCurrency,
+    })
+    pubsub.publish({ trigger: userPriceUpdateTrigger, payload: { price: payload } })
   }
 
   const sendBalance = async ({
