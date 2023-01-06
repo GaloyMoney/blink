@@ -1,7 +1,7 @@
 subscription price(
   $amount: SatAmount!
   $amountCurrencyUnit: ExchangeCurrencyUnit!
-  $priceCurrencyUnit: ExchangeCurrencyUnit!
+  $priceCurrencyUnit: String!
 ) {
   price(
     input: {

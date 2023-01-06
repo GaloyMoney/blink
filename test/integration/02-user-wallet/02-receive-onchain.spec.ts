@@ -9,7 +9,7 @@ import {
   getDisplayCurrencyConfig,
   getFeesConfig,
   getLocale,
-  getOnChainAddressCreateAttemptLimits,
+  getOnChainAddressCreateAttemptLimits
 } from "@config"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
@@ -50,7 +50,7 @@ import {
   sendToAddressAndConfirm,
   subscribeToChainAddress,
   subscribeToTransactions,
-  waitUntilBlockHeight,
+  waitUntilBlockHeight
 } from "test/helpers"
 import { resetOnChainAddressAccountIdLimits } from "test/helpers/rate-limit"
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
