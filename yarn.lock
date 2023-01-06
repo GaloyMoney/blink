@@ -4337,6 +4337,13 @@ bolt07@1.8.2:
   dependencies:
     bn.js "5.2.1"
 
+bolt07@1.8.3:
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/bolt07/-/bolt07-1.8.3.tgz#1f8e581c715c4289fd16949237f9c4061d06081f"
+  integrity sha512-NXML2vzFmxRrdWt+wNqphU6f8FmS7tkebqDLIhfc8xKoOcGFv4Kf7WuJbKBqcfFDQVXpCpKAF7FQAgTIN2/30A==
+  dependencies:
+    bn.js "5.2.1"
+
 bolt09@0.2.3:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/bolt09/-/bolt09-0.2.3.tgz#2646b0467de7c312a464e924e253d02fcc032b36"
@@ -4346,6 +4353,11 @@ bolt09@0.2.4:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/bolt09/-/bolt09-0.2.4.tgz#69986f9305ca2de4df6e5435fe33ace2ee433f44"
   integrity sha512-ulNUekEfVhJredkXxP970MrVcrbPbDYyybfagqKFa8J3/4MtkhrX1pR5DjHWeyIujEkFNLbZpo6QF/Og2gXxug==
+
+bolt09@0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/bolt09/-/bolt09-0.2.5.tgz#924de4a95aad5ca507d25b38e1b20e3bb9bc680b"
+  integrity sha512-LH8wb3KbVP62SUpnwqUWqoyTUhda3JFQh4TSe6urt2mEAC0w53PSwqB4wqnHdG7QpE209Q2WQl/QH1XtVIsD3g==
 
 boolbase@^1.0.0:
   version "1.0.0"
@@ -7308,7 +7320,7 @@ invoices@2.2.0:
     bolt09 "0.2.3"
     tiny-secp256k1 "2.2.1"
 
-invoices@2.2.2, invoices@^2.2.0:
+invoices@2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.2.2.tgz#209923ce328dfb209f60f12f68dd3ef5b814185a"
   integrity sha512-flSBneW7IYRS2K7eVoL6Uemo5LkXkv++6wul8ZBbDz48j3GSGb1pVLdHUo1nvU9+WGNU3/Pqq27r99okyCnHdQ==
@@ -7318,6 +7330,18 @@ invoices@2.2.2, invoices@^2.2.0:
     bn.js "5.2.1"
     bolt07 "1.8.2"
     bolt09 "0.2.4"
+    tiny-secp256k1 "2.2.1"
+
+invoices@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.2.3.tgz#055ada5fd81889d4b3823c4adc51349ecaada64a"
+  integrity sha512-tYOmXKPsz8/jxtPDmy7HS7Z4VqQ9VK2Y3J37hhHEhU337AoL1CUlEqccTEb4nZQ36HHnFhlcKLoDz7C8W5lNdg==
+  dependencies:
+    bech32 "2.0.0"
+    bitcoinjs-lib "6.1.0"
+    bn.js "5.2.1"
+    bolt07 "1.8.3"
+    bolt09 "0.2.5"
     tiny-secp256k1 "2.2.1"
 
 ioredis-cache@^1.4.1:
