@@ -1,7 +1,5 @@
 import EventEmitter from "events"
 
-import express from "express"
-
 import {
   GetInvoiceResult,
   subscribeToBackups,
@@ -14,6 +12,7 @@ import {
   subscribeToTransactions,
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
+import express from "express"
 
 import { getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
@@ -22,38 +21,41 @@ import {
   Swap as SwapWithSpans,
   Wallets as WalletWithSpans,
 } from "@app"
-import { uploadBackup } from "@app/admin/backup"
 import * as Wallets from "@app/wallets"
+import { uploadBackup } from "@app/admin/backup"
+import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
 
-import { toSats } from "@domain/bitcoin"
-import { CacheKeys } from "@domain/cache"
-import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import {
   CouldNotFindWalletInvoiceError,
   InvalidLedgerTransactionStateError,
 } from "@domain/errors"
-import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
-import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
-
-import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
+import { toSats } from "@domain/bitcoin"
+import { CacheKeys } from "@domain/cache"
 import { SwapTriggerError } from "@domain/swap/errors"
 import { CouldNotFindTransactionError } from "@domain/ledger"
+import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
+import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  checkedToDisplayCurrency,
+  DisplayCurrency,
+  DisplayCurrencyConverter,
+} from "@domain/fiat"
 
-import { RedisCacheService } from "@services/cache"
-import { LedgerService } from "@services/ledger"
-import { LndService } from "@services/lnd"
-import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
-import { onChannelUpdated } from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
-import { LoopService } from "@services/loopd"
-import { setupMongoConnection } from "@services/mongodb"
 import {
   AccountsRepository,
   UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
+import { LndService } from "@services/lnd"
+import { baseLogger } from "@services/logger"
+import { LoopService } from "@services/loopd"
+import { LedgerService } from "@services/ledger"
+import { RedisCacheService } from "@services/cache"
+import { onChannelUpdated } from "@services/lnd/utils"
+import { setupMongoConnection } from "@services/mongodb"
 import { NotificationsService } from "@services/notifications"
+import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import healthzHandler from "./middlewares/healthz"
@@ -109,7 +111,7 @@ export const onchainTransactionEventHandler = async (
 
     let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-    const price = await PricesWithSpans.getCurrentPrice()
+    const price = await PricesWithSpans.getCurrentPrice({ currency: DisplayCurrency.Usd })
     const displayCurrencyPerSat = price instanceof Error ? undefined : price
     if (displayCurrencyPerSat) {
       const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
@@ -180,7 +182,9 @@ export const onchainTransactionEventHandler = async (
 
       let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-      const price = await PricesWithSpans.getCurrentPrice()
+      const price = await PricesWithSpans.getCurrentPrice({
+        currency: DisplayCurrency.Usd,
+      })
       const displayCurrencyPerSat = price instanceof Error ? undefined : price
 
       wallets.forEach(async (wallet) => {
@@ -244,18 +248,33 @@ export const invoiceUpdateEventHandler = async (
     : false
 }
 
-export const publishSingleCurrentPrice = async () => {
-  const displayCurrencyPerSat = await PricesWithSpans.getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) {
-    return logger.error({ err: displayCurrencyPerSat }, "can't publish the price")
+export const publishCurrentPrices = async () => {
+  const currencies = await PricesWithSpans.listCurrencies()
+  if (currencies instanceof Error) {
+    return logger.error(
+      { err: currencies },
+      "can't query currencies and publish the price",
+    )
   }
-  NotificationsService().priceUpdate(displayCurrencyPerSat)
+
+  for (const { code } of currencies) {
+    const displayCurrency = checkedToDisplayCurrency(code)
+    if (displayCurrency instanceof Error) continue
+
+    const pricePerSat = await PricesWithSpans.getCurrentPrice({
+      currency: displayCurrency,
+    })
+    if (pricePerSat instanceof Error) {
+      return logger.error({ err: pricePerSat }, "can't publish the price")
+    }
+    NotificationsService().priceUpdate({ pricePerSat, displayCurrency })
+  }
 }
 
 const publishCurrentPrice = () => {
   const interval: Seconds = (1000 * 30) as Seconds
   return setInterval(async () => {
-    await publishSingleCurrentPrice()
+    await publishCurrentPrices()
   }, interval)
 }
 
