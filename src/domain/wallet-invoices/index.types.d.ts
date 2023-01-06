@@ -99,6 +99,7 @@ type WalletAddressReceiver = {
 
 type WalletReceiverArgs = {
   receivedBtc: BtcPaymentAmount
+  feeBtc?: BtcPaymentAmount
   usdFromBtc(
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
@@ -113,7 +114,6 @@ type WalletInvoiceReceiverArgs = WalletReceiverArgs & {
 
 type WalletAddressReceiverArgs<S extends WalletCurrency> = WalletReceiverArgs & {
   walletAddress: WalletAddress<S>
-  feeBtc: BtcPaymentAmount
 }
 
 type WalletInvoiceValidator = {
