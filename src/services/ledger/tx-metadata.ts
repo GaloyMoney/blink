@@ -94,7 +94,9 @@ export const OnChainSendLedgerMetadata = <
 
     fee: toSats(satsFee),
     feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
-    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
+    usd: convertCentsToUsdAsDollars(
+      (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
+    ),
 
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
