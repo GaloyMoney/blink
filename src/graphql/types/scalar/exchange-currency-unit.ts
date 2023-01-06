@@ -4,7 +4,6 @@ const ExchangeCurrencyUnit = GT.Enum({
   name: "ExchangeCurrencyUnit",
   values: {
     BTCSAT: {},
-    USDCENT: {},
   },
 })
 

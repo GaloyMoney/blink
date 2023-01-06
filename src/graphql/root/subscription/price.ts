@@ -23,7 +23,7 @@ const PriceInput = GT.Input({
   fields: () => ({
     amount: { type: GT.NonNull(SatAmount) },
     amountCurrencyUnit: { type: GT.NonNull(ExchangeCurrencyUnit) },
-    priceCurrencyUnit: { type: GT.NonNull(ExchangeCurrencyUnit) },
+    priceCurrencyUnit: { type: GT.NonNull(GT.String) },
   }),
 })
 
