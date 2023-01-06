@@ -20,7 +20,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { InvalidZeroAmountPriceRatioInputError } from "@domain/payments"
+import { InvalidZeroAmountPriceRatioInputError, PriceRatio } from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -28,7 +28,9 @@ import { LedgerService } from "@services/ledger"
 import { sleep, timestampDaysAgo } from "@utils"
 
 import { getCurrentPrice } from "@app/prices"
+import { usdFromBtcMidPriceFn } from "@app/shared"
 
+import { LedgerTransactionType } from "@domain/ledger"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { add, sub, toCents } from "@domain/fiat"
@@ -231,6 +233,8 @@ const testExternalSend = async ({
 
   await sleep(1000)
 
+  const dealerFns = DealerPriceService()
+
   {
     const txResult = await getTransactionsForWalletId(senderWalletId)
     if (txResult.error instanceof Error || txResult.result === null) {
@@ -256,7 +260,6 @@ const testExternalSend = async ({
       fee = feeRates.withdrawDefaultMin + 7050
     } else {
       const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
-      const dealerFns = DealerPriceService()
       const feeResult = await dealerFns.getCentsFromSatsForImmediateSell(feeSats)
       if (feeResult instanceof Error) return feeResult
       fee = feeResult
@@ -274,6 +277,71 @@ const testExternalSend = async ({
       expect(settledTx.settlementAmount).toBe(-amount - fee)
       expect(finalBalance).toBe(initialWalletBalance - amount - fee)
     }
+
+    // Check ledger transaction metadata
+    // ===
+    const txHash = (settledTx.settlementVia as SettlementViaOnChain).transactionHash
+    const txns = await LedgerService().getTransactionsByHash(txHash)
+    if (txns instanceof Error) throw txns
+    const txnPayment = txns.find(
+      (tx) =>
+        tx.walletId === senderWalletId &&
+        tx.type === LedgerTransactionType.OnchainPayment &&
+        tx.debit,
+    )
+    expect(txnPayment).not.toBeUndefined()
+
+    let debit, satsAmount, centsAmount, satsFee, centsFee
+    if (senderWallet.currency === WalletCurrency.Btc) {
+      satsAmount = sendAll ? amountToSend - fee : amountToSend
+      const centsPaymentAmount = await usdFromBtcMidPriceFn({
+        amount: BigInt(satsAmount),
+        currency: WalletCurrency.Btc,
+      })
+      if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
+      centsAmount = toCents(centsPaymentAmount.amount)
+
+      satsFee = fee
+
+      const priceRatio = PriceRatio({
+        usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
+        btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
+      })
+      if (priceRatio instanceof Error) throw priceRatio
+      const centsFeeAmount = priceRatio.convertFromBtcToCeil({
+        amount: BigInt(satsFee),
+        currency: WalletCurrency.Btc,
+      })
+      centsFee = toCents(centsFeeAmount.amount)
+
+      debit = satsAmount + satsFee
+    } else {
+      centsAmount = sendAll ? amountToSend - fee : amountToSend
+      satsAmount = await dealerFns.getSatsFromCentsForImmediateSell(centsAmount)
+
+      centsFee = fee
+      satsFee = toSats(feeRates.withdrawDefaultMin + 7050)
+
+      debit = centsAmount + centsFee
+    }
+
+    expect(txnPayment).toEqual(
+      expect.objectContaining({
+        debit,
+        credit: 0,
+
+        fee: satsFee,
+        feeUsd: Number((centsFee / 100).toFixed(2)),
+        usd: Number(((centsAmount + centsFee) / 100).toFixed(2)),
+
+        satsAmount,
+        satsFee,
+        centsAmount,
+        centsFee,
+        displayAmount: centsAmount,
+        displayFee: centsFee,
+      }),
+    )
 
     // Check notification sent
     // ===
