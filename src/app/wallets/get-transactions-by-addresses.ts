@@ -4,8 +4,9 @@ import { getCurrentPrice } from "@app/prices"
 import { PartialResult } from "@app/partial-result"
 
 import { LedgerError } from "@domain/ledger"
-import { WalletTransactionHistory } from "@domain/wallets"
+import { DisplayCurrency } from "@domain/fiat"
 import { TxFilter } from "@domain/bitcoin/onchain"
+import { WalletTransactionHistory } from "@domain/wallets"
 
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
@@ -73,7 +74,7 @@ export const getTransactionsForWalletsByAddresses = async ({
 
   const pendingIncoming = filter.apply(onChainTxs)
 
-  let price = await getCurrentPrice()
+  let price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
   if (price instanceof Error) {
     price = NaN as DisplayCurrencyPerSat
   }
