@@ -31,7 +31,7 @@ import {
   SubscribeFunction,
   SubscriptionServer,
 } from "subscriptions-transport-ws"
-import { GRAPHQL_TRANSPORT_WS_PROTOCOL } from "graphql-ws"
+import { Context, GRAPHQL_TRANSPORT_WS_PROTOCOL } from "graphql-ws"
 
 import { WebSocketServer } from "ws"
 
@@ -347,7 +347,7 @@ export const startApolloServer = async ({
   apolloServer.applyMiddleware({ app, path: "/graphql" })
 
   // old legacy ws
-  const onConnect = async (
+  const onConnectLegacy = async (
     connectionParams: Record<string, unknown>,
     webSocket: unknown,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -402,10 +402,8 @@ export const startApolloServer = async ({
   }
 
   // new ws server
-  /* eslint @typescript-eslint/ban-ts-comment: "off" */
-  // @ts-ignore-next-line no-implicit-any error
-  const context = async (ctx) => {
-    const connectionParams = ctx.connectionParams as Record<string, string>
+  const getContext = async (ctx: Context) => {
+    const connectionParams = ctx.connectionParams
 
     // TODO: check if nginx pass the ip to the header
     // TODO: ip not been used currently for subscription.
@@ -416,9 +414,7 @@ export const startApolloServer = async ({
 
     const ip = parseIps(ipString)
 
-    const authz = (connectionParams.authorization || connectionParams.Authorization) as
-      | string
-      | undefined
+    const authz = connectionParams?.Authorization as string | undefined
 
     // TODO: also manage the case where there is a cookie in the request
     // https://www.ory.sh/docs/oathkeeper/guides/proxy-websockets#configure-ory-oathkeeper-and-ory-kratos
@@ -440,8 +436,7 @@ export const startApolloServer = async ({
     const originalToken = authz?.slice(7) as LegacyJwtToken | SessionToken | undefined
 
     const newToken = await sendOathkeeperRequest(originalToken)
-    // TODO: see how returning an error affect the websocket connection
-    if (newToken instanceof Error) return newToken
+    if (newToken instanceof Error) return false // TODO: open telemetry
 
     const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
 
@@ -450,7 +445,7 @@ export const startApolloServer = async ({
     })
 
     if (typeof tokenPayload === "string") {
-      throw new Error("tokenPayload should be an object")
+      return false
     }
 
     return sessionContext({
@@ -462,12 +457,43 @@ export const startApolloServer = async ({
     })
   }
 
+  // from https://github.com/enisdenjo/graphql-ws/issues/36#issuecomment-715285764
+  // TODO: this cache is naive. it doesn't have security implication because currently the websocket
+  // is only receiving data, but if the token is revoked, it should not longer be be able to receive data.
+  // authorizedContexts is currently only be flushed on server restart.
+  // this could also have a memory leak if the server is never restarted and have lot of entities
+  const authorizedContexts: Record<string, unknown> = {}
+
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
       if (startSubscriptionServer) {
         const graphqlWs = new WebSocketServer({ noServer: true })
         const serverCleanup = useServer(
-          { schema, execute, subscribe, context },
+          {
+            schema,
+            execute,
+            subscribe,
+            onConnect: async (ctx) => {
+              // TODO: integrate open telemetry
+              if (typeof ctx.connectionParams?.Authorization !== "string") {
+                return true // anon connection ?
+              }
+
+              const context = await getContext(ctx)
+              authorizedContexts[ctx.connectionParams.Authorization] = context
+              return true
+            },
+            context: (ctx) => {
+              // TODO: integrate open telemetry
+              if (typeof ctx.connectionParams?.Authorization === "string") {
+                return authorizedContexts[ctx.connectionParams?.Authorization]
+              }
+            },
+            onSubscribe: () => {
+              /* ctx, message */
+              // TODO: integrate open telemetry
+            },
+          },
           graphqlWs,
         )
 
@@ -477,7 +503,7 @@ export const startApolloServer = async ({
             execute: execute as unknown as ExecuteFunction,
             subscribe: subscribe as unknown as SubscribeFunction,
             schema,
-            onConnect,
+            onConnect: onConnectLegacy,
           },
           subTransWs,
         )

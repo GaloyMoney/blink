@@ -11,9 +11,13 @@ import {
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
+import { publishSingleCurrentPrice } from "@servers/trigger"
+
 import USER_LOGIN from "./mutations/user-login.gql"
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import MAIN from "./queries/main.gql"
+
+import PRICE from "./subscriptions/price.gql"
 
 import {
   clearAccountLocks,
@@ -25,6 +29,7 @@ import {
   getPhoneAndCodeFromRef,
   initializeTestingState,
   killServer,
+  promisifiedSubscription,
   startServer,
 } from "test/helpers"
 import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
@@ -56,6 +61,36 @@ afterAll(async () => {
 })
 
 describe("graphql", () => {
+  describe("price", () => {
+    const subscriptionQuery = PRICE
+
+    it("returns data with valid inputs", async () => {
+      const input = {
+        amount: "100",
+        amountCurrencyUnit: "BTCSAT",
+        priceCurrencyUnit: "USDCENT",
+      }
+
+      const subscription = apolloClient.subscribe({
+        query: subscriptionQuery,
+        variables: input,
+      })
+
+      const pricePublish = setTimeout(publishSingleCurrentPrice, 1000)
+
+      const result = (await promisifiedSubscription(subscription)) as { data }
+      clearTimeout(pricePublish)
+      const price_ = result.data?.price
+      const { price, errors } = price_
+
+      expect(errors.length).toEqual(0)
+      expect(price).toHaveProperty("base")
+      expect(price).toHaveProperty("offset")
+      expect(price).toHaveProperty("formattedAmount")
+      expect(price.currencyUnit).toEqual(input["priceCurrencyUnit"])
+    })
+  })
+
   describe("main query", () => {
     it("returns valid data", async () => {
       const { data } = await apolloClient.query({
