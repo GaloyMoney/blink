@@ -2,6 +2,12 @@ log:
   level: debug
   format: json
 
+tracing:
+  provider: jaeger
+  providers:
+    jaeger:
+      local_agent_address: otel-agent:6831
+
 authenticators:
   bearer_token:
     enabled: true
