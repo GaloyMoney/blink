@@ -12,6 +12,7 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 import { BTC_NETWORK } from "@config"
 
 import { createToken } from "@services/legacy-jwt"
+import { Subscription } from "zen-observable-ts"
 
 import { sleep } from "@utils"
 
@@ -81,6 +82,8 @@ afterAll(async () => {
   disposeClient()
   await killServer(serverPid)
   await killServer(triggerPid)
+
+  await sleep(2000)
 })
 
 describe("setup", () => {
@@ -661,23 +664,33 @@ describe("graphql", () => {
         request: invoice.paymentRequest,
       })
 
-      await new Promise((resolve) =>
-        observable.subscribe({
-          async next(data) {
+      await new Promise((resolve, reject) => {
+        const res: Subscription = observable.subscribe(
+          async (data) => {
+            // onNext()
             let i: number
-            for (i = 0; i < 5; i++) {
+            for (i = 0; i < 200; i++) {
               if (data.data.myUpdates.update.type !== "LnUpdate") {
-                await sleep(100)
+                await sleep(10)
               } else {
                 status = data.data.myUpdates.update.status
                 hash = data.data.myUpdates.update.paymentHash
-                resolve("got the update")
                 break
               }
             }
+            resolve(res) // test will fail if we didn't received the update
+            res.unsubscribe()
           },
-        }),
-      )
+          () => {
+            res.unsubscribe()
+            reject(res)
+          },
+          () => {
+            res.unsubscribe()
+            reject(res)
+          },
+        )
+      })
 
       expect(status).toBe("PAID")
       const result2 = await promisePay
