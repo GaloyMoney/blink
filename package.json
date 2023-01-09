@@ -57,6 +57,8 @@
     "bip32": "^3.1.0",
     "bitcoin-core-ts": "^3.0.3",
     "bitcoinjs-lib": "^6.1.0",
+    "body-parser": "^1.20.1",
+    "cookie": "^0.5.0",
     "cors": "^2.8.5",
     "csv-writer": "^1.6.0",
     "dataloader": "^2.2.2",
