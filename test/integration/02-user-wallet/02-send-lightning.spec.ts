@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "crypto"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
+import { usdFromBtcMidPriceFn } from "@app/shared"
 
 import { getDisplayCurrencyConfig, getLocale, ONE_DAY } from "@config"
 
@@ -469,39 +470,69 @@ describe("UserWallet - Lightning Pay", () => {
     const txns = await LedgerService().getTransactionsByHash(paymentHash)
     if (txns instanceof Error) throw txns
 
-    // Test fee reimbursement amounts
+    const btcPaymentAmount = paymentAmountFromNumber({
+      amount: amountInvoice,
+      currency: WalletCurrency.Btc,
+    })
+    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
+
+    const usdPaymentAmount = await usdFromBtcMidPriceFn(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+    const cents = Number(usdPaymentAmount.amount)
+
+    // Check transaction metadata for BTC 'LedgerTransactionType.Payment'
+    // ===
     const txnPayment = txns.find((tx) => tx.type === LedgerTransactionType.Payment)
     expect(txnPayment).not.toBeUndefined()
     if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
     if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
+    if (!txnPayment?.centsFee) throw new Error("centsFee missing from payment")
+    if (!txnPayment?.satsFee) throw new Error("satsFee missing from payment")
+    expect(amountInvoice).toEqual(txnPayment.satsAmount)
+    expect(Number(usdPaymentAmount.amount)).toEqual(txnPayment.centsAmount)
+    expect(txnPayment.usd).toEqual(
+      Number(((txnPayment.centsAmount + txnPayment.centsFee) / 100).toFixed(2)),
+    )
 
-    const usdPaymentAmount = paymentAmountFromNumber({
-      amount: txnPayment.centsAmount,
-      currency: WalletCurrency.Usd,
-    })
-    if (usdPaymentAmount instanceof Error) return usdPaymentAmount
-    const btcPaymentAmount = paymentAmountFromNumber({
-      amount: txnPayment.satsAmount,
-      currency: WalletCurrency.Btc,
-    })
-    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
-    const paymentAmounts = {
+    const priceRatio = PriceRatio({
       usd: usdPaymentAmount,
       btc: btcPaymentAmount,
-    }
-    const priceRatio = PriceRatio(paymentAmounts)
+    })
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeAmountSats = LnFees().maxProtocolFee({
       amount: BigInt(amountInvoice),
       currency: WalletCurrency.Btc,
     })
-    const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
-    const feeCents = toCents(feeAmountCents.amount)
+    const satsFee = toSats(feeAmountSats.amount)
 
+    const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
+    const centsFee = toCents(feeAmountCents.amount)
+
+    const expectedFields = {
+      type: LedgerTransactionType.Payment,
+
+      debit: amountInvoice + satsFee,
+      credit: 0,
+
+      fee: satsFee,
+      feeUsd: centsFee / 100,
+      usd: (cents + centsFee) / 100,
+
+      satsAmount: amountInvoice,
+      satsFee,
+      centsAmount: cents,
+      centsFee,
+      displayAmount: cents,
+      displayFee: centsFee,
+    }
+    expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
+
+    // Test fee reimbursement amounts
     const txnFeeReimburse = txns.find(
       (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,
     )
+
     expect(txnFeeReimburse).not.toBeUndefined()
     expect(txnFeeReimburse).toEqual(
       expect.objectContaining({
@@ -510,13 +541,13 @@ describe("UserWallet - Lightning Pay", () => {
 
         fee: 0,
         feeUsd: 0,
-        usd: feeCents / 100,
+        usd: centsFee / 100,
 
         satsAmount: toSats(feeAmountSats.amount),
         satsFee: 0,
-        centsAmount: feeCents,
+        centsAmount: centsFee,
         centsFee: 0,
-        displayAmount: feeCents,
+        displayAmount: centsFee,
         displayFee: 0,
       }),
     )
@@ -1476,7 +1507,10 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toSats(100)
 
-      const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountPayment })
+      const { id: rawPaymentHash, request } = await createInvoice({
+        lnd: lndOutside1,
+        tokens: amountPayment,
+      })
 
       const paymentResult = await Payments.payInvoiceByWalletId({
         uncheckedPaymentRequest: request,
@@ -1490,6 +1524,60 @@ describe("USD Wallets - Lightning Pay", () => {
       const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
       if (cents instanceof Error) throw cents
 
+      const feeAmountSats = LnFees().maxProtocolFee({
+        amount: BigInt(amountPayment),
+        currency: WalletCurrency.Btc,
+      })
+
+      // Check transaction metadata for USD 'LedgerTransactionType.Payment'
+      // ===
+      const txns = await LedgerService().getTransactionsByHash(
+        rawPaymentHash as PaymentHash,
+      )
+      if (txns instanceof Error) throw txns
+
+      const txnPayment = txns.find((tx) => tx.type === LedgerTransactionType.Payment)
+      expect(txnPayment).not.toBeUndefined()
+      if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
+      if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
+      if (!txnPayment?.centsFee) throw new Error("centsFee missing from payment")
+      if (!txnPayment?.satsFee) throw new Error("satsFee missing from payment")
+      expect(amountPayment).toEqual(txnPayment.satsAmount)
+      expect(cents).toEqual(txnPayment.centsAmount)
+      expect(txnPayment.usd).toEqual(
+        Number(((txnPayment.centsAmount + txnPayment.centsFee) / 100).toFixed(2)),
+      )
+
+      const priceRatio = PriceRatio({
+        usd: { amount: BigInt(cents), currency: WalletCurrency.Usd },
+        btc: { amount: BigInt(amountPayment), currency: WalletCurrency.Btc },
+      })
+      if (priceRatio instanceof Error) throw priceRatio
+      const feeAmountCents = priceRatio.convertFromBtcToCeil(feeAmountSats)
+
+      const satsFee = Number(feeAmountSats.amount)
+      const centsFee = Number(feeAmountCents.amount)
+      const expectedFields = {
+        type: LedgerTransactionType.Payment,
+
+        debit: cents + centsFee,
+        credit: 0,
+
+        fee: satsFee,
+        feeUsd: centsFee / 100,
+        usd: (cents + centsFee) / 100,
+
+        satsAmount: amountPayment,
+        satsFee,
+        centsAmount: cents,
+        centsFee,
+        displayAmount: cents,
+        displayFee: centsFee,
+      }
+      expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
+
+      // Check final balances
+      // ===
       const finalBalance = await getBalanceHelper(walletIdUsdB)
       expect(finalBalance).toBe(initBalanceUsdB - cents)
     })
@@ -1850,6 +1938,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(finalBalanceA).toBe(initBalanceA - amountPayment)
     })
   })
+
   describe("Intraledger payments", () => {
     const btcSendAmount = 50_000
     const btcPromise = () =>
