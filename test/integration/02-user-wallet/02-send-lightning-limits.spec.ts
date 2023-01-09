@@ -47,6 +47,8 @@ jest.mock("@config", () => {
   }
 })
 
+const centsToUsdString = (cents: UsdCents) => `$${(cents / 100).toFixed(2)}`
+
 const newDealerFns = NewDealerPriceService()
 const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateSell
 
@@ -144,7 +146,9 @@ const successLimitsPaymentTests = ({
       expect(paymentResult).toBe(PaymentSendStatus.Success)
     } else {
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-      const expectedError = `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`
+      const expectedError = `Cannot transfer more than ${centsToUsdString(
+        accountLimits.withdrawalLimit,
+      )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
 
@@ -156,7 +160,9 @@ const successLimitsPaymentTests = ({
         senderAccount,
       })
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-      const expectedError = `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`
+      const expectedError = `Cannot transfer more than ${centsToUsdString(
+        accountLimits.intraLedgerLimit,
+      )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
   }
@@ -187,7 +193,9 @@ const successLimitsPaymentTests = ({
       expect(paymentResult).toBe(PaymentSendStatus.Success)
     } else {
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-      const expectedError = `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`
+      const expectedError = `Cannot transfer more than ${centsToUsdString(
+        accountLimits.intraLedgerLimit,
+      )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
 
@@ -199,7 +207,9 @@ const successLimitsPaymentTests = ({
         senderAccount,
       })
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-      const expectedError = `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`
+      const expectedError = `Cannot transfer more than ${centsToUsdString(
+        accountLimits.intraLedgerLimit,
+      )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
   }
@@ -254,7 +264,9 @@ const successLimitsPaymentTests = ({
       expect(paymentResult).toBe(PaymentSendStatus.Success)
     } else {
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-      const expectedError = `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`
+      const expectedError = `Cannot transfer more than ${centsToUsdString(
+        accountLimits.tradeIntraAccountLimit,
+      )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
 
@@ -280,7 +292,9 @@ const successLimitsPaymentTests = ({
         senderAccount,
       })
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-      const expectedError = `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`
+      const expectedError = `Cannot transfer more than ${centsToUsdString(
+        accountLimits.tradeIntraAccountLimit,
+      )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
   }
