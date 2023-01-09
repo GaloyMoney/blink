@@ -9,17 +9,22 @@ import { getKratosConfig, isDev, JWT_SECRET } from "@config"
 import { mapError } from "@graphql/error-map"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-import { validateKratosToken } from "@services/kratos"
+import { AuthWithPhonePasswordlessService, validateKratosToken } from "@services/kratos"
 import { kratosPublic } from "@services/kratos/private"
 import { AccountsRepository } from "@services/mongoose"
 import { parseIps } from "@domain/accounts-ips"
 import { KratosError } from "@services/kratos/errors"
+import cookie from "cookie"
+import bodyParser from "body-parser"
+import { isCodeValid } from "@app/auth"
 
 const authRouter = express.Router({ caseSensitive: true })
 
 const { corsAllowedOrigins } = getKratosConfig()
 
 authRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
+authRouter.use(bodyParser.urlencoded({ extended: true }))
+authRouter.use(bodyParser.json())
 
 // deprecated
 authRouter.post("/browser", async (req, res) => {
@@ -113,5 +118,61 @@ authRouter.post(
     },
   }),
 )
+
+authRouter.post("/cookieLogin", async (req, res) => {
+  const phone = req.body.phone as PhoneNumber
+  const code = req.body.code
+  const validCode = await isCodeValid({ phone, code })
+  if (validCode instanceof Error) {
+    // TODO loop and clear cookies to prevent error on client
+    return res.status(500).send(JSON.stringify(validCode))
+  }
+  const authService = AuthWithPhonePasswordlessService()
+  const loginRes = await authService.loginCookie(phone)
+  if (loginRes instanceof Error) {
+    // TODO loop and clear cookies to prevent error on client
+    return res.status(500).send(JSON.stringify(loginRes))
+  }
+  const cookies = loginRes.cookieToSendBackToClient
+  const clientCsrfCookie = cookie.parse(cookies[0])
+  const clientOrySessionCookie = cookie.parse(cookies[1])
+  res.cookie("ory_kratos_session", clientOrySessionCookie.ory_kratos_session, {
+    expires: new Date(Date.now() + 900000), // TODO parse this date - clientOrySessionCookie.Expires,
+    sameSite: "strict", // TODO Lax or none
+    secure: true,
+    httpOnly: true,
+    path: clientOrySessionCookie.Path,
+  })
+  const csrfKey = Object.keys(clientCsrfCookie)[0]
+  const csrfValue = Object.values(clientCsrfCookie)[0]
+  res.cookie(csrfKey, csrfValue, {
+    maxAge: clientOrySessionCookie["Max-Age"], // TODO look this up from downstream
+    sameSite: "strict", // TODO Lax or none
+    secure: true,
+    httpOnly: true,
+    path: clientOrySessionCookie.Path,
+  })
+
+  if (isDev) {
+    res.set({
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
+      "access-control-allow-origin": "http://localhost:3000",
+    })
+  }
+  res.status(200).send(JSON.stringify({ kratosUserId: loginRes.kratosUserId, phone }))
+})
+
+authRouter.get("/cookieLogout", async (req, res) => {
+  // TODO clearCookies
+  if (isDev) {
+    res.set({
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
+      "access-control-allow-origin": "http://localhost:3000",
+    })
+  }
+  res.status(200).send(JSON.stringify({}))
+})
 
 export default authRouter

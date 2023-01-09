@@ -158,7 +158,13 @@ const checkfailedLoginAttemptPerEmailAddressLimits = async (
     keyToConsume: emailAddress,
   })
 
-const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCode }) => {
+export const isCodeValid = async ({
+  code,
+  phone,
+}: {
+  phone: PhoneNumber
+  code: PhoneCode
+}) => {
   const testAccounts = getTestAccounts()
   if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
     const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({

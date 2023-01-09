@@ -30,6 +30,7 @@ interface IAuthWithPhonePasswordlessService {
   login(
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
+  loginCookie(phone: PhoneNumber): Promise<any | AuthenticationError>
   logout(token: SessionToken): Promise<void | AuthenticationError>
   createIdentityWithSession(
     phone: PhoneNumber,

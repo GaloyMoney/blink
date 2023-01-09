@@ -67,6 +67,49 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     return { sessionToken, kratosUserId }
   }
 
+  const loginCookie = async (phone: PhoneNumber): Promise<any | KratosError> => {
+    const flow = await kratosPublic.createBrowserLoginFlow()
+
+    const headers = flow.headers
+    const cookie = headers["set-cookie"][0]
+    const csrf = cookie.split("=")[1] + "="
+
+    const identifier = phone
+    const method = "password"
+
+    let result: AxiosResponse<any>
+
+    try {
+      result = await kratosPublic.updateLoginFlow({
+        flow: flow.data.id,
+        cookie,
+        updateLoginFlowBody: {
+          identifier,
+          method,
+          password,
+          csrf_token: csrf,
+        },
+      })
+    } catch (err) {
+      if (err.message === "Request failed with status code 400") {
+        return new LikelyNoUserWithThisPhoneExistError(err)
+      }
+
+      if (err.message === "Request failed with status code 401") {
+        return new AuthenticationKratosError(err)
+      }
+
+      return new UnknownKratosError(err)
+    }
+
+    const cookieToSendBackToClient = result.headers["set-cookie"]
+
+    // note: this only works when whoami: required_aal = aal1
+    const kratosUserId = result.data.session.identity.id as UserId
+
+    return { cookieToSendBackToClient, kratosUserId }
+  }
+
   const logout = async (token: string): Promise<void | KratosError> => {
     try {
       await kratosPublic.performNativeLogout({
@@ -189,6 +232,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
   return {
     login,
+    loginCookie,
     logout,
     createIdentityWithSession,
     createIdentityNoSession,
