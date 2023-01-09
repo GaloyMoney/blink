@@ -35,7 +35,6 @@ import { MainBook, Transaction } from "./books"
 import { paginatedLedger } from "./paginated-ledger"
 import * as caching from "./caching"
 import { TransactionsMetadataRepository } from "./services"
-import { receive } from "./receive"
 import { send } from "./send"
 import { volume } from "./volume"
 
@@ -383,7 +382,6 @@ export const LedgerService = (): ILedgerService => {
       ...admin,
       ...volume,
       ...send,
-      ...receive,
     },
   })
 }

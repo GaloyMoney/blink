@@ -129,8 +129,10 @@ export const OnChainReceiveLedgerMetadata = ({
     pending: false,
     hash: onChainTxHash,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayCurrency,
-    usd: amountDisplayCurrency,
+    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
+    usd: convertCentsToUsdAsDollars(
+      (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
+    ),
     payee_addresses: payeeAddresses,
   }
   return metadata

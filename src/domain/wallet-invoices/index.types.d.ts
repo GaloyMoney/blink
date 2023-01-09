@@ -76,7 +76,12 @@ type WalletInvoice = {
   paid: boolean
 }
 
-type WalletInvoiceReceiver = WalletInvoice & {
+type WalletAddress<S extends WalletCurrency> = {
+  address: OnChainAddress
+  recipientWalletDescriptor: WalletDescriptor<S>
+}
+
+type WalletInvoiceReceiver = {
   usdToCreditReceiver: UsdPaymentAmount
   btcToCreditReceiver: BtcPaymentAmount
   usdBankFee: UsdPaymentAmount
@@ -84,8 +89,15 @@ type WalletInvoiceReceiver = WalletInvoice & {
   receivedAmount: () => BtcPaymentAmount | UsdPaymentAmount
 }
 
-type WalletInvoiceReceiverArgs = {
-  walletInvoice: WalletInvoice
+type WalletAddressReceiver = {
+  usdToCreditReceiver: UsdPaymentAmount
+  btcToCreditReceiver: BtcPaymentAmount
+  usdBankFee: UsdPaymentAmount
+  btcBankFee: BtcPaymentAmount
+  receivedAmount: () => BtcPaymentAmount | UsdPaymentAmount
+}
+
+type WalletReceiverArgs = {
   receivedBtc: BtcPaymentAmount
   usdFromBtc(
     amount: BtcPaymentAmount,
@@ -93,6 +105,15 @@ type WalletInvoiceReceiverArgs = {
   usdFromBtcMidPrice(
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+}
+
+type WalletInvoiceReceiverArgs = WalletReceiverArgs & {
+  walletInvoice: WalletInvoice
+}
+
+type WalletAddressReceiverArgs<S extends WalletCurrency> = WalletReceiverArgs & {
+  walletAddress: WalletAddress<S>
+  feeBtc: BtcPaymentAmount
 }
 
 type WalletInvoiceValidator = {

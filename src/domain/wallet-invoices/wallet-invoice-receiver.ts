@@ -15,10 +15,8 @@ export const WalletInvoiceReceiver = async ({
     if (usdToCreditReceiver instanceof Error) return usdToCreditReceiver
 
     return {
-      ...walletInvoice,
       btcToCreditReceiver,
       usdToCreditReceiver,
-      recipientWalletDescriptor: walletInvoice.recipientWalletDescriptor,
       ...ZERO_BANK_FEE,
       receivedAmount: () =>
         walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
@@ -30,10 +28,8 @@ export const WalletInvoiceReceiver = async ({
   if (walletInvoice.usdAmount) {
     const usdToCreditReceiver = walletInvoice.usdAmount
     return {
-      ...walletInvoice,
       btcToCreditReceiver,
       usdToCreditReceiver,
-      recipientWalletDescriptor: walletInvoice.recipientWalletDescriptor,
       ...ZERO_BANK_FEE,
       receivedAmount: () =>
         walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
@@ -46,10 +42,8 @@ export const WalletInvoiceReceiver = async ({
   if (usdToCreditReceiver instanceof Error) return usdToCreditReceiver
 
   return {
-    ...walletInvoice,
     usdToCreditReceiver,
     btcToCreditReceiver,
-    recipientWalletDescriptor: walletInvoice.recipientWalletDescriptor,
     ...ZERO_BANK_FEE,
     receivedAmount: () =>
       walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
