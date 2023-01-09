@@ -13,8 +13,8 @@
     "cron": ". ./.envrc && yarn build && node lib/servers/cron.js",
     "exporter": "yarn build && node lib/servers/exporter.js",
     "daily-notif": "yarn build && node lib/servers/daily-balance-notification.js",
-    "lncli1": "lncli --network regtest --macaroonpath=./dev/lnd/lnd1.macaroon --tlscertpath=./dev/lnd/tls.cert --rpcserver=${LND1_DNS}:${LND1_RPCPORT}",
-    "lncli2": "lncli --network regtest --macaroonpath=./dev/lnd/lnd2.macaroon --tlscertpath=./dev/lnd/tls.cert --rpcserver=${LND2_DNS}:${LND2_RPCPORT}",
+    "lncli1": "lncli --network regtest --macaroonpath=./dev/lnd/regtest/lnd1.admin.macaroon --tlscertpath=./dev/lnd/tls.cert --rpcserver=${LND1_DNS}:${LND1_RPCPORT}",
+    "lncli2": "lncli --network regtest --macaroonpath=./dev/lnd/regtest/lnd2.admin.macaroon --tlscertpath=./dev/lnd/tls.cert --rpcserver=${LND2_DNS}:${LND2_RPCPORT}",
     "bitcoin-cli": "bitcoin-cli -rpcuser=rpcuser -rpcpassword=$BITCOINDRPCPASS -regtest",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
     "test:unit": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-unit.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
@@ -162,7 +162,8 @@
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.1.2",
     "typescript": "^4.9.4",
-    "ws": "^8.11.0"
+    "ws": "^8.11.0",
+    "zen-observable-ts": "^1.1.0"
   },
   "resolutions": {
     "**/**/ws": ">=7.4.6",

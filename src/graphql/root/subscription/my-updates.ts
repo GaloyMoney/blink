@@ -123,13 +123,6 @@ const MeSubscription = {
     _args: unknown,
     ctx: GraphQLContextAuth,
   ) => {
-    if (!ctx.domainAccount) {
-      throw new AuthenticationError({
-        message: "Not Authenticated for subscription",
-        logger: baseLogger,
-      })
-    }
-
     if (source === undefined) {
       throw new UnknownClientError({
         message:
@@ -143,7 +136,7 @@ const MeSubscription = {
       return { errors: source.errors }
     }
 
-    const myPayload = userPayload(ctx.domainAccount)
+    // non auth request
 
     if (source.price) {
       return userPayload(null)({
@@ -154,6 +147,17 @@ const MeSubscription = {
         formattedAmount: source.price.satUsdCentPrice.toString(),
       })
     }
+
+    if (!ctx.domainAccount) {
+      throw new AuthenticationError({
+        message: "Not Authenticated for subscription",
+        logger: baseLogger,
+      })
+    }
+
+    // authed request
+
+    const myPayload = userPayload(ctx.domainAccount)
 
     if (source.invoice) {
       return myPayload({ resolveType: "LnUpdate", ...source.invoice })

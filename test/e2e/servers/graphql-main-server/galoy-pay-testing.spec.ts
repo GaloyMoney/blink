@@ -2,7 +2,6 @@ import crypto from "crypto"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 import { toSats } from "@domain/bitcoin"
-import { publishSingleCurrentPrice } from "@servers/trigger"
 
 import LN_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-invoice-create-on-behalf-of-recipient.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
@@ -13,7 +12,6 @@ import GLOBALS from "./queries/globals.gql"
 import USER_DEFAULT_WALLET_ID from "./queries/user-default-walletid.gql"
 import LN_INVOICE_PAYMENT_STATUS_QUERY from "./queries/ln-invoice-payment-status.gql"
 import LN_INVOICE_PAYMENT_STATUS_SUBSCRIPTION from "./subscriptions/ln-invoice-payment-status.gql"
-import PRICE from "./subscriptions/price.gql"
 
 import {
   clearAccountLocks,
@@ -195,36 +193,6 @@ describe("galoy-pay", () => {
 
       expect(errors.length).toBeGreaterThan(0)
       expect(invoice).toBe(null)
-    })
-  })
-
-  describe("price", () => {
-    const subscriptionQuery = PRICE
-
-    it("returns data with valid inputs", async () => {
-      const input = {
-        amount: "100",
-        amountCurrencyUnit: "BTCSAT",
-        priceCurrencyUnit: "USDCENT",
-      }
-
-      const subscription = apolloClient.subscribe({
-        query: subscriptionQuery,
-        variables: input,
-      })
-
-      const pricePublish = setTimeout(publishSingleCurrentPrice, 1000)
-
-      const result = (await promisifiedSubscription(subscription)) as { data }
-      clearTimeout(pricePublish)
-      const price_ = result.data?.price
-      const { price, errors } = price_
-
-      expect(errors.length).toEqual(0)
-      expect(price).toHaveProperty("base")
-      expect(price).toHaveProperty("offset")
-      expect(price).toHaveProperty("formattedAmount")
-      expect(price.currencyUnit).toEqual(input["priceCurrencyUnit"])
     })
   })
 

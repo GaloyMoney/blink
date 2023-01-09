@@ -9,13 +9,12 @@ import { LnFees } from "@domain/payments"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-import { baseLogger } from "@services/logger"
-
-import { sleep } from "@utils"
-
 import { BTC_NETWORK } from "@config"
 
 import { createToken } from "@services/legacy-jwt"
+import { Subscription } from "zen-observable-ts"
+
+import { sleep } from "@utils"
 
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_USD_INVOICE_CREATE from "./mutations/ln-usd-invoice-create.gql"
@@ -42,7 +41,6 @@ import {
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
-  promisifiedSubscription,
   initializeTestingState,
   killServer,
   lndOutside1,
@@ -84,6 +82,8 @@ afterAll(async () => {
   disposeClient()
   await killServer(serverPid)
   await killServer(triggerPid)
+
+  await sleep(2000)
 })
 
 describe("setup", () => {
@@ -113,10 +113,13 @@ describe("setup", () => {
       mutation: USER_LOGIN,
       variables: { input },
     })
+
     // Create a new authenticated client
     disposeClient()
+    const authToken = result.data.userLogin.authToken
+
     ;({ apolloClient, disposeClient } = createApolloClient(
-      defaultTestClientConfig(result.data.userLogin.authToken),
+      defaultTestClientConfig(authToken),
     ))
     const meResult = await apolloClient.query({ query: ME })
     expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
@@ -649,37 +652,45 @@ describe("graphql", () => {
 
       const subscriptionQuery = MY_UPDATES_LN
 
-      const subscription = apolloClient.subscribe({
+      const observable = apolloClient.subscribe({
         query: subscriptionQuery,
       })
+
+      let status = ""
+      let hash = ""
 
       const promisePay = pay({
         lnd: lndOutside1,
         request: invoice.paymentRequest,
       })
 
-      let status = ""
-      let hash = ""
-      let i = 0
-      // this is a hacky workaround, sometimes the price subscription event will arrive first
-      while (i < 5) {
-        try {
-          const result_sub = (await promisifiedSubscription(subscription)) as { data }
-          if (result_sub.data.myUpdates.update.type === "Price") i += 1
-          else {
-            status = result_sub.data.myUpdates.update.status
-            hash = result_sub.data.myUpdates.update.paymentHash
-            break
-          }
-        } catch (err) {
-          baseLogger.warn({ err }, "error with subscription")
-        }
-
-        // we need to wait here, otherwise promisifiedSubscription
-        // would give back the same event and not wait for the next event
-        // so if Price were to be the event that came back at first, it would fail
-        await sleep(100)
-      }
+      await new Promise((resolve, reject) => {
+        const res: Subscription = observable.subscribe(
+          async (data) => {
+            // onNext()
+            let i: number
+            for (i = 0; i < 200; i++) {
+              if (data.data.myUpdates.update.type !== "LnUpdate") {
+                await sleep(10)
+              } else {
+                status = data.data.myUpdates.update.status
+                hash = data.data.myUpdates.update.paymentHash
+                break
+              }
+            }
+            resolve(res) // test will fail if we didn't received the update
+            res.unsubscribe()
+          },
+          () => {
+            res.unsubscribe()
+            reject(res)
+          },
+          () => {
+            res.unsubscribe()
+            reject(res)
+          },
+        )
+      })
 
       expect(status).toBe("PAID")
       const result2 = await promisePay
