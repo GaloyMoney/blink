@@ -119,7 +119,7 @@ authRouter.post(
   }),
 )
 
-authRouter.post("/cookieLogin", async (req, res) => {
+authRouter.post("/login", async (req, res) => {
   const phone = req.body.phone as PhoneNumber
   const code = req.body.code
   const validCode = await isCodeValid({ phone, code })
@@ -163,7 +163,7 @@ authRouter.post("/cookieLogin", async (req, res) => {
   res.status(200).send(JSON.stringify({ kratosUserId: loginRes.kratosUserId, phone }))
 })
 
-authRouter.get("/cookieLogout", async (req, res) => {
+authRouter.post("/logout", async (req, res) => {
   const cookiesStr = req.headers.cookie
   if (cookiesStr?.includes("kratos") || cookiesStr?.includes("csrf")) {
     const cookies = cookie.parse(cookiesStr)
