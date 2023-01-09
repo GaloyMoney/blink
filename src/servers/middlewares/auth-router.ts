@@ -164,7 +164,17 @@ authRouter.post("/cookieLogin", async (req, res) => {
 })
 
 authRouter.get("/cookieLogout", async (req, res) => {
-  // TODO clearCookies
+  const cookiesStr = req.headers.cookie
+  if (cookiesStr?.includes("kratos") || cookiesStr?.includes("csrf")) {
+    const cookies = cookie.parse(cookiesStr)
+    for (const c of Object.keys(cookies)) {
+      if (c.includes("kratos") || c.includes("csrf")) {
+        res.clearCookie(c)
+      }
+    }
+  } else {
+    return res.status(200).send(JSON.stringify({ result: "no cookies" }))
+  }
   if (isDev) {
     res.set({
       "access-control-allow-credentials": "true",
@@ -172,7 +182,7 @@ authRouter.get("/cookieLogout", async (req, res) => {
       "access-control-allow-origin": "http://localhost:3000",
     })
   }
-  res.status(200).send(JSON.stringify({}))
+  res.status(200).send(JSON.stringify({ result: "cookies deleted" }))
 })
 
 export default authRouter
