@@ -9,6 +9,7 @@ import {
   RestrictedRegionPhoneProviderError,
   UnknownPhoneProviderServiceError,
   UnsubscribedRecipientPhoneProviderError,
+  PhoneProviderRateLimitExceededError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 
@@ -50,6 +51,9 @@ export const TwilioClient = (): IPhoneProviderService => {
         case match(KnownTwilioErrorMessages.BadPhoneProviderConnection):
           return new PhoneProviderConnectionError(err.message || err)
 
+        case match(KnownTwilioErrorMessages.RateLimitsExceeded):
+          return new PhoneProviderRateLimitExceededError(err.message || err)
+
         default:
           return new UnknownPhoneProviderServiceError(err.message || err)
       }
@@ -79,6 +83,9 @@ export const TwilioClient = (): IPhoneProviderService => {
 
         case match(KnownTwilioErrorMessages.BadPhoneProviderConnection):
           return new PhoneProviderConnectionError(err.message || err)
+
+        case match(KnownTwilioErrorMessages.RateLimitsExceeded):
+          return new PhoneProviderRateLimitExceededError(err.message || err)
 
         case err.status === 404:
           return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
@@ -145,4 +152,5 @@ export const KnownTwilioErrorMessages: { [key: string]: RegExp } = {
   BadPhoneProviderConnection: /timeout of.*exceeded/,
   BlockedRegion:
     /The destination phone number has been blocked by Verify Geo-Permissions. .* is blocked for sms channel for all services/,
+  RateLimitsExceeded: /Max.*attempts reached/,
 } as const
