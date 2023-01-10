@@ -5,6 +5,7 @@ import {
   CouldNotFindTransactionError,
   inputAmountFromLedgerTransaction,
   LedgerTransactionType,
+  LnTxRecorded,
   UnknownLedgerError,
 } from "@domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@domain/payments"
@@ -151,7 +152,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           return recorded
         }
 
-        if (recorded) {
+        if (recorded === LnTxRecorded.TRUE) {
           paymentLogger.info("payment has already been processed")
           return true
         }

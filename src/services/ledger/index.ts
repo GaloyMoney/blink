@@ -8,6 +8,7 @@ import { toCents } from "@domain/fiat"
 import {
   LedgerTransactionType,
   liabilitiesMainAccount,
+  LnTxRecorded,
   toLiabilitiesWalletId,
   toWalletId,
 } from "@domain/ledger"
@@ -317,13 +318,29 @@ export const LedgerService = (): ILedgerService => {
 
   const isLnTxRecorded = async (
     paymentHash: PaymentHash,
-  ): Promise<boolean | LedgerServiceError> => {
+  ): Promise<LnTxRecorded | LedgerServiceError> => {
     try {
-      const { total } = await MainBook.ledger({
+      const { total: totalNotPending } = await MainBook.ledger({
         pending: false,
         hash: paymentHash,
       })
-      return total > 0
+      const { total: totalPending } = await MainBook.ledger({
+        pending: true,
+        hash: paymentHash,
+      })
+
+      switch (true) {
+        case totalNotPending > 0 && totalPending === 0:
+          return LnTxRecorded.TRUE
+        case totalNotPending === 0 && totalPending >= 0:
+          return LnTxRecorded.FALSE
+        case totalNotPending > 0 && totalPending > 0:
+          return LnTxRecorded.MIXED
+        default:
+          return new UnknownLedgerError(
+            JSON.stringify({ totalNotPending, totalPending, paymentHash }),
+          )
+      }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
