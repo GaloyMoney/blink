@@ -170,7 +170,10 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           defaultTimeToExpiryInSeconds,
         ).markLightningPaymentFlowNotPending(paymentFlowIndex)
         if (paymentFlow instanceof Error) {
-          paymentFlow = await reconstructPendingPaymentFlow(paymentHash)
+          paymentFlow = await reconstructPendingPaymentFlow({
+            paymentHash,
+            inputAmount: Number(inputAmount),
+          })
           if (paymentFlow instanceof Error) return paymentFlow
         }
 
@@ -241,30 +244,43 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
 const reconstructPendingPaymentFlow = async <
   S extends WalletCurrency,
   R extends WalletCurrency,
->(
-  paymentHash: PaymentHash,
-): Promise<PaymentFlow<S, R> | ApplicationError> => {
+>({
+  paymentHash,
+  inputAmount,
+}: {
+  paymentHash: PaymentHash
+  inputAmount: number
+}): Promise<PaymentFlow<S, R> | ApplicationError> => {
   const ledgerTxns = await LedgerService().getTransactionsByHash(paymentHash)
   if (ledgerTxns instanceof Error) return ledgerTxns
 
   const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
 
-  const payment = ledgerTxns.find(
+  const payments = ledgerTxns.filter(
     (tx) =>
       tx.pendingConfirmation === true &&
       tx.type === LedgerTransactionType.Payment &&
       tx.debit > 0 &&
       tx.walletId !== undefined &&
       !nonEndUserWalletIds.includes(tx.walletId),
-  ) as LedgerTransaction<S> | undefined
-  if (!payment) return new CouldNotFindTransactionError()
+  ) as LedgerTransaction<S>[] | undefined
+  if (!(payments && payments.length)) return new CouldNotFindTransactionError()
 
-  const { walletId: senderWalletId } = payment
+  const { walletId: senderWalletId } = payments[0]
   if (!senderWalletId) return new MissingPropsInTransactionForPaymentFlowError()
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
   const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
   if (senderAccount instanceof Error) return senderAccount
+
+  const filteredPayments = payments.filter((tx) =>
+    senderWallet.currency === WalletCurrency.Btc
+      ? tx.satsAmount === inputAmount
+      : tx.centsAmount === inputAmount,
+  )
+  if (!(filteredPayments && filteredPayments.length))
+    return new CouldNotFindTransactionError()
+  const payment = filteredPayments[0]
 
   return PaymentFlowFromLedgerTransaction({
     ledgerTxn: payment,
