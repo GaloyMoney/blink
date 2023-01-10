@@ -9,6 +9,7 @@ import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
   InvalidFeeProbeStateError,
+  InvoiceExpiredOrBadPaymentHashError,
   LightningServiceError,
   PaymentNotFoundError,
   PaymentSendStatus,
@@ -1453,6 +1454,15 @@ describe("UserWallet - Lightning Pay", () => {
         if (payment === undefined) throw new Error("Could not find payment in lnd")
 
         expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Failed)
+
+        // Test repayment after fail
+        const paymentAfterFailed = await fn({
+          account: accountB,
+          walletId: walletIdB,
+        })({
+          invoice: request,
+        })
+        expect(paymentAfterFailed).toBeInstanceOf(InvoiceExpiredOrBadPaymentHashError)
 
         // Check for invoice
         const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
