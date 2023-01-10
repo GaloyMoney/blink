@@ -120,22 +120,26 @@ authRouter.post(
 )
 
 authRouter.post("/login", async (req, res) => {
-  const phone = req.body.phone as PhoneNumber
-  const code = req.body.code
-  const validCode = await isCodeValid({ phone, code })
+  const phoneNumber = req.body.phoneNumber as PhoneNumber
+  const authCode = req.body.authCode
+
+  const validCode = await isCodeValid({ phone: phoneNumber, code: authCode })
   if (validCode instanceof Error) {
     // TODO loop and clear cookies to prevent error on client
     return res.status(500).send(JSON.stringify(validCode))
   }
+
   const authService = AuthWithPhonePasswordlessService()
-  const loginRes = await authService.loginCookie(phone)
+  const loginRes = await authService.loginCookie(phoneNumber)
   if (loginRes instanceof Error) {
     // TODO loop and clear cookies to prevent error on client
     return res.status(500).send(JSON.stringify(loginRes))
   }
+
   const cookies = loginRes.cookieToSendBackToClient
   const clientCsrfCookie = cookie.parse(cookies[0])
   const clientOrySessionCookie = cookie.parse(cookies[1])
+
   res.cookie("ory_kratos_session", clientOrySessionCookie.ory_kratos_session, {
     expires: new Date(Date.now() + 900000), // TODO parse this date - clientOrySessionCookie.Expires,
     sameSite: "strict", // TODO Lax or none
@@ -143,6 +147,7 @@ authRouter.post("/login", async (req, res) => {
     httpOnly: true,
     path: clientOrySessionCookie.Path,
   })
+
   const csrfKey = Object.keys(clientCsrfCookie)[0]
   const csrfValue = Object.values(clientCsrfCookie)[0]
   res.cookie(csrfKey, csrfValue, {
@@ -160,7 +165,14 @@ authRouter.post("/login", async (req, res) => {
       "access-control-allow-origin": "http://localhost:3000",
     })
   }
-  res.status(200).send(JSON.stringify({ kratosUserId: loginRes.kratosUserId, phone }))
+
+  res.send({
+    identity: {
+      id: loginRes.kratosUserId,
+      uid: loginRes.kratosUserId,
+      phoneNumber,
+    },
+  })
 })
 
 authRouter.post("/logout", async (req, res) => {
@@ -173,7 +185,7 @@ authRouter.post("/logout", async (req, res) => {
       }
     }
   } else {
-    return res.status(200).send(JSON.stringify({ result: "no cookies" }))
+    return res.send({ result: "no cookies" })
   }
   if (isDev) {
     res.set({
@@ -182,7 +194,7 @@ authRouter.post("/logout", async (req, res) => {
       "access-control-allow-origin": "http://localhost:3000",
     })
   }
-  res.status(200).send(JSON.stringify({ result: "cookies deleted" }))
+  res.send({ result: "cookies deleted" })
 })
 
 export default authRouter
