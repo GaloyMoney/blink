@@ -9,6 +9,8 @@ import {
   RestrictedRegionPhoneProviderError,
   UnknownPhoneProviderServiceError,
   UnsubscribedRecipientPhoneProviderError,
+  PhoneProviderRateLimitExceededError,
+  RestrictedRecipientPhoneNumberError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 
@@ -50,6 +52,12 @@ export const TwilioClient = (): IPhoneProviderService => {
         case match(KnownTwilioErrorMessages.BadPhoneProviderConnection):
           return new PhoneProviderConnectionError(err.message || err)
 
+        case match(KnownTwilioErrorMessages.RateLimitsExceeded):
+          return new PhoneProviderRateLimitExceededError(err.message || err)
+
+        case match(KnownTwilioErrorMessages.FraudulentActivityBlock):
+          return new RestrictedRecipientPhoneNumberError(err.message || err)
+
         default:
           return new UnknownPhoneProviderServiceError(err.message || err)
       }
@@ -71,20 +79,24 @@ export const TwilioClient = (): IPhoneProviderService => {
       verification = await verify.verificationChecks.create({ to, code })
     } catch (err) {
       baseLogger.error({ err }, "impossible to verify phone and code")
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(err.message)
 
-      if (err.message.includes("Invalid parameter `To`")) {
-        return new InvalidPhoneNumberPhoneProviderError(err.message || err)
+      switch (true) {
+        case match(KnownTwilioErrorMessages.InvalidPhoneNumberParameter):
+          return new InvalidPhoneNumberPhoneProviderError(err.message || err)
+
+        case match(KnownTwilioErrorMessages.BadPhoneProviderConnection):
+          return new PhoneProviderConnectionError(err.message || err)
+
+        case match(KnownTwilioErrorMessages.RateLimitsExceeded):
+          return new PhoneProviderRateLimitExceededError(err.message || err)
+
+        case err.status === 404:
+          return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
+
+        default:
+          return new UnknownPhoneProviderServiceError(err.message || err)
       }
-
-      if (err.message.includes("timeout of") && err.message.includes("exceeded")) {
-        return new PhoneProviderConnectionError(err.message || err)
-      }
-
-      if (err.status === 404) {
-        return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
-      }
-
-      return new UnknownPhoneProviderServiceError(err.message || err)
     }
 
     if (verification.status !== "approved") {
@@ -138,9 +150,13 @@ export const TwilioClient = (): IPhoneProviderService => {
 export const KnownTwilioErrorMessages: { [key: string]: RegExp } = {
   InvalidPhoneNumber: /not a valid phone number/,
   InvalidMobileNumber: /not a mobile number/,
+  InvalidPhoneNumberParameter: /Invalid parameter `To`/,
   RestrictedRegion: /has not been enabled for the region/,
   UnsubscribedRecipient: /unsubscribed recipient/,
   BadPhoneProviderConnection: /timeout of.*exceeded/,
   BlockedRegion:
     /The destination phone number has been blocked by Verify Geo-Permissions. .* is blocked for sms channel for all services/,
+  RateLimitsExceeded: /Max.*attempts reached/,
+  FraudulentActivityBlock:
+    /The destination phone number has been temporarily blocked by Twilio due to fraudulent activities/,
 } as const
