@@ -14,9 +14,9 @@ import { kratosPublic } from "@services/kratos/private"
 import { AccountsRepository } from "@services/mongoose"
 import { parseIps } from "@domain/accounts-ips"
 import { KratosError } from "@services/kratos/errors"
-import cookie from "cookie"
 import bodyParser from "body-parser"
 import { isCodeValid } from "@app/auth"
+import setCookie from "set-cookie-parser"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -136,26 +136,31 @@ authRouter.post("/login", async (req, res) => {
     return res.status(500).send(JSON.stringify(loginRes))
   }
 
-  const cookies = loginRes.cookieToSendBackToClient
-  const clientCsrfCookie = cookie.parse(cookies[0])
-  const clientOrySessionCookie = cookie.parse(cookies[1])
+  const cookies = setCookie.parse(loginRes.cookieToSendBackToClient)
+  const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
+  const kratosSessionCookie = cookies?.find((c) => c.name.includes("ory_kratos_session"))
+  if (!csrfCookie || !kratosSessionCookie) {
+    return res
+      .status(500)
+      .send(JSON.stringify({ result: "No csrfCookie or kratosSessionCookie " }))
+  }
 
-  res.cookie("ory_kratos_session", clientOrySessionCookie.ory_kratos_session, {
-    expires: new Date(Date.now() + 900000), // TODO parse this date - clientOrySessionCookie.Expires,
-    sameSite: "strict", // TODO Lax or none
-    secure: true,
-    httpOnly: true,
-    path: clientOrySessionCookie.Path,
+  res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
+    maxAge: kratosSessionCookie.maxAge,
+    sameSite: kratosSessionCookie.sameSite,
+    secure: kratosSessionCookie.secure,
+    httpOnly: kratosSessionCookie.httpOnly,
+    path: kratosSessionCookie.Path,
+    expires: kratosSessionCookie.expires,
   })
 
-  const csrfKey = Object.keys(clientCsrfCookie)[0]
-  const csrfValue = Object.values(clientCsrfCookie)[0]
-  res.cookie(csrfKey, csrfValue, {
-    maxAge: clientOrySessionCookie["Max-Age"], // TODO look this up from downstream
-    sameSite: "strict", // TODO Lax or none
-    secure: true,
-    httpOnly: true,
-    path: clientOrySessionCookie.Path,
+  res.cookie(csrfCookie.name, csrfCookie.value, {
+    maxAge: csrfCookie.maxAge,
+    sameSite: csrfCookie.sameSite,
+    secure: csrfCookie.secure,
+    httpOnly: csrfCookie.httpOnly,
+    path: csrfCookie.Path,
+    expires: csrfCookie.expires,
   })
 
   if (isDev) {
@@ -176,25 +181,26 @@ authRouter.post("/login", async (req, res) => {
 })
 
 authRouter.post("/logout", async (req, res) => {
-  const cookiesStr = req.headers.cookie
-  if (cookiesStr?.includes("kratos") || cookiesStr?.includes("csrf")) {
-    const cookies = cookie.parse(cookiesStr)
-    for (const c of Object.keys(cookies)) {
-      if (c.includes("kratos") || c.includes("csrf")) {
-        res.clearCookie(c)
-      }
+  const cookies = setCookie.parse(req.headers.cookies)
+  if (!cookies) return res.status(200).send(JSON.stringify({ result: "No cookies " }))
+  try {
+    const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
+    const kratosSessionCookie = cookies?.find((c) =>
+      c.name.includes("ory_kratos_session"),
+    )
+    res.clearCookie(csrfCookie?.name)
+    res.clearCookie(kratosSessionCookie?.name)
+    if (isDev) {
+      res.set({
+        "access-control-allow-credentials": "true",
+        "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
+        "access-control-allow-origin": "http://localhost:3000",
+      })
     }
-  } else {
-    return res.send({ result: "no cookies" })
+    res.status(200).send(JSON.stringify({ result: "cookies deleted" }))
+  } catch (e) {
+    res.status(500).send(JSON.stringify({ result: `${e}` }))
   }
-  if (isDev) {
-    res.set({
-      "access-control-allow-credentials": "true",
-      "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
-      "access-control-allow-origin": "http://localhost:3000",
-    })
-  }
-  res.send({ result: "cookies deleted" })
 })
 
 export default authRouter

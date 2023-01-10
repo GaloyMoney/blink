@@ -14,6 +14,9 @@ import {
 
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
 
+import setCookie from "set-cookie-parser"
+import libCookie from "cookie"
+
 import {
   AuthenticationKratosError,
   IncompatibleSchemaUpgradeError,
@@ -69,44 +72,43 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
   const loginCookie = async (phone: PhoneNumber): Promise<any | KratosError> => {
     const flow = await kratosPublic.createBrowserLoginFlow()
-
-    const headers = flow.headers
-    const cookie = headers["set-cookie"][0]
-    const csrf = cookie.split("=")[1] + "="
+    const parsedCookies = setCookie.parse(flow.headers["set-cookie"])
+    const csrfCookie = parsedCookies?.find((c) => c.name.includes("csrf"))
+    const cookie = libCookie.serialize(csrfCookie.name, csrfCookie.value, {
+      expires: csrfCookie.expires,
+      maxAge: csrfCookie.maxAge,
+      sameSite: csrfCookie.sameSite,
+      secure: csrfCookie.secure,
+      httpOnly: csrfCookie.httpOnly,
+      path: csrfCookie.path,
+    })
 
     const identifier = phone
     const method = "password"
-
-    let result: AxiosResponse<any>
-
+    let result: AxiosResponse
     try {
       result = await kratosPublic.updateLoginFlow({
         flow: flow.data.id,
-        cookie,
+        cookie: decodeURIComponent(cookie),
         updateLoginFlowBody: {
           identifier,
           method,
           password,
-          csrf_token: csrf,
+          csrf_token: csrfCookie.value,
         },
       })
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
         return new LikelyNoUserWithThisPhoneExistError(err)
       }
-
       if (err.message === "Request failed with status code 401") {
         return new AuthenticationKratosError(err)
       }
-
       return new UnknownKratosError(err)
     }
-
     const cookieToSendBackToClient = result.headers["set-cookie"]
-
     // note: this only works when whoami: required_aal = aal1
     const kratosUserId = result.data.session.identity.id as UserId
-
     return { cookieToSendBackToClient, kratosUserId }
   }
 
