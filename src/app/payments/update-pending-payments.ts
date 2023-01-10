@@ -135,9 +135,11 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
     }
 
     let roundedUpFee: Satoshis
+    let satsAmount: Satoshis
     const { status } = lnPaymentLookup
     if (status != PaymentStatus.Failed) {
       roundedUpFee = lnPaymentLookup.confirmedDetails?.roundedUpFee || toSats(0)
+      satsAmount = toSats(lnPaymentLookup.roundedUpAmount - roundedUpFee)
     }
 
     if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
@@ -183,31 +185,11 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           return settled
         }
 
-        if (status === PaymentStatus.Settled) {
-          paymentLogger.info(
-            { success: true, id: paymentHash, payment: pendingPayment },
-            "payment has been confirmed",
-          )
-
-          const revealedPreImage = lnPaymentLookup.confirmedDetails?.revealedPreImage
-          if (revealedPreImage)
-            LedgerService().updateMetadataByHash({
-              hash: paymentHash,
-              revealedPreImage,
-            })
-          if (pendingPayment.feeKnownInAdvance) return true
-
-          const { displayAmount, displayFee } = pendingPayment
-          if (displayAmount === undefined || displayFee === undefined)
-            return new UnknownLedgerError("missing display-related values in transaction")
-
-          return Wallets.reimburseFee({
-            paymentFlow,
-            journalId: pendingPayment.journalId,
-            actualFee: roundedUpFee,
-            revealedPreImage,
-          })
-        } else if (status === PaymentStatus.Failed) {
+        if (
+          status === PaymentStatus.Failed ||
+          // pendingPayment is a different version to latest payment from lnd
+          satsAmount !== toSats(paymentFlow.btcPaymentAmount.amount)
+        ) {
           paymentLogger.warn(
             { success: false, id: paymentHash, payment: pendingPayment },
             "payment has failed. reverting transaction",
@@ -233,6 +215,30 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
               return setErrorCritical(reimbursed)
             }
           }
+        } else if (status === PaymentStatus.Settled) {
+          paymentLogger.info(
+            { success: true, id: paymentHash, payment: pendingPayment },
+            "payment has been confirmed",
+          )
+
+          const revealedPreImage = lnPaymentLookup.confirmedDetails?.revealedPreImage
+          if (revealedPreImage)
+            LedgerService().updateMetadataByHash({
+              hash: paymentHash,
+              revealedPreImage,
+            })
+          if (pendingPayment.feeKnownInAdvance) return true
+
+          const { displayAmount, displayFee } = pendingPayment
+          if (displayAmount === undefined || displayFee === undefined)
+            return new UnknownLedgerError("missing display-related values in transaction")
+
+          return Wallets.reimburseFee({
+            paymentFlow,
+            journalId: pendingPayment.journalId,
+            actualFee: roundedUpFee,
+            revealedPreImage,
+          })
         }
         return true
       })
