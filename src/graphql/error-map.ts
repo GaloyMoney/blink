@@ -152,6 +152,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Too many phone number attempts, please try again in a few minutes."
       return new PhoneProviderError({ message, logger: baseLogger })
 
+    case "RestrictedRecipientPhoneNumberError":
+      message =
+        "Issue detected with phone number. Please try again later or contact support."
+      return new PhoneProviderError({ message, logger: baseLogger })
+
     case "UnsubscribedRecipientPhoneProviderError":
       message = "Phone number has opted out of receiving messages"
       return new ValidationInternalError({ message, logger: baseLogger })

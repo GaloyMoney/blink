@@ -7,6 +7,7 @@ export class PhoneProviderRateLimitExceededError extends PhoneProviderServiceErr
 export class InvalidPhoneNumberPhoneProviderError extends PhoneProviderServiceError {}
 export class RestrictedRegionPhoneProviderError extends PhoneProviderServiceError {}
 export class UnsubscribedRecipientPhoneProviderError extends PhoneProviderServiceError {}
+export class RestrictedRecipientPhoneNumberError extends PhoneProviderServiceError {}
 
 export class PhoneCodeInvalidError extends PhoneProviderServiceError {}
 
