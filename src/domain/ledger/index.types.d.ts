@@ -19,7 +19,6 @@ type AdminLedgerTransactionType =
 
 type LedgerTransactionTypeObject = typeof import("./index").LedgerTransactionType
 type LedgerTransactionTypeKey = keyof typeof import("./index").LedgerTransactionType
-type LnTxRecorded = keyof typeof import("./index").LnTxRecorded
 type LedgerTransactionType = LedgerTransactionTypeObject[LedgerTransactionTypeKey]
 
 type LedgerJournal = {
@@ -300,7 +299,7 @@ interface ILedgerService {
 
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
-  isLnTxRecorded(paymentHash: PaymentHash): Promise<LnTxRecorded | LedgerServiceError>
+  isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
   setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
 

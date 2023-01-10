@@ -1,6 +1,5 @@
 import { RepositoryError } from "@domain/errors"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { LnTxRecorded } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 
 export const PaymentStatusChecker = async (uncheckedPaymentRequest: string) => {
@@ -12,10 +11,10 @@ export const PaymentStatusChecker = async (uncheckedPaymentRequest: string) => {
   return {
     paymentHash,
     invoiceIsPaid: async (): Promise<boolean | RepositoryError> => {
-      const recorded = await LedgerService().isLnTxRecorded(paymentHash)
+      const ledger = LedgerService()
+      const recorded = await ledger.isLnTxRecorded(paymentHash)
       if (recorded instanceof Error) return recorded
-
-      return recorded === LnTxRecorded.TRUE
+      return recorded
     },
   }
 }

@@ -60,12 +60,6 @@ export const LedgerTransactionType = {
   ...AdminLedgerTransactionType,
 } as const
 
-export const LnTxRecorded = {
-  TRUE: "TRUE",
-  FALSE: "FALSE",
-  MIXED: "MIXED",
-} as const
-
 export const isOnChainTransaction = (type: LedgerTransactionType): boolean =>
   type === LedgerTransactionType.OnchainIntraLedger ||
   type === LedgerTransactionType.OnChainTradeIntraAccount ||

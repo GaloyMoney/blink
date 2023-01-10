@@ -17,7 +17,6 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
   PriceRatio,
 } from "@domain/payments"
-import { LnTxRecorded } from "@domain/ledger"
 import { WalletCurrency } from "@domain/shared"
 import {
   checkedToWalletId,
@@ -368,7 +367,7 @@ const executePaymentViaIntraledger = async <
 
     const recorded = await ledgerService.isLnTxRecorded(paymentHash)
     if (recorded instanceof Error) return recorded
-    if (recorded === LnTxRecorded.TRUE) return PaymentSendStatus.AlreadyPaid
+    if (recorded) return PaymentSendStatus.AlreadyPaid
 
     const balance = await ledgerService.getWalletBalanceAmount(senderWallet)
     if (balance instanceof Error) return balance
