@@ -1386,10 +1386,21 @@ describe("UserWallet - Lightning Pay", () => {
           lnd: lndOutside1,
           tokens: amountInvoice,
         })
-        const result = await fn({ account: accountB, walletId: walletIdB })({
+        const result = await fn({
+          account: accountB,
+          walletId: walletIdB,
+        })({
           invoice: request,
         })
         if (result instanceof Error) throw result
+
+        const paymentWhilePending = await fn({
+          account: accountB,
+          walletId: walletIdB,
+        })({
+          invoice: request,
+        })
+        expect(paymentWhilePending).toBeInstanceOf(LnPaymentRequestInTransitError)
 
         expect(result).toBe(PaymentSendStatus.Pending)
         baseLogger.info("payment has timeout. status is pending.")
