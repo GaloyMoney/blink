@@ -134,6 +134,7 @@ const handleCommonErrors = (err: Error | string) => {
       return new PhoneProviderConnectionError(errMsg)
 
     case match(KnownTwilioErrorMessages.RateLimitsExceeded):
+    case match(KnownTwilioErrorMessages.TooManyConcurrentRequests):
       return new PhoneProviderRateLimitExceededError(errMsg)
 
     case match(KnownTwilioErrorMessages.FraudulentActivityBlock):
@@ -153,6 +154,7 @@ export const KnownTwilioErrorMessages: { [key: string]: RegExp } = {
   BlockedRegion:
     /The destination phone number has been blocked by Verify Geo-Permissions. .* is blocked for sms channel for all services/,
   RateLimitsExceeded: /Max.*attempts reached/,
+  TooManyConcurrentRequests: /Too many concurrent requests/,
   FraudulentActivityBlock:
     /The destination phone number has been temporarily blocked by Twilio due to fraudulent activities/,
 } as const
