@@ -230,4 +230,29 @@ authRouter.get("/logout", async (req, res) => {
   }
 })
 
+// Helper endpoint to clear any lingering cookies like csrf
+authRouter.get("/clearCookies", async (req, res) => {
+  try {
+    if (req.cookies) {
+      for (const cookieName of Object.keys(req.cookies)) {
+        res.clearCookie(cookieName)
+      }
+      if (isDev) {
+        res.set({
+          "access-control-allow-credentials": "true",
+          "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
+          "access-control-allow-origin": "http://localhost:3000",
+        })
+      }
+      res.status(200).send(
+        JSON.stringify({
+          result: "cookies cleared successfully",
+        }),
+      )
+    }
+  } catch (e) {
+    res.status(500).send(JSON.stringify({ result: `${e}` }))
+  }
+})
+
 export default authRouter
