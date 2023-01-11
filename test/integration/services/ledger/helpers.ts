@@ -290,7 +290,10 @@ export const recordOnChainIntraLedgerPayment = async <
   })
 }
 
-export const recordLnTradeIntraAccountTxn = async ({
+export const recordLnTradeIntraAccountTxn = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   senderWalletDescriptor,
   recipientWalletDescriptor,
   paymentAmount,
@@ -309,7 +312,7 @@ export const recordLnTradeIntraAccountTxn = async ({
         usdPaymentAmount: paymentAmount.usd,
         btcProtocolFee: ZERO_SATS,
         usdProtocolFee: ZERO_CENTS,
-      } as PaymentFlowState<WalletCurrency, WalletCurrency>,
+      } as PaymentFlowState<S, R>,
     })
 
   return LedgerFacade.recordIntraledger({
@@ -322,7 +325,10 @@ export const recordLnTradeIntraAccountTxn = async ({
   })
 }
 
-export const recordWalletIdTradeIntraAccountTxn = async ({
+export const recordWalletIdTradeIntraAccountTxn = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   senderWalletDescriptor,
   recipientWalletDescriptor,
   paymentAmount,
@@ -336,7 +342,7 @@ export const recordWalletIdTradeIntraAccountTxn = async ({
       usdPaymentAmount: paymentAmount.usd,
       btcProtocolFee: ZERO_SATS,
       usdProtocolFee: ZERO_CENTS,
-    } as PaymentFlowState<WalletCurrency, WalletCurrency>,
+    } as PaymentFlowState<S, R>,
   })
 
   return LedgerFacade.recordIntraledger({
@@ -349,7 +355,10 @@ export const recordWalletIdTradeIntraAccountTxn = async ({
   })
 }
 
-export const recordOnChainTradeIntraAccountTxn = async ({
+export const recordOnChainTradeIntraAccountTxn = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   senderWalletDescriptor,
   recipientWalletDescriptor,
   paymentAmount,
@@ -368,7 +377,7 @@ export const recordOnChainTradeIntraAccountTxn = async ({
         usdPaymentAmount: paymentAmount.usd,
         btcProtocolFee: ZERO_SATS,
         usdProtocolFee: ZERO_CENTS,
-      } as OnChainPaymentFlowState<WalletCurrency, WalletCurrency>,
+      } as OnChainPaymentFlowState<S, R>,
     })
 
   return LedgerFacade.recordIntraledger({
@@ -380,6 +389,7 @@ export const recordOnChainTradeIntraAccountTxn = async ({
     additionalDebitMetadata: debitAccountAdditionalMetadata,
   })
 }
+
 // Non-LedgerFacade helpers from legacy admin service
 // ======
 
