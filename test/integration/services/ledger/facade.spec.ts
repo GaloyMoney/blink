@@ -22,19 +22,18 @@ describe("Facade", () => {
     usd: { amount: 10n, currency: WalletCurrency.Usd },
     btc: { amount: 20n, currency: WalletCurrency.Btc },
   }
-  const walletDescriptor1 = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-  const walletDescriptor2 = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
 
   describe("recordReceive", () => {
     it("receives to btc wallet", async () => {
+      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
       await recordReceiveLnPayment({
-        walletDescriptor: walletDescriptor1,
+        walletDescriptor: btcWalletDescriptor,
         paymentAmount: receiveAmount,
         bankFee,
       })
 
       const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-        walletDescriptor1,
+        btcWalletDescriptor,
       )
       if (balance instanceof Error) throw balance
       expect(balance).toEqual(
@@ -48,19 +47,21 @@ describe("Facade", () => {
 
   describe("recordSend", () => {
     it("sends from btc wallet", async () => {
+      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+
       const startingBalance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-        walletDescriptor1,
+        btcWalletDescriptor,
       )
       if (startingBalance instanceof Error) throw startingBalance
 
       await recordSendLnPayment({
-        walletDescriptor: walletDescriptor1,
+        walletDescriptor: btcWalletDescriptor,
         paymentAmount: sendAmount,
         bankFee,
       })
 
       const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-        walletDescriptor1,
+        btcWalletDescriptor,
       )
       if (balance instanceof Error) throw balance
       expect(balance).toEqual(
@@ -74,19 +75,22 @@ describe("Facade", () => {
 
   describe("recordIntraledger", () => {
     it("sends from btc wallet to usd wallet", async () => {
+      const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+      const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
+
       const startingBalanceSender = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-        walletDescriptor1,
+        btcWalletDescriptor,
       )
       if (startingBalanceSender instanceof Error) throw startingBalanceSender
 
       await recordLnIntraLedgerPayment({
-        senderWalletDescriptor: walletDescriptor1,
-        recipientWalletDescriptor: walletDescriptor2,
+        senderWalletDescriptor: btcWalletDescriptor,
+        recipientWalletDescriptor: usdWalletDescriptor,
         paymentAmount: sendAmount,
       })
 
       const finishBalanceSender = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-        walletDescriptor1,
+        btcWalletDescriptor,
       )
       if (finishBalanceSender instanceof Error) throw finishBalanceSender
       expect(finishBalanceSender).toEqual(
@@ -97,7 +101,7 @@ describe("Facade", () => {
       )
 
       const finishBalanceReceiver = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-        walletDescriptor2,
+        usdWalletDescriptor,
       )
       if (finishBalanceReceiver instanceof Error) throw finishBalanceReceiver
       expect(finishBalanceReceiver).toEqual(
