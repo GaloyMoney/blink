@@ -1,0 +1,19 @@
+subscription satPrice(
+  $priceCurrencyUnit: String!
+) {
+  satPrice(
+    input: {
+      priceCurrencyUnit: $priceCurrencyUnit
+    }
+  ) {
+    errors {
+      message
+    }
+    price {
+      base
+      offset
+      currencyUnit
+      formattedAmount
+    }
+  }
+}

@@ -1,8 +1,9 @@
 import { GT } from "@graphql/index"
 
 import PriceSubscription from "@graphql/root/subscription/price"
-import LnInvoicePaymentStatusSubscription from "@graphql/root/subscription/ln-invoice-payment-status"
+import SatPriceSubscription from "@graphql/root/subscription/sat-price"
 import MyUpdatesSubscription from "@graphql/root/subscription/my-updates"
+import LnInvoicePaymentStatusSubscription from "@graphql/root/subscription/ln-invoice-payment-status"
 import {
   ACCOUNT_USERNAME,
   addAttributesToCurrentSpan,
@@ -12,6 +13,7 @@ import {
 const fields = {
   myUpdates: MyUpdatesSubscription,
   price: PriceSubscription,
+  satPrice: SatPriceSubscription,
   lnInvoicePaymentStatus: LnInvoicePaymentStatusSubscription,
 }
 
