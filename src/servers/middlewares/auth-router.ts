@@ -10,13 +10,14 @@ import { mapError } from "@graphql/error-map"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { AuthWithPhonePasswordlessService, validateKratosToken } from "@services/kratos"
-import { kratosPublic } from "@services/kratos/private"
+import { kratosPublic, kratosAdmin } from "@services/kratos/private"
 import { AccountsRepository } from "@services/mongoose"
 import { parseIps } from "@domain/accounts-ips"
 import { KratosError } from "@services/kratos/errors"
 import bodyParser from "body-parser"
 import { isCodeValid } from "@app/auth"
 import setCookie from "set-cookie-parser"
+import cookieParser from "cookie-parser"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -25,6 +26,7 @@ const { corsAllowedOrigins } = getKratosConfig()
 authRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
 authRouter.use(bodyParser.urlencoded({ extended: true }))
 authRouter.use(bodyParser.json())
+authRouter.use(cookieParser())
 
 // deprecated
 authRouter.post("/browser", async (req, res) => {
@@ -180,16 +182,37 @@ authRouter.post("/login", async (req, res) => {
   })
 })
 
-authRouter.post("/logout", async (req, res) => {
-  const cookies = setCookie.parse(req.headers.cookies)
-  if (!cookies) return res.status(200).send(JSON.stringify({ result: "No cookies " }))
+// Logout flow
+// 1. Client app (web wallet/admin etc...) sends an HTTP GET
+//    to http://localhost:4002/auth/logout with credentials: 'include'
+// 2. The backend project logs the user out via kratos and
+//    revokes the session via kratosAdmin
+// 3. All the cookies are deleted via res.clearCookie
+//    from the backend
+// 4. The cookies should be magically deleted on the client
+authRouter.get("/logout", async (req, res) => {
   try {
-    const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
-    const kratosSessionCookie = cookies?.find((c) =>
-      c.name.includes("ory_kratos_session"),
-    )
-    res.clearCookie(csrfCookie?.name)
-    res.clearCookie(kratosSessionCookie?.name)
+    let reqCookie = req.headers.cookie
+    if (!reqCookie) {
+      return res
+        .status(500)
+        .send(JSON.stringify({ result: "need cookies and redirect query params" }))
+    }
+    reqCookie = decodeURIComponent(reqCookie)
+    const session = await kratosPublic.toSession({ cookie: reqCookie })
+    const sessionId = session.data.id
+    // * revoke token via admin api
+    //   there is no way to do it via cookies and the public api via the backend
+    //   I tried the kratosPublic.createBrowserLogoutFlow but it did not work
+    //   properly with cookies
+    const sessionResp = await kratosAdmin.disableSession({
+      id: sessionId,
+    })
+    // TODO check for 204 resp
+    // manually clear all cookies on the client
+    for (const cookieName of Object.keys(req.cookies)) {
+      res.clearCookie(cookieName)
+    }
     if (isDev) {
       res.set({
         "access-control-allow-credentials": "true",
@@ -197,7 +220,11 @@ authRouter.post("/logout", async (req, res) => {
         "access-control-allow-origin": "http://localhost:3000",
       })
     }
-    res.status(200).send(JSON.stringify({ result: "cookies deleted" }))
+    res.status(200).send(
+      JSON.stringify({
+        result: "logout successful",
+      }),
+    )
   } catch (e) {
     res.status(500).send(JSON.stringify({ result: `${e}` }))
   }
