@@ -147,18 +147,18 @@ export const OnChainReceiveLedgerMetadata = <
 
     fee: toSats(satsFee),
     feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
-    usd: convertCentsToUsdAsDollars(
-      (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
-    ),
+    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
 
-    satsFee: toSats(satsFee),
-    displayFee: feeDisplayCurrency,
+    // Amounts are after fee is deducted
+    satsAmount: toSats(satsAmount),
+    centsAmount: toCents(centsAmount),
     displayAmount: amountDisplayCurrency,
 
-    displayCurrency,
-    centsAmount: toCents(centsAmount),
-    satsAmount: toSats(satsAmount),
+    satsFee: toSats(satsFee),
     centsFee: toCents(centsFee),
+    displayFee: feeDisplayCurrency,
+
+    displayCurrency,
   }
   return metadata
 }
@@ -198,18 +198,18 @@ export const LnReceiveLedgerMetadata = <
 
     fee: toSats(satsFee),
     feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
-    usd: convertCentsToUsdAsDollars(
-      (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
-    ),
+    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
 
-    satsFee: toSats(satsFee),
-    displayFee: feeDisplayCurrency,
+    // Amounts are after fee is deducted
+    satsAmount: toSats(satsAmount),
+    centsAmount: toCents(centsAmount),
     displayAmount: amountDisplayCurrency,
 
-    displayCurrency,
-    centsAmount: toCents(centsAmount),
-    satsAmount: toSats(satsAmount),
+    satsFee: toSats(satsFee),
     centsFee: toCents(centsFee),
+    displayFee: feeDisplayCurrency,
+
+    displayCurrency,
   }
   return metadata
 }
