@@ -513,7 +513,7 @@ async function sendToWalletTestWrapper({
   })
   if (priceRatio instanceof Error) throw priceRatio
 
-  const feeAmountCents = priceRatio.convertFromBtc({
+  const feeAmountCents = priceRatio.convertFromBtcToCeil({
     amount: BigInt(fee),
     currency: WalletCurrency.Btc,
   })
