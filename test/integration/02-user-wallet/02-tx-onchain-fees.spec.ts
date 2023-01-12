@@ -4,7 +4,7 @@ import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
-import { DealerPriceService } from "@services/dealer-price"
+import { NewDealerPriceService } from "@services/dealer-price"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 import {
@@ -21,6 +21,8 @@ const defaultUsdAmount = toSats(105)
 const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
 let walletIdA: WalletId, walletIdB: WalletId, walletIdUsdA: WalletId, accountA: Account
+
+const newDealerFns = NewDealerPriceService()
 
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
@@ -164,15 +166,20 @@ describe("UserWallet - getOnchainFee", () => {
       const account = await AccountsRepository().findById(wallet.accountId)
       if (account instanceof Error) throw account
 
-      const withdrawFeeAsUsd =
-        await DealerPriceService().getCentsFromSatsForImmediateSell(account.withdrawFee)
-      if (withdrawFeeAsUsd instanceof Error) throw withdrawFeeAsUsd
+      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateSell({
+        amount: BigInt(account.withdrawFee),
+        currency: WalletCurrency.Btc,
+      })
+      if (usdAmount instanceof Error) throw usdAmount
+      const withdrawFeeAsUsd = Number(usdAmount.amount)
       expect(fee).toBeGreaterThan(withdrawFeeAsUsd)
 
-      const expectedFee = await DealerPriceService().getCentsFromSatsForImmediateSell(
-        feeSats,
-      )
-      if (expectedFee instanceof Error) throw expectedFee
+      const feeUsdAmount = await newDealerFns.getCentsFromSatsForImmediateSell({
+        amount: BigInt(feeSats),
+        currency: WalletCurrency.Btc,
+      })
+      if (feeUsdAmount instanceof Error) throw feeUsdAmount
+      const expectedFee = Number(feeUsdAmount.amount)
       expect(expectedFee).toEqual(fee)
     })
 
@@ -194,13 +201,18 @@ describe("UserWallet - getOnchainFee", () => {
     it("returns error for dust amount", async () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const amount = toSats(dustThreshold - 1)
-      const usdAmount = await DealerPriceService().getCentsFromSatsForImmediateBuy(amount)
+
+      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(amount),
+        currency: WalletCurrency.Btc,
+      })
       if (usdAmount instanceof Error) throw usdAmount
+      const amountInUsd = Number(usdAmount.amount)
 
       const fee = await Wallets.getOnChainFeeForUsdWallet({
         walletId: walletIdUsdA,
         account: accountA,
-        amount: usdAmount,
+        amount: amountInUsd,
         address,
         targetConfirmations: defaultTarget,
       })
@@ -232,13 +244,18 @@ describe("UserWallet - getOnchainFee", () => {
     it("returns error for balance too low", async () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const amount = toSats(1_000_000_000)
-      const usdAmount = await DealerPriceService().getCentsFromSatsForImmediateBuy(amount)
+
+      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(amount),
+        currency: WalletCurrency.Btc,
+      })
       if (usdAmount instanceof Error) throw usdAmount
+      const amountInUsd = Number(usdAmount.amount)
 
       const fee = await Wallets.getOnChainFeeForUsdWallet({
         walletId: walletIdUsdA,
         account: accountA,
-        amount: usdAmount,
+        amount: amountInUsd,
         address,
         targetConfirmations: defaultTarget,
       })

@@ -49,7 +49,7 @@ import {
 } from "@domain/bitcoin/onchain/errors"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import * as OnChainServiceImpl from "@services/lnd/onchain-service"
-import { DealerPriceService, NewDealerPriceService } from "@services/dealer-price"
+import { NewDealerPriceService } from "@services/dealer-price"
 
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 import {
@@ -86,6 +86,8 @@ let walletIdF: WalletId
 
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
+
+const newDealerFns = NewDealerPriceService()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -233,8 +235,6 @@ const testExternalSend = async ({
 
   await sleep(1000)
 
-  const dealerFns = DealerPriceService()
-
   {
     const txResult = await getTransactionsForWalletId(senderWalletId)
     if (txResult.error instanceof Error || txResult.result === null) {
@@ -260,9 +260,13 @@ const testExternalSend = async ({
       fee = feeRates.withdrawDefaultMin + 7050
     } else {
       const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
-      const feeResult = await dealerFns.getCentsFromSatsForImmediateSell(feeSats)
-      if (feeResult instanceof Error) return feeResult
-      fee = feeResult
+
+      const feeResult = await newDealerFns.getCentsFromSatsForImmediateSell({
+        amount: BigInt(feeSats),
+        currency: WalletCurrency.Btc,
+      })
+      if (feeResult instanceof Error) throw feeResult
+      fee = Number(feeResult.amount)
     }
 
     expect(settledTx.settlementFee).toBe(fee)
@@ -317,7 +321,13 @@ const testExternalSend = async ({
       debit = satsAmount + satsFee
     } else {
       centsAmount = sendAll ? amountToSend - fee : amountToSend
-      satsAmount = await dealerFns.getSatsFromCentsForImmediateSell(centsAmount)
+
+      const btcAmount = await newDealerFns.getSatsFromCentsForImmediateSell({
+        amount: BigInt(centsAmount),
+        currency: WalletCurrency.Usd,
+      })
+      if (btcAmount instanceof Error) throw btcAmount
+      satsAmount = Number(btcAmount.amount)
 
       centsFee = fee
       satsFee = toSats(feeRates.withdrawDefaultMin + 7050)
@@ -404,11 +414,8 @@ const testInternalSend = async ({
   if (recipientWallet instanceof Error) return recipientWallet
   const { currency: recipientCurrency } = recipientWallet
 
-  const dealerFns = DealerPriceService()
-  const newDealerFns = NewDealerPriceService()
-
-  let amountResult: UsdCents | Satoshis | DealerPriceServiceError
-  let recipientAmount: UsdCents | Satoshis
+  let amountResult: PaymentAmount<WalletCurrency> | DealerPriceServiceError
+  let recipientAmount: number
   switch (true) {
     case senderCurrency === recipientCurrency:
       recipientAmount = senderAmount
@@ -416,22 +423,22 @@ const testInternalSend = async ({
 
     case senderCurrency === WalletCurrency.Usd &&
       recipientCurrency === WalletCurrency.Btc:
-      amountResult = await dealerFns.getSatsFromCentsForImmediateSell(
-        senderAmount as unknown as UsdCents,
-      )
+      amountResult = await newDealerFns.getSatsFromCentsForImmediateSell({
+        amount: BigInt(senderAmount),
+        currency: WalletCurrency.Usd,
+      })
       if (amountResult instanceof Error) return amountResult
-
-      recipientAmount = amountResult
+      recipientAmount = Number(amountResult.amount)
       break
 
     case senderCurrency === WalletCurrency.Btc &&
       recipientCurrency === WalletCurrency.Usd:
-      amountResult = await dealerFns.getCentsFromSatsForImmediateBuy(
-        senderAmount as unknown as Satoshis,
-      )
+      amountResult = await newDealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(senderAmount),
+        currency: WalletCurrency.Btc,
+      })
       if (amountResult instanceof Error) return amountResult
-
-      recipientAmount = amountResult
+      recipientAmount = Number(amountResult.amount)
       break
 
     default:
@@ -1093,12 +1100,15 @@ describe("UsdWallet - onChainPay", () => {
     })
 
     it("fails to send with less-than-1-cent amount from btc wallet to usd wallet", async () => {
-      const dealerFns = DealerPriceService()
-
       const btcSendAmount = toSats(10)
-      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
-        toSats(btcSendAmount),
-      )
+
+      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(btcSendAmount),
+        currency: WalletCurrency.Btc,
+      })
+      if (usdAmount instanceof Error) return usdAmount
+      const btcSendAmountInUsd = Number(usdAmount.amount)
+
       expect(btcSendAmountInUsd).toBe(0)
 
       const res = await testInternalSend({
