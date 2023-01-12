@@ -26,19 +26,19 @@ describe("Tx metadata", () => {
     usd: { amount: 10n, currency: WalletCurrency.Usd },
     btc: { amount: 2000n, currency: WalletCurrency.Btc },
   }
-  const paymentFlow = {
+  const paymentAmounts = {
     btcPaymentAmount: receiveAmount.btc,
     usdPaymentAmount: receiveAmount.usd,
     btcProtocolFee: ZERO_SATS,
     usdProtocolFee: ZERO_CENTS,
-  } as PaymentFlowState<WalletCurrency, WalletCurrency>
+  }
 
-  const onChainPaymentFlow = {
+  const onChainPaymentAmounts = {
     btcPaymentAmount: receiveAmount.btc,
     usdPaymentAmount: receiveAmount.usd,
     btcProtocolFee: ZERO_SATS,
     usdProtocolFee: ZERO_CENTS,
-  } as OnChainPaymentFlowState<WalletCurrency, WalletCurrency>
+  }
 
   describe("intraledger", () => {
     it("onchain", () => {
@@ -46,7 +46,7 @@ describe("Tx metadata", () => {
         OnChainIntraledgerLedgerMetadata({
           payeeAddresses,
           sendAll: true,
-          paymentFlow: onChainPaymentFlow,
+          paymentAmounts: onChainPaymentAmounts,
 
           amountDisplayCurrency,
           feeDisplayCurrency,
@@ -76,7 +76,7 @@ describe("Tx metadata", () => {
         OnChainTradeIntraAccountLedgerMetadata({
           payeeAddresses,
           sendAll: true,
-          paymentFlow: onChainPaymentFlow,
+          paymentAmounts: onChainPaymentAmounts,
 
           amountDisplayCurrency,
           feeDisplayCurrency,
@@ -102,7 +102,7 @@ describe("Tx metadata", () => {
       const { metadata, debitAccountAdditionalMetadata } = LnIntraledgerLedgerMetadata({
         paymentHash,
         pubkey,
-        paymentFlow,
+        paymentAmounts,
 
         amountDisplayCurrency,
         feeDisplayCurrency,
@@ -144,7 +144,7 @@ describe("Tx metadata", () => {
         LnTradeIntraAccountLedgerMetadata({
           paymentHash,
           pubkey,
-          paymentFlow,
+          paymentAmounts,
 
           amountDisplayCurrency,
           feeDisplayCurrency,
@@ -180,7 +180,7 @@ describe("Tx metadata", () => {
     it("wallet id", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         WalletIdIntraledgerLedgerMetadata({
-          paymentFlow,
+          paymentAmounts,
 
           feeDisplayCurrency,
           amountDisplayCurrency,
@@ -218,7 +218,7 @@ describe("Tx metadata", () => {
 
     it("wallet id trade", () => {
       const metadata = WalletIdTradeIntraAccountLedgerMetadata({
-        paymentFlow,
+        paymentAmounts,
 
         feeDisplayCurrency,
         amountDisplayCurrency,

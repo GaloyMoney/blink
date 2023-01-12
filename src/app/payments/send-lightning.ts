@@ -397,7 +397,7 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.LnTradeIntraAccountLedgerMetadata({
           paymentHash,
           pubkey: recipientPubkey,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -410,7 +410,7 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.LnIntraledgerLedgerMetadata({
           paymentHash,
           pubkey: recipientPubkey,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -532,7 +532,7 @@ const executePaymentViaLn = async ({
       feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
       displayCurrency: DisplayCurrency.Usd,
 
-      paymentFlow,
+      paymentAmounts: paymentFlow,
       pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
       paymentHash,
       feeKnownInAdvance: !!rawRoute,

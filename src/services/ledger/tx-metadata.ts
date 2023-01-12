@@ -5,10 +5,10 @@ import { LedgerTransactionType } from "@domain/ledger"
 const convertCentsToUsdAsDollars = (cents: DisplayCurrencyBaseAmount) =>
   Number((Number(cents) / 100).toFixed(2))
 
-export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletCurrency>({
+export const LnSendLedgerMetadata = ({
   paymentHash,
   pubkey,
-  paymentFlow,
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
@@ -16,7 +16,7 @@ export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletC
 }: {
   paymentHash: PaymentHash
   pubkey: Pubkey
-  paymentFlow: PaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
@@ -29,7 +29,7 @@ export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletC
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: AddLnSendLedgerMetadata = {
     type: LedgerTransactionType.Payment,
@@ -56,12 +56,9 @@ export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletC
   return metadata
 }
 
-export const OnChainSendLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const OnChainSendLedgerMetadata = ({
   onChainTxHash,
-  paymentFlow,
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
@@ -69,7 +66,7 @@ export const OnChainSendLedgerMetadata = <
   sendAll,
 }: {
   onChainTxHash: OnChainTxHash
-  paymentFlow: OnChainPaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
@@ -83,7 +80,7 @@ export const OnChainSendLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: AddOnchainSendLedgerMetadata = {
     type: LedgerTransactionType.OnchainPayment,
@@ -111,12 +108,9 @@ export const OnChainSendLedgerMetadata = <
   return metadata
 }
 
-export const OnChainReceiveLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const OnChainReceiveLedgerMetadata = ({
   onChainTxHash,
-  paymentFlow,
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
@@ -124,7 +118,7 @@ export const OnChainReceiveLedgerMetadata = <
   payeeAddresses,
 }: {
   onChainTxHash: OnChainTxHash
-  paymentFlow: OnChainPaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
@@ -137,7 +131,7 @@ export const OnChainReceiveLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: OnChainReceiveLedgerMetadata = {
     type: LedgerTransactionType.OnchainReceipt,
@@ -163,13 +157,10 @@ export const OnChainReceiveLedgerMetadata = <
   return metadata
 }
 
-export const LnReceiveLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const LnReceiveLedgerMetadata = ({
   paymentHash,
   pubkey,
-  paymentFlow,
+  paymentAmounts,
 
   feeDisplayCurrency,
   amountDisplayCurrency,
@@ -177,7 +168,7 @@ export const LnReceiveLedgerMetadata = <
 }: {
   paymentHash: PaymentHash
   pubkey: Pubkey
-  paymentFlow: PaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
@@ -188,7 +179,7 @@ export const LnReceiveLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: LnReceiveLedgerMetadata = {
     type: LedgerTransactionType.Invoice,
@@ -214,18 +205,15 @@ export const LnReceiveLedgerMetadata = <
   return metadata
 }
 
-export const LnFeeReimbursementReceiveLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
-  paymentFlow,
+export const LnFeeReimbursementReceiveLedgerMetadata = ({
+  paymentAmounts,
   paymentHash,
   journalId,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
 }: {
-  paymentFlow: PaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
   paymentHash: PaymentHash
   journalId: LedgerJournalId
   feeDisplayCurrency: DisplayCurrencyBaseAmount
@@ -237,7 +225,7 @@ export const LnFeeReimbursementReceiveLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: FeeReimbursementLedgerMetadata = {
     type: LedgerTransactionType.LnFeeReimbursement,
@@ -260,13 +248,10 @@ export const LnFeeReimbursementReceiveLedgerMetadata = <
   return metadata
 }
 
-export const OnChainIntraledgerLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const OnChainIntraledgerLedgerMetadata = ({
   payeeAddresses,
   sendAll,
-  paymentFlow,
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
@@ -276,7 +261,7 @@ export const OnChainIntraledgerLedgerMetadata = <
 }: {
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
-  paymentFlow: OnChainPaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
@@ -291,7 +276,7 @@ export const OnChainIntraledgerLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: NewAddOnChainIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.OnchainIntraLedger,
@@ -319,11 +304,8 @@ export const OnChainIntraledgerLedgerMetadata = <
   return { metadata, debitAccountAdditionalMetadata }
 }
 
-export const WalletIdIntraledgerLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
-  paymentFlow,
+export const WalletIdIntraledgerLedgerMetadata = ({
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
@@ -331,7 +313,7 @@ export const WalletIdIntraledgerLedgerMetadata = <
   senderUsername,
   recipientUsername,
 }: {
-  paymentFlow: PaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   displayCurrency: DisplayCurrency
@@ -344,7 +326,7 @@ export const WalletIdIntraledgerLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: NewAddWalletIdIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.IntraLedger,
@@ -370,13 +352,10 @@ export const WalletIdIntraledgerLedgerMetadata = <
   return { metadata, debitAccountAdditionalMetadata }
 }
 
-export const LnIntraledgerLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const LnIntraledgerLedgerMetadata = ({
   paymentHash,
   pubkey,
-  paymentFlow,
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
@@ -386,7 +365,7 @@ export const LnIntraledgerLedgerMetadata = <
 }: {
   paymentHash: PaymentHash
   pubkey: Pubkey
-  paymentFlow: PaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   displayCurrency: DisplayCurrency
@@ -399,7 +378,7 @@ export const LnIntraledgerLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: NewAddLnIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.LnIntraLedger,
@@ -427,13 +406,10 @@ export const LnIntraledgerLedgerMetadata = <
   return { metadata, debitAccountAdditionalMetadata }
 }
 
-export const OnChainTradeIntraAccountLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const OnChainTradeIntraAccountLedgerMetadata = ({
   payeeAddresses,
   sendAll,
-  paymentFlow,
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
@@ -441,7 +417,7 @@ export const OnChainTradeIntraAccountLedgerMetadata = <
 }: {
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
-  paymentFlow: OnChainPaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
@@ -453,7 +429,7 @@ export const OnChainTradeIntraAccountLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: NewAddOnChainTradeIntraAccountLedgerMetadata = {
     type: LedgerTransactionType.OnChainTradeIntraAccount,
@@ -479,17 +455,14 @@ export const OnChainTradeIntraAccountLedgerMetadata = <
   return { metadata, debitAccountAdditionalMetadata }
 }
 
-export const WalletIdTradeIntraAccountLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
-  paymentFlow,
+export const WalletIdTradeIntraAccountLedgerMetadata = ({
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
   memoOfPayer,
 }: {
-  paymentFlow: PaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   displayCurrency: DisplayCurrency
@@ -500,7 +473,7 @@ export const WalletIdTradeIntraAccountLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: NewAddWalletIdTradeIntraAccountLedgerMetadata = {
     type: LedgerTransactionType.WalletIdTradeIntraAccount,
@@ -522,13 +495,10 @@ export const WalletIdTradeIntraAccountLedgerMetadata = <
   return metadata
 }
 
-export const LnTradeIntraAccountLedgerMetadata = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const LnTradeIntraAccountLedgerMetadata = ({
   paymentHash,
   pubkey,
-  paymentFlow,
+  paymentAmounts,
   feeDisplayCurrency,
   amountDisplayCurrency,
   displayCurrency,
@@ -536,7 +506,7 @@ export const LnTradeIntraAccountLedgerMetadata = <
 }: {
   paymentHash: PaymentHash
   pubkey: Pubkey
-  paymentFlow: PaymentFlowState<S, R>
+  paymentAmounts: AmountsAndFees
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   displayCurrency: DisplayCurrency
@@ -547,7 +517,7 @@ export const LnTradeIntraAccountLedgerMetadata = <
     usdPaymentAmount: { amount: centsAmount },
     btcProtocolFee: { amount: satsFee },
     usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
+  } = paymentAmounts
 
   const metadata: NewAddLnTradeIntraAccountLedgerMetadata = {
     type: LedgerTransactionType.LnTradeIntraAccount,
@@ -572,6 +542,8 @@ export const LnTradeIntraAccountLedgerMetadata = <
   }
   return { metadata, debitAccountAdditionalMetadata }
 }
+
+// Non-LedgerFacade constructors from legacy admin service
 
 export const LnChannelOpenOrClosingFee = ({ txId }: { txId: OnChainTxHash }) => {
   const metadata: LnChannelOpenOrClosingFee = {

@@ -286,7 +286,7 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
           payeeAddresses,
           sendAll,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -299,7 +299,7 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.OnChainIntraledgerLedgerMetadata({
           payeeAddresses,
           sendAll,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -453,7 +453,7 @@ const executePaymentViaOnChain = async <
     const metadata = LedgerFacade.OnChainSendLedgerMetadata({
       // we need a temporary hash to be able to search in admin panel
       onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
-      paymentFlow,
+      paymentAmounts: paymentFlow,
 
       amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
       feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),

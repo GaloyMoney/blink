@@ -81,10 +81,7 @@ export const updatePendingInvoiceByPaymentHash = async ({
 
 const dealer = NewDealerPriceService()
 
-const updatePendingInvoiceBeforeFinally = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+const updatePendingInvoiceBeforeFinally = async ({
   walletInvoice,
   logger,
 }: {
@@ -197,12 +194,12 @@ const updatePendingInvoiceBeforeFinally = async <
     const metadata = LedgerFacade.LnReceiveLedgerMetadata({
       paymentHash,
       pubkey: walletInvoice.pubkey,
-      paymentFlow: {
+      paymentAmounts: {
         btcPaymentAmount: walletInvoiceReceiver.btcToCreditReceiver,
         usdPaymentAmount: walletInvoiceReceiver.usdToCreditReceiver,
         btcProtocolFee: walletInvoiceReceiver.btcBankFee,
         usdProtocolFee: walletInvoiceReceiver.usdBankFee,
-      } as PaymentFlowState<S, R>,
+      },
 
       feeDisplayCurrency: Number(
         walletInvoiceReceiver.usdBankFee.amount,

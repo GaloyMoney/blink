@@ -112,7 +112,7 @@ export const updateOnChainReceipt = async ({
   return onChainTxs.length
 }
 
-const processTxForWallet = async <S extends WalletCurrency, R extends WalletCurrency>(
+const processTxForWallet = async (
   wallet: Wallet,
   tx: IncomingOnChainTransaction,
   logger: Logger,
@@ -183,12 +183,12 @@ const processTxForWallet = async <S extends WalletCurrency, R extends WalletCurr
 
           const metadata = LedgerFacade.OnChainReceiveLedgerMetadata({
             onChainTxHash: tx.rawTx.txHash,
-            paymentFlow: {
+            paymentAmounts: {
               btcPaymentAmount: walletAddressReceiver.btcToCreditReceiver,
               usdPaymentAmount: walletAddressReceiver.usdToCreditReceiver,
               btcProtocolFee: walletAddressReceiver.btcBankFee,
               usdProtocolFee: walletAddressReceiver.usdBankFee,
-            } as OnChainPaymentFlowState<S, R>,
+            },
             feeDisplayCurrency,
             amountDisplayCurrency,
             displayCurrency,

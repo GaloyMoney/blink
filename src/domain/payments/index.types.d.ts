@@ -11,7 +11,18 @@ type XorPaymentHashProperty = XOR<
   { intraLedgerHash: IntraLedgerHash }
 >
 
-type PaymentFlowCommonState<S extends WalletCurrency, R extends WalletCurrency> = {
+type AmountsAndFees = {
+  btcPaymentAmount: BtcPaymentAmount
+  btcProtocolFee: BtcPaymentAmount
+
+  usdPaymentAmount: UsdPaymentAmount
+  usdProtocolFee: UsdPaymentAmount
+}
+
+type PaymentFlowCommonState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = AmountsAndFees & {
   senderWalletId: WalletId
   senderWalletCurrency: S
   senderAccountId: AccountId
@@ -20,12 +31,7 @@ type PaymentFlowCommonState<S extends WalletCurrency, R extends WalletCurrency> 
   createdAt: Date
   paymentSentAndPending: boolean
 
-  btcPaymentAmount: BtcPaymentAmount
-  usdPaymentAmount: UsdPaymentAmount
   inputAmount: bigint
-
-  btcProtocolFee: BtcPaymentAmount
-  usdProtocolFee: UsdPaymentAmount
 
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
