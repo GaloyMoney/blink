@@ -233,5 +233,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     createIdentityWithSession,
     createIdentityNoSession,
     upgradeToPhoneAndEmailSchema,
+    updatePhone,
   }
 }
