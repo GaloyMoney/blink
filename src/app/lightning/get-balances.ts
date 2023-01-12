@@ -52,12 +52,7 @@ export const getOutboundBalance = async (): Promise<Satoshis | ApplicationError>
       .map((pubkey) => offChainService.getInboundOutboundBalance(pubkey)),
   )
 
-  const outbound: Satoshis[] = []
-  inboundOutboundBalance.forEach((balance) => {
-    if ("outbound" in balance) {
-      outbound.push(balance.outbound)
-    }
-  })
+  const outbound = inboundOutboundBalance.map(b => b.outbound)
 
   return sumBalances(outbound)
 }
