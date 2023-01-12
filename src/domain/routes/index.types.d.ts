@@ -1,5 +1,5 @@
 type ProbeForRouteArgs = import("lightning").ProbeForRouteArgs
-type RawHopWithNumbers = NonNullable<ProbeForRouteArgs["routes"]>[number][number]
+type ProbeForRouteRoutes = import("lightning").ProbeForRouteRoutes
 
 type PayViaPaymentDetailsArgs = import("lightning").PayViaPaymentDetailsArgs
 type RawHopWithStrings = NonNullable<PayViaPaymentDetailsArgs["routes"]>[number][number]

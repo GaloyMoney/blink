@@ -11,7 +11,7 @@ import { SATS_PER_BTC } from "@domain/bitcoin"
 import { mapError } from "@graphql/error-map"
 
 const parseRange: (
-  string: typeof priceRangeValues[number],
+  string: (typeof priceRangeValues)[number],
 ) => PriceRange | InputValidationError = (range) => {
   switch (range) {
     case "ONE_DAY":
@@ -30,7 +30,7 @@ const parseRange: (
 }
 
 const parseInterval: (
-  string: typeof priceRangeValues[number],
+  string: (typeof priceRangeValues)[number],
 ) => PriceInterval | InputValidationError = (range) => {
   switch (range) {
     case "ONE_DAY":

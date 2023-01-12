@@ -215,11 +215,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     amount: Satoshis
   }): Promise<RawRoute | LightningServiceError> => {
     try {
-      const routes: RawHopWithNumbers[][] = decodedInvoice.routeHints.map((route) =>
+      const routes: ProbeForRouteRoutes = decodedInvoice.routeHints.map((route) =>
         route.map((hop) => ({
-          base_fee_mtokens: hop.baseFeeMTokens
-            ? parseFloat(hop.baseFeeMTokens)
-            : undefined,
+          base_fee_mtokens: hop.baseFeeMTokens,
           channel: hop.channel,
           cltv_delta: hop.cltvDelta,
           fee_rate: hop.feeRate,
@@ -227,13 +225,15 @@ export const LndService = (): ILightningService | LightningServiceError => {
         })),
       )
 
+      let mTokens = (amount * 1000).toString()
+      if (decodedInvoice.milliSatsAmount > 0) {
+        mTokens = decodedInvoice.milliSatsAmount.toString()
+      }
+
       const probeForRouteArgs: ProbeForRouteArgs = {
         lnd: defaultLnd,
         destination: decodedInvoice.destination,
-        mtokens:
-          decodedInvoice.milliSatsAmount > 0
-            ? decodedInvoice.milliSatsAmount.toString()
-            : (amount * 1000).toString(),
+        mtokens: mTokens,
         routes,
         cltv_delta: decodedInvoice.cltvDelta || undefined,
         features: decodedInvoice.features
@@ -245,12 +245,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
           : undefined,
         max_fee: maxFee,
         payment: decodedInvoice.paymentSecret || undefined,
-        total_mtokens: decodedInvoice.paymentSecret
-          ? decodedInvoice.milliSatsAmount > 0
-            ? decodedInvoice.milliSatsAmount.toString()
-            : (amount * 1000).toString()
-          : undefined,
-        tokens: amount,
+        total_mtokens: decodedInvoice.paymentSecret ? mTokens : undefined,
       }
       const routePromise = lnService.probeForRoute(probeForRouteArgs)
       const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
