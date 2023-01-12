@@ -278,7 +278,7 @@ export const OnChainIntraledgerLedgerMetadata = ({
     usdProtocolFee: { amount: centsFee },
   } = paymentAmounts
 
-  const metadata: NewAddOnChainIntraledgerSendLedgerMetadata = {
+  const metadata: AddOnChainIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.OnchainIntraLedger,
     pending: false,
     memoPayer: undefined,
@@ -328,7 +328,7 @@ export const WalletIdIntraledgerLedgerMetadata = ({
     usdProtocolFee: { amount: centsFee },
   } = paymentAmounts
 
-  const metadata: NewAddWalletIdIntraledgerSendLedgerMetadata = {
+  const metadata: AddWalletIdIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.IntraLedger,
     pending: false,
     memoPayer: memoOfPayer,
@@ -380,7 +380,7 @@ export const LnIntraledgerLedgerMetadata = ({
     usdProtocolFee: { amount: centsFee },
   } = paymentAmounts
 
-  const metadata: NewAddLnIntraledgerSendLedgerMetadata = {
+  const metadata: AddLnIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.LnIntraLedger,
     pending: false,
     memoPayer: undefined,
@@ -431,7 +431,7 @@ export const OnChainTradeIntraAccountLedgerMetadata = ({
     usdProtocolFee: { amount: centsFee },
   } = paymentAmounts
 
-  const metadata: NewAddOnChainTradeIntraAccountLedgerMetadata = {
+  const metadata: AddOnChainTradeIntraAccountLedgerMetadata = {
     type: LedgerTransactionType.OnChainTradeIntraAccount,
     pending: false,
     memoPayer: undefined,
@@ -475,7 +475,7 @@ export const WalletIdTradeIntraAccountLedgerMetadata = ({
     usdProtocolFee: { amount: centsFee },
   } = paymentAmounts
 
-  const metadata: NewAddWalletIdTradeIntraAccountLedgerMetadata = {
+  const metadata: AddWalletIdTradeIntraAccountLedgerMetadata = {
     type: LedgerTransactionType.WalletIdTradeIntraAccount,
     pending: false,
     memoPayer: memoOfPayer,
@@ -519,7 +519,7 @@ export const LnTradeIntraAccountLedgerMetadata = ({
     usdProtocolFee: { amount: centsFee },
   } = paymentAmounts
 
-  const metadata: NewAddLnTradeIntraAccountLedgerMetadata = {
+  const metadata: AddLnTradeIntraAccountLedgerMetadata = {
     type: LedgerTransactionType.LnTradeIntraAccount,
     pending: false,
     memoPayer: undefined,

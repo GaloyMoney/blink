@@ -278,8 +278,8 @@ const executePaymentViaIntraledger = async <
     const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
 
     let metadata:
-      | NewAddOnChainIntraledgerSendLedgerMetadata
-      | NewAddOnChainTradeIntraAccountLedgerMetadata
+      | AddOnChainIntraledgerSendLedgerMetadata
+      | AddOnChainTradeIntraAccountLedgerMetadata
     let additionalDebitMetadata: { [key: string]: string | undefined } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
