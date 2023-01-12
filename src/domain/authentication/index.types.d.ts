@@ -39,6 +39,10 @@ interface IAuthWithPhonePasswordlessService {
     kratosUserId: UserId
     email: EmailAddress
   }): Promise<IdentityPhone | AuthenticationError> // TODO: should be IdentityPhoneWithPassword
+  updatePhone(input: {
+    kratosUserId: UserId
+    phone: PhoneNumber
+  }): Promise<IdentityPhone | AuthenticationError>
 }
 
 interface IIdentityRepository {

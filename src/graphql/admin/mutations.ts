@@ -10,6 +10,7 @@ import AccountUpdateStatusMutation from "@graphql/admin/root/mutation/account-up
 import BusinessUpdateMapInfoMutation from "@graphql/admin/root/mutation/business-update-map-info"
 import ColdStorageRebalanceToHotWalletMutation from "@graphql/admin/root/mutation/cold-storage-rebalance-to-hot-wallet"
 
+import UserUpdatePhoneMutation from "./root/mutation/user-update-phone"
 import AccountsAddUsdWalletMutation from "./root/mutation/account-add-usd-wallet"
 
 export const mutationFields = {
@@ -21,6 +22,7 @@ export const mutationFields = {
     captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
   },
   authed: {
+    userUpdatePhone: UserUpdatePhoneMutation,
     accountUpdateLevel: AccountUpdateLevelMutation,
     accountUpdateStatus: AccountUpdateStatusMutation,
     accountsAddUsdWallet: AccountsAddUsdWalletMutation,

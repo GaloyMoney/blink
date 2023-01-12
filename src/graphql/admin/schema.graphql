@@ -256,6 +256,7 @@ type Mutation {
   ): PsbtDetailPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
 
 """
@@ -551,6 +552,11 @@ input UserLoginInput {
 input UserRequestAuthCodeInput {
   channel: PhoneCodeChannelType
   phone: Phone!
+}
+
+input UserUpdatePhoneInput {
+  phone: Phone!
+  uid: ID!
 }
 
 """
