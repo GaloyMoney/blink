@@ -83,7 +83,7 @@
     "ipaddr.js": "^2.0.1",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
-    "jwks-rsa": "^3.0.0",
+    "jwks-rsa": "^3.0.1",
     "lightning": "^7.0.4",
     "ln-service": "^54.9.0",
     "lodash.difference": "^4.5.0",
