@@ -15,7 +15,7 @@ import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { TransactionsMetadataRepository } from "@services/ledger/services"
 import { KnownLndErrorDetails, LndService } from "@services/lnd"
@@ -398,8 +398,8 @@ describe("UserWallet - Lightning", () => {
     const hash = getHash(invoice)
     const amount = getAmount(invoice)
 
-    const newDealerFns = NewDealerPriceService(defaultTimeToExpiryInSeconds)
-    const btcAmount = await newDealerFns.getSatsFromCentsForFutureBuy({
+    const dealerFns = DealerPriceService(defaultTimeToExpiryInSeconds)
+    const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
       amount: BigInt(cents),
       currency: WalletCurrency.Usd,
     })
@@ -524,8 +524,8 @@ describe("UserWallet - Lightning", () => {
     const ledgerTx = ledgerTxs.find((tx) => tx.walletId === walletIdUsdB)
     if (ledgerTx === undefined) throw Error("ledgerTx needs to be defined")
 
-    const newDealerFns = NewDealerPriceService()
-    const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+    const dealerFns = DealerPriceService()
+    const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
       amount: BigInt(sats),
       currency: WalletCurrency.Btc,
     })

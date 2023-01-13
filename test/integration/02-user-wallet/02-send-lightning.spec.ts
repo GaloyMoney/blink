@@ -37,7 +37,7 @@ import {
 } from "@domain/shared"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { TransactionsMetadataRepository } from "@services/ledger/services"
@@ -85,7 +85,7 @@ import {
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
 
-const newDealerFns = NewDealerPriceService()
+const dealerFns = DealerPriceService()
 const calc = AmountCalculator()
 
 jest.mock("@config", () => {
@@ -1438,7 +1438,7 @@ describe("UserWallet - Lightning Pay", () => {
           currency: WalletCurrency.Btc,
         })
         if (btcInvoiceAmount instanceof Error) throw btcInvoiceAmount
-        const usdInvoiceAmount = await newDealerFns.getCentsFromSatsForImmediateSell(
+        const usdInvoiceAmount = await dealerFns.getCentsFromSatsForImmediateSell(
           btcInvoiceAmount,
         )
         if (usdInvoiceAmount instanceof Error) throw usdInvoiceAmount
@@ -1562,7 +1562,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateSell({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateSell({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Btc,
       })
@@ -1680,7 +1680,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateSell({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateSell({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Btc,
       })
@@ -1716,7 +1716,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-      const btcAmount = await newDealerFns.getSatsFromCentsForFutureBuy({
+      const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Usd,
       })
@@ -1836,7 +1836,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-      const btcAmount = await newDealerFns.getSatsFromCentsForImmediateSell({
+      const btcAmount = await dealerFns.getSatsFromCentsForImmediateSell({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Usd,
       })
@@ -1857,7 +1857,7 @@ describe("USD Wallets - Lightning Pay", () => {
       const amountPayment = toSats(100)
 
       // Validate btc amount to pay
-      const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdPaymentAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Btc,
       })
@@ -1884,7 +1884,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Btc,
       })
@@ -1928,7 +1928,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(txTypeSet.has(LedgerTransactionType.LnTradeIntraAccount)).toBeTruthy()
 
       // Check amounts
-      const btcAmount = await newDealerFns.getSatsFromCentsForImmediateSell({
+      const btcAmount = await dealerFns.getSatsFromCentsForImmediateSell({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Usd,
       })
@@ -1949,7 +1949,7 @@ describe("USD Wallets - Lightning Pay", () => {
       const amountPayment = toSats(100)
 
       // Validate btc amount to pay
-      const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdPaymentAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Btc,
       })
@@ -1982,7 +1982,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(txTypeSet.has(LedgerTransactionType.LnTradeIntraAccount)).toBeTruthy()
 
       // Check amounts
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Btc,
       })
@@ -2000,7 +2000,7 @@ describe("USD Wallets - Lightning Pay", () => {
   describe("Intraledger payments", () => {
     const btcSendAmount = 50_000
     const btcPromise = async () => {
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(btcSendAmount),
         currency: WalletCurrency.Btc,
       })
@@ -2010,7 +2010,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
     const usdSendAmount = 100
     const usdPromise = async () => {
-      const btcAmount = await newDealerFns.getSatsFromCentsForImmediateSell({
+      const btcAmount = await dealerFns.getSatsFromCentsForImmediateSell({
         amount: BigInt(usdSendAmount),
         currency: WalletCurrency.Usd,
       })
@@ -2146,7 +2146,7 @@ describe("USD Wallets - Lightning Pay", () => {
         const centsPaymentAmount =
           senderWallet.currency === recipientWallet.currency
             ? await usdFromBtcMidPriceFn(btcPaymentAmount)
-            : await newDealerFns.getCentsFromSatsForImmediateBuy(btcPaymentAmount)
+            : await dealerFns.getCentsFromSatsForImmediateBuy(btcPaymentAmount)
 
         if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
         centsAmount = toCents(centsPaymentAmount.amount)
@@ -2161,7 +2161,7 @@ describe("USD Wallets - Lightning Pay", () => {
         const satsPaymentAmount =
           senderWallet.currency === recipientWallet.currency
             ? await btcFromUsdMidPriceFn(usdPaymentAmount)
-            : await newDealerFns.getSatsFromCentsForImmediateSell(usdPaymentAmount)
+            : await dealerFns.getSatsFromCentsForImmediateSell(usdPaymentAmount)
         if (satsPaymentAmount instanceof Error) throw satsPaymentAmount
         satsAmount = toSats(satsPaymentAmount.amount)
 
@@ -2288,7 +2288,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
     it("fails to send less-than-1-cent amount from BTC wallet to USD wallet", async () => {
       const btcSendAmount = 10
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(btcSendAmount),
         currency: WalletCurrency.Btc,
       })

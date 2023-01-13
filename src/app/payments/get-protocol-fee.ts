@@ -10,7 +10,7 @@ import {
 import { LndService } from "@services/lnd"
 
 import { WalletsRepository, PaymentFlowStateRepository } from "@services/mongoose"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
@@ -136,7 +136,7 @@ const estimateLightningFee = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return PartialResult.err(senderWallet)
 
-  const dealer = NewDealerPriceService()
+  const dealer = DealerPriceService()
   const builder = await constructPaymentFlowBuilder({
     senderWallet,
     invoice,

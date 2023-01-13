@@ -13,7 +13,7 @@ import {
 import { WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 
 import {
   createUserAndWalletFromUserRef,
@@ -32,7 +32,7 @@ let accountIdB: AccountId
 
 const walletInvoices = WalletInvoicesRepository()
 
-const newDealerFns = NewDealerPriceService()
+const dealerFns = DealerPriceService()
 
 beforeAll(async () => {
   const userRef = "B"
@@ -153,7 +153,7 @@ describe("Wallet - addInvoice USD", () => {
   it("add a self generated USD invoice", async () => {
     const centsInput = 10000
 
-    const btcAmount = await newDealerFns.getSatsFromCentsForFutureBuy({
+    const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
       amount: BigInt(centsInput),
       currency: WalletCurrency.Usd,
     })
@@ -206,7 +206,7 @@ describe("Wallet - addInvoice USD", () => {
   it("adds a public with amount invoice", async () => {
     const centsInput = 10000
 
-    const btcAmount = await newDealerFns.getSatsFromCentsForFutureBuy({
+    const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
       amount: BigInt(centsInput),
       currency: WalletCurrency.Usd,
     })

@@ -49,7 +49,7 @@ import {
 } from "@domain/bitcoin/onchain/errors"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import * as OnChainServiceImpl from "@services/lnd/onchain-service"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 import {
@@ -87,7 +87,7 @@ let walletIdF: WalletId
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
-const newDealerFns = NewDealerPriceService()
+const dealerFns = DealerPriceService()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -261,7 +261,7 @@ const testExternalSend = async ({
     } else {
       const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
 
-      const feeResult = await newDealerFns.getCentsFromSatsForImmediateSell({
+      const feeResult = await dealerFns.getCentsFromSatsForImmediateSell({
         amount: BigInt(feeSats),
         currency: WalletCurrency.Btc,
       })
@@ -322,7 +322,7 @@ const testExternalSend = async ({
     } else {
       centsAmount = sendAll ? amountToSend - fee : amountToSend
 
-      const btcAmount = await newDealerFns.getSatsFromCentsForImmediateSell({
+      const btcAmount = await dealerFns.getSatsFromCentsForImmediateSell({
         amount: BigInt(centsAmount),
         currency: WalletCurrency.Usd,
       })
@@ -423,7 +423,7 @@ const testInternalSend = async ({
 
     case senderCurrency === WalletCurrency.Usd &&
       recipientCurrency === WalletCurrency.Btc:
-      amountResult = await newDealerFns.getSatsFromCentsForImmediateSell({
+      amountResult = await dealerFns.getSatsFromCentsForImmediateSell({
         amount: BigInt(senderAmount),
         currency: WalletCurrency.Usd,
       })
@@ -433,7 +433,7 @@ const testInternalSend = async ({
 
     case senderCurrency === WalletCurrency.Btc &&
       recipientCurrency === WalletCurrency.Usd:
-      amountResult = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      amountResult = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(senderAmount),
         currency: WalletCurrency.Btc,
       })
@@ -570,7 +570,7 @@ const testInternalSend = async ({
     const centsPaymentAmount =
       senderCurrency === recipientCurrency
         ? await usdFromBtcMidPriceFn(btcPaymentAmount)
-        : await newDealerFns.getCentsFromSatsForImmediateBuy(btcPaymentAmount)
+        : await dealerFns.getCentsFromSatsForImmediateBuy(btcPaymentAmount)
 
     if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
     centsAmount = toCents(centsPaymentAmount.amount)
@@ -598,7 +598,7 @@ const testInternalSend = async ({
     const satsPaymentAmount =
       senderCurrency === recipientCurrency
         ? await btcFromUsdMidPriceFn(usdPaymentAmount)
-        : await newDealerFns.getSatsFromCentsForImmediateSell(usdPaymentAmount)
+        : await dealerFns.getSatsFromCentsForImmediateSell(usdPaymentAmount)
     if (satsPaymentAmount instanceof Error) throw satsPaymentAmount
     satsAmount = toSats(satsPaymentAmount.amount)
 
@@ -1102,7 +1102,7 @@ describe("UsdWallet - onChainPay", () => {
     it("fails to send with less-than-1-cent amount from btc wallet to usd wallet", async () => {
       const btcSendAmount = toSats(10)
 
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(btcSendAmount),
         currency: WalletCurrency.Btc,
       })

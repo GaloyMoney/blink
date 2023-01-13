@@ -6,7 +6,7 @@ import { getDealerConfig } from "@config"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { LimitsExceededError } from "@domain/errors"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 
 import { AccountsRepository } from "@services/mongoose"
 
@@ -49,8 +49,8 @@ jest.mock("@config", () => {
 
 const centsToUsdString = (cents: UsdCents) => `$${(cents / 100).toFixed(2)}`
 
-const newDealerFns = NewDealerPriceService()
-const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateSell
+const dealerFns = DealerPriceService()
+const dealerUsdFromBtc = dealerFns.getCentsFromSatsForImmediateSell
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 

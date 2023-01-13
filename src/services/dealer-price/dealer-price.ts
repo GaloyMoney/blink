@@ -91,9 +91,9 @@ const clientGetCentsPerSatsExchangeMidRate = util.promisify<
   GetCentsPerSatsExchangeMidRateResponse
 >(client.getCentsPerSatsExchangeMidRate.bind(client))
 
-export const NewDealerPriceService = (
+export const DealerPriceService = (
   timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
-): INewDealerPriceService => {
+): IDealerPriceService => {
   const getCentsFromSatsForImmediateBuy = async function (
     btcAmount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError> {

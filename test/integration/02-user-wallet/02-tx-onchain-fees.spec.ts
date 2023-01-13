@@ -4,7 +4,7 @@ import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 import {
@@ -22,7 +22,7 @@ const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
 let walletIdA: WalletId, walletIdB: WalletId, walletIdUsdA: WalletId, accountA: Account
 
-const newDealerFns = NewDealerPriceService()
+const dealerFns = DealerPriceService()
 
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
@@ -166,7 +166,7 @@ describe("UserWallet - getOnchainFee", () => {
       const account = await AccountsRepository().findById(wallet.accountId)
       if (account instanceof Error) throw account
 
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateSell({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateSell({
         amount: BigInt(account.withdrawFee),
         currency: WalletCurrency.Btc,
       })
@@ -174,7 +174,7 @@ describe("UserWallet - getOnchainFee", () => {
       const withdrawFeeAsUsd = Number(usdAmount.amount)
       expect(fee).toBeGreaterThan(withdrawFeeAsUsd)
 
-      const feeUsdAmount = await newDealerFns.getCentsFromSatsForImmediateSell({
+      const feeUsdAmount = await dealerFns.getCentsFromSatsForImmediateSell({
         amount: BigInt(feeSats),
         currency: WalletCurrency.Btc,
       })
@@ -202,7 +202,7 @@ describe("UserWallet - getOnchainFee", () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const amount = toSats(dustThreshold - 1)
 
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(amount),
         currency: WalletCurrency.Btc,
       })
@@ -245,7 +245,7 @@ describe("UserWallet - getOnchainFee", () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const amount = toSats(1_000_000_000)
 
-      const usdAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(amount),
         currency: WalletCurrency.Btc,
       })

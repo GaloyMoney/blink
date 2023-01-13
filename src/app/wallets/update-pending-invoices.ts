@@ -11,7 +11,7 @@ import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-re
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { LockService } from "@services/lock"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
@@ -79,7 +79,7 @@ export const updatePendingInvoiceByPaymentHash = async ({
   return updatePendingInvoice({ walletInvoice, logger })
 }
 
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 
 const updatePendingInvoiceBeforeFinally = async ({
   walletInvoice,
