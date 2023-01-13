@@ -18,7 +18,7 @@ import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { PriceRatio } from "@domain/payments"
 
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -535,6 +535,8 @@ async function sendToWalletTestWrapper({
     centsFee,
     displayAmount: centsAmount - centsFee,
     displayFee: centsFee,
+
+    displayCurrency: DisplayCurrency.Usd,
   }
   expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
 }

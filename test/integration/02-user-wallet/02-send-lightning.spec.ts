@@ -19,7 +19,7 @@ import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import {
@@ -293,6 +293,8 @@ describe("UserWallet - Lightning Pay", () => {
       centsFee: 0,
       displayAmount: centsAmount,
       displayFee: 0,
+
+      displayCurrency: DisplayCurrency.Usd,
     }
     expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
   })
@@ -561,6 +563,8 @@ describe("UserWallet - Lightning Pay", () => {
       centsFee,
       displayAmount: cents,
       displayFee: centsFee,
+
+      displayCurrency: DisplayCurrency.Usd,
     }
     expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
 
@@ -585,6 +589,8 @@ describe("UserWallet - Lightning Pay", () => {
         centsFee: 0,
         displayAmount: centsFee,
         displayFee: 0,
+
+        displayCurrency: DisplayCurrency.Usd,
       }),
     )
 
@@ -1609,6 +1615,8 @@ describe("USD Wallets - Lightning Pay", () => {
         centsFee,
         displayAmount: cents,
         displayFee: centsFee,
+
+        displayCurrency: DisplayCurrency.Usd,
       }
       expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
 
@@ -2153,6 +2161,8 @@ describe("USD Wallets - Lightning Pay", () => {
         centsFee: 0,
         displayAmount: centsAmount,
         displayFee: 0,
+
+        displayCurrency: DisplayCurrency.Usd,
       }
       expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
     }

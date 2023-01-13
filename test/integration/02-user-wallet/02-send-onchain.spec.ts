@@ -33,7 +33,7 @@ import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 import { LedgerTransactionType } from "@domain/ledger"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
-import { add, sub, toCents } from "@domain/fiat"
+import { add, DisplayCurrency, sub, toCents } from "@domain/fiat"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import { WalletsRepository } from "@services/mongoose"
@@ -342,6 +342,8 @@ const testExternalSend = async ({
         centsFee,
         displayAmount: centsAmount,
         displayFee: centsFee,
+
+        displayCurrency: DisplayCurrency.Usd,
       }),
     )
 
@@ -615,6 +617,8 @@ const testInternalSend = async ({
     centsFee,
     displayAmount: centsAmount,
     displayFee: centsFee,
+
+    displayCurrency: DisplayCurrency.Usd,
   }
   expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
 }

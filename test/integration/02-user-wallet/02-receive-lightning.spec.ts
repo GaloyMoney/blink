@@ -8,7 +8,7 @@ import { handleHeldInvoices } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletInvoiceError } from "@domain/errors"
@@ -209,6 +209,8 @@ describe("UserWallet - Lightning", () => {
       centsFee: 0,
       displayAmount: centsAmount,
       displayFee: 0,
+
+      displayCurrency: DisplayCurrency.Usd,
     }
     expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
   })
@@ -474,6 +476,8 @@ describe("UserWallet - Lightning", () => {
       centsFee: 0,
       displayAmount: cents,
       displayFee: 0,
+
+      displayCurrency: DisplayCurrency.Usd,
     }
     expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
   })

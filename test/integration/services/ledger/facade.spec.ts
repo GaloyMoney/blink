@@ -3,7 +3,7 @@ import crypto from "crypto"
 import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
 import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
@@ -85,6 +85,8 @@ describe("Facade", () => {
       satsFee,
       centsFee,
       displayFee: centsFee,
+
+      displayCurrency: DisplayCurrency.Usd,
     }
     expect(txn).toEqual(expect.objectContaining(expectedFields))
   }
