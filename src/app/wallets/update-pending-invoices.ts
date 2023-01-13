@@ -197,8 +197,8 @@ const updatePendingInvoiceBeforeFinally = async ({
       paymentAmounts: {
         btcPaymentAmount: walletInvoiceReceiver.btcToCreditReceiver,
         usdPaymentAmount: walletInvoiceReceiver.usdToCreditReceiver,
-        btcProtocolFee: walletInvoiceReceiver.btcBankFee,
-        usdProtocolFee: walletInvoiceReceiver.usdBankFee,
+        btcProtocolAndBankFee: walletInvoiceReceiver.btcBankFee,
+        usdProtocolAndBankFee: walletInvoiceReceiver.usdBankFee,
       },
 
       feeDisplayCurrency: Number(

@@ -538,7 +538,7 @@ describe("UserWallet - Lightning Pay", () => {
     })
     if (priceRatio instanceof Error) throw priceRatio
 
-    const feeAmountSats = LnFees().maxProtocolFee({
+    const feeAmountSats = LnFees().maxProtocolAndBankFee({
       amount: BigInt(amountInvoice),
       currency: WalletCurrency.Btc,
     })
@@ -902,7 +902,9 @@ describe("UserWallet - Lightning Pay", () => {
       })
     expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore)
     expect(errorMuun).toBeUndefined()
-    expect(feeMuun).toStrictEqual(LnFees().maxProtocolFee(muunInvoice.paymentAmount))
+    expect(feeMuun).toStrictEqual(
+      LnFees().maxProtocolAndBankFee(muunInvoice.paymentAmount),
+    )
   })
 
   const createInvoiceHash = () => {
@@ -1230,7 +1232,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         const balanceBeforeSettlement = await getBalanceHelper(walletIdB)
 
-        const feeAmount = LnFees().maxProtocolFee({
+        const feeAmount = LnFees().maxProtocolAndBankFee({
           amount: BigInt(amountInvoice),
           currency: WalletCurrency.Btc,
         })
@@ -1371,7 +1373,7 @@ describe("UserWallet - Lightning Pay", () => {
         baseLogger.info("payment has timeout. status is pending.")
         const intermediateBalance = await getBalanceHelper(walletIdB)
 
-        const feeAmount = LnFees().maxProtocolFee({
+        const feeAmount = LnFees().maxProtocolAndBankFee({
           amount: BigInt(amountInvoice),
           currency: WalletCurrency.Btc,
         })
@@ -1463,15 +1465,15 @@ describe("UserWallet - Lightning Pay", () => {
           usd: usdInvoiceAmount,
         })
         if (priceRatio instanceof Error) return priceRatio
-        const btcProtocolFee = applyMaxFee
-          ? LnFees().maxProtocolFee({
+        const btcProtocolAndBankFee = applyMaxFee
+          ? LnFees().maxProtocolAndBankFee({
               amount: btcInvoiceAmount.amount,
               currency: WalletCurrency.Btc,
             })
           : ZERO_SATS
-        const usdProtocolFee = priceRatio.convertFromBtc(btcProtocolFee)
+        const usdProtocolAndBankFee = priceRatio.convertFromBtc(btcProtocolAndBankFee)
 
-        const amountInvoiceWithFee = calc.add(usdInvoiceAmount, usdProtocolFee)
+        const amountInvoiceWithFee = calc.add(usdInvoiceAmount, usdProtocolAndBankFee)
 
         expect(intermediateBalance).toBe(
           initBalanceUsdB - Number(amountInvoiceWithFee.amount),
@@ -1525,7 +1527,7 @@ describe("UserWallet - Lightning Pay", () => {
         await waitUntilChannelBalanceSyncAll()
 
         // Check BTC wallet balance
-        const btcAmountInvoiceWithFee = calc.add(btcInvoiceAmount, btcProtocolFee)
+        const btcAmountInvoiceWithFee = calc.add(btcInvoiceAmount, btcProtocolAndBankFee)
         const finalBalanceBtc = await getBalanceHelper(walletIdB)
         expect(finalBalanceBtc).toBe(
           initBalanceB + Number(btcAmountInvoiceWithFee.amount),
@@ -1566,7 +1568,7 @@ describe("USD Wallets - Lightning Pay", () => {
       const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
       if (cents instanceof Error) throw cents
 
-      const feeAmountSats = LnFees().maxProtocolFee({
+      const feeAmountSats = LnFees().maxProtocolAndBankFee({
         amount: BigInt(amountPayment),
         currency: WalletCurrency.Btc,
       })

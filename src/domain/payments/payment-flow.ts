@@ -18,10 +18,10 @@ import { RouteValidator } from "./route-validator"
 export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurrency>(
   state: PaymentFlowCommonState<S, R>,
 ): PaymentFlowCommon<S, R> => {
-  const protocolFeeInSenderWalletCurrency = (): PaymentAmount<S> => {
+  const protocolAndBankFeeInSenderWalletCurrency = (): PaymentAmount<S> => {
     return state.senderWalletCurrency === WalletCurrency.Btc
-      ? (state.btcProtocolFee as PaymentAmount<S>)
-      : (state.usdProtocolFee as PaymentAmount<S>)
+      ? (state.btcProtocolAndBankFee as PaymentAmount<S>)
+      : (state.usdProtocolAndBankFee as PaymentAmount<S>)
   }
 
   const paymentAmounts = (): PaymentAmountInAllCurrencies => ({
@@ -33,8 +33,8 @@ export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurr
     btc: BtcPaymentAmount
     usd: UsdPaymentAmount
   } => ({
-    btc: AmountCalculator().add(state.btcPaymentAmount, state.btcProtocolFee),
-    usd: AmountCalculator().add(state.usdPaymentAmount, state.usdProtocolFee),
+    btc: AmountCalculator().add(state.btcPaymentAmount, state.btcProtocolAndBankFee),
+    usd: AmountCalculator().add(state.usdPaymentAmount, state.usdProtocolAndBankFee),
   })
 
   const routeDetails = (): {
@@ -102,8 +102,8 @@ export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurr
 
     const { amount, fee } =
       balanceAmount.currency === WalletCurrency.Btc
-        ? { amount: state.btcPaymentAmount, fee: state.btcProtocolFee }
-        : { amount: state.usdPaymentAmount, fee: state.usdProtocolFee }
+        ? { amount: state.btcPaymentAmount, fee: state.btcProtocolAndBankFee }
+        : { amount: state.usdPaymentAmount, fee: state.usdProtocolAndBankFee }
     const totalSendAmount = AmountCalculator().add(amount, fee)
 
     if (balanceAmount.amount < totalSendAmount.amount) {
@@ -118,7 +118,7 @@ export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurr
   }
 
   return {
-    protocolFeeInSenderWalletCurrency,
+    protocolAndBankFeeInSenderWalletCurrency,
     paymentAmounts,
     totalAmountsForPayment,
     routeDetails,

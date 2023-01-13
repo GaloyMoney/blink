@@ -18,7 +18,7 @@ export const LnFees = (
     feeCapBasisPoints: FEECAP_BASIS_POINTS,
   },
 ) => {
-  const maxProtocolFee = <T extends WalletCurrency>(amount: PaymentAmount<T>) => {
+  const maxProtocolAndBankFee = <T extends WalletCurrency>(amount: PaymentAmount<T>) => {
     if (amount.amount == 0n) {
       return amount
     }
@@ -45,7 +45,7 @@ export const LnFees = (
 
   return {
     intraLedgerFees,
-    maxProtocolFee,
+    maxProtocolAndBankFee,
     feeFromRawRoute,
   }
 }

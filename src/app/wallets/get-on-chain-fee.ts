@@ -107,7 +107,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
       .withoutMinerFee()
     if (paymentFlow instanceof Error) return paymentFlow
 
-    return paymentFlow.protocolFeeInSenderWalletCurrency()
+    return paymentFlow.protocolAndBankFeeInSenderWalletCurrency()
   }
 
   const builder = withSenderBuilder
@@ -138,7 +138,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   const balanceCheck = paymentFlow.checkBalanceForSend(balance)
   if (balanceCheck instanceof Error) return balanceCheck
 
-  return paymentFlow.protocolFeeInSenderWalletCurrency()
+  return paymentFlow.protocolAndBankFeeInSenderWalletCurrency()
 }
 
 export const getMinerFeeAndPaymentFlow = async <

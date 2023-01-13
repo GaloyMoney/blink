@@ -430,11 +430,11 @@ const executePaymentViaOnChain = async <
     if (bankFee instanceof Error) return bankFee
     const btcBankFee = bankFee.btc
 
-    const btcTotalFee = await paymentFlow.btcProtocolFee
+    const btcTotalFee = await paymentFlow.btcProtocolAndBankFee
     if (btcTotalFee instanceof Error) return btcTotalFee
 
     addAttributesToCurrentSpan({
-      "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolFee.amount}`,
+      "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolAndBankFee.amount}`,
       "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee}`,
       "payOnChainByWalletId.totalFee": `${btcTotalFee}`,
       "payOnChainByWalletId.bankFee": `${btcBankFee}`,
@@ -456,7 +456,7 @@ const executePaymentViaOnChain = async <
       paymentAmounts: paymentFlow,
 
       amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
+      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolAndBankFee),
       displayCurrency: DisplayCurrency.Usd,
 
       payeeAddresses: [paymentFlow.address],
@@ -469,11 +469,15 @@ const executePaymentViaOnChain = async <
       amountToDebitSender: {
         btc: {
           currency: paymentFlow.btcPaymentAmount.currency,
-          amount: paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
+          amount:
+            paymentFlow.btcPaymentAmount.amount +
+            paymentFlow.btcProtocolAndBankFee.amount,
         },
         usd: {
           currency: paymentFlow.usdPaymentAmount.currency,
-          amount: paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
+          amount:
+            paymentFlow.usdPaymentAmount.amount +
+            paymentFlow.usdProtocolAndBankFee.amount,
         },
       },
       bankFee,

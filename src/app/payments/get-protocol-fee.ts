@@ -216,9 +216,9 @@ const estimateLightningFee = async ({
 
       PaymentFlowStateRepository(defaultTimeToExpiryInSeconds).persistNew(paymentFlow)
       return routeResult instanceof SkipProbeForPubkeyError
-        ? PartialResult.ok(paymentFlow.protocolFeeInSenderWalletCurrency())
+        ? PartialResult.ok(paymentFlow.protocolAndBankFeeInSenderWalletCurrency())
         : PartialResult.partial(
-            paymentFlow.protocolFeeInSenderWalletCurrency(),
+            paymentFlow.protocolAndBankFeeInSenderWalletCurrency(),
             routeResult,
           )
     }
@@ -232,9 +232,9 @@ const estimateLightningFee = async ({
   ).persistNew(paymentFlow)
   if (persistedPayment instanceof Error)
     return PartialResult.partial(
-      paymentFlow.protocolFeeInSenderWalletCurrency(),
+      paymentFlow.protocolAndBankFeeInSenderWalletCurrency(),
       persistedPayment,
     )
 
-  return PartialResult.ok(persistedPayment.protocolFeeInSenderWalletCurrency())
+  return PartialResult.ok(persistedPayment.protocolAndBankFeeInSenderWalletCurrency())
 }

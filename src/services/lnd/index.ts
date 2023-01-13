@@ -171,7 +171,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       currency: WalletCurrency.Btc,
     })
     if (btcAmount instanceof Error) return btcAmount
-    const maxFeeAmount = LnFees().maxProtocolFee(btcAmount)
+    const maxFeeAmount = LnFees().maxProtocolAndBankFee(btcAmount)
 
     const rawRoute = await probeForRoute({
       decodedInvoice: invoice,

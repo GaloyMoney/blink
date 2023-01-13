@@ -460,7 +460,7 @@ describe("graphql", () => {
       const messageRegex = /^Unable to find a route for payment.$/
       const unreachable10kSatPaymentRequest =
         "lnbc100u1p3fj2qlpp5gnp23luuectecrlqddwkh7n7flj6zrnna8eqm8h9ws4ecweucqzsdqqcqzpgxqyz5vqsp5gue9tr3djq08kw6286tzk948ys69pphyd6xmwyut0xyn6fqt2zfs9qyyssq043fsndfudcjt05m7pyeusgpdlegm8kcstc5xywc2zws35tmlpsxdyed8jg8vk4erdxpwwap8akc9vm769qw2zqq86u63mqpa22fu6cpqjuudj"
-      const expectedFeeAmount = LnFees().maxProtocolFee({
+      const expectedFeeAmount = LnFees().maxProtocolAndBankFee({
         amount: 10_000n,
         currency: WalletCurrency.Btc,
       })
@@ -516,7 +516,7 @@ describe("graphql", () => {
         "lnbcrt1p39jaempp58sazckz8cce377ry7cle7k6rwafsjzkuqg022cp2vhxvccyss3csdqqcqzpuxqr23ssp509fhyjxf4utxetalmjett6xvwrm3g7datl6sted2w2m3qdnlq7ps9qyyssqg49tguulzccdtfdl07ltep8294d60tcryxl0tcau0uzwpre6mmxq7mc6737ffctl59fxv32a9g0ul63gx304862fuuwslnr2cd3ghuqq2rsxaz"
 
       const paymentAmount = 10_000
-      const expectedFeeAmount = LnFees().maxProtocolFee({
+      const expectedFeeAmount = LnFees().maxProtocolAndBankFee({
         amount: BigInt(paymentAmount),
         currency: WalletCurrency.Btc,
       })
