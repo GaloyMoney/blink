@@ -121,66 +121,69 @@ authRouter.post(
   }),
 )
 
-authRouter.post("/login", async (req, res) => {
-  const phoneNumber = req.body.phoneNumber as PhoneNumber
-  const authCode = req.body.authCode
+authRouter.post(
+  "/login",
+  wrapAsyncToRunInSpan({
+    namespace: "auth-router",
+    fn: async (req: express.Request, res: express.Response) => {
+      try {
+        const phoneNumber = req.body.phoneNumber as PhoneNumber
+        const authCode = req.body.authCode
 
-  const validCode = await isCodeValid({ phone: phoneNumber, code: authCode })
-  if (validCode instanceof Error) {
-    // TODO loop and clear cookies to prevent error on client
-    return res.status(500).send(JSON.stringify(validCode))
-  }
+        const validCode = await isCodeValid({ phone: phoneNumber, code: authCode })
+        if (validCode instanceof Error) {
+          return res.status(401).send({ error: "Invalid code" })
+        }
 
-  const authService = AuthWithPhonePasswordlessService()
-  const loginRes = await authService.loginCookie(phoneNumber)
-  if (loginRes instanceof Error) {
-    // TODO loop and clear cookies to prevent error on client
-    return res.status(500).send(JSON.stringify(loginRes))
-  }
+        const authService = AuthWithPhonePasswordlessService()
+        const loginRes = await authService.loginCookie(phoneNumber)
+        if (loginRes instanceof Error) {
+          return res.status(500).send({ error: "Cannot login" })
+        }
 
-  const cookies = setCookie.parse(loginRes.cookieToSendBackToClient)
-  const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
-  const kratosSessionCookie = cookies?.find((c) => c.name.includes("ory_kratos_session"))
-  if (!csrfCookie || !kratosSessionCookie) {
-    return res
-      .status(500)
-      .send(JSON.stringify({ result: "No csrfCookie or kratosSessionCookie " }))
-  }
+        const cookies = setCookie.parse(loginRes.cookieToSendBackToClient)
+        const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
+        const kratosSessionCookie = cookies?.find((c) =>
+          c.name.includes("ory_kratos_session"),
+        )
+        if (!csrfCookie || !kratosSessionCookie) {
+          return res
+            .status(500)
+            .send({ error: "Missing csrf or ory_kratos_session cookie" })
+        }
 
-  res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
-    maxAge: kratosSessionCookie.maxAge,
-    sameSite: kratosSessionCookie.sameSite,
-    secure: kratosSessionCookie.secure,
-    httpOnly: kratosSessionCookie.httpOnly,
-    path: kratosSessionCookie.Path,
-    expires: kratosSessionCookie.expires,
-  })
+        res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
+          maxAge: kratosSessionCookie.maxAge,
+          sameSite: kratosSessionCookie.sameSite,
+          secure: kratosSessionCookie.secure,
+          httpOnly: kratosSessionCookie.httpOnly,
+          path: kratosSessionCookie.Path,
+          expires: kratosSessionCookie.expires,
+        })
 
-  res.cookie(csrfCookie.name, csrfCookie.value, {
-    maxAge: csrfCookie.maxAge,
-    sameSite: csrfCookie.sameSite,
-    secure: csrfCookie.secure,
-    httpOnly: csrfCookie.httpOnly,
-    path: csrfCookie.Path,
-    expires: csrfCookie.expires,
-  })
+        res.cookie(csrfCookie.name, csrfCookie.value, {
+          maxAge: csrfCookie.maxAge,
+          sameSite: csrfCookie.sameSite,
+          secure: csrfCookie.secure,
+          httpOnly: csrfCookie.httpOnly,
+          path: csrfCookie.Path,
+          expires: csrfCookie.expires,
+        })
 
-  if (isDev) {
-    res.set({
-      "access-control-allow-credentials": "true",
-      "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
-      "access-control-allow-origin": "http://localhost:3000",
-    })
-  }
-
-  res.send({
-    identity: {
-      id: loginRes.kratosUserId,
-      uid: loginRes.kratosUserId,
-      phoneNumber,
+        res.send({
+          identity: {
+            id: loginRes.kratosUserId,
+            uid: loginRes.kratosUserId,
+            phoneNumber,
+          },
+        })
+      } catch (e) {
+        addAttributesToCurrentSpan({ cookieLoginError: e })
+        res.status(500).send({ result: "Error logging in" })
+      }
     },
-  })
-})
+  }),
+)
 
 // Logout flow
 // 1. Client app (web wallet/admin etc...) sends an HTTP GET
@@ -190,45 +193,42 @@ authRouter.post("/login", async (req, res) => {
 // 3. All the cookies are deleted via res.clearCookie
 //    from the backend
 // 4. The cookies should be magically deleted on the client
-authRouter.get("/logout", async (req, res) => {
-  try {
-    let reqCookie = req.headers.cookie
-    if (!reqCookie) {
-      return res
-        .status(500)
-        .send(JSON.stringify({ result: "need cookies and redirect query params" }))
-    }
-    reqCookie = decodeURIComponent(reqCookie)
-    const session = await kratosPublic.toSession({ cookie: reqCookie })
-    const sessionId = session.data.id
-    // * revoke token via admin api
-    //   there is no way to do it via cookies and the public api via the backend
-    //   I tried the kratosPublic.createBrowserLogoutFlow but it did not work
-    //   properly with cookies
-    const sessionResp = await kratosAdmin.disableSession({
-      id: sessionId,
-    })
-    // TODO check for 204 resp
-    // manually clear all cookies on the client
-    for (const cookieName of Object.keys(req.cookies)) {
-      res.clearCookie(cookieName)
-    }
-    if (isDev) {
-      res.set({
-        "access-control-allow-credentials": "true",
-        "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
-        "access-control-allow-origin": "http://localhost:3000",
-      })
-    }
-    res.status(200).send(
-      JSON.stringify({
-        result: "logout successful",
-      }),
-    )
-  } catch (e) {
-    res.status(500).send(JSON.stringify({ result: `${e}` }))
-  }
-})
+authRouter.get(
+  "/logout",
+  wrapAsyncToRunInSpan({
+    namespace: "auth-router",
+    fn: async (req: express.Request, res: express.Response) => {
+      try {
+        let reqCookie = req.headers.cookie
+        if (!reqCookie) {
+          return res
+            .status(500)
+            .send({ error: "Missing csrf or ory_kratos_session cookie" })
+        }
+        reqCookie = decodeURIComponent(reqCookie)
+        const session = await kratosPublic.toSession({ cookie: reqCookie })
+        const sessionId = session.data.id
+        // * revoke token via admin api
+        //   there is no way to do it via cookies and the public api via the backend
+        //   I tried the kratosPublic.createBrowserLogoutFlow but it did not work
+        //   properly with cookies
+        await kratosAdmin.disableSession({
+          id: sessionId,
+        })
+        // manually clear all cookies for the client
+        for (const cookieName of Object.keys(req.cookies)) {
+          res.clearCookie(cookieName)
+        }
+        res.status(200).send({
+          result: "logout successful",
+        })
+      } catch (e) {
+        addAttributesToCurrentSpan({ cookieLogoutError: e })
+        res.status(500).send({ error: "Error Logging out" })
+      }
+    },
+  }),
+)
 
 // Helper endpoint to clear any lingering cookies like csrf
 authRouter.get("/clearCookies", async (req, res) => {
@@ -237,21 +237,12 @@ authRouter.get("/clearCookies", async (req, res) => {
       for (const cookieName of Object.keys(req.cookies)) {
         res.clearCookie(cookieName)
       }
-      if (isDev) {
-        res.set({
-          "access-control-allow-credentials": "true",
-          "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
-          "access-control-allow-origin": "http://localhost:3000",
-        })
-      }
-      res.status(200).send(
-        JSON.stringify({
-          result: "cookies cleared successfully",
-        }),
-      )
+      res.status(200).send({
+        result: "cookies cleared successfully",
+      })
     }
   } catch (e) {
-    res.status(500).send(JSON.stringify({ result: `${e}` }))
+    res.status(500).send({ result: "Error clearing cookies" })
   }
 })
 
