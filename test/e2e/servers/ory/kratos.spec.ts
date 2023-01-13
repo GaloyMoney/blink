@@ -517,3 +517,40 @@ describe("decoding link header", () => {
     expect(getNextPage(withoutNext)).toBe(undefined)
   })
 })
+
+describe("cookie flow", () => {
+  const authService = AuthWithPhonePasswordlessService()
+  const phone = randomPhone()
+  let cookies: Array<KratosCookie>
+  let cookieStr = ""
+
+  it("login with cookie", async () => {
+    const res = await authService.createIdentityWithCookie(phone)
+    if (res instanceof Error) throw res
+    expect(res).toHaveProperty("kratosUserId")
+    expect(res).toHaveProperty("cookiesToSendBackToClient")
+    cookies = res.cookiesToSendBackToClient
+  })
+
+  it("logout and revoke cookies", async () => {
+    for (const c of cookies) {
+      cookieStr = cookieStr + c + "; "
+    }
+    cookieStr = decodeURIComponent(cookieStr)
+    const session = await kratosPublic.toSession({ cookie: cookieStr })
+    const sessionId = session.data.id
+    const kratosResp = await kratosAdmin.disableSession({
+      id: sessionId,
+    })
+    expect(kratosResp.status).toBe(204)
+  })
+
+  it("test revoked cookies", async () => {
+    try {
+      const session = await kratosPublic.toSession({ cookie: cookieStr })
+      expect(session.status).toBe(401)
+    } catch (e) {
+      expect(e.response.status).toBe(401)
+    }
+  })
+})
