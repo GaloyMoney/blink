@@ -30,8 +30,8 @@ export const recordReceiveLnPayment = async ({
     paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
-      btcProtocolFee: bankFee.btc,
-      usdProtocolFee: bankFee.usd,
+      btcProtocolAndBankFee: bankFee.btc,
+      usdProtocolAndBankFee: bankFee.usd,
     },
 
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
@@ -61,8 +61,8 @@ export const recordReceiveOnChainPayment = async ({
     paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
-      btcProtocolFee: bankFee.btc,
-      usdProtocolFee: bankFee.usd,
+      btcProtocolAndBankFee: bankFee.btc,
+      usdProtocolAndBankFee: bankFee.usd,
     },
 
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
@@ -96,8 +96,8 @@ export const recordSendLnPayment = async ({
     paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
-      btcProtocolFee: bankFee.btc,
-      usdProtocolFee: bankFee.usd,
+      btcProtocolAndBankFee: bankFee.btc,
+      usdProtocolAndBankFee: bankFee.usd,
     },
   })
 
@@ -120,8 +120,8 @@ export const recordSendOnChainPayment = async ({
     paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
-      btcProtocolFee: bankFee.btc,
-      usdProtocolFee: bankFee.usd,
+      btcProtocolAndBankFee: bankFee.btc,
+      usdProtocolAndBankFee: bankFee.usd,
     },
 
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
@@ -156,8 +156,8 @@ export const recordLnFeeReimbursement = async ({
     paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
-      btcProtocolFee: bankFee.btc,
-      usdProtocolFee: bankFee.usd,
+      btcProtocolAndBankFee: bankFee.btc,
+      usdProtocolAndBankFee: bankFee.usd,
     },
     journalId: "031a419636dbf6d25981d6d2" as LedgerJournalId,
   })
@@ -189,8 +189,8 @@ export const recordLnIntraLedgerPayment = async ({
       paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
-        btcProtocolFee: ZERO_SATS,
-        usdProtocolFee: ZERO_CENTS,
+        btcProtocolAndBankFee: ZERO_SATS,
+        usdProtocolAndBankFee: ZERO_CENTS,
       },
     })
 
@@ -219,8 +219,8 @@ export const recordWalletIdIntraLedgerPayment = async ({
       paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
-        btcProtocolFee: ZERO_SATS,
-        usdProtocolFee: ZERO_CENTS,
+        btcProtocolAndBankFee: ZERO_SATS,
+        usdProtocolAndBankFee: ZERO_CENTS,
       },
     })
 
@@ -251,8 +251,8 @@ export const recordOnChainIntraLedgerPayment = async ({
       paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
-        btcProtocolFee: ZERO_SATS,
-        usdProtocolFee: ZERO_CENTS,
+        btcProtocolAndBankFee: ZERO_SATS,
+        usdProtocolAndBankFee: ZERO_CENTS,
       },
     })
 
@@ -283,8 +283,8 @@ export const recordLnTradeIntraAccountTxn = async ({
       paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
-        btcProtocolFee: ZERO_SATS,
-        usdProtocolFee: ZERO_CENTS,
+        btcProtocolAndBankFee: ZERO_SATS,
+        usdProtocolAndBankFee: ZERO_CENTS,
       },
     })
 
@@ -310,8 +310,8 @@ export const recordWalletIdTradeIntraAccountTxn = async ({
     paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
-      btcProtocolFee: ZERO_SATS,
-      usdProtocolFee: ZERO_CENTS,
+      btcProtocolAndBankFee: ZERO_SATS,
+      usdProtocolAndBankFee: ZERO_CENTS,
     },
   })
 
@@ -342,8 +342,8 @@ export const recordOnChainTradeIntraAccountTxn = async ({
       paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
-        btcProtocolFee: ZERO_SATS,
-        usdProtocolFee: ZERO_CENTS,
+        btcProtocolAndBankFee: ZERO_SATS,
+        usdProtocolAndBankFee: ZERO_CENTS,
       },
     })
 

@@ -29,15 +29,15 @@ describe("Tx metadata", () => {
   const paymentAmounts = {
     btcPaymentAmount: receiveAmount.btc,
     usdPaymentAmount: receiveAmount.usd,
-    btcProtocolFee: ZERO_SATS,
-    usdProtocolFee: ZERO_CENTS,
+    btcProtocolAndBankFee: ZERO_SATS,
+    usdProtocolAndBankFee: ZERO_CENTS,
   }
 
   const onChainPaymentAmounts = {
     btcPaymentAmount: receiveAmount.btc,
     usdPaymentAmount: receiveAmount.usd,
-    btcProtocolFee: ZERO_SATS,
-    usdProtocolFee: ZERO_CENTS,
+    btcProtocolAndBankFee: ZERO_SATS,
+    usdProtocolAndBankFee: ZERO_CENTS,
   }
 
   describe("intraledger", () => {

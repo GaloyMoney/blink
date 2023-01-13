@@ -22,8 +22,8 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     destination: Pubkey | undefined,
   ): {
     settlementMethod: SettlementMethod
-    btcProtocolFee: BtcPaymentAmount | undefined
-    usdProtocolFee: UsdPaymentAmount | undefined
+    btcProtocolAndBankFee: BtcPaymentAmount | undefined
+    usdProtocolAndBankFee: UsdPaymentAmount | undefined
   } => {
     const settlementMethod =
       destination === undefined
@@ -33,11 +33,11 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
         : SettlementMethod.Lightning
     return {
       settlementMethod,
-      btcProtocolFee:
+      btcProtocolAndBankFee:
         settlementMethod === SettlementMethod.IntraLedger
           ? LnFees().intraLedgerFees().btc
           : undefined,
-      usdProtocolFee:
+      usdProtocolAndBankFee:
         settlementMethod === SettlementMethod.IntraLedger
           ? LnFees().intraLedgerFees().usd
           : undefined,
@@ -137,7 +137,8 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
           senderAccountId,
           btcPaymentAmount: paymentAmount,
           inputAmount: paymentAmount.amount,
-          btcProtocolFee: state.btcProtocolFee || LnFees().maxProtocolFee(paymentAmount),
+          btcProtocolAndBankFee:
+            state.btcProtocolAndBankFee || LnFees().maxProtocolAndBankFee(paymentAmount),
         })
       } else {
         const paymentAmount = checkedToUsdPaymentAmount(state.uncheckedAmount)
@@ -151,7 +152,8 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
           senderAccountId,
           usdPaymentAmount: paymentAmount,
           inputAmount: paymentAmount.amount,
-          usdProtocolFee: state.usdProtocolFee || LnFees().maxProtocolFee(paymentAmount),
+          usdProtocolAndBankFee:
+            state.usdProtocolAndBankFee || LnFees().maxProtocolAndBankFee(paymentAmount),
         })
       }
     }
@@ -165,7 +167,8 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
         senderWalletCurrency,
         senderAccountId,
         btcPaymentAmount,
-        btcProtocolFee: state.btcProtocolFee || LnFees().maxProtocolFee(btcPaymentAmount),
+        btcProtocolAndBankFee:
+          state.btcProtocolAndBankFee || LnFees().maxProtocolAndBankFee(btcPaymentAmount),
         inputAmount,
       })
     }
@@ -254,7 +257,12 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
     mid,
   }: WithConversionArgs): LPFBWithConversion<S, R> | LPFBWithError => {
     const stateWithCreatedAt = { ...state, createdAt: new Date(Date.now()) }
-    const { btcPaymentAmount, usdPaymentAmount, btcProtocolFee, usdProtocolFee } = state
+    const {
+      btcPaymentAmount,
+      usdPaymentAmount,
+      btcProtocolAndBankFee,
+      usdProtocolAndBankFee,
+    } = state
 
     // Use mid price when no buy / sell required
     const noConversionRequired =
@@ -264,21 +272,26 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         (state.recipientWalletCurrency as WalletCurrency)
 
     if (noConversionRequired) {
-      if (btcPaymentAmount && btcProtocolFee && usdPaymentAmount && usdProtocolFee) {
+      if (
+        btcPaymentAmount &&
+        btcProtocolAndBankFee &&
+        usdPaymentAmount &&
+        usdProtocolAndBankFee
+      ) {
         return LPFBWithConversion(
           new Promise((res) =>
             res({
               ...stateWithCreatedAt,
               btcPaymentAmount,
               usdPaymentAmount,
-              btcProtocolFee,
-              usdProtocolFee,
+              btcProtocolAndBankFee,
+              usdProtocolAndBankFee,
             }),
           ),
         )
       }
 
-      if (btcPaymentAmount && btcProtocolFee) {
+      if (btcPaymentAmount && btcProtocolAndBankFee) {
         const updatedStateFromBtcPaymentAmount = async (
           btcPaymentAmount: BtcPaymentAmount,
         ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
@@ -291,19 +304,20 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
           })
           if (priceRatio instanceof Error) return priceRatio
 
-          const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
+          const usdProtocolAndBankFee =
+            priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
           return {
             ...stateWithCreatedAt,
             btcPaymentAmount,
             usdPaymentAmount: convertedAmount,
-            btcProtocolFee,
-            usdProtocolFee,
+            btcProtocolAndBankFee,
+            usdProtocolAndBankFee,
           }
         }
 
         return LPFBWithConversion(updatedStateFromBtcPaymentAmount(btcPaymentAmount))
       }
-      if (usdPaymentAmount && usdProtocolFee) {
+      if (usdPaymentAmount && usdProtocolAndBankFee) {
         const updatedStateFromUsdPaymentAmount = async (
           usdPaymentAmount: UsdPaymentAmount,
         ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
@@ -316,13 +330,13 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
           })
           if (priceRatio instanceof Error) return priceRatio
 
-          const btcProtocolFee = priceRatio.convertFromUsd(usdProtocolFee)
+          const btcProtocolAndBankFee = priceRatio.convertFromUsd(usdProtocolAndBankFee)
           return {
             ...stateWithCreatedAt,
             btcPaymentAmount: convertedAmount,
             usdPaymentAmount,
-            btcProtocolFee,
-            usdProtocolFee,
+            btcProtocolAndBankFee,
+            usdProtocolAndBankFee,
           }
         }
 
@@ -331,26 +345,26 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 
       return LPFBWithError(
         new InvalidLightningPaymentFlowBuilderStateError(
-          "withConversion - btcPaymentAmount || btcProtocolFee not set",
+          "withConversion - btcPaymentAmount || btcProtocolAndBankFee not set",
         ),
       )
     }
 
     // Convert to usd if necessary
-    if (btcPaymentAmount && btcProtocolFee) {
+    if (btcPaymentAmount && btcProtocolAndBankFee) {
       // We already know usd amount from the recipient invoice
       if (
         state.recipientWalletCurrency === WalletCurrency.Usd &&
         usdPaymentAmount &&
-        usdProtocolFee
+        usdProtocolAndBankFee
       ) {
         return LPFBWithConversion(
           Promise.resolve({
             ...stateWithCreatedAt,
             btcPaymentAmount,
             usdPaymentAmount,
-            btcProtocolFee,
-            usdProtocolFee,
+            btcProtocolAndBankFee,
+            usdProtocolAndBankFee,
           }),
         )
       }
@@ -372,20 +386,21 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         })
         if (priceRatio instanceof Error) return priceRatio
 
-        const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
+        const usdProtocolAndBankFee =
+          priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
         return {
           ...stateWithCreatedAt,
           btcPaymentAmount,
           usdPaymentAmount: convertedAmount,
-          btcProtocolFee,
-          usdProtocolFee,
+          btcProtocolAndBankFee,
+          usdProtocolAndBankFee,
         }
       }
 
       return LPFBWithConversion(updatedStateFromBtcPaymentAmount(btcPaymentAmount))
     }
 
-    if (usdPaymentAmount && usdProtocolFee) {
+    if (usdPaymentAmount && usdProtocolAndBankFee) {
       const updatedStateFromUsdPaymentAmount = async (
         usdPaymentAmount: UsdPaymentAmount,
       ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
@@ -403,13 +418,13 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         })
         if (priceRatio instanceof Error) return priceRatio
 
-        const btcProtocolFee = priceRatio.convertFromUsd(usdProtocolFee)
+        const btcProtocolAndBankFee = priceRatio.convertFromUsd(usdProtocolAndBankFee)
         return {
           ...stateWithCreatedAt,
           btcPaymentAmount: convertedAmount,
           usdPaymentAmount,
-          btcProtocolFee,
-          usdProtocolFee,
+          btcProtocolAndBankFee,
+          usdProtocolAndBankFee,
         }
       }
 
@@ -465,8 +480,8 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       settlementMethod: state.settlementMethod,
       paymentInitiationMethod: state.paymentInitiationMethod,
 
-      btcProtocolFee: state.btcProtocolFee,
-      usdProtocolFee: state.usdProtocolFee,
+      btcProtocolAndBankFee: state.btcProtocolAndBankFee,
+      usdProtocolAndBankFee: state.usdProtocolAndBankFee,
 
       outgoingNodePubkey: state.outgoingNodePubkey,
       cachedRoute: state.checkedRoute,
@@ -500,16 +515,16 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     })
     if (priceRatio instanceof Error) return priceRatio
 
-    const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
-    if (btcProtocolFee instanceof Error) return btcProtocolFee
-    const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
+    const btcProtocolAndBankFee = LnFees().feeFromRawRoute(rawRoute)
+    if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
+    const usdProtocolAndBankFee = priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
 
     return paymentFromState({
       ...state,
       outgoingNodePubkey: pubkey,
       checkedRoute: rawRoute,
-      btcProtocolFee,
-      usdProtocolFee,
+      btcProtocolAndBankFee,
+      usdProtocolAndBankFee,
     })
   }
 

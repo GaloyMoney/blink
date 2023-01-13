@@ -27,8 +27,8 @@ export const LnSendLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: AddLnSendLedgerMetadata = {
@@ -78,8 +78,8 @@ export const OnChainSendLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: AddOnchainSendLedgerMetadata = {
@@ -129,8 +129,8 @@ export const OnChainReceiveLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: OnChainReceiveLedgerMetadata = {
@@ -177,8 +177,8 @@ export const LnReceiveLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: LnReceiveLedgerMetadata = {
@@ -223,8 +223,8 @@ export const LnFeeReimbursementReceiveLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: FeeReimbursementLedgerMetadata = {
@@ -274,8 +274,8 @@ export const OnChainIntraledgerLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: AddOnChainIntraledgerSendLedgerMetadata = {
@@ -324,8 +324,8 @@ export const WalletIdIntraledgerLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: AddWalletIdIntraledgerSendLedgerMetadata = {
@@ -376,8 +376,8 @@ export const LnIntraledgerLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: AddLnIntraledgerSendLedgerMetadata = {
@@ -427,8 +427,8 @@ export const OnChainTradeIntraAccountLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: AddOnChainTradeIntraAccountLedgerMetadata = {
@@ -471,8 +471,8 @@ export const WalletIdTradeIntraAccountLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: AddWalletIdTradeIntraAccountLedgerMetadata = {
@@ -515,8 +515,8 @@ export const LnTradeIntraAccountLedgerMetadata = ({
   const {
     btcPaymentAmount: { amount: satsAmount },
     usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
   } = paymentAmounts
 
   const metadata: AddLnTradeIntraAccountLedgerMetadata = {

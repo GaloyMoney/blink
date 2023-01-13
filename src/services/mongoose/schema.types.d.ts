@@ -142,8 +142,8 @@ type PaymentFlowStateRecordPartial = XOR<
   usdPaymentAmount: number
   inputAmount: number
 
-  btcProtocolFee: number
-  usdProtocolFee: number
+  btcProtocolAndBankFee: number
+  usdProtocolAndBankFee: number
 
   recipientWalletId?: string
   recipientWalletCurrency?: string

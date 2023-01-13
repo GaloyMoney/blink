@@ -13,10 +13,10 @@ type XorPaymentHashProperty = XOR<
 
 type AmountsAndFees = {
   btcPaymentAmount: BtcPaymentAmount
-  btcProtocolFee: BtcPaymentAmount
+  btcProtocolAndBankFee: BtcPaymentAmount
 
   usdPaymentAmount: UsdPaymentAmount
-  usdProtocolFee: UsdPaymentAmount
+  usdProtocolAndBankFee: UsdPaymentAmount
 }
 
 type PaymentFlowCommonState<
@@ -67,7 +67,7 @@ type PaymentFlowStateIndex = XorPaymentHashProperty & {
 type PaymentAmountInAllCurrencies = { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
 
 type PaymentFlowCommon<S extends WalletCurrency, R extends WalletCurrency> = {
-  protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
+  protocolAndBankFeeInSenderWalletCurrency(): PaymentAmount<S>
   paymentAmounts(): PaymentAmountInAllCurrencies
   totalAmountsForPayment(): PaymentAmountInAllCurrencies
   routeDetails(): {
@@ -319,8 +319,8 @@ type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
     btcPaymentAmount?: BtcPaymentAmount
     inputAmount?: bigint
     uncheckedAmount?: number
-    btcProtocolFee?: BtcPaymentAmount
-    usdProtocolFee?: UsdPaymentAmount
+    btcProtocolAndBankFee?: BtcPaymentAmount
+    usdProtocolAndBankFee?: UsdPaymentAmount
     skipProbeForDestination: boolean
   }
 
@@ -351,7 +351,10 @@ type LPFBWithConversionState<
   R extends WalletCurrency,
 > = RequireField<
   LPFBWithRecipientWalletState<S, R>,
-  "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
+  | "btcPaymentAmount"
+  | "btcProtocolAndBankFee"
+  | "usdProtocolAndBankFee"
+  | "usdPaymentAmount"
 > & { createdAt: Date }
 
 type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {

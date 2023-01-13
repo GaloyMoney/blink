@@ -50,11 +50,11 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       currency: WalletCurrency.Usd,
     },
 
-    btcProtocolFee: {
+    btcProtocolAndBankFee: {
       amount: BigInt(satsFee),
       currency: WalletCurrency.Btc,
     },
-    usdProtocolFee: {
+    usdProtocolAndBankFee: {
       amount: BigInt(centsFee),
       currency: WalletCurrency.Usd,
     },
@@ -106,11 +106,11 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       ...expectedPaymentFlowStateBase,
       senderWalletCurrency: WalletCurrency.Btc,
       inputAmount: BigInt(satsAmount),
-      btcProtocolFee: {
+      btcProtocolAndBankFee: {
         amount: BigInt(0),
         currency: WalletCurrency.Btc,
       },
-      usdProtocolFee: {
+      usdProtocolAndBankFee: {
         amount: BigInt(0),
         currency: WalletCurrency.Usd,
       },
@@ -132,11 +132,11 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       ...expectedPaymentFlowStateBase,
       senderWalletCurrency: WalletCurrency.Usd,
       inputAmount: BigInt(centsAmount),
-      btcProtocolFee: {
+      btcProtocolAndBankFee: {
         amount: BigInt(0),
         currency: WalletCurrency.Btc,
       },
-      usdProtocolFee: {
+      usdProtocolAndBankFee: {
         amount: BigInt(0),
         currency: WalletCurrency.Usd,
       },

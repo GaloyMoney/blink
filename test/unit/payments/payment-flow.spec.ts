@@ -14,8 +14,8 @@ const calc = AmountCalculator()
 
 const btcPaymentAmount = { amount: BigInt(20_000), currency: WalletCurrency.Btc }
 const usdPaymentAmount = { amount: BigInt(1_000), currency: WalletCurrency.Usd }
-const btcProtocolFee = { amount: BigInt(400), currency: WalletCurrency.Btc }
-const usdProtocolFee = { amount: BigInt(20), currency: WalletCurrency.Usd }
+const btcProtocolAndBankFee = { amount: BigInt(400), currency: WalletCurrency.Btc }
+const usdProtocolAndBankFee = { amount: BigInt(20), currency: WalletCurrency.Usd }
 const btcBankFee = { amount: BigInt(40), currency: WalletCurrency.Btc }
 const usdBankFee = { amount: BigInt(2), currency: WalletCurrency.Usd }
 const timestamp = new Date()
@@ -23,12 +23,12 @@ const timestamp = new Date()
 const walletsToTest = [
   {
     name: "btc",
-    sendAmount: calc.add(btcPaymentAmount, btcProtocolFee),
+    sendAmount: calc.add(btcPaymentAmount, btcProtocolAndBankFee),
     inputAmount: btcPaymentAmount.amount,
   },
   {
     name: "usd",
-    sendAmount: calc.add(usdPaymentAmount, usdProtocolFee),
+    sendAmount: calc.add(usdPaymentAmount, usdProtocolAndBankFee),
     inputAmount: usdPaymentAmount.amount,
   },
 ]
@@ -156,8 +156,8 @@ describe("LightningPaymentFlowFromLedgerTransaction", <S extends WalletCurrency,
     inputAmount: undefined as unknown as bigint,
     senderWalletCurrency: undefined as unknown as S,
 
-    btcProtocolFee,
-    usdProtocolFee,
+    btcProtocolAndBankFee,
+    usdProtocolAndBankFee,
   }
 
   for (const { name, sendAmount, inputAmount } of walletsToTest) {
@@ -189,8 +189,8 @@ describe("OnChainPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R
     inputAmount: undefined as unknown as bigint,
     senderWalletCurrency: undefined as unknown as S,
 
-    btcProtocolFee,
-    usdProtocolFee,
+    btcProtocolAndBankFee,
+    usdProtocolAndBankFee,
     btcBankFee,
     usdBankFee,
   }

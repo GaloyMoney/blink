@@ -34,13 +34,15 @@ export const reimburseFailedUsdPayment = async <
 
     satsAmount: toSats(paymentFlow.btcPaymentAmount.amount),
     centsAmount: toCents(paymentFlow.usdPaymentAmount.amount),
-    satsFee: toSats(paymentFlow.btcProtocolFee.amount),
-    centsFee: toCents(paymentFlow.usdProtocolFee.amount),
+    satsFee: toSats(paymentFlow.btcProtocolAndBankFee.amount),
+    centsFee: toCents(paymentFlow.usdProtocolAndBankFee.amount),
 
     displayAmount: Number(
       paymentFlow.usdPaymentAmount.amount,
     ) as DisplayCurrencyBaseAmount,
-    displayFee: Number(paymentFlow.usdProtocolFee.amount) as DisplayCurrencyBaseAmount,
+    displayFee: Number(
+      paymentFlow.usdProtocolAndBankFee.amount,
+    ) as DisplayCurrencyBaseAmount,
     displayCurrency: DisplayCurrency.Usd,
   }
 

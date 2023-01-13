@@ -231,7 +231,7 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
 
       return OPFBWithError(
         new InvalidOnChainPaymentFlowBuilderStateError(
-          "withConversion - btcProposedAmount || btcProtocolFee not set",
+          "withConversion - btcProposedAmount || btcProtocolAndBankFee not set",
         ),
       )
     }
@@ -368,8 +368,8 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
 
     return OnChainPaymentFlow({
       ...state,
-      btcProtocolFee: onChainFees.intraLedgerFees().btc,
-      usdProtocolFee: onChainFees.intraLedgerFees().usd,
+      btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
+      usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
       ...ZERO_BANK_FEE,
       btcPaymentAmount,
       usdPaymentAmount,
@@ -421,19 +421,19 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     })
 
     // Calculate amounts & fees
-    const btcProtocolFee = feeAmounts.totalFee
-    const usdProtocolFee = priceRatio.convertFromBtcToCeil(feeAmounts.totalFee)
+    const btcProtocolAndBankFee = feeAmounts.totalFee
+    const usdProtocolAndBankFee = priceRatio.convertFromBtcToCeil(feeAmounts.totalFee)
 
     let btcPaymentAmount = state.btcProposedAmount
     let usdPaymentAmount = state.usdProposedAmount
     if (state.sendAll) {
       switch (state.senderWalletCurrency) {
         case WalletCurrency.Btc:
-          btcPaymentAmount = calc.sub(state.btcProposedAmount, btcProtocolFee)
+          btcPaymentAmount = calc.sub(state.btcProposedAmount, btcProtocolAndBankFee)
           usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
           break
         case WalletCurrency.Usd:
-          usdPaymentAmount = calc.sub(state.usdProposedAmount, usdProtocolFee)
+          usdPaymentAmount = calc.sub(state.usdProposedAmount, usdProtocolAndBankFee)
           btcPaymentAmount = priceRatio.convertFromUsd(usdPaymentAmount)
           break
       }
@@ -447,8 +447,8 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
 
     return OnChainPaymentFlow({
       ...state,
-      btcProtocolFee,
-      usdProtocolFee,
+      btcProtocolAndBankFee,
+      usdProtocolAndBankFee,
       btcBankFee: feeAmounts.bankFee,
       usdBankFee: priceRatio.convertFromBtcToCeil(feeAmounts.bankFee),
       btcPaymentAmount: validatedBtcPaymentAmount,

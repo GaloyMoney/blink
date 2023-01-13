@@ -186,8 +186,8 @@ const processTxForWallet = async (
             paymentAmounts: {
               btcPaymentAmount: walletAddressReceiver.btcToCreditReceiver,
               usdPaymentAmount: walletAddressReceiver.usdToCreditReceiver,
-              btcProtocolFee: walletAddressReceiver.btcBankFee,
-              usdProtocolFee: walletAddressReceiver.usdBankFee,
+              btcProtocolAndBankFee: walletAddressReceiver.btcBankFee,
+              usdProtocolAndBankFee: walletAddressReceiver.usdBankFee,
             },
             feeDisplayCurrency,
             amountDisplayCurrency,

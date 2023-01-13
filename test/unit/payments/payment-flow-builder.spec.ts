@@ -202,13 +202,16 @@ describe("LightningPaymentFlowBuilder", () => {
 
           const usdPaymentAmount = await usdFromBtcMid(invoiceWithAmount.paymentAmount)
 
-          const btcProtocolFee = LnFees().maxProtocolFee(invoiceWithAmount.paymentAmount)
-          if (btcProtocolFee instanceof Error) return btcProtocolFee
-          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+          const btcProtocolAndBankFee = LnFees().maxProtocolAndBankFee(
+            invoiceWithAmount.paymentAmount,
+          )
+          if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
+          expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
           const priceRatio = PriceRatio(payment.paymentAmounts())
           if (priceRatio instanceof Error) throw priceRatio
-          const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
+          const usdProtocolAndBankFee =
+            priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
 
           checkSettlementMethod(payment)
           checkInvoice(payment)
@@ -216,8 +219,8 @@ describe("LightningPaymentFlowBuilder", () => {
           expect(payment).toEqual(
             expect.objectContaining({
               usdPaymentAmount,
-              btcProtocolFee,
-              usdProtocolFee,
+              btcProtocolAndBankFee,
+              usdProtocolAndBankFee,
               skipProbeForDestination: false,
             }),
           )
@@ -240,17 +243,18 @@ describe("LightningPaymentFlowBuilder", () => {
           checkInvoice(payment)
           checkSenderWallet(payment)
 
-          const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
-          if (btcProtocolFee instanceof Error) return btcProtocolFee
-          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+          const btcProtocolAndBankFee = LnFees().feeFromRawRoute(rawRoute)
+          if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
+          expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
           const priceRatio = PriceRatio(payment.paymentAmounts())
           if (priceRatio instanceof Error) throw priceRatio
 
           expect(payment).toEqual(
             expect.objectContaining({
-              btcProtocolFee,
-              usdProtocolFee: priceRatio.convertFromBtcToCeil(btcProtocolFee),
+              btcProtocolAndBankFee,
+              usdProtocolAndBankFee:
+                priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee),
               outgoingNodePubkey: pubkey,
               cachedRoute: rawRoute,
               skipProbeForDestination: false,
@@ -294,11 +298,13 @@ describe("LightningPaymentFlowBuilder", () => {
 
           const usdPaymentAmount = await usdFromBtcSell(invoiceWithAmount.paymentAmount)
 
-          const btcProtocolFee = LnFees().maxProtocolFee(invoiceWithAmount.paymentAmount)
-          if (btcProtocolFee instanceof Error) return btcProtocolFee
-          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+          const btcProtocolAndBankFee = LnFees().maxProtocolAndBankFee(
+            invoiceWithAmount.paymentAmount,
+          )
+          if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
+          expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
-          const usdProtocolFee = await usdFromBtcSell(btcProtocolFee)
+          const usdProtocolAndBankFee = await usdFromBtcSell(btcProtocolAndBankFee)
 
           checkSettlementMethod(payment)
           checkInvoice(payment)
@@ -306,8 +312,8 @@ describe("LightningPaymentFlowBuilder", () => {
           expect(payment).toEqual(
             expect.objectContaining({
               usdPaymentAmount,
-              btcProtocolFee,
-              usdProtocolFee,
+              btcProtocolAndBankFee,
+              usdProtocolAndBankFee,
               skipProbeForDestination: false,
             }),
           )
@@ -330,14 +336,14 @@ describe("LightningPaymentFlowBuilder", () => {
           checkInvoice(payment)
           checkSenderWallet(payment)
 
-          const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
-          if (btcProtocolFee instanceof Error) return btcProtocolFee
-          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+          const btcProtocolAndBankFee = LnFees().feeFromRawRoute(rawRoute)
+          if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
+          expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
           expect(payment).toEqual(
             expect.objectContaining({
-              btcProtocolFee,
-              usdProtocolFee: await usdFromBtcSell(btcProtocolFee),
+              btcProtocolAndBankFee,
+              usdProtocolAndBankFee: await usdFromBtcSell(btcProtocolAndBankFee),
               outgoingNodePubkey: pubkey,
               cachedRoute: rawRoute,
               skipProbeForDestination: false,
@@ -404,16 +410,17 @@ describe("LightningPaymentFlowBuilder", () => {
             currency: WalletCurrency.Btc,
           })
 
-          const btcProtocolFee = LnFees().maxProtocolFee({
+          const btcProtocolAndBankFee = LnFees().maxProtocolAndBankFee({
             amount: uncheckedAmount,
             currency: WalletCurrency.Btc,
           })
-          if (btcProtocolFee instanceof Error) return btcProtocolFee
-          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+          if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
+          expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
           const priceRatio = PriceRatio(payment.paymentAmounts())
           if (priceRatio instanceof Error) throw priceRatio
-          const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
+          const usdProtocolAndBankFee =
+            priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
 
           checkSettlementMethod(payment)
           checkInvoice(payment)
@@ -421,8 +428,8 @@ describe("LightningPaymentFlowBuilder", () => {
           expect(payment).toEqual(
             expect.objectContaining({
               usdPaymentAmount,
-              btcProtocolFee,
-              usdProtocolFee,
+              btcProtocolAndBankFee,
+              usdProtocolAndBankFee,
               skipProbeForDestination: false,
             }),
           )
@@ -469,7 +476,7 @@ describe("LightningPaymentFlowBuilder", () => {
           expect(payment).toEqual(
             expect.objectContaining({
               btcPaymentAmount,
-              btcProtocolFee: LnFees().maxProtocolFee(btcPaymentAmount),
+              btcProtocolAndBankFee: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
               skipProbeForDestination: false,
             }),
           )
@@ -488,8 +495,8 @@ describe("LightningPaymentFlowBuilder", () => {
         expect.objectContaining({
           settlementMethod: SettlementMethod.IntraLedger,
           paymentInitiationMethod: PaymentInitiationMethod.Lightning,
-          btcProtocolFee: LnFees().intraLedgerFees().btc,
-          usdProtocolFee: LnFees().intraLedgerFees().usd,
+          btcProtocolAndBankFee: LnFees().intraLedgerFees().btc,
+          usdProtocolAndBankFee: LnFees().intraLedgerFees().usd,
         }),
       )
     }
@@ -965,8 +972,8 @@ describe("LightningPaymentFlowBuilder", () => {
         expect.objectContaining({
           settlementMethod: SettlementMethod.IntraLedger,
           paymentInitiationMethod: PaymentInitiationMethod.IntraLedger,
-          btcProtocolFee: LnFees().intraLedgerFees().btc,
-          usdProtocolFee: LnFees().intraLedgerFees().usd,
+          btcProtocolAndBankFee: LnFees().intraLedgerFees().btc,
+          usdProtocolAndBankFee: LnFees().intraLedgerFees().usd,
         }),
       )
     }
