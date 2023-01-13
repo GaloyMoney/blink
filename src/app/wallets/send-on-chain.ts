@@ -32,7 +32,7 @@ import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow
 
 import * as LedgerFacade from "@services/ledger/facade"
 
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services/lock"
@@ -49,7 +49,7 @@ import { getMinerFeeAndPaymentFlow } from "./get-on-chain-fee"
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
 const { dustThreshold } = getOnChainWalletConfig()
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 
 const payOnChainByWalletId = async <R extends WalletCurrency>({
   senderAccount,

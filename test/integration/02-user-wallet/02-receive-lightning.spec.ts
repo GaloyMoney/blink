@@ -398,12 +398,13 @@ describe("UserWallet - Lightning", () => {
     const hash = getHash(invoice)
     const amount = getAmount(invoice)
 
-    const dealerFns = DealerPriceService()
-    const sats = await dealerFns.getSatsFromCentsForFutureBuy(
-      cents,
-      defaultTimeToExpiryInSeconds,
-    )
-    if (sats instanceof Error) throw sats
+    const dealerFns = DealerPriceService(defaultTimeToExpiryInSeconds)
+    const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
+      amount: BigInt(cents),
+      currency: WalletCurrency.Usd,
+    })
+    if (btcAmount instanceof Error) throw btcAmount
+    const sats = Number(btcAmount.amount)
 
     expect(amount).toBe(sats)
 
@@ -524,8 +525,12 @@ describe("UserWallet - Lightning", () => {
     if (ledgerTx === undefined) throw Error("ledgerTx needs to be defined")
 
     const dealerFns = DealerPriceService()
-    const cents = await dealerFns.getCentsFromSatsForImmediateBuy(sats)
-    if (cents instanceof Error) throw cents
+    const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
+      amount: BigInt(sats),
+      currency: WalletCurrency.Btc,
+    })
+    if (usdAmount instanceof Error) throw usdAmount
+    const cents = Number(usdAmount.amount)
 
     expect(ledgerTx.credit).toBe(cents)
     expect(ledgerTx.usd).toBe(cents / 100)

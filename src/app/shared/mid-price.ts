@@ -3,7 +3,7 @@ import { getDealerConfig } from "@config"
 import { CENTS_PER_USD } from "@domain/fiat"
 import { toPriceRatio } from "@domain/payments"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import {
   addAttributesToCurrentSpan,
   asyncRunInSpan,
@@ -12,7 +12,7 @@ import {
 } from "@services/tracing"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 
 export const usdFromBtcMidPriceFn = async (
   amount: BtcPaymentAmount,

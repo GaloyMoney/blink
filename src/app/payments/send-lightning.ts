@@ -33,7 +33,7 @@ import {
   UsersRepository,
 } from "@services/mongoose"
 
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
@@ -54,7 +54,7 @@ import {
   newCheckWithdrawalLimits,
 } from "./helpers"
 
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
 
 export const payInvoiceByWalletId = async ({

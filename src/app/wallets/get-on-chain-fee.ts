@@ -6,7 +6,7 @@ import { CouldNotFindError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -15,7 +15,7 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
 const { dustThreshold } = getOnChainWalletConfig()
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 
 const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>({
   walletId,

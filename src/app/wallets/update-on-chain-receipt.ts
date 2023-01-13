@@ -29,12 +29,12 @@ import {
   UsersRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import * as LedgerFacade from "@services/ledger/facade"
 
 const redisCache = RedisCacheService()
 
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 
 export const updateOnChainReceipt = async ({
   scanDepth = ONCHAIN_SCAN_DEPTH,
