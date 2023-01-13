@@ -18,15 +18,15 @@ export const WalletInvoiceReceiver = async ({
 
     const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
     if (priceRatio instanceof Error) return priceRatio
-    const bankFee = {
-      usdBankFee: priceRatio.convertFromBtcToCeil(feeBtc),
-      btcBankFee: feeBtc,
-    }
+
+    const btcBankFee = feeBtc
+    const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
     return {
-      btcToCreditReceiver: calc.sub(receivedBtc, feeBtc),
-      usdToCreditReceiver: calc.sub(receivedUsd, bankFee.usdBankFee),
-      ...bankFee,
+      btcToCreditReceiver: calc.sub(receivedBtc, btcBankFee),
+      usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
+      usdBankFee,
+      btcBankFee,
       receivedAmount: () =>
         walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
           ? receivedBtc
@@ -39,15 +39,15 @@ export const WalletInvoiceReceiver = async ({
 
     const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
     if (priceRatio instanceof Error) return priceRatio
-    const bankFee = {
-      usdBankFee: priceRatio.convertFromBtcToCeil(feeBtc),
-      btcBankFee: feeBtc,
-    }
+
+    const btcBankFee = feeBtc
+    const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
     return {
-      btcToCreditReceiver: calc.sub(receivedBtc, feeBtc),
-      usdToCreditReceiver: calc.sub(receivedUsd, bankFee.usdBankFee),
-      ...bankFee,
+      btcToCreditReceiver: calc.sub(receivedBtc, btcBankFee),
+      usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
+      usdBankFee,
+      btcBankFee,
       receivedAmount: () =>
         walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
           ? receivedBtc
@@ -60,15 +60,15 @@ export const WalletInvoiceReceiver = async ({
 
   const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
   if (priceRatio instanceof Error) return priceRatio
-  const bankFee = {
-    usdBankFee: priceRatio.convertFromBtcToCeil(feeBtc),
-    btcBankFee: feeBtc,
-  }
+
+  const btcBankFee = feeBtc
+  const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
   return {
-    btcToCreditReceiver: calc.sub(receivedBtc, feeBtc),
-    usdToCreditReceiver: calc.sub(receivedUsd, bankFee.usdBankFee),
-    ...bankFee,
+    btcToCreditReceiver: calc.sub(receivedBtc, btcBankFee),
+    usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
+    usdBankFee,
+    btcBankFee,
     receivedAmount: () =>
       walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
         ? receivedBtc
