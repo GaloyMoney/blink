@@ -5,6 +5,7 @@ import Phone from "@graphql/types/scalar/phone"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { KratosLoginType } from "@domain/authentication"
 
 const UserLoginInput = GT.Input({
   name: "UserLoginInput",
@@ -46,7 +47,12 @@ const UserLoginMutation = GT.Field<{
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const authToken = await Auth.loginWithPhone({ phone, code, ip })
+    const authToken = await Auth.loginWithPhone({
+      phone,
+      code,
+      ip,
+      kratosLoginType: KratosLoginType.SessionToken,
+    })
 
     if (authToken instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(authToken)] }

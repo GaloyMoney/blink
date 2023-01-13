@@ -9,15 +9,15 @@ import { getKratosConfig, isDev, JWT_SECRET } from "@config"
 import { mapError } from "@graphql/error-map"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-import { AuthWithPhonePasswordlessService, validateKratosToken } from "@services/kratos"
+import { validateKratosToken } from "@services/kratos"
 import { kratosPublic, kratosAdmin } from "@services/kratos/private"
 import { AccountsRepository } from "@services/mongoose"
 import { parseIps } from "@domain/accounts-ips"
 import { KratosError } from "@services/kratos/errors"
 import bodyParser from "body-parser"
-import { isCodeValid } from "@app/auth"
 import setCookie from "set-cookie-parser"
 import cookieParser from "cookie-parser"
+import { KratosLoginType } from "@domain/authentication"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -127,21 +127,27 @@ authRouter.post(
     namespace: "auth-router",
     fn: async (req: express.Request, res: express.Response) => {
       try {
-        const phoneNumber = req.body.phoneNumber as PhoneNumber
-        const authCode = req.body.authCode
-
-        const validCode = await isCodeValid({ phone: phoneNumber, code: authCode })
-        if (validCode instanceof Error) {
-          return res.status(401).send({ error: "Invalid code" })
+        const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
+        const ip = parseIps(ipString)
+        if (ip === undefined) {
+          throw new Error("IP is not defined")
         }
 
-        const authService = AuthWithPhonePasswordlessService()
-        const loginRes = await authService.loginCookie(phoneNumber)
-        if (loginRes instanceof Error) {
-          return res.status(500).send({ error: "Cannot login" })
+        const phone = req.body.phoneNumber as PhoneNumber
+        const code = req.body.authCode
+
+        const loginResp = (await Auth.loginWithPhone({
+          phone,
+          code,
+          ip,
+          kratosLoginType: KratosLoginType.Cookie,
+        })) as WithCookieResponse // TODO type guard
+
+        if (loginResp instanceof Error) {
+          return res.status(500).send({ error: mapError(loginResp).message })
         }
 
-        const cookies = setCookie.parse(loginRes.cookieToSendBackToClient)
+        const cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
         const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
         const kratosSessionCookie = cookies?.find((c) =>
           c.name.includes("ory_kratos_session"),
@@ -154,27 +160,27 @@ authRouter.post(
 
         res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
           maxAge: kratosSessionCookie.maxAge,
-          sameSite: kratosSessionCookie.sameSite,
+          sameSite: "lax",
           secure: kratosSessionCookie.secure,
           httpOnly: kratosSessionCookie.httpOnly,
-          path: kratosSessionCookie.Path,
+          path: kratosSessionCookie.path,
           expires: kratosSessionCookie.expires,
         })
 
         res.cookie(csrfCookie.name, csrfCookie.value, {
           maxAge: csrfCookie.maxAge,
-          sameSite: csrfCookie.sameSite,
+          sameSite: "lax",
           secure: csrfCookie.secure,
           httpOnly: csrfCookie.httpOnly,
-          path: csrfCookie.Path,
+          path: csrfCookie.path,
           expires: csrfCookie.expires,
         })
 
         res.send({
           identity: {
-            id: loginRes.kratosUserId,
-            uid: loginRes.kratosUserId,
-            phoneNumber,
+            id: loginResp.kratosUserId,
+            uid: loginResp.kratosUserId,
+            phoneNumber: phone,
           },
         })
       } catch (e) {

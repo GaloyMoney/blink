@@ -22,16 +22,19 @@ import { AccountsRepository } from "@services/mongoose"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
+import { KratosLoginType } from "@domain/authentication"
 
 export const loginWithPhone = async ({
   phone,
   code,
   ip,
+  kratosLoginType,
 }: {
   phone: PhoneNumber
   code: PhoneCode
   ip: IpAddress
-}): Promise<SessionToken | LegacyJwtToken | ApplicationError> => {
+  kratosLoginType: KratosLoginType
+}): Promise<SessionToken | WithCookieResponse | LegacyJwtToken | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -54,21 +57,35 @@ export const loginWithPhone = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.login(phone)
-
-  // FIXME: this is a fuzzy error.
-  // it exists because we currently make no difference between a registration and login
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-    // user is a new user
-
-    kratosResult = await authService.createIdentityWithSession(phone)
-    if (kratosResult instanceof Error) return kratosResult
-    addAttributesToCurrentSpan({ "login.newAccount": true })
-  } else if (kratosResult instanceof Error) {
+  if (kratosLoginType === KratosLoginType.SessionToken) {
+    let kratosResult = await authService.login(phone)
+    // FIXME: this is a fuzzy error.
+    // it exists because we currently make no difference between a registration and login
+    if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+      // user is a new user
+      kratosResult = await authService.createIdentityWithSession(phone)
+      if (kratosResult instanceof Error) return kratosResult
+      addAttributesToCurrentSpan({ "login.newAccount": true })
+    } else if (kratosResult instanceof Error) {
+      return kratosResult
+    }
+    return kratosResult.sessionToken
+  } else if (kratosLoginType === KratosLoginType.Cookie) {
+    let kratosResult = await authService.loginCookie(phone)
+    // FIXME: this is a fuzzy error.
+    // it exists because we currently make no difference between a registration and login
+    if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+      // user is a new user
+      kratosResult = await authService.createIdentityWithCookie(phone)
+      if (kratosResult instanceof Error) return kratosResult
+      addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
+    } else if (kratosResult instanceof Error) {
+      return kratosResult
+    }
     return kratosResult
+  } else {
+    return new Error("kratosLoginType not implemented")
   }
-
-  return kratosResult.sessionToken
 }
 
 // deprecated
