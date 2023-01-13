@@ -264,12 +264,12 @@ const executePaymentViaIntraledger = async <
     }
 
     let metadata:
-      | NewAddWalletIdIntraledgerSendLedgerMetadata
-      | NewAddWalletIdTradeIntraAccountLedgerMetadata
+      | AddWalletIdIntraledgerSendLedgerMetadata
+      | AddWalletIdTradeIntraAccountLedgerMetadata
     let additionalDebitMetadata: { [key: string]: Username | undefined } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       metadata = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
-        paymentFlow,
+        paymentAmounts: paymentFlow,
 
         amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
         feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -280,7 +280,7 @@ const executePaymentViaIntraledger = async <
     } else {
       ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
         LedgerFacade.WalletIdIntraledgerLedgerMetadata({
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,

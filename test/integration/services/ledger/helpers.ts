@@ -26,10 +26,17 @@ export const recordReceiveLnPayment = async ({
 
   const metadata = LedgerFacade.LnReceiveLedgerMetadata({
     paymentHash,
-    fee: bankFee.btc,
+    pubkey: crypto.randomUUID() as Pubkey,
+    paymentAmounts: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolFee: bankFee.btc,
+      usdProtocolFee: bankFee.usd,
+    },
+
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
     amountDisplayCurrency: Number(paymentAmount.usd.amount) as DisplayCurrencyBaseAmount,
-    pubkey: crypto.randomUUID() as Pubkey,
+    displayCurrency: DisplayCurrency.Usd,
   })
 
   return LedgerFacade.recordReceive({
@@ -51,9 +58,17 @@ export const recordReceiveOnChainPayment = async ({
 
   const metadata = LedgerFacade.OnChainReceiveLedgerMetadata({
     onChainTxHash,
-    fee: bankFee.btc,
+    paymentAmounts: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolFee: bankFee.btc,
+      usdProtocolFee: bankFee.usd,
+    },
+
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
     amountDisplayCurrency: Number(paymentAmount.usd.amount) as DisplayCurrencyBaseAmount,
+    displayCurrency: DisplayCurrency.Usd,
+
     payeeAddresses: ["address1" as OnChainAddress],
   })
 
@@ -66,10 +81,7 @@ export const recordReceiveOnChainPayment = async ({
   })
 }
 
-export const recordSendLnPayment = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const recordSendLnPayment = async ({
   walletDescriptor,
   paymentAmount,
   bankFee,
@@ -81,12 +93,12 @@ export const recordSendLnPayment = async <
     displayCurrency: getDisplayCurrencyConfig().code,
     pubkey: crypto.randomUUID() as Pubkey,
     feeKnownInAdvance: true,
-    paymentFlow: {
+    paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
       btcProtocolFee: bankFee.btc,
       usdProtocolFee: bankFee.usd,
-    } as PaymentFlowState<S, R>,
+    },
   })
 
   return LedgerFacade.recordSend({
@@ -98,22 +110,19 @@ export const recordSendLnPayment = async <
   })
 }
 
-export const recordSendOnChainPayment = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const recordSendOnChainPayment = async ({
   walletDescriptor,
   paymentAmount,
   bankFee,
 }) => {
   const metadata = LedgerFacade.OnChainSendLedgerMetadata({
     onChainTxHash: crypto.randomUUID() as OnChainTxHash,
-    paymentFlow: {
+    paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
       btcProtocolFee: bankFee.btc,
       usdProtocolFee: bankFee.usd,
-    } as OnChainPaymentFlowState<S, R>,
+    },
 
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
     amountDisplayCurrency: Number(paymentAmount.usd.amount) as DisplayCurrencyBaseAmount,
@@ -132,10 +141,7 @@ export const recordSendOnChainPayment = async <
   })
 }
 
-export const recordLnFeeReimbursement = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const recordLnFeeReimbursement = async ({
   walletDescriptor,
   paymentAmount,
   bankFee,
@@ -147,12 +153,12 @@ export const recordLnFeeReimbursement = async <
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
     amountDisplayCurrency: Number(paymentAmount.usd.amount) as DisplayCurrencyBaseAmount,
     displayCurrency: getDisplayCurrencyConfig().code,
-    paymentFlow: {
+    paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
       btcProtocolFee: bankFee.btc,
       usdProtocolFee: bankFee.usd,
-    } as PaymentFlowState<S, R>,
+    },
     journalId: "031a419636dbf6d25981d6d2" as LedgerJournalId,
   })
 
@@ -166,10 +172,7 @@ export const recordLnFeeReimbursement = async <
   })
 }
 
-export const recordLnIntraLedgerPayment = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const recordLnIntraLedgerPayment = async ({
   senderWalletDescriptor,
   recipientWalletDescriptor,
   paymentAmount,
@@ -183,12 +186,12 @@ export const recordLnIntraLedgerPayment = async <
       feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
       displayCurrency: DisplayCurrency.Usd,
       pubkey: crypto.randomUUID() as Pubkey,
-      paymentFlow: {
+      paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
         btcProtocolFee: ZERO_SATS,
         usdProtocolFee: ZERO_CENTS,
-      } as PaymentFlowState<S, R>,
+      },
     })
 
   return LedgerFacade.recordIntraledger({
@@ -201,10 +204,7 @@ export const recordLnIntraLedgerPayment = async <
   })
 }
 
-export const recordWalletIdIntraLedgerPayment = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const recordWalletIdIntraLedgerPayment = async ({
   senderWalletDescriptor,
   recipientWalletDescriptor,
   paymentAmount,
@@ -216,12 +216,12 @@ export const recordWalletIdIntraLedgerPayment = async <
       ) as DisplayCurrencyBaseAmount,
       feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
       displayCurrency: DisplayCurrency.Usd,
-      paymentFlow: {
+      paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
         btcProtocolFee: ZERO_SATS,
         usdProtocolFee: ZERO_CENTS,
-      } as PaymentFlowState<S, R>,
+      },
     })
 
   return LedgerFacade.recordIntraledger({
@@ -234,10 +234,7 @@ export const recordWalletIdIntraLedgerPayment = async <
   })
 }
 
-export const recordOnChainIntraLedgerPayment = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+export const recordOnChainIntraLedgerPayment = async ({
   senderWalletDescriptor,
   recipientWalletDescriptor,
   paymentAmount,
@@ -251,12 +248,12 @@ export const recordOnChainIntraLedgerPayment = async <
       displayCurrency: DisplayCurrency.Usd,
       sendAll: false,
       payeeAddresses: ["address1" as OnChainAddress],
-      paymentFlow: {
+      paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
         btcProtocolFee: ZERO_SATS,
         usdProtocolFee: ZERO_CENTS,
-      } as OnChainPaymentFlowState<S, R>,
+      },
     })
 
   return LedgerFacade.recordIntraledger({
@@ -283,12 +280,12 @@ export const recordLnTradeIntraAccountTxn = async ({
       feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
       displayCurrency: DisplayCurrency.Usd,
       pubkey: crypto.randomUUID() as Pubkey,
-      paymentFlow: {
+      paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
         btcProtocolFee: ZERO_SATS,
         usdProtocolFee: ZERO_CENTS,
-      } as PaymentFlowState<WalletCurrency, WalletCurrency>,
+      },
     })
 
   return LedgerFacade.recordIntraledger({
@@ -310,12 +307,12 @@ export const recordWalletIdTradeIntraAccountTxn = async ({
     amountDisplayCurrency: Number(paymentAmount.usd.amount) as DisplayCurrencyBaseAmount,
     feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
     displayCurrency: DisplayCurrency.Usd,
-    paymentFlow: {
+    paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
       btcProtocolFee: ZERO_SATS,
       usdProtocolFee: ZERO_CENTS,
-    } as PaymentFlowState<WalletCurrency, WalletCurrency>,
+    },
   })
 
   return LedgerFacade.recordIntraledger({
@@ -342,12 +339,12 @@ export const recordOnChainTradeIntraAccountTxn = async ({
       displayCurrency: DisplayCurrency.Usd,
       sendAll: false,
       payeeAddresses: ["address1" as OnChainAddress],
-      paymentFlow: {
+      paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
         btcProtocolFee: ZERO_SATS,
         usdProtocolFee: ZERO_CENTS,
-      } as OnChainPaymentFlowState<WalletCurrency, WalletCurrency>,
+      },
     })
 
   return LedgerFacade.recordIntraledger({
@@ -359,6 +356,7 @@ export const recordOnChainTradeIntraAccountTxn = async ({
     additionalDebitMetadata: debitAccountAdditionalMetadata,
   })
 }
+
 // Non-LedgerFacade helpers from legacy admin service
 // ======
 

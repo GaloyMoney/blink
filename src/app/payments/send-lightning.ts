@@ -389,15 +389,15 @@ const executePaymentViaIntraledger = async <
     }
 
     let metadata:
-      | NewAddLnIntraledgerSendLedgerMetadata
-      | NewAddLnTradeIntraAccountLedgerMetadata
+      | AddLnIntraledgerSendLedgerMetadata
+      | AddLnTradeIntraAccountLedgerMetadata
     let additionalDebitMetadata: { [key: string]: string | undefined } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
         LedgerFacade.LnTradeIntraAccountLedgerMetadata({
           paymentHash,
           pubkey: recipientPubkey,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -410,7 +410,7 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.LnIntraledgerLedgerMetadata({
           paymentHash,
           pubkey: recipientPubkey,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -532,7 +532,7 @@ const executePaymentViaLn = async ({
       feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
       displayCurrency: DisplayCurrency.Usd,
 
-      paymentFlow,
+      paymentAmounts: paymentFlow,
       pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
       paymentHash,
       feeKnownInAdvance: !!rawRoute,

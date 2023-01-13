@@ -28,6 +28,7 @@ import {
 } from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
+import { DisplayCurrency } from "@domain/fiat"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -192,14 +193,21 @@ const updatePendingInvoiceBeforeFinally = async ({
 
     const metadata = LedgerFacade.LnReceiveLedgerMetadata({
       paymentHash,
-      fee: walletInvoiceReceiver.btcBankFee,
+      pubkey: walletInvoice.pubkey,
+      paymentAmounts: {
+        btcPaymentAmount: walletInvoiceReceiver.btcToCreditReceiver,
+        usdPaymentAmount: walletInvoiceReceiver.usdToCreditReceiver,
+        btcProtocolFee: walletInvoiceReceiver.btcBankFee,
+        usdProtocolFee: walletInvoiceReceiver.usdBankFee,
+      },
+
       feeDisplayCurrency: Number(
         walletInvoiceReceiver.usdBankFee.amount,
       ) as DisplayCurrencyBaseAmount,
       amountDisplayCurrency: Number(
         walletInvoiceReceiver.usdToCreditReceiver.amount,
       ) as DisplayCurrencyBaseAmount,
-      pubkey: walletInvoice.pubkey,
+      displayCurrency: DisplayCurrency.Usd,
     })
 
     const recipientWallet = await WalletsRepository().findById(

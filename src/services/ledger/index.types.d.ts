@@ -53,14 +53,17 @@ type NonIntraledgerLedgerMetadata = LedgerMetadata & {
   feeUsd: number // to be removed when "centFee" takes over
 }
 
-type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
-  hash: PaymentHash
-}
+type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata &
+  SendAmountsMetadata & {
+    hash: PaymentHash
+    pubkey: Pubkey
+  }
 
-type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
-  hash: OnChainTxHash
-  payee_addresses: OnChainAddress[]
-}
+type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata &
+  SendAmountsMetadata & {
+    hash: OnChainTxHash
+    payee_addresses: OnChainAddress[]
+  }
 
 type SendAmountsMetadata = {
   satsAmount: Satoshis
@@ -103,60 +106,33 @@ type IntraledgerBaseMetadata = LedgerMetadata & {
   username?: Username
 }
 
-type AddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
-  hash: PaymentHash
-  pubkey: Pubkey
-}
+type AddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+  SendAmountsMetadata & {
+    hash: PaymentHash
+    pubkey: Pubkey
+  }
 
 type AddLnTradeIntraAccountLedgerMetadata = Omit<
   AddLnIntraledgerSendLedgerMetadata,
   "username"
 >
 
-type NewAddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
   SendAmountsMetadata & {
-    hash: PaymentHash
-    pubkey: Pubkey
+    payee_addresses: OnChainAddress[]
+    sendAll: boolean
   }
-
-type NewAddLnTradeIntraAccountLedgerMetadata = Omit<
-  NewAddLnIntraledgerSendLedgerMetadata,
-  "username"
->
-
-type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
-  payee_addresses: OnChainAddress[]
-  sendAll: boolean
-}
 
 type AddOnChainTradeIntraAccountLedgerMetadata = Omit<
   AddOnChainIntraledgerSendLedgerMetadata,
   "username"
 >
 
-type NewAddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
-  SendAmountsMetadata & {
-    payee_addresses: OnChainAddress[]
-    sendAll: boolean
-  }
-
-type NewAddOnChainTradeIntraAccountLedgerMetadata = Omit<
-  NewAddOnChainIntraledgerSendLedgerMetadata,
-  "username"
->
-
-type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata
+type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+  SendAmountsMetadata
 
 type AddWalletIdTradeIntraAccountLedgerMetadata = Omit<
   AddWalletIdIntraledgerSendLedgerMetadata,
-  "username"
->
-
-type NewAddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
-  SendAmountsMetadata
-
-type NewAddWalletIdTradeIntraAccountLedgerMetadata = Omit<
-  NewAddWalletIdIntraledgerSendLedgerMetadata,
   "username"
 >
 

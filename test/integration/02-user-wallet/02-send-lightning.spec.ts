@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "crypto"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
 import { getDisplayCurrencyConfig, getLocale, ONE_DAY } from "@config"
 
@@ -18,7 +19,7 @@ import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import {
@@ -208,7 +209,7 @@ afterAll(() => {
 
 describe("UserWallet - Lightning Pay", () => {
   it("sends to another Galoy user with memo", async () => {
-    const memo = "invoiceMemo"
+    const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
     const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdC as WalletId,
@@ -258,6 +259,44 @@ describe("UserWallet - Lightning Pay", () => {
     expect(userCTxn.memo).toBe(memo)
     expect(userCTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
     expect(userCTxn.settlementVia.type).toBe("intraledger")
+
+    // Check ledger transaction metadata for BTC 'LedgerTransactionType.LnIntraLedger'
+    // ===
+    const txns = await LedgerService().getTransactionsByWalletId(walletIdB)
+    if (txns instanceof Error) throw txns
+
+    const txnPayment = txns.find((tx) => tx.lnMemo === memo)
+    expect(txnPayment).not.toBeUndefined()
+
+    const satsAmount = amountInvoice
+    const btcPaymentAmount = {
+      amount: BigInt(satsAmount),
+      currency: WalletCurrency.Btc,
+    }
+    const usdPaymentAmount = await usdFromBtcMidPriceFn(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+    const centsAmount = Number(usdPaymentAmount.amount)
+
+    const expectedFields = {
+      type: LedgerTransactionType.LnIntraLedger,
+
+      debit: satsAmount,
+      credit: 0,
+
+      fee: 0,
+      feeUsd: 0,
+      usd: Number((centsAmount / 100).toFixed(2)),
+
+      satsAmount,
+      satsFee: 0,
+      centsAmount,
+      centsFee: 0,
+      displayAmount: centsAmount,
+      displayFee: 0,
+
+      displayCurrency: DisplayCurrency.Usd,
+    }
+    expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
   })
 
   it("sends to another Galoy user an amount less than 1 cent", async () => {
@@ -469,39 +508,71 @@ describe("UserWallet - Lightning Pay", () => {
     const txns = await LedgerService().getTransactionsByHash(paymentHash)
     if (txns instanceof Error) throw txns
 
-    // Test fee reimbursement amounts
+    const btcPaymentAmount = paymentAmountFromNumber({
+      amount: amountInvoice,
+      currency: WalletCurrency.Btc,
+    })
+    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
+
+    const usdPaymentAmount = await usdFromBtcMidPriceFn(btcPaymentAmount)
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+    const cents = Number(usdPaymentAmount.amount)
+
+    // Check transaction metadata for BTC 'LedgerTransactionType.Payment'
+    // ===
     const txnPayment = txns.find((tx) => tx.type === LedgerTransactionType.Payment)
     expect(txnPayment).not.toBeUndefined()
     if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
     if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
+    if (!txnPayment?.centsFee) throw new Error("centsFee missing from payment")
+    if (!txnPayment?.satsFee) throw new Error("satsFee missing from payment")
+    expect(amountInvoice).toEqual(txnPayment.satsAmount)
+    expect(Number(usdPaymentAmount.amount)).toEqual(txnPayment.centsAmount)
+    expect(txnPayment.usd).toEqual(
+      Number(((txnPayment.centsAmount + txnPayment.centsFee) / 100).toFixed(2)),
+    )
 
-    const usdPaymentAmount = paymentAmountFromNumber({
-      amount: txnPayment.centsAmount,
-      currency: WalletCurrency.Usd,
-    })
-    if (usdPaymentAmount instanceof Error) return usdPaymentAmount
-    const btcPaymentAmount = paymentAmountFromNumber({
-      amount: txnPayment.satsAmount,
-      currency: WalletCurrency.Btc,
-    })
-    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
-    const paymentAmounts = {
+    const priceRatio = PriceRatio({
       usd: usdPaymentAmount,
       btc: btcPaymentAmount,
-    }
-    const priceRatio = PriceRatio(paymentAmounts)
+    })
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeAmountSats = LnFees().maxProtocolFee({
       amount: BigInt(amountInvoice),
       currency: WalletCurrency.Btc,
     })
-    const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
-    const feeCents = toCents(feeAmountCents.amount)
+    const satsFee = toSats(feeAmountSats.amount)
 
+    const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
+    const centsFee = toCents(feeAmountCents.amount)
+
+    const expectedFields = {
+      type: LedgerTransactionType.Payment,
+
+      debit: amountInvoice + satsFee,
+      credit: 0,
+
+      fee: satsFee,
+      feeUsd: centsFee / 100,
+      usd: (cents + centsFee) / 100,
+
+      satsAmount: amountInvoice,
+      satsFee,
+      centsAmount: cents,
+      centsFee,
+      displayAmount: cents,
+      displayFee: centsFee,
+
+      displayCurrency: DisplayCurrency.Usd,
+    }
+    expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
+
+    // Test fee reimbursement amounts
     const txnFeeReimburse = txns.find(
       (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,
     )
+
     expect(txnFeeReimburse).not.toBeUndefined()
     expect(txnFeeReimburse).toEqual(
       expect.objectContaining({
@@ -510,14 +581,16 @@ describe("UserWallet - Lightning Pay", () => {
 
         fee: 0,
         feeUsd: 0,
-        usd: feeCents / 100,
+        usd: centsFee / 100,
 
         satsAmount: toSats(feeAmountSats.amount),
         satsFee: 0,
-        centsAmount: feeCents,
+        centsAmount: centsFee,
         centsFee: 0,
-        displayAmount: feeCents,
+        displayAmount: centsFee,
         displayFee: 0,
+
+        displayCurrency: DisplayCurrency.Usd,
       }),
     )
 
@@ -1476,7 +1549,10 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toSats(100)
 
-      const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountPayment })
+      const { id: rawPaymentHash, request } = await createInvoice({
+        lnd: lndOutside1,
+        tokens: amountPayment,
+      })
 
       const paymentResult = await Payments.payInvoiceByWalletId({
         uncheckedPaymentRequest: request,
@@ -1490,6 +1566,62 @@ describe("USD Wallets - Lightning Pay", () => {
       const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
       if (cents instanceof Error) throw cents
 
+      const feeAmountSats = LnFees().maxProtocolFee({
+        amount: BigInt(amountPayment),
+        currency: WalletCurrency.Btc,
+      })
+
+      // Check transaction metadata for USD 'LedgerTransactionType.Payment'
+      // ===
+      const txns = await LedgerService().getTransactionsByHash(
+        rawPaymentHash as PaymentHash,
+      )
+      if (txns instanceof Error) throw txns
+
+      const txnPayment = txns.find((tx) => tx.type === LedgerTransactionType.Payment)
+      expect(txnPayment).not.toBeUndefined()
+      if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
+      if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
+      if (!txnPayment?.centsFee) throw new Error("centsFee missing from payment")
+      if (!txnPayment?.satsFee) throw new Error("satsFee missing from payment")
+      expect(amountPayment).toEqual(txnPayment.satsAmount)
+      expect(cents).toEqual(txnPayment.centsAmount)
+      expect(txnPayment.usd).toEqual(
+        Number(((txnPayment.centsAmount + txnPayment.centsFee) / 100).toFixed(2)),
+      )
+
+      const priceRatio = PriceRatio({
+        usd: { amount: BigInt(cents), currency: WalletCurrency.Usd },
+        btc: { amount: BigInt(amountPayment), currency: WalletCurrency.Btc },
+      })
+      if (priceRatio instanceof Error) throw priceRatio
+      const feeAmountCents = priceRatio.convertFromBtcToCeil(feeAmountSats)
+
+      const satsFee = Number(feeAmountSats.amount)
+      const centsFee = Number(feeAmountCents.amount)
+      const expectedFields = {
+        type: LedgerTransactionType.Payment,
+
+        debit: cents + centsFee,
+        credit: 0,
+
+        fee: satsFee,
+        feeUsd: centsFee / 100,
+        usd: (cents + centsFee) / 100,
+
+        satsAmount: amountPayment,
+        satsFee,
+        centsAmount: cents,
+        centsFee,
+        displayAmount: cents,
+        displayFee: centsFee,
+
+        displayCurrency: DisplayCurrency.Usd,
+      }
+      expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
+
+      // Check final balances
+      // ===
       const finalBalance = await getBalanceHelper(walletIdUsdB)
       expect(finalBalance).toBe(initBalanceUsdB - cents)
     })
@@ -1850,6 +1982,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(finalBalanceA).toBe(initBalanceA - amountPayment)
     })
   })
+
   describe("Intraledger payments", () => {
     const btcSendAmount = 50_000
     const btcPromise = () =>
@@ -1915,19 +2048,24 @@ describe("USD Wallets - Lightning Pay", () => {
       recipientAmountInvoice
       txType?: LedgerTransactionType
     }) => {
+      const memo = "Intraledger Memo #" + (Math.random() * 1_000_000).toFixed()
+
       const senderInitBalance = toSats(await getBalanceHelper(senderWalletId))
       const recipientInitBalance = toSats(await getBalanceHelper(recipientWalletId))
 
       const senderWallet = await WalletsRepository().findById(senderWalletId)
       if (senderWallet instanceof Error) throw senderWallet
 
+      const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+      if (recipientWallet instanceof Error) throw recipientWallet
+
       const intraledgerPaymentSendFn =
         senderWallet.currency === WalletCurrency.Btc
           ? Payments.intraledgerPaymentSendWalletIdForBtcWallet
           : Payments.intraledgerPaymentSendWalletIdForUsdWallet
       const res = await intraledgerPaymentSendFn({
-        recipientWalletId: recipientWalletId,
-        memo: "",
+        recipientWalletId,
+        memo,
         amount: senderAmountInvoice,
         senderWalletId: senderWalletId,
         senderAccount,
@@ -1963,10 +2101,74 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const senderFinalBalance = await getBalanceHelper(senderWalletId)
       expect(senderFinalBalance).toBe(senderInitBalance - senderAmountInvoice)
+
+      // Check ledger transaction metadata for USD & BTC 'LedgerTransactionType.[IntraLedger,WalletIdTradeIntraAccount]'
+      // ===
+      const txns = await LedgerService().getTransactionsByWalletId(senderWalletId)
+      if (txns instanceof Error) throw txns
+
+      const txnPayment = txns.find((tx) => tx.lnMemo === memo)
+      expect(txnPayment).not.toBeUndefined()
+
+      let debit, satsAmount, centsAmount
+      if (senderWallet.currency === WalletCurrency.Btc) {
+        satsAmount = senderAmountInvoice
+        const btcPaymentAmount = {
+          amount: BigInt(satsAmount),
+          currency: WalletCurrency.Btc,
+        }
+        const centsPaymentAmount =
+          senderWallet.currency === recipientWallet.currency
+            ? await usdFromBtcMidPriceFn(btcPaymentAmount)
+            : await newDealerFns.getCentsFromSatsForImmediateBuy(btcPaymentAmount)
+
+        if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
+        centsAmount = toCents(centsPaymentAmount.amount)
+
+        debit = satsAmount
+      } else {
+        centsAmount = senderAmountInvoice
+        const usdPaymentAmount = {
+          amount: BigInt(centsAmount),
+          currency: WalletCurrency.Usd,
+        }
+        const satsPaymentAmount =
+          senderWallet.currency === recipientWallet.currency
+            ? await btcFromUsdMidPriceFn(usdPaymentAmount)
+            : await newDealerFns.getSatsFromCentsForImmediateSell(usdPaymentAmount)
+        if (satsPaymentAmount instanceof Error) throw satsPaymentAmount
+        satsAmount = toSats(satsPaymentAmount.amount)
+
+        debit = centsAmount
+      }
+
+      const expectedFields = {
+        type:
+          senderWallet.accountId === recipientWallet.accountId
+            ? LedgerTransactionType.WalletIdTradeIntraAccount
+            : LedgerTransactionType.IntraLedger,
+
+        debit,
+        credit: 0,
+
+        fee: 0,
+        feeUsd: 0,
+        usd: Number((centsAmount / 100).toFixed(2)),
+
+        satsAmount,
+        satsFee: 0,
+        centsAmount,
+        centsFee: 0,
+        displayAmount: centsAmount,
+        displayFee: 0,
+
+        displayCurrency: DisplayCurrency.Usd,
+      }
+      expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
     }
 
     it("sends to self, conversion from BTC wallet to USD wallet", async () => {
-      const btcSendAmountInUsd = await Promise.resolve(btcPromise())
+      const btcSendAmountInUsd = await btcPromise()
       if (btcSendAmountInUsd instanceof Error) throw btcSendAmountInUsd
 
       const res = await testIntraledgerSend({
@@ -1981,7 +2183,7 @@ describe("USD Wallets - Lightning Pay", () => {
     })
 
     it("sends to self, conversion from USD wallet to BTC wallet", async () => {
-      const usdSendAmountInBtc = await Promise.resolve(usdPromise())
+      const usdSendAmountInBtc = await usdPromise()
       if (usdSendAmountInBtc instanceof Error) throw usdSendAmountInBtc
 
       const res = await testIntraledgerSend({
@@ -2020,7 +2222,7 @@ describe("USD Wallets - Lightning Pay", () => {
     })
 
     it("sends from BTC wallet to another Galoy user's USD wallet", async () => {
-      const btcSendAmountInUsd = await Promise.resolve(btcPromise())
+      const btcSendAmountInUsd = await btcPromise()
       if (btcSendAmountInUsd instanceof Error) throw btcSendAmountInUsd
 
       const res = await testIntraledgerSend({
@@ -2034,7 +2236,7 @@ describe("USD Wallets - Lightning Pay", () => {
     })
 
     it("sends from USD wallet to another Galoy user's BTC wallet", async () => {
-      const usdSendAmountInBtc = await Promise.resolve(usdPromise())
+      const usdSendAmountInBtc = await usdPromise()
       if (usdSendAmountInBtc instanceof Error) throw usdSendAmountInBtc
 
       const res = await testIntraledgerSend({

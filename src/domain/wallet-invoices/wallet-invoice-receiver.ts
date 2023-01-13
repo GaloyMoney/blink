@@ -1,53 +1,77 @@
-import { WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
+import { PriceRatio } from "@domain/payments"
+import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
+
+const calc = AmountCalculator()
 
 export const WalletInvoiceReceiver = async ({
   walletInvoice,
   receivedBtc,
+  feeBtc = ZERO_BANK_FEE.btcBankFee,
   usdFromBtc,
   usdFromBtcMidPrice,
 }: WalletInvoiceReceiverArgs): Promise<
   WalletInvoiceReceiver | DealerPriceServiceError | ValidationError
 > => {
-  const btcToCreditReceiver = receivedBtc
-
   if (walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc) {
-    const usdToCreditReceiver = await usdFromBtcMidPrice(btcToCreditReceiver)
-    if (usdToCreditReceiver instanceof Error) return usdToCreditReceiver
+    const receivedUsd = await usdFromBtcMidPrice(receivedBtc)
+    if (receivedUsd instanceof Error) return receivedUsd
+
+    const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+    if (priceRatio instanceof Error) return priceRatio
+
+    const btcBankFee = feeBtc
+    const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
     return {
-      btcToCreditReceiver,
-      usdToCreditReceiver,
-      ...ZERO_BANK_FEE,
+      btcToCreditReceiver: calc.sub(receivedBtc, btcBankFee),
+      usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
+      usdBankFee,
+      btcBankFee,
       receivedAmount: () =>
         walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
-          ? btcToCreditReceiver
-          : usdToCreditReceiver,
+          ? receivedBtc
+          : receivedUsd,
     }
   }
 
   if (walletInvoice.usdAmount) {
-    const usdToCreditReceiver = walletInvoice.usdAmount
+    const receivedUsd = walletInvoice.usdAmount
+
+    const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+    if (priceRatio instanceof Error) return priceRatio
+
+    const btcBankFee = feeBtc
+    const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
+
     return {
-      btcToCreditReceiver,
-      usdToCreditReceiver,
-      ...ZERO_BANK_FEE,
+      btcToCreditReceiver: calc.sub(receivedBtc, btcBankFee),
+      usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
+      usdBankFee,
+      btcBankFee,
       receivedAmount: () =>
         walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
-          ? btcToCreditReceiver
-          : usdToCreditReceiver,
+          ? receivedBtc
+          : receivedUsd,
     }
   }
 
-  const usdToCreditReceiver = await usdFromBtc(btcToCreditReceiver)
-  if (usdToCreditReceiver instanceof Error) return usdToCreditReceiver
+  const receivedUsd = await usdFromBtc(receivedBtc)
+  if (receivedUsd instanceof Error) return receivedUsd
+
+  const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+  if (priceRatio instanceof Error) return priceRatio
+
+  const btcBankFee = feeBtc
+  const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
   return {
-    usdToCreditReceiver,
-    btcToCreditReceiver,
-    ...ZERO_BANK_FEE,
+    btcToCreditReceiver: calc.sub(receivedBtc, btcBankFee),
+    usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
+    usdBankFee,
+    btcBankFee,
     receivedAmount: () =>
       walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
-        ? btcToCreditReceiver
-        : usdToCreditReceiver,
+        ? receivedBtc
+        : receivedUsd,
   }
 }
