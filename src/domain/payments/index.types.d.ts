@@ -11,7 +11,18 @@ type XorPaymentHashProperty = XOR<
   { intraLedgerHash: IntraLedgerHash }
 >
 
-type PaymentFlowCommonState<S extends WalletCurrency, R extends WalletCurrency> = {
+type AmountsAndFees = {
+  btcPaymentAmount: BtcPaymentAmount
+  btcProtocolAndBankFee: BtcPaymentAmount
+
+  usdPaymentAmount: UsdPaymentAmount
+  usdProtocolAndBankFee: UsdPaymentAmount
+}
+
+type PaymentFlowCommonState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = AmountsAndFees & {
   senderWalletId: WalletId
   senderWalletCurrency: S
   senderAccountId: AccountId
@@ -20,12 +31,7 @@ type PaymentFlowCommonState<S extends WalletCurrency, R extends WalletCurrency> 
   createdAt: Date
   paymentSentAndPending: boolean
 
-  btcPaymentAmount: BtcPaymentAmount
-  usdPaymentAmount: UsdPaymentAmount
   inputAmount: bigint
-
-  btcProtocolFee: BtcPaymentAmount
-  usdProtocolFee: UsdPaymentAmount
 
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
@@ -61,7 +67,7 @@ type PaymentFlowStateIndex = XorPaymentHashProperty & {
 type PaymentAmountInAllCurrencies = { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
 
 type PaymentFlowCommon<S extends WalletCurrency, R extends WalletCurrency> = {
-  protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
+  protocolAndBankFeeInSenderWalletCurrency(): PaymentAmount<S>
   paymentAmounts(): PaymentAmountInAllCurrencies
   totalAmountsForPayment(): PaymentAmountInAllCurrencies
   routeDetails(): {
@@ -313,8 +319,8 @@ type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
     btcPaymentAmount?: BtcPaymentAmount
     inputAmount?: bigint
     uncheckedAmount?: number
-    btcProtocolFee?: BtcPaymentAmount
-    usdProtocolFee?: UsdPaymentAmount
+    btcProtocolAndBankFee?: BtcPaymentAmount
+    usdProtocolAndBankFee?: UsdPaymentAmount
     skipProbeForDestination: boolean
   }
 
@@ -345,7 +351,10 @@ type LPFBWithConversionState<
   R extends WalletCurrency,
 > = RequireField<
   LPFBWithRecipientWalletState<S, R>,
-  "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
+  | "btcPaymentAmount"
+  | "btcProtocolAndBankFee"
+  | "usdProtocolAndBankFee"
+  | "usdPaymentAmount"
 > & { createdAt: Date }
 
 type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {

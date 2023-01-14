@@ -21,13 +21,11 @@ const checkLimit =
     limitName,
     limitAmount: limit,
     limitError,
-    limitErrMsg,
     priceRatio,
   }: {
     limitName: AccountLimitsType
     limitAmount: UsdCents
     limitError: LimitsExceededErrorConstructor
-    limitErrMsg: string | undefined
     priceRatio: PriceRatio
   }) =>
   async ({
@@ -63,6 +61,10 @@ const checkLimit =
 
       walletVolumes,
     })
+
+    const limitAsUsd = `$${(limit / 100).toFixed(2)}`
+    const limitErrMsg = `Cannot transfer more than ${limitAsUsd} in 24 hours`
+
     return volumeRemaining.amount < amount.amount ? new limitError(limitErrMsg) : true
   }
 
@@ -77,21 +79,18 @@ export const AccountLimitsChecker = ({
     limitName: AccountLimitsType.IntraLedger,
     limitAmount: accountLimits.intraLedgerLimit,
     limitError: IntraledgerLimitsExceededError,
-    limitErrMsg: `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
     priceRatio,
   }),
   checkWithdrawal: checkLimit({
     limitName: AccountLimitsType.Withdrawal,
     limitAmount: accountLimits.withdrawalLimit,
     limitError: WithdrawalLimitsExceededError,
-    limitErrMsg: `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
     priceRatio,
   }),
   checkTradeIntraAccount: checkLimit({
     limitName: AccountLimitsType.SelfTrade,
     limitAmount: accountLimits.tradeIntraAccountLimit,
     limitError: TradeIntraAccountLimitsExceededError,
-    limitErrMsg: `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`,
     priceRatio,
   }),
 })

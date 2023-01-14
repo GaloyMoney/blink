@@ -9,6 +9,8 @@ import {
   RestrictedRegionPhoneProviderError,
   UnknownPhoneProviderServiceError,
   UnsubscribedRecipientPhoneProviderError,
+  PhoneProviderRateLimitExceededError,
+  RestrictedRecipientPhoneNumberError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 
@@ -33,26 +35,7 @@ export const TwilioClient = (): IPhoneProviderService => {
       await verify.verifications.create({ to, channel })
     } catch (err) {
       baseLogger.error({ err }, "impossible to send text")
-      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(err.message)
-
-      switch (true) {
-        case match(KnownTwilioErrorMessages.InvalidPhoneNumber):
-        case match(KnownTwilioErrorMessages.InvalidMobileNumber):
-          return new InvalidPhoneNumberPhoneProviderError(err.message || err)
-
-        case match(KnownTwilioErrorMessages.RestrictedRegion):
-        case match(KnownTwilioErrorMessages.BlockedRegion):
-          return new RestrictedRegionPhoneProviderError(err.message || err)
-
-        case match(KnownTwilioErrorMessages.UnsubscribedRecipient):
-          return new UnsubscribedRecipientPhoneProviderError(err.message || err)
-
-        case match(KnownTwilioErrorMessages.BadPhoneProviderConnection):
-          return new PhoneProviderConnectionError(err.message || err)
-
-        default:
-          return new UnknownPhoneProviderServiceError(err.message || err)
-      }
+      return handleCommonErrors(err)
     }
 
     return true
@@ -72,19 +55,13 @@ export const TwilioClient = (): IPhoneProviderService => {
     } catch (err) {
       baseLogger.error({ err }, "impossible to verify phone and code")
 
-      if (err.message.includes("Invalid parameter `To`")) {
-        return new InvalidPhoneNumberPhoneProviderError(err.message || err)
-      }
+      switch (true) {
+        case err.status === 404:
+          return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
 
-      if (err.message.includes("timeout of") && err.message.includes("exceeded")) {
-        return new PhoneProviderConnectionError(err.message || err)
+        default:
+          return handleCommonErrors(err)
       }
-
-      if (err.status === 404) {
-        return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
-      }
-
-      return new UnknownPhoneProviderServiceError(err.message || err)
     }
 
     if (verification.status !== "approved") {
@@ -135,12 +112,49 @@ export const TwilioClient = (): IPhoneProviderService => {
   })
 }
 
+const handleCommonErrors = (err: Error | string) => {
+  const errMsg = typeof err === "string" ? err : err.message
+
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
+
+  switch (true) {
+    case match(KnownTwilioErrorMessages.InvalidPhoneNumber):
+    case match(KnownTwilioErrorMessages.InvalidMobileNumber):
+    case match(KnownTwilioErrorMessages.InvalidPhoneNumberParameter):
+      return new InvalidPhoneNumberPhoneProviderError(errMsg)
+
+    case match(KnownTwilioErrorMessages.RestrictedRegion):
+    case match(KnownTwilioErrorMessages.BlockedRegion):
+      return new RestrictedRegionPhoneProviderError(errMsg)
+
+    case match(KnownTwilioErrorMessages.UnsubscribedRecipient):
+      return new UnsubscribedRecipientPhoneProviderError(errMsg)
+
+    case match(KnownTwilioErrorMessages.BadPhoneProviderConnection):
+      return new PhoneProviderConnectionError(errMsg)
+
+    case match(KnownTwilioErrorMessages.RateLimitsExceeded):
+    case match(KnownTwilioErrorMessages.TooManyConcurrentRequests):
+      return new PhoneProviderRateLimitExceededError(errMsg)
+
+    case match(KnownTwilioErrorMessages.FraudulentActivityBlock):
+      return new RestrictedRecipientPhoneNumberError(errMsg)
+
+    default:
+      return new UnknownPhoneProviderServiceError(errMsg)
+  }
+}
 export const KnownTwilioErrorMessages: { [key: string]: RegExp } = {
   InvalidPhoneNumber: /not a valid phone number/,
   InvalidMobileNumber: /not a mobile number/,
+  InvalidPhoneNumberParameter: /Invalid parameter `To`/,
   RestrictedRegion: /has not been enabled for the region/,
   UnsubscribedRecipient: /unsubscribed recipient/,
   BadPhoneProviderConnection: /timeout of.*exceeded/,
   BlockedRegion:
     /The destination phone number has been blocked by Verify Geo-Permissions. .* is blocked for sms channel for all services/,
+  RateLimitsExceeded: /Max.*attempts reached/,
+  TooManyConcurrentRequests: /Too many concurrent requests/,
+  FraudulentActivityBlock:
+    /The destination phone number has been temporarily blocked by Twilio due to fraudulent activities/,
 } as const

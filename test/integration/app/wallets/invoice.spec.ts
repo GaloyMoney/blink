@@ -4,7 +4,7 @@ import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
 } from "@config"
-import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
+import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { toCents } from "@domain/fiat"
 import {
   InvoiceCreateForRecipientRateLimiterExceededError,
@@ -31,6 +31,8 @@ let walletIdUsd: WalletId
 let accountIdB: AccountId
 
 const walletInvoices = WalletInvoicesRepository()
+
+const dealerFns = DealerPriceService()
 
 beforeAll(async () => {
   const userRef = "B"
@@ -151,12 +153,12 @@ describe("Wallet - addInvoice USD", () => {
   it("add a self generated USD invoice", async () => {
     const centsInput = 10000
 
-    const sats = await DealerPriceService().getSatsFromCentsForFutureBuy(
-      toCents(centsInput),
-      defaultTimeToExpiryInSeconds,
-    )
-    expect(sats).not.toBeInstanceOf(Error)
-    if (sats instanceof Error) throw sats
+    const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
+      amount: BigInt(centsInput),
+      currency: WalletCurrency.Usd,
+    })
+    if (btcAmount instanceof Error) throw btcAmount
+    const sats = Number(btcAmount.amount)
 
     const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
       walletId: walletIdUsd,
@@ -204,12 +206,12 @@ describe("Wallet - addInvoice USD", () => {
   it("adds a public with amount invoice", async () => {
     const centsInput = 10000
 
-    const sats = await DealerPriceService().getSatsFromCentsForFutureBuy(
-      toCents(centsInput),
-      defaultTimeToExpiryInSeconds,
-    )
-    expect(sats).not.toBeInstanceOf(Error)
-    if (sats instanceof Error) throw sats
+    const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
+      amount: BigInt(centsInput),
+      currency: WalletCurrency.Usd,
+    })
+    if (btcAmount instanceof Error) throw btcAmount
+    const sats = Number(btcAmount.amount)
 
     const lnInvoice = await Wallets.addInvoiceForRecipientForUsdWallet({
       recipientWalletId: walletIdUsd,

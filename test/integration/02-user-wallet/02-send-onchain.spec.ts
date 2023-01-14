@@ -28,12 +28,12 @@ import { LedgerService } from "@services/ledger"
 import { sleep, timestampDaysAgo } from "@utils"
 
 import { getCurrentPrice } from "@app/prices"
-import { usdFromBtcMidPriceFn } from "@app/shared"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
 import { LedgerTransactionType } from "@domain/ledger"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
-import { add, sub, toCents } from "@domain/fiat"
+import { add, DisplayCurrency, sub, toCents } from "@domain/fiat"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import { WalletsRepository } from "@services/mongoose"
@@ -86,6 +86,8 @@ let walletIdF: WalletId
 
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
+
+const dealerFns = DealerPriceService()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -233,8 +235,6 @@ const testExternalSend = async ({
 
   await sleep(1000)
 
-  const dealerFns = DealerPriceService()
-
   {
     const txResult = await getTransactionsForWalletId(senderWalletId)
     if (txResult.error instanceof Error || txResult.result === null) {
@@ -260,9 +260,13 @@ const testExternalSend = async ({
       fee = feeRates.withdrawDefaultMin + 7050
     } else {
       const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
-      const feeResult = await dealerFns.getCentsFromSatsForImmediateSell(feeSats)
-      if (feeResult instanceof Error) return feeResult
-      fee = feeResult
+
+      const feeResult = await dealerFns.getCentsFromSatsForImmediateSell({
+        amount: BigInt(feeSats),
+        currency: WalletCurrency.Btc,
+      })
+      if (feeResult instanceof Error) throw feeResult
+      fee = Number(feeResult.amount)
     }
 
     expect(settledTx.settlementFee).toBe(fee)
@@ -278,7 +282,7 @@ const testExternalSend = async ({
       expect(finalBalance).toBe(initialWalletBalance - amount - fee)
     }
 
-    // Check ledger transaction metadata
+    // Check ledger transaction metadata for USD & BTC 'LedgerTransactionType.OnchainPayment'
     // ===
     const txHash = (settledTx.settlementVia as SettlementViaOnChain).transactionHash
     const txns = await LedgerService().getTransactionsByHash(txHash)
@@ -317,7 +321,13 @@ const testExternalSend = async ({
       debit = satsAmount + satsFee
     } else {
       centsAmount = sendAll ? amountToSend - fee : amountToSend
-      satsAmount = await dealerFns.getSatsFromCentsForImmediateSell(centsAmount)
+
+      const btcAmount = await dealerFns.getSatsFromCentsForImmediateSell({
+        amount: BigInt(centsAmount),
+        currency: WalletCurrency.Usd,
+      })
+      if (btcAmount instanceof Error) throw btcAmount
+      satsAmount = Number(btcAmount.amount)
 
       centsFee = fee
       satsFee = toSats(feeRates.withdrawDefaultMin + 7050)
@@ -327,6 +337,8 @@ const testExternalSend = async ({
 
     expect(txnPayment).toEqual(
       expect.objectContaining({
+        type: LedgerTransactionType.OnchainPayment,
+
         debit,
         credit: 0,
 
@@ -340,6 +352,8 @@ const testExternalSend = async ({
         centsFee,
         displayAmount: centsAmount,
         displayFee: centsFee,
+
+        displayCurrency: DisplayCurrency.Usd,
       }),
     )
 
@@ -387,6 +401,9 @@ const testInternalSend = async ({
   recipientWalletId: WalletId
   senderAmount: Satoshis | UsdCents
 }) => {
+  const sendAll = false
+  const fee = 0
+
   const memo = "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
 
   const senderWallet = await WalletsRepository().findById(senderWalletId)
@@ -397,10 +414,8 @@ const testInternalSend = async ({
   if (recipientWallet instanceof Error) return recipientWallet
   const { currency: recipientCurrency } = recipientWallet
 
-  const dealerFns = DealerPriceService()
-
-  let amountResult: UsdCents | Satoshis | DealerPriceServiceError
-  let recipientAmount: UsdCents | Satoshis
+  let amountResult: PaymentAmount<WalletCurrency> | DealerPriceServiceError
+  let recipientAmount: number
   switch (true) {
     case senderCurrency === recipientCurrency:
       recipientAmount = senderAmount
@@ -408,22 +423,22 @@ const testInternalSend = async ({
 
     case senderCurrency === WalletCurrency.Usd &&
       recipientCurrency === WalletCurrency.Btc:
-      amountResult = await dealerFns.getSatsFromCentsForImmediateSell(
-        senderAmount as unknown as UsdCents,
-      )
+      amountResult = await dealerFns.getSatsFromCentsForImmediateSell({
+        amount: BigInt(senderAmount),
+        currency: WalletCurrency.Usd,
+      })
       if (amountResult instanceof Error) return amountResult
-
-      recipientAmount = amountResult
+      recipientAmount = Number(amountResult.amount)
       break
 
     case senderCurrency === WalletCurrency.Btc &&
       recipientCurrency === WalletCurrency.Usd:
-      amountResult = await dealerFns.getCentsFromSatsForImmediateBuy(
-        senderAmount as unknown as Satoshis,
-      )
+      amountResult = await dealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(senderAmount),
+        currency: WalletCurrency.Btc,
+      })
       if (amountResult instanceof Error) return amountResult
-
-      recipientAmount = amountResult
+      recipientAmount = Number(amountResult.amount)
       break
 
     default:
@@ -447,7 +462,7 @@ const testInternalSend = async ({
     amount: senderAmount,
     targetConfirmations,
     memo,
-    sendAll: false,
+    sendAll,
   }
   const paid =
     senderWallet.currency === WalletCurrency.Btc
@@ -529,6 +544,90 @@ const testInternalSend = async ({
   const filteredTxsUserD = txsRecipient.slice.filter(matchTx)
   expect(filteredTxsUserD.length).toBe(1)
   expect(filteredTxsUserD[0].memo).not.toBe(memo)
+
+  // Check ledger transaction metadata for USD & BTC 'LedgerTransactionType.OnchainIntraLedger'
+  // ===
+  const txns = await LedgerService().getTransactionsByWalletId(senderWalletId)
+  if (txns instanceof Error) throw txns
+
+  const txnPayment = txns.find(
+    (tx) =>
+      tx.type === LedgerTransactionType.OnchainIntraLedger &&
+      tx.memoFromPayer === memo &&
+      tx.debit,
+  )
+  expect(txnPayment).not.toBeUndefined()
+
+  const amountToSend = senderAmount
+
+  let debit, satsAmount, centsAmount, satsFee, centsFee
+  if (senderWallet.currency === WalletCurrency.Btc) {
+    satsAmount = sendAll ? amountToSend - fee : amountToSend
+    const btcPaymentAmount = {
+      amount: BigInt(satsAmount),
+      currency: WalletCurrency.Btc,
+    }
+    const centsPaymentAmount =
+      senderCurrency === recipientCurrency
+        ? await usdFromBtcMidPriceFn(btcPaymentAmount)
+        : await dealerFns.getCentsFromSatsForImmediateBuy(btcPaymentAmount)
+
+    if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
+    centsAmount = toCents(centsPaymentAmount.amount)
+
+    satsFee = fee
+
+    const priceRatio = PriceRatio({
+      usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
+      btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
+    })
+    if (priceRatio instanceof Error) throw priceRatio
+    const centsFeeAmount = priceRatio.convertFromBtcToCeil({
+      amount: BigInt(satsFee),
+      currency: WalletCurrency.Btc,
+    })
+    centsFee = toCents(centsFeeAmount.amount)
+
+    debit = satsAmount + satsFee
+  } else {
+    centsAmount = sendAll ? amountToSend - fee : amountToSend
+    const usdPaymentAmount = {
+      amount: BigInt(centsAmount),
+      currency: WalletCurrency.Usd,
+    }
+    const satsPaymentAmount =
+      senderCurrency === recipientCurrency
+        ? await btcFromUsdMidPriceFn(usdPaymentAmount)
+        : await dealerFns.getSatsFromCentsForImmediateSell(usdPaymentAmount)
+    if (satsPaymentAmount instanceof Error) throw satsPaymentAmount
+    satsAmount = toSats(satsPaymentAmount.amount)
+
+    centsFee = fee
+    satsFee = 0
+
+    debit = centsAmount + centsFee
+  }
+
+  const expectedFields = {
+    type: LedgerTransactionType.OnchainIntraLedger,
+
+    debit,
+    credit: 0,
+
+    fee: satsFee,
+    feeUsd: Number((centsFee / 100).toFixed(2)),
+    usd: Number(((centsAmount + centsFee) / 100).toFixed(2)),
+
+    satsAmount,
+    satsFee,
+    centsAmount,
+    centsFee,
+    displayAmount: centsAmount,
+    displayFee: centsFee,
+
+    displayCurrency: DisplayCurrency.Usd,
+  }
+  expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
 }
 
 describe("BtcWallet - onChainPay", () => {
@@ -1001,12 +1100,15 @@ describe("UsdWallet - onChainPay", () => {
     })
 
     it("fails to send with less-than-1-cent amount from btc wallet to usd wallet", async () => {
-      const dealerFns = DealerPriceService()
-
       const btcSendAmount = toSats(10)
-      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
-        toSats(btcSendAmount),
-      )
+
+      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(btcSendAmount),
+        currency: WalletCurrency.Btc,
+      })
+      if (usdAmount instanceof Error) return usdAmount
+      const btcSendAmountInUsd = Number(usdAmount.amount)
+
       expect(btcSendAmountInUsd).toBe(0)
 
       const res = await testInternalSend({

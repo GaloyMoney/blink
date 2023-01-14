@@ -33,7 +33,7 @@ import {
   UsersRepository,
 } from "@services/mongoose"
 
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
@@ -54,7 +54,7 @@ import {
   newCheckWithdrawalLimits,
 } from "./helpers"
 
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
 
 export const payInvoiceByWalletId = async ({
@@ -389,15 +389,15 @@ const executePaymentViaIntraledger = async <
     }
 
     let metadata:
-      | NewAddLnIntraledgerSendLedgerMetadata
-      | NewAddLnTradeIntraAccountLedgerMetadata
+      | AddLnIntraledgerSendLedgerMetadata
+      | AddLnTradeIntraAccountLedgerMetadata
     let additionalDebitMetadata: { [key: string]: string | undefined } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
         LedgerFacade.LnTradeIntraAccountLedgerMetadata({
           paymentHash,
           pubkey: recipientPubkey,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -410,7 +410,7 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.LnIntraledgerLedgerMetadata({
           paymentHash,
           pubkey: recipientPubkey,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -529,10 +529,10 @@ const executePaymentViaLn = async ({
 
     const metadata = LedgerFacade.LnSendLedgerMetadata({
       amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
+      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolAndBankFee),
       displayCurrency: DisplayCurrency.Usd,
 
-      paymentFlow,
+      paymentAmounts: paymentFlow,
       pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
       paymentHash,
       feeKnownInAdvance: !!rawRoute,
@@ -543,11 +543,15 @@ const executePaymentViaLn = async ({
       amountToDebitSender: {
         btc: {
           currency: paymentFlow.btcPaymentAmount.currency,
-          amount: paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
+          amount:
+            paymentFlow.btcPaymentAmount.amount +
+            paymentFlow.btcProtocolAndBankFee.amount,
         },
         usd: {
           currency: paymentFlow.usdPaymentAmount.currency,
-          amount: paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
+          amount:
+            paymentFlow.usdPaymentAmount.amount +
+            paymentFlow.usdProtocolAndBankFee.amount,
         },
       },
       senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
@@ -565,7 +569,7 @@ const executePaymentViaLn = async ({
       : await lndService.payInvoiceViaPaymentDetails({
           decodedInvoice,
           btcPaymentAmount: paymentFlow.btcPaymentAmount,
-          maxFeeAmount: paymentFlow.btcProtocolFee,
+          maxFeeAmount: paymentFlow.btcProtocolAndBankFee,
         })
 
     // Fire-and-forget update to 'lnPayments' collection

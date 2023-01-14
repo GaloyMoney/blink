@@ -11,7 +11,7 @@ import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-re
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { LockService } from "@services/lock"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
@@ -28,6 +28,7 @@ import {
 } from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
+import { DisplayCurrency } from "@domain/fiat"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -78,7 +79,7 @@ export const updatePendingInvoiceByPaymentHash = async ({
   return updatePendingInvoice({ walletInvoice, logger })
 }
 
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 
 const updatePendingInvoiceBeforeFinally = async ({
   walletInvoice,
@@ -192,14 +193,21 @@ const updatePendingInvoiceBeforeFinally = async ({
 
     const metadata = LedgerFacade.LnReceiveLedgerMetadata({
       paymentHash,
-      fee: walletInvoiceReceiver.btcBankFee,
+      pubkey: walletInvoice.pubkey,
+      paymentAmounts: {
+        btcPaymentAmount: walletInvoiceReceiver.btcToCreditReceiver,
+        usdPaymentAmount: walletInvoiceReceiver.usdToCreditReceiver,
+        btcProtocolAndBankFee: walletInvoiceReceiver.btcBankFee,
+        usdProtocolAndBankFee: walletInvoiceReceiver.usdBankFee,
+      },
+
       feeDisplayCurrency: Number(
         walletInvoiceReceiver.usdBankFee.amount,
       ) as DisplayCurrencyBaseAmount,
       amountDisplayCurrency: Number(
         walletInvoiceReceiver.usdToCreditReceiver.amount,
       ) as DisplayCurrencyBaseAmount,
-      pubkey: walletInvoiceReceiver.pubkey,
+      displayCurrency: DisplayCurrency.Usd,
     })
 
     const recipientWallet = await WalletsRepository().findById(
@@ -216,7 +224,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     const result = await LedgerFacade.recordReceive({
       description,
       recipientWalletDescriptor: {
-        ...walletInvoiceReceiver.recipientWalletDescriptor,
+        ...walletInvoice.recipientWalletDescriptor,
         accountId: recipientAccount.id,
       },
       amountToCreditReceiver: {

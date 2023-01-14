@@ -9,13 +9,12 @@ import { LnFees } from "@domain/payments"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-import { baseLogger } from "@services/logger"
-
-import { sleep } from "@utils"
-
 import { BTC_NETWORK } from "@config"
 
 import { createToken } from "@services/legacy-jwt"
+import { Subscription } from "zen-observable-ts"
+
+import { sleep } from "@utils"
 
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_USD_INVOICE_CREATE from "./mutations/ln-usd-invoice-create.gql"
@@ -42,7 +41,6 @@ import {
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
-  promisifiedSubscription,
   initializeTestingState,
   killServer,
   lndOutside1,
@@ -84,6 +82,8 @@ afterAll(async () => {
   disposeClient()
   await killServer(serverPid)
   await killServer(triggerPid)
+
+  await sleep(2000)
 })
 
 describe("setup", () => {
@@ -113,10 +113,13 @@ describe("setup", () => {
       mutation: USER_LOGIN,
       variables: { input },
     })
+
     // Create a new authenticated client
     disposeClient()
+    const authToken = result.data.userLogin.authToken
+
     ;({ apolloClient, disposeClient } = createApolloClient(
-      defaultTestClientConfig(result.data.userLogin.authToken),
+      defaultTestClientConfig(authToken),
     ))
     const meResult = await apolloClient.query({ query: ME })
     expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
@@ -457,7 +460,7 @@ describe("graphql", () => {
       const messageRegex = /^Unable to find a route for payment.$/
       const unreachable10kSatPaymentRequest =
         "lnbc100u1p3fj2qlpp5gnp23luuectecrlqddwkh7n7flj6zrnna8eqm8h9ws4ecweucqzsdqqcqzpgxqyz5vqsp5gue9tr3djq08kw6286tzk948ys69pphyd6xmwyut0xyn6fqt2zfs9qyyssq043fsndfudcjt05m7pyeusgpdlegm8kcstc5xywc2zws35tmlpsxdyed8jg8vk4erdxpwwap8akc9vm769qw2zqq86u63mqpa22fu6cpqjuudj"
-      const expectedFeeAmount = LnFees().maxProtocolFee({
+      const expectedFeeAmount = LnFees().maxProtocolAndBankFee({
         amount: 10_000n,
         currency: WalletCurrency.Btc,
       })
@@ -513,7 +516,7 @@ describe("graphql", () => {
         "lnbcrt1p39jaempp58sazckz8cce377ry7cle7k6rwafsjzkuqg022cp2vhxvccyss3csdqqcqzpuxqr23ssp509fhyjxf4utxetalmjett6xvwrm3g7datl6sted2w2m3qdnlq7ps9qyyssqg49tguulzccdtfdl07ltep8294d60tcryxl0tcau0uzwpre6mmxq7mc6737ffctl59fxv32a9g0ul63gx304862fuuwslnr2cd3ghuqq2rsxaz"
 
       const paymentAmount = 10_000
-      const expectedFeeAmount = LnFees().maxProtocolFee({
+      const expectedFeeAmount = LnFees().maxProtocolAndBankFee({
         amount: BigInt(paymentAmount),
         currency: WalletCurrency.Btc,
       })
@@ -649,37 +652,45 @@ describe("graphql", () => {
 
       const subscriptionQuery = MY_UPDATES_LN
 
-      const subscription = apolloClient.subscribe({
+      const observable = apolloClient.subscribe({
         query: subscriptionQuery,
       })
+
+      let status = ""
+      let hash = ""
 
       const promisePay = pay({
         lnd: lndOutside1,
         request: invoice.paymentRequest,
       })
 
-      let status = ""
-      let hash = ""
-      let i = 0
-      // this is a hacky workaround, sometimes the price subscription event will arrive first
-      while (i < 5) {
-        try {
-          const result_sub = (await promisifiedSubscription(subscription)) as { data }
-          if (result_sub.data.myUpdates.update.type === "Price") i += 1
-          else {
-            status = result_sub.data.myUpdates.update.status
-            hash = result_sub.data.myUpdates.update.paymentHash
-            break
-          }
-        } catch (err) {
-          baseLogger.warn({ err }, "error with subscription")
-        }
-
-        // we need to wait here, otherwise promisifiedSubscription
-        // would give back the same event and not wait for the next event
-        // so if Price were to be the event that came back at first, it would fail
-        await sleep(100)
-      }
+      await new Promise((resolve, reject) => {
+        const res: Subscription = observable.subscribe(
+          async (data) => {
+            // onNext()
+            let i: number
+            for (i = 0; i < 200; i++) {
+              if (data.data.myUpdates.update.type !== "LnUpdate") {
+                await sleep(10)
+              } else {
+                status = data.data.myUpdates.update.status
+                hash = data.data.myUpdates.update.paymentHash
+                break
+              }
+            }
+            resolve(res) // test will fail if we didn't received the update
+            res.unsubscribe()
+          },
+          () => {
+            res.unsubscribe()
+            reject(res)
+          },
+          () => {
+            res.unsubscribe()
+            reject(res)
+          },
+        )
+      })
 
       expect(status).toBe("PAID")
       const result2 = await promisePay

@@ -2,7 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToWalletId } from "@domain/wallets"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
@@ -141,7 +141,7 @@ const addInvoice = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const dealer = NewDealerPriceService()
+  const dealer = DealerPriceService()
   const walletInvoiceBuilder = WalletInvoiceBuilder({
     dealerBtcFromUsd: dealer.getSatsFromCentsForFutureBuy,
     lnRegisterInvoice: (args) =>

@@ -32,7 +32,7 @@ import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow
 
 import * as LedgerFacade from "@services/ledger/facade"
 
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services/lock"
@@ -49,7 +49,7 @@ import { getMinerFeeAndPaymentFlow } from "./get-on-chain-fee"
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
 const { dustThreshold } = getOnChainWalletConfig()
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 
 const payOnChainByWalletId = async <R extends WalletCurrency>({
   senderAccount,
@@ -278,15 +278,15 @@ const executePaymentViaIntraledger = async <
     const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
 
     let metadata:
-      | NewAddOnChainIntraledgerSendLedgerMetadata
-      | NewAddOnChainTradeIntraAccountLedgerMetadata
+      | AddOnChainIntraledgerSendLedgerMetadata
+      | AddOnChainTradeIntraAccountLedgerMetadata
     let additionalDebitMetadata: { [key: string]: string | undefined } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
         LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
           payeeAddresses,
           sendAll,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -299,7 +299,7 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.OnChainIntraledgerLedgerMetadata({
           payeeAddresses,
           sendAll,
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -430,11 +430,11 @@ const executePaymentViaOnChain = async <
     if (bankFee instanceof Error) return bankFee
     const btcBankFee = bankFee.btc
 
-    const btcTotalFee = await paymentFlow.btcProtocolFee
+    const btcTotalFee = await paymentFlow.btcProtocolAndBankFee
     if (btcTotalFee instanceof Error) return btcTotalFee
 
     addAttributesToCurrentSpan({
-      "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolFee.amount}`,
+      "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolAndBankFee.amount}`,
       "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee}`,
       "payOnChainByWalletId.totalFee": `${btcTotalFee}`,
       "payOnChainByWalletId.bankFee": `${btcBankFee}`,
@@ -453,10 +453,10 @@ const executePaymentViaOnChain = async <
     const metadata = LedgerFacade.OnChainSendLedgerMetadata({
       // we need a temporary hash to be able to search in admin panel
       onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
-      paymentFlow,
+      paymentAmounts: paymentFlow,
 
       amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
+      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolAndBankFee),
       displayCurrency: DisplayCurrency.Usd,
 
       payeeAddresses: [paymentFlow.address],
@@ -469,11 +469,15 @@ const executePaymentViaOnChain = async <
       amountToDebitSender: {
         btc: {
           currency: paymentFlow.btcPaymentAmount.currency,
-          amount: paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
+          amount:
+            paymentFlow.btcPaymentAmount.amount +
+            paymentFlow.btcProtocolAndBankFee.amount,
         },
         usd: {
           currency: paymentFlow.usdPaymentAmount.currency,
-          amount: paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
+          amount:
+            paymentFlow.usdPaymentAmount.amount +
+            paymentFlow.usdProtocolAndBankFee.amount,
         },
       },
       bankFee,

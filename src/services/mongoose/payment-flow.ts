@@ -209,17 +209,17 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
   })
   if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
-  const btcProtocolFee = paymentAmountFromNumber({
-    amount: paymentFlowState.btcProtocolFee,
+  const btcProtocolAndBankFee = paymentAmountFromNumber({
+    amount: paymentFlowState.btcProtocolAndBankFee,
     currency: WalletCurrency.Btc,
   })
-  if (btcProtocolFee instanceof Error) return btcProtocolFee
+  if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
 
-  const usdProtocolFee = paymentAmountFromNumber({
-    amount: paymentFlowState.usdProtocolFee,
+  const usdProtocolAndBankFee = paymentAmountFromNumber({
+    amount: paymentFlowState.usdProtocolAndBankFee,
     currency: WalletCurrency.Usd,
   })
-  if (usdProtocolFee instanceof Error) return usdProtocolFee
+  if (usdProtocolAndBankFee instanceof Error) return usdProtocolAndBankFee
 
   return PaymentFlow<S, R>({
     ...hash,
@@ -239,8 +239,8 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
     usdPaymentAmount,
     inputAmount,
 
-    btcProtocolFee,
-    usdProtocolFee,
+    btcProtocolAndBankFee,
+    usdProtocolAndBankFee,
 
     recipientWalletId: (paymentFlowState.recipientWalletId as WalletId) || undefined,
     recipientWalletCurrency: (paymentFlowState.recipientWalletCurrency as R) || undefined,
@@ -284,8 +284,8 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     usdPaymentAmount: Number(paymentFlow.usdPaymentAmount.amount),
     inputAmount: Number(paymentFlow.inputAmount),
 
-    btcProtocolFee: Number(paymentFlow.btcProtocolFee.amount),
-    usdProtocolFee: Number(paymentFlow.usdProtocolFee.amount),
+    btcProtocolAndBankFee: Number(paymentFlow.btcProtocolAndBankFee.amount),
+    usdProtocolAndBankFee: Number(paymentFlow.usdProtocolAndBankFee.amount),
 
     recipientWalletId: paymentFlow.recipientWalletId,
     recipientWalletCurrency: paymentFlow.recipientWalletCurrency,

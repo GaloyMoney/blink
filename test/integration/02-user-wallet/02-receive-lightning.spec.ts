@@ -1,13 +1,14 @@
 import { MEMO_SHARING_SATS_THRESHOLD, ONE_DAY } from "@config"
 
 import { Lightning } from "@app"
+import { usdFromBtcMidPriceFn } from "@app/shared"
 import * as Wallets from "@app/wallets"
 import { handleHeldInvoices } from "@app/wallets"
 
 import { toSats } from "@domain/bitcoin"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletInvoiceError } from "@domain/errors"
@@ -23,6 +24,7 @@ import { baseLogger } from "@services/logger"
 import { setupInvoiceSubscribe } from "@servers/trigger"
 
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import { LedgerTransactionType } from "@domain/ledger"
 
 import { sleep } from "@utils"
 
@@ -181,6 +183,36 @@ describe("UserWallet - Lightning", () => {
     if (imbalance instanceof Error) throw imbalance
 
     expect(Number(imbalance.amount)).toBe(sats)
+
+    // Check ledger transaction metadata for BTC 'LedgerTransactionType.Invoice'
+    // ===
+    const usdPaymentAmount = await usdFromBtcMidPriceFn({
+      amount: BigInt(sats),
+      currency: WalletCurrency.Btc,
+    })
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+    const centsAmount = Number(usdPaymentAmount.amount)
+
+    const expectedFields = {
+      type: LedgerTransactionType.Invoice,
+
+      debit: 0,
+      credit: sats,
+
+      fee: 0,
+      feeUsd: 0,
+      usd: Number((centsAmount / 100).toFixed(2)),
+
+      satsAmount: sats,
+      satsFee: 0,
+      centsAmount,
+      centsFee: 0,
+      displayAmount: centsAmount,
+      displayFee: 0,
+
+      displayCurrency: DisplayCurrency.Usd,
+    }
+    expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
   })
 
   it("if trigger is missing the USD invoice, then it should be denied", async () => {
@@ -366,12 +398,13 @@ describe("UserWallet - Lightning", () => {
     const hash = getHash(invoice)
     const amount = getAmount(invoice)
 
-    const dealerFns = DealerPriceService()
-    const sats = await dealerFns.getSatsFromCentsForFutureBuy(
-      cents,
-      defaultTimeToExpiryInSeconds,
-    )
-    if (sats instanceof Error) throw sats
+    const dealerFns = DealerPriceService(defaultTimeToExpiryInSeconds)
+    const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
+      amount: BigInt(cents),
+      currency: WalletCurrency.Usd,
+    })
+    if (btcAmount instanceof Error) throw btcAmount
+    const sats = Number(btcAmount.amount)
 
     expect(amount).toBe(sats)
 
@@ -425,9 +458,32 @@ describe("UserWallet - Lightning", () => {
 
     const finalBalance = await getBalanceHelper(walletIdUsdB)
     expect(finalBalance).toBe(initBalanceUsdB + cents)
+
+    // Check ledger transaction metadata for USD 'LedgerTransactionType.Invoice'
+    // ===
+    const expectedFields = {
+      type: LedgerTransactionType.Invoice,
+
+      debit: 0,
+      credit: cents,
+
+      fee: 0,
+      feeUsd: 0,
+      usd: Number((cents / 100).toFixed(2)),
+
+      satsAmount: sats,
+      satsFee: 0,
+      centsAmount: cents,
+      centsFee: 0,
+      displayAmount: cents,
+      displayFee: 0,
+
+      displayCurrency: DisplayCurrency.Usd,
+    }
+    expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
   })
 
-  it("receives payment from outside USD wallet with amountless invoices", async () => {
+  it("receives payment from outside to USD wallet with amountless invoices", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
     const sats = toSats(120000)
@@ -469,8 +525,12 @@ describe("UserWallet - Lightning", () => {
     if (ledgerTx === undefined) throw Error("ledgerTx needs to be defined")
 
     const dealerFns = DealerPriceService()
-    const cents = await dealerFns.getCentsFromSatsForImmediateBuy(sats)
-    if (cents instanceof Error) throw cents
+    const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
+      amount: BigInt(sats),
+      currency: WalletCurrency.Btc,
+    })
+    if (usdAmount instanceof Error) throw usdAmount
+    const cents = Number(usdAmount.amount)
 
     expect(ledgerTx.credit).toBe(cents)
     expect(ledgerTx.usd).toBe(cents / 100)

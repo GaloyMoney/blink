@@ -13,7 +13,7 @@ import {
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 import { LockService } from "@services/lock"
@@ -40,7 +40,7 @@ import {
   newCheckTradeIntraAccountLimits,
 } from "./helpers"
 
-const dealer = NewDealerPriceService()
+const dealer = DealerPriceService()
 
 const intraledgerPaymentSendWalletId = async ({
   recipientWalletId: uncheckedRecipientWalletId,
@@ -264,12 +264,12 @@ const executePaymentViaIntraledger = async <
     }
 
     let metadata:
-      | NewAddWalletIdIntraledgerSendLedgerMetadata
-      | NewAddWalletIdTradeIntraAccountLedgerMetadata
+      | AddWalletIdIntraledgerSendLedgerMetadata
+      | AddWalletIdTradeIntraAccountLedgerMetadata
     let additionalDebitMetadata: { [key: string]: Username | undefined } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       metadata = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
-        paymentFlow,
+        paymentAmounts: paymentFlow,
 
         amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
         feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -280,7 +280,7 @@ const executePaymentViaIntraledger = async <
     } else {
       ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
         LedgerFacade.WalletIdIntraledgerLedgerMetadata({
-          paymentFlow,
+          paymentAmounts: paymentFlow,
 
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,

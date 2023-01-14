@@ -114,6 +114,11 @@ export const createApolloClient = (
   }
 }
 
+// it's kind of a hack because it's resuscribing to the same subscription
+// and triggering a new subscribe() function on the server
+// whereas a real client would just wait for next()
+//
+// also the backend currently send price on subscribe.
 export const promisifiedSubscription = (subscription) => {
   return new Promise((resolve, reject) => {
     subscription.subscribe({ next: resolve, error: reject })

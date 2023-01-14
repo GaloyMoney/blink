@@ -26,8 +26,8 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   if (actualFeeAmount instanceof Error) return actualFeeAmount
 
   const maxFeeAmounts = {
-    btc: paymentFlow.btcProtocolFee,
-    usd: paymentFlow.usdProtocolFee,
+    btc: paymentFlow.btcProtocolAndBankFee,
+    usd: paymentFlow.usdProtocolAndBankFee,
   }
 
   const priceRatio = PriceRatio(paymentFlow.paymentAmounts())

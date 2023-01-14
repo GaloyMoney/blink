@@ -10,7 +10,7 @@ import {
 import { LndService } from "@services/lnd"
 
 import { WalletsRepository, PaymentFlowStateRepository } from "@services/mongoose"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
@@ -136,7 +136,7 @@ const estimateLightningFee = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return PartialResult.err(senderWallet)
 
-  const dealer = NewDealerPriceService()
+  const dealer = DealerPriceService()
   const builder = await constructPaymentFlowBuilder({
     senderWallet,
     invoice,
@@ -216,9 +216,9 @@ const estimateLightningFee = async ({
 
       PaymentFlowStateRepository(defaultTimeToExpiryInSeconds).persistNew(paymentFlow)
       return routeResult instanceof SkipProbeForPubkeyError
-        ? PartialResult.ok(paymentFlow.protocolFeeInSenderWalletCurrency())
+        ? PartialResult.ok(paymentFlow.protocolAndBankFeeInSenderWalletCurrency())
         : PartialResult.partial(
-            paymentFlow.protocolFeeInSenderWalletCurrency(),
+            paymentFlow.protocolAndBankFeeInSenderWalletCurrency(),
             routeResult,
           )
     }
@@ -232,9 +232,9 @@ const estimateLightningFee = async ({
   ).persistNew(paymentFlow)
   if (persistedPayment instanceof Error)
     return PartialResult.partial(
-      paymentFlow.protocolFeeInSenderWalletCurrency(),
+      paymentFlow.protocolAndBankFeeInSenderWalletCurrency(),
       persistedPayment,
     )
 
-  return PartialResult.ok(persistedPayment.protocolFeeInSenderWalletCurrency())
+  return PartialResult.ok(persistedPayment.protocolAndBankFeeInSenderWalletCurrency())
 }

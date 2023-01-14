@@ -1,11 +1,11 @@
 import { getCurrentPriceInCentsPerSat, getMidPriceRatio } from "@app/shared"
 
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 
 describe("getMidPriceRatio", () => {
   const fetchPrices = async () => {
     const dealerMidPriceRatio =
-      await NewDealerPriceService().getCentsPerSatsExchangeMidRate()
+      await DealerPriceService().getCentsPerSatsExchangeMidRate()
     if (dealerMidPriceRatio instanceof Error) throw dealerMidPriceRatio
 
     const priceMidPriceRatio = await getCurrentPriceInCentsPerSat()

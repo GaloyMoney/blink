@@ -1,6 +1,9 @@
 import { once } from "events"
 
 import { Prices, Wallets, Accounts } from "@app"
+import { getCurrentPrice } from "@app/prices"
+import { usdFromBtcMidPriceFn } from "@app/shared"
+
 import {
   getAccountLimits,
   getDisplayCurrencyConfig,
@@ -8,23 +11,27 @@ import {
   getLocale,
   getOnChainAddressCreateAttemptLimits,
 } from "@config"
+
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
+import { LedgerTransactionType } from "@domain/ledger"
+import { DisplayCurrency, toCents } from "@domain/fiat"
+import { PriceRatio } from "@domain/payments"
+
 import { onchainTransactionEventHandler } from "@servers/trigger"
+
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { LedgerService } from "@services/ledger"
 import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-
-import { getCurrentPrice } from "@app/prices"
-
-import { WalletCurrency } from "@domain/shared"
 
 import {
   amountAfterFeeDeduction,
@@ -461,6 +468,8 @@ async function sendToWalletTestWrapper({
       }),
     )
     expect(txn.initiationVia.address).toBe(address)
+
+    return txn
   }
 
   // just to improve performance
@@ -470,7 +479,66 @@ async function sendToWalletTestWrapper({
     address,
     amount: sat2btc(amountSats),
   })
-  await checkBalance(blockNumber)
+  const txn = await checkBalance(blockNumber)
+
+  // Check ledger transaction metadata for BTC 'LedgerTransactionType.OnchainReceipt'
+  // ===
+  const ledgerTxs = await LedgerService().getTransactionsByHash(
+    (txn.settlementVia as SettlementViaOnChain).transactionHash,
+  )
+  if (ledgerTxs instanceof Error) throw ledgerTxs
+  const ledgerTx = ledgerTxs.find((tx) => tx.walletId === walletId)
+  expect(ledgerTx).not.toBeUndefined()
+
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) throw wallet
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) throw account
+
+  const fee = DepositFeeCalculator().onChainDepositFee({
+    amount: amountSats,
+    ratio: account.depositFeeRatio,
+  })
+
+  const usdPaymentAmount = await usdFromBtcMidPriceFn({
+    amount: BigInt(amountSats),
+    currency: WalletCurrency.Btc,
+  })
+  if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+  const centsAmount = Number(usdPaymentAmount.amount)
+
+  const priceRatio = PriceRatio({
+    usd: usdPaymentAmount,
+    btc: { amount: BigInt(amountSats), currency: WalletCurrency.Btc },
+  })
+  if (priceRatio instanceof Error) throw priceRatio
+
+  const feeAmountCents = priceRatio.convertFromBtcToCeil({
+    amount: BigInt(fee),
+    currency: WalletCurrency.Btc,
+  })
+  const centsFee = toCents(feeAmountCents.amount)
+
+  const expectedFields = {
+    type: LedgerTransactionType.OnchainReceipt,
+
+    debit: 0,
+    credit: amountSats - fee,
+
+    fee: fee,
+    feeUsd: Number((centsFee / 100).toFixed(2)),
+    usd: Number(((centsAmount - centsFee) / 100).toFixed(2)),
+
+    satsAmount: amountSats - fee,
+    satsFee: fee,
+    centsAmount: centsAmount - centsFee,
+    centsFee,
+    displayAmount: centsAmount - centsFee,
+    displayFee: centsFee,
+
+    displayCurrency: DisplayCurrency.Usd,
+  }
+  expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
 }
 
 async function testTxnsByAddressWrapper({

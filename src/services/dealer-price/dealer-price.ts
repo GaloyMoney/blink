@@ -12,10 +12,8 @@ import {
   UnknownDealerPriceServiceError,
 } from "@domain/dealer-price"
 
-import { toSats } from "@domain/bitcoin"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
-import { toCents, toCentsPerSatsRatio } from "@domain/fiat"
 import { toPriceRatio } from "@domain/payments"
 
 import { baseLogger } from "../logger"
@@ -93,174 +91,9 @@ const clientGetCentsPerSatsExchangeMidRate = util.promisify<
   GetCentsPerSatsExchangeMidRateResponse
 >(client.getCentsPerSatsExchangeMidRate.bind(client))
 
-export const DealerPriceService = (): IDealerPriceService => {
-  const getCentsFromSatsForImmediateBuy = async function (
-    amountInSatoshis: Satoshis,
-  ): Promise<UsdCents | DealerPriceServiceError> {
-    try {
-      const response = await clientGetCentsFromSatsForImmediateBuy(
-        new GetCentsFromSatsForImmediateBuyRequest().setAmountInSatoshis(
-          amountInSatoshis,
-        ),
-      )
-      return toCents(response.getAmountInCents())
-    } catch (error) {
-      baseLogger.error({ error }, "GetCentsFromSatsForImmediateBuy unable to fetch price")
-      return parseDealerErrors(error)
-    }
-  }
-
-  const getCentsFromSatsForImmediateSell = async function (
-    amountInSatoshis: Satoshis,
-  ): Promise<UsdCents | DealerPriceServiceError> {
-    try {
-      const response = await clientGetCentsFromSatsForImmediateSell(
-        new GetCentsFromSatsForImmediateSellRequest().setAmountInSatoshis(
-          amountInSatoshis,
-        ),
-      )
-      return toCents(response.getAmountInCents())
-    } catch (error) {
-      baseLogger.error(
-        { error },
-        "GetCentsFromSatsForImmediateSell unable to fetch price",
-      )
-      return parseDealerErrors(error)
-    }
-  }
-
-  const getCentsFromSatsForFutureBuy = async function (
-    amountInSatoshis: Satoshis,
-    timeToExpiryInSeconds: Seconds,
-  ): Promise<UsdCents | DealerPriceServiceError> {
-    try {
-      const response = await clientGetCentsFromSatsForFutureBuy(
-        new GetCentsFromSatsForFutureBuyRequest()
-          .setAmountInSatoshis(amountInSatoshis)
-          .setTimeInSeconds(timeToExpiryInSeconds),
-      )
-      return toCents(response.getAmountInCents())
-    } catch (error) {
-      baseLogger.error({ error }, "GetCentsFromSatsForFutureBuy unable to fetch price")
-      return parseDealerErrors(error)
-    }
-  }
-
-  const getCentsFromSatsForFutureSell = async function (
-    amountInSatoshis: Satoshis,
-    timeToExpiryInSeconds: Seconds,
-  ): Promise<UsdCents | DealerPriceServiceError> {
-    try {
-      const response = await clientGetCentsFromSatsForFutureSell(
-        new GetCentsFromSatsForFutureSellRequest()
-          .setAmountInSatoshis(amountInSatoshis)
-          .setTimeInSeconds(timeToExpiryInSeconds),
-      )
-      return toCents(response.getAmountInCents())
-    } catch (error) {
-      baseLogger.error({ error }, "GetCentsFromSatsForFutureSell unable to fetch price")
-      return parseDealerErrors(error)
-    }
-  }
-
-  const getSatsFromCentsForImmediateBuy = async function (
-    amountInCents: UsdCents,
-  ): Promise<Satoshis | DealerPriceServiceError> {
-    try {
-      const response = await clientGetSatsFromCentsForImmediateBuy(
-        new GetSatsFromCentsForImmediateBuyRequest().setAmountInCents(amountInCents),
-      )
-      return toSats(response.getAmountInSatoshis())
-    } catch (error) {
-      baseLogger.error({ error }, "GetSatsFromCentsForImmediateBuy unable to fetch price")
-      return parseDealerErrors(error)
-    }
-  }
-
-  const getSatsFromCentsForImmediateSell = async function (
-    amountInCents: UsdCents,
-  ): Promise<Satoshis | DealerPriceServiceError> {
-    try {
-      const response = await clientGetSatsFromCentsForImmediateSell(
-        new GetSatsFromCentsForImmediateSellRequest().setAmountInCents(amountInCents),
-      )
-      return toSats(response.getAmountInSatoshis())
-    } catch (error) {
-      baseLogger.error(
-        { error },
-        "GetSatsFromCentsForImmediateSell unable to fetch price",
-      )
-      return parseDealerErrors(error)
-    }
-  }
-
-  const getSatsFromCentsForFutureBuy = async function (
-    amountInCents: UsdCents,
-    timeToExpiryInSeconds: Seconds,
-  ): Promise<Satoshis | DealerPriceServiceError> {
-    try {
-      const response = await clientGetSatsFromCentsForFutureBuy(
-        new GetSatsFromCentsForFutureBuyRequest()
-          .setAmountInCents(amountInCents)
-          .setTimeInSeconds(timeToExpiryInSeconds),
-      )
-      return toSats(response.getAmountInSatoshis())
-    } catch (error) {
-      baseLogger.error({ error }, "GetSatsFromCentsForFutureBuy unable to fetch price")
-      return parseDealerErrors(error)
-    }
-  }
-
-  const getSatsFromCentsForFutureSell = async function (
-    amountInCents: UsdCents,
-    timeToExpiryInSeconds: Seconds,
-  ): Promise<Satoshis | DealerPriceServiceError> {
-    try {
-      const response = await clientGetSatsFromCentsForFutureSell(
-        new GetSatsFromCentsForFutureSellRequest()
-          .setAmountInCents(amountInCents)
-          .setTimeInSeconds(timeToExpiryInSeconds),
-      )
-      return toSats(response.getAmountInSatoshis())
-    } catch (error) {
-      baseLogger.error({ error }, "GetSatsFromCentsForFutureSell unable to fetch price")
-      return parseDealerErrors(error)
-    }
-  }
-
-  const getCentsPerSatsExchangeMidRate = async function (): Promise<
-    CentsPerSatsRatio | DealerPriceServiceError
-  > {
-    try {
-      const response = await clientGetCentsPerSatsExchangeMidRate(
-        new GetCentsPerSatsExchangeMidRateRequest(),
-      )
-      return toCentsPerSatsRatio(response.getRatioInCentsPerSatoshis())
-    } catch (error) {
-      baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
-      return parseDealerErrors(error)
-    }
-  }
-
-  return {
-    getCentsFromSatsForImmediateBuy,
-    getCentsFromSatsForImmediateSell,
-
-    getCentsFromSatsForFutureBuy,
-    getCentsFromSatsForFutureSell,
-
-    getSatsFromCentsForImmediateBuy,
-    getSatsFromCentsForImmediateSell,
-
-    getSatsFromCentsForFutureBuy,
-    getSatsFromCentsForFutureSell,
-
-    getCentsPerSatsExchangeMidRate,
-  }
-}
-export const NewDealerPriceService = (
+export const DealerPriceService = (
   timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
-): INewDealerPriceService => {
+): IDealerPriceService => {
   const getCentsFromSatsForImmediateBuy = async function (
     btcAmount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError> {

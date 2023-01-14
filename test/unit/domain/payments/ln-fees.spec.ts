@@ -2,13 +2,13 @@ import { WalletCurrency } from "@domain/shared"
 import { LnFees } from "@domain/payments"
 
 describe("LnFees", () => {
-  describe("maxProtocolFee", () => {
-    it("returns the maxProtocolFee", () => {
+  describe("maxProtocolAndBankFee", () => {
+    it("returns the maxProtocolAndBankFee", () => {
       const btcAmount = {
         amount: 10_000n,
         currency: WalletCurrency.Btc,
       }
-      expect(LnFees().maxProtocolFee(btcAmount)).toEqual({
+      expect(LnFees().maxProtocolAndBankFee(btcAmount)).toEqual({
         amount: 50n,
         currency: WalletCurrency.Btc,
       })
@@ -19,7 +19,7 @@ describe("LnFees", () => {
         amount: 25844n,
         currency: WalletCurrency.Btc,
       }
-      expect(LnFees().maxProtocolFee(btcAmount)).toEqual({
+      expect(LnFees().maxProtocolAndBankFee(btcAmount)).toEqual({
         amount: 129n,
         currency: WalletCurrency.Btc,
       })
@@ -30,7 +30,7 @@ describe("LnFees", () => {
         amount: 1n,
         currency: WalletCurrency.Btc,
       }
-      expect(LnFees().maxProtocolFee(btcAmount)).toEqual({
+      expect(LnFees().maxProtocolAndBankFee(btcAmount)).toEqual({
         amount: 1n,
         currency: WalletCurrency.Btc,
       })

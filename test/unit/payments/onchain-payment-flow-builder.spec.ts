@@ -261,8 +261,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                 })
                 if (withdrawFees instanceof Error) throw withdrawFees
 
-                const btcProtocolFee = withdrawFees.totalFee
-                const usdProtocolFee = await usdFromBtcMid(btcProtocolFee)
+                const btcProtocolAndBankFee = withdrawFees.totalFee
+                const usdProtocolAndBankFee = await usdFromBtcMid(btcProtocolAndBankFee)
 
                 checkAddress(payment)
                 checkSettlementMethod(payment)
@@ -271,8 +271,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                 expect(payment).toEqual(
                   expect.objectContaining({
                     usdPaymentAmount,
-                    btcProtocolFee,
-                    usdProtocolFee,
+                    btcProtocolAndBankFee,
+                    usdProtocolAndBankFee,
                   }),
                 )
               })
@@ -313,8 +313,8 @@ describe("OnChainPaymentFlowBuilder", () => {
               expect.objectContaining({
                 settlementMethod: SettlementMethod.IntraLedger,
                 paymentInitiationMethod: PaymentInitiationMethod.OnChain,
-                btcProtocolFee: onChainFees.intraLedgerFees().btc,
-                usdProtocolFee: onChainFees.intraLedgerFees().usd,
+                btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
+                usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
               }),
             )
           }
@@ -372,8 +372,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                   expect(payment).toEqual(
                     expect.objectContaining({
                       usdPaymentAmount,
-                      btcProtocolFee: onChainFees.intraLedgerFees().btc,
-                      usdProtocolFee: onChainFees.intraLedgerFees().usd,
+                      btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
+                      usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
                     }),
                   )
                 })
@@ -438,8 +438,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                   expect(payment).toEqual(
                     expect.objectContaining({
                       usdPaymentAmount,
-                      btcProtocolFee: onChainFees.intraLedgerFees().btc,
-                      usdProtocolFee: onChainFees.intraLedgerFees().usd,
+                      btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
+                      usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
                     }),
                   )
                 })
@@ -554,14 +554,15 @@ describe("OnChainPaymentFlowBuilder", () => {
                   imbalance,
                 })
                 if (withdrawalFees instanceof Error) throw withdrawalFees
-                const btcProtocolFee = withdrawalFees.totalFee
+                const btcProtocolAndBankFee = withdrawalFees.totalFee
 
                 const priceRatio = PriceRatio({
                   usd: sendAmount,
                   btc: btcPaymentAmount,
                 })
                 if (priceRatio instanceof Error) throw priceRatio
-                const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
+                const usdProtocolAndBankFee =
+                  priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
 
                 checkAddress(payment)
                 checkSettlementMethod(payment)
@@ -570,8 +571,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                 expect(payment).toEqual(
                   expect.objectContaining({
                     btcPaymentAmount,
-                    btcProtocolFee,
-                    usdProtocolFee,
+                    btcProtocolAndBankFee,
+                    usdProtocolAndBankFee,
                   }),
                 )
               })
@@ -617,8 +618,8 @@ describe("OnChainPaymentFlowBuilder", () => {
               expect.objectContaining({
                 settlementMethod: SettlementMethod.IntraLedger,
                 paymentInitiationMethod: PaymentInitiationMethod.OnChain,
-                btcProtocolFee: onChainFees.intraLedgerFees().btc,
-                usdProtocolFee: onChainFees.intraLedgerFees().usd,
+                btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
+                usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
               }),
             )
           }
@@ -675,8 +676,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                   expect(payment).toEqual(
                     expect.objectContaining({
                       btcPaymentAmount,
-                      btcProtocolFee: onChainFees.intraLedgerFees().btc,
-                      usdProtocolFee: onChainFees.intraLedgerFees().usd,
+                      btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
+                      usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
                     }),
                   )
                 })
@@ -740,8 +741,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                   expect(payment).toEqual(
                     expect.objectContaining({
                       btcPaymentAmount,
-                      btcProtocolFee: onChainFees.intraLedgerFees().btc,
-                      usdProtocolFee: onChainFees.intraLedgerFees().usd,
+                      btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
+                      usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
                     }),
                   )
                 })

@@ -10,36 +10,33 @@
 // communicate how the different stablesats methods work.
 
 import { WalletCurrency } from "@domain/shared"
-import { NewDealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@services/dealer-price"
 
-const newDealerFns = NewDealerPriceService()
+const dealerFns = DealerPriceService()
 
 const centsFromSats = async (btc: BtcPaymentAmount) => {
   // Conversions with spreads
-  const getCentsFromSatsForImmediateBuy =
-    await newDealerFns.getCentsFromSatsForImmediateBuy(btc)
+  const getCentsFromSatsForImmediateBuy = await dealerFns.getCentsFromSatsForImmediateBuy(
+    btc,
+  )
   if (getCentsFromSatsForImmediateBuy instanceof Error) {
     throw getCentsFromSatsForImmediateBuy
   }
 
   const getCentsFromSatsForImmediateSell =
-    await newDealerFns.getCentsFromSatsForImmediateSell(btc)
+    await dealerFns.getCentsFromSatsForImmediateSell(btc)
   if (getCentsFromSatsForImmediateSell instanceof Error) {
     throw getCentsFromSatsForImmediateSell
   }
 
-  const getCentsFromSatsForFutureBuy = await newDealerFns.getCentsFromSatsForFutureBuy(
-    btc,
-  )
+  const getCentsFromSatsForFutureBuy = await dealerFns.getCentsFromSatsForFutureBuy(btc)
   if (getCentsFromSatsForFutureBuy instanceof Error) throw getCentsFromSatsForFutureBuy
 
-  const getCentsFromSatsForFutureSell = await newDealerFns.getCentsFromSatsForFutureSell(
-    btc,
-  )
+  const getCentsFromSatsForFutureSell = await dealerFns.getCentsFromSatsForFutureSell(btc)
   if (getCentsFromSatsForFutureSell instanceof Error) throw getCentsFromSatsForFutureSell
 
   // Mid-rate conversions
-  const priceRatio = await newDealerFns.getCentsPerSatsExchangeMidRate()
+  const priceRatio = await dealerFns.getCentsPerSatsExchangeMidRate()
   if (priceRatio instanceof Error) throw priceRatio
 
   const convertFromBtc = priceRatio.convertFromBtc(btc)
@@ -61,30 +58,27 @@ const centsFromSats = async (btc: BtcPaymentAmount) => {
 
 const satsFromCents = async (usd: UsdPaymentAmount) => {
   //  Conversions with spreads
-  const getSatsFromCentsForImmediateBuy =
-    await newDealerFns.getSatsFromCentsForImmediateBuy(usd)
+  const getSatsFromCentsForImmediateBuy = await dealerFns.getSatsFromCentsForImmediateBuy(
+    usd,
+  )
   if (getSatsFromCentsForImmediateBuy instanceof Error) {
     throw getSatsFromCentsForImmediateBuy
   }
 
   const getSatsFromCentsForImmediateSell =
-    await newDealerFns.getSatsFromCentsForImmediateSell(usd)
+    await dealerFns.getSatsFromCentsForImmediateSell(usd)
   if (getSatsFromCentsForImmediateSell instanceof Error) {
     throw getSatsFromCentsForImmediateSell
   }
 
-  const getSatsFromCentsForFutureBuy = await newDealerFns.getSatsFromCentsForFutureBuy(
-    usd,
-  )
+  const getSatsFromCentsForFutureBuy = await dealerFns.getSatsFromCentsForFutureBuy(usd)
   if (getSatsFromCentsForFutureBuy instanceof Error) throw getSatsFromCentsForFutureBuy
 
-  const getSatsFromCentsForFutureSell = await newDealerFns.getSatsFromCentsForFutureSell(
-    usd,
-  )
+  const getSatsFromCentsForFutureSell = await dealerFns.getSatsFromCentsForFutureSell(usd)
   if (getSatsFromCentsForFutureSell instanceof Error) throw getSatsFromCentsForFutureSell
 
   // Mid-rate conversions
-  const priceRatio = await newDealerFns.getCentsPerSatsExchangeMidRate()
+  const priceRatio = await dealerFns.getCentsPerSatsExchangeMidRate()
   if (priceRatio instanceof Error) throw priceRatio
 
   const convertFromUsd = priceRatio.convertFromUsd(usd)
@@ -102,7 +96,7 @@ const satsFromCents = async (usd: UsdPaymentAmount) => {
 
 describe("define stablesats expected behavior", () => {
   it("is the expected nominal rate", async () => {
-    const priceRatio = await newDealerFns.getCentsPerSatsExchangeMidRate()
+    const priceRatio = await dealerFns.getCentsPerSatsExchangeMidRate()
     if (priceRatio instanceof Error) throw priceRatio
 
     expect(priceRatio.usdPerSat()).toEqual(0.02)

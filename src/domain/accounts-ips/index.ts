@@ -1,6 +1,8 @@
 import ipaddr from "ipaddr.js"
 
-export const parseIps = (ips: undefined | string | string[]): IpAddress | undefined => {
+export const parseIps = (
+  ips: undefined | string | string[] | unknown,
+): IpAddress | undefined => {
   if (!ips) return undefined
 
   if (Array.isArray(ips) && ips.length) {
