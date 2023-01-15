@@ -25,11 +25,7 @@ import { SECS_PER_5_MINS } from "@config"
 import { LocalCacheService } from "@services/cache"
 import { toSeconds } from "@domain/primitives"
 import { timeout } from "@utils"
-
-import {
-  getTotalPendingHtlcCountLnd1,
-  getTotalPendingHtlcCountLnd2,
-} from "@services/lnd/utils-ln-service"
+import { LndService } from "@services/lnd"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -318,22 +314,82 @@ export const getBookingVersusRealWorldAssets = async () => {
 }
 
 createGauge({
-  name: "totalPendingHtlcCountLnd1",
-  description: "How many pending HTLCs there are in the channels of lnd1",
+  name: "totalPendingHtlcCount",
+  description: "How many pending HTLCs there are in the channels of the active nodes",
   collect: async () => {
-    const totalPendingHtlcCount = await getTotalPendingHtlcCountLnd1()
-    if (getTotalPendingHtlcCountLnd1 instanceof Error) return NaN
-    return totalPendingHtlcCount
+    try {
+      const lndService = LndService()
+      if (lndService instanceof Error) throw lndService
+      const totalPendingHtlcCount = await lndService.getTotalPendingHtlcCount()
+      if (totalPendingHtlcCount instanceof Error) throw totalPendingHtlcCount
+      return totalPendingHtlcCount
+    } catch (err) {
+      return NaN
+    }
   },
 })
 
 createGauge({
-  name: "totalPendingHtlcCountLnd2",
-  description: "How many pending HTLCs there are in the channels of lnd2",
+  name: "activeChannels",
+  description: "How many active channels there are on the active nodes",
   collect: async () => {
-    const totalPendingHtlcCount = await getTotalPendingHtlcCountLnd2()
-    if (getTotalPendingHtlcCountLnd2 instanceof Error) return NaN
-    return totalPendingHtlcCount
+    try {
+      const lndService = LndService()
+      if (lndService instanceof Error) throw lndService
+      const activeChannels = await lndService.getActiveChannels()
+      if (activeChannels instanceof Error) throw activeChannels
+      return activeChannels
+    } catch (err) {
+      return NaN
+    }
+  },
+})
+
+createGauge({
+  name: "offlineChannels",
+  description: "How many offline channels there are on the active nodes",
+  collect: async () => {
+    try {
+      const lndService = LndService()
+      if (lndService instanceof Error) throw lndService
+      const offlineChannels = await lndService.getOfflineChannels()
+      if (offlineChannels instanceof Error) throw offlineChannels
+      return offlineChannels
+    } catch (err) {
+      return NaN
+    }
+  },
+})
+
+createGauge({
+  name: "publicChannels",
+  description: "How many public channels there are on the active nodes",
+  collect: async () => {
+    try {
+      const lndService = LndService()
+      if (lndService instanceof Error) throw lndService
+      const publicChannels = await lndService.getPublicChannels()
+      if (publicChannels instanceof Error) throw publicChannels
+      return publicChannels
+    } catch (err) {
+      return NaN
+    }
+  },
+})
+
+createGauge({
+  name: "privateChannels",
+  description: "How many private channels there are on the active nodes",
+  collect: async () => {
+    try {
+      const lndService = LndService()
+      if (lndService instanceof Error) throw lndService
+      const privateChannels = await lndService.getPrivateChannels()
+      if (privateChannels instanceof Error) throw privateChannels
+      return privateChannels
+    } catch (err) {
+      return NaN
+    }
   },
 })
 
