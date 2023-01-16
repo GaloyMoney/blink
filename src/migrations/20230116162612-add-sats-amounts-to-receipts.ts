@@ -1,4 +1,4 @@
-const txTypes = ["onchain_payment"]
+const txTypes = ["invoice", "onchain_receipt"]
 
 module.exports = {
   async up(db) {
@@ -16,9 +16,7 @@ module.exports = {
         {
           $group: {
             _id: "$hash",
-            // For payments, 'currency: "BTC"' filter applies above:
-            // - for USD: max sat debit comes from dealer BTC wallet
-            // - for BTC: max sat debit comes from sender BTC wallet
+            // 'debit' here would be the full amount received by lnd
             debit: { $max: "$debit" },
             fee: { $first: "$fee" },
             usd: { $first: "$usd" },
@@ -29,6 +27,7 @@ module.exports = {
       for await (const { _id: hash, debit, fee, usd, feeUsd } of allTxns) {
         if (!hash) continue
         const satsAmount = Math.round(debit - fee)
+        // 'usd' in legacy txns represents the full amount received by lnd
         const centsAmount = Math.round((usd - feeUsd) * 100)
         const centsFee = Math.round(feeUsd * 100)
 
