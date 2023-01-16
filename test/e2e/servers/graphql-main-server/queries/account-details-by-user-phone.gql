@@ -1,0 +1,5 @@
+query accountDetailsByUserPhone($phone: Phone!) {
+  accountDetailsByUserPhone(phone: $phone) {
+    id
+  }
+}

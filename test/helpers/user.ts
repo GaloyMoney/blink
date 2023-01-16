@@ -92,6 +92,11 @@ export const createMandatoryUsers = async () => {
   }
 }
 
+export const getAdminPhoneAndCode = async () => {
+  const entry = yamlConfig.test_accounts.find((item) => item.role === "editor")
+  return { phone: entry?.phone as PhoneNumber, code: entry?.code as PhoneCode }
+}
+
 type TestEntry = {
   role?: string
   needUsdWallet?: boolean
