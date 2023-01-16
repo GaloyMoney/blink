@@ -1,42 +1,29 @@
 module.exports = {
   async up(db) {
     const collection = db.collection("medici_transactions")
-    try {
-      const resultDebits = await collection.update(
-        { type: "payment", debit: { $gt: 0 } },
-        [{ $set: { satsAmount: { $subtract: ["$debit", "$fee"] } } }],
-        { multi: true },
-      )
-      console.log(
-        { result: resultDebits },
-        "added new props to debit medici_transactions",
-      )
-    } catch (error) {
-      console.log(
-        { result: error },
-        "Couldn't add new props to debit medici_transactions",
-      )
-    }
 
     try {
       const allTxns = await collection.aggregate([
         {
           $match: {
-            satsAmount: { $exists: true },
+            type: "onchain_payment",
+            satsAmount: { $exists: false },
+            currency: "BTC",
           },
         },
         {
           $group: {
             _id: "$hash",
-            satsAmount: { $first: "$satsAmount" },
+            debit: { $max: "$debit" },
             fee: { $first: "$fee" },
             usd: { $first: "$usd" },
             feeUsd: { $first: "$feeUsd" },
           },
         },
       ])
-      for await (const { _id: hash, satsAmount, fee, usd, feeUsd } of allTxns) {
+      for await (const { _id: hash, debit, fee, usd, feeUsd } of allTxns) {
         if (!hash) continue
+        const satsAmount = Math.round(debit - fee)
         const centsAmount = Math.round((usd - feeUsd) * 100)
         const centsFee = Math.round(feeUsd * 100)
 
