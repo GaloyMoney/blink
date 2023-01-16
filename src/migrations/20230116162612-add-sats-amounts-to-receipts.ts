@@ -15,7 +15,7 @@ module.exports = {
         },
         {
           $group: {
-            _id: "$hash",
+            _id: "$_journal",
             // 'debit' here would be the full amount received by lnd
             debit: { $max: "$debit" },
             fee: { $first: "$fee" },
@@ -24,15 +24,14 @@ module.exports = {
           },
         },
       ])
-      for await (const { _id: hash, debit, fee, usd, feeUsd } of allTxns) {
-        if (!hash) continue
+      for await (const { _id: journalId, debit, fee, usd, feeUsd } of allTxns) {
         const satsAmount = Math.round(debit - fee)
         // 'usd' in legacy txns represents the full amount received by lnd
         const centsAmount = Math.round((usd - feeUsd) * 100)
         const centsFee = Math.round(feeUsd * 100)
 
         const resultRest = await collection.update(
-          { hash },
+          { _journal: journalId },
           [
             {
               $set: {
@@ -53,7 +52,7 @@ module.exports = {
         )
         const { matchedCount: n, modifiedCount: nModified } = resultRest
         console.log(
-          `added new props to ${nModified} of ${n}  transactions for hash: ${hash}`,
+          `added new props to ${nModified} of ${n}  transactions for journal: ${journalId}`,
         )
       }
     } catch (error) {
