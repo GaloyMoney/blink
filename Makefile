@@ -33,6 +33,9 @@ start: start-deps
 start-main-ci:
 	node lib/servers/graphql-main-server.js
 
+start-admin-ci:
+	node lib/servers/graphql-admin-server.js
+
 start-trigger-ci:
 	node lib/servers/trigger.js
 

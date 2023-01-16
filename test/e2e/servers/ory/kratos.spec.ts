@@ -29,7 +29,15 @@ import { AuthWithEmailPasswordlessService } from "@services/kratos/auth-email-no
 
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
+import USER_UPDATE_PHONE from "../../../e2e/servers/graphql-main-server/mutations/user-update-phone.gql"
+import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-server/queries/account-details-by-user-phone.gql"
+import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
+
 import {
+  createApolloClient,
+  defaultTestClientConfig,
+  getAdminPhoneAndCode,
+  getPhoneAndCodeFromRef,
   killServer,
   randomEmail,
   randomPassword,
@@ -37,6 +45,7 @@ import {
   startServer,
 } from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
+import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
 
 const identityRepo = IdentityRepository()
 
@@ -516,4 +525,47 @@ describe("decoding link header", () => {
   it("should be undefined when no more next is present", () => {
     expect(getNextPage(withoutNext)).toBe(undefined)
   })
+})
+
+it("updates user phone", async () => {
+  await killServer(serverPid)
+
+  const adminServerPid = await startServer("start-admin-ci")
+
+  const { phone, code } = getPhoneAndCodeFromRef("H")
+
+  const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
+
+  const apolloClient = await loginFromPhoneAndCode({
+    phone: adminPhone,
+    code: adminCode,
+  })
+
+  await apolloClient.mutate({
+    mutation: USER_LOGIN,
+    variables: { input: { phone, code } },
+  })
+
+  const accountDetails = await apolloClient.query({
+    query: ACCOUNT_DETAILS_BY_USER_PHONE,
+    variables: { phone },
+  })
+
+  const uid = accountDetails.data.accountDetailsByUserPhone.id
+
+  const newPhone = randomPhone()
+  await apolloClient.mutate({
+    mutation: USER_UPDATE_PHONE,
+    variables: { input: { phone: newPhone, uid } },
+  })
+
+  const result = await apolloClient.query({
+    query: ACCOUNT_DETAILS_BY_USER_PHONE,
+    variables: { phone: newPhone },
+  })
+
+  expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
+
+  await killServer(adminServerPid)
+  serverPid = await startServer("start-main-ci")
 })
