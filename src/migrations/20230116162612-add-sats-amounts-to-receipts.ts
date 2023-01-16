@@ -1,7 +1,7 @@
-const txTypes = ["invoice", "onchain_receipt"]
-
 module.exports = {
   async up(db) {
+    const txTypes = ["invoice", "onchain_receipt"]
+
     const collection = db.collection("medici_transactions")
 
     try {
@@ -64,6 +64,8 @@ module.exports = {
   },
 
   async down(db) {
+    const txTypes = ["invoice", "onchain_receipt"]
+
     try {
       const result = await db.collection("medici_transactions").update(
         { type: { $in: txTypes }, satsAmountMigration: true },
