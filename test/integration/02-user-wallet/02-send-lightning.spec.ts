@@ -12,12 +12,13 @@ import {
   LightningServiceError,
   PaymentNotFoundError,
   PaymentSendStatus,
-  PaymentStatus
+  PaymentStatus,
 } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
-  SelfPaymentError as DomainSelfPaymentError
+  SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
+import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
@@ -26,14 +27,14 @@ import {
   LnFees,
   LnPaymentRequestInTransitError,
   PriceRatio,
-  ZeroAmountForUsdRecipientError
+  ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
   ValidationError,
   WalletCurrency,
-  ZERO_SATS
+  ZERO_SATS,
 } from "@domain/shared"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 
@@ -49,7 +50,7 @@ import {
   LnPaymentsRepository,
   PaymentFlowStateRepository,
   WalletInvoicesRepository,
-  WalletsRepository
+  WalletsRepository,
 } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
@@ -79,7 +80,7 @@ import {
   lndOutside2,
   settleHodlInvoice,
   waitFor,
-  waitUntilChannelBalanceSyncAll
+  waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
 
 const dealerFns = DealerPriceService()
