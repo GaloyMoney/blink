@@ -324,6 +324,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Service offline, please try again in a few minutes. If the problem persists, please contact support."
       return new DbError({ message, logger: baseLogger })
 
+    case "InvalidPaginationArgumentsError":
+      message = "Invalid pagination arguments"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------

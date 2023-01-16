@@ -5,9 +5,9 @@
 // This should be used for any list of transactions that's exposed in the API
 
 import { Types } from "mongoose"
-
 import { parseFilterQuery } from "medici/build/helper/parse/parseFilterQuery"
 
+import { InvalidPaginationArgumentsError } from "@domain/ledger"
 import { Transaction } from "@services/ledger/schema"
 
 import { MainBook } from "./books"
@@ -27,31 +27,47 @@ export const paginatedLedger = async ({
 }: {
   query: IFilterQuery
   paginationArgs?: PaginationArgs
-}): Promise<PaginatedArray<ILedgerTransaction>> => {
+}): Promise<Error | PaginatedArray<ILedgerTransaction>> => {
   const filterQuery = parseFilterQuery(query, MainBook)
 
-  if (paginationArgs?.after) {
-    filterQuery["_id"] = { $lt: new Types.ObjectId(paginationArgs.after) }
+  const { first, after, last, before } = paginationArgs || {}
+
+  if (
+    (first !== undefined && last !== undefined) ||
+    (after !== undefined && before !== undefined)
+  ) {
+    return new InvalidPaginationArgumentsError()
   }
 
-  if (paginationArgs?.before) {
-    filterQuery["_id"] = { $gt: new Types.ObjectId(paginationArgs.before) }
+  if (after) {
+    filterQuery["_id"] = { $lt: new Types.ObjectId(after) }
   }
 
-  const findPromise = Transaction.collection
-    .find<ILedgerTransaction>(filterQuery, {
-      limit: DEFAULT_MAX_CONNECTION_LIMIT,
-      sort: {
-        datetime: -1,
-        timestamp: -1,
-      },
-    })
+  if (before) {
+    filterQuery["_id"] = { $gt: new Types.ObjectId(before) }
+  }
+
+  let limit = first ?? DEFAULT_MAX_CONNECTION_LIMIT
+  let skip = 0
+
+  const total = await Transaction.countDocuments(filterQuery)
+
+  if (last) {
+    limit = last
+    if (total > last) {
+      skip = total - last
+    }
+  }
+
+  const slice = await Transaction.collection
+    .find<ILedgerTransaction>(filterQuery)
+    .sort({ datetime: -1, timestamp: -1 })
+    .limit(limit)
+    .skip(skip)
     .toArray()
 
-  const countPromise = Transaction.countDocuments(filterQuery)
-
   return {
-    slice: await findPromise,
-    total: await countPromise,
+    slice,
+    total,
   }
 }
