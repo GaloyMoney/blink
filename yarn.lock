@@ -2193,7 +2193,7 @@
     "@grpc/proto-loader" "^0.7.0"
     "@types/node" ">=12.12.47"
 
-"@grpc/grpc-js@^1.8.4":
+"@grpc/grpc-js@1.8.4", "@grpc/grpc-js@^1.8.4":
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.8.4.tgz#316674e8905e2dd310d8aa60331e05b32584e6ad"
   integrity sha512-oaETBotls7FTBpySg5dhyUCyXSxSeCMmkBBXHXG1iw57MiNoB6D7VRhkrXYbwyHM3Q3Afjp4KlsBX0Zb+ELZXw==
@@ -4025,10 +4025,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-balanceofsatoshis@^13.16.0:
-  version "13.16.0"
-  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.16.0.tgz#1e0161b7b6f9bf09671a864b30c8087e70a26f1f"
-  integrity sha512-LHVFtWT2rWXlNCLNoNczTRSldZdkruprn+oALX/4C+3ZZhFfpMvD159K9yxpH6EN9gtCgVJXOId66+PPODkhKQ==
+balanceofsatoshis@^13.18.0:
+  version "13.18.0"
+  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.18.0.tgz#1d74f25f94eef453b6fbc42d13131b13ff0fff26"
+  integrity sha512-1F50mLpYi0pZyKPl3pVv0TohPxKlG+aXyJXIoznWWiIRUGvhs3rAR3hBgIez/leiTbJe00G1iAKLE7iwKRhvKw==
   dependencies:
     "@alexbosworth/caporal" "1.4.4"
     "@alexbosworth/fiat" "1.0.4"
@@ -4049,7 +4049,7 @@ balanceofsatoshis@^13.16.0:
     crypto-js "4.1.1"
     csv-parse "5.3.3"
     ecpair "2.1.0"
-    goldengate "12.0.1"
+    goldengate "12.0.2"
     grammy "1.13.0"
     hot-formula-parser "4.0.0"
     import-lazy "4.0.0"
@@ -4060,7 +4060,7 @@ balanceofsatoshis@^13.16.0:
     ln-sync "4.2.0"
     ln-telegram "4.6.0"
     moment "2.29.4"
-    paid-services "4.2.1"
+    paid-services "4.2.2"
     probing "3.0.1"
     psbt "2.7.2"
     qrcode-terminal "0.12.0"
@@ -6463,6 +6463,36 @@ goldengate@12.0.1:
     ecpair "2.1.0"
     ln-service "54.9.0"
     ln-sync "4.1.0"
+    macaroon "3.0.4"
+    p2tr "1.3.3"
+    psbt "2.7.2"
+    pushdata-bitcoin "1.0.1"
+    tiny-secp256k1 "2.2.1"
+    varuint-bitcoin "1.1.2"
+
+goldengate@12.0.2:
+  version "12.0.2"
+  resolved "https://registry.yarnpkg.com/goldengate/-/goldengate-12.0.2.tgz#a29756df096c4c3f1a39ae4783e34d210b45b653"
+  integrity sha512-FrGuJWxYqWfptGEHkXQkR4CvLOOvbJL9cgPyiGGwtRMJCuUgJHyEdhkTVjQYbOl6pdXFTR9EHd9wkXHeA6zmGw==
+  dependencies:
+    "@alexbosworth/node-fetch" "2.6.2"
+    "@grpc/grpc-js" "1.8.4"
+    "@grpc/proto-loader" "0.7.4"
+    "@mitmaro/http-authorization-header" "1.0.0"
+    async "3.2.4"
+    asyncjs-util "1.2.11"
+    bech32 "2.0.0"
+    bip65 "1.0.3"
+    bip68 "1.0.4"
+    bitcoin-ops "1.4.1"
+    bitcoinjs-lib "6.1.0"
+    bn.js "5.2.1"
+    body-parser "1.20.1"
+    bolt01 "1.2.6"
+    cbor "8.1.0"
+    ecpair "2.1.0"
+    ln-service "54.9.0"
+    ln-sync "4.2.0"
     macaroon "3.0.4"
     p2tr "1.3.3"
     psbt "2.7.2"
@@ -9717,6 +9747,26 @@ paid-services@4.2.1:
     invoices "2.2.3"
     ln-service "54.9.0"
     ln-sync "4.1.1"
+    p2tr "1.3.3"
+    psbt "2.7.2"
+    tiny-secp256k1 "2.2.1"
+
+paid-services@4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/paid-services/-/paid-services-4.2.2.tgz#b5d82324426518595679c3f448419418083cfc28"
+  integrity sha512-TTQWvX1qqQODso+Ol1o9sdRjPlUjbrdTVTjsvd1jFZIxnl6X4LFt3RMH7nHYTnKe3IaVt2xF7+AveYCpha7CJw==
+  dependencies:
+    "@alexbosworth/fiat" "1.0.4"
+    async "3.2.4"
+    asyncjs-util "1.2.11"
+    bech32 "2.0.0"
+    bolt01 "1.2.6"
+    bolt07 "1.8.3"
+    ecpair "2.1.0"
+    goldengate "12.0.2"
+    invoices "2.2.3"
+    ln-service "54.9.0"
+    ln-sync "4.2.0"
     p2tr "1.3.3"
     psbt "2.7.2"
     tiny-secp256k1 "2.2.1"
