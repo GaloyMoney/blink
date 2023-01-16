@@ -1,3 +1,5 @@
+const txTypes = ["onchain_payment"]
+
 module.exports = {
   async up(db) {
     const collection = db.collection("medici_transactions")
@@ -6,7 +8,7 @@ module.exports = {
       const allTxns = await collection.aggregate([
         {
           $match: {
-            type: "onchain_payment",
+            type: { $in: txTypes },
             satsAmount: { $exists: false },
             currency: "BTC",
           },
@@ -14,6 +16,9 @@ module.exports = {
         {
           $group: {
             _id: "$hash",
+            // For payments, 'currency: "BTC"' filter applies above:
+            // - for USD: max sat debit comes from dealer BTC wallet
+            // - for BTC: max sat debit comes from sender BTC wallet
             debit: { $max: "$debit" },
             fee: { $first: "$fee" },
             usd: { $first: "$usd" },
@@ -39,6 +44,7 @@ module.exports = {
                 displayAmount: centsAmount,
                 displayFee: centsFee,
                 displayCurrency: "USD",
+                satsAmountMigration: true,
               },
             },
           ],
@@ -46,9 +52,7 @@ module.exports = {
             multi: true,
           },
         )
-        const {
-          result: { n, nModified },
-        } = resultRest
+        const { matchedCount: n, modifiedCount: nModified } = resultRest
         console.log(
           `added new props to ${nModified} of ${n}  transactions for hash: ${hash}`,
         )
@@ -64,7 +68,7 @@ module.exports = {
   async down(db) {
     try {
       const result = await db.collection("medici_transactions").update(
-        {},
+        { type: { $in: txTypes }, satsAmountMigration: true },
         {
           $unset: {
             satsAmount: "",
@@ -74,6 +78,7 @@ module.exports = {
             displayAmount: "",
             displayFee: "",
             displayCurrency: "",
+            satsAmountMigration: "",
           },
         },
         { multi: true },
