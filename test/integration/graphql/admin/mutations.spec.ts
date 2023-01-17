@@ -6,7 +6,6 @@ import {
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   graphqlAdmin,
-  randomPhone,
   randomUserId,
 } from "test/helpers"
 
@@ -39,32 +38,8 @@ type AccountDetailsByUsernameQuery = GraphQLResult<{
   }
 }>
 
-type AccountDetailsByUserPhoneQuery = GraphQLResult<{
-  accountDetailsByUserPhone: {
-    id?: string
-    level?: string
-    status?: string
-    title?: string
-    coordinates?: {
-      latitude?: number
-      longitude?: number
-    }
-  }
-}>
-
 type AccountUpdateStatusMutation = GraphQLResult<{
   accountUpdateStatus: {
-    errors: IError[]
-    accountDetails: {
-      id?: string
-      level?: string
-      createdAt?: string
-    }
-  }
-}>
-
-type UserUpdatePhoneMutation = GraphQLResult<{
-  userUpdatePhone: {
     errors: IError[]
     accountDetails: {
       id?: string
@@ -203,47 +178,6 @@ describe("GraphQLMutationRoot", () => {
         dataMutation?.accountUpdateStatus.accountDetails.id,
       )
       expect(data?.accountDetailsByUsername.status).toEqual("LOCKED")
-    }
-  })
-
-  it("exposes userUpdatePhone", async () => {
-    const phone = randomPhone()
-    const mutation = `
-      mutation {
-        userUpdatePhone(input: { uid: "${account.id}", phone: "${phone}"}) {
-          errors {
-            message
-          }
-          accountDetails {
-            id
-          }
-        }
-      }
-    `
-
-    const result = await graphqlAdmin<UserUpdatePhoneMutation>({
-      source: mutation,
-    })
-    const { data: dataMutation, errors } = result
-
-    expect(errors).toBeUndefined()
-
-    const query = `
-      query {
-        accountDetailsByUserPhone(phone: "${phone}") {
-          id
-        }
-      }
-    `
-
-    {
-      const { errors, data } = await graphqlAdmin<AccountDetailsByUserPhoneQuery>({
-        source: query,
-      })
-      expect(errors).toBeUndefined()
-      expect(data?.accountDetailsByUserPhone.id).toEqual(
-        dataMutation?.userUpdatePhone.accountDetails.id,
-      )
     }
   })
 
