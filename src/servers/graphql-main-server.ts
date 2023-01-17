@@ -13,6 +13,7 @@ import { gqlMainSchema, mutationFields, queryFields } from "@graphql/main"
 
 import { isAuthenticated, startApolloServer } from "./graphql-server"
 import { walletIdMiddleware } from "./middlewares/wallet-id"
+import { startApolloServerForAdminSchema } from "./graphql-admin-server"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -56,7 +57,10 @@ if (require.main === module) {
   setupMongoConnection(true)
     .then(async () => {
       activateLndHealthCheck()
-      await startApolloServerForCoreSchema()
+      await Promise.race([
+        startApolloServerForCoreSchema(),
+        startApolloServerForAdminSchema(),
+      ])
     })
     .catch((err) => graphqlLogger.error(err, "server error"))
 }
