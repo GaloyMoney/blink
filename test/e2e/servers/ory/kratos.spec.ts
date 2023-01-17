@@ -34,6 +34,7 @@ import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-ser
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
 import {
+  adminTestClientConfig,
   createApolloClient,
   defaultTestClientConfig,
   getAdminPhoneAndCode,
