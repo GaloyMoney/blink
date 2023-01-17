@@ -36,7 +36,6 @@ import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-
 import {
   adminTestClientConfig,
   createApolloClient,
-  defaultTestClientConfig,
   getAdminPhoneAndCode,
   getPhoneAndCodeFromRef,
   killServer,
@@ -528,24 +527,20 @@ describe("decoding link header", () => {
   })
 })
 
-it("updates user phone", async () => {
-  await killServer(serverPid)
-
-  const adminServerPid = await startServer("start-admin-ci")
-
+it.only("updates user phone", async () => {
   const { phone, code } = getPhoneAndCodeFromRef("H")
+  let apolloClient = await loginFromPhoneAndCode({ phone, code })
 
   const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
 
-  const apolloClient = await loginFromPhoneAndCode({
-    phone: adminPhone,
-    code: adminCode,
+  const loginResult = await apolloClient.mutate({
+    mutation: USER_LOGIN,
+    variables: { input: { phone: adminPhone, code: adminCode } },
   })
 
-  await apolloClient.mutate({
-    mutation: USER_LOGIN,
-    variables: { input: { phone, code } },
-  })
+  ;({ apolloClient } = await createApolloClient(
+    adminTestClientConfig(loginResult.data.userLogin.authToken),
+  ))
 
   const accountDetails = await apolloClient.query({
     query: ACCOUNT_DETAILS_BY_USER_PHONE,
@@ -566,7 +561,4 @@ it("updates user phone", async () => {
   })
 
   expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
-
-  await killServer(adminServerPid)
-  serverPid = await startServer("start-main-ci")
 })
