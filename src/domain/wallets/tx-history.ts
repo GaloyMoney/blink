@@ -337,7 +337,9 @@ const displayCurrencyPerBaseUnitFromAmounts = ({
 }: {
   displayAmountAsNumber: number
   settlementAmountInBaseAsNumber: number
-}): number =>
-  settlementAmountInBaseAsNumber === 0
+}): number => {
+  const usdDisplayAmountAsNumber = Number((displayAmountAsNumber / 100).toFixed(2))
+  return settlementAmountInBaseAsNumber === 0
     ? 0
-    : Math.abs(displayAmountAsNumber / settlementAmountInBaseAsNumber)
+    : Math.abs(usdDisplayAmountAsNumber / settlementAmountInBaseAsNumber)
+}
