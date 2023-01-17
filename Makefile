@@ -16,10 +16,6 @@ start-main:
 start-main-fast:
 	yarn run watch-main | yarn pino-pretty -c -l
 
-start-admin:
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
-		src/servers/graphql-admin-server.ts | yarn pino-pretty -c -l
-
 start-trigger: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/trigger.ts | yarn pino-pretty -c -l
@@ -32,7 +28,7 @@ start-loopd:
 	./dev/bin/start-loopd.sh
 
 start: start-deps
-	make start-main & make start-admin & make start-trigger
+	make start-main & make start-trigger
 
 start-main-ci:
 	node lib/servers/graphql-main-server.js
