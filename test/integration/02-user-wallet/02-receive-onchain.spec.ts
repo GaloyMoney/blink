@@ -525,10 +525,6 @@ async function sendToWalletTestWrapper({
     debit: 0,
     credit: amountSats - fee,
 
-    fee: fee,
-    feeUsd: Number((centsFee / 100).toFixed(2)),
-    usd: Number(((centsAmount - centsFee) / 100).toFixed(2)),
-
     satsAmount: amountSats - fee,
     satsFee: fee,
     centsAmount: centsAmount - centsFee,

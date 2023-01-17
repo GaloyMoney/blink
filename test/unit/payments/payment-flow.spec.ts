@@ -211,10 +211,6 @@ describe("OnChainPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R
 
 describe("inputAmountFromLedgerTransaction", () => {
   const baseLedgerTransaction = {
-    fee: toSats(1),
-    usd: 0.2,
-    feeUsd: 0.01,
-
     satsAmount: toSats(1000),
     centsAmount: toCents(20),
     satsFee: toSats(1),
