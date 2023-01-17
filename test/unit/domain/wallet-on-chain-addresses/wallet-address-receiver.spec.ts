@@ -45,7 +45,7 @@ describe("WalletAddressReceiver", () => {
       const walletAddressAmounts = await WalletAddressReceiver({
         walletAddress: btcWalletAddress,
         receivedBtc,
-        feeBtc: satsFee,
+        satsFee,
         usdFromBtcMidPrice,
         usdFromBtc,
       })
@@ -80,7 +80,7 @@ describe("WalletAddressReceiver", () => {
       const walletAddressAmounts = await WalletAddressReceiver({
         walletAddress: usdWalletAddress,
         receivedBtc,
-        feeBtc: satsFee,
+        satsFee,
         usdFromBtcMidPrice,
         usdFromBtc,
       })

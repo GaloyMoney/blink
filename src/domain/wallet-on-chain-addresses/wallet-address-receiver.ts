@@ -6,7 +6,7 @@ const calc = AmountCalculator()
 export const WalletAddressReceiver = async <S extends WalletCurrency>({
   walletAddress,
   receivedBtc,
-  feeBtc = ZERO_BANK_FEE.btcBankFee,
+  satsFee = ZERO_BANK_FEE.btcBankFee,
   usdFromBtc,
   usdFromBtcMidPrice,
 }: WalletAddressReceiverArgs<S>): Promise<
@@ -24,12 +24,12 @@ export const WalletAddressReceiver = async <S extends WalletCurrency>({
   if (priceRatio instanceof Error) return priceRatio
 
   const bankFee = {
-    usdBankFee: priceRatio.convertFromBtcToCeil(feeBtc),
-    btcBankFee: feeBtc,
+    usdBankFee: priceRatio.convertFromBtcToCeil(satsFee),
+    btcBankFee: satsFee,
   }
 
   return {
-    btcToCreditReceiver: calc.sub(receivedBtc, feeBtc),
+    btcToCreditReceiver: calc.sub(receivedBtc, satsFee),
     usdToCreditReceiver: calc.sub(receivedUsd, bankFee.usdBankFee),
     ...bankFee,
     receivedAmount: () =>

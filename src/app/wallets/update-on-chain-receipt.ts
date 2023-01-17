@@ -165,7 +165,7 @@ const processTxForWallet = async (
               recipientWalletDescriptor: wallet,
             },
             receivedBtc,
-            feeBtc: satsFee,
+            satsFee,
             usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
             usdFromBtcMidPrice: usdFromBtcMidPriceFn,
           })
