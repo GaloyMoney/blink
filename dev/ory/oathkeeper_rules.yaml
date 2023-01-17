@@ -45,7 +45,7 @@
     url: "http://e2e-tests:4001"
     strip_path: /admin
   match:
-    url: "<(http|https)>://localhost:4002/admin<.*>"
+    url: "<(http|https)>://<(127.0.0.1|localhost)>:4002/admin<.*>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
     - handler: bearer_token
