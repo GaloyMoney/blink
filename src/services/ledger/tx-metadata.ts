@@ -2,9 +2,6 @@ import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 
-const convertCentsToUsdAsDollars = (cents: DisplayCurrencyBaseAmount) =>
-  Number((Number(cents) / 100).toFixed(2))
-
 export const LnSendLedgerMetadata = ({
   paymentHash,
   pubkey,
@@ -37,12 +34,6 @@ export const LnSendLedgerMetadata = ({
     hash: paymentHash,
     pubkey,
     feeKnownInAdvance,
-
-    fee: toSats(satsFee),
-    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
-    usd: convertCentsToUsdAsDollars(
-      (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
-    ),
 
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
@@ -89,12 +80,6 @@ export const OnChainSendLedgerMetadata = ({
     payee_addresses: payeeAddresses,
     sendAll,
 
-    fee: toSats(satsFee),
-    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
-    usd: convertCentsToUsdAsDollars(
-      (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
-    ),
-
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
     displayAmount: amountDisplayCurrency,
@@ -139,10 +124,6 @@ export const OnChainReceiveLedgerMetadata = ({
     hash: onChainTxHash,
     payee_addresses: payeeAddresses,
 
-    fee: toSats(satsFee),
-    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
-    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
-
     // Amounts are after fee is deducted
     satsAmount: toSats(satsAmount),
     centsAmount: toCents(centsAmount),
@@ -186,10 +167,6 @@ export const LnReceiveLedgerMetadata = ({
     pending: false,
     hash: paymentHash,
     pubkey,
-
-    fee: toSats(satsFee),
-    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
-    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
 
     // Amounts are after fee is deducted
     satsAmount: toSats(satsAmount),
