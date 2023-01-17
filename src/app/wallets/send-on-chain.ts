@@ -11,10 +11,7 @@ import {
 } from "@app/payments/helpers"
 
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
-import {
-  InvalidLightningPaymentFlowBuilderStateError,
-  PriceRatio,
-} from "@domain/payments"
+import { InvalidLightningPaymentFlowBuilderStateError } from "@domain/payments"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   checkedToOnChainAddress,
@@ -23,8 +20,7 @@ import {
   TxDecoder,
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { DisplayCurrency } from "@domain/fiat"
-import { NewDisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
@@ -44,6 +40,8 @@ import {
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { getCurrentPrice } from "@app/prices"
 
 import { getMinerFeeAndPaymentFlow } from "./get-on-chain-fee"
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
@@ -157,7 +155,9 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
 
     return executePaymentViaIntraledger({
       builder,
+      senderAccount,
       senderWallet,
+      recipientAccount,
       senderUsername: senderAccount.username,
       memo,
       sendAll,
@@ -170,6 +170,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
     .withConversion(withConversionArgs)
 
   return executePaymentViaOnChain({
+    senderAccount,
     builder,
     targetConfirmations: checkedTargetConfirmations,
     memo,
@@ -202,14 +203,18 @@ const executePaymentViaIntraledger = async <
   R extends WalletCurrency,
 >({
   builder,
+  senderAccount,
   senderWallet,
+  recipientAccount,
   senderUsername,
   memo,
   sendAll,
 }: {
   builder: OPFBWithConversion<S, R> | OPFBWithError
+  senderAccount: Account
   senderWallet: WalletDescriptor<S>
   senderUsername: Username | undefined
+  recipientAccount: Account
   memo: string | null
   sendAll: boolean
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -251,6 +256,25 @@ const executePaymentViaIntraledger = async <
   })
   if (limitCheck instanceof Error) return limitCheck
 
+  const senderConverter = DisplayCurrencyConverter({
+    currency: senderAccount.displayCurrency,
+    getPriceFn: getCurrentPrice,
+  })
+  const amountSenderDisplayCurrency = await senderConverter.fromBtcAmount(
+    paymentFlow.btcPaymentAmount,
+  )
+  if (amountSenderDisplayCurrency instanceof Error) return amountSenderDisplayCurrency
+
+  const recipientConverter = DisplayCurrencyConverter({
+    currency: recipientAccount.displayCurrency,
+    getPriceFn: getCurrentPrice,
+  })
+  const amountRecipientDisplayCurrency = await recipientConverter.fromBtcAmount(
+    paymentFlow.btcPaymentAmount,
+  )
+  if (amountRecipientDisplayCurrency instanceof Error)
+    return amountRecipientDisplayCurrency
+
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     // Check user balance
     const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
@@ -269,14 +293,6 @@ const executePaymentViaIntraledger = async <
     if (address instanceof Error) return address
     const payeeAddresses = [address]
 
-    const priceRatio = PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
-
     let metadata:
       | AddOnChainIntraledgerSendLedgerMetadata
       | AddOnChainTradeIntraAccountLedgerMetadata
@@ -288,9 +304,9 @@ const executePaymentViaIntraledger = async <
           sendAll,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountSenderDisplayCurrency,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+          displayCurrency: senderAccount.displayCurrency,
 
           memoOfPayer: memo || undefined,
         }))
@@ -301,9 +317,9 @@ const executePaymentViaIntraledger = async <
           sendAll,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountSenderDisplayCurrency,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+          displayCurrency: senderAccount.displayCurrency,
 
           memoOfPayer: memo || undefined,
           senderUsername,
@@ -322,7 +338,11 @@ const executePaymentViaIntraledger = async <
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
-      additionalCreditMetadata: {},
+      additionalCreditMetadata: {
+        amountDisplayCurrency: amountRecipientDisplayCurrency,
+        feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        displayCurrency: recipientAccount.displayCurrency,
+      },
     })
     if (journal instanceof Error) return journal
 
@@ -340,7 +360,10 @@ const executePaymentViaIntraledger = async <
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
       paymentAmount: { amount, currency: recipientWalletCurrency },
-      displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
+      displayPaymentAmount: {
+        amount: amountRecipientDisplayCurrency,
+        currency: recipientAccount.displayCurrency,
+      },
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
     })
@@ -353,12 +376,14 @@ const executePaymentViaOnChain = async <
   S extends WalletCurrency,
   R extends WalletCurrency,
 >({
+  senderAccount,
   builder,
   targetConfirmations,
   memo,
   sendAll,
   logger,
 }: {
+  senderAccount: Account
   builder: OPFBWithConversion<S, R> | OPFBWithError
   targetConfirmations: TargetConfirmations
   memo: string | null
@@ -399,6 +424,20 @@ const executePaymentViaOnChain = async <
     onChainAvailableBalance,
   )
   if (onChainAvailableBalanceCheck instanceof Error) return onChainAvailableBalanceCheck
+
+  const senderConverter = DisplayCurrencyConverter({
+    currency: senderAccount.displayCurrency,
+    getPriceFn: getCurrentPrice,
+  })
+  const amountSenderDisplayCurrency = await senderConverter.fromBtcAmount(
+    paymentFlow.btcPaymentAmount,
+  )
+  if (amountSenderDisplayCurrency instanceof Error) return amountSenderDisplayCurrency
+
+  const feeSenderDisplayCurrency = await senderConverter.fromBtcAmount(
+    paymentFlow.btcProtocolAndBankFee,
+  )
+  if (feeSenderDisplayCurrency instanceof Error) return feeSenderDisplayCurrency
 
   return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) => {
     // Get estimated miner fee and create 'paymentFlow'
@@ -442,23 +481,14 @@ const executePaymentViaOnChain = async <
     })
 
     // Construct metadata
-    const priceRatio = PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
-
     const metadata = LedgerFacade.OnChainSendLedgerMetadata({
       // we need a temporary hash to be able to search in admin panel
       onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
       paymentAmounts: paymentFlow,
 
-      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolAndBankFee),
-      displayCurrency: DisplayCurrency.Usd,
+      amountDisplayCurrency: amountSenderDisplayCurrency,
+      feeDisplayCurrency: feeSenderDisplayCurrency,
+      displayCurrency: senderAccount.displayCurrency,
 
       payeeAddresses: [paymentFlow.address],
       sendAll,

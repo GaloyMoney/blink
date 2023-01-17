@@ -1,6 +1,5 @@
-import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
+import { DisplayCurrencyConverter } from "@domain/fiat"
+import { BtcPaymentAmount, WalletCurrency } from "@domain/shared"
 
 import { getCurrentPrice } from "@app/prices"
 import { LedgerService } from "@services/ledger"
@@ -14,11 +13,6 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
   const accounts = getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 
-  const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
-  const displayCurrencyPerSat = price instanceof Error ? undefined : price
-  const converter = displayCurrencyPerSat
-    ? DisplayCurrencyConverter(displayCurrencyPerSat)
-    : undefined
   const notifyUser = wrapAsyncToRunInSpan({
     namespace: "daily-balance-notification",
     fn: async (account: Account): Promise<void | ApplicationError> => {
@@ -33,9 +27,19 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
       if (balanceAmount instanceof Error) return balanceAmount
 
       let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
-      if (converter && wallet.currency === WalletCurrency.Btc) {
-        const amount = converter.fromSats(toSats(balanceAmount.amount))
-        displayBalanceAmount = { amount, currency: DisplayCurrency.Usd }
+      if (wallet.currency === WalletCurrency.Btc) {
+        const converter = DisplayCurrencyConverter({
+          currency: account.displayCurrency,
+          getPriceFn: getCurrentPrice,
+        })
+        const amount = BtcPaymentAmount(balanceAmount.amount)
+        const displayAmount = await converter.fromBtcAmount(amount)
+        if (!(displayAmount instanceof Error)) {
+          displayBalanceAmount = {
+            amount: displayAmount,
+            currency: account.displayCurrency,
+          }
+        }
       }
 
       return NotificationsService().sendBalance({

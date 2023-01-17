@@ -48,11 +48,11 @@ export const createPushNotificationContent = ({
     displayAmount.currency !== baseCurrency
   ) {
     const displayCurrencyName = i18n.__({
-      phrase: `currency.${displayAmount.currency}.name`,
+      phrase: `currency.${displayAmount.currency}.name:${displayAmount.currency}`,
       locale,
     })
     const displayCurrencySymbol = i18n.__({
-      phrase: `currency.${displayAmount.currency}.symbol`,
+      phrase: `currency.${displayAmount.currency}.symbol:$`,
       locale,
     })
     const displayCurrencyAmount = displayAmount.amount.toLocaleString(locale, {

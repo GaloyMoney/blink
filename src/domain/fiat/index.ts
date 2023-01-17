@@ -48,5 +48,4 @@ export const sub = <T extends number>(
 
 export const DisplayCurrency = {
   Usd: "USD",
-  Btc: "BTC",
 } as const

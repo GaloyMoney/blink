@@ -31,6 +31,7 @@ import {
 import { NotificationsService } from "@services/notifications"
 import { DealerPriceService } from "@services/dealer-price"
 import * as LedgerFacade from "@services/ledger/facade"
+import { checkedToBtcPaymentAmount } from "@domain/payments"
 
 const redisCache = RedisCacheService()
 
@@ -260,8 +261,10 @@ const processTxForHotWallet = async ({
 
   const ledger = LedgerService()
 
-  const displayCurrencyPerSat = await getCurrentPrice({ currency: DisplayCurrency.Usd })
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+  const converter = DisplayCurrencyConverter({
+    currency: DisplayCurrency.Usd,
+    getPriceFn: getCurrentPrice,
+  })
 
   const lockService = LockService()
   return lockService.lockOnChainTxHash(tx.rawTx.txHash, async () => {
@@ -284,9 +287,17 @@ const processTxForHotWallet = async ({
 
         if (fee instanceof Error) fee = toSats(0)
 
-        const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-        const amountDisplayCurrency = converter.fromSats(sats)
-        const feeDisplayCurrency = converter.fromSats(fee)
+        const amount = checkedToBtcPaymentAmount(sats)
+        if (amount instanceof Error) return amount
+
+        const feeAmount = checkedToBtcPaymentAmount(fee)
+        if (feeAmount instanceof Error) return feeAmount
+
+        const amountDisplayCurrency = await converter.fromBtcAmount(amount)
+        if (amountDisplayCurrency instanceof Error) return amountDisplayCurrency
+
+        const feeDisplayCurrency = await converter.fromBtcAmount(feeAmount)
+        if (feeDisplayCurrency instanceof Error) return feeDisplayCurrency
 
         const description = `deposit to hot wallet of ${sats} sats from the cold storage wallet`
 

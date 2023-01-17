@@ -1,13 +1,12 @@
 import { getPubkeysToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
+import { DisplayCurrencyConverter } from "@domain/fiat"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
-  PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
@@ -31,6 +30,7 @@ import {
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import { Accounts } from "@app"
+import { getCurrentPrice } from "@app/prices"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
@@ -251,13 +251,24 @@ const executePaymentViaIntraledger = async <
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
-    const priceRatio = PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
+    const senderConverter = DisplayCurrencyConverter({
+      currency: senderAccount.displayCurrency,
+      getPriceFn: getCurrentPrice,
     })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+    const amountSenderDisplayCurrency = await senderConverter.fromBtcAmount(
+      paymentFlow.btcPaymentAmount,
+    )
+    if (amountSenderDisplayCurrency instanceof Error) return amountSenderDisplayCurrency
+
+    const recipientConverter = DisplayCurrencyConverter({
+      currency: recipientAccount.displayCurrency,
+      getPriceFn: getCurrentPrice,
+    })
+    const amountRecipientDisplayCurrency = await recipientConverter.fromBtcAmount(
+      paymentFlow.btcPaymentAmount,
+    )
+    if (amountRecipientDisplayCurrency instanceof Error)
+      return amountRecipientDisplayCurrency
 
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
@@ -271,9 +282,9 @@ const executePaymentViaIntraledger = async <
       metadata = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
         paymentAmounts: paymentFlow,
 
-        amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+        amountDisplayCurrency: amountSenderDisplayCurrency,
         feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        displayCurrency: DisplayCurrency.Usd,
+        displayCurrency: senderAccount.displayCurrency,
 
         memoOfPayer: memo || undefined,
       })
@@ -282,9 +293,9 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.WalletIdIntraledgerLedgerMetadata({
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountSenderDisplayCurrency,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+          displayCurrency: senderAccount.displayCurrency,
 
           memoOfPayer: memo || undefined,
           senderUsername: senderAccount.username,
@@ -306,7 +317,11 @@ const executePaymentViaIntraledger = async <
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
-      additionalCreditMetadata: {},
+      additionalCreditMetadata: {
+        amountDisplayCurrency: amountRecipientDisplayCurrency,
+        feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        displayCurrency: recipientAccount.displayCurrency,
+      },
     })
     if (journal instanceof Error) return journal
 
@@ -327,7 +342,10 @@ const executePaymentViaIntraledger = async <
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
       paymentAmount: { amount, currency: recipientWallet.currency },
-      displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
+      displayPaymentAmount: {
+        amount: amountRecipientDisplayCurrency,
+        currency: recipientAccount.displayCurrency,
+      },
     })
 
     return PaymentSendStatus.Success

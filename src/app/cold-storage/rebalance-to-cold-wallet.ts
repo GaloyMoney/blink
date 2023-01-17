@@ -14,6 +14,8 @@ import { ColdStorageService } from "@services/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { checkedToBtcPaymentAmount } from "@domain/payments"
+
 import { getOffChainBalance } from "../lightning/get-balances"
 
 export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationError> => {
@@ -28,9 +30,6 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
 
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
-
-  const displayCurrencyPerSat = await getCurrentPrice({ currency: DisplayCurrency.Usd })
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   // we only need active node onchain balance, otherwise we would not be able to rebalance
   const onChainBalance = await onChainService.getBalance()
@@ -73,9 +72,22 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
 
   const description = `deposit of ${rebalanceAmount} sats to the cold storage wallet`
 
-  const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-  const amountDisplayCurrency = converter.fromSats(rebalanceAmount)
-  const feeDisplayCurrency = converter.fromSats(fee)
+  const converter = DisplayCurrencyConverter({
+    currency: DisplayCurrency.Usd,
+    getPriceFn: getCurrentPrice,
+  })
+
+  const amount = checkedToBtcPaymentAmount(rebalanceAmount)
+  if (amount instanceof Error) return amount
+
+  const feeAmount = checkedToBtcPaymentAmount(fee)
+  if (feeAmount instanceof Error) return feeAmount
+
+  const amountDisplayCurrency = await converter.fromBtcAmount(amount)
+  if (amountDisplayCurrency instanceof Error) return amountDisplayCurrency
+
+  const feeDisplayCurrency = await converter.fromBtcAmount(feeAmount)
+  if (feeDisplayCurrency instanceof Error) return feeDisplayCurrency
 
   const journal = await ledgerService.addColdStorageTxReceive({
     txHash,

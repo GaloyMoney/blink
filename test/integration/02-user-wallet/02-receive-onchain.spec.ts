@@ -31,7 +31,7 @@ import { createPushNotificationContent } from "@services/notifications/create-pu
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
 
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { CurrencyConverter } from "@domain/fiat/display-currency"
 
 import {
   amountAfterFeeDeduction,
@@ -206,7 +206,7 @@ describe("UserWallet - On chain", () => {
 
     const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
+    const dCConverter = CurrencyConverter(price)
     const amountSats = dCConverter.fromCentsToSats(withdrawalLimitAccountLevel1)
 
     await sendToWalletTestWrapper({ walletId: walletIdE, amountSats })
@@ -221,7 +221,7 @@ describe("UserWallet - On chain", () => {
 
     const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
+    const dCConverter = CurrencyConverter(price)
     const amountSats = dCConverter.fromCentsToSats(intraLedgerLimitAccountLevel1)
 
     await sendToWalletTestWrapper({ walletId, amountSats })

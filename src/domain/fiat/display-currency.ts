@@ -1,19 +1,11 @@
+import { DisplayCurrency } from "."
+
 export const CENTS_PER_USD = 100
 
 export const toDisplayCurrencyBaseAmount = (amount: number) =>
   amount as DisplayCurrencyBaseAmount
 
-export const DisplayCurrencyConverter = (
-  price: DisplayCurrencyPerSat,
-): DisplayCurrencyConverter => ({
-  fromSats: (amount: Satoshis): DisplayCurrencyBaseAmount => {
-    return (Number(amount) * price) as DisplayCurrencyBaseAmount
-  },
-  fromCents: (amount: UsdCents): DisplayCurrencyBaseAmount => {
-    // FIXME: implement where DisplayCurrency is not USD
-    return amount as number as DisplayCurrencyBaseAmount
-  },
-
+export const CurrencyConverter = (price: DisplayCurrencyPerSat): CurrencyConverter => ({
   // TODO: this method should eventually be moved to the dealer
   // the currency assumption is displayCurrency is USD
   fromSatsToCents: (amount: Satoshis): UsdCents => {
@@ -24,13 +16,30 @@ export const DisplayCurrencyConverter = (
   },
 })
 
-export const NewDisplayCurrencyConverter = (
-  displayCurrencyPrice: DisplayCurrencyBasePerSat,
-): NewDisplayCurrencyConverter => {
+export const DisplayCurrencyConverter = ({
+  currency,
+  getPriceFn,
+}: {
+  currency: DisplayCurrency
+  getPriceFn: GetPriceFn
+}): DisplayCurrencyConverter => {
   return {
-    fromBtcAmount: (btc: BtcPaymentAmount): DisplayCurrencyBaseAmount =>
-      (Number(btc.amount) * displayCurrencyPrice) as DisplayCurrencyBaseAmount,
-    fromUsdAmount: (usd: UsdPaymentAmount): DisplayCurrencyBaseAmount =>
-      Number(usd.amount) as DisplayCurrencyBaseAmount,
+    fromBtcAmount: async ({
+      amount,
+    }: BtcPaymentAmount): Promise<DisplayCurrencyBaseAmount | Error> => {
+      const price = await getPriceFn({ currency })
+      if (price instanceof Error) return price
+      return (Number(amount) * price) as DisplayCurrencyBaseAmount
+    },
+    fromUsdAmount: async ({
+      amount,
+    }: UsdPaymentAmount): Promise<DisplayCurrencyBaseAmount | Error> => {
+      const usdBtcPrice = await getPriceFn({ currency: DisplayCurrency.Usd })
+      if (usdBtcPrice instanceof Error) return usdBtcPrice
+
+      const price = await getPriceFn({ currency })
+      if (price instanceof Error) return price
+      return ((Number(amount) * price) / usdBtcPrice) as DisplayCurrencyBaseAmount
+    },
   }
 }

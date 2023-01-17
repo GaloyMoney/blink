@@ -5,7 +5,7 @@ import { getCurrentPrice } from "@app/prices"
 import { ErrorLevel } from "@domain/shared"
 import { DisplayCurrency } from "@domain/fiat"
 import { ActivityChecker } from "@domain/ledger"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { CurrencyConverter } from "@domain/fiat/display-currency"
 
 import { LedgerService } from "@services/ledger"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
@@ -20,7 +20,7 @@ export const getRecentlyActiveAccounts = async function* ():
   const displayCurrencyPerSat = await getCurrentPrice({ currency: DisplayCurrency.Usd })
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  const dCConverter = CurrencyConverter(displayCurrencyPerSat)
 
   const ledger = LedgerService()
   const activityChecker = ActivityChecker({

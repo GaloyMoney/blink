@@ -7,7 +7,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
-import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
+import { DisplayCurrencyConverter } from "@domain/fiat"
 import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
@@ -15,7 +15,6 @@ import {
   LnPaymentRequestInTransitError,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
-  PriceRatio,
 } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 import {
@@ -31,6 +30,7 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
   UsersRepository,
+  AccountsRepository,
 } from "@services/mongoose"
 
 import { DealerPriceService } from "@services/dealer-price"
@@ -42,6 +42,7 @@ import * as LedgerFacade from "@services/ledger/facade"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
+import { getCurrentPrice } from "@app/prices"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -87,11 +88,12 @@ export const payInvoiceByWalletId = async ({
   return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
     ? executePaymentViaIntraledger({
         paymentFlow,
+        senderAccount,
         senderWallet,
         senderUsername: senderAccount.username,
         memo,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderAccount, senderWallet })
 }
 
 const payNoAmountInvoiceByWalletId = async ({
@@ -126,11 +128,12 @@ const payNoAmountInvoiceByWalletId = async ({
   return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
     ? executePaymentViaIntraledger({
         paymentFlow,
+        senderAccount,
         senderWallet,
         senderUsername: senderAccount.username,
         memo,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderAccount, senderWallet })
 }
 
 export const payNoAmountInvoiceByWalletIdForBtcWallet = async (
@@ -315,11 +318,13 @@ const executePaymentViaIntraledger = async <
   R extends WalletCurrency,
 >({
   paymentFlow,
+  senderAccount,
   senderWallet,
   senderUsername,
   memo,
 }: {
   paymentFlow: PaymentFlow<S, R>
+  senderAccount: Account
   senderWallet: WalletDescriptor<S>
   senderUsername: Username | undefined
   memo: string | null
@@ -351,6 +356,9 @@ const executePaymentViaIntraledger = async <
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
+  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
   const checkLimits =
     senderWallet.accountId === recipientWallet.accountId
       ? newCheckTradeIntraAccountLimits
@@ -361,6 +369,25 @@ const executePaymentViaIntraledger = async <
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
+
+  const senderConverter = DisplayCurrencyConverter({
+    currency: senderAccount.displayCurrency,
+    getPriceFn: getCurrentPrice,
+  })
+  const amountSenderDisplayCurrency = await senderConverter.fromBtcAmount(
+    paymentFlow.btcPaymentAmount,
+  )
+  if (amountSenderDisplayCurrency instanceof Error) return amountSenderDisplayCurrency
+
+  const recipientConverter = DisplayCurrencyConverter({
+    currency: recipientAccount.displayCurrency,
+    getPriceFn: getCurrentPrice,
+  })
+  const amountRecipientDisplayCurrency = await recipientConverter.fromBtcAmount(
+    paymentFlow.btcPaymentAmount,
+  )
+  if (amountRecipientDisplayCurrency instanceof Error)
+    return amountRecipientDisplayCurrency
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const ledgerService = LedgerService()
@@ -374,15 +401,6 @@ const executePaymentViaIntraledger = async <
 
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
-
-    const priceRatio = PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
 
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
@@ -399,9 +417,9 @@ const executePaymentViaIntraledger = async <
           pubkey: recipientPubkey,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountSenderDisplayCurrency,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+          displayCurrency: senderAccount.displayCurrency,
 
           memoOfPayer: memo || undefined,
         }))
@@ -412,9 +430,9 @@ const executePaymentViaIntraledger = async <
           pubkey: recipientPubkey,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountSenderDisplayCurrency,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+          displayCurrency: senderAccount.displayCurrency,
 
           memoOfPayer: memo || undefined,
           senderUsername,
@@ -432,7 +450,11 @@ const executePaymentViaIntraledger = async <
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
-      additionalCreditMetadata: {},
+      additionalCreditMetadata: {
+        amountDisplayCurrency: amountRecipientDisplayCurrency,
+        feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        displayCurrency: recipientAccount.displayCurrency,
+      },
     })
     if (journal instanceof Error) return journal
 
@@ -461,7 +483,10 @@ const executePaymentViaIntraledger = async <
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId,
       paymentAmount: { amount, currency: recipientWalletCurrency },
-      displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
+      displayPaymentAmount: {
+        amount: amountRecipientDisplayCurrency,
+        currency: recipientAccount.displayCurrency,
+      },
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
@@ -474,10 +499,12 @@ const executePaymentViaIntraledger = async <
 const executePaymentViaLn = async ({
   decodedInvoice,
   paymentFlow,
+  senderAccount,
   senderWallet,
 }: {
   decodedInvoice: LnInvoice
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
+  senderAccount: Account
   senderWallet: Wallet
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -498,6 +525,20 @@ const executePaymentViaLn = async ({
 
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
 
+  const senderConverter = DisplayCurrencyConverter({
+    currency: senderAccount.displayCurrency,
+    getPriceFn: getCurrentPrice,
+  })
+  const amountSenderDisplayCurrency = await senderConverter.fromBtcAmount(
+    paymentFlow.btcPaymentAmount,
+  )
+  if (amountSenderDisplayCurrency instanceof Error) return amountSenderDisplayCurrency
+
+  const feeSenderDisplayCurrency = await senderConverter.fromBtcAmount(
+    paymentFlow.btcProtocolAndBankFee,
+  )
+  if (feeSenderDisplayCurrency instanceof Error) return feeSenderDisplayCurrency
+
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const ledgerService = LedgerService()
 
@@ -515,23 +556,14 @@ const executePaymentViaLn = async ({
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
 
-    const priceRatio = PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
-
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
     const metadata = LedgerFacade.LnSendLedgerMetadata({
-      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolAndBankFee),
-      displayCurrency: DisplayCurrency.Usd,
+      amountDisplayCurrency: amountSenderDisplayCurrency,
+      feeDisplayCurrency: feeSenderDisplayCurrency,
+      displayCurrency: senderAccount.displayCurrency,
 
       paymentAmounts: paymentFlow,
       pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
@@ -612,6 +644,7 @@ const executePaymentViaLn = async ({
 
     if (!rawRoute) {
       const reimbursed = await Wallets.reimburseFee({
+        senderAccount,
         paymentFlow,
         journalId,
         actualFee: payResult.roundedUpFee,

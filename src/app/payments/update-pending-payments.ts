@@ -197,7 +197,13 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           if (displayAmount === undefined || displayFee === undefined)
             return new UnknownLedgerError("missing display-related values in transaction")
 
+          const senderAccount = await AccountsRepository().findById(
+            paymentFlow.senderAccountId,
+          )
+          if (senderAccount instanceof Error) return senderAccount
+
           return Wallets.reimburseFee({
+            senderAccount,
             paymentFlow,
             journalId: pendingPayment.journalId,
             actualFee: roundedUpFee,
@@ -262,11 +268,9 @@ const reconstructPendingPaymentFlow = async <
   if (!senderWalletId) return new MissingPropsInTransactionForPaymentFlowError()
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
-  const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
-  if (senderAccount instanceof Error) return senderAccount
 
   return PaymentFlowFromLedgerTransaction({
     ledgerTxn: payment,
-    senderAccountId: senderAccount.id,
+    senderAccountId: senderWallet.accountId,
   })
 }

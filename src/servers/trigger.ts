@@ -58,6 +58,8 @@ import { NotificationsService } from "@services/notifications"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
+import { checkedToBtcPaymentAmount } from "@domain/payments"
+
 import healthzHandler from "./middlewares/healthz"
 
 const redisCache = RedisCacheService()
@@ -109,16 +111,6 @@ export const onchainTransactionEventHandler = async (
       return
     }
 
-    let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
-
-    const price = await PricesWithSpans.getCurrentPrice({ currency: DisplayCurrency.Usd })
-    const displayCurrencyPerSat = price instanceof Error ? undefined : price
-    if (displayCurrencyPerSat) {
-      const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-      const amount = converter.fromSats(toSats(tx.tokens - fee))
-      displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
-    }
-
     const senderWallet = await WalletsRepository().findById(walletId)
     if (senderWallet instanceof Error) return senderWallet
 
@@ -127,6 +119,22 @@ export const onchainTransactionEventHandler = async (
 
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
+
+    const converter = DisplayCurrencyConverter({
+      currency: senderAccount.displayCurrency,
+      getPriceFn: PricesWithSpans.getCurrentPrice,
+    })
+    const amount = checkedToBtcPaymentAmount(tx.tokens - fee)
+    if (amount instanceof Error) return amount
+
+    let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
+    const displayAmount = await converter.fromBtcAmount(amount)
+    if (!(displayAmount instanceof Error)) {
+      displayPaymentAmount = {
+        amount: displayAmount,
+        currency: senderAccount.displayCurrency,
+      }
+    }
 
     const ledgerTxns = await LedgerService().getTransactionsByHash(txHash)
     if (ledgerTxns instanceof Error) return ledgerTxns
@@ -180,13 +188,6 @@ export const onchainTransactionEventHandler = async (
         "mempool appearance",
       )
 
-      let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
-
-      const price = await PricesWithSpans.getCurrentPrice({
-        currency: DisplayCurrency.Usd,
-      })
-      const displayCurrencyPerSat = price instanceof Error ? undefined : price
-
       wallets.forEach(async (wallet) => {
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
         if (recipientAccount instanceof Error) return recipientAccount
@@ -201,11 +202,20 @@ export const onchainTransactionEventHandler = async (
         )
         if (recipientUser instanceof Error) return recipientUser
 
-        if (displayCurrencyPerSat) {
-          const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-          // TODO: tx.tokens represent the total sum, need to segregate amount by address
-          const amount = converter.fromSats(toSats(tx.tokens - fee))
-          displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
+        const converter = DisplayCurrencyConverter({
+          currency: recipientAccount.displayCurrency,
+          getPriceFn: PricesWithSpans.getCurrentPrice,
+        })
+        const amount = checkedToBtcPaymentAmount(tx.tokens - fee)
+        if (amount instanceof Error) return amount
+
+        let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
+        const displayAmount = await converter.fromBtcAmount(amount)
+        if (!(displayAmount instanceof Error)) {
+          displayPaymentAmount = {
+            amount: displayAmount,
+            currency: recipientAccount.displayCurrency,
+          }
         }
 
         NotificationsService().onChainTxReceivedPending({

@@ -74,7 +74,6 @@ const transactionSchema = new Schema<ILedgerTransaction>(
     },
     displayCurrency: {
       type: String,
-      enum: ["USD", "BTC", "CRC"],
     },
 
     // when transaction with on_us transaction, this is the other party username

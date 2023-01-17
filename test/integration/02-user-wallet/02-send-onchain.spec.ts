@@ -31,7 +31,7 @@ import { getCurrentPrice } from "@app/prices"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
 import { LedgerTransactionType } from "@domain/ledger"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { CurrencyConverter } from "@domain/fiat/display-currency"
 
 import { add, DisplayCurrency, sub, toCents } from "@domain/fiat"
 
@@ -1024,7 +1024,7 @@ describe("BtcWallet - onChainPay", () => {
 
     const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
+    const dCConverter = CurrencyConverter(price)
 
     const subResult = sub(
       dCConverter.fromCentsToSats(withdrawalLimit),

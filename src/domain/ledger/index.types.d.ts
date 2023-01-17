@@ -335,7 +335,7 @@ interface ILedgerService {
 
 type ActivityCheckerConfig = {
   monthlyVolumeThreshold: UsdCents
-  dCConverter: DisplayCurrencyConverter
+  dCConverter: CurrencyConverter
   getVolumeFn: (args: IGetVolumeArgs) => VolumeResult
 }
 
