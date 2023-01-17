@@ -60,13 +60,33 @@ const filterPendingIncoming = ({
 const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   txn: LedgerTransaction<S>,
 ) => {
-  const { credit, debit, currency, fee, feeUsd, lnMemo, memoFromPayer } = txn
+  const {
+    credit,
+    debit,
+    currency,
+    satsFee: satsFeeRaw,
+    centsFee: centsFeeRaw,
+    displayAmount: displayAmountRaw,
+    displayFee: displayFeeRaw,
+    lnMemo,
+    memoFromPayer,
+  } = txn
+
+  const displayAmount = displayAmountRaw || 0
+  const displayFee = displayFeeRaw || 0
+  const satsFee = satsFeeRaw || 0
+  const centsFee = centsFeeRaw || 0
+
   const settlementAmount =
     currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
   const settlementFee =
-    currency === WalletCurrency.Btc
-      ? toSats(fee || 0)
-      : toCents(feeUsd ? Math.floor(feeUsd * 100) : 0)
+    currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee)
+
+  // 'displayAmount' is before fees. For total amount:
+  // - send: displayAmount + displayFee
+  // - recv: displayAmount
+  const isSend = settlementAmount < 0
+  const displayAmountAsNumber = isSend ? displayAmount + displayFee : displayAmount
 
   const memo = translateMemo({
     memoFromPayer,
@@ -84,7 +104,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
     settlementFee,
     settlementCurrency: txn.currency,
     displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
-      displayAmountAsNumber: txn.usd,
+      displayAmountAsNumber,
       settlementAmountInBaseAsNumber: settlementAmount,
     }),
     status,

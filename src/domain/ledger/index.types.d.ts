@@ -26,16 +26,12 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly type: LedgerTransactionType
   readonly debit: S extends "BTC" ? Satoshis : UsdCents
   readonly credit: S extends "BTC" ? Satoshis : UsdCents
-  readonly fee: Satoshis
   readonly currency: S
   readonly timestamp: Date
   readonly pendingConfirmation: boolean
   readonly journalId: LedgerJournalId
 
   readonly lnMemo?: string
-
-  readonly usd: number
-  readonly feeUsd: number
 
   // for IntraLedger
   readonly recipientWalletId?: WalletId
