@@ -33,9 +33,6 @@ start: start-deps
 start-main-ci:
 	node lib/servers/graphql-main-server.js
 
-start-admin-ci:
-	node lib/servers/graphql-admin-server.js
-
 start-trigger-ci:
 	node lib/servers/trigger.js
 
@@ -111,7 +108,7 @@ execute-e2e-from-within-container:
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 integration:
 	yarn build && \
