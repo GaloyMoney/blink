@@ -1,7 +1,7 @@
 import {
   MEMO_SHARING_CENTS_THRESHOLD,
   MEMO_SHARING_SATS_THRESHOLD,
-  onboardingEarn,
+  OnboardingEarn,
 } from "@config"
 
 import { toCents } from "@domain/fiat"
@@ -283,7 +283,7 @@ const shouldDisplayMemo = ({
 }
 
 const isAuthorizedMemo = (memo: string | undefined): boolean =>
-  !!memo && Object.keys(onboardingEarn).includes(memo)
+  !!memo && Object.keys(OnboardingEarn).includes(memo)
 
 export const translateMemo = ({
   memoFromPayer,

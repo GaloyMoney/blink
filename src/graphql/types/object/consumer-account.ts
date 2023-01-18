@@ -21,8 +21,9 @@ import getUuidByString from "uuid-by-string"
 
 import AccountLimits from "./account-limits"
 import { TransactionConnection } from "./transaction"
+import Quiz from "./quiz"
 
-const ConsumerAccount = GT.Object({
+const ConsumerAccount = GT.Object<Account>({
   name: "ConsumerAccount",
   interfaces: () => [IAccount],
   isTypeOf: () => true, // TODO: improve
@@ -35,7 +36,7 @@ const ConsumerAccount = GT.Object({
 
     wallets: {
       type: GT.NonNullList(Wallet),
-      resolve: async (source: Account) => {
+      resolve: async (source) => {
         return Wallets.listWalletsByAccountId(source.id)
       },
     },
@@ -59,14 +60,20 @@ const ConsumerAccount = GT.Object({
           type: GT.NonNullList(WalletId),
         },
       },
-      resolve: async (source: Account) => {
+      resolve: async (source) => {
         return Accounts.getCSVForAccount(source.id)
       },
     },
 
     limits: {
       type: GT.NonNull(AccountLimits),
-      resolve: (source: Account) => source,
+      resolve: (source) => source,
+    },
+
+    quiz: {
+      type: GT.NonNullList(Quiz),
+      description: "List the quiz questions of the consumer account",
+      resolve: (source) => source.quiz,
     },
 
     transactions: {

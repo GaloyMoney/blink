@@ -27,7 +27,7 @@ export const MIN_SATS_FOR_PRICE_RATIO_PRECISION = 5000n
 export const levels: Levels = [1, 2]
 
 // onboarding
-export const onboardingEarn: Record<string, Satoshis> = {
+export const OnboardingEarn: Record<QuizQuestionId, Satoshis> = {
   walletDownloaded: 1 as Satoshis,
   walletActivated: 1 as Satoshis,
   whatIsBitcoin: 1 as Satoshis,
@@ -52,4 +52,4 @@ export const onboardingEarn: Record<string, Satoshis> = {
   HighlyDivisible: 6 as Satoshis,
   securePartOne: 6 as Satoshis,
   securePartTwo: 6 as Satoshis,
-}
+} as const

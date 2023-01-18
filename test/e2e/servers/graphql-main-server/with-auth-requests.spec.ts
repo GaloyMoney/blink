@@ -171,6 +171,13 @@ describe("graphql", () => {
           language: expect.any(String),
           phone: expect.stringContaining("+1"),
           defaultAccount: expect.objectContaining({
+            quiz: expect.arrayContaining([
+              expect.objectContaining({
+                id: expect.any(String),
+                amount: expect.any(Number),
+                completed: expect.any(Boolean),
+              }),
+            ]),
             id: expect.any(String),
             defaultWalletId: expect.any(String),
             wallets: expect.arrayContaining([

@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 
 import SatAmount from "../scalar/sat-amount"
 
+// deprecated // TODO: remove
 const QuizQuestion = GT.Object({
   name: "QuizQuestion",
   fields: () => ({

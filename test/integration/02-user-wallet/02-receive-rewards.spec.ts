@@ -1,5 +1,5 @@
 import { Accounts, Payments } from "@app"
-import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
+import { MEMO_SHARING_SATS_THRESHOLD, OnboardingEarn } from "@config"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import difference from "lodash.difference"
@@ -24,9 +24,9 @@ const onBoardingEarnIds = [
   "whyStonesShellGold" as QuizQuestionId,
   "NoCounterfeitMoney" as QuizQuestionId,
 ]
-const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
+const onBoardingEarnAmt: number = Object.keys(OnboardingEarn)
   .filter((k) => find(onBoardingEarnIds, (o) => o === k))
-  .reduce((p, k) => p + onboardingEarn[k], 0)
+  .reduce((p, k) => p + OnboardingEarn[k], 0)
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
@@ -97,20 +97,20 @@ describe("UserWallet - addEarn", () => {
   })
 
   it("receives transaction with reward memo", async () => {
-    const onboardingEarnIds = Object.keys(onboardingEarn)
-    expect(onboardingEarnIds.length).toBeGreaterThanOrEqual(1)
+    const OnboardingEarnIds = Object.keys(OnboardingEarn)
+    expect(OnboardingEarnIds.length).toBeGreaterThanOrEqual(1)
 
     const { result: transactionsBefore } = await getTransactionsForWalletId(walletIdB)
 
-    let onboardingEarnId = ""
+    let OnboardingEarnId = ""
     let txCheck: WalletTransaction | undefined
-    for (onboardingEarnId of onboardingEarnIds) {
-      txCheck = transactionsBefore?.slice.find((tx) => tx.memo === onboardingEarnId)
+    for (OnboardingEarnId of OnboardingEarnIds) {
+      txCheck = transactionsBefore?.slice.find((tx) => tx.memo === OnboardingEarnId)
       if (!txCheck) break
     }
     expect(txCheck).toBeUndefined()
 
-    const amount = onboardingEarn[onboardingEarnId]
+    const amount = OnboardingEarn[OnboardingEarnId]
     expect(amount).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
 
     const funderWalletId = await getFunderWalletId()
@@ -123,12 +123,12 @@ describe("UserWallet - addEarn", () => {
       senderAccount: funderAccount,
       recipientWalletId: walletIdB,
       amount,
-      memo: onboardingEarnId,
+      memo: OnboardingEarnId,
     })
     if (payment instanceof Error) return payment
 
     const { result: transactionsAfter } = await getTransactionsForWalletId(walletIdB)
-    const rewardTx = transactionsAfter?.slice.find((tx) => tx.memo === onboardingEarnId)
+    const rewardTx = transactionsAfter?.slice.find((tx) => tx.memo === OnboardingEarnId)
     expect(rewardTx).not.toBeUndefined()
   })
 })
