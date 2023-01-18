@@ -4059,10 +4059,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-balanceofsatoshis@^13.20.0:
-  version "13.20.0"
-  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.20.0.tgz#8803d3d89c4ff7d733ff317d38230e232b2b324e"
-  integrity sha512-WLdztSJ5AP0vkRNTusB46v4OwZQ1b6hd9A1v6L6aejz1mJuNB+azVUqbmmCuLHpcgpL/e1BXpNLiG6Pb9kL6cQ==
+balanceofsatoshis@^13.21.0:
+  version "13.21.0"
+  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.21.0.tgz#1d365378cdc6de56ecf7de4e6edfcd80b110ba03"
+  integrity sha512-4y0t3tAZiAMqRpyw0Yc8EbbRlikIpJRSKkcbi/0i3QcNg85FYaMeL7f2+BxfkMWzTjmN6XA4WWaPgqTV7W69eg==
   dependencies:
     "@alexbosworth/caporal" "1.4.4"
     "@alexbosworth/fiat" "1.0.4"
@@ -4084,7 +4084,7 @@ balanceofsatoshis@^13.20.0:
     csv-parse "5.3.3"
     ecpair "2.1.0"
     goldengate "12.0.2"
-    grammy "1.13.0"
+    grammy "1.13.1"
     hot-formula-parser "4.0.0"
     import-lazy "4.0.0"
     ini "3.0.1"
@@ -6602,6 +6602,16 @@ grammy@1.13.0:
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/grammy/-/grammy-1.13.0.tgz#14305bdd12c1454e1f8773fe066bca3c1d5291d8"
   integrity sha512-3C9ClsH05NogyZ68MXGDjS3rsieIWsEfx904CR48cfwG1m8fAgSLRi2HLuZOF6HPMEHsyYFwjtvOU312QcADdw==
+  dependencies:
+    "@grammyjs/types" "^2.11.0"
+    abort-controller "^3.0.0"
+    debug "^4.3.4"
+    node-fetch "^2.6.7"
+
+grammy@1.13.1:
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/grammy/-/grammy-1.13.1.tgz#f55defc1066d41351b6c8160a3d68c83a9102d19"
+  integrity sha512-kAxja6QDjw5oTJOFtrqhaQlLfCco3AwO4Mb4YRdP8A+v59roJA8mgEd0S5dOgFPyn74bPp8VWaKCI+of8wnPow==
   dependencies:
     "@grammyjs/types" "^2.11.0"
     abort-controller "^3.0.0"
