@@ -18,6 +18,7 @@ import bodyParser from "body-parser"
 import setCookie from "set-cookie-parser"
 import cookieParser from "cookie-parser"
 import { logoutCookie } from "@app/auth"
+import { checkedToPhoneNumber } from "@domain/users"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -133,8 +134,9 @@ authRouter.post(
           throw new Error("IP is not defined")
         }
 
-        const phone = req.body.phoneNumber as PhoneNumber
         const code = req.body.authCode
+        const phone = checkedToPhoneNumber(req.body.phoneNumber)
+        if (phone instanceof Error) return res.status(400).send("invalid phone")
 
         const loginResp = await Auth.loginWithPhoneCookie({
           phone,
