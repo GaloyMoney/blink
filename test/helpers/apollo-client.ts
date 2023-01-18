@@ -10,13 +10,11 @@ import {
 import { getMainDefinition } from "@apollo/client/utilities"
 
 import { onError } from "@apollo/client/link/error"
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
 import { baseLogger } from "@services/logger"
 
 import { createClient } from "graphql-ws"
-import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
 import WebSocket from "ws"
-import USER_LOGIN from "../e2e/servers/graphql-main-server/mutations/user-login.gql"
-import { getAdminPhoneAndCode } from "./user"
 
 export const localIpAddress = "127.0.0.1" as IpAddress
 
@@ -50,27 +48,6 @@ export const adminTestClientConfig = (
     graphqlUrl: `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/admin/graphql`,
     graphqlSubscriptionUrl: `ws://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/admin/graphql`,
   }
-}
-
-export const createAdminApolloClient = async (): Promise<{
-  apolloClient: ApolloClient<NormalizedCacheObject>
-  disposeClient: () => void
-}> => {
-  let { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
-
-  const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
-
-  const loginResult = await apolloClient.mutate({
-    mutation: USER_LOGIN,
-    variables: { input: { phone: adminPhone, code: adminCode } },
-  })
-
-  await disposeClient()
-  ;({ apolloClient, disposeClient } = await createApolloClient(
-    adminTestClientConfig(loginResult.data.userLogin.authToken),
-  ))
-
-  return { apolloClient, disposeClient }
 }
 
 export const createApolloClient = (
