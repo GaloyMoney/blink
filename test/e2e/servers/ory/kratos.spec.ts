@@ -34,11 +34,9 @@ import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-ser
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
 import {
-  adminTestClientConfig,
   createAdminApolloClient,
   createApolloClient,
   defaultTestClientConfig,
-  getAdminPhoneAndCode,
   getPhoneAndCodeFromRef,
   killServer,
   randomEmail,
@@ -47,7 +45,6 @@ import {
   startServer,
 } from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
-import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
 
 const identityRepo = IdentityRepository()
 
@@ -529,13 +526,13 @@ describe("decoding link header", () => {
   })
 })
 
-describe.only("updates user phone", () => {
+describe("updates user phone", () => {
   let newPhone: PhoneNumber
 
   it("updates user phone", async () => {
     const { phone, code } = getPhoneAndCodeFromRef("H")
 
-    let { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
+    const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
 
     apolloClient.mutate({
       mutation: USER_LOGIN,
