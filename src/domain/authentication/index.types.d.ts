@@ -7,8 +7,6 @@ type IdentityPassword = string & { readonly brand: unique symbol }
 type UserId = string & { readonly brand: unique symbol }
 type SessionToken = string & { readonly brand: unique symbol }
 type KratosCookie = string & { readonly brand: unique symbol }
-type KratosLoginType =
-  typeof import("./index").KratosLoginType[keyof typeof import("./index").KratosLoginType]
 
 type IdentityPhone = {
   id: UserId
@@ -37,13 +35,14 @@ type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
 type CreateKratosUserForPhoneNoPasswordSchemaCookieResponse = WithCookieResponse
 
 interface IAuthWithPhonePasswordlessService {
-  login(
+  loginToken(
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
   loginCookie(
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneCookieSchemaResponse | AuthenticationError>
-  logout(token: SessionToken): Promise<void | AuthenticationError>
+  logoutToken(token: SessionToken): Promise<void | AuthenticationError>
+  logoutCookie(cookie: KratosCookie): Promise<void | AuthenticationError>
   createIdentityWithSession(
     phone: PhoneNumber,
   ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>

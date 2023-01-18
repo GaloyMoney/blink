@@ -22,19 +22,16 @@ import { AccountsRepository } from "@services/mongoose"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
-import { KratosLoginType } from "@domain/authentication"
 
-export const loginWithPhone = async ({
+export const loginWithPhoneToken = async ({
   phone,
   code,
   ip,
-  kratosLoginType,
 }: {
   phone: PhoneNumber
   code: PhoneCode
   ip: IpAddress
-  kratosLoginType: KratosLoginType
-}): Promise<SessionToken | WithCookieResponse | LegacyJwtToken | ApplicationError> => {
+}): Promise<SessionToken | LegacyJwtToken | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -57,35 +54,63 @@ export const loginWithPhone = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  if (kratosLoginType === KratosLoginType.SessionToken) {
-    let kratosResult = await authService.login(phone)
-    // FIXME: this is a fuzzy error.
-    // it exists because we currently make no difference between a registration and login
-    if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-      // user is a new user
-      kratosResult = await authService.createIdentityWithSession(phone)
-      if (kratosResult instanceof Error) return kratosResult
-      addAttributesToCurrentSpan({ "login.newAccount": true })
-    } else if (kratosResult instanceof Error) {
-      return kratosResult
-    }
-    return kratosResult.sessionToken
-  } else if (kratosLoginType === KratosLoginType.Cookie) {
-    let kratosResult = await authService.loginCookie(phone)
-    // FIXME: this is a fuzzy error.
-    // it exists because we currently make no difference between a registration and login
-    if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-      // user is a new user
-      kratosResult = await authService.createIdentityWithCookie(phone)
-      if (kratosResult instanceof Error) return kratosResult
-      addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
-    } else if (kratosResult instanceof Error) {
-      return kratosResult
-    }
+  let kratosResult = await authService.loginToken(phone)
+  // FIXME: this is a fuzzy error.
+  // it exists because we currently make no difference between a registration and login
+  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+    // user is a new user
+    kratosResult = await authService.createIdentityWithSession(phone)
+    if (kratosResult instanceof Error) return kratosResult
+    addAttributesToCurrentSpan({ "login.newAccount": true })
+  } else if (kratosResult instanceof Error) {
     return kratosResult
-  } else {
-    return new Error("kratosLoginType not implemented")
   }
+  return kratosResult.sessionToken
+}
+
+export const loginWithPhoneCookie = async ({
+  phone,
+  code,
+  ip,
+}: {
+  phone: PhoneNumber
+  code: PhoneCode
+  ip: IpAddress
+}): Promise<WithCookieResponse | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  // TODO:
+  // add fibonachi on failed login
+  // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
+
+  const validCode = await isCodeValid({ phone, code })
+  if (validCode instanceof Error) return validCode
+
+  await rewardFailedLoginAttemptPerIpLimits(ip)
+  await rewardFailedLoginAttemptPerPhoneLimits(phone)
+
+  const authService = AuthWithPhonePasswordlessService()
+
+  let kratosResult = await authService.loginCookie(phone)
+  // FIXME: this is a fuzzy error.
+  // it exists because we currently make no difference between a registration and login
+  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+    // user is a new user
+    kratosResult = await authService.createIdentityWithCookie(phone)
+    if (kratosResult instanceof Error) return kratosResult
+    addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
+  } else if (kratosResult instanceof Error) {
+    return kratosResult
+  }
+  return kratosResult
 }
 
 // deprecated
