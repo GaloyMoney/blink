@@ -76,7 +76,7 @@ type Account = {
   readonly contacts: AccountContact[]
   readonly isEditor: boolean
   readonly quizQuestions: UserQuizQuestion[] // deprecated
-  readonly quiz: AccountQuiz[]
+  readonly quiz: Quiz[]
   kratosUserId: UserId
   displayCurrency: string
   // temp
@@ -95,7 +95,7 @@ type UserQuizQuestion = {
   completed: boolean
 }
 
-type AccountQuiz = {
+type Quiz = {
   readonly id: QuizQuestionId
   readonly amount: Satoshis
   readonly completed: boolean

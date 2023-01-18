@@ -63,16 +63,6 @@ type AccountLimits {
   withdrawal: [AccountLimit!]!
 }
 
-type AccountQuiz {
-  completed: Boolean!
-
-  """
-  The earn reward in Satoshis for the quiz question
-  """
-  earnAmount: SatAmount!
-  id: ID!
-}
-
 input AccountUpdateDefaultWalletIdInput {
   walletId: WalletId!
 }
@@ -220,7 +210,7 @@ type ConsumerAccount implements Account {
   """
   List the quiz questions of the consumer account
   """
-  quiz: [AccountQuiz!]!
+  quiz: [Quiz!]!
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -743,6 +733,7 @@ type Mutation {
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
+  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
@@ -751,6 +742,7 @@ type Mutation {
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
+    @deprecated(reason: "Use QuizCompletedMutation instead")
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload!
@@ -921,7 +913,7 @@ The range for the X axis in the BTC price graph
 enum PriceGraphRange {
   FIVE_YEARS
   ONE_DAY
-  ONE_MONTH 
+  ONE_MONTH
   ONE_WEEK
   ONE_YEAR
 }
@@ -985,6 +977,24 @@ type Query {
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
+}
+
+type Quiz {
+  """
+  The reward in Satoshis for the quiz question
+  """
+  amount: SatAmount!
+  completed: Boolean!
+  id: ID!
+}
+
+input QuizCompletedInput {
+  id: ID!
+}
+
+type QuizCompletedPayload {
+  errors: [Error!]!
+  quiz: Quiz
 }
 
 type QuizQuestion {
@@ -1249,8 +1259,7 @@ type User {
   """
   List the quiz questions the user may have completed.
   """
-  quizQuestions: [UserQuizQuestion!]!
-    @deprecated(reason: "use AccountQuiz from Account instead")
+  quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
 
   """
   Optional immutable user friendly identifier.

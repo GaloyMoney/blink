@@ -2,27 +2,26 @@ import { Accounts } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
-import UserQuizQuestionUpdateCompletedPayload from "@graphql/types/payload/user-quiz-question-update-completed"
+import QuizCompleted from "@graphql/types/payload/quiz-completed"
 
-const UserQuizQuestionUpdateCompletedInput = GT.Input({
-  name: "UserQuizQuestionUpdateCompletedInput",
+const QuizCompletedInput = GT.Input({
+  name: "QuizCompletedInput",
   fields: () => ({
     id: { type: GT.NonNull(GT.ID) },
   }),
 })
 
-const UserQuizQuestionUpdateCompletedMutation = GT.Field<
+const QuizCompletedMutation = GT.Field<
   { input: { id: string } },
   null,
   GraphQLContextAuth
 >({
-  deprecationReason: "Use QuizCompletedMutation instead",
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(UserQuizQuestionUpdateCompletedPayload),
+  type: GT.NonNull(QuizCompleted),
   args: {
-    input: { type: GT.NonNull(UserQuizQuestionUpdateCompletedInput) },
+    input: { type: GT.NonNull(QuizCompletedInput) },
   },
   resolve: async (_, args, { domainAccount, ip }) => {
     const { id } = args.input
@@ -38,12 +37,12 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field<
 
     return {
       errors: [],
-      userQuizQuestion: {
-        question,
+      quiz: {
+        ...question,
         completed: true,
       },
     }
   },
 })
 
-export default UserQuizQuestionUpdateCompletedMutation
+export default QuizCompletedMutation

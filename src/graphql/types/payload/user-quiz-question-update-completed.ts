@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 import UserQuizQuestion from "../object/user-quiz-question"
 
+// deprecated in favor of QuizCompletedMutation
 const UserQuizQuestionUpdateCompletedPayload = GT.Object({
   name: "UserQuizQuestionUpdateCompletedPayload",
   fields: () => ({

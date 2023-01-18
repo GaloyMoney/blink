@@ -21,7 +21,7 @@ import getUuidByString from "uuid-by-string"
 
 import AccountLimits from "./account-limits"
 import { TransactionConnection } from "./transaction"
-import AccountQuiz from "./account-quiz-question"
+import Quiz from "./quiz"
 
 const ConsumerAccount = GT.Object<Account>({
   name: "ConsumerAccount",
@@ -71,7 +71,7 @@ const ConsumerAccount = GT.Object<Account>({
     },
 
     quiz: {
-      type: GT.NonNullList(AccountQuiz),
+      type: GT.NonNullList(Quiz),
       description: "List the quiz questions of the consumer account",
       resolve: (source) => source.quiz,
     },

@@ -2,8 +2,8 @@ import { GT } from "@graphql/index"
 
 import SatAmount from "../scalar/sat-amount"
 
-const AccountQuiz = GT.Object({
-  name: "AccountQuiz",
+const Quiz = GT.Object({
+  name: "Quiz",
   fields: () => ({
     id: { type: GT.NonNullID },
     amount: {
@@ -14,4 +14,4 @@ const AccountQuiz = GT.Object({
   }),
 })
 
-export default AccountQuiz
+export default Quiz
