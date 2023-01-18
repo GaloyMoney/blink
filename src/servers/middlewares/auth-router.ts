@@ -10,14 +10,14 @@ import { mapError } from "@graphql/error-map"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { validateKratosToken } from "@services/kratos"
-import { kratosPublic, kratosAdmin } from "@services/kratos/private"
+import { kratosPublic } from "@services/kratos/private"
 import { AccountsRepository } from "@services/mongoose"
 import { parseIps } from "@domain/accounts-ips"
 import { KratosError } from "@services/kratos/errors"
 import bodyParser from "body-parser"
 import setCookie from "set-cookie-parser"
 import cookieParser from "cookie-parser"
-import { KratosLoginType } from "@domain/authentication"
+import { logoutCookie } from "@app/auth"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -136,12 +136,11 @@ authRouter.post(
         const phone = req.body.phoneNumber as PhoneNumber
         const code = req.body.authCode
 
-        const loginResp = (await Auth.loginWithPhone({
+        const loginResp = await Auth.loginWithPhoneCookie({
           phone,
           code,
           ip,
-          kratosLoginType: KratosLoginType.Cookie,
-        })) as WithCookieResponse // TODO type guard
+        })
 
         if (loginResp instanceof Error) {
           return res.status(500).send({ error: mapError(loginResp).message })
@@ -212,15 +211,9 @@ authRouter.get(
             .send({ error: "Missing csrf or ory_kratos_session cookie" })
         }
         reqCookie = decodeURIComponent(reqCookie)
-        const session = await kratosPublic.toSession({ cookie: reqCookie })
-        const sessionId = session.data.id
-        // * revoke token via admin api
-        //   there is no way to do it via cookies and the public api via the backend
-        //   I tried the kratosPublic.createBrowserLogoutFlow but it did not work
-        //   properly with cookies
-        await kratosAdmin.disableSession({
-          id: sessionId,
-        })
+        const logoutResp = await logoutCookie(reqCookie as KratosCookie)
+        if (logoutResp instanceof Error)
+          res.status(500).send({ error: logoutResp.message })
         // manually clear all cookies for the client
         for (const cookieName of Object.keys(req.cookies)) {
           res.clearCookie(cookieName)

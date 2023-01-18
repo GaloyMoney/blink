@@ -75,14 +75,14 @@ describe("phoneNoPassword", () => {
     })
 
     it("login user succeed if user exists", async () => {
-      const res = await authService.login(phone)
+      const res = await authService.loginToken(phone)
       if (res instanceof Error) throw res
 
       expect(res.kratosUserId).toBe(kratosUserId)
     })
 
     it("new sessions are added when LoginWithPhoneNoPasswordSchema is used", async () => {
-      const res = await authService.login(phone)
+      const res = await authService.loginToken(phone)
       if (res instanceof Error) throw res
 
       expect(res.kratosUserId).toBe(kratosUserId)
@@ -119,7 +119,7 @@ describe("phoneNoPassword", () => {
         // but the test is still useful to know how to use kratos for 2fa
         const password = getKratosPasswords().masterUserPassword
 
-        const res = await authService.login(phone)
+        const res = await authService.loginToken(phone)
         if (res instanceof Error) throw res
 
         const session = res.sessionToken
@@ -134,7 +134,7 @@ describe("phoneNoPassword", () => {
 
     it("login fails is user doesn't exist", async () => {
       const phone = randomPhone()
-      const res = await authService.login(phone)
+      const res = await authService.loginToken(phone)
       expect(res).toBeInstanceOf(LikelyNoUserWithThisPhoneExistError)
     })
 
@@ -194,7 +194,7 @@ describe("phoneNoPassword", () => {
       const kratosUserId = await authService.createIdentityNoSession(phone)
       if (kratosUserId instanceof Error) throw kratosUserId
 
-      const res2 = await authService.login(phone)
+      const res2 = await authService.loginToken(phone)
       if (res2 instanceof Error) throw res2
 
       expect(res2.kratosUserId).toBe(kratosUserId)
@@ -252,7 +252,7 @@ describe("session revokation", () => {
   it("return error on revoked session", async () => {
     let token: SessionToken
     {
-      const res = await authService.login(phone)
+      const res = await authService.loginToken(phone)
       if (res instanceof Error) throw res
       token = res.sessionToken
       await revokeSessions(res.kratosUserId)
@@ -265,12 +265,12 @@ describe("session revokation", () => {
 
   it("revoke a user's second session only", async () => {
     // Session 1
-    const session1 = await authService.login(phone)
+    const session1 = await authService.loginToken(phone)
     if (session1 instanceof Error) throw session1
     const session1Token = session1.sessionToken
 
     // Session 2
-    const session2 = await authService.login(phone)
+    const session2 = await authService.loginToken(phone)
     if (session2 instanceof Error) throw session2
     const session2Token = session2.sessionToken
 
@@ -317,15 +317,15 @@ describe.skip("update status", () => {
       kratosUserId = res.kratosUserId
     }
     await deactivateUser(kratosUserId)
-    await authService.login(phone)
+    await authService.loginToken(phone)
 
-    const res = await authService.login(phone)
+    const res = await authService.loginToken(phone)
     expect(res).toBeInstanceOf(AuthenticationKratosError)
   })
 
   it("activate user", async () => {
     await activateUser(kratosUserId)
-    const res = await authService.login(phone)
+    const res = await authService.loginToken(phone)
     if (res instanceof Error) throw res
     expect(res.kratosUserId).toBe(kratosUserId)
   })
@@ -493,7 +493,7 @@ describe("phone+email schema", () => {
   })
 
   it("login back to an phone+email account by phone", async () => {
-    const res = await authServicePhone.login(phone)
+    const res = await authServicePhone.loginToken(phone)
     if (res instanceof Error) throw res
 
     expect(res.kratosUserId).toBe(kratosUserId)
@@ -533,8 +533,8 @@ describe("cookie flow", () => {
   })
 
   it("logout and revoke cookies", async () => {
-    for (const c of cookies) {
-      cookieStr = cookieStr + c + "; "
+    for (const cookie of cookies) {
+      cookieStr = cookieStr + cookie + "; "
     }
     cookieStr = decodeURIComponent(cookieStr)
     const session = await kratosPublic.toSession({ cookie: cookieStr })

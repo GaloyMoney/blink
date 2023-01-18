@@ -31,7 +31,7 @@ import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
 export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessService => {
   const password = getKratosPasswords().masterUserPassword
 
-  const login = async (
+  const loginToken = async (
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
     const flow = await kratosPublic.createNativeLoginFlow()
@@ -115,12 +115,28 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     return { cookiesToSendBackToClient, kratosUserId }
   }
 
-  const logout = async (token: string): Promise<void | KratosError> => {
+  const logoutToken = async (token: string): Promise<void | KratosError> => {
     try {
       await kratosPublic.performNativeLogout({
         performNativeLogoutBody: {
           session_token: token,
         },
+      })
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+  }
+
+  const logoutCookie = async (cookie: string): Promise<void | KratosError> => {
+    try {
+      const session = await kratosPublic.toSession({ cookie })
+      const sessionId = session.data.id
+      // * revoke token via admin api
+      //   there is no way to do it via cookies and the public api via the backend
+      //   I tried the kratosPublic.createBrowserLogoutFlow but it did not work
+      //   properly with cookies
+      await kratosAdmin.disableSession({
+        id: sessionId,
       })
     } catch (err) {
       return new UnknownKratosError(err)
@@ -280,9 +296,10 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
   }
 
   return {
-    login,
+    loginToken,
     loginCookie,
-    logout,
+    logoutToken,
+    logoutCookie,
     createIdentityWithSession,
     createIdentityWithCookie,
     createIdentityNoSession,
