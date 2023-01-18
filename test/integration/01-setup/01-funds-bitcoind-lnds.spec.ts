@@ -13,6 +13,7 @@ import {
   getChainBalance,
   lnd1,
   lndOutside1,
+  lndOutside3,
   mineAndConfirm,
 } from "test/helpers"
 
@@ -66,12 +67,17 @@ describe("Bitcoind", () => {
   })
 
   it("funds outside lnd node", async () => {
-    const amount = btc2sat(1)
-    const { chain_balance: initialBalance } = await getChainBalance({ lnd: lndOutside1 })
-    const sats = initialBalance + amount
-    await fundLnd(lndOutside1, sat2btc(amount))
-    const { chain_balance: balance } = await getChainBalance({ lnd: lndOutside1 })
-    expect(balance).toBe(sats)
+    const outsideLnds = [lndOutside1, lndOutside3]
+    for (const lnd of outsideLnds) {
+      const amount = btc2sat(1)
+      const { chain_balance: initialBalance } = await getChainBalance({
+        lnd,
+      })
+      const sats = initialBalance + amount
+      await fundLnd(lnd, sat2btc(amount))
+      const { chain_balance: balance } = await getChainBalance({ lnd })
+      expect(balance).toBe(sats)
+    }
   })
 
   it("funds lnd1 node", async () => {
