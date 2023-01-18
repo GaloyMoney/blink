@@ -19,7 +19,8 @@ export const updateUserPhone = async ({
   if (user instanceof Error) return user
 
   user.phone = phone
-  await usersRepo.update(user)
+  const result = await usersRepo.update(user)
+  if (result instanceof Error) return result
 
   const authService = AuthWithPhonePasswordlessService()
   const kratosResult = await authService.updatePhone({ kratosUserId, phone })
