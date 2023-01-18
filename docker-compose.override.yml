@@ -37,6 +37,9 @@ services:
   lnd-outside-2:
     ports:
       - "10013:10009"
+  lnd-outside-3:
+    ports:
+      - "10014:10009"
   stablesats:
     ports:
       - "3325:3325"
