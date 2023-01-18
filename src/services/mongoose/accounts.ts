@@ -233,7 +233,7 @@ const translateToAccount = (result: AccountRecord): Account => ({
   quiz: Object.entries(OnboardingEarn).map(([id, amount]) => ({
     id: id as QuizQuestionId,
     amount,
-    completed: id in result.earn,
+    completed: result.earn.indexOf(id) > -1,
   })),
 
   kratosUserId: result.kratosUserId as UserId,

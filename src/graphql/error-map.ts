@@ -218,8 +218,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvalidPhoneMetadataForRewardError":
-    case "InvalidIPMetadataForRewardError":
       message = "Unsupported phone carrier for rewards."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "InvalidIPMetadataForRewardError":
+      message = "Unsupported IP for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "NoConnectionToDealerError":
