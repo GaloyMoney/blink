@@ -15,9 +15,8 @@ import { baseLogger } from "@services/logger"
 import { createClient } from "graphql-ws"
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
 import WebSocket from "ws"
-import { getAdminPhoneAndCode } from "./user"
-
 import USER_LOGIN from "../e2e/servers/graphql-main-server/mutations/user-login.gql"
+import { getAdminPhoneAndCode } from "./user"
 
 export const localIpAddress = "127.0.0.1" as IpAddress
 
