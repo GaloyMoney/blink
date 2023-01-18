@@ -38,7 +38,8 @@ const QuizCompletedMutation = GT.Field<
     return {
       errors: [],
       quiz: {
-        ...question,
+        id: question.id,
+        amount: question.earnAmount,
         completed: true,
       },
     }

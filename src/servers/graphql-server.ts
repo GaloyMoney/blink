@@ -298,17 +298,28 @@ export const startApolloServer = async ({
     PinoHttp({
       logger: graphqlLogger,
       wrapSerializers: true,
-      customProps: (req) => ({
+      customProps: (req) => {
         /* eslint @typescript-eslint/ban-ts-comment: "off" */
         // @ts-ignore-next-line no-implicit-any error
-        "body": req["body"],
-        // @ts-ignore-next-line no-implicit-any error
-        "token.sub": req["token"]?.sub,
-        // @ts-ignore-next-line no-implicit-any error
-        "gqlContext.user": req["gqlContext"]?.user,
-        // @ts-ignore-next-line no-implicit-any error
-        "gqlContext.domainAccount:": req["gqlContext"]?.domainAccount,
-      }),
+        const account = req["gqlContext"]?.domainAccount
+        return {
+          // @ts-ignore-next-line no-implicit-any error
+          "body": req["body"],
+          // @ts-ignore-next-line no-implicit-any error
+          "token.sub": req["token"]?.sub,
+          // @ts-ignore-next-line no-implicit-any error
+          "gqlContext.user": req["gqlContext"]?.user,
+          // @ts-ignore-next-line no-implicit-any error
+          "gqlContext.domainAccount:": {
+            id: account?.id,
+            createdAt: account?.createdAt,
+            defaultWalletId: account?.defaultWalletId,
+            level: account?.level,
+            status: account?.status,
+            displayCurrency: account?.displayCurrency,
+          },
+        }
+      },
       autoLogging: {
         ignore: (req) => req.url === "/healthz",
       },
