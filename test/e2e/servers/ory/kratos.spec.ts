@@ -35,7 +35,9 @@ import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-
 
 import {
   adminTestClientConfig,
+  createAdminApolloClient,
   createApolloClient,
+  defaultTestClientConfig,
   getAdminPhoneAndCode,
   getPhoneAndCodeFromRef,
   killServer,
@@ -527,38 +529,75 @@ describe("decoding link header", () => {
   })
 })
 
-it.only("updates user phone", async () => {
-  const { phone, code } = getPhoneAndCodeFromRef("H")
-  let apolloClient = await loginFromPhoneAndCode({ phone, code })
+describe.only("updates user phone", () => {
+  let newPhone: PhoneNumber
 
-  const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
+  it("updates user phone", async () => {
+    const { phone, code } = getPhoneAndCodeFromRef("H")
 
-  const loginResult = await apolloClient.mutate({
-    mutation: USER_LOGIN,
-    variables: { input: { phone: adminPhone, code: adminCode } },
+    let { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
+
+    apolloClient.mutate({
+      mutation: USER_LOGIN,
+      variables: { input: { phone, code } },
+    })
+
+    await disposeClient()
+    const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
+      await createAdminApolloClient()
+
+    const accountDetails = await adminApolloClient.query({
+      query: ACCOUNT_DETAILS_BY_USER_PHONE,
+      variables: { phone },
+    })
+
+    const uid = accountDetails.data.accountDetailsByUserPhone.id
+
+    newPhone = randomPhone()
+    await adminApolloClient.mutate({
+      mutation: USER_UPDATE_PHONE,
+      variables: { input: { phone: newPhone, uid } },
+    })
+
+    const result = await adminApolloClient.query({
+      query: ACCOUNT_DETAILS_BY_USER_PHONE,
+      variables: { phone: newPhone },
+    })
+
+    await disposeAdminClient()
+
+    expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
   })
 
-  ;({ apolloClient } = await createApolloClient(
-    adminTestClientConfig(loginResult.data.userLogin.authToken),
-  ))
+  it("does not update user phone if new phone already exists", async () => {
+    const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
+    const { phone, code } = getPhoneAndCodeFromRef("I")
 
-  const accountDetails = await apolloClient.query({
-    query: ACCOUNT_DETAILS_BY_USER_PHONE,
-    variables: { phone },
+    apolloClient.mutate({
+      mutation: USER_LOGIN,
+      variables: { input: { phone, code } },
+    })
+
+    await disposeClient()
+
+    const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
+      await createAdminApolloClient()
+
+    const accountDetails = await adminApolloClient.query({
+      query: ACCOUNT_DETAILS_BY_USER_PHONE,
+      variables: { phone },
+    })
+
+    const uid = accountDetails.data.accountDetailsByUserPhone.id
+
+    const result = await adminApolloClient.mutate({
+      mutation: USER_UPDATE_PHONE,
+      variables: { input: { phone: newPhone, uid } },
+    })
+
+    expect(result.data.userUpdatePhone.errors[0].message).toContain(
+      "UserWithPhoneAlreadyExistsError",
+    )
+    await disposeAdminClient()
   })
-
-  const uid = accountDetails.data.accountDetailsByUserPhone.id
-
-  const newPhone = randomPhone()
-  await apolloClient.mutate({
-    mutation: USER_UPDATE_PHONE,
-    variables: { input: { phone: newPhone, uid } },
-  })
-
-  const result = await apolloClient.query({
-    query: ACCOUNT_DETAILS_BY_USER_PHONE,
-    variables: { phone: newPhone },
-  })
-
-  expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
 })
