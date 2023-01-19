@@ -1,10 +1,12 @@
 import { Wallets, Payments } from "@app"
-import { getFeesConfig, getOnChainWalletConfig } from "@config"
+import { BTC_NETWORK, getFeesConfig, getOnChainWalletConfig } from "@config"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
+import { TxDecoder } from "@domain/bitcoin/onchain"
 import { DealerPriceService } from "@services/dealer-price"
+import * as OnChainServiceImpl from "@services/lnd/onchain-service"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 import {
@@ -134,8 +136,19 @@ describe("UserWallet - getOnchainFee", () => {
 
   describe("from usd wallet", () => {
     it("returns a fee greater than zero for an external address", async () => {
+      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+      const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
+      if (onChainService instanceof Error) throw onChainService
+
+      const minerFee = await onChainService.getOnChainFeeEstimate({
+        amount: defaultAmount,
+        address,
+        targetConfirmations: 1 as TargetConfirmations,
+      })
+      if (minerFee instanceof Error) throw minerFee
+
       const feeRates = getFeesConfig()
-      const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
+      const feeSats = toSats(feeRates.withdrawDefaultMin + minerFee)
 
       // Fund empty USD wallet
       const payResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
@@ -147,7 +160,6 @@ describe("UserWallet - getOnchainFee", () => {
       })
       if (payResult instanceof Error) throw payResult
 
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const feeAmount = await Wallets.getOnChainFeeForUsdWallet({
         walletId: walletIdUsdA,
         account: accountA,
