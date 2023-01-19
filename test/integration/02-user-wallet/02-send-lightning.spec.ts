@@ -1194,9 +1194,9 @@ describe("UserWallet - Lightning Pay", () => {
         if (baseMilliSats === undefined || feeRatePpm === undefined) {
           throw new Error("Undefined baseMilliSats or feeRatePpm")
         }
-        const baseSats = Math.ceil(parseInt(baseMilliSats, 10) / 1000)
-        const feeRate = feeRatePpm / 1_000_000
-        const fee = baseSats + Math.ceil(amountInvoice * feeRate)
+        const baseFee = parseInt(baseMilliSats, 10) / 1000
+        const feeRate = (amountInvoice * feeRatePpm) / 1_000_000
+        const fee = Math.ceil(baseFee + feeRate)
 
         expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
       })

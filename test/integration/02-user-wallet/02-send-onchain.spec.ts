@@ -151,6 +151,9 @@ const testExternalSend = async ({
   amount: Satoshis | UsdCents
   sendAll: boolean
 }) => {
+  const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
+  if (onChainService instanceof Error) return onChainService
+
   const initialWalletBalance = await getBalanceHelper(senderWalletId)
 
   const sendNotification = jest.fn()
@@ -170,6 +173,26 @@ const testExternalSend = async ({
 
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
+
+  let amountToSendSats: number = amountToSend
+  if (senderWallet.currency !== WalletCurrency.Btc) {
+    const amountResult = await dealerFns.getSatsFromCentsForImmediateSell({
+      amount: BigInt(amountToSend),
+      currency: WalletCurrency.Usd,
+    })
+    if (amountResult instanceof Error) return amountResult
+    amountToSendSats = Number(amountResult.amount)
+  }
+
+  const minerFee =
+    amountToSend > 0
+      ? await onChainService.getOnChainFeeEstimate({
+          amount: toSats(amountToSendSats),
+          address: address as OnChainAddress,
+          targetConfirmations,
+        })
+      : 0
+  if (minerFee instanceof Error) return minerFee
 
   let results
   try {
@@ -255,14 +278,10 @@ const testExternalSend = async ({
     const settledTx = settledTxs[0]
 
     const feeRates = getFeesConfig()
-    let fee: number
-    if (senderWallet.currency === WalletCurrency.Btc) {
-      fee = feeRates.withdrawDefaultMin + 7050
-    } else {
-      const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
-
+    let fee: number = feeRates.withdrawDefaultMin + minerFee
+    if (senderWallet.currency !== WalletCurrency.Btc) {
       const feeResult = await dealerFns.getCentsFromSatsForImmediateSell({
-        amount: BigInt(feeSats),
+        amount: BigInt(fee),
         currency: WalletCurrency.Btc,
       })
       if (feeResult instanceof Error) throw feeResult
@@ -330,7 +349,7 @@ const testExternalSend = async ({
       satsAmount = Number(btcAmount.amount)
 
       centsFee = fee
-      satsFee = toSats(feeRates.withdrawDefaultMin + 7050)
+      satsFee = toSats(feeRates.withdrawDefaultMin + minerFee)
 
       debit = centsAmount + centsFee
     }
