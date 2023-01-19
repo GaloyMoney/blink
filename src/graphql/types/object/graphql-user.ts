@@ -48,7 +48,7 @@ const GraphQLUser = GT.Object({
     },
 
     quizQuestions: {
-      deprecationReason: `will be moved to Accounts`,
+      deprecationReason: `use Quiz from Account instead`,
       type: GT.NonNullList(UserQuizQuestion),
       description: "List the quiz questions the user may have completed.",
       resolve: async (source, args, { domainAccount }) => {

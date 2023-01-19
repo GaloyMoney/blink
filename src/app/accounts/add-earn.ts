@@ -1,5 +1,5 @@
 import { Payments } from "@app"
-import { getRewardsConfig, onboardingEarn } from "@config"
+import { getRewardsConfig, OnboardingEarn } from "@config"
 import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 import {
   InvalidIPMetadataForRewardError,
@@ -32,7 +32,7 @@ export const addEarn = async ({
   // TODO: quizQuestionId checkedFor
   const quizQuestionId = quizQuestionIdString as QuizQuestionId
 
-  const amount = onboardingEarn[quizQuestionId]
+  const amount = OnboardingEarn[quizQuestionId]
   if (!amount) return new InvalidQuizQuestionIdError()
 
   const funderWalletId = await getFunderWalletId()

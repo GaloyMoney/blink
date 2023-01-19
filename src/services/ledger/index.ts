@@ -121,10 +121,16 @@ export const LedgerService = (): ILedgerService => {
   }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
-      const { slice, total } = await paginatedLedger({
+      const ledgerResp = await paginatedLedger({
         query: { account: liabilitiesWalletIds },
         paginationArgs,
       })
+
+      if (ledgerResp instanceof Error) {
+        return ledgerResp
+      }
+
+      const { slice, total } = ledgerResp
 
       return {
         slice: slice.map((tx) => translateToLedgerTx(tx)),
@@ -146,10 +152,17 @@ export const LedgerService = (): ILedgerService => {
   }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
-      const { slice, total } = await paginatedLedger({
+      const ledgerResp = await paginatedLedger({
         query: { account: liabilitiesWalletIds, username: contactUsername },
         paginationArgs,
       })
+
+      if (ledgerResp instanceof Error) {
+        return ledgerResp
+      }
+
+      const { slice, total } = ledgerResp
+
       return {
         slice: slice.map((tx) => translateToLedgerTx(tx)),
         total,

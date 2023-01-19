@@ -218,8 +218,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvalidPhoneMetadataForRewardError":
-    case "InvalidIPMetadataForRewardError":
       message = "Unsupported phone carrier for rewards."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "InvalidIPMetadataForRewardError":
+      message = "Unsupported IP for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "NoConnectionToDealerError":
@@ -323,6 +326,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message =
         "Service offline, please try again in a few minutes. If the problem persists, please contact support."
       return new DbError({ message, logger: baseLogger })
+
+    case "InvalidPaginationArgumentsError":
+      message = "Invalid pagination arguments"
+      return new ValidationInternalError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here

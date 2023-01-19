@@ -1,3 +1,4 @@
+import { UnknownKratosError } from "./errors"
 import { kratosAdmin } from "./private"
 
 // TODO: should be a param in yaml
@@ -11,8 +12,15 @@ export const extendSession = async ({
   session,
 }: {
   session: KratosSession
-}): Promise<void | KratosError> => {
-  if (!schemaIdsToExtend.includes(session.identity.schema_id)) return
+}): Promise<boolean | KratosError> => {
+  try {
+    if (!schemaIdsToExtend.includes(session.identity.schema_id)) return false
 
-  await kratosAdmin.extendSession({ id: session.id })
+    const res = await kratosAdmin.extendSession({
+      id: session.id,
+    })
+    return res.data?.active ? true : false
+  } catch (err) {
+    return new UnknownKratosError(err.message || err)
+  }
 }

@@ -63,6 +63,18 @@ export const IdentityRepository = (): IIdentityRepository => {
         hasNext = page !== undefined && totalCount !== 0
       }
 
+      // * fixes bug in kratos res.headers.link not returning last page properly
+      const pageCount = totalCount / perPage
+      const isPageCountWholeNumber = pageCount % 1 // 0 means its a whole number, therefore, we can skip because no partial last page of data exists
+      if (isPageCountWholeNumber !== 0) {
+        const lastPageNum = Math.ceil(totalCount / perPage)
+        const lastPageRes = await kratosAdmin.listIdentities({
+          perPage,
+          page: lastPageNum,
+        })
+        identities.push(...lastPageRes.data)
+      }
+
       // FIXME(nb) function above return duplicated query for the first 2 calls, so removing them here
       const uniqueIdentities = identities.filter(
         (value, index, self) => index === self.findIndex((t) => t.id === value.id),

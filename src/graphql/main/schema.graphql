@@ -208,6 +208,11 @@ type ConsumerAccount implements Account {
   limits: AccountLimits!
 
   """
+  List the quiz questions of the consumer account
+  """
+  quiz: [Quiz!]!
+
+  """
   A list of all transactions associated with walletIds optionally passed.
   """
   transactions(
@@ -728,6 +733,7 @@ type Mutation {
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
+  quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
@@ -736,6 +742,7 @@ type Mutation {
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
+    @deprecated(reason: "Use QuizCompletedMutation instead")
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload!
@@ -964,9 +971,30 @@ type Query {
     walletId: WalletId!
   ): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion]
+    @deprecated(
+      reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated"
+    )
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
+}
+
+type Quiz {
+  """
+  The reward in Satoshis for the quiz question
+  """
+  amount: SatAmount!
+  completed: Boolean!
+  id: ID!
+}
+
+input QuizCompletedInput {
+  id: ID!
+}
+
+type QuizCompletedPayload {
+  errors: [Error!]!
+  quiz: Quiz
 }
 
 type QuizQuestion {
@@ -1231,7 +1259,7 @@ type User {
   """
   List the quiz questions the user may have completed.
   """
-  quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "will be moved to Accounts")
+  quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
 
   """
   Optional immutable user friendly identifier.

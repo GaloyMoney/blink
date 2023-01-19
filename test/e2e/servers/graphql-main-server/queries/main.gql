@@ -1,17 +1,26 @@
 query mainQuery($hasToken: Boolean!) {
   globals {
+    ### deprecated
     nodesIds
+    ###
+
     network
   }
+
+  ### deprecated
   quizQuestions {
     id
     earnAmount
   }
+  ###
+
   me @include(if: $hasToken) {
     id
     language
     username
     phone
+
+    ### deprecated
     quizQuestions {
       question {
         id
@@ -19,7 +28,16 @@ query mainQuery($hasToken: Boolean!) {
       }
       completed
     }
+    ###
+
     defaultAccount {
+      ... on ConsumerAccount {
+        quiz {
+          id
+          amount
+          completed
+        }
+      }
       id
       defaultWalletId
       wallets {

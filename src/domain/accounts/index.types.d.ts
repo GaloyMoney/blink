@@ -75,23 +75,30 @@ type Account = {
   contactEnabled: boolean
   readonly contacts: AccountContact[]
   readonly isEditor: boolean
-  readonly quizQuestions: UserQuizQuestion[]
+  readonly quizQuestions: UserQuizQuestion[] // deprecated
+  readonly quiz: Quiz[]
   kratosUserId: UserId
   displayCurrency: string
   // temp
   role?: string
 }
 
-type QuizQuestionId = string & { readonly brand: unique symbol }
-
+// deprecated
 type QuizQuestion = {
   readonly id: QuizQuestionId
   readonly earnAmount: Satoshis
 }
 
+// deprecated
 type UserQuizQuestion = {
   readonly question: QuizQuestion
   completed: boolean
+}
+
+type Quiz = {
+  readonly id: QuizQuestionId
+  readonly amount: Satoshis
+  readonly completed: boolean
 }
 
 type BusinessMapTitle = string & { readonly brand: unique symbol }

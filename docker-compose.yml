@@ -98,7 +98,7 @@ services:
       - POSTGRES_PASSWORD=galoy-price-pwd
       - POSTGRES_DB=galoy-price-history
   bitcoind:
-    image: lncm/bitcoind:v23.0
+    image: lncm/bitcoind:v24.0.1
     volumes:
       - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   lnd1:
@@ -290,7 +290,7 @@ services:
         source: dev/ory
         target: /home/ory
   kratos:
-    image: ntheile/kratos:0.11.1
+    image: oryd/kratos:v0.11.1
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:
