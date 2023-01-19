@@ -148,7 +148,7 @@
     "grpc_tools_node_protoc_ts": "^5.3.2",
     "jest": "^29.3.1",
     "jest-junit": "^15.0.0",
-    "knex": "^2.4.0",
+    "knex": "^2.4.1",
     "migrate-mongo": "^9.0.0",
     "nodemon": "^2.0.20",
     "pg": "^8.8.0",
