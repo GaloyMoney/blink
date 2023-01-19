@@ -317,15 +317,11 @@ createGauge({
   name: "totalPendingHtlcCount",
   description: "How many pending HTLCs there are in the channels of the active nodes",
   collect: async () => {
-    try {
-      const lndService = LndService()
-      if (lndService instanceof Error) throw lndService
-      const totalPendingHtlcCount = await lndService.getTotalPendingHtlcCount()
-      if (totalPendingHtlcCount instanceof Error) throw totalPendingHtlcCount
-      return totalPendingHtlcCount
-    } catch (err) {
-      return NaN
-    }
+    const lndService = LndService()
+    if (lndService instanceof Error) return NaN
+    const totalPendingHtlcCount = await lndService.getTotalPendingHtlcCount()
+    if (totalPendingHtlcCount instanceof Error) throw totalPendingHtlcCount
+    return totalPendingHtlcCount
   },
 })
 
@@ -333,15 +329,11 @@ createGauge({
   name: "activeChannels",
   description: "How many active channels there are on the active nodes",
   collect: async () => {
-    try {
-      const lndService = LndService()
-      if (lndService instanceof Error) throw lndService
-      const activeChannels = await lndService.getActiveChannels()
-      if (activeChannels instanceof Error) throw activeChannels
-      return activeChannels
-    } catch (err) {
-      return NaN
-    }
+    const lndService = LndService()
+    if (lndService instanceof Error) return NaN
+    const activeChannels = await lndService.getActiveChannels()
+    if (activeChannels instanceof Error) throw activeChannels
+    return activeChannels
   },
 })
 
@@ -349,15 +341,11 @@ createGauge({
   name: "offlineChannels",
   description: "How many offline channels there are on the active nodes",
   collect: async () => {
-    try {
-      const lndService = LndService()
-      if (lndService instanceof Error) throw lndService
-      const offlineChannels = await lndService.getOfflineChannels()
-      if (offlineChannels instanceof Error) throw offlineChannels
-      return offlineChannels
-    } catch (err) {
-      return NaN
-    }
+    const lndService = LndService()
+    if (lndService instanceof Error) return NaN
+    const offlineChannels = await lndService.getOfflineChannels()
+    if (offlineChannels instanceof Error) throw offlineChannels
+    return offlineChannels
   },
 })
 
@@ -365,15 +353,11 @@ createGauge({
   name: "publicChannels",
   description: "How many public channels there are on the active nodes",
   collect: async () => {
-    try {
-      const lndService = LndService()
-      if (lndService instanceof Error) throw lndService
-      const publicChannels = await lndService.getPublicChannels()
-      if (publicChannels instanceof Error) throw publicChannels
-      return publicChannels
-    } catch (err) {
-      return NaN
-    }
+    const lndService = LndService()
+    if (lndService instanceof Error) return NaN
+    const publicChannels = await lndService.getPublicChannels()
+    if (publicChannels instanceof Error) throw publicChannels
+    return publicChannels
   },
 })
 
@@ -381,15 +365,11 @@ createGauge({
   name: "privateChannels",
   description: "How many private channels there are on the active nodes",
   collect: async () => {
-    try {
-      const lndService = LndService()
-      if (lndService instanceof Error) throw lndService
-      const privateChannels = await lndService.getPrivateChannels()
-      if (privateChannels instanceof Error) throw privateChannels
-      return privateChannels
-    } catch (err) {
-      return NaN
-    }
+    const lndService = LndService()
+    if (lndService instanceof Error) return NaN
+    const privateChannels = await lndService.getPrivateChannels()
+    if (privateChannels instanceof Error) throw privateChannels
+    return privateChannels
   },
 })
 
