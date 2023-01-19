@@ -96,9 +96,7 @@ describe("graphql", () => {
     const subscriptionQuery = SAT_PRICE
 
     it("returns data with valid inputs", async () => {
-      const input = {
-        priceCurrencyUnit: "USDCENT",
-      }
+      const input = { currency: "USD" }
 
       const subscription = apolloClient.subscribe({
         query: subscriptionQuery,
@@ -116,7 +114,7 @@ describe("graphql", () => {
       expect(price).toHaveProperty("base")
       expect(price).toHaveProperty("offset")
       expect(price).toHaveProperty("formattedAmount")
-      expect(price.currencyUnit).toEqual(input["priceCurrencyUnit"])
+      expect(price.currencyUnit).toEqual(input["currency"] + "CENT")
     })
   })
 

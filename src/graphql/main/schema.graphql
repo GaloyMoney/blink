@@ -993,7 +993,7 @@ type SatAmountPayload {
 }
 
 input SatPriceInput {
-  priceCurrencyUnit: String!
+  currency: DisplayCurrency! = "USD"
 }
 
 """

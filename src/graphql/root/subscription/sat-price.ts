@@ -11,6 +11,7 @@ import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import { UnknownClientError } from "@graphql/error"
 import PricePayload from "@graphql/types/payload/price"
+import DisplayCurrencyGT from "@graphql/types/scalar/display-currency"
 
 import { PubSubService } from "@services/pubsub"
 import { baseLogger } from "@services/logger"
@@ -20,13 +21,13 @@ const pubsub = PubSubService()
 const SatPriceInput = GT.Input({
   name: "SatPriceInput",
   fields: () => ({
-    priceCurrencyUnit: { type: GT.NonNull(GT.String) },
+    currency: { type: GT.NonNull(DisplayCurrencyGT), defaultValue: DisplayCurrency.Usd },
   }),
 })
 
 type SatPriceSubscribeArgs = {
   input: {
-    priceCurrencyUnit: string | Error
+    currency: DisplayCurrency | Error
   }
 }
 
@@ -67,17 +68,17 @@ const SatPriceSubscription = {
     }
   },
   subscribe: async (_: unknown, args: SatPriceSubscribeArgs) => {
-    const { priceCurrencyUnit } = args.input
+    const { currency } = args.input
 
     const immediateTrigger = customPubSubTrigger({
       event: PubSubDefaultTriggers.PriceUpdate,
       suffix: crypto.randomUUID(),
     })
 
-    if (priceCurrencyUnit instanceof Error) {
+    if (currency instanceof Error) {
       pubsub.publishImmediate({
         trigger: immediateTrigger,
-        payload: { errors: [{ message: priceCurrencyUnit.message }] },
+        payload: { errors: [{ message: currency.message }] },
       })
       return pubsub.createAsyncIterator({ trigger: immediateTrigger })
     }
@@ -91,7 +92,7 @@ const SatPriceSubscription = {
       return pubsub.createAsyncIterator({ trigger: immediateTrigger })
     }
 
-    const priceCurrency = currencies.find((c) => priceCurrencyUnit === `${c.code}CENT`)
+    const priceCurrency = currencies.find((c) => currency === c.code)
     const displayCurrency = checkedToDisplayCurrency(priceCurrency?.code)
 
     if (displayCurrency instanceof Error) {

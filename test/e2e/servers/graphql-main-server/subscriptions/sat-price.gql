@@ -1,9 +1,9 @@
 subscription satPrice(
-  $priceCurrencyUnit: String!
+  $currency: DisplayCurrency!
 ) {
   satPrice(
     input: {
-      priceCurrencyUnit: $priceCurrencyUnit
+      currency: $currency
     }
   ) {
     errors {
