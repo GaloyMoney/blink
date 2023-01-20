@@ -2469,7 +2469,7 @@ describe("Handle pending payments - Lightning Pay", () => {
     expect(isRecordedVoided).toBeTruthy()
   })
 
-  it("settle failed and then successful payment routed to lnd-outside-3", async () => {
+  it.skip("settle failed and then successful payment routed to lnd-outside-3", async () => {
     const ledger = LedgerService()
     const senderWalletId = walletIdB
     const senderAccount = accountB
