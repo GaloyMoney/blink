@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import AuthToken from "@graphql/types/scalar/auth-token"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
-import { logoutToken } from "@app/auth"
+import { logout } from "@app/auth"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const UserLogoutInput = GT.Input({
@@ -29,7 +29,7 @@ const UserLogoutMutation = GT.Field<{
   resolve: async (_, args) => {
     const { authToken } = args.input
     if (authToken instanceof Error) return
-    const logoutResp = await logoutToken(authToken)
+    const logoutResp = await logout(authToken)
     if (logoutResp instanceof Error)
       return { errors: [mapAndParseErrorForGqlResponse(logoutResp)] }
     return { errors: [] }

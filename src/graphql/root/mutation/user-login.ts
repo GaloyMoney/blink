@@ -46,11 +46,7 @@ const UserLoginMutation = GT.Field<{
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const authToken = await Auth.loginWithPhoneToken({
-      phone,
-      code,
-      ip,
-    })
+    const authToken = await Auth.loginWithPhone({ phone, code, ip })
 
     if (authToken instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(authToken)] }
