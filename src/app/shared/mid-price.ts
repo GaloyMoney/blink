@@ -1,15 +1,18 @@
-import { getCurrentPrice } from "@app/prices"
 import { getDealerConfig } from "@config"
-import { CENTS_PER_USD } from "@domain/fiat"
+
+import { getCurrentPrice } from "@app/prices"
+
 import { toPriceRatio } from "@domain/payments"
+import { CENTS_PER_USD, DisplayCurrency } from "@domain/fiat"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
-import { DealerPriceService } from "@services/dealer-price"
+
 import {
   addAttributesToCurrentSpan,
   asyncRunInSpan,
   recordExceptionInCurrentSpan,
   SemanticAttributes,
 } from "@services/tracing"
+import { DealerPriceService } from "@services/dealer-price"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 const dealer = DealerPriceService()
@@ -87,7 +90,7 @@ export const btcFromUsdMidPriceFn = async (
 export const getCurrentPriceInCentsPerSat = async (): Promise<
   PriceRatio | PriceServiceError
 > => {
-  const price = await getCurrentPrice()
+  const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
   if (price instanceof Error) return price
 
   return toPriceRatio(price * CENTS_PER_USD)

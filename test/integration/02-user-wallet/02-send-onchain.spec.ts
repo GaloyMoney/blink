@@ -379,7 +379,7 @@ const testExternalSend = async ({
     // Check notification sent
     // ===
     const amountForNotification = sendAll ? amountToSend - fee : amountToSend
-    const satsPrice = await Prices.getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) return satsPrice
 
     const paymentAmount = {
@@ -1030,7 +1030,7 @@ describe("BtcWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const price = await getCurrentPrice()
+    const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
 

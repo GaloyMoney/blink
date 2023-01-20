@@ -237,5 +237,5 @@ const translateToAccount = (result: AccountRecord): Account => ({
   })),
 
   kratosUserId: result.kratosUserId as UserId,
-  displayCurrency: result.displayCurrency || DisplayCurrency.Usd,
+  displayCurrency: (result.displayCurrency || DisplayCurrency.Usd) as DisplayCurrency,
 })

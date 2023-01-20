@@ -78,7 +78,7 @@ type Account = {
   readonly quizQuestions: UserQuizQuestion[] // deprecated
   readonly quiz: Quiz[]
   kratosUserId: UserId
-  displayCurrency: string
+  displayCurrency: DisplayCurrency
   // temp
   role?: string
 }

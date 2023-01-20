@@ -1,14 +1,20 @@
-import { Prices, Wallets } from "@app"
 import { getDisplayCurrencyConfig, getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+
+import { Prices, Wallets } from "@app"
+
+import { TxStatus } from "@domain/wallets"
+import { DisplayCurrency } from "@domain/fiat"
+import { WalletCurrency } from "@domain/shared"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
-import { WalletCurrency } from "@domain/shared"
-import { TxStatus } from "@domain/wallets"
+
 import { invoiceUpdateEventHandler, onchainBlockEventHandler } from "@servers/trigger"
-import { LedgerService } from "@services/ledger"
+
 import { baseLogger } from "@services/logger"
+import { LedgerService } from "@services/ledger"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+
 import { sleep } from "@utils"
 
 import {
@@ -226,7 +232,7 @@ describe("onchainBlockEventHandler", () => {
     expect(ledgerTx.credit).toBe(sats)
     expect(ledgerTx.pendingConfirmation).toBe(false)
 
-    const satsPrice = await Prices.getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }

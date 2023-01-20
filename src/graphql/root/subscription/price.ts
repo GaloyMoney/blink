@@ -2,17 +2,19 @@ import crypto from "crypto"
 
 import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
+import { Prices } from "@app"
+
+import { checkedToDisplayCurrency, DisplayCurrency } from "@domain/fiat"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+
 import { GT } from "@graphql/index"
+import { UnknownClientError } from "@graphql/error"
 import PricePayload from "@graphql/types/payload/price"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
-import { UnknownClientError } from "@graphql/error"
 
-import { Prices } from "@app"
 import { PubSubService } from "@services/pubsub"
 import { baseLogger } from "@services/logger"
-
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
 const pubsub = PubSubService()
 
@@ -47,7 +49,9 @@ const PriceSubscription = {
     input: { type: GT.NonNull(PriceInput) },
   },
   resolve: (
-    source: { errors: IError[]; satUsdCentPrice?: number } | undefined,
+    source:
+      | { errors: IError[]; centsPerSat?: number; displayCurrency?: DisplayCurrency }
+      | undefined,
     args: PriceResolveArgs,
   ) => {
     if (source === undefined) {
@@ -59,20 +63,18 @@ const PriceSubscription = {
       })
     }
 
-    if (source.errors) {
-      return { errors: source.errors }
-    }
-    if (!source.satUsdCentPrice) {
+    if (source.errors) return { errors: source.errors }
+    if (!source.centsPerSat || !source.displayCurrency)
       return { errors: [{ message: "No price info" }] }
-    }
-    const amountPriceInCents = args.input.amount * source.satUsdCentPrice
+
+    const amountPriceInCents = args.input.amount * source.centsPerSat
     return {
       errors: [],
       price: {
         formattedAmount: amountPriceInCents.toString(),
         base: Math.round(amountPriceInCents * 10 ** SAT_PRICE_PRECISION_OFFSET),
         offset: SAT_PRICE_PRECISION_OFFSET,
-        currencyUnit: "USDCENT",
+        currencyUnit: `${source.displayCurrency}CENT`,
       },
     }
   },
@@ -94,7 +96,19 @@ const PriceSubscription = {
       }
     }
 
-    if (amountCurrencyUnit !== "BTCSAT" || priceCurrencyUnit !== "USDCENT") {
+    const currencies = await Prices.listCurrencies()
+    if (currencies instanceof Error) {
+      pubsub.publishImmediate({
+        trigger: immediateTrigger,
+        payload: { errors: [{ message: currencies.message }] },
+      })
+      return pubsub.createAsyncIterator({ trigger: immediateTrigger })
+    }
+
+    const priceCurrency = currencies.find((c) => priceCurrencyUnit === `${c.code}CENT`)
+    const displayCurrency = checkedToDisplayCurrency(priceCurrency?.code)
+
+    if (amountCurrencyUnit !== "BTCSAT" || displayCurrency instanceof Error) {
       // For now, keep the only supported exchange price as SAT -> USD
       pubsub.publishImmediate({
         trigger: immediateTrigger,
@@ -107,15 +121,19 @@ const PriceSubscription = {
         payload: { errors: [{ message: "Unsupported exchange amount" }] },
       })
     } else {
-      const satUsdPrice = await Prices.getCurrentPrice()
-      if (!(satUsdPrice instanceof Error)) {
+      const pricePerSat = await Prices.getCurrentPrice({ currency: displayCurrency })
+      if (!(pricePerSat instanceof Error)) {
         pubsub.publishImmediate({
           trigger: immediateTrigger,
-          payload: { satUsdCentPrice: 100 * satUsdPrice },
+          payload: { centsPerSat: 100 * pricePerSat, displayCurrency },
         })
       }
+      const priceUpdateTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.PriceUpdate,
+        suffix: displayCurrency,
+      })
       return pubsub.createAsyncIterator({
-        trigger: [immediateTrigger, PubSubDefaultTriggers.PriceUpdate],
+        trigger: [immediateTrigger, priceUpdateTrigger],
       })
     }
 

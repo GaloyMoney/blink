@@ -1,14 +1,15 @@
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { PartialResult } from "@app/partial-result"
 import { getCurrentPrice } from "@app/prices"
+import { PartialResult } from "@app/partial-result"
 
-import { TxFilter } from "@domain/bitcoin/onchain"
 import { LedgerError } from "@domain/ledger"
+import { DisplayCurrency } from "@domain/fiat"
+import { TxFilter } from "@domain/bitcoin/onchain"
 import { WalletTransactionHistory } from "@domain/wallets"
 
-import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
+import { LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
 
 import { getOnChainTxs } from "./private/get-on-chain-txs"
@@ -66,7 +67,7 @@ export const getTransactionsForWallets = async ({
 
   const pendingIncoming = filter.apply(onChainTxs)
 
-  let price = await getCurrentPrice()
+  let price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
   if (price instanceof Error) {
     price = NaN as DisplayCurrencyPerSat
   }

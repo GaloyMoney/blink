@@ -1,8 +1,11 @@
-import { CacheKeys } from "@domain/cache"
 import { Prices } from "@app"
+
+import { CacheKeys } from "@domain/cache"
+import { DisplayCurrency } from "@domain/fiat"
+import { PriceNotAvailableError } from "@domain/price"
+
 import * as PriceServiceImpl from "@services/price"
 import { LocalCacheService } from "@services/cache"
-import { PriceNotAvailableError } from "@domain/price"
 
 jest.mock("@services/redis", () => ({}))
 
@@ -32,10 +35,10 @@ describe("Prices", () => {
           listCurrencies: jest.fn(),
         }))
 
-      let price = await Prices.getCurrentPrice()
+      let price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
       expect(price).toEqual(0.05)
 
-      price = await Prices.getCurrentPrice()
+      price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
       expect(price).toEqual(0.05)
     })
 
@@ -46,7 +49,7 @@ describe("Prices", () => {
         listCurrencies: jest.fn(),
       }))
 
-      const price = await Prices.getCurrentPrice()
+      const price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
       expect(price).toBeInstanceOf(PriceNotAvailableError)
     })
   })

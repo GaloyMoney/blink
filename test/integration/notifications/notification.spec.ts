@@ -1,10 +1,13 @@
+import { getDisplayCurrencyConfig } from "@config"
+
 import { Prices } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
-import { getDisplayCurrencyConfig } from "@config"
+
 import { toSats } from "@domain/bitcoin"
-import * as serviceLedger from "@services/ledger"
+import { DisplayCurrency } from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
+import * as serviceLedger from "@services/ledger"
 import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
@@ -14,7 +17,7 @@ const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 let price, spy
 
 beforeAll(async () => {
-  price = await Prices.getCurrentPrice()
+  price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
   if (price instanceof Error) throw price
 
   const ledgerService = serviceLedger.LedgerService()

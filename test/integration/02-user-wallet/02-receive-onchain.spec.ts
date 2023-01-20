@@ -1,6 +1,6 @@
 import { once } from "events"
 
-import { Prices, Wallets, Accounts } from "@app"
+import { Accounts, Prices, Wallets } from "@app"
 import { getCurrentPrice } from "@app/prices"
 import { usdFromBtcMidPriceFn } from "@app/shared"
 
@@ -13,22 +13,22 @@ import {
 } from "@config"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { NotificationType } from "@domain/notifications"
-import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
-import { WalletCurrency } from "@domain/shared"
-import { LedgerTransactionType } from "@domain/ledger"
 import { DisplayCurrency, toCents } from "@domain/fiat"
+import { LedgerTransactionType } from "@domain/ledger"
+import { NotificationType } from "@domain/notifications"
 import { PriceRatio } from "@domain/payments"
+import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
+import { WalletCurrency } from "@domain/shared"
+import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 
 import { onchainTransactionEventHandler } from "@servers/trigger"
 
+import { LedgerService } from "@services/ledger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { LedgerService } from "@services/ledger"
 import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
@@ -204,7 +204,7 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const price = await getCurrentPrice()
+    const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
     const amountSats = dCConverter.fromCentsToSats(withdrawalLimitAccountLevel1)
@@ -219,7 +219,7 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const price = await getCurrentPrice()
+    const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
     const amountSats = dCConverter.fromCentsToSats(intraLedgerLimitAccountLevel1)
@@ -352,7 +352,7 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    const satsPrice = await Prices.getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = {

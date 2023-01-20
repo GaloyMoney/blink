@@ -34,17 +34,17 @@ const priceHistoryClient = new PriceHistoryProtoDescriptor.PriceHistory(
 const listPrices = util.promisify(priceHistoryClient.listPrices).bind(priceHistoryClient)
 
 export const PriceService = (): IPriceService => {
-  const getRealTimePrice = async (): Promise<
-    DisplayCurrencyPerSat | PriceServiceError
-  > => {
+  const getRealTimePrice = async ({
+    currency,
+  }: GetRealTimePriceArgs): Promise<DisplayCurrencyPerSat | PriceServiceError> => {
     try {
-      const { price } = await getPrice({})
+      const { price } = await getPrice({ currency })
       // FIXME: price server should return CentsPerSat directly
       if (price > 0) return (price / SATS_PER_BTC) as DisplayCurrencyPerSat
       return new PriceNotAvailableError()
     } catch (err) {
       baseLogger.error({ err }, "impossible to fetch most recent price")
-      return new UnknownPriceServiceError(err)
+      return new UnknownPriceServiceError(err.message || err)
     }
   }
 
@@ -58,7 +58,7 @@ export const PriceService = (): IPriceService => {
         price: t.price / SATS_PER_BTC,
       }))
     } catch (err) {
-      return new UnknownPriceServiceError(err)
+      return new UnknownPriceServiceError(err.message || err)
     }
   }
 

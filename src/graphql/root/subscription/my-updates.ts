@@ -1,5 +1,10 @@
 import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
+import { Prices } from "@app"
+
+import { DisplayCurrency } from "@domain/fiat"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+
 import { GT } from "@graphql/index"
 import Price from "@graphql/types/object/price"
 import IError from "@graphql/types/abstract/error"
@@ -8,14 +13,12 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import GraphQLUser from "@graphql/types/object/graphql-user"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
 import OnChainTxHash from "@graphql/types/scalar/onchain-tx-hash"
+import { AuthenticationError, UnknownClientError } from "@graphql/error"
 import TxNotificationType from "@graphql/types/scalar/tx-notification-type"
 import InvoicePaymentStatus from "@graphql/types/scalar/invoice-payment-status"
 
-import { Prices } from "@app"
-import { PubSubService } from "@services/pubsub"
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
-import { AuthenticationError, UnknownClientError } from "@graphql/error"
 import { baseLogger } from "@services/logger"
+import { PubSubService } from "@services/pubsub"
 
 const pubsub = PubSubService()
 
@@ -73,7 +76,8 @@ const MyUpdatesPayload = GT.Object({
 })
 
 type MePayloadPrice = {
-  satUsdCentPrice: number
+  centsPerSat: number
+  displayCurrency: DisplayCurrency
 }
 
 type MeResolvePrice = {
@@ -141,10 +145,10 @@ const MeSubscription = {
     if (source.price) {
       return userPayload(null)({
         resolveType: "Price",
-        base: Math.round(source.price.satUsdCentPrice * 10 ** SAT_PRICE_PRECISION_OFFSET),
+        base: Math.round(source.price.centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
         offset: SAT_PRICE_PRECISION_OFFSET,
-        currencyUnit: "USDCENT",
-        formattedAmount: source.price.satUsdCentPrice.toString(),
+        currencyUnit: `${source.price.displayCurrency}CENT`,
+        formattedAmount: source.price.centsPerSat.toString(),
       })
     }
 
@@ -187,21 +191,27 @@ const MeSubscription = {
         logger: baseLogger,
       })
     }
+    const { id, displayCurrency } = ctx.domainAccount
     const accountUpdatedTrigger = customPubSubTrigger({
       event: PubSubDefaultTriggers.AccountUpdate,
-      suffix: ctx.domainAccount.id,
+      suffix: id,
     })
 
-    const satUsdPrice = await Prices.getCurrentPrice()
-    if (!(satUsdPrice instanceof Error)) {
+    const pricePerSat = await Prices.getCurrentPrice({ currency: displayCurrency })
+    if (!(pricePerSat instanceof Error)) {
       pubsub.publishImmediate({
         trigger: accountUpdatedTrigger,
-        payload: { price: { satUsdCentPrice: 100 * satUsdPrice } },
+        payload: { price: { centsPerSat: 100 * pricePerSat, displayCurrency } },
       })
     }
 
+    const userPriceUpdateTrigger = customPubSubTrigger({
+      event: PubSubDefaultTriggers.UserPriceUpdate,
+      suffix: displayCurrency,
+    })
+
     return pubsub.createAsyncIterator({
-      trigger: [accountUpdatedTrigger, PubSubDefaultTriggers.UserPriceUpdate],
+      trigger: [accountUpdatedTrigger, userPriceUpdateTrigger],
     })
   },
 }

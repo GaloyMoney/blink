@@ -1,14 +1,18 @@
+import { BTC_PRICE_PRECISION_OFFSET } from "@config"
+
+import { Prices } from "@app"
+
+import { SATS_PER_BTC } from "@domain/bitcoin"
+import { DisplayCurrency } from "@domain/fiat"
+import { PriceInterval, PriceRange } from "@domain/price"
+
 import { GT } from "@graphql/index"
-import PricePoint from "@graphql/types/object/price-point"
+import { mapError } from "@graphql/error-map"
 import PriceGraphRange, {
   priceRangeValues,
 } from "@graphql/types/scalar/price-graph-range"
 import { InputValidationError } from "@graphql/error"
-import { PriceInterval, PriceRange } from "@domain/price"
-import { BTC_PRICE_PRECISION_OFFSET } from "@config"
-import { Prices } from "@app"
-import { SATS_PER_BTC } from "@domain/bitcoin"
-import { mapError } from "@graphql/error-map"
+import PricePoint from "@graphql/types/object/price-point"
 
 const parseRange: (
   string: (typeof priceRangeValues)[number],
@@ -82,7 +86,7 @@ const BtcPriceListQuery = GT.Field({
 
     // Add the current price as the last item in the array
     // This is used by the mobile app to convert prices
-    const currentPrice = await Prices.getCurrentPrice()
+    const currentPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (!(currentPrice instanceof Error)) {
       const currentBtcPriceInCents = currentPrice * 100 * SATS_PER_BTC
       prices.push({

@@ -45,6 +45,11 @@ type SendBalanceArgs = {
   recipientLanguage: UserLanguageOrEmpty
 }
 
+type PriceUpdateArgs = {
+  pricePerSat: DisplayCurrencyPerSat
+  displayCurrency: DisplayCurrency
+}
+
 interface INotificationsService {
   lightningTxReceived: (
     args: LightningTxReceivedArgs,
@@ -62,6 +67,6 @@ interface INotificationsService {
   ): Promise<void | NotificationsServiceError>
   onChainTxSent(args: OnChainTxSentArgs): Promise<void | NotificationsServiceError>
 
-  priceUpdate: (DisplayCurrencyPerSat: DisplayCurrencyPerSat) => void
+  priceUpdate: (args: PriceUpdateArgs) => void
   sendBalance(args: SendBalanceArgs): Promise<void | NotificationsServiceError>
 }

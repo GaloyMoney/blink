@@ -1,11 +1,10 @@
 import { createHash, randomBytes } from "crypto"
 
+import { getDisplayCurrencyConfig, getLocale, ONE_DAY } from "@config"
+
 import { Lightning, Payments, Prices, Wallets } from "@app"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
-import { getDisplayCurrencyConfig, getLocale, ONE_DAY } from "@config"
-
-import { toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
@@ -19,9 +18,11 @@ import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
+import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import { NotificationType } from "@domain/notifications"
 import {
   LnFees,
   LnPaymentRequestInTransitError,
@@ -52,13 +53,10 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
-
-import { sleep } from "@utils"
-
-import { NotificationType } from "@domain/notifications"
-
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+
+import { sleep } from "@utils"
 
 import {
   cancelHodlInvoice,
@@ -409,7 +407,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     await sleep(1000)
 
-    const satsPrice = await Prices.getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
@@ -1072,7 +1070,9 @@ describe("UserWallet - Lightning Pay", () => {
           expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
 
-          const satsPrice = await Prices.getCurrentPrice()
+          const satsPrice = await Prices.getCurrentPrice({
+            currency: DisplayCurrency.Usd,
+          })
           if (satsPrice instanceof Error) throw satsPrice
 
           const paymentAmount = {

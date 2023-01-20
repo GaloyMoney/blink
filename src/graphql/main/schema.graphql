@@ -902,7 +902,7 @@ Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
 """
 type Price {
   base: SafeInt!
-  currencyUnit: ExchangeCurrencyUnit!
+  currencyUnit: String!
   formattedAmount: String!
   offset: Int!
 }
@@ -948,7 +948,7 @@ type PublicWallet {
 
 type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
-  btcPrice: Price
+  btcPrice(currency: DisplayCurrency! = "USD"): Price
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
   currencyList: [Currency]
@@ -1020,6 +1020,10 @@ type SatAmountPayload {
   errors: [Error!]!
 }
 
+input SatPriceInput {
+  currency: DisplayCurrency! = "USD"
+}
+
 """
 (Positive) amount of seconds
 """
@@ -1058,6 +1062,11 @@ type Subscription {
   ): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!
   price(input: PriceInput!): PricePayload!
+
+  """
+  Returns the price of 1 satoshi
+  """
+  satPrice(input: SatPriceInput!): PricePayload!
 }
 
 type SuccessPayload {

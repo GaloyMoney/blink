@@ -11,13 +11,14 @@ import {
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-import { publishSingleCurrentPrice } from "@servers/trigger"
+import { publishCurrentPrices } from "@servers/trigger"
 
 import USER_LOGIN from "./mutations/user-login.gql"
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import MAIN from "./queries/main.gql"
 
 import PRICE from "./subscriptions/price.gql"
+import SAT_PRICE from "./subscriptions/sat-price.gql"
 
 import {
   clearAccountLocks,
@@ -76,7 +77,7 @@ describe("graphql", () => {
         variables: input,
       })
 
-      const pricePublish = setTimeout(publishSingleCurrentPrice, 1000)
+      const pricePublish = setTimeout(publishCurrentPrices, 1000)
 
       const result = (await promisifiedSubscription(subscription)) as { data }
       clearTimeout(pricePublish)
@@ -88,6 +89,32 @@ describe("graphql", () => {
       expect(price).toHaveProperty("offset")
       expect(price).toHaveProperty("formattedAmount")
       expect(price.currencyUnit).toEqual(input["priceCurrencyUnit"])
+    })
+  })
+
+  describe("sat price", () => {
+    const subscriptionQuery = SAT_PRICE
+
+    it("returns data with valid inputs", async () => {
+      const input = { currency: "USD" }
+
+      const subscription = apolloClient.subscribe({
+        query: subscriptionQuery,
+        variables: input,
+      })
+
+      const pricePublish = setTimeout(publishCurrentPrices, 1000)
+
+      const result = (await promisifiedSubscription(subscription)) as { data }
+      clearTimeout(pricePublish)
+      const price_ = result.data?.satPrice
+      const { price, errors } = price_
+
+      expect(errors.length).toEqual(0)
+      expect(price).toHaveProperty("base")
+      expect(price).toHaveProperty("offset")
+      expect(price).toHaveProperty("formattedAmount")
+      expect(price.currencyUnit).toEqual(input["currency"] + "CENT")
     })
   })
 

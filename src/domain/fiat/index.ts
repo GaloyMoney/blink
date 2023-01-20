@@ -1,4 +1,5 @@
 import {
+  InvalidDisplayCurrencyError,
   InvalidNegativeAmountError,
   InvalidUsdCents,
   NonIntegerError,
@@ -12,6 +13,15 @@ export const toCents = (amount: number | bigint): UsdCents => {
 
 export const toCentsPerSatsRatio = (amount: number): CentsPerSatsRatio => {
   return amount as CentsPerSatsRatio
+}
+
+export const checkedToDisplayCurrency = (
+  currency?: string,
+): DisplayCurrency | ValidationError => {
+  if (!currency || currency.length > 4) {
+    return new InvalidDisplayCurrencyError(currency)
+  }
+  return currency.toUpperCase() as DisplayCurrency
 }
 
 export const checkedtoCents = (amount: number): UsdCents | ValidationError => {
@@ -39,5 +49,4 @@ export const sub = <T extends number>(
 export const DisplayCurrency = {
   Usd: "USD",
   Btc: "BTC",
-  Crc: "CRC",
 } as const
