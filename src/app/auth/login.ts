@@ -23,7 +23,7 @@ import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
-export const loginWithPhoneToken = async ({
+export const loginWithPhone = async ({
   phone,
   code,
   ip,
@@ -54,63 +54,21 @@ export const loginWithPhoneToken = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.loginToken(phone)
+  let kratosResult = await authService.login(phone)
+
   // FIXME: this is a fuzzy error.
   // it exists because we currently make no difference between a registration and login
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
     // user is a new user
+
     kratosResult = await authService.createIdentityWithSession(phone)
     if (kratosResult instanceof Error) return kratosResult
     addAttributesToCurrentSpan({ "login.newAccount": true })
   } else if (kratosResult instanceof Error) {
     return kratosResult
   }
+
   return kratosResult.sessionToken
-}
-
-export const loginWithPhoneCookie = async ({
-  phone,
-  code,
-  ip,
-}: {
-  phone: PhoneNumber
-  code: PhoneCode
-  ip: IpAddress
-}): Promise<WithCookieResponse | ApplicationError> => {
-  {
-    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
-    if (limitOk instanceof Error) return limitOk
-  }
-
-  {
-    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
-    if (limitOk instanceof Error) return limitOk
-  }
-
-  // TODO:
-  // add fibonachi on failed login
-  // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
-
-  const validCode = await isCodeValid({ phone, code })
-  if (validCode instanceof Error) return validCode
-
-  await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerPhoneLimits(phone)
-
-  const authService = AuthWithPhonePasswordlessService()
-
-  let kratosResult = await authService.loginCookie(phone)
-  // FIXME: this is a fuzzy error.
-  // it exists because we currently make no difference between a registration and login
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-    // user is a new user
-    kratosResult = await authService.createIdentityWithCookie(phone)
-    if (kratosResult instanceof Error) return kratosResult
-    addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
-  } else if (kratosResult instanceof Error) {
-    return kratosResult
-  }
-  return kratosResult
 }
 
 // deprecated
@@ -200,13 +158,7 @@ const checkfailedLoginAttemptPerEmailAddressLimits = async (
     keyToConsume: emailAddress,
   })
 
-export const isCodeValid = async ({
-  code,
-  phone,
-}: {
-  phone: PhoneNumber
-  code: PhoneCode
-}) => {
+const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCode }) => {
   const testAccounts = getTestAccounts()
   if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
     const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({

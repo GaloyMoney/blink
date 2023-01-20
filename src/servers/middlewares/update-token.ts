@@ -106,7 +106,7 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
 
   const authService = AuthWithPhonePasswordlessService()
 
-  const kratosResult = await authService.loginToken(phone)
+  const kratosResult = await authService.login(phone)
   if (kratosResult instanceof Error) {
     addAttributesToCurrentSpan({ authUpgrade: "kratos issue" })
 
