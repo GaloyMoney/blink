@@ -154,7 +154,7 @@
     "pg": "^8.8.0",
     "pino-pretty": "^9.1.1",
     "prettier": "^2.8.3",
-    "spectaql": "^2.0.3",
+    "spectaql": "^2.0.4",
     "tiny-secp256k1": "^2.2.1",
     "tree-kill": "^1.2.2",
     "ts-jest": "^29.0.5",
