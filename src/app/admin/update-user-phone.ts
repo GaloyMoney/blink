@@ -3,9 +3,43 @@ import {
   UserWithPhoneAlreadyExistsError,
 } from "@domain/authentication/errors"
 import { AuthWithPhonePasswordlessService } from "@services/kratos/auth-phone-no-password"
+import { KratosError } from "@services/kratos/errors"
 import { IdentityRepository } from "@services/kratos/identity"
+import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
+
+import { getBalanceForWallet, listWalletsByAccountId } from "../wallets"
+
+const deleteUserIfNew = async ({
+  kratosUserId,
+}: {
+  kratosUserId: UserId
+}): Promise<void | Error> => {
+  const accountsRepo = AccountsRepository()
+  const account = await accountsRepo.findByUserId(kratosUserId)
+  if (account instanceof Error) return account
+
+  const wallets = await listWalletsByAccountId(account.id)
+  if (wallets instanceof Error) return wallets
+
+  for (const wallet of wallets) {
+    const balance = await getBalanceForWallet({ walletId: wallet.id, logger: baseLogger })
+    if (balance instanceof Error) return balance
+    if (balance > 0) {
+      return new UserWithPhoneAlreadyExistsError(
+        "The new phone is associated with an account with a non empty wallet",
+      )
+    }
+  }
+
+  const identityRepo = IdentityRepository()
+  await identityRepo.deleteIdentity(kratosUserId)
+
+  const usersRepo = UsersRepository()
+  const result = await usersRepo.deletePhone(kratosUserId)
+  if (result instanceof Error) return result
+}
 
 export const updateUserPhone = async ({
   id,
@@ -17,13 +51,18 @@ export const updateUserPhone = async ({
   const accountsRepo = AccountsRepository()
   const account = await accountsRepo.findById(id as AccountId)
   if (account instanceof Error) return account
+  const kratosUserId = account.kratosUserId
 
   const identityRepo = IdentityRepository()
   const existingIdentity = await identityRepo.slowFindByPhone(phone)
-  if (!(existingIdentity instanceof PhoneIdentityDoesNotExistError))
-    return new UserWithPhoneAlreadyExistsError(phone)
 
-  const kratosUserId = account.kratosUserId
+  if (
+    !(existingIdentity instanceof PhoneIdentityDoesNotExistError) &&
+    !(existingIdentity instanceof KratosError)
+  ) {
+    const result = await deleteUserIfNew({ kratosUserId: existingIdentity.id })
+    if (result instanceof Error) return result
+  }
 
   const usersRepo = UsersRepository()
   const user = await usersRepo.findById(kratosUserId)

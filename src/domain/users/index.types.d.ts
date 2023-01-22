@@ -64,4 +64,5 @@ interface IUsersRepository {
   findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
+  deletePhone(id: UserId): Promise<User | RepositoryError>
 }

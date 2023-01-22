@@ -111,9 +111,18 @@ export const IdentityRepository = (): IIdentityRepository => {
     return toDomainIdentityPhone(identity)
   }
 
+  const deleteIdentity = async (id: UserId): Promise<void | KratosError> => {
+    try {
+      await kratosAdmin.deleteIdentity({ id })
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+  }
+
   return {
     getIdentity,
     listIdentities,
     slowFindByPhone,
+    deleteIdentity,
   }
 }

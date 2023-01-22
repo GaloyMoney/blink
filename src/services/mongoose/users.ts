@@ -84,9 +84,22 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const deletePhone = async (id: UserId): Promise<User | RepositoryError> => {
+    const result = await User.findOneAndUpdate(
+      { userId: id },
+      { $unset: { phone: true } },
+      { new: true },
+    )
+    if (!result) {
+      return new RepositoryError("Couldn't delete phone from user")
+    }
+    return translateToUser(result)
+  }
+
   return {
     findById,
     findByPhone,
     update,
+    deletePhone,
   }
 }

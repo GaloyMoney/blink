@@ -49,4 +49,5 @@ interface IIdentityRepository {
   getIdentity(id: UserId): Promise<IdentityPhone | KratosError>
   listIdentities(): Promise<IdentityPhone[] | KratosError>
   slowFindByPhone(phone: PhoneNumber): Promise<IdentityPhone | KratosError>
+  deleteIdentity(id: UserId): Promise<void | KratosError>
 }

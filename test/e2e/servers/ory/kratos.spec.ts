@@ -37,7 +37,9 @@ import {
   adminTestClientConfig,
   createApolloClient,
   defaultTestClientConfig,
+  fundWalletIdFromLightning,
   getAdminPhoneAndCode,
+  getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
   killServer,
   randomEmail,
@@ -577,9 +579,10 @@ describe("updates user phone", () => {
     expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
   })
 
-  it("does not update user phone if new phone already exists", async () => {
+  it("updates phone even if new phone is associated with a zero balance account", async () => {
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
     const { phone, code } = getPhoneAndCodeFromRef("I")
+    const walletId = await getDefaultWalletIdByTestUserRef("I")
 
     apolloClient.mutate({
       mutation: USER_LOGIN,
@@ -612,9 +615,19 @@ describe("updates user phone", () => {
       variables: { input: { phone: newPhone, uid } },
     })
 
-    expect(result.data.userUpdatePhone.errors[0].message).toContain(
+    expect(result.data.userUpdatePhone.errors.length).toBe(0)
+
+    await fundWalletIdFromLightning({ walletId, amount: 1000 })
+
+    const result1 = await adminApolloClient.mutate({
+      mutation: USER_UPDATE_PHONE,
+      variables: { input: { phone: newPhone, uid } },
+    })
+
+    expect(result1.data.userUpdatePhone.errors[0].message).toContain(
       "UserWithPhoneAlreadyExistsError",
     )
+
     await disposeAdminClient()
   })
 })
