@@ -332,14 +332,14 @@ export const WalletTransactionHistory = {
 // TODO: refactor this to use PriceRatio eventually instead after
 // 'usd' property removal from db
 const displayCurrencyPerBaseUnitFromAmounts = ({
-  displayAmountAsNumber,
+  displayAmountAsNumber: displayAmountMinorUnit,
   settlementAmountInBaseAsNumber,
 }: {
   displayAmountAsNumber: number
   settlementAmountInBaseAsNumber: number
 }): number => {
-  const usdDisplayAmountAsNumber = Number((displayAmountAsNumber / 100).toFixed(2))
+  const displayAmountMajorUnit = Number((displayAmountMinorUnit / 100).toFixed(2))
   return settlementAmountInBaseAsNumber === 0
     ? 0
-    : Math.abs(usdDisplayAmountAsNumber / settlementAmountInBaseAsNumber)
+    : Math.abs(displayAmountMajorUnit / settlementAmountInBaseAsNumber)
 }
