@@ -1,4 +1,8 @@
-import { CouldNotFindUserFromPhoneError, RepositoryError } from "@domain/errors"
+import {
+  CouldNotDeletePhoneFromUser,
+  CouldNotFindUserFromPhoneError,
+  RepositoryError,
+} from "@domain/errors"
 
 import { User } from "./schema"
 
@@ -85,15 +89,19 @@ export const UsersRepository = (): IUsersRepository => {
   }
 
   const deletePhone = async (id: UserId): Promise<User | RepositoryError> => {
-    const result = await User.findOneAndUpdate(
-      { userId: id },
-      { $unset: { phone: true } },
-      { new: true },
-    )
-    if (!result) {
-      return new RepositoryError("Couldn't delete phone from user")
+    try {
+      const result = await User.findOneAndUpdate(
+        { userId: id },
+        { $unset: { phone: true } },
+        { new: true },
+      )
+      if (!result) {
+        return new CouldNotDeletePhoneFromUser("Couldn't delete phone from user")
+      }
+      return translateToUser(result)
+    } catch (err) {
+      return parseRepositoryError(err)
     }
-    return translateToUser(result)
   }
 
   return {
