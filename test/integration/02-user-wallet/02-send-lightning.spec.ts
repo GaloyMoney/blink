@@ -1200,6 +1200,19 @@ describe("UserWallet - Lightning Pay", () => {
         )
         if (partnerPolicy === undefined) throw new Error("Undefined 'partnerPolicy'")
 
+        // FIXME: revert this console.log once we can observe policies from test breaking in CI again
+        console.log(
+          JSON.stringify(
+            {
+              ownPolicy,
+              lndOutside2Pubkey: process.env.LND_OUTSIDE_2_PUBKEY,
+              partnerPolicy,
+              lndOutside1Pubkey: process.env.LND_OUTSIDE_1_PUBKEY,
+            },
+            null,
+            2,
+          ),
+        )
         expect(ownPolicy.base_fee_mtokens).not.toBe(partnerPolicy.base_fee_mtokens)
         expect(ownPolicy.base_fee_mtokens).toBe("1000")
         expect(partnerPolicy.base_fee_mtokens).toBe("0")
