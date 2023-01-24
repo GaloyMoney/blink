@@ -88,7 +88,9 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const deletePhone = async (id: UserId): Promise<User | RepositoryError> => {
+  const adminUnsetPhoneForUserPreservation = async (
+    id: UserId,
+  ): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
         { userId: id },
@@ -108,6 +110,6 @@ export const UsersRepository = (): IUsersRepository => {
     findById,
     findByPhone,
     update,
-    deletePhone,
+    adminUnsetPhoneForUserPreservation,
   }
 }
