@@ -40,6 +40,7 @@ type RecordIntraledgerArgs = {
   }
   metadata: IntraledgerLedgerMetadata
   additionalDebitMetadata: TxMetadata
+  additionalCreditMetadata: TxMetadata
 }
 
 type LedgerMetadata = {

@@ -201,6 +201,7 @@ export const recordLnIntraLedgerPayment = async ({
     recipientWalletDescriptor,
     metadata,
     additionalDebitMetadata: debitAccountAdditionalMetadata,
+    additionalCreditMetadata: {},
   })
 }
 
@@ -231,6 +232,7 @@ export const recordWalletIdIntraLedgerPayment = async ({
     recipientWalletDescriptor,
     metadata,
     additionalDebitMetadata: debitAccountAdditionalMetadata,
+    additionalCreditMetadata: {},
   })
 }
 
@@ -263,6 +265,7 @@ export const recordOnChainIntraLedgerPayment = async ({
     recipientWalletDescriptor,
     metadata,
     additionalDebitMetadata: debitAccountAdditionalMetadata,
+    additionalCreditMetadata: {},
   })
 }
 
@@ -295,6 +298,7 @@ export const recordLnTradeIntraAccountTxn = async ({
     recipientWalletDescriptor,
     metadata,
     additionalDebitMetadata: debitAccountAdditionalMetadata,
+    additionalCreditMetadata: {},
   })
 }
 
@@ -322,6 +326,7 @@ export const recordWalletIdTradeIntraAccountTxn = async ({
     recipientWalletDescriptor,
     metadata,
     additionalDebitMetadata: {},
+    additionalCreditMetadata: {},
   })
 }
 
@@ -354,6 +359,7 @@ export const recordOnChainTradeIntraAccountTxn = async ({
     recipientWalletDescriptor,
     metadata,
     additionalDebitMetadata: debitAccountAdditionalMetadata,
+    additionalCreditMetadata: {},
   })
 }
 
