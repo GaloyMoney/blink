@@ -1,5 +1,5 @@
 import {
-  CouldNotDeletePhoneFromUser,
+  CouldNotUnsetPhoneFromUser,
   CouldNotFindUserFromPhoneError,
   RepositoryError,
 } from "@domain/errors"
@@ -98,7 +98,7 @@ export const UsersRepository = (): IUsersRepository => {
         { new: true },
       )
       if (!result) {
-        return new CouldNotDeletePhoneFromUser("Couldn't delete phone from user")
+        return new CouldNotUnsetPhoneFromUser()
       }
       return translateToUser(result)
     } catch (err) {
