@@ -104,7 +104,7 @@ export const getMidPriceRatio = async (
     if (priceRatio instanceof Error) {
       recordExceptionInCurrentSpan({
         error: priceRatio,
-        level: ErrorLevel.Critical,
+        level: ErrorLevel.Warn,
       })
       return getCurrentPriceInCentsPerSat()
     }
