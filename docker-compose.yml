@@ -272,7 +272,7 @@ services:
     volumes:
       - ./:/repo
   stablesats:
-    image: us.gcr.io/galoy-org/stablesats-rs:latest
+    image: us.gcr.io/galoy-org/stablesats-rs:0.3.27
     command: ["stablesats", "run"]
     working_dir: /repo/dev
     depends_on:
