@@ -439,6 +439,10 @@ export const translateToLedgerTx = (
     tx.displayCurrency !== undefined
       ? (tx.displayCurrency as DisplayCurrency)
       : undefined,
+
+  fee: tx.fee,
+  usd: tx.usd,
+  feeUsd: tx.feeUsd,
 })
 
 // @ts-ignore-next-line no-implicit-any error

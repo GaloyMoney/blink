@@ -7,7 +7,7 @@ import {
 import { toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
-import { LedgerTransactionType } from "@domain/ledger"
+import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
 
 import { TxStatus } from "./tx-status"
 import { DepositFeeCalculator } from "./deposit-fee-calculator"
@@ -61,6 +61,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   txn: LedgerTransaction<S>,
 ) => {
   const {
+    type,
     credit,
     debit,
     currency,
@@ -72,10 +73,26 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
     memoFromPayer,
   } = txn
 
-  const displayAmount = displayAmountRaw || 0
-  const displayFee = displayFeeRaw || 0
-  const satsFee = satsFeeRaw || 0
-  const centsFee = centsFeeRaw || 0
+  const isAdmin = Object.values(AdminLedgerTransactionType).includes(
+    type as AdminLedgerTransactionType,
+  )
+
+  let displayAmount: number
+  let displayFee: number
+  let satsFee: number
+  let centsFee: number
+  // Temp admin checks, to be removed when usd/feeUsd/fee fields are deprecated
+  if (isAdmin) {
+    displayAmount = txn.usd ? Math.round(txn.usd * 100) : 0
+    displayFee = txn.feeUsd ? Math.round(txn.feeUsd * 100) : 0
+    satsFee = txn.fee || 0
+    centsFee = displayFee
+  } else {
+    displayAmount = displayAmountRaw || 0
+    displayFee = displayFeeRaw || 0
+    satsFee = satsFeeRaw || 0
+    centsFee = centsFeeRaw || 0
+  }
 
   const settlementAmount =
     currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
@@ -86,7 +103,8 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   // - send: displayAmount + displayFee
   // - recv: displayAmount
   const isSend = settlementAmount < 0
-  const displayAmountAsNumber = isSend ? displayAmount + displayFee : displayAmount
+  const displayAmountAsNumber =
+    isSend && !isAdmin ? displayAmount + displayFee : displayAmount
 
   const memo = translateMemo({
     memoFromPayer,

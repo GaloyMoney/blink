@@ -49,6 +49,10 @@ describe("translates ledger txs to wallet txs", () => {
       centsAmount,
       displayAmount: centsAmount as unknown as DisplayCurrencyBaseAmount,
       currency,
+
+      fee: undefined,
+      feeUsd: undefined,
+      usd: undefined,
     }
 
     return [

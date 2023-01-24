@@ -35,6 +35,11 @@ interface ILedgerTransaction {
   displayAmount: number
   displayFee: number
   displayCurrency: string
+
+  // FIXME: Admin-only, to be removed with satsAmount changes
+  fee?: number
+  usd?: number
+  feeUsd?: number
 }
 
 interface TransactionMetadataRecord {

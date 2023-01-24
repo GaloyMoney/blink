@@ -9,6 +9,14 @@ type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 
 type LedgerTransactionId = string & { readonly brand: unique symbol }
 type LedgerJournalId = string & { readonly brand: unique symbol }
+
+type AdminLedgerTransactionTypeObject =
+  typeof import("./index").AdminLedgerTransactionType
+type AdminLedgerTransactionTypeKey =
+  keyof typeof import("./index").AdminLedgerTransactionType
+type AdminLedgerTransactionType =
+  AdminLedgerTransactionTypeObject[AdminLedgerTransactionTypeKey]
+
 type LedgerTransactionTypeObject = typeof import("./index").LedgerTransactionType
 type LedgerTransactionTypeKey = keyof typeof import("./index").LedgerTransactionType
 type LedgerTransactionType = LedgerTransactionTypeObject[LedgerTransactionTypeKey]
@@ -55,6 +63,11 @@ type LedgerTransaction<S extends WalletCurrency> = {
   // for onchain
   readonly address?: OnChainAddress
   readonly txHash?: OnChainTxHash
+
+  // for admin, to be removed when we switch those to satsAmount props
+  readonly fee: number | undefined // Satoshis
+  readonly usd: number | undefined
+  readonly feeUsd: number | undefined
 }
 
 type LedgerTransactionWithMetadata<S extends WalletCurrency> = {

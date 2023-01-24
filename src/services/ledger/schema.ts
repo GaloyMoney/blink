@@ -113,6 +113,17 @@ const transactionSchema = new Schema<ILedgerTransaction>(
       type: Schema.Types.ObjectId,
       ref: "Medici_Journal",
     },
+
+    // FIXME: Admin-only, to be removed with satsAmount changes
+    fee: {
+      type: Number,
+      default: 0,
+    },
+    feeUsd: {
+      type: Number,
+      default: 0,
+    },
+    usd: Number,
   },
   { id: false, versionKey: false, timestamps: false },
 )
