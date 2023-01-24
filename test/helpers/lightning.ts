@@ -243,7 +243,7 @@ export const closeAllChannels = async ({ lnd }) => {
   }
 }
 
-export const setChannelFees = async ({ lnd, channel, base, rate }) => {
+export const setChannelFees = async ({ lnd, channel, base, rate }): Promise<boolean> => {
   const input = {
     fee_rate: rate,
     base_fee_mtokens: `${base * 1000}`,
@@ -262,9 +262,13 @@ export const setChannelFees = async ({ lnd, channel, base, rate }) => {
   })
 
   const sub = subscribeToGraph({ lnd })
-  await Promise.all([updateRoutingFeesPromise, once(sub, "channel_updated")])
+  const [updateFeesRes] = await Promise.all([
+    updateRoutingFeesPromise,
+    once(sub, "channel_updated"),
+  ])
 
   sub.removeAllListeners()
+  return updateFeesRes
 }
 
 export const mineBlockAndSync = async ({
