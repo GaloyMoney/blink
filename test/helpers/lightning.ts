@@ -243,7 +243,7 @@ export const closeAllChannels = async ({ lnd }) => {
   }
 }
 
-export const setChannelFees = async ({ lnd, channel, base, rate }): Promise<boolean> => {
+export const setChannelFees = async ({ lnd, channel, base, rate }) => {
   const input = {
     fee_rate: rate,
     base_fee_mtokens: `${base * 1000}`,
@@ -253,11 +253,14 @@ export const setChannelFees = async ({ lnd, channel, base, rate }): Promise<bool
 
   const updateRoutingFeesPromise = waitFor(async () => {
     try {
-      await updateRoutingFees({ lnd, ...input })
+      const { failures } = await updateRoutingFees({ lnd, ...input })
+      if (failures && failures.length) {
+        return failures[0].failure
+      }
       return true
     } catch (error) {
       baseLogger.warn({ error }, "updateRoutingFees failed. trying again.")
-      return false
+      return error
     }
   })
 

@@ -105,19 +105,30 @@ describe("Lightning channels", () => {
     expect(channels.some((e) => e.is_private)).toBe(true)
 
     // Set fee policy on lndOutside1 as routing node between lnd1 and lndOutside2
-    const setOnLndOutside1 = await setChannelFees({
-      lnd: lndOutside1,
-      channel,
-      base: 0,
-      rate: 5000,
-    })
+    let count = 0
+    let countMax = 3
+    let setOnLndOutside1
+    while (count < countMax && setOnLndOutside1 !== true) {
+      if (count > 0) await sleep(500)
+      count++
+
+      setOnLndOutside1 = await setChannelFees({
+        lnd: lndOutside1,
+        channel,
+        base: 0,
+        rate: 5000,
+      })
+    }
+    expect(count).toBeGreaterThan(0)
+    expect(count).toBeLessThan(countMax)
     expect(setOnLndOutside1).toBe(true)
 
     let policies
     let errMsg: string | undefined = "FullChannelDetailsNotFound"
-    let count = 0
+    count = 0
+    countMax = 8
     // Try to getChannel for up to 2 secs (250ms x 8)
-    while (count < 8 && errMsg === "FullChannelDetailsNotFound") {
+    while (count < countMax && errMsg === "FullChannelDetailsNotFound") {
       count++
       await sleep(250)
       try {
@@ -128,6 +139,7 @@ describe("Lightning channels", () => {
       }
     }
     expect(count).toBeGreaterThan(0)
+    expect(count).toBeLessThan(countMax)
     expect(errMsg).not.toBe("FullChannelDetailsNotFound")
     expect(policies && policies.length).toBeGreaterThan(0)
 
