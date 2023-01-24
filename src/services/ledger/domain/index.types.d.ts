@@ -90,9 +90,13 @@ type EntryBuilderCreditState<M extends MediciEntry> = {
 type EntryBuilderCredit<M extends MediciEntry> = {
   creditLnd: () => M
   creditColdStorage: () => M
-  creditAccount: <C extends WalletCurrency>(
-    accountDescriptor: LedgerAccountDescriptor<C>,
-  ) => M
+  creditAccount: <C extends WalletCurrency>({
+    accountDescriptor,
+    additionalMetadata,
+  }: {
+    accountDescriptor: LedgerAccountDescriptor<C>
+    additionalMetadata?: TxMetadata
+  }) => M
 }
 
 type BaseLedgerTransactionMetadata = {

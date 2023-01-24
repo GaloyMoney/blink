@@ -176,7 +176,9 @@ describe("EntryBuilder", () => {
           .withTotalAmount(amount)
           .withBankFee(ZERO_BANK_FEE)
           .debitLnd()
-          .creditAccount(btcCreditorAccountDescriptor)
+          .creditAccount({
+            accountDescriptor: btcCreditorAccountDescriptor,
+          })
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
@@ -197,7 +199,9 @@ describe("EntryBuilder", () => {
           .withTotalAmount(amount)
           .withBankFee(bankFee)
           .debitLnd()
-          .creditAccount(btcCreditorAccountDescriptor)
+          .creditAccount({
+            accountDescriptor: btcCreditorAccountDescriptor,
+          })
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
@@ -312,7 +316,9 @@ describe("EntryBuilder", () => {
             .withTotalAmount(amount)
             .withBankFee(ZERO_BANK_FEE)
             .debitLnd()
-            .creditAccount(usdCreditorAccountDescriptor)
+            .creditAccount({
+              accountDescriptor: usdCreditorAccountDescriptor,
+            })
 
           const credits = result.transactions.filter((t) => t.credit > 0)
           const debits = result.transactions.filter((t) => t.debit > 0)
@@ -363,7 +369,9 @@ describe("EntryBuilder", () => {
             .withTotalAmount(amount)
             .withBankFee(ZERO_BANK_FEE)
             .debitLnd()
-            .creditAccount(usdCreditorAccountDescriptor)
+            .creditAccount({
+              accountDescriptor: usdCreditorAccountDescriptor,
+            })
 
           const credits = result.transactions.filter((t) => t.credit > 0)
           const debits = result.transactions.filter((t) => t.debit > 0)
@@ -397,7 +405,9 @@ describe("EntryBuilder", () => {
           .withTotalAmount(amount)
           .withBankFee(bankFee)
           .debitLnd()
-          .creditAccount(usdCreditorAccountDescriptor)
+          .creditAccount({
+            accountDescriptor: usdCreditorAccountDescriptor,
+          })
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
@@ -441,7 +451,9 @@ describe("EntryBuilder", () => {
           .debitAccount({
             accountDescriptor: btcDebitorAccountDescriptor,
           })
-          .creditAccount(btcCreditorAccountDescriptor)
+          .creditAccount({
+            accountDescriptor: btcCreditorAccountDescriptor,
+          })
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
@@ -462,7 +474,9 @@ describe("EntryBuilder", () => {
           .debitAccount({
             accountDescriptor: btcDebitorAccountDescriptor,
           })
-          .creditAccount(usdCreditorAccountDescriptor)
+          .creditAccount({
+            accountDescriptor: usdCreditorAccountDescriptor,
+          })
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
@@ -500,7 +514,9 @@ describe("EntryBuilder", () => {
           .debitAccount({
             accountDescriptor: usdDebitorAccountDescriptor,
           })
-          .creditAccount(btcCreditorAccountDescriptor)
+          .creditAccount({
+            accountDescriptor: btcCreditorAccountDescriptor,
+          })
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
@@ -537,7 +553,9 @@ describe("EntryBuilder", () => {
           .debitAccount({
             accountDescriptor: usdDebitorAccountDescriptor,
           })
-          .creditAccount(usdCreditorAccountDescriptor)
+          .creditAccount({
+            accountDescriptor: usdCreditorAccountDescriptor,
+          })
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)

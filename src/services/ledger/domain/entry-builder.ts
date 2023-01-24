@@ -135,12 +135,22 @@ const EntryBuilderCredit = <M extends MediciEntry>({
   debitCurrency,
   staticAccountIds,
 }: EntryBuilderCreditState<M>): EntryBuilderCredit<M> => {
-  const creditLnd = () => creditAccount(lndLedgerAccountDescriptor)
-  const creditColdStorage = () => creditAccount(coldStorageAccountDescriptor)
+  const creditLnd = () =>
+    creditAccount({
+      accountDescriptor: lndLedgerAccountDescriptor,
+    })
+  const creditColdStorage = () =>
+    creditAccount({
+      accountDescriptor: coldStorageAccountDescriptor,
+    })
 
-  const creditAccount = <T extends WalletCurrency>(
-    accountDescriptor: LedgerAccountDescriptor<T>,
-  ) => {
+  const creditAccount = <T extends WalletCurrency>({
+    accountDescriptor,
+    additionalMetadata,
+  }: {
+    accountDescriptor: LedgerAccountDescriptor<T>
+    additionalMetadata?: TxMetadata
+  }) => {
     let entryToReturn = entry
     const usdWithOutFee = calc.sub(usdWithFees, usdBankFee)
     const btcWithOutFee = calc.sub(btcWithFees, btcBankFee)
@@ -188,8 +198,12 @@ const EntryBuilderCredit = <M extends MediciEntry>({
     const creditAmount =
       accountDescriptor.currency === WalletCurrency.Usd ? usdWithOutFee : btcWithOutFee
 
+    const creditMetadata = additionalMetadata
+      ? { ...metadata, ...additionalMetadata }
+      : metadata
+
     entryToReturn.credit(accountDescriptor.id, Number(creditAmount.amount), {
-      ...metadata,
+      ...creditMetadata,
       currency: creditAmount.currency,
     })
 

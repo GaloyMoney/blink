@@ -322,6 +322,7 @@ const executePaymentViaIntraledger = async <
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
+      additionalCreditMetadata: {},
     })
     if (journal instanceof Error) return journal
 

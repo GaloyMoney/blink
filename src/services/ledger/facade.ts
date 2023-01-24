@@ -86,7 +86,9 @@ export const recordReceive = async ({
     .withTotalAmount(amountWithFees)
     .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
     .debitLnd()
-    .creditAccount(toLedgerAccountDescriptor(recipientWalletDescriptor))
+    .creditAccount({
+      accountDescriptor: toLedgerAccountDescriptor(recipientWalletDescriptor),
+    })
 
   return persistAndReturnEntry({ entry, ...txMetadata })
 }
@@ -111,7 +113,8 @@ export const recordIntraledger = async ({
   recipientWalletDescriptor,
   amount,
   metadata,
-  additionalDebitMetadata: additionalMetadata,
+  additionalDebitMetadata,
+  additionalCreditMetadata,
 }: RecordIntraledgerArgs) => {
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
@@ -125,9 +128,12 @@ export const recordIntraledger = async ({
     .withBankFee(ZERO_BANK_FEE)
     .debitAccount({
       accountDescriptor: toLedgerAccountDescriptor(senderWalletDescriptor),
-      additionalMetadata,
+      additionalMetadata: additionalDebitMetadata,
     })
-    .creditAccount(toLedgerAccountDescriptor(recipientWalletDescriptor))
+    .creditAccount({
+      accountDescriptor: toLedgerAccountDescriptor(recipientWalletDescriptor),
+      additionalMetadata: additionalCreditMetadata,
+    })
 
   return persistAndReturnEntry({
     entry,
