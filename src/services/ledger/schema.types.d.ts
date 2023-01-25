@@ -20,14 +20,11 @@ interface ILedgerTransaction {
   pending: boolean
   err?: string
   currency: WalletCurrency
-  fee: number
   feeKnownInAdvance?: boolean
   related_journal?: ObjectId
   payee_addresses?: string[]
   memoPayer?: string
-  usd?: number
   sats?: number
-  feeUsd?: number
   username?: string
   pubkey?: string
 
@@ -38,6 +35,11 @@ interface ILedgerTransaction {
   displayAmount: number
   displayFee: number
   displayCurrency: string
+
+  // FIXME: Admin-only, to be removed with satsAmount changes
+  fee?: number
+  usd?: number
+  feeUsd?: number
 }
 
 interface TransactionMetadataRecord {

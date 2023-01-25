@@ -43,11 +43,6 @@ const transactionSchema = new Schema<ILedgerTransaction>(
       required: true,
     },
 
-    fee: {
-      type: Number,
-      default: 0,
-    },
-
     // for fee updated
     feeKnownInAdvance: {
       type: Boolean,
@@ -59,16 +54,7 @@ const transactionSchema = new Schema<ILedgerTransaction>(
 
     memoPayer: String,
 
-    // not used for accounting but used for usd/sats equivalent
-    usd: Number, // TODO: should be renamed to amountDisplayCurrency
-
     sats: Number, // TODO: should be removed?
-
-    feeUsd: {
-      // TODO: should be renamed feeDisplayCurrency
-      type: Number,
-      default: 0,
-    },
 
     satsAmount: Number,
     centsAmount: Number,
@@ -127,6 +113,17 @@ const transactionSchema = new Schema<ILedgerTransaction>(
       type: Schema.Types.ObjectId,
       ref: "Medici_Journal",
     },
+
+    // FIXME: Admin-only, to be removed with satsAmount changes
+    fee: {
+      type: Number,
+      default: 0,
+    },
+    feeUsd: {
+      type: Number,
+      default: 0,
+    },
+    usd: Number,
   },
   { id: false, versionKey: false, timestamps: false },
 )

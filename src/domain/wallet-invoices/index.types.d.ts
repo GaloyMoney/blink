@@ -99,7 +99,7 @@ type WalletAddressReceiver = {
 
 type WalletReceiverArgs = {
   receivedBtc: BtcPaymentAmount
-  feeBtc?: BtcPaymentAmount
+  satsFee?: BtcPaymentAmount
   usdFromBtc(
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>

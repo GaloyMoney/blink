@@ -199,10 +199,6 @@ describe("UserWallet - Lightning", () => {
       debit: 0,
       credit: sats,
 
-      fee: 0,
-      feeUsd: 0,
-      usd: Number((centsAmount / 100).toFixed(2)),
-
       satsAmount: sats,
       satsFee: 0,
       centsAmount,
@@ -435,7 +431,7 @@ describe("UserWallet - Lightning", () => {
     if (ledgerTx === undefined) throw Error("ledgerTx needs to be defined")
 
     expect(ledgerTx.credit).toBe(cents)
-    expect(ledgerTx.usd).toBe(cents / 100)
+    expect(ledgerTx.centsAmount).toBe(cents)
     expect(ledgerTx.currency).toBe(WalletCurrency.Usd)
     expect(ledgerTx.lnMemo).toBe(memo)
     expect(ledgerTx.pendingConfirmation).toBe(false)
@@ -466,10 +462,6 @@ describe("UserWallet - Lightning", () => {
 
       debit: 0,
       credit: cents,
-
-      fee: 0,
-      feeUsd: 0,
-      usd: Number((cents / 100).toFixed(2)),
 
       satsAmount: sats,
       satsFee: 0,
@@ -533,7 +525,7 @@ describe("UserWallet - Lightning", () => {
     const cents = Number(usdAmount.amount)
 
     expect(ledgerTx.credit).toBe(cents)
-    expect(ledgerTx.usd).toBe(cents / 100)
+    expect(ledgerTx.centsAmount).toBe(cents)
     expect(ledgerTx.currency).toBe(WalletCurrency.Usd)
     expect(ledgerTx.lnMemo).toBe(memo)
     expect(ledgerTx.pendingConfirmation).toBe(false)

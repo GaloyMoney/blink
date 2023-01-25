@@ -280,10 +280,6 @@ describe("UserWallet - Lightning Pay", () => {
       debit: satsAmount,
       credit: 0,
 
-      fee: 0,
-      feeUsd: 0,
-      usd: Number((centsAmount / 100).toFixed(2)),
-
       satsAmount,
       satsFee: 0,
       centsAmount,
@@ -525,9 +521,6 @@ describe("UserWallet - Lightning Pay", () => {
     if (!txnPayment?.satsFee) throw new Error("satsFee missing from payment")
     expect(amountInvoice).toEqual(txnPayment.satsAmount)
     expect(Number(usdPaymentAmount.amount)).toEqual(txnPayment.centsAmount)
-    expect(txnPayment.usd).toEqual(
-      Number(((txnPayment.centsAmount + txnPayment.centsFee) / 100).toFixed(2)),
-    )
 
     const priceRatio = PriceRatio({
       usd: usdPaymentAmount,
@@ -550,10 +543,6 @@ describe("UserWallet - Lightning Pay", () => {
       debit: amountInvoice + satsFee,
       credit: 0,
 
-      fee: satsFee,
-      feeUsd: centsFee / 100,
-      usd: (cents + centsFee) / 100,
-
       satsAmount: amountInvoice,
       satsFee,
       centsAmount: cents,
@@ -575,10 +564,6 @@ describe("UserWallet - Lightning Pay", () => {
       expect.objectContaining({
         debit: 0,
         credit: toSats(feeAmountSats.amount),
-
-        fee: 0,
-        feeUsd: 0,
-        usd: centsFee / 100,
 
         satsAmount: toSats(feeAmountSats.amount),
         satsFee: 0,
@@ -1598,9 +1583,6 @@ describe("USD Wallets - Lightning Pay", () => {
       if (!txnPayment?.satsFee) throw new Error("satsFee missing from payment")
       expect(amountPayment).toEqual(txnPayment.satsAmount)
       expect(cents).toEqual(txnPayment.centsAmount)
-      expect(txnPayment.usd).toEqual(
-        Number(((txnPayment.centsAmount + txnPayment.centsFee) / 100).toFixed(2)),
-      )
 
       const priceRatio = PriceRatio({
         usd: { amount: BigInt(cents), currency: WalletCurrency.Usd },
@@ -1616,10 +1598,6 @@ describe("USD Wallets - Lightning Pay", () => {
 
         debit: cents + centsFee,
         credit: 0,
-
-        fee: satsFee,
-        feeUsd: centsFee / 100,
-        usd: (cents + centsFee) / 100,
 
         satsAmount: amountPayment,
         satsFee,
@@ -2185,10 +2163,6 @@ describe("USD Wallets - Lightning Pay", () => {
 
         debit,
         credit: 0,
-
-        fee: 0,
-        feeUsd: 0,
-        usd: Number((centsAmount / 100).toFixed(2)),
 
         satsAmount,
         satsFee: 0,

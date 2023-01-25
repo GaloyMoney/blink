@@ -72,12 +72,6 @@ describe("Facade", () => {
       debit,
       credit,
 
-      fee: satsFee,
-      feeUsd: Number((centsFee / 100).toFixed(2)),
-      usd: isSend
-        ? Number(((centsAmount + centsFee) / 100).toFixed(2))
-        : Number((centsAmount / 100).toFixed(2)),
-
       satsAmount,
       centsAmount,
       displayAmount: centsAmount,

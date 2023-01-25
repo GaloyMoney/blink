@@ -186,12 +186,12 @@ describe("UserWallet - getOnchainFee", () => {
       const withdrawFeeAsUsd = Number(usdAmount.amount)
       expect(fee).toBeGreaterThan(withdrawFeeAsUsd)
 
-      const feeUsdAmount = await dealerFns.getCentsFromSatsForImmediateSell({
+      const centsFeeAmount = await dealerFns.getCentsFromSatsForImmediateSell({
         amount: BigInt(feeSats),
         currency: WalletCurrency.Btc,
       })
-      if (feeUsdAmount instanceof Error) throw feeUsdAmount
-      const expectedFee = Number(feeUsdAmount.amount)
+      if (centsFeeAmount instanceof Error) throw centsFeeAmount
+      const expectedFee = Number(centsFeeAmount.amount)
       expect(expectedFee).toEqual(fee)
     })
 

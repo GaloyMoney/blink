@@ -361,10 +361,6 @@ const testExternalSend = async ({
         debit,
         credit: 0,
 
-        fee: satsFee,
-        feeUsd: Number((centsFee / 100).toFixed(2)),
-        usd: Number(((centsAmount + centsFee) / 100).toFixed(2)),
-
         satsAmount,
         satsFee,
         centsAmount,
@@ -632,10 +628,6 @@ const testInternalSend = async ({
 
     debit,
     credit: 0,
-
-    fee: satsFee,
-    feeUsd: Number((centsFee / 100).toFixed(2)),
-    usd: Number(((centsAmount + centsFee) / 100).toFixed(2)),
 
     satsAmount,
     satsFee,

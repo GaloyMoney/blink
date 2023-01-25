@@ -407,9 +407,6 @@ export const translateToLedgerTx = (
   type: tx.type,
   debit: toSats(tx.debit),
   credit: toSats(tx.credit),
-  fee: toSats(tx.fee || 0),
-  usd: tx.usd || 0,
-  feeUsd: tx.feeUsd || 0,
   currency: tx.currency,
   timestamp: tx.timestamp,
   pendingConfirmation: tx.pending,
@@ -442,6 +439,10 @@ export const translateToLedgerTx = (
     tx.displayCurrency !== undefined
       ? (tx.displayCurrency as DisplayCurrency)
       : undefined,
+
+  fee: tx.fee,
+  usd: tx.usd,
+  feeUsd: tx.feeUsd,
 })
 
 // @ts-ignore-next-line no-implicit-any error

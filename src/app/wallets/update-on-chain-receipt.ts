@@ -153,11 +153,11 @@ const processTxForWallet = async (
           })
           if (receivedBtc instanceof Error) return receivedBtc
 
-          const feeBtc = paymentAmountFromNumber({
+          const satsFee = paymentAmountFromNumber({
             amount: fee,
             currency: WalletCurrency.Btc,
           })
-          if (feeBtc instanceof Error) return feeBtc
+          if (satsFee instanceof Error) return satsFee
 
           const walletAddressReceiver = await WalletAddressReceiver({
             walletAddress: {
@@ -165,7 +165,7 @@ const processTxForWallet = async (
               recipientWalletDescriptor: wallet,
             },
             receivedBtc,
-            feeBtc,
+            satsFee,
             usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
             usdFromBtcMidPrice: usdFromBtcMidPriceFn,
           })

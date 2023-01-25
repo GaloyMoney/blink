@@ -48,19 +48,13 @@ type LedgerMetadata = {
   pending: boolean
 }
 
-type NonIntraledgerLedgerMetadata = LedgerMetadata & {
-  usd: number // to be removed when "centAmount" takes over
-  fee: Satoshis
-  feeUsd: number // to be removed when "centFee" takes over
-}
-
-type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata &
+type LnReceiveLedgerMetadata = LedgerMetadata &
   SendAmountsMetadata & {
     hash: PaymentHash
     pubkey: Pubkey
   }
 
-type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata &
+type OnChainReceiveLedgerMetadata = LedgerMetadata &
   SendAmountsMetadata & {
     hash: OnChainTxHash
     payee_addresses: OnChainAddress[]
@@ -77,19 +71,25 @@ type SendAmountsMetadata = {
   displayCurrency: DisplayCurrency
 }
 
-type AddLnSendLedgerMetadata = NonIntraledgerLedgerMetadata &
+type AddLnSendLedgerMetadata = LedgerMetadata &
   SendAmountsMetadata & {
     hash: PaymentHash
     pubkey: Pubkey
     feeKnownInAdvance: boolean
   }
 
-type AddOnchainSendLedgerMetadata = NonIntraledgerLedgerMetadata &
+type AddOnchainSendLedgerMetadata = LedgerMetadata &
   SendAmountsMetadata & {
     hash: OnChainTxHash
     payee_addresses: OnChainAddress[]
     sendAll: boolean
   }
+
+type NonIntraledgerLedgerMetadata = LedgerMetadata & {
+  usd: number // to be removed when "centAmount" takes over
+  fee: Satoshis
+  feeUsd: number // to be removed when "centFee" takes over
+}
 
 type AddColdStorageLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: OnChainTxHash

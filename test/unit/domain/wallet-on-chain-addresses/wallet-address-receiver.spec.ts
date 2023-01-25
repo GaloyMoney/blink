@@ -23,7 +23,7 @@ describe("WalletAddressReceiver", () => {
   }
 
   const receivedBtc = BtcPaymentAmount(1200n)
-  const feeBtc = BtcPaymentAmount(200n)
+  const satsFee = BtcPaymentAmount(200n)
   const recipientBtcWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Btc,
@@ -45,7 +45,7 @@ describe("WalletAddressReceiver", () => {
       const walletAddressAmounts = await WalletAddressReceiver({
         walletAddress: btcWalletAddress,
         receivedBtc,
-        feeBtc,
+        satsFee,
         usdFromBtcMidPrice,
         usdFromBtc,
       })
@@ -57,14 +57,14 @@ describe("WalletAddressReceiver", () => {
 
       const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
       if (priceRatio instanceof Error) throw priceRatio
-      const feeUsd = priceRatio.convertFromBtcToCeil(feeBtc)
+      const centsFee = priceRatio.convertFromBtcToCeil(satsFee)
 
       expect(walletAddressAmounts).toEqual(
         expect.objectContaining({
-          usdBankFee: feeUsd,
-          btcBankFee: feeBtc,
-          usdToCreditReceiver: calc.sub(receivedUsd, feeUsd),
-          btcToCreditReceiver: calc.sub(receivedBtc, feeBtc),
+          usdBankFee: centsFee,
+          btcBankFee: satsFee,
+          usdToCreditReceiver: calc.sub(receivedUsd, centsFee),
+          btcToCreditReceiver: calc.sub(receivedBtc, satsFee),
         }),
       )
     })
@@ -80,7 +80,7 @@ describe("WalletAddressReceiver", () => {
       const walletAddressAmounts = await WalletAddressReceiver({
         walletAddress: usdWalletAddress,
         receivedBtc,
-        feeBtc,
+        satsFee,
         usdFromBtcMidPrice,
         usdFromBtc,
       })
@@ -92,14 +92,14 @@ describe("WalletAddressReceiver", () => {
 
       const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
       if (priceRatio instanceof Error) throw priceRatio
-      const feeUsd = priceRatio.convertFromBtcToCeil(feeBtc)
+      const centsFee = priceRatio.convertFromBtcToCeil(satsFee)
 
       expect(walletAddressAmounts).toEqual(
         expect.objectContaining({
-          usdBankFee: feeUsd,
-          btcBankFee: feeBtc,
-          usdToCreditReceiver: calc.sub(receivedUsd, feeUsd),
-          btcToCreditReceiver: calc.sub(receivedBtc, feeBtc),
+          usdBankFee: centsFee,
+          btcBankFee: satsFee,
+          usdToCreditReceiver: calc.sub(receivedUsd, centsFee),
+          btcToCreditReceiver: calc.sub(receivedBtc, satsFee),
         }),
       )
     })

@@ -11,13 +11,15 @@ import { toCents } from "@domain/fiat"
 
 describe("translates ledger txs to wallet txs", () => {
   const timestamp = new Date(Date.now())
-  const fee = toSats(2)
-  const feeUsd = 0.1
+  const satsFee = toSats(2)
+  const centsFee = toCents(10)
+  const displayFee = 10 as DisplayCurrencyBaseAmount
 
   const baseLedgerTransaction = {
     id: "id" as LedgerTransactionId,
-    fee,
-    feeUsd,
+    satsFee,
+    centsFee,
+    displayFee,
     pendingConfirmation: false,
     journalId: "journalId" as LedgerJournalId,
     timestamp,
@@ -33,15 +35,25 @@ describe("translates ledger txs to wallet txs", () => {
   const ledgerTxnsInputs = ({
     walletId,
     settlementAmount,
-    usd,
+    centsAmount,
     currency,
   }: {
     walletId: WalletId
     settlementAmount: Satoshis | UsdCents
-    usd: number
+    centsAmount: UsdCents
     currency: WalletCurrency
   }): LedgerTransaction<WalletCurrency>[] => {
-    const currencyBaseLedgerTxns = { ...baseLedgerTransaction, walletId, usd, currency }
+    const currencyBaseLedgerTxns = {
+      ...baseLedgerTransaction,
+      walletId,
+      centsAmount,
+      displayAmount: centsAmount as unknown as DisplayCurrencyBaseAmount,
+      currency,
+
+      fee: undefined,
+      feeUsd: undefined,
+      usd: undefined,
+    }
 
     return [
       {
@@ -94,17 +106,18 @@ describe("translates ledger txs to wallet txs", () => {
   const expectedWalletTxns = ({
     walletId,
     settlementAmount,
-    usd,
+    centsAmount,
     currency,
   }: {
     walletId: WalletId
     settlementAmount: Satoshis | UsdCents
-    usd: number
+    centsAmount: UsdCents
     currency: WalletCurrency
   }): WalletTransaction[] => {
-    const settlementFee =
-      currency === WalletCurrency.Btc ? toSats(fee) : toCents(Math.floor(feeUsd * 100))
-    const displayCurrencyPerSettlementCurrencyUnit = Math.abs(usd / settlementAmount)
+    const settlementFee = currency === WalletCurrency.Btc ? satsFee : centsFee
+    const displayCurrencyPerSettlementCurrencyUnit = Math.abs(
+      centsAmount / 100 / settlementAmount,
+    )
 
     if (currency === WalletCurrency.Usd) {
       expect(displayCurrencyPerSettlementCurrencyUnit).toEqual(0.01)
@@ -181,13 +194,15 @@ describe("translates ledger txs to wallet txs", () => {
     it("translates btc ledger txs", () => {
       const currency = WalletCurrency.Btc
       const settlementAmount = toSats(100000)
-      const usd = 20
+      const centsAmount = toCents(2000)
 
       const txnsArgs = {
         walletId: crypto.randomUUID() as WalletId,
         settlementAmount,
-        usd,
-        feeUsd,
+        centsAmount,
+        centsFee,
+        displayAmount: centsAmount,
+        displayFee: centsFee,
         currency,
       }
 
@@ -201,13 +216,15 @@ describe("translates ledger txs to wallet txs", () => {
     it("translates usd ledger txs", () => {
       const currency = WalletCurrency.Usd
       const settlementAmount = toCents(2000)
-      const usd = 20
+      const centsAmount = settlementAmount
 
       const txnsArgs = {
         walletId: crypto.randomUUID() as WalletId,
         settlementAmount,
-        usd,
-        feeUsd,
+        centsAmount,
+        centsFee,
+        displayAmount: centsAmount,
+        displayFee: centsFee,
         currency,
       }
 
@@ -223,13 +240,15 @@ describe("translates ledger txs to wallet txs", () => {
     it("translates btc ledger txs", () => {
       const currency = WalletCurrency.Btc
       const settlementAmount = toSats(100000)
-      const usd = 20
+      const centsAmount = toCents(2000)
 
       const txnsArgs = {
         walletId: crypto.randomUUID() as WalletId,
         settlementAmount,
-        usd,
-        feeUsd,
+        centsAmount,
+        centsFee,
+        displayAmount: centsAmount,
+        displayFee: centsFee,
         currency,
       }
 
@@ -273,13 +292,15 @@ describe("translates ledger txs to wallet txs", () => {
     it("translates usd ledger txs", () => {
       const currency = WalletCurrency.Usd
       const settlementAmount = toCents(2000)
-      const usd = 20
+      const centsAmount = settlementAmount
 
       const txnsArgs = {
         walletId: crypto.randomUUID() as WalletId,
         settlementAmount,
-        usd,
-        feeUsd,
+        centsAmount,
+        centsFee,
+        displayAmount: centsAmount,
+        displayFee: centsFee,
         currency,
       }
 

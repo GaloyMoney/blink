@@ -6,7 +6,7 @@ const calc = AmountCalculator()
 export const WalletInvoiceReceiver = async ({
   walletInvoice,
   receivedBtc,
-  feeBtc = ZERO_BANK_FEE.btcBankFee,
+  satsFee = ZERO_BANK_FEE.btcBankFee,
   usdFromBtc,
   usdFromBtcMidPrice,
 }: WalletInvoiceReceiverArgs): Promise<
@@ -19,7 +19,7 @@ export const WalletInvoiceReceiver = async ({
     const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
     if (priceRatio instanceof Error) return priceRatio
 
-    const btcBankFee = feeBtc
+    const btcBankFee = satsFee
     const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
     return {
@@ -40,7 +40,7 @@ export const WalletInvoiceReceiver = async ({
     const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
     if (priceRatio instanceof Error) return priceRatio
 
-    const btcBankFee = feeBtc
+    const btcBankFee = satsFee
     const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
     return {
@@ -61,7 +61,7 @@ export const WalletInvoiceReceiver = async ({
   const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
   if (priceRatio instanceof Error) return priceRatio
 
-  const btcBankFee = feeBtc
+  const btcBankFee = satsFee
   const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
   return {

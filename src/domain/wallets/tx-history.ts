@@ -7,7 +7,7 @@ import {
 import { toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
-import { LedgerTransactionType } from "@domain/ledger"
+import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
 
 import { TxStatus } from "./tx-status"
 import { DepositFeeCalculator } from "./deposit-fee-calculator"
@@ -60,13 +60,51 @@ const filterPendingIncoming = ({
 const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   txn: LedgerTransaction<S>,
 ) => {
-  const { credit, debit, currency, fee, feeUsd, lnMemo, memoFromPayer } = txn
+  const {
+    type,
+    credit,
+    debit,
+    currency,
+    satsFee: satsFeeRaw,
+    centsFee: centsFeeRaw,
+    displayAmount: displayAmountRaw,
+    displayFee: displayFeeRaw,
+    lnMemo,
+    memoFromPayer,
+  } = txn
+
+  const isAdmin = Object.values(AdminLedgerTransactionType).includes(
+    type as AdminLedgerTransactionType,
+  )
+
+  let displayAmount: number
+  let displayFee: number
+  let satsFee: number
+  let centsFee: number
+  // Temp admin checks, to be removed when usd/feeUsd/fee fields are deprecated
+  if (isAdmin) {
+    displayAmount = txn.usd ? Math.round(txn.usd * 100) : 0
+    displayFee = txn.feeUsd ? Math.round(txn.feeUsd * 100) : 0
+    satsFee = txn.fee || 0
+    centsFee = displayFee
+  } else {
+    displayAmount = displayAmountRaw || 0
+    displayFee = displayFeeRaw || 0
+    satsFee = satsFeeRaw || 0
+    centsFee = centsFeeRaw || 0
+  }
+
   const settlementAmount =
     currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
   const settlementFee =
-    currency === WalletCurrency.Btc
-      ? toSats(fee || 0)
-      : toCents(feeUsd ? Math.floor(feeUsd * 100) : 0)
+    currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee)
+
+  // 'displayAmount' is before fees. For total amount:
+  // - send: displayAmount + displayFee
+  // - recv: displayAmount
+  const isSend = settlementAmount < 0
+  const displayAmountAsNumber =
+    isSend && !isAdmin ? displayAmount + displayFee : displayAmount
 
   const memo = translateMemo({
     memoFromPayer,
@@ -84,7 +122,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
     settlementFee,
     settlementCurrency: txn.currency,
     displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
-      displayAmountAsNumber: txn.usd,
+      displayAmountAsNumber,
       settlementAmountInBaseAsNumber: settlementAmount,
     }),
     status,
@@ -312,12 +350,14 @@ export const WalletTransactionHistory = {
 // TODO: refactor this to use PriceRatio eventually instead after
 // 'usd' property removal from db
 const displayCurrencyPerBaseUnitFromAmounts = ({
-  displayAmountAsNumber,
+  displayAmountAsNumber: displayAmountMinorUnit,
   settlementAmountInBaseAsNumber,
 }: {
   displayAmountAsNumber: number
   settlementAmountInBaseAsNumber: number
-}): number =>
-  settlementAmountInBaseAsNumber === 0
+}): number => {
+  const displayAmountMajorUnit = Number((displayAmountMinorUnit / 100).toFixed(2))
+  return settlementAmountInBaseAsNumber === 0
     ? 0
-    : Math.abs(displayAmountAsNumber / settlementAmountInBaseAsNumber)
+    : Math.abs(displayAmountMajorUnit / settlementAmountInBaseAsNumber)
+}
