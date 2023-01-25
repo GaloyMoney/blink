@@ -34,7 +34,8 @@ const deleteUserIfNew = async ({
   }
 
   const identityRepo = IdentityRepository()
-  await identityRepo.deleteIdentity(kratosUserId)
+  const deletionResult = await identityRepo.deleteIdentity(kratosUserId)
+  if (deletionResult instanceof Error) return deletionResult
 
   const usersRepo = UsersRepository()
   const result = await usersRepo.adminUnsetPhoneForUserPreservation(kratosUserId)
