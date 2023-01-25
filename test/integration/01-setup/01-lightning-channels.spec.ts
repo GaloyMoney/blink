@@ -1,9 +1,11 @@
 import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
 import { ledgerAdmin } from "@services/mongodb"
+import { sleep } from "@utils"
 
 import {
   checkIsBalanced,
   closeChannel,
+  getChannel,
   getChannels,
   lnd1,
   lnd2,
@@ -102,8 +104,49 @@ describe("Lightning channels", () => {
     expect(channels.length).toEqual(channelLengthOutside1 + 1)
     expect(channels.some((e) => e.is_private)).toBe(true)
 
-    await setChannelFees({ lnd: lndOutside1, channel, base: 0, rate: 5000 })
-    await setChannelFees({ lnd: lndOutside2, channel, base: 0, rate: 5000 })
+    // Set fee policy on lndOutside1 as routing node between lnd1 and lndOutside2
+    let count = 0
+    let countMax = 3
+    let setOnLndOutside1
+    while (count < countMax && setOnLndOutside1 !== true) {
+      if (count > 0) await sleep(500)
+      count++
+
+      setOnLndOutside1 = await setChannelFees({
+        lnd: lndOutside1,
+        channel,
+        base: 0,
+        rate: 5000,
+      })
+    }
+    expect(count).toBeGreaterThan(0)
+    expect(count).toBeLessThan(countMax)
+    expect(setOnLndOutside1).toBe(true)
+
+    let policies
+    let errMsg: string | undefined = "FullChannelDetailsNotFound"
+    count = 0
+    countMax = 8
+    // Try to getChannel for up to 2 secs (250ms x 8)
+    while (count < countMax && errMsg === "FullChannelDetailsNotFound") {
+      count++
+      await sleep(250)
+      try {
+        ;({ policies } = await getChannel({ id: channel.id, lnd: lndOutside1 }))
+        errMsg = undefined
+      } catch (err) {
+        errMsg = err[1]
+      }
+    }
+    expect(count).toBeGreaterThan(0)
+    expect(count).toBeLessThan(countMax)
+    expect(errMsg).not.toBe("FullChannelDetailsNotFound")
+    expect(policies && policies.length).toBeGreaterThan(0)
+
+    const { base_fee_mtokens, fee_rate, public_key } = policies[0]
+    expect(public_key).toBe(process.env.LND_OUTSIDE_1_PUBKEY)
+    expect(base_fee_mtokens).toBe("0")
+    expect(fee_rate).toEqual(5000)
   })
 
   // FIXME: we need a way to calculate the closing fee

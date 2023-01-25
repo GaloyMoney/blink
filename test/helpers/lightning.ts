@@ -253,18 +253,25 @@ export const setChannelFees = async ({ lnd, channel, base, rate }) => {
 
   const updateRoutingFeesPromise = waitFor(async () => {
     try {
-      await updateRoutingFees({ lnd, ...input })
+      const { failures } = await updateRoutingFees({ lnd, ...input })
+      if (failures && failures.length) {
+        return failures[0].failure
+      }
       return true
     } catch (error) {
       baseLogger.warn({ error }, "updateRoutingFees failed. trying again.")
-      return false
+      return error
     }
   })
 
   const sub = subscribeToGraph({ lnd })
-  await Promise.all([updateRoutingFeesPromise, once(sub, "channel_updated")])
+  const [updateFeesRes] = await Promise.all([
+    updateRoutingFeesPromise,
+    once(sub, "channel_updated"),
+  ])
 
   sub.removeAllListeners()
+  return updateFeesRes
 }
 
 export const mineBlockAndSync = async ({

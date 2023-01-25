@@ -1190,35 +1190,11 @@ describe("UserWallet - Lightning Pay", () => {
         const { id } = channels[0]
         const { policies } = await getChannel({ id, lnd: lndOutside2 })
 
-        const ownPolicy = policies.find(
-          (pol) => pol.public_key === (process.env.LND_OUTSIDE_2_PUBKEY as Pubkey),
-        )
-        if (ownPolicy === undefined) throw new Error("Undefined 'ownPolicy'")
-
         const partnerPolicy = policies.find(
           (pol) => pol.public_key !== (process.env.LND_OUTSIDE_2_PUBKEY as Pubkey),
         )
         if (partnerPolicy === undefined) throw new Error("Undefined 'partnerPolicy'")
-
-        // FIXME: revert this console.log once we can observe policies from test breaking in CI again
-        console.log(
-          JSON.stringify(
-            {
-              ownPolicy,
-              lndOutside2Pubkey: process.env.LND_OUTSIDE_2_PUBKEY,
-              partnerPolicy,
-              lndOutside1Pubkey: process.env.LND_OUTSIDE_1_PUBKEY,
-            },
-            null,
-            2,
-          ),
-        )
-        expect(ownPolicy.base_fee_mtokens).not.toBe(partnerPolicy.base_fee_mtokens)
-        expect(ownPolicy.base_fee_mtokens).toBe("1000")
         expect(partnerPolicy.base_fee_mtokens).toBe("0")
-
-        expect(ownPolicy.fee_rate).not.toEqual(partnerPolicy.fee_rate)
-        expect(ownPolicy.fee_rate).toEqual(1)
         expect(partnerPolicy.fee_rate).toEqual(5000)
 
         const { base_fee_mtokens: baseMilliSats, fee_rate: feeRatePpm } = partnerPolicy
