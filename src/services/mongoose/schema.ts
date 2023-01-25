@@ -285,6 +285,8 @@ const AccountSchema = new Schema<AccountRecord>(
       type: String,
       index: true,
     },
+
+    displayCurrency: String, // FIXME: should be an enum
   },
   { id: false },
 )
