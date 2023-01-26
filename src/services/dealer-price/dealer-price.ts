@@ -16,6 +16,8 @@ import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
 import { toPriceRatio } from "@domain/payments"
 
+import { wrapToAddAttributes } from "@services/tracing"
+
 import { baseLogger } from "../logger"
 
 import { PriceServiceClient } from "./proto/services/price/v1/price_service_grpc_pb"
@@ -250,21 +252,24 @@ export const DealerPriceService = (
     }
   }
 
-  return {
-    getCentsFromSatsForImmediateBuy,
-    getCentsFromSatsForImmediateSell,
+  return wrapToAddAttributes({
+    attributes: { ["slo.dealerCalled"]: "true" },
+    fns: {
+      getCentsFromSatsForImmediateBuy,
+      getCentsFromSatsForImmediateSell,
 
-    getCentsFromSatsForFutureBuy,
-    getCentsFromSatsForFutureSell,
+      getCentsFromSatsForFutureBuy,
+      getCentsFromSatsForFutureSell,
 
-    getSatsFromCentsForImmediateBuy,
-    getSatsFromCentsForImmediateSell,
+      getSatsFromCentsForImmediateBuy,
+      getSatsFromCentsForImmediateSell,
 
-    getSatsFromCentsForFutureBuy,
-    getSatsFromCentsForFutureSell,
+      getSatsFromCentsForFutureBuy,
+      getSatsFromCentsForFutureSell,
 
-    getCentsPerSatsExchangeMidRate,
-  }
+      getCentsPerSatsExchangeMidRate,
+    },
+  })
 }
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */

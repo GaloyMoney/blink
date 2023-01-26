@@ -516,6 +516,29 @@ export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnTyp
   return context.with(propagation.setBaggage(ctx, baggage), fn)
 }
 
+export const wrapToAddAttributes = <F extends object>({
+  fns,
+  attributes,
+}: {
+  fns: F
+  attributes: Attributes
+}): F => {
+  const addAttributesToMethod = <T extends (...args: Parameters<T>) => ReturnType<T>>(
+    fn: T,
+  ) => {
+    return (args) => {
+      addAttributesToCurrentSpan(attributes)
+      return fn(args)
+    }
+  }
+
+  const functions = { ...fns }
+  for (const fn of Object.keys(functions)) {
+    functions[fn] = addAttributesToMethod(fns[fn])
+  }
+  return functions
+}
+
 export const shutdownTracing = async () => {
   provider.shutdown()
 }
