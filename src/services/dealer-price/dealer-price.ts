@@ -16,6 +16,8 @@ import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
 import { toPriceRatio } from "@domain/payments"
 
+import { addAttributesToCurrentSpan } from "@services/tracing"
+
 import { baseLogger } from "../logger"
 
 import { PriceServiceClient } from "./proto/services/price/v1/price_service_grpc_pb"
@@ -91,7 +93,7 @@ const clientGetCentsPerSatsExchangeMidRate = util.promisify<
   GetCentsPerSatsExchangeMidRateResponse
 >(client.getCentsPerSatsExchangeMidRate.bind(client))
 
-export const DealerPriceService = (
+const PreWrappedDealerPriceService = (
   timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
 ): IDealerPriceService => {
   const getCentsFromSatsForImmediateBuy = async function (
@@ -265,6 +267,30 @@ export const DealerPriceService = (
 
     getCentsPerSatsExchangeMidRate,
   }
+}
+
+export const DealerPriceService = (
+  timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
+): IDealerPriceService => {
+  // @ts-ignore-next-line no-implicit-any
+  const addAttributesToMethod = (fn) => {
+    // @ts-ignore-next-line no-implicit-any
+    return (args) => {
+      addAttributesToCurrentSpan({ ["slo.dealerCalled"]: "true" })
+      return fn(args)
+    }
+  }
+
+  const dealer = PreWrappedDealerPriceService(timeToExpiryInSeconds)
+
+  const wrappedDealer = {} as IDealerPriceService
+  let fnKey: keyof IDealerPriceService
+  for (fnKey in dealer) {
+    // @ts-ignore-next-line no-implicit-any
+    wrappedDealer[fnKey] = addAttributesToMethod(dealer[fnKey])
+  }
+
+  return wrappedDealer
 }
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
