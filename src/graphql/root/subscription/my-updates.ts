@@ -201,7 +201,7 @@ const MeSubscription = {
     if (!(pricePerSat instanceof Error)) {
       pubsub.publishImmediate({
         trigger: accountUpdatedTrigger,
-        payload: { price: { centsPerSat: 100 * pricePerSat, displayCurrency } },
+        payload: { price: { centsPerSat: 100 * pricePerSat.price, displayCurrency } },
       })
     }
 

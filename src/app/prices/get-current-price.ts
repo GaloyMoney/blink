@@ -9,7 +9,7 @@ import { LocalCacheService } from "@services/cache"
 
 export const getCurrentPrice = async ({
   currency,
-}: GetCurrentPriceArgs): Promise<DisplayCurrencyPerSat | ApplicationError> => {
+}: GetCurrentPriceArgs): Promise<CurrentPrice | ApplicationError> => {
   const checkedDisplayCurrency = checkedToDisplayCurrency(currency)
   if (checkedDisplayCurrency instanceof Error) return checkedDisplayCurrency
 
@@ -22,7 +22,10 @@ export const getCurrentPrice = async ({
   let cachedPrices = await getCachedPrices()
   cachedPrices = cachedPrices instanceof Error ? {} : cachedPrices
 
-  cachedPrices[currency] = realtimePrice
+  cachedPrices[currency] = {
+    timestamp: new Date(Date.now()),
+    price: realtimePrice,
+  }
 
   // keep prices in cache for 10 mins in case the price pod is not online
   await LocalCacheService().set<DisplayCurrencyPrices>({
@@ -30,12 +33,12 @@ export const getCurrentPrice = async ({
     value: cachedPrices,
     ttlSecs: SECS_PER_10_MINS,
   })
-  return realtimePrice
+  return cachedPrices[currency]
 }
 
 const getCachedPrice = async ({
   currency,
-}: GetCachedPriceArgs): Promise<DisplayCurrencyPerSat | PriceNotAvailableError> => {
+}: GetCachedPriceArgs): Promise<CurrentPrice | PriceNotAvailableError> => {
   const cachedPrices = await getCachedPrices()
   if (cachedPrices instanceof Error || !cachedPrices[currency])
     return new PriceNotAvailableError()

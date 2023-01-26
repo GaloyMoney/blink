@@ -20,7 +20,7 @@ export const getRecentlyActiveAccounts = async function* ():
   const displayCurrencyPerSat = await getCurrentPrice({ currency: DisplayCurrency.Usd })
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat.price)
 
   const ledger = LedgerService()
   const activityChecker = ActivityChecker({

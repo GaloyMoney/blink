@@ -10,6 +10,7 @@ import Price from "@graphql/types/object/price"
 import DisplayCurrencyGT from "@graphql/types/scalar/display-currency"
 
 const BtcPriceQuery = GT.Field({
+  deprecationReason: `use realtimePrice instead`,
   type: Price,
   args: {
     currency: { type: GT.NonNull(DisplayCurrencyGT), defaultValue: DisplayCurrency.Usd },
@@ -24,7 +25,7 @@ const BtcPriceQuery = GT.Field({
       throw mapError(satCurrencyPrice)
     }
 
-    const price = 100 * satCurrencyPrice
+    const price = 100 * satCurrencyPrice.price
 
     return {
       formattedAmount: price.toString(),

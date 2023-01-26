@@ -73,7 +73,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
 
   const description = `deposit of ${rebalanceAmount} sats to the cold storage wallet`
 
-  const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  const converter = DisplayCurrencyConverter(displayCurrencyPerSat.price)
   const amountDisplayCurrency = converter.fromSats(rebalanceAmount)
   const feeDisplayCurrency = converter.fromSats(fee)
 

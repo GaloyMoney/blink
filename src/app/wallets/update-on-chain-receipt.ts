@@ -284,7 +284,7 @@ const processTxForHotWallet = async ({
 
         if (fee instanceof Error) fee = toSats(0)
 
-        const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
+        const converter = DisplayCurrencyConverter(displayCurrencyPerSat.price)
         const amountDisplayCurrency = converter.fromSats(sats)
         const feeDisplayCurrency = converter.fromSats(fee)
 

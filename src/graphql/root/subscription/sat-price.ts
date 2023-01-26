@@ -107,7 +107,7 @@ const SatPriceSubscription = {
     if (!(pricePerSat instanceof Error)) {
       pubsub.publishImmediate({
         trigger: immediateTrigger,
-        payload: { centsPerSat: 100 * pricePerSat, displayCurrency },
+        payload: { centsPerSat: 100 * pricePerSat.price, displayCurrency },
       })
     }
 

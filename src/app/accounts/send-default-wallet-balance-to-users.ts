@@ -17,7 +17,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
   const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
   const displayCurrencyPerSat = price instanceof Error ? undefined : price
   const converter = displayCurrencyPerSat
-    ? DisplayCurrencyConverter(displayCurrencyPerSat)
+    ? DisplayCurrencyConverter(displayCurrencyPerSat.price)
     : undefined
   const notifyUser = wrapAsyncToRunInSpan({
     namespace: "daily-balance-notification",

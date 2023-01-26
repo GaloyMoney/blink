@@ -204,9 +204,9 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
-    if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
+    const currentPrice = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+    if (currentPrice instanceof Error) throw currentPrice
+    const dCConverter = DisplayCurrencyConverter(currentPrice.price)
     const amountSats = dCConverter.fromCentsToSats(withdrawalLimitAccountLevel1)
 
     await sendToWalletTestWrapper({ walletId: walletIdE, amountSats })
@@ -219,9 +219,9 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
-    if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
+    const currentPrice = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+    if (currentPrice instanceof Error) throw currentPrice
+    const dCConverter = DisplayCurrencyConverter(currentPrice.price)
     const amountSats = dCConverter.fromCentsToSats(intraLedgerLimitAccountLevel1)
 
     await sendToWalletTestWrapper({ walletId, amountSats })
@@ -360,7 +360,7 @@ describe("UserWallet - On chain", () => {
       currency: WalletCurrency.Btc,
     }
     const displayPaymentAmount = {
-      amount: pendingTx.settlementAmount * satsPrice,
+      amount: pendingTx.settlementAmount * satsPrice.price,
       currency: DefaultDisplayCurrency,
     }
 

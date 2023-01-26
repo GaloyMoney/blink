@@ -114,7 +114,7 @@ export const onchainTransactionEventHandler = async (
     const price = await PricesWithSpans.getCurrentPrice({ currency: DisplayCurrency.Usd })
     const displayCurrencyPerSat = price instanceof Error ? undefined : price
     if (displayCurrencyPerSat) {
-      const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
+      const converter = DisplayCurrencyConverter(displayCurrencyPerSat.price)
       const amount = converter.fromSats(toSats(tx.tokens - fee))
       displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
     }
@@ -202,7 +202,7 @@ export const onchainTransactionEventHandler = async (
         if (recipientUser instanceof Error) return recipientUser
 
         if (displayCurrencyPerSat) {
-          const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
+          const converter = DisplayCurrencyConverter(displayCurrencyPerSat.price)
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
           const amount = converter.fromSats(toSats(tx.tokens - fee))
           displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
@@ -261,12 +261,13 @@ export const publishCurrentPrices = async () => {
     const displayCurrency = checkedToDisplayCurrency(code)
     if (displayCurrency instanceof Error) continue
 
-    const pricePerSat = await PricesWithSpans.getCurrentPrice({
+    const currentPrice = await PricesWithSpans.getCurrentPrice({
       currency: displayCurrency,
     })
-    if (pricePerSat instanceof Error) {
-      return logger.error({ err: pricePerSat }, "can't publish the price")
+    if (currentPrice instanceof Error) {
+      return logger.error({ err: currentPrice }, "can't publish the price")
     }
+    const pricePerSat = currentPrice.price
     NotificationsService().priceUpdate({ pricePerSat, displayCurrency })
   }
 }

@@ -949,6 +949,7 @@ type PublicWallet {
 type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
   btcPrice(currency: DisplayCurrency! = "USD"): Price
+    @deprecated(reason: "use realtime price instead")
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
   currencyList: [Currency]
@@ -974,6 +975,14 @@ type Query {
     @deprecated(
       reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated"
     )
+
+  """
+  Returns 1 Sat or 1 Cent price for the given quote display currency
+  """
+  realtimePrice(
+    displayCurrency: DisplayCurrency! = "USD"
+    walletCurrency: WalletCurrency! = BTC
+  ): RealtimePrice
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
@@ -1003,6 +1012,22 @@ type QuizQuestion {
   """
   earnAmount: SatAmount!
   id: ID!
+}
+
+"""
+Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
+"""
+type RealtimePrice {
+  base: SafeInt!
+  currency: DisplayCurrency!
+  currencyUnit: String!
+  formattedAmount: String!
+  offset: Int!
+
+  """
+  Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
+  """
+  timestamp: Timestamp!
 }
 
 """

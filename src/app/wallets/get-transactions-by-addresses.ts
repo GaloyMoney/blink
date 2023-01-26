@@ -74,17 +74,16 @@ export const getTransactionsForWalletsByAddresses = async ({
 
   const pendingIncoming = filter.apply(onChainTxs)
 
-  let price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
-  if (price instanceof Error) {
-    price = NaN as DisplayCurrencyPerSat
-  }
+  const currentPrice = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+  const displayCurrencyPerSat =
+    currentPrice instanceof Error ? (NaN as DisplayCurrencyPerSat) : currentPrice.price
 
   return PartialResult.ok({
     slice: confirmedHistory.addPendingIncoming({
       pendingIncoming,
       addressesByWalletId,
       walletDetailsByWalletId,
-      displayCurrencyPerSat: price,
+      displayCurrencyPerSat,
     }).transactions,
     total: resp.total,
   })
