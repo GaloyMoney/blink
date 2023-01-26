@@ -19,7 +19,7 @@ import WalletCurrency from "../scalar/wallet-currency"
 import SignedDisplayMajorAmount from "../scalar/signed-display-amount"
 import DisplayCurrency from "../scalar/display-currency"
 
-import Price from "./price"
+import SettlementPrice from "./settlement-price"
 
 const Transaction = GT.Object<WalletTransaction>({
   name: "Transaction",
@@ -81,7 +81,7 @@ const Transaction = GT.Object<WalletTransaction>({
       type: GT.NonNull(SignedAmount),
     },
     settlementPrice: {
-      type: GT.NonNull(Price),
+      type: GT.NonNull(SettlementPrice),
       resolve: (source) => {
         const displayCurrencyPerSettlementCurrencyUnitInCents =
           source.displayCurrencyPerSettlementCurrencyUnit * 100
@@ -92,6 +92,7 @@ const Transaction = GT.Object<WalletTransaction>({
               10 ** SAT_PRICE_PRECISION_OFFSET,
           ),
           offset: SAT_PRICE_PRECISION_OFFSET,
+          currency: "USD",
           currencyUnit: "USDCENT",
         }
       },

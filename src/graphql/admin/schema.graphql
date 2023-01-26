@@ -313,16 +313,6 @@ enum PhoneCodeChannelType {
   WHATSAPP
 }
 
-"""
-Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
-"""
-type Price {
-  base: SafeInt!
-  currencyUnit: String!
-  formattedAmount: String!
-  offset: Int!
-}
-
 type PsbtDetail {
   fee: SatAmount!
   transaction: String!
@@ -354,6 +344,17 @@ scalar SafeInt
 (Positive) Satoshi amount
 """
 scalar SatAmount
+
+"""
+Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
+"""
+type SettlementPrice {
+  base: SafeInt!
+  currency: DisplayCurrency!
+  currencyUnit: String!
+  formattedAmount: String!
+  offset: Int!
+}
 
 union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
 
@@ -436,7 +437,7 @@ type Transaction {
   """
   Price in USDCENT/SETTLEMENTUNIT at time of settlement.
   """
-  settlementPrice: Price!
+  settlementPrice: SettlementPrice!
 
   """
   To which protocol the payment has settled on.
