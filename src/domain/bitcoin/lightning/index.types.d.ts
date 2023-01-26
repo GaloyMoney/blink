@@ -177,6 +177,13 @@ interface ILightningService {
   getOpeningChannelsBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
   getClosingChannelsBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
 
+  getTotalPendingHtlcCount(pubkey?: Pubkey): Promise<number | LightningServiceError>
+
+  getActiveChannels(pubkey?: Pubkey): Promise<number | LightningServiceError>
+  getOfflineChannels(pubkey?: Pubkey): Promise<number | LightningServiceError>
+  getPublicChannels(pubkey?: Pubkey): Promise<number | LightningServiceError>
+  getPrivateChannels(pubkey?: Pubkey): Promise<number | LightningServiceError>
+
   findRouteForInvoice({
     invoice,
     amount,
