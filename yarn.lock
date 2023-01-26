@@ -3835,7 +3835,7 @@ arrify@^2.0.0:
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-2.0.1.tgz#c9655e9331e0abcd588d2a7cad7e9956f66701fa"
   integrity sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==
 
-asap@^2.0.0, asap@~2.0.6:
+asap@~2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/asap/-/asap-2.0.6.tgz#e50347611d7e690943208bbdafebcbc2fb866d46"
   integrity sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==
@@ -9930,11 +9930,6 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-pop-iterate@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/pop-iterate/-/pop-iterate-1.0.1.tgz#ceacfdab4abf353d7a0f2aaa2c1fc7b3f9413ba3"
-  integrity sha512-HRCx4+KJE30JhX84wBN4+vja9bNfysxg1y28l0DuJmkoaICiv2ZSilKddbS48pq50P8d2erAhqDLbp47yv3MbQ==
-
 portscanner@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/portscanner/-/portscanner-2.2.0.tgz#6059189b3efa0965c9d96a56b958eb9508411cf1"
@@ -10200,15 +10195,6 @@ pushdata-bitcoin@1.0.1:
   integrity sha512-hw7rcYTJRAl4olM8Owe8x0fBuJJ+WGbMhQuLWOXEMN3PxPCKQHRkhfL+XG0+iXUmSHjkMmb3Ba55Mt21cZc9kQ==
   dependencies:
     bitcoin-ops "^1.3.0"
-
-q@2.0.x:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/q/-/q-2.0.3.tgz#75b8db0255a1a5af82f58c3f3aaa1efec7d0d134"
-  integrity sha512-gv6vLGcmAOg96/fgo3d9tvA4dJNZL3fMyBqVRrGxQ+Q/o4k9QzbJ3NQF9cOO/71wRodoXhaPgphvMFU68qVAJQ==
-  dependencies:
-    asap "^2.0.0"
-    pop-iterate "^1.0.1"
-    weak-map "^1.0.5"
 
 qrcode-terminal@0.12.0:
   version "0.12.0"
@@ -10618,11 +10604,6 @@ ripemd160@^2.0.0, ripemd160@^2.0.1, ripemd160@^2.0.2:
   dependencies:
     hash-base "^3.0.0"
     inherits "^2.0.1"
-
-rootpath@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/rootpath/-/rootpath-0.1.2.tgz#5b379a87dca906e9b91d690a599439bef267ea6b"
-  integrity sha512-R3wLbuAYejpxQjL/SjXo1Cjv4wcJECnMRT/FlcCfTwCBhaji9rWaRCoVEQ1SPiTJ4kKK+yh+bZLAV7SCafoDDw==
 
 run-async@^2.2.0, run-async@^2.4.0:
   version "2.4.1"
@@ -11690,19 +11671,16 @@ tweetnacl@^1.0.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
   integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==
 
-twilio@^3.84.0:
-  version "3.84.1"
-  resolved "https://registry.yarnpkg.com/twilio/-/twilio-3.84.1.tgz#b7a64db440240d3a06cc591fd339b81ca9b70db0"
-  integrity sha512-Q/xaPoayTj+bgJdnUgpE+EiB/VoNOG+byDFdlDej0FgxiHLgXKliZfVv6boqHPWvC1k7Dt0AK96OBFZ0P55QQg==
+twilio@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/twilio/-/twilio-4.0.0.tgz#6fb0ac08d703f45e63b50d2f6aa134639be3acba"
+  integrity sha512-8UVM+Xl42Wj/mmZhvArQgsCMh3iNrPxc9GbH0nsccrmFlrl3YvA7fEtzg69MOkGk/yrxE8+llnbY0h1k5m4fSA==
   dependencies:
     axios "^0.26.1"
     dayjs "^1.8.29"
     https-proxy-agent "^5.0.0"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.21"
-    q "2.0.x"
+    jsonwebtoken "^9.0.0"
     qs "^6.9.4"
-    rootpath "^0.1.2"
     scmp "^2.1.0"
     url-parse "^1.5.9"
     xmlbuilder "^13.0.2"
@@ -12007,11 +11985,6 @@ wcwidth@^1.0.1:
   integrity sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==
   dependencies:
     defaults "^1.0.3"
-
-weak-map@^1.0.5:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/weak-map/-/weak-map-1.0.8.tgz#394c18a9e8262e790544ed8b55c6a4ddad1cb1a3"
-  integrity sha512-lNR9aAefbGPpHO7AEnY0hCFjz1eTkWCXYvkTRrTHs9qv8zJp+SkVYpzfLIFXQQiG3tVvbNFQgVg2bQS8YGgxyw==
 
 webidl-conversions@^3.0.0:
   version "3.0.1"
