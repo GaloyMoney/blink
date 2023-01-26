@@ -21,6 +21,7 @@ import {
   getInvoices,
   GetInvoicesResult,
   getPendingChannels,
+  getChannels,
 } from "lightning"
 import lnService from "ln-service"
 
@@ -155,10 +156,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
-      const channels = await lnService.getChannels({ lnd })
-      return channels.filter(
-        (channel: { is_active: boolean }) => channel.is_active === true,
-      ).length
+      const { channels } = await getChannels({ lnd })
+      return channels.filter((channel) => channel.is_active === true).length
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }
@@ -170,10 +169,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
-      const channels = await lnService.getChannels({ lnd })
-      return channels.filter(
-        (channel: { is_offline: boolean }) => channel.is_offline === true,
-      ).length
+      const { channels } = await getChannels({ lnd })
+      return channels.filter((channel) => channel.is_active === false).length
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }
@@ -185,10 +182,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
-      const channels = await lnService.getChannels({ lnd })
-      return channels.filter(
-        (channel: { is_public: boolean }) => channel.is_public === true,
-      ).length
+      const { channels } = await getChannels({ lnd })
+      return channels.filter((channel) => channel.is_private === false).length
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }
@@ -200,10 +195,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
-      const channels = await lnService.getChannels({ lnd })
-      return channels.filter(
-        (channel: { is_private: boolean }) => channel.is_private === true,
-      ).length
+      const { channels } = await getChannels({ lnd })
+      return channels.filter((channel) => channel.is_private === true).length
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }
@@ -215,16 +208,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
-
-      const channels = await lnService.getChannels({ lnd })
-      const pendingHtlcCounts: { [channelId: string]: number } = {}
-      channels.forEach((channel: { id: string; pending_payments: number[] }) => {
-        pendingHtlcCounts[channel.id] = channel.pending_payments.length
-      })
-      const totalPendingHtlcCount = Object.values(pendingHtlcCounts).reduce(
-        (a, b) => a + b,
-        0,
-      )
+      const { channels } = await getChannels({ lnd })
+      const pendingHtlcCounts = channels.map((channel) => channel.pending_payments.length)
+      const totalPendingHtlcCount = pendingHtlcCounts.reduce((a, b) => a + b, 0)
       return totalPendingHtlcCount
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
