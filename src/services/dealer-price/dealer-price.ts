@@ -16,7 +16,7 @@ import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
 import { toPriceRatio } from "@domain/payments"
 
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import { wrapToAddAttributes } from "@services/tracing"
 
 import { baseLogger } from "../logger"
 
@@ -93,7 +93,7 @@ const clientGetCentsPerSatsExchangeMidRate = util.promisify<
   GetCentsPerSatsExchangeMidRateResponse
 >(client.getCentsPerSatsExchangeMidRate.bind(client))
 
-const PreWrappedDealerPriceService = (
+export const DealerPriceService = (
   timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
 ): IDealerPriceService => {
   const getCentsFromSatsForImmediateBuy = async function (
@@ -252,45 +252,24 @@ const PreWrappedDealerPriceService = (
     }
   }
 
-  return {
-    getCentsFromSatsForImmediateBuy,
-    getCentsFromSatsForImmediateSell,
+  return wrapToAddAttributes({
+    attributes: { ["slo.dealerCalled"]: "true" },
+    fns: {
+      getCentsFromSatsForImmediateBuy,
+      getCentsFromSatsForImmediateSell,
 
-    getCentsFromSatsForFutureBuy,
-    getCentsFromSatsForFutureSell,
+      getCentsFromSatsForFutureBuy,
+      getCentsFromSatsForFutureSell,
 
-    getSatsFromCentsForImmediateBuy,
-    getSatsFromCentsForImmediateSell,
+      getSatsFromCentsForImmediateBuy,
+      getSatsFromCentsForImmediateSell,
 
-    getSatsFromCentsForFutureBuy,
-    getSatsFromCentsForFutureSell,
+      getSatsFromCentsForFutureBuy,
+      getSatsFromCentsForFutureSell,
 
-    getCentsPerSatsExchangeMidRate,
-  }
-}
-
-export const DealerPriceService = (
-  timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
-): IDealerPriceService => {
-  // @ts-ignore-next-line no-implicit-any
-  const addAttributesToMethod = (fn) => {
-    // @ts-ignore-next-line no-implicit-any
-    return (args) => {
-      addAttributesToCurrentSpan({ ["slo.dealerCalled"]: "true" })
-      return fn(args)
-    }
-  }
-
-  const dealer = PreWrappedDealerPriceService(timeToExpiryInSeconds)
-
-  const wrappedDealer = {} as IDealerPriceService
-  let fnKey: keyof IDealerPriceService
-  for (fnKey in dealer) {
-    // @ts-ignore-next-line no-implicit-any
-    wrappedDealer[fnKey] = addAttributesToMethod(dealer[fnKey])
-  }
-
-  return wrappedDealer
+      getCentsPerSatsExchangeMidRate,
+    },
+  })
 }
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
