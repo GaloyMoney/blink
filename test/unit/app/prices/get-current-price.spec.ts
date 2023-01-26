@@ -35,11 +35,13 @@ describe("Prices", () => {
           listCurrencies: jest.fn(),
         }))
 
-      let price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
-      expect(price).toEqual(0.05)
+      let currentPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+      if (currentPrice instanceof Error) throw currentPrice
+      expect(currentPrice.price).toEqual(0.05)
 
-      price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
-      expect(price).toEqual(0.05)
+      currentPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+      if (currentPrice instanceof Error) throw currentPrice
+      expect(currentPrice.price).toEqual(0.05)
     })
 
     it("fails when realtime fails and cache is empty", async () => {

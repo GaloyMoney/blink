@@ -1,6 +1,7 @@
-export const getCurrentPrice = async (): Promise<
-  DisplayCurrencyPerSat | ApplicationError
-> => {
+export const getCurrentPrice = async (): Promise<CurrentPrice | ApplicationError> => {
   // DisplayCurrencyPerSat is DollarsPerSat here
-  return Promise.resolve(0.0005 as DisplayCurrencyPerSat)
+  return Promise.resolve({
+    timestamp: new Date(Date.now()),
+    price: 0.0005 as DisplayCurrencyPerSat,
+  })
 }

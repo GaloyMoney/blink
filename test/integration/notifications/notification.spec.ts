@@ -17,8 +17,10 @@ const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 let price, spy
 
 beforeAll(async () => {
-  price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
-  if (price instanceof Error) throw price
+  const currentPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+  if (currentPrice instanceof Error) throw currentPrice
+
+  price = currentPrice.price
 
   const ledgerService = serviceLedger.LedgerService()
 
