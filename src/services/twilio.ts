@@ -14,8 +14,6 @@ import {
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 
-import { VerificationCheckInstance } from "twilio/lib/rest/verify/v2/service/verificationCheck"
-
 import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
 export const TwilioClient = (): IPhoneProviderService => {
@@ -48,10 +46,13 @@ export const TwilioClient = (): IPhoneProviderService => {
     to: PhoneNumber
     code: PhoneCode
   }): Promise<true | PhoneProviderServiceError> => {
-    let verification: VerificationCheckInstance
-
     try {
-      verification = await verify.verificationChecks.create({ to, code })
+      const verification = await verify.verificationChecks.create({ to, code })
+      if (verification.status !== "approved") {
+        return new PhoneCodeInvalidError()
+      }
+
+      return true
     } catch (err) {
       baseLogger.error({ err }, "impossible to verify phone and code")
 
@@ -63,12 +64,6 @@ export const TwilioClient = (): IPhoneProviderService => {
           return handleCommonErrors(err)
       }
     }
-
-    if (verification.status !== "approved") {
-      return new PhoneCodeInvalidError()
-    }
-
-    return true
   }
 
   const getCarrier = async (phone: PhoneNumber) => {
