@@ -4060,10 +4060,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-balanceofsatoshis@^13.23.0:
-  version "13.23.0"
-  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.23.0.tgz#38cbaf2a3813d658095747e71e882fa41b945332"
-  integrity sha512-EYhuh4VTgCZa0zMFkM31K0/PVIGIarDw3iQdFtX6ovn6J1Fv8K4TOo+1EeIA+Yhc6e7s0Pjknevyvx1r7Aqfbw==
+balanceofsatoshis@^13.24.0:
+  version "13.24.0"
+  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.24.0.tgz#457b01f121724f66bab030cf1764b053ddad8fdf"
+  integrity sha512-QP3hY4Ehgjnl5mXmHuXzgU/rnRpMTlpMxr3+JytC2NTNTUTjD5NSm+jJ+fUTHfcfGa8Plos2RTTmiqamHEE7uw==
   dependencies:
     "@alexbosworth/caporal" "1.4.4"
     "@alexbosworth/fiat" "1.0.4"
