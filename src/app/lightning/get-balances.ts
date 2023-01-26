@@ -35,11 +35,9 @@ export const getInboundBalance = async (): Promise<Satoshis | ApplicationError> 
       .map((pubkey) => offChainService.getInboundOutboundBalance(pubkey)),
   )
 
-  const inbound: Satoshis[] = []
-  inboundOutboundBalance.forEach((balance) => {
-    if ("inbound" in balance) {
-      inbound.push(balance.inbound)
-    }
+  const inbound = inboundOutboundBalance.map((balance) => {
+    if (balance instanceof Error) return toSats(0)
+    return balance.inbound
   })
 
   return sumBalances(inbound)
@@ -57,11 +55,9 @@ export const getOutboundBalance = async (): Promise<Satoshis | ApplicationError>
       .map((pubkey) => offChainService.getInboundOutboundBalance(pubkey)),
   )
 
-  const outbound: Satoshis[] = []
-  inboundOutboundBalance.forEach((balance) => {
-    if ("outbound" in balance) {
-      outbound.push(balance.outbound)
-    }
+  const outbound = inboundOutboundBalance.map((balance) => {
+    if (balance instanceof Error) return toSats(0)
+    return balance.outbound
   })
 
   return sumBalances(outbound)
