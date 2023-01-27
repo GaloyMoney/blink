@@ -579,7 +579,7 @@ describe("updates user phone", () => {
     expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
   })
 
-  it("updates phone even if new phone is associated with a zero balance account", async () => {
+  it("updates phone even if new phone is associated with a zero balance account, but not otherwise", async () => {
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
     const { phone, code } = getPhoneAndCodeFromRef("I")
     const walletId = await getDefaultWalletIdByTestUserRef("I")
@@ -615,6 +615,7 @@ describe("updates user phone", () => {
       variables: { input: { phone: newPhone, uid } },
     })
 
+    // removes the phone from a user with zero balance
     expect(result.data.userUpdatePhone.errors.length).toBe(0)
 
     await fundWalletIdFromLightning({ walletId, amount: 1000 })
@@ -624,8 +625,9 @@ describe("updates user phone", () => {
       variables: { input: { phone: newPhone, uid } },
     })
 
+    // errors when trying to remove phone from a user with non zero balance
     expect(result1.data.userUpdatePhone.errors[0].message).toContain(
-      "UserWithPhoneAlreadyExistsError",
+      "The phone is associated with an existing wallet that has a non zero balance",
     )
 
     await disposeAdminClient()

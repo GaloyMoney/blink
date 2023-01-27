@@ -1,5 +1,5 @@
 import {
-  CouldNotUnsetPhoneFromUser,
+  CouldNotUnsetPhoneFromUserError,
   CouldNotFindUserFromPhoneError,
   RepositoryError,
 } from "@domain/errors"
@@ -98,7 +98,7 @@ export const UsersRepository = (): IUsersRepository => {
         { new: true },
       )
       if (!result) {
-        return new CouldNotUnsetPhoneFromUser()
+        return new CouldNotUnsetPhoneFromUserError()
       }
       return translateToUser(result)
     } catch (err) {
