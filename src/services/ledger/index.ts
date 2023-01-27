@@ -23,6 +23,7 @@ import {
   BigIntFloatConversionError,
   ErrorLevel,
 } from "@domain/shared"
+import { baseLogger } from "@services/logger"
 import { fromObjectId, toObjectId } from "@services/mongoose/utils"
 import {
   recordExceptionInCurrentSpan,
@@ -73,7 +74,7 @@ export const LedgerService = (): ILedgerService => {
         _id,
       })
       if (results.length === 1) {
-        return translateToLedgerTx(results[0])
+        return translateToLedgerTxWithMetadataFetch(results[0])
       }
       return new CouldNotFindTransactionError()
     } catch (err) {
@@ -89,9 +90,7 @@ export const LedgerService = (): ILedgerService => {
         hash,
         account: liabilitiesMainAccount,
       })
-      /* eslint @typescript-eslint/ban-ts-comment: "off" */
-      // @ts-ignore-next-line no-implicit-any error
-      return results.map((tx) => translateToLedgerTx(tx))
+      return translateToLedgerTxsWithMetadataFetch(results)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -105,8 +104,7 @@ export const LedgerService = (): ILedgerService => {
       const { results } = await MainBook.ledger({
         account: liabilitiesWalletId,
       })
-      // @ts-ignore-next-line no-implicit-any error
-      return results.map((tx) => translateToLedgerTx(tx))
+      return translateToLedgerTxsWithMetadataFetch(results)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -133,7 +131,9 @@ export const LedgerService = (): ILedgerService => {
       const { slice, total } = ledgerResp
 
       return {
-        slice: slice.map((tx) => translateToLedgerTx(tx)),
+        slice: await Promise.all(
+          slice.map((tx) => translateToLedgerTxWithMetadataFetch(tx)),
+        ),
         total,
       }
     } catch (err) {
@@ -164,7 +164,9 @@ export const LedgerService = (): ILedgerService => {
       const { slice, total } = ledgerResp
 
       return {
-        slice: slice.map((tx) => translateToLedgerTx(tx)),
+        slice: await Promise.all(
+          slice.map((tx) => translateToLedgerTxWithMetadataFetch(tx)),
+        ),
         total,
       }
     } catch (err) {
@@ -183,8 +185,7 @@ export const LedgerService = (): ILedgerService => {
         pending: true,
       })
 
-      // @ts-ignore-next-line no-implicit-any error
-      return results.map((tx) => translateToLedgerTx(tx))
+      return Promise.all(results.map((tx) => translateToLedgerTxWithMetadataFetch(tx)))
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -399,15 +400,15 @@ export const LedgerService = (): ILedgerService => {
   })
 }
 
-export const translateToLedgerTx = (
+const translateToLedgerTx = <S extends WalletCurrency>(
   tx: ILedgerTransaction,
-): LedgerTransaction<WalletCurrency> => ({
+): LedgerTransaction<S> => ({
   id: fromObjectId<LedgerTransactionId>(tx._id || ""),
   walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
   type: tx.type,
-  debit: toSats(tx.debit),
-  credit: toSats(tx.credit),
-  currency: tx.currency,
+  debit: tx.debit as S extends "BTC" ? Satoshis : UsdCents,
+  credit: tx.credit as S extends "BTC" ? Satoshis : UsdCents,
+  currency: tx.currency as S,
   timestamp: tx.timestamp,
   pendingConfirmation: tx.pending,
   journalId: tx._journal.toString() as LedgerJournalId,
@@ -445,10 +446,63 @@ export const translateToLedgerTx = (
   feeUsd: tx.feeUsd,
 })
 
-// @ts-ignore-next-line no-implicit-any error
+export const translateToLedgerTxWithMetadataFetch = async <S extends WalletCurrency>(
+  tx: ILedgerTransaction,
+): Promise<LedgerTransaction<S>> => {
+  const txMetadata = await TransactionsMetadataRepository().findById(
+    fromObjectId<LedgerTransactionId>(tx._id || ""),
+  )
+
+  if (txMetadata instanceof Error) {
+    if (!(txMetadata instanceof CouldNotFindTransactionError)) {
+      baseLogger.error(
+        { error: txMetadata },
+        `could not fetch transaction metadata for id '${tx._id}'`,
+      )
+      recordExceptionInCurrentSpan({ error: txMetadata, level: ErrorLevel.Critical })
+    }
+
+    return {
+      ...translateToLedgerTx<S>(tx),
+
+      revealedPreImage: undefined,
+    }
+  }
+
+  return {
+    ...translateToLedgerTx<S>(tx),
+
+    revealedPreImage:
+      "revealedPreImage" in txMetadata ? txMetadata.revealedPreImage : undefined,
+  }
+}
+
+export const translateToLedgerTxsWithMetadataFetch = async <S extends WalletCurrency>(
+  txs: Array<ILedgerTransaction>,
+): Promise<Array<LedgerTransaction<S>>> => {
+  const txsMetadata = await TransactionsMetadataRepository().listByIds(
+    txs.map((tx) => fromObjectId<LedgerTransactionId>(tx._id || "")),
+  )
+
+  if (txsMetadata instanceof Error) {
+    if (!(txsMetadata instanceof CouldNotFindTransactionError)) {
+      baseLogger.error({ error: txsMetadata }, `could not fetch transactions metadata`)
+      recordExceptionInCurrentSpan({ error: txsMetadata, level: ErrorLevel.Critical })
+    }
+
+    return txs.map((tx) => translateToLedgerTx<S>(tx))
+  }
+
+  return txs.map((tx) => ({
+    ...translateToLedgerTx<S>(tx),
+    revealedPreImage: txsMetadata.find(
+      (txm) => txm.id === fromObjectId<LedgerTransactionId>(tx._id || ""),
+    ),
+  }))
+}
+
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
   journalId: savedEntry._id.toString(),
   voided: savedEntry.voided,
-  // @ts-ignore-next-line no-implicit-any error
   transactionIds: savedEntry._transactions.map((id) => id.toString()),
 })

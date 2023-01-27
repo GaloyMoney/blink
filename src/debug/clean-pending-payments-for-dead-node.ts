@@ -13,7 +13,7 @@ import { isUp } from "@services/lnd/health"
 import { lndsConnect } from "@services/lnd/auth"
 
 import { setupMongoConnection } from "@services/mongodb"
-import { LedgerService, translateToLedgerTx } from "@services/ledger"
+import { LedgerService, translateToLedgerTxsWithMetadataFetch } from "@services/ledger"
 import { LockService } from "@services/lock"
 import { baseLogger } from "@services/logger"
 
@@ -30,7 +30,7 @@ const listAllPendingPayments = async (): Promise<
       pending: true,
     })
 
-    return results.filter((tx) => tx.debit > 0).map((tx) => translateToLedgerTx(tx))
+    return translateToLedgerTxsWithMetadataFetch(results.filter((tx) => tx.debit > 0))
   } catch (err) {
     return new UnknownLedgerError(err)
   }

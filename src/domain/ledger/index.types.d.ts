@@ -68,12 +68,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly fee: number | undefined // Satoshis
   readonly usd: number | undefined
   readonly feeUsd: number | undefined
-}
-
-type LedgerTransactionWithMetadata<S extends WalletCurrency> = {
-  hasMetadata: true
-} & LedgerTransaction<S> &
-  LedgerTransactionMetadata
+} & LedgerTransactionMetadata
 
 type TxArgs = {
   walletId: WalletId

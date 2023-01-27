@@ -153,4 +153,8 @@ interface ITransactionsMetadataRepository {
   findByHash(
     hash: PaymentHash | OnChainTxHash | SwapHash,
   ): Promise<LedgerTransactionMetadata | RepositoryError>
+
+  listByIds(
+    ids: Array<LedgerTransactionId>,
+  ): Promise<Array<LedgerTransactionMetadata> | RepositoryError>
 }

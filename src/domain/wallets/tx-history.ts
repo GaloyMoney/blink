@@ -73,6 +73,8 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
     memoFromPayer,
   } = txn
 
+  const revealedPreImage = "revealedPreImage" in txn ? txn.revealedPreImage : undefined
+
   const isAdmin = Object.values(AdminLedgerTransactionType).includes(
     type as AdminLedgerTransactionType,
   )
@@ -217,7 +219,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
         },
         settlementVia: {
           type: SettlementMethod.Lightning,
-          revealedPreImage: undefined,
+          revealedPreImage,
         },
       }
       break
@@ -242,12 +244,11 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
 }
 
 const translateLedgerTxnToWalletTxnWithMetadata = <S extends WalletCurrency>(
-  txn: LedgerTransactionWithMetadata<S>,
+  txn: LedgerTransaction<S>,
 ): WalletTransactionWithMetadata => {
   const walletTxn = translateLedgerTxnToWalletTxn(txn)
 
   let walletTxnWithMetadata: WalletTransactionWithMetadata = {
-    hasMetadata: true,
     ...walletTxn,
   }
   if ("revealedPreImage" in txn) {
@@ -270,26 +271,12 @@ const translateLedgerTxnToWalletTxnWithMetadata = <S extends WalletCurrency>(
 const fromLedger = (
   ledgerTransactions: LedgerTransaction<WalletCurrency>[],
 ): ConfirmedTransactionHistory => {
-  const transactions = ledgerTransactions.map(translateLedgerTxnToWalletTxn)
-
-  return {
-    transactions,
-    addPendingIncoming: (args) => ({
-      transactions: [...filterPendingIncoming(args), ...transactions],
-    }),
-  }
-}
-
-const fromLedgerWithMetadata = <S extends WalletCurrency>(
-  ledgerTransactions: LedgerTransactionWithMetadata<S>[],
-): ConfirmedTransactionHistoryWithMetadata => {
   const transactions = ledgerTransactions.map(translateLedgerTxnToWalletTxnWithMetadata)
 
   const addPendingIncoming = (args: AddPendingIncomingArgs) => {
     const pendingTxnsWithMetadata = filterPendingIncoming(args).map(
       (txn: WalletTransaction): WalletTransactionWithMetadata => ({
         ...txn,
-        hasMetadata: true,
       }),
     )
 
@@ -344,7 +331,6 @@ export const translateMemo = ({
 
 export const WalletTransactionHistory = {
   fromLedger,
-  fromLedgerWithMetadata,
 } as const
 
 // TODO: refactor this to use PriceRatio eventually instead after

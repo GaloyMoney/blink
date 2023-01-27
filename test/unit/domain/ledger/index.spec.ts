@@ -1,5 +1,5 @@
 import { LedgerTransactionType, liabilitiesMainAccount } from "@domain/ledger"
-import { translateToLedgerTx } from "@services/ledger"
+import { translateToLedgerTxWithMetadataFetch } from "@services/ledger"
 import { toObjectId } from "@services/mongoose/utils"
 
 describe("LedgerService", () => {
@@ -70,6 +70,6 @@ describe("LedgerService", () => {
       displayCurrency: "USD",
     }
 
-    expect(translateToLedgerTx(rawTx)).toEqual(expectedLedgerTx)
+    expect(translateToLedgerTxWithMetadataFetch(rawTx)).toEqual(expectedLedgerTx)
   })
 })

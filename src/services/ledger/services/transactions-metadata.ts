@@ -66,11 +66,24 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
     }
   }
 
+  const listByIds = async (ids: Array<LedgerTransactionId>) => {
+    try {
+      const result = await TransactionMetadata.find({
+        _id: { $in: ids.map((id) => toObjectId<LedgerTransactionId>(id)) },
+      })
+      if (!result) return new CouldNotFindTransactionMetadataError()
+      return result.map((txn) => translateToLedgerTxMetadata(txn))
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   return {
     updateByHash,
     persistAll,
     findById,
     findByHash,
+    listByIds,
   }
 }
 

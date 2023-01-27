@@ -236,7 +236,7 @@ describe("translates ledger txs to wallet txs", () => {
     })
   })
 
-  describe("WalletTransactionHistory.fromLedgerWithMetadata", () => {
+  describe("WalletTransactionHistory.fromLedger", () => {
     it("translates btc ledger txs", () => {
       const currency = WalletCurrency.Btc
       const settlementAmount = toSats(100000)
@@ -253,11 +253,8 @@ describe("translates ledger txs to wallet txs", () => {
       }
 
       const ledgerTxnsWithMetadata = ledgerTxnsInputs(txnsArgs).map(
-        <S extends WalletCurrency>(
-          txn: LedgerTransaction<S>,
-        ): LedgerTransactionWithMetadata<S> => ({
+        <S extends WalletCurrency>(txn: LedgerTransaction<S>): LedgerTransaction<S> => ({
           ...txn,
-          hasMetadata: true,
         }),
       )
 
@@ -267,13 +264,11 @@ describe("translates ledger txs to wallet txs", () => {
         revealedPreImage: "revealedPreImage" as RevealedPreImage,
       }
 
-      const result =
-        WalletTransactionHistory.fromLedgerWithMetadata(ledgerTxnsWithMetadata)
+      const result = WalletTransactionHistory.fromLedger(ledgerTxnsWithMetadata)
 
       const expectedWithMetadata = expectedWalletTxns(txnsArgs).map(
         (txn: WalletTransaction): WalletTransactionWithMetadata => ({
           ...txn,
-          hasMetadata: true,
         }),
       )
 
@@ -305,11 +300,8 @@ describe("translates ledger txs to wallet txs", () => {
       }
 
       const ledgerTxnsWithMetadata = ledgerTxnsInputs(txnsArgs).map(
-        <S extends WalletCurrency>(
-          txn: LedgerTransaction<S>,
-        ): LedgerTransactionWithMetadata<S> => ({
+        <S extends WalletCurrency>(txn: LedgerTransaction<S>): LedgerTransaction<S> => ({
           ...txn,
-          hasMetadata: true,
         }),
       )
 
@@ -319,13 +311,11 @@ describe("translates ledger txs to wallet txs", () => {
         revealedPreImage: "revealedPreImage" as RevealedPreImage,
       }
 
-      const result =
-        WalletTransactionHistory.fromLedgerWithMetadata(ledgerTxnsWithMetadata)
+      const result = WalletTransactionHistory.fromLedger(ledgerTxnsWithMetadata)
 
       const expectedWithMetadata = expectedWalletTxns(txnsArgs).map(
         (txn: WalletTransaction): WalletTransactionWithMetadata => ({
           ...txn,
-          hasMetadata: true,
         }),
       )
 

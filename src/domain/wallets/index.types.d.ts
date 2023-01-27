@@ -38,7 +38,7 @@ type SettlementViaIntraledger = {
 
 type SettlementViaLn = {
   readonly type: "lightning"
-  readonly revealedPreImage: undefined
+  readonly revealedPreImage: RevealedPreImage | undefined
 }
 
 type SettlementViaLnWithMetadata = {
@@ -103,27 +103,23 @@ type WalletLnSettledTransactionWithMetadata = BaseWalletTransaction & {
   readonly settlementVia: SettlementViaLnWithMetadata
 }
 
-type IntraLedgerTransactionWithMetadata = { hasMetadata: true } & IntraLedgerTransaction
-
 type WalletOnChainTransaction =
   | WalletOnChainIntraledgerTransaction
   | WalletOnChainSettledTransaction
   | WalletLegacyOnChainIntraledgerTransaction
   | WalletLegacyOnChainSettledTransaction
 
-type WalletOnChainTransactionWithMetadata = { hasMetadata: true } & (
+type WalletOnChainTransactionWithMetadata =
   | WalletOnChainIntraledgerTransaction
   | WalletOnChainSettledTransaction
   | WalletLegacyOnChainIntraledgerTransaction
   | WalletLegacyOnChainSettledTransaction
-)
 
 type WalletLnTransaction = WalletLnIntraledgerTransaction | WalletLnSettledTransaction
 
-type WalletLnTransactionWithMetadata = { hasMetadata: true } & (
+type WalletLnTransactionWithMetadata =
   | WalletLnIntraledgerTransaction
   | WalletLnSettledTransactionWithMetadata
-)
 
 type WalletTransaction =
   | IntraLedgerTransaction
@@ -131,7 +127,7 @@ type WalletTransaction =
   | WalletLnTransaction
 
 type WalletTransactionWithMetadata =
-  | IntraLedgerTransactionWithMetadata
+  | IntraLedgerTransaction
   | WalletOnChainTransactionWithMetadata
   | WalletLnTransactionWithMetadata
 
