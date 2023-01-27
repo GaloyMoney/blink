@@ -156,8 +156,9 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       return new UnknownKratosError(err)
     }
 
-    if (identity.state === undefined)
-      throw new KratosError("state undefined, probably impossible state") // type issue
+    if (identity.state === undefined) {
+      return new KratosError("state undefined, probably impossible state") // type issue
+    }
 
     identity.traits = { phone }
 
@@ -167,14 +168,15 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       state: identity.state,
     }
 
-    const { data: newIdentity } = await kratosAdmin.updateIdentity({
-      id: kratosUserId,
-      updateIdentityBody: adminIdentity,
-    })
-
-    // TODO: check if phone doesn't already exist
-
-    return toDomainIdentityPhone(newIdentity)
+    try {
+      const { data: newIdentity } = await kratosAdmin.updateIdentity({
+        id: kratosUserId,
+        updateIdentityBody: adminIdentity,
+      })
+      return toDomainIdentityPhone(newIdentity)
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
   }
 
   const upgradeToPhoneAndEmailSchema = async ({
@@ -215,12 +217,16 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       schema_id: "phone_email_no_password_v0",
     }
 
-    const { data: newIdentity } = await kratosAdmin.updateIdentity({
-      id: kratosUserId,
-      updateIdentityBody: adminIdentity,
-    })
+    try {
+      const { data: newIdentity } = await kratosAdmin.updateIdentity({
+        id: kratosUserId,
+        updateIdentityBody: adminIdentity,
+      })
 
-    return toDomainIdentityPhone(newIdentity)
+      return toDomainIdentityPhone(newIdentity)
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
   }
 
   return {
