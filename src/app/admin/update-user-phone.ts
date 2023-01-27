@@ -8,6 +8,7 @@ import { IdentityRepository } from "@services/kratos/identity"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
+import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
 
 import { getBalanceForWallet, listWalletsByAccountId } from "../wallets"
 
@@ -48,34 +49,44 @@ export const updateUserPhone = async ({
 }: {
   id: string
   phone: PhoneNumber
-}): Promise<Account | ApplicationError> => {
-  const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findById(id as AccountId)
-  if (account instanceof Error) return account
-  const kratosUserId = account.kratosUserId
+}): Promise<Account | ApplicationError> =>
+  asyncRunInSpan(
+    "app.admin.updateUserPhone",
+    {
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: "updateUserPhone",
+        [SemanticAttributes.CODE_NAMESPACE]: "app.admin",
+      },
+    },
+    async () => {
+      const accountsRepo = AccountsRepository()
+      const account = await accountsRepo.findById(id as AccountId)
+      if (account instanceof Error) return account
+      const kratosUserId = account.kratosUserId
 
-  const identityRepo = IdentityRepository()
-  const existingIdentity = await identityRepo.slowFindByPhone(phone)
+      const identityRepo = IdentityRepository()
+      const existingIdentity = await identityRepo.slowFindByPhone(phone)
 
-  if (
-    !(existingIdentity instanceof PhoneIdentityDoesNotExistError) &&
-    !(existingIdentity instanceof KratosError)
-  ) {
-    const result = await deleteUserIfNew({ kratosUserId: existingIdentity.id })
-    if (result instanceof Error) return result
-  }
+      if (
+        !(existingIdentity instanceof PhoneIdentityDoesNotExistError) &&
+        !(existingIdentity instanceof KratosError)
+      ) {
+        const result = await deleteUserIfNew({ kratosUserId: existingIdentity.id })
+        if (result instanceof Error) return result
+      }
 
-  const usersRepo = UsersRepository()
-  const user = await usersRepo.findById(kratosUserId)
-  if (user instanceof Error) return user
+      const usersRepo = UsersRepository()
+      const user = await usersRepo.findById(kratosUserId)
+      if (user instanceof Error) return user
 
-  user.phone = phone
-  const result = await usersRepo.update(user)
-  if (result instanceof Error) return result
+      user.phone = phone
+      const result = await usersRepo.update(user)
+      if (result instanceof Error) return result
 
-  const authService = AuthWithPhonePasswordlessService()
-  const kratosResult = await authService.updatePhone({ kratosUserId, phone })
-  if (kratosResult instanceof Error) return kratosResult
+      const authService = AuthWithPhonePasswordlessService()
+      const kratosResult = await authService.updatePhone({ kratosUserId, phone })
+      if (kratosResult instanceof Error) return kratosResult
 
-  return account
-}
+      return account
+    },
+  )
