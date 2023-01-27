@@ -27,17 +27,20 @@ const SettlementViaIntraLedger = GT.Object({
 
 const SettlementViaLn = GT.Object({
   name: "SettlementViaLn",
-  isTypeOf: (source: SettlementViaLn) => source.type === SettlementMethod.Lightning,
+  isTypeOf: (source) => source.type === SettlementMethod.Lightning,
   fields: () => ({
     paymentSecret: {
       type: LnPaymentSecret,
-      resolve: (source: SettlementViaLn) => source.revealedPreImage,
+      resolve: (source) => source.revealedPreImage,
       deprecationReason:
         "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type",
     },
     preImage: {
       type: LnPaymentPreImage,
-      resolve: (source: SettlementViaLn) => source.revealedPreImage,
+      resolve: (source, args, { loaders }) => {
+        console.log({ source })
+        return loaders.txnMetadata.load(source.id)
+      },
     },
   }),
 })
