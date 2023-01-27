@@ -29,7 +29,18 @@ import { AuthWithEmailPasswordlessService } from "@services/kratos/auth-email-no
 
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
+import USER_UPDATE_PHONE from "../../../e2e/servers/graphql-main-server/mutations/user-update-phone.gql"
+import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-server/queries/account-details-by-user-phone.gql"
+import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
+
 import {
+  adminTestClientConfig,
+  createApolloClient,
+  defaultTestClientConfig,
+  fundWalletIdFromLightning,
+  getAdminPhoneAndCode,
+  getDefaultWalletIdByTestUserRef,
+  getPhoneAndCodeFromRef,
   killServer,
   randomEmail,
   randomPassword,
@@ -515,5 +526,110 @@ describe("decoding link header", () => {
 
   it("should be undefined when no more next is present", () => {
     expect(getNextPage(withoutNext)).toBe(undefined)
+  })
+})
+
+describe("updates user phone", () => {
+  let newPhone: PhoneNumber
+
+  it("updates user phone", async () => {
+    const { phone, code } = getPhoneAndCodeFromRef("H")
+
+    const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
+
+    await apolloClient.mutate({
+      mutation: USER_LOGIN,
+      variables: { input: { phone, code } },
+    })
+
+    const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
+
+    const loginResult = await apolloClient.mutate({
+      mutation: USER_LOGIN,
+      variables: { input: { phone: adminPhone, code: adminCode } },
+    })
+
+    await disposeClient()
+
+    const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
+      await createApolloClient(
+        adminTestClientConfig(loginResult.data.userLogin.authToken),
+      )
+
+    const accountDetails = await adminApolloClient.query({
+      query: ACCOUNT_DETAILS_BY_USER_PHONE,
+      variables: { phone },
+    })
+
+    const uid = accountDetails.data.accountDetailsByUserPhone.id
+
+    newPhone = randomPhone()
+    await adminApolloClient.mutate({
+      mutation: USER_UPDATE_PHONE,
+      variables: { input: { phone: newPhone, uid } },
+    })
+
+    const result = await adminApolloClient.query({
+      query: ACCOUNT_DETAILS_BY_USER_PHONE,
+      variables: { phone: newPhone },
+    })
+
+    await disposeAdminClient()
+
+    expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
+  })
+
+  it("updates phone even if new phone is associated with a zero balance account, but not otherwise", async () => {
+    const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
+    const { phone, code } = getPhoneAndCodeFromRef("I")
+    const walletId = await getDefaultWalletIdByTestUserRef("I")
+
+    apolloClient.mutate({
+      mutation: USER_LOGIN,
+      variables: { input: { phone, code } },
+    })
+
+    const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
+
+    const loginResult = await apolloClient.mutate({
+      mutation: USER_LOGIN,
+      variables: { input: { phone: adminPhone, code: adminCode } },
+    })
+
+    await disposeClient()
+
+    const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
+      await createApolloClient(
+        adminTestClientConfig(loginResult.data.userLogin.authToken),
+      )
+
+    const accountDetails = await adminApolloClient.query({
+      query: ACCOUNT_DETAILS_BY_USER_PHONE,
+      variables: { phone },
+    })
+
+    const uid = accountDetails.data.accountDetailsByUserPhone.id
+
+    const result = await adminApolloClient.mutate({
+      mutation: USER_UPDATE_PHONE,
+      variables: { input: { phone: newPhone, uid } },
+    })
+
+    // removes the phone from a user with zero balance
+    expect(result.data.userUpdatePhone.errors.length).toBe(0)
+
+    await fundWalletIdFromLightning({ walletId, amount: 1000 })
+
+    const result1 = await adminApolloClient.mutate({
+      mutation: USER_UPDATE_PHONE,
+      variables: { input: { phone: newPhone, uid } },
+    })
+
+    // errors when trying to remove phone from a user with non zero balance
+    expect(result1.data.userUpdatePhone.errors[0].message).toContain(
+      "The phone is associated with an existing wallet that has a non zero balance",
+    )
+
+    await disposeAdminClient()
   })
 })

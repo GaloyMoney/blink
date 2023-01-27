@@ -335,6 +335,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid pagination arguments"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "UserWithPhoneAlreadyExistsError":
+      message =
+        "The phone is associated with an existing wallet that has a non zero balance. Sweep the funds and try again."
+      return new ValidationInternalError({ message, logger: baseLogger })
     // ----------
     // Unhandled below here
     // ----------
@@ -360,6 +364,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "PersistError":
     case "DuplicateError":
     case "CouldNotFindError":
+    case "CouldNotUpdateError":
     case "ValidationError":
     case "LnRouteValidationError":
     case "BadAmountForRouteError":
@@ -481,6 +486,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LikelyNoUserWithThisPhoneExistError":
     case "LikelyUserAlreadyExistError":
     case "PhoneIdentityDoesNotExistError":
+    case "CouldNotUnsetPhoneFromUserError":
     case "InvalidDeviceTokenError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name

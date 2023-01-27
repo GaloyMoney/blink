@@ -13,12 +13,15 @@ export class DuplicateError extends RepositoryError {}
 
 export class BadInputsForFindError extends RepositoryError {}
 export class CouldNotFindError extends RepositoryError {}
+export class CouldNotUpdateError extends RepositoryError {}
 export class CannotConnectToDbError extends RepositoryError {
   level = ErrorLevel.Critical
 }
 export class DbConnectionClosedError extends RepositoryError {
   level = ErrorLevel.Critical
 }
+
+export class CouldNotUnsetPhoneFromUserError extends CouldNotUpdateError {}
 
 export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 

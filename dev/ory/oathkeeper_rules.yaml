@@ -14,7 +14,7 @@
   upstream:
     url: "http://e2e-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<.*>"
+    url: "<(http|https)>://<.*><[0-9]+>/graphql<.*>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
     - handler: cookie_session
@@ -26,6 +26,31 @@
     - handler: bearer_token
       config:
         check_session_url: "http://e2e-tests:4012/auth/validatetoken"
+        preserve_path: true
+        preserve_query: true
+        subject_from: sub
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: header
+      config:
+        headers:
+          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
+    - handler: id_token
+      config:
+        claims: '{"sub": "{{ print .Subject }}"}'
+- id: admin-backend
+  upstream:
+    url: "http://e2e-tests:4001"
+    strip_path: /admin
+  match:
+    url: "<(http|https)>://<.*><[0-9]+>/admin<.*>"
+    methods: ["GET", "POST", "OPTIONS"]
+  authenticators:
+    - handler: bearer_token
+      config:
+        check_session_url: "http://e2e-tests:4001/auth/validatetoken"
         preserve_path: true
         preserve_query: true
         subject_from: sub

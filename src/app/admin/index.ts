@@ -1,3 +1,5 @@
+export * from "./update-user-phone"
+
 import { checkedToUsername } from "@domain/accounts"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 

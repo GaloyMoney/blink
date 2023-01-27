@@ -39,10 +39,15 @@ interface IAuthWithPhonePasswordlessService {
     kratosUserId: UserId
     email: EmailAddress
   }): Promise<IdentityPhone | AuthenticationError> // TODO: should be IdentityPhoneWithPassword
+  updatePhone(input: {
+    kratosUserId: UserId
+    phone: PhoneNumber
+  }): Promise<IdentityPhone | AuthenticationError>
 }
 
 interface IIdentityRepository {
   getIdentity(id: UserId): Promise<IdentityPhone | KratosError>
   listIdentities(): Promise<IdentityPhone[] | KratosError>
   slowFindByPhone(phone: PhoneNumber): Promise<IdentityPhone | KratosError>
+  deleteIdentity(id: UserId): Promise<void | KratosError>
 }

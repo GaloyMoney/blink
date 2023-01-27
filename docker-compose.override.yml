@@ -66,6 +66,7 @@ services:
   e2e-tests:
     ports:
       - "4012:4012"
+      - "4001:4001"
   mailslurper:
     ports:
       - "4436:4436"

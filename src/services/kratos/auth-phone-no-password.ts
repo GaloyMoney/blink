@@ -141,6 +141,44 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     return kratosUserId
   }
 
+  const updatePhone = async ({
+    kratosUserId,
+    phone,
+  }: {
+    kratosUserId: UserId
+    phone: PhoneNumber
+  }) => {
+    let identity: Identity
+
+    try {
+      ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+
+    if (identity.state === undefined) {
+      return new KratosError("state undefined, probably impossible state") // type issue
+    }
+
+    identity.traits = { phone }
+
+    const adminIdentity: UpdateIdentityBody = {
+      ...identity,
+      credentials: { password: { config: { password } } },
+      state: identity.state,
+    }
+
+    try {
+      const { data: newIdentity } = await kratosAdmin.updateIdentity({
+        id: kratosUserId,
+        updateIdentityBody: adminIdentity,
+      })
+      return toDomainIdentityPhone(newIdentity)
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+  }
+
   const upgradeToPhoneAndEmailSchema = async ({
     kratosUserId,
     email,
@@ -179,12 +217,16 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       schema_id: "phone_email_no_password_v0",
     }
 
-    const { data: newIdentity } = await kratosAdmin.updateIdentity({
-      id: kratosUserId,
-      updateIdentityBody: adminIdentity,
-    })
+    try {
+      const { data: newIdentity } = await kratosAdmin.updateIdentity({
+        id: kratosUserId,
+        updateIdentityBody: adminIdentity,
+      })
 
-    return toDomainIdentityPhone(newIdentity)
+      return toDomainIdentityPhone(newIdentity)
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
   }
 
   return {
@@ -193,5 +235,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     createIdentityWithSession,
     createIdentityNoSession,
     upgradeToPhoneAndEmailSchema,
+    updatePhone,
   }
 }

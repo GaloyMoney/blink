@@ -1,4 +1,8 @@
-import { CouldNotFindUserFromPhoneError, RepositoryError } from "@domain/errors"
+import {
+  CouldNotUnsetPhoneFromUserError,
+  CouldNotFindUserFromPhoneError,
+  RepositoryError,
+} from "@domain/errors"
 
 import { User } from "./schema"
 
@@ -84,9 +88,28 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const adminUnsetPhoneForUserPreservation = async (
+    id: UserId,
+  ): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOneAndUpdate(
+        { userId: id },
+        { $unset: { phone: true } },
+        { new: true },
+      )
+      if (!result) {
+        return new CouldNotUnsetPhoneFromUserError()
+      }
+      return translateToUser(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   return {
     findById,
     findByPhone,
     update,
+    adminUnsetPhoneForUserPreservation,
   }
 }
