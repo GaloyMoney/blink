@@ -1,4 +1,4 @@
-name: "Nodejs Check Code"
+name: 'Nodejs Check Code'
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ jobs:
     name: Nodejs Check Code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v2
       - run: yarn install
       - name: Run check code
