@@ -537,7 +537,7 @@ describe("updates user phone", () => {
 
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
 
-    apolloClient.mutate({
+    await apolloClient.mutate({
       mutation: USER_LOGIN,
       variables: { input: { phone, code } },
     })
