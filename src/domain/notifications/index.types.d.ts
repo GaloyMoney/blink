@@ -46,6 +46,7 @@ type SendBalanceArgs = {
 }
 
 type PriceUpdateArgs = {
+  timestamp: Date
   pricePerSat: DisplayCurrencyPerSat
   displayCurrency: DisplayCurrency
 }

@@ -48,11 +48,12 @@ const RealtimePriceQuery = GT.Field({
 
     return {
       timestamp,
-      formattedAmount: price.toString(),
       base: Math.round(price * 10 ** offset),
       offset,
-      currency: displayCurrency,
+      walletCurrency,
+      displayCurrency,
       currencyUnit: `${displayCurrency}CENT`,
+      formattedAmount: price.toFixed(8),
     }
   },
 })

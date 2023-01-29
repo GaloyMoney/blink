@@ -267,8 +267,9 @@ export const publishCurrentPrices = async () => {
     if (currentPrice instanceof Error) {
       return logger.error({ err: currentPrice }, "can't publish the price")
     }
+    const timestamp = currentPrice.timestamp
     const pricePerSat = currentPrice.price
-    NotificationsService().priceUpdate({ pricePerSat, displayCurrency })
+    NotificationsService().priceUpdate({ timestamp, pricePerSat, displayCurrency })
   }
 }
 

@@ -949,7 +949,7 @@ type PublicWallet {
 type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
   btcPrice(currency: DisplayCurrency! = "USD"): Price
-    @deprecated(reason: "use realtime price instead")
+    @deprecated(reason: "use realtimePrice instead")
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
   currencyList: [Currency]
@@ -1019,15 +1019,27 @@ Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
 """
 type RealtimePrice {
   base: SafeInt!
-  currency: DisplayCurrency!
   currencyUnit: String!
+  displayCurrency: DisplayCurrency!
   formattedAmount: String!
+  id: ID!
   offset: Int!
 
   """
   Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
   """
   timestamp: Timestamp!
+  walletCurrency: WalletCurrency!
+}
+
+input RealtimePriceInput {
+  displayCurrency: DisplayCurrency! = "USD"
+  walletCurrency: WalletCurrency! = BTC
+}
+
+type RealtimePricePayload {
+  errors: [Error!]!
+  price: RealtimePrice
 }
 
 """
@@ -1043,10 +1055,6 @@ scalar SatAmount
 type SatAmountPayload {
   amount: SatAmount
   errors: [Error!]!
-}
-
-input SatPriceInput {
-  currency: DisplayCurrency! = "USD"
 }
 
 """
@@ -1091,7 +1099,7 @@ type Subscription {
   """
   Returns the price of 1 satoshi
   """
-  satPrice(input: SatPriceInput!): PricePayload!
+  realtimePrice(input: RealtimePriceInput!): RealtimePricePayload!
 }
 
 type SuccessPayload {
