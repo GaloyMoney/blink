@@ -1,0 +1,25 @@
+subscription realtimePrice(
+  $walletCurrency: WalletCurrency!
+  $displayCurrency: DisplayCurrency!
+) {
+  realtimePrice(
+    input: {
+      walletCurrency: $walletCurrency,
+      displayCurrency: $displayCurrency
+    }
+  ) {
+    errors {
+      message
+    }
+    price {
+      id
+      timestamp
+      base
+      offset
+      walletCurrency
+      displayCurrency
+      currencyUnit
+      formattedAmount
+    }
+  }
+}

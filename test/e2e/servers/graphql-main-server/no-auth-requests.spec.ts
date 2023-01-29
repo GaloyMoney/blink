@@ -18,7 +18,7 @@ import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import MAIN from "./queries/main.gql"
 
 import PRICE from "./subscriptions/price.gql"
-import SAT_PRICE from "./subscriptions/sat-price.gql"
+import REALTIME_PRICE from "./subscriptions/realtime-price.gql"
 
 import {
   clearAccountLocks,
@@ -92,11 +92,11 @@ describe("graphql", () => {
     })
   })
 
-  describe("sat price", () => {
-    const subscriptionQuery = SAT_PRICE
+  describe("realtime price", () => {
+    const subscriptionQuery = REALTIME_PRICE
 
     it("returns data with valid inputs", async () => {
-      const input = { currency: "USD" }
+      const input = { walletCurrency: "BTC", displayCurrency: "USD" }
 
       const subscription = apolloClient.subscribe({
         query: subscriptionQuery,
@@ -107,14 +107,18 @@ describe("graphql", () => {
 
       const result = (await promisifiedSubscription(subscription)) as { data }
       clearTimeout(pricePublish)
-      const price_ = result.data?.satPrice
+      const price_ = result.data?.realtimePrice
       const { price, errors } = price_
 
       expect(errors.length).toEqual(0)
+      expect(price).toHaveProperty("id")
+      expect(price).toHaveProperty("timestamp")
       expect(price).toHaveProperty("base")
       expect(price).toHaveProperty("offset")
+      expect(price).toHaveProperty("walletCurrency")
+      expect(price).toHaveProperty("displayCurrency")
       expect(price).toHaveProperty("formattedAmount")
-      expect(price.currencyUnit).toEqual(input["currency"] + "CENT")
+      expect(price.currencyUnit).toEqual(input["displayCurrency"] + "CENT")
     })
   })
 
