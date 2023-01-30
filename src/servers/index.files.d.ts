@@ -1,5 +1,12 @@
+interface Loaders {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any
+  txnMetadata
+}
+
 type GraphQLContext = {
   logger: Logger
+  loaders: Loaders
   user: User | undefined
   domainAccount: Account | undefined
   geetest: GeetestType
@@ -8,6 +15,7 @@ type GraphQLContext = {
 
 type GraphQLContextAuth = {
   logger: Logger
+  loaders: Loaders
   user: User
   domainAccount: Account
   geetest: GeetestType
