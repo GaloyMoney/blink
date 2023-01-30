@@ -8,6 +8,7 @@ import { IdentityRepository } from "@services/kratos/identity"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { getBalanceForWallet, listWalletsByAccountId } from "../wallets"
 
@@ -61,6 +62,7 @@ export const updateUserPhone = async ({
     !(existingIdentity instanceof PhoneIdentityDoesNotExistError) &&
     !(existingIdentity instanceof KratosError)
   ) {
+    addAttributesToCurrentSpan({ existingIdentity: true, existingUser: true })
     const result = await deleteUserIfNew({ kratosUserId: existingIdentity.id })
     if (result instanceof Error) return result
   }
@@ -69,6 +71,7 @@ export const updateUserPhone = async ({
 
   const existingUser = await usersRepo.findByPhone(phone)
   if (!(existingUser instanceof Error)) {
+    addAttributesToCurrentSpan({ existingIdentity: false, existingUser: true })
     const existingUserKratosUserId = existingUser.id
     const result = await usersRepo.adminUnsetPhoneForUserPreservation(
       existingUserKratosUserId,
