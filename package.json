@@ -140,7 +140,7 @@
     "@typescript-eslint/parser": "^5.49.0",
     "@xascode/tscpaths": "0.1.4",
     "axios-mock-adapter": "^1.21.2",
-    "eslint": "^8.32.0",
+    "eslint": "^8.33.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.0.0",
