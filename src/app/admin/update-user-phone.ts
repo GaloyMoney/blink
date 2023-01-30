@@ -66,6 +66,16 @@ export const updateUserPhone = async ({
   }
 
   const usersRepo = UsersRepository()
+
+  const existingUser = await usersRepo.findByPhone(phone)
+  if (!(existingUser instanceof Error)) {
+    const existingUserKratosUserId = existingUser.id
+    const result = await usersRepo.adminUnsetPhoneForUserPreservation(
+      existingUserKratosUserId,
+    )
+    if (result instanceof Error) return result
+  }
+
   const user = await usersRepo.findById(kratosUserId)
   if (user instanceof Error) return user
 
