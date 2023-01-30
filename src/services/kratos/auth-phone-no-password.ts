@@ -175,7 +175,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       })
       return toDomainIdentityPhone(newIdentity)
     } catch (err) {
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
   }
 
@@ -225,7 +225,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
       return toDomainIdentityPhone(newIdentity)
     } catch (err) {
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
   }
 
