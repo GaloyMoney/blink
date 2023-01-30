@@ -4059,10 +4059,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-balanceofsatoshis@^13.24.0:
-  version "13.24.0"
-  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.24.0.tgz#457b01f121724f66bab030cf1764b053ddad8fdf"
-  integrity sha512-QP3hY4Ehgjnl5mXmHuXzgU/rnRpMTlpMxr3+JytC2NTNTUTjD5NSm+jJ+fUTHfcfGa8Plos2RTTmiqamHEE7uw==
+balanceofsatoshis@^13.25.0:
+  version "13.25.0"
+  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.25.0.tgz#f513b8a1c26668370c79ad14c4c19394c7f0ae44"
+  integrity sha512-roAcU+q8joEhqMMpBj101OrK9u9bdN21twccRFDAhoBYIHZA5b1tGzl+CiQ/JRPqDdFUL3DObwxVLuho4Ed8CA==
   dependencies:
     "@alexbosworth/caporal" "1.4.4"
     "@alexbosworth/fiat" "1.0.4"
@@ -4094,7 +4094,7 @@ balanceofsatoshis@^13.24.0:
     ln-sync "4.3.0"
     ln-telegram "4.6.1"
     moment "2.29.4"
-    paid-services "4.3.0"
+    paid-services "4.3.1"
     probing "3.0.1"
     psbt "2.7.2"
     qrcode-terminal "0.12.0"
@@ -9625,6 +9625,26 @@ paid-services@4.3.0:
     invoices "2.2.3"
     ln-service "54.9.0"
     ln-sync "4.2.0"
+    p2tr "1.3.3"
+    psbt "2.7.2"
+    tiny-secp256k1 "2.2.1"
+
+paid-services@4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/paid-services/-/paid-services-4.3.1.tgz#cca54b7321be89732c137b8360e90310f4fac271"
+  integrity sha512-ViELmtre3hJ9XxtZKvvEdil5YpgIDir3COdGWEya0WKjPbfjoAteaIJc0awQB9WEPxADUHKPj5PWz9arScMSvw==
+  dependencies:
+    "@alexbosworth/fiat" "1.0.4"
+    async "3.2.4"
+    asyncjs-util "1.2.11"
+    bech32 "2.0.0"
+    bolt01 "1.2.6"
+    bolt07 "1.8.3"
+    ecpair "2.1.0"
+    goldengate "12.0.2"
+    invoices "2.2.3"
+    ln-service "54.9.0"
+    ln-sync "4.3.0"
     p2tr "1.3.3"
     psbt "2.7.2"
     tiny-secp256k1 "2.2.1"
