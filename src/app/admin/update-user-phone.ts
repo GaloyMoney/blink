@@ -1,9 +1,5 @@
-import {
-  PhoneIdentityDoesNotExistError,
-  UserWithPhoneAlreadyExistsError,
-} from "@domain/authentication/errors"
+import { UserWithPhoneAlreadyExistsError } from "@domain/authentication/errors"
 import { AuthWithPhonePasswordlessService } from "@services/kratos/auth-phone-no-password"
-import { KratosError } from "@services/kratos/errors"
 import { IdentityRepository } from "@services/kratos/identity"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose/accounts"
@@ -55,27 +51,12 @@ export const updateUserPhone = async ({
   if (account instanceof Error) return account
   const kratosUserId = account.kratosUserId
 
-  const identityRepo = IdentityRepository()
-  const existingIdentity = await identityRepo.slowFindByPhone(phone)
-
-  if (
-    !(existingIdentity instanceof PhoneIdentityDoesNotExistError) &&
-    !(existingIdentity instanceof KratosError)
-  ) {
-    addAttributesToCurrentSpan({ existingIdentity: true, existingUser: true })
-    const result = await deleteUserIfNew({ kratosUserId: existingIdentity.id })
-    if (result instanceof Error) return result
-  }
-
   const usersRepo = UsersRepository()
 
   const existingUser = await usersRepo.findByPhone(phone)
   if (!(existingUser instanceof Error)) {
-    addAttributesToCurrentSpan({ existingIdentity: false, existingUser: true })
-    const existingUserKratosUserId = existingUser.id
-    const result = await usersRepo.adminUnsetPhoneForUserPreservation(
-      existingUserKratosUserId,
-    )
+    addAttributesToCurrentSpan({ existingUser: true })
+    const result = await deleteUserIfNew({ kratosUserId: existingUser.id })
     if (result instanceof Error) return result
   }
 
