@@ -155,6 +155,6 @@ interface ITransactionsMetadataRepository {
   ): Promise<LedgerTransactionMetadata | RepositoryError>
 
   listByIds(
-    ids: Array<LedgerTransactionId>,
-  ): Promise<Array<LedgerTransactionMetadata | undefined | RepositoryError>>
+    ids: LedgerTransactionId[],
+  ): Promise<(LedgerTransactionMetadata | RepositoryError)[] | RepositoryError>
 }

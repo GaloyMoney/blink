@@ -2,7 +2,7 @@ import { createServer } from "http"
 
 import DataLoader from "dataloader"
 
-import { Accounts } from "@app"
+import { Accounts, Transactions } from "@app"
 import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
@@ -51,7 +51,6 @@ import jwksRsa from "jwks-rsa"
 import { checkedToUserId } from "@domain/accounts"
 
 import { sendOathkeeperRequest } from "@services/oathkeeper"
-import { TransactionsMetadataRepository } from "@services/ledger/services"
 
 import { ValidationError } from "@domain/shared"
 
@@ -173,9 +172,14 @@ const sessionContext = ({
       }
 
       const loaders = {
-        txnMetadata: new DataLoader((keys) =>
-          TransactionsMetadataRepository().listByIds(keys as LedgerTransactionId[]),
-        ),
+        txnMetadata: new DataLoader(async (keys) => {
+          const txnMetadata = await Transactions.getTransactionsMetadataByIds(
+            keys as LedgerTransactionId[],
+          )
+          if (txnMetadata instanceof Error) throw mapError(txnMetadata)
+
+          return txnMetadata
+        }),
       }
 
       return {

@@ -37,7 +37,9 @@ const Transaction = GT.Object<WalletTransaction>({
       description: "To which protocol the payment has settled on.",
       resolve: async (source, _, { loaders }) => {
         const { settlementVia } = source
-        const result = await loaders.txnMetadata.load(source.id)
+        const result: LedgerTransactionMetadata | RepositoryError =
+          await loaders.txnMetadata.load(source.id)
+        if (result instanceof Error) return settlementVia
 
         const updatedSettlementVia = { ...settlementVia }
         for (const key of Object.keys(settlementVia)) {
