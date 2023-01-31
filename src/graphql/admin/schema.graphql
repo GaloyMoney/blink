@@ -172,11 +172,6 @@ interface Error {
   path: [String]
 }
 
-enum ExchangeCurrencyUnit {
-  BTCSAT
-  USDCENT
-}
-
 type GraphQLApplicationError implements Error {
   code: String
   message: String!
@@ -313,7 +308,7 @@ Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
 """
 type Price {
   base: SafeInt!
-  currencyUnit: ExchangeCurrencyUnit!
+  currencyUnit: String!
   formattedAmount: String!
   offset: Int!
 }
