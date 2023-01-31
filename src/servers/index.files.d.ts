@@ -1,7 +1,9 @@
+declare class DataLoader<K, V> {
+  load(key: K): Promise<V>
+}
+
 interface Loaders {
-  /* eslint @typescript-eslint/ban-ts-comment: "off" */
-  // @ts-ignore-next-line no-implicit-any
-  txnMetadata
+  txnMetadata: DataLoader<string, LedgerTransactionMetadata | RepositoryError>
 }
 
 type GraphQLContext = {
