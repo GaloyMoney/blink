@@ -6627,10 +6627,10 @@ graphql@^16.3.0, graphql@^16.6.0:
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-16.6.0.tgz#c2dcffa4649db149f6282af726c8c83f1c7c5fdb"
   integrity sha512-KPIBPDlW7NxrbT/eh4qPXz5FiFdL5UbaA0XUNz2Rp3Z3hqBSkbj0GVjwFDztsWVauZUWsbKHgMg++sk8UX0bkw==
 
-grpc-tools@^1.12.3:
-  version "1.12.3"
-  resolved "https://registry.yarnpkg.com/grpc-tools/-/grpc-tools-1.12.3.tgz#bedbb880e564a52b192d693300280ed7ab45e61d"
-  integrity sha512-KJgk65dbGqkMuj0xiuT5uk45GcqrFfWTSqpk6Ktd0Ds2cEe9QtPQG/uWCGk185ShXCdgYFLRwfh+FyjQ3nlBNw==
+grpc-tools@^1.12.4:
+  version "1.12.4"
+  resolved "https://registry.yarnpkg.com/grpc-tools/-/grpc-tools-1.12.4.tgz#a044c9e8157941033ea7a5f144c2dc9dc4501de4"
+  integrity sha512-5+mLAJJma3BjnW/KQp6JBjUMgvu7Mu3dBvBPd1dcbNIb+qiR0817zDpgPjS7gRb+l/8EVNIa3cB02xI9JLToKg==
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.5"
 

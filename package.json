@@ -144,7 +144,7 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.0.0",
-    "grpc-tools": "^1.12.3",
+    "grpc-tools": "^1.12.4",
     "grpc_tools_node_protoc_ts": "^5.3.2",
     "jest": "^29.4.1",
     "jest-junit": "^15.0.0",
