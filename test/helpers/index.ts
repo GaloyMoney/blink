@@ -42,16 +42,15 @@ export const amountAfterFeeDeduction = ({
   depositFeeRatio: DepositFeeRatio
 }) => Math.round(amount * (1 - depositFeeRatio))
 
-export const resetDatabase = async (mongoose) => {
+export const resetDatabase = async (mongoose: typeof import("mongoose")) => {
   const db = mongoose.connection.db
   // Get all collections
   const collections = await db.listCollections().toArray()
   // Create an array of collection names and drop each collection
-  collections
-    .map((c) => c.name)
-    .forEach(async (collectionName) => {
-      await db.dropCollection(collectionName)
-    })
+  const collectionNames = collections.map((c) => c.name)
+  for (const collectionName of collectionNames) {
+    await db.dropCollection(collectionName)
+  }
 }
 
 export const chunk = (a, n) =>
