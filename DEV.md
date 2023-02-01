@@ -49,7 +49,7 @@ To start the GraphQL server and its dependencies:
 $ make start
 ```
 
-After running `make start-deps` or `make reset-deps`, the lightning network - running on regtest - will not have any channel, and the mongodb database - that includes some mandatory accounts for Galoy to work - will be empty. 
+After running `make start-deps` or `make reset-deps`, the lightning network - running on regtest - will not have any channel, and the mongodb database - that includes some mandatory accounts for Galoy to work - will be empty.
 
 To seed the channels and accounts, run: `TEST="with-auth" make e2e`
 
@@ -64,7 +64,7 @@ $ make watch
 
 You can load GraphiQL, a web GUI for GraphQL. Start the server and open the following url:
 
-- http://localhost:4001/graphql (admin API)
+- http://localhost:4002/admin/graphql (admin API, proxied thru oathkeeper)
 - http://localhost:4002/graphql (end user API)
 
 ### Docker compose
