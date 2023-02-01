@@ -9,7 +9,7 @@
     "trigger": "yarn build && node lib/servers/trigger.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
-    "kill-graphql": "kill $(lsof -t -i:4001) & kill $(lsof -t -i:4012) & kill $(lsof -t -i:4011)",
+    "kill-graphql": "kill $(lsof -t -i:4012) & kill $(lsof -t -i:4011)",
     "cron": ". ./.envrc && yarn build && node lib/servers/cron.js",
     "exporter": "yarn build && node lib/servers/exporter.js",
     "daily-notif": "yarn build && node lib/servers/daily-balance-notification.js",
