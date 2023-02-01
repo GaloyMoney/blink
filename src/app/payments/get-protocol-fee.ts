@@ -19,9 +19,9 @@ import { PartialResult } from "../partial-result"
 
 import {
   constructPaymentFlowBuilder,
-  newCheckIntraledgerLimits,
-  newCheckTradeIntraAccountLimits,
-  newCheckWithdrawalLimits,
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
+  checkWithdrawalLimits,
 } from "./helpers"
 
 const getLightningFeeEstimation = async ({
@@ -172,7 +172,7 @@ const estimateLightningFee = async ({
 
   let paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency> | ApplicationError
   if (await builder.isTradeIntraAccount()) {
-    const limitCheck = await newCheckTradeIntraAccountLimits({
+    const limitCheck = await checkTradeIntraAccountLimits({
       amount: usdPaymentAmount,
       accountId: senderWallet.accountId,
       priceRatio,
@@ -181,7 +181,7 @@ const estimateLightningFee = async ({
 
     paymentFlow = await builder.withoutRoute()
   } else if (await builder.isIntraLedger()) {
-    const limitCheck = await newCheckIntraledgerLimits({
+    const limitCheck = await checkIntraledgerLimits({
       amount: usdPaymentAmount,
       accountId: senderWallet.accountId,
       priceRatio,
@@ -190,7 +190,7 @@ const estimateLightningFee = async ({
 
     paymentFlow = await builder.withoutRoute()
   } else {
-    const limitCheck = await newCheckWithdrawalLimits({
+    const limitCheck = await checkWithdrawalLimits({
       amount: usdPaymentAmount,
       accountId: senderWallet.accountId,
       priceRatio,

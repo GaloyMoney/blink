@@ -5,9 +5,9 @@ import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 import {
   getPriceRatioForLimits,
-  newCheckIntraledgerLimits,
-  newCheckTradeIntraAccountLimits,
-  newCheckWithdrawalLimits,
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
+  checkWithdrawalLimits,
 } from "@app/payments/helpers"
 
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
@@ -242,8 +242,8 @@ const executePaymentViaIntraledger = async <
 
   const checkLimits =
     senderWallet.accountId === recipientWallet.accountId
-      ? newCheckTradeIntraAccountLimits
-      : newCheckIntraledgerLimits
+      ? checkTradeIntraAccountLimits
+      : checkIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
     accountId: senderWallet.accountId,
@@ -378,7 +378,7 @@ const executePaymentViaOnChain = async <
   const priceRatioForLimits = await getPriceRatioForLimits(proposedAmounts)
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
-  const limitCheck = await newCheckWithdrawalLimits({
+  const limitCheck = await checkWithdrawalLimits({
     amount: proposedAmounts.usd,
     accountId: senderWalletDescriptor.accountId,
     priceRatio: priceRatioForLimits,
