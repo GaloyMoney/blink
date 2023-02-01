@@ -1,15 +1,12 @@
 import { USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config"
 
-import { getCurrentPrice } from "@app/prices"
-
 import { ErrorLevel } from "@domain/shared"
-import { DisplayCurrency } from "@domain/fiat"
 import { ActivityChecker } from "@domain/ledger"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { LedgerService } from "@services/ledger"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 import { WalletsRepository, AccountsRepository } from "@services/mongoose"
+import { getCurrentPriceInCentsPerSat } from "@app/shared"
 
 export const getRecentlyActiveAccounts = async function* ():
   | AsyncGenerator<Account>
@@ -17,15 +14,13 @@ export const getRecentlyActiveAccounts = async function* ():
   const unlockedAccounts = AccountsRepository().listUnlockedAccounts()
   if (unlockedAccounts instanceof Error) return unlockedAccounts
 
-  const displayCurrencyPerSat = await getCurrentPrice({ currency: DisplayCurrency.Usd })
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+  if (displayPriceRatio instanceof Error) return displayPriceRatio
 
   const ledger = LedgerService()
   const activityChecker = ActivityChecker({
-    getVolumeFn: ledger.allTxBaseVolumeSince,
-    dCConverter,
+    getVolumeAmountFn: ledger.allTxBaseVolumeAmountSince,
+    priceRatio: displayPriceRatio,
     monthlyVolumeThreshold: USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
   })
   for await (const account of unlockedAccounts) {
