@@ -2392,7 +2392,7 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
 })
 
 describe("Handle pending payments - Lightning Pay", () => {
-  it.skip("settle failed and then successful payment routed to lnd-outside-3", async () => {
+  it("settle failed and then successful payment routed to lnd-outside-3", async () => {
     const ledger = LedgerService()
     const senderWalletId = walletIdB
     const senderAccount = accountB
@@ -2400,17 +2400,18 @@ describe("Handle pending payments - Lightning Pay", () => {
 
     // Different amounts to bypass lnd mission control on 2nd send attempt
     const successAmountInvoice = 1000
-    const rebalanceAmountInvoice = successAmountInvoice * 1.05 + 1
+    const rebalanceAmountInvoice = 1001
 
     // Fetch balances on lndOutside3 channel
     const { channels } = await getChannels({ lnd: lndOutside3 })
     expect(channels && channels.length).toBeGreaterThan(0)
-    const remoteBalance = channels[0].remote_balance
+    const { remote_balance: remoteBalance, remote_reserve: remoteReserve } = channels[0]
 
     // Pay lndOutside3 and fail
-    const { request, id: paymentHash } = await createInvoice({
+    const { request, id } = await createInvoice({
       lnd: lndOutside3,
     })
+    const paymentHash = id as PaymentHash
 
     const failResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
       uncheckedPaymentRequest: request,
@@ -2424,12 +2425,25 @@ describe("Handle pending payments - Lightning Pay", () => {
     // Rebalance lndOutside3 route
     const { request: invoice } = await createInvoice({
       lnd: lndOutside1,
-      tokens: rebalanceAmountInvoice,
+      tokens:
+        remoteBalance < remoteReserve
+          ? rebalanceAmountInvoice + remoteReserve
+          : rebalanceAmountInvoice,
     })
     const rebalance = await pay({ lnd: lndOutside3, request: invoice })
     expect(rebalance.is_confirmed).toBe(true)
+    await sleep(500) // rebalance can take some time to settle even after promise is resolved
 
     // Pay lndOutside3 and succeed
+    // Note: probe first to avoid reimburse txn that would need to be manually deleted
+    const successProbeResult =
+      await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+        uncheckedPaymentRequest: request,
+        amount: successAmountInvoice,
+        walletId: senderWalletId,
+      })
+    if (successProbeResult instanceof Error) throw successProbeResult
+
     const successResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
       uncheckedPaymentRequest: request,
       amount: successAmountInvoice,
@@ -2461,7 +2475,7 @@ describe("Handle pending payments - Lightning Pay", () => {
     if (originalTxnPending instanceof Error) throw originalTxnPending
     expect(originalTxnPending.pendingConfirmation).toBeTruthy()
 
-    const isRecordedPending = await ledger.isLnTxRecorded(paymentHash as PaymentHash)
+    const isRecordedPending = await ledger.isLnTxRecorded(paymentHash)
     expect(isRecordedPending).toBeFalsy()
 
     // Run update pending payments
@@ -2478,8 +2492,43 @@ describe("Handle pending payments - Lightning Pay", () => {
     if (txnsPaid instanceof Error) throw txnsPaid
     expect(txnsPaid[0].lnMemo).not.toBe("Payment canceled")
 
-    const isRecordedPaid = await ledger.isLnTxRecorded(paymentHash as PaymentHash)
+    const isRecordedPaid = await ledger.isLnTxRecorded(paymentHash)
     expect(isRecordedPaid).toBeTruthy()
+
+    // Accommodate 'bookingVersusRealWorldAssets' inconsistency
+    // ===
+    // If milliSatsFee is not evenly divisible then fee recorded is rounded up but lnd
+    // balance checked changes by the rounded down amount. The proper fix for this is
+    // to enforce that ppm 'rate' is set to '0' when setting  up channels.
+    const lnPaymentLookup = await lndService.lookupPayment({
+      pubkey: process.env.LND1_PUBKEY as Pubkey,
+      paymentHash: paymentHash,
+    })
+    if (lnPaymentLookup instanceof Error) throw lnPaymentLookup
+    if (lnPaymentLookup.status === PaymentStatus.Failed) {
+      throw new Error("Unexpected failed payment detected")
+    }
+    const milliSatsFee = lnPaymentLookup.confirmedDetails?.milliSatsFee
+    if (milliSatsFee !== undefined && milliSatsFee % 1000 > 0) {
+      // Compensate for fee inconsistency by reimbursing 1 sat
+      const paymentFlowIndex: PaymentFlowStateIndex = {
+        paymentHash,
+        walletId: senderWalletId,
+        inputAmount: BigInt(successAmountInvoice),
+      }
+      const paymentFlow = await PaymentFlowStateRepository(
+        defaultTimeToExpiryInSeconds,
+      ).markLightningPaymentFlowNotPending(paymentFlowIndex)
+      if (paymentFlow instanceof Error) throw paymentFlow
+
+      const reimbursed = await Wallets.reimburseFee({
+        paymentFlow,
+        journalId: originalTxn.journalId,
+        actualFee: toSats(1),
+        revealedPreImage: lnPaymentLookup.confirmedDetails?.revealedPreImage,
+      })
+      if (reimbursed instanceof Error) return reimbursed
+    }
   })
 
   it("settle multiple failed payment routed to lnd-outside-3", async () => {
