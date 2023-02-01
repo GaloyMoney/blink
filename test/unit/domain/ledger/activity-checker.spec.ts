@@ -76,7 +76,7 @@ describe("ActivityChecker with Cents", () => {
       monthlyVolumeThreshold: toCents(100),
       getVolumeFn,
     })
-    const resultIncoming = await checker.aboveThreshold([btcWallet])
+    const resultIncoming = await checker.aboveThreshold([usdWallet])
     expect(resultIncoming).toBe(false)
   })
 
@@ -92,7 +92,7 @@ describe("ActivityChecker with Cents", () => {
       getVolumeFn,
     })
 
-    const resultOutgoing = await checker.aboveThreshold([btcWallet])
+    const resultOutgoing = await checker.aboveThreshold([usdWallet])
     expect(resultOutgoing).toBe(true)
 
     getVolumeFn = () =>
@@ -105,7 +105,7 @@ describe("ActivityChecker with Cents", () => {
       monthlyVolumeThreshold: toCents(100),
       getVolumeFn,
     })
-    const resultIncoming = await checker.aboveThreshold([btcWallet])
+    const resultIncoming = await checker.aboveThreshold([usdWallet])
     expect(resultIncoming).toBe(true)
   })
 })
