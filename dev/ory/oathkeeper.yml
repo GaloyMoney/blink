@@ -62,5 +62,5 @@ errors:
 
 access_rules:
   repositories:
-    - file:///home/ory/oathkeeper_rules.yaml
+    - file:///home/ory/oathkeeper_rules.json
   matching_strategy: regexp
