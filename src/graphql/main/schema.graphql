@@ -730,9 +730,9 @@ type Mutation {
   lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
-  onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
+  onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload! // This should allow for usd wallets
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
-  onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
+  onChainNoAmountUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
   quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
@@ -877,6 +877,8 @@ scalar PaymentHash
 
 type PaymentSendPayload {
   errors: [Error!]!
+  transaction: Transaction
+  wallet: Wallet
   status: PaymentSendResult
 }
 
@@ -964,7 +966,13 @@ type Query {
     targetConfirmations: TargetConfirmations = 1
     walletId: WalletId!
   ): OnChainTxFee!
-  onChainUsdTxFee(
+  onChainUsdFee(
+    address: OnChainAddress!
+    amount: SatAmount!
+    targetConfirmations: TargetConfirmations = 1
+    walletId: WalletId!
+  )
+  onChainUsdNoAmountTxFee(
     address: OnChainAddress!
     amount: CentAmount!
     targetConfirmations: TargetConfirmations = 1
@@ -1354,7 +1362,13 @@ input UserRequestAuthCodeInput {
   phone: Phone!
 }
 
-union UserUpdate = IntraLedgerUpdate | LnUpdate | OnChainUpdate | Price
+type TransactionUpdate {
+  transaction: Transaction
+  wallet: Wallet
+  txNotificationType: TxNotificationType
+}
+
+union UserUpdate =  TransactionUpdate | Price
 
 input UserUpdateLanguageInput {
   language: Language!
