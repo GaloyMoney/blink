@@ -162,6 +162,28 @@ When developing migrations the best way to test them on a clean database is:
 make test-migrate
 ```
 
+#### Create a new migration
+
+Create the migration file
+
+```bash
+npx migrate-mongo create <migration-name> \
+  -f src/migrations/migrate-mongo-config.js
+```
+
+Write the migration in the newly created migration file and then test/run with the following:
+```bash
+# Migrate
+npx migrate-mongo up \
+  -f src/migrations/migrate-mongo-config.js
+
+# Rollback
+npx migrate-mongo down \
+  -f src/migrations/migrate-mongo-config.js
+```
+
+When testing, to isolate just the current migration being worked on in local dev you can temporarily move the other migrations to another dir.
+
 ### Known issues
 
 * **Test suite timeouts**: increase jest timeout value. Example:
