@@ -6,7 +6,7 @@ import {
 } from "@config"
 
 import { getCurrentSatPrice } from "@app/prices"
-import { usdFromBtcMidPriceFn } from "@app/shared"
+import { getCurrentPriceInCentsPerSat, usdFromBtcMidPriceFn } from "@app/shared"
 
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
@@ -14,7 +14,6 @@ import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 
@@ -121,11 +120,6 @@ const processTxForWallet = async (
   const ledger = LedgerService()
 
   const walletAddresses = wallet.onChainAddresses()
-
-  const displayCurrencyPerSat = await getCurrentSatPrice({
-    currency: DisplayCurrency.Usd,
-  })
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()
   return lockService.lockOnChainTxHash(tx.rawTx.txHash, async () => {
@@ -262,10 +256,8 @@ const processTxForHotWallet = async ({
 
   const ledger = LedgerService()
 
-  const displayCurrencyPerSat = await getCurrentSatPrice({
-    currency: DisplayCurrency.Usd,
-  })
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+  const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+  if (displayPriceRatio instanceof Error) return displayPriceRatio
 
   const lockService = LockService()
   return lockService.lockOnChainTxHash(tx.rawTx.txHash, async () => {
@@ -278,6 +270,12 @@ const processTxForHotWallet = async ({
     if (recorded) return
 
     for (const { sats, address } of tx.rawTx.outs) {
+      const satsAmount = paymentAmountFromNumber({
+        amount: sats,
+        currency: WalletCurrency.Btc,
+      })
+      if (satsAmount instanceof Error) return satsAmount
+
       if (address) {
         const isColdStorageAddress = await coldStorageService.isDerivedAddress(address)
         if (isColdStorageAddress instanceof Error || isColdStorageAddress) continue
@@ -287,10 +285,14 @@ const processTxForHotWallet = async ({
           tx.fee || (await coldStorageService.lookupTransactionFee(tx.rawTx.txHash))
 
         if (fee instanceof Error) fee = toSats(0)
+        const feeAmount = paymentAmountFromNumber({
+          amount: fee,
+          currency: WalletCurrency.Btc,
+        })
+        if (feeAmount instanceof Error) return feeAmount
 
-        const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-        const amountDisplayCurrency = converter.fromSats(sats)
-        const feeDisplayCurrency = converter.fromSats(fee)
+        const amountDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(satsAmount)
+        const feeDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(feeAmount)
 
         const description = `deposit to hot wallet of ${sats} sats from the cold storage wallet`
 
@@ -299,8 +301,12 @@ const processTxForHotWallet = async ({
           description,
           sats,
           fee,
-          amountDisplayCurrency,
-          feeDisplayCurrency,
+          amountDisplayCurrency: Number(
+            amountDisplayCurrencyAmount.amount,
+          ) as DisplayCurrencyBaseAmount,
+          feeDisplayCurrency: Number(
+            feeDisplayCurrencyAmount.amount,
+          ) as DisplayCurrencyBaseAmount,
           payeeAddress: address,
         })
 
