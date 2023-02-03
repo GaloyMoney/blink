@@ -10,11 +10,25 @@
     handler: allow
   mutators:
     - handler: noop
-- id: galoy-backend
+
+- id: cookie-anonymous-routes
   upstream:
     url: "http://e2e-tests:4012"
   match:
-    url: "<(http|https)>://<.*><[0-9]+>/graphql<.*>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/clearCookies"
+    methods: ["GET", "POST", "OPTIONS"]
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: cookie-auth-routes
+  upstream:
+    url: "http://e2e-tests:4012"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(login|logout)>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
     - handler: cookie_session
@@ -23,9 +37,31 @@
         preserve_path: true
         preserve_query: true
         subject_from: identity.id
+        extra_from: identity.traits
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: admin-backend
+  upstream:
+    url: "http://e2e-tests:4001"
+    strip_path: /admin
+  match:
+    url: "<(http|https)>://<.*><[0-9]+>/admin<.*>"
+    methods: ["GET", "POST", "OPTIONS"]
+  authenticators:
+    - handler: cookie_session
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
     - handler: bearer_token
       config:
-        check_session_url: "http://e2e-tests:4012/auth/validatetoken"
+        check_session_url: "http://e2e-tests:4001/auth/validatetoken"
         preserve_path: true
         preserve_query: true
         subject_from: sub
@@ -40,17 +76,24 @@
     - handler: id_token
       config:
         claims: '{"sub": "{{ print .Subject }}"}'
-- id: admin-backend
+
+- id: galoy-backend
   upstream:
-    url: "http://e2e-tests:4001"
-    strip_path: /admin
+    url: "http://e2e-tests:4012"
   match:
-    url: "<(http|https)>://<.*><[0-9]+>/admin<.*>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<(graphql|kratos|browser|healthz|metrics)(.*)>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
+    - handler: cookie_session
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
     - handler: bearer_token
       config:
-        check_session_url: "http://e2e-tests:4001/auth/validatetoken"
+        check_session_url: "http://e2e-tests:4012/auth/validatetoken"
         preserve_path: true
         preserve_query: true
         subject_from: sub
