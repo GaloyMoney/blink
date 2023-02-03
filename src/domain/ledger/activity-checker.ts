@@ -26,18 +26,17 @@ export const ActivityChecker = ({
       })
       if (walletVolume instanceof Error) return walletVolume
 
-      const outgoingUsdAmount =
-        walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-          ? await priceRatio.convertFromBtc(
-              walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-            )
-          : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-      const incomingUsdAmount =
-        walletVolume.incomingBaseAmount.currency === WalletCurrency.Btc
-          ? await priceRatio.convertFromBtc(
-              walletVolume.incomingBaseAmount as BtcPaymentAmount,
-            )
-          : (walletVolume.incomingBaseAmount as UsdPaymentAmount)
+      let outgoingUsdAmount = walletVolume.outgoingBaseAmount as UsdPaymentAmount
+      let incomingUsdAmount = walletVolume.incomingBaseAmount as UsdPaymentAmount
+      if (walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc) {
+        outgoingUsdAmount = priceRatio.convertFromBtc(
+          walletVolume.outgoingBaseAmount as BtcPaymentAmount,
+        )
+
+        incomingUsdAmount = priceRatio.convertFromBtc(
+          walletVolume.incomingBaseAmount as BtcPaymentAmount,
+        )
+      }
 
       volumeCum.incomingUsdAmount = calc.add(
         volumeCum.incomingUsdAmount,
