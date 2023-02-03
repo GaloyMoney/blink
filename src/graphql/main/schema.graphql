@@ -557,9 +557,7 @@ scalar LnPaymentRequest
 scalar LnPaymentSecret
 
 type LnUpdate {
-  paymentHash: PaymentHash!
-  status: InvoicePaymentStatus!
-  walletId: WalletId!
+  update: Transaction
 }
 
 input LnUsdInvoiceCreateInput {
