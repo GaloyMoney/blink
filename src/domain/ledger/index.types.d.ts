@@ -328,10 +328,14 @@ interface ILedgerService {
   ): Promise<LedgerJournal | LedgerServiceError>
 }
 
+type GetVolumeAmountFn = <S extends WalletCurrency>(
+  args: IGetVolumeAmountArgs<S>,
+) => VolumeAmountResult<S>
+
 type ActivityCheckerConfig = {
   monthlyVolumeThreshold: UsdCents
-  dCConverter: DisplayCurrencyConverter
-  getVolumeFn: (args: IGetVolumeArgs) => VolumeResult
+  priceRatio: PriceRatio
+  getVolumeAmountFn: GetVolumeAmountFn
 }
 
 type ActivityChecker = {
