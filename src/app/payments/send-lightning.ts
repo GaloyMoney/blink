@@ -49,9 +49,9 @@ import { ResourceExpiredLockServiceError } from "@domain/lock"
 import {
   constructPaymentFlowBuilder,
   getPriceRatioForLimits,
-  newCheckIntraledgerLimits,
-  newCheckTradeIntraAccountLimits,
-  newCheckWithdrawalLimits,
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
+  checkWithdrawalLimits,
 } from "./helpers"
 
 const dealer = DealerPriceService()
@@ -353,8 +353,8 @@ const executePaymentViaIntraledger = async <
 
   const checkLimits =
     senderWallet.accountId === recipientWallet.accountId
-      ? newCheckTradeIntraAccountLimits
-      : newCheckIntraledgerLimits
+      ? checkTradeIntraAccountLimits
+      : checkIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
     accountId: senderWallet.accountId,
@@ -487,7 +487,7 @@ const executePaymentViaLn = async ({
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
-  const limitCheck = await newCheckWithdrawalLimits({
+  const limitCheck = await checkWithdrawalLimits({
     amount: paymentFlow.usdPaymentAmount,
     accountId: senderWallet.accountId,
     priceRatio: priceRatioForLimits,

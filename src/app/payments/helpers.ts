@@ -189,7 +189,7 @@ const volumesAndLimitsForAccountId = async ({
   }
 }
 
-export const newCheckIntraledgerLimits = async ({
+export const checkIntraledgerLimits = async ({
   amount,
   accountId,
   priceRatio,
@@ -214,7 +214,7 @@ export const newCheckIntraledgerLimits = async ({
   })
 }
 
-export const newCheckTradeIntraAccountLimits = async ({
+export const checkTradeIntraAccountLimits = async ({
   amount,
   accountId,
   priceRatio,
@@ -239,7 +239,7 @@ export const newCheckTradeIntraAccountLimits = async ({
   })
 }
 
-export const newCheckWithdrawalLimits = async ({
+export const checkWithdrawalLimits = async ({
   amount,
   accountId,
   priceRatio,

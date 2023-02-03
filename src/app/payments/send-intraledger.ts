@@ -36,8 +36,8 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import {
   getPriceRatioForLimits,
-  newCheckIntraledgerLimits,
-  newCheckTradeIntraAccountLimits,
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
 } from "./helpers"
 
 const dealer = DealerPriceService()
@@ -226,8 +226,8 @@ const executePaymentViaIntraledger = async <
 
   const checkLimits =
     senderWallet.accountId === recipientWallet.accountId
-      ? newCheckTradeIntraAccountLimits
-      : newCheckIntraledgerLimits
+      ? checkTradeIntraAccountLimits
+      : checkIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
     accountId: senderWallet.accountId,
