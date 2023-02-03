@@ -72,7 +72,7 @@
     "graphql-redis-subscriptions": "^2.6.0",
     "graphql-relay": "^0.10.0",
     "graphql-shield": "^7.6.4",
-    "graphql-tools": "^8.3.16",
+    "graphql-tools": "^8.3.17",
     "graphql-ws": "^5.11.2",
     "gt3-server-node-express-sdk": "https://github.com/GaloyMoney/gt3-server-node-express-bypass#master",
     "helmet": "^6.0.1",
