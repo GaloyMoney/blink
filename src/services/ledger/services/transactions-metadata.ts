@@ -1,12 +1,6 @@
 import { NoTransactionToUpdateError, UnknownRepositoryError } from "@domain/errors"
-import {
-  CouldNotFindTransactionMetadataError,
-  MismatchedResultForTransactionMetadataQuery,
-} from "@domain/ledger"
-import { ErrorLevel } from "@domain/shared"
+import { CouldNotFindTransactionMetadataError } from "@domain/ledger"
 import { fromObjectId, toObjectId, parseRepositoryError } from "@services/mongoose/utils"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
-import { ModifiedSet } from "@utils"
 
 import { TransactionMetadata } from "../schema"
 
@@ -72,63 +66,11 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
     }
   }
 
-  const listByIds = async (
-    ids: LedgerTransactionId[],
-  ): Promise<(LedgerTransactionMetadata | RepositoryError)[] | RepositoryError> => {
-    try {
-      const result = await TransactionMetadata.find({
-        _id: { $in: ids.map((id) => toObjectId<LedgerTransactionId>(id)) },
-      })
-
-      // If arrays mismatched, record errors but return sensible array
-      if (result.length !== ids.length) {
-        const idsSet = new ModifiedSet(ids)
-        const resultIdsSet = new ModifiedSet(result.map((txn) => fromObjectId(txn._id)))
-        const idsSetDiff = idsSet.difference(resultIdsSet)
-        const resultIdsSetDiff = idsSet.difference(idsSet)
-
-        if (idsSetDiff.size > 0) {
-          const errMsg = Array.from(idsSet)
-            .map((id) => ` ${id}`)
-            .toString()
-            .trimStart()
-          recordExceptionInCurrentSpan({
-            error: new CouldNotFindTransactionMetadataError(errMsg),
-            level: ErrorLevel.Critical,
-          })
-        }
-
-        if (resultIdsSetDiff.size > 0) {
-          const errMsg = Array.from(resultIdsSet)
-            .map((id) => ` ${id}`)
-            .toString()
-            .trimStart()
-          recordExceptionInCurrentSpan({
-            error: new MismatchedResultForTransactionMetadataQuery(errMsg),
-            level: ErrorLevel.Critical,
-          })
-        }
-
-        return ids.map((id) => {
-          const txn = result.find((txn) => id === fromObjectId(txn._id))
-          return txn !== undefined
-            ? translateToLedgerTxMetadata(txn)
-            : new CouldNotFindTransactionMetadataError()
-        })
-      }
-
-      return result.map((txn) => translateToLedgerTxMetadata(txn))
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   return {
     updateByHash,
     persistAll,
     findById,
     findByHash,
-    listByIds,
   }
 }
 
