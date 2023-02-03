@@ -1,6 +1,8 @@
 import { createServer } from "http"
 
-import { Accounts } from "@app"
+import DataLoader from "dataloader"
+
+import { Accounts, Transactions } from "@app"
 import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
@@ -169,8 +171,20 @@ const sessionContext = ({
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
       }
 
+      const loaders = {
+        txnMetadata: new DataLoader(async (keys) => {
+          const txnMetadata = await Transactions.getTransactionsMetadataByIds(
+            keys as LedgerTransactionId[],
+          )
+          if (txnMetadata instanceof Error) throw mapError(txnMetadata)
+
+          return txnMetadata
+        }),
+      }
+
       return {
         logger,
+        loaders,
         // FIXME: we should not return this for the admin graphql endpoint
         user,
         domainAccount,
