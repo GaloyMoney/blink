@@ -50,6 +50,7 @@
 
     "arrow-body-style": "off",
 
+    "complexity": ["error", { "max": 12 }],
     "prefer-arrow-callback": "error",
     "no-duplicate-imports": "error",
     "no-empty-function": "error",
