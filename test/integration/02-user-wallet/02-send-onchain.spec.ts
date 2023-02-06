@@ -26,11 +26,13 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { sleep, timestampDaysAgo } from "@utils"
 
-import { getCurrentSatPrice } from "@app/prices"
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import {
+  btcFromUsdMidPriceFn,
+  getCurrentPriceInCentsPerSat,
+  usdFromBtcMidPriceFn,
+} from "@app/shared"
 
 import { LedgerTransactionType } from "@domain/ledger"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { add, DisplayCurrency, sub, toCents } from "@domain/fiat"
 
@@ -1020,14 +1022,14 @@ describe("BtcWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
+    const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
+    const satsAmount = displayPriceRatio.convertFromUsd({
+      amount: BigInt(withdrawalLimit),
+      currency: WalletCurrency.Usd,
+    })
 
-    const subResult = sub(
-      dCConverter.fromCentsToSats(withdrawalLimit),
-      outgoingBaseAmount,
-    )
+    const subResult = sub(toSats(satsAmount.amount), outgoingBaseAmount)
     if (subResult instanceof Error) throw subResult
 
     const amount = add(subResult, toSats(100))
