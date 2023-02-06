@@ -13,7 +13,7 @@ import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
-import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 
@@ -301,10 +301,10 @@ const processTxForHotWallet = async ({
           description,
           sats,
           fee,
-          amountDisplayCurrency: Number(
+          amountDisplayCurrency: usdMinorToMajorUnit(
             amountDisplayCurrencyAmount.amount,
           ) as DisplayCurrencyBaseAmount,
-          feeDisplayCurrency: Number(
+          feeDisplayCurrency: usdMinorToMajorUnit(
             feeDisplayCurrencyAmount.amount,
           ) as DisplayCurrencyBaseAmount,
           payeeAddress: address,

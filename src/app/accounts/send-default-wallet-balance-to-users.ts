@@ -1,4 +1,4 @@
-import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
 import { getCurrentPriceInCentsPerSat } from "@app/shared"
@@ -37,7 +37,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         )
         // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
         displayBalanceAmount = {
-          amount: Number(displayAmount.amount),
+          amount: usdMinorToMajorUnit(displayAmount.amount),
           currency: DisplayCurrency.Usd,
         }
       }

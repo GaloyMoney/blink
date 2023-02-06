@@ -1,6 +1,6 @@
 import { once } from "events"
 
-import { Prices, Wallets } from "@app"
+import { Wallets } from "@app"
 import {
   BTC_NETWORK,
   getAccountLimits,
@@ -34,7 +34,7 @@ import {
 
 import { LedgerTransactionType } from "@domain/ledger"
 
-import { add, DisplayCurrency, sub, toCents } from "@domain/fiat"
+import { add, DisplayCurrency, sub, toCents, usdMinorToMajorUnit } from "@domain/fiat"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import { WalletsRepository } from "@services/mongoose"
@@ -375,8 +375,9 @@ const testExternalSend = async ({
     // Check notification sent
     // ===
     const amountForNotification = sendAll ? amountToSend - fee : amountToSend
-    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (satsPrice instanceof Error) return satsPrice
+
+    const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
 
     const paymentAmount = {
       amount: BigInt(amountForNotification),
@@ -384,10 +385,15 @@ const testExternalSend = async ({
     }
     const displayPaymentAmount = {
       amount:
-        senderWallet.currency === WalletCurrency.Btc
-          ? amountForNotification * satsPrice.price
+        paymentAmount.currency === WalletCurrency.Btc
+          ? // Note: Inconsistency in 'createPushNotificationContent' for handling displayAmount
+            //       & currencies. Applying 'usdMinorToMajorUnit' to WalletCurrency.Usd case
+            //       makes no difference.
+            usdMinorToMajorUnit(
+              displayPriceRatio.convertFromBtc(paymentAmount as BtcPaymentAmount).amount,
+            )
           : amountForNotification,
-      currency: satsPrice.currency,
+      currency: DisplayCurrency.Usd,
     }
 
     const { title, body } = createPushNotificationContent({

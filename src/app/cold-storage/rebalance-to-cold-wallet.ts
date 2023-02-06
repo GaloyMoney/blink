@@ -4,7 +4,7 @@ import { getCurrentSatPrice } from "@app/prices"
 import { getCurrentPriceInCentsPerSat } from "@app/shared"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
@@ -85,7 +85,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   })
   if (rebalanceBtcAmount instanceof Error) return rebalanceBtcAmount
   const amountDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(rebalanceBtcAmount)
-  const amountDisplayCurrency = Number(
+  const amountDisplayCurrency = usdMinorToMajorUnit(
     amountDisplayCurrencyAmount.amount,
   ) as DisplayCurrencyBaseAmount
 
@@ -95,7 +95,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   })
   if (feeBtcAmount instanceof Error) return feeBtcAmount
   const feeDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(feeBtcAmount)
-  const feeDisplayCurrency = Number(
+  const feeDisplayCurrency = usdMinorToMajorUnit(
     feeDisplayCurrencyAmount.amount,
   ) as DisplayCurrencyBaseAmount
 

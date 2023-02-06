@@ -36,7 +36,7 @@ import { SwapTriggerError } from "@domain/swap/errors"
 import { CouldNotFindTransactionError } from "@domain/ledger"
 import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { checkedToDisplayCurrency } from "@domain/fiat"
+import { checkedToDisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 
 import {
   AccountsRepository,
@@ -118,7 +118,7 @@ export const onchainTransactionEventHandler = async (
         const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
         displayPaymentAmount = {
           ...paymentAmount,
-          amount: Number(paymentAmount.amount),
+          amount: usdMinorToMajorUnit(paymentAmount.amount),
         } as DisplayPaymentAmount<DisplayCurrency>
       }
     }
@@ -212,7 +212,7 @@ export const onchainTransactionEventHandler = async (
             const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
             displayPaymentAmount = {
               ...paymentAmount,
-              amount: Number(paymentAmount.amount),
+              amount: usdMinorToMajorUnit(paymentAmount.amount),
             } as DisplayPaymentAmount<DisplayCurrency>
           }
         }
