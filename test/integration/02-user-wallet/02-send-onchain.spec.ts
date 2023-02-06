@@ -1,6 +1,6 @@
 import { once } from "events"
 
-import { Wallets } from "@app"
+import { Prices, Wallets } from "@app"
 import {
   BTC_NETWORK,
   getAccountLimits,
@@ -26,11 +26,7 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { sleep, timestampDaysAgo } from "@utils"
 
-import {
-  btcFromUsdMidPriceFn,
-  getCurrentPriceInCentsPerSat,
-  usdFromBtcMidPriceFn,
-} from "@app/shared"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
 import { LedgerTransactionType } from "@domain/ledger"
 
@@ -376,7 +372,9 @@ const testExternalSend = async ({
     // ===
     const amountForNotification = sendAll ? amountToSend - fee : amountToSend
 
-    const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
     if (displayPriceRatio instanceof Error) return displayPriceRatio
 
     const paymentAmount = {
@@ -1028,7 +1026,9 @@ describe("BtcWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
     if (displayPriceRatio instanceof Error) throw displayPriceRatio
     const satsAmount = displayPriceRatio.convertFromUsd({
       amount: BigInt(withdrawalLimit),

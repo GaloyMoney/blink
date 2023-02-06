@@ -1,12 +1,14 @@
 import { USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config"
 
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
+
 import { ErrorLevel } from "@domain/shared"
 import { ActivityChecker } from "@domain/ledger"
 
 import { LedgerService } from "@services/ledger"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 import { WalletsRepository, AccountsRepository } from "@services/mongoose"
-import { getCurrentPriceInCentsPerSat } from "@app/shared"
+import { DisplayCurrency } from "@domain/fiat"
 
 export const getRecentlyActiveAccounts = async function* ():
   | AsyncGenerator<Account>
@@ -14,7 +16,9 @@ export const getRecentlyActiveAccounts = async function* ():
   const unlockedAccounts = AccountsRepository().listUnlockedAccounts()
   if (unlockedAccounts instanceof Error) return unlockedAccounts
 
-  const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+  const displayPriceRatio = await getCurrentPriceAsPriceRatio({
+    currency: DisplayCurrency.Usd,
+  })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
 
   const ledger = LedgerService()

@@ -4,21 +4,23 @@ import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 
 import { toSats } from "@domain/bitcoin"
-import { usdMinorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
 import * as serviceLedger from "@services/ledger"
 import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { getCurrentPriceInCentsPerSat } from "@app/shared"
 import { WalletCurrency } from "@domain/shared"
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
 
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 let displayPriceRatio, spy
 
 beforeAll(async () => {
-  displayPriceRatio = await getCurrentPriceInCentsPerSat()
+  displayPriceRatio = await getCurrentPriceAsPriceRatio({
+    currency: DisplayCurrency.Usd,
+  })
   if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
   const ledgerService = serviceLedger.LedgerService()

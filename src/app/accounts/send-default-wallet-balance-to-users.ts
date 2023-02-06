@@ -1,7 +1,7 @@
 import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
-import { getCurrentPriceInCentsPerSat } from "@app/shared"
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
 import { LedgerService } from "@services/ledger"
 import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
@@ -26,7 +26,9 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
       const balanceAmount = await LedgerService().getWalletBalanceAmount(wallet)
       if (balanceAmount instanceof Error) return balanceAmount
 
-      const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+      const displayPriceRatio = await getCurrentPriceAsPriceRatio({
+        currency: DisplayCurrency.Usd,
+      })
       let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
       if (
         !(displayPriceRatio instanceof Error) &&

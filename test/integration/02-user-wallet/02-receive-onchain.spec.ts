@@ -2,7 +2,7 @@
 import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"
-import { getCurrentPriceInCentsPerSat, usdFromBtcMidPriceFn } from "@app/shared"
+import { usdFromBtcMidPriceFn } from "@app/shared"
 
 import {
   getAccountLimits,
@@ -200,7 +200,9 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
     if (displayPriceRatio instanceof Error) throw displayPriceRatio
     const satsAmount = displayPriceRatio.convertFromUsd({
       amount: BigInt(withdrawalLimitAccountLevel1),
@@ -223,7 +225,9 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
     if (displayPriceRatio instanceof Error) throw displayPriceRatio
     const satsAmount = displayPriceRatio.convertFromUsd({
       amount: BigInt(intraLedgerLimitAccountLevel1),

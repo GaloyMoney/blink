@@ -21,7 +21,6 @@ import {
   Swap as SwapWithSpans,
   Wallets as WalletWithSpans,
 } from "@app"
-import { getCurrentPriceInCentsPerSat } from "@app/shared"
 import * as Wallets from "@app/wallets"
 import { uploadBackup } from "@app/admin/backup"
 import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
@@ -36,7 +35,11 @@ import { SwapTriggerError } from "@domain/swap/errors"
 import { CouldNotFindTransactionError } from "@domain/ledger"
 import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { checkedToDisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import {
+  checkedToDisplayCurrency,
+  DisplayCurrency,
+  usdMinorToMajorUnit,
+} from "@domain/fiat"
 
 import {
   AccountsRepository,
@@ -108,7 +111,9 @@ export const onchainTransactionEventHandler = async (
 
     let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-    const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
     if (!(displayPriceRatio instanceof Error)) {
       const satsAmount = paymentAmountFromNumber({
         amount: tx.tokens - fee,
@@ -186,7 +191,9 @@ export const onchainTransactionEventHandler = async (
 
       let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-      const displayPriceRatio = await getCurrentPriceInCentsPerSat()
+      const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsPriceRatio({
+        currency: DisplayCurrency.Usd,
+      })
 
       wallets.forEach(async (wallet) => {
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)

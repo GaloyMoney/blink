@@ -1,7 +1,6 @@
 import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
-import { getCurrentSatPrice } from "@app/prices"
-import { getCurrentPriceInCentsPerSat } from "@app/shared"
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
@@ -30,13 +29,10 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
 
-  const displayPriceRatio = await getCurrentPriceInCentsPerSat()
-  if (displayPriceRatio instanceof Error) return displayPriceRatio
-
-  const displayCurrencyPerSat = await getCurrentSatPrice({
+  const displayPriceRatio = await getCurrentPriceAsPriceRatio({
     currency: DisplayCurrency.Usd,
   })
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+  if (displayPriceRatio instanceof Error) return displayPriceRatio
 
   // we only need active node onchain balance, otherwise we would not be able to rebalance
   const onChainBalance = await onChainService.getBalance()
