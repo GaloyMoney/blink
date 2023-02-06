@@ -5,7 +5,7 @@ import {
   SECS_PER_10_MINS,
 } from "@config"
 
-import { getCurrentSatPrice, getCurrentPriceAsPriceRatio } from "@app/prices"
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
 import { usdFromBtcMidPriceFn } from "@app/shared"
 
 import { toSats } from "@domain/bitcoin"
