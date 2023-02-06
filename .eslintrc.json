@@ -10,8 +10,9 @@
     "project": "tsconfig.json",
     "sourceType": "module"
   },
-  "plugins": ["eslint-plugin-import", "@typescript-eslint", "prettier"],
+  "plugins": ["eslint-plugin-import", "@typescript-eslint", "prettier", "jest"],
   "extends": [
+    "plugin:jest/recommended",
     "eslint:recommended",
     "plugin:import/recommended",
     "plugin:import/typescript",
