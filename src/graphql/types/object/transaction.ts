@@ -5,6 +5,8 @@ import { connectionDefinitions } from "@graphql/connections"
 
 import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
+import { addAttributesToCurrentSpan } from "@services/tracing"
+
 import Memo from "../scalar/memo"
 
 import InitiationVia from "../abstract/initiation-via"
@@ -39,6 +41,14 @@ const Transaction = GT.Object<WalletTransaction>({
         const { settlementVia } = source
         const result = await loaders.txnMetadata.load(source.id)
         if (result instanceof Error || result === undefined) return settlementVia
+
+        // TODO: remove after debugging why we aren't getting back expected pre-images
+        if (settlementVia.type === "lightning") {
+          addAttributesToCurrentSpan({
+            txnMetadata: JSON.stringify(result),
+            txnDirection: source.settlementAmount <= 0 ? "SEND" : "RECEIVE",
+          })
+        }
 
         const updatedSettlementVia = { ...settlementVia }
         for (const key of Object.keys(settlementVia)) {
