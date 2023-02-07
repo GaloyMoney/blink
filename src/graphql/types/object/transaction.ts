@@ -38,7 +38,7 @@ const Transaction = GT.Object<WalletTransaction>({
       resolve: async (source, _, { loaders }) => {
         const { settlementVia } = source
         const result = await loaders.txnMetadata.load(source.id)
-        if (result instanceof Error) return settlementVia
+        if (result instanceof Error || result === undefined) return settlementVia
 
         const updatedSettlementVia = { ...settlementVia }
         for (const key of Object.keys(settlementVia)) {

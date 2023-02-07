@@ -3,7 +3,7 @@ declare class DataLoader<K, V> {
 }
 
 interface Loaders {
-  txnMetadata: DataLoader<string, LedgerTransactionMetadata | RepositoryError>
+  txnMetadata: DataLoader<string, LedgerTransactionMetadata | undefined | RepositoryError>
 }
 
 type GraphQLContext = {

@@ -11,6 +11,7 @@ import {
   SemanticAttributes,
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
+  recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import {
   ApolloServerPluginDrainHttpServer,
@@ -176,7 +177,14 @@ const sessionContext = ({
           const txnMetadata = await Transactions.getTransactionsMetadataByIds(
             keys as LedgerTransactionId[],
           )
-          if (txnMetadata instanceof Error) throw mapError(txnMetadata)
+          if (txnMetadata instanceof Error) {
+            recordExceptionInCurrentSpan({
+              error: txnMetadata,
+              level: txnMetadata.level,
+            })
+
+            return keys.map(() => undefined)
+          }
 
           return txnMetadata
         }),
