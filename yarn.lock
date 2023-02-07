@@ -9884,10 +9884,10 @@ pino-abstract-transport@^1.0.0, pino-abstract-transport@v1.0.0:
     readable-stream "^4.0.0"
     split2 "^4.0.0"
 
-pino-http@^8.3.2:
-  version "8.3.2"
-  resolved "https://registry.yarnpkg.com/pino-http/-/pino-http-8.3.2.tgz#0e688f4295d4649ad9a5ceeed8d9cfa994dc2837"
-  integrity sha512-L6cQxP+d3IT2l7hCrlLOtvSFIYAX8iEAlGto7ahvVWumiiQ4aDCN23rmYGoImKGvBCyZpK07eHKtmuVq5L5SFQ==
+pino-http@^8.3.3:
+  version "8.3.3"
+  resolved "https://registry.yarnpkg.com/pino-http/-/pino-http-8.3.3.tgz#2b140e734bfc6babe0df272a43bb8f36f2b525c0"
+  integrity sha512-p4umsNIXXVu95HD2C8wie/vXH7db5iGRpc+yj1/ZQ3sRtTQLXNjoS6Be5+eI+rQbqCRxen/7k/KSN+qiZubGDw==
   dependencies:
     get-caller-file "^2.0.5"
     pino "^8.0.0"
