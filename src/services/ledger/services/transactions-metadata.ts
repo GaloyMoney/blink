@@ -1,5 +1,6 @@
 import { NoTransactionToUpdateError, UnknownRepositoryError } from "@domain/errors"
 import {
+  CouldNotFindExpectedTransactionMetadataError,
   CouldNotFindTransactionMetadataError,
   MismatchedResultForTransactionMetadataQuery,
 } from "@domain/ledger"
@@ -93,7 +94,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
             .toString()
             .trimStart()
           recordExceptionInCurrentSpan({
-            error: new CouldNotFindTransactionMetadataError(errMsg),
+            error: new CouldNotFindExpectedTransactionMetadataError(errMsg),
             level: ErrorLevel.Critical,
           })
         }
