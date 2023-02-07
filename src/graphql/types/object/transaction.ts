@@ -5,6 +5,8 @@ import { connectionDefinitions } from "@graphql/connections"
 
 import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
+import { TxStatus as DomainTxStatus } from "@domain/wallets"
+
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import Memo from "../scalar/memo"
@@ -39,6 +41,17 @@ const Transaction = GT.Object<WalletTransaction>({
       description: "To which protocol the payment has settled on.",
       resolve: async (source, _, { loaders }) => {
         const { settlementVia } = source
+
+        // Filter out source.id as OnChainTxHash
+        if (
+          settlementVia.type === "onchain" &&
+          source.id === settlementVia.transactionHash &&
+          // If not pending, we would like this to error in the next step with invalid source.id
+          source.status === DomainTxStatus.Pending
+        ) {
+          return settlementVia
+        }
+
         const result = await loaders.txnMetadata.load(source.id)
         if (result instanceof Error || result === undefined) return settlementVia
 
