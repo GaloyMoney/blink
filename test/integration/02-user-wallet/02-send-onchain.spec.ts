@@ -383,6 +383,7 @@ const testExternalSend = async ({
       currency: senderWallet.currency,
     }
     const displayPaymentAmount = {
+      timestamp: new Date(Date.now()),
       amount:
         senderWallet.currency === WalletCurrency.Btc
           ? amountForNotification * satsPrice
