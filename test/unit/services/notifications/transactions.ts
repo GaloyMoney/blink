@@ -47,7 +47,6 @@ export const btcTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -58,7 +57,6 @@ export const btcTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerPayment,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -69,7 +67,6 @@ export const btcTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -80,7 +77,6 @@ export const btcTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceiptPending,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -91,7 +87,6 @@ export const btcTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainPayment,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -102,7 +97,6 @@ export const btcTransactionsWithDisplayCurrency = [
     type: NotificationType.LnInvoicePaid,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -112,42 +106,42 @@ export const btcTransactionsWithDisplayCurrency = [
   {
     type: NotificationType.IntraLedgerReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
-    displayPaymentAmount: { timestamp: new Date(Date.now()), amount: 500, currency: CRC },
+    displayPaymentAmount: { amount: 500, currency: CRC },
     body: "+₡500 colones | 1,000 sats",
     title: "BTC Transaction",
   },
   {
     type: NotificationType.IntraLedgerPayment,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
-    displayPaymentAmount: { timestamp: new Date(Date.now()), amount: 500, currency: CRC },
+    displayPaymentAmount: { amount: 500, currency: CRC },
     body: "Sent payment of ₡500 colones | 1,000 sats",
     title: "BTC Transaction",
   },
   {
     type: NotificationType.OnchainReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
-    displayPaymentAmount: { timestamp: new Date(Date.now()), amount: 500, currency: CRC },
+    displayPaymentAmount: { amount: 500, currency: CRC },
     body: "+₡500 colones | 1,000 sats",
     title: "BTC Transaction",
   },
   {
     type: NotificationType.OnchainReceiptPending,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
-    displayPaymentAmount: { timestamp: new Date(Date.now()), amount: 500, currency: CRC },
+    displayPaymentAmount: { amount: 500, currency: CRC },
     body: "pending +₡500 colones | 1,000 sats",
     title: "BTC Transaction | Pending",
   },
   {
     type: NotificationType.OnchainPayment,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
-    displayPaymentAmount: { timestamp: new Date(Date.now()), amount: 500, currency: CRC },
+    displayPaymentAmount: { amount: 500, currency: CRC },
     body: "Sent onchain payment of +₡500 colones | 1,000 sats confirmed",
     title: "BTC Transaction",
   },
   {
     type: NotificationType.LnInvoicePaid,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
-    displayPaymentAmount: { timestamp: new Date(Date.now()), amount: 500, currency: CRC },
+    displayPaymentAmount: { amount: 500, currency: CRC },
     body: "+₡500 colones | 1,000 sats",
     title: "BTC Transaction",
   },
@@ -233,7 +227,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerReceipt,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -244,7 +237,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerPayment,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -255,7 +247,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceipt,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -266,7 +257,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceiptPending,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -277,7 +267,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainPayment,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -288,7 +277,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.LnInvoicePaid,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -299,7 +287,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerReceipt,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -310,7 +297,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerPayment,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -321,7 +307,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceipt,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -332,7 +317,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceiptPending,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -343,7 +327,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainPayment,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -354,7 +337,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.LnInvoicePaid,
     paymentAmount: { amount: 500n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -365,7 +347,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerReceipt,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -376,7 +357,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerPayment,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -387,7 +367,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceipt,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -398,7 +377,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceiptPending,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -409,7 +387,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainPayment,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -420,7 +397,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.LnInvoicePaid,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 5,
       currency: DisplayCurrency.Usd,
     },
@@ -431,7 +407,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerReceipt,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -442,7 +417,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerPayment,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -453,7 +427,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceipt,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -464,7 +437,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainReceiptPending,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -475,7 +447,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.OnchainPayment,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },
@@ -486,7 +457,6 @@ export const usdTransactionsWithDisplayCurrency = [
     type: NotificationType.LnInvoicePaid,
     paymentAmount: { amount: 507n, currency: WalletCurrency.Usd },
     displayPaymentAmount: {
-      timestamp: new Date(Date.now()),
       amount: 3500,
       currency: CRC,
     },

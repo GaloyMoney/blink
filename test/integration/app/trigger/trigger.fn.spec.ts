@@ -237,7 +237,6 @@ describe("onchainBlockEventHandler", () => {
 
     const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
     const displayPaymentAmount = {
-      timestamp: new Date(Date.now()),
       amount: sats * satsPrice,
       currency: DefaultDisplayCurrency,
     }

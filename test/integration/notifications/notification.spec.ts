@@ -92,7 +92,6 @@ describe("notification", () => {
 
         const paymentAmount = { amount: BigInt(balance), currency: wallet.currency }
         const displayPaymentAmount = {
-          timestamp: new Date(Date.now()),
           amount: balance * price,
           currency: DefaultDisplayCurrency,
         }

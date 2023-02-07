@@ -462,7 +462,6 @@ const executePaymentViaIntraledger = async <
       recipientWalletId,
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
-        timestamp: new Date(Date.now()),
         amount: metadata.usd,
         currency: DisplayCurrency.Usd,
       },

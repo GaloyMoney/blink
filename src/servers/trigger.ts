@@ -117,7 +117,6 @@ export const onchainTransactionEventHandler = async (
       const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
       const amount = converter.fromSats(toSats(tx.tokens - fee))
       displayPaymentAmount = {
-        timestamp: new Date(Date.now()),
         amount,
         currency: DisplayCurrency.Usd,
       }
@@ -210,7 +209,6 @@ export const onchainTransactionEventHandler = async (
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
           const amount = converter.fromSats(toSats(tx.tokens - fee))
           displayPaymentAmount = {
-            timestamp: new Date(Date.now()),
             amount,
             currency: DisplayCurrency.Usd,
           }
