@@ -15,6 +15,7 @@ type Amount<T extends WalletCurrency> = {
 }
 
 type DisplayAmount<T extends DisplayCurrency> = {
+  timestamp: Date
   currency: T
   amount: number
 }

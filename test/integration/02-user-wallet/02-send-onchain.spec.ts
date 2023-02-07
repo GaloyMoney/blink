@@ -382,6 +382,7 @@ const testExternalSend = async ({
       currency: senderWallet.currency,
     }
     const displayPaymentAmount = {
+      timestamp: new Date(Date.now()),
       amount:
         paymentAmount.currency === WalletCurrency.Btc
           ? // Note: Inconsistency in 'createPushNotificationContent' for handling displayAmount

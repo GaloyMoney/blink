@@ -219,6 +219,7 @@ const processTxForWallet = async (
           if (recipientUser instanceof Error) return recipientUser
 
           const displayPaymentAmount = {
+            timestamp: new Date(Date.now()),
             amount: Number((amountDisplayCurrency / 100).toFixed(2)),
             currency: displayCurrency,
           }
