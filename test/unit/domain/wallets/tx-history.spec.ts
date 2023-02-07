@@ -7,7 +7,7 @@ import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import { MEMO_SHARING_CENTS_THRESHOLD, MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { WalletCurrency } from "@domain/shared"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 
 describe("translates ledger txs to wallet txs", () => {
   const timestamp = new Date(Date.now())
@@ -351,7 +351,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           depositFeeRatio: 0 as DepositFeeRatio,
         },
       },
-      displayCurrencyPerSat: 1 as DisplayCurrencyPerSat,
+      displayCurrencyPerSat: {
+        timestamp: new Date(Date.now()),
+        price: 1,
+        currency: DisplayCurrency.Usd,
+      },
     })
     const expected = [
       {
@@ -428,7 +432,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           depositFeeRatio: 0 as DepositFeeRatio,
         },
       },
-      displayCurrencyPerSat: NaN as DisplayCurrencyPerSat,
+      displayCurrencyPerSat: {
+        timestamp: new Date(Date.now()),
+        price: NaN,
+        currency: DisplayCurrency.Usd,
+      },
     })
     const expected = [
       {

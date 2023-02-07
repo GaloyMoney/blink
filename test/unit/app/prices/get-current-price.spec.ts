@@ -16,7 +16,8 @@ jest.mock("@config", () => {
 })
 
 beforeEach(() => {
-  LocalCacheService().clear({ key: CacheKeys.CurrentPrice })
+  LocalCacheService().clear({ key: CacheKeys.CurrentSatPrice })
+  LocalCacheService().clear({ key: CacheKeys.CurrentUsdCentPrice })
 })
 
 describe("Prices", () => {
@@ -42,11 +43,13 @@ describe("Prices", () => {
           listCurrencies: jest.fn(),
         }))
 
-      let price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
-      expect(price).toEqual(0.05)
+      let satPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      if (satPrice instanceof Error) throw satPrice
+      expect(satPrice.price).toEqual(0.05)
 
-      price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
-      expect(price).toEqual(0.05)
+      satPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      if (satPrice instanceof Error) throw satPrice
+      expect(satPrice.price).toEqual(0.05)
     })
 
     it("fails when realtime fails and cache is empty", async () => {
@@ -57,7 +60,7 @@ describe("Prices", () => {
         listCurrencies: jest.fn(),
       }))
 
-      const price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+      const price = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
       expect(price).toBeInstanceOf(PriceNotAvailableError)
     })
   })

@@ -1,5 +1,3 @@
-import { getDisplayCurrencyConfig } from "@config"
-
 import { Prices } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
@@ -12,12 +10,10 @@ import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
-const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
-
 let price, spy
 
 beforeAll(async () => {
-  price = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+  price = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
   if (price instanceof Error) throw price
 
   const ledgerService = serviceLedger.LedgerService()
@@ -92,8 +88,8 @@ describe("notification", () => {
 
         const paymentAmount = { amount: BigInt(balance), currency: wallet.currency }
         const displayPaymentAmount = {
-          amount: balance * price,
-          currency: DefaultDisplayCurrency,
+          amount: balance * price.price,
+          currency: price.currency,
         }
 
         const { title, body } = createPushNotificationContent({

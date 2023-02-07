@@ -253,8 +253,9 @@ export const NotificationsService = (): INotificationsService => {
       txHash,
     })
 
-  const priceUpdate = ({ pricePerSat, displayCurrency }: PriceUpdateArgs) => {
-    const payload = { centsPerSat: 100 * pricePerSat, displayCurrency }
+  const priceUpdate = ({ pricePerSat }: PriceUpdateArgs) => {
+    const displayCurrency = pricePerSat.currency
+    const payload = { centsPerSat: 100 * pricePerSat.price, displayCurrency }
 
     const priceUpdateTrigger = customPubSubTrigger({
       event: PubSubDefaultTriggers.PriceUpdate,

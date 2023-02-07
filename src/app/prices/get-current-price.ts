@@ -1,53 +1,86 @@
 import { SECS_PER_10_MINS } from "@config"
 
 import { CacheKeys } from "@domain/cache"
+import { WalletCurrency } from "@domain/shared"
 import { PriceNotAvailableError } from "@domain/price"
 import { checkedToDisplayCurrency } from "@domain/fiat"
 
 import { PriceService } from "@services/price"
 import { LocalCacheService } from "@services/cache"
 
-export const getCurrentPrice = async ({
+export const getCurrentSatPrice = ({
   currency,
-}: GetCurrentPriceArgs): Promise<DisplayCurrencyPerSat | ApplicationError> => {
-  const checkedDisplayCurrency = checkedToDisplayCurrency(currency)
+}: GetCurrentSatPriceArgs): Promise<RealTimePrice<DisplayCurrency> | ApplicationError> =>
+  getCurrentPrice({
+    walletCurrency: WalletCurrency.Btc,
+    displayCurrency: currency,
+  })
+
+export const getCurrentUsdCentPrice = ({
+  currency,
+}: GetCurrentUsdCentPriceArgs): Promise<
+  RealTimePrice<DisplayCurrency> | ApplicationError
+> =>
+  getCurrentPrice({
+    walletCurrency: WalletCurrency.Usd,
+    displayCurrency: currency,
+  })
+
+const getCurrentPrice = async ({
+  walletCurrency,
+  displayCurrency,
+}: GetCurrentPriceArgs): Promise<RealTimePrice<DisplayCurrency> | ApplicationError> => {
+  const checkedDisplayCurrency = checkedToDisplayCurrency(displayCurrency)
   if (checkedDisplayCurrency instanceof Error) return checkedDisplayCurrency
 
-  const realtimePrice = await PriceService().getSatRealTimePrice({
-    displayCurrency: checkedDisplayCurrency,
-  })
-  if (realtimePrice instanceof Error)
-    return getCachedPrice({ currency: checkedDisplayCurrency })
+  const priceService = PriceService()
+  let cacheKey: CacheKeys = CacheKeys.CurrentSatPrice
+  let getRealTimePrice = () =>
+    priceService.getSatRealTimePrice({
+      displayCurrency: checkedDisplayCurrency,
+    })
+  if (walletCurrency === WalletCurrency.Usd) {
+    cacheKey = CacheKeys.CurrentUsdCentPrice
+    getRealTimePrice = () =>
+      priceService.getUsdCentRealTimePrice({
+        displayCurrency: checkedDisplayCurrency,
+      })
+  }
 
-  let cachedPrices = await getCachedPrices()
+  const realtimePrice = await getRealTimePrice()
+  if (realtimePrice instanceof Error)
+    return getCachedPrice({ key: cacheKey, currency: checkedDisplayCurrency })
+
+  let cachedPrices = await getCachedPrices(cacheKey)
   cachedPrices = cachedPrices instanceof Error ? {} : cachedPrices
 
-  cachedPrices[currency] = realtimePrice.price as DisplayCurrencyPerSat
+  cachedPrices[displayCurrency] = realtimePrice
 
   // keep prices in cache for 10 mins in case the price pod is not online
   await LocalCacheService().set<DisplayCurrencyPrices>({
-    key: CacheKeys.CurrentPrice,
+    key: cacheKey,
     value: cachedPrices,
     ttlSecs: SECS_PER_10_MINS,
   })
-  return cachedPrices[currency]
+  return cachedPrices[displayCurrency]
 }
 
 const getCachedPrice = async ({
+  key,
   currency,
-}: GetCachedPriceArgs): Promise<DisplayCurrencyPerSat | PriceNotAvailableError> => {
-  const cachedPrices = await getCachedPrices()
+}: GetCachedPriceArgs): Promise<
+  RealTimePrice<DisplayCurrency> | PriceNotAvailableError
+> => {
+  const cachedPrices = await getCachedPrices(key)
   if (cachedPrices instanceof Error || !cachedPrices[currency])
     return new PriceNotAvailableError()
   return cachedPrices[currency]
 }
 
-const getCachedPrices = async (): Promise<
-  DisplayCurrencyPrices | PriceNotAvailableError
-> => {
-  const cachedPrices = await LocalCacheService().get<DisplayCurrencyPrices>({
-    key: CacheKeys.CurrentPrice,
-  })
+const getCachedPrices = async (
+  key: CacheKeys,
+): Promise<DisplayCurrencyPrices | PriceNotAvailableError> => {
+  const cachedPrices = await LocalCacheService().get<DisplayCurrencyPrices>({ key })
   if (cachedPrices instanceof Error) return new PriceNotAvailableError()
   return cachedPrices
 }

@@ -46,8 +46,7 @@ type SendBalanceArgs = {
 }
 
 type PriceUpdateArgs = {
-  pricePerSat: DisplayCurrencyPerSat
-  displayCurrency: DisplayCurrency
+  pricePerSat: RealTimePrice<DisplayCurrency>
 }
 
 interface INotificationsService {

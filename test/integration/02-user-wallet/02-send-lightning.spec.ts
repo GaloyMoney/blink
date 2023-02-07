@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 
-import { getDisplayCurrencyConfig, getLocale, ONE_DAY } from "@config"
+import { getLocale, ONE_DAY } from "@config"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
@@ -154,7 +154,6 @@ let usernameB: Username
 let usernameC: Username
 
 const locale = getLocale()
-const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("A")
@@ -403,13 +402,13 @@ describe("UserWallet - Lightning Pay", () => {
 
     await sleep(1000)
 
-    const satsPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
     const displayPaymentAmount = {
-      amount: amountInvoice * satsPrice,
-      currency: DefaultDisplayCurrency,
+      amount: amountInvoice * satsPrice.price,
+      currency: satsPrice.currency,
     }
 
     const { title: titleReceipt, body: bodyReceipt } = createPushNotificationContent({
@@ -1055,7 +1054,7 @@ describe("UserWallet - Lightning Pay", () => {
           expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
 
-          const satsPrice = await Prices.getCurrentPrice({
+          const satsPrice = await Prices.getCurrentSatPrice({
             currency: DisplayCurrency.Usd,
           })
           if (satsPrice instanceof Error) throw satsPrice
@@ -1065,8 +1064,8 @@ describe("UserWallet - Lightning Pay", () => {
             currency: WalletCurrency.Btc,
           }
           const displayPaymentAmount = {
-            amount: amountInvoice * satsPrice,
-            currency: DefaultDisplayCurrency,
+            amount: amountInvoice * satsPrice.price,
+            currency: satsPrice.currency,
           }
 
           const { title, body } = createPushNotificationContent({

@@ -4,10 +4,10 @@ export const toDisplayCurrencyBaseAmount = (amount: number) =>
   amount as DisplayCurrencyBaseAmount
 
 export const DisplayCurrencyConverter = (
-  price: DisplayCurrencyPerSat,
+  realTimePrice: RealTimePrice<DisplayCurrency>,
 ): DisplayCurrencyConverter => ({
   fromSats: (amount: Satoshis): DisplayCurrencyBaseAmount => {
-    return (Number(amount) * price) as DisplayCurrencyBaseAmount
+    return (Number(amount) * realTimePrice.price) as DisplayCurrencyBaseAmount
   },
   fromCents: (amount: UsdCents): DisplayCurrencyBaseAmount => {
     // FIXME: implement where DisplayCurrency is not USD
@@ -17,10 +17,10 @@ export const DisplayCurrencyConverter = (
   // TODO: this method should eventually be moved to the dealer
   // the currency assumption is displayCurrency is USD
   fromSatsToCents: (amount: Satoshis): UsdCents => {
-    return Math.floor(Number(amount) * (price * CENTS_PER_USD)) as UsdCents
+    return Math.floor(Number(amount) * (realTimePrice.price * CENTS_PER_USD)) as UsdCents
   },
   fromCentsToSats: (amount: UsdCents): Satoshis => {
-    return Math.floor(Number(amount) / (price * CENTS_PER_USD)) as Satoshis
+    return Math.floor(Number(amount) / (realTimePrice.price * CENTS_PER_USD)) as Satoshis
   },
 })
 

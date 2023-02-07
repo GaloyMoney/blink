@@ -1,12 +1,11 @@
 import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"
-import { getCurrentPrice } from "@app/prices"
+import { getCurrentSatPrice } from "@app/prices"
 import { usdFromBtcMidPriceFn } from "@app/shared"
 
 import {
   getAccountLimits,
-  getDisplayCurrencyConfig,
   getFeesConfig,
   getLocale,
   getOnChainAddressCreateAttemptLimits,
@@ -62,7 +61,6 @@ let accountIdA: AccountId
 const accountLimits = getAccountLimits({ level: 1 })
 
 const locale = getLocale()
-const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -204,7 +202,7 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+    const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
     const amountSats = dCConverter.fromCentsToSats(withdrawalLimitAccountLevel1)
@@ -219,7 +217,7 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+    const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
     const amountSats = dCConverter.fromCentsToSats(intraLedgerLimitAccountLevel1)
@@ -352,7 +350,7 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    const satsPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = {
@@ -360,8 +358,8 @@ describe("UserWallet - On chain", () => {
       currency: WalletCurrency.Btc,
     }
     const displayPaymentAmount = {
-      amount: pendingTx.settlementAmount * satsPrice,
-      currency: DefaultDisplayCurrency,
+      amount: pendingTx.settlementAmount * satsPrice.price,
+      currency: satsPrice.currency,
     }
 
     const pendingNotification = createPushNotificationContent({

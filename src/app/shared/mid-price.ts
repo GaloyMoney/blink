@@ -1,6 +1,6 @@
 import { getDealerConfig } from "@config"
 
-import { getCurrentPrice } from "@app/prices"
+import { getCurrentSatPrice } from "@app/prices"
 
 import { toPriceRatio } from "@domain/payments"
 import { CENTS_PER_USD, DisplayCurrency } from "@domain/fiat"
@@ -90,10 +90,10 @@ export const btcFromUsdMidPriceFn = async (
 export const getCurrentPriceInCentsPerSat = async (): Promise<
   PriceRatio | PriceServiceError
 > => {
-  const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
-  if (price instanceof Error) return price
+  const satPrice = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+  if (satPrice instanceof Error) return satPrice
 
-  return toPriceRatio(price * CENTS_PER_USD)
+  return toPriceRatio(satPrice.price * CENTS_PER_USD)
 }
 
 export const getMidPriceRatio = async (

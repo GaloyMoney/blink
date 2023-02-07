@@ -1,4 +1,4 @@
-import { getDisplayCurrencyConfig, getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import { Prices, Wallets } from "@app"
 
@@ -46,7 +46,6 @@ let accountRecordA: AccountRecord
 let accountRecordD: AccountRecord
 
 const locale = getLocale()
-const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -232,13 +231,13 @@ describe("onchainBlockEventHandler", () => {
     expect(ledgerTx.credit).toBe(sats)
     expect(ledgerTx.pendingConfirmation).toBe(false)
 
-    const satsPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
     const displayPaymentAmount = {
-      amount: sats * satsPrice,
-      currency: DefaultDisplayCurrency,
+      amount: sats * satsPrice.price,
+      currency: satsPrice.currency,
     }
 
     // floor/ceil is needed here because the price can sometimes shift in the time between
