@@ -19,7 +19,7 @@ import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import MAIN from "./queries/main.gql"
 
 import PRICE from "./subscriptions/price.gql"
-import SAT_PRICE from "./subscriptions/sat-price.gql"
+import REALTIME_PRICE from "./subscriptions/realtime-price.gql"
 
 import {
   clearAccountLocks,
@@ -93,11 +93,11 @@ describe("graphql", () => {
     })
   })
 
-  describe("sat price", () => {
-    const subscriptionQuery = SAT_PRICE
+  describe("realtime price", () => {
+    const subscriptionQuery = REALTIME_PRICE
 
     it("returns data with valid inputs", async () => {
-      const input = { currency: "USD" }
+      const input = { currency: "EUR" }
 
       const subscription = apolloClient.subscribe({
         query: subscriptionQuery,
@@ -108,14 +108,29 @@ describe("graphql", () => {
 
       const result = (await promisifiedSubscription(subscription)) as { data }
       clearTimeout(pricePublish)
-      const price_ = result.data?.satPrice
-      const { price, errors } = price_
+      const price_ = result.data?.realtimePrice
+      const { realtimePrice, errors } = price_
 
       expect(errors.length).toEqual(0)
-      expect(price).toHaveProperty("base")
-      expect(price).toHaveProperty("offset")
-      expect(price).toHaveProperty("formattedAmount")
-      expect(price.currencyUnit).toEqual(input["currency"] + "CENT")
+      expect(realtimePrice).toHaveProperty("id")
+      expect(realtimePrice).toHaveProperty("timestamp")
+      expect(realtimePrice).toHaveProperty("denominatorCurrency", input.currency)
+      expect(realtimePrice).toHaveProperty("btcSatPrice")
+      expect(realtimePrice).toHaveProperty("usdCentPrice")
+
+      expect(realtimePrice).toHaveProperty("btcSatPrice.base", expect.any(Number))
+      expect(realtimePrice).toHaveProperty("btcSatPrice.offset", expect.any(Number))
+      expect(realtimePrice).toHaveProperty(
+        "btcSatPrice.currencyUnit",
+        input.currency + "CENT",
+      )
+
+      expect(realtimePrice).toHaveProperty("usdCentPrice.base", expect.any(Number))
+      expect(realtimePrice).toHaveProperty("usdCentPrice.offset", expect.any(Number))
+      expect(realtimePrice).toHaveProperty(
+        "usdCentPrice.currencyUnit",
+        input.currency + "CENT",
+      )
     })
   })
 

@@ -45,8 +45,9 @@ type SendBalanceArgs = {
   recipientLanguage: UserLanguageOrEmpty
 }
 
-type PriceUpdateArgs = {
-  pricePerSat: RealTimePrice<DisplayCurrency>
+type PriceUpdateArgs<C extends DisplayCurrency> = {
+  pricePerSat: RealTimePrice<C>
+  pricePerUsdCent: RealTimePrice<C>
 }
 
 interface INotificationsService {
@@ -66,6 +67,6 @@ interface INotificationsService {
   ): Promise<void | NotificationsServiceError>
   onChainTxSent(args: OnChainTxSentArgs): Promise<void | NotificationsServiceError>
 
-  priceUpdate: (args: PriceUpdateArgs) => void
+  priceUpdate: <C extends DisplayCurrency>(args: PriceUpdateArgs<C>) => void
   sendBalance(args: SendBalanceArgs): Promise<void | NotificationsServiceError>
 }

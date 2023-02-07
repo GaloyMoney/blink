@@ -81,6 +81,12 @@ type AccountUpdateDisplayCurrencyPayload {
   errors: [Error!]!
 }
 
+interface AnyPrice {
+  base: SafeInt!
+  currencyUnit: String!
+  offset: Int!
+}
+
 """
 An Opaque Bearer token
 """
@@ -924,6 +930,24 @@ input PriceInput {
   priceCurrencyUnit: ExchangeCurrencyUnit!
 }
 
+"""
+Price of 1 sat in base/offset. To calculate, use: `base / 10^offset`
+"""
+type PriceOfOneSat implements AnyPrice {
+  base: SafeInt!
+  currencyUnit: String!
+  offset: Int!
+}
+
+"""
+Price of 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
+"""
+type PriceOfOneUsdCent implements AnyPrice {
+  base: SafeInt!
+  currencyUnit: String!
+  offset: Int!
+}
+
 type PricePayload {
   errors: [Error!]!
   price: Price
@@ -974,6 +998,11 @@ type Query {
     @deprecated(
       reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated"
     )
+
+  """
+  Returns 1 Sat and 1 Usd Cent price for the given currency
+  """
+  realtimePrice(currency: DisplayCurrency! = "USD"): RealtimePrice
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
@@ -1005,6 +1034,27 @@ type QuizQuestion {
   id: ID!
 }
 
+type RealtimePrice {
+  btcSatPrice: PriceOfOneSat!
+  denominatorCurrency: DisplayCurrency!
+  id: ID!
+
+  """
+  Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
+  """
+  timestamp: Timestamp!
+  usdCentPrice: PriceOfOneUsdCent!
+}
+
+input RealtimePriceInput {
+  currency: DisplayCurrency! = "USD"
+}
+
+type RealtimePricePayload {
+  errors: [Error!]!
+  realtimePrice: RealtimePrice
+}
+
 """
 Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 """
@@ -1018,10 +1068,6 @@ scalar SatAmount
 type SatAmountPayload {
   amount: SatAmount
   errors: [Error!]!
-}
-
-input SatPriceInput {
-  currency: DisplayCurrency! = "USD"
 }
 
 """
@@ -1066,7 +1112,7 @@ type Subscription {
   """
   Returns the price of 1 satoshi
   """
-  satPrice(input: SatPriceInput!): PricePayload!
+  realtimePrice(input: RealtimePriceInput!): RealtimePricePayload!
 }
 
 type SuccessPayload {

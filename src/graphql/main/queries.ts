@@ -6,6 +6,7 @@ import BtcPriceQuery from "@graphql/root/query/btc-price"
 import CurrencyListQuery from "@graphql/root/query/currency-list"
 import BtcPriceListQuery from "@graphql/root/query/btc-price-list"
 import QuizQuestionsQuery from "@graphql/root/query/quiz-questions"
+import RealtimePriceQuery from "@graphql/root/query/realtime-price"
 import MobileVersionsQuery from "@graphql/root/query/mobile-versions"
 import OnChainTxFeeQuery from "@graphql/root/query/on-chain-tx-fee-query"
 import OnChainUsdTxFeeQuery from "@graphql/root/query/on-chain-usd-tx-fee-query"
@@ -26,6 +27,7 @@ export const queryFields = {
     mobileVersions: MobileVersionsQuery,
     quizQuestions: QuizQuestionsQuery,
     btcPrice: BtcPriceQuery,
+    realtimePrice: RealtimePriceQuery,
     btcPriceList: BtcPriceListQuery,
     lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
   },
