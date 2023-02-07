@@ -410,6 +410,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "IpFetcherServiceError":
     case "CouldNotFindTransactionError":
     case "CouldNotFindTransactionMetadataError":
+    case "InvalidDocumentIdForDbError":
     case "MismatchedResultForTransactionMetadataQuery":
     case "InvalidLedgerTransactionId":
     case "CacheError":

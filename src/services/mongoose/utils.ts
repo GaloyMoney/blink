@@ -1,6 +1,7 @@
 import {
   CannotConnectToDbError,
   DbConnectionClosedError,
+  InvalidDocumentIdForDbError,
   UnknownRepositoryError,
 } from "@domain/errors"
 import { Types } from "mongoose"
@@ -28,6 +29,9 @@ export const parseRepositoryError = (err: Error | string) => {
     case match(KnownRepositoryErrorMessages.MongoConnectionClosed):
       return new DbConnectionClosedError()
 
+    case match(KnownRepositoryErrorMessages.MongoInvalidDocumentId):
+      return new InvalidDocumentIdForDbError()
+
     default:
       return new UnknownRepositoryError(errMsg)
   }
@@ -39,4 +43,7 @@ const KnownRepositoryErrorMessages = {
   MongoAddrNotFound: /MongooseServerSelectionError: getaddrinfo ENOTFOUND/,
   MongoConnectionRefused: /MongooseServerSelectionError: connect ECONNREFUSED/,
   MongoConnectionClosed: /connection .+ to .+ closed/,
+
+  MongoInvalidDocumentId:
+    /Argument passed in must be a string of 12 bytes or a string of 24 hex characters or an integer/,
 } as const
