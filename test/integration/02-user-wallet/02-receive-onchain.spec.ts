@@ -360,6 +360,7 @@ describe("UserWallet - On chain", () => {
       currency: WalletCurrency.Btc,
     }
     const displayPaymentAmount = {
+      timestamp: new Date(Date.now()),
       amount: pendingTx.settlementAmount * satsPrice,
       currency: DefaultDisplayCurrency,
     }

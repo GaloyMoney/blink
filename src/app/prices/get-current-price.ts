@@ -13,8 +13,8 @@ export const getCurrentPrice = async ({
   const checkedDisplayCurrency = checkedToDisplayCurrency(currency)
   if (checkedDisplayCurrency instanceof Error) return checkedDisplayCurrency
 
-  const realtimePrice = await PriceService().getRealTimePrice({
-    currency: checkedDisplayCurrency,
+  const realtimePrice = await PriceService().getSatRealTimePrice({
+    displayCurrency: checkedDisplayCurrency,
   })
   if (realtimePrice instanceof Error)
     return getCachedPrice({ currency: checkedDisplayCurrency })
@@ -22,7 +22,7 @@ export const getCurrentPrice = async ({
   let cachedPrices = await getCachedPrices()
   cachedPrices = cachedPrices instanceof Error ? {} : cachedPrices
 
-  cachedPrices[currency] = realtimePrice
+  cachedPrices[currency] = realtimePrice.price as DisplayCurrencyPerSat
 
   // keep prices in cache for 10 mins in case the price pod is not online
   await LocalCacheService().set<DisplayCurrencyPrices>({
@@ -30,7 +30,7 @@ export const getCurrentPrice = async ({
     value: cachedPrices,
     ttlSecs: SECS_PER_10_MINS,
   })
-  return realtimePrice
+  return cachedPrices[currency]
 }
 
 const getCachedPrice = async ({
