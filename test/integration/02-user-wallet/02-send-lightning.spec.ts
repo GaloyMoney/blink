@@ -408,7 +408,6 @@ describe("UserWallet - Lightning Pay", () => {
 
     const paymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
     const displayPaymentAmount = {
-      timestamp: new Date(Date.now()),
       amount: amountInvoice * satsPrice,
       currency: DefaultDisplayCurrency,
     }
@@ -1066,7 +1065,6 @@ describe("UserWallet - Lightning Pay", () => {
             currency: WalletCurrency.Btc,
           }
           const displayPaymentAmount = {
-            timestamp: new Date(Date.now()),
             amount: amountInvoice * satsPrice,
             currency: DefaultDisplayCurrency,
           }

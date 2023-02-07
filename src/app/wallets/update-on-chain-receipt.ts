@@ -228,7 +228,6 @@ const processTxForWallet = async (
             recipientWalletId: wallet.id,
             paymentAmount: { amount: BigInt(sats), currency: wallet.currency },
             displayPaymentAmount: {
-              timestamp: new Date(Date.now()),
               amount: amountDisplayCurrency,
               currency: displayCurrency,
             },
