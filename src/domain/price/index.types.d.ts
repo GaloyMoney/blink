@@ -10,6 +10,12 @@ type Tick = {
   readonly price: DisplayCurrencyPerSat
 }
 
+type RealTimePrice<T extends DisplayCurrency> = {
+  timestamp: Date
+  currency: T
+  price: number
+}
+
 type PriceCurrency = {
   readonly code: string // currency iso code. E.g. USD
   readonly symbol: string // currency symbol. E.g. $
@@ -18,8 +24,12 @@ type PriceCurrency = {
 }
 
 type GetRealTimePriceArgs = {
-  currency: DisplayCurrency
+  walletCurrency: WalletCurrency
+  displayCurrency: DisplayCurrency
 }
+
+type GetSatRealTimePriceArgs = Omit<GetRealTimePriceArgs, "walletCurrency">
+type GetUsdCentRealTimePriceArgs = Omit<GetRealTimePriceArgs, "walletCurrency">
 
 type ListHistoryArgs = {
   range: PriceRange
@@ -28,8 +38,11 @@ type ListHistoryArgs = {
 
 interface IPriceService {
   listCurrencies(): Promise<PriceCurrency[] | PriceServiceError>
-  getRealTimePrice(
-    args: GetRealTimePriceArgs,
-  ): Promise<DisplayCurrencyPerSat | PriceServiceError>
+  getSatRealTimePrice(
+    args: GetSatRealTimePriceArgs,
+  ): Promise<RealTimePrice<DisplayCurrency> | PriceServiceError>
+  getUsdCentRealTimePrice(
+    args: GetUsdCentRealTimePriceArgs,
+  ): Promise<RealTimePrice<DisplayCurrency> | PriceServiceError>
   listHistory(args: ListHistoryArgs): Promise<Tick[] | PriceServiceError>
 }

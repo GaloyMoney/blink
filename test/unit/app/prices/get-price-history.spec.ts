@@ -41,7 +41,8 @@ describe("Prices", () => {
               }))
               .slice(-24),
           ),
-        getRealTimePrice: jest.fn(),
+        getSatRealTimePrice: jest.fn(),
+        getUsdCentRealTimePrice: jest.fn(),
         listCurrencies: jest.fn(),
       }))
 
@@ -69,7 +70,8 @@ describe("Prices", () => {
 
       jest.spyOn(PriceServiceImpl, "PriceService").mockImplementationOnce(() => ({
         listHistory: () => Promise.resolve(new UnknownPriceServiceError()),
-        getRealTimePrice: jest.fn(),
+        getSatRealTimePrice: jest.fn(),
+        getUsdCentRealTimePrice: jest.fn(),
         listCurrencies: jest.fn(),
       }))
 
@@ -83,7 +85,8 @@ describe("Prices", () => {
 
       jest.spyOn(PriceServiceImpl, "PriceService").mockImplementationOnce(() => ({
         listHistory: () => Promise.resolve([]),
-        getRealTimePrice: jest.fn(),
+        getSatRealTimePrice: jest.fn(),
+        getUsdCentRealTimePrice: jest.fn(),
         listCurrencies: jest.fn(),
       }))
 

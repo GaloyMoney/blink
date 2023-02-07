@@ -10,6 +10,10 @@ import {
 
 import { SATS_PER_BTC } from "@domain/bitcoin"
 
+import { WalletCurrency } from "@domain/shared"
+
+import { CENTS_PER_USD, DisplayCurrency } from "@domain/fiat"
+
 import { baseLogger } from "../logger"
 
 import { PriceHistoryProtoDescriptor, PriceProtoDescriptor } from "./grpc"
@@ -34,14 +38,58 @@ const priceHistoryClient = new PriceHistoryProtoDescriptor.PriceHistory(
 const listPrices = util.promisify(priceHistoryClient.listPrices).bind(priceHistoryClient)
 
 export const PriceService = (): IPriceService => {
+  const getSatRealTimePrice = ({
+    displayCurrency,
+  }: GetSatRealTimePriceArgs): Promise<
+    RealTimePrice<DisplayCurrency> | PriceServiceError
+  > =>
+    getRealTimePrice({
+      displayCurrency,
+      walletCurrency: WalletCurrency.Btc,
+    })
+
+  const getUsdCentRealTimePrice = ({
+    displayCurrency,
+  }: GetUsdCentRealTimePriceArgs): Promise<
+    RealTimePrice<DisplayCurrency> | PriceServiceError
+  > =>
+    getRealTimePrice({
+      displayCurrency,
+      walletCurrency: WalletCurrency.Usd,
+    })
+
   const getRealTimePrice = async ({
-    currency,
-  }: GetRealTimePriceArgs): Promise<DisplayCurrencyPerSat | PriceServiceError> => {
+    displayCurrency,
+    walletCurrency = WalletCurrency.Btc,
+  }: GetRealTimePriceArgs): Promise<
+    RealTimePrice<DisplayCurrency> | PriceServiceError
+  > => {
     try {
-      const { price } = await getPrice({ currency })
-      // FIXME: price server should return CentsPerSat directly
-      if (price > 0) return (price / SATS_PER_BTC) as DisplayCurrencyPerSat
-      return new PriceNotAvailableError()
+      if (walletCurrency === displayCurrency) {
+        return {
+          timestamp: new Date(Date.now()),
+          price: 1,
+          currency: displayCurrency,
+        }
+      }
+
+      // FIXME: price server should return CentsPerSat directly and timestamp
+      const { price } = await getPrice({ currency: displayCurrency })
+      if (!price) return new PriceNotAvailableError()
+
+      let displayCurrencyPrice = price / SATS_PER_BTC
+      if (walletCurrency === WalletCurrency.Usd) {
+        const { price: usdBtcPrice } = await getPrice({ currency: DisplayCurrency.Usd })
+        if (!usdBtcPrice) return new PriceNotAvailableError()
+
+        displayCurrencyPrice = price / usdBtcPrice / CENTS_PER_USD
+      }
+
+      return {
+        timestamp: new Date(Date.now()),
+        price: displayCurrencyPrice,
+        currency: displayCurrency,
+      }
     } catch (err) {
       baseLogger.error({ err }, "impossible to fetch most recent price")
       return new UnknownPriceServiceError(err.message || err)
@@ -83,7 +131,8 @@ export const PriceService = (): IPriceService => {
   }
 
   return {
-    getRealTimePrice,
+    getSatRealTimePrice,
+    getUsdCentRealTimePrice,
     listHistory,
     listCurrencies,
   }

@@ -23,7 +23,8 @@ describe("Prices", () => {
         .spyOn(PriceServiceImpl, "PriceService")
         .mockImplementationOnce(() => ({
           listHistory: jest.fn(),
-          getRealTimePrice: jest.fn(),
+          getSatRealTimePrice: jest.fn(),
+          getUsdCentRealTimePrice: jest.fn(),
           listCurrencies: () =>
             Promise.resolve([
               { code: "USD", symbol: "$", name: "US Dollar", flag: "🇺🇸" },
@@ -31,7 +32,8 @@ describe("Prices", () => {
         }))
         .mockImplementationOnce(() => ({
           listHistory: jest.fn(),
-          getRealTimePrice: jest.fn(),
+          getSatRealTimePrice: jest.fn(),
+          getUsdCentRealTimePrice: jest.fn(),
           listCurrencies: () => Promise.resolve(new PriceCurrenciesNotAvailableError()),
         }))
 
@@ -58,7 +60,8 @@ describe("Prices", () => {
     it("fails when listCurrencies fails and cache is empty", async () => {
       jest.spyOn(PriceServiceImpl, "PriceService").mockImplementationOnce(() => ({
         listHistory: jest.fn(),
-        getRealTimePrice: jest.fn(),
+        getSatRealTimePrice: jest.fn(),
+        getUsdCentRealTimePrice: jest.fn(),
         listCurrencies: () => Promise.resolve(new PriceCurrenciesNotAvailableError()),
       }))
 

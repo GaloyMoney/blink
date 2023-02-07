@@ -35,7 +35,10 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
       let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
       if (converter && wallet.currency === WalletCurrency.Btc) {
         const amount = converter.fromSats(toSats(balanceAmount.amount))
-        displayBalanceAmount = { amount, currency: DisplayCurrency.Usd }
+        displayBalanceAmount = {
+          amount,
+          currency: DisplayCurrency.Usd,
+        }
       }
 
       return NotificationsService().sendBalance({

@@ -116,7 +116,10 @@ export const onchainTransactionEventHandler = async (
     if (displayCurrencyPerSat) {
       const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
       const amount = converter.fromSats(toSats(tx.tokens - fee))
-      displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
+      displayPaymentAmount = {
+        amount,
+        currency: DisplayCurrency.Usd,
+      }
     }
 
     const senderWallet = await WalletsRepository().findById(walletId)
@@ -205,7 +208,10 @@ export const onchainTransactionEventHandler = async (
           const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
           const amount = converter.fromSats(toSats(tx.tokens - fee))
-          displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
+          displayPaymentAmount = {
+            amount,
+            currency: DisplayCurrency.Usd,
+          }
         }
 
         NotificationsService().onChainTxReceivedPending({
