@@ -217,7 +217,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
         },
         settlementVia: {
           type: SettlementMethod.Lightning,
-          revealedPreImage: undefined,
+          revealedPreImage: undefined, // is added by dataloader in resolver
         },
       }
       break
@@ -241,32 +241,6 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   return walletTransaction
 }
 
-const translateLedgerTxnToWalletTxnWithMetadata = <S extends WalletCurrency>(
-  txn: LedgerTransactionWithMetadata<S>,
-): WalletTransactionWithMetadata => {
-  const walletTxn = translateLedgerTxnToWalletTxn(txn)
-
-  let walletTxnWithMetadata: WalletTransactionWithMetadata = {
-    hasMetadata: true,
-    ...walletTxn,
-  }
-  if ("revealedPreImage" in txn) {
-    if (walletTxnWithMetadata.settlementVia.type !== SettlementMethod.Lightning) {
-      // TODO: return invalid-state error here and remove cast to 'WalletLnTransactionWithMetadata' just below
-    }
-
-    walletTxnWithMetadata = {
-      ...walletTxnWithMetadata,
-      settlementVia: {
-        ...walletTxnWithMetadata.settlementVia,
-        revealedPreImage: txn.revealedPreImage,
-      },
-    } as WalletLnTransactionWithMetadata
-  }
-
-  return walletTxnWithMetadata
-}
-
 const fromLedger = (
   ledgerTransactions: LedgerTransaction<WalletCurrency>[],
 ): ConfirmedTransactionHistory => {
@@ -277,30 +251,6 @@ const fromLedger = (
     addPendingIncoming: (args) => ({
       transactions: [...filterPendingIncoming(args), ...transactions],
     }),
-  }
-}
-
-const fromLedgerWithMetadata = <S extends WalletCurrency>(
-  ledgerTransactions: LedgerTransactionWithMetadata<S>[],
-): ConfirmedTransactionHistoryWithMetadata => {
-  const transactions = ledgerTransactions.map(translateLedgerTxnToWalletTxnWithMetadata)
-
-  const addPendingIncoming = (args: AddPendingIncomingArgs) => {
-    const pendingTxnsWithMetadata = filterPendingIncoming(args).map(
-      (txn: WalletTransaction): WalletTransactionWithMetadata => ({
-        ...txn,
-        hasMetadata: true,
-      }),
-    )
-
-    return {
-      transactions: [...pendingTxnsWithMetadata, ...transactions],
-    }
-  }
-
-  return {
-    transactions,
-    addPendingIncoming,
   }
 }
 
@@ -344,7 +294,6 @@ export const translateMemo = ({
 
 export const WalletTransactionHistory = {
   fromLedger,
-  fromLedgerWithMetadata,
 } as const
 
 // TODO: refactor this to use PriceRatio eventually instead after

@@ -1,5 +1,14 @@
+declare class DataLoader<K, V> {
+  load(key: K): Promise<V>
+}
+
+interface Loaders {
+  txnMetadata: DataLoader<string, LedgerTransactionMetadata | undefined | RepositoryError>
+}
+
 type GraphQLContext = {
   logger: Logger
+  loaders: Loaders
   user: User | undefined
   domainAccount: Account | undefined
   geetest: GeetestType
@@ -8,6 +17,7 @@ type GraphQLContext = {
 
 type GraphQLContextAuth = {
   logger: Logger
+  loaders: Loaders
   user: User
   domainAccount: Account
   geetest: GeetestType

@@ -31,13 +31,13 @@ const SettlementViaLn = GT.Object({
   fields: () => ({
     paymentSecret: {
       type: LnPaymentSecret,
-      resolve: (source: SettlementViaLn) => source.revealedPreImage,
+      resolve: (source) => source.revealedPreImage,
       deprecationReason:
         "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type",
     },
     preImage: {
       type: LnPaymentPreImage,
-      resolve: (source: SettlementViaLn) => source.revealedPreImage,
+      resolve: (source) => source.revealedPreImage,
     },
   }),
 })

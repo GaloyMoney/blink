@@ -780,7 +780,7 @@ const lookupPaymentByPubkeyAndHash = async ({
   }
 }
 
-export const KnownLndErrorDetails: { [key: string]: RegExp } = {
+export const KnownLndErrorDetails = {
   InsufficientBalance: /insufficient local balance/,
   InsufficientBalanceToAttemptPayment: /InsufficientBalanceToAttemptPayment/,
   InvoiceNotFound: /unable to locate invoice/,

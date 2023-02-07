@@ -1,6 +1,8 @@
 import { createServer } from "http"
 
-import { Accounts } from "@app"
+import DataLoader from "dataloader"
+
+import { Accounts, Transactions } from "@app"
 import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
@@ -9,6 +11,7 @@ import {
   SemanticAttributes,
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
+  recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import {
   ApolloServerPluginDrainHttpServer,
@@ -169,8 +172,27 @@ const sessionContext = ({
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
       }
 
+      const loaders = {
+        txnMetadata: new DataLoader(async (keys) => {
+          const txnMetadata = await Transactions.getTransactionsMetadataByIds(
+            keys as LedgerTransactionId[],
+          )
+          if (txnMetadata instanceof Error) {
+            recordExceptionInCurrentSpan({
+              error: txnMetadata,
+              level: txnMetadata.level,
+            })
+
+            return keys.map(() => undefined)
+          }
+
+          return txnMetadata
+        }),
+      }
+
       return {
         logger,
+        loaders,
         // FIXME: we should not return this for the admin graphql endpoint
         user,
         domainAccount,

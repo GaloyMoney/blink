@@ -38,12 +38,7 @@ type SettlementViaIntraledger = {
 
 type SettlementViaLn = {
   readonly type: "lightning"
-  readonly revealedPreImage: undefined
-}
-
-type SettlementViaLnWithMetadata = {
-  readonly type: "lightning"
-  revealedPreImage: RevealedPreImage | undefined
+  readonly revealedPreImage: undefined // is added by dataloader in resolver
 }
 
 type SettlementViaOnChain = {
@@ -98,42 +93,18 @@ type WalletLnSettledTransaction = BaseWalletTransaction & {
   readonly settlementVia: SettlementViaLn
 }
 
-type WalletLnSettledTransactionWithMetadata = BaseWalletTransaction & {
-  readonly initiationVia: InitiationViaLn
-  readonly settlementVia: SettlementViaLnWithMetadata
-}
-
-type IntraLedgerTransactionWithMetadata = { hasMetadata: true } & IntraLedgerTransaction
-
 type WalletOnChainTransaction =
   | WalletOnChainIntraledgerTransaction
   | WalletOnChainSettledTransaction
   | WalletLegacyOnChainIntraledgerTransaction
   | WalletLegacyOnChainSettledTransaction
 
-type WalletOnChainTransactionWithMetadata = { hasMetadata: true } & (
-  | WalletOnChainIntraledgerTransaction
-  | WalletOnChainSettledTransaction
-  | WalletLegacyOnChainIntraledgerTransaction
-  | WalletLegacyOnChainSettledTransaction
-)
-
 type WalletLnTransaction = WalletLnIntraledgerTransaction | WalletLnSettledTransaction
-
-type WalletLnTransactionWithMetadata = { hasMetadata: true } & (
-  | WalletLnIntraledgerTransaction
-  | WalletLnSettledTransactionWithMetadata
-)
 
 type WalletTransaction =
   | IntraLedgerTransaction
   | WalletOnChainTransaction
   | WalletLnTransaction
-
-type WalletTransactionWithMetadata =
-  | IntraLedgerTransactionWithMetadata
-  | WalletOnChainTransactionWithMetadata
-  | WalletLnTransactionWithMetadata
 
 type AddPendingIncomingArgs = {
   pendingIncoming: IncomingOnChainTransaction[]
@@ -149,19 +120,8 @@ type ConfirmedTransactionHistory = {
   addPendingIncoming(args: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
 }
 
-type ConfirmedTransactionHistoryWithMetadata = {
-  readonly transactions: WalletTransactionWithMetadata[]
-  addPendingIncoming(
-    args: AddPendingIncomingArgs,
-  ): WalletTransactionHistoryWithPendingWithMetadata
-}
-
 type WalletTransactionHistoryWithPending = {
   readonly transactions: WalletTransaction[]
-}
-
-type WalletTransactionHistoryWithPendingWithMetadata = {
-  readonly transactions: WalletTransactionWithMetadata[]
 }
 
 type NewWalletInfo = {

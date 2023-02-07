@@ -74,4 +74,8 @@ export class ModifiedSet extends Set {
   intersect<T>(otherSet: Set<T>): Set<T> {
     return new ModifiedSet(Array.from(this).filter((i) => otherSet.has(i)))
   }
+
+  difference<T>(otherSet: Set<T>): Set<T> {
+    return new ModifiedSet(Array.from(this).filter((i) => !otherSet.has(i)))
+  }
 }

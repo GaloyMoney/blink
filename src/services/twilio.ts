@@ -140,7 +140,7 @@ const handleCommonErrors = (err: Error | string) => {
       return new UnknownPhoneProviderServiceError(errMsg)
   }
 }
-export const KnownTwilioErrorMessages: { [key: string]: RegExp } = {
+export const KnownTwilioErrorMessages = {
   InvalidPhoneNumber: /not a valid phone number/,
   InvalidMobileNumber: /not a mobile number/,
   InvalidPhoneNumberParameter: /Invalid parameter `To`/,

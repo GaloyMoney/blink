@@ -1,6 +1,7 @@
 import {
   CannotConnectToDbError,
   DbConnectionClosedError,
+  InvalidDocumentIdForDbError,
   UnknownRepositoryError,
 } from "@domain/errors"
 import { Types } from "mongoose"
@@ -13,16 +14,36 @@ export const fromObjectId = <T extends string>(id: Types.ObjectId | string): T =
   return String(id) as T
 }
 
-export const parseRepositoryError = (err: Error) => {
+export const parseRepositoryError = (err: Error | string) => {
+  const errMsg = typeof err === "string" ? err : err.message
+
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
+
   switch (true) {
-    case err.message.includes("MongoNetworkTimeoutError: connection timed out"):
-    case err.message.includes("MongooseServerSelectionError: connection timed out"):
-    case err.message.includes("MongooseServerSelectionError: getaddrinfo ENOTFOUND"):
-    case err.message.includes("MongooseServerSelectionError: connect ECONNREFUSED"):
+    case match(KnownRepositoryErrorMessages.MongoNetworkTimeout):
+    case match(KnownRepositoryErrorMessages.MongoServerSelectionTimeout):
+    case match(KnownRepositoryErrorMessages.MongoAddrNotFound):
+    case match(KnownRepositoryErrorMessages.MongoConnectionRefused):
       return new CannotConnectToDbError()
-    case /connection .+ to .+ closed/.test(err.message):
+
+    case match(KnownRepositoryErrorMessages.MongoConnectionClosed):
       return new DbConnectionClosedError()
+
+    case match(KnownRepositoryErrorMessages.MongoInvalidDocumentId):
+      return new InvalidDocumentIdForDbError()
+
     default:
-      return new UnknownRepositoryError(err.message)
+      return new UnknownRepositoryError(errMsg)
   }
 }
+
+const KnownRepositoryErrorMessages = {
+  MongoNetworkTimeout: /MongoNetworkTimeoutError: connection timed out/,
+  MongoServerSelectionTimeout: /MongooseServerSelectionError: connection timed out/,
+  MongoAddrNotFound: /MongooseServerSelectionError: getaddrinfo ENOTFOUND/,
+  MongoConnectionRefused: /MongooseServerSelectionError: connect ECONNREFUSED/,
+  MongoConnectionClosed: /connection .+ to .+ closed/,
+
+  MongoInvalidDocumentId:
+    /Argument passed in must be a string of 12 bytes or a string of 24 hex characters or an integer/,
+} as const
