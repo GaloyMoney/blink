@@ -4,7 +4,6 @@ import { Prices, Wallets } from "@app"
 import {
   BTC_NETWORK,
   getAccountLimits,
-  getDisplayCurrencyConfig,
   getFeesConfig,
   getLocale,
   getOnChainWalletConfig,
@@ -27,7 +26,7 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { sleep, timestampDaysAgo } from "@utils"
 
-import { getCurrentPrice } from "@app/prices"
+import { getCurrentSatPrice } from "@app/prices"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
 import { LedgerTransactionType } from "@domain/ledger"
@@ -85,7 +84,6 @@ let walletIdE: WalletId
 let walletIdF: WalletId
 
 const locale = getLocale()
-const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 const dealerFns = DealerPriceService()
 
@@ -375,7 +373,7 @@ const testExternalSend = async ({
     // Check notification sent
     // ===
     const amountForNotification = sendAll ? amountToSend - fee : amountToSend
-    const satsPrice = await Prices.getCurrentPrice({ currency: DisplayCurrency.Usd })
+    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) return satsPrice
 
     const paymentAmount = {
@@ -385,9 +383,9 @@ const testExternalSend = async ({
     const displayPaymentAmount = {
       amount:
         senderWallet.currency === WalletCurrency.Btc
-          ? amountForNotification * satsPrice
+          ? amountForNotification * satsPrice.price
           : amountForNotification,
-      currency: DefaultDisplayCurrency,
+      currency: satsPrice.currency,
     }
 
     const { title, body } = createPushNotificationContent({
@@ -1022,7 +1020,7 @@ describe("BtcWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+    const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
 

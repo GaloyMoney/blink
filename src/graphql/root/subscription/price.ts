@@ -121,11 +121,11 @@ const PriceSubscription = {
         payload: { errors: [{ message: "Unsupported exchange amount" }] },
       })
     } else {
-      const pricePerSat = await Prices.getCurrentPrice({ currency: displayCurrency })
+      const pricePerSat = await Prices.getCurrentSatPrice({ currency: displayCurrency })
       if (!(pricePerSat instanceof Error)) {
         pubsub.publishImmediate({
           trigger: immediateTrigger,
-          payload: { centsPerSat: 100 * pricePerSat, displayCurrency },
+          payload: { centsPerSat: 100 * pricePerSat.price, displayCurrency },
         })
       }
       const priceUpdateTrigger = customPubSubTrigger({

@@ -18,13 +18,13 @@ const BtcPriceQuery = GT.Field({
     const { currency } = args
     if (currency instanceof Error) throw currency
 
-    const satCurrencyPrice = await Prices.getCurrentPrice({ currency })
+    const satCurrencyPrice = await Prices.getCurrentSatPrice({ currency })
 
     if (satCurrencyPrice instanceof Error) {
       throw mapError(satCurrencyPrice)
     }
 
-    const price = 100 * satCurrencyPrice
+    const price = 100 * satCurrencyPrice.price
 
     return {
       formattedAmount: price.toString(),

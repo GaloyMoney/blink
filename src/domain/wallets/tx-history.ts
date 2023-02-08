@@ -36,7 +36,7 @@ const filterPendingIncoming = ({
               settlementAmount: toSats(sats - fee),
               settlementFee: fee,
               settlementCurrency: walletDetailsByWalletId[walletId].currency,
-              displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerSat,
+              displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerSat.price,
               status: TxStatus.Pending,
               memo: null,
               createdAt: createdAt,

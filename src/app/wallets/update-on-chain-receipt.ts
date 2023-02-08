@@ -5,7 +5,7 @@ import {
   SECS_PER_10_MINS,
 } from "@config"
 
-import { getCurrentPrice } from "@app/prices"
+import { getCurrentSatPrice } from "@app/prices"
 import { usdFromBtcMidPriceFn } from "@app/shared"
 
 import { toSats } from "@domain/bitcoin"
@@ -122,7 +122,9 @@ const processTxForWallet = async (
 
   const walletAddresses = wallet.onChainAddresses()
 
-  const displayCurrencyPerSat = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+  const displayCurrencyPerSat = await getCurrentSatPrice({
+    currency: DisplayCurrency.Usd,
+  })
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()
@@ -260,7 +262,9 @@ const processTxForHotWallet = async ({
 
   const ledger = LedgerService()
 
-  const displayCurrencyPerSat = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+  const displayCurrencyPerSat = await getCurrentSatPrice({
+    currency: DisplayCurrency.Usd,
+  })
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()

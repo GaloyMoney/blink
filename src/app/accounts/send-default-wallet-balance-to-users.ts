@@ -2,7 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
-import { getCurrentPrice } from "@app/prices"
+import { getCurrentSatPrice } from "@app/prices"
 import { LedgerService } from "@services/ledger"
 import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
@@ -14,7 +14,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
   const accounts = getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 
-  const price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+  const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
   const displayCurrencyPerSat = price instanceof Error ? undefined : price
   const converter = displayCurrencyPerSat
     ? DisplayCurrencyConverter(displayCurrencyPerSat)

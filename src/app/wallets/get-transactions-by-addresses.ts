@@ -1,6 +1,6 @@
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { getCurrentPrice } from "@app/prices"
+import { getCurrentSatPrice } from "@app/prices"
 import { PartialResult } from "@app/partial-result"
 
 import { LedgerError } from "@domain/ledger"
@@ -74,9 +74,13 @@ export const getTransactionsForWalletsByAddresses = async ({
 
   const pendingIncoming = filter.apply(onChainTxs)
 
-  let price = await getCurrentPrice({ currency: DisplayCurrency.Usd })
+  let price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
   if (price instanceof Error) {
-    price = NaN as DisplayCurrencyPerSat
+    price = {
+      timestamp: new Date(Date.now()),
+      price: NaN,
+      currency: DisplayCurrency.Usd,
+    }
   }
 
   return PartialResult.ok({

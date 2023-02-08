@@ -111,7 +111,9 @@ export const onchainTransactionEventHandler = async (
 
     let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-    const price = await PricesWithSpans.getCurrentPrice({ currency: DisplayCurrency.Usd })
+    const price = await PricesWithSpans.getCurrentSatPrice({
+      currency: DisplayCurrency.Usd,
+    })
     const displayCurrencyPerSat = price instanceof Error ? undefined : price
     if (displayCurrencyPerSat) {
       const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
@@ -185,7 +187,7 @@ export const onchainTransactionEventHandler = async (
 
       let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-      const price = await PricesWithSpans.getCurrentPrice({
+      const price = await PricesWithSpans.getCurrentSatPrice({
         currency: DisplayCurrency.Usd,
       })
       const displayCurrencyPerSat = price instanceof Error ? undefined : price
@@ -267,13 +269,13 @@ export const publishCurrentPrices = async () => {
     const displayCurrency = checkedToDisplayCurrency(code)
     if (displayCurrency instanceof Error) continue
 
-    const pricePerSat = await PricesWithSpans.getCurrentPrice({
+    const pricePerSat = await PricesWithSpans.getCurrentSatPrice({
       currency: displayCurrency,
     })
     if (pricePerSat instanceof Error) {
       return logger.error({ err: pricePerSat }, "can't publish the price")
     }
-    NotificationsService().priceUpdate({ pricePerSat, displayCurrency })
+    NotificationsService().priceUpdate({ pricePerSat })
   }
 }
 

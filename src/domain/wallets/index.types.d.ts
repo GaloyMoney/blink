@@ -112,7 +112,7 @@ type AddPendingIncomingArgs = {
   walletDetailsByWalletId: {
     [key: WalletId]: { currency: WalletCurrency; depositFeeRatio: DepositFeeRatio }
   }
-  displayCurrencyPerSat: DisplayCurrencyPerSat
+  displayCurrencyPerSat: RealTimePrice<DisplayCurrency>
 }
 
 type ConfirmedTransactionHistory = {
