@@ -55,14 +55,6 @@ const Transaction = GT.Object<WalletTransaction>({
         const result = await loaders.txnMetadata.load(source.id)
         if (result instanceof Error || result === undefined) return settlementVia
 
-        // TODO: remove after debugging why we aren't getting back expected pre-images
-        if (settlementVia.type === "lightning") {
-          addAttributesToCurrentSpan({
-            txnMetadata: JSON.stringify(result),
-            txnDirection: source.settlementAmount <= 0 ? "SEND" : "RECEIVE",
-          })
-        }
-
         const updatedSettlementVia = { ...settlementVia }
         for (const key of Object.keys(settlementVia)) {
           /* eslint @typescript-eslint/ban-ts-comment: "off" */
@@ -70,6 +62,16 @@ const Transaction = GT.Object<WalletTransaction>({
           updatedSettlementVia[key] =
             // @ts-ignore-next-line no-implicit-any
             result[key] !== undefined ? result[key] : settlementVia[key]
+        }
+
+        // TODO: remove after debugging why we aren't getting back expected pre-images
+        if (settlementVia.type === "lightning") {
+          addAttributesToCurrentSpan({
+            txnMetadata: JSON.stringify(result),
+            txnDirection: source.settlementAmount <= 0 ? "SEND" : "RECEIVE",
+            settlementVia: JSON.stringify(settlementVia),
+            updatedSettlementVia: JSON.stringify(updatedSettlementVia),
+          })
         }
 
         return updatedSettlementVia
