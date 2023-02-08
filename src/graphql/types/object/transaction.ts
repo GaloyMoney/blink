@@ -52,7 +52,13 @@ const Transaction = GT.Object<WalletTransaction>({
           return settlementVia
         }
 
-        const result = await loaders.txnMetadata.load(source.id)
+        let result: LedgerTransactionMetadata | undefined | RepositoryError
+        // Need try-catch because 'load' function throws any errors returned to it from loader function
+        try {
+          result = await loaders.txnMetadata.load(source.id)
+        } catch (err) {
+          result = err
+        }
         if (result instanceof Error || result === undefined) return settlementVia
 
         const updatedSettlementVia = { ...settlementVia }
