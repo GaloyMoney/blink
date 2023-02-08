@@ -19,7 +19,6 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
-import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
 import { GraphQLError, GraphQLSchema, execute, subscribe } from "graphql"
@@ -217,16 +216,6 @@ export const startApolloServer = async ({
   const app = express()
   const httpServer = createServer(app)
 
-  if (isDev) {
-    // to support CORS on different localhost ports in dev
-    app.use(
-      cors({
-        credentials: true,
-        origin: true,
-      }),
-    )
-  }
-
   const apolloPlugins = [
     createComplexityPlugin({
       schema,
@@ -257,18 +246,6 @@ export const startApolloServer = async ({
     introspection: apolloConfig.playground,
     plugins: apolloPlugins,
     context: (context) => {
-      if (isDev) {
-        // To make CORS work for cookies "credentials": "include" in dev
-        // This needs to be manually added because localhost:3000 is seen
-        // as a different origin from localhost:4002 and the CORS wildcard
-        // "access-control-allow-origin": "*" setting cannot be used via W3C rules
-        // This should work in prod if sites are on the same top level domain
-        context.res.set({
-          "access-control-allow-credentials": "true",
-          "access-control-allow-methods": "PUT GET HEAD POST DELETE OPTIONS",
-          "access-control-allow-origin": context.req.headers.origin,
-        })
-      }
       return (context.req as RequestWithGqlContext).gqlContext
     },
     formatError: (err) => {
@@ -377,7 +354,11 @@ export const startApolloServer = async ({
 
   await apolloServer.start()
 
-  apolloServer.applyMiddleware({ app, path: "/graphql" })
+  apolloServer.applyMiddleware({
+    app,
+    path: "/graphql",
+    cors: { credentials: true, origin: true },
+  })
 
   // old legacy ws
   const onConnectLegacy = async (
