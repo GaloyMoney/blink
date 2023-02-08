@@ -76,10 +76,18 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
   const listByIds = async (
     ids: LedgerTransactionId[],
   ): Promise<(LedgerTransactionMetadata | RepositoryError)[] | RepositoryError> => {
+    const objectIds = ids.map((id) => toObjectId<LedgerTransactionId>(id))
     try {
-      const result = await TransactionMetadata.find({
-        _id: { $in: ids.map((id) => toObjectId<LedgerTransactionId>(id)) },
-      })
+      const agg = TransactionMetadata.aggregate()
+        .match({ _id: { $in: objectIds } })
+        .addFields({ __order: { $indexOfArray: [objectIds, "$_id"] } })
+        .sort({ __order: 1 })
+        .cursor({ batchSize: 100 })
+
+      const result: TransactionMetadataRecord[] = []
+      for await (const txn of agg) {
+        result.push(txn)
+      }
 
       // If arrays mismatched, record errors but return sensible array
       if (result.length !== ids.length) {
