@@ -2712,15 +2712,15 @@
     "@opentelemetry/semantic-conventions" "^1.0.0"
     "@types/ioredis" "4.26.6"
 
-"@opentelemetry/instrumentation-mongodb@^0.34.0":
-  version "0.34.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-mongodb/-/instrumentation-mongodb-0.34.0.tgz#36dfac4d0bd076d4a3fe29d75304f48b40e49474"
-  integrity sha512-SfRvJx4tmJH2EerTAMyMdMuo1bQRvgsOPiv/UsjS1pjFMqOYIEYijem/q8FT2CBMmEZJPUUSUbOwAsRMG7wD/g==
+"@opentelemetry/instrumentation-mongodb@^0.34.1":
+  version "0.34.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-mongodb/-/instrumentation-mongodb-0.34.1.tgz#26f409f324cd6b972c9338704597a38c8f5128df"
+  integrity sha512-zRmotNkUQF6G9KWMEr2K2xZSqlaYKLY4HvV+DGHtOeJ1NbRUFk0V5XBNpB6nc4dXiEJUlGfXRyrQ/yu5TKiUuA==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.34.0"
+    "@opentelemetry/instrumentation" "^0.35.1"
     "@opentelemetry/semantic-conventions" "^1.0.0"
 
-"@opentelemetry/instrumentation@0.35.1", "@opentelemetry/instrumentation@^0.35.0":
+"@opentelemetry/instrumentation@0.35.1", "@opentelemetry/instrumentation@^0.35.0", "@opentelemetry/instrumentation@^0.35.1":
   version "0.35.1"
   resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation/-/instrumentation-0.35.1.tgz#065bdbc4771137347e648eb4c6c6de6e9e97e4d1"
   integrity sha512-EZsvXqxenbRTSNsft6LDcrT4pjAiyZOx3rkDNeqKpwZZe6GmZtsXaZZKuDkJtz9fTjOGjDHjZj9/h80Ya9iIJw==
