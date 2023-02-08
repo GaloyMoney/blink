@@ -7,8 +7,6 @@ import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
 
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
 import Memo from "../scalar/memo"
 
 import InitiationVia from "../abstract/initiation-via"
@@ -52,7 +50,13 @@ const Transaction = GT.Object<WalletTransaction>({
           return settlementVia
         }
 
-        const result = await loaders.txnMetadata.load(source.id)
+        let result: LedgerTransactionMetadata | undefined | RepositoryError
+        // Need try-catch because 'load' function throws any errors returned to it from loader function
+        try {
+          result = await loaders.txnMetadata.load(source.id)
+        } catch (err) {
+          result = err
+        }
         if (result instanceof Error || result === undefined) return settlementVia
 
         const updatedSettlementVia = { ...settlementVia }
@@ -62,16 +66,6 @@ const Transaction = GT.Object<WalletTransaction>({
           updatedSettlementVia[key] =
             // @ts-ignore-next-line no-implicit-any
             result[key] !== undefined ? result[key] : settlementVia[key]
-        }
-
-        // TODO: remove after debugging why we aren't getting back expected pre-images
-        if (settlementVia.type === "lightning") {
-          addAttributesToCurrentSpan({
-            txnMetadata: JSON.stringify(result),
-            txnDirection: source.settlementAmount <= 0 ? "SEND" : "RECEIVE",
-            settlementVia: JSON.stringify(settlementVia),
-            updatedSettlementVia: JSON.stringify(updatedSettlementVia),
-          })
         }
 
         return updatedSettlementVia
