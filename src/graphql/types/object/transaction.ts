@@ -7,8 +7,6 @@ import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
 
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
 import Memo from "../scalar/memo"
 
 import InitiationVia from "../abstract/initiation-via"
@@ -68,16 +66,6 @@ const Transaction = GT.Object<WalletTransaction>({
           updatedSettlementVia[key] =
             // @ts-ignore-next-line no-implicit-any
             result[key] !== undefined ? result[key] : settlementVia[key]
-        }
-
-        // TODO: remove after debugging why we aren't getting back expected pre-images
-        if (settlementVia.type === "lightning") {
-          addAttributesToCurrentSpan({
-            txnMetadata: JSON.stringify(result),
-            txnDirection: source.settlementAmount <= 0 ? "SEND" : "RECEIVE",
-            settlementVia: JSON.stringify(settlementVia),
-            updatedSettlementVia: JSON.stringify(updatedSettlementVia),
-          })
         }
 
         return updatedSettlementVia
