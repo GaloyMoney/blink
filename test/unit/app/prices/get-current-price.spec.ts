@@ -15,13 +15,15 @@ jest.mock("@config", () => {
   return { ...config, getLndParams }
 })
 
+const EUR = "EUR" as DisplayCurrency
+
 beforeEach(() => {
   LocalCacheService().clear({ key: CacheKeys.CurrentSatPrice })
   LocalCacheService().clear({ key: CacheKeys.CurrentUsdCentPrice })
 })
 
 describe("Prices", () => {
-  describe("getCurrentPrice", () => {
+  describe("getCurrentSatPrice", () => {
     it("returns cached price when realtime fails", async () => {
       jest
         .spyOn(PriceServiceImpl, "PriceService")
@@ -61,6 +63,50 @@ describe("Prices", () => {
       }))
 
       const price = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      expect(price).toBeInstanceOf(PriceNotAvailableError)
+    })
+  })
+
+  describe("getCurrentUsdCentPrice", () => {
+    it("returns cached price when realtime fails", async () => {
+      jest
+        .spyOn(PriceServiceImpl, "PriceService")
+        .mockImplementationOnce(() => ({
+          listHistory: jest.fn(),
+          getSatRealTimePrice: jest.fn(),
+          getUsdCentRealTimePrice: () =>
+            Promise.resolve({
+              timestamp: new Date(Date.now()),
+              price: 0.93,
+              currency: EUR,
+            }),
+          listCurrencies: jest.fn(),
+        }))
+        .mockImplementationOnce(() => ({
+          listHistory: jest.fn(),
+          getSatRealTimePrice: jest.fn(),
+          getUsdCentRealTimePrice: () => Promise.resolve(new PriceNotAvailableError()),
+          listCurrencies: jest.fn(),
+        }))
+
+      let satPrice = await Prices.getCurrentUsdCentPrice({ currency: EUR })
+      if (satPrice instanceof Error) throw satPrice
+      expect(satPrice.price).toEqual(0.93)
+
+      satPrice = await Prices.getCurrentUsdCentPrice({ currency: EUR })
+      if (satPrice instanceof Error) throw satPrice
+      expect(satPrice.price).toEqual(0.93)
+    })
+
+    it("fails when realtime fails and cache is empty", async () => {
+      jest.spyOn(PriceServiceImpl, "PriceService").mockImplementationOnce(() => ({
+        listHistory: jest.fn(),
+        getSatRealTimePrice: jest.fn(),
+        getUsdCentRealTimePrice: () => Promise.resolve(new PriceNotAvailableError()),
+        listCurrencies: jest.fn(),
+      }))
+
+      const price = await Prices.getCurrentUsdCentPrice({ currency: EUR })
       expect(price).toBeInstanceOf(PriceNotAvailableError)
     })
   })
