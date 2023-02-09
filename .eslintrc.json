@@ -10,8 +10,9 @@
     "project": "tsconfig.json",
     "sourceType": "module"
   },
-  "plugins": ["eslint-plugin-import", "@typescript-eslint", "prettier"],
+  "plugins": ["eslint-plugin-import", "@typescript-eslint", "prettier", "jest"],
   "extends": [
+    "plugin:jest/recommended",
     "eslint:recommended",
     "plugin:import/recommended",
     "plugin:import/typescript",
@@ -63,7 +64,8 @@
 
     // Temporarily disabled recommended rules
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "no-async-promise-executor": "off"
+    "no-async-promise-executor": "off",
+    "jest/no-disabled-tests": "off"
   },
   "settings": {
     "import/resolver": {
