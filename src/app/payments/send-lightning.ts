@@ -91,7 +91,7 @@ export const payInvoiceByWalletId = async ({
         senderUsername: senderAccount.username,
         memo,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, memo })
 }
 
 const payNoAmountInvoiceByWalletId = async ({
@@ -130,7 +130,7 @@ const payNoAmountInvoiceByWalletId = async ({
         senderUsername: senderAccount.username,
         memo,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, memo })
 }
 
 export const payNoAmountInvoiceByWalletIdForBtcWallet = async (
@@ -478,10 +478,12 @@ const executePaymentViaLn = async ({
   decodedInvoice,
   paymentFlow,
   senderWallet,
+  memo,
 }: {
   decodedInvoice: LnInvoice
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   senderWallet: Wallet
+  memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.Lightning,
@@ -540,10 +542,12 @@ const executePaymentViaLn = async ({
       pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
       paymentHash,
       feeKnownInAdvance: !!rawRoute,
+
+      memoOfPayer: memo || paymentFlow.descriptionFromInvoice,
     })
 
     const journal = await LedgerFacade.recordSend({
-      description: paymentFlow.descriptionFromInvoice,
+      description: paymentFlow.descriptionFromInvoice || memo || "",
       amountToDebitSender: {
         btc: {
           currency: paymentFlow.btcPaymentAmount.currency,

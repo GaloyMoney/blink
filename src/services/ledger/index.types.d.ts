@@ -48,6 +48,10 @@ type LedgerMetadata = {
   pending: boolean
 }
 
+type LedgerSendMetadata = {
+  memoPayer?: string
+}
+
 type LnReceiveLedgerMetadata = LedgerMetadata &
   SendAmountsMetadata & {
     hash: PaymentHash
@@ -72,6 +76,7 @@ type SendAmountsMetadata = {
 }
 
 type AddLnSendLedgerMetadata = LedgerMetadata &
+  LedgerSendMetadata &
   SendAmountsMetadata & {
     hash: PaymentHash
     pubkey: Pubkey
@@ -79,6 +84,7 @@ type AddLnSendLedgerMetadata = LedgerMetadata &
   }
 
 type AddOnchainSendLedgerMetadata = LedgerMetadata &
+  LedgerSendMetadata &
   SendAmountsMetadata & {
     hash: OnChainTxHash
     payee_addresses: OnChainAddress[]
@@ -101,13 +107,13 @@ type AddColdStorageReceiveLedgerMetadata = AddColdStorageLedgerMetadata
 
 type AddColdStorageSendLedgerMetadata = AddColdStorageLedgerMetadata
 
-type IntraledgerBaseMetadata = LedgerMetadata & {
-  usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
-  memoPayer?: string
-  username?: Username
-}
+type IntraledgerSendBaseMetadata = LedgerMetadata &
+  LedgerSendMetadata & {
+    usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
+    username?: Username
+  }
 
-type AddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+type AddLnIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
   SendAmountsMetadata & {
     hash: PaymentHash
     pubkey: Pubkey
@@ -118,7 +124,7 @@ type AddLnTradeIntraAccountLedgerMetadata = Omit<
   "username"
 >
 
-type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
   SendAmountsMetadata & {
     payee_addresses: OnChainAddress[]
     sendAll: boolean
@@ -129,7 +135,7 @@ type AddOnChainTradeIntraAccountLedgerMetadata = Omit<
   "username"
 >
 
-type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
   SendAmountsMetadata
 
 type AddWalletIdTradeIntraAccountLedgerMetadata = Omit<
