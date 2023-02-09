@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkSettlementMethod", "checkInvoice", "checkSenderWallet", "checkRecipientWallet"] }] */
 import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { SelfPaymentError } from "@domain/errors"

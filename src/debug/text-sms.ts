@@ -7,7 +7,7 @@ const main = async () => {
   try {
     // await await new TwilioClient().sendText({body: "test text", to: phone, logger: baseLogger})
   } catch (err) {
-    fail("there was an error sending the Twilio text")
+    console.error("there was an error sending the Twilio text")
   }
 
   return Promise.resolve(true)

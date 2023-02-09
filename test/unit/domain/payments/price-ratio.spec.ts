@@ -185,7 +185,7 @@ describe("PriceRatio", () => {
 
     describe("rounds amounts to floor", () => {
       describe("converts from usd", () => {
-        it("Not Implemented Yet", async () => true)
+        //TODO: implement
       })
       describe("converts from btc", () => {
         const product = 2n
@@ -243,7 +243,7 @@ describe("PriceRatio", () => {
 
     describe("rounds amounts to ceil", () => {
       describe("converts from usd", () => {
-        it("Not Implemented Yet", async () => true)
+        //TODO: implement
       })
       describe("converts from btc", () => {
         const product = 2n

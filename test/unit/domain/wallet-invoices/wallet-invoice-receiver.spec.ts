@@ -105,9 +105,6 @@ describe("WalletInvoiceReceiver", () => {
         )
       })
     })
-  })
-
-  describe("for usd invoice", () => {
     describe("with no amount", () => {
       const noAmountUsdInvoice: WalletInvoice = {
         paymentHash: "paymentHash" as PaymentHash,

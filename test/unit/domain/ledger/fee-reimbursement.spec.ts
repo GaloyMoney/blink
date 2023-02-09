@@ -64,13 +64,14 @@ describe("FeeReimbursement", () => {
 
       const priceRatio = PriceRatio(prepaidFeeAmount)
       if (priceRatio instanceof Error) throw priceRatio
-      expect(priceRatio.usdPerSat()).toEqual(0.05)
-
-      // Test: max fee rounds exactly
-      const { usd, btc } = prepaidFeeAmount
-      expect((usd.amount * btc.amount) % usd.amount).toEqual(0n)
 
       const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
+
+      it("max fee rounds exactly", async () => {
+        const { usd, btc } = prepaidFeeAmount
+        expect(priceRatio.usdPerSat()).toEqual(0.05)
+        expect((usd.amount * btc.amount) % usd.amount).toEqual(0n)
+      })
 
       it("rounds down to 'max fee - 1' if reimbursement normally rounds up to max fee", () => {
         // Calculate fee reimbursement
