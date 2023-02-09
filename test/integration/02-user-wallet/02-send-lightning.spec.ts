@@ -620,16 +620,6 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("pay zero amount invoice with amount less than 1 cent", async () => {
-    const imbalanceCalc = ImbalanceCalculator({
-      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
-      sinceDaysAgo: ONE_DAY,
-      volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
-      volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
-    })
-
-    const imbalanceInit = await imbalanceCalc.getSwapOutImbalanceAmount(walletDescriptorB)
-    if (imbalanceInit instanceof Error) throw imbalanceInit
-
     const { request } = await createInvoice({ lnd: lndOutside1 })
 
     // Test payment is successful
