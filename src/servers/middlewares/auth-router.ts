@@ -4,7 +4,7 @@ import express from "express"
 import * as jwt from "jsonwebtoken"
 
 import { Auth } from "@app"
-import { getKratosConfig, isDev, JWT_SECRET } from "@config"
+import { isDev, JWT_SECRET } from "@config"
 
 import { mapError } from "@graphql/error-map"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
@@ -22,9 +22,7 @@ import { checkedToPhoneNumber } from "@domain/users"
 
 const authRouter = express.Router({ caseSensitive: true })
 
-const { corsAllowedOrigins } = getKratosConfig()
-
-authRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
+authRouter.use(cors({ origin: true, credentials: true }))
 authRouter.use(bodyParser.urlencoded({ extended: true }))
 authRouter.use(bodyParser.json())
 authRouter.use(cookieParser())
@@ -161,7 +159,7 @@ authRouter.post(
 
         res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
           maxAge: kratosSessionCookie.maxAge,
-          sameSite: "lax",
+          sameSite: "none",
           secure: kratosSessionCookie.secure,
           httpOnly: kratosSessionCookie.httpOnly,
           path: kratosSessionCookie.path,
@@ -170,7 +168,7 @@ authRouter.post(
 
         res.cookie(csrfCookie.name, csrfCookie.value, {
           maxAge: csrfCookie.maxAge,
-          sameSite: "lax",
+          sameSite: "none",
           secure: csrfCookie.secure,
           httpOnly: csrfCookie.httpOnly,
           path: csrfCookie.path,

@@ -3,7 +3,7 @@ import { assert } from "console"
 import cors from "cors"
 import express from "express"
 
-import { getDefaultAccountsConfig, getKratosConfig, getKratosPasswords } from "@config"
+import { getDefaultAccountsConfig, getKratosPasswords } from "@config"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 import {
   createAccountForEmailIdentifier,
@@ -14,10 +14,9 @@ import { checkedToUserId } from "@domain/accounts"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
-const { corsAllowedOrigins } = getKratosConfig()
 const { callbackApiKey } = getKratosPasswords()
 
-kratosRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
+kratosRouter.use(cors({ origin: true, credentials: true }))
 kratosRouter.use(express.json())
 
 kratosRouter.post(

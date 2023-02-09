@@ -80,7 +80,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     const cookie = libCookie.serialize(csrfCookie.name, csrfCookie.value, {
       expires: csrfCookie.expires,
       maxAge: csrfCookie.maxAge,
-      sameSite: "lax",
+      sameSite: "none",
       secure: csrfCookie.secure,
       httpOnly: csrfCookie.httpOnly,
       path: csrfCookie.path,
@@ -187,7 +187,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     const cookie = libCookie.serialize(csrfCookie.name, csrfCookie.value, {
       expires: csrfCookie.expires,
       maxAge: csrfCookie.maxAge,
-      sameSite: "lax",
+      sameSite: "none",
       secure: csrfCookie.secure,
       httpOnly: csrfCookie.httpOnly,
       path: csrfCookie.path,
