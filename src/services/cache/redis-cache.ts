@@ -14,9 +14,9 @@ export const RedisCacheService = (): ICacheService => {
   }: LocalCacheSetArgs<T>): Promise<T | CacheServiceError> => {
     try {
       const res = await redisCache.setCache(key, value, ttlSecs)
-      if (!res) return new CacheNotAvailableError()
+      if (res !== "OK") return new CacheNotAvailableError()
 
-      return res
+      return value
     } catch (err) {
       return new UnknownCacheServiceError(err.message || err)
     }
