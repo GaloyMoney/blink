@@ -10,6 +10,7 @@ export const LnSendLedgerMetadata = ({
   amountDisplayCurrency,
   displayCurrency,
   feeKnownInAdvance,
+  memoOfPayer,
 }: {
   paymentHash: PaymentHash
   pubkey: Pubkey
@@ -20,6 +21,7 @@ export const LnSendLedgerMetadata = ({
   displayCurrency: DisplayCurrency
 
   feeKnownInAdvance: boolean
+  memoOfPayer?: string
 }) => {
   const {
     btcPaymentAmount: { amount: satsAmount },
@@ -34,6 +36,7 @@ export const LnSendLedgerMetadata = ({
     hash: paymentHash,
     pubkey,
     feeKnownInAdvance,
+    memoPayer: memoOfPayer,
 
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
@@ -55,6 +58,7 @@ export const OnChainSendLedgerMetadata = ({
   displayCurrency,
   payeeAddresses,
   sendAll,
+  memoOfPayer,
 }: {
   onChainTxHash: OnChainTxHash
   paymentAmounts: AmountsAndFees
@@ -65,6 +69,7 @@ export const OnChainSendLedgerMetadata = ({
 
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
+  memoOfPayer?: string
 }) => {
   const {
     btcPaymentAmount: { amount: satsAmount },
@@ -79,6 +84,7 @@ export const OnChainSendLedgerMetadata = ({
     hash: onChainTxHash,
     payee_addresses: payeeAddresses,
     sendAll,
+    memoPayer: memoOfPayer,
 
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
