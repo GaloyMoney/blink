@@ -2733,12 +2733,12 @@
     "@opentelemetry/semantic-conventions" "1.9.1"
     semver "^7.3.5"
 
-"@opentelemetry/instrumentation-ioredis@^0.33.1":
-  version "0.33.1"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.33.1.tgz#0bd74d4d744e11c79794dfa7d9a8502f763a63c9"
-  integrity sha512-nqYd99FjeJQ+kab4IXeIhYd6TM8dHmXccuCfe4ZMHse0I8sVtzWdyVpmDroPIxKJ6Pum4VPYuSIPy2CT2j6GEw==
+"@opentelemetry/instrumentation-ioredis@^0.33.2":
+  version "0.33.2"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.33.2.tgz#15011cf038d9bf24bd24854983f9d9170fce2330"
+  integrity sha512-86x9Ba4cyOZShORp7HECRULnS/hSJdTSE3cM9oSSAtOu6obUSA9eRGh0P8QZ5Ws1OXB7yD5A8MzxDLBPZSrWCg==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.34.0"
+    "@opentelemetry/instrumentation" "^0.35.1"
     "@opentelemetry/redis-common" "^0.34.0"
     "@opentelemetry/semantic-conventions" "^1.0.0"
     "@types/ioredis" "4.26.6"
@@ -2755,15 +2755,6 @@
   version "0.35.1"
   resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation/-/instrumentation-0.35.1.tgz#065bdbc4771137347e648eb4c6c6de6e9e97e4d1"
   integrity sha512-EZsvXqxenbRTSNsft6LDcrT4pjAiyZOx3rkDNeqKpwZZe6GmZtsXaZZKuDkJtz9fTjOGjDHjZj9/h80Ya9iIJw==
-  dependencies:
-    require-in-the-middle "^5.0.3"
-    semver "^7.3.2"
-    shimmer "^1.2.1"
-
-"@opentelemetry/instrumentation@^0.34.0":
-  version "0.34.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation/-/instrumentation-0.34.0.tgz#bae86da46ea4466594689975cd10f0c3720b4071"
-  integrity sha512-VET/bOh4StOQV4vf1sAvn2JD67BhW2vPZ/ynl2gHXyafme2yB8Hs9+tr1TLzFwNGo7jwMFviFQkZjCYxMuK0AA==
   dependencies:
     require-in-the-middle "^5.0.3"
     semver "^7.3.2"
