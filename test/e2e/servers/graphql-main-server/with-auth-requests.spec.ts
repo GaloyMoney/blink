@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "loginFromPhoneAndCode"] }] */
 import axios from "axios"
 
 import { Accounts } from "@app"
