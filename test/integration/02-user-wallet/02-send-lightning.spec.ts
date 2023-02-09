@@ -634,6 +634,48 @@ describe("UserWallet - Lightning Pay", () => {
     expect(paymentResult).toBe(PaymentSendStatus.Success)
   })
 
+  it("does not filter spam message for external send", async () => {
+    const amount = toSats(1)
+    const memoSpamBelowThreshold = "Memo BELOW spam threshold"
+    const memoOnInvoice = `${memoSpamBelowThreshold} -- from payment request`
+    const memoFromUser = `${memoSpamBelowThreshold} -- from user`
+
+    const { request } = await createInvoice({
+      lnd: lndOutside1,
+      description: memoOnInvoice,
+    })
+
+    // Test probe + payment is successful
+    const { result: fee, error } =
+      await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+        walletId: walletIdB,
+        uncheckedPaymentRequest: request,
+        amount,
+      })
+    if (error instanceof Error) throw error
+    expect(fee).not.toBeNull()
+
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+      uncheckedPaymentRequest: request,
+      memo: memoFromUser,
+      amount,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    // Check memo on txns
+    const txResult = await getTransactionsForWalletId(walletIdB)
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const txns = txResult.result.slice
+    expect(txns.length).toBeGreaterThan(0)
+    const txn = txns[0]
+    expect(txn.memo).toBe(memoFromUser)
+  })
+
   it("filters spam from send to another Galoy user as push payment", async () => {
     // TODO: good candidate for a unit test?
 
