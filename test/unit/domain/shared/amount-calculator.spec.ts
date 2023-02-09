@@ -141,7 +141,7 @@ describe("AmountCalculator", () => {
           const { title, amount } = testCase
           const expectedResult = testCase.result[describeGroup.type]
 
-          it(title, () => {
+          it(`${title}`, () => {
             const result = describeGroup.div({ amount, currency }, divisor)
             expect(result.amount).toEqual(expectedResult)
             expect(result.currency).toBe(currency)

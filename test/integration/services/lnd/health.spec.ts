@@ -19,7 +19,7 @@ describe("lndHealth", () => {
     await isUp(node)
     lndStatusEvent.removeAllListeners()
 
-    expect(handler).toBeCalledTimes(1)
+    expect(handler).toHaveBeenCalledTimes(1)
 
     const { active, lnd, type } = handler.mock.calls[0][0]
     expect(active).toBe(true)

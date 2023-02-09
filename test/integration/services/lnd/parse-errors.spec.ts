@@ -1,9 +1,14 @@
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { getActiveLnd, parseLndErrorDetails } from "@services/lnd/utils"
 
-import { createInvoice, payViaPaymentDetails, payViaRoutes } from "lightning"
+import {
+  createInvoice,
+  payViaPaymentDetails,
+  payViaRoutes,
+  LightningError as LnError,
+} from "lightning"
 
-import { lndOutside1 } from "test/helpers"
+import { getError, lndOutside1 } from "test/helpers"
 
 describe("'lightning' library error handling", () => {
   const activeNode = getActiveLnd()
@@ -15,15 +20,12 @@ describe("'lightning' library error handling", () => {
   // https://github.com/alexbosworth/lightning/blob/edcaf671e6a0bd2d8f8aa39b51ef816b2a633560/test/lnd_methods/offchain/test_pay_via_routes.js#L28
   it("parses error message when no additional details are found", async () => {
     const payArgs = { id: "id", lnd, routes: [] }
-    try {
-      await payViaRoutes(payArgs)
-    } catch (err) {
-      expect(err).toHaveLength(2)
-      expect(err[0]).toEqual(400)
+    const err = await getError<LnError>(() => payViaRoutes(payArgs))
+    expect(err).toHaveLength(2)
+    expect(err[0]).toEqual(400)
 
-      const parsedErr = parseLndErrorDetails(err)
-      expect(parsedErr).toBe("ExpectedStandardHexPaymentHashId")
-    }
+    const parsedErr = parseLndErrorDetails(err)
+    expect(parsedErr).toBe("ExpectedStandardHexPaymentHashId")
   })
 
   it("parses error message from err object", async () => {
@@ -52,28 +54,25 @@ describe("'lightning' library error handling", () => {
       routes: [],
     }
 
-    try {
-      await payViaPaymentDetails(paymentDetailsArgs)
-      await payViaPaymentDetails(paymentDetailsArgs)
-    } catch (err) {
-      expect(err).toHaveLength(3)
-      expect(err[0]).toEqual(503)
-      expect(err[1]).toBe("UnexpectedPaymentError")
-      expect(err[2]).toHaveProperty("err")
-      expect(err[2]).not.toHaveProperty("failures")
+    await payViaPaymentDetails(paymentDetailsArgs)
 
-      const nestedErrObj = err[2].err
-      expect(nestedErrObj).toBeInstanceOf(Error)
-      expect(nestedErrObj).toHaveProperty("code")
-      expect(nestedErrObj).toHaveProperty("metadata")
-      expect(nestedErrObj).toHaveProperty("details")
+    const err = await getError<LnError>(() => payViaPaymentDetails(paymentDetailsArgs))
+    expect(err).toHaveLength(3)
+    expect(err[0]).toEqual(503)
+    expect(err[1]).toBe("UnexpectedPaymentError")
+    expect(err[2]).toHaveProperty("err")
+    expect(err[2]).not.toHaveProperty("failures")
 
-      const expectedDetails = "invoice is already paid"
-      expect(nestedErrObj.details).toBe(expectedDetails)
+    const nestedErrObj = err[2].err
+    expect(nestedErrObj).toBeInstanceOf(Error)
+    expect(nestedErrObj).toHaveProperty("code")
+    expect(nestedErrObj).toHaveProperty("metadata")
 
-      const parsedErr = parseLndErrorDetails(err)
-      expect(parsedErr).toBe(expectedDetails)
-    }
+    const expectedDetails = "invoice is already paid"
+    expect(nestedErrObj).toHaveProperty("details", expectedDetails)
+
+    const parsedErr = parseLndErrorDetails(err)
+    expect(parsedErr).toBe(expectedDetails)
   })
 
   it("parses error message from failures object", async () => {
@@ -101,29 +100,28 @@ describe("'lightning' library error handling", () => {
         },
       ],
     }
-    try {
-      await payViaRoutes(payArgs)
-    } catch (err) {
-      expect(err).toHaveLength(3)
-      expect(err[0]).toEqual(503)
-      expect(err[1]).toBe("UnexpectedErrorWhenPayingViaRoute")
 
-      const nestedFailureErr = err[2].failures[0]
-      expect(nestedFailureErr).toHaveLength(3)
-      expect(nestedFailureErr[0]).toEqual(err[0])
-      expect(nestedFailureErr[1]).toBe(err[1])
+    const err = await getError<LnError<{ failures: LnError }>>(() =>
+      payViaRoutes(payArgs),
+    )
+    expect(err).toHaveLength(3)
+    expect(err[0]).toEqual(503)
+    expect(err[1]).toBe("UnexpectedErrorWhenPayingViaRoute")
 
-      const nestedErrObj = nestedFailureErr[2].err
-      expect(nestedErrObj).toBeInstanceOf(Error)
-      expect(nestedErrObj).toHaveProperty("code")
-      expect(nestedErrObj).toHaveProperty("metadata")
-      expect(nestedErrObj).toHaveProperty("details")
+    const nestedFailureErr = err[2].failures[0]
+    expect(nestedFailureErr).toHaveLength(3)
+    expect(nestedFailureErr[0]).toEqual(err[0])
+    expect(nestedFailureErr[1]).toBe(err[1])
 
-      const expectedDetails = "invalid public key: unsupported format: 0"
-      expect(nestedErrObj.details).toBe(expectedDetails)
+    const nestedErrObj = nestedFailureErr[2].err
+    expect(nestedErrObj).toBeInstanceOf(Error)
+    expect(nestedErrObj).toHaveProperty("code")
+    expect(nestedErrObj).toHaveProperty("metadata")
 
-      const parsedErr = parseLndErrorDetails(err)
-      expect(parsedErr).toBe(expectedDetails)
-    }
+    const expectedDetails = "invalid public key: unsupported format: 0"
+    expect(nestedErrObj).toHaveProperty("details", expectedDetails)
+
+    const parsedErr = parseLndErrorDetails(err)
+    expect(parsedErr).toBe(expectedDetails)
   })
 })

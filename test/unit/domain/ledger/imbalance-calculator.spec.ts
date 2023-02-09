@@ -95,7 +95,7 @@ describe("ImbalanceCalculator", () => {
     })
   })
 
-  describe("for WithdrawalFeePriceMethod.proportionalOnImbalance", () => {
+  describe("for WithdrawalFeePriceMethod.flat", () => {
     const method = WithdrawalFeePriceMethod.flat
     it("no imbalance with flat fees", async () => {
       const calculator = ImbalanceCalculator({

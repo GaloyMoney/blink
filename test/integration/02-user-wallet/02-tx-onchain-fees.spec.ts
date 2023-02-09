@@ -54,7 +54,7 @@ describe("UserWallet - getOnchainFee", () => {
         targetConfirmations: defaultTarget,
       })
       if (feeAmount instanceof Error) throw feeAmount
-      expect(feeAmount.currency === WalletCurrency.Btc)
+      expect(feeAmount.currency).toBe(WalletCurrency.Btc)
       const fee = Number(feeAmount.amount)
       expect(fee).toBeGreaterThan(0)
 
@@ -168,7 +168,7 @@ describe("UserWallet - getOnchainFee", () => {
         targetConfirmations: defaultTarget,
       })
       if (feeAmount instanceof Error) throw feeAmount
-      expect(feeAmount.currency === WalletCurrency.Usd)
+      expect(feeAmount.currency).toBe(WalletCurrency.Usd)
       const fee = Number(feeAmount.amount)
       expect(fee).toBeGreaterThan(0)
 

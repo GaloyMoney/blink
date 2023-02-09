@@ -77,7 +77,7 @@ describe("extractIncomingTransactions", () => {
     expect(txs.length).toEqual(0)
   })
 
-  it("it defaults fee to 0 (only has fee set on outgoing tx)", () => {
+  it("defaults fee to 0 (only has fee set on outgoing tx)", () => {
     const txs = extractIncomingTransactions({
       decoder,
       txs: {
@@ -160,7 +160,7 @@ describe("extractOutgoingTransactions", () => {
     expect(txs.length).toEqual(0)
   })
 
-  it("it defaults fee to 0 (edge case)", () => {
+  it("defaults fee to 0 (edge case)", () => {
     const txs = extractOutgoingTransactions({
       decoder,
       txs: {

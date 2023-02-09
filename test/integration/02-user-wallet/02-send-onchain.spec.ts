@@ -647,7 +647,7 @@ describe("BtcWallet - onChainPay", () => {
       amount,
       sendAll: false,
     })
-    if (res instanceof Error) throw res
+    expect(res).not.toBeInstanceOf(Error)
   })
 
   it("sends all in a successful payment", async () => {
@@ -657,7 +657,7 @@ describe("BtcWallet - onChainPay", () => {
       amount,
       sendAll: true,
     })
-    if (res instanceof Error) throw res
+    expect(res).not.toBeInstanceOf(Error)
   })
 
   it("fails to send all from empty wallet", async () => {
@@ -742,7 +742,7 @@ describe("BtcWallet - onChainPay", () => {
       recipientWalletId: walletIdD,
       senderAmount: amount,
     })
-    if (res instanceof Error) throw res
+    expect(res).not.toBeInstanceOf(Error)
   })
 
   it("sends an on us transaction below dust limit", async () => {
@@ -752,7 +752,7 @@ describe("BtcWallet - onChainPay", () => {
       recipientWalletId: walletIdD,
       senderAmount: toSats(amountBelowDustThreshold),
     })
-    if (res instanceof Error) throw res
+    expect(res).not.toBeInstanceOf(Error)
   })
 
   it("sends all with an on us transaction", async () => {
@@ -1085,7 +1085,7 @@ describe("UsdWallet - onChainPay", () => {
         recipientWalletId: walletIdUsdA,
         senderAmount: usdAmount,
       })
-      if (res instanceof Error) throw res
+      expect(res).not.toBeInstanceOf(Error)
     })
 
     it("sends from usd wallet to btc wallet", async () => {
@@ -1095,7 +1095,7 @@ describe("UsdWallet - onChainPay", () => {
         recipientWalletId: walletIdA,
         senderAmount: usdAmount,
       })
-      if (res instanceof Error) throw res
+      expect(res).not.toBeInstanceOf(Error)
     })
 
     it("sends from btc wallet to usd wallet", async () => {
@@ -1105,7 +1105,7 @@ describe("UsdWallet - onChainPay", () => {
         recipientWalletId: walletIdUsdB,
         senderAmount: amount,
       })
-      if (res instanceof Error) throw res
+      expect(res).not.toBeInstanceOf(Error)
     })
 
     it("fails to send with less-than-1-cent amount from btc wallet to usd wallet", async () => {
@@ -1138,7 +1138,7 @@ describe("UsdWallet - onChainPay", () => {
         amount: usdAmount,
         sendAll: false,
       })
-      if (res instanceof Error) throw res
+      expect(res).not.toBeInstanceOf(Error)
     })
 
     it("send all from usd wallet", async () => {
@@ -1148,7 +1148,7 @@ describe("UsdWallet - onChainPay", () => {
         amount: usdAmount,
         sendAll: true,
       })
-      if (res instanceof Error) throw res
+      expect(res).not.toBeInstanceOf(Error)
     })
 
     it("fails to send all from empty usd wallet", async () => {

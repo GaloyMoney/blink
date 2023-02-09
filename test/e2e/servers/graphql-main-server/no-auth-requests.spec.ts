@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testPhoneCodeAttemptPerPhoneMinInterval", "testPhoneCodeAttemptPerPhone", "testPhoneCodeAttemptPerIp", "testRateLimitLoginByPhone", "testRateLimitLoginByIp"] }] */
 import { BTC_NETWORK } from "@config"
 
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"

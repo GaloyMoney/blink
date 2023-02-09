@@ -22,7 +22,6 @@ import {
   listIdentitySchemas,
   revokeSessions,
 } from "@services/kratos/tests-but-not-prod"
-import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
 
 import { AuthWithEmailPasswordlessService } from "@services/kratos/auth-email-no-password"
@@ -40,6 +39,7 @@ import {
   fundWalletIdFromLightning,
   getAdminPhoneAndCode,
   getDefaultWalletIdByTestUserRef,
+  getError,
   getPhoneAndCodeFromRef,
   killServer,
   randomEmail,
@@ -119,22 +119,30 @@ describe("phoneNoPassword", () => {
         totpSecret = res1
 
         const res2 = await validateKratosToken(session)
-        res2
-        // TODO
-        // expect(res2.aal).toBe("aal2")
+        expect(res2).toEqual(
+          expect.objectContaining({
+            kratosUserId: expect.any(String),
+            session: expect.any(Object),
+          }),
+        )
       }
 
+      // FIXME: tmp for test.
+      // NB: I don't think it make sense to have 2fa for passwordless schema
+      // but the test is still useful to know how to use kratos for 2fa
       {
-        // FIXME: tmp for test.
-        // NB: I don't think it make sense to have 2fa for passwordless schema
-        // but the test is still useful to know how to use kratos for 2fa
         const password = getKratosPasswords().masterUserPassword
 
         const res = await authService.login(phone)
         if (res instanceof Error) throw res
+        expect(res).toEqual(
+          expect.objectContaining({
+            kratosUserId: expect.any(String),
+            sessionToken: expect.any(String),
+          }),
+        )
 
         const session = res.sessionToken
-
         await elevatingSessionWithTotp({
           session,
           code: authenticator.generate(totpSecret),
@@ -172,8 +180,8 @@ describe("phoneNoPassword", () => {
 
       const newPhone = randomPhone()
 
-      try {
-        await kratosPublic.updateSettingsFlow({
+      const err = await getError(() =>
+        kratosPublic.updateSettingsFlow({
           flow: res2.data.id,
           updateSettingsFlowBody: {
             method: "profile",
@@ -182,20 +190,10 @@ describe("phoneNoPassword", () => {
             },
           },
           xSessionToken: res.sessionToken,
-        })
+        }),
+      )
 
-        // should throw
-        expect(true).toBeFalsy()
-      } catch (err) {
-        expect(true).toBeTruthy()
-        baseLogger.debug({ err }, "err impossible to update profile")
-      }
-
-      // should pass if kratos.yaml/serve.selfservice.after.profile is been deleted
-
-      // const res3 = await validateKratosToken(res.sessionToken)
-      // if (res3 instanceof Error) throw res3
-      // expect(res3.session.identity.traits).toStrictEqual({ phone: newPhone })
+      expect(err).toBeTruthy()
     })
   })
 
@@ -216,6 +214,7 @@ describe("phoneNoPassword", () => {
 it("list users", async () => {
   const res = await identityRepo.listIdentities()
   if (res instanceof Error) throw res
+  expect(Array.isArray(res)).toBe(true)
 })
 
 describe("token validation", () => {

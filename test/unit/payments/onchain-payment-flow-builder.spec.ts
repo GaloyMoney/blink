@@ -337,7 +337,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             ]
 
             const describeWithAmount = ({ name, amount }) => {
-              describe(name, () => {
+              describe(`${name}`, () => {
                 const withAmountBuilder = withBtcWalletBuilder
                   .withRecipientWallet(recipientBtcWallet)
                   .withAmount(amount)
@@ -403,7 +403,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             ]
 
             const describeWithAmount = ({ name, amount }) => {
-              describe(name, () => {
+              describe(`${name}`, () => {
                 const withAmountBuilder = withBtcWalletBuilder
                   .withRecipientWallet(recipientUsdWallet)
                   .withAmount(amount)
@@ -641,7 +641,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             ]
 
             const describeWithAmount = ({ name, amount }) => {
-              describe(name, () => {
+              describe(`${name}`, () => {
                 const withAmountBuilder = withUsdWalletBuilder
                   .withRecipientWallet(recipientBtcWallet)
                   .withAmount(amount)
@@ -706,7 +706,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             ]
 
             const describeWithAmount = ({ name, amount }) => {
-              describe(name, () => {
+              describe(`${name}`, () => {
                 const withAmountBuilder = withUsdWalletBuilder
                   .withRecipientWallet(recipientUsdWallet)
                   .withAmount(amount)
