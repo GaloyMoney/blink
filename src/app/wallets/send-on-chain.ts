@@ -465,6 +465,7 @@ const executePaymentViaOnChain = async <
 
       payeeAddresses: [paymentFlow.address],
       sendAll,
+      memoOfPayer: memo || undefined,
     })
 
     // Record transaction
