@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "successLimitsPaymentTests", "multiplePaymentLimitTests"] }] */
 import { Payments, Wallets } from "@app"
 import { getMidPriceRatio } from "@app/shared"
 

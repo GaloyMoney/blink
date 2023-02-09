@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-conditional-expect */
 import { swapOut } from "@app/swap"
 import {
   getActiveLoopd,
@@ -40,7 +41,7 @@ describe("Swap", () => {
     }
   })
 
-  it("Swap out for default active loop node or lnd1-loop node returns successful swap result ", async () => {
+  it("Swap out for default active loop node or lnd1-loop node returns successful swap result", async () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp) {
       const swapDestAddress = await getSwapDestAddress()

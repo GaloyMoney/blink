@@ -86,144 +86,151 @@ describe("Facade", () => {
   }
 
   describe("recordReceive", () => {
-    const runRecordReceive = ({ recordFn, metadata }) => {
-      it("receives to btc wallet", async () => {
-        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-        await recordFn({
-          walletDescriptor: btcWalletDescriptor,
-          paymentAmount: receiveAmount,
-          bankFee,
-        })
-
-        const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-          btcWalletDescriptor,
-        )
-        if (balance instanceof Error) throw balance
-        expect(balance).toEqual(
-          expect.objectContaining({
-            amount: receiveAmount.btc.amount,
-            currency: WalletCurrency.Btc,
-          }),
-        )
-
-        await testMetadata({
-          senderWalletDescriptor: btcWalletDescriptor,
-          metadata,
-          isSend: false,
-        })
-      })
-
-      it("receives to usd wallet", async () => {
-        const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-        await recordFn({
-          walletDescriptor: usdWalletDescriptor,
-          paymentAmount: receiveAmount,
-          bankFee,
-        })
-
-        const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-          usdWalletDescriptor,
-        )
-        if (balance instanceof Error) throw balance
-        expect(balance).toEqual(
-          expect.objectContaining({
-            amount: receiveAmount.usd.amount,
-            currency: WalletCurrency.Usd,
-          }),
-        )
-
-        await testMetadata({
-          senderWalletDescriptor: usdWalletDescriptor,
-          metadata,
-          isSend: false,
-        })
-      })
-    }
-
-    describe("recordReceiveLnPayment", () =>
-      runRecordReceive({
+    const recordReceiveToTest = [
+      {
+        name: "recordReceiveLnPayment",
         recordFn: recordReceiveLnPayment,
         metadata: LedgerTransactionType.Invoice,
-      }))
-
-    describe("recordReceiveOnChainPayment", () =>
-      runRecordReceive({
+      },
+      {
+        name: "recordReceiveOnChainPayment",
         recordFn: recordReceiveOnChainPayment,
         metadata: LedgerTransactionType.OnchainReceipt,
-      }))
+      },
+    ]
+
+    recordReceiveToTest.forEach(({ name, recordFn, metadata }) => {
+      describe(`${name}`, () => {
+        it("receives to btc wallet", async () => {
+          const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+          await recordFn({
+            walletDescriptor: btcWalletDescriptor,
+            paymentAmount: receiveAmount,
+            bankFee,
+          })
+
+          const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+            btcWalletDescriptor,
+          )
+          if (balance instanceof Error) throw balance
+          expect(balance).toEqual(
+            expect.objectContaining({
+              amount: receiveAmount.btc.amount,
+              currency: WalletCurrency.Btc,
+            }),
+          )
+
+          await testMetadata({
+            senderWalletDescriptor: btcWalletDescriptor,
+            metadata,
+            isSend: false,
+          })
+        })
+
+        it("receives to usd wallet", async () => {
+          const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
+          await recordFn({
+            walletDescriptor: usdWalletDescriptor,
+            paymentAmount: receiveAmount,
+            bankFee,
+          })
+
+          const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+            usdWalletDescriptor,
+          )
+          if (balance instanceof Error) throw balance
+          expect(balance).toEqual(
+            expect.objectContaining({
+              amount: receiveAmount.usd.amount,
+              currency: WalletCurrency.Usd,
+            }),
+          )
+
+          await testMetadata({
+            senderWalletDescriptor: usdWalletDescriptor,
+            metadata,
+            isSend: false,
+          })
+        })
+      })
+    })
   })
 
   describe("recordSend", () => {
-    const runRecordSend = ({ recordFn, metadata }) => {
-      it("sends from btc wallet", async () => {
-        const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-
-        const startingBalance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-          btcWalletDescriptor,
-        )
-        if (startingBalance instanceof Error) throw startingBalance
-
-        await recordFn({
-          walletDescriptor: btcWalletDescriptor,
-          paymentAmount: sendAmount,
-          bankFee,
-        })
-
-        const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-          btcWalletDescriptor,
-        )
-        if (balance instanceof Error) throw balance
-        expect(balance).toEqual(
-          expect.objectContaining({
-            amount: startingBalance.amount - sendAmount.btc.amount,
-            currency: WalletCurrency.Btc,
-          }),
-        )
-
-        await testMetadata({
-          senderWalletDescriptor: btcWalletDescriptor,
-          metadata,
-          isSend: true,
-        })
-      })
-
-      it("sends from usd wallet", async () => {
-        const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-
-        const startingBalance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-          usdWalletDescriptor,
-        )
-        if (startingBalance instanceof Error) throw startingBalance
-
-        await recordFn({
-          walletDescriptor: usdWalletDescriptor,
-          paymentAmount: sendAmount,
-          bankFee,
-        })
-
-        const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-          usdWalletDescriptor,
-        )
-        if (balance instanceof Error) throw balance
-        expect(balance).toEqual(
-          expect.objectContaining({
-            amount: startingBalance.amount - sendAmount.usd.amount,
-            currency: WalletCurrency.Usd,
-          }),
-        )
-      })
-    }
-    describe("recordSendLnPayment", () =>
-      runRecordSend({
+    const recordSendToTest = [
+      {
+        name: "recordSendLnPayment",
         recordFn: recordSendLnPayment,
         metadata: LedgerTransactionType.Payment,
-      }))
-
-    describe("recordSendOnChainPayment", () =>
-      runRecordSend({
+      },
+      {
+        name: "recordSendOnChainPayment",
         recordFn: recordSendOnChainPayment,
         metadata: LedgerTransactionType.OnchainPayment,
-      }))
+      },
+    ]
+
+    recordSendToTest.forEach(({ name, recordFn, metadata }) => {
+      describe(`${name}`, () => {
+        it("sends from btc wallet", async () => {
+          const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+
+          const startingBalance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+            btcWalletDescriptor,
+          )
+          if (startingBalance instanceof Error) throw startingBalance
+
+          await recordFn({
+            walletDescriptor: btcWalletDescriptor,
+            paymentAmount: sendAmount,
+            bankFee,
+          })
+
+          const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+            btcWalletDescriptor,
+          )
+          if (balance instanceof Error) throw balance
+          expect(balance).toEqual(
+            expect.objectContaining({
+              amount: startingBalance.amount - sendAmount.btc.amount,
+              currency: WalletCurrency.Btc,
+            }),
+          )
+
+          await testMetadata({
+            senderWalletDescriptor: btcWalletDescriptor,
+            metadata,
+            isSend: true,
+          })
+        })
+
+        it("sends from usd wallet", async () => {
+          const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
+
+          const startingBalance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+            usdWalletDescriptor,
+          )
+          if (startingBalance instanceof Error) throw startingBalance
+
+          await recordFn({
+            walletDescriptor: usdWalletDescriptor,
+            paymentAmount: sendAmount,
+            bankFee,
+          })
+
+          const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+            usdWalletDescriptor,
+          )
+          if (balance instanceof Error) throw balance
+          expect(balance).toEqual(
+            expect.objectContaining({
+              amount: startingBalance.amount - sendAmount.usd.amount,
+              currency: WalletCurrency.Usd,
+            }),
+          )
+        })
+      })
+    })
   })
 
   describe("recordIntraledger", () => {
@@ -330,40 +337,46 @@ describe("Facade", () => {
       }
     }
 
-    describe("recordLnIntraLedgerPayment", () =>
+    describe("recordLnIntraLedgerPayment", () => {
       runRecordIntraLedger({
         recordFn: recordLnIntraLedgerPayment,
         metadata: LedgerTransactionType.LnIntraLedger,
-      }))
+      })
+    })
 
-    describe("recordWalletIdIntraLedgerPayment", () =>
+    describe("recordWalletIdIntraLedgerPayment", () => {
       runRecordIntraLedger({
         recordFn: recordWalletIdIntraLedgerPayment,
         metadata: LedgerTransactionType.IntraLedger,
-      }))
+      })
+    })
 
-    describe("recordOnChainIntraLedgerPayment", () =>
+    describe("recordOnChainIntraLedgerPayment", () => {
       runRecordIntraLedger({
         recordFn: recordOnChainIntraLedgerPayment,
         metadata: LedgerTransactionType.OnchainIntraLedger,
-      }))
+      })
+    })
 
-    describe("recordLnTradeIntraAccountTxn", () =>
+    describe("recordLnTradeIntraAccountTxn", () => {
       runRecordTradeIntraAccount({
         recordFn: recordLnTradeIntraAccountTxn,
         metadata: LedgerTransactionType.LnTradeIntraAccount,
-      }))
+      })
+    })
 
-    describe("recordWalletIdTradeIntraAccountTxn", () =>
+    describe("recordWalletIdTradeIntraAccountTxn", () => {
       runRecordTradeIntraAccount({
         recordFn: recordWalletIdTradeIntraAccountTxn,
         metadata: LedgerTransactionType.WalletIdTradeIntraAccount,
-      }))
+      })
+    })
 
-    describe("recordOnChainTradeIntraAccountTxn", () =>
+    describe("recordOnChainTradeIntraAccountTxn", () => {
       runRecordTradeIntraAccount({
         recordFn: recordOnChainTradeIntraAccountTxn,
         metadata: LedgerTransactionType.OnChainTradeIntraAccount,
-      }))
+      })
+    })
   })
 })

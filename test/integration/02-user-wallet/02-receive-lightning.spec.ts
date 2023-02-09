@@ -1,3 +1,5 @@
+import { LightningError as LnError } from "lightning"
+
 import { MEMO_SHARING_SATS_THRESHOLD, ONE_DAY } from "@config"
 
 import { Lightning } from "@app"
@@ -35,6 +37,7 @@ import {
   getAmount,
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
+  getError,
   getHash,
   getInvoice,
   getPubKey,
@@ -148,9 +151,7 @@ describe("UserWallet - Lightning", () => {
     expect(ledgerTxMetadata).toHaveProperty("hash")
     if (!("hash" in ledgerTxMetadata)) return
     expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
-
-    if ("revealedPreImage" in ledgerTxMetadata)
-      expect(ledgerTxMetadata.revealedPreImage).toBeUndefined()
+    expect(ledgerTxMetadata["revealedPreImage"]).toBeUndefined()
 
     const isPaidAfterPay = await checker.invoiceIsPaid()
     expect(isPaidAfterPay).not.toBeInstanceOf(Error)
@@ -247,11 +248,10 @@ describe("UserWallet - Lightning", () => {
 
     await Promise.all([
       (async () => {
-        try {
-          await pay({ lnd: lndOutside1, request: invoice })
-        } catch (err) {
-          expect(err[1]).toBe("PaymentRejectedByDestination")
-        }
+        const err = await getError<LnError>(() =>
+          pay({ lnd: lndOutside1, request: invoice }),
+        )
+        expect(err[1]).toBe("PaymentRejectedByDestination")
       })(),
       (async () => {
         await sleep(500)
@@ -321,13 +321,7 @@ describe("UserWallet - Lightning", () => {
     const pubkey = getPubKey(invoice)
 
     await Promise.all([
-      (async () => {
-        try {
-          await pay({ lnd: lndOutside1, request: invoice })
-        } catch (err) {
-          expect(err[1]).toBe("PaymentRejectedByDestination")
-        }
-      })(),
+      pay({ lnd: lndOutside1, request: invoice }),
       (async () => {
         await sleep(500)
 
@@ -593,9 +587,7 @@ describe("UserWallet - Lightning", () => {
     expect(ledgerTxMetadata).toHaveProperty("hash")
     if (!("hash" in ledgerTxMetadata)) return
     expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
-
-    if ("revealedPreImage" in ledgerTxMetadata)
-      expect(ledgerTxMetadata.revealedPreImage).toBeUndefined()
+    expect(ledgerTxMetadata["revealedPreImage"]).toBeUndefined()
 
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB + sats)

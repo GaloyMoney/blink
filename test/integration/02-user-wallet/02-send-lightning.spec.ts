@@ -2333,10 +2333,6 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
   })
 })
 
-it.skip("cancel the payment if the fee is too high", async () => {
-  // TODO
-})
-
 it.skip("expired payment", async () => {
   const memo = "payment that should expire"
 

@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "sendToWalletTestWrapper"] }] */
 import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"

@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-conditional-expect */
 import { handleSwapOutCompleted } from "@app/swap"
 import { lnd1LoopConfig } from "@app/swap/get-active-loopd"
 import { WalletCurrency } from "@domain/shared"
