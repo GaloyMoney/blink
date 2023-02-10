@@ -26,7 +26,7 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { sleep, timestampDaysAgo } from "@utils"
 
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { LedgerTransactionType } from "@domain/ledger"
 

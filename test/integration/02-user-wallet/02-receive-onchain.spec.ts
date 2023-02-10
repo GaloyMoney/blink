@@ -2,7 +2,7 @@
 import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"
-import { usdFromBtcMidPriceFn } from "@app/shared"
+import { usdFromBtcMidPriceFn } from "@app/prices"
 
 import {
   getAccountLimits,

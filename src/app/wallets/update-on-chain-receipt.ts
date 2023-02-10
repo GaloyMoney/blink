@@ -5,8 +5,7 @@ import {
   SECS_PER_10_MINS,
 } from "@config"
 
-import { getCurrentPriceAsPriceRatio } from "@app/prices"
-import { usdFromBtcMidPriceFn } from "@app/shared"
+import { getCurrentPriceAsPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"

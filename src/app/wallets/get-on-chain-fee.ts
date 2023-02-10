@@ -1,4 +1,4 @@
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"

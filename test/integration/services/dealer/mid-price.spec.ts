@@ -1,5 +1,4 @@
-import { getCurrentPriceAsPriceRatio } from "@app/prices"
-import { getMidPriceRatio } from "@app/shared"
+import { getCurrentPriceAsPriceRatio, getMidPriceRatio } from "@app/prices"
 import { DisplayCurrency } from "@domain/fiat"
 
 import { DealerPriceService } from "@services/dealer-price"

@@ -2,7 +2,7 @@ import crypto from "crypto"
 
 import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 import {
   getPriceRatioForLimits,
   checkIntraledgerLimits,

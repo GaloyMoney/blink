@@ -1,4 +1,4 @@
-import { usdFromBtcMidPriceFn } from "@app/shared"
+import { usdFromBtcMidPriceFn } from "@app/prices"
 
 import { checkedToSats } from "@domain/bitcoin"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"

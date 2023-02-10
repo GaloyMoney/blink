@@ -3,7 +3,7 @@ import { LightningError as LnError } from "lightning"
 import { MEMO_SHARING_SATS_THRESHOLD, ONE_DAY } from "@config"
 
 import { Lightning } from "@app"
-import { usdFromBtcMidPriceFn } from "@app/shared"
+import { usdFromBtcMidPriceFn } from "@app/prices"
 import * as Wallets from "@app/wallets"
 import { handleHeldInvoices } from "@app/wallets"
 
