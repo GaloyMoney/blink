@@ -94,8 +94,10 @@ export const loginWithPhoneCookie = async ({
   const validCode = await isCodeValid({ phone, code })
   if (validCode instanceof Error) return validCode
 
-  await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerPhoneLimits(phone)
+  await Promise.all([
+    rewardFailedLoginAttemptPerIpLimits(ip),
+    rewardFailedLoginAttemptPerPhoneLimits(phone),
+  ])
 
   const authService = AuthWithPhonePasswordlessService()
 

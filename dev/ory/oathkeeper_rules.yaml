@@ -95,7 +95,7 @@
       config:
         claims: '{"sub": "{{ print .Subject }}"}'
 
-- id: galoy-backend-other-routes
+- id: galoy-backend-middleware-routes
   upstream:
     url: "http://e2e-tests:4012"
   match:

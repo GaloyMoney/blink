@@ -184,7 +184,7 @@ authRouter.post(
         })
       } catch (e) {
         addAttributesToCurrentSpan({ cookieLoginError: e })
-        res.status(500).send({ result: "Error logging in" })
+        return res.status(500).send({ result: "Error logging in" })
       }
     },
   }),
@@ -213,17 +213,17 @@ authRouter.get(
         reqCookie = decodeURIComponent(reqCookie)
         const logoutResp = await logoutCookie(reqCookie as KratosCookie)
         if (logoutResp instanceof Error)
-          res.status(500).send({ error: logoutResp.message })
+          return res.status(500).send({ error: logoutResp.message })
         // manually clear all cookies for the client
         for (const cookieName of Object.keys(req.cookies)) {
           res.clearCookie(cookieName)
         }
-        res.status(200).send({
+        return res.status(200).send({
           result: "logout successful",
         })
       } catch (e) {
         addAttributesToCurrentSpan({ cookieLogoutError: e })
-        res.status(500).send({ error: "Error Logging out" })
+        return res.status(500).send({ error: "Error Logging out" })
       }
     },
   }),
@@ -236,12 +236,12 @@ authRouter.get("/clearCookies", async (req, res) => {
       for (const cookieName of Object.keys(req.cookies)) {
         res.clearCookie(cookieName)
       }
-      res.status(200).send({
-        result: "cookies cleared successfully",
+      return res.status(200).send({
+        result: "Cookies cleared successfully",
       })
     }
   } catch (e) {
-    res.status(500).send({ result: "Error clearing cookies" })
+    return res.status(500).send({ result: "Error clearing cookies" })
   }
 })
 

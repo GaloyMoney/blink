@@ -59,7 +59,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         return new AuthenticationKratosError(err)
       }
 
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
 
     const sessionToken = result.data.session_token as SessionToken
@@ -107,7 +107,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       if (err.message === "Request failed with status code 401") {
         return new AuthenticationKratosError(err)
       }
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
     const cookiesToSendBackToClient: Array<KratosCookie> = result.headers["set-cookie"]
     // note: this only works when whoami: required_aal = aal1
@@ -123,7 +123,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         },
       })
     } catch (err) {
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
   }
 
@@ -139,7 +139,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         id: sessionId,
       })
     } catch (err) {
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
   }
 
@@ -167,7 +167,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         return new LikelyUserAlreadyExistError(err)
       }
 
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
 
     const sessionToken = result.data.session_token as SessionToken
@@ -213,7 +213,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         return new LikelyUserAlreadyExistError(err)
       }
 
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
     const cookiesToSendBackToClient: Array<KratosCookie> = result.headers["set-cookie"]
     const kratosUserId = result.data.identity.id as UserId
@@ -243,7 +243,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         return new LikelyUserAlreadyExistError(err)
       }
 
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
 
     return kratosUserId
@@ -261,7 +261,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
     } catch (err) {
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
 
     if (identity.state === undefined) {
@@ -303,7 +303,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         return new LikelyUserAlreadyExistError(err)
       }
 
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
 
     if (
