@@ -109,8 +109,6 @@ export const loginWithPhoneCookie = async ({
     kratosResult = await authService.createIdentityWithCookie(phone)
     if (kratosResult instanceof Error) return kratosResult
     addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
-  } else if (kratosResult instanceof Error) {
-    return kratosResult
   }
   return kratosResult
 }
