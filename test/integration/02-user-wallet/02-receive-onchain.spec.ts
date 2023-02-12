@@ -18,7 +18,7 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { PriceRatio } from "@domain/payments"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { WalletCurrency } from "@domain/shared"
+import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -58,6 +58,8 @@ import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/walle
 let walletIdA: WalletId
 let walletIdB: WalletId
 let accountIdA: AccountId
+
+const calc = AmountCalculator()
 
 const accountLimits = getAccountLimits({ level: 1 })
 
@@ -139,10 +141,68 @@ describe("UserWallet - On chain", () => {
   })
 
   it("receives on-chain transaction", async () => {
+    const sendNotification = jest.fn()
+    jest
+      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+      .mockImplementationOnce(() => ({
+        sendNotification,
+      }))
+
+    const amountSats = getRandomAmountOfSats()
+    const receivedBtc = { amount: BigInt(amountSats), currency: WalletCurrency.Btc }
+
+    // Execute receive
     await sendToWalletTestWrapper({
       walletId: walletIdA,
-      amountSats: getRandomAmountOfSats(),
+      amountSats,
     })
+
+    // Calculate receive display amount
+    const account = await AccountsRepository().findById(accountIdA)
+    if (account instanceof Error) throw account
+
+    const receivedUsd = await usdFromBtcMidPriceFn({
+      amount: BigInt(amountSats),
+      currency: WalletCurrency.Btc,
+    })
+    if (receivedUsd instanceof Error) return receivedUsd
+
+    const fee = DepositFeeCalculator().onChainDepositFee({
+      amount: amountSats,
+      ratio: account.depositFeeRatio,
+    })
+    const satsFee = paymentAmountFromNumber({
+      amount: fee,
+      currency: WalletCurrency.Btc,
+    })
+    if (satsFee instanceof Error) throw satsFee
+
+    const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+    if (priceRatio instanceof Error) return priceRatio
+
+    const bankFee = {
+      usdBankFee: priceRatio.convertFromBtcToCeil(satsFee),
+      btcBankFee: satsFee,
+    }
+
+    const usdToCreditReceiver = calc.sub(receivedUsd, bankFee.usdBankFee)
+
+    const displayAmount = {
+      amount: Number((Number(usdToCreditReceiver.amount) / 100).toFixed(2)),
+      currency: DisplayCurrency.Usd,
+    }
+
+    // Check received notification
+    const receivedNotification = createPushNotificationContent({
+      type: NotificationType.OnchainReceipt,
+      userLanguage: locale,
+      amount: receivedBtc,
+      displayAmount,
+    })
+
+    expect(sendNotification.mock.calls.length).toBe(1)
+    expect(sendNotification.mock.calls[0][0].title).toBe(receivedNotification.title)
+    expect(sendNotification.mock.calls[0][0].body).toBe(receivedNotification.body)
   })
 
   it("retrieves on-chain transactions by address", async () => {

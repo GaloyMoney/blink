@@ -225,14 +225,16 @@ const processTxForWallet = async (
           )
           if (recipientUser instanceof Error) return recipientUser
 
+          const displayPaymentAmount = {
+            amount: Number((amountDisplayCurrency / 100).toFixed(2)),
+            currency: displayCurrency,
+          }
+
           await notifications.onChainTxReceived({
             recipientAccountId: wallet.accountId,
             recipientWalletId: wallet.id,
             paymentAmount: { amount: BigInt(sats), currency: wallet.currency },
-            displayPaymentAmount: {
-              amount: amountDisplayCurrency,
-              currency: displayCurrency,
-            },
+            displayPaymentAmount,
             txHash: tx.rawTx.txHash,
             recipientDeviceTokens: recipientUser.deviceTokens,
             recipientLanguage: recipientUser.language,
