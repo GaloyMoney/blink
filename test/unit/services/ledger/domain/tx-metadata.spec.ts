@@ -41,7 +41,7 @@ describe("Tx metadata", () => {
   }
 
   describe("intraledger", () => {
-    it("onchain", () => {
+    it("onchain: OnChainIntraledgerLedgerMetadata", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         OnChainIntraledgerLedgerMetadata({
           payeeAddresses,
@@ -71,7 +71,8 @@ describe("Tx metadata", () => {
         }),
       )
     })
-    it("onchain trade", () => {
+
+    it("onchain trade: OnChainTradeIntraAccountLedgerMetadata", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         OnChainTradeIntraAccountLedgerMetadata({
           payeeAddresses,
@@ -98,7 +99,7 @@ describe("Tx metadata", () => {
       )
     })
 
-    it("ln", () => {
+    it("ln: LnIntraledgerLedgerMetadata", () => {
       const { metadata, debitAccountAdditionalMetadata } = LnIntraledgerLedgerMetadata({
         paymentHash,
         pubkey,
@@ -139,7 +140,7 @@ describe("Tx metadata", () => {
       )
     })
 
-    it("ln trade", () => {
+    it("ln trade: LnTradeIntraAccountLedgerMetadata", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         LnTradeIntraAccountLedgerMetadata({
           paymentHash,
@@ -177,7 +178,7 @@ describe("Tx metadata", () => {
       )
     })
 
-    it("wallet id", () => {
+    it("wallet id: WalletIdIntraledgerLedgerMetadata", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         WalletIdIntraledgerLedgerMetadata({
           paymentAmounts,
@@ -216,7 +217,7 @@ describe("Tx metadata", () => {
       )
     })
 
-    it("wallet id trade", () => {
+    it("wallet id trade: WalletIdTradeIntraAccountLedgerMetadata", () => {
       const metadata = WalletIdTradeIntraAccountLedgerMetadata({
         paymentAmounts,
 
