@@ -2,9 +2,14 @@ import { DisplayCurrency } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
 import {
+  LnFeeReimbursementReceiveLedgerMetadata,
   LnIntraledgerLedgerMetadata,
+  LnReceiveLedgerMetadata,
+  LnSendLedgerMetadata,
   LnTradeIntraAccountLedgerMetadata,
   OnChainIntraledgerLedgerMetadata,
+  OnChainReceiveLedgerMetadata,
+  OnChainSendLedgerMetadata,
   OnChainTradeIntraAccountLedgerMetadata,
   WalletIdIntraledgerLedgerMetadata,
   WalletIdTradeIntraAccountLedgerMetadata,
@@ -16,11 +21,13 @@ describe("Tx metadata", () => {
   const memoOfPayer = "sample payer memo"
   const pubkey = "pubkey" as Pubkey
   const payeeAddresses: OnChainAddress[] = ["Address" as OnChainAddress]
-  const paymentHash = "paymenthash" as PaymentHash
+  const paymentHash = "paymentHash" as PaymentHash
+  const onChainTxHash = "onChainTxHash" as OnChainTxHash
   const amountDisplayCurrency = 10 as DisplayCurrencyBaseAmount
   const usd = amountDisplayCurrency / 100
   const feeDisplayCurrency = 0 as DisplayCurrencyBaseAmount
   const displayCurrency = DisplayCurrency.Usd
+  const journalId = "journalId" as LedgerJournalId
 
   const receiveAmount = {
     usd: { amount: 10n, currency: WalletCurrency.Usd },
@@ -42,6 +49,141 @@ describe("Tx metadata", () => {
     displayFee: Number(paymentAmounts.usdProtocolAndBankFee.amount),
     displayCurrency: "USD",
   }
+
+  describe("ln", () => {
+    it("send: LnSendLedgerMetadata", () => {
+      const metadata = LnSendLedgerMetadata({
+        paymentHash,
+        pubkey,
+        paymentAmounts,
+
+        amountDisplayCurrency,
+        feeDisplayCurrency,
+        displayCurrency,
+
+        feeKnownInAdvance: false,
+        memoOfPayer,
+      })
+
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          ...expectedMetadataAmounts,
+          type: LedgerTransactionType.Payment,
+
+          pending: true,
+          hash: paymentHash,
+          pubkey,
+
+          memoPayer: memoOfPayer,
+        }),
+      )
+    })
+
+    it("fee reimburse on send: LnFeeReimbursementReceiveLedgerMetadata", () => {
+      const metadata = LnFeeReimbursementReceiveLedgerMetadata({
+        paymentHash,
+        paymentAmounts,
+
+        amountDisplayCurrency,
+        feeDisplayCurrency,
+        displayCurrency,
+
+        journalId,
+      })
+
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          ...expectedMetadataAmounts,
+          type: LedgerTransactionType.LnFeeReimbursement,
+
+          usd,
+
+          hash: paymentHash,
+          pending: false,
+
+          related_journal: journalId,
+        }),
+      )
+    })
+
+    it("receive: LnReceiveLedgerMetadata", () => {
+      const metadata = LnReceiveLedgerMetadata({
+        paymentHash,
+        pubkey,
+        paymentAmounts,
+
+        amountDisplayCurrency,
+        feeDisplayCurrency,
+        displayCurrency,
+      })
+
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          ...expectedMetadataAmounts,
+          type: LedgerTransactionType.Invoice,
+
+          hash: paymentHash,
+          pubkey,
+          pending: false,
+        }),
+      )
+    })
+  })
+
+  describe("onchain", () => {
+    it("send: OnChainSendLedgerMetadata", () => {
+      const metadata = OnChainSendLedgerMetadata({
+        onChainTxHash,
+        paymentAmounts,
+
+        payeeAddresses,
+        sendAll: false,
+        memoOfPayer,
+
+        amountDisplayCurrency,
+        feeDisplayCurrency,
+        displayCurrency,
+      })
+
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          ...expectedMetadataAmounts,
+          type: LedgerTransactionType.OnchainPayment,
+
+          pending: true,
+          hash: onChainTxHash,
+          payee_addresses: payeeAddresses,
+          sendAll: false,
+
+          memoPayer: memoOfPayer,
+        }),
+      )
+    })
+
+    it("receive: OnChainReceiveLedgerMetadata", () => {
+      const metadata = OnChainReceiveLedgerMetadata({
+        onChainTxHash,
+        paymentAmounts,
+
+        payeeAddresses,
+
+        amountDisplayCurrency,
+        feeDisplayCurrency,
+        displayCurrency,
+      })
+
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          ...expectedMetadataAmounts,
+          type: LedgerTransactionType.OnchainReceipt,
+
+          pending: false,
+          hash: onChainTxHash,
+          payee_addresses: payeeAddresses,
+        }),
+      )
+    })
+  })
 
   describe("intraledger", () => {
     it("onchain: OnChainIntraledgerLedgerMetadata", () => {
