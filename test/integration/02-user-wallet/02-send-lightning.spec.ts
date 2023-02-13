@@ -9,10 +9,12 @@ import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
   InvalidFeeProbeStateError,
+  InvoiceExpiredOrBadPaymentHashError,
   LightningServiceError,
   PaymentNotFoundError,
   PaymentSendStatus,
   PaymentStatus,
+  RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
@@ -78,6 +80,10 @@ import {
   getUsdWalletIdByTestUserRef,
   lndOutside1,
   lndOutside2,
+  lndOutside3,
+  markFailedTransactionAsPending,
+  markSuccessfulTransactionAsPending,
+  pay,
   settleHodlInvoice,
   waitFor,
   waitUntilChannelBalanceSyncAll,
@@ -1386,10 +1392,21 @@ describe("UserWallet - Lightning Pay", () => {
           lnd: lndOutside1,
           tokens: amountInvoice,
         })
-        const result = await fn({ account: accountB, walletId: walletIdB })({
+        const result = await fn({
+          account: accountB,
+          walletId: walletIdB,
+        })({
           invoice: request,
         })
         if (result instanceof Error) throw result
+
+        const paymentWhilePending = await fn({
+          account: accountB,
+          walletId: walletIdB,
+        })({
+          invoice: request,
+        })
+        expect(paymentWhilePending).toBeInstanceOf(LnPaymentRequestInTransitError)
 
         expect(result).toBe(PaymentSendStatus.Pending)
         baseLogger.info("payment has timeout. status is pending.")
@@ -1442,6 +1459,15 @@ describe("UserWallet - Lightning Pay", () => {
         if (payment === undefined) throw new Error("Could not find payment in lnd")
 
         expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Failed)
+
+        // Test repayment after fail
+        const paymentAfterFailed = await fn({
+          account: accountB,
+          walletId: walletIdB,
+        })({
+          invoice: request,
+        })
+        expect(paymentAfterFailed).toBeInstanceOf(InvoiceExpiredOrBadPaymentHashError)
 
         // Check for invoice
         const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
@@ -2362,6 +2388,224 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
     // Check that deleting missing payment doesn't return error
     const deletedAttempt = await lndService.deletePaymentByHash({ paymentHash })
     expect(deletedAttempt).not.toBeInstanceOf(Error)
+  })
+})
+
+describe("Handle pending payments - Lightning Pay", () => {
+  it("settle failed and then successful payment routed to lnd-outside-3", async () => {
+    const ledger = LedgerService()
+    const senderWalletId = walletIdB
+    const senderAccount = accountB
+    const memo = "pay a node with no route liquidity node"
+
+    // Different amounts to bypass lnd mission control on 2nd send attempt
+    const successAmountInvoice = 1000
+    const rebalanceAmountInvoice = 1001
+
+    // Fetch balances on lndOutside3 channel
+    const { channels } = await getChannels({ lnd: lndOutside3 })
+    expect(channels && channels.length).toBeGreaterThan(0)
+    const { remote_balance: remoteBalance, remote_reserve: remoteReserve } = channels[0]
+
+    // Pay lndOutside3 and fail
+    const { request, id } = await createInvoice({
+      lnd: lndOutside3,
+    })
+    const paymentHash = id as PaymentHash
+
+    const failResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+      uncheckedPaymentRequest: request,
+      amount: Math.max(rebalanceAmountInvoice, remoteBalance + 1),
+      senderAccount,
+      senderWalletId,
+      memo,
+    })
+    expect(failResult).toBeInstanceOf(RouteNotFoundError)
+
+    // Rebalance lndOutside3 route
+    const { request: invoice } = await createInvoice({
+      lnd: lndOutside1,
+      tokens:
+        remoteBalance < remoteReserve
+          ? rebalanceAmountInvoice + remoteReserve
+          : rebalanceAmountInvoice,
+    })
+    const rebalance = await pay({ lnd: lndOutside3, request: invoice })
+    expect(rebalance.is_confirmed).toBe(true)
+    await sleep(500) // rebalance can take some time to settle even after promise is resolved
+
+    // Pay lndOutside3 and succeed
+    // Note: probe first to avoid reimburse txn that would need to be manually deleted
+    const successProbeResult =
+      await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+        uncheckedPaymentRequest: request,
+        amount: successAmountInvoice,
+        walletId: senderWalletId,
+      })
+    if (successProbeResult instanceof Error) throw successProbeResult
+
+    const successResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+      uncheckedPaymentRequest: request,
+      amount: successAmountInvoice,
+      senderAccount,
+      senderWalletId,
+      memo,
+    })
+    if (successResult instanceof Error) throw successResult
+    expect(successResult).toBe(PaymentSendStatus.Success)
+
+    // Undo last successful payment to be pending
+    const txns = await ledger.getTransactionsByWalletId(senderWalletId)
+    if (txns instanceof Error) throw txns
+    const txnsByHash = txns
+      // filter on "LedgerTransactionType.Payment" because this is what updatePending counts
+      .filter((tx) => tx.type === LedgerTransactionType.Payment)
+      .filter((tx) => tx.paymentHash === paymentHash)
+      .sort((txA, txB) => txA.timestamp.getTime() - txB.timestamp.getTime())
+      .reverse()
+
+    if (!(txnsByHash && txnsByHash.length > 0)) {
+      throw new Error("Missing expected txn")
+    }
+    const originalTxn = txnsByHash[0]
+    await markSuccessfulTransactionAsPending(originalTxn.journalId)
+
+    // Check that last txn was successfully undone and is pending
+    const originalTxnPending = await ledger.getTransactionById(originalTxn.id)
+    if (originalTxnPending instanceof Error) throw originalTxnPending
+    expect(originalTxnPending.pendingConfirmation).toBeTruthy()
+
+    const isRecordedPending = await ledger.isLnTxRecorded(paymentHash)
+    expect(isRecordedPending).toBeFalsy()
+
+    // Run update pending payments
+    await Payments.updatePendingPaymentsByWalletId({
+      walletId: senderWalletId,
+      logger: baseLogger,
+    })
+
+    // Check if last txn is successfully settled
+    const originalTxnPaid = await ledger.getTransactionById(originalTxn.id)
+    if (originalTxnPaid instanceof Error) throw originalTxnPaid
+    expect(originalTxnPaid.pendingConfirmation).toBeFalsy()
+    const txnsPaid = await ledger.getTransactionsByWalletId(senderWalletId)
+    if (txnsPaid instanceof Error) throw txnsPaid
+    expect(txnsPaid[0].lnMemo).not.toBe("Payment canceled")
+
+    const isRecordedPaid = await ledger.isLnTxRecorded(paymentHash)
+    expect(isRecordedPaid).toBeTruthy()
+
+    // Accommodate 'bookingVersusRealWorldAssets' inconsistency
+    // ===
+    // If milliSatsFee is not evenly divisible then fee recorded is rounded up but lnd
+    // balance checked changes by the rounded down amount. The proper fix for this is
+    // to enforce that ppm 'rate' is set to '0' when setting  up channels.
+    const lnPaymentLookup = await lndService.lookupPayment({
+      pubkey: process.env.LND1_PUBKEY as Pubkey,
+      paymentHash: paymentHash,
+    })
+    if (lnPaymentLookup instanceof Error) throw lnPaymentLookup
+    if (lnPaymentLookup.status === PaymentStatus.Failed) {
+      throw new Error("Unexpected failed payment detected")
+    }
+    const milliSatsFee = lnPaymentLookup.confirmedDetails?.milliSatsFee
+    if (milliSatsFee !== undefined && milliSatsFee % 1000 > 0) {
+      // Compensate for fee inconsistency by reimbursing 1 sat
+      const paymentFlowIndex: PaymentFlowStateIndex = {
+        paymentHash,
+        walletId: senderWalletId,
+        inputAmount: BigInt(successAmountInvoice),
+      }
+      const paymentFlow = await PaymentFlowStateRepository(
+        defaultTimeToExpiryInSeconds,
+      ).markLightningPaymentFlowNotPending(paymentFlowIndex)
+      if (paymentFlow instanceof Error) throw paymentFlow
+
+      const reimbursed = await Wallets.reimburseFee({
+        paymentFlow,
+        journalId: originalTxn.journalId,
+        actualFee: toSats(1),
+        revealedPreImage: lnPaymentLookup.confirmedDetails?.revealedPreImage,
+      })
+      if (reimbursed instanceof Error) return reimbursed
+    }
+  })
+
+  it("settle multiple failed payment routed to lnd-outside-3", async () => {
+    const ledger = LedgerService()
+    const senderWalletId = walletIdB
+    const senderAccount = accountB
+    const memo = "pay a node with no route liquidity node"
+
+    // Fetch balances on lndOutside3 channel
+    const { channels } = await getChannels({ lnd: lndOutside3 })
+    expect(channels && channels.length).toBeGreaterThan(0)
+    const remoteBalance = channels[0].remote_balance
+
+    // Pay lndOutside3 twice and fail
+    const amountInvoice = 1000
+    const { request, id: paymentHash } = await createInvoice({
+      lnd: lndOutside3,
+      tokens: Math.max(amountInvoice, remoteBalance + 1),
+    })
+
+    for (let i = 0; i < 2; i++) {
+      const result = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest: request,
+        senderAccount,
+        senderWalletId,
+        memo,
+      })
+      expect(result).toBeInstanceOf(RouteNotFoundError)
+    }
+
+    // Undo last failed payment to be pending
+    const txns = await ledger.getTransactionsByWalletId(senderWalletId)
+    if (txns instanceof Error) throw txns
+    const txnsByHash = txns
+      // filter on "LedgerTransactionType.Payment" because this is what updatePending counts
+      .filter((tx) => tx.type === LedgerTransactionType.Payment)
+      .filter((tx) => tx.paymentHash === paymentHash)
+      .sort((txA, txB) => txA.timestamp.getTime() - txB.timestamp.getTime())
+      .reverse()
+
+    const voidTxn = txnsByHash.find((txn) => txn.lnMemo === "Payment canceled")
+    if (voidTxn === undefined) {
+      throw new Error("Missing expected voiding txn")
+    }
+    const originalTxn = txnsByHash.find((txn) => txn.lnMemo !== "Payment canceled")
+    if (originalTxn === undefined) {
+      throw new Error("Missing expected txn")
+    }
+    await markFailedTransactionAsPending(originalTxn.journalId)
+
+    // Check that last txn was successfully undone and is pending
+    const originalTxnPending = await ledger.getTransactionById(originalTxn.id)
+    if (originalTxnPending instanceof Error) throw originalTxnPending
+    expect(originalTxnPending.pendingConfirmation).toBeTruthy()
+    const txnsPending = await ledger.getTransactionsByWalletId(senderWalletId)
+    if (txnsPending instanceof Error) throw txnsPending
+    expect(txnsPending[0].lnMemo).not.toBe("Payment canceled")
+
+    const isRecordedPending = await ledger.isLnTxRecorded(paymentHash as PaymentHash)
+    expect(isRecordedPending).toBeFalsy()
+
+    // Run update pending payments
+    await Payments.updatePendingPaymentsByWalletId({
+      walletId: senderWalletId,
+      logger: baseLogger,
+    })
+
+    // Check if last txn is successfully voided
+    const originalTxnVoided = await ledger.getTransactionById(originalTxn.id)
+    if (originalTxnVoided instanceof Error) throw originalTxnVoided
+    expect(originalTxnVoided.pendingConfirmation).toBeFalsy()
+    const txnsVoided = await ledger.getTransactionsByWalletId(senderWalletId)
+    if (txnsVoided instanceof Error) throw txnsVoided
+    expect(txnsVoided[0].lnMemo).toBe("Payment canceled")
+
+    const isRecordedVoided = await ledger.isLnTxRecorded(paymentHash as PaymentHash)
+    expect(isRecordedVoided).toBeTruthy()
   })
 })
 

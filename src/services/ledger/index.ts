@@ -319,11 +319,16 @@ export const LedgerService = (): ILedgerService => {
     paymentHash: PaymentHash,
   ): Promise<boolean | LedgerServiceError> => {
     try {
-      const { total } = await MainBook.ledger({
+      const { total: totalNotPending } = await MainBook.ledger({
         pending: false,
         hash: paymentHash,
       })
-      return total > 0
+      const { total: totalPending } = await MainBook.ledger({
+        pending: true,
+        hash: paymentHash,
+      })
+
+      return totalNotPending > 0 && totalPending === 0
     } catch (err) {
       return new UnknownLedgerError(err)
     }

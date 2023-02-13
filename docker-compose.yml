@@ -16,6 +16,7 @@ services:
       - lnd2
       - lnd-outside-1
       - lnd-outside-2
+      - lnd-outside-3
       - otel-agent
       - oathkeeper
       - mailslurper
@@ -31,6 +32,7 @@ services:
       - lnd2
       - lnd-outside-1
       - lnd-outside-2
+      - lnd-outside-3
       - otel-agent
     restart: on-failure:10
   otel-agent:
@@ -164,7 +166,6 @@ services:
       - ${PWD}/dev/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
       - ${PWD}/dev/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
       - ${PWD}/dev/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
-    depends_on: [bitcoind]
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
@@ -173,6 +174,25 @@ services:
         cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
+    depends_on: [bitcoind]
+  lnd-outside-3:
+    image: lightninglabs/lnd:v0.15.5-beta
+    volumes:
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd-outside-3.wallet.db:/root/.lnd/wallet.db
+      - ${PWD}/dev/lnd/regtest/lnd-outside-3.macaroons.db:/root/.lnd/macaroons.db
+      - ${PWD}/dev/lnd/regtest/lnd-outside-3.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+    depends_on: [bitcoind]
   loopserver:
     image: lightninglabs/loopserver:v0.9.52-beta
     restart: unless-stopped
