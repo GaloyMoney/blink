@@ -18,6 +18,7 @@ describe("Tx metadata", () => {
   const payeeAddresses: OnChainAddress[] = ["Address" as OnChainAddress]
   const paymentHash = "paymenthash" as PaymentHash
   const amountDisplayCurrency = 10 as DisplayCurrencyBaseAmount
+  const usd = amountDisplayCurrency / 100
   const feeDisplayCurrency = 0 as DisplayCurrencyBaseAmount
   const displayCurrency = DisplayCurrency.Usd
 
@@ -66,6 +67,8 @@ describe("Tx metadata", () => {
 
           username: senderUsername,
           memoPayer: undefined,
+
+          usd,
         }),
       )
       expect(debitAccountAdditionalMetadata).toEqual(
@@ -99,7 +102,7 @@ describe("Tx metadata", () => {
           username: senderUsername,
           memoPayer: undefined,
 
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+          usd,
         }),
       )
       expect(debitAccountAdditionalMetadata).toEqual(
@@ -132,7 +135,7 @@ describe("Tx metadata", () => {
           username: senderUsername,
           memoPayer: memoOfPayer,
 
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+          usd,
         }),
       )
       expect(debitAccountAdditionalMetadata).toEqual(
@@ -164,6 +167,8 @@ describe("Tx metadata", () => {
           type: LedgerTransactionType.OnChainTradeIntraAccount,
 
           memoPayer: undefined,
+
+          usd,
         }),
       )
       expect(debitAccountAdditionalMetadata).toEqual(
@@ -194,7 +199,7 @@ describe("Tx metadata", () => {
 
           memoPayer: undefined,
 
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+          usd,
         }),
       )
       expect(debitAccountAdditionalMetadata).toEqual(
@@ -221,7 +226,7 @@ describe("Tx metadata", () => {
           ...expectedMetadataAmounts,
           type: LedgerTransactionType.WalletIdTradeIntraAccount,
 
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+          usd,
         }),
       )
     })
