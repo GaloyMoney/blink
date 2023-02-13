@@ -72,33 +72,6 @@ describe("Tx metadata", () => {
       )
     })
 
-    it("onchain trade: OnChainTradeIntraAccountLedgerMetadata", () => {
-      const { metadata, debitAccountAdditionalMetadata } =
-        OnChainTradeIntraAccountLedgerMetadata({
-          payeeAddresses,
-          sendAll: true,
-          paymentAmounts: onChainPaymentAmounts,
-
-          amountDisplayCurrency,
-          feeDisplayCurrency,
-          displayCurrency,
-
-          memoOfPayer,
-        })
-
-      expect(metadata).toEqual(
-        expect.objectContaining({
-          memoPayer: undefined,
-          type: LedgerTransactionType.OnChainTradeIntraAccount,
-        }),
-      )
-      expect(debitAccountAdditionalMetadata).toEqual(
-        expect.objectContaining({
-          memoPayer: memoOfPayer,
-        }),
-      )
-    })
-
     it("ln: LnIntraledgerLedgerMetadata", () => {
       const { metadata, debitAccountAdditionalMetadata } = LnIntraledgerLedgerMetadata({
         paymentHash,
@@ -140,44 +113,6 @@ describe("Tx metadata", () => {
       )
     })
 
-    it("ln trade: LnTradeIntraAccountLedgerMetadata", () => {
-      const { metadata, debitAccountAdditionalMetadata } =
-        LnTradeIntraAccountLedgerMetadata({
-          paymentHash,
-          pubkey,
-          paymentAmounts,
-
-          amountDisplayCurrency,
-          feeDisplayCurrency,
-          displayCurrency,
-
-          memoOfPayer,
-        })
-
-      expect(metadata).toEqual(
-        expect.objectContaining({
-          memoPayer: undefined,
-          type: LedgerTransactionType.LnTradeIntraAccount,
-
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
-
-          satsFee: toSats(0),
-          displayFee: feeDisplayCurrency,
-          displayAmount: amountDisplayCurrency,
-
-          displayCurrency,
-          centsAmount: toCents(10),
-          satsAmount: toSats(2000),
-          centsFee: toCents(0),
-        }),
-      )
-      expect(debitAccountAdditionalMetadata).toEqual(
-        expect.objectContaining({
-          memoPayer: memoOfPayer,
-        }),
-      )
-    })
-
     it("wallet id: WalletIdIntraledgerLedgerMetadata", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         WalletIdIntraledgerLedgerMetadata({
@@ -213,6 +148,73 @@ describe("Tx metadata", () => {
       expect(debitAccountAdditionalMetadata).toEqual(
         expect.objectContaining({
           username: recipientUsername,
+        }),
+      )
+    })
+  })
+
+  describe("intraledger trade", () => {
+    it("onchain trade: OnChainTradeIntraAccountLedgerMetadata", () => {
+      const { metadata, debitAccountAdditionalMetadata } =
+        OnChainTradeIntraAccountLedgerMetadata({
+          payeeAddresses,
+          sendAll: true,
+          paymentAmounts: onChainPaymentAmounts,
+
+          amountDisplayCurrency,
+          feeDisplayCurrency,
+          displayCurrency,
+
+          memoOfPayer,
+        })
+
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          memoPayer: undefined,
+          type: LedgerTransactionType.OnChainTradeIntraAccount,
+        }),
+      )
+      expect(debitAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          memoPayer: memoOfPayer,
+        }),
+      )
+    })
+
+    it("ln trade: LnTradeIntraAccountLedgerMetadata", () => {
+      const { metadata, debitAccountAdditionalMetadata } =
+        LnTradeIntraAccountLedgerMetadata({
+          paymentHash,
+          pubkey,
+          paymentAmounts,
+
+          amountDisplayCurrency,
+          feeDisplayCurrency,
+          displayCurrency,
+
+          memoOfPayer,
+        })
+
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          memoPayer: undefined,
+          type: LedgerTransactionType.LnTradeIntraAccount,
+
+          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+          satsFee: toSats(0),
+          displayFee: feeDisplayCurrency,
+          displayAmount: amountDisplayCurrency,
+
+          displayCurrency,
+          centsAmount: toCents(10),
+          satsAmount: toSats(2000),
+          centsFee: toCents(0),
+        }),
+      )
+      expect(debitAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          memoPayer: memoOfPayer,
         }),
       )
     })
