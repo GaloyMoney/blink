@@ -9,13 +9,6 @@ type DisplayCurrency =
 // <T extends Satoshis | UsdCents> someFunction({amount}: {amount: T})
 type CurrencyBaseAmount = Satoshis | UsdCents
 
-interface DisplayCurrencyConverter {
-  fromSats: (amount: Satoshis) => DisplayCurrencyBaseAmount
-  fromCents: (amount: UsdCents) => DisplayCurrencyBaseAmount
-  fromSatsToCents: (amount: Satoshis) => UsdCents
-  fromCentsToSats: (amount: UsdCents) => Satoshis
-}
-
 interface NewDisplayCurrencyConverter {
   fromBtcAmount: (amount: BtcPaymentAmount) => DisplayCurrencyBaseAmount
   fromUsdAmount: (amount: UsdPaymentAmount) => DisplayCurrencyBaseAmount

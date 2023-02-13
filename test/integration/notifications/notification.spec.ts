@@ -1,20 +1,27 @@
-import { Prices } from "@app"
+import { getDisplayCurrencyConfig } from "@config"
+
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
 import * as serviceLedger from "@services/ledger"
 import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { WalletCurrency } from "@domain/shared"
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
 
-let price, spy
+const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
+
+let displayPriceRatio, spy
 
 beforeAll(async () => {
-  price = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-  if (price instanceof Error) throw price
+  displayPriceRatio = await getCurrentPriceAsPriceRatio({
+    currency: DisplayCurrency.Usd,
+  })
+  if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
   const ledgerService = serviceLedger.LedgerService()
 
@@ -88,8 +95,18 @@ describe("notification", () => {
 
         const paymentAmount = { amount: BigInt(balance), currency: wallet.currency }
         const displayPaymentAmount = {
-          amount: balance * price.price,
-          currency: price.currency,
+          amount:
+            paymentAmount.currency === WalletCurrency.Btc
+              ? // Note: Inconsistency in 'createPushNotificationContent' for handling displayAmount
+                //       & currencies. Applying 'usdMinorToMajorUnit' to WalletCurrency.Usd case
+                //       makes no difference.
+                usdMinorToMajorUnit(
+                  displayPriceRatio.convertFromBtc(paymentAmount as BtcPaymentAmount)
+                    .amount,
+                )
+              : balance,
+
+          currency: DefaultDisplayCurrency,
         }
 
         const { title, body } = createPushNotificationContent({

@@ -26,13 +26,11 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { sleep, timestampDaysAgo } from "@utils"
 
-import { getCurrentSatPrice } from "@app/prices"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
 import { LedgerTransactionType } from "@domain/ledger"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
-import { add, DisplayCurrency, sub, toCents } from "@domain/fiat"
+import { add, DisplayCurrency, sub, toCents, usdMinorToMajorUnit } from "@domain/fiat"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import { WalletsRepository } from "@services/mongoose"
@@ -373,8 +371,11 @@ const testExternalSend = async ({
     // Check notification sent
     // ===
     const amountForNotification = sendAll ? amountToSend - fee : amountToSend
-    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (satsPrice instanceof Error) return satsPrice
+
+    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
 
     const paymentAmount = {
       amount: BigInt(amountForNotification),
@@ -382,10 +383,15 @@ const testExternalSend = async ({
     }
     const displayPaymentAmount = {
       amount:
-        senderWallet.currency === WalletCurrency.Btc
-          ? amountForNotification * satsPrice.price
+        paymentAmount.currency === WalletCurrency.Btc
+          ? // Note: Inconsistency in 'createPushNotificationContent' for handling displayAmount
+            //       & currencies. Applying 'usdMinorToMajorUnit' to WalletCurrency.Usd case
+            //       makes no difference.
+            usdMinorToMajorUnit(
+              displayPriceRatio.convertFromBtc(paymentAmount as BtcPaymentAmount).amount,
+            )
           : amountForNotification,
-      currency: satsPrice.currency,
+      currency: DisplayCurrency.Usd,
     }
 
     const { title, body } = createPushNotificationContent({
@@ -1020,14 +1026,16 @@ describe("BtcWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
+    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
+    const satsAmount = displayPriceRatio.convertFromUsd({
+      amount: BigInt(withdrawalLimit),
+      currency: WalletCurrency.Usd,
+    })
 
-    const subResult = sub(
-      dCConverter.fromCentsToSats(withdrawalLimit),
-      outgoingBaseAmount,
-    )
+    const subResult = sub(toSats(satsAmount.amount), outgoingBaseAmount)
     if (subResult instanceof Error) throw subResult
 
     const amount = add(subResult, toSats(100))

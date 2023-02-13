@@ -2,7 +2,6 @@
 import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"
-import { getCurrentSatPrice } from "@app/prices"
 import { usdFromBtcMidPriceFn } from "@app/shared"
 
 import {
@@ -30,8 +29,6 @@ import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
-
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import {
   amountAfterFeeDeduction,
@@ -263,13 +260,23 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
-    const amountSats = dCConverter.fromCentsToSats(withdrawalLimitAccountLevel1)
+    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
+    const satsAmount = displayPriceRatio.convertFromUsd({
+      amount: BigInt(withdrawalLimitAccountLevel1),
+      currency: WalletCurrency.Usd,
+    })
 
-    await sendToWalletTestWrapper({ walletId: walletIdE, amountSats })
-    await sendToWalletTestWrapper({ walletId: walletIdG, amountSats })
+    await sendToWalletTestWrapper({
+      walletId: walletIdE,
+      amountSats: toSats(satsAmount.amount),
+    })
+    await sendToWalletTestWrapper({
+      walletId: walletIdG,
+      amountSats: toSats(satsAmount.amount),
+    })
   })
 
   it("receives on-chain transaction with max limit for onUs level1", async () => {
@@ -278,12 +285,16 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
-    const amountSats = dCConverter.fromCentsToSats(intraLedgerLimitAccountLevel1)
+    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
+    const satsAmount = displayPriceRatio.convertFromUsd({
+      amount: BigInt(intraLedgerLimitAccountLevel1),
+      currency: WalletCurrency.Usd,
+    })
 
-    await sendToWalletTestWrapper({ walletId, amountSats })
+    await sendToWalletTestWrapper({ walletId, amountSats: toSats(satsAmount.amount) })
   })
 
   it("receives batch on-chain transaction", async () => {

@@ -1,8 +1,7 @@
-import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
-import { getCurrentSatPrice } from "@app/prices"
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
 import { LedgerService } from "@services/ledger"
 import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
@@ -14,11 +13,6 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
   const accounts = getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 
-  const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-  const displayCurrencyPerSat = price instanceof Error ? undefined : price
-  const converter = displayCurrencyPerSat
-    ? DisplayCurrencyConverter(displayCurrencyPerSat)
-    : undefined
   const notifyUser = wrapAsyncToRunInSpan({
     namespace: "daily-balance-notification",
     fn: async (account: Account): Promise<void | ApplicationError> => {
@@ -32,11 +26,20 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
       const balanceAmount = await LedgerService().getWalletBalanceAmount(wallet)
       if (balanceAmount instanceof Error) return balanceAmount
 
+      const displayPriceRatio = await getCurrentPriceAsPriceRatio({
+        currency: DisplayCurrency.Usd,
+      })
       let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
-      if (converter && wallet.currency === WalletCurrency.Btc) {
-        const amount = converter.fromSats(toSats(balanceAmount.amount))
+      if (
+        !(displayPriceRatio instanceof Error) &&
+        wallet.currency === WalletCurrency.Btc
+      ) {
+        const displayAmount = displayPriceRatio.convertFromBtc(
+          balanceAmount as BtcPaymentAmount,
+        )
+        // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
         displayBalanceAmount = {
-          amount,
+          amount: usdMinorToMajorUnit(displayAmount.amount),
           currency: DisplayCurrency.Usd,
         }
       }

@@ -1,4 +1,6 @@
-import { getCurrentPriceInCentsPerSat, getMidPriceRatio } from "@app/shared"
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
+import { getMidPriceRatio } from "@app/shared"
+import { DisplayCurrency } from "@domain/fiat"
 
 import { DealerPriceService } from "@services/dealer-price"
 
@@ -8,7 +10,9 @@ describe("getMidPriceRatio", () => {
       await DealerPriceService().getCentsPerSatsExchangeMidRate()
     if (dealerMidPriceRatio instanceof Error) throw dealerMidPriceRatio
 
-    const priceMidPriceRatio = await getCurrentPriceInCentsPerSat()
+    const priceMidPriceRatio = await getCurrentPriceAsPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
     if (priceMidPriceRatio instanceof Error) throw priceMidPriceRatio
 
     return {

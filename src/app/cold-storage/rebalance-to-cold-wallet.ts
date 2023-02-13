@@ -1,12 +1,12 @@
 import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
-import { getCurrentSatPrice } from "@app/prices"
+import { getCurrentPriceAsPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
@@ -29,10 +29,10 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
 
-  const displayCurrencyPerSat = await getCurrentSatPrice({
+  const displayPriceRatio = await getCurrentPriceAsPriceRatio({
     currency: DisplayCurrency.Usd,
   })
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+  if (displayPriceRatio instanceof Error) return displayPriceRatio
 
   // we only need active node onchain balance, otherwise we would not be able to rebalance
   const onChainBalance = await onChainService.getBalance()
@@ -75,9 +75,25 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
 
   const description = `deposit of ${rebalanceAmount} sats to the cold storage wallet`
 
-  const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-  const amountDisplayCurrency = converter.fromSats(rebalanceAmount)
-  const feeDisplayCurrency = converter.fromSats(fee)
+  const rebalanceBtcAmount = paymentAmountFromNumber({
+    amount: rebalanceAmount,
+    currency: WalletCurrency.Btc,
+  })
+  if (rebalanceBtcAmount instanceof Error) return rebalanceBtcAmount
+  const amountDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(rebalanceBtcAmount)
+  const amountDisplayCurrency = usdMinorToMajorUnit(
+    amountDisplayCurrencyAmount.amount,
+  ) as DisplayCurrencyBaseAmount
+
+  const feeBtcAmount = paymentAmountFromNumber({
+    amount: fee,
+    currency: WalletCurrency.Btc,
+  })
+  if (feeBtcAmount instanceof Error) return feeBtcAmount
+  const feeDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(feeBtcAmount)
+  const feeDisplayCurrency = usdMinorToMajorUnit(
+    feeDisplayCurrencyAmount.amount,
+  ) as DisplayCurrencyBaseAmount
 
   const journal = await ledgerService.addColdStorageTxReceive({
     txHash,

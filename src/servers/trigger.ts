@@ -38,7 +38,7 @@ import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/sha
 import {
   checkedToDisplayCurrency,
   DisplayCurrency,
-  DisplayCurrencyConverter,
+  usdMinorToMajorUnit,
 } from "@domain/fiat"
 
 import {
@@ -111,16 +111,20 @@ export const onchainTransactionEventHandler = async (
 
     let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-    const price = await PricesWithSpans.getCurrentSatPrice({
+    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsPriceRatio({
       currency: DisplayCurrency.Usd,
     })
-    const displayCurrencyPerSat = price instanceof Error ? undefined : price
-    if (displayCurrencyPerSat) {
-      const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-      const amount = converter.fromSats(toSats(tx.tokens - fee))
-      displayPaymentAmount = {
-        amount,
-        currency: DisplayCurrency.Usd,
+    if (!(displayPriceRatio instanceof Error)) {
+      const satsAmount = paymentAmountFromNumber({
+        amount: tx.tokens - fee,
+        currency: WalletCurrency.Btc,
+      })
+      if (!(satsAmount instanceof Error)) {
+        const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
+        displayPaymentAmount = {
+          ...paymentAmount,
+          amount: usdMinorToMajorUnit(paymentAmount.amount),
+        } as DisplayPaymentAmount<DisplayCurrency>
       }
     }
 
@@ -187,10 +191,9 @@ export const onchainTransactionEventHandler = async (
 
       let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-      const price = await PricesWithSpans.getCurrentSatPrice({
+      const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsPriceRatio({
         currency: DisplayCurrency.Usd,
       })
-      const displayCurrencyPerSat = price instanceof Error ? undefined : price
 
       wallets.forEach(async (wallet) => {
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
@@ -206,13 +209,18 @@ export const onchainTransactionEventHandler = async (
         )
         if (recipientUser instanceof Error) return recipientUser
 
-        if (displayCurrencyPerSat) {
-          const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-          // TODO: tx.tokens represent the total sum, need to segregate amount by address
-          const amount = converter.fromSats(toSats(tx.tokens - fee))
-          displayPaymentAmount = {
-            amount,
-            currency: DisplayCurrency.Usd,
+        if (!(displayPriceRatio instanceof Error)) {
+          const satsAmount = paymentAmountFromNumber({
+            // TODO: tx.tokens represent the total sum, need to segregate amount by address
+            amount: tx.tokens - fee,
+            currency: WalletCurrency.Btc,
+          })
+          if (!(satsAmount instanceof Error)) {
+            const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
+            displayPaymentAmount = {
+              ...paymentAmount,
+              amount: usdMinorToMajorUnit(paymentAmount.amount),
+            } as DisplayPaymentAmount<DisplayCurrency>
           }
         }
 

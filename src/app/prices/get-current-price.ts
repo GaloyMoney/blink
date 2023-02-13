@@ -3,7 +3,8 @@ import { SECS_PER_10_MINS } from "@config"
 import { CacheKeys } from "@domain/cache"
 import { WalletCurrency } from "@domain/shared"
 import { PriceNotAvailableError } from "@domain/price"
-import { checkedToDisplayCurrency } from "@domain/fiat"
+import { CENTS_PER_USD, checkedToDisplayCurrency } from "@domain/fiat"
+import { toPriceRatio } from "@domain/payments"
 
 import { PriceService } from "@services/price"
 import { LocalCacheService } from "@services/cache"
@@ -63,6 +64,15 @@ const getCurrentPrice = async ({
     ttlSecs: SECS_PER_10_MINS,
   })
   return cachedPrices[displayCurrency]
+}
+
+export const getCurrentPriceAsPriceRatio = async ({
+  currency,
+}: GetCurrentSatPriceArgs): Promise<PriceRatio | PriceServiceError> => {
+  const price = await getCurrentSatPrice({ currency })
+  if (price instanceof Error) return price
+
+  return toPriceRatio(price.price * CENTS_PER_USD)
 }
 
 const getCachedPrice = async ({
