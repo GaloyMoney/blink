@@ -5,6 +5,7 @@ import {
   CouldNotFindTransactionError,
   inputAmountFromLedgerTransaction,
   LedgerTransactionType,
+  MultiplePendingPaymentsForHashError,
   UnknownLedgerError,
 } from "@domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@domain/payments"
@@ -281,8 +282,16 @@ const reconstructPendingPaymentFlow = async <
       ? tx.satsAmount === inputAmount
       : tx.centsAmount === inputAmount,
   )
-  if (!(filteredPayments && filteredPayments.length))
+  if (!(filteredPayments && filteredPayments.length)) {
     return new CouldNotFindTransactionError()
+  }
+  // Note: Assumptions that rely on there being 1 pending payment
+  //       - no more than one transaction gets settled for a given single lnd payment
+  //       - fees are for the latest lnd payment attempt
+  if (filteredPayments.length !== 1) {
+    return new MultiplePendingPaymentsForHashError()
+  }
+
   const payment = filteredPayments[0]
 
   return PaymentFlowFromLedgerTransaction({
