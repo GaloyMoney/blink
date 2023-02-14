@@ -10,15 +10,9 @@ import {
 
 const calc = AmountCalculator()
 
-export const LnFees = (
-  {
-    feeCapBasisPoints,
-  }: {
-    feeCapBasisPoints: bigint
-  } = {
-    feeCapBasisPoints: FEECAP_BASIS_POINTS,
-  },
-) => {
+export const LnFees = () => {
+  const feeCapBasisPoints = FEECAP_BASIS_POINTS
+
   const maxProtocolAndBankFee = <T extends WalletCurrency>(amount: PaymentAmount<T>) => {
     if (amount.amount == 0n) {
       return amount
