@@ -8,7 +8,8 @@ import {
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
 import { LnFees, PriceRatio } from "@domain/payments"
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, ONE_SAT, WalletCurrency } from "@domain/shared"
+import { FEECAP_BASIS_POINTS } from "@domain/bitcoin"
 
 import { sleep } from "@utils"
 
@@ -16,15 +17,16 @@ import { lndOutside1, lndOutside3, setChannelFees } from "test/helpers"
 
 const calc = AmountCalculator()
 
-const ONE_SAT = { amount: 1n, currency: WalletCurrency.Btc }
-
 const lndService = LndService()
 if (lndService instanceof Error) throw lndService
 
 describe("LndService", () => {
   describe("payInvoiceViaPaymentDetails", () => {
-    const btcPaymentAmount = { amount: 1001n, currency: WalletCurrency.Btc }
-    const usdPaymentAmount = { amount: 50n, currency: WalletCurrency.Usd }
+    const btcPaymentAmount = { amount: 50_000n, currency: WalletCurrency.Btc }
+    const usdPaymentAmount = {
+      amount: calc.divRound(btcPaymentAmount, FEECAP_BASIS_POINTS).amount,
+      currency: WalletCurrency.Usd,
+    }
     const feeAmount = LnFees().maxProtocolAndBankFee(btcPaymentAmount)
 
     const priceRatio = PriceRatio({
@@ -42,6 +44,21 @@ describe("LndService", () => {
         decodedInvoice,
         btcPaymentAmount,
         maxFeeAmount: feeAmount,
+        priceRatio,
+      })
+      expect(paid).not.toBeInstanceOf(Error)
+    })
+
+    it("pays 1 sat with fee at the max limit", async () => {
+      const { request } = await createInvoice({ lnd: lndOutside1 })
+      const decodedInvoice = decodeInvoice(request)
+      if (decodedInvoice instanceof Error) throw decodedInvoice
+
+      const maxFeeAmount = LnFees().minFeeFromPriceRatio(priceRatio)
+      const paid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice,
+        btcPaymentAmount: ONE_SAT,
+        maxFeeAmount,
         priceRatio,
       })
       expect(paid).not.toBeInstanceOf(Error)
