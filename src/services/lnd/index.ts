@@ -222,6 +222,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     amount,
   }: {
     invoice: LnInvoice
+    // FIXME: remove this optional property, use 'findRouteForNoAmountInvoice' with no-amount invoices instead
     amount?: BtcPaymentAmount
   }): Promise<{ pubkey: Pubkey; rawRoute: RawRoute } | LightningServiceError> => {
     let sats = toSats(0)
