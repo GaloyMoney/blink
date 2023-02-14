@@ -237,6 +237,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
 
+    case "DestinationMissingDependentFeatureError":
+      message = "Unable to pay incompatible recipient."
+      return new RouteFindingError({ message, logger: baseLogger })
+
     case "UnknownNextPeerError":
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
