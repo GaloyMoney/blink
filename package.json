@@ -154,7 +154,7 @@
     "migrate-mongo": "^9.0.0",
     "nodemon": "^2.0.20",
     "pg": "^8.9.0",
-    "pino-pretty": "^9.1.1",
+    "pino-pretty": "^9.2.0",
     "prettier": "^2.8.4",
     "spectaql": "^2.0.4",
     "tiny-secp256k1": "^2.2.1",
