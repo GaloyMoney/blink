@@ -579,6 +579,7 @@ const executePaymentViaLn = async ({
           btcPaymentAmount: paymentFlow.btcPaymentAmount,
           maxFeeAmount: paymentFlow.btcProtocolAndBankFee,
           priceRatio,
+          senderWalletCurrency: paymentFlow.senderWalletDescriptor().currency,
         })
 
     // Fire-and-forget update to 'lnPayments' collection
