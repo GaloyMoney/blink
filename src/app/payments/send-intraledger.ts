@@ -31,7 +31,7 @@ import {
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import { Accounts } from "@app"
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import {

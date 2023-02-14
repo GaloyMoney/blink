@@ -3,7 +3,7 @@ import { createHash, randomBytes } from "crypto"
 import { getLocale, ONE_DAY } from "@config"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 
 import {
   decodeInvoice,

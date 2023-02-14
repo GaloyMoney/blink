@@ -1,5 +1,5 @@
 import { volumesForAccountId } from "@app/payments/helpers"
-import { getMidPriceRatio } from "@app/shared"
+import { getMidPriceRatio } from "@app/prices"
 import { getAccountLimits, getDealerConfig, ONE_DAY } from "@config"
 import { AccountLimitsType } from "@domain/accounts"
 import { AccountLimitsVolumes } from "@domain/accounts/limits-volume"

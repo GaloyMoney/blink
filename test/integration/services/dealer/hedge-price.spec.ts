@@ -1,5 +1,5 @@
 import { Payments, Wallets } from "@app"
-import { getMidPriceRatio } from "@app/shared"
+import { getMidPriceRatio } from "@app/prices"
 import { getDealerConfig } from "@config"
 
 import { toSats } from "@domain/bitcoin"

@@ -1,4 +1,4 @@
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 import {
   getAccountLimits,
   getPubkeysToSkipProbe,
