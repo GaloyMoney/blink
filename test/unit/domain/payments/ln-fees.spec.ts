@@ -1,5 +1,8 @@
-import { WalletCurrency } from "@domain/shared"
+import { AmountCalculator, ONE_SAT, WalletCurrency } from "@domain/shared"
 import { LnFees, PriceRatio } from "@domain/payments"
+import { MaxFeeTooLargeForRoutelessPaymentError } from "@domain/bitcoin/lightning"
+
+const calc = AmountCalculator()
 
 describe("LnFees", () => {
   describe("maxProtocolAndBankFee", () => {
@@ -9,24 +12,6 @@ describe("LnFees", () => {
         currency: WalletCurrency.Btc,
       }
       expect(LnFees().maxProtocolAndBankFee(btcAmount)).toEqual({
-        amount: 50n,
-        currency: WalletCurrency.Btc,
-      })
-    })
-
-    it("returns the minFeeFromPriceRatio", () => {
-      const btc = {
-        amount: 4995n,
-        currency: WalletCurrency.Btc,
-      }
-      const usd = {
-        amount: 100n,
-        currency: WalletCurrency.Usd,
-      }
-      const priceRatio = PriceRatio({ btc, usd })
-      if (priceRatio instanceof Error) throw priceRatio
-
-      expect(LnFees().minFeeFromPriceRatio(priceRatio)).toEqual({
         amount: 50n,
         currency: WalletCurrency.Btc,
       })
@@ -52,6 +37,113 @@ describe("LnFees", () => {
         amount: 1n,
         currency: WalletCurrency.Btc,
       })
+    })
+  })
+
+  describe("verifyMaxFee", () => {
+    const btc = {
+      amount: 4995n,
+      currency: WalletCurrency.Btc,
+    }
+    const usd = {
+      amount: 100n,
+      currency: WalletCurrency.Usd,
+    }
+
+    const priceRatio = PriceRatio({ btc, usd })
+    if (priceRatio instanceof Error) throw priceRatio
+
+    const validBtcMaxFeeToVerify = LnFees().maxProtocolAndBankFee(btc)
+    const validUsdMaxFeeToVerify = priceRatio.convertFromUsd(
+      LnFees().maxProtocolAndBankFee(usd),
+    )
+
+    it("correctly verifies a valid Btc maxFee", () => {
+      expect(
+        LnFees().verifyMaxFee({
+          maxFeeToVerify: validBtcMaxFeeToVerify,
+          btcPaymentAmount: btc,
+          priceRatio,
+          senderWalletCurrency: WalletCurrency.Btc,
+        }),
+      ).toBe(true)
+    })
+
+    it("correctly verifies a valid Usd maxFee", () => {
+      expect(
+        LnFees().verifyMaxFee({
+          maxFeeToVerify: validUsdMaxFeeToVerify,
+          btcPaymentAmount: btc,
+          priceRatio,
+          senderWalletCurrency: WalletCurrency.Usd,
+        }),
+      ).toBe(true)
+    })
+
+    it("correctly verifies 1 sat Btc payment", () => {
+      expect(
+        LnFees().verifyMaxFee({
+          maxFeeToVerify: ONE_SAT,
+          btcPaymentAmount: ONE_SAT,
+          priceRatio,
+          senderWalletCurrency: WalletCurrency.Btc,
+        }),
+      ).toBe(true)
+    })
+
+    it("correctly verifies 1 sat Usd payment", () => {
+      expect(
+        LnFees().verifyMaxFee({
+          maxFeeToVerify: validUsdMaxFeeToVerify,
+          btcPaymentAmount: ONE_SAT,
+          priceRatio,
+          senderWalletCurrency: WalletCurrency.Usd,
+        }),
+      ).toBe(true)
+    })
+
+    it("fails for a large Btc maxFee", () => {
+      expect(
+        LnFees().verifyMaxFee({
+          maxFeeToVerify: calc.add(validBtcMaxFeeToVerify, ONE_SAT),
+          btcPaymentAmount: btc,
+          priceRatio,
+          senderWalletCurrency: WalletCurrency.Btc,
+        }),
+      ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
+    })
+
+    it("fails for a large Usd maxFee", () => {
+      expect(
+        LnFees().verifyMaxFee({
+          maxFeeToVerify: calc.add(validUsdMaxFeeToVerify, ONE_SAT),
+          btcPaymentAmount: btc,
+          priceRatio,
+          senderWalletCurrency: WalletCurrency.Usd,
+        }),
+      ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
+    })
+
+    it("fails for a 1 sat large Btc maxFee", () => {
+      expect(
+        LnFees().verifyMaxFee({
+          maxFeeToVerify: calc.add(ONE_SAT, ONE_SAT),
+          btcPaymentAmount: ONE_SAT,
+          priceRatio,
+          senderWalletCurrency: WalletCurrency.Btc,
+        }),
+      ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
+    })
+
+    it("fails for a 1 sat large Usd maxFee", () => {
+      expect(
+        LnFees().verifyMaxFee({
+          maxFeeToVerify: calc.add(validUsdMaxFeeToVerify, ONE_SAT),
+          btcPaymentAmount: ONE_SAT,
+          priceRatio,
+          senderWalletCurrency: WalletCurrency.Btc,
+        }),
+      ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
     })
   })
 

@@ -8,7 +8,7 @@ import {
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
 import { LnFees, PriceRatio } from "@domain/payments"
-import { AmountCalculator, ONE_SAT, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, ONE_CENT, ONE_SAT, WalletCurrency } from "@domain/shared"
 import { FEECAP_BASIS_POINTS } from "@domain/bitcoin"
 
 import { sleep } from "@utils"
@@ -34,7 +34,7 @@ describe("LndService", () => {
     })
     if (priceRatio instanceof Error) throw priceRatio
 
-    it("pays with fee at the max limit", async () => {
+    it("pays with fee at the max limit for BTC wallet", async () => {
       const { request } = await createInvoice({ lnd: lndOutside1 })
       const decodedInvoice = decodeInvoice(request)
       if (decodedInvoice instanceof Error) throw decodedInvoice
@@ -49,12 +49,27 @@ describe("LndService", () => {
       expect(paid).not.toBeInstanceOf(Error)
     })
 
+    it("pays with fee at the max limit for USD wallet", async () => {
+      const { request } = await createInvoice({ lnd: lndOutside1 })
+      const decodedInvoice = decodeInvoice(request)
+      if (decodedInvoice instanceof Error) throw decodedInvoice
+
+      const paid = await lndService.payInvoiceViaPaymentDetails({
+        decodedInvoice,
+        btcPaymentAmount,
+        maxFeeAmount: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
+        priceRatio,
+        senderWalletCurrency: WalletCurrency.Usd,
+      })
+      expect(paid).not.toBeInstanceOf(Error)
+    })
+
     it("pays 1 sat with fee at the min limit for USD wallet", async () => {
       const { request } = await createInvoice({ lnd: lndOutside1 })
       const decodedInvoice = decodeInvoice(request)
       if (decodedInvoice instanceof Error) throw decodedInvoice
 
-      const minFeeAmountForUsd = LnFees().minFeeFromPriceRatio(priceRatio)
+      const minFeeAmountForUsd = priceRatio.convertFromUsd(ONE_CENT)
       const maxFeeAmountForBtc = LnFees().maxProtocolAndBankFee(ONE_SAT)
       expect(minFeeAmountForUsd.amount).toBeGreaterThan(maxFeeAmountForBtc.amount)
 

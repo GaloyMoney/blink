@@ -53,7 +53,6 @@ import {
   TemporaryChannelFailureError,
   UnknownLightningServiceError,
   UnknownRouteNotFoundError,
-  MaxFeeTooLargeForRoutelessPaymentError,
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
@@ -635,18 +634,16 @@ export const LndService = (): ILightningService | LightningServiceError => {
     priceRatio: PriceRatio
     senderWalletCurrency: WalletCurrency
   }): Promise<PayInvoiceResult | LightningServiceError> => {
+    const maxFeeCheck = LnFees().verifyMaxFee({
+      maxFeeToVerify: maxFeeAmount,
+      btcPaymentAmount,
+      priceRatio,
+      senderWalletCurrency,
+    })
+    if (maxFeeCheck instanceof Error) return maxFeeCheck
+
     const milliSatsAmount = btcPaymentAmount.amount * 1000n
     const maxFee = maxFeeAmount.amount
-
-    const calculatedMaxFeeAmount = LnFees().maxProtocolAndBankFee(btcPaymentAmount)
-    const minFeeAmount = LnFees().minFeeFromPriceRatio(priceRatio)
-    if (
-      (senderWalletCurrency === WalletCurrency.Btc ||
-        maxFeeAmount.amount > minFeeAmount.amount) &&
-      maxFeeAmount.amount > calculatedMaxFeeAmount.amount
-    ) {
-      return new MaxFeeTooLargeForRoutelessPaymentError()
-    }
 
     let routes: RawHopWithStrings[][] = []
     if (decodedInvoice.routeHints) {

@@ -1,4 +1,5 @@
 import { FEECAP_BASIS_POINTS } from "@domain/bitcoin"
+import { MaxFeeTooLargeForRoutelessPaymentError } from "@domain/bitcoin/lightning"
 import {
   WalletCurrency,
   ZERO_SATS,
@@ -26,14 +27,41 @@ export const LnFees = () => {
     }
   }
 
-  const minFeeFromPriceRatio = (priceRatio: PriceRatio) =>
-    priceRatio.convertFromUsd(ONE_CENT)
-
   const intraLedgerFees = () => {
     return {
       btc: ZERO_SATS,
       usd: ZERO_CENTS,
     }
+  }
+
+  const verifyMaxFee = ({
+    maxFeeToVerify,
+    btcPaymentAmount,
+    priceRatio,
+    senderWalletCurrency,
+  }: {
+    maxFeeToVerify: BtcPaymentAmount
+    btcPaymentAmount: BtcPaymentAmount
+    priceRatio: PriceRatio
+    senderWalletCurrency: WalletCurrency
+  }) => {
+    const maxFeeAmount = maxProtocolAndBankFee(btcPaymentAmount)
+    const minFeeAmount = priceRatio.convertFromUsd(ONE_CENT)
+    console.log("HERE 0:", {
+      maxFeeToVerify,
+      maxFeeAmount,
+      minFeeAmount,
+      senderWalletCurrency,
+    })
+    if (
+      (senderWalletCurrency === WalletCurrency.Btc ||
+        maxFeeToVerify.amount > minFeeAmount.amount) &&
+      maxFeeToVerify.amount > maxFeeAmount.amount
+    ) {
+      return new MaxFeeTooLargeForRoutelessPaymentError()
+    }
+
+    return true
   }
 
   const feeFromRawRoute = (rawRoute: RawRoute): BtcPaymentAmount | ValidationError => {
@@ -44,7 +72,7 @@ export const LnFees = () => {
   return {
     intraLedgerFees,
     maxProtocolAndBankFee,
-    minFeeFromPriceRatio,
+    verifyMaxFee,
     feeFromRawRoute,
   }
 }
