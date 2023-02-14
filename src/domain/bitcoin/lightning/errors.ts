@@ -21,6 +21,9 @@ export class SecretDoesNotMatchAnyExistingHodlInvoiceError extends LightningServ
 export class InvoiceNotFoundError extends LightningServiceError {}
 export class LnPaymentPendingError extends LightningServiceError {}
 export class LnAlreadyPaidError extends LightningServiceError {}
+export class MaxFeeTooLargeForRoutelessPaymentError extends LightningServiceError {
+  level = ErrorLevel.Critical
+}
 export class OffChainServiceUnavailableError extends LightningServiceError {
   level = ErrorLevel.Critical
 }

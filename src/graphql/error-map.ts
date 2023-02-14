@@ -234,6 +234,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new DealerOfflineError({ message, logger: baseLogger })
 
     case "RouteNotFoundError":
+    case "MaxFeeTooLargeForRoutelessPaymentError":
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
 
