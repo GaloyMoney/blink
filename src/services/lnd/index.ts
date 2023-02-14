@@ -53,6 +53,7 @@ import {
   TemporaryChannelFailureError,
   UnknownLightningServiceError,
   UnknownRouteNotFoundError,
+  DestinationMissingDependentFeatureError,
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
@@ -800,6 +801,7 @@ export const KnownLndErrorDetails = {
   TemporaryChannelFailure: /TemporaryChannelFailure/,
   InvoiceAlreadySettled: /invoice already settled/,
   NoConnectionEstablished: /No connection established/,
+  MissingDependentFeature: /missing dependent feature/,
 } as const
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
@@ -948,6 +950,10 @@ const handleCommonRouteNotFoundErrors = (err: Error) => {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
       return new OffChainServiceUnavailableError()
+
+    case match(KnownLndErrorDetails.MissingDependentFeature):
+      return new DestinationMissingDependentFeatureError()
+
     default:
       return new UnknownRouteNotFoundError(msgForUnknown(err))
   }
