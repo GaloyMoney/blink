@@ -578,6 +578,7 @@ const executePaymentViaLn = async ({
           decodedInvoice,
           btcPaymentAmount: paymentFlow.btcPaymentAmount,
           maxFeeAmount: paymentFlow.btcProtocolAndBankFee,
+          priceRatio,
         })
 
     // Fire-and-forget update to 'lnPayments' collection

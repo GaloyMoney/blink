@@ -5,6 +5,7 @@ import {
   ZERO_CENTS,
   paymentAmountFromNumber,
   AmountCalculator,
+  ONE_CENT,
 } from "@domain/shared"
 
 const calc = AmountCalculator()
@@ -31,6 +32,9 @@ export const LnFees = (
     }
   }
 
+  const minFeeFromPriceRatio = (priceRatio: PriceRatio) =>
+    priceRatio.convertFromUsd(ONE_CENT)
+
   const intraLedgerFees = () => {
     return {
       btc: ZERO_SATS,
@@ -46,6 +50,7 @@ export const LnFees = (
   return {
     intraLedgerFees,
     maxProtocolAndBankFee,
+    minFeeFromPriceRatio,
     feeFromRawRoute,
   }
 }

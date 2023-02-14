@@ -626,16 +626,22 @@ export const LndService = (): ILightningService | LightningServiceError => {
     decodedInvoice,
     btcPaymentAmount,
     maxFeeAmount,
+    priceRatio,
   }: {
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount
+    priceRatio: PriceRatio
   }): Promise<PayInvoiceResult | LightningServiceError> => {
     const milliSatsAmount = btcPaymentAmount.amount * 1000n
     const maxFee = maxFeeAmount.amount
 
     const calculatedMaxFeeAmount = LnFees().maxProtocolAndBankFee(btcPaymentAmount)
-    if (maxFeeAmount.amount > calculatedMaxFeeAmount.amount) {
+    const minFeeAmount = LnFees().minFeeFromPriceRatio(priceRatio)
+    if (
+      maxFeeAmount.amount > minFeeAmount.amount &&
+      maxFeeAmount.amount > calculatedMaxFeeAmount.amount
+    ) {
       return new MaxFeeTooLargeForRoutelessPaymentError()
     }
 

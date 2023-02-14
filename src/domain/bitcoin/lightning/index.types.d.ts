@@ -270,10 +270,12 @@ interface ILightningService {
     decodedInvoice,
     btcPaymentAmount,
     maxFeeAmount,
+    priceRatio,
   }: {
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount
+    priceRatio: PriceRatio
   }): Promise<PayInvoiceResult | LightningServiceError>
 }
 

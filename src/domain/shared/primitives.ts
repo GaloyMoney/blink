@@ -21,6 +21,11 @@ export const ZERO_CENTS = {
   amount: 0n,
 }
 
+export const ONE_CENT = {
+  currency: WalletCurrency.Usd,
+  amount: 1n,
+}
+
 export const ZERO_BANK_FEE = {
   usdBankFee: ZERO_CENTS,
   btcBankFee: ZERO_SATS,

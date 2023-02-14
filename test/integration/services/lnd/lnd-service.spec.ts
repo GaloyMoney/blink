@@ -7,7 +7,7 @@ import {
   MaxFeeTooLargeForRoutelessPaymentError,
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
-import { LnFees } from "@domain/payments"
+import { LnFees, PriceRatio } from "@domain/payments"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { sleep } from "@utils"
@@ -24,7 +24,14 @@ if (lndService instanceof Error) throw lndService
 describe("LndService", () => {
   describe("payInvoiceViaPaymentDetails", () => {
     const btcPaymentAmount = { amount: 1001n, currency: WalletCurrency.Btc }
+    const usdPaymentAmount = { amount: 50n, currency: WalletCurrency.Usd }
     const feeAmount = LnFees().maxProtocolAndBankFee(btcPaymentAmount)
+
+    const priceRatio = PriceRatio({
+      btc: btcPaymentAmount,
+      usd: usdPaymentAmount,
+    })
+    if (priceRatio instanceof Error) throw priceRatio
 
     it("pays with fee at the max limit", async () => {
       const { request } = await createInvoice({ lnd: lndOutside1 })
@@ -35,6 +42,7 @@ describe("LndService", () => {
         decodedInvoice,
         btcPaymentAmount,
         maxFeeAmount: feeAmount,
+        priceRatio,
       })
       expect(paid).not.toBeInstanceOf(Error)
     })
@@ -48,6 +56,7 @@ describe("LndService", () => {
         decodedInvoice,
         btcPaymentAmount,
         maxFeeAmount: calc.add(feeAmount, ONE_SAT),
+        priceRatio,
       })
       expect(paid).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
     })

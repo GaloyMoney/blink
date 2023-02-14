@@ -1,5 +1,5 @@
 import { WalletCurrency } from "@domain/shared"
-import { LnFees } from "@domain/payments"
+import { LnFees, PriceRatio } from "@domain/payments"
 
 describe("LnFees", () => {
   describe("maxProtocolAndBankFee", () => {
@@ -9,6 +9,24 @@ describe("LnFees", () => {
         currency: WalletCurrency.Btc,
       }
       expect(LnFees().maxProtocolAndBankFee(btcAmount)).toEqual({
+        amount: 50n,
+        currency: WalletCurrency.Btc,
+      })
+    })
+
+    it("returns the minFeeFromPriceRatio", () => {
+      const btc = {
+        amount: 4995n,
+        currency: WalletCurrency.Btc,
+      }
+      const usd = {
+        amount: 100n,
+        currency: WalletCurrency.Usd,
+      }
+      const priceRatio = PriceRatio({ btc, usd })
+      if (priceRatio instanceof Error) throw priceRatio
+
+      expect(LnFees().minFeeFromPriceRatio(priceRatio)).toEqual({
         amount: 50n,
         currency: WalletCurrency.Btc,
       })
