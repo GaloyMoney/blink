@@ -22,6 +22,21 @@ subscription myUpdates {
         currencyUnit
         formattedAmount
       }
+      ... on RealtimePrice {
+        id
+        timestamp
+        denominatorCurrency
+        btcSatPrice {
+          base
+          offset
+          currencyUnit
+        }
+        usdCentPrice {
+          base
+          offset
+          currencyUnit
+        }
+      }
       ... on LnUpdate {
         paymentHash
         status

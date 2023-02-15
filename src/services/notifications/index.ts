@@ -277,6 +277,10 @@ export const NotificationsService = (): INotificationsService => {
       suffix: displayCurrency,
     })
     pubsub.publish({ trigger: userPriceUpdateTrigger, payload: { price: payload } })
+    pubsub.publish({
+      trigger: userPriceUpdateTrigger,
+      payload: { realtimePrice: payload },
+    })
   }
 
   const sendBalance = async ({

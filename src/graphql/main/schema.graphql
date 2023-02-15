@@ -1400,7 +1400,7 @@ input UserRequestAuthCodeInput {
   phone: Phone!
 }
 
-union UserUpdate = IntraLedgerUpdate | LnUpdate | OnChainUpdate | Price
+union UserUpdate = IntraLedgerUpdate | LnUpdate | OnChainUpdate | Price | RealtimePrice
 
 input UserUpdateLanguageInput {
   language: Language!
