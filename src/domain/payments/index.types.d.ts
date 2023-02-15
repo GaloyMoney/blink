@@ -1,3 +1,11 @@
+type PriceRatio = {
+  convertFromOther(other: bigint): BtcPaymentAmount
+  convertFromBtc(btcWalletAmount: BtcPaymentAmount): bigint
+  convertFromBtcToFloor(btcWalletAmount: BtcPaymentAmount): bigint
+  convertFromBtcToCeil(btcWalletAmount: BtcPaymentAmount): bigint
+  usdPerSat(): DisplayCurrencyBasePerSat
+}
+
 type WalletPriceRatio = {
   convertFromUsd(convert: UsdPaymentAmount): BtcPaymentAmount
   convertFromBtc(convert: BtcPaymentAmount): UsdPaymentAmount
