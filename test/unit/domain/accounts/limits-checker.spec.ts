@@ -1,7 +1,7 @@
 import { getAccountLimits } from "@config"
 import { AccountLimitsChecker } from "@domain/accounts"
 import { LimitsExceededError } from "@domain/errors"
-import { PriceRatio } from "@domain/payments"
+import { WalletPriceRatio } from "@domain/payments"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
@@ -13,14 +13,14 @@ let usdPaymentAmount: UsdPaymentAmount
 let limitsChecker: AccountLimitsChecker
 let walletVolumeIntraledger: TxBaseVolumeAmount<WalletCurrency>
 let walletVolumeWithdrawal: TxBaseVolumeAmount<WalletCurrency>
-let priceRatio: PriceRatio
+let priceRatio: WalletPriceRatio
 
 const calc = AmountCalculator()
 
 const ONE_CENT = { amount: 1n, currency: WalletCurrency.Usd } as UsdPaymentAmount
 
 beforeAll(async () => {
-  const priceRatioResult = PriceRatio({
+  const priceRatioResult = WalletPriceRatio({
     usd: ONE_CENT,
     btc: { amount: 50n, currency: WalletCurrency.Btc },
   })

@@ -1,14 +1,14 @@
 import { toCents } from "@domain/fiat"
 import { ActivityChecker } from "@domain/ledger/activity-checker"
-import { PriceRatio } from "@domain/payments"
+import { WalletPriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 let btcWallet: Wallet, usdWallet: Wallet
 
-const priceRatio = PriceRatio({
+const priceRatio = WalletPriceRatio({
   usd: { amount: BigInt(2), currency: WalletCurrency.Usd },
   btc: { amount: BigInt(1), currency: WalletCurrency.Btc },
-}) as PriceRatio
+}) as WalletPriceRatio
 
 beforeAll(() => {
   btcWallet = {

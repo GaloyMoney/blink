@@ -88,7 +88,7 @@ export const btcFromUsdMidPriceFn = async (
 
 export const getMidPriceRatio = async (
   usdHedgeEnabled: YamlSchema["dealer"][keyof YamlSchema["dealer"]]["hedgingEnabled"],
-): Promise<PriceRatio | PriceServiceError> => {
+): Promise<WalletPriceRatio | PriceServiceError> => {
   if (usdHedgeEnabled) {
     const priceRatio = await dealer.getCentsPerSatsExchangeMidRate()
     if (priceRatio instanceof Error) {

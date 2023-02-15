@@ -1,4 +1,4 @@
-import { PriceRatio } from "@domain/payments"
+import { WalletPriceRatio } from "@domain/payments"
 import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
 
 const calc = AmountCalculator()
@@ -20,7 +20,7 @@ export const WalletAddressReceiver = async <S extends WalletCurrency>({
   const receivedUsd = await usdFromBtcFn(receivedBtc)
   if (receivedUsd instanceof Error) return receivedUsd
 
-  const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+  const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
   if (priceRatio instanceof Error) return priceRatio
 
   const bankFee = {

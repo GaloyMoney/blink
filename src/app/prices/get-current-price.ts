@@ -4,7 +4,7 @@ import { CacheKeys } from "@domain/cache"
 import { WalletCurrency } from "@domain/shared"
 import { PriceNotAvailableError } from "@domain/price"
 import { CENTS_PER_USD, checkedToDisplayCurrency } from "@domain/fiat"
-import { toPriceRatio } from "@domain/payments"
+import { toWalletPriceRatio } from "@domain/payments"
 
 import { PriceService } from "@services/price"
 import { LocalCacheService } from "@services/cache"
@@ -68,11 +68,11 @@ const getCurrentPrice = async ({
 
 export const getCurrentPriceAsPriceRatio = async ({
   currency,
-}: GetCurrentSatPriceArgs): Promise<PriceRatio | PriceServiceError> => {
+}: GetCurrentSatPriceArgs): Promise<WalletPriceRatio | PriceServiceError> => {
   const price = await getCurrentSatPrice({ currency })
   if (price instanceof Error) return price
 
-  return toPriceRatio(price.price * CENTS_PER_USD)
+  return toWalletPriceRatio(price.price * CENTS_PER_USD)
 }
 
 const getCachedPrice = async ({

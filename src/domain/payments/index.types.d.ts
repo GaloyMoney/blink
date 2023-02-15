@@ -1,4 +1,4 @@
-type PriceRatio = {
+type WalletPriceRatio = {
   convertFromUsd(convert: UsdPaymentAmount): BtcPaymentAmount
   convertFromBtc(convert: BtcPaymentAmount): UsdPaymentAmount
   convertFromBtcToFloor(convert: BtcPaymentAmount): UsdPaymentAmount

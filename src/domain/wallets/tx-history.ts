@@ -321,7 +321,7 @@ export const WalletTransactionHistory = {
   fromLedger,
 } as const
 
-// TODO: refactor this to use PriceRatio eventually instead after
+// TODO: refactor this to use WalletPriceRatio eventually instead after
 // 'usd' property removal from db
 const displayCurrencyPerBaseUnitFromAmounts = ({
   displayAmountAsNumber: displayAmountMinorUnit,

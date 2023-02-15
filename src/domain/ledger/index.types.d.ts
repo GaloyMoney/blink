@@ -334,7 +334,7 @@ type GetVolumeAmountFn = <S extends WalletCurrency>(
 
 type ActivityCheckerConfig = {
   monthlyVolumeThreshold: UsdCents
-  priceRatio: PriceRatio
+  priceRatio: WalletPriceRatio
   getVolumeAmountFn: GetVolumeAmountFn
 }
 

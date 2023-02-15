@@ -10,7 +10,7 @@ export const FeeReimbursement = ({
     btc: BtcPaymentAmount
     usd: UsdPaymentAmount
   }
-  priceRatio: PriceRatio
+  priceRatio: WalletPriceRatio
 }): FeeReimbursement => {
   const getReimbursement = (
     actualFee: BtcPaymentAmount,

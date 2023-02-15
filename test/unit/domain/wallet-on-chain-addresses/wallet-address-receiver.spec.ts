@@ -1,4 +1,4 @@
-import { PriceRatio } from "@domain/payments"
+import { WalletPriceRatio } from "@domain/payments"
 import { AmountCalculator, BtcPaymentAmount, WalletCurrency } from "@domain/shared"
 
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
@@ -55,7 +55,7 @@ describe("WalletAddressReceiver", () => {
       const receivedUsd = await usdFromBtcMidPrice(receivedBtc)
       if (receivedUsd instanceof Error) throw receivedUsd
 
-      const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+      const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
       if (priceRatio instanceof Error) throw priceRatio
       const centsFee = priceRatio.convertFromBtcToCeil(satsFee)
 
@@ -90,7 +90,7 @@ describe("WalletAddressReceiver", () => {
       const receivedUsd = await usdFromBtc(receivedBtc)
       if (receivedUsd instanceof Error) throw receivedUsd
 
-      const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+      const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
       if (priceRatio instanceof Error) throw priceRatio
       const centsFee = priceRatio.convertFromBtcToCeil(satsFee)
 

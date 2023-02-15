@@ -5,13 +5,13 @@ import { InvalidZeroAmountPriceRatioInputError } from "./errors"
 
 const calc = AmountCalculator()
 
-export const PriceRatio = ({
+export const WalletPriceRatio = ({
   usd,
   btc,
 }: {
   usd: UsdPaymentAmount
   btc: BtcPaymentAmount
-}): PriceRatio | ValidationError => {
+}): WalletPriceRatio | ValidationError => {
   if (usd.amount === 0n || btc.amount === 0n) {
     return new InvalidZeroAmountPriceRatioInputError()
   }
@@ -68,7 +68,7 @@ export const PriceRatio = ({
   }
 }
 
-export const toPriceRatio = (ratio: number): PriceRatio | ValidationError => {
+export const toWalletPriceRatio = (ratio: number): WalletPriceRatio | ValidationError => {
   const precision = RATIO_PRECISION
 
   const usd: UsdPaymentAmount = {
@@ -81,5 +81,5 @@ export const toPriceRatio = (ratio: number): PriceRatio | ValidationError => {
     currency: WalletCurrency.Btc,
   }
 
-  return PriceRatio({ usd, btc })
+  return WalletPriceRatio({ usd, btc })
 }

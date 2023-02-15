@@ -13,7 +13,7 @@ import {
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
-  PriceRatio,
+  WalletPriceRatio,
 } from "@domain/payments"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
@@ -269,7 +269,7 @@ const executePaymentViaIntraledger = async <
     if (address instanceof Error) return address
     const payeeAddresses = [address]
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: paymentFlow.usdPaymentAmount,
       btc: paymentFlow.btcPaymentAmount,
     })
@@ -445,7 +445,7 @@ const executePaymentViaOnChain = async <
     })
 
     // Construct metadata
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: paymentFlow.usdPaymentAmount,
       btc: paymentFlow.btcPaymentAmount,
     })

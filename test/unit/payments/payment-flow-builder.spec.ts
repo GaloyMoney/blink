@@ -6,7 +6,7 @@ import {
   LightningPaymentFlowBuilder,
   LnFees,
   InvalidLightningPaymentFlowBuilderStateError,
-  PriceRatio,
+  WalletPriceRatio,
 } from "@domain/payments"
 import { ValidationError, WalletCurrency } from "@domain/shared"
 
@@ -209,7 +209,7 @@ describe("LightningPaymentFlowBuilder", () => {
           if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
           expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
-          const priceRatio = PriceRatio(payment.paymentAmounts())
+          const priceRatio = WalletPriceRatio(payment.paymentAmounts())
           if (priceRatio instanceof Error) throw priceRatio
           const usdProtocolAndBankFee =
             priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
@@ -248,7 +248,7 @@ describe("LightningPaymentFlowBuilder", () => {
           if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
           expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
-          const priceRatio = PriceRatio(payment.paymentAmounts())
+          const priceRatio = WalletPriceRatio(payment.paymentAmounts())
           if (priceRatio instanceof Error) throw priceRatio
 
           expect(payment).toEqual(
@@ -418,7 +418,7 @@ describe("LightningPaymentFlowBuilder", () => {
           if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
           expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
-          const priceRatio = PriceRatio(payment.paymentAmounts())
+          const priceRatio = WalletPriceRatio(payment.paymentAmounts())
           if (priceRatio instanceof Error) throw priceRatio
           const usdProtocolAndBankFee =
             priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)

@@ -15,7 +15,7 @@ import { sat2btc, toSats } from "@domain/bitcoin"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
-import { PriceRatio } from "@domain/payments"
+import { WalletPriceRatio } from "@domain/payments"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
@@ -174,7 +174,7 @@ describe("UserWallet - On chain", () => {
     })
     if (satsFee instanceof Error) throw satsFee
 
-    const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+    const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
     if (priceRatio instanceof Error) return priceRatio
 
     const bankFee = {
@@ -577,7 +577,7 @@ async function sendToWalletTestWrapper({
   if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
   const centsAmount = Number(usdPaymentAmount.amount)
 
-  const priceRatio = PriceRatio({
+  const priceRatio = WalletPriceRatio({
     usd: usdPaymentAmount,
     btc: { amount: BigInt(amountSats), currency: WalletCurrency.Btc },
   })

@@ -19,7 +19,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { InvalidZeroAmountPriceRatioInputError, PriceRatio } from "@domain/payments"
+import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -322,7 +322,7 @@ const testExternalSend = async ({
 
       satsFee = fee
 
-      const priceRatio = PriceRatio({
+      const priceRatio = WalletPriceRatio({
         usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
         btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
       })
@@ -596,7 +596,7 @@ const testInternalSend = async ({
 
     satsFee = fee
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
       btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
     })

@@ -1,6 +1,6 @@
 import { FeeDifferenceError } from "@domain/ledger"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
-import { PriceRatio } from "@domain/payments"
+import { WalletPriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 describe("FeeReimbursement", () => {
@@ -10,7 +10,7 @@ describe("FeeReimbursement", () => {
       usd: { amount: 5n, currency: WalletCurrency.Usd },
     }
 
-    const priceRatio = PriceRatio(prepaidFeeAmount)
+    const priceRatio = WalletPriceRatio(prepaidFeeAmount)
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
@@ -29,7 +29,7 @@ describe("FeeReimbursement", () => {
       usd: { amount: 0n, currency: WalletCurrency.Usd },
     }
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       btc: { amount: 80n, currency: WalletCurrency.Btc },
       usd: { amount: 4n, currency: WalletCurrency.Usd },
     })
@@ -46,7 +46,7 @@ describe("FeeReimbursement", () => {
       usd: { amount: 5n, currency: WalletCurrency.Usd },
     }
 
-    const priceRatio = PriceRatio(prepaidFeeAmount)
+    const priceRatio = WalletPriceRatio(prepaidFeeAmount)
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
@@ -62,7 +62,7 @@ describe("FeeReimbursement", () => {
         usd: { amount: 5n, currency: WalletCurrency.Usd },
       }
 
-      const priceRatio = PriceRatio(prepaidFeeAmount)
+      const priceRatio = WalletPriceRatio(prepaidFeeAmount)
       if (priceRatio instanceof Error) throw priceRatio
 
       const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
@@ -141,7 +141,7 @@ describe("FeeReimbursement", () => {
         usd: { amount: 120n, currency: WalletCurrency.Usd },
       }
 
-      const priceRatio = PriceRatio(paymentAmounts)
+      const priceRatio = WalletPriceRatio(paymentAmounts)
       if (priceRatio instanceof Error) throw priceRatio
 
       const paymentFlowConvertFromBtc = priceRatio.convertFromBtcToCeil
@@ -181,7 +181,7 @@ describe("FeeReimbursement", () => {
         usd: { amount: 150n, currency: WalletCurrency.Usd },
       }
 
-      const priceRatio = PriceRatio(paymentAmounts)
+      const priceRatio = WalletPriceRatio(paymentAmounts)
       if (priceRatio instanceof Error) throw priceRatio
 
       const paymentFlowConvertFromBtc = priceRatio.convertFromBtcToCeil
@@ -222,7 +222,7 @@ describe("FeeReimbursement", () => {
       usd: { amount: 5n, currency: WalletCurrency.Usd },
     }
 
-    const priceRatio = PriceRatio(prepaidFeeAmount)
+    const priceRatio = WalletPriceRatio(prepaidFeeAmount)
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
@@ -240,7 +240,7 @@ describe("FeeReimbursement", () => {
       usd: { amount: 5n, currency: WalletCurrency.Usd },
     }
 
-    const priceRatio = PriceRatio(prepaidFeeAmount)
+    const priceRatio = WalletPriceRatio(prepaidFeeAmount)
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
@@ -255,7 +255,7 @@ describe("FeeReimbursement", () => {
       usd: { amount: 100n, currency: WalletCurrency.Usd },
     }
 
-    const priceRatio = PriceRatio(paymentAmounts)
+    const priceRatio = WalletPriceRatio(paymentAmounts)
     if (priceRatio instanceof Error) throw priceRatio
 
     const btc = { amount: 40n, currency: WalletCurrency.Btc }

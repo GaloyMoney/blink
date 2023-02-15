@@ -1,4 +1,4 @@
-import { PriceRatio } from "@domain/payments"
+import { WalletPriceRatio } from "@domain/payments"
 import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
 
 const calc = AmountCalculator()
@@ -16,7 +16,7 @@ export const WalletInvoiceReceiver = async ({
     const receivedUsd = await usdFromBtcMidPrice(receivedBtc)
     if (receivedUsd instanceof Error) return receivedUsd
 
-    const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+    const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
     if (priceRatio instanceof Error) return priceRatio
 
     const btcBankFee = satsFee
@@ -37,7 +37,7 @@ export const WalletInvoiceReceiver = async ({
   if (walletInvoice.usdAmount) {
     const receivedUsd = walletInvoice.usdAmount
 
-    const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+    const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
     if (priceRatio instanceof Error) return priceRatio
 
     const btcBankFee = satsFee
@@ -58,7 +58,7 @@ export const WalletInvoiceReceiver = async ({
   const receivedUsd = await usdFromBtc(receivedBtc)
   if (receivedUsd instanceof Error) return receivedUsd
 
-  const priceRatio = PriceRatio({ usd: receivedUsd, btc: receivedBtc })
+  const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
   if (priceRatio instanceof Error) return priceRatio
 
   const btcBankFee = satsFee
