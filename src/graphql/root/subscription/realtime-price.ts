@@ -4,8 +4,8 @@ import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
 
 import { Prices } from "@app"
 
-import { checkedToDisplayCurrency, DisplayCurrency } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+import { checkedToDisplayCurrency, DisplayCurrency, majorToMinorUnit } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
@@ -145,8 +145,8 @@ const RealtimePriceSubscription = {
         payload: {
           timestamp,
           displayCurrency,
-          centsPerSat: 100 * pricePerSat.price,
-          centsPerUsdCent: 100 * pricePerUsdCent.price,
+          centsPerSat: majorToMinorUnit(pricePerSat.price),
+          centsPerUsdCent: majorToMinorUnit(pricePerUsdCent.price),
         },
       })
     }
