@@ -22,7 +22,7 @@ const RealtimePriceInput = GT.Input({
   name: "RealtimePriceInput",
   fields: () => ({
     currency: {
-      type: GT.NonNull(DisplayCurrencyGT),
+      type: DisplayCurrencyGT,
       defaultValue: DisplayCurrency.Usd,
     },
   }),

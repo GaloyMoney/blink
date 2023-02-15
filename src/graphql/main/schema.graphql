@@ -1002,7 +1002,7 @@ type Query {
   """
   Returns 1 Sat and 1 Usd Cent price for the given currency
   """
-  realtimePrice(currency: DisplayCurrency! = "USD"): RealtimePrice
+  realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
@@ -1047,7 +1047,7 @@ type RealtimePrice {
 }
 
 input RealtimePriceInput {
-  currency: DisplayCurrency! = "USD"
+  currency: DisplayCurrency = "USD"
 }
 
 type RealtimePricePayload {

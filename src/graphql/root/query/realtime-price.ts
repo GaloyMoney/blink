@@ -14,7 +14,7 @@ const RealtimePriceQuery = GT.Field({
   description: `Returns 1 Sat and 1 Usd Cent price for the given currency`,
   args: {
     currency: {
-      type: GT.NonNull(DisplayCurrencyGT),
+      type: DisplayCurrencyGT,
       defaultValue: DisplayCurrency.Usd,
     },
   },
