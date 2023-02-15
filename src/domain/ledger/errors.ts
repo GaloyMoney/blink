@@ -7,6 +7,9 @@ export class FeeDifferenceError extends LedgerError {}
 export class NoTransactionToSettleError extends LedgerServiceError {}
 export class InvalidPaginationArgumentsError extends LedgerServiceError {}
 export class MismatchedResultForTransactionMetadataQuery extends LedgerServiceError {}
+export class MultiplePendingPaymentsForHashError extends LedgerServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownLedgerError extends LedgerServiceError {
   level = ErrorLevel.Critical
 }
