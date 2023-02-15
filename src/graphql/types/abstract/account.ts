@@ -3,6 +3,7 @@ import { connectionArgs } from "@graphql/connections"
 
 import WalletId from "@graphql/types/scalar/wallet-id"
 import AccountLimits from "@graphql/types/object/account-limits"
+import RealtimePrice from "@graphql/types/object/realtime-price"
 import DisplayCurrency from "@graphql/types/scalar/display-currency"
 import { TransactionConnection } from "@graphql/types/object/transaction"
 
@@ -22,6 +23,9 @@ const IAccount = GT.Interface({
     },
     displayCurrency: {
       type: GT.NonNull(DisplayCurrency),
+    },
+    realtimePrice: {
+      type: GT.NonNull(RealtimePrice),
     },
     csvTransactions: {
       type: GT.NonNull(GT.String),

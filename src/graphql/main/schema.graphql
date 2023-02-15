@@ -4,6 +4,7 @@ interface Account {
   displayCurrency: DisplayCurrency!
   id: ID!
   limits: AccountLimits!
+  realtimePrice: RealtimePrice!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -211,6 +212,7 @@ type ConsumerAccount implements Account {
   List the quiz questions of the consumer account
   """
   quiz: [Quiz!]!
+  realtimePrice: RealtimePrice!
 
   """
   A list of all transactions associated with walletIds optionally passed.
