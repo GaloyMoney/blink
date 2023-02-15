@@ -1,5 +1,5 @@
 import { RATIO_PRECISION } from "@config"
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, safeBigInt, WalletCurrency } from "@domain/shared"
 
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
 
@@ -90,6 +90,69 @@ export const WalletPriceRatio = ({
 
     usdPerSat: () =>
       (Number(usd.amount) / Number(btc.amount)) as DisplayCurrencyBasePerSat,
+  }
+}
+
+export const DisplayPriceRatio = <T extends DisplayCurrency>({
+  displayAmountInMinorUnit,
+  btcWalletAmount,
+  majorExponent,
+}: {
+  displayAmountInMinorUnit: DisplayAmount<T>
+  btcWalletAmount: BtcPaymentAmount
+  majorExponent: CurrencyMajorExponent
+}): DisplayPriceRatio<T> | ValidationError => {
+  const { currency: displayCurrency } = displayAmountInMinorUnit
+
+  const displayAmountValue = safeBigInt(displayAmountInMinorUnit.amount)
+  if (displayAmountValue instanceof Error) return displayAmountValue
+  const priceRatio = PriceRatio({
+    other: displayAmountValue,
+    btc: btcWalletAmount,
+  })
+  if (priceRatio instanceof Error) return priceRatio
+
+  const displayAmountToDisplayCurrencyObject = (
+    displayAmountInMinorUnit: DisplayAmount<T>,
+  ): DisplayCurrencyObject<T> => {
+    const displayInMajor = (
+      displayAmountInMinorUnit.amount /
+      10 ** Number(majorExponent)
+    ).toFixed(Number(majorExponent))
+
+    return {
+      valueInMinor: displayAmountInMinorUnit,
+      displayInMajor,
+    }
+  }
+
+  return {
+    convertFromDisplayMinorUnit: (displayAmount: DisplayAmount<T>): BtcPaymentAmount =>
+      priceRatio.convertFromOther(BigInt(displayAmount.amount)),
+
+    convertFromBtc: (btcWalletAmount: BtcPaymentAmount): DisplayCurrencyObject<T> =>
+      displayAmountToDisplayCurrencyObject({
+        amount: Number(priceRatio.convertFromBtc(btcWalletAmount)),
+        currency: displayCurrency,
+      }),
+
+    convertFromBtcToFloor: (
+      btcWalletAmount: BtcPaymentAmount,
+    ): DisplayCurrencyObject<T> =>
+      displayAmountToDisplayCurrencyObject({
+        amount: Number(priceRatio.convertFromBtcToFloor(btcWalletAmount)),
+        currency: displayCurrency,
+      }),
+
+    convertFromBtcToCeil: (btcWalletAmount: BtcPaymentAmount): DisplayCurrencyObject<T> =>
+      displayAmountToDisplayCurrencyObject({
+        amount: Number(priceRatio.convertFromBtcToCeil(btcWalletAmount)),
+        currency: displayCurrency,
+      }),
+
+    displayMinorUnitPerSat: () =>
+      (displayAmountInMinorUnit.amount /
+        Number(btcWalletAmount.amount)) as DisplayCurrencyBasePerSat,
   }
 }
 

@@ -9,6 +9,14 @@ type WalletCurrency =
 type ExchangeCurrencyUnit =
   typeof import("./primitives").ExchangeCurrencyUnit[keyof typeof import("./primitives").ExchangeCurrencyUnit]
 
+type CurrencyMajorExponent = bigint & {
+  readonly brand?: unique symbol
+}
+
+type DisplayCurrencyMajorAmount = string & {
+  readonly brand?: unique symbol
+}
+
 type Amount<T extends WalletCurrency> = {
   currency: T
   amount: bigint
@@ -17,6 +25,11 @@ type Amount<T extends WalletCurrency> = {
 type DisplayAmount<T extends DisplayCurrency> = {
   currency: T
   amount: number
+}
+
+type DisplayCurrencyObject<T extends DisplayCurrency> = {
+  valueInMinor: DisplayAmount<T>
+  displayInMajor: DisplayCurrencyMajorAmount
 }
 
 type PaymentAmount<T extends WalletCurrency> = Amount<T> & {

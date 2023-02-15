@@ -14,6 +14,14 @@ type WalletPriceRatio = {
   usdPerSat(): DisplayCurrencyBasePerSat
 }
 
+type DisplayPriceRatio<T extends DisplayCurrency> = {
+  convertFromDisplayMinorUnit(convert: DisplayAmount<T>): BtcPaymentAmount
+  convertFromBtc(convert: BtcPaymentAmount): DisplayCurrencyObject<T>
+  convertFromBtcToFloor(convert: BtcPaymentAmount): DisplayCurrencyObject<T>
+  convertFromBtcToCeil(convert: BtcPaymentAmount): DisplayCurrencyObject<T>
+  displayMinorUnitPerSat(): DisplayCurrencyBasePerSat
+}
+
 type XorPaymentHashProperty = XOR<
   { paymentHash: PaymentHash },
   { intraLedgerHash: IntraLedgerHash }
