@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import IPrice from "../abstract/any-price"
+import IPrice from "../abstract/price"
 import SafeInt from "../scalar/safe-int"
 
 const PriceOfOneUsdCent = GT.Object({

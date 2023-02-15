@@ -81,12 +81,6 @@ type AccountUpdateDisplayCurrencyPayload {
   errors: [Error!]!
 }
 
-interface AnyPrice {
-  base: SafeInt!
-  currencyUnit: String!
-  offset: Int!
-}
-
 """
 An Opaque Bearer token
 """
@@ -930,10 +924,16 @@ input PriceInput {
   priceCurrencyUnit: ExchangeCurrencyUnit!
 }
 
+interface PriceInterface {
+  base: SafeInt!
+  currencyUnit: String!
+  offset: Int!
+}
+
 """
 Price of 1 sat in base/offset. To calculate, use: `base / 10^offset`
 """
-type PriceOfOneSat implements AnyPrice {
+type PriceOfOneSat implements PriceInterface {
   base: SafeInt!
   currencyUnit: String!
   offset: Int!
@@ -942,7 +942,7 @@ type PriceOfOneSat implements AnyPrice {
 """
 Price of 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
 """
-type PriceOfOneUsdCent implements AnyPrice {
+type PriceOfOneUsdCent implements PriceInterface {
   base: SafeInt!
   currencyUnit: String!
   offset: Int!

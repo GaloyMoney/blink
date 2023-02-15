@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import SafeInt from "../scalar/safe-int"
 
 const IPrice = GT.Interface({
-  name: "AnyPrice",
+  name: "PriceInterface",
   fields: () => ({
     base: { type: GT.NonNull(SafeInt) },
     offset: { type: GT.NonNull(GT.Int) },
