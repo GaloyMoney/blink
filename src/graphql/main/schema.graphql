@@ -951,7 +951,7 @@ type Query {
   btcPrice(currency: DisplayCurrency! = "USD"): Price
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
-  currencyList: [Currency]
+  currencyList: [Currency!]!
   globals: Globals
   lnInvoicePaymentStatus(
     input: LnInvoicePaymentStatusInput!
