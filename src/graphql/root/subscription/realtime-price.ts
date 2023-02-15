@@ -8,8 +8,8 @@ import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import { checkedToDisplayCurrency, DisplayCurrency, majorToMinorUnit } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
 import { UnknownClientError } from "@graphql/error"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import DisplayCurrencyGT from "@graphql/types/scalar/display-currency"
 import RealtimePricePayload from "@graphql/types/payload/realtime-price"
 
@@ -116,7 +116,7 @@ const RealtimePriceSubscription = {
     if (currencies instanceof Error) {
       pubsub.publishImmediate({
         trigger: immediateTrigger,
-        payload: { errors: [mapError(currencies)] },
+        payload: { errors: [mapAndParseErrorForGqlResponse(currencies)] },
       })
       return pubsub.createAsyncIterator({ trigger: immediateTrigger })
     }
