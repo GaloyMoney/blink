@@ -54,7 +54,7 @@ describe("LnFees", () => {
     if (priceRatio instanceof Error) throw priceRatio
 
     const validBtcMaxFeeToVerify = LnFees().maxProtocolAndBankFee(btc)
-    const validUsdMaxFeeToVerify = priceRatio.convertFromUsd(
+    const validUsdMaxFeeInBtcToVerify = priceRatio.convertFromUsd(
       LnFees().maxProtocolAndBankFee(usd),
     )
 
@@ -72,7 +72,7 @@ describe("LnFees", () => {
     it("correctly verifies a valid Usd maxFee", () => {
       expect(
         LnFees().verifyMaxFee({
-          maxFeeAmount: validUsdMaxFeeToVerify,
+          maxFeeAmount: validUsdMaxFeeInBtcToVerify,
           btcPaymentAmount: btc,
           priceRatio,
           senderWalletCurrency: WalletCurrency.Usd,
@@ -94,7 +94,7 @@ describe("LnFees", () => {
     it("correctly verifies 1 sat Usd payment", () => {
       expect(
         LnFees().verifyMaxFee({
-          maxFeeAmount: validUsdMaxFeeToVerify,
+          maxFeeAmount: validUsdMaxFeeInBtcToVerify,
           btcPaymentAmount: ONE_SAT,
           priceRatio,
           senderWalletCurrency: WalletCurrency.Usd,
@@ -116,7 +116,7 @@ describe("LnFees", () => {
     it("fails for a large Usd maxFee", () => {
       expect(
         LnFees().verifyMaxFee({
-          maxFeeAmount: calc.add(validUsdMaxFeeToVerify, ONE_SAT),
+          maxFeeAmount: calc.add(validUsdMaxFeeInBtcToVerify, ONE_SAT),
           btcPaymentAmount: btc,
           priceRatio,
           senderWalletCurrency: WalletCurrency.Usd,
@@ -138,7 +138,7 @@ describe("LnFees", () => {
     it("fails for a 1 sat large Usd maxFee", () => {
       expect(
         LnFees().verifyMaxFee({
-          maxFeeAmount: calc.add(validUsdMaxFeeToVerify, ONE_SAT),
+          maxFeeAmount: calc.add(validUsdMaxFeeInBtcToVerify, ONE_SAT),
           btcPaymentAmount: ONE_SAT,
           priceRatio,
           senderWalletCurrency: WalletCurrency.Btc,
