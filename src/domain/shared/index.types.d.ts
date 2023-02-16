@@ -23,8 +23,9 @@ type DisplayAmount<T extends DisplayCurrency> = {
   amount: number
 }
 
-type DisplayCurrencyObject<T extends DisplayCurrency> = {
-  valueInMinor: DisplayAmount<T>
+type NewDisplayAmount<T extends DisplayCurrency> = {
+  amountInMinor: bigint
+  currency: T
   displayInMajor: DisplayCurrencyMajorAmount
 }
 

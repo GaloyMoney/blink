@@ -420,10 +420,8 @@ describe("DisplayPriceRatio", () => {
     })
 
     expect(result).toStrictEqual({
-      valueInMinor: {
-        amount: 40,
-        currency: DisplayCurrency.Usd,
-      },
+      amountInMinor: 40n,
+      currency: DisplayCurrency.Usd,
       displayInMajor: "0.40",
     })
   })
@@ -435,10 +433,8 @@ describe("DisplayPriceRatio", () => {
     })
 
     expect(result).toStrictEqual({
-      valueInMinor: {
-        amount: 40,
-        currency: DisplayCurrency.Usd,
-      },
+      amountInMinor: 40n,
+      currency: DisplayCurrency.Usd,
       displayInMajor: "0.40",
     })
   })
@@ -450,10 +446,8 @@ describe("DisplayPriceRatio", () => {
     })
 
     expect(result).toStrictEqual({
-      valueInMinor: {
-        amount: 41,
-        currency: DisplayCurrency.Usd,
-      },
+      amountInMinor: 41n,
+      currency: DisplayCurrency.Usd,
       displayInMajor: "0.41",
     })
   })
