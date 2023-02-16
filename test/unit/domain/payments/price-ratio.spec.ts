@@ -3,6 +3,7 @@ import {
   DisplayPriceRatio,
   InvalidZeroAmountPriceRatioInputError,
   PriceRatio,
+  toDisplayPriceRatio,
   toWalletPriceRatio,
   WalletPriceRatio,
 } from "@domain/payments"
@@ -470,5 +471,20 @@ describe("to WalletPriceRatio from float ratio", () => {
     if (priceRatio instanceof Error) throw priceRatio
 
     expect(priceRatio.usdPerSat()).toEqual(ratio)
+  })
+})
+
+describe("to DisplayPriceRatio from float ratio", () => {
+  it("converts a float ratio to DisplayPriceRatio object", async () => {
+    const ratio = 0.0005
+
+    const priceRatio = toDisplayPriceRatio({
+      ratio,
+      displayCurrency: DisplayCurrency.Usd,
+    })
+    expect(priceRatio).not.toBeInstanceOf(Error)
+    if (priceRatio instanceof Error) throw priceRatio
+
+    expect(priceRatio.displayMinorUnitPerWalletUnit()).toEqual(ratio)
   })
 })

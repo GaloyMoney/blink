@@ -1,4 +1,5 @@
 import { RATIO_PRECISION } from "@config"
+import { MajorExponent } from "@domain/fiat"
 import { AmountCalculator, safeBigInt, WalletCurrency } from "@domain/shared"
 
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
@@ -178,4 +179,34 @@ export const toWalletPriceRatio = (ratio: number): WalletPriceRatio | Validation
   }
 
   return WalletPriceRatio({ usd, btc })
+}
+
+export const toDisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCurrency>({
+  ratio,
+  displayCurrency,
+  displayMajorExponent = MajorExponent.STANDARD,
+  walletCurrency = WalletCurrency.Btc as S,
+}: {
+  ratio: number
+  displayCurrency: T
+  displayMajorExponent?: CurrencyMajorExponent
+  walletCurrency?: S
+}): DisplayPriceRatio<S, T> | ValidationError => {
+  const precision = RATIO_PRECISION
+
+  const displayAmountInMinorUnit: DisplayAmount<T> = {
+    amount: Math.floor(ratio * precision),
+    currency: displayCurrency,
+  }
+
+  const walletAmount: PaymentAmount<S> = {
+    amount: BigInt(precision),
+    currency: walletCurrency,
+  }
+
+  return DisplayPriceRatio({
+    displayAmountInMinorUnit,
+    walletAmount,
+    displayMajorExponent,
+  })
 }
