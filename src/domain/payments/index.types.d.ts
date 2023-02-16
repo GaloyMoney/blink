@@ -1,9 +1,9 @@
-type PriceRatio = {
-  convertFromOther(other: bigint): BtcPaymentAmount
-  convertFromBtc(btcWalletAmount: BtcPaymentAmount): bigint
-  convertFromBtcToFloor(btcWalletAmount: BtcPaymentAmount): bigint
-  convertFromBtcToCeil(btcWalletAmount: BtcPaymentAmount): bigint
-  usdPerSat(): DisplayCurrencyBasePerSat
+type PriceRatio<S extends WalletCurrency> = {
+  convertFromOther(other: bigint): PaymentAmount<S>
+  convertFromWallet(btcWalletAmount: PaymentAmount<S>): bigint
+  convertFromWalletToFloor(btcWalletAmount: PaymentAmount<S>): bigint
+  convertFromWalletToCeil(btcWalletAmount: PaymentAmount<S>): bigint
+  otherUnitPerWalletUnit(): DisplayCurrencyBasePerSat
 }
 
 type WalletPriceRatio = {
@@ -14,12 +14,12 @@ type WalletPriceRatio = {
   usdPerSat(): DisplayCurrencyBasePerSat
 }
 
-type DisplayPriceRatio<T extends DisplayCurrency> = {
-  convertFromDisplayMinorUnit(convert: DisplayAmount<T>): BtcPaymentAmount
-  convertFromBtc(convert: BtcPaymentAmount): DisplayCurrencyObject<T>
-  convertFromBtcToFloor(convert: BtcPaymentAmount): DisplayCurrencyObject<T>
-  convertFromBtcToCeil(convert: BtcPaymentAmount): DisplayCurrencyObject<T>
-  displayMinorUnitPerSat(): DisplayCurrencyBasePerSat
+type DisplayPriceRatio<S extends WalletCurrency, T extends DisplayCurrency> = {
+  convertFromDisplayMinorUnit(convert: DisplayAmount<T>): PaymentAmount<S>
+  convertFromWallet(convert: PaymentAmount<S>): DisplayCurrencyObject<T>
+  convertFromWalletToFloor(convert: PaymentAmount<S>): DisplayCurrencyObject<T>
+  convertFromWalletToCeil(convert: PaymentAmount<S>): DisplayCurrencyObject<T>
+  displayMinorUnitPerWalletUnit(): DisplayCurrencyBasePerSat
 }
 
 type XorPaymentHashProperty = XOR<

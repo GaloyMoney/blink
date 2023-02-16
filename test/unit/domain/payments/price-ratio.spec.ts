@@ -18,7 +18,10 @@ describe("PriceRatio", () => {
   it("converts usd", () => {
     const convertAmount = 40n
 
-    const priceRatio = PriceRatio({ other: otherQuoteAmount, btc: btcQuoteAmount })
+    const priceRatio = PriceRatio({
+      other: otherQuoteAmount,
+      walletAmount: btcQuoteAmount,
+    })
     if (priceRatio instanceof Error) throw priceRatio
 
     expect(priceRatio.convertFromOther(convertAmount)).toEqual({
@@ -33,10 +36,13 @@ describe("PriceRatio", () => {
       currency: WalletCurrency.Btc,
     }
 
-    const priceRatio = PriceRatio({ other: otherQuoteAmount, btc: btcQuoteAmount })
+    const priceRatio = PriceRatio({
+      other: otherQuoteAmount,
+      walletAmount: btcQuoteAmount,
+    })
     if (priceRatio instanceof Error) throw priceRatio
 
-    expect(priceRatio.convertFromBtc(convertAmount)).toEqual(4n)
+    expect(priceRatio.convertFromWallet(convertAmount)).toEqual(4n)
   })
 
   describe("rounds amounts", () => {
@@ -48,7 +54,7 @@ describe("PriceRatio", () => {
         it("correctly rounds down when unrounded value is just below 0.5 less than target quotient", () => {
           const priceRatio = PriceRatio({
             other: 4_100_000n,
-            btc: btcPivot,
+            walletAmount: btcPivot,
           })
           if (priceRatio instanceof Error) throw priceRatio
 
@@ -61,7 +67,7 @@ describe("PriceRatio", () => {
         it("correctly rounds up when unrounded value is just above 0.5 more than target quotient", () => {
           const priceRatio = PriceRatio({
             other: 3_900_000n,
-            btc: btcPivot,
+            walletAmount: btcPivot,
           })
           if (priceRatio instanceof Error) throw priceRatio
 
@@ -74,7 +80,7 @@ describe("PriceRatio", () => {
         it("correctly rounds down when unrounded value is just above target quotient", () => {
           const priceRatio = PriceRatio({
             other: 3_999_900n,
-            btc: btcPivot,
+            walletAmount: btcPivot,
           })
           if (priceRatio instanceof Error) throw priceRatio
 
@@ -87,7 +93,7 @@ describe("PriceRatio", () => {
         it("correctly rounds up when unrounded value is just below target quotient", () => {
           const priceRatio = PriceRatio({
             other: 4_000_100n,
-            btc: btcPivot,
+            walletAmount: btcPivot,
           })
           if (priceRatio instanceof Error) throw priceRatio
 
@@ -101,12 +107,12 @@ describe("PriceRatio", () => {
         const product = 2n
         const priceRatio = PriceRatio({
           other: 5_000_000n,
-          btc: { amount: 100_000_000n, currency: WalletCurrency.Btc },
+          walletAmount: { amount: 100_000_000n, currency: WalletCurrency.Btc },
         })
         if (priceRatio instanceof Error) throw priceRatio
 
         it("correctly rounds down when unrounded value is just below 0.5 less than target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtc({
+          const usdPaymentAmount = priceRatio.convertFromWallet({
             amount: 29n,
             currency: WalletCurrency.Btc,
           })
@@ -114,7 +120,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds up when unrounded value is just above 0.5 more than target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtc({
+          const usdPaymentAmount = priceRatio.convertFromWallet({
             amount: 51n,
             currency: WalletCurrency.Btc,
           })
@@ -122,7 +128,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds down when unrounded value is just above target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtc({
+          const usdPaymentAmount = priceRatio.convertFromWallet({
             amount: 41n,
             currency: WalletCurrency.Btc,
           })
@@ -130,7 +136,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds up when unrounded value is just below target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtc({
+          const usdPaymentAmount = priceRatio.convertFromWallet({
             amount: 39n,
             currency: WalletCurrency.Btc,
           })
@@ -147,12 +153,12 @@ describe("PriceRatio", () => {
         const product = 2n
         const priceRatio = PriceRatio({
           other: 5_000_000n,
-          btc: { amount: 100_000_000n, currency: WalletCurrency.Btc },
+          walletAmount: { amount: 100_000_000n, currency: WalletCurrency.Btc },
         })
         if (priceRatio instanceof Error) throw priceRatio
 
         it("correctly rounds down when unrounded value is just below 0.5 less than target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtcToFloor({
+          const usdPaymentAmount = priceRatio.convertFromWalletToFloor({
             amount: 29n,
             currency: WalletCurrency.Btc,
           })
@@ -160,7 +166,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds down when unrounded value is just above 0.5 more than target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtcToFloor({
+          const usdPaymentAmount = priceRatio.convertFromWalletToFloor({
             amount: 51n,
             currency: WalletCurrency.Btc,
           })
@@ -168,7 +174,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds down when unrounded value is just above target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtcToFloor({
+          const usdPaymentAmount = priceRatio.convertFromWalletToFloor({
             amount: 41n,
             currency: WalletCurrency.Btc,
           })
@@ -176,7 +182,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds down when unrounded value is just below target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtcToFloor({
+          const usdPaymentAmount = priceRatio.convertFromWalletToFloor({
             amount: 39n,
             currency: WalletCurrency.Btc,
           })
@@ -193,12 +199,12 @@ describe("PriceRatio", () => {
         const product = 2n
         const priceRatio = PriceRatio({
           other: 5_000_000n,
-          btc: { amount: 100_000_000n, currency: WalletCurrency.Btc },
+          walletAmount: { amount: 100_000_000n, currency: WalletCurrency.Btc },
         })
         if (priceRatio instanceof Error) throw priceRatio
 
         it("correctly rounds up when unrounded value is just below 0.5 less than target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtcToCeil({
+          const usdPaymentAmount = priceRatio.convertFromWalletToCeil({
             amount: 29n,
             currency: WalletCurrency.Btc,
           })
@@ -206,7 +212,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds up when unrounded value is just above 0.5 more than target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtcToCeil({
+          const usdPaymentAmount = priceRatio.convertFromWalletToCeil({
             amount: 51n,
             currency: WalletCurrency.Btc,
           })
@@ -214,7 +220,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds up when unrounded value is just above target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtcToCeil({
+          const usdPaymentAmount = priceRatio.convertFromWalletToCeil({
             amount: 41n,
             currency: WalletCurrency.Btc,
           })
@@ -222,7 +228,7 @@ describe("PriceRatio", () => {
         })
 
         it("correctly rounds up when unrounded value is just below target product", () => {
-          const usdPaymentAmount = priceRatio.convertFromBtcToCeil({
+          const usdPaymentAmount = priceRatio.convertFromWalletToCeil({
             amount: 39n,
             currency: WalletCurrency.Btc,
           })
@@ -240,11 +246,11 @@ describe("PriceRatio", () => {
 
     const priceRatio = PriceRatio({
       other: 1n,
-      btc: { amount: 1000n, currency: WalletCurrency.Btc },
+      walletAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     })
     if (priceRatio instanceof Error) throw priceRatio
 
-    expect(priceRatio.convertFromBtc(convertAmount)).toEqual(1n)
+    expect(priceRatio.convertFromWallet(convertAmount)).toEqual(1n)
   })
 
   it("does not return zero btc amount for small ratios", () => {
@@ -252,7 +258,7 @@ describe("PriceRatio", () => {
 
     const priceRatio = PriceRatio({
       other: 1000n,
-      btc: { amount: 1n, currency: WalletCurrency.Btc },
+      walletAmount: { amount: 1n, currency: WalletCurrency.Btc },
     })
     if (priceRatio instanceof Error) throw priceRatio
 
@@ -270,11 +276,11 @@ describe("PriceRatio", () => {
 
     const priceRatio = PriceRatio({
       other: 1000n,
-      btc: { amount: 1n, currency: WalletCurrency.Btc },
+      walletAmount: { amount: 1n, currency: WalletCurrency.Btc },
     })
     if (priceRatio instanceof Error) throw priceRatio
 
-    expect(priceRatio.convertFromBtc(convertAmount)).toEqual(0n)
+    expect(priceRatio.convertFromWallet(convertAmount)).toEqual(0n)
   })
 
   it("returns zero btc amount for zero usd conversion input", () => {
@@ -282,7 +288,7 @@ describe("PriceRatio", () => {
 
     const priceRatio = PriceRatio({
       other: 1000n,
-      btc: { amount: 1n, currency: WalletCurrency.Btc },
+      walletAmount: { amount: 1n, currency: WalletCurrency.Btc },
     })
     if (priceRatio instanceof Error) throw priceRatio
 
@@ -295,7 +301,7 @@ describe("PriceRatio", () => {
   it("returns error for zero amount btc", () => {
     const priceRatio = PriceRatio({
       other: 1n,
-      btc: {
+      walletAmount: {
         amount: 0n,
         currency: WalletCurrency.Btc,
       },
@@ -306,7 +312,7 @@ describe("PriceRatio", () => {
   it("returns error for zero amount usd", () => {
     const priceRatio = PriceRatio({
       other: 0n,
-      btc: {
+      walletAmount: {
         amount: 1n,
         currency: WalletCurrency.Btc,
       },
@@ -389,8 +395,8 @@ describe("DisplayPriceRatio", () => {
   }
   const displayPriceRatio = DisplayPriceRatio({
     displayAmountInMinorUnit: displayQuoteAmount,
-    btcWalletAmount: btcQuoteAmount,
-    majorExponent: MajorExponent.STANDARD,
+    walletAmount: btcQuoteAmount,
+    displayMajorExponent: MajorExponent.STANDARD,
   })
   if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
@@ -406,8 +412,8 @@ describe("DisplayPriceRatio", () => {
     })
   })
 
-  it("convertFromBtc", () => {
-    const result = displayPriceRatio.convertFromBtc({
+  it("convertFromWallet", () => {
+    const result = displayPriceRatio.convertFromWallet({
       amount: 401n,
       currency: WalletCurrency.Btc,
     })
@@ -421,8 +427,8 @@ describe("DisplayPriceRatio", () => {
     })
   })
 
-  it("convertFromBtcToFloor", () => {
-    const result = displayPriceRatio.convertFromBtcToFloor({
+  it("convertFromWalletToFloor", () => {
+    const result = displayPriceRatio.convertFromWalletToFloor({
       amount: 401n,
       currency: WalletCurrency.Btc,
     })
@@ -436,8 +442,8 @@ describe("DisplayPriceRatio", () => {
     })
   })
 
-  it("convertFromBtcToCeil", () => {
-    const result = displayPriceRatio.convertFromBtcToCeil({
+  it("convertFromWalletToCeil", () => {
+    const result = displayPriceRatio.convertFromWalletToCeil({
       amount: 401n,
       currency: WalletCurrency.Btc,
     })
@@ -451,8 +457,8 @@ describe("DisplayPriceRatio", () => {
     })
   })
 
-  it("displayMinorUnitPerSat", () =>
-    expect(displayPriceRatio.displayMinorUnitPerSat()).toEqual(0.1))
+  it("displayMinorUnitPerWalletUnit", () =>
+    expect(displayPriceRatio.displayMinorUnitPerWalletUnit()).toEqual(0.1))
 })
 
 describe("to WalletPriceRatio from float ratio", () => {
