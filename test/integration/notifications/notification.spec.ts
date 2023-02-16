@@ -11,14 +11,14 @@ import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { WalletCurrency } from "@domain/shared"
-import { getCurrentPriceAsPriceRatio } from "@app/prices"
+import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
 
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 let displayPriceRatio, spy
 
 beforeAll(async () => {
-  displayPriceRatio = await getCurrentPriceAsPriceRatio({
+  displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
     currency: DisplayCurrency.Usd,
   })
   if (displayPriceRatio instanceof Error) throw displayPriceRatio

@@ -1,6 +1,6 @@
 import { USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config"
 
-import { getCurrentPriceAsPriceRatio } from "@app/prices"
+import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
 
 import { ErrorLevel } from "@domain/shared"
 import { ActivityChecker } from "@domain/ledger"
@@ -16,7 +16,7 @@ export const getRecentlyActiveAccounts = async function* ():
   const unlockedAccounts = AccountsRepository().listUnlockedAccounts()
   if (unlockedAccounts instanceof Error) return unlockedAccounts
 
-  const displayPriceRatio = await getCurrentPriceAsPriceRatio({
+  const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
     currency: DisplayCurrency.Usd,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio

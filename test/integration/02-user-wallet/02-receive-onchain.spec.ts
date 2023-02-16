@@ -260,7 +260,7 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
       currency: DisplayCurrency.Usd,
     })
     if (displayPriceRatio instanceof Error) throw displayPriceRatio
@@ -285,7 +285,7 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
       currency: DisplayCurrency.Usd,
     })
     if (displayPriceRatio instanceof Error) throw displayPriceRatio

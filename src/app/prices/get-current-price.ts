@@ -66,7 +66,7 @@ const getCurrentPrice = async ({
   return cachedPrices[displayCurrency]
 }
 
-export const getCurrentPriceAsPriceRatio = async ({
+export const getCurrentPriceAsWalletPriceRatio = async ({
   currency,
 }: GetCurrentSatPriceArgs): Promise<WalletPriceRatio | PriceServiceError> => {
   const price = await getCurrentSatPrice({ currency })

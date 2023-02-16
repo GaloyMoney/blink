@@ -372,7 +372,7 @@ const testExternalSend = async ({
     // ===
     const amountForNotification = sendAll ? amountToSend - fee : amountToSend
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
       currency: DisplayCurrency.Usd,
     })
     if (displayPriceRatio instanceof Error) return displayPriceRatio
@@ -1026,7 +1026,7 @@ describe("BtcWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
       currency: DisplayCurrency.Usd,
     })
     if (displayPriceRatio instanceof Error) throw displayPriceRatio
