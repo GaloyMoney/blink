@@ -4,6 +4,8 @@ type DisplayCurrencyBaseAmount = number & { readonly brand: unique symbol }
 type DisplayCurrency =
   | typeof import(".").DisplayCurrency[keyof typeof import(".").DisplayCurrency]
   | (string & { readonly brand: unique symbol })
+type CurrencyMajorExponent =
+  typeof import("./index").MajorExponent[keyof typeof import("./index").MajorExponent]
 
 // TODO: a better way to type it can be:
 // <T extends Satoshis | UsdCents> someFunction({amount}: {amount: T})

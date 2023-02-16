@@ -9,10 +9,6 @@ type WalletCurrency =
 type ExchangeCurrencyUnit =
   typeof import("./primitives").ExchangeCurrencyUnit[keyof typeof import("./primitives").ExchangeCurrencyUnit]
 
-type CurrencyMajorExponent = bigint & {
-  readonly brand?: unique symbol
-}
-
 type DisplayCurrencyMajorAmount = string & {
   readonly brand?: unique symbol
 }
