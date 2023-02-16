@@ -141,7 +141,7 @@ describe("LnFees", () => {
           maxFeeAmount: calc.add(validUsdMaxFeeInBtcToVerify, ONE_SAT),
           btcPaymentAmount: ONE_SAT,
           priceRatio,
-          senderWalletCurrency: WalletCurrency.Btc,
+          senderWalletCurrency: WalletCurrency.Usd,
         }),
       ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
     })
