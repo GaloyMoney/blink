@@ -273,7 +273,7 @@ interface ILightningService {
   }: {
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
-    maxFeeAmount: BtcPaymentAmount
+    maxFeeAmount: BtcPaymentAmount | undefined
   }): Promise<PayInvoiceResult | LightningServiceError>
 }
 

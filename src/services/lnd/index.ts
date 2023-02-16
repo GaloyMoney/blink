@@ -628,10 +628,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }: {
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
-    maxFeeAmount: BtcPaymentAmount
+    maxFeeAmount: BtcPaymentAmount | undefined
   }): Promise<PayInvoiceResult | LightningServiceError> => {
     const milliSatsAmount = btcPaymentAmount.amount * 1000n
-    const maxFee = maxFeeAmount.amount
+    const maxFee = maxFeeAmount !== undefined ? Number(maxFeeAmount.amount) : undefined
 
     let routes: RawHopWithStrings[][] = []
     if (decodedInvoice.routeHints) {
@@ -652,7 +652,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       destination: decodedInvoice.destination,
       mtokens: milliSatsAmount.toString(),
       payment: decodedInvoice.paymentSecret as string,
-      max_fee: Number(maxFee),
+      max_fee: maxFee,
       cltv_delta: decodedInvoice.cltvDelta || undefined,
       features: decodedInvoice.features
         ? decodedInvoice.features.map((f) => ({
