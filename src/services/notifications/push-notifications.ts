@@ -2,6 +2,7 @@ import * as admin from "firebase-admin"
 
 import {
   InvalidDeviceNotificationsServiceError,
+  NotificationsServiceBadGatewayError,
   UnknownNotificationsServiceError,
 } from "@domain/notifications"
 import { baseLogger } from "@services/logger"
@@ -83,7 +84,7 @@ const sendToDevice = async (
     })
 
     logger.error({ err, tokens, message }, "impossible to send notification")
-    return new UnknownNotificationsServiceError(err?.message)
+    return handleCommonNotificationErrors(err)
   }
 }
 
@@ -118,3 +119,21 @@ export const PushNotificationsService = (): IPushNotificationsService => {
 
   return { sendNotification }
 }
+
+export const handleCommonNotificationErrors = (err: Error | string) => {
+  const errMsg = typeof err === "string" ? err : err.message
+
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
+
+  switch (true) {
+    case match(KnownNotificationErrorMessages.GoogleBadGatewayError):
+      return new NotificationsServiceBadGatewayError(errMsg)
+
+    default:
+      return new UnknownNotificationsServiceError(errMsg)
+  }
+}
+
+export const KnownNotificationErrorMessages = {
+  GoogleBadGatewayError: /Raw server response .* Error 502/,
+} as const

@@ -4,6 +4,9 @@ export class NotificationsError extends DomainError {}
 
 export class NotificationsServiceError extends NotificationsError {}
 export class InvalidDeviceNotificationsServiceError extends NotificationsServiceError {}
+export class NotificationsServiceBadGatewayError extends NotificationsServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownNotificationsServiceError extends NotificationsError {
   level = ErrorLevel.Critical
 }
