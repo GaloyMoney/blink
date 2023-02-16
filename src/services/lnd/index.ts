@@ -625,23 +625,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
     decodedInvoice,
     btcPaymentAmount,
     maxFeeAmount,
-    priceRatio,
-    senderWalletCurrency,
   }: {
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount
-    priceRatio: PriceRatio
-    senderWalletCurrency: WalletCurrency
   }): Promise<PayInvoiceResult | LightningServiceError> => {
-    const maxFeeCheck = LnFees().verifyMaxFee({
-      maxFeeToVerify: maxFeeAmount,
-      btcPaymentAmount,
-      priceRatio,
-      senderWalletCurrency,
-    })
-    if (maxFeeCheck instanceof Error) return maxFeeCheck
-
     const milliSatsAmount = btcPaymentAmount.amount * 1000n
     const maxFee = maxFeeAmount.amount
 

@@ -35,28 +35,22 @@ export const LnFees = () => {
   }
 
   const verifyMaxFee = ({
-    maxFeeToVerify,
+    maxFeeAmount,
     btcPaymentAmount,
     priceRatio,
     senderWalletCurrency,
   }: {
-    maxFeeToVerify: BtcPaymentAmount
+    maxFeeAmount: BtcPaymentAmount
     btcPaymentAmount: BtcPaymentAmount
     priceRatio: PriceRatio
     senderWalletCurrency: WalletCurrency
   }) => {
-    const maxFeeAmount = maxProtocolAndBankFee(btcPaymentAmount)
-    const minFeeAmount = priceRatio.convertFromUsd(ONE_CENT)
-    console.log("HERE 0:", {
-      maxFeeToVerify,
-      maxFeeAmount,
-      minFeeAmount,
-      senderWalletCurrency,
-    })
+    const calculatedMaxFeeAmount = maxProtocolAndBankFee(btcPaymentAmount)
+    const calculatedMinFeeAmount = priceRatio.convertFromUsd(ONE_CENT)
     if (
       (senderWalletCurrency === WalletCurrency.Btc ||
-        maxFeeToVerify.amount > minFeeAmount.amount) &&
-      maxFeeToVerify.amount > maxFeeAmount.amount
+        maxFeeAmount.amount > calculatedMinFeeAmount.amount) &&
+      maxFeeAmount.amount > calculatedMaxFeeAmount.amount
     ) {
       return new MaxFeeTooLargeForRoutelessPaymentError()
     }

@@ -2,137 +2,16 @@ import { createInvoice, getChannel, getChannels, pay } from "lightning"
 
 import { LndService } from "@services/lnd"
 
-import {
-  decodeInvoice,
-  MaxFeeTooLargeForRoutelessPaymentError,
-  RouteNotFoundError,
-} from "@domain/bitcoin/lightning"
-import { LnFees, PriceRatio } from "@domain/payments"
-import { AmountCalculator, ONE_CENT, ONE_SAT, WalletCurrency } from "@domain/shared"
-import { FEECAP_BASIS_POINTS } from "@domain/bitcoin"
+import { decodeInvoice, RouteNotFoundError } from "@domain/bitcoin/lightning"
 
 import { sleep } from "@utils"
 
 import { lndOutside1, lndOutside3, setChannelFees } from "test/helpers"
 
-const calc = AmountCalculator()
-
 const lndService = LndService()
 if (lndService instanceof Error) throw lndService
 
 describe("LndService", () => {
-  describe("payInvoiceViaPaymentDetails", () => {
-    const btcPaymentAmount = { amount: 50_000n, currency: WalletCurrency.Btc }
-    const usdPaymentAmount = {
-      amount: calc.divRound(btcPaymentAmount, FEECAP_BASIS_POINTS).amount,
-      currency: WalletCurrency.Usd,
-    }
-
-    const priceRatio = PriceRatio({
-      btc: btcPaymentAmount,
-      usd: usdPaymentAmount,
-    })
-    if (priceRatio instanceof Error) throw priceRatio
-
-    it("pays with fee at the max limit for BTC wallet", async () => {
-      const { request } = await createInvoice({ lnd: lndOutside1 })
-      const decodedInvoice = decodeInvoice(request)
-      if (decodedInvoice instanceof Error) throw decodedInvoice
-
-      const paid = await lndService.payInvoiceViaPaymentDetails({
-        decodedInvoice,
-        btcPaymentAmount,
-        maxFeeAmount: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
-        priceRatio,
-        senderWalletCurrency: WalletCurrency.Btc,
-      })
-      expect(paid).not.toBeInstanceOf(Error)
-    })
-
-    it("pays with fee at the max limit for USD wallet", async () => {
-      const { request } = await createInvoice({ lnd: lndOutside1 })
-      const decodedInvoice = decodeInvoice(request)
-      if (decodedInvoice instanceof Error) throw decodedInvoice
-
-      const paid = await lndService.payInvoiceViaPaymentDetails({
-        decodedInvoice,
-        btcPaymentAmount,
-        maxFeeAmount: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
-        priceRatio,
-        senderWalletCurrency: WalletCurrency.Usd,
-      })
-      expect(paid).not.toBeInstanceOf(Error)
-    })
-
-    it("pays 1 sat with fee at the min limit for USD wallet", async () => {
-      const { request } = await createInvoice({ lnd: lndOutside1 })
-      const decodedInvoice = decodeInvoice(request)
-      if (decodedInvoice instanceof Error) throw decodedInvoice
-
-      const minFeeAmountForUsd = priceRatio.convertFromUsd(ONE_CENT)
-      const maxFeeAmountForBtc = LnFees().maxProtocolAndBankFee(ONE_SAT)
-      expect(minFeeAmountForUsd.amount).toBeGreaterThan(maxFeeAmountForBtc.amount)
-
-      const paid = await lndService.payInvoiceViaPaymentDetails({
-        decodedInvoice,
-        btcPaymentAmount: ONE_SAT,
-        maxFeeAmount: minFeeAmountForUsd,
-        priceRatio,
-        senderWalletCurrency: WalletCurrency.Usd,
-      })
-      expect(paid).not.toBeInstanceOf(Error)
-    })
-
-    it("pays 1 sat with fee at the max limit for BTC wallet", async () => {
-      const { request } = await createInvoice({ lnd: lndOutside1 })
-      const decodedInvoice = decodeInvoice(request)
-      if (decodedInvoice instanceof Error) throw decodedInvoice
-
-      const paid = await lndService.payInvoiceViaPaymentDetails({
-        decodedInvoice,
-        btcPaymentAmount: ONE_SAT,
-        maxFeeAmount: LnFees().maxProtocolAndBankFee(ONE_SAT),
-        priceRatio,
-        senderWalletCurrency: WalletCurrency.Usd,
-      })
-      expect(paid).not.toBeInstanceOf(Error)
-    })
-
-    it("fails to pay with fee above max limit", async () => {
-      const { request } = await createInvoice({ lnd: lndOutside1 })
-      const decodedInvoice = decodeInvoice(request)
-      if (decodedInvoice instanceof Error) throw decodedInvoice
-
-      const feeAmount = LnFees().maxProtocolAndBankFee(btcPaymentAmount)
-
-      const paid = await lndService.payInvoiceViaPaymentDetails({
-        decodedInvoice,
-        btcPaymentAmount,
-        maxFeeAmount: calc.add(feeAmount, ONE_SAT),
-        priceRatio,
-        senderWalletCurrency: WalletCurrency.Btc,
-      })
-      expect(paid).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
-    })
-
-    it("fails to pay 1 sat with fee above max limit", async () => {
-      const { request } = await createInvoice({ lnd: lndOutside1 })
-      const decodedInvoice = decodeInvoice(request)
-      if (decodedInvoice instanceof Error) throw decodedInvoice
-
-      const feeAmount = LnFees().maxProtocolAndBankFee(ONE_SAT)
-
-      const paid = await lndService.payInvoiceViaPaymentDetails({
-        decodedInvoice,
-        btcPaymentAmount: ONE_SAT,
-        maxFeeAmount: calc.add(feeAmount, ONE_SAT),
-        priceRatio,
-        senderWalletCurrency: WalletCurrency.Btc,
-      })
-      expect(paid).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
-    })
-  })
-
   describe("findRouteForInvoice", () => {
     const lndService = LndService()
     if (lndService instanceof Error) throw lndService
