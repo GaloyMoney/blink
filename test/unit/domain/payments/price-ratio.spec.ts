@@ -1,9 +1,12 @@
 import { WalletCurrency } from "@domain/shared"
 import {
+  DisplayPriceRatio,
   InvalidZeroAmountPriceRatioInputError,
   PriceRatio,
   toWalletPriceRatio,
+  WalletPriceRatio,
 } from "@domain/payments"
+import { DisplayCurrency, MajorExponent } from "@domain/fiat"
 
 describe("PriceRatio", () => {
   const otherQuoteAmount = 100n
@@ -310,6 +313,146 @@ describe("PriceRatio", () => {
     })
     expect(priceRatio).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
   })
+})
+
+describe("WalletPriceRatio", () => {
+  const usdQuoteAmount = {
+    amount: 100n,
+    currency: WalletCurrency.Usd,
+  }
+  const btcQuoteAmount = {
+    amount: 1000n,
+    currency: WalletCurrency.Btc,
+  }
+  const walletPriceRatio = WalletPriceRatio({ usd: usdQuoteAmount, btc: btcQuoteAmount })
+  if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+  it("convertFromUsd", () => {
+    const result = walletPriceRatio.convertFromUsd({
+      amount: 40n,
+      currency: WalletCurrency.Usd,
+    })
+
+    expect(result).toStrictEqual({
+      amount: 400n,
+      currency: WalletCurrency.Btc,
+    })
+  })
+
+  it("convertFromBtc", () => {
+    const result = walletPriceRatio.convertFromBtc({
+      amount: 401n,
+      currency: WalletCurrency.Btc,
+    })
+
+    expect(result).toStrictEqual({
+      amount: 40n,
+      currency: WalletCurrency.Usd,
+    })
+  })
+
+  it("convertFromBtcToFloor", () => {
+    const result = walletPriceRatio.convertFromBtcToFloor({
+      amount: 401n,
+      currency: WalletCurrency.Btc,
+    })
+
+    expect(result).toStrictEqual({
+      amount: 40n,
+      currency: WalletCurrency.Usd,
+    })
+  })
+
+  it("convertFromBtcToCeil", () => {
+    const result = walletPriceRatio.convertFromBtcToCeil({
+      amount: 401n,
+      currency: WalletCurrency.Btc,
+    })
+
+    expect(result).toStrictEqual({
+      amount: 41n,
+      currency: WalletCurrency.Usd,
+    })
+  })
+
+  it("usdPerSat", () => expect(walletPriceRatio.usdPerSat()).toEqual(0.1))
+})
+
+describe("DisplayPriceRatio", () => {
+  const displayQuoteAmount = {
+    amount: 100,
+    currency: DisplayCurrency.Usd,
+  }
+  const btcQuoteAmount = {
+    amount: 1000n,
+    currency: WalletCurrency.Btc,
+  }
+  const displayPriceRatio = DisplayPriceRatio({
+    displayAmountInMinorUnit: displayQuoteAmount,
+    btcWalletAmount: btcQuoteAmount,
+    majorExponent: MajorExponent.STANDARD,
+  })
+  if (displayPriceRatio instanceof Error) throw displayPriceRatio
+
+  it("convertFromDisplayMinorUnit", () => {
+    const result = displayPriceRatio.convertFromDisplayMinorUnit({
+      amount: 40,
+      currency: DisplayCurrency.Usd,
+    })
+
+    expect(result).toStrictEqual({
+      amount: 400n,
+      currency: WalletCurrency.Btc,
+    })
+  })
+
+  it("convertFromBtc", () => {
+    const result = displayPriceRatio.convertFromBtc({
+      amount: 401n,
+      currency: WalletCurrency.Btc,
+    })
+
+    expect(result).toStrictEqual({
+      valueInMinor: {
+        amount: 40,
+        currency: DisplayCurrency.Usd,
+      },
+      displayInMajor: "0.40",
+    })
+  })
+
+  it("convertFromBtcToFloor", () => {
+    const result = displayPriceRatio.convertFromBtcToFloor({
+      amount: 401n,
+      currency: WalletCurrency.Btc,
+    })
+
+    expect(result).toStrictEqual({
+      valueInMinor: {
+        amount: 40,
+        currency: DisplayCurrency.Usd,
+      },
+      displayInMajor: "0.40",
+    })
+  })
+
+  it("convertFromBtcToCeil", () => {
+    const result = displayPriceRatio.convertFromBtcToCeil({
+      amount: 401n,
+      currency: WalletCurrency.Btc,
+    })
+
+    expect(result).toStrictEqual({
+      valueInMinor: {
+        amount: 41,
+        currency: DisplayCurrency.Usd,
+      },
+      displayInMajor: "0.41",
+    })
+  })
+
+  it("displayMinorUnitPerSat", () =>
+    expect(displayPriceRatio.displayMinorUnitPerSat()).toEqual(0.1))
 })
 
 describe("to WalletPriceRatio from float ratio", () => {
