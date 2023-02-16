@@ -12,6 +12,7 @@ import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
   InvalidLightningPaymentFlowBuilderStateError,
+  LnFees,
   LnPaymentRequestInTransitError,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
@@ -568,17 +569,29 @@ const executePaymentViaLn = async ({
     if (journal instanceof Error) return journal
     const { journalId } = journal
 
-    const payResult = rawRoute
-      ? await lndService.payInvoiceViaRoutes({
-          paymentHash,
-          rawRoute,
-          pubkey: outgoingNodePubkey,
-        })
-      : await lndService.payInvoiceViaPaymentDetails({
-          decodedInvoice,
-          btcPaymentAmount: paymentFlow.btcPaymentAmount,
-          maxFeeAmount: paymentFlow.btcProtocolAndBankFee,
-        })
+    let payResult: PayInvoiceResult | LightningServiceError
+    if (rawRoute) {
+      payResult = await lndService.payInvoiceViaRoutes({
+        paymentHash,
+        rawRoute,
+        pubkey: outgoingNodePubkey,
+      })
+    } else {
+      const maxFeeCheckArgs = {
+        maxFeeAmount: paymentFlow.btcProtocolAndBankFee,
+        btcPaymentAmount: paymentFlow.btcPaymentAmount,
+        priceRatio,
+        senderWalletCurrency: paymentFlow.senderWalletDescriptor().currency,
+      }
+
+      const maxFeeCheck = LnFees().verifyMaxFee(maxFeeCheckArgs)
+      if (maxFeeCheck instanceof Error) return maxFeeCheck
+
+      payResult = await lndService.payInvoiceViaPaymentDetails({
+        ...maxFeeCheckArgs,
+        decodedInvoice,
+      })
+    }
 
     // Fire-and-forget update to 'lnPayments' collection
     if (!(payResult instanceof LnAlreadyPaidError)) {
