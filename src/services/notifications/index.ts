@@ -2,16 +2,15 @@ import { toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
-import {
-  NotificationsServiceError,
-  NotificationType,
-  UnknownNotificationsServiceError,
-} from "@domain/notifications"
+import { NotificationsServiceError, NotificationType } from "@domain/notifications"
 
 import { PubSubService } from "@services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
-import { PushNotificationsService } from "./push-notifications"
+import {
+  handleCommonNotificationErrors,
+  PushNotificationsService,
+} from "./push-notifications"
 import { createPushNotificationContent } from "./create-push-notification-content"
 
 export const NotificationsService = (): INotificationsService => {
@@ -69,7 +68,7 @@ export const NotificationsService = (): INotificationsService => {
         })
       }
     } catch (err) {
-      return new UnknownNotificationsServiceError(err.message || err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -125,7 +124,7 @@ export const NotificationsService = (): INotificationsService => {
         })
       }
     } catch (err) {
-      return new UnknownNotificationsServiceError(err.message || err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -189,7 +188,7 @@ export const NotificationsService = (): INotificationsService => {
         })
       }
     } catch (err) {
-      return new UnknownNotificationsServiceError(err.message || err)
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -293,7 +292,7 @@ export const NotificationsService = (): INotificationsService => {
         body,
       })
     } catch (err) {
-      return new UnknownNotificationsServiceError(err.message || err)
+      return handleCommonNotificationErrors(err)
     }
   }
 

@@ -495,6 +495,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LikelyUserAlreadyExistError":
     case "PhoneIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
+    case "NotificationsServiceBadGatewayError":
     case "InvalidDeviceTokenError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
