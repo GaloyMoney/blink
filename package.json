@@ -137,7 +137,7 @@
     "@types/node": "^18.13.0",
     "@types/nodemon": "^1.19.2",
     "@types/prettier": "^2.7.2",
-    "@typescript-eslint/eslint-plugin": "^5.51.0",
+    "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "@xascode/tscpaths": "0.1.4",
     "axios-mock-adapter": "^1.21.2",
