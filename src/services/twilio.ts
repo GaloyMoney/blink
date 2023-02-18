@@ -118,6 +118,9 @@ const handleCommonErrors = (err: Error | string) => {
     case match(KnownTwilioErrorMessages.InvalidPhoneNumberParameter):
       return new InvalidPhoneNumberPhoneProviderError(errMsg)
 
+    case match(KnownTwilioErrorMessages.InvalidCodeParameter):
+      return new PhoneCodeInvalidError(errMsg)
+
     case match(KnownTwilioErrorMessages.RestrictedRegion):
     case match(KnownTwilioErrorMessages.CountryNeedsVetting):
     case match(KnownTwilioErrorMessages.BlockedRegion):
@@ -144,6 +147,7 @@ export const KnownTwilioErrorMessages = {
   InvalidPhoneNumber: /not a valid phone number/,
   InvalidMobileNumber: /not a mobile number/,
   InvalidPhoneNumberParameter: /Invalid parameter `To`/,
+  InvalidCodeParameter: /Invalid parameter: Code/,
   RestrictedRegion: /has not been enabled for the region/,
   CountryNeedsVetting: /require use case vetting/,
   UnsubscribedRecipient: /unsubscribed recipient/,
