@@ -10,7 +10,7 @@ import RealtimePrice from "@graphql/types/object/realtime-price"
 import DisplayCurrencyGT from "@graphql/types/scalar/display-currency"
 
 const RealtimePriceQuery = GT.Field({
-  type: RealtimePrice,
+  type: GT.NonNull(RealtimePrice),
   description: `Returns 1 Sat and 1 Usd Cent price for the given currency`,
   args: {
     currency: {
