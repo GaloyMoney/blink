@@ -84,7 +84,7 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
   if (error instanceof Error || !result?.slice) {
     throw error
   }
-  const onchainAddress = await Wallets.getLastOnChainAddressForBtcWallet(walletId)
+  const onchainAddress = await Wallets.getLastOnChainAddress(walletId)
   if (onchainAddress instanceof Error) {
     throw onchainAddress
   }

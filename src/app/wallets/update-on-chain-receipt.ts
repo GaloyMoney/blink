@@ -30,10 +30,8 @@ import { NotificationsService } from "@services/notifications"
 import { DealerPriceService } from "@services/dealer-price"
 import * as LedgerFacade from "@services/ledger/facade"
 
-import {
-  createOnChainAddressForBtcWallet,
-  createOnChainAddressForUsdWallet,
-} from "./create-on-chain-address"
+import { getLastOnChainAddress } from "./get-last-on-chain-address"
+import { createOnChainAddressByWallet } from "./create-on-chain-address"
 
 const redisCache = RedisCacheService()
 
@@ -238,14 +236,11 @@ const processTxForWallet = async (
             recipientLanguage: recipientUser.language,
           })
 
-          if (wallet.currency === WalletCurrency.Btc) {
-            const newAddress = await createOnChainAddressForBtcWallet(wallet.id)
+          const currentAddress = await getLastOnChainAddress(wallet.id)
+          if (address === currentAddress) {
+            const newAddress = await createOnChainAddressByWallet(wallet)
             if (newAddress instanceof Error) return newAddress
-            return
           }
-
-          const newAddress = await createOnChainAddressForUsdWallet(wallet.id)
-          if (newAddress instanceof Error) return newAddress
         }
       }
     }

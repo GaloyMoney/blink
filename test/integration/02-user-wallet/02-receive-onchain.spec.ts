@@ -104,7 +104,7 @@ describe("FunderWallet - On chain", () => {
 describe("UserWallet - On chain", () => {
   it("get last on chain address", async () => {
     const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
-    const lastAddress = await Wallets.getLastOnChainAddressForBtcWallet(walletIdA)
+    const lastAddress = await Wallets.getLastOnChainAddress(walletIdA)
 
     expect(address).not.toBeInstanceOf(Error)
     expect(lastAddress).not.toBeInstanceOf(Error)

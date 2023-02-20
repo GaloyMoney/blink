@@ -25,7 +25,7 @@ const OnChainAddressCurrentMutation = GT.Field({
       return { errors: [{ message: walletId.message }] }
     }
 
-    const address = await Wallets.getLastOnChainAddressForBtcWallet(walletId)
+    const address = await Wallets.getLastOnChainAddress(walletId)
     if (address instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(address)] }
     }
