@@ -62,7 +62,8 @@ const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
 authRouter.post(
   "/validatetoken",
   wrapAsyncToRunInSpan({
-    namespace: "validatetoken",
+    namespace: "servers.middlewares.authRouter",
+    fnName: "validatetoken",
     fn: async (req: express.Request, res: express.Response) => {
       const headers = req?.headers
       let tokenPayload: string | jwt.JwtPayload | null = null
@@ -123,30 +124,36 @@ authRouter.post(
 authRouter.post(
   "/login",
   wrapAsyncToRunInSpan({
-    namespace: "auth-router",
+    namespace: "servers.middlewares.authRouter",
+    fnName: "login",
     fn: async (req: express.Request, res: express.Response) => {
+      const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
+      const ip = parseIps(ipString)
+      if (ip === undefined) {
+        throw new Error("IP is not defined")
+      }
+      const code = req.body.authCode
+      const phone = checkedToPhoneNumber(req.body.phoneNumber)
+      if (phone instanceof Error) return res.status(400).send("invalid phone")
+      let cookies
+      let kratosUserId
       try {
-        const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
-        const ip = parseIps(ipString)
-        if (ip === undefined) {
-          throw new Error("IP is not defined")
-        }
-
-        const code = req.body.authCode
-        const phone = checkedToPhoneNumber(req.body.phoneNumber)
-        if (phone instanceof Error) return res.status(400).send("invalid phone")
-
         const loginResp = await Auth.loginWithPhoneCookie({
           phone,
           code,
           ip,
         })
-
         if (loginResp instanceof Error) {
           return res.status(500).send({ error: mapError(loginResp).message })
         }
+        cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
+        kratosUserId = loginResp.kratosUserId
+      } catch (e) {
+        addAttributesToCurrentSpan({ cookieLoginError: e })
+        return res.status(500).send({ result: "Error logging in" })
+      }
 
-        const cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
+      try {
         const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
         const kratosSessionCookie = cookies?.find((c) =>
           c.name.includes("ory_kratos_session"),
@@ -156,7 +163,6 @@ authRouter.post(
             .status(500)
             .send({ error: "Missing csrf or ory_kratos_session cookie" })
         }
-
         res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
           maxAge: kratosSessionCookie.maxAge,
           sameSite: "none",
@@ -165,7 +171,6 @@ authRouter.post(
           path: kratosSessionCookie.path,
           expires: kratosSessionCookie.expires,
         })
-
         res.cookie(csrfCookie.name, csrfCookie.value, {
           maxAge: csrfCookie.maxAge,
           sameSite: "none",
@@ -174,18 +179,18 @@ authRouter.post(
           path: csrfCookie.path,
           expires: csrfCookie.expires,
         })
-
-        res.send({
-          identity: {
-            id: loginResp.kratosUserId,
-            uid: loginResp.kratosUserId,
-            phoneNumber: phone,
-          },
-        })
       } catch (e) {
-        addAttributesToCurrentSpan({ cookieLoginError: e })
-        return res.status(500).send({ result: "Error logging in" })
+        addAttributesToCurrentSpan({ cookieParsingError: e })
+        return res.status(500).send({ result: "Error parsing cookies" })
       }
+
+      res.send({
+        identity: {
+          id: kratosUserId,
+          uid: kratosUserId,
+          phoneNumber: phone,
+        },
+      })
     },
   }),
 )
@@ -201,17 +206,18 @@ authRouter.post(
 authRouter.get(
   "/logout",
   wrapAsyncToRunInSpan({
-    namespace: "auth-router",
+    namespace: "servers.middlewares.authRouter",
+    fnName: "logout",
     fn: async (req: express.Request, res: express.Response) => {
+      let reqCookie = req.headers?.cookie
+      if (!reqCookie) {
+        return res
+          .status(500)
+          .send({ error: "Missing csrf or ory_kratos_session cookie" })
+      }
       try {
-        let reqCookie = req.headers.cookie
-        if (!reqCookie) {
-          return res
-            .status(500)
-            .send({ error: "Missing csrf or ory_kratos_session cookie" })
-        }
         reqCookie = decodeURIComponent(reqCookie)
-        const logoutResp = await logoutCookie(reqCookie as KratosCookie)
+        const logoutResp = await logoutCookie(reqCookie as SessionCookie)
         if (logoutResp instanceof Error)
           return res.status(500).send({ error: logoutResp.message })
         // manually clear all cookies for the client
@@ -223,7 +229,7 @@ authRouter.get(
         })
       } catch (e) {
         addAttributesToCurrentSpan({ cookieLogoutError: e })
-        return res.status(500).send({ error: "Error Logging out" })
+        return res.status(500).send({ error: "Error logging out" })
       }
     },
   }),

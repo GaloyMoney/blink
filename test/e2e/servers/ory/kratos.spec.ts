@@ -642,7 +642,7 @@ describe("cookie flow", () => {
     expect(res).toHaveProperty("kratosUserId")
     expect(res).toHaveProperty("cookiesToSendBackToClient")
 
-    const cookies: Array<KratosCookie> = res.cookiesToSendBackToClient
+    const cookies: Array<SessionCookie> = res.cookiesToSendBackToClient
     let cookieStr = ""
     for (const cookie of cookies) {
       cookieStr = cookieStr + cookie + "; "

@@ -12,7 +12,7 @@ export const logoutToken = async (
 }
 
 export const logoutCookie = async (
-  cookie: KratosCookie,
+  cookie: SessionCookie,
 ): Promise<boolean | ApplicationError> => {
   const authService = AuthWithPhonePasswordlessService()
   const kratosResult = await authService.logoutCookie(cookie)
