@@ -7,7 +7,11 @@ import { Auth } from "@app"
 import { isDev, JWT_SECRET } from "@config"
 
 import { mapError } from "@graphql/error-map"
-import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
 
 import { validateKratosToken } from "@services/kratos"
 import { kratosPublic } from "@services/kratos/private"
@@ -135,22 +139,23 @@ authRouter.post(
       const code = req.body.authCode
       const phone = checkedToPhoneNumber(req.body.phoneNumber)
       if (phone instanceof Error) return res.status(400).send("invalid phone")
+      const loginResp = await Auth.loginWithPhoneCookie({
+        phone,
+        code,
+        ip,
+      })
+      if (loginResp instanceof Error) {
+        return res.status(500).send({ error: mapError(loginResp).message })
+      }
+
       let cookies
       let kratosUserId
       try {
-        const loginResp = await Auth.loginWithPhoneCookie({
-          phone,
-          code,
-          ip,
-        })
-        if (loginResp instanceof Error) {
-          return res.status(500).send({ error: mapError(loginResp).message })
-        }
         cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
         kratosUserId = loginResp.kratosUserId
-      } catch (e) {
-        addAttributesToCurrentSpan({ cookieLoginError: e })
-        return res.status(500).send({ result: "Error logging in" })
+      } catch (err) {
+        recordExceptionInCurrentSpan({ error: err })
+        return res.status(500).send({ error: "Error parsing cookies" })
       }
 
       try {
@@ -179,8 +184,8 @@ authRouter.post(
           path: csrfCookie.path,
           expires: csrfCookie.expires,
         })
-      } catch (e) {
-        addAttributesToCurrentSpan({ cookieParsingError: e })
+      } catch (err) {
+        recordExceptionInCurrentSpan({ error: err })
         return res.status(500).send({ result: "Error parsing cookies" })
       }
 
@@ -227,8 +232,8 @@ authRouter.get(
         return res.status(200).send({
           result: "logout successful",
         })
-      } catch (e) {
-        addAttributesToCurrentSpan({ cookieLogoutError: e })
+      } catch (err) {
+        recordExceptionInCurrentSpan({ error: err })
         return res.status(500).send({ error: "Error logging out" })
       }
     },

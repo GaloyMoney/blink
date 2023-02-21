@@ -77,14 +77,19 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     const parsedCookies = setCookie.parse(flow.headers["set-cookie"])
     const csrfCookie = parsedCookies?.find((c) => c.name.includes("csrf"))
     if (!csrfCookie) return new KratosError("Could not find csrf cookie")
-    const cookie = libCookie.serialize(csrfCookie.name, csrfCookie.value, {
-      expires: csrfCookie.expires,
-      maxAge: csrfCookie.maxAge,
-      sameSite: "none",
-      secure: csrfCookie.secure,
-      httpOnly: csrfCookie.httpOnly,
-      path: csrfCookie.path,
-    })
+    let cookie
+    try {
+      cookie = libCookie.serialize(csrfCookie.name, csrfCookie.value, {
+        expires: csrfCookie.expires,
+        maxAge: csrfCookie.maxAge,
+        sameSite: "none",
+        secure: csrfCookie.secure,
+        httpOnly: csrfCookie.httpOnly,
+        path: csrfCookie.path,
+      })
+    } catch (err) {
+      return new UnknownKratosError(err.message || err)
+    }
 
     const identifier = phone
     const method = "password"
