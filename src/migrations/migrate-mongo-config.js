@@ -1,9 +1,15 @@
-const user = process.env.MONGODB_USER ?? "testGaloy"
-const password = process.env.MONGODB_PASSWORD ?? "password"
+const user = process.env.MONGODB_USER
+const password = process.env.MONGODB_PASSWORD
 const address = process.env.MONGODB_ADDRESS ?? "localhost"
 const db = process.env.MONGODB_DATABASE ?? "galoy"
 
-const url = `mongodb://${user}:${password}@${address}/${db}`
+let url
+if (user && password) {
+  url = `mongodb://${user}:${password}@${address}/${db}`
+} else {
+  url = `mongodb://${address}/${db}`
+  console.log({ path: url }, "Connecting to MongoDB without a username and password")
+}
 
 const config = {
   mongodb: {

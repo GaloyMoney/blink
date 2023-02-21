@@ -144,7 +144,7 @@ export const googleApplicationCredentialsIsSet = (): boolean => {
 }
 
 export const mongodbCredentials = () => {
-  const user = process.env.MONGODB_USER ?? "testGaloy"
+  const user = process.env.MONGODB_USER
   const password = process.env.MONGODB_PASSWORD
   const address = process.env.MONGODB_ADDRESS ?? "mongodb"
   const db = process.env.MONGODB_DATABASE ?? "galoy"
