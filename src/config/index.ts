@@ -20,6 +20,7 @@ export const ONE_DAY = toDays(1)
 export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 
 export const SAT_PRICE_PRECISION_OFFSET = 12
+export const USD_PRICE_PRECISION_OFFSET = 6
 export const BTC_PRICE_PRECISION_OFFSET = 4
 
 export const MIN_SATS_FOR_PRICE_RATIO_PRECISION = 5000n

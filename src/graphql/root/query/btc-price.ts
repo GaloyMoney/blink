@@ -10,6 +10,7 @@ import Price from "@graphql/types/object/price"
 import DisplayCurrencyGT from "@graphql/types/scalar/display-currency"
 
 const BtcPriceQuery = GT.Field({
+  deprecationReason: "Deprecated in favor of realtimePrice",
   type: Price,
   args: {
     currency: { type: GT.NonNull(DisplayCurrencyGT), defaultValue: DisplayCurrency.Usd },

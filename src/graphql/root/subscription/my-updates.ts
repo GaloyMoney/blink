@@ -1,8 +1,8 @@
-import { SAT_PRICE_PRECISION_OFFSET } from "@config"
+import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
 
 import { Prices } from "@app"
 
-import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrency, majorToMinorUnit } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
 import { GT } from "@graphql/index"
@@ -12,6 +12,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import GraphQLUser from "@graphql/types/object/graphql-user"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
+import RealtimePrice from "@graphql/types/object/realtime-price"
 import OnChainTxHash from "@graphql/types/scalar/onchain-tx-hash"
 import { AuthenticationError, UnknownClientError } from "@graphql/error"
 import TxNotificationType from "@graphql/types/scalar/tx-notification-type"
@@ -62,7 +63,7 @@ const OnChainUpdate = GT.Object({
 
 const UserUpdate = GT.Union({
   name: "UserUpdate",
-  types: [Price, LnUpdate, OnChainUpdate, IntraLedgerUpdate],
+  types: [RealtimePrice, Price, LnUpdate, OnChainUpdate, IntraLedgerUpdate],
   resolveType: (obj) => obj.resolveType,
 })
 
@@ -76,7 +77,9 @@ const MyUpdatesPayload = GT.Object({
 })
 
 type MePayloadPrice = {
+  timestamp: Date
   centsPerSat: number
+  centsPerUsdCent: number
   displayCurrency: DisplayCurrency
 }
 
@@ -86,6 +89,21 @@ type MeResolvePrice = {
   offset: number
   currencyUnit: string
   formattedAmount: string
+}
+
+type IPrice = {
+  base: number
+  offset: number
+  currencyUnit: string
+}
+
+type MeResolveRealtimePrice = {
+  resolveType: "RealtimePrice"
+  id: string
+  timestamp: Date
+  denominatorCurrency: DisplayCurrency
+  btcSatPrice: IPrice
+  usdCentPrice: IPrice
 }
 
 type MeResolveLn = {
@@ -102,6 +120,7 @@ type MeResolveIntraLedger = {
 
 type MeResolveSource = {
   errors: IError[]
+  realtimePrice?: MePayloadPrice
   price?: MePayloadPrice
   invoice?: MeResolveLn
   transaction?: MeResolveOnChain
@@ -109,6 +128,7 @@ type MeResolveSource = {
 }
 
 type MeResolveUpdate =
+  | MeResolveRealtimePrice
   | MeResolvePrice
   | MeResolveLn
   | MeResolveOnChain
@@ -142,7 +162,8 @@ const MeSubscription = {
 
     // non auth request
 
-    if (source.price) {
+    // This will be deprecated but while we update the app must return only USD updates
+    if (source.price && source.price.displayCurrency === DisplayCurrency.Usd) {
       return userPayload(null)({
         resolveType: "Price",
         base: Math.round(source.price.centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
@@ -160,8 +181,26 @@ const MeSubscription = {
     }
 
     // authed request
-
     const myPayload = userPayload(ctx.domainAccount)
+    if (source.realtimePrice) {
+      const { timestamp, displayCurrency, centsPerSat, centsPerUsdCent } =
+        source.realtimePrice
+      return myPayload({
+        resolveType: "RealtimePrice",
+        timestamp: new Date(timestamp),
+        denominatorCurrency: displayCurrency,
+        btcSatPrice: {
+          base: Math.round(centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
+          offset: SAT_PRICE_PRECISION_OFFSET,
+          currencyUnit: `${displayCurrency}CENT`,
+        },
+        usdCentPrice: {
+          base: Math.round(centsPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
+          offset: USD_PRICE_PRECISION_OFFSET,
+          currencyUnit: `${displayCurrency}CENT`,
+        },
+      })
+    }
 
     if (source.invoice) {
       return myPayload({ resolveType: "LnUpdate", ...source.invoice })
@@ -198,10 +237,23 @@ const MeSubscription = {
     })
 
     const pricePerSat = await Prices.getCurrentSatPrice({ currency: displayCurrency })
-    if (!(pricePerSat instanceof Error)) {
+    const pricePerUsdCent = await Prices.getCurrentUsdCentPrice({
+      currency: displayCurrency,
+    })
+    if (!(pricePerSat instanceof Error) && !(pricePerUsdCent instanceof Error)) {
+      const priceData = {
+        timestamp: pricePerSat.timestamp,
+        displayCurrency,
+        centsPerSat: majorToMinorUnit(pricePerSat.price),
+        centsPerUsdCent: majorToMinorUnit(pricePerUsdCent.price),
+      }
       pubsub.publishImmediate({
         trigger: accountUpdatedTrigger,
-        payload: { price: { centsPerSat: 100 * pricePerSat.price, displayCurrency } },
+        payload: { price: priceData },
+      })
+      pubsub.publishImmediate({
+        trigger: accountUpdatedTrigger,
+        payload: { realtimePrice: priceData },
       })
     }
 

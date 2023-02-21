@@ -283,7 +283,15 @@ export const publishCurrentPrices = async () => {
     if (pricePerSat instanceof Error) {
       return logger.error({ err: pricePerSat }, "can't publish the price")
     }
-    NotificationsService().priceUpdate({ pricePerSat })
+
+    const pricePerUsdCent = await PricesWithSpans.getCurrentUsdCentPrice({
+      currency: displayCurrency,
+    })
+    if (pricePerUsdCent instanceof Error) {
+      return logger.error({ err: pricePerUsdCent }, "can't publish the price")
+    }
+
+    NotificationsService().priceUpdate({ pricePerSat, pricePerUsdCent })
   }
 }
 
