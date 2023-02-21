@@ -2230,10 +2230,10 @@
     "@grpc/proto-loader" "^0.7.0"
     "@types/node" ">=12.12.47"
 
-"@grpc/grpc-js@1.8.8", "@grpc/grpc-js@^1.8.8":
-  version "1.8.8"
-  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.8.8.tgz#a7c6765d0302f47ba67c0ce3cb79718d6b028248"
-  integrity sha512-4gfDqMLXTrorvYTKA1jL22zLvVwiHJ73t6Re1OHwdCFRjdGTDOVtSJuaWhtHaivyeDGg0LeCkmU77MTKoV3wPA==
+"@grpc/grpc-js@1.8.9", "@grpc/grpc-js@^1.8.8":
+  version "1.8.9"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.8.9.tgz#84e9167dc80b0c3a98608e14b839458bf0df684d"
+  integrity sha512-xzsl2HamhovnZddS/2pMF4Q+FgwINaBvxoFGQ+G54Lo7Xsge36VvfDO/TDkL7FofmrRK/X5weRvwlJh7rKwN4w==
   dependencies:
     "@grpc/proto-loader" "^0.7.0"
     "@types/node" ">=12.12.47"
@@ -8553,12 +8553,12 @@ lightning@7.0.3:
     tiny-secp256k1 "2.2.1"
     type-fest "3.5.1"
 
-lightning@^7.0.6:
-  version "7.0.6"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-7.0.6.tgz#5c2bce03b628ced2dca47f41b0b78de1cefc79a6"
-  integrity sha512-Bpbx8H9FqUwRps/UWS7sW16sm8UjS/gPKbEMFheRnHna4SBF+bWMiR3Ub/IfE80x+Vi12WZfGnWWR4IIRh1bzw==
+lightning@^7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-7.1.0.tgz#124b4b116cba1fc9af556324cbce73be71b2a827"
+  integrity sha512-+46PVhATqGB+t01RipPHj/uOavsnDdKbSBMSNAyAmn2Yo1+lJSp8nYJpr2mfMikMmNDiP3NbBJTSqNjNBknHBQ==
   dependencies:
-    "@grpc/grpc-js" "1.8.8"
+    "@grpc/grpc-js" "1.8.9"
     "@grpc/proto-loader" "0.7.5"
     "@types/express" "4.17.17"
     "@types/node" "18.13.0"
@@ -8577,7 +8577,7 @@ lightning@^7.0.6:
     invoices "2.2.3"
     psbt "2.7.2"
     tiny-secp256k1 "2.2.1"
-    type-fest "3.5.7"
+    type-fest "3.6.0"
 
 limiter@^1.1.5:
   version "1.1.5"
@@ -11845,10 +11845,10 @@ type-fest@3.5.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.5.1.tgz#9555ae435f560c1b4447b70bdd195bb2c86c6c92"
   integrity sha512-70T99cpILFk2fzwuljwWxmazSphFrdOe3gRHbp6bqs71pxFBbJwFqnmkLO2lQL6aLHxHmYAnP/sL+AJWpT70jA==
 
-type-fest@3.5.7, type-fest@^3.0.0:
-  version "3.5.7"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.5.7.tgz#1ee9efc9a172f4002c40b896689928a7bba537f2"
-  integrity sha512-6J4bYzb4sdkcLBty4XW7F18VPI66M4boXNE+CY40532oq2OJe6AVMB5NmjOp6skt/jw5mRjz/hLRpuglz0U+FA==
+type-fest@3.6.0, type-fest@^3.0.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.6.0.tgz#827c36c0e7fcff0cb2d55d091a5c4cf586432b8a"
+  integrity sha512-RqTRtKTzvPpNdDUp1dVkKQRunlPITk4mXeqFlAZoJsS+fLRn8AdPK0TcQDumGayhU7fjlBfiBjsq3pe3rIfXZQ==
 
 type-fest@^0.20.2:
   version "0.20.2"
