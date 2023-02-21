@@ -73,7 +73,7 @@ services:
       - DB_DEBUG=false
     depends_on: [postgres-price-history]
   redis:
-    image: bitnami/redis:7.0.7
+    image: redis:7.0.8
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
@@ -85,14 +85,9 @@ services:
     environment:
       - MONGODB_ADDRESS=mongodb
   mongodb:
-    image: bitnami/mongodb:5.0.10-debian-11-r3
+    image: mongo:5.0.10
     environment:
-      - MONGODB_PASSWORD=password
-      - MONGODB_USERNAME=testGaloy
-      - MONGODB_DATABASE=galoy
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_ROOT_PASSWORD=password
-      - MONGODB_REPLICA_SET_KEY=replicasetkey
+      - MONGO_INITDB_DATABASE=galoy
   postgres-price-history:
     image: postgres:14.1
     environment:
