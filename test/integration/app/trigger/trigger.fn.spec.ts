@@ -75,6 +75,7 @@ afterAll(async () => {
 type WalletState = {
   balance: CurrencyBaseAmount
   transactions: WalletTransaction[]
+  onchainAddress: OnChainAddress
 }
 
 const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
@@ -83,9 +84,14 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
   if (error instanceof Error || !result?.slice) {
     throw error
   }
+  const onchainAddress = await Wallets.getLastOnChainAddress(walletId)
+  if (onchainAddress instanceof Error) {
+    throw onchainAddress
+  }
   return {
     balance,
     transactions: result.slice,
+    onchainAddress,
   }
 }
 
@@ -99,9 +105,6 @@ describe("onchainBlockEventHandler", () => {
     await mineBlockAndSyncAll()
     const result = await Wallets.updateOnChainReceipt({ scanDepth, logger: baseLogger })
     if (result instanceof Error) throw result
-
-    const initWalletAState = await getWalletState(walletIdA)
-    const initWalletDState = await getWalletState(walletIdD)
 
     const initialBlock = await bitcoindClient.getBlockCount()
     let isFinalBlock = false
@@ -134,6 +137,9 @@ describe("onchainBlockEventHandler", () => {
     const finalizedPsbt = await bitcoindOutside.finalizePsbt({
       psbt: walletProcessPsbt.psbt,
     })
+
+    const initWalletAState = await getWalletState(walletIdA)
+    const initWalletDState = await getWalletState(walletIdD)
     await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
     await bitcoindOutside.generateToAddress({
       nblocks: blocksToMine,
@@ -161,7 +167,7 @@ describe("onchainBlockEventHandler", () => {
       amount: Satoshis
       address: string
     }) => {
-      const { balance, transactions } = await getWalletState(walletId)
+      const { balance, transactions, onchainAddress } = await getWalletState(walletId)
       const depositFeeRatio = userRecord.depositFeeRatio as DepositFeeRatio
       const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
       const lastTransaction = transactions[0]
@@ -176,6 +182,7 @@ describe("onchainBlockEventHandler", () => {
         address,
       )
       expect(balance).toBe(initialState.balance + finalAmount)
+      expect(onchainAddress).not.toBe(initialState.onchainAddress)
     }
 
     await validateWalletState({

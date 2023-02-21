@@ -30,6 +30,9 @@ import { NotificationsService } from "@services/notifications"
 import { DealerPriceService } from "@services/dealer-price"
 import * as LedgerFacade from "@services/ledger/facade"
 
+import { getLastOnChainAddress } from "./get-last-on-chain-address"
+import { createOnChainAddressByWallet } from "./create-on-chain-address"
+
 const redisCache = RedisCacheService()
 
 const dealer = DealerPriceService()
@@ -232,6 +235,12 @@ const processTxForWallet = async (
             recipientDeviceTokens: recipientUser.deviceTokens,
             recipientLanguage: recipientUser.language,
           })
+
+          const currentAddress = await getLastOnChainAddress(wallet.id)
+          if (address === currentAddress) {
+            const newAddress = await createOnChainAddressByWallet(wallet)
+            if (newAddress instanceof Error) return newAddress
+          }
         }
       }
     }

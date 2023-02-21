@@ -2,6 +2,7 @@ import { BTC_NETWORK } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { WalletCurrency } from "@domain/shared"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { WalletOnChainAddressesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
@@ -31,6 +32,16 @@ const createOnChainAddress = async (
   if (savedOnChainAddress instanceof Error) return savedOnChainAddress
 
   return savedOnChainAddress.address
+}
+
+export const createOnChainAddressByWallet = async (
+  wallet: Wallet,
+): Promise<OnChainAddress | ApplicationError> => {
+  if (wallet.currency === WalletCurrency.Btc) {
+    return createOnChainAddressForBtcWallet(wallet.id)
+  }
+
+  return createOnChainAddressForUsdWallet(wallet.id)
 }
 
 export const createOnChainAddressForBtcWallet = async (

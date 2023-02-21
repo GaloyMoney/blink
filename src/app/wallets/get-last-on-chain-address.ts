@@ -3,7 +3,7 @@ import { WalletOnChainAddressesRepository } from "@services/mongoose"
 
 import { createOnChainAddressForBtcWallet } from "./create-on-chain-address"
 
-export const getLastOnChainAddressForBtcWallet = async (
+export const getLastOnChainAddress = async (
   walletId: WalletId,
 ): Promise<OnChainAddress | ApplicationError> => {
   const onChainAddressesRepo = WalletOnChainAddressesRepository()
