@@ -531,7 +531,7 @@ async function sendToWalletTestWrapper({
     const txn = transactions.slice[0] as WalletOnChainTransaction
     expect(txn.settlementVia.type).toBe("onchain")
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
-    expect(txn.settlementAmount).toBe(
+    expect(txn.settlementAmount + txn.settlementFee).toBe(
       amountAfterFeeDeduction({
         amount: amountSats,
         depositFeeRatio: depositFeeRatio,
@@ -666,7 +666,7 @@ async function testTxnsByAddressWrapper({
     const txn = transactions.slice[0] as WalletOnChainTransaction
     expect(txn.settlementVia.type).toBe("onchain")
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
-    expect(txn.settlementAmount).toBe(
+    expect(txn.settlementAmount + txn.settlementFee).toBe(
       amountAfterFeeDeduction({
         amount: amountSats,
         depositFeeRatio: depositFeeRatio,
