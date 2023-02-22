@@ -14,14 +14,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: main
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "yarn"
       - uses: actions/checkout@v3
         with:
           ref: docs
           path: docs
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - run: yarn install --frozen-lockfile
         working-directory: main
       - uses: vmware-tanzu/carvel-setup-action@v1
