@@ -34,12 +34,12 @@ describe("translates ledger txs to wallet txs", () => {
 
   const ledgerTxnsInputs = ({
     walletId,
-    settlementAmount,
+    credit,
     centsAmount,
     currency,
   }: {
     walletId: WalletId
-    settlementAmount: Satoshis | UsdCents
+    credit: Satoshis | UsdCents
     centsAmount: UsdCents
     currency: WalletCurrency
   }): LedgerTransaction<WalletCurrency>[] => {
@@ -61,7 +61,7 @@ describe("translates ledger txs to wallet txs", () => {
         type: LedgerTransactionType.Invoice,
 
         debit: toSats(0),
-        credit: settlementAmount,
+        credit,
 
         paymentHash: "paymentHash" as PaymentHash,
         pubkey: "pubkey" as Pubkey,
@@ -73,7 +73,7 @@ describe("translates ledger txs to wallet txs", () => {
         type: LedgerTransactionType.IntraLedger,
 
         debit: toSats(0),
-        credit: settlementAmount,
+        credit,
 
         paymentHash: "paymentHash" as PaymentHash,
         pubkey: "pubkey" as Pubkey,
@@ -85,7 +85,7 @@ describe("translates ledger txs to wallet txs", () => {
         type: LedgerTransactionType.OnchainIntraLedger,
 
         debit: toSats(0),
-        credit: settlementAmount,
+        credit,
 
         address: "address" as OnChainAddress,
         txHash: "txHash" as OnChainTxHash,
@@ -95,7 +95,7 @@ describe("translates ledger txs to wallet txs", () => {
         type: LedgerTransactionType.OnchainReceipt,
 
         debit: toSats(0),
-        credit: settlementAmount,
+        credit,
 
         address: "address" as OnChainAddress,
         txHash: "txHash" as OnChainTxHash,
@@ -105,18 +105,23 @@ describe("translates ledger txs to wallet txs", () => {
 
   const expectedWalletTxns = ({
     walletId,
-    settlementAmount,
+    credit,
     centsAmount,
     currency,
   }: {
     walletId: WalletId
-    settlementAmount: Satoshis | UsdCents
+    credit: Satoshis | UsdCents
     centsAmount: UsdCents
     currency: WalletCurrency
   }): WalletTransaction[] => {
+    const receiveSettlementAmount =
+      currency === WalletCurrency.Btc
+        ? toSats(credit - satsFee)
+        : toCents(credit - centsFee)
+
     const settlementFee = currency === WalletCurrency.Btc ? satsFee : centsFee
     const displayCurrencyPerSettlementCurrencyUnit = Math.abs(
-      centsAmount / 100 / settlementAmount,
+      centsAmount / receiveSettlementAmount / 100,
     )
 
     if (currency === WalletCurrency.Usd) {
@@ -128,7 +133,7 @@ describe("translates ledger txs to wallet txs", () => {
       walletId,
       settlementCurrency: currency,
 
-      settlementAmount,
+      settlementAmount: receiveSettlementAmount,
       settlementFee,
       displayCurrencyPerSettlementCurrencyUnit,
     }
@@ -198,7 +203,7 @@ describe("translates ledger txs to wallet txs", () => {
 
       const txnsArgs = {
         walletId: crypto.randomUUID() as WalletId,
-        settlementAmount,
+        credit: settlementAmount,
         centsAmount,
         centsFee,
         displayAmount: centsAmount,
@@ -216,11 +221,11 @@ describe("translates ledger txs to wallet txs", () => {
     it("translates usd ledger txs", () => {
       const currency = WalletCurrency.Usd
       const settlementAmount = toCents(2000)
-      const centsAmount = settlementAmount
+      const centsAmount = toCents(settlementAmount - centsFee)
 
       const txnsArgs = {
         walletId: crypto.randomUUID() as WalletId,
-        settlementAmount,
+        credit: settlementAmount,
         centsAmount,
         centsFee,
         displayAmount: centsAmount,
