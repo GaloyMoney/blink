@@ -97,10 +97,10 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   const isSend = debit > credit
 
   let settlementAmount: Satoshis | UsdCents = isSend
-    ? toSats(debit)
+    ? toSats(-debit)
     : toSats(credit - satsFee)
   if (currency === WalletCurrency.Usd) {
-    settlementAmount = isSend ? toCents(debit) : toCents(credit - centsFee)
+    settlementAmount = isSend ? toCents(-debit) : toCents(credit - centsFee)
   }
   const settlementFee =
     currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee)
