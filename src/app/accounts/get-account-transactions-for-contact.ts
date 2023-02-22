@@ -1,6 +1,7 @@
 import { LedgerError } from "@domain/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
-import { LedgerService } from "@services/ledger"
+
+import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 import { WalletsRepository } from "@services/mongoose"
 
 export const getAccountTransactionsForContact = async ({
@@ -24,7 +25,10 @@ export const getAccountTransactionsForContact = async ({
   })
   if (resp instanceof LedgerError) return resp
 
-  const confirmedHistory = WalletTransactionHistory.fromLedger(resp.slice)
+  const confirmedHistory = WalletTransactionHistory.fromLedger({
+    ledgerTransactions: resp.slice,
+    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+  })
 
   return { slice: confirmedHistory.transactions, total: resp.total }
 }

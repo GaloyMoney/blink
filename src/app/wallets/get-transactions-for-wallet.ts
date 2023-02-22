@@ -9,7 +9,7 @@ import { TxFilter } from "@domain/bitcoin/onchain"
 import { WalletTransactionHistory } from "@domain/wallets"
 
 import { baseLogger } from "@services/logger"
-import { LedgerService } from "@services/ledger"
+import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
 
 import { getOnChainTxs } from "./private/get-on-chain-txs"
@@ -31,7 +31,10 @@ export const getTransactionsForWallets = async ({
 
   if (resp instanceof LedgerError) return PartialResult.err(resp)
 
-  const confirmedHistory = WalletTransactionHistory.fromLedger(resp.slice)
+  const confirmedHistory = WalletTransactionHistory.fromLedger({
+    ledgerTransactions: resp.slice,
+    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+  })
 
   const onChainTxs = await getOnChainTxs()
   if (onChainTxs instanceof Error) {
