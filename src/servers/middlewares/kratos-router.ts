@@ -41,7 +41,7 @@ kratosRouter.post(
       const body = req.body
       const { identity_id: userId, phone: phoneRaw, schema_id, email } = body
 
-      assert(schema_id === "phone_or_email_password_v0", "unsupported schema")
+      assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
       if ((!phoneRaw && !email) || !userId) {
         console.log("missing inputs")

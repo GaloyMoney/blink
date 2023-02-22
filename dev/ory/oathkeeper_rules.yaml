@@ -99,7 +99,7 @@
   upstream:
     url: "http://e2e-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<(kratos|browser|healthz|metrics)(.*)>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<(kratos|browser)(.*)>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
     - handler: cookie_session
