@@ -1,6 +1,7 @@
+import { decode } from "jsonwebtoken"
+
 import { OathkeeperUnauthorizedServiceError } from "@domain/oathkeeper/errors"
 import { sendOathkeeperRequest } from "@services/oathkeeper"
-import * as jwt from "jsonwebtoken"
 
 import { BTC_NETWORK } from "@config"
 
@@ -39,7 +40,7 @@ describe("Oathkeeper", () => {
     const res = await sendOathkeeperRequest(undefined)
     if (res instanceof Error) throw res
 
-    const decoded = jwt.decode(res, { complete: true })
+    const decoded = decode(res, { complete: true })
     expect(decoded?.payload?.sub).toBe("anon")
   })
 
@@ -66,7 +67,7 @@ describe("Oathkeeper", () => {
     const res = await sendOathkeeperRequest(token)
     if (res instanceof Error) throw res
 
-    const decodedNew = jwt.decode(res, { complete: true })
+    const decodedNew = decode(res, { complete: true })
     const uidFromJwt = decodedNew?.payload?.sub
 
     expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
@@ -89,7 +90,7 @@ describe("Oathkeeper", () => {
     const res = await sendOathkeeperRequest(jwtToken)
     if (res instanceof Error) throw res
 
-    const decodedNew = jwt.decode(res, { complete: true })
+    const decodedNew = decode(res, { complete: true })
     const uidFromJwt = decodedNew?.payload?.sub
 
     expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
