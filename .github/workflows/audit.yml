@@ -11,6 +11,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: yarn install
+          cache: "yarn"
+      - run: yarn install --frozen-lockfile
       - name: Run audit
         run: make audit

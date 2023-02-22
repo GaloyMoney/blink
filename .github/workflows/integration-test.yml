@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 18
           cache: "yarn"
-      - run: yarn install
+      - run: yarn install --frozen-lockfile
       - name: Run integration tests
         run: |
           make integration-in-ci
