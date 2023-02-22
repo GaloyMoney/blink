@@ -1,6 +1,7 @@
-import { LedgerService } from "@services/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { checkedToLedgerTransactionId } from "@domain/ledger"
+
+import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 
 export const getTransactionById = async (
   id: string,
@@ -13,5 +14,8 @@ export const getTransactionById = async (
   const ledgerTransaction = await ledger.getTransactionById(ledgerTxId)
   if (ledgerTransaction instanceof Error) return ledgerTransaction
 
-  return WalletTransactionHistory.fromLedger([ledgerTransaction]).transactions[0]
+  return WalletTransactionHistory.fromLedger({
+    ledgerTransactions: [ledgerTransaction],
+    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+  }).transactions[0]
 }

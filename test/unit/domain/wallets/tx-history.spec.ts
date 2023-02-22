@@ -207,7 +207,10 @@ describe("translates ledger txs to wallet txs", () => {
       }
 
       const ledgerTransactions = ledgerTxnsInputs(txnsArgs)
-      const result = WalletTransactionHistory.fromLedger(ledgerTransactions)
+      const result = WalletTransactionHistory.fromLedger({
+        ledgerTransactions,
+        nonEndUserWalletIds: [],
+      })
 
       const expected = expectedWalletTxns(txnsArgs)
       expect(result.transactions).toEqual(expected)
@@ -229,7 +232,10 @@ describe("translates ledger txs to wallet txs", () => {
       }
 
       const ledgerTransactions = ledgerTxnsInputs(txnsArgs)
-      const result = WalletTransactionHistory.fromLedger(ledgerTransactions)
+      const result = WalletTransactionHistory.fromLedger({
+        ledgerTransactions,
+        nonEndUserWalletIds: [],
+      })
 
       const expected = expectedWalletTxns(txnsArgs)
       expect(result.transactions).toEqual(expected)
@@ -238,11 +244,32 @@ describe("translates ledger txs to wallet txs", () => {
 })
 
 describe("translateDescription", () => {
+  const journalIdMemoArgs = {
+    walletId: "" as WalletId,
+    journalId: "" as LedgerJournalId,
+    nonEndUserWalletIds: ["dealerBtcWalletId" as WalletId],
+  }
+
+  it("return journalId for dealer wallet id", () => {
+    const journalId = "journal-01" as LedgerJournalId
+
+    const result = translateMemo({
+      memoFromPayer: "some memo",
+      credit: MEMO_SHARING_SATS_THRESHOLD,
+      currency: WalletCurrency.Btc,
+      walletId: journalIdMemoArgs.nonEndUserWalletIds[0],
+      journalId,
+      nonEndUserWalletIds: journalIdMemoArgs.nonEndUserWalletIds,
+    })
+    expect(result).toEqual(`JournalId:${journalId}`)
+  })
+
   it("returns the memoFromPayer for BTC wallet", () => {
     const result = translateMemo({
       memoFromPayer: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
       currency: WalletCurrency.Btc,
+      ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
   })
@@ -252,6 +279,7 @@ describe("translateDescription", () => {
       lnMemo: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
       currency: WalletCurrency.Btc,
+      ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
   })
@@ -261,6 +289,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: 1 as Satoshis,
       currency: WalletCurrency.Btc,
+      ...journalIdMemoArgs,
     })
     expect(result).toBeNull()
   })
@@ -270,6 +299,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: 0 as Satoshis,
       currency: WalletCurrency.Btc,
+      ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
   })
@@ -279,6 +309,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: MEMO_SHARING_CENTS_THRESHOLD,
       currency: WalletCurrency.Usd,
+      ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
   })
@@ -288,6 +319,7 @@ describe("translateDescription", () => {
       lnMemo: "some memo",
       credit: MEMO_SHARING_CENTS_THRESHOLD,
       currency: WalletCurrency.Usd,
+      ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
   })
@@ -297,6 +329,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: 1 as UsdCents,
       currency: WalletCurrency.Usd,
+      ...journalIdMemoArgs,
     })
     expect(result).toBeNull()
   })
@@ -306,6 +339,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: 0 as UsdCents,
       currency: WalletCurrency.Usd,
+      ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
   })
@@ -340,7 +374,10 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         createdAt: timestamp,
       }),
     ]
-    const history = WalletTransactionHistory.fromLedger([])
+    const history = WalletTransactionHistory.fromLedger({
+      ledgerTransactions: [],
+      nonEndUserWalletIds: [],
+    })
     const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
     const result = history.addPendingIncoming({
       pendingIncoming: incomingTxs,
@@ -421,7 +458,10 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         createdAt: timestamp,
       }),
     ]
-    const history = WalletTransactionHistory.fromLedger([])
+    const history = WalletTransactionHistory.fromLedger({
+      ledgerTransactions: [],
+      nonEndUserWalletIds: [],
+    })
     const addresses = ["userAddress1"] as OnChainAddress[]
     const result = history.addPendingIncoming({
       pendingIncoming: incomingTxs,

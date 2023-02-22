@@ -57,9 +57,13 @@ const filterPendingIncoming = ({
   return walletTransactions
 }
 
-const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
-  txn: LedgerTransaction<S>,
-) => {
+const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
+  txn,
+  nonEndUserWalletIds,
+}: {
+  txn: LedgerTransaction<S>
+  nonEndUserWalletIds: WalletId[]
+}) => {
   const {
     type,
     credit,
@@ -71,6 +75,8 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
     displayFee: displayFeeRaw,
     lnMemo,
     memoFromPayer,
+    journalId,
+    walletId,
   } = txn
 
   const isAdmin = Object.values(AdminLedgerTransactionType).includes(
@@ -111,6 +117,9 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
     lnMemo,
     credit,
     currency,
+    walletId,
+    nonEndUserWalletIds,
+    journalId,
   })
 
   const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
@@ -241,10 +250,16 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   return walletTransaction
 }
 
-const fromLedger = (
-  ledgerTransactions: LedgerTransaction<WalletCurrency>[],
-): ConfirmedTransactionHistory => {
-  const transactions = ledgerTransactions.map(translateLedgerTxnToWalletTxn)
+const fromLedger = ({
+  ledgerTransactions,
+  nonEndUserWalletIds,
+}: {
+  ledgerTransactions: LedgerTransaction<WalletCurrency>[]
+  nonEndUserWalletIds: WalletId[]
+}): ConfirmedTransactionHistory => {
+  const transactions = ledgerTransactions.map((txn) =>
+    translateLedgerTxnToWalletTxn({ txn, nonEndUserWalletIds }),
+  )
 
   return {
     transactions,
@@ -278,12 +293,22 @@ export const translateMemo = ({
   lnMemo,
   credit,
   currency,
+  walletId,
+  nonEndUserWalletIds,
+  journalId,
 }: {
   memoFromPayer?: string
   lnMemo?: string
   credit: CurrencyBaseAmount
   currency: WalletCurrency
+  walletId: WalletId | undefined
+  nonEndUserWalletIds: WalletId[]
+  journalId: LedgerJournalId
 }): string | null => {
+  if (walletId && nonEndUserWalletIds.includes(walletId)) {
+    return `JournalId:${journalId}`
+  }
+
   const memo = memoFromPayer || lnMemo
   if (shouldDisplayMemo({ memo, credit, currency })) {
     return memo || null
