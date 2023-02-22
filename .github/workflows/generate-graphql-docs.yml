@@ -22,6 +22,7 @@ jobs:
         with:
           node-version: 18
           cache: "yarn"
+          path: main
       - run: yarn install --frozen-lockfile
         working-directory: main
       - uses: vmware-tanzu/carvel-setup-action@v1
