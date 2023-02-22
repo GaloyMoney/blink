@@ -94,15 +94,20 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
     centsFee = centsFeeRaw || 0
   }
 
-  const settlementAmount =
-    currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
+  const isSend = debit > credit
+
+  let settlementAmount: Satoshis | UsdCents = isSend
+    ? toSats(debit)
+    : toSats(credit - satsFee)
+  if (currency === WalletCurrency.Usd) {
+    settlementAmount = isSend ? toCents(debit) : toCents(credit - centsFee)
+  }
   const settlementFee =
     currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee)
 
   // 'displayAmount' is before fees. For total amount:
   // - send: displayAmount + displayFee
   // - recv: displayAmount
-  const isSend = settlementAmount < 0
   const displayAmountAsNumber =
     isSend && !isAdmin ? displayAmount + displayFee : displayAmount
 
