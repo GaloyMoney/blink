@@ -305,8 +305,12 @@ const displayCurrencyPerBaseUnitFromAmounts = ({
   displayAmountAsNumber: number
   settlementAmountInBaseAsNumber: number
 }): number => {
-  const displayAmountMajorUnit = Number((displayAmountMinorUnit / 100).toFixed(2))
-  return settlementAmountInBaseAsNumber === 0
-    ? 0
-    : Math.abs(displayAmountMajorUnit / settlementAmountInBaseAsNumber)
+  const majorExponent = 2
+
+  const priceInMinor =
+    settlementAmountInBaseAsNumber === 0
+      ? 0
+      : Math.abs(displayAmountMinorUnit / settlementAmountInBaseAsNumber)
+
+  return priceInMinor / 10 ** majorExponent
 }
