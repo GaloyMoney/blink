@@ -129,6 +129,7 @@ const transactionSchema = new Schema<ILedgerTransaction>(
 )
 
 //indexes used by our queries
+transactionSchema.index({ accounts: 1, book: 1, datetime: -1, timestamp: -1, _id: -1 })
 transactionSchema.index({ accounts: 1, type: 1, timestamp: -1 })
 transactionSchema.index({ type: 1, pending: 1, account_path: 1 })
 transactionSchema.index({ account_path: 1 })
