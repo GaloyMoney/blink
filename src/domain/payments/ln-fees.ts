@@ -52,7 +52,13 @@ export const LnFees = () => {
         maxFeeAmount.amount > calculatedMinFeeAmount.amount) &&
       maxFeeAmount.amount > calculatedMaxFeeAmount.amount
     ) {
-      return new MaxFeeTooLargeForRoutelessPaymentError()
+      return new MaxFeeTooLargeForRoutelessPaymentError(
+        JSON.stringify({
+          btcPaymentAmount: Number(btcPaymentAmount.amount),
+          maxFeeBtcAmount: Number(maxFeeAmount.amount),
+          calculatedMaxFeeBtcAmount: Number(calculatedMaxFeeAmount.amount),
+        }),
+      )
     }
 
     return true
