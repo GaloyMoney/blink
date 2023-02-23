@@ -3,7 +3,7 @@ import { assert } from "console"
 import cors from "cors"
 import express from "express"
 
-import { getDefaultAccountsConfig, getKratosConfig, getKratosPasswords } from "@config"
+import { getDefaultAccountsConfig, getKratosPasswords } from "@config"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 import {
   createAccountForEmailIdentifier,
@@ -14,10 +14,9 @@ import { checkedToUserId } from "@domain/accounts"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
-const { corsAllowedOrigins } = getKratosConfig()
 const { callbackApiKey } = getKratosPasswords()
 
-kratosRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
+kratosRouter.use(cors({ origin: true, credentials: true }))
 kratosRouter.use(express.json())
 
 kratosRouter.post(
@@ -42,7 +41,7 @@ kratosRouter.post(
       const body = req.body
       const { identity_id: userId, phone: phoneRaw, schema_id, email } = body
 
-      assert(schema_id === "phone_or_email_password_v0", "unsupported schema")
+      assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
       if ((!phoneRaw && !email) || !userId) {
         console.log("missing inputs")

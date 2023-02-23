@@ -6,6 +6,7 @@ type IdentityPassword = string & { readonly brand: unique symbol }
 
 type UserId = string & { readonly brand: unique symbol }
 type SessionToken = string & { readonly brand: unique symbol }
+type SessionCookie = string & { readonly brand: unique symbol }
 
 type IdentityPhone = {
   id: UserId
@@ -23,17 +24,31 @@ type WithSessionResponse = {
   kratosUserId: UserId
 }
 
+type WithCookieResponse = {
+  cookiesToSendBackToClient: Array<SessionCookie>
+  kratosUserId: UserId
+}
+
 type LoginWithPhoneNoPasswordSchemaResponse = WithSessionResponse
+type LoginWithPhoneCookieSchemaResponse = WithCookieResponse
 type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
+type CreateKratosUserForPhoneNoPasswordSchemaCookieResponse = WithCookieResponse
 
 interface IAuthWithPhonePasswordlessService {
-  login(
+  loginToken(
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
-  logout(token: SessionToken): Promise<void | AuthenticationError>
+  loginCookie(
+    phone: PhoneNumber,
+  ): Promise<LoginWithPhoneCookieSchemaResponse | AuthenticationError>
+  logoutToken(token: SessionToken): Promise<void | AuthenticationError>
+  logoutCookie(cookie: SessionCookie): Promise<void | AuthenticationError>
   createIdentityWithSession(
     phone: PhoneNumber,
   ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
+  createIdentityWithCookie(
+    phone: PhoneNumber,
+  ): Promise<CreateKratosUserForPhoneNoPasswordSchemaCookieResponse | AuthenticationError>
   createIdentityNoSession(phone: PhoneNumber): Promise<UserId | AuthenticationError>
   upgradeToPhoneAndEmailSchema(input: {
     kratosUserId: UserId

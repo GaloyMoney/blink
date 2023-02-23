@@ -142,10 +142,10 @@ hashers:
     cost: 8
 
 identity:
-  default_schema_id: phone_or_email_password_v0
+  default_schema_id: phone_no_password_v0
   schemas:
     - id: phone_no_password_v0
-      url: file:///home/ory/phone_v0.identity.schema.json
+      url: file:///home/ory/phone_no_password_v0.identity.schema.json
     - id: phone_email_no_password_v0
       url: file:///home/ory/phone_email_no_password_v0.identity.schema.json
     - id: phone_or_email_password_v0

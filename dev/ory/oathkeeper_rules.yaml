@@ -44,6 +44,89 @@
   mutators:
     - handler: noop
 
+- id: apollo-playground-ui
+  upstream:
+    url: "http://e2e-tests:4012"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphql"
+    methods: ["GET", "OPTIONS"]
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: header
+      config:
+        headers:
+          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
+    - handler: id_token
+      config:
+        claims: '{"sub": "{{ print .Subject }}"}'
+
+- id: galoy-backend
+  upstream:
+    url: "http://e2e-tests:4012"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphql<.*>"
+    methods: ["POST"]
+  authenticators:
+    - handler: cookie_session
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
+    - handler: bearer_token
+      config:
+        check_session_url: "http://e2e-tests:4012/auth/validatetoken"
+        preserve_path: true
+        preserve_query: true
+        subject_from: sub
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: header
+      config:
+        headers:
+          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
+    - handler: id_token
+      config:
+        claims: '{"sub": "{{ print .Subject }}"}'
+
+- id: galoy-backend-middleware-routes
+  upstream:
+    url: "http://e2e-tests:4012"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<(kratos|browser)(.*)>"
+    methods: ["GET", "POST", "OPTIONS"]
+  authenticators:
+    - handler: cookie_session
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
+    - handler: bearer_token
+      config:
+        check_session_url: "http://e2e-tests:4012/auth/validatetoken"
+        preserve_path: true
+        preserve_query: true
+        subject_from: sub
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: header
+      config:
+        headers:
+          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
+    - handler: id_token
+      config:
+        claims: '{"sub": "{{ print .Subject }}"}'
+
 - id: admin-backend
   upstream:
     url: "http://e2e-tests:4001"
@@ -62,38 +145,6 @@
     - handler: bearer_token
       config:
         check_session_url: "http://e2e-tests:4001/auth/validatetoken"
-        preserve_path: true
-        preserve_query: true
-        subject_from: sub
-    - handler: anonymous
-  authorizer:
-    handler: allow
-  mutators:
-    - handler: header
-      config:
-        headers:
-          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
-    - handler: id_token
-      config:
-        claims: '{"sub": "{{ print .Subject }}"}'
-
-- id: galoy-backend
-  upstream:
-    url: "http://e2e-tests:4012"
-  match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<(graphql|kratos|browser|healthz|metrics)(.*)>"
-    methods: ["GET", "POST", "OPTIONS"]
-  authenticators:
-    - handler: cookie_session
-      config:
-        check_session_url: http://kratos:4433/sessions/whoami
-        preserve_path: true
-        preserve_query: true
-        subject_from: identity.id
-        extra_from: identity.traits
-    - handler: bearer_token
-      config:
-        check_session_url: "http://e2e-tests:4012/auth/validatetoken"
         preserve_path: true
         preserve_query: true
         subject_from: sub
