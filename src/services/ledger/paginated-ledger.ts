@@ -61,7 +61,7 @@ export const paginatedLedger = async ({
 
   const slice = await Transaction.collection
     .find<ILedgerTransaction>(filterQuery)
-    .sort({ datetime: -1, timestamp: -1, _id: 1 })
+    .sort({ datetime: -1, timestamp: -1, _id: -1 })
     .limit(limit)
     .skip(skip)
     .toArray()
