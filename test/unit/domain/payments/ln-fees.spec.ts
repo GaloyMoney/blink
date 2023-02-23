@@ -1,5 +1,5 @@
 import { AmountCalculator, ONE_SAT, WalletCurrency } from "@domain/shared"
-import { LnFees, PriceRatio } from "@domain/payments"
+import { LnFees, WalletPriceRatio } from "@domain/payments"
 import { MaxFeeTooLargeForRoutelessPaymentError } from "@domain/bitcoin/lightning"
 
 const calc = AmountCalculator()
@@ -50,7 +50,7 @@ describe("LnFees", () => {
       currency: WalletCurrency.Usd,
     }
 
-    const priceRatio = PriceRatio({ btc, usd })
+    const priceRatio = WalletPriceRatio({ btc, usd })
     if (priceRatio instanceof Error) throw priceRatio
 
     const validBtcMaxFeeToVerify = LnFees().maxProtocolAndBankFee(btc)
