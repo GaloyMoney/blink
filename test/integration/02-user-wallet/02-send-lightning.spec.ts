@@ -11,6 +11,7 @@ import {
   InvalidFeeProbeStateError,
   InvoiceExpiredOrBadPaymentHashError,
   LightningServiceError,
+  MaxFeeTooLargeForRoutelessPaymentError,
   PaymentNotFoundError,
   PaymentSendStatus,
   PaymentStatus,
@@ -31,6 +32,7 @@ import {
   PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
+import * as DomainPayments from "@domain/payments"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
@@ -100,6 +102,15 @@ jest.mock("@config", () => {
       withdrawalLimit: 100_000 as UsdCents,
       tradeIntraAccountLimit: 100_000 as UsdCents,
     }),
+  }
+})
+
+jest.mock("@domain/payments", () => {
+  const module = jest.requireActual("@domain/payments")
+
+  return {
+    ...module,
+    LnFees: jest.fn().mockReturnValue(module.LnFees()),
   }
 })
 
@@ -622,6 +633,47 @@ describe("UserWallet - Lightning Pay", () => {
     // imbalance is reduced with lightning payment
     expect(Number(imbalanceFinal.amount)).toBe(
       Number(imbalanceInit.amount) - amountInvoice,
+    )
+  })
+
+  it("pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
+    jest.spyOn(DomainPayments, "LnFees").mockReturnValueOnce({
+      ...LnFees(),
+      verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
+    })
+
+    const { request, id } = await createInvoice({ lnd: lndOutside1 })
+    const paymentHash = id as PaymentHash
+
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+      uncheckedPaymentRequest: request,
+      memo: null,
+      amount: amountInvoice,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+    })
+    expect(paymentResult).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
+
+    const txns = await LedgerService().getTransactionsByHash(paymentHash)
+    if (txns instanceof Error) throw txns
+
+    const { satsAmount, satsFee } = txns[0]
+    expect(txns.length).toEqual(2)
+    expect(txns).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          lnMemo: "Payment canceled",
+          credit: (satsAmount || 0) + (satsFee || 0),
+          debit: 0,
+          pendingConfirmation: false,
+        }),
+        expect.objectContaining({
+          lnMemo: "",
+          debit: (satsAmount || 0) + (satsFee || 0),
+          credit: 0,
+          pendingConfirmation: false,
+        }),
+      ]),
     )
   })
 
