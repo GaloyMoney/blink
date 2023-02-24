@@ -66,9 +66,11 @@ export const PriceService = (): IPriceService => {
   > => {
     try {
       if (walletCurrency === displayCurrency) {
+        const offset =
+          displayCurrency === DisplayCurrency.Usd ? CENTS_PER_USD : SATS_PER_BTC
         return {
           timestamp: new Date(Date.now()),
-          price: 1,
+          price: 1 / offset,
           currency: displayCurrency,
         }
       }
