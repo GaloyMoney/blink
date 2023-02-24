@@ -583,14 +583,15 @@ const executePaymentViaLn = async ({
         priceRatio,
         senderWalletCurrency: paymentFlow.senderWalletDescriptor().currency,
       }
-
       const maxFeeCheck = LnFees().verifyMaxFee(maxFeeCheckArgs)
-      if (maxFeeCheck instanceof Error) return maxFeeCheck
 
-      payResult = await lndService.payInvoiceViaPaymentDetails({
-        ...maxFeeCheckArgs,
-        decodedInvoice,
-      })
+      payResult =
+        maxFeeCheck instanceof Error
+          ? maxFeeCheck
+          : await lndService.payInvoiceViaPaymentDetails({
+              ...maxFeeCheckArgs,
+              decodedInvoice,
+            })
     }
 
     // Fire-and-forget update to 'lnPayments' collection
