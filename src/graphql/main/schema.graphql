@@ -254,7 +254,7 @@ type Coordinates {
 
 type Currency {
   flag: String!
-  id: String!
+  id: ID!
   name: String!
   symbol: String!
 }
