@@ -32,7 +32,7 @@ import {
   PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
-import * as DomainPayments from "@domain/payments"
+import * as LnFeesImpl from "@domain/payments/ln-fees"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
@@ -102,15 +102,6 @@ jest.mock("@config", () => {
       withdrawalLimit: 100_000 as UsdCents,
       tradeIntraAccountLimit: 100_000 as UsdCents,
     }),
-  }
-})
-
-jest.mock("@domain/payments", () => {
-  const module = jest.requireActual("@domain/payments")
-
-  return {
-    ...module,
-    LnFees: jest.fn().mockReturnValue(module.LnFees()),
   }
 })
 
@@ -637,10 +628,18 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
-    jest.spyOn(DomainPayments, "LnFees").mockReturnValueOnce({
-      ...LnFees(),
-      verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
-    })
+    const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments/ln-fees")
+    jest
+      .spyOn(LnFeesImpl, "LnFees")
+      // 1st call is in PaymentFlow
+      .mockReturnValueOnce({
+        ...LnFeesOrig(),
+      })
+      // 2nd call is in use-case at verifyMaxFee
+      .mockReturnValueOnce({
+        ...LnFeesOrig(),
+        verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
+      })
 
     const { request, id } = await createInvoice({ lnd: lndOutside1 })
     const paymentHash = id as PaymentHash
