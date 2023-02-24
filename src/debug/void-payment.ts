@@ -1,46 +1,62 @@
 /**
  * how to run:
  *
- * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/void-payment.ts <payment hash>
+ * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/void-payment.ts <journal id> <payment hash> <validate with lnd true|false>
  *
- * <payment hash>: payment hash to void. Must be the last param
+ * <journal id>: journal id to void.
+ * <payment hash>: payment hash to void.
+ * <validateLnd>: true if hash needs to be validated against lnd. Must be the last param
  */
 import { PaymentStatus } from "@domain/bitcoin/lightning"
-import { lndsConnect } from "@services/lnd/auth"
-import { setupMongoConnection } from "@services/mongodb"
-import { LedgerService } from "@services/ledger"
-import { isUp } from "@services/lnd/health"
-import { LndService } from "@services/lnd"
 
-const voidPayment = async (paymentHash: PaymentHash) => {
+import { LndService } from "@services/lnd"
+import { isUp } from "@services/lnd/health"
+import { lndsConnect } from "@services/lnd/auth"
+import { LedgerService } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
+import { setupMongoConnection } from "@services/mongodb"
+
+const voidPayment = async ({
+  journalId,
+  paymentHash,
+  validateLnd = true,
+}: {
+  journalId: LedgerJournalId
+  paymentHash: PaymentHash
+  validateLnd: boolean
+}) => {
   const ledgerService = LedgerService()
   const ledgerTransactions = await ledgerService.getTransactionsByHash(paymentHash)
   if (ledgerTransactions instanceof Error) return ledgerTransactions
 
-  const payment = ledgerTransactions.find((tx) => tx.pendingConfirmation)
+  const payment = ledgerTransactions.find(
+    (tx) => tx.pendingConfirmation && tx.journalId === journalId,
+  )
   if (!payment) return new Error("Invalid payment hash or payment has been handled")
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
   const lndPayment = await lndService.lookupPayment({ paymentHash })
-  if (lndPayment instanceof Error) return lndPayment
+  const lndPaymentExists = !(lndPayment instanceof Error)
+  if (validateLnd && !lndPaymentExists) return lndPayment
 
   // this will be handled by trigger
-  if (lndPayment.status === PaymentStatus.Settled)
+  if (lndPaymentExists && lndPayment.status === PaymentStatus.Settled)
     return new Error("Payment has been settled")
 
   // TODO: add timeout validation
   if (
+    lndPaymentExists &&
     lndPayment.status === PaymentStatus.Pending &&
     payment.timestamp > new Date(Date.now() - 1296e6)
   )
     return new Error("You need to wait at least 15 days to void a payment")
 
-  const settled = await ledgerService.settlePendingLnPayment(paymentHash)
+  const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
   if (settled instanceof Error) return settled
 
-  const reverted = await ledgerService.revertLightningPayment({
+  const reverted = await LedgerFacade.recordLnSendRevert({
     journalId: payment.journalId,
     paymentHash,
   })
@@ -50,13 +66,18 @@ const voidPayment = async (paymentHash: PaymentHash) => {
 }
 
 const main = async () => {
-  const args = process.argv
-  const result = await voidPayment(args.at(-1) as PaymentHash)
+  const args = process.argv.slice(-3)
+  const params = {
+    journalId: args[0] as LedgerJournalId,
+    paymentHash: args[1] as PaymentHash,
+    validateLnd: args[2] !== "false",
+  }
+  const result = await voidPayment(params)
   if (result instanceof Error) {
     console.error("Error:", result)
     return
   }
-  console.log(`Voided payment ${args.at(-1)}: `, result)
+  console.log(`Voided payment ${params.paymentHash}: `, result)
 }
 
 setupMongoConnection()
