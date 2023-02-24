@@ -253,8 +253,8 @@ type Coordinates {
 }
 
 type Currency {
-  code: String!
   flag: String!
+  id: ID!
   name: String!
   symbol: String!
 }
