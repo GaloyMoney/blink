@@ -163,7 +163,13 @@ const MeSubscription = {
     // non auth request
 
     // This will be deprecated but while we update the app must return only USD updates
-    if (source.price && source.price.displayCurrency === DisplayCurrency.Usd) {
+    if (source.price) {
+      if (source.price.displayCurrency !== DisplayCurrency.Usd) {
+        return {
+          errors: [{ message: "Price is deprecated, please use realtimePrice event" }],
+        }
+      }
+
       return userPayload(null)({
         resolveType: "Price",
         base: Math.round(source.price.centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
