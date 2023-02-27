@@ -29,7 +29,7 @@ import { NotificationType } from "@domain/notifications"
 import {
   LnFees,
   LnPaymentRequestInTransitError,
-  PriceRatio,
+  WalletPriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import * as LnFeesImpl from "@domain/payments/ln-fees"
@@ -529,7 +529,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(amountInvoice).toEqual(txnPayment.satsAmount)
     expect(Number(usdPaymentAmount.amount)).toEqual(txnPayment.centsAmount)
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: usdPaymentAmount,
       btc: btcPaymentAmount,
     })
@@ -1559,7 +1559,7 @@ describe("UserWallet - Lightning Pay", () => {
         baseLogger.info("payment has timeout. status is pending.")
         const intermediateBalance = await getBalanceHelper(walletIdUsdB)
 
-        const priceRatio = PriceRatio({
+        const priceRatio = WalletPriceRatio({
           btc: btcInvoiceAmount,
           usd: usdInvoiceAmount,
         })
@@ -1692,7 +1692,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(amountPayment).toEqual(txnPayment.satsAmount)
       expect(cents).toEqual(txnPayment.centsAmount)
 
-      const priceRatio = PriceRatio({
+      const priceRatio = WalletPriceRatio({
         usd: { amount: BigInt(cents), currency: WalletCurrency.Usd },
         btc: { amount: BigInt(amountPayment), currency: WalletCurrency.Btc },
       })

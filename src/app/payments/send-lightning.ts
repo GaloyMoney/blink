@@ -16,7 +16,7 @@ import {
   LnPaymentRequestInTransitError,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
-  PriceRatio,
+  WalletPriceRatio,
 } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 import {
@@ -376,7 +376,7 @@ const executePaymentViaIntraledger = async <
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: paymentFlow.usdPaymentAmount,
       btc: paymentFlow.btcPaymentAmount,
     })
@@ -521,7 +521,7 @@ const executePaymentViaLn = async ({
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: paymentFlow.usdPaymentAmount,
       btc: paymentFlow.btcPaymentAmount,
     })

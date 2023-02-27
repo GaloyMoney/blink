@@ -2,7 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, NewDisplayCurrencyConverter, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
-import { PriceRatio } from "@domain/payments"
+import { WalletPriceRatio } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import * as LedgerFacade from "@services/ledger/facade"
@@ -30,7 +30,7 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     usd: paymentFlow.usdProtocolAndBankFee,
   }
 
-  const priceRatio = PriceRatio(paymentFlow.paymentAmounts())
+  const priceRatio = WalletPriceRatio(paymentFlow.paymentAmounts())
   if (priceRatio instanceof Error) return priceRatio
 
   const feeDifference = FeeReimbursement({

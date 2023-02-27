@@ -19,7 +19,7 @@ export const calculateLimitsInUsd = async ({
 }: {
   limitName: AccountLimitsType
   limitAmount: UsdPaymentAmount
-  priceRatio: PriceRatio
+  priceRatio: WalletPriceRatio
   walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
 }): Promise<{
   volumeTotalLimit: UsdPaymentAmount
@@ -59,7 +59,7 @@ const volumesForLimit =
   }: {
     limitName: AccountLimitsType
     limitAmount: UsdPaymentAmount
-    priceRatio: PriceRatio
+    priceRatio: WalletPriceRatio
   }) =>
   async (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) =>
     calculateLimitsInUsd({
@@ -75,7 +75,7 @@ export const AccountLimitsVolumes = ({
   priceRatio,
 }: {
   accountLimits: IAccountLimits
-  priceRatio: PriceRatio
+  priceRatio: WalletPriceRatio
 }): AccountLimitsVolumes => {
   const accountLimitAmounts = {} as IAccountLimitAmounts
   for (const rawKey of Object.keys(accountLimits)) {

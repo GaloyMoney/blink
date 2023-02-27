@@ -10,7 +10,7 @@ import { AlreadyPaidError } from "@domain/errors"
 import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
-  PriceRatio,
+  WalletPriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
@@ -196,7 +196,7 @@ export const checkIntraledgerLimits = async ({
 }: {
   amount: UsdPaymentAmount
   accountId: AccountId
-  priceRatio: PriceRatio
+  priceRatio: WalletPriceRatio
 }) => {
   const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
@@ -221,7 +221,7 @@ export const checkTradeIntraAccountLimits = async ({
 }: {
   amount: UsdPaymentAmount
   accountId: AccountId
-  priceRatio: PriceRatio
+  priceRatio: WalletPriceRatio
 }) => {
   const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
@@ -246,7 +246,7 @@ export const checkWithdrawalLimits = async ({
 }: {
   amount: UsdPaymentAmount
   accountId: AccountId
-  priceRatio: PriceRatio
+  priceRatio: WalletPriceRatio
 }) => {
   const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
@@ -280,12 +280,12 @@ export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
       )
       if (usdPaymentAmountForRatio instanceof Error) return usdPaymentAmountForRatio
 
-      return PriceRatio({
+      return WalletPriceRatio({
         usd: usdPaymentAmountForRatio,
         btc: btcPaymentAmountForRatio,
       })
     }
 
-    return PriceRatio(paymentAmounts)
+    return WalletPriceRatio(paymentAmounts)
   },
 })

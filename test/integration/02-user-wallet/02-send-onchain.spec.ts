@@ -19,7 +19,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { InvalidZeroAmountPriceRatioInputError, PriceRatio } from "@domain/payments"
+import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -322,7 +322,7 @@ const testExternalSend = async ({
 
       satsFee = fee
 
-      const priceRatio = PriceRatio({
+      const priceRatio = WalletPriceRatio({
         usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
         btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
       })
@@ -372,7 +372,7 @@ const testExternalSend = async ({
     // ===
     const amountForNotification = sendAll ? amountToSend - fee : amountToSend
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
       currency: DisplayCurrency.Usd,
     })
     if (displayPriceRatio instanceof Error) return displayPriceRatio
@@ -596,7 +596,7 @@ const testInternalSend = async ({
 
     satsFee = fee
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
       btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
     })
@@ -1026,7 +1026,7 @@ describe("BtcWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsPriceRatio({
+    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
       currency: DisplayCurrency.Usd,
     })
     if (displayPriceRatio instanceof Error) throw displayPriceRatio

@@ -1,5 +1,5 @@
 import { CENTS_PER_USD } from "@domain/fiat"
-import { toPriceRatio } from "@domain/payments"
+import { toDisplayPriceRatio, toWalletPriceRatio } from "@domain/payments"
 
 export const getCurrentSatPrice = ({
   currency,
@@ -25,11 +25,23 @@ export const getCurrentUsdCentPrice = ({
   })
 }
 
-export const getCurrentPriceAsPriceRatio = async ({
+export const getCurrentPriceAsWalletPriceRatio = async ({
   currency,
-}: GetCurrentSatPriceArgs): Promise<PriceRatio | PriceServiceError> => {
+}: GetCurrentSatPriceArgs): Promise<WalletPriceRatio | PriceServiceError> => {
   const price = await getCurrentSatPrice({ currency })
   if (price instanceof Error) return price
 
-  return toPriceRatio(price.price * CENTS_PER_USD)
+  return toWalletPriceRatio(price.price * CENTS_PER_USD)
+}
+
+export const getCurrentPriceAsDisplayPriceRatio = async <T extends WalletCurrency>({
+  currency,
+}: GetCurrentSatPriceArgs): Promise<DisplayPriceRatio<"BTC", T> | PriceServiceError> => {
+  const price = await getCurrentSatPrice({ currency })
+  if (price instanceof Error) return price
+
+  return toDisplayPriceRatio({
+    ratio: price.price * CENTS_PER_USD,
+    displayCurrency: currency as T,
+  })
 }

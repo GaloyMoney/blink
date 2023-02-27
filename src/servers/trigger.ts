@@ -111,7 +111,7 @@ export const onchainTransactionEventHandler = async (
 
     let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsPriceRatio({
+    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
       currency: DisplayCurrency.Usd,
     })
     if (!(displayPriceRatio instanceof Error)) {
@@ -191,7 +191,7 @@ export const onchainTransactionEventHandler = async (
 
       let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-      const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsPriceRatio({
+      const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
         currency: DisplayCurrency.Usd,
       })
 

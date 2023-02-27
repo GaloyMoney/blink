@@ -1,74 +1,174 @@
 import { RATIO_PRECISION } from "@config"
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { MajorExponent } from "@domain/fiat"
+import { AmountCalculator, safeBigInt, WalletCurrency } from "@domain/shared"
 
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
 
 const calc = AmountCalculator()
 
-export const PriceRatio = ({
+export const PriceRatio = <S extends WalletCurrency>({
+  other,
+  walletAmount,
+}: {
+  other: bigint
+  walletAmount: PaymentAmount<S>
+}): PriceRatio<S> | ValidationError => {
+  if (other === 0n || walletAmount.amount === 0n) {
+    return new InvalidZeroAmountPriceRatioInputError()
+  }
+
+  const { currency } = walletAmount
+
+  const convertFromOther = (otherToConvert: bigint): PaymentAmount<S> => {
+    if (otherToConvert === 0n) {
+      return { amount: 0n, currency }
+    }
+
+    const { amount } = calc.divRound(
+      { amount: otherToConvert * walletAmount.amount, currency },
+      other,
+    )
+
+    return { amount: amount || 1n, currency }
+  }
+
+  const convertFromWallet = (walletAmountToConvert: PaymentAmount<S>): bigint => {
+    if (walletAmountToConvert.amount === 0n) return 0n
+
+    const { amount } = calc.divRound(
+      { amount: walletAmountToConvert.amount * other, currency },
+      walletAmount.amount,
+    )
+
+    return amount || 1n
+  }
+
+  const convertFromWalletToFloor = (walletAmountToConvert: PaymentAmount<S>): bigint =>
+    calc.divFloor(
+      { amount: walletAmountToConvert.amount * other, currency },
+      walletAmount.amount,
+    ).amount
+
+  const convertFromWalletToCeil = (walletAmountToConvert: PaymentAmount<S>): bigint =>
+    calc.divCeil(
+      { amount: walletAmountToConvert.amount * other, currency },
+      walletAmount.amount,
+    ).amount
+
+  return {
+    convertFromOther,
+    convertFromWallet,
+    convertFromWalletToFloor,
+    convertFromWalletToCeil,
+    otherUnitPerWalletUnit: () =>
+      (Number(other) / Number(walletAmount.amount)) as DisplayCurrencyBasePerSat,
+  }
+}
+
+export const WalletPriceRatio = ({
   usd,
   btc,
 }: {
   usd: UsdPaymentAmount
   btc: BtcPaymentAmount
-}): PriceRatio | ValidationError => {
-  if (usd.amount === 0n || btc.amount === 0n) {
-    return new InvalidZeroAmountPriceRatioInputError()
-  }
+}): WalletPriceRatio | ValidationError => {
+  const otherCurrency = WalletCurrency.Usd
 
-  const convertFromUsd = (convert: UsdPaymentAmount): BtcPaymentAmount => {
-    const currency = WalletCurrency.Btc
-
-    if (convert.amount === 0n) {
-      return { amount: 0n, currency }
-    }
-
-    const amount = calc.divRound(
-      { amount: convert.amount * btc.amount, currency },
-      usd.amount,
-    )
-
-    return { amount: amount.amount || 1n, currency }
-  }
-
-  const convertFromBtc = (convert: BtcPaymentAmount): UsdPaymentAmount => {
-    const currency = WalletCurrency.Usd
-
-    if (convert.amount === 0n) {
-      return { amount: 0n, currency }
-    }
-
-    const amount = calc.divRound(
-      { amount: convert.amount * usd.amount, currency },
-      btc.amount,
-    )
-
-    return { amount: amount.amount || 1n, currency }
-  }
-
-  const convertFromBtcToFloor = (convert: BtcPaymentAmount): UsdPaymentAmount =>
-    calc.divFloor(
-      { amount: convert.amount * usd.amount, currency: WalletCurrency.Usd },
-      btc.amount,
-    )
-
-  const convertFromBtcToCeil = (convert: BtcPaymentAmount): UsdPaymentAmount =>
-    calc.divCeil(
-      { amount: convert.amount * usd.amount, currency: WalletCurrency.Usd },
-      btc.amount,
-    )
+  const priceRatio = PriceRatio({ other: usd.amount, walletAmount: btc })
+  if (priceRatio instanceof Error) return priceRatio
 
   return {
-    convertFromUsd,
-    convertFromBtc,
-    convertFromBtcToFloor,
-    convertFromBtcToCeil,
-    usdPerSat: () =>
-      (Number(usd.amount) / Number(btc.amount)) as DisplayCurrencyBasePerSat,
+    convertFromUsd: (usdWalletAmount: UsdPaymentAmount): BtcPaymentAmount =>
+      priceRatio.convertFromOther(usdWalletAmount.amount),
+
+    convertFromBtc: (btcWalletAmount: BtcPaymentAmount): UsdPaymentAmount => ({
+      amount: priceRatio.convertFromWallet(btcWalletAmount),
+      currency: otherCurrency,
+    }),
+
+    convertFromBtcToFloor: (btcWalletAmount: BtcPaymentAmount): UsdPaymentAmount => ({
+      amount: priceRatio.convertFromWalletToFloor(btcWalletAmount),
+      currency: otherCurrency,
+    }),
+
+    convertFromBtcToCeil: (btcWalletAmount: BtcPaymentAmount): UsdPaymentAmount => ({
+      amount: priceRatio.convertFromWalletToCeil(btcWalletAmount),
+      currency: otherCurrency,
+    }),
+
+    usdPerSat: priceRatio.otherUnitPerWalletUnit,
   }
 }
 
-export const toPriceRatio = (ratio: number): PriceRatio | ValidationError => {
+export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCurrency>({
+  displayAmountInMinorUnit,
+  walletAmount,
+  displayMajorExponent,
+}: {
+  displayAmountInMinorUnit: DisplayAmount<T>
+  walletAmount: PaymentAmount<S>
+  displayMajorExponent: CurrencyMajorExponent
+}): DisplayPriceRatio<S, T> | ValidationError => {
+  const { currency: displayCurrency } = displayAmountInMinorUnit
+
+  const displayAmountValue = safeBigInt(displayAmountInMinorUnit.amount)
+  if (displayAmountValue instanceof Error) return displayAmountValue
+  const priceRatio = PriceRatio({
+    other: displayAmountValue,
+    walletAmount,
+  })
+  if (priceRatio instanceof Error) return priceRatio
+
+  const toNewDisplayAmount = ({
+    amountInMinor,
+    currency,
+  }: {
+    amountInMinor: bigint
+    currency: T
+  }): NewDisplayAmount<T> => {
+    const displayInMajor = (
+      Number(amountInMinor) /
+      10 ** Number(displayMajorExponent)
+    ).toFixed(Number(displayMajorExponent))
+
+    return {
+      amountInMinor,
+      currency,
+      displayInMajor,
+    }
+  }
+
+  return {
+    convertFromDisplayMinorUnit: (displayAmount: DisplayAmount<T>): PaymentAmount<S> =>
+      priceRatio.convertFromOther(BigInt(displayAmount.amount)),
+
+    convertFromWallet: (walletAmountToConvert: PaymentAmount<S>): NewDisplayAmount<T> =>
+      toNewDisplayAmount({
+        amountInMinor: priceRatio.convertFromWallet(walletAmountToConvert),
+        currency: displayCurrency,
+      }),
+
+    convertFromWalletToFloor: (
+      walletAmountToConvert: PaymentAmount<S>,
+    ): NewDisplayAmount<T> =>
+      toNewDisplayAmount({
+        amountInMinor: priceRatio.convertFromWalletToFloor(walletAmountToConvert),
+        currency: displayCurrency,
+      }),
+
+    convertFromWalletToCeil: (
+      walletAmountToConvert: PaymentAmount<S>,
+    ): NewDisplayAmount<T> =>
+      toNewDisplayAmount({
+        amountInMinor: priceRatio.convertFromWalletToCeil(walletAmountToConvert),
+        currency: displayCurrency,
+      }),
+
+    displayMinorUnitPerWalletUnit: priceRatio.otherUnitPerWalletUnit,
+  }
+}
+
+export const toWalletPriceRatio = (ratio: number): WalletPriceRatio | ValidationError => {
   const precision = RATIO_PRECISION
 
   const usd: UsdPaymentAmount = {
@@ -81,5 +181,35 @@ export const toPriceRatio = (ratio: number): PriceRatio | ValidationError => {
     currency: WalletCurrency.Btc,
   }
 
-  return PriceRatio({ usd, btc })
+  return WalletPriceRatio({ usd, btc })
+}
+
+export const toDisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCurrency>({
+  ratio,
+  displayCurrency,
+  displayMajorExponent = MajorExponent.STANDARD,
+  walletCurrency = WalletCurrency.Btc as S,
+}: {
+  ratio: number
+  displayCurrency: T
+  displayMajorExponent?: CurrencyMajorExponent
+  walletCurrency?: S
+}): DisplayPriceRatio<S, T> | ValidationError => {
+  const precision = RATIO_PRECISION
+
+  const displayAmountInMinorUnit: DisplayAmount<T> = {
+    amount: Math.floor(ratio * precision),
+    currency: displayCurrency,
+  }
+
+  const walletAmount: PaymentAmount<S> = {
+    amount: BigInt(precision),
+    currency: walletCurrency,
+  }
+
+  return DisplayPriceRatio({
+    displayAmountInMinorUnit,
+    walletAmount,
+    displayMajorExponent,
+  })
 }

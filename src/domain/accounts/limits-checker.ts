@@ -26,7 +26,7 @@ const checkLimit =
     limitName: AccountLimitsType
     limitAmount: UsdCents
     limitError: LimitsExceededErrorConstructor
-    priceRatio: PriceRatio
+    priceRatio: WalletPriceRatio
   }) =>
   async ({
     amount,
@@ -73,7 +73,7 @@ export const AccountLimitsChecker = ({
   priceRatio,
 }: {
   accountLimits: IAccountLimits
-  priceRatio: PriceRatio
+  priceRatio: WalletPriceRatio
 }): AccountLimitsChecker => ({
   checkIntraledger: checkLimit({
     limitName: AccountLimitsType.IntraLedger,

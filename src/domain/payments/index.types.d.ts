@@ -1,9 +1,25 @@
-type PriceRatio = {
+type PriceRatio<S extends WalletCurrency> = {
+  convertFromOther(other: bigint): PaymentAmount<S>
+  convertFromWallet(btcWalletAmount: PaymentAmount<S>): bigint
+  convertFromWalletToFloor(btcWalletAmount: PaymentAmount<S>): bigint
+  convertFromWalletToCeil(btcWalletAmount: PaymentAmount<S>): bigint
+  otherUnitPerWalletUnit(): DisplayCurrencyBasePerSat
+}
+
+type WalletPriceRatio = {
   convertFromUsd(convert: UsdPaymentAmount): BtcPaymentAmount
   convertFromBtc(convert: BtcPaymentAmount): UsdPaymentAmount
   convertFromBtcToFloor(convert: BtcPaymentAmount): UsdPaymentAmount
   convertFromBtcToCeil(convert: BtcPaymentAmount): UsdPaymentAmount
   usdPerSat(): DisplayCurrencyBasePerSat
+}
+
+type DisplayPriceRatio<S extends WalletCurrency, T extends DisplayCurrency> = {
+  convertFromDisplayMinorUnit(convert: DisplayAmount<T>): PaymentAmount<S>
+  convertFromWallet(convert: PaymentAmount<S>): NewDisplayAmount<T>
+  convertFromWalletToFloor(convert: PaymentAmount<S>): NewDisplayAmount<T>
+  convertFromWalletToCeil(convert: PaymentAmount<S>): NewDisplayAmount<T>
+  displayMinorUnitPerWalletUnit(): DisplayCurrencyBasePerSat
 }
 
 type XorPaymentHashProperty = XOR<

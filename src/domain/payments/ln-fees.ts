@@ -42,7 +42,7 @@ export const LnFees = () => {
   }: {
     maxFeeAmount: BtcPaymentAmount
     btcPaymentAmount: BtcPaymentAmount
-    priceRatio: PriceRatio
+    priceRatio: WalletPriceRatio
     senderWalletCurrency: WalletCurrency
   }) => {
     const calculatedMaxFeeAmount = maxProtocolAndBankFee(btcPaymentAmount)

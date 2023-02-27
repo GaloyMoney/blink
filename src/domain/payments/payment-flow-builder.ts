@@ -12,7 +12,7 @@ import {
   InvalidLightningPaymentFlowStateError,
 } from "./errors"
 import { LnFees } from "./ln-fees"
-import { PriceRatio } from "./price-ratio"
+import { WalletPriceRatio } from "./price-ratio"
 import { PaymentFlow } from "./payment-flow"
 
 export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
@@ -298,7 +298,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
           const convertedAmount = await mid.usdFromBtc(btcPaymentAmount)
           if (convertedAmount instanceof Error) return convertedAmount
 
-          const priceRatio = PriceRatio({
+          const priceRatio = WalletPriceRatio({
             usd: convertedAmount,
             btc: btcPaymentAmount,
           })
@@ -324,7 +324,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
           const convertedAmount = await mid.btcFromUsd(usdPaymentAmount)
           if (convertedAmount instanceof Error) return convertedAmount
 
-          const priceRatio = PriceRatio({
+          const priceRatio = WalletPriceRatio({
             btc: convertedAmount,
             usd: usdPaymentAmount,
           })
@@ -380,7 +380,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         const convertedAmount = await usdFromBtc(btcPaymentAmount)
         if (convertedAmount instanceof Error) return convertedAmount
 
-        const priceRatio = PriceRatio({
+        const priceRatio = WalletPriceRatio({
           usd: convertedAmount,
           btc: btcPaymentAmount,
         })
@@ -412,7 +412,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         const convertedAmount = await btcFromUsd(usdPaymentAmount)
         if (convertedAmount instanceof Error) return convertedAmount
 
-        const priceRatio = PriceRatio({
+        const priceRatio = WalletPriceRatio({
           btc: convertedAmount,
           usd: usdPaymentAmount,
         })
@@ -509,7 +509,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     const state = await statePromise
     if (state instanceof Error) return state
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: state.usdPaymentAmount,
       btc: state.btcPaymentAmount,
     })

@@ -12,7 +12,7 @@ import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/pa
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import { InvalidOnChainPaymentFlowBuilderStateError } from "./errors"
-import { PriceRatio } from "./price-ratio"
+import { WalletPriceRatio } from "./price-ratio"
 import { OnChainPaymentFlow } from "./payment-flow"
 
 const calc = AmountCalculator()
@@ -190,7 +190,7 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
           const convertedAmount = await mid.usdFromBtc(btcProposedAmount)
           if (convertedAmount instanceof Error) return convertedAmount
 
-          const priceRatio = PriceRatio({
+          const priceRatio = WalletPriceRatio({
             usd: convertedAmount,
             btc: btcProposedAmount,
           })
@@ -213,7 +213,7 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
           const convertedAmount = await mid.btcFromUsd(usdProposedAmount)
           if (convertedAmount instanceof Error) return convertedAmount
 
-          const priceRatio = PriceRatio({
+          const priceRatio = WalletPriceRatio({
             btc: convertedAmount,
             usd: usdProposedAmount,
           })
@@ -249,7 +249,7 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
         const convertedAmount = await usdFromBtc(btcProposedAmount)
         if (convertedAmount instanceof Error) return convertedAmount
 
-        const priceRatio = PriceRatio({
+        const priceRatio = WalletPriceRatio({
           usd: convertedAmount,
           btc: btcProposedAmount,
         })
@@ -277,7 +277,7 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
         const convertedAmount = await btcFromUsd(usdProposedAmount)
         if (convertedAmount instanceof Error) return convertedAmount
 
-        const priceRatio = PriceRatio({
+        const priceRatio = WalletPriceRatio({
           btc: convertedAmount,
           usd: usdProposedAmount,
         })
@@ -383,7 +383,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     const state = await stateFromPromise(statePromise)
     if (state instanceof Error) return state
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: state.usdProposedAmount,
       btc: state.btcProposedAmount,
     })

@@ -1,6 +1,6 @@
 import { getDealerConfig } from "@config"
 
-import { getCurrentPriceAsPriceRatio } from "@app/prices"
+import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
 
 import { DisplayCurrency } from "@domain/fiat"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
@@ -88,7 +88,7 @@ export const btcFromUsdMidPriceFn = async (
 
 export const getMidPriceRatio = async (
   usdHedgeEnabled: YamlSchema["dealer"][keyof YamlSchema["dealer"]]["hedgingEnabled"],
-): Promise<PriceRatio | PriceServiceError> => {
+): Promise<WalletPriceRatio | PriceServiceError> => {
   if (usdHedgeEnabled) {
     const priceRatio = await dealer.getCentsPerSatsExchangeMidRate()
     if (priceRatio instanceof Error) {
@@ -96,10 +96,10 @@ export const getMidPriceRatio = async (
         error: priceRatio,
         level: ErrorLevel.Warn,
       })
-      return getCurrentPriceAsPriceRatio({ currency: DisplayCurrency.Usd })
+      return getCurrentPriceAsWalletPriceRatio({ currency: DisplayCurrency.Usd })
     }
     return priceRatio
   }
 
-  return getCurrentPriceAsPriceRatio({ currency: DisplayCurrency.Usd })
+  return getCurrentPriceAsWalletPriceRatio({ currency: DisplayCurrency.Usd })
 }

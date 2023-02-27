@@ -14,7 +14,7 @@ import {
 
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
-import { toPriceRatio } from "@domain/payments"
+import { toWalletPriceRatio } from "@domain/payments"
 
 import { wrapToAddAttributes } from "@services/tracing"
 
@@ -239,13 +239,13 @@ export const DealerPriceService = (
   }
 
   const getCentsPerSatsExchangeMidRate = async function (): Promise<
-    PriceRatio | ValidationError
+    WalletPriceRatio | ValidationError
   > {
     try {
       const response = await clientGetCentsPerSatsExchangeMidRate(
         new GetCentsPerSatsExchangeMidRateRequest(),
       )
-      return toPriceRatio(response.getRatioInCentsPerSatoshis())
+      return toWalletPriceRatio(response.getRatioInCentsPerSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
       return parseDealerErrors(error)

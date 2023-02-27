@@ -83,21 +83,16 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     type as AdminLedgerTransactionType,
   )
 
-  let displayAmount: number
-  let displayFee: number
-  let satsFee: number
-  let centsFee: number
+  let displayAmount = displayAmountRaw || 0
+  let displayFee = displayFeeRaw || 0
+  let satsFee = satsFeeRaw || 0
+  let centsFee = centsFeeRaw || 0
   // Temp admin checks, to be removed when usd/feeUsd/fee fields are deprecated
   if (isAdmin) {
     displayAmount = txn.usd ? Math.round(txn.usd * 100) : 0
     displayFee = txn.feeUsd ? Math.round(txn.feeUsd * 100) : 0
     satsFee = txn.fee || 0
     centsFee = displayFee
-  } else {
-    displayAmount = displayAmountRaw || 0
-    displayFee = displayFeeRaw || 0
-    satsFee = satsFeeRaw || 0
-    centsFee = centsFeeRaw || 0
   }
 
   const settlementAmount =
@@ -321,7 +316,7 @@ export const WalletTransactionHistory = {
   fromLedger,
 } as const
 
-// TODO: refactor this to use PriceRatio eventually instead after
+// TODO: refactor this to use WalletPriceRatio eventually instead after
 // 'usd' property removal from db
 const displayCurrencyPerBaseUnitFromAmounts = ({
   displayAmountAsNumber: displayAmountMinorUnit,

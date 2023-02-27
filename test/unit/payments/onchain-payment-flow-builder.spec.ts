@@ -2,7 +2,10 @@ import { getFeesConfig, getOnChainWalletConfig } from "@config"
 
 import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@domain/wallets"
 import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
-import { InvalidOnChainPaymentFlowBuilderStateError, PriceRatio } from "@domain/payments"
+import {
+  InvalidOnChainPaymentFlowBuilderStateError,
+  WalletPriceRatio,
+} from "@domain/payments"
 import { paymentAmountFromNumber, ValidationError, WalletCurrency } from "@domain/shared"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 import { toSats } from "@domain/bitcoin"
@@ -556,7 +559,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                 if (withdrawalFees instanceof Error) throw withdrawalFees
                 const btcProtocolAndBankFee = withdrawalFees.totalFee
 
-                const priceRatio = PriceRatio({
+                const priceRatio = WalletPriceRatio({
                   usd: sendAmount,
                   btc: btcPaymentAmount,
                 })

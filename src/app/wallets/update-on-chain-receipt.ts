@@ -5,7 +5,7 @@ import {
   SECS_PER_10_MINS,
 } from "@config"
 
-import { getCurrentPriceAsPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import { getCurrentPriceAsWalletPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
@@ -266,7 +266,7 @@ const processTxForHotWallet = async ({
 
   const ledger = LedgerService()
 
-  const displayPriceRatio = await getCurrentPriceAsPriceRatio({
+  const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
     currency: DisplayCurrency.Usd,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio

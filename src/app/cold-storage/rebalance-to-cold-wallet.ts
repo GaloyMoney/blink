@@ -1,6 +1,6 @@
 import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
-import { getCurrentPriceAsPriceRatio } from "@app/prices"
+import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
@@ -29,7 +29,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
 
-  const displayPriceRatio = await getCurrentPriceAsPriceRatio({
+  const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
     currency: DisplayCurrency.Usd,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio

@@ -7,7 +7,7 @@ import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
-  PriceRatio,
+  WalletPriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
@@ -251,7 +251,7 @@ const executePaymentViaIntraledger = async <
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
-    const priceRatio = PriceRatio({
+    const priceRatio = WalletPriceRatio({
       usd: paymentFlow.usdPaymentAmount,
       btc: paymentFlow.btcPaymentAmount,
     })

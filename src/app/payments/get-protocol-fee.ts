@@ -5,7 +5,7 @@ import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
   SkipProbeForPubkeyError,
-  PriceRatio,
+  WalletPriceRatio,
 } from "@domain/payments"
 import { LndService } from "@services/lnd"
 
@@ -167,7 +167,7 @@ const estimateLightningFee = async ({
       : "undefined",
   })
 
-  const priceRatio = PriceRatio({ usd: usdPaymentAmount, btc: btcPaymentAmount })
+  const priceRatio = WalletPriceRatio({ usd: usdPaymentAmount, btc: btcPaymentAmount })
   if (priceRatio instanceof Error) return PartialResult.err(priceRatio)
 
   let paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency> | ApplicationError
