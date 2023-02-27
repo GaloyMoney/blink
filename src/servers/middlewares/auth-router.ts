@@ -182,9 +182,10 @@ authRouter.post(
           },
         )
         const session = await kratosPublic.toSession({ cookie: kratosCookieStr })
+        const thirtyDaysFromNow = new Date(new Date().setDate(new Date().getDate() + 30))
         const expiresAt = session.data.expires_at
           ? new Date(session.data.expires_at)
-          : new Date(new Date().setDate(new Date().getDate() + 30))
+          : thirtyDaysFromNow
         const maxAge = expiresAt.getTime() - new Date().getTime()
         res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
           maxAge,
