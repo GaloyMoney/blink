@@ -12,6 +12,7 @@ import ColdStorageRebalanceToHotWalletMutation from "@graphql/admin/root/mutatio
 
 import UserUpdatePhoneMutation from "./root/mutation/user-update-phone"
 import AccountsAddUsdWalletMutation from "./root/mutation/account-add-usd-wallet"
+import BusinessDeleteMapInfoMutation from "./root/mutation/delete-business-map"
 
 export const mutationFields = {
   unauthed: {
@@ -27,6 +28,7 @@ export const mutationFields = {
     accountUpdateStatus: AccountUpdateStatusMutation,
     accountsAddUsdWallet: AccountsAddUsdWalletMutation,
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
+    businessDeleteMapInfo: BusinessDeleteMapInfoMutation,
     coldStorageRebalanceToHotWallet: ColdStorageRebalanceToHotWalletMutation,
   },
 }

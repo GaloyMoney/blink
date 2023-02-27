@@ -275,7 +275,7 @@ export const configSchema = {
         },
         {
           ref: "I",
-          phone: "+19876543336",
+          phone: "+16505554336",
           code: "321321",
           role: "editor",
           username: "editor",
