@@ -660,18 +660,45 @@ describe("cookie flow", () => {
   })
 })
 
-describe("cookie email flow", () => {
-  const email = randomEmail()
-  const password = randomPassword()
+describe("email flow", () => {
   const emailAuthService = AuthWithEmailAndPasswordService()
+  const emailForSessionToken = randomEmail()
+  const passwordForSessionToken = randomPassword()
+  const emailForCookieToken = randomEmail()
+  const passwordForCookieToken = randomPassword()
 
-  it("create email account", async () => {
-    const res = await emailAuthService.createIdentityWithSession(email, password)
+  it("create email account with session token", async () => {
+    const res = await emailAuthService.createIdentityWithSession(
+      emailForSessionToken,
+      passwordForSessionToken,
+    )
     expect(res).toHaveProperty("kratosUserId")
   })
 
-  it("cookie login with email", async () => {
-    const res = await emailAuthService.loginToken(email, password)
+  it("login with email session token", async () => {
+    const res = await emailAuthService.loginToken(
+      emailForSessionToken,
+      passwordForSessionToken,
+    )
     expect(res).toHaveProperty("kratosUserId")
+    expect(res).toHaveProperty("sessionToken")
+  })
+
+  it("create email account with cookie", async () => {
+    const res = await emailAuthService.createIdentityWithCookie(
+      emailForCookieToken,
+      passwordForCookieToken,
+    )
+    expect(res).toHaveProperty("kratosUserId")
+    expect(res).toHaveProperty("cookiesToSendBackToClient")
+  })
+
+  it("login with email cookie", async () => {
+    const res = await emailAuthService.loginCookie(
+      emailForCookieToken,
+      passwordForCookieToken,
+    )
+    expect(res).toHaveProperty("kratosUserId")
+    expect(res).toHaveProperty("cookiesToSendBackToClient")
   })
 })

@@ -10,13 +10,19 @@ import { TwilioClient } from "@services/twilio"
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
+import {
+  LikelyNoUserWithThisEmailExistError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@domain/authentication/errors"
 
 import { CouldNotFindAccountFromKratosIdError, NotImplementedError } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import {
+  AuthWithPhonePasswordlessService,
+  AuthWithEmailAndPasswordService,
+} from "@services/kratos"
 
 import { AccountsRepository } from "@services/mongoose"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
@@ -109,6 +115,90 @@ export const loginWithPhoneCookie = async ({
     kratosResult = await authService.createIdentityWithCookie(phone)
     if (kratosResult instanceof Error) return kratosResult
     addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
+  }
+  return kratosResult
+}
+
+export const loginWithEmailToken = async ({
+  email,
+  password,
+  ip,
+}: {
+  email: EmailAddress
+  password: IdentityPassword
+  ip: IpAddress
+}): Promise<SessionToken | ApplicationError> => {
+  const emailAddressValid = checkedToEmailAddress(email)
+  if (emailAddressValid instanceof Error) return emailAddressValid
+
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkfailedLoginAttemptPerEmailAddressLimits(emailAddressValid)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  await Promise.all([
+    rewardFailedLoginAttemptPerIpLimits(ip),
+    // rewardFailedLoginAttemptPerEmailLimits(phone),
+  ])
+
+  const authService = AuthWithEmailAndPasswordService()
+
+  let kratosResult = await authService.loginToken(email, password)
+  // FIXME: this is a fuzzy error.
+  // it exists because we currently make no difference between a registration and login
+  if (kratosResult instanceof LikelyNoUserWithThisEmailExistError) {
+    // user is a new user
+    kratosResult = await authService.createIdentityWithSession(email, password)
+    if (kratosResult instanceof Error) return kratosResult
+    addAttributesToCurrentSpan({ "login.email.newAccount": true })
+  } else if (kratosResult instanceof Error) {
+    return kratosResult
+  }
+  return kratosResult.sessionToken
+}
+
+export const loginWithEmailCookie = async ({
+  email,
+  password,
+  ip,
+}: {
+  email: EmailAddress
+  password: IdentityPassword
+  ip: IpAddress
+}): Promise<WithCookieResponse | ApplicationError> => {
+  const emailAddressValid = checkedToEmailAddress(email)
+  if (emailAddressValid instanceof Error) return emailAddressValid
+
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkfailedLoginAttemptPerEmailAddressLimits(emailAddressValid)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  await Promise.all([
+    rewardFailedLoginAttemptPerIpLimits(ip),
+    // rewardFailedLoginAttemptPerEmailLimits(phone),
+  ])
+
+  const authService = AuthWithEmailAndPasswordService()
+
+  let kratosResult = await authService.loginCookie(email, password)
+  // FIXME: this is a fuzzy error.
+  // it exists because we currently make no difference between a registration and login
+  if (kratosResult instanceof LikelyNoUserWithThisEmailExistError) {
+    // user is a new user
+    kratosResult = await authService.createIdentityWithCookie(email, password)
+    if (kratosResult instanceof Error) return kratosResult
+    addAttributesToCurrentSpan({ "login.email.cookie.newAccount": true })
   }
   return kratosResult
 }

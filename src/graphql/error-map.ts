@@ -344,6 +344,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message =
         "The phone is associated with an existing wallet that has a non zero balance. Sweep the funds and try again."
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "UserWithEmailAlreadyExistsError":
+      message =
+        "The email is associated with an existing wallet that has a non zero balance. Sweep the funds and try again."
+      return new ValidationInternalError({ message, logger: baseLogger })
     // ----------
     // Unhandled below here
     // ----------
@@ -493,8 +498,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidWalletForAccountError":
     case "AuthenticationError":
     case "LikelyNoUserWithThisPhoneExistError":
+    case "LikelyNoUserWithThisEmailExistError":
     case "LikelyUserAlreadyExistError":
     case "PhoneIdentityDoesNotExistError":
+    case "EmailIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
     case "NotificationsServiceBadGatewayError":
     case "InvalidDeviceTokenError":

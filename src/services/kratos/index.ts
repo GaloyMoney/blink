@@ -2,6 +2,7 @@ import { AuthenticationKratosError, UnknownKratosError } from "./errors"
 import { kratosPublic, listSessionsInternal, toDomainSession } from "./private"
 
 export * from "./auth-phone-no-password"
+export * from "./auth-email-with-password"
 export * from "./cron"
 export * from "./identity"
 
