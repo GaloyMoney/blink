@@ -34,6 +34,11 @@ type LoginWithPhoneCookieSchemaResponse = WithCookieResponse
 type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
 type CreateKratosUserForPhoneNoPasswordSchemaCookieResponse = WithCookieResponse
 
+type LoginWithEmailAndPasswordSchemaResponse = WithSessionResponse
+type LoginWithCookieEmailAndPasswordSchemaResponse = WithCookieResponse
+type CreateKratosUserForEmailAndPasswordSchemaResponse = WithSessionResponse
+type CreateKratosUserForEmailAndPasswordSchemaCookieResponse = WithCookieResponse
+
 interface IAuthWithPhonePasswordlessService {
   loginToken(
     phone: PhoneNumber,
@@ -58,6 +63,29 @@ interface IAuthWithPhonePasswordlessService {
     kratosUserId: UserId
     phone: PhoneNumber
   }): Promise<IdentityPhone | AuthenticationError>
+}
+
+interface IAuthWithEmailAndPasswordService {
+  loginToken(
+    email: EmailAddress,
+    password: IdentityPassword,
+  ): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
+  loginCookie(
+    email: EmailAddress,
+    password: IdentityPassword,
+  ): Promise<LoginWithCookieEmailAndPasswordSchemaResponse | AuthenticationError>
+  logoutToken(token: SessionToken): Promise<void | AuthenticationError>
+  logoutCookie(cookie: SessionCookie): Promise<void | AuthenticationError>
+  createIdentityWithSession(
+    email: EmailAddress,
+    password: IdentityPassword,
+  ): Promise<CreateKratosUserForEmailAndPasswordSchemaResponse | AuthenticationError>
+  createIdentityWithCookie(
+    email: EmailAddress,
+    password: IdentityPassword,
+  ): Promise<
+    CreateKratosUserForEmailAndPasswordSchemaCookieResponse | AuthenticationError
+  >
 }
 
 interface IIdentityRepository {

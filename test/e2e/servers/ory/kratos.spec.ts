@@ -28,6 +28,8 @@ import { AuthWithEmailPasswordlessService } from "@services/kratos/auth-email-no
 
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
+import { AuthWithEmailAndPasswordService } from "@services/kratos/auth-email-with-password"
+
 import USER_UPDATE_PHONE from "../../../e2e/servers/graphql-main-server/mutations/user-update-phone.gql"
 import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-server/queries/account-details-by-user-phone.gql"
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
@@ -655,5 +657,21 @@ describe("cookie flow", () => {
       id: sessionId,
     })
     expect(kratosResp.status).toBe(204)
+  })
+})
+
+describe("cookie email flow", () => {
+  const email = randomEmail()
+  const password = randomPassword()
+  const emailAuthService = AuthWithEmailAndPasswordService()
+
+  it("create email account", async () => {
+    const res = await emailAuthService.createIdentityWithSession(email, password)
+    expect(res).toHaveProperty("kratosUserId")
+  })
+
+  it("cookie login with email", async () => {
+    const res = await emailAuthService.loginToken(email, password)
+    expect(res).toHaveProperty("kratosUserId")
   })
 })
