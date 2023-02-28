@@ -128,6 +128,10 @@ type BTCWallet implements Wallet {
   walletCurrency: WalletCurrency!
 }
 
+input BusinessDeleteMapInfoInput {
+  username: Username!
+}
+
 input BusinessUpdateMapInfoInput {
   latitude: Float!
   longitude: Float!
@@ -243,6 +247,7 @@ type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   accountsAddUsdWallet(input: AccountsAddUsdWalletInput!): WalletDetailsPayload
+  businessDeleteMapInfo(input: BusinessDeleteMapInfoInput!): AccountDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!

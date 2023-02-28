@@ -70,8 +70,8 @@ type Account = {
   level: AccountLevel
   status: AccountStatus
   statusHistory: AccountStatusHistory
-  title: BusinessMapTitle
-  coordinates: Coordinates
+  title: BusinessMapTitle | null
+  coordinates: Coordinates | null
   contactEnabled: boolean
   readonly contacts: AccountContact[]
   readonly isEditor: boolean

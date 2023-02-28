@@ -19,6 +19,7 @@ export * from "./update-contact-alias"
 export * from "./update-default-walletid"
 export * from "./update-display-currency"
 export * from "./username-available"
+export * from "./delete-business-map-info"
 
 const accounts = AccountsRepository()
 
