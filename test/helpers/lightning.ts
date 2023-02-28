@@ -120,6 +120,15 @@ export const openChannelTesting = async ({
   lndPartner,
   socket,
   is_private = false,
+  base,
+  rate,
+}: {
+  lnd: AuthenticatedLnd
+  lndPartner: AuthenticatedLnd
+  socket: string
+  is_private?: boolean
+  base?: number
+  rate?: number
 }) => {
   await waitUntilSync({ lnds: [lnd, lndPartner] })
 
@@ -134,6 +143,8 @@ export const openChannelTesting = async ({
         is_private,
         partner_public_key,
         partner_socket: socket,
+        fee_rate: rate,
+        base_fee_mtokens: base === undefined ? base : `${base * 1000}`,
       })
     } catch (error) {
       baseLogger.warn({ error }, "openChannel failed. trying again.")
