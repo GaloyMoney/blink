@@ -3,10 +3,9 @@ module.exports = {
   rootDir: "../",
   roots: ["<rootDir>/test/unit", "<rootDir>/src"],
   transform: {
-    "^.+\\.(ts)$": "ts-jest"
+    "^.+\\.(ts)$": "ts-jest",
   },
   testRegex: ".*\\.spec\\.ts$",
-  testSequencer: "<rootDir>/test/jest-test-sequencer.js",
   testEnvironment: "node",
   moduleNameMapper: {
     "^@config$": ["<rootDir>src/config/index"],
