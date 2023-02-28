@@ -241,6 +241,10 @@ const MeSubscription = {
       event: PubSubDefaultTriggers.AccountUpdate,
       suffix: id,
     })
+    const userPriceUpdateTrigger = customPubSubTrigger({
+      event: PubSubDefaultTriggers.UserPriceUpdate,
+      suffix: displayCurrency,
+    })
 
     const pricePerSat = await Prices.getCurrentSatPrice({ currency: displayCurrency })
     const pricePerUsdCent = await Prices.getCurrentUsdCentPrice({
@@ -255,20 +259,15 @@ const MeSubscription = {
       }
       if (displayCurrency === DisplayCurrency.Usd) {
         pubsub.publishImmediate({
-          trigger: accountUpdatedTrigger,
+          trigger: userPriceUpdateTrigger,
           payload: { price: priceData },
         })
       }
       pubsub.publishImmediate({
-        trigger: accountUpdatedTrigger,
+        trigger: userPriceUpdateTrigger,
         payload: { realtimePrice: priceData },
       })
     }
-
-    const userPriceUpdateTrigger = customPubSubTrigger({
-      event: PubSubDefaultTriggers.UserPriceUpdate,
-      suffix: displayCurrency,
-    })
 
     return pubsub.createAsyncIterator({
       trigger: [accountUpdatedTrigger, userPriceUpdateTrigger],
