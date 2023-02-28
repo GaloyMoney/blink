@@ -1,6 +1,6 @@
-import { majorToMinorUnit, toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
+import { DisplayCurrency, majorToMinorUnit, toCents } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
 
@@ -275,7 +275,9 @@ export const NotificationsService = (): INotificationsService => {
       event: PubSubDefaultTriggers.UserPriceUpdate,
       suffix: displayCurrency,
     })
-    pubsub.publish({ trigger: userPriceUpdateTrigger, payload: { price: payload } })
+    if (displayCurrency === DisplayCurrency.Usd) {
+      pubsub.publish({ trigger: userPriceUpdateTrigger, payload: { price: payload } })
+    }
     pubsub.publish({
       trigger: userPriceUpdateTrigger,
       payload: { realtimePrice: payload },

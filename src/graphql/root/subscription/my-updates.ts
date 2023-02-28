@@ -253,10 +253,12 @@ const MeSubscription = {
         centsPerSat: majorToMinorUnit(pricePerSat.price),
         centsPerUsdCent: majorToMinorUnit(pricePerUsdCent.price),
       }
-      pubsub.publishImmediate({
-        trigger: accountUpdatedTrigger,
-        payload: { price: priceData },
-      })
+      if (displayCurrency === DisplayCurrency.Usd) {
+        pubsub.publishImmediate({
+          trigger: accountUpdatedTrigger,
+          payload: { price: priceData },
+        })
+      }
       pubsub.publishImmediate({
         trigger: accountUpdatedTrigger,
         payload: { realtimePrice: priceData },
