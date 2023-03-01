@@ -82,6 +82,7 @@ authRouter.post(
 
       // new flow
       if (rawToken.length === 32) {
+        addAttributesToCurrentSpan({ kratosToken: true, legacyJwt: false })
         const kratosRes = await validateKratosToken(rawToken as SessionToken)
         if (kratosRes instanceof KratosError) {
           res.status(401).send({ error: `${kratosRes.name} ${kratosRes.message}` })
@@ -96,6 +97,7 @@ authRouter.post(
 
       // legacy flow
       try {
+        addAttributesToCurrentSpan({ kratosToken: false, legacyJwt: true })
         tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
           algorithms: jwtAlgorithms,
         })
