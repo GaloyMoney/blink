@@ -177,22 +177,33 @@ export const recordLnIntraLedgerPayment = async ({
   recipientWalletDescriptor,
   paymentAmount,
 }) => {
-  const { metadata, debitAccountAdditionalMetadata } =
-    LedgerFacade.LnIntraledgerLedgerMetadata({
-      paymentHash: crypto.randomUUID() as PaymentHash,
-      amountDisplayCurrency: Number(
-        paymentAmount.usd.amount,
-      ) as DisplayCurrencyBaseAmount,
-      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
-      pubkey: crypto.randomUUID() as Pubkey,
-      paymentAmounts: {
-        btcPaymentAmount: paymentAmount.btc,
-        usdPaymentAmount: paymentAmount.usd,
-        btcProtocolAndBankFee: ZERO_SATS,
-        usdProtocolAndBankFee: ZERO_CENTS,
-      },
-    })
+  const {
+    metadata,
+    debitAccountAdditionalMetadata: additionalDebitMetadata,
+    creditAccountAdditionalMetadata: additionalCreditMetadata,
+  } = LedgerFacade.LnIntraledgerLedgerMetadata({
+    paymentHash: crypto.randomUUID() as PaymentHash,
+
+    senderAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    senderDisplayCurrency: DisplayCurrency.Usd,
+
+    recipientAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    recipientDisplayCurrency: DisplayCurrency.Usd,
+
+    pubkey: crypto.randomUUID() as Pubkey,
+    paymentAmounts: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolAndBankFee: ZERO_SATS,
+      usdProtocolAndBankFee: ZERO_CENTS,
+    },
+  })
 
   return LedgerFacade.recordIntraledger({
     description: "sends/receives ln intraledger",
@@ -200,8 +211,8 @@ export const recordLnIntraLedgerPayment = async ({
     senderWalletDescriptor,
     recipientWalletDescriptor,
     metadata,
-    additionalDebitMetadata: debitAccountAdditionalMetadata,
-    additionalCreditMetadata: {},
+    additionalDebitMetadata,
+    additionalCreditMetadata,
   })
 }
 
@@ -210,20 +221,30 @@ export const recordWalletIdIntraLedgerPayment = async ({
   recipientWalletDescriptor,
   paymentAmount,
 }) => {
-  const { metadata, debitAccountAdditionalMetadata } =
-    LedgerFacade.WalletIdIntraledgerLedgerMetadata({
-      amountDisplayCurrency: Number(
-        paymentAmount.usd.amount,
-      ) as DisplayCurrencyBaseAmount,
-      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
-      paymentAmounts: {
-        btcPaymentAmount: paymentAmount.btc,
-        usdPaymentAmount: paymentAmount.usd,
-        btcProtocolAndBankFee: ZERO_SATS,
-        usdProtocolAndBankFee: ZERO_CENTS,
-      },
-    })
+  const {
+    metadata,
+    debitAccountAdditionalMetadata: additionalDebitMetadata,
+    creditAccountAdditionalMetadata: additionalCreditMetadata,
+  } = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
+    senderAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    senderDisplayCurrency: DisplayCurrency.Usd,
+
+    recipientAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    recipientDisplayCurrency: DisplayCurrency.Usd,
+
+    paymentAmounts: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolAndBankFee: ZERO_SATS,
+      usdProtocolAndBankFee: ZERO_CENTS,
+    },
+  })
 
   return LedgerFacade.recordIntraledger({
     description: "sends/receives walletId intraledger",
@@ -231,8 +252,8 @@ export const recordWalletIdIntraLedgerPayment = async ({
     senderWalletDescriptor,
     recipientWalletDescriptor,
     metadata,
-    additionalDebitMetadata: debitAccountAdditionalMetadata,
-    additionalCreditMetadata: {},
+    additionalDebitMetadata,
+    additionalCreditMetadata,
   })
 }
 
@@ -241,22 +262,32 @@ export const recordOnChainIntraLedgerPayment = async ({
   recipientWalletDescriptor,
   paymentAmount,
 }) => {
-  const { metadata, debitAccountAdditionalMetadata } =
-    LedgerFacade.OnChainIntraledgerLedgerMetadata({
-      amountDisplayCurrency: Number(
-        paymentAmount.usd.amount,
-      ) as DisplayCurrencyBaseAmount,
-      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
-      sendAll: false,
-      payeeAddresses: ["address1" as OnChainAddress],
-      paymentAmounts: {
-        btcPaymentAmount: paymentAmount.btc,
-        usdPaymentAmount: paymentAmount.usd,
-        btcProtocolAndBankFee: ZERO_SATS,
-        usdProtocolAndBankFee: ZERO_CENTS,
-      },
-    })
+  const {
+    metadata,
+    debitAccountAdditionalMetadata: additionalDebitMetadata,
+    creditAccountAdditionalMetadata: additionalCreditMetadata,
+  } = LedgerFacade.OnChainIntraledgerLedgerMetadata({
+    senderAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    senderDisplayCurrency: DisplayCurrency.Usd,
+
+    recipientAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    recipientDisplayCurrency: DisplayCurrency.Usd,
+
+    sendAll: false,
+    payeeAddresses: ["address1" as OnChainAddress],
+    paymentAmounts: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolAndBankFee: ZERO_SATS,
+      usdProtocolAndBankFee: ZERO_CENTS,
+    },
+  })
 
   return LedgerFacade.recordIntraledger({
     description: "sends/receives onchain intraledger",
@@ -264,8 +295,8 @@ export const recordOnChainIntraLedgerPayment = async ({
     senderWalletDescriptor,
     recipientWalletDescriptor,
     metadata,
-    additionalDebitMetadata: debitAccountAdditionalMetadata,
-    additionalCreditMetadata: {},
+    additionalDebitMetadata,
+    additionalCreditMetadata,
   })
 }
 
@@ -274,22 +305,32 @@ export const recordLnTradeIntraAccountTxn = async ({
   recipientWalletDescriptor,
   paymentAmount,
 }) => {
-  const { metadata, debitAccountAdditionalMetadata } =
-    LedgerFacade.LnTradeIntraAccountLedgerMetadata({
-      paymentHash: crypto.randomUUID() as PaymentHash,
-      amountDisplayCurrency: Number(
-        paymentAmount.usd.amount,
-      ) as DisplayCurrencyBaseAmount,
-      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
-      pubkey: crypto.randomUUID() as Pubkey,
-      paymentAmounts: {
-        btcPaymentAmount: paymentAmount.btc,
-        usdPaymentAmount: paymentAmount.usd,
-        btcProtocolAndBankFee: ZERO_SATS,
-        usdProtocolAndBankFee: ZERO_CENTS,
-      },
-    })
+  const {
+    metadata,
+    debitAccountAdditionalMetadata: additionalDebitMetadata,
+    creditAccountAdditionalMetadata: additionalCreditMetadata,
+  } = LedgerFacade.LnTradeIntraAccountLedgerMetadata({
+    paymentHash: crypto.randomUUID() as PaymentHash,
+    senderAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    senderDisplayCurrency: DisplayCurrency.Usd,
+
+    recipientAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    recipientDisplayCurrency: DisplayCurrency.Usd,
+
+    pubkey: crypto.randomUUID() as Pubkey,
+    paymentAmounts: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolAndBankFee: ZERO_SATS,
+      usdProtocolAndBankFee: ZERO_CENTS,
+    },
+  })
 
   return LedgerFacade.recordIntraledger({
     description: "sends/receives ln trade",
@@ -297,8 +338,8 @@ export const recordLnTradeIntraAccountTxn = async ({
     senderWalletDescriptor,
     recipientWalletDescriptor,
     metadata,
-    additionalDebitMetadata: debitAccountAdditionalMetadata,
-    additionalCreditMetadata: {},
+    additionalDebitMetadata,
+    additionalCreditMetadata,
   })
 }
 
@@ -307,10 +348,23 @@ export const recordWalletIdTradeIntraAccountTxn = async ({
   recipientWalletDescriptor,
   paymentAmount,
 }) => {
-  const metadata = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
-    amountDisplayCurrency: Number(paymentAmount.usd.amount) as DisplayCurrencyBaseAmount,
-    feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-    displayCurrency: DisplayCurrency.Usd,
+  const {
+    metadata,
+    debitAccountAdditionalMetadata: additionalDebitMetadata,
+    creditAccountAdditionalMetadata: additionalCreditMetadata,
+  } = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
+    senderAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    senderDisplayCurrency: DisplayCurrency.Usd,
+
+    recipientAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    recipientDisplayCurrency: DisplayCurrency.Usd,
+
     paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,
@@ -325,8 +379,8 @@ export const recordWalletIdTradeIntraAccountTxn = async ({
     senderWalletDescriptor,
     recipientWalletDescriptor,
     metadata,
-    additionalDebitMetadata: {},
-    additionalCreditMetadata: {},
+    additionalDebitMetadata,
+    additionalCreditMetadata,
   })
 }
 
@@ -335,22 +389,32 @@ export const recordOnChainTradeIntraAccountTxn = async ({
   recipientWalletDescriptor,
   paymentAmount,
 }) => {
-  const { metadata, debitAccountAdditionalMetadata } =
-    LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
-      amountDisplayCurrency: Number(
-        paymentAmount.usd.amount,
-      ) as DisplayCurrencyBaseAmount,
-      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
-      sendAll: false,
-      payeeAddresses: ["address1" as OnChainAddress],
-      paymentAmounts: {
-        btcPaymentAmount: paymentAmount.btc,
-        usdPaymentAmount: paymentAmount.usd,
-        btcProtocolAndBankFee: ZERO_SATS,
-        usdProtocolAndBankFee: ZERO_CENTS,
-      },
-    })
+  const {
+    metadata,
+    debitAccountAdditionalMetadata: additionalDebitMetadata,
+    creditAccountAdditionalMetadata: additionalCreditMetadata,
+  } = LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
+    senderAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    senderDisplayCurrency: DisplayCurrency.Usd,
+
+    recipientAmountDisplayCurrency: Number(
+      paymentAmount.usd.amount,
+    ) as DisplayCurrencyBaseAmount,
+    recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    recipientDisplayCurrency: DisplayCurrency.Usd,
+
+    sendAll: false,
+    payeeAddresses: ["address1" as OnChainAddress],
+    paymentAmounts: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolAndBankFee: ZERO_SATS,
+      usdProtocolAndBankFee: ZERO_CENTS,
+    },
+  })
 
   return LedgerFacade.recordIntraledger({
     description: "sends/receives onchain trade",
@@ -358,8 +422,8 @@ export const recordOnChainTradeIntraAccountTxn = async ({
     senderWalletDescriptor,
     recipientWalletDescriptor,
     metadata,
-    additionalDebitMetadata: debitAccountAdditionalMetadata,
-    additionalCreditMetadata: {},
+    additionalDebitMetadata,
+    additionalCreditMetadata,
   })
 }
 

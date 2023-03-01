@@ -41,21 +41,38 @@ describe("Tx metadata", () => {
   }
 
   describe("intraledger", () => {
+    const senderAmountDisplayCurrency = amountDisplayCurrency
+    const senderFeeDisplayCurrency = feeDisplayCurrency
+    const senderDisplayCurrency = displayCurrency
+
+    const recipientAmountDisplayCurrency = (amountDisplayCurrency +
+      1) as DisplayCurrencyBaseAmount
+    const recipientFeeDisplayCurrency = (feeDisplayCurrency +
+      1) as DisplayCurrencyBaseAmount
+    const recipientDisplayCurrency = displayCurrency
+
     it("onchain", () => {
-      const { metadata, debitAccountAdditionalMetadata } =
-        OnChainIntraledgerLedgerMetadata({
-          payeeAddresses,
-          sendAll: true,
-          paymentAmounts: onChainPaymentAmounts,
+      const {
+        metadata,
+        debitAccountAdditionalMetadata,
+        creditAccountAdditionalMetadata,
+      } = OnChainIntraledgerLedgerMetadata({
+        payeeAddresses,
+        sendAll: true,
+        paymentAmounts: onChainPaymentAmounts,
 
-          amountDisplayCurrency,
-          feeDisplayCurrency,
-          displayCurrency,
+        senderAmountDisplayCurrency,
+        senderFeeDisplayCurrency,
+        senderDisplayCurrency,
 
-          memoOfPayer,
-          senderUsername,
-          recipientUsername,
-        })
+        recipientAmountDisplayCurrency,
+        recipientFeeDisplayCurrency,
+        recipientDisplayCurrency,
+
+        memoOfPayer,
+        senderUsername,
+        recipientUsername,
+      })
 
       expect(metadata).toEqual(
         expect.objectContaining({
@@ -64,26 +81,46 @@ describe("Tx metadata", () => {
           type: LedgerTransactionType.OnchainIntraLedger,
         }),
       )
+
       expect(debitAccountAdditionalMetadata).toEqual(
         expect.objectContaining({
           username: recipientUsername,
           memoPayer: memoOfPayer,
+
+          displayAmount: senderAmountDisplayCurrency,
+          displayFee: senderFeeDisplayCurrency,
+          displayCurrency: senderDisplayCurrency,
+        }),
+      )
+
+      expect(creditAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          displayAmount: recipientAmountDisplayCurrency,
+          displayFee: recipientFeeDisplayCurrency,
+          displayCurrency: recipientDisplayCurrency,
         }),
       )
     })
     it("onchain trade", () => {
-      const { metadata, debitAccountAdditionalMetadata } =
-        OnChainTradeIntraAccountLedgerMetadata({
-          payeeAddresses,
-          sendAll: true,
-          paymentAmounts: onChainPaymentAmounts,
+      const {
+        metadata,
+        debitAccountAdditionalMetadata,
+        creditAccountAdditionalMetadata,
+      } = OnChainTradeIntraAccountLedgerMetadata({
+        payeeAddresses,
+        sendAll: true,
+        paymentAmounts: onChainPaymentAmounts,
 
-          amountDisplayCurrency,
-          feeDisplayCurrency,
-          displayCurrency,
+        senderAmountDisplayCurrency,
+        senderFeeDisplayCurrency,
+        senderDisplayCurrency,
 
-          memoOfPayer,
-        })
+        recipientAmountDisplayCurrency,
+        recipientFeeDisplayCurrency,
+        recipientDisplayCurrency,
+
+        memoOfPayer,
+      })
 
       expect(metadata).toEqual(
         expect.objectContaining({
@@ -91,22 +128,43 @@ describe("Tx metadata", () => {
           type: LedgerTransactionType.OnChainTradeIntraAccount,
         }),
       )
+
       expect(debitAccountAdditionalMetadata).toEqual(
         expect.objectContaining({
           memoPayer: memoOfPayer,
+
+          displayAmount: senderAmountDisplayCurrency,
+          displayFee: senderFeeDisplayCurrency,
+          displayCurrency: senderDisplayCurrency,
+        }),
+      )
+
+      expect(creditAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          displayAmount: recipientAmountDisplayCurrency,
+          displayFee: recipientFeeDisplayCurrency,
+          displayCurrency: recipientDisplayCurrency,
         }),
       )
     })
 
     it("ln", () => {
-      const { metadata, debitAccountAdditionalMetadata } = LnIntraledgerLedgerMetadata({
+      const {
+        metadata,
+        debitAccountAdditionalMetadata,
+        creditAccountAdditionalMetadata,
+      } = LnIntraledgerLedgerMetadata({
         paymentHash,
         pubkey,
         paymentAmounts,
 
-        amountDisplayCurrency,
-        feeDisplayCurrency,
-        displayCurrency,
+        senderAmountDisplayCurrency,
+        senderFeeDisplayCurrency,
+        senderDisplayCurrency,
+
+        recipientAmountDisplayCurrency,
+        recipientFeeDisplayCurrency,
+        recipientDisplayCurrency,
 
         memoOfPayer,
         senderUsername,
@@ -120,36 +178,53 @@ describe("Tx metadata", () => {
           type: LedgerTransactionType.LnIntraLedger,
 
           satsFee: toSats(0),
-          displayFee: feeDisplayCurrency,
-          displayAmount: amountDisplayCurrency,
 
-          displayCurrency,
           centsAmount: toCents(10),
           satsAmount: toSats(2000),
           centsFee: toCents(0),
         }),
       )
+
       expect(debitAccountAdditionalMetadata).toEqual(
         expect.objectContaining({
           username: recipientUsername,
           memoPayer: memoOfPayer,
+
+          displayAmount: senderAmountDisplayCurrency,
+          displayFee: senderFeeDisplayCurrency,
+          displayCurrency: senderDisplayCurrency,
+        }),
+      )
+
+      expect(creditAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          displayAmount: recipientAmountDisplayCurrency,
+          displayFee: recipientFeeDisplayCurrency,
+          displayCurrency: recipientDisplayCurrency,
         }),
       )
     })
 
     it("ln trade", () => {
-      const { metadata, debitAccountAdditionalMetadata } =
-        LnTradeIntraAccountLedgerMetadata({
-          paymentHash,
-          pubkey,
-          paymentAmounts,
+      const {
+        metadata,
+        debitAccountAdditionalMetadata,
+        creditAccountAdditionalMetadata,
+      } = LnTradeIntraAccountLedgerMetadata({
+        paymentHash,
+        pubkey,
+        paymentAmounts,
 
-          amountDisplayCurrency,
-          feeDisplayCurrency,
-          displayCurrency,
+        senderAmountDisplayCurrency,
+        senderFeeDisplayCurrency,
+        senderDisplayCurrency,
 
-          memoOfPayer,
-        })
+        recipientAmountDisplayCurrency,
+        recipientFeeDisplayCurrency,
+        recipientDisplayCurrency,
+
+        memoOfPayer,
+      })
 
       expect(metadata).toEqual(
         expect.objectContaining({
@@ -157,35 +232,52 @@ describe("Tx metadata", () => {
           type: LedgerTransactionType.LnTradeIntraAccount,
 
           satsFee: toSats(0),
-          displayFee: feeDisplayCurrency,
-          displayAmount: amountDisplayCurrency,
 
-          displayCurrency,
           centsAmount: toCents(10),
           satsAmount: toSats(2000),
           centsFee: toCents(0),
         }),
       )
+
       expect(debitAccountAdditionalMetadata).toEqual(
         expect.objectContaining({
           memoPayer: memoOfPayer,
+
+          displayAmount: senderAmountDisplayCurrency,
+          displayFee: senderFeeDisplayCurrency,
+          displayCurrency: senderDisplayCurrency,
+        }),
+      )
+
+      expect(creditAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          displayAmount: recipientAmountDisplayCurrency,
+          displayFee: recipientFeeDisplayCurrency,
+          displayCurrency: recipientDisplayCurrency,
         }),
       )
     })
 
     it("wallet id", () => {
-      const { metadata, debitAccountAdditionalMetadata } =
-        WalletIdIntraledgerLedgerMetadata({
-          paymentAmounts,
+      const {
+        metadata,
+        debitAccountAdditionalMetadata,
+        creditAccountAdditionalMetadata,
+      } = WalletIdIntraledgerLedgerMetadata({
+        paymentAmounts,
 
-          feeDisplayCurrency,
-          amountDisplayCurrency,
-          displayCurrency,
+        senderAmountDisplayCurrency,
+        senderFeeDisplayCurrency,
+        senderDisplayCurrency,
 
-          memoOfPayer,
-          senderUsername,
-          recipientUsername,
-        })
+        recipientAmountDisplayCurrency,
+        recipientFeeDisplayCurrency,
+        recipientDisplayCurrency,
+
+        memoOfPayer,
+        senderUsername,
+        recipientUsername,
+      })
 
       expect(metadata).toEqual(
         expect.objectContaining({
@@ -194,29 +286,47 @@ describe("Tx metadata", () => {
           type: LedgerTransactionType.IntraLedger,
 
           satsFee: toSats(0),
-          displayFee: feeDisplayCurrency,
-          displayAmount: amountDisplayCurrency,
 
-          displayCurrency,
           centsAmount: toCents(10),
           satsAmount: toSats(2000),
           centsFee: toCents(0),
         }),
       )
+
       expect(debitAccountAdditionalMetadata).toEqual(
         expect.objectContaining({
           username: recipientUsername,
+
+          displayAmount: senderAmountDisplayCurrency,
+          displayFee: senderFeeDisplayCurrency,
+          displayCurrency: senderDisplayCurrency,
+        }),
+      )
+
+      expect(creditAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          displayAmount: recipientAmountDisplayCurrency,
+          displayFee: recipientFeeDisplayCurrency,
+          displayCurrency: recipientDisplayCurrency,
         }),
       )
     })
 
     it("wallet id trade", () => {
-      const metadata = WalletIdTradeIntraAccountLedgerMetadata({
+      const {
+        metadata,
+        debitAccountAdditionalMetadata,
+        creditAccountAdditionalMetadata,
+      } = WalletIdTradeIntraAccountLedgerMetadata({
         paymentAmounts,
 
-        feeDisplayCurrency,
-        amountDisplayCurrency,
-        displayCurrency,
+        senderAmountDisplayCurrency,
+        senderFeeDisplayCurrency,
+        senderDisplayCurrency,
+
+        recipientAmountDisplayCurrency,
+        recipientFeeDisplayCurrency,
+        recipientDisplayCurrency,
 
         memoOfPayer,
       })
@@ -227,13 +337,26 @@ describe("Tx metadata", () => {
           type: LedgerTransactionType.WalletIdTradeIntraAccount,
 
           satsFee: toSats(0),
-          displayFee: feeDisplayCurrency,
-          displayAmount: amountDisplayCurrency,
 
-          displayCurrency,
           centsAmount: toCents(10),
           satsAmount: toSats(2000),
           centsFee: toCents(0),
+        }),
+      )
+
+      expect(debitAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          displayAmount: senderAmountDisplayCurrency,
+          displayFee: senderFeeDisplayCurrency,
+          displayCurrency: senderDisplayCurrency,
+        }),
+      )
+
+      expect(creditAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          displayAmount: recipientAmountDisplayCurrency,
+          displayFee: recipientFeeDisplayCurrency,
+          displayCurrency: recipientDisplayCurrency,
         }),
       )
     })

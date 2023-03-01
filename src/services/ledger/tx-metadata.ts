@@ -232,9 +232,12 @@ export const OnChainIntraledgerLedgerMetadata = ({
   payeeAddresses,
   sendAll,
   paymentAmounts,
-  feeDisplayCurrency,
-  amountDisplayCurrency,
-  displayCurrency,
+  senderFeeDisplayCurrency,
+  senderAmountDisplayCurrency,
+  senderDisplayCurrency,
+  recipientFeeDisplayCurrency,
+  recipientAmountDisplayCurrency,
+  recipientDisplayCurrency,
   memoOfPayer,
   senderUsername,
   recipientUsername,
@@ -243,9 +246,13 @@ export const OnChainIntraledgerLedgerMetadata = ({
   sendAll: boolean
   paymentAmounts: AmountsAndFees
 
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
+  senderFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  senderAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  senderDisplayCurrency: DisplayCurrency
+
+  recipientFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientDisplayCurrency: DisplayCurrency
 
   memoOfPayer?: string
   senderUsername?: Username
@@ -267,10 +274,7 @@ export const OnChainIntraledgerLedgerMetadata = ({
     sendAll,
 
     satsFee: toSats(satsFee),
-    displayFee: feeDisplayCurrency,
-    displayAmount: amountDisplayCurrency,
 
-    displayCurrency,
     centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
     centsFee: toCents(centsFee),
@@ -278,23 +282,42 @@ export const OnChainIntraledgerLedgerMetadata = ({
   const debitAccountAdditionalMetadata = {
     memoPayer: memoOfPayer,
     username: recipientUsername,
+    displayAmount: senderAmountDisplayCurrency,
+    displayFee: senderFeeDisplayCurrency,
+    displayCurrency: senderDisplayCurrency,
   }
-  return { metadata, debitAccountAdditionalMetadata }
+
+  const creditAccountAdditionalMetadata = {
+    displayAmount: recipientAmountDisplayCurrency,
+    displayFee: recipientFeeDisplayCurrency,
+    displayCurrency: recipientDisplayCurrency,
+  }
+
+  return { metadata, debitAccountAdditionalMetadata, creditAccountAdditionalMetadata }
 }
 
 export const WalletIdIntraledgerLedgerMetadata = ({
   paymentAmounts,
-  feeDisplayCurrency,
-  amountDisplayCurrency,
-  displayCurrency,
+  senderFeeDisplayCurrency,
+  senderAmountDisplayCurrency,
+  senderDisplayCurrency,
+  recipientFeeDisplayCurrency,
+  recipientAmountDisplayCurrency,
+  recipientDisplayCurrency,
   memoOfPayer,
   senderUsername,
   recipientUsername,
 }: {
   paymentAmounts: AmountsAndFees
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
+
+  senderFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  senderAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  senderDisplayCurrency: DisplayCurrency
+
+  recipientFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientDisplayCurrency: DisplayCurrency
+
   memoOfPayer?: string
   senderUsername?: Username
   recipientUsername?: Username
@@ -313,28 +336,38 @@ export const WalletIdIntraledgerLedgerMetadata = ({
     username: senderUsername,
 
     satsFee: toSats(satsFee),
-    displayFee: feeDisplayCurrency,
-    displayAmount: amountDisplayCurrency,
 
-    displayCurrency,
     centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
     centsFee: toCents(centsFee),
   }
+
   const debitAccountAdditionalMetadata = {
     username: recipientUsername,
+    displayAmount: senderAmountDisplayCurrency,
+    displayFee: senderFeeDisplayCurrency,
+    displayCurrency: senderDisplayCurrency,
   }
 
-  return { metadata, debitAccountAdditionalMetadata }
+  const creditAccountAdditionalMetadata = {
+    displayAmount: recipientAmountDisplayCurrency,
+    displayFee: recipientFeeDisplayCurrency,
+    displayCurrency: recipientDisplayCurrency,
+  }
+
+  return { metadata, debitAccountAdditionalMetadata, creditAccountAdditionalMetadata }
 }
 
 export const LnIntraledgerLedgerMetadata = ({
   paymentHash,
   pubkey,
   paymentAmounts,
-  feeDisplayCurrency,
-  amountDisplayCurrency,
-  displayCurrency,
+  senderFeeDisplayCurrency,
+  senderAmountDisplayCurrency,
+  senderDisplayCurrency,
+  recipientFeeDisplayCurrency,
+  recipientAmountDisplayCurrency,
+  recipientDisplayCurrency,
   memoOfPayer,
   senderUsername,
   recipientUsername,
@@ -342,9 +375,15 @@ export const LnIntraledgerLedgerMetadata = ({
   paymentHash: PaymentHash
   pubkey: Pubkey
   paymentAmounts: AmountsAndFees
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
+
+  senderFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  senderAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  senderDisplayCurrency: DisplayCurrency
+
+  recipientFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientDisplayCurrency: DisplayCurrency
+
   memoOfPayer?: string
   senderUsername?: Username
   recipientUsername?: Username
@@ -365,37 +404,53 @@ export const LnIntraledgerLedgerMetadata = ({
     pubkey,
 
     satsFee: toSats(satsFee),
-    displayFee: feeDisplayCurrency,
-    displayAmount: amountDisplayCurrency,
 
-    displayCurrency,
     centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
     centsFee: toCents(centsFee),
   }
+
   const debitAccountAdditionalMetadata = {
     memoPayer: memoOfPayer,
     username: recipientUsername,
+    displayAmount: senderAmountDisplayCurrency,
+    displayFee: senderFeeDisplayCurrency,
+    displayCurrency: senderDisplayCurrency,
   }
-  return { metadata, debitAccountAdditionalMetadata }
+
+  const creditAccountAdditionalMetadata = {
+    displayAmount: recipientAmountDisplayCurrency,
+    displayFee: recipientFeeDisplayCurrency,
+    displayCurrency: recipientDisplayCurrency,
+  }
+
+  return { metadata, debitAccountAdditionalMetadata, creditAccountAdditionalMetadata }
 }
 
 export const OnChainTradeIntraAccountLedgerMetadata = ({
   payeeAddresses,
   sendAll,
   paymentAmounts,
-  feeDisplayCurrency,
-  amountDisplayCurrency,
-  displayCurrency,
+  senderFeeDisplayCurrency,
+  senderAmountDisplayCurrency,
+  senderDisplayCurrency,
+  recipientFeeDisplayCurrency,
+  recipientAmountDisplayCurrency,
+  recipientDisplayCurrency,
   memoOfPayer,
 }: {
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
   paymentAmounts: AmountsAndFees
 
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
+  senderFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  senderAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  senderDisplayCurrency: DisplayCurrency
+
+  recipientFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientDisplayCurrency: DisplayCurrency
+
   memoOfPayer?: string
 }) => {
   const {
@@ -413,31 +468,47 @@ export const OnChainTradeIntraAccountLedgerMetadata = ({
     sendAll,
 
     satsFee: toSats(satsFee),
-    displayFee: feeDisplayCurrency,
-    displayAmount: amountDisplayCurrency,
 
-    displayCurrency,
     centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
     centsFee: toCents(centsFee),
   }
+
   const debitAccountAdditionalMetadata = {
     memoPayer: memoOfPayer,
+    displayAmount: senderAmountDisplayCurrency,
+    displayFee: senderFeeDisplayCurrency,
+    displayCurrency: senderDisplayCurrency,
   }
-  return { metadata, debitAccountAdditionalMetadata }
+
+  const creditAccountAdditionalMetadata = {
+    displayAmount: recipientAmountDisplayCurrency,
+    displayFee: recipientFeeDisplayCurrency,
+    displayCurrency: recipientDisplayCurrency,
+  }
+  return { metadata, debitAccountAdditionalMetadata, creditAccountAdditionalMetadata }
 }
 
 export const WalletIdTradeIntraAccountLedgerMetadata = ({
   paymentAmounts,
-  feeDisplayCurrency,
-  amountDisplayCurrency,
-  displayCurrency,
+  senderFeeDisplayCurrency,
+  senderAmountDisplayCurrency,
+  senderDisplayCurrency,
+  recipientFeeDisplayCurrency,
+  recipientAmountDisplayCurrency,
+  recipientDisplayCurrency,
   memoOfPayer,
 }: {
   paymentAmounts: AmountsAndFees
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
+
+  senderFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  senderAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  senderDisplayCurrency: DisplayCurrency
+
+  recipientFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientDisplayCurrency: DisplayCurrency
+
   memoOfPayer?: string
 }) => {
   const {
@@ -453,33 +524,51 @@ export const WalletIdTradeIntraAccountLedgerMetadata = ({
     memoPayer: memoOfPayer,
 
     satsFee: toSats(satsFee),
-    displayFee: feeDisplayCurrency,
-    displayAmount: amountDisplayCurrency,
 
-    displayCurrency,
     centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
     centsFee: toCents(centsFee),
   }
 
-  return metadata
+  const debitAccountAdditionalMetadata = {
+    displayAmount: senderAmountDisplayCurrency,
+    displayFee: senderFeeDisplayCurrency,
+    displayCurrency: senderDisplayCurrency,
+  }
+
+  const creditAccountAdditionalMetadata = {
+    displayAmount: recipientAmountDisplayCurrency,
+    displayFee: recipientFeeDisplayCurrency,
+    displayCurrency: recipientDisplayCurrency,
+  }
+
+  return { metadata, debitAccountAdditionalMetadata, creditAccountAdditionalMetadata }
 }
 
 export const LnTradeIntraAccountLedgerMetadata = ({
   paymentHash,
   pubkey,
   paymentAmounts,
-  feeDisplayCurrency,
-  amountDisplayCurrency,
-  displayCurrency,
+  senderFeeDisplayCurrency,
+  senderAmountDisplayCurrency,
+  senderDisplayCurrency,
+  recipientFeeDisplayCurrency,
+  recipientAmountDisplayCurrency,
+  recipientDisplayCurrency,
   memoOfPayer,
 }: {
   paymentHash: PaymentHash
   pubkey: Pubkey
   paymentAmounts: AmountsAndFees
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
+
+  senderFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  senderAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  senderDisplayCurrency: DisplayCurrency
+
+  recipientFeeDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientAmountDisplayCurrency: DisplayCurrencyBaseAmount
+  recipientDisplayCurrency: DisplayCurrency
+
   memoOfPayer?: string
 }) => {
   const {
@@ -497,18 +586,25 @@ export const LnTradeIntraAccountLedgerMetadata = ({
     pubkey,
 
     satsFee: toSats(satsFee),
-    displayFee: feeDisplayCurrency,
-    displayAmount: amountDisplayCurrency,
-
-    displayCurrency,
     centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
     centsFee: toCents(centsFee),
   }
+
   const debitAccountAdditionalMetadata = {
     memoPayer: memoOfPayer,
+    displayAmount: senderAmountDisplayCurrency,
+    displayFee: senderFeeDisplayCurrency,
+    displayCurrency: senderDisplayCurrency,
   }
-  return { metadata, debitAccountAdditionalMetadata }
+
+  const creditAccountAdditionalMetadata = {
+    displayAmount: recipientAmountDisplayCurrency,
+    displayFee: recipientFeeDisplayCurrency,
+    displayCurrency: recipientDisplayCurrency,
+  }
+
+  return { metadata, debitAccountAdditionalMetadata, creditAccountAdditionalMetadata }
 }
 
 // Non-LedgerFacade constructors from legacy admin service

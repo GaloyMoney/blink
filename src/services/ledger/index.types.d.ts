@@ -75,6 +75,13 @@ type SendAmountsMetadata = {
   displayCurrency: DisplayCurrency
 }
 
+type IntraLedgerSendAmountsMetadata = {
+  satsAmount: Satoshis
+  centsAmount: UsdCents
+  satsFee: Satoshis
+  centsFee: UsdCents
+}
+
 type AddLnSendLedgerMetadata = LedgerMetadata &
   LedgerSendMetadata &
   SendAmountsMetadata & {
@@ -113,7 +120,7 @@ type IntraledgerSendBaseMetadata = LedgerMetadata &
   }
 
 type AddLnIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
-  SendAmountsMetadata & {
+  IntraLedgerSendAmountsMetadata & {
     hash: PaymentHash
     pubkey: Pubkey
   }
@@ -124,7 +131,7 @@ type AddLnTradeIntraAccountLedgerMetadata = Omit<
 >
 
 type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
-  SendAmountsMetadata & {
+  IntraLedgerSendAmountsMetadata & {
     payee_addresses: OnChainAddress[]
     sendAll: boolean
   }
@@ -135,7 +142,7 @@ type AddOnChainTradeIntraAccountLedgerMetadata = Omit<
 >
 
 type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
-  SendAmountsMetadata
+  IntraLedgerSendAmountsMetadata
 
 type AddWalletIdTradeIntraAccountLedgerMetadata = Omit<
   AddWalletIdIntraledgerSendLedgerMetadata,

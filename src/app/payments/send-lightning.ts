@@ -422,35 +422,59 @@ const executePaymentViaIntraledger = async <
     let metadata:
       | AddLnIntraledgerSendLedgerMetadata
       | AddLnTradeIntraAccountLedgerMetadata
-    let additionalDebitMetadata: { [key: string]: string | undefined } = {}
+    let additionalDebitMetadata: {
+      [key: string]:
+        | Username
+        | DisplayCurrencyBaseAmount
+        | DisplayCurrency
+        | string
+        | undefined
+    } = {}
+    let additionalCreditMetadata: {
+      [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
-      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-        LedgerFacade.LnTradeIntraAccountLedgerMetadata({
-          paymentHash,
-          pubkey: recipientPubkey,
-          paymentAmounts: paymentFlow,
+      ;({
+        metadata,
+        debitAccountAdditionalMetadata: additionalDebitMetadata,
+        creditAccountAdditionalMetadata: additionalCreditMetadata,
+      } = LedgerFacade.LnTradeIntraAccountLedgerMetadata({
+        paymentHash,
+        pubkey: recipientPubkey,
+        paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
-          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: senderDisplayCurrency,
+        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
+        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderDisplayCurrency: senderDisplayCurrency,
 
-          memoOfPayer: memo || undefined,
-        }))
+        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
+        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        recipientDisplayCurrency: recipientAccount.displayCurrency,
+
+        memoOfPayer: memo || undefined,
+      }))
     } else {
-      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-        LedgerFacade.LnIntraledgerLedgerMetadata({
-          paymentHash,
-          pubkey: recipientPubkey,
-          paymentAmounts: paymentFlow,
+      ;({
+        metadata,
+        debitAccountAdditionalMetadata: additionalDebitMetadata,
+        creditAccountAdditionalMetadata: additionalCreditMetadata,
+      } = LedgerFacade.LnIntraledgerLedgerMetadata({
+        paymentHash,
+        pubkey: recipientPubkey,
+        paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
-          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: senderDisplayCurrency,
+        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
+        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderDisplayCurrency: senderDisplayCurrency,
 
-          memoOfPayer: memo || undefined,
-          senderUsername,
-          recipientUsername,
-        }))
+        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
+        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        recipientDisplayCurrency: recipientAccount.displayCurrency,
+
+        memoOfPayer: memo || undefined,
+        senderUsername,
+        recipientUsername,
+      }))
     }
 
     const journal = await LedgerFacade.recordIntraledger({
@@ -463,7 +487,7 @@ const executePaymentViaIntraledger = async <
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
-      additionalCreditMetadata: {},
+      additionalCreditMetadata,
     })
     if (journal instanceof Error) return journal
 
