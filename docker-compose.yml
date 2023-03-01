@@ -298,7 +298,7 @@ services:
     volumes:
       - ./:/repo
   oathkeeper:
-    image: ntheile/oathkeeper:v0.40.1
+    image: oryd/oathkeeper:v0.40.1
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
       - type: bind
