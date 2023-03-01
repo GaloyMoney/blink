@@ -119,8 +119,6 @@ describe("Tx metadata", () => {
           memoPayer: undefined,
           type: LedgerTransactionType.LnIntraLedger,
 
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
-
           satsFee: toSats(0),
           displayFee: feeDisplayCurrency,
           displayAmount: amountDisplayCurrency,
@@ -157,8 +155,6 @@ describe("Tx metadata", () => {
         expect.objectContaining({
           memoPayer: undefined,
           type: LedgerTransactionType.LnTradeIntraAccount,
-
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
 
           satsFee: toSats(0),
           displayFee: feeDisplayCurrency,
@@ -197,8 +193,6 @@ describe("Tx metadata", () => {
           memoPayer: memoOfPayer,
           type: LedgerTransactionType.IntraLedger,
 
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
-
           satsFee: toSats(0),
           displayFee: feeDisplayCurrency,
           displayAmount: amountDisplayCurrency,
@@ -231,8 +225,6 @@ describe("Tx metadata", () => {
         expect.objectContaining({
           memoPayer: memoOfPayer,
           type: LedgerTransactionType.WalletIdTradeIntraAccount,
-
-          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
 
           satsFee: toSats(0),
           displayFee: feeDisplayCurrency,

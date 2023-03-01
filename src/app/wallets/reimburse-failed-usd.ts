@@ -2,12 +2,10 @@ import { toSats } from "@domain/bitcoin"
 import { CouldNotFindBtcWalletForAccountError } from "@domain/errors"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 
 import { WalletsRepository } from "@services/mongoose"
 import * as LedgerFacade from "@services/ledger/facade"
-
-const calc = AmountCalculator()
 
 export const reimburseFailedUsdPayment = async <
   S extends WalletCurrency,
@@ -27,10 +25,6 @@ export const reimburseFailedUsdPayment = async <
     type: LedgerTransactionType.Payment,
     pending: false,
     related_journal: journalId,
-
-    usd: Number(
-      calc.divFloor(paymentFlow.usdPaymentAmount, 100n).amount,
-    ) as DisplayCurrencyBaseAmount,
 
     satsAmount: toSats(paymentFlow.btcPaymentAmount.amount),
     centsAmount: toCents(paymentFlow.usdPaymentAmount.amount),

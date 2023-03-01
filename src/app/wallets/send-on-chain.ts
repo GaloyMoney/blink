@@ -24,7 +24,10 @@ import {
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
-import { NewDisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import {
+  NewDisplayCurrencyConverter,
+  usdMinorToMajorUnit,
+} from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
@@ -341,7 +344,7 @@ const executePaymentViaIntraledger = async <
       recipientWalletId: recipientWallet.id,
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
-        amount: metadata.usd,
+        amount: usdMinorToMajorUnit(paymentFlow.usdPaymentAmount.amount),
         currency: DisplayCurrency.Usd,
       },
       recipientDeviceTokens: recipientUser.deviceTokens,

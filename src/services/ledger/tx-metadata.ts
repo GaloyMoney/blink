@@ -216,9 +216,6 @@ export const LnFeeReimbursementReceiveLedgerMetadata = ({
     related_journal: journalId,
     pending: false,
 
-    usd: ((amountDisplayCurrency + feeDisplayCurrency) /
-      100) as DisplayCurrencyBaseAmount,
-
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
     displayAmount: amountDisplayCurrency,
@@ -269,8 +266,6 @@ export const OnChainIntraledgerLedgerMetadata = ({
     payee_addresses: payeeAddresses,
     sendAll,
 
-    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
-
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
     displayAmount: amountDisplayCurrency,
@@ -316,8 +311,6 @@ export const WalletIdIntraledgerLedgerMetadata = ({
     pending: false,
     memoPayer: memoOfPayer,
     username: senderUsername,
-
-    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
 
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
@@ -371,8 +364,6 @@ export const LnIntraledgerLedgerMetadata = ({
     hash: paymentHash,
     pubkey,
 
-    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
-
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
     displayAmount: amountDisplayCurrency,
@@ -421,8 +412,6 @@ export const OnChainTradeIntraAccountLedgerMetadata = ({
     payee_addresses: payeeAddresses,
     sendAll,
 
-    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
-
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
     displayAmount: amountDisplayCurrency,
@@ -462,8 +451,6 @@ export const WalletIdTradeIntraAccountLedgerMetadata = ({
     type: LedgerTransactionType.WalletIdTradeIntraAccount,
     pending: false,
     memoPayer: memoOfPayer,
-
-    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
 
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
@@ -508,8 +495,6 @@ export const LnTradeIntraAccountLedgerMetadata = ({
     memoPayer: undefined,
     hash: paymentHash,
     pubkey,
-
-    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
 
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
