@@ -4,7 +4,7 @@ import axios from "axios"
 import { Accounts } from "@app"
 import { WalletType } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { LnFees } from "@domain/payments"
 
@@ -196,6 +196,8 @@ describe("graphql", () => {
                         status: expect.any(String),
                         settlementAmount: expect.any(Number),
                         settlementFee: expect.any(Number),
+                        settlementDisplayAmount: expect.any(String),
+                        settlementDisplayCurrency: DisplayCurrency.Usd,
                         createdAt: expect.any(Number),
                       }),
                     }),
@@ -257,12 +259,16 @@ describe("graphql", () => {
             node: expect.objectContaining({
               settlementAmount: 4_000,
               settlementCurrency: WalletCurrency.Usd,
+              settlementDisplayAmount: "40",
+              settlementDisplayCurrency: DisplayCurrency.Usd,
             }),
           }),
           expect.objectContaining({
             node: expect.objectContaining({
               settlementAmount: 50_000,
               settlementCurrency: WalletCurrency.Btc,
+              settlementDisplayAmount: expect.any(String),
+              settlementDisplayCurrency: DisplayCurrency.Usd,
             }),
           }),
         ]),
