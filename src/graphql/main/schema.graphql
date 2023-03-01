@@ -254,6 +254,7 @@ type Coordinates {
 
 type Currency {
   flag: String!
+  fractionDigits: Int!
   id: ID!
   name: String!
   symbol: String!

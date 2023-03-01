@@ -119,12 +119,19 @@ export const PriceService = (): IPriceService => {
         return new PriceCurrenciesNotAvailableError()
 
       return currencies.map(
-        (c: { code: string; symbol: string; name: string; flag: string }) =>
+        (c: {
+          code: string
+          symbol: string
+          name: string
+          flag: string
+          fractionDigits: number
+        }) =>
           ({
             code: c.code,
             symbol: c.symbol,
             name: c.name,
             flag: c.flag,
+            fractionDigits: c.fractionDigits,
           } as PriceCurrency),
       )
     } catch (err) {

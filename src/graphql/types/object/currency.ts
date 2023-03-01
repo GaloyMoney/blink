@@ -10,6 +10,7 @@ const Currency = GT.Object({
     symbol: { type: GT.NonNull(GT.String) },
     name: { type: GT.NonNull(GT.String) },
     flag: { type: GT.NonNull(GT.String) },
+    fractionDigits: { type: GT.NonNull(GT.Int) },
   }),
 })
 

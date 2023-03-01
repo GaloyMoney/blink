@@ -27,7 +27,13 @@ describe("Prices", () => {
           getUsdCentRealTimePrice: jest.fn(),
           listCurrencies: () =>
             Promise.resolve([
-              { code: "USD", symbol: "$", name: "US Dollar", flag: "🇺🇸" },
+              {
+                code: "USD",
+                symbol: "$",
+                name: "US Dollar",
+                flag: "🇺🇸",
+                fractionDigits: 2,
+              },
             ]),
         }))
         .mockImplementationOnce(() => ({
@@ -49,6 +55,7 @@ describe("Prices", () => {
             symbol: expect.any(String),
             name: expect.any(String),
             flag: expect.any(String),
+            fractionDigits: expect.any(Number),
           }),
         ]),
       )
