@@ -69,7 +69,9 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     credit,
     debit,
     currency,
+    satsAmount: satsAmountRaw,
     satsFee: satsFeeRaw,
+    centsAmount: centsAmountRaw,
     centsFee: centsFeeRaw,
     displayAmount: displayAmountRaw,
     displayFee: displayFeeRaw,
@@ -83,6 +85,11 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     type as AdminLedgerTransactionType,
   )
 
+  const settlementAmount =
+    currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
+
+  let satsAmount = satsAmountRaw || 0
+  let centsAmount = centsAmountRaw || 0
   let displayAmount = displayAmountRaw || 0
   let displayFee = displayFeeRaw || 0
   let satsFee = satsFeeRaw || 0
@@ -91,21 +98,11 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   if (isAdmin) {
     displayAmount = txn.usd ? Math.round(txn.usd * 100) : 0
     displayFee = txn.feeUsd ? Math.round(txn.feeUsd * 100) : 0
+    satsAmount = Math.abs(settlementAmount)
     satsFee = txn.fee || 0
+    centsAmount = displayAmount
     centsFee = displayFee
   }
-
-  const settlementAmount =
-    currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
-  const settlementFee =
-    currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee)
-
-  // 'displayAmount' is before fees. For total amount:
-  // - send: displayAmount + displayFee
-  // - recv: displayAmount
-  const isSend = settlementAmount < 0
-  const displayAmountAsNumber =
-    isSend && !isAdmin ? displayAmount + displayFee : displayAmount
 
   const memo = translateMemo({
     memoFromPayer,
@@ -123,11 +120,11 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     id: txn.id,
     walletId: txn.walletId,
     settlementAmount,
-    settlementFee,
+    settlementFee: currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee),
     settlementCurrency: txn.currency,
     displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
-      displayAmountAsNumber,
-      settlementAmountInBaseAsNumber: settlementAmount,
+      displayAmount,
+      baseAmount: txn.currency === WalletCurrency.Btc ? satsAmount : centsAmount,
     }),
     status,
     memo,
@@ -319,14 +316,17 @@ export const WalletTransactionHistory = {
 // TODO: refactor this to use WalletPriceRatio eventually instead after
 // 'usd' property removal from db
 const displayCurrencyPerBaseUnitFromAmounts = ({
-  displayAmountAsNumber: displayAmountMinorUnit,
-  settlementAmountInBaseAsNumber,
+  displayAmount,
+  baseAmount,
 }: {
-  displayAmountAsNumber: number
-  settlementAmountInBaseAsNumber: number
+  displayAmount: number
+  baseAmount: number
 }): number => {
-  const displayAmountMajorUnit = Number((displayAmountMinorUnit / 100).toFixed(2))
-  return settlementAmountInBaseAsNumber === 0
-    ? 0
-    : Math.abs(displayAmountMajorUnit / settlementAmountInBaseAsNumber)
+  if (baseAmount === 0) {
+    return 0
+  }
+
+  const majorExponent = 2
+  const priceInMinorUnit = displayAmount / baseAmount
+  return Number(priceInMinorUnit / 10 ** majorExponent)
 }

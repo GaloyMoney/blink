@@ -11,7 +11,10 @@ import { DisplayCurrency, toCents } from "@domain/fiat"
 
 describe("translates ledger txs to wallet txs", () => {
   const timestamp = new Date(Date.now())
+
+  const satsAmount = toSats(100_000)
   const satsFee = toSats(2)
+  const centsAmount = toCents(2_000)
   const centsFee = toCents(10)
   const displayFee = 10 as DisplayCurrencyBaseAmount
 
@@ -35,17 +38,20 @@ describe("translates ledger txs to wallet txs", () => {
   const ledgerTxnsInputs = ({
     walletId,
     settlementAmount,
+    satsAmount,
     centsAmount,
     currency,
   }: {
     walletId: WalletId
     settlementAmount: Satoshis | UsdCents
+    satsAmount: Satoshis
     centsAmount: UsdCents
     currency: WalletCurrency
   }): LedgerTransaction<WalletCurrency>[] => {
     const currencyBaseLedgerTxns = {
       ...baseLedgerTransaction,
       walletId,
+      satsAmount,
       centsAmount,
       displayAmount: centsAmount as unknown as DisplayCurrencyBaseAmount,
       currency,
@@ -193,12 +199,12 @@ describe("translates ledger txs to wallet txs", () => {
   describe("WalletTransactionHistory.fromLedger", () => {
     it("translates btc ledger txs", () => {
       const currency = WalletCurrency.Btc
-      const settlementAmount = toSats(100000)
-      const centsAmount = toCents(2000)
+      const settlementAmount = satsAmount
 
       const txnsArgs = {
         walletId: crypto.randomUUID() as WalletId,
         settlementAmount,
+        satsAmount,
         centsAmount,
         centsFee,
         displayAmount: centsAmount,
@@ -218,12 +224,12 @@ describe("translates ledger txs to wallet txs", () => {
 
     it("translates usd ledger txs", () => {
       const currency = WalletCurrency.Usd
-      const settlementAmount = toCents(2000)
-      const centsAmount = settlementAmount
+      const settlementAmount = centsAmount
 
       const txnsArgs = {
         walletId: crypto.randomUUID() as WalletId,
         settlementAmount,
+        satsAmount,
         centsAmount,
         centsFee,
         displayAmount: centsAmount,
