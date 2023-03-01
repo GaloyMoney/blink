@@ -23,6 +23,7 @@ describe("translates ledger txs to wallet txs", () => {
     satsFee,
     centsFee,
     displayFee,
+    displayCurrency: DisplayCurrency.Usd,
     pendingConfirmation: false,
     journalId: "journalId" as LedgerJournalId,
     timestamp,
@@ -136,6 +137,8 @@ describe("translates ledger txs to wallet txs", () => {
 
       settlementAmount,
       settlementFee,
+      settlementDisplayAmount: centsAmount / 100,
+      settlementDisplayCurrency: DisplayCurrency.Usd,
       displayCurrencyPerSettlementCurrencyUnit,
     }
 
@@ -415,6 +418,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
+        settlementDisplayAmount: 25000 / 100,
+        settlementDisplayCurrency: DisplayCurrency.Usd,
         settlementCurrency: WalletCurrency.Btc,
         displayCurrencyPerSettlementCurrencyUnit: 1,
         status: TxStatus.Pending,
@@ -433,6 +438,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(50000),
         settlementCurrency: WalletCurrency.Btc,
+        settlementDisplayAmount: 50000 / 100,
+        settlementDisplayCurrency: DisplayCurrency.Usd,
         memo: null,
         settlementFee: toSats(0),
         displayCurrencyPerSettlementCurrencyUnit: 1,
@@ -500,6 +507,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
         settlementCurrency: WalletCurrency.Btc,
+        settlementDisplayAmount: NaN,
+        settlementDisplayCurrency: DisplayCurrency.Usd,
         displayCurrencyPerSettlementCurrencyUnit: NaN,
         status: TxStatus.Pending,
         createdAt: timestamp,
