@@ -2283,6 +2283,17 @@ describe("USD Wallets - Lightning Pay", () => {
         debit = centsAmount
       }
 
+      const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+        currency: senderAccount.displayCurrency,
+      })
+      if (displayPriceRatio instanceof Error) throw displayPriceRatio
+      const displayAmount = Number(
+        displayPriceRatio.convertFromWallet({
+          amount: BigInt(satsAmount),
+          currency: WalletCurrency.Btc,
+        }).amountInMinor,
+      )
+
       const expectedFields = {
         type:
           senderWallet.accountId === recipientWallet.accountId
@@ -2296,7 +2307,7 @@ describe("USD Wallets - Lightning Pay", () => {
         satsFee: 0,
         centsAmount,
         centsFee: 0,
-        displayAmount: centsAmount,
+        displayAmount,
         displayFee: 0,
 
         displayCurrency: DisplayCurrency.Usd,
