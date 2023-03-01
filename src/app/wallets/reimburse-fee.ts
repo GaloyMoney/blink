@@ -64,8 +64,6 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     pending: false,
     related_journal: journalId,
 
-    usd: (reimburseAmountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
-
     satsAmount: toSats(feeDifference.btc.amount),
     centsAmount: toCents(feeDifference.usd.amount),
     satsFee: toSats(0),

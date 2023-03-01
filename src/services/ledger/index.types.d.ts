@@ -109,7 +109,6 @@ type AddColdStorageSendLedgerMetadata = AddColdStorageLedgerMetadata
 
 type IntraledgerSendBaseMetadata = LedgerMetadata &
   LedgerSendMetadata & {
-    usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
     username?: Username
   }
 
@@ -146,7 +145,6 @@ type AddWalletIdTradeIntraAccountLedgerMetadata = Omit<
 type ReimbursementLedgerMetadata = SendAmountsMetadata & {
   hash: PaymentHash
   pending: boolean
-  usd: DisplayCurrencyBaseAmount
   related_journal: LedgerJournalId
 }
 
