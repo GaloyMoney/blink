@@ -16,6 +16,8 @@ import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 import TxStatus from "../scalar/tx-status"
 import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
+import SignedDisplayMajorAmount from "../scalar/signed-display-amount"
+import DisplayCurrency from "../scalar/display-currency"
 
 import Price from "./price"
 
@@ -98,6 +100,13 @@ const Transaction = GT.Object<WalletTransaction>({
     settlementCurrency: {
       type: GT.NonNull(WalletCurrency),
       description: "Wallet currency for transaction.",
+    },
+    settlementDisplayAmount: {
+      type: GT.NonNull(SignedDisplayMajorAmount),
+      resolve: (source) => `${source.settlementDisplayAmount}`,
+    },
+    settlementDisplayCurrency: {
+      type: GT.NonNull(DisplayCurrency),
     },
     direction: {
       type: GT.NonNull(TxDirection),

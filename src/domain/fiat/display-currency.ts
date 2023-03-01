@@ -6,12 +6,33 @@ export const MajorExponent = {
   THREE: 3n,
 } as const
 
-export const usdMinorToMajorUnit = (amount: number | bigint) =>
-  Number((Number(amount) / CENTS_PER_USD).toFixed(2))
+export const minorToMajorUnit = ({
+  amount,
+  displayMajorExponent,
+}: {
+  amount: number | bigint
+  displayMajorExponent: CurrencyMajorExponent
+}) => {
+  const majorExponent = Number(displayMajorExponent)
+  return Number((Number(amount) / 10 ** majorExponent).toFixed(majorExponent))
+}
 
-// TODO: update by display currency
-export const majorToMinorUnit = (amount: number | bigint) =>
-  Number(Number(amount) * CENTS_PER_USD)
+export const usdMinorToMajorUnit = (amount: number | bigint) =>
+  minorToMajorUnit({ amount, displayMajorExponent: MajorExponent.STANDARD })
+
+export const majorToMinorUnit = ({
+  amount,
+  displayMajorExponent,
+}: {
+  amount: number | bigint
+  displayMajorExponent: CurrencyMajorExponent
+}) => {
+  const majorExponent = Number(displayMajorExponent)
+  return Number(Number(amount) * 10 ** majorExponent)
+}
+
+export const usdMajorToMinorUnit = (amount: number | bigint) =>
+  majorToMinorUnit({ amount, displayMajorExponent: MajorExponent.STANDARD })
 
 export const toDisplayCurrencyBaseAmount = (amount: number) =>
   amount as DisplayCurrencyBaseAmount

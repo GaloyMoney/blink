@@ -1106,6 +1106,11 @@ An amount (of a currency) that can be negative (e.g. in a transaction)
 """
 scalar SignedAmount
 
+"""
+A string amount (of a currency) that can be negative (e.g. in a transaction)
+"""
+scalar SignedDisplayMajorAmount
+
 type Subscription {
   lnInvoicePaymentStatus(
     input: LnInvoicePaymentStatusInput!
@@ -1161,6 +1166,8 @@ type Transaction {
   Wallet currency for transaction.
   """
   settlementCurrency: WalletCurrency!
+  settlementDisplayAmount: SignedDisplayMajorAmount!
+  settlementDisplayCurrency: DisplayCurrency!
   settlementFee: SignedAmount!
 
   """

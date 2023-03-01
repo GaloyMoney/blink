@@ -72,6 +72,8 @@ fragment TransactionList on TransactionConnection {
       createdAt
       settlementAmount
       settlementFee
+      settlementDisplayAmount
+      settlementDisplayCurrency
       settlementCurrency
       settlementPrice {
         base

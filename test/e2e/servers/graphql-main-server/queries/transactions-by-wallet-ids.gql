@@ -25,6 +25,8 @@ fragment TransactionList on TransactionConnection {
       settlementAmount
       settlementFee
       settlementCurrency
+      settlementDisplayAmount
+      settlementDisplayCurrency
       settlementPrice {
         base
         offset

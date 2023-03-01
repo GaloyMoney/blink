@@ -4,7 +4,7 @@ import {
   OnboardingEarn,
 } from "@config"
 
-import { toCents } from "@domain/fiat"
+import { MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
@@ -30,12 +30,22 @@ const filterPendingIncoming = ({
               amount: sats,
               ratio: walletDetailsByWalletId[walletId].depositFeeRatio,
             })
+
+            const settlementAmount = toSats(sats - fee)
+
+            const settlementDisplayAmount = minorToMajorUnit({
+              amount: Math.round(displayCurrencyPerSat.price * settlementAmount),
+              displayMajorExponent: MajorExponent.STANDARD,
+            })
+
             walletTransactions.push({
               id: rawTx.txHash,
               walletId,
-              settlementAmount: toSats(sats - fee),
+              settlementAmount,
               settlementFee: fee,
               settlementCurrency: walletDetailsByWalletId[walletId].currency,
+              settlementDisplayAmount,
+              settlementDisplayCurrency: displayCurrencyPerSat.currency,
               displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerSat.price,
               status: TxStatus.Pending,
               memo: null,
@@ -63,7 +73,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 }: {
   txn: LedgerTransaction<S>
   nonEndUserWalletIds: WalletId[]
-}) => {
+}): WalletTransaction => {
   const {
     type,
     credit,
@@ -75,6 +85,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     centsFee: centsFeeRaw,
     displayAmount: displayAmountRaw,
     displayFee: displayFeeRaw,
+    displayCurrency,
     lnMemo,
     memoFromPayer,
     journalId,
@@ -116,12 +127,19 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 
   const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
 
-  const baseTransaction = {
+  const settlementDisplayAmount = minorToMajorUnit({
+    amount: displayAmount,
+    displayMajorExponent: MajorExponent.STANDARD,
+  })
+
+  const baseTransaction: BaseWalletTransaction = {
     id: txn.id,
     walletId: txn.walletId,
     settlementAmount,
     settlementFee: currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee),
     settlementCurrency: txn.currency,
+    settlementDisplayAmount,
+    settlementDisplayCurrency: displayCurrency || "",
     displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
       displayAmount,
       baseAmount: txn.currency === WalletCurrency.Btc ? satsAmount : centsAmount,
