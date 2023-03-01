@@ -170,6 +170,11 @@ type Coordinates {
   longitude: Float!
 }
 
+"""
+Display currency of an account
+"""
+scalar DisplayCurrency
+
 interface Error {
   code: String
   message: String!
@@ -377,6 +382,11 @@ An amount (of a currency) that can be negative (e.g. in a transaction)
 """
 scalar SignedAmount
 
+"""
+A string amount (of a currency) that can be negative (e.g. in a transaction)
+"""
+scalar SignedDisplayMajorAmount
+
 type SuccessPayload {
   errors: [Error!]!
   success: Boolean
@@ -419,6 +429,8 @@ type Transaction {
   Wallet currency for transaction.
   """
   settlementCurrency: WalletCurrency!
+  settlementDisplayAmount: SignedDisplayMajorAmount!
+  settlementDisplayCurrency: DisplayCurrency!
   settlementFee: SignedAmount!
 
   """
