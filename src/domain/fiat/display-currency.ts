@@ -33,17 +33,3 @@ export const majorToMinorUnit = ({
 
 export const usdMajorToMinorUnit = (amount: number | bigint) =>
   majorToMinorUnit({ amount, displayMajorExponent: MajorExponent.STANDARD })
-
-export const toDisplayCurrencyBaseAmount = (amount: number) =>
-  amount as DisplayCurrencyBaseAmount
-
-export const NewDisplayCurrencyConverter = (
-  displayCurrencyPrice: DisplayCurrencyBasePerSat,
-): NewDisplayCurrencyConverter => {
-  return {
-    fromBtcAmount: (btc: BtcPaymentAmount): DisplayCurrencyBaseAmount =>
-      (Number(btc.amount) * displayCurrencyPrice) as DisplayCurrencyBaseAmount,
-    fromUsdAmount: (usd: UsdPaymentAmount): DisplayCurrencyBaseAmount =>
-      Number(usd.amount) as DisplayCurrencyBaseAmount,
-  }
-}
