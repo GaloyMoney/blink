@@ -2592,8 +2592,17 @@ describe("Handle pending payments - Lightning Pay", () => {
       ).markLightningPaymentFlowNotPending(paymentFlowIndex)
       if (paymentFlow instanceof Error) throw paymentFlow
 
+      const {
+        displayAmount: senderDisplayAmount,
+        displayCurrency: senderDisplayCurrency,
+      } = originalTxn
+      if (senderDisplayAmount === undefined || senderDisplayCurrency === undefined) {
+        throw new Error("missing display-related values in transaction")
+      }
       const reimbursed = await Wallets.reimburseFee({
         paymentFlow,
+        senderDisplayAmount,
+        senderDisplayCurrency,
         journalId: originalTxn.journalId,
         actualFee: toSats(1),
         revealedPreImage: lnPaymentLookup.confirmedDetails?.revealedPreImage,

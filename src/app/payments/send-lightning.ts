@@ -661,6 +661,8 @@ const executePaymentViaLn = async ({
     if (!rawRoute) {
       const reimbursed = await Wallets.reimburseFee({
         paymentFlow,
+        senderDisplayAmount: amountDisplayCurrencyAsNumber,
+        senderDisplayCurrency,
         journalId,
         actualFee: payResult.roundedUpFee,
         revealedPreImage: payResult.revealedPreImage,
