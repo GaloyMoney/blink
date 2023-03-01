@@ -28,7 +28,7 @@
   upstream:
     url: "http://e2e-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(login|logout)>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(login|logout)><.*>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
     - handler: cookie_session

@@ -36,11 +36,11 @@ export const AuthWithEmailAndPasswordService = (): IAuthWithEmailAndPasswordServ
       })
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
-        return new LikelyNoUserWithThisEmailExistError(err)
+        return new LikelyNoUserWithThisEmailExistError(err.message || err)
       }
 
       if (err.message === "Request failed with status code 401") {
-        return new AuthenticationKratosError(err)
+        return new AuthenticationKratosError(err.message || err)
       }
 
       return new UnknownKratosError(err.message || err)
@@ -90,7 +90,7 @@ export const AuthWithEmailAndPasswordService = (): IAuthWithEmailAndPasswordServ
         return new LikelyNoUserWithThisEmailExistError(err)
       }
       if (err.message === "Request failed with status code 401") {
-        return new AuthenticationKratosError(err)
+        return new AuthenticationKratosError(err.message || err)
       }
       return new UnknownKratosError(err.message || err)
     }
@@ -146,7 +146,7 @@ export const AuthWithEmailAndPasswordService = (): IAuthWithEmailAndPasswordServ
       })
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
+        return new LikelyUserAlreadyExistError(err.message || err)
       }
 
       return new UnknownKratosError(err.message || err)
@@ -193,7 +193,7 @@ export const AuthWithEmailAndPasswordService = (): IAuthWithEmailAndPasswordServ
       })
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
+        return new LikelyUserAlreadyExistError(err.message || err)
       }
 
       return new UnknownKratosError(err.message || err)

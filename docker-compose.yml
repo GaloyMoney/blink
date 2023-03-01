@@ -307,9 +307,10 @@ services:
   kratos:
     image: oryd/kratos:v0.11.1
     entrypoint: sh -c
-    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:
       DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+      KRATOS_YAML_FILE: ${KRATOS_YAML_FILE}
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/$KRATOS_YAML_FILE --watch-courier --sqa-opt-out"'
     links:
       - kratos-pg:kratos-pg
     volumes:

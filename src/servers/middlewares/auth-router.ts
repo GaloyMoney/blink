@@ -22,7 +22,8 @@ import bodyParser from "body-parser"
 import setCookie from "set-cookie-parser"
 import cookieParser from "cookie-parser"
 import { logoutCookie } from "@app/auth"
-import { checkedToPhoneNumber } from "@domain/users"
+import { checkedToPhoneNumber, checkedToEmailAddress } from "@domain/users"
+import libCookie from "cookie"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -194,6 +195,99 @@ authRouter.post(
           id: kratosUserId,
           uid: kratosUserId,
           phoneNumber: phone,
+        },
+      })
+    },
+  }),
+)
+
+// TODO should we have a kratosEmailFeatureFlag
+// to enable/disable email login?
+authRouter.post(
+  "/login/email",
+  wrapAsyncToRunInSpan({
+    namespace: "servers.middlewares.authRouter",
+    fnName: "loginEmail",
+    fn: async (req: express.Request, res: express.Response) => {
+      const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
+      const ip = parseIps(ipString)
+      if (ip === undefined) {
+        throw new Error("IP is not defined")
+      }
+      const email = checkedToEmailAddress(req.body.email)
+      const password = req.body.password
+      if (email instanceof Error) return res.status(400).send("invalid email")
+      const loginResp = await Auth.loginWithEmailCookie({
+        email,
+        password,
+        ip,
+      })
+      if (loginResp instanceof Error) {
+        return res.status(500).send({ error: mapError(loginResp).message })
+      }
+
+      let cookies
+      let kratosUserId
+      try {
+        cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
+        kratosUserId = loginResp.kratosUserId
+      } catch (err) {
+        recordExceptionInCurrentSpan({ error: err })
+        return res.status(500).send({ error: "Error parsing cookies" })
+      }
+
+      try {
+        const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
+        const kratosSessionCookie = cookies?.find((c) =>
+          c.name.includes("ory_kratos_session"),
+        )
+        if (!csrfCookie || !kratosSessionCookie) {
+          return res
+            .status(500)
+            .send({ error: "Missing csrf or ory_kratos_session cookie" })
+        }
+        const kratosCookieStr = libCookie.serialize(
+          kratosSessionCookie.name,
+          kratosSessionCookie.value,
+          {
+            expires: kratosSessionCookie.expires,
+            maxAge: kratosSessionCookie.maxAge,
+            sameSite: "none",
+            secure: kratosSessionCookie.secure,
+            httpOnly: kratosSessionCookie.httpOnly,
+            path: kratosSessionCookie.path,
+          },
+        )
+        const session = await kratosPublic.toSession({ cookie: kratosCookieStr })
+        const thirtyDaysFromNow = new Date(new Date().setDate(new Date().getDate() + 30))
+        const expiresAt = session.data.expires_at
+          ? new Date(session.data.expires_at)
+          : thirtyDaysFromNow
+        const maxAge = expiresAt.getTime() - new Date().getTime()
+        res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
+          maxAge,
+          sameSite: "none",
+          secure: kratosSessionCookie.secure,
+          httpOnly: kratosSessionCookie.httpOnly,
+          path: kratosSessionCookie.path,
+        })
+        res.cookie(csrfCookie.name, csrfCookie.value, {
+          maxAge,
+          sameSite: "none",
+          secure: csrfCookie.secure,
+          httpOnly: csrfCookie.httpOnly,
+          path: csrfCookie.path,
+        })
+      } catch (err) {
+        recordExceptionInCurrentSpan({ error: err })
+        return res.status(500).send({ result: "Error parsing cookies" })
+      }
+
+      res.send({
+        identity: {
+          id: kratosUserId,
+          uid: kratosUserId,
+          email,
         },
       })
     },
