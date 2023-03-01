@@ -10,7 +10,7 @@ export const usdMinorToMajorUnit = (amount: number | bigint) =>
   Number((Number(amount) / CENTS_PER_USD).toFixed(2))
 
 // TODO: update by display currency
-export const majorToMinorUnit = (amount: number | bigint) =>
+export const usdMajorToMinorUnit = (amount: number | bigint) =>
   Number(Number(amount) * CENTS_PER_USD)
 
 export const toDisplayCurrencyBaseAmount = (amount: number) =>
