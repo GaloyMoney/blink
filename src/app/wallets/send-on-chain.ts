@@ -27,8 +27,7 @@ import {
   TxDecoder,
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { DisplayCurrency } from "@domain/fiat"
-import { usdMinorToMajorUnit } from "@domain/fiat/display-currency"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
@@ -244,6 +243,9 @@ const executePaymentViaIntraledger = async <
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
+  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
   // Limit check
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
@@ -283,12 +285,22 @@ const executePaymentViaIntraledger = async <
     })
     if (priceRatio instanceof Error) return priceRatio
 
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
       currency: senderDisplayCurrency,
     })
-    if (displayPriceRatio instanceof Error) return displayPriceRatio
-    const amountDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
+    const senderAmountDisplayCurrencyAsNumber = Number(
+      senderDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+
+    const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
+    const recipientAmountDisplayCurrencyAsNumber = Number(
+      recipientDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
     let metadata:
@@ -302,7 +314,7 @@ const executePaymentViaIntraledger = async <
           sendAll,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
+          amountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
           displayCurrency: DisplayCurrency.Usd,
 
@@ -315,7 +327,7 @@ const executePaymentViaIntraledger = async <
           sendAll,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
+          amountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
           displayCurrency: DisplayCurrency.Usd,
 
@@ -355,8 +367,8 @@ const executePaymentViaIntraledger = async <
       recipientWalletId: recipientWallet.id,
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
-        amount: usdMinorToMajorUnit(paymentFlow.usdPaymentAmount.amount),
-        currency: DisplayCurrency.Usd,
+        amount: usdMinorToMajorUnit(recipientAmountDisplayCurrencyAsNumber),
+        currency: recipientAccount.displayCurrency,
       },
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,

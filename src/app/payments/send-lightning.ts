@@ -32,6 +32,7 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
   UsersRepository,
+  AccountsRepository,
 } from "@services/mongoose"
 
 import { DealerPriceService } from "@services/dealer-price"
@@ -369,6 +370,9 @@ const executePaymentViaIntraledger = async <
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
+  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
   const checkLimits =
     senderWallet.accountId === recipientWallet.accountId
       ? checkTradeIntraAccountLimits
@@ -393,12 +397,22 @@ const executePaymentViaIntraledger = async <
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
       currency: senderDisplayCurrency,
     })
-    if (displayPriceRatio instanceof Error) return displayPriceRatio
-    const amountDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
+    const senderAmountDisplayCurrencyAsNumber = Number(
+      senderDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+
+    const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
+    const recipientAmountDisplayCurrencyAsNumber = Number(
+      recipientDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
     if (signal.aborted) {
@@ -416,7 +430,7 @@ const executePaymentViaIntraledger = async <
           pubkey: recipientPubkey,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
+          amountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
           displayCurrency: senderDisplayCurrency,
 
@@ -429,7 +443,7 @@ const executePaymentViaIntraledger = async <
           pubkey: recipientPubkey,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
+          amountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
           displayCurrency: senderDisplayCurrency,
 
@@ -479,8 +493,8 @@ const executePaymentViaIntraledger = async <
       recipientWalletId,
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
-        amount: usdMinorToMajorUnit(paymentFlow.usdPaymentAmount.amount),
-        currency: DisplayCurrency.Usd,
+        amount: usdMinorToMajorUnit(recipientAmountDisplayCurrencyAsNumber),
+        currency: recipientAccount.displayCurrency,
       },
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,

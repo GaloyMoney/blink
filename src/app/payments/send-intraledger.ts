@@ -2,7 +2,7 @@ import { getPubkeysToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import { usdMinorToMajorUnit } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
@@ -254,13 +254,23 @@ const executePaymentViaIntraledger = async <
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
-    const { displayCurrency } = senderAccount
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: displayCurrency,
+    const { displayCurrency: senderDisplayCurrency } = senderAccount
+    const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: senderDisplayCurrency,
     })
-    if (displayPriceRatio instanceof Error) return displayPriceRatio
-    const amountDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
+    const senderAmountDisplayCurrencyAsNumber = Number(
+      senderDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+
+    const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
+    const recipientAmountDisplayCurrencyAsNumber = Number(
+      recipientDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
     if (signal.aborted) {
@@ -275,9 +285,9 @@ const executePaymentViaIntraledger = async <
       metadata = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
         paymentAmounts: paymentFlow,
 
-        amountDisplayCurrency: amountDisplayCurrencyAsNumber,
+        amountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
         feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        displayCurrency,
+        displayCurrency: senderDisplayCurrency,
 
         memoOfPayer: memo || undefined,
       })
@@ -286,9 +296,9 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.WalletIdIntraledgerLedgerMetadata({
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
+          amountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency,
+          displayCurrency: senderDisplayCurrency,
 
           memoOfPayer: memo || undefined,
           senderUsername: senderAccount.username,
@@ -332,8 +342,8 @@ const executePaymentViaIntraledger = async <
       recipientLanguage: recipientUser.language,
       paymentAmount: { amount, currency: recipientWallet.currency },
       displayPaymentAmount: {
-        amount: usdMinorToMajorUnit(totalSendAmounts.usd.amount),
-        currency: DisplayCurrency.Usd,
+        amount: usdMinorToMajorUnit(recipientAmountDisplayCurrencyAsNumber),
+        currency: recipientAccount.displayCurrency,
       },
     })
 
