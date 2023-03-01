@@ -91,8 +91,7 @@ export const payInvoiceByWalletId = async ({
     ? executePaymentViaIntraledger({
         paymentFlow,
         senderWallet,
-        senderUsername: senderAccount.username,
-        senderDisplayCurrency: senderAccount.displayCurrency,
+        senderAccount,
         memo,
       })
     : executePaymentViaLn({
@@ -137,8 +136,7 @@ const payNoAmountInvoiceByWalletId = async ({
     ? executePaymentViaIntraledger({
         paymentFlow,
         senderWallet,
-        senderUsername: senderAccount.username,
-        senderDisplayCurrency: senderAccount.displayCurrency,
+        senderAccount,
         memo,
       })
     : executePaymentViaLn({
@@ -333,14 +331,12 @@ const executePaymentViaIntraledger = async <
 >({
   paymentFlow,
   senderWallet,
-  senderUsername,
-  senderDisplayCurrency,
+  senderAccount,
   memo,
 }: {
   paymentFlow: PaymentFlow<S, R>
   senderWallet: WalletDescriptor<S>
-  senderUsername: Username | undefined
-  senderDisplayCurrency: DisplayCurrency
+  senderAccount: Account
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -398,7 +394,7 @@ const executePaymentViaIntraledger = async <
     if (balanceCheck instanceof Error) return balanceCheck
 
     const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: senderDisplayCurrency,
+      currency: senderAccount.displayCurrency,
     })
     if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
     const senderAmountDisplayCurrencyAsNumber = Number(
@@ -445,7 +441,7 @@ const executePaymentViaIntraledger = async <
 
         senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
         senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        senderDisplayCurrency: senderDisplayCurrency,
+        senderDisplayCurrency: senderAccount.displayCurrency,
 
         recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
         recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
@@ -465,14 +461,14 @@ const executePaymentViaIntraledger = async <
 
         senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
         senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        senderDisplayCurrency: senderDisplayCurrency,
+        senderDisplayCurrency: senderAccount.displayCurrency,
 
         recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
         recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
         recipientDisplayCurrency: recipientAccount.displayCurrency,
 
         memoOfPayer: memo || undefined,
-        senderUsername,
+        senderUsername: senderAccount.username,
         recipientUsername,
       }))
     }
