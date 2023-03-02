@@ -1,6 +1,10 @@
 pubsub:
   host: redis
 
+exchanges:
+  okex:
+    weight: 1.0
+
 price_server:
   enabled: true
   server:

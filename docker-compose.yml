@@ -287,13 +287,12 @@ services:
     volumes:
       - ./:/repo
   stablesats:
-    image: us.gcr.io/galoy-org/stablesats-rs:0.3.27
+    image: us.gcr.io/galoy-org/stablesats-rs:latest
     command: ["stablesats", "run"]
     working_dir: /repo/dev
     depends_on:
       - otel-agent
       - redis
-      - mongodb
     restart: on-failure:10
     volumes:
       - ./:/repo
