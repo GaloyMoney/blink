@@ -399,7 +399,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       },
       displayCurrencyPerSat: {
         timestamp: new Date(Date.now()),
-        price: 1,
+        price: 0.01,
         currency: DisplayCurrency.Usd,
       },
     })
@@ -421,7 +421,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementDisplayAmount: (25000 / 100).toFixed(2),
         settlementDisplayCurrency: DisplayCurrency.Usd,
         settlementCurrency: WalletCurrency.Btc,
-        displayCurrencyPerSettlementCurrencyUnit: 1,
+        displayCurrencyPerSettlementCurrencyUnit: 0.01,
         status: TxStatus.Pending,
         createdAt: timestamp,
       },
@@ -442,7 +442,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementDisplayCurrency: DisplayCurrency.Usd,
         memo: null,
         settlementFee: toSats(0),
-        displayCurrencyPerSettlementCurrencyUnit: 1,
+        displayCurrencyPerSettlementCurrencyUnit: 0.01,
 
         status: TxStatus.Pending,
         createdAt: timestamp,
