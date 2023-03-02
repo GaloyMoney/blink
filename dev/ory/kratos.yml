@@ -2,6 +2,13 @@ version: v0.11.0
 
 dsn: "overrided-by-env"
 
+tracing:
+  provider: otel
+  providers:
+    otlp:
+      server_url: otel-agent:4318
+      insecure: true
+
 serve:
   public:
     base_url: http://127.0.0.1:4433/
