@@ -34,8 +34,11 @@ const filterPendingIncoming = ({
 
             const settlementAmount = toSats(sats - fee)
 
+            const priceForMinorUnit =
+              displayCurrencyPerSat.price * 10 ** Number(MajorExponent.STANDARD)
+
             const settlementDisplayAmount = minorToMajorUnit({
-              amount: Math.round(displayCurrencyPerSat.price * settlementAmount),
+              amount: Math.round(priceForMinorUnit * settlementAmount),
               displayMajorExponent: MajorExponent.STANDARD,
             })
 
