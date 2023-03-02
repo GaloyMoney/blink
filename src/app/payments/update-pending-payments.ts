@@ -230,13 +230,19 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         })
       if (pendingPayment.feeKnownInAdvance) return true
 
-      const { displayAmount, displayFee } = pendingPayment
-      if (displayAmount === undefined || displayFee === undefined) {
+      const { displayAmount, displayFee, displayCurrency } = pendingPayment
+      if (
+        displayAmount === undefined ||
+        displayFee === undefined ||
+        displayCurrency === undefined
+      ) {
         return new UnknownLedgerError("missing display-related values in transaction")
       }
 
       return Wallets.reimburseFee({
         paymentFlow,
+        senderDisplayAmount: displayAmount,
+        senderDisplayCurrency: displayCurrency,
         journalId: pendingPayment.journalId,
         actualFee: roundedUpFee,
         revealedPreImage,

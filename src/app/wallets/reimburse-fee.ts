@@ -1,20 +1,32 @@
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, NewDisplayCurrencyConverter, toCents } from "@domain/fiat"
+import { MajorExponent, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
-import { WalletPriceRatio } from "@domain/payments"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
+import {
+  displayAmountFromNumber,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@domain/shared"
 
 import * as LedgerFacade from "@services/ledger/facade"
 import { baseLogger } from "@services/logger"
 
-export const reimburseFee = async <S extends WalletCurrency, R extends WalletCurrency>({
+export const reimburseFee = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+  T extends DisplayCurrency,
+>({
   paymentFlow,
+  senderDisplayAmount,
+  senderDisplayCurrency,
   journalId,
   actualFee,
   revealedPreImage,
 }: {
   paymentFlow: PaymentFlow<S, R>
+  senderDisplayAmount: DisplayCurrencyBaseAmount
+  senderDisplayCurrency: T
   journalId: LedgerJournalId
   actualFee: Satoshis
   revealedPreImage?: RevealedPreImage
@@ -51,9 +63,24 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     return true
   }
 
-  const displayCentsPerSat = priceRatio.usdPerSat()
-  const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
-  const reimburseAmountDisplayCurrency = converter.fromUsdAmount(feeDifference.usd)
+  const displayAmount = displayAmountFromNumber({
+    amount: senderDisplayAmount,
+    currency: senderDisplayCurrency,
+  })
+  if (displayAmount instanceof Error) return displayAmount
+
+  const displayPriceRatio = DisplayPriceRatio({
+    displayAmountInMinorUnit: displayAmount,
+    walletAmount: paymentFlow.btcPaymentAmount,
+    displayMajorExponent: MajorExponent.STANDARD,
+  })
+  if (displayPriceRatio instanceof Error) return displayPriceRatio
+  const reimburseAmountDisplayCurrency = displayPriceRatio.convertFromWallet(
+    feeDifference.btc,
+  )
+  const reimburseAmountAsNumber = Number(
+    reimburseAmountDisplayCurrency.amountInMinor,
+  ) as DisplayCurrencyBaseAmount
 
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
@@ -69,9 +96,9 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     satsFee: toSats(0),
     centsFee: toCents(0),
 
-    displayAmount: reimburseAmountDisplayCurrency,
+    displayAmount: reimburseAmountAsNumber,
     displayFee: 0 as DisplayCurrencyBaseAmount,
-    displayCurrency: DisplayCurrency.Usd,
+    displayCurrency: senderDisplayCurrency,
   }
 
   const txMetadata: LnLedgerTransactionMetadataUpdate = {

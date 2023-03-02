@@ -7,11 +7,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
-import {
-  DisplayCurrency,
-  NewDisplayCurrencyConverter,
-  usdMinorToMajorUnit,
-} from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
@@ -48,6 +44,7 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
+import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
@@ -94,9 +91,16 @@ export const payInvoiceByWalletId = async ({
         paymentFlow,
         senderWallet,
         senderUsername: senderAccount.username,
+        senderDisplayCurrency: senderAccount.displayCurrency,
         memo,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, memo })
+    : executePaymentViaLn({
+        decodedInvoice,
+        paymentFlow,
+        senderWallet,
+        senderDisplayCurrency: senderAccount.displayCurrency,
+        memo,
+      })
 }
 
 const payNoAmountInvoiceByWalletId = async ({
@@ -133,9 +137,16 @@ const payNoAmountInvoiceByWalletId = async ({
         paymentFlow,
         senderWallet,
         senderUsername: senderAccount.username,
+        senderDisplayCurrency: senderAccount.displayCurrency,
         memo,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, memo })
+    : executePaymentViaLn({
+        decodedInvoice,
+        paymentFlow,
+        senderWallet,
+        senderDisplayCurrency: senderAccount.displayCurrency,
+        memo,
+      })
 }
 
 export const payNoAmountInvoiceByWalletIdForBtcWallet = async (
@@ -322,11 +333,13 @@ const executePaymentViaIntraledger = async <
   paymentFlow,
   senderWallet,
   senderUsername,
+  senderDisplayCurrency,
   memo,
 }: {
   paymentFlow: PaymentFlow<S, R>
   senderWallet: WalletDescriptor<S>
   senderUsername: Username | undefined
+  senderDisplayCurrency: DisplayCurrency
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -380,14 +393,13 @@ const executePaymentViaIntraledger = async <
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
-    const priceRatio = WalletPriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: senderDisplayCurrency,
     })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
+    const amountDisplayCurrencyAsNumber = Number(
+      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    ) as DisplayCurrencyBaseAmount
 
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
@@ -404,9 +416,9 @@ const executePaymentViaIntraledger = async <
           pubkey: recipientPubkey,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+          displayCurrency: senderDisplayCurrency,
 
           memoOfPayer: memo || undefined,
         }))
@@ -417,9 +429,9 @@ const executePaymentViaIntraledger = async <
           pubkey: recipientPubkey,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+          displayCurrency: senderDisplayCurrency,
 
           memoOfPayer: memo || undefined,
           senderUsername,
@@ -483,11 +495,13 @@ const executePaymentViaLn = async ({
   decodedInvoice,
   paymentFlow,
   senderWallet,
+  senderDisplayCurrency,
   memo,
 }: {
   decodedInvoice: LnInvoice
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   senderWallet: Wallet
+  senderDisplayCurrency: DisplayCurrency
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -525,22 +539,25 @@ const executePaymentViaLn = async ({
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
 
-    const priceRatio = WalletPriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: senderDisplayCurrency,
     })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
+    const amountDisplayCurrencyAsNumber = Number(
+      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+    const feeDisplayCurrencyAsNumber = Number(
+      displayPriceRatio.convertFromWallet(paymentFlow.btcProtocolAndBankFee)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
 
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
     const metadata = LedgerFacade.LnSendLedgerMetadata({
-      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolAndBankFee),
+      amountDisplayCurrency: amountDisplayCurrencyAsNumber,
+      feeDisplayCurrency: feeDisplayCurrencyAsNumber,
       displayCurrency: DisplayCurrency.Usd,
 
       paymentAmounts: paymentFlow,
@@ -573,6 +590,12 @@ const executePaymentViaLn = async ({
     if (journal instanceof Error) return journal
     const { journalId } = journal
 
+    const walletPriceRatio = WalletPriceRatio({
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
+    })
+    if (walletPriceRatio instanceof Error) return walletPriceRatio
+
     let payResult: PayInvoiceResult | LightningServiceError
     if (rawRoute) {
       payResult = await lndService.payInvoiceViaRoutes({
@@ -584,7 +607,7 @@ const executePaymentViaLn = async ({
       const maxFeeCheckArgs = {
         maxFeeAmount: paymentFlow.btcProtocolAndBankFee,
         btcPaymentAmount: paymentFlow.btcPaymentAmount,
-        priceRatio,
+        priceRatio: walletPriceRatio,
         senderWalletCurrency: paymentFlow.senderWalletDescriptor().currency,
       }
       const maxFeeCheck = LnFees().verifyMaxFee(maxFeeCheckArgs)
@@ -638,6 +661,8 @@ const executePaymentViaLn = async ({
     if (!rawRoute) {
       const reimbursed = await Wallets.reimburseFee({
         paymentFlow,
+        senderDisplayAmount: amountDisplayCurrencyAsNumber,
+        senderDisplayCurrency,
         journalId,
         actualFee: payResult.roundedUpFee,
         revealedPreImage: payResult.revealedPreImage,

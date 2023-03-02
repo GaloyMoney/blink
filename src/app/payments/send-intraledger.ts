@@ -2,16 +2,11 @@ import { getPubkeysToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import {
-  DisplayCurrency,
-  NewDisplayCurrencyConverter,
-  usdMinorToMajorUnit,
-} from "@domain/fiat"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
-  WalletPriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
@@ -35,7 +30,11 @@ import {
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import { Accounts } from "@app"
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
+import {
+  btcFromUsdMidPriceFn,
+  getCurrentPriceAsDisplayPriceRatio,
+  usdFromBtcMidPriceFn,
+} from "@app/prices"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import {
@@ -255,13 +254,14 @@ const executePaymentViaIntraledger = async <
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
-    const priceRatio = WalletPriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
+    const { displayCurrency } = senderAccount
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: displayCurrency,
     })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
+    const amountDisplayCurrencyAsNumber = Number(
+      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    ) as DisplayCurrencyBaseAmount
 
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
@@ -275,9 +275,9 @@ const executePaymentViaIntraledger = async <
       metadata = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
         paymentAmounts: paymentFlow,
 
-        amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+        amountDisplayCurrency: amountDisplayCurrencyAsNumber,
         feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        displayCurrency: DisplayCurrency.Usd,
+        displayCurrency,
 
         memoOfPayer: memo || undefined,
       })
@@ -286,9 +286,9 @@ const executePaymentViaIntraledger = async <
         LedgerFacade.WalletIdIntraledgerLedgerMetadata({
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+          displayCurrency,
 
           memoOfPayer: memo || undefined,
           senderUsername: senderAccount.username,

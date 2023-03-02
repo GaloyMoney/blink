@@ -3,7 +3,11 @@ import { createHash, randomBytes } from "crypto"
 import { getLocale, ONE_DAY } from "@config"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
+import {
+  btcFromUsdMidPriceFn,
+  getCurrentPriceAsDisplayPriceRatio,
+  usdFromBtcMidPriceFn,
+} from "@app/prices"
 
 import {
   decodeInvoice,
@@ -1646,6 +1650,7 @@ describe("USD Wallets - Lightning Pay", () => {
   // TODO: add probing scenarios
   describe("Lightning invoices with amounts", () => {
     it("pay external invoice from usd wallet", async () => {
+      const senderAccount = accountB
       const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
       const amountPayment = toSats(100)
@@ -1659,7 +1664,7 @@ describe("USD Wallets - Lightning Pay", () => {
         uncheckedPaymentRequest: request,
         memo: null,
         senderWalletId: walletIdUsdB,
-        senderAccount: accountB,
+        senderAccount,
       })
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
@@ -1692,15 +1697,26 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(amountPayment).toEqual(txnPayment.satsAmount)
       expect(cents).toEqual(txnPayment.centsAmount)
 
+      const btcPaymentAmount = {
+        amount: BigInt(amountPayment),
+        currency: WalletCurrency.Btc,
+      }
+      const usdPaymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
       const priceRatio = WalletPriceRatio({
-        usd: { amount: BigInt(cents), currency: WalletCurrency.Usd },
-        btc: { amount: BigInt(amountPayment), currency: WalletCurrency.Btc },
+        usd: usdPaymentAmount,
+        btc: btcPaymentAmount,
       })
       if (priceRatio instanceof Error) throw priceRatio
       const feeAmountCents = priceRatio.convertFromBtcToCeil(feeAmountSats)
 
       const satsFee = Number(feeAmountSats.amount)
       const centsFee = Number(feeAmountCents.amount)
+
+      const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+        currency: senderAccount.displayCurrency,
+      })
+      if (displayPriceRatio instanceof Error) throw displayPriceRatio
+
       const expectedFields = {
         type: LedgerTransactionType.Payment,
 
@@ -1711,8 +1727,12 @@ describe("USD Wallets - Lightning Pay", () => {
         satsFee,
         centsAmount: cents,
         centsFee,
-        displayAmount: cents,
-        displayFee: centsFee,
+        displayAmount: Number(
+          displayPriceRatio.convertFromWallet(btcPaymentAmount).amountInMinor,
+        ),
+        displayFee: Number(
+          displayPriceRatio.convertFromWallet(feeAmountSats).amountInMinor,
+        ),
 
         displayCurrency: DisplayCurrency.Usd,
       }
@@ -2263,6 +2283,17 @@ describe("USD Wallets - Lightning Pay", () => {
         debit = centsAmount
       }
 
+      const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+        currency: senderAccount.displayCurrency,
+      })
+      if (displayPriceRatio instanceof Error) throw displayPriceRatio
+      const displayAmount = Number(
+        displayPriceRatio.convertFromWallet({
+          amount: BigInt(satsAmount),
+          currency: WalletCurrency.Btc,
+        }).amountInMinor,
+      )
+
       const expectedFields = {
         type:
           senderWallet.accountId === recipientWallet.accountId
@@ -2276,7 +2307,7 @@ describe("USD Wallets - Lightning Pay", () => {
         satsFee: 0,
         centsAmount,
         centsFee: 0,
-        displayAmount: centsAmount,
+        displayAmount,
         displayFee: 0,
 
         displayCurrency: DisplayCurrency.Usd,
@@ -2572,8 +2603,17 @@ describe("Handle pending payments - Lightning Pay", () => {
       ).markLightningPaymentFlowNotPending(paymentFlowIndex)
       if (paymentFlow instanceof Error) throw paymentFlow
 
+      const {
+        displayAmount: senderDisplayAmount,
+        displayCurrency: senderDisplayCurrency,
+      } = originalTxn
+      if (senderDisplayAmount === undefined || senderDisplayCurrency === undefined) {
+        throw new Error("missing display-related values in transaction")
+      }
       const reimbursed = await Wallets.reimburseFee({
         paymentFlow,
+        senderDisplayAmount,
+        senderDisplayCurrency,
         journalId: originalTxn.journalId,
         actualFee: toSats(1),
         revealedPreImage: lnPaymentLookup.confirmedDetails?.revealedPreImage,

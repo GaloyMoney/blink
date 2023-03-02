@@ -2,7 +2,11 @@ import crypto from "crypto"
 
 import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
+import {
+  btcFromUsdMidPriceFn,
+  getCurrentPriceAsDisplayPriceRatio,
+  usdFromBtcMidPriceFn,
+} from "@app/prices"
 import {
   getPriceRatioForLimits,
   checkIntraledgerLimits,
@@ -24,10 +28,7 @@ import {
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
-import {
-  NewDisplayCurrencyConverter,
-  usdMinorToMajorUnit,
-} from "@domain/fiat/display-currency"
+import { usdMinorToMajorUnit } from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
@@ -162,6 +163,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
       builder,
       senderWallet,
       senderUsername: senderAccount.username,
+      senderDisplayCurrency: senderAccount.displayCurrency,
       memo,
       sendAll,
     })
@@ -174,6 +176,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
 
   return executePaymentViaOnChain({
     builder,
+    senderDisplayCurrency: senderAccount.displayCurrency,
     targetConfirmations: checkedTargetConfirmations,
     memo,
     sendAll,
@@ -207,12 +210,14 @@ const executePaymentViaIntraledger = async <
   builder,
   senderWallet,
   senderUsername,
+  senderDisplayCurrency,
   memo,
   sendAll,
 }: {
   builder: OPFBWithConversion<S, R> | OPFBWithError
   senderWallet: WalletDescriptor<S>
   senderUsername: Username | undefined
+  senderDisplayCurrency: DisplayCurrency
   memo: string | null
   sendAll: boolean
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -277,8 +282,14 @@ const executePaymentViaIntraledger = async <
       btc: paymentFlow.btcPaymentAmount,
     })
     if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: senderDisplayCurrency,
+    })
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
+    const amountDisplayCurrencyAsNumber = Number(
+      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    ) as DisplayCurrencyBaseAmount
 
     let metadata:
       | AddOnChainIntraledgerSendLedgerMetadata
@@ -291,7 +302,7 @@ const executePaymentViaIntraledger = async <
           sendAll,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
           displayCurrency: DisplayCurrency.Usd,
 
@@ -304,7 +315,7 @@ const executePaymentViaIntraledger = async <
           sendAll,
           paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
           feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
           displayCurrency: DisplayCurrency.Usd,
 
@@ -360,12 +371,14 @@ const executePaymentViaOnChain = async <
   R extends WalletCurrency,
 >({
   builder,
+  senderDisplayCurrency,
   targetConfirmations,
   memo,
   sendAll,
   logger,
 }: {
   builder: OPFBWithConversion<S, R> | OPFBWithError
+  senderDisplayCurrency: DisplayCurrency
   targetConfirmations: TargetConfirmations
   memo: string | null
   sendAll: boolean
@@ -448,22 +461,25 @@ const executePaymentViaOnChain = async <
     })
 
     // Construct metadata
-    const priceRatio = WalletPriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: senderDisplayCurrency,
     })
-    if (priceRatio instanceof Error) return priceRatio
-    const displayCentsPerSat = priceRatio.usdPerSat()
-
-    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
+    const amountDisplayCurrencyAsNumber = Number(
+      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+    const feeDisplayCurrencyAsNumber = Number(
+      displayPriceRatio.convertFromWallet(paymentFlow.btcProtocolAndBankFee)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
 
     const metadata = LedgerFacade.OnChainSendLedgerMetadata({
       // we need a temporary hash to be able to search in admin panel
       onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
       paymentAmounts: paymentFlow,
 
-      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolAndBankFee),
+      amountDisplayCurrency: amountDisplayCurrencyAsNumber,
+      feeDisplayCurrency: feeDisplayCurrencyAsNumber,
       displayCurrency: DisplayCurrency.Usd,
 
       payeeAddresses: [paymentFlow.address],

@@ -26,7 +26,11 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { sleep, timestampDaysAgo } from "@utils"
 
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
+import {
+  btcFromUsdMidPriceFn,
+  getCurrentPriceAsDisplayPriceRatio,
+  usdFromBtcMidPriceFn,
+} from "@app/prices"
 
 import { LedgerTransactionType } from "@domain/ledger"
 
@@ -350,6 +354,23 @@ const testExternalSend = async ({
       debit = centsAmount + centsFee
     }
 
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: senderAccount.displayCurrency,
+    })
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
+    const displayAmount = Number(
+      displayPriceRatio.convertFromWallet({
+        amount: BigInt(satsAmount),
+        currency: WalletCurrency.Btc,
+      }).amountInMinor,
+    )
+    const displayFee = Number(
+      displayPriceRatio.convertFromWallet({
+        amount: BigInt(satsFee),
+        currency: WalletCurrency.Btc,
+      }).amountInMinor,
+    )
+
     expect(txnPayment).toEqual(
       expect.objectContaining({
         type: LedgerTransactionType.OnchainPayment,
@@ -361,8 +382,8 @@ const testExternalSend = async ({
         satsFee,
         centsAmount,
         centsFee,
-        displayAmount: centsAmount,
-        displayFee: centsFee,
+        displayAmount,
+        displayFee,
 
         displayCurrency: DisplayCurrency.Usd,
       }),
@@ -371,11 +392,6 @@ const testExternalSend = async ({
     // Check notification sent
     // ===
     const amountForNotification = sendAll ? amountToSend - fee : amountToSend
-
-    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
-    })
-    if (displayPriceRatio instanceof Error) return displayPriceRatio
 
     const paymentAmount = {
       amount: BigInt(amountForNotification),
@@ -388,7 +404,8 @@ const testExternalSend = async ({
             //       & currencies. Applying 'usdMinorToMajorUnit' to WalletCurrency.Usd case
             //       makes no difference.
             usdMinorToMajorUnit(
-              displayPriceRatio.convertFromBtc(paymentAmount as BtcPaymentAmount).amount,
+              displayPriceRatio.convertFromWallet(paymentAmount as BtcPaymentAmount)
+                .amountInMinor,
             )
           : amountForNotification,
       currency: DisplayCurrency.Usd,
@@ -627,6 +644,23 @@ const testInternalSend = async ({
     debit = centsAmount + centsFee
   }
 
+  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: senderAccount.displayCurrency,
+  })
+  if (displayPriceRatio instanceof Error) throw displayPriceRatio
+  const displayAmount = Number(
+    displayPriceRatio.convertFromWallet({
+      amount: BigInt(satsAmount),
+      currency: WalletCurrency.Btc,
+    }).amountInMinor,
+  )
+  const displayFee = Number(
+    displayPriceRatio.convertFromWallet({
+      amount: BigInt(satsFee),
+      currency: WalletCurrency.Btc,
+    }).amountInMinor,
+  )
+
   const expectedFields = {
     type: LedgerTransactionType.OnchainIntraLedger,
 
@@ -637,8 +671,8 @@ const testInternalSend = async ({
     satsFee,
     centsAmount,
     centsFee,
-    displayAmount: centsAmount,
-    displayFee: centsFee,
+    displayAmount,
+    displayFee,
 
     displayCurrency: DisplayCurrency.Usd,
   }
