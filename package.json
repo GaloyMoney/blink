@@ -143,7 +143,7 @@
     "@types/node": "^18.14.2",
     "@types/nodemon": "^1.19.2",
     "@types/prettier": "^2.7.2",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
     "@typescript-eslint/parser": "^5.54.0",
     "@types/set-cookie-parser": "^2.4.2",
     "@xascode/tscpaths": "0.1.4",
