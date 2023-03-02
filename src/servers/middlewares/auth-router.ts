@@ -23,6 +23,7 @@ import setCookie from "set-cookie-parser"
 import cookieParser from "cookie-parser"
 import { logoutCookie } from "@app/auth"
 import { checkedToPhoneNumber } from "@domain/users"
+import libCookie from "cookie"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -170,21 +171,37 @@ authRouter.post(
             .status(500)
             .send({ error: "Missing csrf or ory_kratos_session cookie" })
         }
+        const kratosCookieStr = libCookie.serialize(
+          kratosSessionCookie.name,
+          kratosSessionCookie.value,
+          {
+            expires: kratosSessionCookie.expires,
+            maxAge: kratosSessionCookie.maxAge,
+            sameSite: "none",
+            secure: kratosSessionCookie.secure,
+            httpOnly: kratosSessionCookie.httpOnly,
+            path: kratosSessionCookie.path,
+          },
+        )
+        const session = await kratosPublic.toSession({ cookie: kratosCookieStr })
+        const thirtyDaysFromNow = new Date(new Date().setDate(new Date().getDate() + 30))
+        const expiresAt = session.data.expires_at
+          ? new Date(session.data.expires_at)
+          : thirtyDaysFromNow
+        const maxAge = expiresAt.getTime() - new Date().getTime()
         res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
-          maxAge: kratosSessionCookie.maxAge,
+          maxAge,
           sameSite: "none",
           secure: kratosSessionCookie.secure,
           httpOnly: kratosSessionCookie.httpOnly,
           path: kratosSessionCookie.path,
-          expires: kratosSessionCookie.expires,
         })
         res.cookie(csrfCookie.name, csrfCookie.value, {
-          maxAge: csrfCookie.maxAge,
+          maxAge,
           sameSite: "none",
           secure: csrfCookie.secure,
           httpOnly: csrfCookie.httpOnly,
           path: csrfCookie.path,
-          expires: csrfCookie.expires,
         })
       } catch (err) {
         recordExceptionInCurrentSpan({ error: err })
