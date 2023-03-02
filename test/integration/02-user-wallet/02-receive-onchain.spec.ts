@@ -409,6 +409,12 @@ describe("UserWallet - On chain", () => {
     expect(pendingTx.initiationVia.address).toBe(address)
     expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
+    expect(pendingTx.settlementDisplayAmount).toBe(
+      (
+        pendingTx.settlementAmount * pendingTx.displayCurrencyPerSettlementCurrencyUnit
+      ).toFixed(2),
+    )
+
     // Check pendingTx from cache
     const { result: txsFromCache, error: errorFromCache } =
       await getTransactionsForWalletId(walletIdA)

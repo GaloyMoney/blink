@@ -137,7 +137,7 @@ describe("translates ledger txs to wallet txs", () => {
 
       settlementAmount,
       settlementFee,
-      settlementDisplayAmount: centsAmount / 100,
+      settlementDisplayAmount: (centsAmount / 100).toFixed(2),
       settlementDisplayCurrency: DisplayCurrency.Usd,
       displayCurrencyPerSettlementCurrencyUnit,
     }
@@ -399,7 +399,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       },
       displayCurrencyPerSat: {
         timestamp: new Date(Date.now()),
-        price: 1,
+        price: 0.01,
         currency: DisplayCurrency.Usd,
       },
     })
@@ -418,10 +418,10 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
-        settlementDisplayAmount: 25000 / 100,
+        settlementDisplayAmount: (25000 / 100).toFixed(2),
         settlementDisplayCurrency: DisplayCurrency.Usd,
         settlementCurrency: WalletCurrency.Btc,
-        displayCurrencyPerSettlementCurrencyUnit: 1,
+        displayCurrencyPerSettlementCurrencyUnit: 0.01,
         status: TxStatus.Pending,
         createdAt: timestamp,
       },
@@ -438,11 +438,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(50000),
         settlementCurrency: WalletCurrency.Btc,
-        settlementDisplayAmount: 50000 / 100,
+        settlementDisplayAmount: (50000 / 100).toFixed(2),
         settlementDisplayCurrency: DisplayCurrency.Usd,
         memo: null,
         settlementFee: toSats(0),
-        displayCurrencyPerSettlementCurrencyUnit: 1,
+        displayCurrencyPerSettlementCurrencyUnit: 0.01,
 
         status: TxStatus.Pending,
         createdAt: timestamp,
@@ -507,7 +507,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
         settlementCurrency: WalletCurrency.Btc,
-        settlementDisplayAmount: NaN,
+        settlementDisplayAmount: "NaN",
         settlementDisplayCurrency: DisplayCurrency.Usd,
         displayCurrencyPerSettlementCurrencyUnit: NaN,
         status: TxStatus.Pending,

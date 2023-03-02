@@ -12,6 +12,7 @@ import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledge
 import { TxStatus } from "./tx-status"
 import { DepositFeeCalculator } from "./deposit-fee-calculator"
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
+import { SettlementAmounts } from "./settlement-amounts"
 
 const filterPendingIncoming = ({
   pendingIncoming,
@@ -33,8 +34,11 @@ const filterPendingIncoming = ({
 
             const settlementAmount = toSats(sats - fee)
 
+            const priceForMinorUnit =
+              displayCurrencyPerSat.price * 10 ** Number(MajorExponent.STANDARD)
+
             const settlementDisplayAmount = minorToMajorUnit({
-              amount: Math.round(displayCurrencyPerSat.price * settlementAmount),
+              amount: Math.round(priceForMinorUnit * settlementAmount),
               displayMajorExponent: MajorExponent.STANDARD,
             })
 
@@ -77,7 +81,6 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   const {
     type,
     credit,
-    debit,
     currency,
     satsAmount: satsAmountRaw,
     satsFee: satsFeeRaw,
@@ -96,8 +99,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     type as AdminLedgerTransactionType,
   )
 
-  const settlementAmount =
-    currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
+  const { settlementAmount, settlementDisplayAmount } = SettlementAmounts().fromTxn(txn)
 
   let satsAmount = satsAmountRaw || 0
   let centsAmount = centsAmountRaw || 0
@@ -126,11 +128,6 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   })
 
   const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
-
-  const settlementDisplayAmount = minorToMajorUnit({
-    amount: displayAmount,
-    displayMajorExponent: MajorExponent.STANDARD,
-  })
 
   const baseTransaction: BaseWalletTransaction = {
     id: txn.id,

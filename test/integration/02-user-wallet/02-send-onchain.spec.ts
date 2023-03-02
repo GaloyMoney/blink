@@ -49,6 +49,8 @@ import {
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain/errors"
 import { TxDecoder } from "@domain/bitcoin/onchain"
+import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
+
 import * as OnChainServiceImpl from "@services/lnd/onchain-service"
 import { DealerPriceService } from "@services/dealer-price"
 
@@ -236,6 +238,13 @@ const testExternalSend = async ({
     const pendingTx = pendingTxs[0]
     const interimBalance = await getBalanceHelper(senderWalletId)
 
+    const pendingLedgerTx = await LedgerService().getTransactionById(
+      pendingTx.id as LedgerTransactionId,
+    )
+    if (pendingLedgerTx instanceof Error) throw pendingLedgerTx
+    const { settlementDisplayAmount } = SettlementAmounts().fromTxn(pendingLedgerTx)
+    expect(pendingTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
+
     if (sendAll) {
       expect(pendingTx.settlementAmount).toBe(-initialWalletBalance)
       expect(interimBalance).toBe(0)
@@ -290,6 +299,13 @@ const testExternalSend = async ({
 
     expect(settledTx.settlementFee).toBe(fee)
     expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+    const settledLedgerTx = await LedgerService().getTransactionById(
+      settledTx.id as LedgerTransactionId,
+    )
+    if (settledLedgerTx instanceof Error) throw settledLedgerTx
+    const { settlementDisplayAmount } = SettlementAmounts().fromTxn(settledLedgerTx)
+    expect(settledTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
 
     const finalBalance = await getBalanceHelper(senderWalletId)
 
@@ -540,6 +556,13 @@ const testInternalSend = async ({
   expect(senderSettledTx.settlementAmount).toBe(-senderAmount)
   expect(senderSettledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
 
+  const senderSettledLedgerTx = await LedgerService().getTransactionById(
+    senderSettledTx.id as LedgerTransactionId,
+  )
+  if (senderSettledLedgerTx instanceof Error) throw senderSettledLedgerTx
+  const { settlementDisplayAmount } = SettlementAmounts().fromTxn(senderSettledLedgerTx)
+  expect(senderSettledTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
+
   // Check txn details for received wallet
   // ===
   const { result: txsRecipient, error: errorUserA } = await getTransactionsForWalletId(
@@ -564,6 +587,13 @@ const testInternalSend = async ({
   expect(recipientSettledTx.settlementFee).toBe(0)
   expect(recipientSettledTx.settlementAmount).toBe(recipientAmount)
   expect(recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+  expect(recipientSettledTx.settlementDisplayAmount).toBe(
+    (
+      recipientSettledTx.settlementAmount *
+      recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit
+    ).toFixed(2),
+  )
 
   // Check memos
   // ===
