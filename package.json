@@ -148,7 +148,7 @@
     "@types/set-cookie-parser": "^2.4.2",
     "@xascode/tscpaths": "0.1.4",
     "axios-mock-adapter": "^1.21.2",
-    "eslint": "^8.34.0",
+    "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jest": "^27.2.1",
