@@ -14,11 +14,11 @@ export const minorToMajorUnit = ({
   displayMajorExponent: CurrencyMajorExponent
 }) => {
   const majorExponent = Number(displayMajorExponent)
-  return Number((Number(amount) / 10 ** majorExponent).toFixed(majorExponent))
+  return (Number(amount) / 10 ** majorExponent).toFixed(majorExponent)
 }
 
 export const usdMinorToMajorUnit = (amount: number | bigint) =>
-  minorToMajorUnit({ amount, displayMajorExponent: MajorExponent.STANDARD })
+  Number(minorToMajorUnit({ amount, displayMajorExponent: MajorExponent.STANDARD }))
 
 export const majorToMinorUnit = ({
   amount,

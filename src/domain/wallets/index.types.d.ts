@@ -52,7 +52,7 @@ type BaseWalletTransaction = {
   readonly settlementAmount: Satoshis | UsdCents
   readonly settlementFee: Satoshis | UsdCents
   readonly settlementCurrency: WalletCurrency
-  readonly settlementDisplayAmount: number
+  readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayCurrency: DisplayCurrency | ""
   readonly displayCurrencyPerSettlementCurrencyUnit: number
   readonly status: TxStatus
