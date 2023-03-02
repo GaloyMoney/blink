@@ -259,7 +259,7 @@ describe("graphql", () => {
             node: expect.objectContaining({
               settlementAmount: 4_000,
               settlementCurrency: WalletCurrency.Usd,
-              settlementDisplayAmount: "40",
+              settlementDisplayAmount: "40.00",
               settlementDisplayCurrency: DisplayCurrency.Usd,
             }),
           }),
