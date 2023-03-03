@@ -166,6 +166,17 @@ export class LndOfflineError extends CustomApolloError {
   }
 }
 
+export class DealerError extends CustomApolloError {
+  constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
+    super({
+      code: "DEALER_ERROR",
+      forwardToClient: true,
+      ...errData,
+      logger: baseLogger,
+    })
+  }
+}
+
 export class DealerOfflineError extends CustomApolloError {
   constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
     super({

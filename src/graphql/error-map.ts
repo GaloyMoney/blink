@@ -21,6 +21,7 @@ import {
   OnChainPaymentError,
   PhoneProviderError,
   UnexpectedClientError,
+  DealerError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -224,6 +225,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidIPMetadataForRewardError":
       message = "Unsupported IP for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "NoDealerPriceDataAvailableError":
+      message = "No price data from dealer to perform USD operation."
+      return new DealerError({ message, logger: baseLogger })
 
     case "NoConnectionToDealerError":
       message = "No connection to dealer to perform USD operation."

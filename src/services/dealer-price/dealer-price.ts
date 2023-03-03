@@ -9,6 +9,7 @@ import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import {
   DealerStalePriceError,
   NoConnectionToDealerError,
+  NoDealerPriceDataAvailableError,
   UnknownDealerPriceServiceError,
 } from "@domain/dealer-price"
 
@@ -280,6 +281,10 @@ const parseDealerErrors = (error): DealerPriceServiceError => {
   }
   if (error.message.includes("StalePrice")) {
     return new DealerStalePriceError()
+  }
+
+  if (error.message.includes("No price data available")) {
+    return new NoDealerPriceDataAvailableError()
   }
 
   return new UnknownDealerPriceServiceError(error.message)
