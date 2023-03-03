@@ -1,6 +1,8 @@
 import { getI18nInstance } from "@config"
-import { getLanguageOrDefault } from "@domain/locale"
+
+import { MajorExponent } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
+import { getLanguageOrDefault } from "@domain/locale"
 
 const i18n = getI18nInstance()
 
@@ -30,7 +32,7 @@ export const createPushNotificationContent = ({
     baseCurrency === WalletCurrency.Usd ? Number(amount.amount) / 100 : amount.amount
   const baseCurrencyAmount = displayedBaseAmount.toLocaleString(locale, {
     minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: MajorExponent.STANDARD,
     currency: baseCurrency,
     style: baseCurrency === WalletCurrency.Btc ? "decimal" : "currency",
     currencyDisplay: "narrowSymbol",
@@ -51,7 +53,7 @@ export const createPushNotificationContent = ({
   ) {
     const displayCurrencyAmount = displayAmount.amount.toLocaleString(locale, {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: MajorExponent.STANDARD,
       currency: displayAmount.currency,
       style: "currency",
       currencyDisplay: "narrowSymbol",
