@@ -95,6 +95,8 @@ i18n.configure({
   objectNotation: true,
   updateFiles: false,
   locales: ["en", "es"],
+  defaultLocale: "en",
+  retryInDefaultLocale: true,
   directory: path.join(__dirname, "locales"),
 })
 

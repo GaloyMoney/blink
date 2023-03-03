@@ -26,17 +26,19 @@ export const createPushNotificationContent = ({
     { walletCurrency: baseCurrency },
   )
   const baseCurrencyName = baseCurrency === WalletCurrency.Btc ? "sats" : ""
-  const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
   const displayedBaseAmount =
     baseCurrency === WalletCurrency.Usd ? Number(amount.amount) / 100 : amount.amount
   const baseCurrencyAmount = displayedBaseAmount.toLocaleString(locale, {
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
+    currency: baseCurrency,
+    style: baseCurrency === WalletCurrency.Btc ? "decimal" : "currency",
+    currencyDisplay: "narrowSymbol",
   })
 
   let body = i18n.__(
     { phrase: `notification.${notificationType}.body`, locale },
     {
-      baseCurrencySymbol,
       baseCurrencyAmount,
       baseCurrencyName: baseCurrencyName ? ` ${baseCurrencyName}` : "",
     },
@@ -47,24 +49,17 @@ export const createPushNotificationContent = ({
     displayAmount.amount > 0 &&
     displayAmount.currency !== baseCurrency
   ) {
-    const displayCurrencyName = i18n.__({
-      phrase: `currency.${displayAmount.currency}.name`,
-      locale,
-    })
-    const displayCurrencySymbol = i18n.__({
-      phrase: `currency.${displayAmount.currency}.symbol`,
-      locale,
-    })
     const displayCurrencyAmount = displayAmount.amount.toLocaleString(locale, {
+      minimumFractionDigits: 0,
       maximumFractionDigits: 2,
+      currency: displayAmount.currency,
+      style: "currency",
+      currencyDisplay: "narrowSymbol",
     })
     body = i18n.__(
       { phrase: `notification.${notificationType}.bodyDisplayCurrency`, locale },
       {
-        displayCurrencySymbol,
         displayCurrencyAmount,
-        displayCurrencyName: displayCurrencyName ? ` ${displayCurrencyName}` : "",
-        baseCurrencySymbol,
         baseCurrencyAmount,
         baseCurrencyName: baseCurrencyName ? ` ${baseCurrencyName}` : "",
       },
