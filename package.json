@@ -159,7 +159,7 @@
     "jest-junit": "^15.0.0",
     "knex": "^2.4.2",
     "migrate-mongo": "^9.0.0",
-    "nodemon": "^2.0.20",
+    "nodemon": "^2.0.21",
     "pg": "^8.9.0",
     "pino-pretty": "^9.4.0",
     "prettier": "^2.8.4",
