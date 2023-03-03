@@ -107,42 +107,42 @@ export const btcTransactionsWithDisplayCurrency = [
     type: NotificationType.IntraLedgerReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: { amount: 500, currency: CRC },
-    body: "+₡500 colones | 1,000 sats",
+    body: "+₡500 | 1,000 sats",
     title: "BTC Transaction",
   },
   {
     type: NotificationType.IntraLedgerPayment,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: { amount: 500, currency: CRC },
-    body: "Sent payment of ₡500 colones | 1,000 sats",
+    body: "Sent payment of ₡500 | 1,000 sats",
     title: "BTC Transaction",
   },
   {
     type: NotificationType.OnchainReceipt,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: { amount: 500, currency: CRC },
-    body: "+₡500 colones | 1,000 sats",
+    body: "+₡500 | 1,000 sats",
     title: "BTC Transaction",
   },
   {
     type: NotificationType.OnchainReceiptPending,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: { amount: 500, currency: CRC },
-    body: "pending +₡500 colones | 1,000 sats",
+    body: "pending +₡500 | 1,000 sats",
     title: "BTC Transaction | Pending",
   },
   {
     type: NotificationType.OnchainPayment,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: { amount: 500, currency: CRC },
-    body: "Sent onchain payment of +₡500 colones | 1,000 sats confirmed",
+    body: "Sent onchain payment of +₡500 | 1,000 sats confirmed",
     title: "BTC Transaction",
   },
   {
     type: NotificationType.LnInvoicePaid,
     paymentAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayPaymentAmount: { amount: 500, currency: CRC },
-    body: "+₡500 colones | 1,000 sats",
+    body: "+₡500 | 1,000 sats",
     title: "BTC Transaction",
   },
 ]
@@ -290,7 +290,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "+₡3,500 colones | $5",
+    body: "+₡3,500 | $5",
     title: "USD Transaction",
   },
   {
@@ -300,7 +300,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "Sent payment of ₡3,500 colones | $5",
+    body: "Sent payment of ₡3,500 | $5",
     title: "USD Transaction",
   },
   {
@@ -310,7 +310,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "+₡3,500 colones | $5",
+    body: "+₡3,500 | $5",
     title: "USD Transaction",
   },
   {
@@ -320,7 +320,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "pending +₡3,500 colones | $5",
+    body: "pending +₡3,500 | $5",
     title: "USD Transaction | Pending",
   },
   {
@@ -330,7 +330,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "Sent onchain payment of +₡3,500 colones | $5 confirmed",
+    body: "Sent onchain payment of +₡3,500 | $5 confirmed",
     title: "USD Transaction",
   },
   {
@@ -340,7 +340,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "+₡3,500 colones | $5",
+    body: "+₡3,500 | $5",
     title: "USD Transaction",
   },
   {
@@ -410,7 +410,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "+₡3,500 colones | $5.07",
+    body: "+₡3,500 | $5.07",
     title: "USD Transaction",
   },
   {
@@ -420,7 +420,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "Sent payment of ₡3,500 colones | $5.07",
+    body: "Sent payment of ₡3,500 | $5.07",
     title: "USD Transaction",
   },
   {
@@ -430,7 +430,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "+₡3,500 colones | $5.07",
+    body: "+₡3,500 | $5.07",
     title: "USD Transaction",
   },
   {
@@ -440,7 +440,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "pending +₡3,500 colones | $5.07",
+    body: "pending +₡3,500 | $5.07",
     title: "USD Transaction | Pending",
   },
   {
@@ -450,7 +450,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "Sent onchain payment of +₡3,500 colones | $5.07 confirmed",
+    body: "Sent onchain payment of +₡3,500 | $5.07 confirmed",
     title: "USD Transaction",
   },
   {
@@ -460,7 +460,7 @@ export const usdTransactionsWithDisplayCurrency = [
       amount: 3500,
       currency: CRC,
     },
-    body: "+₡3,500 colones | $5.07",
+    body: "+₡3,500 | $5.07",
     title: "USD Transaction",
   },
 ]

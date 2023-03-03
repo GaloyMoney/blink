@@ -1,53 +1,39 @@
 {
-  "currency": {
-    "BTC": {
-      "name": "sats",
-      "symbol": ""
-    },
-    "CRC": {
-      "name": "colones",
-      "symbol": "₡"
-    },
-    "USD": {
-      "name": "",
-      "symbol": "$"
-    }
-  },
   "notification": {
     "balance": {
-      "body": "Su balance es {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
-      "bodyDisplayCurrency": "Su balance es {{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} ({{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}})",
+      "body": "Su balance es {{baseCurrencyAmount}}{{baseCurrencyName}}",
+      "bodyDisplayCurrency": "Su balance es {{displayCurrencyAmount}} ({{baseCurrencyAmount}}{{baseCurrencyName}})",
       "title": "Balance {{walletCurrency}}"
     },
     "transaction": {
       "intra_ledger_payment": {
-        "body": "Pago enviado por {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
-        "bodyDisplayCurrency": "Pago enviado por {{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "body": "Pago enviado por {{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "Pago enviado por {{displayCurrencyAmount}} | {{baseCurrencyAmount}}{{baseCurrencyName}}",
         "title": "Transacción {{walletCurrency}}"
       },
       "intra_ledger_receipt": {
-        "body": "+{{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
-        "bodyDisplayCurrency": "+{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "body": "+{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "+{{displayCurrencyAmount}} | {{baseCurrencyAmount}}{{baseCurrencyName}}",
         "title": "Transacción {{walletCurrency}}"
       },
       "onchain_payment": {
-        "body": "Pago onchain por {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
-        "bodyDisplayCurrency": "Pago onchain por +{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
+        "body": "Pago onchain por {{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
+        "bodyDisplayCurrency": "Pago onchain por +{{displayCurrencyAmount}} | {{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
         "title": "Transacción {{walletCurrency}}"
       },
       "onchain_receipt": {
-        "body": "+{{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
-        "bodyDisplayCurrency": "+{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "body": "+{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "+{{displayCurrencyAmount}} | {{baseCurrencyAmount}}{{baseCurrencyName}}",
         "title": "Transacción {{walletCurrency}}"
       },
       "onchain_receipt_pending": {
-        "body": "pendiente +{{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
-        "bodyDisplayCurrency": "pendiente +{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "body": "pendiente +{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "pendiente +{{displayCurrencyAmount}} | {{baseCurrencyAmount}}{{baseCurrencyName}}",
         "title": "Transacción {{walletCurrency}} | Pendiente por confirmar"
       },
       "paid-invoice": {
-        "body": "+{{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
-        "bodyDisplayCurrency": "+{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "body": "+{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "+{{displayCurrencyAmount}} | {{baseCurrencyAmount}}{{baseCurrencyName}}",
         "title": "Transacción {{walletCurrency}}"
       }
     }

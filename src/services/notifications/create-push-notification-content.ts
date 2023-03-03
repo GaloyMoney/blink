@@ -1,6 +1,8 @@
 import { getI18nInstance } from "@config"
-import { getLanguageOrDefault } from "@domain/locale"
+
+import { MajorExponent } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
+import { getLanguageOrDefault } from "@domain/locale"
 
 const i18n = getI18nInstance()
 
@@ -26,17 +28,19 @@ export const createPushNotificationContent = ({
     { walletCurrency: baseCurrency },
   )
   const baseCurrencyName = baseCurrency === WalletCurrency.Btc ? "sats" : ""
-  const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
   const displayedBaseAmount =
     baseCurrency === WalletCurrency.Usd ? Number(amount.amount) / 100 : amount.amount
   const baseCurrencyAmount = displayedBaseAmount.toLocaleString(locale, {
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: MajorExponent.STANDARD,
+    currency: baseCurrency,
+    style: baseCurrency === WalletCurrency.Btc ? "decimal" : "currency",
+    currencyDisplay: "narrowSymbol",
   })
 
   let body = i18n.__(
     { phrase: `notification.${notificationType}.body`, locale },
     {
-      baseCurrencySymbol,
       baseCurrencyAmount,
       baseCurrencyName: baseCurrencyName ? ` ${baseCurrencyName}` : "",
     },
@@ -47,24 +51,17 @@ export const createPushNotificationContent = ({
     displayAmount.amount > 0 &&
     displayAmount.currency !== baseCurrency
   ) {
-    const displayCurrencyName = i18n.__({
-      phrase: `currency.${displayAmount.currency}.name`,
-      locale,
-    })
-    const displayCurrencySymbol = i18n.__({
-      phrase: `currency.${displayAmount.currency}.symbol`,
-      locale,
-    })
     const displayCurrencyAmount = displayAmount.amount.toLocaleString(locale, {
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: MajorExponent.STANDARD,
+      currency: displayAmount.currency,
+      style: "currency",
+      currencyDisplay: "narrowSymbol",
     })
     body = i18n.__(
       { phrase: `notification.${notificationType}.bodyDisplayCurrency`, locale },
       {
-        displayCurrencySymbol,
         displayCurrencyAmount,
-        displayCurrencyName: displayCurrencyName ? ` ${displayCurrencyName}` : "",
-        baseCurrencySymbol,
         baseCurrencyAmount,
         baseCurrencyName: baseCurrencyName ? ` ${baseCurrencyName}` : "",
       },
