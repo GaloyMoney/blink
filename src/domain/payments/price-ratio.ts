@@ -126,10 +126,9 @@ export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCur
     amountInMinor: bigint
     currency: T
   }): NewDisplayAmount<T> => {
-    const displayInMajor = (
-      Number(amountInMinor) /
-      10 ** Number(displayMajorExponent)
-    ).toFixed(Number(displayMajorExponent))
+    const displayInMajor = (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(
+      displayMajorExponent,
+    )
 
     return {
       amountInMinor,
