@@ -140,7 +140,7 @@
     "@types/lodash.sortby": "^4.7.6",
     "@types/lodash.sumby": "^4.6.6",
     "@types/migrate-mongo": "^8.2.0",
-    "@types/node": "^18.14.2",
+    "@types/node": "^18.14.5",
     "@types/nodemon": "^1.19.2",
     "@types/prettier": "^2.7.2",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
