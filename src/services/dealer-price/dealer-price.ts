@@ -9,6 +9,7 @@ import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import {
   DealerStalePriceError,
   NoConnectionToDealerError,
+  NoDealerPriceDataAvailableError,
   UnknownDealerPriceServiceError,
 } from "@domain/dealer-price"
 
@@ -109,7 +110,7 @@ export const DealerPriceService = (
       return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForImmediateBuy unable to fetch price")
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -129,7 +130,7 @@ export const DealerPriceService = (
         { error },
         "GetCentsFromSatsForImmediateSell unable to fetch price",
       )
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -146,7 +147,7 @@ export const DealerPriceService = (
       return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureBuy unable to fetch price")
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -163,7 +164,7 @@ export const DealerPriceService = (
       return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureSell unable to fetch price")
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -180,7 +181,7 @@ export const DealerPriceService = (
       return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForImmediateBuy unable to fetch price")
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -200,7 +201,7 @@ export const DealerPriceService = (
         { error },
         "GetSatsFromCentsForImmediateSell unable to fetch price",
       )
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -217,7 +218,7 @@ export const DealerPriceService = (
       return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureBuy unable to fetch price")
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -234,7 +235,7 @@ export const DealerPriceService = (
       return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureSell unable to fetch price")
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -248,7 +249,7 @@ export const DealerPriceService = (
       return toWalletPriceRatio(response.getRatioInCentsPerSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
-      return parseDealerErrors(error)
+      return handleDealerErrors(error)
     }
   }
 
@@ -272,15 +273,28 @@ export const DealerPriceService = (
   })
 }
 
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line no-implicit-any error
-const parseDealerErrors = (error): DealerPriceServiceError => {
-  if (error.details === "No connection established") {
-    return new NoConnectionToDealerError()
-  }
-  if (error.message.includes("StalePrice")) {
-    return new DealerStalePriceError()
-  }
+const handleDealerErrors = (err: Error | string) => {
+  const errMsg = typeof err === "string" ? err : err.message
 
-  return new UnknownDealerPriceServiceError(error.message)
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
+
+  switch (true) {
+    case match(KnownDealerErrorDetails.NoConnection):
+      return new NoConnectionToDealerError(errMsg)
+
+    case match(KnownDealerErrorDetails.StalePrice):
+      return new DealerStalePriceError(errMsg)
+
+    case match(KnownDealerErrorDetails.NoPriceData):
+      return new NoDealerPriceDataAvailableError(errMsg)
+
+    default:
+      return new UnknownDealerPriceServiceError(errMsg)
+  }
 }
+
+export const KnownDealerErrorDetails = {
+  NoConnection: /No connection established/,
+  StalePrice: /StalePrice/,
+  NoPriceData: /No price data available/,
+} as const

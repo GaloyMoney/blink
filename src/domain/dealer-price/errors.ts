@@ -10,6 +10,9 @@ export class NoConnectionToDealerError extends DealerPriceServiceError {
 export class DealerStalePriceError extends DealerPriceServiceError {
   level = ErrorLevel.Critical
 }
+export class NoDealerPriceDataAvailableError extends DealerPriceServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownDealerPriceServiceError extends DealerPriceServiceError {
   level = ErrorLevel.Critical
 }
