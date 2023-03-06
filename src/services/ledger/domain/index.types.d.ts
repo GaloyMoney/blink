@@ -1,8 +1,18 @@
 declare const ledgerAccountId: unique symbol
 type LedgerAccountId = string & { [ledgerAccountId]: never }
 
-// eslint-disable-next-line
-type TxMetadata = any
+type TxMetadata = Record<
+  string,
+  | string // TODO: add branded type for memo/memoPayer/memoFromPayer and remove this
+  | DisplayCurrency
+  | Username
+  | Satoshis
+  | UsdCents
+  | DisplayCurrencyBaseAmount
+  | boolean
+  | OnChainAddress[]
+  | undefined
+>
 
 type LedgerAccountDescriptor<T extends WalletCurrency> = {
   id: LedgerAccountId
