@@ -1716,6 +1716,12 @@ describe("USD Wallets - Lightning Pay", () => {
         currency: senderAccount.displayCurrency,
       })
       if (displayPriceRatio instanceof Error) throw displayPriceRatio
+      const displayAmount = Number(
+        displayPriceRatio.convertFromWallet(btcPaymentAmount).amountInMinor,
+      )
+      const displayFee = Number(
+        displayPriceRatio.convertFromWallet(feeAmountSats).amountInMinor,
+      )
 
       const expectedFields = {
         type: LedgerTransactionType.Payment,
@@ -1727,12 +1733,10 @@ describe("USD Wallets - Lightning Pay", () => {
         satsFee,
         centsAmount: cents,
         centsFee,
-        displayAmount: Number(
-          displayPriceRatio.convertFromWallet(btcPaymentAmount).amountInMinor,
-        ),
-        displayFee: Number(
-          displayPriceRatio.convertFromWallet(feeAmountSats).amountInMinor,
-        ),
+        displayAmount:
+          senderAccount.displayCurrency === DisplayCurrency.Usd ? cents : displayAmount,
+        displayFee:
+          senderAccount.displayCurrency === DisplayCurrency.Usd ? centsFee : displayFee,
 
         displayCurrency: DisplayCurrency.Usd,
       }
@@ -2307,7 +2311,10 @@ describe("USD Wallets - Lightning Pay", () => {
         satsFee: 0,
         centsAmount,
         centsFee: 0,
-        displayAmount,
+        displayAmount:
+          senderAccount.displayCurrency === DisplayCurrency.Usd
+            ? centsAmount
+            : displayAmount,
         displayFee: 0,
 
         displayCurrency: DisplayCurrency.Usd,

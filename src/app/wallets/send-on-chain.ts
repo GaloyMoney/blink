@@ -317,12 +317,16 @@ const executePaymentViaIntraledger = async <
     let additionalCreditMetadata: {
       [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
     } = {}
+    let additionalInternalMetadata: {
+      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    } = {}
 
     if (senderWallet.accountId === recipientWallet.accountId) {
       ;({
         metadata,
         debitAccountAdditionalMetadata: additionalDebitMetadata,
         creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
       } = LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
         payeeAddresses,
         sendAll,
@@ -332,10 +336,6 @@ const executePaymentViaIntraledger = async <
         senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
         senderDisplayCurrency: senderDisplayCurrency,
 
-        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
-        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        recipientDisplayCurrency: recipientAccount.displayCurrency,
-
         memoOfPayer: memo || undefined,
       }))
     } else {
@@ -343,6 +343,7 @@ const executePaymentViaIntraledger = async <
         metadata,
         debitAccountAdditionalMetadata: additionalDebitMetadata,
         creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
       } = LedgerFacade.OnChainIntraledgerLedgerMetadata({
         payeeAddresses,
         sendAll,
@@ -374,6 +375,7 @@ const executePaymentViaIntraledger = async <
       metadata,
       additionalDebitMetadata,
       additionalCreditMetadata,
+      additionalInternalMetadata,
     })
     if (journal instanceof Error) return journal
 
@@ -510,7 +512,11 @@ const executePaymentViaOnChain = async <
         .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
-    const metadata = LedgerFacade.OnChainSendLedgerMetadata({
+    const {
+      metadata,
+      debitAccountAdditionalMetadata,
+      internalAccountsAdditionalMetadata,
+    } = LedgerFacade.OnChainSendLedgerMetadata({
       // we need a temporary hash to be able to search in admin panel
       onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
       paymentAmounts: paymentFlow,
@@ -544,6 +550,8 @@ const executePaymentViaOnChain = async <
       bankFee,
       senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
       metadata,
+      additionalDebitMetadata: debitAccountAdditionalMetadata,
+      additionalInternalMetadata: internalAccountsAdditionalMetadata,
     })
     if (journal instanceof Error) return journal
 

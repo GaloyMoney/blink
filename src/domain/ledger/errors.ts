@@ -10,6 +10,9 @@ export class MismatchedResultForTransactionMetadataQuery extends LedgerServiceEr
 export class MultiplePendingPaymentsForHashError extends LedgerServiceError {
   level = ErrorLevel.Critical
 }
+export class MissingExpectedDisplayAmountsForTransactionError extends LedgerServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownLedgerError extends LedgerServiceError {
   level = ErrorLevel.Critical
 }

@@ -425,6 +425,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MismatchedResultForTransactionMetadataQuery":
     case "InvalidLedgerTransactionId":
     case "MultiplePendingPaymentsForHashError":
+    case "MissingExpectedDisplayAmountsForTransactionError":
     case "CacheError":
     case "CacheNotAvailableError":
     case "CacheServiceError":

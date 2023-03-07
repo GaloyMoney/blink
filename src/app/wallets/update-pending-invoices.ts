@@ -191,7 +191,11 @@ const updatePendingInvoiceBeforeFinally = async ({
     // for walletInvoicesRepo, but also in the ledger to make sure in case the process crash in this
     // loop that an eventual consistency doesn't lead to a double credit
 
-    const metadata = LedgerFacade.LnReceiveLedgerMetadata({
+    const {
+      metadata,
+      creditAccountAdditionalMetadata,
+      internalAccountsAdditionalMetadata,
+    } = LedgerFacade.LnReceiveLedgerMetadata({
       paymentHash,
       pubkey: walletInvoice.pubkey,
       paymentAmounts: {
@@ -239,6 +243,8 @@ const updatePendingInvoiceBeforeFinally = async ({
       txMetadata: {
         hash: metadata.hash,
       },
+      additionalCreditMetadata: creditAccountAdditionalMetadata,
+      additionalInternalMetadata: internalAccountsAdditionalMetadata,
     })
 
     if (result instanceof Error) return result

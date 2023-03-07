@@ -1,12 +1,12 @@
-import { toSats } from "@domain/bitcoin"
-import { MajorExponent, toCents } from "@domain/fiat"
-import { LedgerTransactionType } from "@domain/ledger"
+import { MajorExponent } from "@domain/fiat"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
 import {
   displayAmountFromNumber,
   paymentAmountFromNumber,
   WalletCurrency,
+  ZERO_CENTS,
+  ZERO_SATS,
 } from "@domain/shared"
 
 import * as LedgerFacade from "@services/ledger/facade"
@@ -85,21 +85,23 @@ export const reimburseFee = async <
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
 
-  const metadata: FeeReimbursementLedgerMetadata = {
-    hash: paymentHash,
-    type: LedgerTransactionType.LnFeeReimbursement,
-    pending: false,
-    related_journal: journalId,
-
-    satsAmount: toSats(feeDifference.btc.amount),
-    centsAmount: toCents(feeDifference.usd.amount),
-    satsFee: toSats(0),
-    centsFee: toCents(0),
-
-    displayAmount: reimburseAmountAsNumber,
-    displayFee: 0 as DisplayCurrencyBaseAmount,
+  const {
+    metadata,
+    creditAccountAdditionalMetadata,
+    internalAccountsAdditionalMetadata,
+  } = LedgerFacade.LnFeeReimbursementReceiveLedgerMetadata({
+    paymentAmounts: {
+      btcPaymentAmount: feeDifference.btc,
+      usdPaymentAmount: feeDifference.usd,
+      btcProtocolAndBankFee: ZERO_SATS,
+      usdProtocolAndBankFee: ZERO_CENTS,
+    },
+    paymentHash,
+    journalId,
+    feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+    amountDisplayCurrency: reimburseAmountAsNumber,
     displayCurrency: senderDisplayCurrency,
-  }
+  })
 
   const txMetadata: LnLedgerTransactionMetadataUpdate = {
     hash: paymentHash,
@@ -124,6 +126,8 @@ export const reimburseFee = async <
       btc: feeDifference.btc,
     },
     metadata,
+    additionalCreditMetadata: creditAccountAdditionalMetadata,
+    additionalInternalMetadata: internalAccountsAdditionalMetadata,
     txMetadata,
   })
   if (result instanceof Error) return result

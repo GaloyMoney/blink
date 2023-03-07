@@ -429,11 +429,15 @@ const executePaymentViaIntraledger = async <
     let additionalCreditMetadata: {
       [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
     } = {}
+    let additionalInternalMetadata: {
+      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       ;({
         metadata,
         debitAccountAdditionalMetadata: additionalDebitMetadata,
         creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
       } = LedgerFacade.LnTradeIntraAccountLedgerMetadata({
         paymentHash,
         pubkey: recipientPubkey,
@@ -443,10 +447,6 @@ const executePaymentViaIntraledger = async <
         senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
         senderDisplayCurrency: senderAccount.displayCurrency,
 
-        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
-        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        recipientDisplayCurrency: recipientAccount.displayCurrency,
-
         memoOfPayer: memo || undefined,
       }))
     } else {
@@ -454,6 +454,7 @@ const executePaymentViaIntraledger = async <
         metadata,
         debitAccountAdditionalMetadata: additionalDebitMetadata,
         creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
       } = LedgerFacade.LnIntraledgerLedgerMetadata({
         paymentHash,
         pubkey: recipientPubkey,
@@ -484,6 +485,7 @@ const executePaymentViaIntraledger = async <
       metadata,
       additionalDebitMetadata,
       additionalCreditMetadata,
+      additionalInternalMetadata,
     })
     if (journal instanceof Error) return journal
 
@@ -589,7 +591,11 @@ const executePaymentViaLn = async ({
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    const metadata = LedgerFacade.LnSendLedgerMetadata({
+    const {
+      metadata,
+      debitAccountAdditionalMetadata,
+      internalAccountsAdditionalMetadata,
+    } = LedgerFacade.LnSendLedgerMetadata({
       amountDisplayCurrency: amountDisplayCurrencyAsNumber,
       feeDisplayCurrency: feeDisplayCurrencyAsNumber,
       displayCurrency: DisplayCurrency.Usd,
@@ -620,6 +626,8 @@ const executePaymentViaLn = async ({
       },
       senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
       metadata,
+      additionalDebitMetadata: debitAccountAdditionalMetadata,
+      additionalInternalMetadata: internalAccountsAdditionalMetadata,
     })
     if (journal instanceof Error) return journal
     const { journalId } = journal

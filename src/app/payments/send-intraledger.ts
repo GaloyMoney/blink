@@ -284,23 +284,23 @@ const executePaymentViaIntraledger = async <
       [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
     } = {}
     let additionalCreditMetadata: {
-      [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    }
+    let additionalInternalMetadata: {
+      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
     } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       ;({
         metadata,
         debitAccountAdditionalMetadata: additionalDebitMetadata,
         creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
       } = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
         paymentAmounts: paymentFlow,
 
         senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
         senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
         senderDisplayCurrency: senderDisplayCurrency,
-
-        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
-        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        recipientDisplayCurrency: recipientAccount.displayCurrency,
 
         memoOfPayer: memo || undefined,
       }))
@@ -309,6 +309,7 @@ const executePaymentViaIntraledger = async <
         metadata,
         debitAccountAdditionalMetadata: additionalDebitMetadata,
         creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
       } = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
         paymentAmounts: paymentFlow,
 
@@ -341,6 +342,7 @@ const executePaymentViaIntraledger = async <
       metadata,
       additionalDebitMetadata,
       additionalCreditMetadata,
+      additionalInternalMetadata,
     })
     if (journal instanceof Error) return journal
 

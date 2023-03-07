@@ -1,44 +1,66 @@
-import { toSats } from "@domain/bitcoin"
 import { CouldNotFindBtcWalletForAccountError } from "@domain/errors"
-import { DisplayCurrency, toCents } from "@domain/fiat"
-import { LedgerTransactionType } from "@domain/ledger"
-import { WalletCurrency } from "@domain/shared"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
 
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import * as LedgerFacade from "@services/ledger/facade"
+import { MissingExpectedDisplayAmountsForTransactionError } from "@domain/ledger"
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 export const reimburseFailedUsdPayment = async <
   S extends WalletCurrency,
   R extends WalletCurrency,
 >({
+  walletId,
   paymentFlow,
-  journalId,
+  pendingPayment,
 }: {
+  walletId: WalletId
   paymentFlow: PaymentFlow<S, R>
-  journalId: LedgerJournalId
+  pendingPayment: LedgerTransaction<S>
 }): Promise<true | ApplicationError> => {
+  const {
+    journalId,
+    displayAmount,
+    displayFee,
+    displayCurrency: displayCurrencyRaw,
+  } = pendingPayment
+  if (
+    displayAmount === undefined ||
+    displayFee === undefined ||
+    displayCurrencyRaw === undefined
+  ) {
+    recordExceptionInCurrentSpan({
+      error: new MissingExpectedDisplayAmountsForTransactionError(
+        `LedgerTransactionId: ${pendingPayment.id}`,
+      ),
+      level: ErrorLevel.Critical,
+    })
+  }
+
+  let displayCurrency = displayCurrencyRaw
+  if (displayCurrency === undefined) {
+    const wallet = await WalletsRepository().findById(walletId)
+    if (wallet instanceof Error) return wallet
+    const account = await AccountsRepository().findById(wallet.accountId)
+    if (account instanceof Error) return account
+    ;({ displayCurrency } = account)
+  }
+
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
 
-  const metadata: FailedPaymentLedgerMetadata = {
-    hash: paymentHash,
-    type: LedgerTransactionType.Payment,
-    pending: false,
-    related_journal: journalId,
-
-    satsAmount: toSats(paymentFlow.btcPaymentAmount.amount),
-    centsAmount: toCents(paymentFlow.usdPaymentAmount.amount),
-    satsFee: toSats(paymentFlow.btcProtocolAndBankFee.amount),
-    centsFee: toCents(paymentFlow.usdProtocolAndBankFee.amount),
-
-    displayAmount: Number(
-      paymentFlow.usdPaymentAmount.amount,
-    ) as DisplayCurrencyBaseAmount,
-    displayFee: Number(
-      paymentFlow.usdProtocolAndBankFee.amount,
-    ) as DisplayCurrencyBaseAmount,
-    displayCurrency: DisplayCurrency.Usd,
-  }
+  const {
+    metadata,
+    creditAccountAdditionalMetadata,
+    internalAccountsAdditionalMetadata,
+  } = LedgerFacade.LnFailedPaymentReceiveLedgerMetadata({
+    paymentAmounts: paymentFlow,
+    paymentHash,
+    journalId,
+    feeDisplayCurrency: displayFee || (0 as DisplayCurrencyBaseAmount),
+    amountDisplayCurrency: displayAmount || (0 as DisplayCurrencyBaseAmount),
+    displayCurrency,
+  })
 
   const txMetadata: LnLedgerTransactionMetadataUpdate = {
     hash: paymentHash,
@@ -76,6 +98,8 @@ export const reimburseFailedUsdPayment = async <
     amountToCreditReceiver: paymentFlow.totalAmountsForPayment(),
     metadata,
     txMetadata,
+    additionalCreditMetadata: creditAccountAdditionalMetadata,
+    additionalInternalMetadata: internalAccountsAdditionalMetadata,
   })
   if (result instanceof Error) return result
 
