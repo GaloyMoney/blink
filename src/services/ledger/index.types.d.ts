@@ -9,6 +9,8 @@ type RecordSendArgs = {
     btc: BtcPaymentAmount
   }
   metadata: SendLedgerMetadata
+  additionalDebitMetadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
   bankFee?: {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount
@@ -23,6 +25,8 @@ type RecordReceiveArgs = {
     btc: BtcPaymentAmount
   }
   metadata: ReceiveLedgerMetadata
+  additionalCreditMetadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
   txMetadata?: LnLedgerTransactionMetadataUpdate
   bankFee?: {
     usd: UsdPaymentAmount
@@ -41,6 +45,7 @@ type RecordIntraledgerArgs = {
   metadata: IntraledgerLedgerMetadata
   additionalDebitMetadata: TxMetadata
   additionalCreditMetadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
 }
 
 type LedgerMetadata = {
