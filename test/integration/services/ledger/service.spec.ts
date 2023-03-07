@@ -18,6 +18,7 @@ import { ModifiedSet, timestampDaysAgo } from "@utils"
 import {
   recordLnIntraLedgerPayment,
   recordLnFeeReimbursement,
+  recordLnFailedPayment,
   recordReceiveLnPayment,
   recordSendLnPayment,
   recordSendOnChainPayment,
@@ -318,6 +319,10 @@ describe("Volumes", () => {
         testExternalTxReceiveWLE({
           recordTx: recordLnFeeReimbursement,
         }),
+      LnFailedPayment: () =>
+        testExternalTxReceiveWLE({
+          recordTx: recordLnFailedPayment,
+        }),
       IntraLedgerSend: () =>
         testInternalTxSendWLE({
           recordTx: recordWalletIdIntraLedgerPayment,
@@ -384,6 +389,7 @@ describe("Volumes", () => {
       Payment: () => testExternalTxNLE({ recordTx: recordSendLnPayment }),
       OnchainPayment: () => testExternalTxNLE({ recordTx: recordSendOnChainPayment }),
       LnFeeReimbursement: () => testExternalTxNLE({ recordTx: recordLnFeeReimbursement }),
+      LnFailedPayment: () => testExternalTxNLE({ recordTx: recordLnFailedPayment }),
       Fee: () => testExternalTxNLE({ recordTx: recordLnChannelOpenOrClosingFee }),
       EscrowCredit: () => testExternalTxNLE({ recordTx: recordLndEscrowCredit }),
       EscrowDebit: () => testExternalTxNLE({ recordTx: recordLndEscrowDebit }),

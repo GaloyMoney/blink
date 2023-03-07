@@ -404,6 +404,59 @@ export const LnFeeReimbursementReceiveLedgerMetadata = ({
   }
 }
 
+export const LnFailedPaymentReceiveLedgerMetadata = ({
+  paymentAmounts,
+  paymentHash,
+  journalId,
+  feeDisplayCurrency: displayAmount,
+  amountDisplayCurrency: displayFee,
+  displayCurrency,
+}: {
+  paymentAmounts: AmountsAndFees
+  paymentHash: PaymentHash
+  journalId: LedgerJournalId
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
+}) => {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolAndBankFee: { amount: satsFee },
+    usdProtocolAndBankFee: { amount: centsFee },
+  } = paymentAmounts
+
+  const metadata: FailedPaymentLedgerMetadata = {
+    type: LedgerTransactionType.Payment,
+    hash: paymentHash,
+    related_journal: journalId,
+    pending: false,
+
+    satsAmount: toSats(satsAmount),
+    satsFee: toSats(satsFee),
+    centsAmount: toCents(centsAmount),
+    centsFee: toCents(centsFee),
+  }
+
+  const {
+    debitOrCreditAdditionalMetadata: creditAccountAdditionalMetadata,
+    internalAccountsAdditionalMetadata,
+  } = debitOrCreditMetadataAmounts({
+    centsAmount,
+    centsFee,
+
+    displayAmount,
+    displayFee,
+    displayCurrency,
+  })
+
+  return {
+    metadata,
+    creditAccountAdditionalMetadata,
+    internalAccountsAdditionalMetadata,
+  }
+}
+
 export const OnChainIntraledgerLedgerMetadata = ({
   payeeAddresses,
   sendAll,
