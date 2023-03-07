@@ -192,6 +192,12 @@ type IntraledgerLedgerMetadata =
 
 type SendLedgerMetadata = AddOnchainSendLedgerMetadata | AddLnSendLedgerMetadata
 
+type DisplayTxnAmountsArg = {
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
+}
+
 type PaginatedArray<T> = { slice: T[]; total: number }
 
 // The following is needed for src/services/ledger/paginated-ledger.ts
