@@ -69,10 +69,6 @@ type SendAmountsMetadata = {
   centsAmount: UsdCents
   satsFee: Satoshis
   centsFee: UsdCents
-
-  displayAmount: DisplayCurrencyBaseAmount
-  displayFee: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
 }
 
 type IntraLedgerSendAmountsMetadata = {
