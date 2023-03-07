@@ -31,11 +31,13 @@ type EntryBuilderConfig<M extends MediciEntry> = {
   entry: M
   staticAccountIds: StaticAccountIds
   metadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
 }
 
 type EntryBuilderFeeState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
   staticAccountIds: StaticAccountIds
   amountWithFees: {
     usdWithFees: UsdPaymentAmount
@@ -56,6 +58,7 @@ type EntryBuilderFee<M extends MediciEntry> = {
 type EntryBuilderDebitState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
   staticAccountIds: StaticAccountIds
   amountWithFees: {
     usdWithFees: UsdPaymentAmount
@@ -73,7 +76,7 @@ type EntryBuilderDebit<M extends MediciEntry> = {
     additionalMetadata,
   }: {
     accountDescriptor: LedgerAccountDescriptor<D>
-    additionalMetadata?: TxMetadata
+    additionalMetadata: TxMetadata
   }) => EntryBuilderCredit<M>
   debitLnd: () => EntryBuilderCredit<M>
   debitColdStorage: () => EntryBuilderCredit<M>
@@ -82,6 +85,7 @@ type EntryBuilderDebit<M extends MediciEntry> = {
 type EntryBuilderCreditState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
   debitCurrency: WalletCurrency
   amountWithFees: {
     usdWithFees: UsdPaymentAmount
@@ -105,7 +109,7 @@ type EntryBuilderCredit<M extends MediciEntry> = {
     additionalMetadata,
   }: {
     accountDescriptor: LedgerAccountDescriptor<C>
-    additionalMetadata?: TxMetadata
+    additionalMetadata: TxMetadata
   }) => M
 }
 
