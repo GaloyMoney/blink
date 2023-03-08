@@ -35,54 +35,94 @@ describe("Facade", () => {
     btc: { amount: 20n, currency: WalletCurrency.Btc },
   }
 
-  const testMetadata = async ({
+  const displayReceiveEurAmounts = {
+    amountDisplayCurrency: 120 as DisplayCurrencyBaseAmount,
+    feeDisplayCurrency: 12 as DisplayCurrencyBaseAmount,
+    displayCurrency: "EUR" as DisplayCurrency,
+  }
+
+  const displaySendEurAmounts = {
+    amountDisplayCurrency: 24 as DisplayCurrencyBaseAmount,
+    feeDisplayCurrency: 12 as DisplayCurrencyBaseAmount,
+    displayCurrency: "EUR" as DisplayCurrency,
+  }
+
+  const testMetadata = async <S extends WalletCurrency>({
     senderWalletDescriptor,
     metadata,
     isSend,
     isIntraLedger = false,
-  }) => {
-    const txns = await LedgerService().getTransactionsByWalletId(
-      senderWalletDescriptor.id,
-    )
-    if (txns instanceof Error) throw txns
-    if (!(txns && txns.length)) throw new Error()
-    const txn = txns[0]
-
-    const satsAmount = toSats(isSend ? sendAmount.btc.amount : receiveAmount.btc.amount)
-    const centsAmount = toCents(isSend ? sendAmount.usd.amount : receiveAmount.usd.amount)
-
-    const satsFee = !isIntraLedger ? toSats(bankFee.btc.amount) : 0
-    const centsFee = !isIntraLedger ? toSats(bankFee.usd.amount) : 0
-
-    const debit = isSend
-      ? senderWalletDescriptor.currency === WalletCurrency.Btc
-        ? satsAmount
-        : centsAmount
-      : 0
-
-    const credit = !isSend
-      ? senderWalletDescriptor.currency === WalletCurrency.Btc
-        ? satsAmount
-        : centsAmount
-      : 0
-
-    const expectedFields = {
-      type: metadata,
-
-      debit,
-      credit,
-
-      satsAmount,
-      centsAmount,
-      displayAmount: centsAmount,
-
-      satsFee,
-      centsFee,
-      displayFee: centsFee,
-
-      displayCurrency: DisplayCurrency.Usd,
+    senderDisplayAmounts,
+  }: {
+    senderWalletDescriptor: WalletDescriptor<S>
+    metadata
+    isSend: boolean
+    isIntraLedger?: boolean
+    senderDisplayAmounts?: {
+      amountDisplayCurrency: DisplayCurrencyBaseAmount
+      feeDisplayCurrency: DisplayCurrencyBaseAmount
+      displayCurrency: DisplayCurrency
     }
-    expect(txn).toEqual(expect.objectContaining(expectedFields))
+  }) => {
+    const testCases = [
+      { walletDescriptor: senderWalletDescriptor, displayAmounts: senderDisplayAmounts },
+    ]
+
+    for (const { walletDescriptor, displayAmounts: displayAmountsRaw } of testCases) {
+      const txns = await LedgerService().getTransactionsByWalletId(walletDescriptor.id)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
+
+      const satsAmount = toSats(isSend ? sendAmount.btc.amount : receiveAmount.btc.amount)
+      const centsAmount = toCents(
+        isSend ? sendAmount.usd.amount : receiveAmount.usd.amount,
+      )
+
+      const satsFee = !isIntraLedger ? toSats(bankFee.btc.amount) : 0
+      const centsFee = !isIntraLedger ? toSats(bankFee.usd.amount) : 0
+
+      const debit = isSend
+        ? walletDescriptor.currency === WalletCurrency.Btc
+          ? satsAmount
+          : centsAmount
+        : 0
+
+      const credit = !isSend
+        ? walletDescriptor.currency === WalletCurrency.Btc
+          ? satsAmount
+          : centsAmount
+        : 0
+
+      const usdDisplayAmounts = {
+        displayAmount: centsAmount,
+        displayFee: centsFee,
+        displayCurrency: DisplayCurrency.Usd,
+      }
+
+      const displayAmounts = displayAmountsRaw
+        ? {
+            displayAmount: displayAmountsRaw.amountDisplayCurrency,
+            displayFee: displayAmountsRaw.feeDisplayCurrency,
+            displayCurrency: displayAmountsRaw.displayCurrency,
+          }
+        : usdDisplayAmounts
+
+      const expectedFields = {
+        type: metadata,
+
+        debit,
+        credit,
+
+        satsAmount,
+        satsFee,
+        centsAmount,
+        centsFee,
+
+        ...displayAmounts,
+      }
+      expect(txn).toEqual(expect.objectContaining(expectedFields))
+    }
   }
 
   describe("recordReceive", () => {
@@ -101,12 +141,15 @@ describe("Facade", () => {
 
     recordReceiveToTest.forEach(({ name, recordFn, metadata }) => {
       describe(`${name}`, () => {
+        const displayAmounts = displayReceiveEurAmounts
         it("receives to btc wallet", async () => {
           const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+
           await recordFn({
             walletDescriptor: btcWalletDescriptor,
             paymentAmount: receiveAmount,
             bankFee,
+            displayAmounts,
           })
 
           const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
@@ -124,6 +167,7 @@ describe("Facade", () => {
             senderWalletDescriptor: btcWalletDescriptor,
             metadata,
             isSend: false,
+            senderDisplayAmounts: displayAmounts,
           })
         })
 
@@ -133,6 +177,7 @@ describe("Facade", () => {
             walletDescriptor: usdWalletDescriptor,
             paymentAmount: receiveAmount,
             bankFee,
+            displayAmounts,
           })
 
           const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
@@ -150,6 +195,7 @@ describe("Facade", () => {
             senderWalletDescriptor: usdWalletDescriptor,
             metadata,
             isSend: false,
+            senderDisplayAmounts: displayAmounts,
           })
         })
       })
@@ -172,6 +218,7 @@ describe("Facade", () => {
 
     recordSendToTest.forEach(({ name, recordFn, metadata }) => {
       describe(`${name}`, () => {
+        const displayAmounts = displaySendEurAmounts
         it("sends from btc wallet", async () => {
           const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
 
@@ -184,6 +231,7 @@ describe("Facade", () => {
             walletDescriptor: btcWalletDescriptor,
             paymentAmount: sendAmount,
             bankFee,
+            displayAmounts,
           })
 
           const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
@@ -201,6 +249,7 @@ describe("Facade", () => {
             senderWalletDescriptor: btcWalletDescriptor,
             metadata,
             isSend: true,
+            senderDisplayAmounts: displayAmounts,
           })
         })
 
@@ -216,6 +265,7 @@ describe("Facade", () => {
             walletDescriptor: usdWalletDescriptor,
             paymentAmount: sendAmount,
             bankFee,
+            displayAmounts,
           })
 
           const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
@@ -228,14 +278,34 @@ describe("Facade", () => {
               currency: WalletCurrency.Usd,
             }),
           )
+
+          await testMetadata({
+            senderWalletDescriptor: usdWalletDescriptor,
+            metadata,
+            isSend: true,
+            senderDisplayAmounts: displayAmounts,
+          })
         })
       })
     })
   })
 
   describe("recordIntraledger", () => {
-    const itRecordIntraLedger = ({ recordFn, metadata, send, receive }) => {
+    const itRecordIntraLedger = ({
+      recordFn,
+      metadata,
+      send,
+      receive,
+    }: {
+      recordFn: RecordInternalTxTestFn
+      metadata
+      send: WalletCurrency
+      receive: WalletCurrency
+    }) => {
       it(`sends from ${send.toLowerCase()} wallet to ${receive.toLowerCase()} wallet`, async () => {
+        const displaySendAmounts = displaySendEurAmounts
+        const displayReceiveAmounts = displayReceiveEurAmounts
+
         const btcSendWalletDescriptor = BtcWalletDescriptor(
           crypto.randomUUID() as WalletId,
         )
@@ -253,6 +323,18 @@ describe("Facade", () => {
         const senderWalletDescriptor =
           send === WalletCurrency.Btc ? btcSendWalletDescriptor : usdSendWalletDescriptor
 
+        const senderDisplayAmounts = {
+          senderAmountDisplayCurrency: displaySendAmounts.amountDisplayCurrency,
+          senderFeeDisplayCurrency: displaySendAmounts.feeDisplayCurrency,
+          senderDisplayCurrency: displaySendAmounts.displayCurrency,
+        }
+
+        const recipientDisplayAmounts = {
+          recipientAmountDisplayCurrency: displayReceiveAmounts.amountDisplayCurrency,
+          recipientFeeDisplayCurrency: displayReceiveAmounts.feeDisplayCurrency,
+          recipientDisplayCurrency: displayReceiveAmounts.displayCurrency,
+        }
+
         const recipientWalletDescriptor =
           receive === WalletCurrency.Btc
             ? btcReceiveWalletDescriptor
@@ -266,6 +348,8 @@ describe("Facade", () => {
           senderWalletDescriptor,
           recipientWalletDescriptor,
           paymentAmount: sendAmount,
+          senderDisplayAmounts,
+          recipientDisplayAmounts,
         })
 
         const finishBalanceSender = await LedgerFacade.getLedgerAccountBalanceForWalletId(
@@ -301,11 +385,18 @@ describe("Facade", () => {
           metadata,
           isSend: true,
           isIntraLedger: true,
+          senderDisplayAmounts: displaySendAmounts,
         })
       })
     }
 
-    const runRecordIntraLedger = ({ recordFn, metadata }) => {
+    const runRecordIntraLedger = ({
+      recordFn,
+      metadata,
+    }: {
+      recordFn: RecordInternalTxTestFn
+      metadata
+    }) => {
       const sendReceivePairs = [
         { send: WalletCurrency.Btc, receive: WalletCurrency.Btc },
         { send: WalletCurrency.Btc, receive: WalletCurrency.Usd },
@@ -322,7 +413,13 @@ describe("Facade", () => {
       }
     }
 
-    const runRecordTradeIntraAccount = ({ recordFn, metadata }) => {
+    const runRecordTradeIntraAccount = ({
+      recordFn,
+      metadata,
+    }: {
+      recordFn: RecordInternalTxTestFn
+      metadata
+    }) => {
       const sendReceivePairs = [
         { send: WalletCurrency.Btc, receive: WalletCurrency.Usd },
         { send: WalletCurrency.Usd, receive: WalletCurrency.Btc },
