@@ -73,6 +73,7 @@ fragment TransactionList on TransactionConnection {
       settlementAmount
       settlementFee
       settlementDisplayAmount
+      settlementDisplayFee
       settlementDisplayCurrency
       settlementCurrency
       settlementPrice {
