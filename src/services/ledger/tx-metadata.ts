@@ -300,8 +300,8 @@ export const LnReceiveLedgerMetadata = ({
   pubkey,
   paymentAmounts,
 
-  feeDisplayCurrency: displayAmount,
-  amountDisplayCurrency: displayFee,
+  feeDisplayCurrency: displayFee,
+  amountDisplayCurrency: displayAmount,
   displayCurrency,
 }: {
   paymentHash: PaymentHash
