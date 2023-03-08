@@ -36,6 +36,11 @@ describe("SettlementAmounts", () => {
     displayCurrency,
   }
 
+  const expectedDisplayFee = minorToMajorUnit({
+    amount: displayFee,
+    displayMajorExponent: MajorExponent.STANDARD,
+  })
+
   const debitCreditScenarios = {
     "amount": {
       sats: satsAmount,
@@ -81,7 +86,8 @@ describe("SettlementAmounts", () => {
             debit: toSats(debit),
           }
           const settlementAmounts = SettlementAmounts().fromTxn(txnDebit)
-          const { settlementAmount, settlementDisplayAmount } = settlementAmounts
+          const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
+            settlementAmounts
 
           const expectedDisplayAmountForDebit = minorToMajorUnit({
             amount: expectedDisplayAmount,
@@ -89,6 +95,7 @@ describe("SettlementAmounts", () => {
           })
           expect(settlementAmount).toEqual(expectedSettlementAmountForDebit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForDebit)
+          expect(settlementDisplayFee).toEqual(expectedDisplayFee)
         })
       }
     })
@@ -108,7 +115,8 @@ describe("SettlementAmounts", () => {
             debit: toSats(0),
           }
           const settlementAmounts = SettlementAmounts().fromTxn(txnCredit)
-          const { settlementAmount, settlementDisplayAmount } = settlementAmounts
+          const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
+            settlementAmounts
 
           const expectedDisplayAmountForCredit = minorToMajorUnit({
             amount: expectedDisplayAmount,
@@ -116,6 +124,7 @@ describe("SettlementAmounts", () => {
           })
           expect(settlementAmount).toEqual(expectedSettlementAmountForCredit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForCredit)
+          expect(settlementDisplayFee).toEqual(expectedDisplayFee)
         })
       }
     })
@@ -143,7 +152,8 @@ describe("SettlementAmounts", () => {
             debit: toCents(debit),
           }
           const settlementAmounts = SettlementAmounts().fromTxn(txnDebit)
-          const { settlementAmount, settlementDisplayAmount } = settlementAmounts
+          const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
+            settlementAmounts
 
           const expectedDisplayAmountForDebit = minorToMajorUnit({
             amount: expectedDisplayAmount,
@@ -151,6 +161,7 @@ describe("SettlementAmounts", () => {
           })
           expect(settlementAmount).toEqual(expectedSettlementAmountForDebit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForDebit)
+          expect(settlementDisplayFee).toEqual(expectedDisplayFee)
         })
       }
     })
@@ -170,7 +181,8 @@ describe("SettlementAmounts", () => {
             debit: toCents(0),
           }
           const settlementAmounts = SettlementAmounts().fromTxn(txnCredit)
-          const { settlementAmount, settlementDisplayAmount } = settlementAmounts
+          const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
+            settlementAmounts
 
           const expectedDisplayAmountForCredit = minorToMajorUnit({
             amount: expectedDisplayAmount,
@@ -178,6 +190,7 @@ describe("SettlementAmounts", () => {
           })
           expect(settlementAmount).toEqual(expectedSettlementAmountForCredit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForCredit)
+          expect(settlementDisplayFee).toEqual(expectedDisplayFee)
         })
       }
     })

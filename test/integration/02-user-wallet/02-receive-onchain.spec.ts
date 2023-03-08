@@ -12,7 +12,7 @@ import {
 } from "@config"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { DisplayCurrency, MajorExponent, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { WalletPriceRatio } from "@domain/payments"
@@ -412,7 +412,12 @@ describe("UserWallet - On chain", () => {
     expect(pendingTx.settlementDisplayAmount).toBe(
       (
         pendingTx.settlementAmount * pendingTx.displayCurrencyPerSettlementCurrencyUnit
-      ).toFixed(2),
+      ).toFixed(MajorExponent.STANDARD),
+    )
+    expect(pendingTx.settlementDisplayFee).toBe(
+      (
+        pendingTx.settlementFee * pendingTx.displayCurrencyPerSettlementCurrencyUnit
+      ).toFixed(MajorExponent.STANDARD),
     )
 
     // Check pendingTx from cache
