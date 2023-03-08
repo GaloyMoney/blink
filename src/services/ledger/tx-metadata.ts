@@ -355,8 +355,8 @@ export const LnFeeReimbursementReceiveLedgerMetadata = ({
   paymentAmounts,
   paymentHash,
   journalId,
-  feeDisplayCurrency: displayAmount,
-  amountDisplayCurrency: displayFee,
+  feeDisplayCurrency: displayFee,
+  amountDisplayCurrency: displayAmount,
   displayCurrency,
 }: {
   paymentAmounts: AmountsAndFees
@@ -408,8 +408,8 @@ export const LnFailedPaymentReceiveLedgerMetadata = ({
   paymentAmounts,
   paymentHash,
   journalId,
-  feeDisplayCurrency: displayAmount,
-  amountDisplayCurrency: displayFee,
+  feeDisplayCurrency: displayFee,
+  amountDisplayCurrency: displayAmount,
   displayCurrency,
 }: {
   paymentAmounts: AmountsAndFees
