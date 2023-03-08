@@ -433,16 +433,14 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (satsPrice instanceof Error) throw satsPrice
-
     const paymentAmount = {
       amount: BigInt(pendingTx.settlementAmount),
       currency: WalletCurrency.Btc,
     }
+
     const displayPaymentAmount = {
-      amount: pendingTx.settlementAmount * satsPrice.price,
-      currency: satsPrice.currency,
+      amount: Number(pendingTx.settlementDisplayAmount),
+      currency: pendingTx.settlementDisplayCurrency as DisplayCurrency,
     }
 
     const pendingNotification = createPushNotificationContent({
