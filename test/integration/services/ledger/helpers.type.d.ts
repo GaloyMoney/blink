@@ -9,13 +9,12 @@ type RecordExternalTxTestArgs<S extends WalletCurrency> = {
   }
 }
 
-type RecordInternalTxTestFn = <S extends WalletCurrency, R extends WalletCurrency>({
-  senderWalletDescriptor,
-  recipientWalletDescriptor,
+type RecordExternalTxTestFn = <S extends WalletCurrency>({
+  walletDescriptor,
   paymentAmount,
-  senderDisplayAmounts,
-  recipientDisplayAmounts,
-}: RecordInternalTxTestArgs<S, R>) => Promise<LedgerJournal | LedgerError>
+  bankFee,
+  displayAmounts,
+}: RecordExternalTxTestArgs<S>) => Promise<LedgerJournal | LedgerError>
 
 type RecordInternalTxTestArgs<S extends WalletCurrency, R extends WalletCurrency> = {
   senderWalletDescriptor: WalletDescriptor<S>
@@ -32,3 +31,11 @@ type RecordInternalTxTestArgs<S extends WalletCurrency, R extends WalletCurrency
     recipientDisplayCurrency: DisplayCurrency
   }
 }
+
+type RecordInternalTxTestFn = <S extends WalletCurrency, R extends WalletCurrency>({
+  senderWalletDescriptor,
+  recipientWalletDescriptor,
+  paymentAmount,
+  senderDisplayAmounts,
+  recipientDisplayAmounts,
+}: RecordInternalTxTestArgs<S, R>) => Promise<LedgerJournal | LedgerError>

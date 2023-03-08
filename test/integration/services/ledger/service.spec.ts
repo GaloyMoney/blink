@@ -98,13 +98,31 @@ describe("Volumes", () => {
     btc: { amount: 20n, currency: WalletCurrency.Btc },
   }
 
+  const displayAmounts = {
+    amountDisplayCurrency: 240 as DisplayCurrencyBaseAmount,
+    feeDisplayCurrency: 24 as DisplayCurrencyBaseAmount,
+    displayCurrency: "EUR" as DisplayCurrency,
+  }
+
+  const senderDisplayAmounts = {
+    senderAmountDisplayCurrency: displayAmounts.amountDisplayCurrency,
+    senderFeeDisplayCurrency: displayAmounts.feeDisplayCurrency,
+    senderDisplayCurrency: displayAmounts.displayCurrency,
+  }
+
+  const recipientDisplayAmounts = {
+    recipientAmountDisplayCurrency: displayAmounts.amountDisplayCurrency,
+    recipientFeeDisplayCurrency: displayAmounts.feeDisplayCurrency,
+    recipientDisplayCurrency: displayAmounts.displayCurrency,
+  }
+
   type fetchVolumeAmountType<S extends WalletCurrency> = (
     walletDescriptor: WalletDescriptor<S>,
   ) => Promise<PaymentAmount<S>>
 
   // Each "TxFn" execute a transaction for a given type and then checks if
   // the respective tx volume has been affected or not.
-  const prepareTxFns = <S extends WalletCurrency>(
+  const prepareTxFns = <S extends WalletCurrency, R extends WalletCurrency>(
     fetchVolumeAmount: fetchVolumeAmountType<S>,
   ) => {
     // Base function for extra-ledger transactions (onchain/ln)
@@ -112,7 +130,7 @@ describe("Volumes", () => {
       recordTx,
       calcFn,
     }: {
-      recordTx
+      recordTx: RecordExternalTxTestFn
       calcFn: <S extends WalletCurrency>(a, b) => PaymentAmount<S>
     }) => {
       const currentVolumeAmount = await fetchVolumeAmount(
@@ -125,6 +143,7 @@ describe("Volumes", () => {
         walletDescriptor,
         paymentAmount,
         bankFee,
+        displayAmounts,
       })
       expect(result).not.toBeInstanceOf(Error)
 
@@ -133,7 +152,17 @@ describe("Volumes", () => {
     }
 
     // Base function for intra-ledger transactions
-    const testInternalTx = async ({ recordTx, sender, recipient, calcFn }) => {
+    const testInternalTx = async ({
+      recordTx,
+      sender,
+      recipient,
+      calcFn,
+    }: {
+      recordTx: RecordInternalTxTestFn
+      sender: WalletDescriptor<S>
+      recipient: WalletDescriptor<R>
+      calcFn: <S extends WalletCurrency>(a, b) => PaymentAmount<S>
+    }) => {
       const currentVolumeAmount = await fetchVolumeAmount(
         walletDescriptor as WalletDescriptor<S>,
       )
@@ -143,6 +172,8 @@ describe("Volumes", () => {
         senderWalletDescriptor: sender,
         recipientWalletDescriptor: recipient,
         paymentAmount,
+        senderDisplayAmounts,
+        recipientDisplayAmounts,
       })
       expect(result).not.toBeInstanceOf(Error)
 
