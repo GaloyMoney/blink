@@ -9,6 +9,8 @@ import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 
 import {
+  recordLnFailedPayment,
+  recordLnFeeReimbursement,
   recordLnIntraLedgerPayment,
   recordLnTradeIntraAccountTxn,
   recordOnChainIntraLedgerPayment,
@@ -167,6 +169,16 @@ describe("Facade", () => {
         name: "recordReceiveOnChainPayment",
         recordFn: recordReceiveOnChainPayment,
         metadata: LedgerTransactionType.OnchainReceipt,
+      },
+      {
+        name: "recordLnFailedPayment",
+        recordFn: recordLnFailedPayment,
+        metadata: LedgerTransactionType.Payment,
+      },
+      {
+        name: "recordLnFeeReimbursement",
+        recordFn: recordLnFeeReimbursement,
+        metadata: LedgerTransactionType.LnFeeReimbursement,
       },
     ]
 
