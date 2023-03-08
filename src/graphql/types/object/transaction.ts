@@ -105,6 +105,10 @@ const Transaction = GT.Object<WalletTransaction>({
       type: GT.NonNull(SignedDisplayMajorAmount),
       resolve: (source) => `${source.settlementDisplayAmount}`,
     },
+    settlementDisplayFee: {
+      type: GT.NonNull(SignedDisplayMajorAmount),
+      resolve: (source) => `${source.settlementDisplayFee}`,
+    },
     settlementDisplayCurrency: {
       type: GT.NonNull(DisplayCurrency),
     },

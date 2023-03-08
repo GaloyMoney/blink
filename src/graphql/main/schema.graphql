@@ -1168,6 +1168,7 @@ type Transaction {
   settlementCurrency: WalletCurrency!
   settlementDisplayAmount: SignedDisplayMajorAmount!
   settlementDisplayCurrency: DisplayCurrency!
+  settlementDisplayFee: SignedDisplayMajorAmount!
   settlementFee: SignedAmount!
 
   """

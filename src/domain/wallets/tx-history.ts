@@ -42,6 +42,11 @@ const filterPendingIncoming = ({
               displayMajorExponent: MajorExponent.STANDARD,
             })
 
+            const settlementDisplayFee = minorToMajorUnit({
+              amount: Math.round(priceForMinorUnit * fee),
+              displayMajorExponent: MajorExponent.STANDARD,
+            })
+
             walletTransactions.push({
               id: rawTx.txHash,
               walletId,
@@ -49,6 +54,7 @@ const filterPendingIncoming = ({
               settlementFee: fee,
               settlementCurrency: walletDetailsByWalletId[walletId].currency,
               settlementDisplayAmount,
+              settlementDisplayFee,
               settlementDisplayCurrency: displayCurrencyPerSat.currency,
               displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerSat.price,
               status: TxStatus.Pending,
@@ -99,7 +105,8 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     type as AdminLedgerTransactionType,
   )
 
-  const { settlementAmount, settlementDisplayAmount } = SettlementAmounts().fromTxn(txn)
+  const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
+    SettlementAmounts().fromTxn(txn)
 
   let satsAmount = satsAmountRaw || 0
   let centsAmount = centsAmountRaw || 0
@@ -136,6 +143,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     settlementFee: currency === WalletCurrency.Btc ? toSats(satsFee) : toCents(centsFee),
     settlementCurrency: txn.currency,
     settlementDisplayAmount,
+    settlementDisplayFee,
     settlementDisplayCurrency: displayCurrency || "",
     displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
       displayAmount,

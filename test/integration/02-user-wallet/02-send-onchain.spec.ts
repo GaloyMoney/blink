@@ -34,7 +34,14 @@ import {
 
 import { LedgerTransactionType } from "@domain/ledger"
 
-import { add, DisplayCurrency, sub, toCents, usdMinorToMajorUnit } from "@domain/fiat"
+import {
+  add,
+  DisplayCurrency,
+  MajorExponent,
+  sub,
+  toCents,
+  usdMinorToMajorUnit,
+} from "@domain/fiat"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import { WalletsRepository } from "@services/mongoose"
@@ -242,8 +249,10 @@ const testExternalSend = async ({
       pendingTx.id as LedgerTransactionId,
     )
     if (pendingLedgerTx instanceof Error) throw pendingLedgerTx
-    const { settlementDisplayAmount } = SettlementAmounts().fromTxn(pendingLedgerTx)
+    const { settlementDisplayAmount, settlementDisplayFee } =
+      SettlementAmounts().fromTxn(pendingLedgerTx)
     expect(pendingTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
+    expect(pendingTx.settlementDisplayFee).toBe(settlementDisplayFee)
 
     if (sendAll) {
       expect(pendingTx.settlementAmount).toBe(-initialWalletBalance)
@@ -304,8 +313,10 @@ const testExternalSend = async ({
       settledTx.id as LedgerTransactionId,
     )
     if (settledLedgerTx instanceof Error) throw settledLedgerTx
-    const { settlementDisplayAmount } = SettlementAmounts().fromTxn(settledLedgerTx)
+    const { settlementDisplayAmount, settlementDisplayFee } =
+      SettlementAmounts().fromTxn(settledLedgerTx)
     expect(settledTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
+    expect(settledTx.settlementDisplayFee).toBe(settlementDisplayFee)
 
     const finalBalance = await getBalanceHelper(senderWalletId)
 
@@ -560,8 +571,10 @@ const testInternalSend = async ({
     senderSettledTx.id as LedgerTransactionId,
   )
   if (senderSettledLedgerTx instanceof Error) throw senderSettledLedgerTx
-  const { settlementDisplayAmount } = SettlementAmounts().fromTxn(senderSettledLedgerTx)
+  const { settlementDisplayAmount, settlementDisplayFee } =
+    SettlementAmounts().fromTxn(senderSettledLedgerTx)
   expect(senderSettledTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
+  expect(senderSettledTx.settlementDisplayFee).toBe(settlementDisplayFee)
 
   // Check txn details for received wallet
   // ===
@@ -592,7 +605,13 @@ const testInternalSend = async ({
     (
       recipientSettledTx.settlementAmount *
       recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit
-    ).toFixed(2),
+    ).toFixed(MajorExponent.STANDARD),
+  )
+  expect(recipientSettledTx.settlementDisplayFee).toBe(
+    (
+      recipientSettledTx.settlementFee *
+      recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit
+    ).toFixed(MajorExponent.STANDARD),
   )
 
   // Check memos

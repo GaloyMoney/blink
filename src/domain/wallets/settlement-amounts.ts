@@ -8,6 +8,7 @@ export const SettlementAmounts = () => {
   ): {
     settlementAmount: Satoshis | UsdCents
     settlementDisplayAmount: DisplayCurrencyMajorAmount
+    settlementDisplayFee: DisplayCurrencyMajorAmount
   } => {
     // ======
     // Calculate: settlementAmount
@@ -100,6 +101,10 @@ export const SettlementAmounts = () => {
       settlementAmount,
       settlementDisplayAmount: minorToMajorUnit({
         amount: settlementDisplayAmountAsNumber,
+        displayMajorExponent: MajorExponent.STANDARD,
+      }),
+      settlementDisplayFee: minorToMajorUnit({
+        amount: displayFee,
         displayMajorExponent: MajorExponent.STANDARD,
       }),
     }
