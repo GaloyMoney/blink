@@ -113,12 +113,12 @@ export const configSchema = {
       },
       default: {
         android: {
-          minBuildNumber: 182,
-          lastBuildNumber: 294,
+          minBuildNumber: 362,
+          lastBuildNumber: 362,
         },
         ios: {
-          minBuildNumber: 182,
-          lastBuildNumber: 269,
+          minBuildNumber: 362,
+          lastBuildNumber: 362,
         },
       },
       required: ["ios", "android"],
