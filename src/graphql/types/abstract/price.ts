@@ -7,7 +7,11 @@ const IPrice = GT.Interface({
   fields: () => ({
     base: { type: GT.NonNull(SafeInt) },
     offset: { type: GT.NonNull(GT.Int) },
-    currencyUnit: { type: GT.NonNull(GT.String) },
+    minorUnitToMajorUnitOffset: { type: GT.NonNull(GT.Int) },
+    currencyUnit: {
+      deprecationReason: "Deprecated in favor of minorUnitToMajorUnitOffset",
+      type: GT.NonNull(GT.String),
+    },
   }),
 })
 

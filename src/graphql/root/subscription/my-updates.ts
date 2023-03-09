@@ -2,7 +2,11 @@ import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
 
 import { Prices } from "@app"
 
-import { DisplayCurrency, usdMajorToMinorUnit } from "@domain/fiat"
+import {
+  currencyMajorToMinorUnit,
+  DisplayCurrency,
+  getCurrencyMajorExponent,
+} from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
 import { GT } from "@graphql/index"
@@ -78,8 +82,8 @@ const MyUpdatesPayload = GT.Object({
 
 type MePayloadPrice = {
   timestamp: Date
-  centsPerSat: number
-  centsPerUsdCent: number
+  minorUnitPerSat: number
+  minorUnitPerUsdCent: number
   displayCurrency: DisplayCurrency
 }
 
@@ -94,6 +98,7 @@ type MeResolvePrice = {
 type IPrice = {
   base: number
   offset: number
+  minorUnitToMajorUnitOffset: number
   currencyUnit: string
 }
 
@@ -172,10 +177,10 @@ const MeSubscription = {
 
       return userPayload(null)({
         resolveType: "Price",
-        base: Math.round(source.price.centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
+        base: Math.round(source.price.minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
         offset: SAT_PRICE_PRECISION_OFFSET,
         currencyUnit: `${source.price.displayCurrency}CENT`,
-        formattedAmount: source.price.centsPerSat.toString(),
+        formattedAmount: source.price.minorUnitPerSat.toString(),
       })
     }
 
@@ -189,20 +194,23 @@ const MeSubscription = {
     // authed request
     const myPayload = userPayload(ctx.domainAccount)
     if (source.realtimePrice) {
-      const { timestamp, displayCurrency, centsPerSat, centsPerUsdCent } =
+      const { timestamp, displayCurrency, minorUnitPerSat, minorUnitPerUsdCent } =
         source.realtimePrice
+      const minorUnitToMajorUnitOffset = getCurrencyMajorExponent(displayCurrency)
       return myPayload({
         resolveType: "RealtimePrice",
         timestamp: new Date(timestamp),
         denominatorCurrency: displayCurrency,
         btcSatPrice: {
-          base: Math.round(centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
+          base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
           offset: SAT_PRICE_PRECISION_OFFSET,
+          minorUnitToMajorUnitOffset,
           currencyUnit: `${displayCurrency}CENT`,
         },
         usdCentPrice: {
-          base: Math.round(centsPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
+          base: Math.round(minorUnitPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
           offset: USD_PRICE_PRECISION_OFFSET,
+          minorUnitToMajorUnitOffset,
           currencyUnit: `${displayCurrency}CENT`,
         },
       })
@@ -250,8 +258,14 @@ const MeSubscription = {
       const priceData = {
         timestamp: pricePerSat.timestamp,
         displayCurrency,
-        centsPerSat: usdMajorToMinorUnit(pricePerSat.price),
-        centsPerUsdCent: usdMajorToMinorUnit(pricePerUsdCent.price),
+        minorUnitPerSat: currencyMajorToMinorUnit({
+          amount: pricePerSat.price,
+          displayCurrency,
+        }),
+        minorUnitPerUsdCent: currencyMajorToMinorUnit({
+          amount: pricePerUsdCent.price,
+          displayCurrency,
+        }),
       }
       if (displayCurrency === DisplayCurrency.Usd) {
         pubsub.publishImmediate({

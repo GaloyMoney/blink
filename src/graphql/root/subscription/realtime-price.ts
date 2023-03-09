@@ -7,8 +7,9 @@ import { Prices } from "@app"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import {
   checkedToDisplayCurrency,
+  currencyMajorToMinorUnit,
   DisplayCurrency,
-  usdMajorToMinorUnit,
+  getCurrencyMajorExponent,
 } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
@@ -49,8 +50,8 @@ const RealtimePriceSubscription = {
       | {
           errors: IError[]
           timestamp?: Date
-          centsPerSat?: number
-          centsPerUsdCent?: number
+          minorUnitPerSat?: number
+          minorUnitPerUsdCent?: number
           displayCurrency?: DisplayCurrency
         }
       | undefined,
@@ -65,9 +66,10 @@ const RealtimePriceSubscription = {
       })
     }
 
-    const { errors, timestamp, centsPerSat, centsPerUsdCent, displayCurrency } = source
+    const { errors, timestamp, minorUnitPerSat, minorUnitPerUsdCent, displayCurrency } =
+      source
     if (errors) return { errors: errors }
-    if (!timestamp || !centsPerSat || !centsPerUsdCent || !displayCurrency) {
+    if (!timestamp || !minorUnitPerSat || !minorUnitPerUsdCent || !displayCurrency) {
       return { errors: [{ message: "No price info" }] }
     }
 
@@ -82,19 +84,23 @@ const RealtimePriceSubscription = {
       })
     }
 
+    const minorUnitToMajorUnitOffset = getCurrencyMajorExponent(currency)
+
     return {
       errors: [],
       realtimePrice: {
         timestamp: new Date(timestamp),
         denominatorCurrency: currency,
         btcSatPrice: {
-          base: Math.round(centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
+          base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
           offset: SAT_PRICE_PRECISION_OFFSET,
+          minorUnitToMajorUnitOffset,
           currencyUnit: `${currency}CENT`,
         },
         usdCentPrice: {
-          base: Math.round(centsPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
+          base: Math.round(minorUnitPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
           offset: USD_PRICE_PRECISION_OFFSET,
+          minorUnitToMajorUnitOffset,
           currencyUnit: `${currency}CENT`,
         },
       },
@@ -149,8 +155,14 @@ const RealtimePriceSubscription = {
         payload: {
           timestamp,
           displayCurrency,
-          centsPerSat: usdMajorToMinorUnit(pricePerSat.price),
-          centsPerUsdCent: usdMajorToMinorUnit(pricePerUsdCent.price),
+          minorUnitPerSat: currencyMajorToMinorUnit({
+            amount: pricePerSat.price,
+            displayCurrency,
+          }),
+          minorUnitPerUsdCent: currencyMajorToMinorUnit({
+            amount: pricePerUsdCent.price,
+            displayCurrency,
+          }),
         },
       })
     }
