@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 
 import IPrice from "../abstract/price"
 import SafeInt from "../scalar/safe-int"
+import CurrencyUnit from "../scalar/currency-unit"
 
 const PriceOfOneUsdCent = GT.Object({
   name: "PriceOfOneUsdCent",
@@ -12,10 +13,7 @@ const PriceOfOneUsdCent = GT.Object({
     base: { type: GT.NonNull(SafeInt) },
     offset: { type: GT.NonNull(GT.Int) },
     minorUnitToMajorUnitOffset: { type: GT.NonNull(GT.Int) },
-    currencyUnit: {
-      deprecationReason: "Deprecated in favor of minorUnitToMajorUnitOffset",
-      type: GT.NonNull(GT.String),
-    },
+    currencyUnit: { type: GT.NonNull(CurrencyUnit) },
   }),
 })
 

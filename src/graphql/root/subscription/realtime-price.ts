@@ -50,8 +50,8 @@ const RealtimePriceSubscription = {
       | {
           errors: IError[]
           timestamp?: Date
-          minorUnitPerSat?: number
-          minorUnitPerUsdCent?: number
+          pricePerSat?: number
+          pricePerUsdCent?: number
           displayCurrency?: DisplayCurrency
         }
       | undefined,
@@ -66,10 +66,9 @@ const RealtimePriceSubscription = {
       })
     }
 
-    const { errors, timestamp, minorUnitPerSat, minorUnitPerUsdCent, displayCurrency } =
-      source
+    const { errors, timestamp, pricePerSat, pricePerUsdCent, displayCurrency } = source
     if (errors) return { errors: errors }
-    if (!timestamp || !minorUnitPerSat || !minorUnitPerUsdCent || !displayCurrency) {
+    if (!timestamp || !pricePerSat || !pricePerUsdCent || !displayCurrency) {
       return { errors: [{ message: "No price info" }] }
     }
 
@@ -85,6 +84,14 @@ const RealtimePriceSubscription = {
     }
 
     const minorUnitToMajorUnitOffset = getCurrencyMajorExponent(currency)
+    const minorUnitPerSat = currencyMajorToMinorUnit({
+      amount: pricePerSat,
+      displayCurrency: currency,
+    })
+    const minorUnitPerUsdCent = currencyMajorToMinorUnit({
+      amount: pricePerUsdCent,
+      displayCurrency: currency,
+    })
 
     return {
       errors: [],
@@ -95,13 +102,13 @@ const RealtimePriceSubscription = {
           base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
           offset: SAT_PRICE_PRECISION_OFFSET,
           minorUnitToMajorUnitOffset,
-          currencyUnit: `${currency}CENT`,
+          currencyUnit: "MINOR",
         },
         usdCentPrice: {
           base: Math.round(minorUnitPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
           offset: USD_PRICE_PRECISION_OFFSET,
           minorUnitToMajorUnitOffset,
-          currencyUnit: `${currency}CENT`,
+          currencyUnit: "MINOR",
         },
       },
     }
@@ -155,14 +162,8 @@ const RealtimePriceSubscription = {
         payload: {
           timestamp,
           displayCurrency,
-          minorUnitPerSat: currencyMajorToMinorUnit({
-            amount: pricePerSat.price,
-            displayCurrency,
-          }),
-          minorUnitPerUsdCent: currencyMajorToMinorUnit({
-            amount: pricePerUsdCent.price,
-            displayCurrency,
-          }),
+          pricePerSat: pricePerSat.price,
+          pricePerUsdCent: pricePerUsdCent.price,
         },
       })
     }

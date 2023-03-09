@@ -53,13 +53,13 @@ const RealtimePriceQuery = GT.Field({
         base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
         offset: SAT_PRICE_PRECISION_OFFSET,
         minorUnitToMajorUnitOffset,
-        currencyUnit: `${currency}CENT`,
+        currencyUnit: "MINOR",
       },
       usdCentPrice: {
         base: Math.round(minorUnitPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
         offset: USD_PRICE_PRECISION_OFFSET,
         minorUnitToMajorUnitOffset,
-        currencyUnit: `${currency}CENT`,
+        currencyUnit: "MINOR",
       },
     }
   },

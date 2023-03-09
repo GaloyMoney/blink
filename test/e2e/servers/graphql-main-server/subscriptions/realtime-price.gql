@@ -16,11 +16,13 @@ subscription realtimePrice(
       btcSatPrice {
         base
         offset
+        minorUnitToMajorUnitOffset
         currencyUnit
       }
       usdCentPrice {
         base
         offset
+        minorUnitToMajorUnitOffset
         currencyUnit
       }
     }

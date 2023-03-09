@@ -29,11 +29,13 @@ subscription myUpdates {
         btcSatPrice {
           base
           offset
+          minorUnitToMajorUnitOffset
           currencyUnit
         }
         usdCentPrice {
           base
           offset
+          minorUnitToMajorUnitOffset
           currencyUnit
         }
       }

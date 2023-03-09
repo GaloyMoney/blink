@@ -121,16 +121,18 @@ describe("graphql", () => {
       expect(realtimePrice).toHaveProperty("btcSatPrice.base", expect.any(Number))
       expect(realtimePrice).toHaveProperty("btcSatPrice.offset", expect.any(Number))
       expect(realtimePrice).toHaveProperty(
-        "btcSatPrice.currencyUnit",
-        input.currency + "CENT",
+        "btcSatPrice.minorUnitToMajorUnitOffset",
+        expect.any(Number),
       )
+      expect(realtimePrice).toHaveProperty("btcSatPrice.currencyUnit", "MINOR")
 
       expect(realtimePrice).toHaveProperty("usdCentPrice.base", expect.any(Number))
       expect(realtimePrice).toHaveProperty("usdCentPrice.offset", expect.any(Number))
       expect(realtimePrice).toHaveProperty(
-        "usdCentPrice.currencyUnit",
-        input.currency + "CENT",
+        "usdCentPrice.minorUnitToMajorUnitOffset",
+        expect.any(Number),
       )
+      expect(realtimePrice).toHaveProperty("usdCentPrice.currencyUnit", "MINOR")
     })
   })
 
