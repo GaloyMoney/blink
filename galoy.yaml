@@ -1,3 +1,4 @@
+# WARNING: this file is only a sample, make config customizations in /var/yaml/custom.yaml
 name: Galoy Banking
 lightningAddressDomain: pay.domain.com
 lightningAddressDomainAliases:

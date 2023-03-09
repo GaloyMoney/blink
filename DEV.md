@@ -1,5 +1,23 @@
 # Dev environment
 
+- [Setup](#setup)
+- [Runtime dependencies](#runtime-dependencies)
+- [Development](#development)
+- [Config](#config)
+- [Using GraphQL Playground](#using-graphql-playground)
+- [Docker compose](#docker-compose)
+- [Testing](#testing)
+  - [Unit Tests](#run-unit-tests)
+  - [Integrations Tests](#run-integration-tests)
+  - [E2E Tests](#run-e2e-tests)
+  - [Run specific test file](#run-specific-test-file)
+- [Migrations](#migrations)
+  - [Testing migrations](#testing-migrations)
+  - [Create a new migration](#create-a-new-migration)
+- [Known issues](#known-issues)
+- [Running checks](#running-checks)
+- [Contributing](#contributing)
+
 ## Setup
 
 This setup was last tested with the following tools:
@@ -60,9 +78,24 @@ Alernatively, to start the GraphQL server in watch mode (with automatic restart 
 $ make watch
 ```
 
-### Using GraphiQL
+### Config
+There is a sample configuration file `galoy.yaml`. This is the applications default configuration and contains settings for  LND, test accounts, rate limits, fees and more.
 
-You can load GraphiQL, a web GUI for GraphQL. Start the server and open the following url:
+If you need to customize any of these settings you can create a `custom.yaml` file in the path `/var/yaml/custom.yaml`. This file will be merged with the default config. Here is an example of a custom.yaml file that configures fees:
+
+```
+fees:
+  withdraw:
+    method: flat
+    defaultMin: 2000
+    ratioAsBasisPoints: 50
+    threshold: 1000000
+    daysLookback: 30
+```
+
+### Using GraphQL Playground
+
+You can load the Apollo GraphQL Playground, a web GUI for GraphQL. Start the server and open the following url:
 
 - http://localhost:4002/admin/graphql (admin API, proxied thru oathkeeper)
 - http://localhost:4002/graphql (end user API)
@@ -153,6 +186,8 @@ if within a specific test suite you want to run/debug only a describe or it(test
 * [describe.only](https://jestjs.io/docs/api#describeonlyname-fn): just for debug purposes
 * [it.only](https://jestjs.io/docs/api#testonlyname-fn-timeout): just for debug purposes
 * [it.skip](https://jestjs.io/docs/api#testskipname-fn): use it when a test is temporarily broken. Please don't commit commented test cases
+
+## Migrations
 
 ### Testing migrations
 
