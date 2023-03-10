@@ -390,7 +390,7 @@ export const startApolloServer = async ({
     }
 
     // make request to oathkeeper
-    const originalToken = authz?.slice(7) as LegacyJwtToken | SessionToken | undefined
+    const originalToken = authz?.slice(7) as SessionToken | undefined
 
     const newToken = await sendOathkeeperRequest(originalToken)
     // TODO: see how returning an error affect the websocket connection
@@ -446,7 +446,7 @@ export const startApolloServer = async ({
     //   })
     // }
 
-    const kratosToken = authz?.slice(7) as LegacyJwtToken | SessionToken
+    const kratosToken = authz?.slice(7) as SessionToken
 
     // make request to oathkeeper
     // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"

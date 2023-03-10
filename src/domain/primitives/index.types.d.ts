@@ -7,7 +7,6 @@ type AccountId = string & { readonly brand: unique symbol }
 type Seconds = number & { readonly brand: unique symbol }
 type MilliSeconds = number & { readonly brand: unique symbol }
 type Days = number & { readonly brand: unique symbol }
-type LegacyJwtToken = string & { readonly brand: unique symbol } // symmetric non expiry auth token
 type JwtToken = string & { readonly brand: unique symbol } // short lived asymmetric token from oathkeeper
 type Memo = string & { readonly brand: unique symbol }
 

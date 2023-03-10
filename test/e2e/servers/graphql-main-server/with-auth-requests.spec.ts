@@ -12,7 +12,6 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
 import { BTC_NETWORK } from "@config"
 
-import { createToken } from "@services/legacy-jwt"
 import { Subscription } from "zen-observable-ts"
 
 import { sleep } from "@utils"
@@ -124,32 +123,6 @@ describe("setup", () => {
     ))
     const meResult = await apolloClient.query({ query: ME })
     expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
-  })
-})
-
-describe("header", () => {
-  it("getting a kratos header when passing a legacy JWT in the header", async () => {
-    const account = await getAccountByTestUserRef(userRef)
-    const jwtLegacyToken = createToken({ uid: account.id, network: BTC_NETWORK })
-
-    const graphql = JSON.stringify({
-      query: "query nodeIds {\n  globals {\n    nodesIds\n  }\n}\n",
-      variables: {},
-    })
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${jwtLegacyToken}`,
-    }
-
-    const res = await axios({
-      url: defaultTestClientConfig().graphqlUrl,
-      method: "POST",
-      headers,
-      data: graphql,
-    })
-
-    expect(res.headers["kratos-session-token"]).toHaveLength(32)
   })
 })
 

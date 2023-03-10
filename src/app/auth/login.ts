@@ -31,7 +31,7 @@ export const loginWithPhoneToken = async ({
   phone: PhoneNumber
   code: PhoneCode
   ip: IpAddress
-}): Promise<SessionToken | LegacyJwtToken | ApplicationError> => {
+}): Promise<SessionToken | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
