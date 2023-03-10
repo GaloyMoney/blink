@@ -3,14 +3,6 @@ import { decode } from "jsonwebtoken"
 import { OathkeeperUnauthorizedServiceError } from "@domain/oathkeeper/errors"
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 
-import { BTC_NETWORK } from "@config"
-
-import { createToken } from "@services/legacy-jwt"
-
-import { AccountsRepository } from "@services/mongoose"
-
-import { IdentityRepository } from "@services/kratos"
-
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
 import {
@@ -65,29 +57,6 @@ describe("Oathkeeper", () => {
     const token = result.data.userLogin.authToken
 
     const res = await sendOathkeeperRequest(token)
-    if (res instanceof Error) throw res
-
-    const decodedNew = decode(res, { complete: true })
-    const uidFromJwt = decodedNew?.payload?.sub
-
-    expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
-  })
-
-  it("return UserId when legacy JWT is provided", async () => {
-    const { phone } = getPhoneAndCodeFromRef(userRef)
-
-    const user = await IdentityRepository().slowFindByPhone(phone)
-    if (user instanceof Error) throw user
-
-    const account = await AccountsRepository().findByUserId(user.id)
-    if (account instanceof Error) throw account
-
-    const jwtToken = createToken({
-      uid: account.id,
-      network: BTC_NETWORK,
-    })
-
-    const res = await sendOathkeeperRequest(jwtToken)
     if (res instanceof Error) throw res
 
     const decodedNew = decode(res, { complete: true })
