@@ -63,7 +63,6 @@ import { playgroundTabs } from "../graphql/playground"
 import authRouter from "./middlewares/auth-router"
 import healthzHandler from "./middlewares/healthz"
 import kratosRouter from "./middlewares/kratos-router"
-import { updateToken } from "./middlewares/update-token"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -347,8 +346,6 @@ export const startApolloServer = async ({
       issuer: "galoy.io",
     }),
   )
-
-  app.use(updateToken)
 
   app.use("/graphql", setGqlContext)
 

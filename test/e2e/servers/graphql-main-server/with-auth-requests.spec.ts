@@ -1,5 +1,4 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "loginFromPhoneAndCode"] }] */
-import axios from "axios"
 
 import { Accounts } from "@app"
 import { WalletType } from "@domain/wallets"
@@ -9,8 +8,6 @@ import { WalletCurrency } from "@domain/shared"
 import { LnFees } from "@domain/payments"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
-
-import { BTC_NETWORK } from "@config"
 
 import { Subscription } from "zen-observable-ts"
 
