@@ -508,7 +508,7 @@ const executePaymentViaOnChain = async <
       displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
     ) as DisplayCurrencyBaseAmount
     const feeDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWallet(paymentFlow.btcProtocolAndBankFee)
+      displayPriceRatio.convertFromWalletToCeil(paymentFlow.btcProtocolAndBankFee)
         .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
