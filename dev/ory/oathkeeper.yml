@@ -12,7 +12,10 @@ authenticators:
   bearer_token:
     enabled: true
     config:
-      check_session_url: http://e2e-tests:4012/auth/validatetoken
+      check_session_url: http://kratos:4433/sessions/whoami
+      preserve_path: true
+      subject_from: identity.id
+      extra_from: identity.traits
 
   anonymous:
     enabled: true

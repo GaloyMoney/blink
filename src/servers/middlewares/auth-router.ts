@@ -1,23 +1,15 @@
 import cors from "cors"
 import express from "express"
 
-import * as jwt from "jsonwebtoken"
-
 import { Auth } from "@app"
-import { isDev, JWT_SECRET } from "@config"
+import { isDev } from "@config"
 
 import { mapError } from "@graphql/error-map"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-  wrapAsyncToRunInSpan,
-} from "@services/tracing"
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-import { validateKratosToken } from "@services/kratos"
 import { kratosPublic } from "@services/kratos/private"
-import { AccountsRepository } from "@services/mongoose"
+
 import { parseIps } from "@domain/accounts-ips"
-import { KratosError } from "@services/kratos/errors"
 import bodyParser from "body-parser"
 import setCookie from "set-cookie-parser"
 import cookieParser from "cookie-parser"
@@ -59,74 +51,6 @@ authRouter.post("/browser", async (req, res) => {
     res.send({ error: "Browser auth error" })
   }
 })
-
-const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
-
-// used by oathkeeper to validate LegacyJWT and SessionToken
-// should not be public
-authRouter.post(
-  "/validatetoken",
-  wrapAsyncToRunInSpan({
-    namespace: "servers.middlewares.authRouter",
-    fnName: "validatetoken",
-    fn: async (req: express.Request, res: express.Response) => {
-      const headers = req?.headers
-      let tokenPayload: string | jwt.JwtPayload | null = null
-      const authz = headers.authorization || headers.Authorization
-
-      if (!authz) {
-        res.status(401).send({ error: "Missing token" })
-        return
-      }
-
-      const rawToken = authz.slice(7) as string
-
-      // new flow
-      if (rawToken.length === 32) {
-        addAttributesToCurrentSpan({ kratosToken: true, legacyJwt: false })
-        const kratosRes = await validateKratosToken(rawToken as SessionToken)
-        if (kratosRes instanceof KratosError) {
-          res.status(401).send({ error: `${kratosRes.name} ${kratosRes.message}` })
-          return
-        }
-
-        addAttributesToCurrentSpan({ token: "kratos" })
-
-        res.json({ sub: kratosRes.kratosUserId })
-        return
-      }
-
-      // legacy flow
-      try {
-        addAttributesToCurrentSpan({ kratosToken: false, legacyJwt: true })
-        tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
-          algorithms: jwtAlgorithms,
-        })
-      } catch (err) {
-        res.status(401).send({ error: "Token validation error" })
-        return
-      }
-
-      if (typeof tokenPayload === "string") {
-        res.status(401).send({ error: "tokenPayload should be an object" })
-        return
-      }
-
-      if (!tokenPayload) {
-        res.status(401).send({ error: "Token validation error" })
-        return
-      }
-
-      const account = await AccountsRepository().findById(tokenPayload.uid)
-      if (account instanceof Error) {
-        res.status(401).send({ error: `${account.name} ${account.message}` })
-        return
-      }
-
-      res.json({ sub: account.kratosUserId })
-    },
-  }),
-)
 
 authRouter.post(
   "/login",
