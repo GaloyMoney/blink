@@ -8,7 +8,9 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
 } from "@app/prices"
+import * as PaymentsHelpers from "@app/payments/helpers"
 
+import { AccountLimitsChecker } from "@domain/accounts"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
@@ -2703,6 +2705,126 @@ describe("Handle pending payments - Lightning Pay", () => {
 
     const isRecordedVoided = await ledger.isLnTxRecorded(paymentHash as PaymentHash)
     expect(isRecordedVoided).toBeTruthy()
+  })
+})
+
+describe("UserWalletLimit - handles 1 sat send with high btc outgoing volume", () => {
+  const usdLimit = toCents(100_000)
+
+  const accountLimits = {
+    intraLedgerLimit: usdLimit,
+    withdrawalLimit: usdLimit,
+    tradeIntraAccountLimit: usdLimit,
+  }
+
+  const walletVolumes = [
+    {
+      outgoingBaseAmount: {
+        amount: BigInt(usdLimit),
+        currency: WalletCurrency.Btc,
+      },
+      incomingBaseAmount: { amount: 0n, currency: WalletCurrency.Btc },
+    },
+    {
+      outgoingBaseAmount: { amount: 0n, currency: WalletCurrency.Usd },
+      incomingBaseAmount: { amount: 0n, currency: WalletCurrency.Usd },
+    },
+  ]
+
+  const mockedCheckWithdrawalLimits = ({
+    amount,
+    priceRatio,
+  }: {
+    amount: UsdPaymentAmount
+    priceRatio: WalletPriceRatio
+  }) => {
+    return AccountLimitsChecker({
+      accountLimits,
+      priceRatio,
+    }).checkWithdrawal({
+      amount,
+      walletVolumes,
+    })
+  }
+
+  const mockedCheckIntraledgerLimits = ({
+    amount,
+    priceRatio,
+  }: {
+    amount: UsdPaymentAmount
+    priceRatio: WalletPriceRatio
+  }) => {
+    return AccountLimitsChecker({
+      accountLimits,
+      priceRatio,
+    }).checkIntraledger({
+      amount,
+      walletVolumes,
+    })
+  }
+
+  it("estimate fee for zero amount invoice with 1 sat amount", async () => {
+    jest
+      .spyOn(PaymentsHelpers, "checkWithdrawalLimits")
+      .mockImplementationOnce(mockedCheckWithdrawalLimits)
+      .mockImplementationOnce(mockedCheckWithdrawalLimits)
+
+    const senderWalletId = walletIdB
+    const { request } = await createInvoice({ lnd: lndOutside1 })
+
+    // Estimate fee with 2,000 sats
+    const { error } = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+      walletId: senderWalletId,
+      uncheckedPaymentRequest: request,
+      amount: toSats(2_000),
+    })
+    expect(error).not.toBeInstanceOf(Error)
+
+    // Estimate fee with 1 sat
+    // This tests that a suitable WalletPriceRatio is passed into limits checker
+    const { error: error1Sat } =
+      await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+        walletId: senderWalletId,
+        uncheckedPaymentRequest: request,
+        amount: toSats(1),
+      })
+    expect(error1Sat).not.toBeInstanceOf(Error)
+  })
+
+  it("pay zero amount invoice with 1 sat amount", async () => {
+    jest
+      .spyOn(PaymentsHelpers, "checkWithdrawalLimits")
+      .mockImplementationOnce(mockedCheckWithdrawalLimits)
+
+    const senderWalletId = walletIdB
+    const senderAccount = accountB
+    const { request } = await createInvoice({ lnd: lndOutside1 })
+
+    const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+      senderWalletId,
+      senderAccount,
+      uncheckedPaymentRequest: request,
+      amount: toSats(1),
+      memo: "",
+    })
+    expect(paid).not.toBeInstanceOf(Error)
+  })
+
+  it("pay other Galoy user with 1 sat amount", async () => {
+    jest
+      .spyOn(PaymentsHelpers, "checkIntraledgerLimits")
+      .mockImplementationOnce(mockedCheckIntraledgerLimits)
+
+    const senderWalletId = walletIdB
+    const senderAccount = accountB
+    const paidIntraledger = Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+      senderWalletId,
+      senderAccount,
+      recipientWalletId: walletIdC,
+      amount: toSats(1),
+      memo: "",
+    })
+    expect(paidIntraledger).not.toBeInstanceOf(Error)
   })
 })
 
