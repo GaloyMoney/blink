@@ -37,6 +37,12 @@ const sendToDevice = async (
   },
 ) => {
   try {
+    if (!messaging) {
+      baseLogger.info("messaging module not loaded")
+      // FIXME: should return an error?
+      return true
+    }
+
     const response = await messaging.sendToDevice(tokens, message)
     logger.info({ response, tokens, message }, "notification was sent successfully")
 

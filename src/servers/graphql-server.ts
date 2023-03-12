@@ -126,7 +126,7 @@ const setGqlContext = async (
   )
 }
 
-const sessionContext = ({
+export const sessionContext = ({
   tokenPayload,
   ip,
   body,
