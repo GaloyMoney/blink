@@ -87,7 +87,7 @@ afterEach(async () => {
 describe("UserWallet - Lightning", () => {
   it("receives payment from outside", async () => {
     // larger amount to not fall below the escrow limit
-    const sats = 50000
+    const sats = 500_000
     const memo = "myMemo"
 
     const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
