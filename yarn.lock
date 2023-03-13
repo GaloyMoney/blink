@@ -2264,18 +2264,6 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.3.tgz#e45e384e4b8ec16bce2fd903af78450f6bf7ec98"
   integrity sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==
 
-"@jest/console@^29.4.3":
-  version "29.4.3"
-  resolved "https://registry.yarnpkg.com/@jest/console/-/console-29.4.3.tgz#1f25a99f7f860e4c46423b5b1038262466fadde1"
-  integrity sha512-W/o/34+wQuXlgqlPYTansOSiBnuxrTv61dEVkA6HNmpcgHLUjfaUbdqt6oVvOzaawwo9IdW9QOtMgQ1ScSZC4A==
-  dependencies:
-    "@jest/types" "^29.4.3"
-    "@types/node" "*"
-    chalk "^4.0.0"
-    jest-message-util "^29.4.3"
-    jest-util "^29.4.3"
-    slash "^3.0.0"
-
 "@jest/console@^29.5.0":
   version "29.5.0"
   resolved "https://registry.yarnpkg.com/@jest/console/-/console-29.5.0.tgz#593a6c5c0d3f75689835f1b3b4688c4f8544cb57"
@@ -2422,16 +2410,6 @@
     callsites "^3.0.0"
     graceful-fs "^4.2.9"
 
-"@jest/test-result@^29.4.3":
-  version "29.4.3"
-  resolved "https://registry.yarnpkg.com/@jest/test-result/-/test-result-29.4.3.tgz#e13d973d16c8c7cc0c597082d5f3b9e7f796ccb8"
-  integrity sha512-Oi4u9NfBolMq9MASPwuWTlC5WvmNRwI4S8YrQg5R5Gi47DYlBe3sh7ILTqi/LGrK1XUE4XY9KZcQJTH1WJCLLA==
-  dependencies:
-    "@jest/console" "^29.4.3"
-    "@jest/types" "^29.4.3"
-    "@types/istanbul-lib-coverage" "^2.0.0"
-    collect-v8-coverage "^1.0.0"
-
 "@jest/test-result@^29.5.0":
   version "29.5.0"
   resolved "https://registry.yarnpkg.com/@jest/test-result/-/test-result-29.5.0.tgz#7c856a6ca84f45cc36926a4e9c6b57f1973f1408"
@@ -2441,16 +2419,6 @@
     "@jest/types" "^29.5.0"
     "@types/istanbul-lib-coverage" "^2.0.0"
     collect-v8-coverage "^1.0.0"
-
-"@jest/test-sequencer@^29.4.3":
-  version "29.4.3"
-  resolved "https://registry.yarnpkg.com/@jest/test-sequencer/-/test-sequencer-29.4.3.tgz#0862e876a22993385a0f3e7ea1cc126f208a2898"
-  integrity sha512-yi/t2nES4GB4G0mjLc0RInCq/cNr9dNwJxcGg8sslajua5Kb4kmozAc+qPLzplhBgfw1vLItbjyHzUN92UXicw==
-  dependencies:
-    "@jest/test-result" "^29.4.3"
-    graceful-fs "^4.2.9"
-    jest-haste-map "^29.4.3"
-    slash "^3.0.0"
 
 "@jest/test-sequencer@^29.5.0":
   version "29.5.0"
@@ -7860,26 +7828,7 @@ jest-get-type@^29.4.3:
   resolved "https://registry.yarnpkg.com/jest-get-type/-/jest-get-type-29.4.3.tgz#1ab7a5207c995161100b5187159ca82dd48b3dd5"
   integrity sha512-J5Xez4nRRMjk8emnTpWrlkyb9pfRQQanDrvWHhsR1+VUfbwxi30eVcZFlcdGInRibU4G5LwHXpI7IRHU0CY+gg==
 
-jest-haste-map@^29.4.3:
-  version "29.4.3"
-  resolved "https://registry.yarnpkg.com/jest-haste-map/-/jest-haste-map-29.4.3.tgz#085a44283269e7ace0645c63a57af0d2af6942e2"
-  integrity sha512-eZIgAS8tvm5IZMtKlR8Y+feEOMfo2pSQkmNbufdbMzMSn9nitgGxF1waM/+LbryO3OkMcKS98SUb+j/cQxp/vQ==
-  dependencies:
-    "@jest/types" "^29.4.3"
-    "@types/graceful-fs" "^4.1.3"
-    "@types/node" "*"
-    anymatch "^3.0.3"
-    fb-watchman "^2.0.0"
-    graceful-fs "^4.2.9"
-    jest-regex-util "^29.4.3"
-    jest-util "^29.4.3"
-    jest-worker "^29.4.3"
-    micromatch "^4.0.4"
-    walker "^1.0.8"
-  optionalDependencies:
-    fsevents "^2.3.2"
-
-jest-haste-map@^29.5.0:
+jest-haste-map@^29.4.3, jest-haste-map@^29.5.0:
   version "29.5.0"
   resolved "https://registry.yarnpkg.com/jest-haste-map/-/jest-haste-map-29.5.0.tgz#69bd67dc9012d6e2723f20a945099e972b2e94de"
   integrity sha512-IspOPnnBro8YfVYSw6yDRKh/TiCdRngjxeacCps1cQ9cgVN6+10JUcuJ1EabrgYLOATsIAigxA0rLR9x/YlrSA==
@@ -8141,16 +8090,6 @@ jest-watcher@^29.5.0:
     emittery "^0.13.1"
     jest-util "^29.5.0"
     string-length "^4.0.1"
-
-jest-worker@^29.4.3:
-  version "29.4.3"
-  resolved "https://registry.yarnpkg.com/jest-worker/-/jest-worker-29.4.3.tgz#9a4023e1ea1d306034237c7133d7da4240e8934e"
-  integrity sha512-GLHN/GTAAMEy5BFdvpUfzr9Dr80zQqBrh0fz1mtRMe05hqP45+HfQltu7oTBfduD0UeZs09d+maFtFYAXFWvAA==
-  dependencies:
-    "@types/node" "*"
-    jest-util "^29.4.3"
-    merge-stream "^2.0.0"
-    supports-color "^8.0.0"
 
 jest-worker@^29.5.0:
   version "29.5.0"

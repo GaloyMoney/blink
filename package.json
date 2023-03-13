@@ -117,7 +117,7 @@
     "@babel/core": "^7.21.0",
     "@babel/preset-env": "^7.19.4",
     "@graphql-tools/jest-transform": "^1.2.2",
-    "@jest/test-sequencer": "^29.4.3",
+    "@jest/test-sequencer": "^29.5.0",
     "@types/babel__core": "^7.20.0",
     "@types/babel__preset-env": "^7.9.2",
     "@types/cookie": "^0.5.1",
