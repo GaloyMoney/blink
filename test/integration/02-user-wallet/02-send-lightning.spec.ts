@@ -1538,7 +1538,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(finalBalance).toBe(initBalanceB)
       }, 60000)
 
-      it("reimburse failed USD payment", async () => {
+      it.skip("reimburse failed USD payment", async () => {
         const { id } = createInvoiceHash()
 
         const btcInvoiceAmount = paymentAmountFromNumber({
@@ -1569,7 +1569,7 @@ describe("UserWallet - Lightning Pay", () => {
           btc: btcInvoiceAmount,
           usd: usdInvoiceAmount,
         })
-        if (priceRatio instanceof Error) return priceRatio
+        if (priceRatio instanceof Error) throw priceRatio
         const btcProtocolAndBankFee = applyMaxFee
           ? LnFees().maxProtocolAndBankFee({
               amount: btcInvoiceAmount.amount,

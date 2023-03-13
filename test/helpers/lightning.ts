@@ -320,6 +320,7 @@ export const waitUntilChannelBalanceSyncAll = async () => {
 export const waitUntilChannelBalanceSync = ({ lnd }) =>
   waitFor(async () => {
     const { unsettled_balance } = await getChannelBalance({ lnd })
+    console.log("HERE 11a:", { unsettled_balance })
     return unsettled_balance === 0
   })
 

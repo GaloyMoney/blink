@@ -11,17 +11,21 @@ import { waitUntilChannelBalanceSyncAll } from "./lightning"
 const logger = baseLogger.child({ module: "test" })
 
 export const checkIsBalanced = async () => {
-  await Promise.all([
+  console.log("HERE 10:")
+  const res = await Promise.all([
     handleHeldInvoices(logger),
     updatePendingPayments(logger),
     updateOnChainReceipt({ logger }),
   ])
+  console.log("HERE 11:", { res })
   // wait for balance updates because invoice event
   // arrives before wallet balances updates in lnd
-  await waitUntilChannelBalanceSyncAll()
+  const res1 = await waitUntilChannelBalanceSyncAll()
 
+  console.log("HERE 12:", res1)
   const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
     await balanceSheetIsBalanced()
+  console.log("HERE 13:", { assetsLiabilitiesDifference })
   expect(assetsLiabilitiesDifference).toBe(0)
 
   // TODO: need to go from sats to msats to properly account for every msats spent
