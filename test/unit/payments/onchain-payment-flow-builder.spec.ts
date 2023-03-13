@@ -4,6 +4,8 @@ import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@domain/
 import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import {
   InvalidOnChainPaymentFlowBuilderStateError,
+  priceRatioFromBtcFromUsd,
+  priceRatioFromUsdFromBtc,
   WalletPriceRatio,
 } from "@domain/payments"
 import { paymentAmountFromNumber, ValidationError, WalletCurrency } from "@domain/shared"
@@ -362,7 +364,10 @@ describe("OnChainPaymentFlowBuilder", () => {
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const usdPaymentAmount = await usdFromBtcMid({
+                  const walletPriceRatio = await priceRatioFromUsdFromBtc(usdFromBtcMid)
+                  if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+                  const usdPaymentAmount = walletPriceRatio.convertFromBtc({
                     amount: BigInt(amount),
                     currency: WalletCurrency.Btc,
                   })
@@ -428,7 +433,10 @@ describe("OnChainPaymentFlowBuilder", () => {
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const usdPaymentAmount = await usdFromBtcBuy({
+                  const walletPriceRatio = await priceRatioFromUsdFromBtc(usdFromBtcBuy)
+                  if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+                  const usdPaymentAmount = walletPriceRatio.convertFromBtc({
                     amount: BigInt(amount),
                     currency: WalletCurrency.Btc,
                   })
@@ -666,7 +674,10 @@ describe("OnChainPaymentFlowBuilder", () => {
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const btcPaymentAmount = await btcFromUsdSell({
+                  const walletPriceRatio = await priceRatioFromBtcFromUsd(btcFromUsdSell)
+                  if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+                  const btcPaymentAmount = walletPriceRatio.convertFromUsd({
                     amount: BigInt(amount),
                     currency: WalletCurrency.Usd,
                   })
@@ -731,7 +742,10 @@ describe("OnChainPaymentFlowBuilder", () => {
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const btcPaymentAmount = await btcFromUsdMid({
+                  const walletPriceRatio = await priceRatioFromBtcFromUsd(btcFromUsdMid)
+                  if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+                  const btcPaymentAmount = walletPriceRatio.convertFromUsd({
                     amount: BigInt(amount),
                     currency: WalletCurrency.Usd,
                   })

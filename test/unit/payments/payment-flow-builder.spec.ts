@@ -7,6 +7,7 @@ import {
   LnFees,
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
+  priceRatioFromUsdFromBtc,
 } from "@domain/payments"
 import { ValidationError, WalletCurrency } from "@domain/shared"
 
@@ -297,7 +298,12 @@ describe("LightningPaymentFlowBuilder", () => {
           if (invoiceWithAmount.paymentAmount === null)
             throw new Error("paymentAmount should not be null")
 
-          const usdPaymentAmount = await usdFromBtcSell(invoiceWithAmount.paymentAmount)
+          const walletPriceRatio = await priceRatioFromUsdFromBtc(usdFromBtcSell)
+          if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+          const usdPaymentAmount = walletPriceRatio.convertFromBtc(
+            invoiceWithAmount.paymentAmount,
+          )
 
           const btcProtocolAndBankFee = LnFees().maxProtocolAndBankFee(
             invoiceWithAmount.paymentAmount,
@@ -305,7 +311,8 @@ describe("LightningPaymentFlowBuilder", () => {
           if (btcProtocolAndBankFee instanceof Error) return btcProtocolAndBankFee
           expect(btcProtocolAndBankFee).not.toBeInstanceOf(Error)
 
-          const usdProtocolAndBankFee = await usdFromBtcSell(btcProtocolAndBankFee)
+          const usdProtocolAndBankFee =
+            walletPriceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
 
           checkSettlementMethod(payment)
           checkInvoice(payment)
@@ -658,7 +665,10 @@ describe("LightningPaymentFlowBuilder", () => {
               .withoutRoute()
             if (payment instanceof Error) throw payment
 
-            const usdPaymentAmount = await usdFromBtcSell(
+            const walletPriceRatio = await priceRatioFromUsdFromBtc(usdFromBtcSell)
+            if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+            const usdPaymentAmount = walletPriceRatio.convertFromBtc(
               invoiceWithAmount.paymentAmount as BtcPaymentAmount,
             )
 
@@ -830,7 +840,10 @@ describe("LightningPaymentFlowBuilder", () => {
               .withoutRoute()
             if (payment instanceof Error) throw payment
 
-            const usdPaymentAmount = await usdFromBtcBuy({
+            const walletPriceRatio = await priceRatioFromUsdFromBtc(usdFromBtcBuy)
+            if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+            const usdPaymentAmount = walletPriceRatio.convertFromBtc({
               amount: uncheckedAmount,
               currency: WalletCurrency.Btc,
             })
@@ -1088,7 +1101,10 @@ describe("LightningPaymentFlowBuilder", () => {
               .withoutRoute()
             if (payment instanceof Error) throw payment
 
-            const usdPaymentAmount = await usdFromBtcBuy({
+            const walletPriceRatio = await priceRatioFromUsdFromBtc(usdFromBtcBuy)
+            if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+            const usdPaymentAmount = await walletPriceRatio.convertFromBtc({
               amount: uncheckedAmount,
               currency: WalletCurrency.Btc,
             })
