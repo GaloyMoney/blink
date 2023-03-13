@@ -12,7 +12,10 @@ const PriceOfOneSat = GT.Object({
     base: { type: GT.NonNull(SafeInt) },
     offset: { type: GT.NonNull(GT.Int) },
     minorUnitToMajorUnitOffset: { type: GT.NonNull(GT.Int) },
-    currencyUnit: { type: GT.NonNull(CurrencyUnit) },
+    currencyUnit: {
+      deprecationReason: "Deprecated in favor of minorUnitToMajorUnitOffset",
+      type: GT.NonNull(CurrencyUnit),
+    },
   }),
 })
 
