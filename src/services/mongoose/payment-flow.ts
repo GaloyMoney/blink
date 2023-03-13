@@ -5,7 +5,11 @@ import {
   BadInputsForFindError,
   UnknownRepositoryError,
 } from "@domain/errors"
-import { InvalidLightningPaymentFlowStateError, PaymentFlow } from "@domain/payments"
+import {
+  InvalidLightningPaymentFlowStateError,
+  PaymentFlow,
+  toWalletPriceRatio,
+} from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { safeBigInt } from "@domain/shared/safe"
 import { elapsedSinceTimestamp } from "@utils"
@@ -221,6 +225,9 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
   })
   if (usdProtocolAndBankFee instanceof Error) return usdProtocolAndBankFee
 
+  const walletPriceRatio = toWalletPriceRatio(Number(paymentFlowState.walletPriceRatio))
+  if (walletPriceRatio instanceof Error) return walletPriceRatio
+
   return PaymentFlow<S, R>({
     ...hash,
 
@@ -234,6 +241,8 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
     skipProbeForDestination: paymentFlowState.skipProbeForDestination,
     createdAt: paymentFlowState.createdAt,
     paymentSentAndPending: paymentFlowState.paymentSentAndPending,
+
+    walletPriceRatio,
 
     btcPaymentAmount,
     usdPaymentAmount,
@@ -283,6 +292,8 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     btcPaymentAmount: Number(paymentFlow.btcPaymentAmount.amount),
     usdPaymentAmount: Number(paymentFlow.usdPaymentAmount.amount),
     inputAmount: Number(paymentFlow.inputAmount),
+
+    walletPriceRatio: `${paymentFlow.walletPriceRatio.usdPerSat()}`,
 
     btcProtocolAndBankFee: Number(paymentFlow.btcProtocolAndBankFee.amount),
     usdProtocolAndBankFee: Number(paymentFlow.usdProtocolAndBankFee.amount),

@@ -3,6 +3,7 @@ import {
   MissingPropsInTransactionForPaymentFlowError,
   NonLnPaymentTransactionForPaymentFlowError,
   PaymentFlow,
+  WalletPriceRatio,
 } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
@@ -70,6 +71,12 @@ export const PaymentFlowFromLedgerTransaction = <
   })
   if (usdProtocolAndBankFee instanceof Error) return usdProtocolAndBankFee
 
+  const walletPriceRatio = WalletPriceRatio({
+    usd: usdPaymentAmount,
+    btc: btcPaymentAmount,
+  })
+  if (walletPriceRatio instanceof Error) return walletPriceRatio
+
   return PaymentFlow({
     senderWalletId,
     senderWalletCurrency,
@@ -82,6 +89,8 @@ export const PaymentFlowFromLedgerTransaction = <
     skipProbeForDestination: false,
     createdAt,
     paymentSentAndPending: true,
+
+    walletPriceRatio,
 
     btcPaymentAmount,
     usdPaymentAmount,

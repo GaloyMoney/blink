@@ -363,6 +363,8 @@ const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
     usdPaymentAmount: { type: Number, required: true },
     inputAmount: { type: Number, required: true },
 
+    walletPriceRatio: { type: String, required: true },
+
     btcProtocolAndBankFee: { type: Number, required: true },
     usdProtocolAndBankFee: { type: Number, required: true },
 

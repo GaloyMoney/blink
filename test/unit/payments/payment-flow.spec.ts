@@ -6,7 +6,7 @@ import {
 } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { inputAmountFromLedgerTransaction } from "@domain/ledger"
-import { OnChainPaymentFlow, PaymentFlow } from "@domain/payments"
+import { OnChainPaymentFlow, PaymentFlow, WalletPriceRatio } from "@domain/payments"
 import { WalletCurrency, safeBigInt, AmountCalculator } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 
@@ -32,6 +32,18 @@ const walletsToTest = [
     inputAmount: usdPaymentAmount.amount,
   },
 ]
+
+const walletPriceRatio = WalletPriceRatio({
+  usd: {
+    amount: 20n,
+    currency: WalletCurrency.Usd,
+  },
+  btc: {
+    amount: 1000n,
+    currency: WalletCurrency.Btc,
+  },
+})
+if (walletPriceRatio instanceof Error) throw walletPriceRatio
 
 const runCheckBalanceTests = <S extends WalletCurrency, R extends WalletCurrency>({
   name,
@@ -150,6 +162,8 @@ describe("LightningPaymentFlowFromLedgerTransaction", <S extends WalletCurrency,
     createdAt: timestamp,
     paymentSentAndPending: true,
 
+    walletPriceRatio,
+
     btcPaymentAmount,
     usdPaymentAmount,
 
@@ -182,6 +196,8 @@ describe("OnChainPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R
     address: "OnChainAddress" as OnChainAddress,
     createdAt: timestamp,
     paymentSentAndPending: true,
+
+    walletPriceRatio,
 
     btcPaymentAmount,
     usdPaymentAmount,

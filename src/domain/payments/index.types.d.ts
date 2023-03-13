@@ -47,6 +47,8 @@ type PaymentFlowCommonState<
   createdAt: Date
   paymentSentAndPending: boolean
 
+  walletPriceRatio: WalletPriceRatio
+
   inputAmount: bigint
 
   recipientWalletId?: WalletId
@@ -176,12 +178,8 @@ type LPFBWithSenderWallet<S extends WalletCurrency> = {
 }
 
 type ConversionFns = {
-  usdFromBtc(
-    amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount | DealerPriceServiceError>
-  btcFromUsd(
-    amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount | DealerPriceServiceError>
+  usdFromBtc: UsdFromBtcMidPriceFn
+  btcFromUsd: BtcFromUsdMidPriceFn
 }
 
 type WithConversionArgs = {
@@ -371,7 +369,7 @@ type LPFBWithConversionState<
   | "btcProtocolAndBankFee"
   | "usdProtocolAndBankFee"
   | "usdPaymentAmount"
-> & { createdAt: Date }
+> & { createdAt: Date; walletPriceRatio: WalletPriceRatio }
 
 type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {
   paymentInitiationMethod: PaymentInitiationMethod
@@ -412,6 +410,7 @@ type OPFBWithConversionState<
   R extends WalletCurrency,
 > = RequireField<OPFBWithAmountState<S, R>, "btcProposedAmount" | "usdProposedAmount"> & {
   createdAt: Date
+  walletPriceRatio: WalletPriceRatio
 }
 
 type LPFBWithRouteState<

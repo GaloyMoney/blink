@@ -212,3 +212,31 @@ export const toDisplayPriceRatio = <S extends WalletCurrency, T extends DisplayC
     displayMajorExponent,
   })
 }
+
+export const priceRatioFromUsdFromBtc = async (usdFromBtc: UsdFromBtcMidPriceFn) => {
+  const btcForPriceRatio = {
+    amount: BigInt(RATIO_PRECISION),
+    currency: WalletCurrency.Btc,
+  }
+  const usdForPriceRatio = await usdFromBtc(btcForPriceRatio)
+  if (usdForPriceRatio instanceof Error) return usdForPriceRatio
+
+  return WalletPriceRatio({
+    usd: usdForPriceRatio,
+    btc: btcForPriceRatio,
+  })
+}
+
+export const priceRatioFromBtcFromUsd = async (btcFromUsd: BtcFromUsdMidPriceFn) => {
+  const usdForPriceRatio = {
+    amount: BigInt(RATIO_PRECISION),
+    currency: WalletCurrency.Usd,
+  }
+  const btcForPriceRatio = await btcFromUsd(usdForPriceRatio)
+  if (btcForPriceRatio instanceof Error) return btcForPriceRatio
+
+  return WalletPriceRatio({
+    usd: usdForPriceRatio,
+    btc: btcForPriceRatio,
+  })
+}
