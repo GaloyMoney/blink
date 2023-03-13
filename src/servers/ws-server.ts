@@ -23,7 +23,7 @@ import { sessionContext } from "./graphql-server"
 
 const schema = gqlMainSchema
 
-const port = 4000
+const port = process.env.WEBSOCKET_PORT ? parseInt(process.env.WEBSOCKET_PORT) : 4000
 const path = "/graphql"
 
 const wsServer = new WebSocketServer({
