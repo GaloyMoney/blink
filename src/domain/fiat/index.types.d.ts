@@ -7,6 +7,12 @@ type DisplayCurrency =
 type CurrencyMajorExponent =
   typeof import("./index").MajorExponent[keyof typeof import("./index").MajorExponent]
 
+type DisplayTxnAmounts = {
+  displayAmount: DisplayCurrencyBaseAmount
+  displayFee: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
+}
+
 // TODO: a better way to type it can be:
 // <T extends Satoshis | UsdCents> someFunction({amount}: {amount: T})
 type CurrencyBaseAmount = Satoshis | UsdCents

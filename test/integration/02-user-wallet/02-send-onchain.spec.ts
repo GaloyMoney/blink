@@ -409,10 +409,14 @@ const testExternalSend = async ({
         satsFee,
         centsAmount,
         centsFee,
-        displayAmount,
-        displayFee,
+        displayAmount:
+          senderAccount.displayCurrency === DisplayCurrency.Usd
+            ? centsAmount
+            : displayAmount,
+        displayFee:
+          senderAccount.displayCurrency === DisplayCurrency.Usd ? centsFee : displayFee,
 
-        displayCurrency: DisplayCurrency.Usd,
+        displayCurrency: senderAccount.displayCurrency,
       }),
     )
 
@@ -720,8 +724,10 @@ const testInternalSend = async ({
     satsFee,
     centsAmount,
     centsFee,
-    displayAmount,
-    displayFee,
+    displayAmount:
+      senderAccount.displayCurrency === DisplayCurrency.Usd ? centsAmount : displayAmount,
+    displayFee:
+      senderAccount.displayCurrency === DisplayCurrency.Usd ? centsFee : displayFee,
 
     displayCurrency: DisplayCurrency.Usd,
   }

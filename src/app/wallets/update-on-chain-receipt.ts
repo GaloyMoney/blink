@@ -179,7 +179,11 @@ const processTxForWallet = async (
 
           const displayCurrency = DisplayCurrency.Usd
 
-          const metadata = LedgerFacade.OnChainReceiveLedgerMetadata({
+          const {
+            metadata,
+            creditAccountAdditionalMetadata,
+            internalAccountsAdditionalMetadata,
+          } = LedgerFacade.OnChainReceiveLedgerMetadata({
             onChainTxHash: tx.rawTx.txHash,
             paymentAmounts: {
               btcPaymentAmount: walletAddressReceiver.btcToCreditReceiver,
@@ -206,6 +210,8 @@ const processTxForWallet = async (
               btc: walletAddressReceiver.btcBankFee,
             },
             metadata,
+            additionalCreditMetadata: creditAccountAdditionalMetadata,
+            additionalInternalMetadata: internalAccountsAdditionalMetadata,
           })
 
           if (result instanceof Error) {

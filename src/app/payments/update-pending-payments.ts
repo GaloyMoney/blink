@@ -5,8 +5,8 @@ import {
   CouldNotFindTransactionError,
   inputAmountFromLedgerTransaction,
   LedgerTransactionType,
+  MissingExpectedDisplayAmountsForTransactionError,
   MultiplePendingPaymentsForHashError,
-  UnknownLedgerError,
 } from "@domain/ledger"
 import { MissingPropsInTransactionForPaymentFlowError } from "@domain/payments"
 import { setErrorCritical, WalletCurrency } from "@domain/shared"
@@ -206,7 +206,8 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         }
 
         const reimbursed = await Wallets.reimburseFailedUsdPayment({
-          journalId: pendingPayment.journalId,
+          walletId,
+          pendingPayment,
           paymentFlow,
         })
         if (reimbursed instanceof Error) {
@@ -236,7 +237,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         displayFee === undefined ||
         displayCurrency === undefined
       ) {
-        return new UnknownLedgerError("missing display-related values in transaction")
+        return new MissingExpectedDisplayAmountsForTransactionError()
       }
 
       return Wallets.reimburseFee({

@@ -2,7 +2,7 @@ import { getPubkeysToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import { usdMinorToMajorUnit } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
@@ -254,13 +254,23 @@ const executePaymentViaIntraledger = async <
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
-    const { displayCurrency } = senderAccount
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: displayCurrency,
+    const { displayCurrency: senderDisplayCurrency } = senderAccount
+    const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: senderDisplayCurrency,
     })
-    if (displayPriceRatio instanceof Error) return displayPriceRatio
-    const amountDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
+    const senderAmountDisplayCurrencyAsNumber = Number(
+      senderDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+
+    const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
+    const recipientAmountDisplayCurrencyAsNumber = Number(
+      recipientDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
     if (signal.aborted) {
@@ -270,30 +280,51 @@ const executePaymentViaIntraledger = async <
     let metadata:
       | AddWalletIdIntraledgerSendLedgerMetadata
       | AddWalletIdTradeIntraAccountLedgerMetadata
-    let additionalDebitMetadata: { [key: string]: Username | undefined } = {}
+    let additionalDebitMetadata: {
+      [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    } = {}
+    let additionalCreditMetadata: {
+      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    }
+    let additionalInternalMetadata: {
+      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
-      metadata = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
+      ;({
+        metadata,
+        debitAccountAdditionalMetadata: additionalDebitMetadata,
+        creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
+      } = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
         paymentAmounts: paymentFlow,
 
-        amountDisplayCurrency: amountDisplayCurrencyAsNumber,
-        feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        displayCurrency,
+        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
+        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderDisplayCurrency: senderDisplayCurrency,
 
         memoOfPayer: memo || undefined,
-      })
+      }))
     } else {
-      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-        LedgerFacade.WalletIdIntraledgerLedgerMetadata({
-          paymentAmounts: paymentFlow,
+      ;({
+        metadata,
+        debitAccountAdditionalMetadata: additionalDebitMetadata,
+        creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
+      } = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
+        paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
-          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency,
+        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
+        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderDisplayCurrency: senderDisplayCurrency,
 
-          memoOfPayer: memo || undefined,
-          senderUsername: senderAccount.username,
-          recipientUsername,
-        }))
+        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
+        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        recipientDisplayCurrency: recipientAccount.displayCurrency,
+
+        memoOfPayer: memo || undefined,
+        senderUsername: senderAccount.username,
+        recipientUsername,
+      }))
     }
 
     const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
@@ -310,7 +341,8 @@ const executePaymentViaIntraledger = async <
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
-      additionalCreditMetadata: {},
+      additionalCreditMetadata,
+      additionalInternalMetadata,
     })
     if (journal instanceof Error) return journal
 
@@ -332,8 +364,8 @@ const executePaymentViaIntraledger = async <
       recipientLanguage: recipientUser.language,
       paymentAmount: { amount, currency: recipientWallet.currency },
       displayPaymentAmount: {
-        amount: usdMinorToMajorUnit(totalSendAmounts.usd.amount),
-        currency: DisplayCurrency.Usd,
+        amount: usdMinorToMajorUnit(recipientAmountDisplayCurrencyAsNumber),
+        currency: recipientAccount.displayCurrency,
       },
     })
 

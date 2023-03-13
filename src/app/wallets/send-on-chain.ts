@@ -27,8 +27,7 @@ import {
   TxDecoder,
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { DisplayCurrency } from "@domain/fiat"
-import { usdMinorToMajorUnit } from "@domain/fiat/display-currency"
+import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
@@ -244,6 +243,9 @@ const executePaymentViaIntraledger = async <
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
+  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
   // Limit check
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
@@ -283,46 +285,82 @@ const executePaymentViaIntraledger = async <
     })
     if (priceRatio instanceof Error) return priceRatio
 
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    const senderDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
       currency: senderDisplayCurrency,
     })
-    if (displayPriceRatio instanceof Error) return displayPriceRatio
-    const amountDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
+    if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
+    const senderAmountDisplayCurrencyAsNumber = Number(
+      senderDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+
+    const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
+    const recipientAmountDisplayCurrencyAsNumber = Number(
+      recipientDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
+        .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
     let metadata:
       | AddOnChainIntraledgerSendLedgerMetadata
       | AddOnChainTradeIntraAccountLedgerMetadata
-    let additionalDebitMetadata: { [key: string]: string | undefined } = {}
+    let additionalDebitMetadata: {
+      [key: string]:
+        | Username
+        | DisplayCurrencyBaseAmount
+        | DisplayCurrency
+        | string
+        | undefined
+    } = {}
+    let additionalCreditMetadata: {
+      [key: string]: Username | DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    } = {}
+    let additionalInternalMetadata: {
+      [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
+    } = {}
+
     if (senderWallet.accountId === recipientWallet.accountId) {
-      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-        LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
-          payeeAddresses,
-          sendAll,
-          paymentAmounts: paymentFlow,
+      ;({
+        metadata,
+        debitAccountAdditionalMetadata: additionalDebitMetadata,
+        creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
+      } = LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
+        payeeAddresses,
+        sendAll,
+        paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
-          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
+        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderDisplayCurrency: senderDisplayCurrency,
 
-          memoOfPayer: memo || undefined,
-        }))
+        memoOfPayer: memo || undefined,
+      }))
     } else {
-      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-        LedgerFacade.OnChainIntraledgerLedgerMetadata({
-          payeeAddresses,
-          sendAll,
-          paymentAmounts: paymentFlow,
+      ;({
+        metadata,
+        debitAccountAdditionalMetadata: additionalDebitMetadata,
+        creditAccountAdditionalMetadata: additionalCreditMetadata,
+        internalAccountsAdditionalMetadata: additionalInternalMetadata,
+      } = LedgerFacade.OnChainIntraledgerLedgerMetadata({
+        payeeAddresses,
+        sendAll,
+        paymentAmounts: paymentFlow,
 
-          amountDisplayCurrency: amountDisplayCurrencyAsNumber,
-          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
+        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderDisplayCurrency: senderDisplayCurrency,
 
-          memoOfPayer: memo || undefined,
-          senderUsername,
-          recipientUsername,
-        }))
+        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
+        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        recipientDisplayCurrency: recipientAccount.displayCurrency,
+
+        memoOfPayer: memo || undefined,
+        senderUsername,
+        recipientUsername,
+      }))
     }
 
     // Record transaction
@@ -336,7 +374,8 @@ const executePaymentViaIntraledger = async <
       recipientWalletDescriptor,
       metadata,
       additionalDebitMetadata,
-      additionalCreditMetadata: {},
+      additionalCreditMetadata,
+      additionalInternalMetadata,
     })
     if (journal instanceof Error) return journal
 
@@ -355,8 +394,8 @@ const executePaymentViaIntraledger = async <
       recipientWalletId: recipientWallet.id,
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
-        amount: usdMinorToMajorUnit(paymentFlow.usdPaymentAmount.amount),
-        currency: DisplayCurrency.Usd,
+        amount: usdMinorToMajorUnit(recipientAmountDisplayCurrencyAsNumber),
+        currency: recipientAccount.displayCurrency,
       },
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
@@ -469,11 +508,15 @@ const executePaymentViaOnChain = async <
       displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
     ) as DisplayCurrencyBaseAmount
     const feeDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWallet(paymentFlow.btcProtocolAndBankFee)
+      displayPriceRatio.convertFromWalletToCeil(paymentFlow.btcProtocolAndBankFee)
         .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
-    const metadata = LedgerFacade.OnChainSendLedgerMetadata({
+    const {
+      metadata,
+      debitAccountAdditionalMetadata,
+      internalAccountsAdditionalMetadata,
+    } = LedgerFacade.OnChainSendLedgerMetadata({
       // we need a temporary hash to be able to search in admin panel
       onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
       paymentAmounts: paymentFlow,
@@ -507,6 +550,8 @@ const executePaymentViaOnChain = async <
       bankFee,
       senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
       metadata,
+      additionalDebitMetadata: debitAccountAdditionalMetadata,
+      additionalInternalMetadata: internalAccountsAdditionalMetadata,
     })
     if (journal instanceof Error) return journal
 

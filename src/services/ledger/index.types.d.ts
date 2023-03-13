@@ -9,6 +9,8 @@ type RecordSendArgs = {
     btc: BtcPaymentAmount
   }
   metadata: SendLedgerMetadata
+  additionalDebitMetadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
   bankFee?: {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount
@@ -23,6 +25,8 @@ type RecordReceiveArgs = {
     btc: BtcPaymentAmount
   }
   metadata: ReceiveLedgerMetadata
+  additionalCreditMetadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
   txMetadata?: LnLedgerTransactionMetadataUpdate
   bankFee?: {
     usd: UsdPaymentAmount
@@ -41,6 +45,7 @@ type RecordIntraledgerArgs = {
   metadata: IntraledgerLedgerMetadata
   additionalDebitMetadata: TxMetadata
   additionalCreditMetadata: TxMetadata
+  additionalInternalMetadata: TxMetadata
 }
 
 type LedgerMetadata = {
@@ -69,10 +74,13 @@ type SendAmountsMetadata = {
   centsAmount: UsdCents
   satsFee: Satoshis
   centsFee: UsdCents
+}
 
-  displayAmount: DisplayCurrencyBaseAmount
-  displayFee: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
+type IntraLedgerSendAmountsMetadata = {
+  satsAmount: Satoshis
+  centsAmount: UsdCents
+  satsFee: Satoshis
+  centsFee: UsdCents
 }
 
 type AddLnSendLedgerMetadata = LedgerMetadata &
@@ -113,7 +121,7 @@ type IntraledgerSendBaseMetadata = LedgerMetadata &
   }
 
 type AddLnIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
-  SendAmountsMetadata & {
+  IntraLedgerSendAmountsMetadata & {
     hash: PaymentHash
     pubkey: Pubkey
   }
@@ -124,7 +132,7 @@ type AddLnTradeIntraAccountLedgerMetadata = Omit<
 >
 
 type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
-  SendAmountsMetadata & {
+  IntraLedgerSendAmountsMetadata & {
     payee_addresses: OnChainAddress[]
     sendAll: boolean
   }
@@ -135,7 +143,7 @@ type AddOnChainTradeIntraAccountLedgerMetadata = Omit<
 >
 
 type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerSendBaseMetadata &
-  SendAmountsMetadata
+  IntraLedgerSendAmountsMetadata
 
 type AddWalletIdTradeIntraAccountLedgerMetadata = Omit<
   AddWalletIdIntraledgerSendLedgerMetadata,
@@ -183,6 +191,12 @@ type IntraledgerLedgerMetadata =
   | AddWalletIdIntraledgerSendLedgerMetadata
 
 type SendLedgerMetadata = AddOnchainSendLedgerMetadata | AddLnSendLedgerMetadata
+
+type DisplayTxnAmountsArg = {
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
+}
 
 type PaginatedArray<T> = { slice: T[]; total: number }
 

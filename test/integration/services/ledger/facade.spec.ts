@@ -9,6 +9,8 @@ import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 
 import {
+  recordLnFailedPayment,
+  recordLnFeeReimbursement,
   recordLnIntraLedgerPayment,
   recordLnTradeIntraAccountTxn,
   recordOnChainIntraLedgerPayment,
@@ -35,54 +37,125 @@ describe("Facade", () => {
     btc: { amount: 20n, currency: WalletCurrency.Btc },
   }
 
-  const testMetadata = async ({
+  const displayReceiveUsdAmounts = {
+    amountDisplayCurrency: Number(receiveAmount.usd.amount) as DisplayCurrencyBaseAmount,
+    feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
+    displayCurrency: DisplayCurrency.Usd,
+  }
+
+  const displayReceiveEurAmounts = {
+    amountDisplayCurrency: 120 as DisplayCurrencyBaseAmount,
+    feeDisplayCurrency: 12 as DisplayCurrencyBaseAmount,
+    displayCurrency: "EUR" as DisplayCurrency,
+  }
+
+  const displaySendUsdAmounts = {
+    amountDisplayCurrency: Number(sendAmount.usd.amount) as DisplayCurrencyBaseAmount,
+    feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
+    displayCurrency: DisplayCurrency.Usd,
+  }
+
+  const displaySendEurAmounts = {
+    amountDisplayCurrency: 24 as DisplayCurrencyBaseAmount,
+    feeDisplayCurrency: 12 as DisplayCurrencyBaseAmount,
+    displayCurrency: "EUR" as DisplayCurrency,
+  }
+
+  const testMetadata = async <S extends WalletCurrency, R extends WalletCurrency>({
     senderWalletDescriptor,
+    recipientWalletDescriptor,
     metadata,
-    isSend,
+    isSend: isSendForAmount,
     isIntraLedger = false,
+    senderDisplayAmounts,
+    recipientDisplayAmounts,
+  }: {
+    senderWalletDescriptor: WalletDescriptor<S>
+    recipientWalletDescriptor?: WalletDescriptor<R>
+    metadata
+    isSend: boolean
+    isIntraLedger?: boolean
+    senderDisplayAmounts?: DisplayTxnAmountsArg
+    recipientDisplayAmounts?: DisplayTxnAmountsArg
   }) => {
-    const txns = await LedgerService().getTransactionsByWalletId(
-      senderWalletDescriptor.id,
-    )
-    if (txns instanceof Error) throw txns
-    if (!(txns && txns.length)) throw new Error()
-    const txn = txns[0]
+    const testCases = [
+      {
+        walletDescriptor: senderWalletDescriptor,
+        displayAmounts: senderDisplayAmounts,
+        isSend: isSendForAmount,
+      },
+      {
+        walletDescriptor: recipientWalletDescriptor,
+        displayAmounts: recipientDisplayAmounts,
+        isSend: !isSendForAmount,
+      },
+    ]
 
-    const satsAmount = toSats(isSend ? sendAmount.btc.amount : receiveAmount.btc.amount)
-    const centsAmount = toCents(isSend ? sendAmount.usd.amount : receiveAmount.usd.amount)
+    for (const {
+      walletDescriptor,
+      displayAmounts: displayAmountsRaw,
+      isSend,
+    } of testCases) {
+      if (walletDescriptor === undefined || displayAmountsRaw === undefined) {
+        continue
+      }
 
-    const satsFee = !isIntraLedger ? toSats(bankFee.btc.amount) : 0
-    const centsFee = !isIntraLedger ? toSats(bankFee.usd.amount) : 0
+      const txns = await LedgerService().getTransactionsByWalletId(walletDescriptor.id)
+      if (txns instanceof Error) throw txns
+      if (!(txns && txns.length)) throw new Error()
+      const txn = txns[0]
 
-    const debit = isSend
-      ? senderWalletDescriptor.currency === WalletCurrency.Btc
-        ? satsAmount
-        : centsAmount
-      : 0
+      const satsAmount = toSats(
+        isSendForAmount ? sendAmount.btc.amount : receiveAmount.btc.amount,
+      )
+      const centsAmount = toCents(
+        isSendForAmount ? sendAmount.usd.amount : receiveAmount.usd.amount,
+      )
 
-    const credit = !isSend
-      ? senderWalletDescriptor.currency === WalletCurrency.Btc
-        ? satsAmount
-        : centsAmount
-      : 0
+      const satsFee = !isIntraLedger ? toSats(bankFee.btc.amount) : 0
+      const centsFee = !isIntraLedger ? toSats(bankFee.usd.amount) : 0
 
-    const expectedFields = {
-      type: metadata,
+      const debit = isSend
+        ? walletDescriptor.currency === WalletCurrency.Btc
+          ? satsAmount
+          : centsAmount
+        : 0
 
-      debit,
-      credit,
+      const credit = !isSend
+        ? walletDescriptor.currency === WalletCurrency.Btc
+          ? satsAmount
+          : centsAmount
+        : 0
 
-      satsAmount,
-      centsAmount,
-      displayAmount: centsAmount,
+      const usdDisplayAmounts = {
+        displayAmount: centsAmount,
+        displayFee: centsFee,
+        displayCurrency: DisplayCurrency.Usd,
+      }
 
-      satsFee,
-      centsFee,
-      displayFee: centsFee,
+      const displayAmounts = displayAmountsRaw
+        ? {
+            displayAmount: displayAmountsRaw.amountDisplayCurrency,
+            displayFee: displayAmountsRaw.feeDisplayCurrency,
+            displayCurrency: displayAmountsRaw.displayCurrency,
+          }
+        : usdDisplayAmounts
 
-      displayCurrency: DisplayCurrency.Usd,
+      const expectedFields = {
+        type: metadata,
+
+        debit,
+        credit,
+
+        satsAmount,
+        satsFee,
+        centsAmount,
+        centsFee,
+
+        ...displayAmounts,
+      }
+      expect(txn).toEqual(expect.objectContaining(expectedFields))
     }
-    expect(txn).toEqual(expect.objectContaining(expectedFields))
   }
 
   describe("recordReceive", () => {
@@ -97,61 +170,85 @@ describe("Facade", () => {
         recordFn: recordReceiveOnChainPayment,
         metadata: LedgerTransactionType.OnchainReceipt,
       },
+      {
+        name: "recordLnFailedPayment",
+        recordFn: recordLnFailedPayment,
+        metadata: LedgerTransactionType.Payment,
+      },
+      {
+        name: "recordLnFeeReimbursement",
+        recordFn: recordLnFeeReimbursement,
+        metadata: LedgerTransactionType.LnFeeReimbursement,
+      },
     ]
 
     recordReceiveToTest.forEach(({ name, recordFn, metadata }) => {
       describe(`${name}`, () => {
-        it("receives to btc wallet", async () => {
-          const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
-          await recordFn({
-            walletDescriptor: btcWalletDescriptor,
-            paymentAmount: receiveAmount,
-            bankFee,
+        const displayAmountsCases = [displayReceiveEurAmounts, displayReceiveUsdAmounts]
+        for (const displayAmounts of displayAmountsCases) {
+          describe(`wallet has ${displayAmounts.displayCurrency.toLowerCase()} display`, () => {
+            it("receives to btc wallet", async () => {
+              const btcWalletDescriptor = BtcWalletDescriptor(
+                crypto.randomUUID() as WalletId,
+              )
+
+              await recordFn({
+                walletDescriptor: btcWalletDescriptor,
+                paymentAmount: receiveAmount,
+                bankFee,
+                displayAmounts,
+              })
+
+              const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+                btcWalletDescriptor,
+              )
+              if (balance instanceof Error) throw balance
+              expect(balance).toEqual(
+                expect.objectContaining({
+                  amount: receiveAmount.btc.amount,
+                  currency: WalletCurrency.Btc,
+                }),
+              )
+
+              await testMetadata({
+                senderWalletDescriptor: btcWalletDescriptor,
+                metadata,
+                isSend: false,
+                senderDisplayAmounts: displayAmounts,
+              })
+            })
+
+            it("receives to usd wallet", async () => {
+              const usdWalletDescriptor = UsdWalletDescriptor(
+                crypto.randomUUID() as WalletId,
+              )
+              await recordFn({
+                walletDescriptor: usdWalletDescriptor,
+                paymentAmount: receiveAmount,
+                bankFee,
+                displayAmounts,
+              })
+
+              const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+                usdWalletDescriptor,
+              )
+              if (balance instanceof Error) throw balance
+              expect(balance).toEqual(
+                expect.objectContaining({
+                  amount: receiveAmount.usd.amount,
+                  currency: WalletCurrency.Usd,
+                }),
+              )
+
+              await testMetadata({
+                senderWalletDescriptor: usdWalletDescriptor,
+                metadata,
+                isSend: false,
+                senderDisplayAmounts: displayAmounts,
+              })
+            })
           })
-
-          const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-            btcWalletDescriptor,
-          )
-          if (balance instanceof Error) throw balance
-          expect(balance).toEqual(
-            expect.objectContaining({
-              amount: receiveAmount.btc.amount,
-              currency: WalletCurrency.Btc,
-            }),
-          )
-
-          await testMetadata({
-            senderWalletDescriptor: btcWalletDescriptor,
-            metadata,
-            isSend: false,
-          })
-        })
-
-        it("receives to usd wallet", async () => {
-          const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-          await recordFn({
-            walletDescriptor: usdWalletDescriptor,
-            paymentAmount: receiveAmount,
-            bankFee,
-          })
-
-          const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-            usdWalletDescriptor,
-          )
-          if (balance instanceof Error) throw balance
-          expect(balance).toEqual(
-            expect.objectContaining({
-              amount: receiveAmount.usd.amount,
-              currency: WalletCurrency.Usd,
-            }),
-          )
-
-          await testMetadata({
-            senderWalletDescriptor: usdWalletDescriptor,
-            metadata,
-            isSend: false,
-          })
-        })
+        }
       })
     })
   })
@@ -172,70 +269,116 @@ describe("Facade", () => {
 
     recordSendToTest.forEach(({ name, recordFn, metadata }) => {
       describe(`${name}`, () => {
-        it("sends from btc wallet", async () => {
-          const btcWalletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
+        const displayAmountsCases = [displaySendEurAmounts, displaySendUsdAmounts]
+        for (const displayAmounts of displayAmountsCases) {
+          describe(`wallet has ${displayAmounts.displayCurrency.toLowerCase()} display`, () => {
+            it("sends from btc wallet", async () => {
+              const btcWalletDescriptor = BtcWalletDescriptor(
+                crypto.randomUUID() as WalletId,
+              )
 
-          const startingBalance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-            btcWalletDescriptor,
-          )
-          if (startingBalance instanceof Error) throw startingBalance
+              const startingBalance =
+                await LedgerFacade.getLedgerAccountBalanceForWalletId(btcWalletDescriptor)
+              if (startingBalance instanceof Error) throw startingBalance
 
-          await recordFn({
-            walletDescriptor: btcWalletDescriptor,
-            paymentAmount: sendAmount,
-            bankFee,
+              await recordFn({
+                walletDescriptor: btcWalletDescriptor,
+                paymentAmount: sendAmount,
+                bankFee,
+                displayAmounts,
+              })
+
+              const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+                btcWalletDescriptor,
+              )
+              if (balance instanceof Error) throw balance
+              expect(balance).toEqual(
+                expect.objectContaining({
+                  amount: startingBalance.amount - sendAmount.btc.amount,
+                  currency: WalletCurrency.Btc,
+                }),
+              )
+
+              await testMetadata({
+                senderWalletDescriptor: btcWalletDescriptor,
+                metadata,
+                isSend: true,
+                senderDisplayAmounts: displayAmounts,
+              })
+            })
+
+            it("sends from usd wallet", async () => {
+              const usdWalletDescriptor = UsdWalletDescriptor(
+                crypto.randomUUID() as WalletId,
+              )
+
+              const startingBalance =
+                await LedgerFacade.getLedgerAccountBalanceForWalletId(usdWalletDescriptor)
+              if (startingBalance instanceof Error) throw startingBalance
+
+              await recordFn({
+                walletDescriptor: usdWalletDescriptor,
+                paymentAmount: sendAmount,
+                bankFee,
+                displayAmounts,
+              })
+
+              const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
+                usdWalletDescriptor,
+              )
+              if (balance instanceof Error) throw balance
+              expect(balance).toEqual(
+                expect.objectContaining({
+                  amount: startingBalance.amount - sendAmount.usd.amount,
+                  currency: WalletCurrency.Usd,
+                }),
+              )
+
+              await testMetadata({
+                senderWalletDescriptor: usdWalletDescriptor,
+                metadata,
+                isSend: true,
+                senderDisplayAmounts: displayAmounts,
+              })
+            })
           })
-
-          const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-            btcWalletDescriptor,
-          )
-          if (balance instanceof Error) throw balance
-          expect(balance).toEqual(
-            expect.objectContaining({
-              amount: startingBalance.amount - sendAmount.btc.amount,
-              currency: WalletCurrency.Btc,
-            }),
-          )
-
-          await testMetadata({
-            senderWalletDescriptor: btcWalletDescriptor,
-            metadata,
-            isSend: true,
-          })
-        })
-
-        it("sends from usd wallet", async () => {
-          const usdWalletDescriptor = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
-
-          const startingBalance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-            usdWalletDescriptor,
-          )
-          if (startingBalance instanceof Error) throw startingBalance
-
-          await recordFn({
-            walletDescriptor: usdWalletDescriptor,
-            paymentAmount: sendAmount,
-            bankFee,
-          })
-
-          const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(
-            usdWalletDescriptor,
-          )
-          if (balance instanceof Error) throw balance
-          expect(balance).toEqual(
-            expect.objectContaining({
-              amount: startingBalance.amount - sendAmount.usd.amount,
-              currency: WalletCurrency.Usd,
-            }),
-          )
-        })
+        }
       })
     })
   })
 
   describe("recordIntraledger", () => {
-    const itRecordIntraLedger = ({ recordFn, metadata, send, receive }) => {
-      it(`sends from ${send.toLowerCase()} wallet to ${receive.toLowerCase()} wallet`, async () => {
+    const itRecordIntraLedger = ({
+      recordFn,
+      metadata,
+      send,
+      receive,
+      displaySendAmounts: displaySendAmountsRaw,
+      displayReceiveAmounts: displayReceiveAmountsRaw,
+    }: {
+      recordFn: RecordInternalTxTestFn
+      metadata
+      send: WalletCurrency
+      receive: WalletCurrency
+      displaySendAmounts: DisplayTxnAmountsArg
+      displayReceiveAmounts: DisplayTxnAmountsArg
+    }) => {
+      // For expects, since Intraledger transactions metadata removes fee automatically
+      const displaySendAmounts: DisplayTxnAmountsArg = {
+        ...displaySendAmountsRaw,
+        feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+      }
+
+      const displayReceiveAmounts: DisplayTxnAmountsArg = {
+        ...displayReceiveAmountsRaw,
+        feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+      }
+
+      const title =
+        `from ${displaySendAmounts.displayCurrency.toLowerCase()} display ` +
+        `to ${displayReceiveAmounts.displayCurrency.toLowerCase()} display`
+
+      it(`${title}`, async () => {
         const btcSendWalletDescriptor = BtcWalletDescriptor(
           crypto.randomUUID() as WalletId,
         )
@@ -253,6 +396,18 @@ describe("Facade", () => {
         const senderWalletDescriptor =
           send === WalletCurrency.Btc ? btcSendWalletDescriptor : usdSendWalletDescriptor
 
+        const senderDisplayAmounts = {
+          senderAmountDisplayCurrency: displaySendAmounts.amountDisplayCurrency,
+          senderFeeDisplayCurrency: displaySendAmounts.feeDisplayCurrency,
+          senderDisplayCurrency: displaySendAmounts.displayCurrency,
+        }
+
+        const recipientDisplayAmounts = {
+          recipientAmountDisplayCurrency: displayReceiveAmounts.amountDisplayCurrency,
+          recipientFeeDisplayCurrency: displayReceiveAmounts.feeDisplayCurrency,
+          recipientDisplayCurrency: displayReceiveAmounts.displayCurrency,
+        }
+
         const recipientWalletDescriptor =
           receive === WalletCurrency.Btc
             ? btcReceiveWalletDescriptor
@@ -266,6 +421,8 @@ describe("Facade", () => {
           senderWalletDescriptor,
           recipientWalletDescriptor,
           paymentAmount: sendAmount,
+          senderDisplayAmounts,
+          recipientDisplayAmounts,
         })
 
         const finishBalanceSender = await LedgerFacade.getLedgerAccountBalanceForWalletId(
@@ -298,41 +455,106 @@ describe("Facade", () => {
 
         await testMetadata({
           senderWalletDescriptor,
+          recipientWalletDescriptor,
           metadata,
           isSend: true,
           isIntraLedger: true,
+          senderDisplayAmounts: displaySendAmounts,
+          recipientDisplayAmounts: displayReceiveAmounts,
         })
       })
     }
 
-    const runRecordIntraLedger = ({ recordFn, metadata }) => {
-      const sendReceivePairs = [
+    const runRecordIntraLedger = ({
+      recordFn,
+      metadata,
+    }: {
+      recordFn: RecordInternalTxTestFn
+      metadata
+    }) => {
+      const sendReceiveWalletPairs = [
         { send: WalletCurrency.Btc, receive: WalletCurrency.Btc },
         { send: WalletCurrency.Btc, receive: WalletCurrency.Usd },
         { send: WalletCurrency.Usd, receive: WalletCurrency.Btc },
         { send: WalletCurrency.Usd, receive: WalletCurrency.Usd },
       ]
 
-      for (const sendReceivePair of sendReceivePairs) {
-        itRecordIntraLedger({
-          recordFn,
-          metadata,
-          ...sendReceivePair,
+      const sendReceiveDisplayPairs = [
+        {
+          displaySendAmounts: displaySendEurAmounts,
+          displayReceiveAmounts: displaySendEurAmounts,
+        },
+        {
+          displaySendAmounts: displaySendEurAmounts,
+          displayReceiveAmounts: displaySendUsdAmounts,
+        },
+        {
+          displaySendAmounts: displaySendUsdAmounts,
+          displayReceiveAmounts: displaySendEurAmounts,
+        },
+        {
+          displaySendAmounts: displaySendUsdAmounts,
+          displayReceiveAmounts: displaySendUsdAmounts,
+        },
+      ]
+
+      for (const { send, receive } of sendReceiveWalletPairs) {
+        describe(`sends from ${send.toLowerCase()} wallet to ${receive.toLowerCase()} wallet`, () => {
+          for (const {
+            displaySendAmounts,
+            displayReceiveAmounts,
+          } of sendReceiveDisplayPairs) {
+            itRecordIntraLedger({
+              recordFn,
+              metadata,
+              send,
+              receive,
+              displaySendAmounts,
+              displayReceiveAmounts,
+            })
+          }
         })
       }
     }
 
-    const runRecordTradeIntraAccount = ({ recordFn, metadata }) => {
-      const sendReceivePairs = [
+    const runRecordTradeIntraAccount = ({
+      recordFn,
+      metadata,
+    }: {
+      recordFn: RecordInternalTxTestFn
+      metadata
+    }) => {
+      const sendReceiveWalletPairs = [
         { send: WalletCurrency.Btc, receive: WalletCurrency.Usd },
         { send: WalletCurrency.Usd, receive: WalletCurrency.Btc },
       ]
 
-      for (const sendReceivePair of sendReceivePairs) {
-        itRecordIntraLedger({
-          recordFn,
-          metadata,
-          ...sendReceivePair,
+      const sendReceiveDisplayPairs = [
+        {
+          displaySendAmounts: displaySendEurAmounts,
+          displayReceiveAmounts: displaySendEurAmounts,
+        },
+        {
+          displaySendAmounts: displaySendUsdAmounts,
+          displayReceiveAmounts: displaySendUsdAmounts,
+        },
+      ]
+
+      for (const { send, receive } of sendReceiveWalletPairs) {
+        describe(`sends from ${send.toLowerCase()} wallet to ${receive.toLowerCase()} wallet`, () => {
+          for (const {
+            displaySendAmounts,
+            displayReceiveAmounts,
+          } of sendReceiveDisplayPairs) {
+            itRecordIntraLedger({
+              recordFn,
+              metadata,
+              send,
+              receive,
+              displaySendAmounts,
+              displayReceiveAmounts,
+            })
+          }
         })
       }
     }
