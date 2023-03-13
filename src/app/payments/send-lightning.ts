@@ -50,7 +50,6 @@ import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import {
   constructPaymentFlowBuilder,
-  getPriceRatioForLimits,
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
@@ -346,9 +345,6 @@ const executePaymentViaIntraledger = async <
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
 
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
-  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
-
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
 
@@ -376,7 +372,7 @@ const executePaymentViaIntraledger = async <
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
     accountId: senderWallet.accountId,
-    priceRatio: priceRatioForLimits,
+    priceRatio: paymentFlow.walletPriceRatio,
   })
   if (limitCheck instanceof Error) return limitCheck
 
@@ -508,13 +504,10 @@ const executePaymentViaLn = async ({
     "payment.settlement_method": SettlementMethod.Lightning,
   })
 
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
-  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
-
   const limitCheck = await checkWithdrawalLimits({
     amount: paymentFlow.usdPaymentAmount,
     accountId: senderWallet.accountId,
-    priceRatio: priceRatioForLimits,
+    priceRatio: paymentFlow.walletPriceRatio,
   })
   if (limitCheck instanceof Error) return limitCheck
 

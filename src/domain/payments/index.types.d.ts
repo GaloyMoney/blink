@@ -226,6 +226,7 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
 
   btcPaymentAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
   usdPaymentAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
+  walletPriceRatio(): Promise<WalletPriceRatio | DealerPriceServiceError>
   skipProbeForDestination(): Promise<boolean | DealerPriceServiceError>
 
   isIntraLedger(): Promise<boolean | DealerPriceServiceError>
@@ -245,6 +246,9 @@ type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   >
   usdProposedAmount(): Promise<
     UsdPaymentAmount | DealerPriceServiceError | ValidationError
+  >
+  walletPriceRatio(): Promise<
+    WalletPriceRatio | DealerPriceServiceError | ValidationError
   >
   proposedAmounts(): Promise<
     PaymentAmountInAllCurrencies | DealerPriceServiceError | ValidationError
@@ -267,6 +271,7 @@ type LPFBWithError = {
   withoutRoute(): Promise<ValidationError | DealerPriceServiceError>
   btcPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
   usdPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
+  walletPriceRatio(): Promise<ValidationError | DealerPriceServiceError>
   skipProbeForDestination(): Promise<ValidationError | DealerPriceServiceError>
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
   isTradeIntraAccount(): Promise<ValidationError | DealerPriceServiceError>
@@ -282,6 +287,7 @@ type OPFBWithError = {
   withoutMinerFee(): Promise<ValidationError | DealerPriceServiceError>
   btcProposedAmount(): Promise<ValidationError | DealerPriceServiceError>
   usdProposedAmount(): Promise<ValidationError | DealerPriceServiceError>
+  walletPriceRatio(): Promise<ValidationError | DealerPriceServiceError>
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
   proposedAmounts(): Promise<ValidationError | DealerPriceServiceError>
   addressForFlow(): Promise<ValidationError | DealerPriceServiceError>

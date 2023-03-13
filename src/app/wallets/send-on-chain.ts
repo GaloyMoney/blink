@@ -8,7 +8,6 @@ import {
   usdFromBtcMidPriceFn,
 } from "@app/prices"
 import {
-  getPriceRatioForLimits,
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
@@ -245,9 +244,6 @@ const executePaymentViaIntraledger = async <
   if (recipientWallet instanceof Error) return recipientWallet
 
   // Limit check
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
-  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
-
   const checkLimits =
     senderWallet.accountId === recipientWallet.accountId
       ? checkTradeIntraAccountLimits
@@ -255,7 +251,7 @@ const executePaymentViaIntraledger = async <
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
     accountId: senderWallet.accountId,
-    priceRatio: priceRatioForLimits,
+    priceRatio: paymentFlow.walletPriceRatio,
   })
   if (limitCheck instanceof Error) return limitCheck
 
@@ -394,7 +390,7 @@ const executePaymentViaOnChain = async <
   const proposedAmounts = await builder.proposedAmounts()
   if (proposedAmounts instanceof Error) return proposedAmounts
 
-  const priceRatioForLimits = await getPriceRatioForLimits(proposedAmounts)
+  const priceRatioForLimits = await builder.walletPriceRatio()
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const limitCheck = await checkWithdrawalLimits({

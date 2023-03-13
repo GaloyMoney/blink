@@ -542,6 +542,13 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     return state.usdPaymentAmount
   }
 
+  const walletPriceRatio = async () => {
+    const state = await statePromise
+    if (state instanceof Error) return state
+
+    return state.walletPriceRatio
+  }
+
   const skipProbeForDestination = async () => {
     const state = await statePromise
     if (state instanceof Error) return state
@@ -572,6 +579,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     withoutRoute,
     btcPaymentAmount,
     usdPaymentAmount,
+    walletPriceRatio,
     skipProbeForDestination,
     isIntraLedger,
     isTradeIntraAccount,
@@ -620,6 +628,10 @@ const LPFBWithError = (
     return Promise.resolve(error)
   }
 
+  const walletPriceRatio = async () => {
+    return Promise.resolve(error)
+  }
+
   return {
     withSenderWallet,
     withoutRecipientWallet,
@@ -632,5 +644,6 @@ const LPFBWithError = (
     withoutRoute,
     btcPaymentAmount,
     usdPaymentAmount,
+    walletPriceRatio,
   }
 }

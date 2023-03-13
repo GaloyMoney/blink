@@ -1,16 +1,10 @@
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
-import {
-  getAccountLimits,
-  getPubkeysToSkipProbe,
-  MIN_SATS_FOR_PRICE_RATIO_PRECISION,
-  ONE_DAY,
-} from "@config"
+import { getAccountLimits, getPubkeysToSkipProbe, ONE_DAY } from "@config"
 import { AccountLimitsChecker } from "@domain/accounts"
 import { AlreadyPaidError } from "@domain/errors"
 import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
-  WalletPriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
@@ -21,7 +15,6 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
 import { timestampDaysAgo } from "@utils"
 
 const ledger = LedgerService()
@@ -263,29 +256,3 @@ export const checkWithdrawalLimits = async ({
     walletVolumes,
   })
 }
-
-export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
-  namespace: "app.payments",
-  fnName: "getPriceRatioForLimits",
-  fn: async (paymentAmounts: PaymentAmountInAllCurrencies) => {
-    const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
-
-    if (paymentAmounts.btc.amount < amount) {
-      const btcPaymentAmountForRatio = {
-        amount,
-        currency: WalletCurrency.Btc,
-      }
-      const usdPaymentAmountForRatio = await usdFromBtcMidPriceFn(
-        btcPaymentAmountForRatio,
-      )
-      if (usdPaymentAmountForRatio instanceof Error) return usdPaymentAmountForRatio
-
-      return WalletPriceRatio({
-        usd: usdPaymentAmountForRatio,
-        btc: btcPaymentAmountForRatio,
-      })
-    }
-
-    return WalletPriceRatio(paymentAmounts)
-  },
-})

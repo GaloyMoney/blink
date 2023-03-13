@@ -465,6 +465,13 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     return state.usdProposedAmount
   }
 
+  const walletPriceRatio = async () => {
+    const state = await stateFromPromise(statePromise)
+    if (state instanceof Error) return state
+
+    return state.walletPriceRatio
+  }
+
   const proposedAmounts = async () => {
     const btc = await btcProposedAmount()
     if (btc instanceof Error) return btc
@@ -497,6 +504,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     withMinerFee,
     btcProposedAmount,
     usdProposedAmount,
+    walletPriceRatio,
     proposedAmounts,
     addressForFlow,
     senderWalletDescriptor,
@@ -542,6 +550,10 @@ const OPFBWithError = (
     return Promise.resolve(error)
   }
 
+  const walletPriceRatio = async () => {
+    return Promise.resolve(error)
+  }
+
   const proposedAmounts = async () => {
     return Promise.resolve(error)
   }
@@ -565,6 +577,7 @@ const OPFBWithError = (
     isIntraLedger,
     btcProposedAmount,
     usdProposedAmount,
+    walletPriceRatio,
     proposedAmounts,
     addressForFlow,
     senderWalletDescriptor,
