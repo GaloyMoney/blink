@@ -7,8 +7,8 @@ import { Prices } from "@app"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import {
   checkedToDisplayCurrency,
+  currencyMajorToMinorUnit,
   DisplayCurrency,
-  usdMajorToMinorUnit,
 } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
@@ -49,8 +49,8 @@ const RealtimePriceSubscription = {
       | {
           errors: IError[]
           timestamp?: Date
-          centsPerSat?: number
-          centsPerUsdCent?: number
+          pricePerSat?: number
+          pricePerUsdCent?: number
           displayCurrency?: DisplayCurrency
         }
       | undefined,
@@ -65,9 +65,9 @@ const RealtimePriceSubscription = {
       })
     }
 
-    const { errors, timestamp, centsPerSat, centsPerUsdCent, displayCurrency } = source
+    const { errors, timestamp, pricePerSat, pricePerUsdCent, displayCurrency } = source
     if (errors) return { errors: errors }
-    if (!timestamp || !centsPerSat || !centsPerUsdCent || !displayCurrency) {
+    if (!timestamp || !pricePerSat || !pricePerUsdCent || !displayCurrency) {
       return { errors: [{ message: "No price info" }] }
     }
 
@@ -82,20 +82,29 @@ const RealtimePriceSubscription = {
       })
     }
 
+    const minorUnitPerSat = currencyMajorToMinorUnit({
+      amount: pricePerSat,
+      displayCurrency: currency,
+    })
+    const minorUnitPerUsdCent = currencyMajorToMinorUnit({
+      amount: pricePerUsdCent,
+      displayCurrency: currency,
+    })
+
     return {
       errors: [],
       realtimePrice: {
         timestamp: new Date(timestamp),
         denominatorCurrency: currency,
         btcSatPrice: {
-          base: Math.round(centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
+          base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
           offset: SAT_PRICE_PRECISION_OFFSET,
-          currencyUnit: `${currency}CENT`,
+          currencyUnit: "MINOR",
         },
         usdCentPrice: {
-          base: Math.round(centsPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
+          base: Math.round(minorUnitPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
           offset: USD_PRICE_PRECISION_OFFSET,
-          currencyUnit: `${currency}CENT`,
+          currencyUnit: "MINOR",
         },
       },
     }
@@ -149,8 +158,8 @@ const RealtimePriceSubscription = {
         payload: {
           timestamp,
           displayCurrency,
-          centsPerSat: usdMajorToMinorUnit(pricePerSat.price),
-          centsPerUsdCent: usdMajorToMinorUnit(pricePerUsdCent.price),
+          pricePerSat: pricePerSat.price,
+          pricePerUsdCent: pricePerUsdCent.price,
         },
       })
     }
