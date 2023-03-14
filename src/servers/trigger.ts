@@ -37,7 +37,8 @@ import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import {
   checkedToDisplayCurrency,
-  DisplayCurrency,
+  MajorExponent,
+  minorToMajorUnit,
   usdMinorToMajorUnit,
 } from "@domain/fiat"
 
@@ -109,10 +110,17 @@ export const onchainTransactionEventHandler = async (
       return
     }
 
+    const senderWallet = await WalletsRepository().findById(walletId)
+    if (senderWallet instanceof Error) return senderWallet
+
+    const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
+    if (senderAccount instanceof Error) return senderAccount
+    const { displayCurrency: senderDisplayCurrency } = senderAccount
+
     let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
     const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
+      currency: senderDisplayCurrency,
     })
     if (!(displayPriceRatio instanceof Error)) {
       const satsAmount = paymentAmountFromNumber({
@@ -123,16 +131,15 @@ export const onchainTransactionEventHandler = async (
         const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
         displayPaymentAmount = {
           ...paymentAmount,
-          amount: usdMinorToMajorUnit(paymentAmount.amount),
+          amount: Number(
+            minorToMajorUnit({
+              amount: paymentAmount.amount,
+              displayMajorExponent: MajorExponent.STANDARD,
+            }),
+          ),
         } as DisplayPaymentAmount<DisplayCurrency>
       }
     }
-
-    const senderWallet = await WalletsRepository().findById(walletId)
-    if (senderWallet instanceof Error) return senderWallet
-
-    const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
-    if (senderAccount instanceof Error) return senderAccount
 
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
@@ -191,13 +198,24 @@ export const onchainTransactionEventHandler = async (
 
       let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-      const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
-        currency: DisplayCurrency.Usd,
-      })
-
+      const displayPriceRatios = {} as Record<
+        DisplayCurrency,
+        WalletPriceRatio | PriceServiceError | undefined
+      >
       wallets.forEach(async (wallet) => {
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
         if (recipientAccount instanceof Error) return recipientAccount
+        const { displayCurrency } = recipientAccount
+
+        let displayPriceRatio = displayPriceRatios[displayCurrency]
+        if (displayPriceRatio === undefined) {
+          displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
+            currency: displayCurrency,
+          })
+          if (!(displayPriceRatio instanceof Error)) {
+            displayPriceRatios[displayCurrency] = displayPriceRatio
+          }
+        }
 
         const fee = DepositFeeCalculator().onChainDepositFee({
           amount: toSats(tx.tokens),
