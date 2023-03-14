@@ -1,27 +1,58 @@
-import { getDisplayCurrencyConfig } from "@config"
-
+import { Accounts } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency, MajorExponent, minorToMajorUnit } from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
 import * as serviceLedger from "@services/ledger"
-import { WalletsRepository, UsersRepository } from "@services/mongoose"
+import {
+  WalletsRepository,
+  UsersRepository,
+  AccountsRepository,
+} from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import {
+  getCurrentPriceAsWalletPriceRatio,
+  getCurrentPriceAsDisplayPriceRatio,
+} from "@app/prices"
 import { WalletCurrency } from "@domain/shared"
-import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
 
-const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
+import { getAccountByTestUserRef, getUsdWalletIdByTestUserRef } from "test/helpers"
 
-let displayPriceRatio, spy
+let spy
+let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>
 
 beforeAll(async () => {
-  displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+  const walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
+  const accountB = await getAccountByTestUserRef("B")
+  const updated = await Accounts.updateDefaultWalletId({
+    accountId: accountB.id,
+    walletId: walletIdUsdB,
+  })
+  if (updated instanceof Error) throw updated
+
+  const usdDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: DisplayCurrency.Usd,
   })
-  if (displayPriceRatio instanceof Error) throw displayPriceRatio
+  if (usdDisplayPriceRatio instanceof Error) throw usdDisplayPriceRatio
+
+  const eurDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: "EUR",
+  })
+  if (eurDisplayPriceRatio instanceof Error) throw eurDisplayPriceRatio
+
+  const crcDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+    currency: "CRC",
+  })
+  if (crcDisplayPriceRatio instanceof Error) throw crcDisplayPriceRatio
+
+  displayPriceRatios = {
+    USD: usdDisplayPriceRatio,
+    EUR: eurDisplayPriceRatio,
+    CRC: crcDisplayPriceRatio,
+  }
 
   const ledgerService = serviceLedger.LedgerService()
 
@@ -90,29 +121,56 @@ describe("notification", () => {
           // need to make integration tests independent the one to the others
         }
 
+        const account = await AccountsRepository().findById(wallet.accountId)
+        if (account instanceof Error) throw account
+        const { displayCurrency } = account
+        const displayPriceRatio = displayPriceRatios[displayCurrency]
+
         const balance = await LedgerService().getWalletBalance(defaultWalletId)
         if (balance instanceof Error) throw balance
+        const balanceAmount = { amount: BigInt(balance), currency: wallet.currency }
 
-        const paymentAmount = { amount: BigInt(balance), currency: wallet.currency }
-        const displayPaymentAmount = {
-          amount:
-            paymentAmount.currency === WalletCurrency.Btc
-              ? // Note: Inconsistency in 'createPushNotificationContent' for handling displayAmount
-                //       & currencies. Applying 'usdMinorToMajorUnit' to WalletCurrency.Usd case
-                //       makes no difference.
-                usdMinorToMajorUnit(
-                  displayPriceRatio.convertFromBtc(paymentAmount as BtcPaymentAmount)
-                    .amount,
-                )
-              : balance,
+        let displayPaymentAmount: DisplayAmount<DisplayCurrency>
+        if (balanceAmount.currency === WalletCurrency.Btc) {
+          const majorBalanceAmount = Number(
+            minorToMajorUnit({
+              amount: displayPriceRatio.convertFromWallet(
+                balanceAmount as BtcPaymentAmount,
+              ).amountInMinor,
+              displayMajorExponent: MajorExponent.STANDARD,
+            }),
+          )
 
-          currency: DefaultDisplayCurrency,
+          displayPaymentAmount = {
+            amount: majorBalanceAmount,
+            currency: displayCurrency,
+          }
+        } else {
+          const walletPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+            currency: WalletCurrency.Usd,
+          })
+          if (walletPriceRatio instanceof Error) throw walletPriceRatio
+          const btcBalanceAmount = walletPriceRatio.convertFromUsd(
+            balanceAmount as UsdPaymentAmount,
+          )
+
+          const majorBalanceAmount = Number(
+            minorToMajorUnit({
+              amount: displayPriceRatio.convertFromWallet(btcBalanceAmount).amountInMinor,
+              displayMajorExponent: MajorExponent.STANDARD,
+            }),
+          )
+
+          displayPaymentAmount = {
+            amount: majorBalanceAmount,
+            currency: displayCurrency,
+          }
         }
 
         const { title, body } = createPushNotificationContent({
           type: "balance",
           userLanguage: user.language,
-          amount: paymentAmount,
+          amount: balanceAmount,
           displayAmount: displayPaymentAmount,
         })
 

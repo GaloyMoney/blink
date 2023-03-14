@@ -1,7 +1,10 @@
 import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
-import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
+import {
+  getCurrentPriceAsDisplayPriceRatio,
+  getCurrentPriceAsWalletPriceRatio,
+} from "@app/prices"
 import { LedgerService } from "@services/ledger"
 import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
@@ -27,21 +30,39 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
       if (balanceAmount instanceof Error) return balanceAmount
 
       const { displayCurrency } = account
-      const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+      const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
         currency: displayCurrency,
       })
+
       let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
-      if (
-        !(displayPriceRatio instanceof Error) &&
-        wallet.currency === WalletCurrency.Btc
-      ) {
-        const displayAmount = displayPriceRatio.convertFromBtc(
-          balanceAmount as BtcPaymentAmount,
-        )
-        // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
-        displayBalanceAmount = {
-          amount: usdMinorToMajorUnit(displayAmount.amount),
-          currency: displayCurrency,
+      if (!(displayPriceRatio instanceof Error)) {
+        if (balanceAmount.currency === WalletCurrency.Btc) {
+          const displayAmount = displayPriceRatio.convertFromWallet(
+            balanceAmount as BtcPaymentAmount,
+          )
+          // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
+          displayBalanceAmount = {
+            amount: usdMinorToMajorUnit(displayAmount.amountInMinor),
+            currency: displayCurrency,
+          }
+        }
+
+        if (balanceAmount.currency === WalletCurrency.Usd) {
+          const usdDisplayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+            currency: DisplayCurrency.Usd,
+          })
+
+          if (!(usdDisplayPriceRatio instanceof Error)) {
+            const btcBalanceAmount = usdDisplayPriceRatio.convertFromUsd(
+              balanceAmount as UsdPaymentAmount,
+            )
+            const displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)
+            // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
+            displayBalanceAmount = {
+              amount: usdMinorToMajorUnit(displayAmount.amountInMinor),
+              currency: displayCurrency,
+            }
+          }
         }
       }
 
