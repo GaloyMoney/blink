@@ -5,7 +5,11 @@ import {
   SECS_PER_10_MINS,
 } from "@config"
 
-import { getCurrentPriceAsWalletPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import {
+  getCurrentPriceAsDisplayPriceRatio,
+  getCurrentPriceAsWalletPriceRatio,
+  usdFromBtcMidPriceFn,
+} from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
@@ -174,15 +178,27 @@ const processTxForWallet = async (
           })
           if (walletAddressReceiver instanceof Error) return walletAddressReceiver
 
-          const feeDisplayCurrency = Number(
-            walletAddressReceiver.usdBankFee.amount,
-          ) as DisplayCurrencyBaseAmount
+          const recipientAccount = await AccountsRepository().findById(wallet.accountId)
+          if (recipientAccount instanceof Error) return recipientAccount
+          const { displayCurrency } = recipientAccount
 
+          const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+            currency: displayCurrency,
+          })
+          if (recipientDisplayPriceRatio instanceof Error) {
+            return recipientDisplayPriceRatio
+          }
           const amountDisplayCurrency = Number(
-            walletAddressReceiver.usdToCreditReceiver.amount,
+            recipientDisplayPriceRatio.convertFromWallet(
+              walletAddressReceiver.btcToCreditReceiver,
+            ).amountInMinor,
           ) as DisplayCurrencyBaseAmount
 
-          const displayCurrency = DisplayCurrency.Usd
+          const feeDisplayCurrency = Number(
+            recipientDisplayPriceRatio.convertFromWalletToCeil(
+              walletAddressReceiver.btcBankFee,
+            ).amountInMinor,
+          ) as DisplayCurrencyBaseAmount
 
           const {
             metadata,
@@ -223,9 +239,6 @@ const processTxForWallet = async (
             logger.error({ error: result }, "Could not record onchain tx in ledger")
             return result
           }
-
-          const recipientAccount = await AccountsRepository().findById(wallet.accountId)
-          if (recipientAccount instanceof Error) return recipientAccount
 
           const recipientUser = await UsersRepository().findById(
             recipientAccount.kratosUserId,
