@@ -26,8 +26,9 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
       const balanceAmount = await LedgerService().getWalletBalanceAmount(wallet)
       if (balanceAmount instanceof Error) return balanceAmount
 
+      const { displayCurrency } = account
       const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
-        currency: DisplayCurrency.Usd,
+        currency: displayCurrency,
       })
       let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
       if (
@@ -40,7 +41,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
         displayBalanceAmount = {
           amount: usdMinorToMajorUnit(displayAmount.amount),
-          currency: DisplayCurrency.Usd,
+          currency: displayCurrency,
         }
       }
 
