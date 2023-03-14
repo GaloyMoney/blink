@@ -109,18 +109,31 @@ type WalletTransaction =
   | WalletOnChainTransaction
   | WalletLnTransaction
 
-type AddPendingIncomingArgs = {
+type WalletDetailsByWalletId<
+  S extends WalletCurrency,
+  T extends DisplayCurrency,
+> = Record<
+  WalletId,
+  {
+    walletCurrency: S
+    walletPriceRatio: WalletPriceRatio
+    depositFeeRatio: DepositFeeRatio
+    displayCurrency: T
+    displayPriceRatio: DisplayPriceRatio<"BTC", T> | undefined
+  }
+>
+
+type AddPendingIncomingArgs<S extends WalletCurrency, T extends DisplayCurrency> = {
   pendingIncoming: IncomingOnChainTransaction[]
   addressesByWalletId: { [key: WalletId]: OnChainAddress[] }
-  walletDetailsByWalletId: {
-    [key: WalletId]: { currency: WalletCurrency; depositFeeRatio: DepositFeeRatio }
-  }
-  displayCurrencyPerSat: RealTimePrice<DisplayCurrency>
+  walletDetailsByWalletId: WalletDetailsByWalletId<S, T>
 }
 
-type ConfirmedTransactionHistory = {
+type ConfirmedTransactionHistory<S extends WalletCurrency, T extends DisplayCurrency> = {
   readonly transactions: WalletTransaction[]
-  addPendingIncoming(args: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
+  addPendingIncoming(
+    args: AddPendingIncomingArgs<S, T>,
+  ): WalletTransactionHistoryWithPending
 }
 
 type WalletTransactionHistoryWithPending = {

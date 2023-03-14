@@ -1,6 +1,6 @@
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getDealerConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { getCurrentSatPrice } from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio, getMidPriceRatio } from "@app/prices"
 import { PartialResult } from "@app/partial-result"
 
 import { LedgerError } from "@domain/ledger"
@@ -12,9 +12,17 @@ import { baseLogger } from "@services/logger"
 import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
 
+import { WalletPriceRatio } from "@domain/payments"
+import { WalletCurrency } from "@domain/shared"
+
 import { getOnChainTxs } from "./private/get-on-chain-txs"
 
-export const getTransactionsForWalletsByAddresses = async ({
+const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
+
+export const getTransactionsForWalletsByAddresses = async <
+  S extends WalletCurrency,
+  T extends DisplayCurrency,
+>({
   wallets,
   addresses,
   paginationArgs,
@@ -51,9 +59,7 @@ export const getTransactionsForWalletsByAddresses = async ({
 
   const allAddresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
-  const walletDetailsByWalletId: {
-    [walletid: string]: { currency: WalletCurrency; depositFeeRatio: DepositFeeRatio }
-  } = {}
+  const walletDetailsByWalletId: WalletDetailsByWalletId<S, T> = {}
 
   const accountRepo = AccountsRepository()
   for (const wallet of wallets) {
@@ -64,7 +70,45 @@ export const getTransactionsForWalletsByAddresses = async ({
     const account = await accountRepo.findById(wallet.accountId)
     const depositFeeRatio =
       account instanceof Error ? (0 as DepositFeeRatio) : account.depositFeeRatio
-    walletDetailsByWalletId[wallet.id] = { currency: wallet.currency, depositFeeRatio }
+
+    const displayCurrency =
+      account instanceof Error
+        ? (DisplayCurrency.Usd as T)
+        : (account.displayCurrency as T)
+
+    let displayPriceRatioForPending:
+      | DisplayPriceRatio<"BTC", T>
+      | PriceServiceError
+      | undefined = await getCurrentPriceAsDisplayPriceRatio<T>({
+      currency: displayCurrency,
+    })
+    if (displayPriceRatioForPending instanceof Error) {
+      displayPriceRatioForPending = undefined
+    }
+
+    let walletPriceRatio = WalletPriceRatio({
+      usd: { amount: 1n, currency: WalletCurrency.Usd },
+      btc: { amount: 1n, currency: WalletCurrency.Btc },
+    })
+    if (walletPriceRatio instanceof Error) {
+      return PartialResult.err(walletPriceRatio)
+    }
+    if (wallet.currency !== WalletCurrency.Btc) {
+      const walletPriceRatioResult = await getMidPriceRatio(usdHedgeEnabled)
+      if (walletPriceRatioResult instanceof Error) {
+        return PartialResult.err(walletPriceRatioResult)
+      }
+
+      walletPriceRatio = walletPriceRatioResult
+    }
+
+    walletDetailsByWalletId[wallet.id] = {
+      walletCurrency: wallet.currency as S,
+      walletPriceRatio,
+      depositFeeRatio,
+      displayCurrency,
+      displayPriceRatio: displayPriceRatioForPending,
+    }
   }
   const addressesForWallets = addresses.filter((address) =>
     allAddresses.includes(address),
@@ -77,21 +121,11 @@ export const getTransactionsForWalletsByAddresses = async ({
 
   const pendingIncoming = filter.apply(onChainTxs)
 
-  let price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-  if (price instanceof Error) {
-    price = {
-      timestamp: new Date(Date.now()),
-      price: NaN,
-      currency: DisplayCurrency.Usd,
-    }
-  }
-
   return PartialResult.ok({
     slice: confirmedHistory.addPendingIncoming({
       pendingIncoming,
       addressesByWalletId,
       walletDetailsByWalletId,
-      displayCurrencyPerSat: price,
     }).transactions,
     total: resp.total,
   })

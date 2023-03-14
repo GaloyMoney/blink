@@ -64,7 +64,7 @@ import healthzHandler from "./middlewares/healthz"
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
 
-export const onchainTransactionEventHandler = async (
+export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
   tx: SubscribeToTransactionsChainTransactionEvent,
 ) => {
   logger.info({ tx }, "received new onchain tx event")
@@ -117,27 +117,29 @@ export const onchainTransactionEventHandler = async (
     if (senderAccount instanceof Error) return senderAccount
     const { displayCurrency: senderDisplayCurrency } = senderAccount
 
-    let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
+    let displayPaymentAmount: DisplayPaymentAmount<T> | undefined
 
-    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
-      currency: senderDisplayCurrency,
-    })
+    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
+      {
+        currency: senderDisplayCurrency,
+      },
+    )
     if (!(displayPriceRatio instanceof Error)) {
       const satsAmount = paymentAmountFromNumber({
         amount: tx.tokens - fee,
         currency: WalletCurrency.Btc,
       })
       if (!(satsAmount instanceof Error)) {
-        const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
+        const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
         displayPaymentAmount = {
           ...paymentAmount,
           amount: Number(
             minorToMajorUnit({
-              amount: paymentAmount.amount,
+              amount: paymentAmount.amountInMinor,
               displayMajorExponent: MajorExponent.STANDARD,
             }),
           ),
-        } as DisplayPaymentAmount<DisplayCurrency>
+        }
       }
     }
 
@@ -196,22 +198,25 @@ export const onchainTransactionEventHandler = async (
         "mempool appearance",
       )
 
-      let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
+      let displayPaymentAmount: DisplayPaymentAmount<T> | undefined
 
       const displayPriceRatios = {} as Record<
-        DisplayCurrency,
-        WalletPriceRatio | PriceServiceError | undefined
+        T,
+        DisplayPriceRatio<"BTC", T> | PriceServiceError | undefined
       >
       wallets.forEach(async (wallet) => {
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
         if (recipientAccount instanceof Error) return recipientAccount
-        const { displayCurrency } = recipientAccount
+        const { displayCurrency: displayCurrencyRaw } = recipientAccount
+        const displayCurrency = displayCurrencyRaw as T
 
         let displayPriceRatio = displayPriceRatios[displayCurrency]
         if (displayPriceRatio === undefined) {
-          displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
-            currency: displayCurrency,
-          })
+          displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
+            {
+              currency: displayCurrency,
+            },
+          )
           if (!(displayPriceRatio instanceof Error)) {
             displayPriceRatios[displayCurrency] = displayPriceRatio
           }
@@ -234,11 +239,11 @@ export const onchainTransactionEventHandler = async (
             currency: WalletCurrency.Btc,
           })
           if (!(satsAmount instanceof Error)) {
-            const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
+            const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
             displayPaymentAmount = {
               ...paymentAmount,
-              amount: usdMinorToMajorUnit(paymentAmount.amount),
-            } as DisplayPaymentAmount<DisplayCurrency>
+              amount: usdMinorToMajorUnit(paymentAmount.amountInMinor),
+            }
           }
         }
 
