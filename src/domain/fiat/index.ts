@@ -11,10 +11,6 @@ export const toCents = (amount: number | bigint): UsdCents => {
   return Number(amount) as UsdCents
 }
 
-export const toCentsPerSatsRatio = (amount: number): CentsPerSatsRatio => {
-  return amount as CentsPerSatsRatio
-}
-
 export const checkedToDisplayCurrency = (
   currency?: string,
 ): DisplayCurrency | ValidationError => {
