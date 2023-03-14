@@ -416,9 +416,14 @@ describe("UserWallet - On chain", () => {
         pendingTx.settlementAmount * pendingTx.displayCurrencyPerSettlementCurrencyUnit
       ).toFixed(MajorExponent.STANDARD),
     )
+
     expect(pendingTx.settlementDisplayFee).toBe(
       (
-        pendingTx.settlementFee * pendingTx.displayCurrencyPerSettlementCurrencyUnit
+        Math.ceil(
+          pendingTx.settlementFee *
+            pendingTx.displayCurrencyPerSettlementCurrencyUnit *
+            100,
+        ) / 100
       ).toFixed(MajorExponent.STANDARD),
     )
 
