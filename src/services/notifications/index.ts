@@ -1,6 +1,6 @@
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
-import { DisplayCurrency, usdMajorToMinorUnit, toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
 
@@ -261,8 +261,8 @@ export const NotificationsService = (): INotificationsService => {
     const payload = {
       timestamp,
       displayCurrency,
-      centsPerSat: usdMajorToMinorUnit(pricePerSat.price),
-      centsPerUsdCent: usdMajorToMinorUnit(pricePerUsdCent.price),
+      pricePerSat: pricePerSat.price,
+      pricePerUsdCent: pricePerUsdCent.price,
     }
 
     const priceUpdateTrigger = customPubSubTrigger({

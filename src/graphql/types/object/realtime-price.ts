@@ -6,8 +6,8 @@ import Timestamp from "../scalar/timestamp"
 
 import DisplayCurrencyGT from "../scalar/display-currency"
 
-import PriceOfOneSat from "./price-of-one-sat"
-import PriceOfOneUsdCent from "./price-of-one-usd-cent"
+import PriceOfOneSatInMinorUnit from "./price-of-one-sat-in-minor-unit"
+import PriceOfOneUsdCentInMinorUnit from "./price-of-one-usd-cent-in-minor-unit"
 
 const RealtimePrice = GT.Object({
   name: "RealtimePrice",
@@ -24,8 +24,8 @@ const RealtimePrice = GT.Object({
     },
     denominatorCurrency: { type: GT.NonNull(DisplayCurrencyGT) },
 
-    btcSatPrice: { type: GT.NonNull(PriceOfOneSat) },
-    usdCentPrice: { type: GT.NonNull(PriceOfOneUsdCent) },
+    btcSatPrice: { type: GT.NonNull(PriceOfOneSatInMinorUnit) },
+    usdCentPrice: { type: GT.NonNull(PriceOfOneUsdCentInMinorUnit) },
   }),
 })
 
