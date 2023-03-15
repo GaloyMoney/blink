@@ -5,14 +5,23 @@ import {
   SECS_PER_10_MINS,
 } from "@config"
 
-import { getCurrentPriceAsWalletPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import {
+  getCurrentPriceAsDisplayPriceRatio,
+  getCurrentPriceAsWalletPriceRatio,
+  usdFromBtcMidPriceFn,
+} from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import {
+  DisplayCurrency,
+  MajorExponent,
+  minorToMajorUnit,
+  usdMinorToMajorUnit,
+} from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 
@@ -169,15 +178,27 @@ const processTxForWallet = async (
           })
           if (walletAddressReceiver instanceof Error) return walletAddressReceiver
 
-          const feeDisplayCurrency = Number(
-            walletAddressReceiver.usdBankFee.amount,
-          ) as DisplayCurrencyBaseAmount
+          const recipientAccount = await AccountsRepository().findById(wallet.accountId)
+          if (recipientAccount instanceof Error) return recipientAccount
+          const { displayCurrency } = recipientAccount
 
+          const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+            currency: displayCurrency,
+          })
+          if (recipientDisplayPriceRatio instanceof Error) {
+            return recipientDisplayPriceRatio
+          }
           const amountDisplayCurrency = Number(
-            walletAddressReceiver.usdToCreditReceiver.amount,
+            recipientDisplayPriceRatio.convertFromWallet(
+              walletAddressReceiver.btcToCreditReceiver,
+            ).amountInMinor,
           ) as DisplayCurrencyBaseAmount
 
-          const displayCurrency = DisplayCurrency.Usd
+          const feeDisplayCurrency = Number(
+            recipientDisplayPriceRatio.convertFromWalletToCeil(
+              walletAddressReceiver.btcBankFee,
+            ).amountInMinor,
+          ) as DisplayCurrencyBaseAmount
 
           const {
             metadata,
@@ -219,23 +240,31 @@ const processTxForWallet = async (
             return result
           }
 
-          const recipientAccount = await AccountsRepository().findById(wallet.accountId)
-          if (recipientAccount instanceof Error) return recipientAccount
-
           const recipientUser = await UsersRepository().findById(
             recipientAccount.kratosUserId,
           )
           if (recipientUser instanceof Error) return recipientUser
 
           const displayPaymentAmount = {
-            amount: Number((amountDisplayCurrency / 100).toFixed(2)),
+            amount: Number(
+              minorToMajorUnit({
+                amount: creditAccountAdditionalMetadata.displayAmount,
+                displayMajorExponent: MajorExponent.STANDARD,
+              }),
+            ),
             currency: displayCurrency,
           }
+
+          const paymentAmount = paymentAmountFromNumber({
+            amount: sats,
+            currency: wallet.currency,
+          })
+          if (paymentAmount instanceof Error) return paymentAmount
 
           await notifications.onChainTxReceived({
             recipientAccountId: wallet.accountId,
             recipientWalletId: wallet.id,
-            paymentAmount: { amount: BigInt(sats), currency: wallet.currency },
+            paymentAmount,
             displayPaymentAmount,
             txHash: tx.rawTx.txHash,
             recipientDeviceTokens: recipientUser.deviceTokens,

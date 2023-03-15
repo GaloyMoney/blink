@@ -523,7 +523,7 @@ const executePaymentViaOnChain = async <
 
       amountDisplayCurrency: amountDisplayCurrencyAsNumber,
       feeDisplayCurrency: feeDisplayCurrencyAsNumber,
-      displayCurrency: DisplayCurrency.Usd,
+      displayCurrency: senderDisplayCurrency,
 
       payeeAddresses: [paymentFlow.address],
       sendAll,

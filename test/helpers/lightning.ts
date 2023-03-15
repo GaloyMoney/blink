@@ -381,7 +381,8 @@ export const fundWalletIdFromLightning = async ({
 
 export const safePay = async (args) => {
   try {
-    await pay(args) // 'await' is explicitly needed here
+    const res = await pay(args) // 'await' is explicitly needed here
+    return res
   } catch (err) {
     // If we get here, error
     expect(err).toBeUndefined()

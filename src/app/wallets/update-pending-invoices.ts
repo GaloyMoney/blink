@@ -1,4 +1,4 @@
-import { usdFromBtcMidPriceFn } from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { checkedToSats } from "@domain/bitcoin"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
@@ -186,6 +186,32 @@ const updatePendingInvoiceBeforeFinally = async ({
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
 
+    const recipientWallet = await WalletsRepository().findById(
+      recipientWalletDescriptor.id,
+    )
+    if (recipientWallet instanceof Error) return recipientWallet
+
+    const recipientAccount = await AccountsRepository().findById(
+      recipientWallet.accountId,
+    )
+    if (recipientAccount instanceof Error) return recipientAccount
+
+    const { displayCurrency: recipientDisplayCurrency } = recipientAccount
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: recipientDisplayCurrency,
+    })
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
+
+    const amountDisplayCurrency = Number(
+      displayPriceRatio.convertFromWallet(walletInvoiceReceiver.btcToCreditReceiver)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+
+    const feeDisplayCurrency = Number(
+      displayPriceRatio.convertFromWalletToCeil(walletInvoiceReceiver.btcBankFee)
+        .amountInMinor,
+    ) as DisplayCurrencyBaseAmount
+
     // TODO: this should be a in a mongodb transaction session with the ledger transaction below
     // markAsPaid could be done after the transaction, but we should in that case not only look
     // for walletInvoicesRepo, but also in the ledger to make sure in case the process crash in this
@@ -205,24 +231,10 @@ const updatePendingInvoiceBeforeFinally = async ({
         usdProtocolAndBankFee: walletInvoiceReceiver.usdBankFee,
       },
 
-      feeDisplayCurrency: Number(
-        walletInvoiceReceiver.usdBankFee.amount,
-      ) as DisplayCurrencyBaseAmount,
-      amountDisplayCurrency: Number(
-        walletInvoiceReceiver.usdToCreditReceiver.amount,
-      ) as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
+      feeDisplayCurrency,
+      amountDisplayCurrency,
+      displayCurrency: recipientDisplayCurrency,
     })
-
-    const recipientWallet = await WalletsRepository().findById(
-      recipientWalletDescriptor.id,
-    )
-    if (recipientWallet instanceof Error) return recipientWallet
-
-    const recipientAccount = await AccountsRepository().findById(
-      recipientWallet.accountId,
-    )
-    if (recipientAccount instanceof Error) return recipientAccount
 
     //TODO: add displayCurrency: displayPaymentAmount.currency,
     const result = await LedgerFacade.recordReceive({

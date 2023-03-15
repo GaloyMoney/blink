@@ -598,7 +598,7 @@ const executePaymentViaLn = async ({
     } = LedgerFacade.LnSendLedgerMetadata({
       amountDisplayCurrency: amountDisplayCurrencyAsNumber,
       feeDisplayCurrency: feeDisplayCurrencyAsNumber,
-      displayCurrency: DisplayCurrency.Usd,
+      displayCurrency: senderDisplayCurrency,
 
       paymentAmounts: paymentFlow,
       pubkey: outgoingNodePubkey || lndService.defaultPubkey(),

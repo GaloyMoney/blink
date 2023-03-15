@@ -7,7 +7,8 @@ import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import { MEMO_SHARING_CENTS_THRESHOLD, MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { WalletCurrency } from "@domain/shared"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { DisplayCurrency, MajorExponent, toCents } from "@domain/fiat"
+import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
 
 describe("translates ledger txs to wallet txs", () => {
   const timestamp = new Date(Date.now())
@@ -356,6 +357,19 @@ describe("translateDescription", () => {
 })
 
 describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
+  const walletPriceRatio = WalletPriceRatio({
+    usd: { amount: 20n, currency: WalletCurrency.Usd },
+    btc: { amount: 1000n, currency: WalletCurrency.Btc },
+  })
+  if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
+  const displayPriceRatio = DisplayPriceRatio({
+    displayAmountInMinorUnit: { amount: 16, currency: DisplayCurrency.Usd },
+    walletAmount: { amount: 1000n, currency: WalletCurrency.Btc },
+    displayMajorExponent: MajorExponent.STANDARD,
+  })
+  if (displayPriceRatio instanceof Error) throw displayPriceRatio
+
   it("translates submitted txs to wallet txs", () => {
     const walletId = crypto.randomUUID() as WalletId
 
@@ -394,14 +408,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       addressesByWalletId: { [walletId]: addresses },
       walletDetailsByWalletId: {
         [walletId]: {
-          currency: WalletCurrency.Btc,
+          walletCurrency: WalletCurrency.Btc,
+          walletPriceRatio,
           depositFeeRatio: 0 as DepositFeeRatio,
+          displayCurrency: "EUR" as DisplayCurrency,
+          displayPriceRatio,
         },
-      },
-      displayCurrencyPerSat: {
-        timestamp: new Date(Date.now()),
-        price: 0.01,
-        currency: DisplayCurrency.Usd,
       },
     })
     const expected = [
@@ -419,11 +431,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
-        settlementDisplayAmount: (25000 / 100).toFixed(2),
+        settlementDisplayAmount: (25000 * 0.00016).toFixed(2),
         settlementDisplayFee: (0).toFixed(2),
-        settlementDisplayCurrency: DisplayCurrency.Usd,
+        settlementDisplayCurrency: "EUR",
         settlementCurrency: WalletCurrency.Btc,
-        displayCurrencyPerSettlementCurrencyUnit: 0.01,
+        displayCurrencyPerSettlementCurrencyUnit: 0.00016,
         status: TxStatus.Pending,
         createdAt: timestamp,
       },
@@ -440,12 +452,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(50000),
         settlementCurrency: WalletCurrency.Btc,
-        settlementDisplayAmount: (50000 / 100).toFixed(2),
+        settlementDisplayAmount: (50000 * 0.00016).toFixed(2),
         settlementDisplayFee: (0).toFixed(2),
-        settlementDisplayCurrency: DisplayCurrency.Usd,
+        settlementDisplayCurrency: "EUR",
         memo: null,
         settlementFee: toSats(0),
-        displayCurrencyPerSettlementCurrencyUnit: 0.01,
+        displayCurrencyPerSettlementCurrencyUnit: 0.00016,
 
         status: TxStatus.Pending,
         createdAt: timestamp,
@@ -484,14 +496,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       addressesByWalletId: { [walletId]: addresses },
       walletDetailsByWalletId: {
         [walletId]: {
-          currency: WalletCurrency.Btc,
+          walletCurrency: WalletCurrency.Btc,
+          walletPriceRatio,
           depositFeeRatio: 0 as DepositFeeRatio,
+          displayCurrency: "EUR" as DisplayCurrency,
+          displayPriceRatio: undefined,
         },
-      },
-      displayCurrencyPerSat: {
-        timestamp: new Date(Date.now()),
-        price: NaN,
-        currency: DisplayCurrency.Usd,
       },
     })
     const expected = [
@@ -512,7 +522,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementCurrency: WalletCurrency.Btc,
         settlementDisplayAmount: "NaN",
         settlementDisplayFee: "NaN",
-        settlementDisplayCurrency: DisplayCurrency.Usd,
+        settlementDisplayCurrency: "EUR",
         displayCurrencyPerSettlementCurrencyUnit: NaN,
         status: TxStatus.Pending,
         createdAt: timestamp,

@@ -1,28 +1,45 @@
 import { CENTS_PER_USD } from "@domain/fiat"
 import { toDisplayPriceRatio, toWalletPriceRatio } from "@domain/payments"
 
-export const getCurrentSatPrice = ({
+export const getCurrentSatPrice = async ({
   currency,
 }: GetCurrentSatPriceArgs): Promise<
   RealTimePrice<DisplayCurrency> | ApplicationError
 > => {
-  return Promise.resolve({
-    timestamp: new Date(Date.now()),
-    price: 0.0005,
-    currency: currency as DisplayCurrency,
-  })
+  const USD = 0.0005
+
+  switch (currency) {
+    case "CRC":
+      return {
+        timestamp: new Date(Date.now()),
+        price: USD * 550,
+        currency: currency as DisplayCurrency,
+      }
+    case "EUR":
+      return {
+        timestamp: new Date(Date.now()),
+        price: USD * 0.8,
+        currency: currency as DisplayCurrency,
+      }
+    default:
+      return {
+        timestamp: new Date(Date.now()),
+        price: USD,
+        currency: currency as DisplayCurrency,
+      }
+  }
 }
 
-export const getCurrentUsdCentPrice = ({
+export const getCurrentUsdCentPrice = async ({
   currency,
 }: GetCurrentUsdCentPriceArgs): Promise<
   RealTimePrice<DisplayCurrency> | ApplicationError
 > => {
-  return Promise.resolve({
+  return {
     timestamp: new Date(Date.now()),
     price: 21,
     currency: currency as DisplayCurrency,
-  })
+  }
 }
 
 export const getCurrentPriceAsWalletPriceRatio = async ({

@@ -37,7 +37,8 @@ import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import {
   checkedToDisplayCurrency,
-  DisplayCurrency,
+  MajorExponent,
+  minorToMajorUnit,
   usdMinorToMajorUnit,
 } from "@domain/fiat"
 
@@ -63,7 +64,7 @@ import healthzHandler from "./middlewares/healthz"
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
 
-export const onchainTransactionEventHandler = async (
+export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
   tx: SubscribeToTransactionsChainTransactionEvent,
 ) => {
   logger.info({ tx }, "received new onchain tx event")
@@ -109,30 +110,38 @@ export const onchainTransactionEventHandler = async (
       return
     }
 
-    let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
+    const senderWallet = await WalletsRepository().findById(walletId)
+    if (senderWallet instanceof Error) return senderWallet
 
-    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
-    })
+    const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
+    if (senderAccount instanceof Error) return senderAccount
+    const { displayCurrency: senderDisplayCurrency } = senderAccount
+
+    let displayPaymentAmount: DisplayPaymentAmount<T> | undefined
+
+    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
+      {
+        currency: senderDisplayCurrency,
+      },
+    )
     if (!(displayPriceRatio instanceof Error)) {
       const satsAmount = paymentAmountFromNumber({
         amount: tx.tokens - fee,
         currency: WalletCurrency.Btc,
       })
       if (!(satsAmount instanceof Error)) {
-        const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
+        const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
         displayPaymentAmount = {
           ...paymentAmount,
-          amount: usdMinorToMajorUnit(paymentAmount.amount),
-        } as DisplayPaymentAmount<DisplayCurrency>
+          amount: Number(
+            minorToMajorUnit({
+              amount: paymentAmount.amountInMinor,
+              displayMajorExponent: MajorExponent.STANDARD,
+            }),
+          ),
+        }
       }
     }
-
-    const senderWallet = await WalletsRepository().findById(walletId)
-    if (senderWallet instanceof Error) return senderWallet
-
-    const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
-    if (senderAccount instanceof Error) return senderAccount
 
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
@@ -189,15 +198,29 @@ export const onchainTransactionEventHandler = async (
         "mempool appearance",
       )
 
-      let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
+      let displayPaymentAmount: DisplayPaymentAmount<T> | undefined
 
-      const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsWalletPriceRatio({
-        currency: DisplayCurrency.Usd,
-      })
-
+      const displayPriceRatios = {} as Record<
+        T,
+        DisplayPriceRatio<"BTC", T> | PriceServiceError | undefined
+      >
       wallets.forEach(async (wallet) => {
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
         if (recipientAccount instanceof Error) return recipientAccount
+        const { displayCurrency: displayCurrencyRaw } = recipientAccount
+        const displayCurrency = displayCurrencyRaw as T
+
+        let displayPriceRatio = displayPriceRatios[displayCurrency]
+        if (displayPriceRatio === undefined) {
+          displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
+            {
+              currency: displayCurrency,
+            },
+          )
+          if (!(displayPriceRatio instanceof Error)) {
+            displayPriceRatios[displayCurrency] = displayPriceRatio
+          }
+        }
 
         const fee = DepositFeeCalculator().onChainDepositFee({
           amount: toSats(tx.tokens),
@@ -216,11 +239,11 @@ export const onchainTransactionEventHandler = async (
             currency: WalletCurrency.Btc,
           })
           if (!(satsAmount instanceof Error)) {
-            const paymentAmount = displayPriceRatio.convertFromBtc(satsAmount)
+            const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
             displayPaymentAmount = {
               ...paymentAmount,
-              amount: usdMinorToMajorUnit(paymentAmount.amount),
-            } as DisplayPaymentAmount<DisplayCurrency>
+              amount: usdMinorToMajorUnit(paymentAmount.amountInMinor),
+            }
           }
         }
 

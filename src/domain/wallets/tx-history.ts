@@ -14,49 +14,92 @@ import { DepositFeeCalculator } from "./deposit-fee-calculator"
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { SettlementAmounts } from "./settlement-amounts"
 
-const filterPendingIncoming = ({
+const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurrency>({
   pendingIncoming,
   addressesByWalletId,
   walletDetailsByWalletId,
-  displayCurrencyPerSat,
-}: AddPendingIncomingArgs): WalletOnChainTransaction[] => {
+}: AddPendingIncomingArgs<S, T>): WalletOnChainTransaction[] => {
   const walletTransactions: WalletOnChainTransaction[] = []
   pendingIncoming.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
       if (address) {
         for (const walletIdString in addressesByWalletId) {
           const walletId = walletIdString as WalletId
+          const {
+            walletCurrency,
+            walletPriceRatio,
+            depositFeeRatio,
+            displayCurrency,
+            displayPriceRatio,
+          } = walletDetailsByWalletId[walletId]
+
           if (addressesByWalletId[walletId].includes(address)) {
             const fee = DepositFeeCalculator().onChainDepositFee({
               amount: sats,
-              ratio: walletDetailsByWalletId[walletId].depositFeeRatio,
+              ratio: depositFeeRatio,
             })
+            const btcFeeAmount = {
+              amount: BigInt(fee),
+              currency: WalletCurrency.Btc,
+            }
 
-            const settlementAmount = toSats(sats - fee)
+            const settlementAmountSats = toSats(sats - fee)
+            const btcSettlementAmount = {
+              amount: BigInt(settlementAmountSats),
+              currency: WalletCurrency.Btc,
+            }
 
-            const priceForMinorUnit =
-              displayCurrencyPerSat.price * 10 ** MajorExponent.STANDARD
+            const settlementAmount =
+              walletCurrency === WalletCurrency.Btc
+                ? settlementAmountSats
+                : walletPriceRatio === undefined // This should not be 'undefined' when walletCurrency === "USD"
+                ? toCents(0)
+                : toCents(walletPriceRatio.convertFromBtc(btcSettlementAmount).amount)
 
-            const settlementDisplayAmount = minorToMajorUnit({
-              amount: Math.round(priceForMinorUnit * settlementAmount),
-              displayMajorExponent: MajorExponent.STANDARD,
-            })
+            const settlementFee =
+              walletCurrency === WalletCurrency.Btc
+                ? fee
+                : walletPriceRatio === undefined // This should not be 'undefined' when walletCurrency === "USD"
+                ? toCents(0)
+                : toCents(walletPriceRatio.convertFromBtcToCeil(btcFeeAmount).amount)
 
-            const settlementDisplayFee = minorToMajorUnit({
-              amount: Math.round(priceForMinorUnit * fee),
-              displayMajorExponent: MajorExponent.STANDARD,
-            })
+            const settlementDisplayAmount =
+              displayPriceRatio === undefined
+                ? `${NaN}`
+                : minorToMajorUnit({
+                    amount:
+                      displayPriceRatio.convertFromWallet(btcSettlementAmount)
+                        .amountInMinor,
+                    displayMajorExponent: MajorExponent.STANDARD,
+                  })
+
+            const settlementDisplayFee =
+              displayPriceRatio === undefined
+                ? `${NaN}`
+                : minorToMajorUnit({
+                    amount:
+                      displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
+                        .amountInMinor,
+                    displayMajorExponent: MajorExponent.STANDARD,
+                  })
+
+            const displayCurrencyPerSettlementCurrencyMajorUnit =
+              displayPriceRatio === undefined
+                ? (NaN as number)
+                : displayPriceRatio.displayMinorUnitPerWalletUnit() /
+                  10 ** MajorExponent.STANDARD
 
             walletTransactions.push({
               id: rawTx.txHash,
               walletId,
               settlementAmount,
-              settlementFee: fee,
-              settlementCurrency: walletDetailsByWalletId[walletId].currency,
+              settlementFee,
+              settlementCurrency: walletCurrency,
               settlementDisplayAmount,
               settlementDisplayFee,
-              settlementDisplayCurrency: displayCurrencyPerSat.currency,
-              displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerSat.price,
+              settlementDisplayCurrency: displayCurrency,
+              displayCurrencyPerSettlementCurrencyUnit:
+                displayCurrencyPerSettlementCurrencyMajorUnit,
               status: TxStatus.Pending,
               memo: null,
               createdAt: createdAt,
@@ -265,13 +308,13 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   return walletTransaction
 }
 
-const fromLedger = ({
+const fromLedger = <S extends WalletCurrency, T extends DisplayCurrency>({
   ledgerTransactions,
   nonEndUserWalletIds,
 }: {
-  ledgerTransactions: LedgerTransaction<WalletCurrency>[]
+  ledgerTransactions: LedgerTransaction<S>[]
   nonEndUserWalletIds: WalletId[]
-}): ConfirmedTransactionHistory => {
+}): ConfirmedTransactionHistory<S, T> => {
   const transactions = ledgerTransactions.map((txn) =>
     translateLedgerTxnToWalletTxn({ txn, nonEndUserWalletIds }),
   )

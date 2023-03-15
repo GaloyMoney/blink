@@ -25,6 +25,10 @@ beforeAll(async () => {
   if (!walletName) throw new Error("Invalid specter wallet name")
 
   coldStorageWalletClient = new BitcoindWalletClient(walletName)
+
+  // Note: Needed to clean up any pending txns since test adds pending txns to balance
+  //       while onChainService does not.
+  await mineBlockAndSyncAll()
 })
 
 afterEach(async () => {

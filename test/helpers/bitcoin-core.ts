@@ -22,9 +22,17 @@ export async function sendToAddressAndConfirm({
   walletClient: BitcoindWalletClient
   address: OnChainAddress
   amount: number
-}) {
-  await walletClient.sendToAddress({ address, amount })
+}): Promise<OnChainTxHash | Error> {
+  let txId: OnChainTxHash | Error
+  try {
+    txId = (await walletClient.sendToAddress({ address, amount })) as OnChainTxHash
+  } catch (err) {
+    txId = new Error(err.message || err)
+  }
+
   await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
+
+  return txId
 }
 
 export const sendToAddress = async ({

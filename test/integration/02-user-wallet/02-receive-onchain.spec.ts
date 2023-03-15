@@ -12,12 +12,12 @@ import {
 } from "@config"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { DisplayCurrency, MajorExponent, toCents } from "@domain/fiat"
+import { DisplayCurrency, MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { WalletPriceRatio } from "@domain/payments"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -55,8 +55,6 @@ import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/walle
 let walletIdA: WalletId
 let walletIdB: WalletId
 let accountIdA: AccountId
-
-const calc = AmountCalculator()
 
 const accountLimits = getAccountLimits({ level: 1 })
 
@@ -149,7 +147,7 @@ describe("UserWallet - On chain", () => {
     const receivedBtc = { amount: BigInt(amountSats), currency: WalletCurrency.Btc }
 
     // Execute receive
-    await sendToWalletTestWrapper({
+    const txId = await sendToWalletTestWrapper({
       walletId: walletIdA,
       amountSats,
     })
@@ -168,26 +166,30 @@ describe("UserWallet - On chain", () => {
       amount: amountSats,
       ratio: account.depositFeeRatio,
     })
-    const satsFee = paymentAmountFromNumber({
+    const expectedSatsFee = paymentAmountFromNumber({
       amount: fee,
       currency: WalletCurrency.Btc,
     })
-    if (satsFee instanceof Error) throw satsFee
+    if (expectedSatsFee instanceof Error) throw expectedSatsFee
 
-    const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
-    if (priceRatio instanceof Error) return priceRatio
+    const txns = await LedgerService().getTransactionsByHash(txId)
+    if (txns instanceof Error) throw txns
+    const { satsFee, displayAmount: displayAmountRaw, displayCurrency } = txns[0]
 
-    const bankFee = {
-      usdBankFee: priceRatio.convertFromBtcToCeil(satsFee),
-      btcBankFee: satsFee,
-    }
+    expect(Number(expectedSatsFee.amount)).toEqual(satsFee)
 
-    const usdToCreditReceiver = calc.sub(receivedUsd, bankFee.usdBankFee)
+    const displayAmountMajorUnit = minorToMajorUnit({
+      amount: displayAmountRaw || 0,
+      displayMajorExponent: MajorExponent.STANDARD,
+    })
 
-    const displayAmount = {
-      amount: Number((Number(usdToCreditReceiver.amount) / 100).toFixed(2)),
-      currency: DisplayCurrency.Usd,
-    }
+    const displayAmount =
+      displayAmountRaw === undefined || displayCurrency === undefined
+        ? undefined
+        : {
+            currency: displayCurrency,
+            amount: Number(displayAmountMajorUnit),
+          }
 
     // Check received notification
     const receivedNotification = createPushNotificationContent({
@@ -414,9 +416,14 @@ describe("UserWallet - On chain", () => {
         pendingTx.settlementAmount * pendingTx.displayCurrencyPerSettlementCurrencyUnit
       ).toFixed(MajorExponent.STANDARD),
     )
+
     expect(pendingTx.settlementDisplayFee).toBe(
       (
-        pendingTx.settlementFee * pendingTx.displayCurrencyPerSettlementCurrencyUnit
+        Math.ceil(
+          pendingTx.settlementFee *
+            pendingTx.displayCurrencyPerSettlementCurrencyUnit *
+            100,
+        ) / 100
       ).toFixed(MajorExponent.STANDARD),
     )
 
@@ -490,7 +497,7 @@ async function sendToWalletTestWrapper({
   amountSats: Satoshis
   walletId: WalletId
   depositFeeRatio?: DepositFeeRatio
-}) {
+}): Promise<OnChainTxHash> {
   const lnd = lndonchain
 
   const initialBalance = await getBalanceHelper(walletId)
@@ -553,11 +560,12 @@ async function sendToWalletTestWrapper({
 
   // just to improve performance
   const blockNumber = await bitcoindClient.getBlockCount()
-  await sendToAddressAndConfirm({
+  const txId = await sendToAddressAndConfirm({
     walletClient: bitcoindOutside,
     address,
     amount: sat2btc(amountSats),
   })
+  if (txId instanceof Error) throw txId
   const txn = await checkBalance(blockNumber)
 
   // Check ledger transaction metadata for BTC 'LedgerTransactionType.OnchainReceipt'
@@ -614,6 +622,8 @@ async function sendToWalletTestWrapper({
     displayCurrency: DisplayCurrency.Usd,
   }
   expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
+
+  return txId
 }
 
 async function testTxnsByAddressWrapper({
