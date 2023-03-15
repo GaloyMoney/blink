@@ -29,6 +29,10 @@
 #@   return data.values.docker_registry + "/galoy-app-migrate"
 #@ end
 
+#@ def websocket_galoy_image():
+#@   return data.values.docker_registry + "/galoy-app-websocket"
+#@ end
+
 #@ def release_pipeline_image():
 #@   return data.values.docker_registry + "/release-pipeline"
 #@ end
@@ -52,6 +56,7 @@ groups:
       - build-edge-image
       - build-debug-edge-image
       - build-migrate-edge-image
+      - build-websocket-edge-image
       - install-deps
       - bump-image-in-chart
       - release
@@ -232,6 +237,32 @@ jobs:
         params:
           image: image/image.tar
 
+  - name: build-websocket-edge-image
+    serial: true
+    plan:
+      - { get: repo, trigger: true }
+      - task: build
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+          inputs:
+            - name: repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: repo
+            BUILD_ARGS_FILE: repo/.env
+            DOCKERFILE: "repo/Dockerfile-websocket"
+          run:
+            path: build
+      - put: websocket-edge-image
+        params:
+          image: image/image.tar
+
   - name: release
     plan:
       - in_parallel:
@@ -246,6 +277,7 @@ jobs:
               - build-debug-edge-image
               - build-migrate-edge-image
               - build-edge-image
+              - build-websocket-edge-image
           - get: pipeline-tasks
           - get: edge-image
             passed: [build-edge-image]
@@ -510,6 +542,14 @@ resources:
       username: #@ data.values.docker_registry_user
       password: #@ data.values.docker_registry_password
       repository: #@ migrate_galoy_image()
+
+  - name: websocket-edge-image
+    type: registry-image
+    source:
+      tag: edge
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ websocket_galoy_image()
 
   - name: version
     type: semver
