@@ -3,8 +3,8 @@ import { GT } from "@graphql/index"
 import IPrice from "../abstract/price"
 import SafeInt from "../scalar/safe-int"
 
-const SettlementPriceInMinorUnit = GT.Object({
-  name: "SettlementPriceInMinorUnit",
+const PriceOfOneSettlementMinorUnitInDisplayMinorUnit = GT.Object({
+  name: "PriceOfOneSettlementMinorUnitInDisplayMinorUnit",
   interfaces: () => [IPrice],
   description:
     "Price of 1 sat or 1 usd cent in base/offset. To calculate, use: `base / 10^offset`",
@@ -22,4 +22,4 @@ const SettlementPriceInMinorUnit = GT.Object({
   }),
 })
 
-export default SettlementPriceInMinorUnit
+export default PriceOfOneSettlementMinorUnitInDisplayMinorUnit

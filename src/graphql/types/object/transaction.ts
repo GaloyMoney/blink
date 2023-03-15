@@ -22,7 +22,7 @@ import DisplayCurrency from "../scalar/display-currency"
 import SignedDisplayMajorAmount from "../scalar/signed-display-amount"
 import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 
-import SettlementPriceInMinorUnit from "./settlement-price-in-minor-unit"
+import PriceOfOneSettlementMinorUnitInDisplayMinorUnit from "./price-of-one-settlement-minor-unit-in-display-minor-unit"
 
 const Transaction = GT.Object<WalletTransaction>({
   name: "Transaction",
@@ -84,7 +84,7 @@ const Transaction = GT.Object<WalletTransaction>({
       type: GT.NonNull(SignedAmount),
     },
     settlementPrice: {
-      type: GT.NonNull(SettlementPriceInMinorUnit),
+      type: GT.NonNull(PriceOfOneSettlementMinorUnitInDisplayMinorUnit),
       resolve: (source) => {
         const displayCurrency = checkedToDisplayCurrency(source.settlementDisplayCurrency)
         if (displayCurrency instanceof Error) throw mapError(displayCurrency)
@@ -103,7 +103,7 @@ const Transaction = GT.Object<WalletTransaction>({
           base: Math.round(displayCurrencyPriceInMinorUnit * 10 ** offset),
           offset,
           currencyUnit: "MINOR",
-          formattedAmount: displayCurrencyPriceInMinorUnit.toString(),
+          formattedAmount: `${displayCurrencyPriceInMinorUnit}`,
         }
       },
       description: "Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement.",
