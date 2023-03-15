@@ -52,11 +52,15 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
             const settlementAmount =
               walletCurrency === WalletCurrency.Btc
                 ? settlementAmountSats
+                : walletPriceRatio === undefined // This should not be 'undefined' when walletCurrency === "USD"
+                ? toCents(0)
                 : toCents(walletPriceRatio.convertFromBtc(btcSettlementAmount).amount)
 
             const settlementFee =
               walletCurrency === WalletCurrency.Btc
                 ? fee
+                : walletPriceRatio === undefined // This should not be 'undefined' when walletCurrency === "USD"
+                ? toCents(0)
                 : toCents(walletPriceRatio.convertFromBtcToCeil(btcFeeAmount).amount)
 
             const settlementDisplayAmount =

@@ -116,7 +116,8 @@ type WalletDetailsByWalletId<
   WalletId,
   {
     walletCurrency: S
-    walletPriceRatio: WalletPriceRatio
+    // TODO: Add conditional type here to be: S extends "BTC" ? undefined : WalletPriceRatio
+    walletPriceRatio: WalletPriceRatio | undefined
     depositFeeRatio: DepositFeeRatio
     displayCurrency: T
     displayPriceRatio: DisplayPriceRatio<"BTC", T> | undefined
