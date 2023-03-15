@@ -361,16 +361,6 @@ scalar SafeInt
 """
 scalar SatAmount
 
-"""
-Price of 1 sat or 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
-"""
-type SettlementPriceInMinorUnit implements PriceInterface {
-  base: SafeInt!
-  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
-  formattedAmount: String! @deprecated(reason: "Deprecated please use `base / 10^offset`")
-  offset: Int!
-}
-
 union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
 
 type SettlementViaIntraLedger {
