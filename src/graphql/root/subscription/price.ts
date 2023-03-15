@@ -4,7 +4,7 @@ import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 import { Prices } from "@app"
 
-import { checkedToDisplayCurrency, DisplayCurrency } from "@domain/fiat"
+import { checkedToDisplayCurrency } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
 import { GT } from "@graphql/index"

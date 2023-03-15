@@ -257,6 +257,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: recipientTxn.centsAmount,
               displayFee: recipientTxn.centsFee,
+              displayCurrency: DisplayCurrency.Usd,
             }),
           )
         }
@@ -392,6 +393,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
+              displayCurrency: DisplayCurrency.Usd,
             }),
           )
         }
@@ -460,6 +462,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
+              displayCurrency: DisplayCurrency.Usd,
             }),
           )
         }
@@ -630,6 +633,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
+              displayCurrency: DisplayCurrency.Usd,
             }),
           )
         }
@@ -716,6 +720,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: recipientTxn.centsAmount,
               displayFee: recipientTxn.centsFee,
+              displayCurrency: DisplayCurrency.Usd,
             }),
           )
         }
@@ -936,6 +941,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
+              displayCurrency: DisplayCurrency.Usd,
             }),
           )
         }
@@ -1028,6 +1034,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
+              displayCurrency: DisplayCurrency.Usd,
             }),
           )
         }
@@ -1162,6 +1169,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
+              displayCurrency: DisplayCurrency.Usd,
             }),
           )
         }

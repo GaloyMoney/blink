@@ -308,7 +308,7 @@ const fromLedger = <S extends WalletCurrency, T extends DisplayCurrency>({
   ledgerTransactions,
   nonEndUserWalletIds,
 }: {
-  ledgerTransactions: LedgerTransaction<WalletCurrency>[]
+  ledgerTransactions: LedgerTransaction<S>[]
   nonEndUserWalletIds: WalletId[]
 }): ConfirmedTransactionHistory<S, T> => {
   const transactions = ledgerTransactions.map((txn) =>

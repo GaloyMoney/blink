@@ -364,7 +364,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
   if (walletPriceRatio instanceof Error) throw walletPriceRatio
 
   const displayPriceRatio = DisplayPriceRatio({
-    displayAmountInMinorUnit: { amount: 16, currency: WalletCurrency.Usd },
+    displayAmountInMinorUnit: { amount: 16, currency: DisplayCurrency.Usd },
     walletAmount: { amount: 1000n, currency: WalletCurrency.Btc },
     displayMajorExponent: MajorExponent.STANDARD,
   })

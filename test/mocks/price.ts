@@ -20,6 +20,13 @@ export const PriceService = (): IPriceService => {
         flag: "🇨🇷",
         fractionDigits: 2,
       } as PriceCurrency,
+      {
+        code: "USD",
+        symbol: "$",
+        name: "US Dollar",
+        flag: "🇺🇸",
+        fractionDigits: 2,
+      } as PriceCurrency,
     ],
   }
 }
