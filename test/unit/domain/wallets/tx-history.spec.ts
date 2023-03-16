@@ -7,7 +7,7 @@ import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import { MEMO_SHARING_CENTS_THRESHOLD, MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { WalletCurrency } from "@domain/shared"
-import { DisplayCurrency, MajorExponent, toCents } from "@domain/fiat"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
 
 describe("translates ledger txs to wallet txs", () => {
@@ -450,7 +450,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
   const displayPriceRatio = DisplayPriceRatio({
     displayAmountInMinorUnit: { amount: 16, currency: DisplayCurrency.Usd },
     walletAmount: { amount: 1000n, currency: WalletCurrency.Btc },
-    displayMajorExponent: MajorExponent.STANDARD,
   })
   if (displayPriceRatio instanceof Error) throw displayPriceRatio
 

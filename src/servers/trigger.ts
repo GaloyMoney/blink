@@ -35,12 +35,7 @@ import { SwapTriggerError } from "@domain/swap/errors"
 import { CouldNotFindTransactionError } from "@domain/ledger"
 import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import {
-  checkedToDisplayCurrency,
-  MajorExponent,
-  minorToMajorUnit,
-  usdMinorToMajorUnit,
-} from "@domain/fiat"
+import { checkedToDisplayCurrency, minorToMajorUnit } from "@domain/fiat"
 
 import {
   AccountsRepository,
@@ -133,12 +128,10 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
         const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
         displayPaymentAmount = {
           ...paymentAmount,
-          amount: Number(
-            minorToMajorUnit({
-              amount: paymentAmount.amountInMinor,
-              displayMajorExponent: MajorExponent.STANDARD,
-            }),
-          ),
+          amount: minorToMajorUnit({
+            amount: paymentAmount.amountInMinor,
+            displayCurrency: paymentAmount.currency,
+          }),
         }
       }
     }
@@ -242,7 +235,10 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
             const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
             displayPaymentAmount = {
               ...paymentAmount,
-              amount: usdMinorToMajorUnit(paymentAmount.amountInMinor),
+              amount: minorToMajorUnit({
+                amount: paymentAmount.amountInMinor,
+                displayCurrency: paymentAmount.currency,
+              }),
             }
           }
         }

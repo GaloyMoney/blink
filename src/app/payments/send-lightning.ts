@@ -7,7 +7,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import { minorToMajorUnit } from "@domain/fiat"
 import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
@@ -515,7 +515,10 @@ const executePaymentViaIntraledger = async <
       recipientWalletId,
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
-        amount: usdMinorToMajorUnit(recipientAmountDisplayCurrencyAsNumber),
+        amount: minorToMajorUnit({
+          amount: recipientAmountDisplayCurrencyAsNumber,
+          displayCurrency: recipientAccount.displayCurrency,
+        }),
         currency: recipientAccount.displayCurrency,
       },
       paymentHash,

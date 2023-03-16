@@ -1,4 +1,4 @@
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
 import {
@@ -42,7 +42,10 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
           )
           // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
           displayBalanceAmount = {
-            amount: usdMinorToMajorUnit(displayAmount.amountInMinor),
+            amount: minorToMajorUnit({
+              amount: displayAmount.amountInMinor,
+              displayCurrency: displayAmount.currency,
+            }),
             currency: displayCurrency,
           }
         }
@@ -59,7 +62,10 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
             const displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)
             // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
             displayBalanceAmount = {
-              amount: usdMinorToMajorUnit(displayAmount.amountInMinor),
+              amount: minorToMajorUnit({
+                amount: displayAmount.amountInMinor,
+                displayCurrency: displayAmount.currency,
+              }),
               currency: displayCurrency,
             }
           }

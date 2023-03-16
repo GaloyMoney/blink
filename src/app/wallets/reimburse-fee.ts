@@ -1,4 +1,3 @@
-import { MajorExponent } from "@domain/fiat"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
 import {
@@ -72,7 +71,6 @@ export const reimburseFee = async <
   const displayPriceRatio = DisplayPriceRatio({
     displayAmountInMinorUnit: displayAmount,
     walletAmount: paymentFlow.btcPaymentAmount,
-    displayMajorExponent: MajorExponent.STANDARD,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
   const reimburseAmountDisplayCurrency = displayPriceRatio.convertFromWallet(

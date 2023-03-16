@@ -4,7 +4,7 @@ import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
 
 import { Accounts, Prices, Wallets } from "@app"
 
-import { currencyMajorToMinorUnit } from "@domain/fiat"
+import { majorToMinorUnit } from "@domain/fiat"
 import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 
 import { GT } from "@graphql/index"
@@ -65,11 +65,11 @@ const BusinessAccount = GT.Object({
         const usdPrice = await Prices.getCurrentUsdCentPrice({ currency })
         if (usdPrice instanceof Error) throw mapError(usdPrice)
 
-        const minorUnitPerSat = currencyMajorToMinorUnit({
+        const minorUnitPerSat = majorToMinorUnit({
           amount: btcPrice.price,
           displayCurrency: currency,
         })
-        const minorUnitPerUsdCent = currencyMajorToMinorUnit({
+        const minorUnitPerUsdCent = majorToMinorUnit({
           amount: usdPrice.price,
           displayCurrency: currency,
         })

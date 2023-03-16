@@ -16,12 +16,7 @@ import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
-import {
-  DisplayCurrency,
-  MajorExponent,
-  minorToMajorUnit,
-  usdMinorToMajorUnit,
-} from "@domain/fiat"
+import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 
@@ -249,7 +244,7 @@ const processTxForWallet = async (
             amount: Number(
               minorToMajorUnit({
                 amount: creditAccountAdditionalMetadata.displayAmount,
-                displayMajorExponent: MajorExponent.STANDARD,
+                displayCurrency: creditAccountAdditionalMetadata.displayCurrency,
               }),
             ),
             currency: displayCurrency,
@@ -348,12 +343,14 @@ const processTxForHotWallet = async ({
           description,
           sats,
           fee,
-          amountDisplayCurrency: usdMinorToMajorUnit(
-            amountDisplayCurrencyAmount.amount,
-          ) as DisplayCurrencyBaseAmount,
-          feeDisplayCurrency: usdMinorToMajorUnit(
-            feeDisplayCurrencyAmount.amount,
-          ) as DisplayCurrencyBaseAmount,
+          amountDisplayCurrency: minorToMajorUnit({
+            amount: amountDisplayCurrencyAmount.amount,
+            displayCurrency: DisplayCurrency.Usd,
+          }) as DisplayCurrencyBaseAmount,
+          feeDisplayCurrency: minorToMajorUnit({
+            amount: feeDisplayCurrencyAmount.amount,
+            displayCurrency: DisplayCurrency.Usd,
+          }) as DisplayCurrencyBaseAmount,
           payeeAddress: address,
         })
 

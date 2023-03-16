@@ -7,7 +7,7 @@ import {
   toWalletPriceRatio,
   WalletPriceRatio,
 } from "@domain/payments"
-import { DisplayCurrency, MajorExponent } from "@domain/fiat"
+import { DisplayCurrency } from "@domain/fiat"
 
 describe("PriceRatio", () => {
   const otherQuoteAmount = 100n
@@ -397,7 +397,6 @@ describe("DisplayPriceRatio", () => {
   const displayPriceRatio = DisplayPriceRatio({
     displayAmountInMinorUnit: displayQuoteAmount,
     walletAmount: btcQuoteAmount,
-    displayMajorExponent: MajorExponent.STANDARD,
   })
   if (displayPriceRatio instanceof Error) throw displayPriceRatio
 

@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
+import { DisplayCurrency, minorToMajorUnit, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
@@ -38,7 +38,7 @@ describe("SettlementAmounts", () => {
 
   const expectedDisplayFee = minorToMajorUnit({
     amount: displayFee,
-    displayMajorExponent: MajorExponent.STANDARD,
+    displayCurrency,
   })
 
   const debitCreditScenarios = {
@@ -91,7 +91,7 @@ describe("SettlementAmounts", () => {
 
           const expectedDisplayAmountForDebit = minorToMajorUnit({
             amount: expectedDisplayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
+            displayCurrency: txnDebit.displayCurrency || DisplayCurrency.Usd,
           })
           expect(settlementAmount).toEqual(expectedSettlementAmountForDebit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForDebit)
@@ -120,7 +120,7 @@ describe("SettlementAmounts", () => {
 
           const expectedDisplayAmountForCredit = minorToMajorUnit({
             amount: expectedDisplayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
+            displayCurrency: txnCredit.displayCurrency || DisplayCurrency.Usd,
           })
           expect(settlementAmount).toEqual(expectedSettlementAmountForCredit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForCredit)
@@ -157,7 +157,7 @@ describe("SettlementAmounts", () => {
 
           const expectedDisplayAmountForDebit = minorToMajorUnit({
             amount: expectedDisplayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
+            displayCurrency: txnDebit.displayCurrency || DisplayCurrency.Usd,
           })
           expect(settlementAmount).toEqual(expectedSettlementAmountForDebit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForDebit)
@@ -186,7 +186,7 @@ describe("SettlementAmounts", () => {
 
           const expectedDisplayAmountForCredit = minorToMajorUnit({
             amount: expectedDisplayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
+            displayCurrency: txnCredit.displayCurrency || DisplayCurrency.Usd,
           })
           expect(settlementAmount).toEqual(expectedSettlementAmountForCredit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForCredit)
