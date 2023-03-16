@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, minorToMajorUnit, toCents } from "@domain/fiat"
+import { DisplayCurrency, minorToMajorUnitFormatted, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
 export const SettlementAmounts = () => {
@@ -99,14 +99,14 @@ export const SettlementAmounts = () => {
 
     return {
       settlementAmount,
-      settlementDisplayAmount: `${minorToMajorUnit({
+      settlementDisplayAmount: minorToMajorUnitFormatted({
         amount: settlementDisplayAmountAsNumber,
         displayCurrency: displayCurrency || DisplayCurrency.Usd,
-      })}`,
-      settlementDisplayFee: `${minorToMajorUnit({
+      }),
+      settlementDisplayFee: minorToMajorUnitFormatted({
         amount: displayFee,
         displayCurrency: displayCurrency || DisplayCurrency.Usd,
-      })}`,
+      }),
     }
   }
 
