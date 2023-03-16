@@ -1,0 +1,22 @@
+name: "Mobile Schema Compatibility"
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  compatibility:
+    name: Check mobile compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: repo
+      - uses: actions/checkout@v3
+        with:
+          repository: GaloyMoney/galoy-mobile-deployments
+          ssh-key: ${{ secrets.MOBILE_DEPLOYMENTS_SSH_KEY }}
+          fetch-depth: 0
+          path: mobile-deployments
+      - name: Check compatibility
+        run: ./repo/ci/tasks/check-mobile-schema-compatibility.sh
