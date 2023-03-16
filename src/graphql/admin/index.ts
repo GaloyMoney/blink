@@ -1,22 +1,11 @@
-import { GraphQLSchema, lexicographicSortSchema, printSchema } from "graphql"
+import { GraphQLSchema } from "graphql"
 
-import { isDev, isRunningJest } from "@config"
-
-import { QueryType } from "./queries"
 import { MutationType } from "./mutations"
+import { QueryType } from "./queries"
 import { ALL_INTERFACE_TYPES } from "./types"
 
-export { queryFields as adminQueryFields } from "./queries"
 export { mutationFields as adminMutationFields } from "./mutations"
-
-if (isDev && !isRunningJest) {
-  import("@services/fs").then(({ writeSDLFile }) => {
-    writeSDLFile(
-      __dirname + "/schema.graphql",
-      printSchema(lexicographicSortSchema(gqlAdminSchema)),
-    )
-  })
-}
+export { queryFields as adminQueryFields } from "./queries"
 
 export const gqlAdminSchema = new GraphQLSchema({
   query: QueryType,

@@ -145,6 +145,7 @@ check-code: check-implicit
 	yarn eslint-check
 	yarn build
 	yarn check-yaml
+	. ./.envrc && yarn check:schema-updated
 
 create-tmp-env-ci:
 	. ./.envrc && \
