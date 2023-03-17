@@ -313,13 +313,19 @@ enum PhoneCodeChannelType {
   WHATSAPP
 }
 
-"""
-Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
-"""
-type Price {
+interface PriceInterface {
   base: SafeInt!
-  currencyUnit: String!
-  formattedAmount: String!
+  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
+  offset: Int!
+}
+
+"""
+Price of 1 sat or 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
+"""
+type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
+  base: SafeInt!
+  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
+  formattedAmount: String! @deprecated(reason: "Deprecated please use `base / 10^offset`")
   offset: Int!
 }
 
@@ -435,9 +441,9 @@ type Transaction {
   settlementFee: SignedAmount!
 
   """
-  Price in USDCENT/SETTLEMENTUNIT at time of settlement.
+  Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement.
   """
-  settlementPrice: Price!
+  settlementPrice: PriceOfOneSettlementMinorUnitInDisplayMinorUnit!
 
   """
   To which protocol the payment has settled on.
