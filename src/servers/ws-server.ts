@@ -144,11 +144,14 @@ const server = () =>
         authorizedContexts[ctx.connectionParams.Authorization] = context
         return true
       },
-      context: (ctx) => {
+      context: async (ctx) => {
         // TODO: integrate open telemetry
         if (typeof ctx.connectionParams?.Authorization === "string") {
           return authorizedContexts[ctx.connectionParams?.Authorization]
         }
+        // anon context
+        const context = await getContext(ctx)
+        return context
       },
       onNext: (ctx, msg, args, result) => {
         baseLogger.debug("Next", { ctx, msg, args, result })
