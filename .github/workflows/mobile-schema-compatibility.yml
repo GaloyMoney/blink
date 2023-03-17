@@ -15,8 +15,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: GaloyMoney/galoy-mobile-deployments
-          ssh-key: ${{ secrets.MOBILE_DEPLOYMENTS_SSH_KEY }}
+          ref: main
           fetch-depth: 0
           path: mobile-deployments
+          ssh-key: ${{ secrets.MOBILE_DEPLOYMENTS_SSH_KEY }}
       - name: Check compatibility
         run: ./repo/ci/tasks/check-mobile-schema-compatibility.sh
