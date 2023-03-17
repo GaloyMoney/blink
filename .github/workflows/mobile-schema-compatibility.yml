@@ -5,9 +5,26 @@ on:
     branches: [main]
 
 jobs:
+  check-secret:
+    runs-on: ubuntu-latest
+    outputs:
+      secret_exists: ${{ steps.secret_exists.outputs.defined }}
+    steps:
+      - name: Check for Secret availability
+        id: secret_exists
+        shell: bash
+        run: |
+          if [ "${{ secrets.MOBILE_DEPLOYMENTS_SSH_KEY }}" != '' ]; then
+            echo "defined=true" >> $GITHUB_OUTPUT;
+          else
+            echo "defined=false" >> $GITHUB_OUTPUT;
+          fi
+
   compatibility:
     name: Check mobile compatibility
     runs-on: ubuntu-latest
+    needs: [check-secret]
+    if: needs.check-secret.outputs.secret_exists == 'true'
     steps:
       - uses: actions/checkout@v3
         with:
