@@ -51,12 +51,12 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         }
 
         if (balanceAmount.currency === WalletCurrency.Usd) {
-          const usdDisplayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+          const usdWalletPriceRatio = await getCurrentPriceAsWalletPriceRatio({
             currency: DisplayCurrency.Usd,
           })
 
-          if (!(usdDisplayPriceRatio instanceof Error)) {
-            const btcBalanceAmount = usdDisplayPriceRatio.convertFromUsd(
+          if (!(usdWalletPriceRatio instanceof Error)) {
+            const btcBalanceAmount = usdWalletPriceRatio.convertFromUsd(
               balanceAmount as UsdPaymentAmount,
             )
             const displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)

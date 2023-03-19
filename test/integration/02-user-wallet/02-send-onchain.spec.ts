@@ -1121,11 +1121,11 @@ describe("BtcWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
+    const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
+      currency: WalletCurrency.Usd,
     })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-    const satsAmount = displayPriceRatio.convertFromUsd({
+    if (walletPriceRatio instanceof Error) throw walletPriceRatio
+    const satsAmount = walletPriceRatio.convertFromUsd({
       amount: BigInt(withdrawalLimit),
       currency: WalletCurrency.Usd,
     })

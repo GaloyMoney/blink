@@ -5,11 +5,7 @@ import {
   SECS_PER_10_MINS,
 } from "@config"
 
-import {
-  getCurrentPriceAsDisplayPriceRatio,
-  getCurrentPriceAsWalletPriceRatio,
-  usdFromBtcMidPriceFn,
-} from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
@@ -296,7 +292,7 @@ const processTxForHotWallet = async ({
 
   const ledger = LedgerService()
 
-  const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: DisplayCurrency.Usd,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
@@ -333,8 +329,9 @@ const processTxForHotWallet = async ({
         })
         if (feeAmount instanceof Error) return feeAmount
 
-        const amountDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(satsAmount)
-        const feeDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(feeAmount)
+        const amountDisplayCurrencyAmount =
+          displayPriceRatio.convertFromWallet(satsAmount)
+        const feeDisplayCurrencyAmount = displayPriceRatio.convertFromWallet(feeAmount)
 
         const description = `deposit to hot wallet of ${sats} sats from the cold storage wallet`
 
@@ -344,11 +341,11 @@ const processTxForHotWallet = async ({
           sats,
           fee,
           amountDisplayCurrency: minorToMajorUnit({
-            amount: amountDisplayCurrencyAmount.amount,
+            amount: amountDisplayCurrencyAmount.amountInMinor,
             displayCurrency: DisplayCurrency.Usd,
           }) as DisplayCurrencyBaseAmount,
           feeDisplayCurrency: minorToMajorUnit({
-            amount: feeDisplayCurrencyAmount.amount,
+            amount: feeDisplayCurrencyAmount.amountInMinor,
             displayCurrency: DisplayCurrency.Usd,
           }) as DisplayCurrencyBaseAmount,
           payeeAddress: address,

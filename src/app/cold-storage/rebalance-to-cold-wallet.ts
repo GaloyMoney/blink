@@ -1,6 +1,6 @@
 import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
-import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
@@ -29,7 +29,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
 
-  const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: DisplayCurrency.Usd,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
@@ -80,9 +80,10 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
     currency: WalletCurrency.Btc,
   })
   if (rebalanceBtcAmount instanceof Error) return rebalanceBtcAmount
-  const amountDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(rebalanceBtcAmount)
+  const amountDisplayCurrencyAmount =
+    displayPriceRatio.convertFromWallet(rebalanceBtcAmount)
   const amountDisplayCurrency = minorToMajorUnit({
-    amount: amountDisplayCurrencyAmount.amount,
+    amount: amountDisplayCurrencyAmount.amountInMinor,
     displayCurrency: amountDisplayCurrencyAmount.currency,
   }) as DisplayCurrencyBaseAmount
 
@@ -91,9 +92,9 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
     currency: WalletCurrency.Btc,
   })
   if (feeBtcAmount instanceof Error) return feeBtcAmount
-  const feeDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(feeBtcAmount)
+  const feeDisplayCurrencyAmount = displayPriceRatio.convertFromWallet(feeBtcAmount)
   const feeDisplayCurrency = minorToMajorUnit({
-    amount: feeDisplayCurrencyAmount.amount,
+    amount: feeDisplayCurrencyAmount.amountInMinor,
     displayCurrency: feeDisplayCurrencyAmount.currency,
   }) as DisplayCurrencyBaseAmount
 
