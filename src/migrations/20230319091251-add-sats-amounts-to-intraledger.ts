@@ -5,25 +5,28 @@ module.exports = {
     const collection = db.collection("medici_transactions")
 
     try {
-      const allTxns = await collection.aggregate([
-        {
-          $match: {
-            type: { $in: txTypes },
-            satsAmount: { $exists: false },
-            currency: "BTC",
+      const allTxns = await collection.aggregate(
+        [
+          {
+            $match: {
+              type: { $in: txTypes },
+              satsAmount: { $exists: false },
+              currency: "BTC",
+            },
           },
-        },
-        {
-          $group: {
-            _id: "$_journal",
-            // 'debit' here would be the full BTC amount sent
-            debit: { $max: "$debit" },
-            fee: { $first: "$fee" },
-            usd: { $first: "$usd" },
-            feeUsd: { $first: "$feeUsd" },
+          {
+            $group: {
+              _id: "$_journal",
+              // 'debit' here would be the full BTC amount sent
+              debit: { $max: "$debit" },
+              fee: { $first: "$fee" },
+              usd: { $first: "$usd" },
+              feeUsd: { $first: "$feeUsd" },
+            },
           },
-        },
-      ])
+        ],
+        { allowDiskUse: true },
+      )
       for await (const { _id: journalId, debit, fee, usd, feeUsd } of allTxns) {
         const satsAmount = Math.round(debit - fee)
         const centsAmount = Math.round((usd - feeUsd) * 100)
