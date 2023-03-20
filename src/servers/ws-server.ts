@@ -66,7 +66,7 @@ const getContext = async (ctx: Context) => {
   //   })
   // }
 
-  const kratosToken = authz?.slice(7) as LegacyJwtToken | SessionToken
+  const kratosToken = authz?.slice(7) as SessionToken
 
   // make request to oathkeeper
   // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"
