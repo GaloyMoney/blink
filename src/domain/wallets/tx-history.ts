@@ -4,7 +4,7 @@ import {
   OnboardingEarn,
 } from "@config"
 
-import { MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
+import { DisplayCurrency, MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
@@ -187,7 +187,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     settlementCurrency: txn.currency,
     settlementDisplayAmount,
     settlementDisplayFee,
-    settlementDisplayCurrency: displayCurrency || "",
+    settlementDisplayCurrency: displayCurrency || DisplayCurrency.Usd,
     displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
       displayAmount,
       baseAmount: txn.currency === WalletCurrency.Btc ? satsAmount : centsAmount,

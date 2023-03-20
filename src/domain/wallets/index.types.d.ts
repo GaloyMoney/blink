@@ -54,7 +54,7 @@ type BaseWalletTransaction = {
   readonly settlementCurrency: WalletCurrency
   readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayFee: DisplayCurrencyMajorAmount
-  readonly settlementDisplayCurrency: DisplayCurrency | ""
+  readonly settlementDisplayCurrency: DisplayCurrency
   readonly displayCurrencyPerSettlementCurrencyUnit: number
   readonly status: TxStatus
   readonly memo: string | null
