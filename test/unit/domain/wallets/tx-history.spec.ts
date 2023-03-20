@@ -251,6 +251,90 @@ describe("translates ledger txs to wallet txs", () => {
       const expected = expectedWalletTxns(txnsArgs)
       expect(result.transactions).toEqual(expected)
     })
+
+    it("handles missing satsAmount-related properties", () => {
+      const currency = WalletCurrency.Btc
+      const settlementAmount = satsAmount
+
+      const txnsArgs = {
+        walletId: crypto.randomUUID() as WalletId,
+        settlementAmount,
+        satsAmount,
+        centsAmount,
+        centsFee,
+        displayAmount: centsAmount,
+        displayFee: centsFee,
+        currency,
+      }
+
+      const ledgerTransactions = ledgerTxnsInputs(txnsArgs)
+
+      // Remove satsAmount-related properties
+      const ledgerTransactionsModified = ledgerTransactions.map((tx) => {
+        const {
+          satsAmount,
+          satsFee,
+          centsAmount,
+          centsFee,
+          displayAmount,
+          displayFee,
+          displayCurrency,
+          ...rest
+        } = tx
+
+        const removed = [
+          satsAmount,
+          satsFee,
+          centsAmount,
+          centsFee,
+          displayAmount,
+          displayFee,
+          displayCurrency,
+        ]
+        removed // dummy call to satisfy type-checker
+
+        return rest
+      })
+
+      const result = WalletTransactionHistory.fromLedger({
+        ledgerTransactions: ledgerTransactionsModified,
+        nonEndUserWalletIds: [],
+      })
+
+      const expected = expectedWalletTxns(txnsArgs)
+
+      // Modify satsAmount-related-dependent properties
+      const expectedTransactionsModified = expected.map((tx) => {
+        const {
+          settlementFee,
+          settlementDisplayAmount,
+          settlementDisplayFee,
+          settlementDisplayCurrency,
+          displayCurrencyPerSettlementCurrencyUnit,
+          ...rest
+        } = tx
+
+        const removed = [
+          settlementFee,
+          settlementDisplayAmount,
+          settlementDisplayFee,
+          settlementDisplayCurrency,
+          displayCurrencyPerSettlementCurrencyUnit,
+        ]
+        removed // dummy call to satisfy type-checker
+
+        return {
+          settlementFee: 0,
+          settlementDisplayAmount: "0.00",
+          settlementDisplayFee: "0.00",
+          settlementDisplayCurrency: DisplayCurrency.Usd,
+          displayCurrencyPerSettlementCurrencyUnit: 0,
+          ...rest,
+        }
+      })
+
+      expect(result.transactions).toEqual(expectedTransactionsModified)
+    })
   })
 })
 
