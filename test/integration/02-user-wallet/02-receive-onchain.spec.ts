@@ -22,7 +22,11 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { WalletPriceRatio } from "@domain/payments"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  newDisplayAmountFromNumber,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -183,9 +187,13 @@ describe("UserWallet - On chain", () => {
 
     expect(Number(expectedSatsFee.amount)).toEqual(satsFee)
 
-    const displayAmountMajorUnit = minorToMajorUnit({
+    const displayAmountForMajor = newDisplayAmountFromNumber({
       amount: displayAmountRaw || 0,
-      displayCurrency: displayCurrency || DisplayCurrency.Usd,
+      currency: displayCurrency || DisplayCurrency.Usd,
+    })
+    if (displayAmountForMajor instanceof Error) throw displayAmountForMajor
+    const displayAmountMajorUnit = minorToMajorUnit({
+      displayAmount: displayAmountForMajor,
     })
 
     const displayAmount =

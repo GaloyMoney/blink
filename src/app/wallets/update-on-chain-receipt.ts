@@ -10,7 +10,11 @@ import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/p
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  newDisplayAmountFromNumber,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
 import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
@@ -236,11 +240,16 @@ const processTxForWallet = async (
           )
           if (recipientUser instanceof Error) return recipientUser
 
+          const displayAmount = newDisplayAmountFromNumber({
+            amount: creditAccountAdditionalMetadata.displayAmount,
+            currency: creditAccountAdditionalMetadata.displayCurrency,
+          })
+          if (displayAmount instanceof Error) return displayAmount
+
           const displayPaymentAmount = {
             amount: Number(
               minorToMajorUnit({
-                amount: creditAccountAdditionalMetadata.displayAmount,
-                displayCurrency: creditAccountAdditionalMetadata.displayCurrency,
+                displayAmount,
               }),
             ),
             currency: displayCurrency,
@@ -341,12 +350,10 @@ const processTxForHotWallet = async ({
           sats,
           fee,
           amountDisplayCurrency: minorToMajorUnit({
-            amount: amountDisplayCurrencyAmount.amountInMinor,
-            displayCurrency: DisplayCurrency.Usd,
+            displayAmount: amountDisplayCurrencyAmount,
           }) as DisplayCurrencyBaseAmount,
           feeDisplayCurrency: minorToMajorUnit({
-            amount: feeDisplayCurrencyAmount.amountInMinor,
-            displayCurrency: DisplayCurrency.Usd,
+            displayAmount: feeDisplayCurrencyAmount,
           }) as DisplayCurrencyBaseAmount,
           payeeAddress: address,
         })

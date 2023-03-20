@@ -125,12 +125,11 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
         currency: WalletCurrency.Btc,
       })
       if (!(satsAmount instanceof Error)) {
-        const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
+        const displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
         displayPaymentAmount = {
-          ...paymentAmount,
+          ...displayAmount,
           amount: minorToMajorUnit({
-            amount: paymentAmount.amountInMinor,
-            displayCurrency: paymentAmount.currency,
+            displayAmount,
           }),
         }
       }
@@ -232,12 +231,11 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
             currency: WalletCurrency.Btc,
           })
           if (!(satsAmount instanceof Error)) {
-            const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
+            const displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
             displayPaymentAmount = {
-              ...paymentAmount,
+              ...displayAmount,
               amount: minorToMajorUnit({
-                amount: paymentAmount.amountInMinor,
-                displayCurrency: paymentAmount.currency,
+                displayAmount,
               }),
             }
           }

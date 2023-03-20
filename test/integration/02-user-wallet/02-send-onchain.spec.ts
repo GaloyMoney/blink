@@ -435,10 +435,9 @@ const testExternalSend = async ({
             //       & currencies. Applying 'minorToMajorUnit' to WalletCurrency.Usd case
             //       makes no difference.
             minorToMajorUnit({
-              amount: displayPriceRatio.convertFromWallet(
+              displayAmount: displayPriceRatio.convertFromWallet(
                 paymentAmount as BtcPaymentAmount,
-              ).amountInMinor,
-              displayCurrency: senderAccount.displayCurrency,
+              ),
             })
           : amountForNotification,
       currency: DisplayCurrency.Usd,

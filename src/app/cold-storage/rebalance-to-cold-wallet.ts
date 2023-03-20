@@ -83,8 +83,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const amountDisplayCurrencyAmount =
     displayPriceRatio.convertFromWallet(rebalanceBtcAmount)
   const amountDisplayCurrency = minorToMajorUnit({
-    amount: amountDisplayCurrencyAmount.amountInMinor,
-    displayCurrency: amountDisplayCurrencyAmount.currency,
+    displayAmount: amountDisplayCurrencyAmount,
   }) as DisplayCurrencyBaseAmount
 
   const feeBtcAmount = paymentAmountFromNumber({
@@ -94,8 +93,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   if (feeBtcAmount instanceof Error) return feeBtcAmount
   const feeDisplayCurrencyAmount = displayPriceRatio.convertFromWallet(feeBtcAmount)
   const feeDisplayCurrency = minorToMajorUnit({
-    amount: feeDisplayCurrencyAmount.amountInMinor,
-    displayCurrency: feeDisplayCurrencyAmount.currency,
+    displayAmount: feeDisplayCurrencyAmount,
   }) as DisplayCurrencyBaseAmount
 
   const journal = await ledgerService.addColdStorageTxReceive({

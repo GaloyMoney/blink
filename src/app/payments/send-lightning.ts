@@ -18,7 +18,7 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
   WalletPriceRatio,
 } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
+import { newDisplayAmountFromNumber, WalletCurrency } from "@domain/shared"
 import {
   checkedToWalletId,
   PaymentInitiationMethod,
@@ -509,6 +509,12 @@ const executePaymentViaIntraledger = async <
       amount = paymentFlow.usdPaymentAmount.amount
     }
 
+    const recipientDisplayAmount = newDisplayAmountFromNumber({
+      amount: recipientAmountDisplayCurrencyAsNumber,
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
+
     const notificationsService = NotificationsService()
     notificationsService.lightningTxReceived({
       recipientAccountId: recipientWallet.accountId,
@@ -516,8 +522,7 @@ const executePaymentViaIntraledger = async <
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
         amount: minorToMajorUnit({
-          amount: recipientAmountDisplayCurrencyAsNumber,
-          displayCurrency: recipientAccount.displayCurrency,
+          displayAmount: recipientDisplayAmount,
         }),
         currency: recipientAccount.displayCurrency,
       },

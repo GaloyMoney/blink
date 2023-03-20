@@ -20,17 +20,17 @@ export const minorToMajorUnitFormatted = ({
   return majorAmount.toFixed(displayMajorExponent)
 }
 
-export const minorToMajorUnit = ({
-  amount,
-  displayCurrency,
+export const minorToMajorUnit = <T extends DisplayCurrency>({
+  displayAmount,
   fixed = true,
 }: {
-  amount: number | bigint
-  displayCurrency: DisplayCurrency
+  displayAmount: NewDisplayAmount<T>
   fixed?: boolean
 }): number => {
-  const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
-  const majorAmount = Number(amount) / 10 ** displayMajorExponent
+  const { amountInMinor, currency } = displayAmount
+
+  const displayMajorExponent = getCurrencyMajorExponent(currency)
+  const majorAmount = Number(amountInMinor) / 10 ** displayMajorExponent
   return fixed ? Number(majorAmount.toFixed(displayMajorExponent)) : majorAmount
 }
 

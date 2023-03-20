@@ -43,8 +43,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
           // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
           displayBalanceAmount = {
             amount: minorToMajorUnit({
-              amount: displayAmount.amountInMinor,
-              displayCurrency: displayAmount.currency,
+              displayAmount,
             }),
             currency: displayCurrency,
           }
@@ -63,8 +62,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
             // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
             displayBalanceAmount = {
               amount: minorToMajorUnit({
-                amount: displayAmount.amountInMinor,
-                displayCurrency: displayAmount.currency,
+                displayAmount,
               }),
               currency: displayCurrency,
             }

@@ -134,10 +134,9 @@ describe("notification", () => {
         if (balanceAmount.currency === WalletCurrency.Btc) {
           const majorBalanceAmount = Number(
             minorToMajorUnit({
-              amount: displayPriceRatio.convertFromWallet(
+              displayAmount: displayPriceRatio.convertFromWallet(
                 balanceAmount as BtcPaymentAmount,
-              ).amountInMinor,
-              displayCurrency,
+              ),
             }),
           )
 
@@ -156,8 +155,7 @@ describe("notification", () => {
 
           const majorBalanceAmount = Number(
             minorToMajorUnit({
-              amount: displayPriceRatio.convertFromWallet(btcBalanceAmount).amountInMinor,
-              displayCurrency,
+              displayAmount: displayPriceRatio.convertFromWallet(btcBalanceAmount),
             }),
           )
 

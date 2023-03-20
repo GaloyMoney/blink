@@ -11,7 +11,7 @@ import {
   toCents,
 } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
-import { WalletCurrency } from "@domain/shared"
+import { newDisplayAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
 
 import { TxStatus } from "./tx-status"
@@ -86,9 +86,16 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
                 displayCurrency,
               })
 
-              displayCurrencyPerSettlementCurrencyMajorUnit = minorToMajorUnit({
+              const displayAmountForOneSettlementMajorUnit = newDisplayAmountFromNumber({
                 amount: displayPriceRatio.displayMinorUnitPerWalletUnit(),
-                displayCurrency,
+                currency: displayCurrency,
+              })
+              if (displayAmountForOneSettlementMajorUnit instanceof Error) {
+                return displayAmountForOneSettlementMajorUnit
+              }
+
+              displayCurrencyPerSettlementCurrencyMajorUnit = minorToMajorUnit({
+                displayAmount: displayAmountForOneSettlementMajorUnit,
                 fixed: false,
               })
             }

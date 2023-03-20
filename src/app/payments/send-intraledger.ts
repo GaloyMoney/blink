@@ -9,7 +9,7 @@ import {
   LightningPaymentFlowBuilder,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { ErrorLevel, newDisplayAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 
 import { DealerPriceService } from "@services/dealer-price"
@@ -356,6 +356,12 @@ const executePaymentViaIntraledger = async <
       amount = totalSendAmounts.usd.amount
     }
 
+    const recipientDisplayAmount = newDisplayAmountFromNumber({
+      amount: recipientAmountDisplayCurrencyAsNumber,
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
+
     const notificationsService = NotificationsService()
     notificationsService.intraLedgerTxReceived({
       recipientAccountId: recipientWallet.accountId,
@@ -365,8 +371,7 @@ const executePaymentViaIntraledger = async <
       paymentAmount: { amount, currency: recipientWallet.currency },
       displayPaymentAmount: {
         amount: minorToMajorUnit({
-          amount: recipientAmountDisplayCurrencyAsNumber,
-          displayCurrency: recipientAccount.displayCurrency,
+          displayAmount: recipientDisplayAmount,
         }),
         currency: recipientAccount.displayCurrency,
       },
