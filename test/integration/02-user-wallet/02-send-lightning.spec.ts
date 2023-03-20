@@ -1210,6 +1210,8 @@ describe("UserWallet - Lightning Pay", () => {
         }
 
         const accountRecordA = await getAccountRecordByTestUserRef("A")
+        const accountRecordB = await getAccountRecordByTestUserRef("B")
+        const accountRecordC = await getAccountRecordByTestUserRef("C")
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdB,
@@ -1234,7 +1236,13 @@ describe("UserWallet - Lightning Pay", () => {
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWalletB, walletPayer: userwalletC})
         expect(accountRecordA.contacts).toEqual(
-          expect.not.arrayContaining([expect.objectContaining({ id: usernameC })]),
+          expect.arrayContaining([expect.objectContaining({ id: usernameC })]),
+        )
+        expect(accountRecordB.contacts).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameC })]),
+        )
+        expect(accountRecordC.contacts).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
         )
       })
 

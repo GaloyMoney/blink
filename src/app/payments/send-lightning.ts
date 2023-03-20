@@ -41,7 +41,10 @@ import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
 
 import * as LedgerFacade from "@services/ledger/facade"
-import { addAttributesToCurrentSpan,recordExceptionInCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 
 import { Wallets } from "@app"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
@@ -55,9 +58,8 @@ import {
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
-  addContactsAfterSend
+  addContactsAfterSend,
 } from "./helpers"
-
 
 const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
