@@ -8,7 +8,7 @@ import { connectionDefinitions } from "@graphql/connections"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
-import { checkedToDisplayCurrency, currencyMajorToMinorUnit } from "@domain/fiat"
+import { checkedToDisplayCurrency, majorToMinorUnit } from "@domain/fiat"
 
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
@@ -89,7 +89,7 @@ const Transaction = GT.Object<WalletTransaction>({
         const displayCurrency = checkedToDisplayCurrency(source.settlementDisplayCurrency)
         if (displayCurrency instanceof Error) throw mapError(displayCurrency)
 
-        const displayCurrencyPriceInMinorUnit = currencyMajorToMinorUnit({
+        const displayCurrencyPriceInMinorUnit = majorToMinorUnit({
           amount: source.displayCurrencyPerSettlementCurrencyUnit,
           displayCurrency,
         })

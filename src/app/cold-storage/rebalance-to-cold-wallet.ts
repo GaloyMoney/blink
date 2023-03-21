@@ -3,7 +3,7 @@ import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "
 import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
@@ -81,9 +81,10 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   })
   if (rebalanceBtcAmount instanceof Error) return rebalanceBtcAmount
   const amountDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(rebalanceBtcAmount)
-  const amountDisplayCurrency = usdMinorToMajorUnit(
-    amountDisplayCurrencyAmount.amount,
-  ) as DisplayCurrencyBaseAmount
+  const amountDisplayCurrency = minorToMajorUnit({
+    amount: amountDisplayCurrencyAmount.amount,
+    displayCurrency: amountDisplayCurrencyAmount.currency,
+  }) as DisplayCurrencyBaseAmount
 
   const feeBtcAmount = paymentAmountFromNumber({
     amount: fee,
@@ -91,9 +92,10 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   })
   if (feeBtcAmount instanceof Error) return feeBtcAmount
   const feeDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(feeBtcAmount)
-  const feeDisplayCurrency = usdMinorToMajorUnit(
-    feeDisplayCurrencyAmount.amount,
-  ) as DisplayCurrencyBaseAmount
+  const feeDisplayCurrency = minorToMajorUnit({
+    amount: feeDisplayCurrencyAmount.amount,
+    displayCurrency: feeDisplayCurrencyAmount.currency,
+  }) as DisplayCurrencyBaseAmount
 
   const journal = await ledgerService.addColdStorageTxReceive({
     txHash,

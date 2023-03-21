@@ -4,7 +4,12 @@ import {
   OnboardingEarn,
 } from "@config"
 
-import { DisplayCurrency, MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
+import {
+  DisplayCurrency,
+  minorToMajorUnit,
+  minorToMajorUnitFormatted,
+  toCents,
+} from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
@@ -63,31 +68,30 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
                 ? toCents(0)
                 : toCents(walletPriceRatio.convertFromBtcToCeil(btcFeeAmount).amount)
 
-            const settlementDisplayAmount =
-              displayPriceRatio === undefined
-                ? `${NaN}`
-                : minorToMajorUnit({
-                    amount:
-                      displayPriceRatio.convertFromWallet(btcSettlementAmount)
-                        .amountInMinor,
-                    displayMajorExponent: MajorExponent.STANDARD,
-                  })
+            let settlementDisplayAmount = `${NaN}`
+            let settlementDisplayFee = `${NaN}`
+            let displayCurrencyPerSettlementCurrencyMajorUnit = NaN as number
+            if (displayPriceRatio) {
+              const displayAmount =
+                displayPriceRatio.convertFromWallet(btcSettlementAmount)
+              const displayCurrency = displayAmount.currency
+              settlementDisplayAmount = minorToMajorUnitFormatted({
+                amount: displayAmount.amountInMinor,
+                displayCurrency,
+              })
 
-            const settlementDisplayFee =
-              displayPriceRatio === undefined
-                ? `${NaN}`
-                : minorToMajorUnit({
-                    amount:
-                      displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
-                        .amountInMinor,
-                    displayMajorExponent: MajorExponent.STANDARD,
-                  })
+              const displayFee = displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
+              settlementDisplayFee = minorToMajorUnitFormatted({
+                amount: displayFee.amountInMinor,
+                displayCurrency,
+              })
 
-            const displayCurrencyPerSettlementCurrencyMajorUnit =
-              displayPriceRatio === undefined
-                ? (NaN as number)
-                : displayPriceRatio.displayMinorUnitPerWalletUnit() /
-                  10 ** MajorExponent.STANDARD
+              displayCurrencyPerSettlementCurrencyMajorUnit = minorToMajorUnit({
+                amount: displayPriceRatio.displayMinorUnitPerWalletUnit(),
+                displayCurrency,
+                fixed: false,
+              })
+            }
 
             walletTransactions.push({
               id: rawTx.txHash,

@@ -2,7 +2,7 @@ import { getPubkeysToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { usdMinorToMajorUnit } from "@domain/fiat"
+import { minorToMajorUnit } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
@@ -364,7 +364,10 @@ const executePaymentViaIntraledger = async <
       recipientLanguage: recipientUser.language,
       paymentAmount: { amount, currency: recipientWallet.currency },
       displayPaymentAmount: {
-        amount: usdMinorToMajorUnit(recipientAmountDisplayCurrencyAsNumber),
+        amount: minorToMajorUnit({
+          amount: recipientAmountDisplayCurrencyAsNumber,
+          displayCurrency: recipientAccount.displayCurrency,
+        }),
         currency: recipientAccount.displayCurrency,
       },
     })

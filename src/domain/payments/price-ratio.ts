@@ -1,5 +1,6 @@
 import { RATIO_PRECISION } from "@config"
-import { MajorExponent } from "@domain/fiat"
+
+import { getCurrencyMajorExponent } from "@domain/fiat"
 import { AmountCalculator, safeBigInt, WalletCurrency } from "@domain/shared"
 
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
@@ -103,11 +104,9 @@ export const WalletPriceRatio = ({
 export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCurrency>({
   displayAmountInMinorUnit,
   walletAmount,
-  displayMajorExponent,
 }: {
   displayAmountInMinorUnit: DisplayAmount<T>
   walletAmount: PaymentAmount<S>
-  displayMajorExponent: CurrencyMajorExponent
 }): DisplayPriceRatio<S, T> | ValidationError => {
   const { currency: displayCurrency } = displayAmountInMinorUnit
 
@@ -118,6 +117,8 @@ export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCur
     walletAmount,
   })
   if (priceRatio instanceof Error) return priceRatio
+
+  const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
 
   const toNewDisplayAmount = ({
     amountInMinor,
@@ -186,12 +187,10 @@ export const toWalletPriceRatio = (ratio: number): WalletPriceRatio | Validation
 export const toDisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCurrency>({
   ratio,
   displayCurrency,
-  displayMajorExponent = MajorExponent.STANDARD,
   walletCurrency = WalletCurrency.Btc as S,
 }: {
   ratio: number
   displayCurrency: T
-  displayMajorExponent?: CurrencyMajorExponent
   walletCurrency?: S
 }): DisplayPriceRatio<S, T> | ValidationError => {
   const precision = RATIO_PRECISION
@@ -206,9 +205,5 @@ export const toDisplayPriceRatio = <S extends WalletCurrency, T extends DisplayC
     currency: walletCurrency,
   }
 
-  return DisplayPriceRatio({
-    displayAmountInMinorUnit,
-    walletAmount,
-    displayMajorExponent,
-  })
+  return DisplayPriceRatio({ displayAmountInMinorUnit, walletAmount })
 }

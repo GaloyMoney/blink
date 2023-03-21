@@ -2,7 +2,7 @@ import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
 
 import { Prices } from "@app"
 
-import { currencyMajorToMinorUnit, DisplayCurrency } from "@domain/fiat"
+import { majorToMinorUnit, DisplayCurrency } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
@@ -32,11 +32,11 @@ const RealtimePriceQuery = GT.Field({
     })
     if (usdPrice instanceof Error) throw mapError(usdPrice)
 
-    const minorUnitPerSat = currencyMajorToMinorUnit({
+    const minorUnitPerSat = majorToMinorUnit({
       amount: btcPrice.price,
       displayCurrency: currency,
     })
-    const minorUnitPerUsdCent = currencyMajorToMinorUnit({
+    const minorUnitPerUsdCent = majorToMinorUnit({
       amount: usdPrice.price,
       displayCurrency: currency,
     })

@@ -12,7 +12,12 @@ import {
 } from "@config"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { DisplayCurrency, MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
+import {
+  DisplayCurrency,
+  getCurrencyMajorExponent,
+  minorToMajorUnit,
+  toCents,
+} from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { WalletPriceRatio } from "@domain/payments"
@@ -180,7 +185,7 @@ describe("UserWallet - On chain", () => {
 
     const displayAmountMajorUnit = minorToMajorUnit({
       amount: displayAmountRaw || 0,
-      displayMajorExponent: MajorExponent.STANDARD,
+      displayCurrency: displayCurrency || DisplayCurrency.Usd,
     })
 
     const displayAmount =
@@ -411,10 +416,14 @@ describe("UserWallet - On chain", () => {
     expect(pendingTx.initiationVia.address).toBe(address)
     expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
+    const exponent = getCurrencyMajorExponent(
+      pendingTx.settlementDisplayCurrency as DisplayCurrency,
+    )
+
     expect(pendingTx.settlementDisplayAmount).toBe(
       (
         pendingTx.settlementAmount * pendingTx.displayCurrencyPerSettlementCurrencyUnit
-      ).toFixed(MajorExponent.STANDARD),
+      ).toFixed(exponent),
     )
 
     expect(pendingTx.settlementDisplayFee).toBe(
@@ -422,9 +431,10 @@ describe("UserWallet - On chain", () => {
         Math.ceil(
           pendingTx.settlementFee *
             pendingTx.displayCurrencyPerSettlementCurrencyUnit *
-            100,
-        ) / 100
-      ).toFixed(MajorExponent.STANDARD),
+            10 ** exponent,
+        ) /
+        10 ** exponent
+      ).toFixed(exponent),
     )
 
     // Check pendingTx from cache

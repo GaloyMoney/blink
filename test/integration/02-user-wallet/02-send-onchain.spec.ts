@@ -37,10 +37,10 @@ import { LedgerTransactionType } from "@domain/ledger"
 import {
   add,
   DisplayCurrency,
-  MajorExponent,
+  getCurrencyMajorExponent,
+  minorToMajorUnit,
   sub,
   toCents,
-  usdMinorToMajorUnit,
 } from "@domain/fiat"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
@@ -432,12 +432,14 @@ const testExternalSend = async ({
       amount:
         paymentAmount.currency === WalletCurrency.Btc
           ? // Note: Inconsistency in 'createPushNotificationContent' for handling displayAmount
-            //       & currencies. Applying 'usdMinorToMajorUnit' to WalletCurrency.Usd case
+            //       & currencies. Applying 'minorToMajorUnit' to WalletCurrency.Usd case
             //       makes no difference.
-            usdMinorToMajorUnit(
-              displayPriceRatio.convertFromWallet(paymentAmount as BtcPaymentAmount)
-                .amountInMinor,
-            )
+            minorToMajorUnit({
+              amount: displayPriceRatio.convertFromWallet(
+                paymentAmount as BtcPaymentAmount,
+              ).amountInMinor,
+              displayCurrency: senderAccount.displayCurrency,
+            })
           : amountForNotification,
       currency: DisplayCurrency.Usd,
     }
@@ -605,17 +607,21 @@ const testInternalSend = async ({
   expect(recipientSettledTx.settlementAmount).toBe(recipientAmount)
   expect(recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
 
+  const exponent = getCurrencyMajorExponent(
+    recipientSettledTx.settlementDisplayCurrency as DisplayCurrency,
+  )
+
   expect(recipientSettledTx.settlementDisplayAmount).toBe(
     (
       recipientSettledTx.settlementAmount *
       recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit
-    ).toFixed(MajorExponent.STANDARD),
+    ).toFixed(exponent),
   )
   expect(recipientSettledTx.settlementDisplayFee).toBe(
     (
       recipientSettledTx.settlementFee *
       recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit
-    ).toFixed(MajorExponent.STANDARD),
+    ).toFixed(exponent),
   )
 
   // Check memos

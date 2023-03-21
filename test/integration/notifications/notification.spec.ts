@@ -3,7 +3,7 @@ import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, MajorExponent, minorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
 import * as serviceLedger from "@services/ledger"
 import {
@@ -137,7 +137,7 @@ describe("notification", () => {
               amount: displayPriceRatio.convertFromWallet(
                 balanceAmount as BtcPaymentAmount,
               ).amountInMinor,
-              displayMajorExponent: MajorExponent.STANDARD,
+              displayCurrency,
             }),
           )
 
@@ -157,7 +157,7 @@ describe("notification", () => {
           const majorBalanceAmount = Number(
             minorToMajorUnit({
               amount: displayPriceRatio.convertFromWallet(btcBalanceAmount).amountInMinor,
-              displayMajorExponent: MajorExponent.STANDARD,
+              displayCurrency,
             }),
           )
 

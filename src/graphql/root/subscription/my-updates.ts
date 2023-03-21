@@ -2,7 +2,7 @@ import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
 
 import { Prices } from "@app"
 
-import { currencyMajorToMinorUnit, DisplayCurrency } from "@domain/fiat"
+import { majorToMinorUnit, DisplayCurrency } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
 import { GT } from "@graphql/index"
@@ -170,7 +170,7 @@ const MeSubscription = {
         }
       }
 
-      const minorUnitPerSat = currencyMajorToMinorUnit({
+      const minorUnitPerSat = majorToMinorUnit({
         amount: source.price.pricePerSat,
         displayCurrency: source.price.displayCurrency,
       })
@@ -196,11 +196,11 @@ const MeSubscription = {
     if (source.realtimePrice) {
       const { timestamp, displayCurrency, pricePerSat, pricePerUsdCent } =
         source.realtimePrice
-      const minorUnitPerSat = currencyMajorToMinorUnit({
+      const minorUnitPerSat = majorToMinorUnit({
         amount: pricePerSat,
         displayCurrency,
       })
-      const minorUnitPerUsdCent = currencyMajorToMinorUnit({
+      const minorUnitPerUsdCent = majorToMinorUnit({
         amount: pricePerUsdCent,
         displayCurrency,
       })
