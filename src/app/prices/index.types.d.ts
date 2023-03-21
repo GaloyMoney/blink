@@ -4,7 +4,7 @@ type GetCurrentPriceArgs = {
 }
 
 type GetCurrentSatPriceArgs = {
-  currency: string
+  currency: DisplayCurrency
 }
 
 type GetCurrentUsdCentPriceArgs = {

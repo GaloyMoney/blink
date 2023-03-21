@@ -39,12 +39,12 @@ beforeAll(async () => {
   if (usdDisplayPriceRatio instanceof Error) throw usdDisplayPriceRatio
 
   const eurDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: "EUR",
+    currency: "EUR" as DisplayCurrency,
   })
   if (eurDisplayPriceRatio instanceof Error) throw eurDisplayPriceRatio
 
   const crcDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: "CRC",
+    currency: "CRC" as DisplayCurrency,
   })
   if (crcDisplayPriceRatio instanceof Error) throw crcDisplayPriceRatio
 
