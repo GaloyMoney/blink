@@ -27,6 +27,9 @@ start-cron: start-deps
 start-loopd:
 	./dev/bin/start-loopd.sh
 
+start-ws:
+	yarn ws
+
 start: start-deps
 	make start-main & make start-trigger
 

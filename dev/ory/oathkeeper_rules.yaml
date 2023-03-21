@@ -149,3 +149,37 @@
     - handler: id_token
       config:
         claims: '{"sub": "{{ print .Subject }}"}'
+
+- id: websocket-server
+  upstream:
+    url: "http://e2e-tests:4000"
+    strip_path: /ws
+  match:
+    url: "<(ws|wss|http|https)>://<.*><[0-9]+>/ws<.*>"
+    methods: ["GET", "POST", "OPTIONS"]
+  authenticators:
+    - handler: cookie_session
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
+    - handler: bearer_token
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: header
+      config:
+        headers:
+          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
+    - handler: id_token
+      config:
+        claims: '{"sub": "{{ print .Subject }}"}'
