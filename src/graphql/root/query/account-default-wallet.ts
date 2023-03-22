@@ -32,8 +32,12 @@ const AccountDefaultWalletQuery = GT.Field({
       throw mapError(wallets)
     }
 
+    const displayCurrency = account.displayCurrency
     if (!walletCurrency) {
-      return wallets.find((wallet) => wallet.id === account.defaultWalletId)
+      return {
+        ...wallets.find((wallet) => wallet.id === account.defaultWalletId),
+        displayCurrency,
+      }
     }
 
     const wallet = wallets.find((wallet) => wallet.currency === walletCurrency)
@@ -41,7 +45,10 @@ const AccountDefaultWalletQuery = GT.Field({
       throw mapError(new CouldNotFindWalletFromUsernameAndCurrencyError(username))
     }
 
-    return wallet
+    return {
+      ...wallet,
+      displayCurrency,
+    }
   },
 })
 

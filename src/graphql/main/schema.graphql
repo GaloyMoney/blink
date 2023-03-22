@@ -979,6 +979,7 @@ type PricePoint {
 A public view of a generic wallet which stores value in one of our supported currencies.
 """
 type PublicWallet {
+  displayCurrency: DisplayCurrency!
   id: ID!
   walletCurrency: WalletCurrency!
 }
