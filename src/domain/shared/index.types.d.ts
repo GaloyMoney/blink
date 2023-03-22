@@ -29,6 +29,12 @@ type NewDisplayAmount<T extends DisplayCurrency> = {
   displayInMajor: DisplayCurrencyMajorAmount
 }
 
+type PriceAmount<T extends DisplayCurrency> = {
+  priceOfOneSatInMinorUnit: number
+  priceOfOneSatInMajorUnit: number
+  currency: T
+}
+
 type PaymentAmount<T extends WalletCurrency> = Amount<T> & {
   readonly brand?: unique symbol
 }

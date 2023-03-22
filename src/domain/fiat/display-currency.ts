@@ -24,16 +24,14 @@ export const minorToMajorUnitFormatted = ({
 
 export const minorToMajorUnit = <T extends DisplayCurrency>({
   displayAmount,
-  fixed = true,
 }: {
   displayAmount: NewDisplayAmount<T>
-  fixed?: boolean
 }): number => {
   const { amountInMinor, currency } = displayAmount
 
   const displayMajorExponent = getCurrencyMajorExponent(currency)
   const majorAmount = Number(amountInMinor) / 10 ** displayMajorExponent
-  return fixed ? Number(majorAmount.toFixed(displayMajorExponent)) : majorAmount
+  return Number(majorAmount.toFixed(displayMajorExponent))
 }
 
 export const majorToMinorUnit = ({
@@ -89,5 +87,21 @@ export const newDisplayAmountFromNumber = <T extends DisplayCurrency>({
     displayInMajor: (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(
       displayMajorExponent,
     ),
+  }
+}
+
+export const priceAmountFromNumber = <T extends DisplayCurrency>({
+  priceOfOneSatInMinorUnit,
+  currency,
+}: {
+  priceOfOneSatInMinorUnit: number
+  currency: T
+}): PriceAmount<T> => {
+  const displayMajorExponent = getCurrencyMajorExponent(currency)
+
+  return {
+    priceOfOneSatInMinorUnit,
+    priceOfOneSatInMajorUnit: priceOfOneSatInMinorUnit / 10 ** displayMajorExponent,
+    currency,
   }
 }

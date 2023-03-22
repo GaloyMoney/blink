@@ -6,9 +6,8 @@ import {
 
 import {
   DisplayCurrency,
-  minorToMajorUnit,
   minorToMajorUnitFormatted,
-  newDisplayAmountFromNumber,
+  priceAmountFromNumber,
   toCents,
 } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
@@ -71,7 +70,7 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
 
             let settlementDisplayAmount = `${NaN}`
             let settlementDisplayFee = `${NaN}`
-            let displayCurrencyPerSettlementCurrencyMajorUnit = NaN as number
+            let displayCurrencyPerSettlementCurrencyUnit = NaN as number
             if (displayPriceRatio) {
               const displayAmount =
                 displayPriceRatio.convertFromWallet(btcSettlementAmount)
@@ -86,19 +85,12 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
                 amount: displayFee.amountInMinor,
                 displayCurrency,
               })
-
-              const displayAmountForOneSettlementMajorUnit = newDisplayAmountFromNumber({
-                amount: displayPriceRatio.displayMinorUnitPerWalletUnit(),
-                currency: displayCurrency,
-              })
-              if (displayAmountForOneSettlementMajorUnit instanceof Error) {
-                return displayAmountForOneSettlementMajorUnit
-              }
-
-              displayCurrencyPerSettlementCurrencyMajorUnit = minorToMajorUnit({
-                displayAmount: displayAmountForOneSettlementMajorUnit,
-                fixed: false,
-              })
+              ;({ priceOfOneSatInMajorUnit: displayCurrencyPerSettlementCurrencyUnit } =
+                priceAmountFromNumber({
+                  priceOfOneSatInMinorUnit:
+                    displayPriceRatio.displayMinorUnitPerWalletUnit(),
+                  currency: displayCurrency,
+                }))
             }
 
             walletTransactions.push({
@@ -110,8 +102,7 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
               settlementDisplayAmount,
               settlementDisplayFee,
               settlementDisplayCurrency: displayCurrency,
-              displayCurrencyPerSettlementCurrencyUnit:
-                displayCurrencyPerSettlementCurrencyMajorUnit,
+              displayCurrencyPerSettlementCurrencyUnit,
               status: TxStatus.Pending,
               memo: null,
               createdAt: createdAt,
