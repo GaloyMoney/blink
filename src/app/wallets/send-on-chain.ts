@@ -27,9 +27,9 @@ import {
   TxDecoder,
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { minorToMajorUnit } from "@domain/fiat"
+import { minorToMajorUnit, newDisplayAmountFromNumber } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
-import { newDisplayAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 

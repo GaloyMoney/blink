@@ -16,17 +16,14 @@ import {
   DisplayCurrency,
   getCurrencyMajorExponent,
   minorToMajorUnit,
+  newDisplayAmountFromNumber,
   toCents,
 } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { WalletPriceRatio } from "@domain/payments"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import {
-  newDisplayAmountFromNumber,
-  paymentAmountFromNumber,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 
 import { onchainTransactionEventHandler } from "@servers/trigger"

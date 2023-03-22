@@ -1,3 +1,5 @@
+import { safeBigInt } from "@domain/shared"
+
 export const CENTS_PER_USD = 100
 
 export const MajorExponent = {
@@ -66,5 +68,26 @@ export const getCurrencyMajorExponent = (
   } catch {
     // this is necessary for non-standard currencies
     return MajorExponent.STANDARD
+  }
+}
+
+export const newDisplayAmountFromNumber = <T extends DisplayCurrency>({
+  amount,
+  currency,
+}: {
+  amount: number
+  currency: T
+}): NewDisplayAmount<T> | ValidationError => {
+  const amountInMinor = safeBigInt(amount)
+  if (amountInMinor instanceof Error) return amountInMinor
+
+  const displayMajorExponent = getCurrencyMajorExponent(currency)
+
+  return {
+    amountInMinor,
+    currency,
+    displayInMajor: (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(
+      displayMajorExponent,
+    ),
   }
 }

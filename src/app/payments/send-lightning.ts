@@ -7,7 +7,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
-import { minorToMajorUnit } from "@domain/fiat"
+import { minorToMajorUnit, newDisplayAmountFromNumber } from "@domain/fiat"
 import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
@@ -18,7 +18,7 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
   WalletPriceRatio,
 } from "@domain/payments"
-import { newDisplayAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 import {
   checkedToWalletId,
   PaymentInitiationMethod,

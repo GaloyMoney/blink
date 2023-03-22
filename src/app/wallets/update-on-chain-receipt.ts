@@ -10,13 +10,13 @@ import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/p
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
-import {
-  newDisplayAmountFromNumber,
-  paymentAmountFromNumber,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
-import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
+import {
+  DisplayCurrency,
+  minorToMajorUnit,
+  newDisplayAmountFromNumber,
+} from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 

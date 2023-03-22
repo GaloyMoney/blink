@@ -8,10 +8,11 @@ import {
   DisplayCurrency,
   minorToMajorUnit,
   minorToMajorUnitFormatted,
+  newDisplayAmountFromNumber,
   toCents,
 } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
-import { newDisplayAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
 
 import { TxStatus } from "./tx-status"

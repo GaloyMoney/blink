@@ -2,14 +2,14 @@ import { getPubkeysToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { minorToMajorUnit } from "@domain/fiat"
+import { minorToMajorUnit, newDisplayAmountFromNumber } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
-import { ErrorLevel, newDisplayAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 
 import { DealerPriceService } from "@services/dealer-price"
