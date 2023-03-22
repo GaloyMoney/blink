@@ -1,7 +1,7 @@
+import { newDisplayAmountFromNumber } from "@domain/fiat"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
 import {
-  displayAmountFromNumber,
   paymentAmountFromNumber,
   WalletCurrency,
   ZERO_CENTS,
@@ -62,14 +62,14 @@ export const reimburseFee = async <
     return true
   }
 
-  const displayAmount = displayAmountFromNumber({
+  const displayAmount = newDisplayAmountFromNumber({
     amount: senderDisplayAmount,
     currency: senderDisplayCurrency,
   })
   if (displayAmount instanceof Error) return displayAmount
 
   const displayPriceRatio = DisplayPriceRatio({
-    displayAmountInMinorUnit: displayAmount,
+    displayAmount,
     walletAmount: paymentFlow.btcPaymentAmount,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
