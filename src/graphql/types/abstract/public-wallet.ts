@@ -18,6 +18,9 @@ const IPublicWallet = GT.Object<Wallet>({
     displayCurrency: {
       type: GT.NonNull(DisplayCurrency),
     },
+    isBusiness: {
+      type: GT.NonNull(GT.Boolean),
+    },
   }),
 })
 

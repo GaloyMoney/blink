@@ -1,10 +1,14 @@
 import { Wallets } from "@app"
+
+import { DisplayCurrency } from "@domain/fiat"
 import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@domain/errors"
-import { mapError } from "@graphql/error-map"
+
 import { GT } from "@graphql/index"
+import { mapError } from "@graphql/error-map"
 import Username from "@graphql/types/scalar/username"
 import WalletCurrency from "@graphql/types/scalar/wallet-currency"
 import PublicWallet from "@graphql/types/abstract/public-wallet"
+
 import { AccountsRepository } from "@services/mongoose"
 
 const AccountDefaultWalletQuery = GT.Field({
@@ -32,11 +36,13 @@ const AccountDefaultWalletQuery = GT.Field({
       throw mapError(wallets)
     }
 
-    const displayCurrency = account.displayCurrency
+    const { displayCurrency, title, coordinates } = account
+    const isBusiness = !!title && !!coordinates
     if (!walletCurrency) {
       return {
         ...wallets.find((wallet) => wallet.id === account.defaultWalletId),
-        displayCurrency,
+        displayCurrency: isBusiness ? displayCurrency : DisplayCurrency.Usd,
+        isBusiness,
       }
     }
 
@@ -47,7 +53,8 @@ const AccountDefaultWalletQuery = GT.Field({
 
     return {
       ...wallet,
-      displayCurrency,
+      displayCurrency: isBusiness ? displayCurrency : DisplayCurrency.Usd,
+      isBusiness,
     }
   },
 })
