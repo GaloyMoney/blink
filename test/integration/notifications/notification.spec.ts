@@ -3,11 +3,7 @@ import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 
 import { toSats } from "@domain/bitcoin"
-import {
-  DisplayCurrency,
-  minorToMajorUnit,
-  newDisplayAmountFromNumber,
-} from "@domain/fiat"
+import { DisplayCurrency } from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
 import * as serviceLedger from "@services/ledger"
 import {
@@ -159,16 +155,9 @@ describe("notification", () => {
         let displayPaymentAmount: NewDisplayAmount<DisplayCurrency> | undefined =
           undefined
         if (balanceAmount.currency === WalletCurrency.Btc) {
-          const majorBalanceAmount = minorToMajorUnit({
-            displayAmount: displayPriceRatio.convertFromWallet(
-              balanceAmount as BtcPaymentAmount,
-            ),
-          })
-          const displayAmount = newDisplayAmountFromNumber({
-            amount: majorBalanceAmount,
-            currency: displayCurrency,
-          })
-          if (displayAmount instanceof Error) throw displayAmount
+          const displayAmount = displayPriceRatio.convertFromWallet(
+            balanceAmount as BtcPaymentAmount,
+          )
 
           displayPaymentAmount = displayAmount
         } else {
@@ -180,16 +169,7 @@ describe("notification", () => {
             balanceAmount as UsdPaymentAmount,
           )
 
-          const majorBalanceAmount = Number(
-            minorToMajorUnit({
-              displayAmount: displayPriceRatio.convertFromWallet(btcBalanceAmount),
-            }),
-          )
-
-          const displayAmount = newDisplayAmountFromNumber({
-            amount: majorBalanceAmount,
-            currency: displayCurrency,
-          })
+          const displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)
           if (displayAmount instanceof Error) throw displayAmount
 
           displayPaymentAmount = displayAmount

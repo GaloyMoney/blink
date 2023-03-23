@@ -34,7 +34,7 @@ export const admin = {
     }
   },
 
-  addColdStorageTxReceive: async ({
+  addColdStorageTxReceive: async <T extends DisplayCurrency>({
     txHash,
     payeeAddress,
     description,
@@ -42,15 +42,15 @@ export const admin = {
     fee,
     feeDisplayCurrency,
     amountDisplayCurrency,
-  }: AddColdStorageTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError> => {
+  }: AddColdStorageTxReceiveArgs<T>): Promise<LedgerJournal | LedgerServiceError> => {
     const metadata: AddColdStorageReceiveLedgerMetadata = {
       type: LedgerTransactionType.ToColdStorage,
       pending: false,
       hash: txHash,
       payee_addresses: [payeeAddress],
       fee,
-      feeUsd: feeDisplayCurrency,
-      usd: amountDisplayCurrency,
+      feeUsd: Number(feeDisplayCurrency.displayInMajor),
+      usd: Number(amountDisplayCurrency.displayInMajor),
       currency: WalletCurrency.Btc,
     }
 
@@ -70,7 +70,7 @@ export const admin = {
     }
   },
 
-  addColdStorageTxSend: async ({
+  addColdStorageTxSend: async <T extends DisplayCurrency>({
     txHash,
     payeeAddress,
     description,
@@ -78,15 +78,15 @@ export const admin = {
     fee,
     amountDisplayCurrency,
     feeDisplayCurrency,
-  }: AddColdStorageTxSendArgs): Promise<LedgerJournal | LedgerServiceError> => {
+  }: AddColdStorageTxSendArgs<T>): Promise<LedgerJournal | LedgerServiceError> => {
     const metadata: AddColdStorageSendLedgerMetadata = {
       type: LedgerTransactionType.ToHotWallet,
       pending: false,
       hash: txHash,
       payee_addresses: [payeeAddress],
       fee,
-      feeUsd: feeDisplayCurrency,
-      usd: amountDisplayCurrency,
+      feeUsd: Number(feeDisplayCurrency.displayInMajor),
+      usd: Number(amountDisplayCurrency.displayInMajor),
       currency: WalletCurrency.Btc,
     }
 
