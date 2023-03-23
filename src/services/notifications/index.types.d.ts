@@ -3,7 +3,7 @@ type NotificationsDataObject = {
   txNotificationType: NotificationType
   amount: bigint
   currency: WalletCurrency
-  displayAmount: number | undefined
+  displayAmount: DisplayCurrencyMajorAmount | undefined
   displayCurrency: DisplayCurrency | undefined
   displayCurrencyPerSat?: number
   sats?: Satoshis

@@ -91,14 +91,16 @@ export const NotificationsService = (): INotificationsService => {
         txNotificationType: NotificationType.IntraLedgerReceipt,
         amount: paymentAmount.amount,
         currency: paymentAmount.currency,
-        displayAmount: displayPaymentAmount?.amount,
+        displayAmount: displayPaymentAmount
+          ? displayPaymentAmount?.displayInMajor
+          : undefined,
         displayCurrency: displayPaymentAmount?.currency,
       }
 
       // TODO: remove deprecated fields
       if (displayPaymentAmount)
         data["displayCurrencyPerSat"] =
-          displayPaymentAmount.amount / Number(paymentAmount.amount)
+          Number(displayPaymentAmount.amountInMinor) / Number(paymentAmount.amount)
       if (paymentAmount.currency === WalletCurrency.Btc)
         data["sats"] = toSats(paymentAmount.amount)
       if (paymentAmount.currency === WalletCurrency.Usd)
@@ -142,7 +144,7 @@ export const NotificationsService = (): INotificationsService => {
     accountId: AccountId
     walletId: WalletId
     paymentAmount: PaymentAmount<WalletCurrency>
-    displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
+    displayPaymentAmount?: NewDisplayAmount<DisplayCurrency>
     deviceTokens: DeviceToken[]
     language: UserLanguageOrEmpty
     txHash: OnChainTxHash
@@ -158,7 +160,7 @@ export const NotificationsService = (): INotificationsService => {
         txNotificationType: type,
         amount: paymentAmount.amount,
         currency: paymentAmount.currency,
-        displayAmount: displayPaymentAmount?.amount,
+        displayAmount: displayPaymentAmount?.displayInMajor,
         displayCurrency: displayPaymentAmount?.currency,
         txHash,
       }
@@ -166,7 +168,7 @@ export const NotificationsService = (): INotificationsService => {
       // TODO: remove deprecated fields
       if (displayPaymentAmount)
         data["displayCurrencyPerSat"] =
-          displayPaymentAmount.amount / Number(paymentAmount.amount)
+          Number(displayPaymentAmount.amountInMinor) / Number(paymentAmount.amount)
 
       pubsub.publish({
         trigger: accountUpdatedTrigger,
