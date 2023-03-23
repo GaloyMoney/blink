@@ -27,7 +27,7 @@ import {
   TxDecoder,
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { minorToMajorUnit, newDisplayAmountFromNumber } from "@domain/fiat"
+import { newDisplayAmountFromNumber } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
@@ -399,12 +399,7 @@ const executePaymentViaIntraledger = async <
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
       paymentAmount: { amount, currency: recipientWalletCurrency },
-      displayPaymentAmount: {
-        amount: minorToMajorUnit({
-          displayAmount: recipientDisplayAmount,
-        }),
-        currency: recipientAccount.displayCurrency,
-      },
+      displayPaymentAmount: recipientDisplayAmount,
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
     })

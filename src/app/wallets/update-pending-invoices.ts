@@ -28,7 +28,7 @@ import {
 } from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
-import { DisplayCurrency } from "@domain/fiat"
+import { newDisplayAmountFromNumber } from "@domain/fiat"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -262,11 +262,12 @@ const updatePendingInvoiceBeforeFinally = async ({
     if (result instanceof Error) return result
 
     // Prepare and send notification
-    const { usdToCreditReceiver: displayAmount } = walletInvoiceReceiver
-    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
-      amount: Number((Number(displayAmount.amount) / 100).toFixed(2)),
-      currency: displayAmount.currency,
-    } as DisplayPaymentAmount<DisplayCurrency>
+    const { displayAmount, displayCurrency } = creditAccountAdditionalMetadata
+    const displayPaymentAmount = newDisplayAmountFromNumber({
+      amount: displayAmount,
+      currency: displayCurrency,
+    })
+    if (displayPaymentAmount instanceof Error) throw displayPaymentAmount
 
     const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser

@@ -35,7 +35,7 @@ import { SwapTriggerError } from "@domain/swap/errors"
 import { CouldNotFindTransactionError } from "@domain/ledger"
 import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { checkedToDisplayCurrency, minorToMajorUnit } from "@domain/fiat"
+import { checkedToDisplayCurrency } from "@domain/fiat"
 
 import {
   AccountsRepository,
@@ -112,7 +112,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
     if (senderAccount instanceof Error) return senderAccount
     const { displayCurrency: senderDisplayCurrency } = senderAccount
 
-    let displayPaymentAmount: DisplayPaymentAmount<T> | undefined
+    let displayAmount: NewDisplayAmount<T> | undefined = undefined
 
     const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
       {
@@ -125,13 +125,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
         currency: WalletCurrency.Btc,
       })
       if (!(satsAmount instanceof Error)) {
-        const displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
-        displayPaymentAmount = {
-          ...displayAmount,
-          amount: minorToMajorUnit({
-            displayAmount,
-          }),
-        }
+        displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
       }
     }
 
@@ -166,7 +160,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
       senderWalletId: senderWallet.id,
       // TODO: tx.tokens represent the total sum, need to segregate amount by address
       paymentAmount,
-      displayPaymentAmount,
+      displayPaymentAmount: displayAmount,
       txHash,
       senderDeviceTokens: senderUser.deviceTokens,
       senderLanguage: senderUser.language,
@@ -190,7 +184,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
         "mempool appearance",
       )
 
-      let displayPaymentAmount: DisplayPaymentAmount<T> | undefined
+      let displayAmount: NewDisplayAmount<T> | undefined = undefined
 
       const displayPriceRatios = {} as Record<
         T,
@@ -231,13 +225,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
             currency: WalletCurrency.Btc,
           })
           if (!(satsAmount instanceof Error)) {
-            const displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
-            displayPaymentAmount = {
-              ...displayAmount,
-              amount: minorToMajorUnit({
-                displayAmount,
-              }),
-            }
+            displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
           }
         }
 
@@ -246,7 +234,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
           recipientWalletId: wallet.id,
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
           paymentAmount: { amount: BigInt(tx.tokens - fee), currency: wallet.currency },
-          displayPaymentAmount,
+          displayPaymentAmount: displayAmount,
           txHash,
           recipientDeviceTokens: recipientUser.deviceTokens,
           recipientLanguage: recipientUser.language,

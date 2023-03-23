@@ -246,15 +246,6 @@ const processTxForWallet = async (
           })
           if (displayAmount instanceof Error) return displayAmount
 
-          const displayPaymentAmount = {
-            amount: Number(
-              minorToMajorUnit({
-                displayAmount,
-              }),
-            ),
-            currency: displayCurrency,
-          }
-
           const paymentAmount = paymentAmountFromNumber({
             amount: sats,
             currency: wallet.currency,
@@ -265,7 +256,7 @@ const processTxForWallet = async (
             recipientAccountId: wallet.accountId,
             recipientWalletId: wallet.id,
             paymentAmount,
-            displayPaymentAmount,
+            displayPaymentAmount: displayAmount,
             txHash: tx.rawTx.txHash,
             recipientDeviceTokens: recipientUser.deviceTokens,
             recipientLanguage: recipientUser.language,

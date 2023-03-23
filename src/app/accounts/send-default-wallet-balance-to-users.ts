@@ -1,4 +1,4 @@
-import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
 import {
@@ -34,19 +34,12 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         currency: displayCurrency,
       })
 
-      let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
+      let displayAmount: NewDisplayAmount<DisplayCurrency> | undefined
       if (!(displayPriceRatio instanceof Error)) {
         if (balanceAmount.currency === WalletCurrency.Btc) {
-          const displayAmount = displayPriceRatio.convertFromWallet(
+          displayAmount = displayPriceRatio.convertFromWallet(
             balanceAmount as BtcPaymentAmount,
           )
-          // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
-          displayBalanceAmount = {
-            amount: minorToMajorUnit({
-              displayAmount,
-            }),
-            currency: displayCurrency,
-          }
         }
 
         if (balanceAmount.currency === WalletCurrency.Usd) {
@@ -58,14 +51,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
             const btcBalanceAmount = usdWalletPriceRatio.convertFromUsd(
               balanceAmount as UsdPaymentAmount,
             )
-            const displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)
-            // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
-            displayBalanceAmount = {
-              amount: minorToMajorUnit({
-                displayAmount,
-              }),
-              currency: displayCurrency,
-            }
+            displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)
           }
         }
       }
@@ -73,7 +59,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
       return NotificationsService().sendBalance({
         balanceAmount,
         deviceTokens: user.deviceTokens,
-        displayBalanceAmount,
+        displayBalanceAmount: displayAmount,
         recipientLanguage: user.language,
       })
     },
