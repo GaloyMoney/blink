@@ -3,7 +3,11 @@ import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
+import {
+  DisplayCurrency,
+  minorToMajorUnit,
+  newDisplayAmountFromNumber,
+} from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
 import * as serviceLedger from "@services/ledger"
 import {
@@ -130,20 +134,21 @@ describe("notification", () => {
         if (balance instanceof Error) throw balance
         const balanceAmount = { amount: BigInt(balance), currency: wallet.currency }
 
-        let displayPaymentAmount: DisplayAmount<DisplayCurrency>
+        let displayPaymentAmount: NewDisplayAmount<DisplayCurrency> | undefined =
+          undefined
         if (balanceAmount.currency === WalletCurrency.Btc) {
-          const majorBalanceAmount = Number(
-            minorToMajorUnit({
-              displayAmount: displayPriceRatio.convertFromWallet(
-                balanceAmount as BtcPaymentAmount,
-              ),
-            }),
-          )
-
-          displayPaymentAmount = {
+          const majorBalanceAmount = minorToMajorUnit({
+            displayAmount: displayPriceRatio.convertFromWallet(
+              balanceAmount as BtcPaymentAmount,
+            ),
+          })
+          const displayAmount = newDisplayAmountFromNumber({
             amount: majorBalanceAmount,
             currency: displayCurrency,
-          }
+          })
+          if (displayAmount instanceof Error) throw displayAmount
+
+          displayPaymentAmount = displayAmount
         } else {
           const walletPriceRatio = await getCurrentPriceAsWalletPriceRatio({
             currency: WalletCurrency.Usd,
@@ -159,10 +164,13 @@ describe("notification", () => {
             }),
           )
 
-          displayPaymentAmount = {
+          const displayAmount = newDisplayAmountFromNumber({
             amount: majorBalanceAmount,
             currency: displayCurrency,
-          }
+          })
+          if (displayAmount instanceof Error) throw displayAmount
+
+          displayPaymentAmount = displayAmount
         }
 
         const { title, body } = createPushNotificationContent({
