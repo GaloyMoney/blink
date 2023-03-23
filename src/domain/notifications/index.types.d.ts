@@ -6,7 +6,7 @@ type NotificationType =
 
 type TransactionNotificationBaseArgs = {
   paymentAmount: PaymentAmount<WalletCurrency>
-  displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
+  displayPaymentAmount?: NewDisplayAmount<DisplayCurrency>
 }
 
 type TransactionReceivedNotificationBaseArgs = TransactionNotificationBaseArgs & {
@@ -41,7 +41,7 @@ type OnChainTxSentArgs = TransactionSentNotificationBaseArgs & OnChainTxBaseArgs
 type SendBalanceArgs = {
   balanceAmount: BalanceAmount<WalletCurrency>
   deviceTokens: DeviceToken[]
-  displayBalanceAmount?: DisplayBalanceAmount<DisplayCurrency>
+  displayBalanceAmount?: NewDisplayAmount<DisplayCurrency>
   recipientLanguage: UserLanguageOrEmpty
 }
 
