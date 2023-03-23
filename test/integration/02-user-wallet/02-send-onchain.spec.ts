@@ -38,7 +38,7 @@ import {
   add,
   DisplayCurrency,
   getCurrencyMajorExponent,
-  minorToMajorUnit,
+  newDisplayAmountFromNumber,
   sub,
   toCents,
 } from "@domain/fiat"
@@ -428,20 +428,16 @@ const testExternalSend = async ({
       amount: BigInt(amountForNotification),
       currency: senderWallet.currency,
     }
-    const displayPaymentAmount = {
-      amount:
-        paymentAmount.currency === WalletCurrency.Btc
-          ? // Note: Inconsistency in 'createPushNotificationContent' for handling displayAmount
-            //       & currencies. Applying 'minorToMajorUnit' to WalletCurrency.Usd case
-            //       makes no difference.
-            minorToMajorUnit({
-              displayAmount: displayPriceRatio.convertFromWallet(
-                paymentAmount as BtcPaymentAmount,
-              ),
-            })
-          : amountForNotification,
-      currency: DisplayCurrency.Usd,
-    }
+    const paymentAsDisplayAmount = newDisplayAmountFromNumber({
+      amount: amountForNotification,
+      currency: senderWallet.currency,
+    })
+    if (paymentAsDisplayAmount instanceof Error) throw paymentAsDisplayAmount
+
+    const displayPaymentAmount =
+      paymentAmount.currency === WalletCurrency.Btc
+        ? displayPriceRatio.convertFromWallet(paymentAmount as BtcPaymentAmount)
+        : paymentAsDisplayAmount
 
     const { title, body } = createPushNotificationContent({
       type: NotificationType.OnchainPayment,

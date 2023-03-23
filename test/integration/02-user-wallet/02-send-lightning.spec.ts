@@ -417,11 +417,13 @@ describe("UserWallet - Lightning Pay", () => {
     const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) throw satsPrice
 
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
+
     const paymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
-    const displayPaymentAmount = {
-      amount: amountInvoice * satsPrice.price,
-      currency: satsPrice.currency,
-    }
+    const displayPaymentAmount = displayPriceRatio.convertFromWallet(paymentAmount)
 
     const { title: titleReceipt, body: bodyReceipt } = createPushNotificationContent({
       type: NotificationType.IntraLedgerReceipt,
@@ -1147,19 +1149,16 @@ describe("UserWallet - Lightning Pay", () => {
           expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
 
-          const satsPrice = await Prices.getCurrentSatPrice({
+          const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
             currency: DisplayCurrency.Usd,
           })
-          if (satsPrice instanceof Error) throw satsPrice
+          if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
           const paymentAmount = {
             amount: BigInt(amountInvoice),
             currency: WalletCurrency.Btc,
           }
-          const displayPaymentAmount = {
-            amount: amountInvoice * satsPrice.price,
-            currency: satsPrice.currency,
-          }
+          const displayPaymentAmount = displayPriceRatio.convertFromWallet(paymentAmount)
 
           const { title, body } = createPushNotificationContent({
             type: NotificationType.LnInvoicePaid,
