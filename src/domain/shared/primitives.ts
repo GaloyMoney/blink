@@ -92,19 +92,6 @@ export const paymentAmountFromNumber = <T extends WalletCurrency>({
   }
 }
 
-export const displayAmountFromNumber = <T extends DisplayCurrency>({
-  amount,
-  currency,
-}: {
-  amount: number
-  currency: T
-}): DisplayAmount<T> | ValidationError => {
-  return {
-    amount,
-    currency,
-  }
-}
-
 export const balanceAmountFromNumber = <T extends WalletCurrency>({
   amount,
   currency,
