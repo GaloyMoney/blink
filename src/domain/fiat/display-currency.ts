@@ -10,18 +10,6 @@ export const MajorExponent = {
   FOUR: 4,
 } as const
 
-export const minorToMajorUnitFormatted = ({
-  amount,
-  displayCurrency,
-}: {
-  amount: number | bigint
-  displayCurrency: DisplayCurrency
-}): string => {
-  const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
-  const majorAmount = Number(amount) / 10 ** displayMajorExponent
-  return majorAmount.toFixed(displayMajorExponent)
-}
-
 export const majorToMinorUnit = ({
   amount,
   displayCurrency,

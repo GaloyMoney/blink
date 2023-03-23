@@ -1,6 +1,13 @@
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, minorToMajorUnitFormatted, toCents } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
+import {
+  DisplayCurrency,
+  getCurrencyMajorExponent,
+  newDisplayAmountFromNumber,
+  toCents,
+} from "@domain/fiat"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
+
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 export const SettlementAmounts = () => {
   const fromTxn = <S extends WalletCurrency>(
@@ -14,7 +21,8 @@ export const SettlementAmounts = () => {
     // Calculate: settlementAmount
     // ======
 
-    const { debit, credit, currency, displayCurrency } = txn
+    const { debit, credit, currency, displayCurrency: displayCurrencyRaw } = txn
+    const displayCurrency = displayCurrencyRaw || DisplayCurrency.Usd
     const settlementAmount =
       currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
 
@@ -91,22 +99,50 @@ export const SettlementAmounts = () => {
     }
 
     // Calculate settlementDisplayAmount with matched combination
-    let settlementDisplayAmountAsNumber = 0
+    let settlementDisplayAmountMinorAsNumber = 0
     if (matchIndex >= 0) {
       const [amountToUse, feeToUse] = combinations[matchIndex]
-      settlementDisplayAmountAsNumber = amountToUse.display + feeToUse.display
+      settlementDisplayAmountMinorAsNumber = amountToUse.display + feeToUse.display
+    }
+
+    const exponent = getCurrencyMajorExponent(displayCurrency)
+
+    let settlementDisplayAmountObj = newDisplayAmountFromNumber({
+      amount: settlementDisplayAmountMinorAsNumber,
+      currency: displayCurrency,
+    })
+    if (settlementDisplayAmountObj instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: settlementDisplayAmountObj,
+        level: ErrorLevel.Critical,
+      })
+      settlementDisplayAmountObj = {
+        amountInMinor: 0n,
+        currency: displayCurrency,
+        displayInMajor: (0).toFixed(exponent),
+      }
+    }
+
+    let settlementDisplayFeeObj = newDisplayAmountFromNumber({
+      amount: displayFee,
+      currency: displayCurrency,
+    })
+    if (settlementDisplayFeeObj instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: settlementDisplayFeeObj,
+        level: ErrorLevel.Critical,
+      })
+      settlementDisplayFeeObj = {
+        amountInMinor: 0n,
+        currency: displayCurrency,
+        displayInMajor: (0).toFixed(exponent),
+      }
     }
 
     return {
       settlementAmount,
-      settlementDisplayAmount: minorToMajorUnitFormatted({
-        amount: settlementDisplayAmountAsNumber,
-        displayCurrency: displayCurrency || DisplayCurrency.Usd,
-      }),
-      settlementDisplayFee: minorToMajorUnitFormatted({
-        amount: displayFee,
-        displayCurrency: displayCurrency || DisplayCurrency.Usd,
-      }),
+      settlementDisplayAmount: settlementDisplayAmountObj.displayInMajor,
+      settlementDisplayFee: settlementDisplayFeeObj.displayInMajor,
     }
   }
 

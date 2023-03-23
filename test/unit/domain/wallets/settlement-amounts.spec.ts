@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, minorToMajorUnitFormatted, toCents } from "@domain/fiat"
+import { DisplayCurrency, newDisplayAmountFromNumber, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
@@ -36,10 +36,12 @@ describe("SettlementAmounts", () => {
     displayCurrency,
   }
 
-  const expectedDisplayFee = minorToMajorUnitFormatted({
+  const expectedDisplayFeeObj = newDisplayAmountFromNumber({
     amount: displayFee,
-    displayCurrency,
+    currency: displayCurrency,
   })
+  if (expectedDisplayFeeObj instanceof Error) throw expectedDisplayFeeObj
+  const expectedDisplayFee = expectedDisplayFeeObj.displayInMajor
 
   const debitCreditScenarios = {
     "amount": {
@@ -89,10 +91,16 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForDebit = minorToMajorUnitFormatted({
+          const expectedDisplayAmountForDebitObj = newDisplayAmountFromNumber({
             amount: expectedDisplayAmount,
-            displayCurrency: txnDebit.displayCurrency || DisplayCurrency.Usd,
+            currency: txnDebit.displayCurrency || DisplayCurrency.Usd,
           })
+          if (expectedDisplayAmountForDebitObj instanceof Error) {
+            throw expectedDisplayAmountForDebitObj
+          }
+          const expectedDisplayAmountForDebit =
+            expectedDisplayAmountForDebitObj.displayInMajor
+
           expect(settlementAmount).toEqual(expectedSettlementAmountForDebit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForDebit)
           expect(settlementDisplayFee).toEqual(expectedDisplayFee)
@@ -118,10 +126,16 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForCredit = minorToMajorUnitFormatted({
+          const expectedDisplayAmountForCreditObj = newDisplayAmountFromNumber({
             amount: expectedDisplayAmount,
-            displayCurrency: txnCredit.displayCurrency || DisplayCurrency.Usd,
+            currency: txnCredit.displayCurrency || DisplayCurrency.Usd,
           })
+          if (expectedDisplayAmountForCreditObj instanceof Error) {
+            throw expectedDisplayAmountForCreditObj
+          }
+          const expectedDisplayAmountForCredit =
+            expectedDisplayAmountForCreditObj.displayInMajor
+
           expect(settlementAmount).toEqual(expectedSettlementAmountForCredit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForCredit)
           expect(settlementDisplayFee).toEqual(expectedDisplayFee)
@@ -155,10 +169,16 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForDebit = minorToMajorUnitFormatted({
+          const expectedDisplayAmountForDebitObj = newDisplayAmountFromNumber({
             amount: expectedDisplayAmount,
-            displayCurrency: txnDebit.displayCurrency || DisplayCurrency.Usd,
+            currency: txnDebit.displayCurrency || DisplayCurrency.Usd,
           })
+          if (expectedDisplayAmountForDebitObj instanceof Error) {
+            throw expectedDisplayAmountForDebitObj
+          }
+          const expectedDisplayAmountForDebit =
+            expectedDisplayAmountForDebitObj.displayInMajor
+
           expect(settlementAmount).toEqual(expectedSettlementAmountForDebit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForDebit)
           expect(settlementDisplayFee).toEqual(expectedDisplayFee)
@@ -184,10 +204,16 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForCredit = minorToMajorUnitFormatted({
+          const expectedDisplayAmountForCreditObj = newDisplayAmountFromNumber({
             amount: expectedDisplayAmount,
-            displayCurrency: txnCredit.displayCurrency || DisplayCurrency.Usd,
+            currency: txnCredit.displayCurrency || DisplayCurrency.Usd,
           })
+          if (expectedDisplayAmountForCreditObj instanceof Error) {
+            throw expectedDisplayAmountForCreditObj
+          }
+          const expectedDisplayAmountForCredit =
+            expectedDisplayAmountForCreditObj.displayInMajor
+
           expect(settlementAmount).toEqual(expectedSettlementAmountForCredit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForCredit)
           expect(settlementDisplayFee).toEqual(expectedDisplayFee)
