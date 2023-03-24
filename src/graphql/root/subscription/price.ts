@@ -4,8 +4,8 @@ import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 import { Prices } from "@app"
 
-import { checkedToDisplayCurrency } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+import { checkedToDisplayCurrency, DisplayCurrency, majorToMinorUnit } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
 import { UnknownClientError } from "@graphql/error"
@@ -50,7 +50,7 @@ const PriceSubscription = {
   },
   resolve: (
     source:
-      | { errors: IError[]; centsPerSat?: number; displayCurrency?: DisplayCurrency }
+      | { errors: IError[]; pricePerSat?: number; displayCurrency?: DisplayCurrency }
       | undefined,
     args: PriceResolveArgs,
   ) => {
@@ -64,10 +64,21 @@ const PriceSubscription = {
     }
 
     if (source.errors) return { errors: source.errors }
-    if (!source.centsPerSat || !source.displayCurrency)
+    if (source.displayCurrency !== DisplayCurrency.Usd) {
+      return {
+        errors: [{ message: "Price is deprecated, please use realtimePrice event" }],
+      }
+    }
+    if (!source.pricePerSat) {
       return { errors: [{ message: "No price info" }] }
+    }
 
-    const amountPriceInCents = args.input.amount * source.centsPerSat
+    const minorUnitPerSat = majorToMinorUnit({
+      amount: source.pricePerSat,
+      displayCurrency: source.displayCurrency,
+    })
+
+    const amountPriceInCents = args.input.amount * minorUnitPerSat
     return {
       errors: [],
       price: {
@@ -125,7 +136,7 @@ const PriceSubscription = {
       if (!(pricePerSat instanceof Error)) {
         pubsub.publishImmediate({
           trigger: immediateTrigger,
-          payload: { centsPerSat: 100 * pricePerSat.price, displayCurrency },
+          payload: { pricePerSat: pricePerSat.price, displayCurrency },
         })
       }
       const priceUpdateTrigger = customPubSubTrigger({
