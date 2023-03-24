@@ -2,7 +2,7 @@ import * as admin from "firebase-admin"
 
 import {
   InvalidDeviceNotificationsServiceError,
-  NotificationsServiceBadGatewayError,
+  NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
 } from "@domain/notifications"
 import { baseLogger } from "@services/logger"
@@ -133,7 +133,8 @@ export const handleCommonNotificationErrors = (err: Error | string) => {
 
   switch (true) {
     case match(KnownNotificationErrorMessages.GoogleBadGatewayError):
-      return new NotificationsServiceBadGatewayError(errMsg)
+    case match(KnownNotificationErrorMessages.GoogleInternalServerError):
+      return new NotificationsServiceUnreachableServerError(errMsg)
 
     default:
       return new UnknownNotificationsServiceError(errMsg)
@@ -142,4 +143,5 @@ export const handleCommonNotificationErrors = (err: Error | string) => {
 
 export const KnownNotificationErrorMessages = {
   GoogleBadGatewayError: /Raw server response .* Error 502/,
+  GoogleInternalServerError: /Raw server response .* Error 500/,
 } as const
