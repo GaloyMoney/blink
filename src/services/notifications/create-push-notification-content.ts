@@ -28,7 +28,7 @@ export const createPushNotificationContent = <T extends DisplayCurrency>({
 }: {
   type: NotificationType | "balance"
   amount: Amount<WalletCurrency>
-  displayAmount?: NewDisplayAmount<T>
+  displayAmount?: DisplayAmount<T>
   userLanguage: UserLanguageOrEmpty
 }): {
   title: string

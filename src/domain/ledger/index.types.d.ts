@@ -113,8 +113,8 @@ type AddColdStorageTxReceiveArgs<T extends DisplayCurrency> = {
   description: string
   sats: Satoshis
   fee: Satoshis
-  amountDisplayCurrency: NewDisplayAmount<T>
-  feeDisplayCurrency: NewDisplayAmount<T>
+  amountDisplayCurrency: DisplayAmount<T>
+  feeDisplayCurrency: DisplayAmount<T>
 }
 
 type AddColdStorageTxSendArgs<T extends DisplayCurrency> = {
@@ -123,8 +123,8 @@ type AddColdStorageTxSendArgs<T extends DisplayCurrency> = {
   description: string
   sats: Satoshis
   fee: Satoshis
-  amountDisplayCurrency: NewDisplayAmount<T>
-  feeDisplayCurrency: NewDisplayAmount<T>
+  amountDisplayCurrency: DisplayAmount<T>
+  feeDisplayCurrency: DisplayAmount<T>
 }
 
 type IntraledgerTxArgs = {

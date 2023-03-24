@@ -2,7 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import {
   DisplayCurrency,
   getCurrencyMajorExponent,
-  newDisplayAmountFromNumber,
+  displayAmountFromNumber,
   toCents,
 } from "@domain/fiat"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
@@ -107,7 +107,7 @@ export const SettlementAmounts = () => {
 
     const exponent = getCurrencyMajorExponent(displayCurrency)
 
-    let settlementDisplayAmountObj = newDisplayAmountFromNumber({
+    let settlementDisplayAmountObj = displayAmountFromNumber({
       amount: settlementDisplayAmountMinorAsNumber,
       currency: displayCurrency,
     })
@@ -123,7 +123,7 @@ export const SettlementAmounts = () => {
       }
     }
 
-    let settlementDisplayFeeObj = newDisplayAmountFromNumber({
+    let settlementDisplayFeeObj = displayAmountFromNumber({
       amount: displayFee,
       currency: displayCurrency,
     })

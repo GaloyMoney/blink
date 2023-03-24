@@ -12,7 +12,7 @@ import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
 import * as LnFeesImpl from "@domain/payments/ln-fees"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { TxStatus } from "@domain/wallets"
-import { DisplayCurrency, newDisplayAmountFromNumber } from "@domain/fiat"
+import { DisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
 
 import { updateDisplayCurrency } from "@app/accounts"
 
@@ -767,13 +767,13 @@ describe("Display properties on transactions", () => {
           satsFee: toSats(recipientTxn.settlementFee),
         })
 
-        const settlementDisplayAmountObj = newDisplayAmountFromNumber({
+        const settlementDisplayAmountObj = displayAmountFromNumber({
           amount: expectedRecipientDisplayProps.displayAmount,
           currency: expectedRecipientDisplayProps.displayCurrency,
         })
         if (settlementDisplayAmountObj instanceof Error) throw settlementDisplayAmountObj
 
-        const settlementDisplayFeeObj = newDisplayAmountFromNumber({
+        const settlementDisplayFeeObj = displayAmountFromNumber({
           amount: expectedRecipientDisplayProps.displayFee,
           currency: expectedRecipientDisplayProps.displayCurrency,
         })

@@ -152,8 +152,7 @@ describe("notification", () => {
         if (balance instanceof Error) throw balance
         const balanceAmount = { amount: BigInt(balance), currency: wallet.currency }
 
-        let displayPaymentAmount: NewDisplayAmount<DisplayCurrency> | undefined =
-          undefined
+        let displayPaymentAmount: DisplayAmount<DisplayCurrency> | undefined = undefined
         if (balanceAmount.currency === WalletCurrency.Btc) {
           const displayAmount = displayPriceRatio.convertFromWallet(
             balanceAmount as BtcPaymentAmount,

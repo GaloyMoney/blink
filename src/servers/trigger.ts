@@ -112,7 +112,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
     if (senderAccount instanceof Error) return senderAccount
     const { displayCurrency: senderDisplayCurrency } = senderAccount
 
-    let displayAmount: NewDisplayAmount<T> | undefined = undefined
+    let displayAmount: DisplayAmount<T> | undefined = undefined
 
     const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
       {
@@ -184,7 +184,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
         "mempool appearance",
       )
 
-      let displayAmount: NewDisplayAmount<T> | undefined = undefined
+      let displayAmount: DisplayAmount<T> | undefined = undefined
 
       const displayPriceRatios = {} as Record<
         T,

@@ -38,7 +38,7 @@ import {
   add,
   DisplayCurrency,
   getCurrencyMajorExponent,
-  newDisplayAmountFromNumber,
+  displayAmountFromNumber,
   sub,
   toCents,
 } from "@domain/fiat"
@@ -428,7 +428,7 @@ const testExternalSend = async ({
       amount: BigInt(amountForNotification),
       currency: senderWallet.currency,
     }
-    const paymentAsDisplayAmount = newDisplayAmountFromNumber({
+    const paymentAsDisplayAmount = displayAmountFromNumber({
       amount: amountForNotification,
       currency: senderWallet.currency,
     })

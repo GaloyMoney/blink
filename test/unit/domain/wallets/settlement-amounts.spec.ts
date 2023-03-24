@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, newDisplayAmountFromNumber, toCents } from "@domain/fiat"
+import { DisplayCurrency, displayAmountFromNumber, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
@@ -36,7 +36,7 @@ describe("SettlementAmounts", () => {
     displayCurrency,
   }
 
-  const expectedDisplayFeeObj = newDisplayAmountFromNumber({
+  const expectedDisplayFeeObj = displayAmountFromNumber({
     amount: displayFee,
     currency: displayCurrency,
   })
@@ -91,7 +91,7 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForDebitObj = newDisplayAmountFromNumber({
+          const expectedDisplayAmountForDebitObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
             currency: txnDebit.displayCurrency || DisplayCurrency.Usd,
           })
@@ -126,7 +126,7 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForCreditObj = newDisplayAmountFromNumber({
+          const expectedDisplayAmountForCreditObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
             currency: txnCredit.displayCurrency || DisplayCurrency.Usd,
           })
@@ -169,7 +169,7 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForDebitObj = newDisplayAmountFromNumber({
+          const expectedDisplayAmountForDebitObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
             currency: txnDebit.displayCurrency || DisplayCurrency.Usd,
           })
@@ -204,7 +204,7 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForCreditObj = newDisplayAmountFromNumber({
+          const expectedDisplayAmountForCreditObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
             currency: txnCredit.displayCurrency || DisplayCurrency.Usd,
           })

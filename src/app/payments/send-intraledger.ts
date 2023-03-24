@@ -2,7 +2,7 @@ import { getPubkeysToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { newDisplayAmountFromNumber } from "@domain/fiat"
+import { displayAmountFromNumber } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
@@ -356,7 +356,7 @@ const executePaymentViaIntraledger = async <
       amount = totalSendAmounts.usd.amount
     }
 
-    const recipientDisplayAmount = newDisplayAmountFromNumber({
+    const recipientDisplayAmount = displayAmountFromNumber({
       amount: recipientAmountDisplayCurrencyAsNumber,
       currency: recipientAccount.displayCurrency,
     })

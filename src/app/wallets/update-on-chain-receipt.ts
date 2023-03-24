@@ -12,7 +12,7 @@ import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
-import { DisplayCurrency, newDisplayAmountFromNumber } from "@domain/fiat"
+import { DisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 
@@ -236,7 +236,7 @@ const processTxForWallet = async (
           )
           if (recipientUser instanceof Error) return recipientUser
 
-          const displayAmount = newDisplayAmountFromNumber({
+          const displayAmount = displayAmountFromNumber({
             amount: creditAccountAdditionalMetadata.displayAmount,
             currency: creditAccountAdditionalMetadata.displayCurrency,
           })

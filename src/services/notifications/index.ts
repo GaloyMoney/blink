@@ -144,7 +144,7 @@ export const NotificationsService = (): INotificationsService => {
     accountId: AccountId
     walletId: WalletId
     paymentAmount: PaymentAmount<WalletCurrency>
-    displayPaymentAmount?: NewDisplayAmount<DisplayCurrency>
+    displayPaymentAmount?: DisplayAmount<DisplayCurrency>
     deviceTokens: DeviceToken[]
     language: UserLanguageOrEmpty
     txHash: OnChainTxHash

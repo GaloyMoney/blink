@@ -15,10 +15,10 @@ type WalletPriceRatio = {
 }
 
 type DisplayPriceRatio<S extends WalletCurrency, T extends DisplayCurrency> = {
-  convertFromDisplayMinorUnit(convert: NewDisplayAmount<T>): PaymentAmount<S>
-  convertFromWallet(convert: PaymentAmount<S>): NewDisplayAmount<T>
-  convertFromWalletToFloor(convert: PaymentAmount<S>): NewDisplayAmount<T>
-  convertFromWalletToCeil(convert: PaymentAmount<S>): NewDisplayAmount<T>
+  convertFromDisplayMinorUnit(convert: DisplayAmount<T>): PaymentAmount<S>
+  convertFromWallet(convert: PaymentAmount<S>): DisplayAmount<T>
+  convertFromWalletToFloor(convert: PaymentAmount<S>): DisplayAmount<T>
+  convertFromWalletToCeil(convert: PaymentAmount<S>): DisplayAmount<T>
   displayMinorUnitPerWalletUnit(): DisplayCurrencyBasePerSat
 }
 

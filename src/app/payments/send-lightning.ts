@@ -7,7 +7,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
-import { newDisplayAmountFromNumber } from "@domain/fiat"
+import { displayAmountFromNumber } from "@domain/fiat"
 import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
@@ -509,7 +509,7 @@ const executePaymentViaIntraledger = async <
       amount = paymentFlow.usdPaymentAmount.amount
     }
 
-    const recipientDisplayAmount = newDisplayAmountFromNumber({
+    const recipientDisplayAmount = displayAmountFromNumber({
       amount: recipientAmountDisplayCurrencyAsNumber,
       currency: recipientAccount.displayCurrency,
     })

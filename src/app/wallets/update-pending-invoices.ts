@@ -28,7 +28,7 @@ import {
 } from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
-import { newDisplayAmountFromNumber } from "@domain/fiat"
+import { displayAmountFromNumber } from "@domain/fiat"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -263,7 +263,7 @@ const updatePendingInvoiceBeforeFinally = async ({
 
     // Prepare and send notification
     const { displayAmount, displayCurrency } = creditAccountAdditionalMetadata
-    const displayPaymentAmount = newDisplayAmountFromNumber({
+    const displayPaymentAmount = displayAmountFromNumber({
       amount: displayAmount,
       currency: displayCurrency,
     })

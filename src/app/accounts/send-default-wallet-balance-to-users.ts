@@ -34,7 +34,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         currency: displayCurrency,
       })
 
-      let displayAmount: NewDisplayAmount<DisplayCurrency> | undefined
+      let displayAmount: DisplayAmount<DisplayCurrency> | undefined
       if (!(displayPriceRatio instanceof Error)) {
         if (balanceAmount.currency === WalletCurrency.Btc) {
           displayAmount = displayPriceRatio.convertFromWallet(

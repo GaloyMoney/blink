@@ -15,7 +15,7 @@ import { sat2btc, toSats } from "@domain/bitcoin"
 import {
   DisplayCurrency,
   getCurrencyMajorExponent,
-  newDisplayAmountFromNumber,
+  displayAmountFromNumber,
   toCents,
 } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
@@ -183,7 +183,7 @@ describe("UserWallet - On chain", () => {
 
     expect(Number(expectedSatsFee.amount)).toEqual(satsFee)
 
-    const displayAmountForMajor = newDisplayAmountFromNumber({
+    const displayAmountForMajor = displayAmountFromNumber({
       amount: displayAmountRaw || 0,
       currency: displayCurrency || DisplayCurrency.Usd,
     })
@@ -452,7 +452,7 @@ describe("UserWallet - On chain", () => {
       currency: WalletCurrency.Btc,
     }
 
-    const displayPaymentAmount = newDisplayAmountFromNumber({
+    const displayPaymentAmount = displayAmountFromNumber({
       amount: Number(pendingTx.settlementDisplayAmount) * 10 ** exponent,
       currency: displayCurrency,
     })
