@@ -144,7 +144,7 @@
     "@types/nodemon": "^1.19.2",
     "@types/prettier": "^2.7.2",
     "@types/set-cookie-parser": "^2.4.2",
-    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.54.0",
     "@xascode/tscpaths": "0.1.4",
     "axios-mock-adapter": "^1.21.2",
