@@ -16,6 +16,7 @@ import {
   DisplayCurrency,
   getCurrencyMajorExponent,
   minorToMajorUnit,
+  newDisplayAmountFromNumber,
   toCents,
 } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
@@ -183,9 +184,13 @@ describe("UserWallet - On chain", () => {
 
     expect(Number(expectedSatsFee.amount)).toEqual(satsFee)
 
-    const displayAmountMajorUnit = minorToMajorUnit({
+    const displayAmountForMajor = newDisplayAmountFromNumber({
       amount: displayAmountRaw || 0,
-      displayCurrency: displayCurrency || DisplayCurrency.Usd,
+      currency: displayCurrency || DisplayCurrency.Usd,
+    })
+    if (displayAmountForMajor instanceof Error) throw displayAmountForMajor
+    const displayAmountMajorUnit = minorToMajorUnit({
+      displayAmount: displayAmountForMajor,
     })
 
     const displayAmount =
@@ -267,11 +272,11 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
+    const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
+      currency: WalletCurrency.Usd,
     })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-    const satsAmount = displayPriceRatio.convertFromUsd({
+    if (walletPriceRatio instanceof Error) throw walletPriceRatio
+    const satsAmount = walletPriceRatio.convertFromUsd({
       amount: BigInt(withdrawalLimitAccountLevel1),
       currency: WalletCurrency.Usd,
     })
@@ -292,11 +297,11 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
+    const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
+      currency: WalletCurrency.Usd,
     })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-    const satsAmount = displayPriceRatio.convertFromUsd({
+    if (walletPriceRatio instanceof Error) throw walletPriceRatio
+    const satsAmount = walletPriceRatio.convertFromUsd({
       amount: BigInt(intraLedgerLimitAccountLevel1),
       currency: WalletCurrency.Usd,
     })

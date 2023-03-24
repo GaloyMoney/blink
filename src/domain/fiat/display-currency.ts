@@ -1,3 +1,5 @@
+import { safeBigInt } from "@domain/shared"
+
 export const CENTS_PER_USD = 100
 
 export const MajorExponent = {
@@ -20,18 +22,16 @@ export const minorToMajorUnitFormatted = ({
   return majorAmount.toFixed(displayMajorExponent)
 }
 
-export const minorToMajorUnit = ({
-  amount,
-  displayCurrency,
-  fixed = true,
+export const minorToMajorUnit = <T extends DisplayCurrency>({
+  displayAmount,
 }: {
-  amount: number | bigint
-  displayCurrency: DisplayCurrency
-  fixed?: boolean
+  displayAmount: NewDisplayAmount<T>
 }): number => {
-  const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
-  const majorAmount = Number(amount) / 10 ** displayMajorExponent
-  return fixed ? Number(majorAmount.toFixed(displayMajorExponent)) : majorAmount
+  const { amountInMinor, currency } = displayAmount
+
+  const displayMajorExponent = getCurrencyMajorExponent(currency)
+  const majorAmount = Number(amountInMinor) / 10 ** displayMajorExponent
+  return Number(majorAmount.toFixed(displayMajorExponent))
 }
 
 export const majorToMinorUnit = ({
@@ -66,5 +66,42 @@ export const getCurrencyMajorExponent = (
   } catch {
     // this is necessary for non-standard currencies
     return MajorExponent.STANDARD
+  }
+}
+
+export const newDisplayAmountFromNumber = <T extends DisplayCurrency>({
+  amount,
+  currency,
+}: {
+  amount: number
+  currency: T
+}): NewDisplayAmount<T> | ValidationError => {
+  const amountInMinor = safeBigInt(amount)
+  if (amountInMinor instanceof Error) return amountInMinor
+
+  const displayMajorExponent = getCurrencyMajorExponent(currency)
+
+  return {
+    amountInMinor,
+    currency,
+    displayInMajor: (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(
+      displayMajorExponent,
+    ),
+  }
+}
+
+export const priceAmountFromNumber = <T extends DisplayCurrency>({
+  priceOfOneSatInMinorUnit,
+  currency,
+}: {
+  priceOfOneSatInMinorUnit: number
+  currency: T
+}): PriceAmount<T> => {
+  const displayMajorExponent = getCurrencyMajorExponent(currency)
+
+  return {
+    priceOfOneSatInMinorUnit,
+    priceOfOneSatInMajorUnit: priceOfOneSatInMinorUnit / 10 ** displayMajorExponent,
+    currency,
   }
 }

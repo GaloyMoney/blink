@@ -6,8 +6,8 @@ import {
 
 import {
   DisplayCurrency,
-  minorToMajorUnit,
   minorToMajorUnitFormatted,
+  priceAmountFromNumber,
   toCents,
 } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
@@ -70,7 +70,7 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
 
             let settlementDisplayAmount = `${NaN}`
             let settlementDisplayFee = `${NaN}`
-            let displayCurrencyPerSettlementCurrencyMajorUnit = NaN as number
+            let displayCurrencyPerSettlementCurrencyUnit = NaN as number
             if (displayPriceRatio) {
               const displayAmount =
                 displayPriceRatio.convertFromWallet(btcSettlementAmount)
@@ -85,12 +85,12 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
                 amount: displayFee.amountInMinor,
                 displayCurrency,
               })
-
-              displayCurrencyPerSettlementCurrencyMajorUnit = minorToMajorUnit({
-                amount: displayPriceRatio.displayMinorUnitPerWalletUnit(),
-                displayCurrency,
-                fixed: false,
-              })
+              ;({ priceOfOneSatInMajorUnit: displayCurrencyPerSettlementCurrencyUnit } =
+                priceAmountFromNumber({
+                  priceOfOneSatInMinorUnit:
+                    displayPriceRatio.displayMinorUnitPerWalletUnit(),
+                  currency: displayCurrency,
+                }))
             }
 
             walletTransactions.push({
@@ -102,8 +102,7 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
               settlementDisplayAmount,
               settlementDisplayFee,
               settlementDisplayCurrency: displayCurrency,
-              displayCurrencyPerSettlementCurrencyUnit:
-                displayCurrencyPerSettlementCurrencyMajorUnit,
+              displayCurrencyPerSettlementCurrencyUnit,
               status: TxStatus.Pending,
               memo: null,
               createdAt: createdAt,

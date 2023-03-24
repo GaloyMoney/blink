@@ -27,7 +27,7 @@ import {
   TxDecoder,
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { minorToMajorUnit } from "@domain/fiat"
+import { minorToMajorUnit, newDisplayAmountFromNumber } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
@@ -387,6 +387,12 @@ const executePaymentViaIntraledger = async <
       amount = paymentFlow.usdPaymentAmount.amount
     }
 
+    const recipientDisplayAmount = newDisplayAmountFromNumber({
+      amount: recipientAmountDisplayCurrencyAsNumber,
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
+
     // Send 'received'-side intraledger notification
     const notificationsService = NotificationsService()
     notificationsService.intraLedgerTxReceived({
@@ -395,8 +401,7 @@ const executePaymentViaIntraledger = async <
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
         amount: minorToMajorUnit({
-          amount: recipientAmountDisplayCurrencyAsNumber,
-          displayCurrency: recipientAccount.displayCurrency,
+          displayAmount: recipientDisplayAmount,
         }),
         currency: recipientAccount.displayCurrency,
       },

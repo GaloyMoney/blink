@@ -7,7 +7,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
-import { minorToMajorUnit } from "@domain/fiat"
+import { minorToMajorUnit, newDisplayAmountFromNumber } from "@domain/fiat"
 import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
@@ -509,6 +509,12 @@ const executePaymentViaIntraledger = async <
       amount = paymentFlow.usdPaymentAmount.amount
     }
 
+    const recipientDisplayAmount = newDisplayAmountFromNumber({
+      amount: recipientAmountDisplayCurrencyAsNumber,
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
+
     const notificationsService = NotificationsService()
     notificationsService.lightningTxReceived({
       recipientAccountId: recipientWallet.accountId,
@@ -516,8 +522,7 @@ const executePaymentViaIntraledger = async <
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: {
         amount: minorToMajorUnit({
-          amount: recipientAmountDisplayCurrencyAsNumber,
-          displayCurrency: recipientAccount.displayCurrency,
+          displayAmount: recipientDisplayAmount,
         }),
         currency: recipientAccount.displayCurrency,
       },

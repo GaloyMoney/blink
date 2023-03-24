@@ -43,28 +43,26 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
           // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
           displayBalanceAmount = {
             amount: minorToMajorUnit({
-              amount: displayAmount.amountInMinor,
-              displayCurrency: displayAmount.currency,
+              displayAmount,
             }),
             currency: displayCurrency,
           }
         }
 
         if (balanceAmount.currency === WalletCurrency.Usd) {
-          const usdDisplayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+          const usdWalletPriceRatio = await getCurrentPriceAsWalletPriceRatio({
             currency: DisplayCurrency.Usd,
           })
 
-          if (!(usdDisplayPriceRatio instanceof Error)) {
-            const btcBalanceAmount = usdDisplayPriceRatio.convertFromUsd(
+          if (!(usdWalletPriceRatio instanceof Error)) {
+            const btcBalanceAmount = usdWalletPriceRatio.convertFromUsd(
               balanceAmount as UsdPaymentAmount,
             )
             const displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)
             // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
             displayBalanceAmount = {
               amount: minorToMajorUnit({
-                amount: displayAmount.amountInMinor,
-                displayCurrency: displayAmount.currency,
+                displayAmount,
               }),
               currency: displayCurrency,
             }

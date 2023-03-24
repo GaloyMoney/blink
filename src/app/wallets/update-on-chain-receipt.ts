@@ -5,18 +5,18 @@ import {
   SECS_PER_10_MINS,
 } from "@config"
 
-import {
-  getCurrentPriceAsDisplayPriceRatio,
-  getCurrentPriceAsWalletPriceRatio,
-  usdFromBtcMidPriceFn,
-} from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
-import { DisplayCurrency, minorToMajorUnit } from "@domain/fiat"
+import {
+  DisplayCurrency,
+  minorToMajorUnit,
+  newDisplayAmountFromNumber,
+} from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 
@@ -240,11 +240,16 @@ const processTxForWallet = async (
           )
           if (recipientUser instanceof Error) return recipientUser
 
+          const displayAmount = newDisplayAmountFromNumber({
+            amount: creditAccountAdditionalMetadata.displayAmount,
+            currency: creditAccountAdditionalMetadata.displayCurrency,
+          })
+          if (displayAmount instanceof Error) return displayAmount
+
           const displayPaymentAmount = {
             amount: Number(
               minorToMajorUnit({
-                amount: creditAccountAdditionalMetadata.displayAmount,
-                displayCurrency: creditAccountAdditionalMetadata.displayCurrency,
+                displayAmount,
               }),
             ),
             currency: displayCurrency,
@@ -296,7 +301,7 @@ const processTxForHotWallet = async ({
 
   const ledger = LedgerService()
 
-  const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: DisplayCurrency.Usd,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
@@ -333,8 +338,9 @@ const processTxForHotWallet = async ({
         })
         if (feeAmount instanceof Error) return feeAmount
 
-        const amountDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(satsAmount)
-        const feeDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(feeAmount)
+        const amountDisplayCurrencyAmount =
+          displayPriceRatio.convertFromWallet(satsAmount)
+        const feeDisplayCurrencyAmount = displayPriceRatio.convertFromWallet(feeAmount)
 
         const description = `deposit to hot wallet of ${sats} sats from the cold storage wallet`
 
@@ -344,12 +350,10 @@ const processTxForHotWallet = async ({
           sats,
           fee,
           amountDisplayCurrency: minorToMajorUnit({
-            amount: amountDisplayCurrencyAmount.amount,
-            displayCurrency: DisplayCurrency.Usd,
+            displayAmount: amountDisplayCurrencyAmount,
           }) as DisplayCurrencyBaseAmount,
           feeDisplayCurrency: minorToMajorUnit({
-            amount: feeDisplayCurrencyAmount.amount,
-            displayCurrency: DisplayCurrency.Usd,
+            displayAmount: feeDisplayCurrencyAmount,
           }) as DisplayCurrencyBaseAmount,
           payeeAddress: address,
         })
