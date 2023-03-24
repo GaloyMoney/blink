@@ -257,7 +257,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const userBTxn = txResultB.result.slice.filter(matchTx)[0]
     expect(userBTxn.memo).toBe(memo)
-    expect(userBTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
+    expect(userBTxn.settlementDisplayPrice?.priceOfOneSatInMajorUnit).toBe(0.0005)
     expect(userBTxn.settlementVia.type).toBe("intraledger")
     // expect(userBTxn.recipientUsername).toBe("lily")
 
@@ -267,7 +267,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const userCTxn = txResultC.result.slice.filter(matchTx)[0]
     expect(userCTxn.memo).toBe(memo)
-    expect(userCTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
+    expect(userCTxn.settlementDisplayPrice?.priceOfOneSatInMajorUnit).toBe(0.0005)
     expect(userCTxn.settlementVia.type).toBe("intraledger")
 
     // Check ledger transaction metadata for BTC 'LedgerTransactionType.LnIntraLedger'

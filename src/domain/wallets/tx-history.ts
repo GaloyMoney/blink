@@ -65,7 +65,8 @@ const filterPendingIncoming = ({
 
             let settlementDisplayAmount = `${NaN}`
             let settlementDisplayFee = `${NaN}`
-            let displayCurrencyPerSettlementCurrencyUnit = NaN as number
+            let settlementDisplayPrice: PriceAmount<DisplayCurrency> | undefined =
+              undefined
             if (displayPriceRatio) {
               const displayAmount =
                 displayPriceRatio.convertFromWallet(btcSettlementAmount)
@@ -74,12 +75,11 @@ const filterPendingIncoming = ({
 
               const displayFee = displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
               settlementDisplayFee = displayFee.displayInMajor
-              ;({ priceOfOneSatInMajorUnit: displayCurrencyPerSettlementCurrencyUnit } =
-                priceAmountFromNumber({
-                  priceOfOneSatInMinorUnit:
-                    displayPriceRatio.displayMinorUnitPerWalletUnit(),
-                  currency: displayCurrency,
-                }))
+              settlementDisplayPrice = priceAmountFromNumber({
+                priceOfOneSatInMinorUnit:
+                  displayPriceRatio.displayMinorUnitPerWalletUnit(),
+                currency: displayCurrency,
+              })
             }
 
             walletTransactions.push({
@@ -91,7 +91,7 @@ const filterPendingIncoming = ({
               settlementDisplayAmount,
               settlementDisplayFee,
               settlementDisplayCurrency: displayCurrency,
-              displayCurrencyPerSettlementCurrencyUnit,
+              settlementDisplayPrice,
               status: TxStatus.Pending,
               memo: null,
               createdAt: createdAt,
@@ -185,8 +185,9 @@ const translateLedgerTxnToWalletTxn = <
     settlementDisplayAmount,
     settlementDisplayFee,
     settlementDisplayCurrency: displayCurrency,
-    displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
+    settlementDisplayPrice: displayCurrencyPerBaseUnitFromAmounts({
       displayAmount,
+      displayCurrency,
       baseAmount: txn.currency === WalletCurrency.Btc ? satsAmount : centsAmount,
     }),
     status,
@@ -378,18 +379,19 @@ export const WalletTransactionHistory = {
 
 // TODO: refactor this to use WalletPriceRatio eventually instead after
 // 'usd' property removal from db
-const displayCurrencyPerBaseUnitFromAmounts = ({
+export const displayCurrencyPerBaseUnitFromAmounts = <T extends DisplayCurrency>({
   displayAmount,
+  displayCurrency,
   baseAmount,
 }: {
   displayAmount: number
+  displayCurrency: T
   baseAmount: number
-}): number => {
-  if (baseAmount === 0) {
-    return 0
-  }
+}): PriceAmount<T> => {
+  const priceInMinorUnit = baseAmount !== 0 ? displayAmount / baseAmount : 0
 
-  const majorExponent = 2
-  const priceInMinorUnit = displayAmount / baseAmount
-  return Number(priceInMinorUnit / 10 ** majorExponent)
+  return priceAmountFromNumber({
+    priceOfOneSatInMinorUnit: priceInMinorUnit,
+    currency: displayCurrency,
+  })
 }

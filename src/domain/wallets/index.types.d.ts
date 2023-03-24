@@ -55,7 +55,7 @@ type BaseWalletTransaction<T extends DisplayCurrency> = {
   readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayFee: DisplayCurrencyMajorAmount
   readonly settlementDisplayCurrency: T
-  readonly displayCurrencyPerSettlementCurrencyUnit: number
+  readonly settlementDisplayPrice: PriceAmount<T> | undefined
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date

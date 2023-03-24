@@ -90,7 +90,7 @@ const Transaction = GT.Object<WalletTransaction<DisplayCurrency>>({
         if (displayCurrency instanceof Error) throw mapError(displayCurrency)
 
         const displayCurrencyPriceInMinorUnit = majorToMinorUnit({
-          amount: source.displayCurrencyPerSettlementCurrencyUnit,
+          amount: source.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0,
           displayCurrency,
         })
 

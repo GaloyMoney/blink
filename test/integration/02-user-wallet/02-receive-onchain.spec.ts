@@ -419,7 +419,8 @@ describe("UserWallet - On chain", () => {
 
     expect(pendingTx.settlementDisplayAmount).toBe(
       (
-        pendingTx.settlementAmount * pendingTx.displayCurrencyPerSettlementCurrencyUnit
+        pendingTx.settlementAmount *
+        (pendingTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0)
       ).toFixed(exponent),
     )
 
@@ -427,7 +428,7 @@ describe("UserWallet - On chain", () => {
       (
         Math.ceil(
           pendingTx.settlementFee *
-            pendingTx.displayCurrencyPerSettlementCurrencyUnit *
+            (pendingTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0) *
             10 ** exponent,
         ) /
         10 ** exponent

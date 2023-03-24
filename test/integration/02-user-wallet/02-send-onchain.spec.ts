@@ -307,7 +307,7 @@ const testExternalSend = async ({
     }
 
     expect(settledTx.settlementFee).toBe(fee)
-    expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+    expect(settledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit).toBeGreaterThan(0)
 
     const settledLedgerTx = await LedgerService().getTransactionById(
       settledTx.id as LedgerTransactionId,
@@ -566,7 +566,9 @@ const testInternalSend = async ({
 
   expect(senderSettledTx.settlementFee).toBe(0)
   expect(senderSettledTx.settlementAmount).toBe(-senderAmount)
-  expect(senderSettledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+  expect(
+    senderSettledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit,
+  ).toBeGreaterThan(0)
 
   const senderSettledLedgerTx = await LedgerService().getTransactionById(
     senderSettledTx.id as LedgerTransactionId,
@@ -600,7 +602,9 @@ const testInternalSend = async ({
 
   expect(recipientSettledTx.settlementFee).toBe(0)
   expect(recipientSettledTx.settlementAmount).toBe(recipientAmount)
-  expect(recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+  expect(
+    recipientSettledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit,
+  ).toBeGreaterThan(0)
 
   const exponent = getCurrencyMajorExponent(
     recipientSettledTx.settlementDisplayCurrency as DisplayCurrency,
@@ -609,13 +613,13 @@ const testInternalSend = async ({
   expect(recipientSettledTx.settlementDisplayAmount).toBe(
     (
       recipientSettledTx.settlementAmount *
-      recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit
+      (recipientSettledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0)
     ).toFixed(exponent),
   )
   expect(recipientSettledTx.settlementDisplayFee).toBe(
     (
       recipientSettledTx.settlementFee *
-      recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit
+      (recipientSettledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0)
     ).toFixed(exponent),
   )
 
@@ -898,7 +902,9 @@ describe("BtcWallet - onChainPay", () => {
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserF)
-      expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+      expect(settledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit).toBeGreaterThan(
+        0,
+      )
 
       const finalBalance = await getBalanceHelper(walletIdF)
       expect(finalBalance).toBe(0)
