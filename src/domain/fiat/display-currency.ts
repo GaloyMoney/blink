@@ -78,7 +78,7 @@ export const priceAmountFromNumber = <
   priceOfOneSatInMinorUnit: number
   displayCurrency: T
   walletCurrency: S
-}): PriceAmount<S, T> => {
+}): WalletMinorUnitDisplayPrice<S, T> => {
   const offset =
     walletCurrency === WalletCurrency.Btc
       ? SAT_PRICE_PRECISION_OFFSET

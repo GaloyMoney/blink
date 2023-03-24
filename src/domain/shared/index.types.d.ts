@@ -24,7 +24,7 @@ type DisplayAmount<T extends DisplayCurrency> = {
   displayInMajor: DisplayCurrencyMajorAmount
 }
 
-type PriceAmount<S extends WalletCurrency, T extends DisplayCurrency> = {
+type WalletMinorUnitDisplayPrice<S extends WalletCurrency, T extends DisplayCurrency> = {
   base: bigint
   offset: bigint
   displayCurrency: T

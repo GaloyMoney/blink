@@ -70,7 +70,7 @@ const filterPendingIncoming = ({
             let settlementDisplayAmount = `${NaN}`
             let settlementDisplayFee = `${NaN}`
             let settlementDisplayPrice:
-              | PriceAmount<WalletCurrency, DisplayCurrency>
+              | WalletMinorUnitDisplayPrice<WalletCurrency, DisplayCurrency>
               | undefined = undefined
             if (displayPriceRatio) {
               const displayAmount =
@@ -399,7 +399,7 @@ export const displayCurrencyPerBaseUnitFromAmounts = <
   displayCurrency: T
   walletAmount: number
   walletCurrency: S
-}): PriceAmount<S, T> => {
+}): WalletMinorUnitDisplayPrice<S, T> => {
   const priceInMinorUnit = walletAmount !== 0 ? displayAmount / walletAmount : 0
 
   return priceAmountFromNumber({

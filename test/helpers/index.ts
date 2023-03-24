@@ -66,7 +66,7 @@ export const amountByPriceAsMajor = <
   displayCurrency,
 }: {
   amount: Satoshis | UsdCents
-  price: PriceAmount<S, T> | undefined
+  price: WalletMinorUnitDisplayPrice<S, T> | undefined
   walletCurrency: S
   displayCurrency: T
 }): number => {
