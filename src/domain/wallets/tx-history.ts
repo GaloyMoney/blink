@@ -67,26 +67,16 @@ const filterPendingIncoming = ({
                 ? toCents(0)
                 : toCents(walletPriceRatio.convertFromBtcToCeil(btcFeeAmount).amount)
 
-            let settlementDisplayAmount = `${NaN}`
-            let settlementDisplayFee = `${NaN}`
-            let settlementDisplayPrice:
-              | WalletMinorUnitDisplayPrice<WalletCurrency, DisplayCurrency>
-              | undefined = undefined
-            if (displayPriceRatio) {
-              const displayAmount =
-                displayPriceRatio.convertFromWallet(btcSettlementAmount)
-              const displayCurrency = displayAmount.currency
-              settlementDisplayAmount = displayAmount.displayInMajor
+            const displayAmount = displayPriceRatio.convertFromWallet(btcSettlementAmount)
+            const settlementDisplayAmount = displayAmount.displayInMajor
 
-              const displayFee = displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
-              settlementDisplayFee = displayFee.displayInMajor
-              settlementDisplayPrice = priceAmountFromNumber({
-                priceOfOneSatInMinorUnit:
-                  displayPriceRatio.displayMinorUnitPerWalletUnit(),
-                displayCurrency: displayCurrency,
-                walletCurrency,
-              })
-            }
+            const displayFee = displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
+            const settlementDisplayFee = displayFee.displayInMajor
+            const settlementDisplayPrice = priceAmountFromNumber({
+              priceOfOneSatInMinorUnit: displayPriceRatio.displayMinorUnitPerWalletUnit(),
+              displayCurrency: displayCurrency,
+              walletCurrency,
+            })
 
             walletTransactions.push({
               id: rawTx.txHash,

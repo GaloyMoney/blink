@@ -5,7 +5,7 @@ import { mapError } from "@graphql/error-map"
 import { connectionDefinitions } from "@graphql/connections"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
-import { checkedToDisplayCurrency, priceAmountFromNumber } from "@domain/fiat"
+import { checkedToDisplayCurrency } from "@domain/fiat"
 
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
@@ -86,15 +86,7 @@ const Transaction = GT.Object<WalletTransaction<WalletCurrency, DisplayCurrency>
         const displayCurrency = checkedToDisplayCurrency(source.settlementDisplayCurrency)
         if (displayCurrency instanceof Error) throw mapError(displayCurrency)
 
-        let settlementDisplayPrice = source.settlementDisplayPrice
-        if (settlementDisplayPrice === undefined) {
-          settlementDisplayPrice = priceAmountFromNumber({
-            priceOfOneSatInMinorUnit: 0,
-            displayCurrency,
-            walletCurrency: source.settlementCurrency,
-          })
-        }
-
+        const { settlementDisplayPrice } = source
         const formattedAmount = `${
           Number(settlementDisplayPrice.base) /
           10 ** Number(settlementDisplayPrice.offset)

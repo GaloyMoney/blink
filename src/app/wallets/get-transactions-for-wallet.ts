@@ -70,14 +70,11 @@ export const getTransactionsForWallets = async <T extends DisplayCurrency>({
         ? (DisplayCurrency.Usd as T)
         : (account.displayCurrency as T)
 
-    let displayPriceRatioForPending:
-      | DisplayPriceRatio<"BTC", T>
-      | PriceServiceError
-      | undefined = await getCurrentPriceAsDisplayPriceRatio<T>({
+    const displayPriceRatioForPending = await getCurrentPriceAsDisplayPriceRatio<T>({
       currency: displayCurrency,
     })
     if (displayPriceRatioForPending instanceof Error) {
-      displayPriceRatioForPending = undefined
+      return PartialResult.err(displayPriceRatioForPending)
     }
 
     let walletPriceRatio: WalletPriceRatio | undefined = undefined

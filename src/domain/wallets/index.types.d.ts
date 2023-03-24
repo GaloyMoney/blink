@@ -55,7 +55,7 @@ type BaseWalletTransaction<S extends WalletCurrency, T extends DisplayCurrency> 
   readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayFee: DisplayCurrencyMajorAmount
   readonly settlementDisplayCurrency: T
-  readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<S, T> | undefined
+  readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<S, T>
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date
@@ -140,7 +140,7 @@ type WalletDetailsByWalletId<T extends DisplayCurrency> = Record<
     walletPriceRatio: WalletPriceRatio | undefined
     depositFeeRatio: DepositFeeRatio
     displayCurrency: T
-    displayPriceRatio: DisplayPriceRatio<"BTC", T> | undefined
+    displayPriceRatio: DisplayPriceRatio<"BTC", T>
   }
 >
 

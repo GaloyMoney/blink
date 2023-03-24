@@ -78,23 +78,14 @@ export const getTransactionsForWalletsByAddresses = async <
         ? (DisplayCurrency.Usd as T)
         : (account.displayCurrency as T)
 
-    let displayPriceRatioForPending:
-      | DisplayPriceRatio<"BTC", T>
-      | PriceServiceError
-      | undefined = await getCurrentPriceAsDisplayPriceRatio<T>({
+    const displayPriceRatioForPending = await getCurrentPriceAsDisplayPriceRatio<T>({
       currency: displayCurrency,
     })
     if (displayPriceRatioForPending instanceof Error) {
-      displayPriceRatioForPending = undefined
+      return PartialResult.err(displayPriceRatioForPending)
     }
 
-    let walletPriceRatio = WalletPriceRatio({
-      usd: { amount: 1n, currency: WalletCurrency.Usd },
-      btc: { amount: 1n, currency: WalletCurrency.Btc },
-    })
-    if (walletPriceRatio instanceof Error) {
-      return PartialResult.err(walletPriceRatio)
-    }
+    let walletPriceRatio: WalletPriceRatio | undefined = undefined
     if (wallet.currency !== WalletCurrency.Btc) {
       const walletPriceRatioResult = await getMidPriceRatio(usdHedgeEnabled)
       if (walletPriceRatioResult instanceof Error) {
