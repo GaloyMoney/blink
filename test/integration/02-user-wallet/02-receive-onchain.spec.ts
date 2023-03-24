@@ -37,6 +37,7 @@ import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
 
 import {
   amountAfterFeeDeduction,
+  amountByPriceAsMajor,
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
@@ -407,7 +408,10 @@ describe("UserWallet - On chain", () => {
     const pendingTxs = txs.slice.filter(({ status }) => status === TxStatus.Pending)
     expect(pendingTxs.length).toBe(1)
 
-    const pendingTx = pendingTxs[0] as WalletOnChainTransaction<DisplayCurrency>
+    const pendingTx = pendingTxs[0] as WalletOnChainTransaction<
+      WalletCurrency,
+      DisplayCurrency
+    >
     expect(pendingTx.settlementVia.type).toBe("onchain")
     expect(pendingTx.settlementAmount).toBe(amountSats - feeSats)
     expect(pendingTx.settlementFee).toBe(feeSats)
@@ -418,17 +422,23 @@ describe("UserWallet - On chain", () => {
     const exponent = getCurrencyMajorExponent(displayCurrency)
 
     expect(pendingTx.settlementDisplayAmount).toBe(
-      (
-        pendingTx.settlementAmount *
-        (pendingTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0)
-      ).toFixed(exponent),
+      amountByPriceAsMajor({
+        amount: pendingTx.settlementAmount,
+        price: pendingTx.settlementDisplayPrice,
+        walletCurrency: pendingTx.settlementCurrency,
+        displayCurrency: pendingTx.settlementDisplayCurrency,
+      }).toFixed(exponent),
     )
 
     expect(pendingTx.settlementDisplayFee).toBe(
       (
         Math.ceil(
-          pendingTx.settlementFee *
-            (pendingTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0) *
+          amountByPriceAsMajor({
+            amount: pendingTx.settlementFee,
+            price: pendingTx.settlementDisplayPrice,
+            walletCurrency: pendingTx.settlementCurrency,
+            displayCurrency: pendingTx.settlementDisplayCurrency,
+          }) *
             10 ** exponent,
         ) /
         10 ** exponent
@@ -553,7 +563,10 @@ async function sendToWalletTestWrapper({
 
     expect(transactions.slice.length).toBe(initTransactions.slice.length + 1)
 
-    const txn = transactions.slice[0] as WalletOnChainTransaction<DisplayCurrency>
+    const txn = transactions.slice[0] as WalletOnChainTransaction<
+      WalletCurrency,
+      DisplayCurrency
+    >
     expect(txn.settlementVia.type).toBe("onchain")
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
     expect(txn.settlementAmount).toBe(
@@ -691,7 +704,10 @@ async function testTxnsByAddressWrapper({
       initTransactions.slice.length + addresses.length,
     )
 
-    const txn = transactions.slice[0] as WalletOnChainTransaction<DisplayCurrency>
+    const txn = transactions.slice[0] as WalletOnChainTransaction<
+      WalletCurrency,
+      DisplayCurrency
+    >
     expect(txn.settlementVia.type).toBe("onchain")
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
     expect(txn.settlementAmount).toBe(

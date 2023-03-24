@@ -1,14 +1,11 @@
 import dedent from "dedent"
 
-import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
-
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import { connectionDefinitions } from "@graphql/connections"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
-import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
-import { checkedToDisplayCurrency, majorToMinorUnit } from "@domain/fiat"
+import { checkedToDisplayCurrency, priceAmountFromNumber } from "@domain/fiat"
 
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
@@ -24,7 +21,7 @@ import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 
 import PriceOfOneSettlementMinorUnitInDisplayMinorUnit from "./price-of-one-settlement-minor-unit-in-display-minor-unit"
 
-const Transaction = GT.Object<WalletTransaction<DisplayCurrency>>({
+const Transaction = GT.Object<WalletTransaction<WalletCurrency, DisplayCurrency>>({
   name: "Transaction",
   description: dedent`Give details about an individual transaction.
   Galoy have a smart routing system which is automatically
@@ -89,21 +86,24 @@ const Transaction = GT.Object<WalletTransaction<DisplayCurrency>>({
         const displayCurrency = checkedToDisplayCurrency(source.settlementDisplayCurrency)
         if (displayCurrency instanceof Error) throw mapError(displayCurrency)
 
-        const displayCurrencyPriceInMinorUnit = majorToMinorUnit({
-          amount: source.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0,
-          displayCurrency,
-        })
-
-        let offset = SAT_PRICE_PRECISION_OFFSET
-        if (source.settlementCurrency === WalletCurrencyDomain.Usd) {
-          offset = USD_PRICE_PRECISION_OFFSET
+        let settlementDisplayPrice = source.settlementDisplayPrice
+        if (settlementDisplayPrice === undefined) {
+          settlementDisplayPrice = priceAmountFromNumber({
+            priceOfOneSatInMinorUnit: 0,
+            displayCurrency,
+            walletCurrency: source.settlementCurrency,
+          })
         }
 
+        const formattedAmount = `${
+          Number(settlementDisplayPrice.base) /
+          10 ** Number(settlementDisplayPrice.offset)
+        }`
+
         return {
-          base: Math.round(displayCurrencyPriceInMinorUnit * 10 ** offset),
-          offset,
+          ...settlementDisplayPrice,
+          formattedAmount,
           currencyUnit: "MINOR",
-          formattedAmount: `${displayCurrencyPriceInMinorUnit}`,
         }
       },
       description: "Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement.",

@@ -125,18 +125,25 @@ describe("translates ledger txs to wallet txs", () => {
     settlementAmount: Satoshis | UsdCents
     centsAmount: UsdCents
     currency: WalletCurrency
-  }): WalletTransaction<DisplayCurrency>[] => {
+  }): WalletTransaction<WalletCurrency, DisplayCurrency>[] => {
     const displayCurrency = DisplayCurrency.Usd
 
     const settlementFee = currency === WalletCurrency.Btc ? satsFee : centsFee
     const settlementDisplayPrice = displayCurrencyPerBaseUnitFromAmounts({
       displayAmount: centsAmount,
       displayCurrency,
-      baseAmount: settlementAmount,
+      walletAmount: settlementAmount,
+      walletCurrency: currency,
     })
 
     if (currency === WalletCurrency.Usd) {
-      expect(settlementDisplayPrice.priceOfOneSatInMajorUnit).toEqual(0.01)
+      expect(settlementDisplayPrice).toEqual(
+        priceAmountFromNumber({
+          priceOfOneSatInMinorUnit: 1,
+          displayCurrency,
+          walletCurrency: currency,
+        }),
+      )
     }
 
     const currencyBaseWalletTxns = {
@@ -338,7 +345,8 @@ describe("translates ledger txs to wallet txs", () => {
           settlementDisplayCurrency: DisplayCurrency.Usd,
           settlementDisplayPrice: priceAmountFromNumber({
             priceOfOneSatInMinorUnit: 0,
-            currency: settlementDisplayCurrency,
+            displayCurrency: settlementDisplayCurrency,
+            walletCurrency: tx.settlementCurrency,
           }),
           ...rest,
         }
@@ -535,7 +543,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementCurrency: WalletCurrency.Btc,
         settlementDisplayPrice: priceAmountFromNumber({
           priceOfOneSatInMinorUnit: 0.016,
-          currency: "EUR" as DisplayCurrency,
+          displayCurrency: "EUR" as DisplayCurrency,
+          walletCurrency: WalletCurrency.Btc,
         }),
         status: TxStatus.Pending,
         createdAt: timestamp,
@@ -560,7 +569,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementFee: toSats(0),
         settlementDisplayPrice: priceAmountFromNumber({
           priceOfOneSatInMinorUnit: 0.016,
-          currency: "EUR" as DisplayCurrency,
+          displayCurrency: "EUR" as DisplayCurrency,
+          walletCurrency: WalletCurrency.Btc,
         }),
 
         status: TxStatus.Pending,

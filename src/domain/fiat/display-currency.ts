@@ -1,4 +1,5 @@
-import { safeBigInt } from "@domain/shared"
+import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
+import { safeBigInt, WalletCurrency } from "@domain/shared"
 
 export const CENTS_PER_USD = 100
 
@@ -66,18 +67,27 @@ export const displayAmountFromNumber = <T extends DisplayCurrency>({
   }
 }
 
-export const priceAmountFromNumber = <T extends DisplayCurrency>({
+export const priceAmountFromNumber = <
+  S extends WalletCurrency,
+  T extends DisplayCurrency,
+>({
   priceOfOneSatInMinorUnit,
-  currency,
+  displayCurrency,
+  walletCurrency,
 }: {
   priceOfOneSatInMinorUnit: number
-  currency: T
-}): PriceAmount<T> => {
-  const displayMajorExponent = getCurrencyMajorExponent(currency)
+  displayCurrency: T
+  walletCurrency: S
+}): PriceAmount<S, T> => {
+  const offset =
+    walletCurrency === WalletCurrency.Btc
+      ? SAT_PRICE_PRECISION_OFFSET
+      : USD_PRICE_PRECISION_OFFSET
 
   return {
-    priceOfOneSatInMinorUnit,
-    priceOfOneSatInMajorUnit: priceOfOneSatInMinorUnit / 10 ** displayMajorExponent,
-    currency,
+    base: BigInt(Math.floor(priceOfOneSatInMinorUnit * 10 ** offset)),
+    offset: BigInt(offset),
+    displayCurrency,
+    walletCurrency,
   }
 }

@@ -81,11 +81,9 @@ const BtcWallet = GT.Object<Wallet>({
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
 
-        return connectionFromPaginatedArray<WalletTransaction<DisplayCurrency>>(
-          result.slice,
-          result.total,
-          paginationArgs,
-        )
+        return connectionFromPaginatedArray<
+          WalletTransaction<WalletCurrency, DisplayCurrency>
+        >(result.slice, result.total, paginationArgs)
       },
       description: "A list of BTC transactions associated with this wallet.",
     },
@@ -119,11 +117,9 @@ const BtcWallet = GT.Object<Wallet>({
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
 
-        return connectionFromPaginatedArray<WalletTransaction<DisplayCurrency>>(
-          result.slice,
-          result.total,
-          paginationArgs,
-        )
+        return connectionFromPaginatedArray<
+          WalletTransaction<WalletCurrency, DisplayCurrency>
+        >(result.slice, result.total, paginationArgs)
       },
     },
   }),

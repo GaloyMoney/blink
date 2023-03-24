@@ -17,7 +17,9 @@ export const getBalanceHelper = async (
 
 export const getTransactionsForWalletId = async (
   walletId: WalletId,
-): Promise<PartialResult<PaginatedArray<WalletTransaction<DisplayCurrency>>>> => {
+): Promise<
+  PartialResult<PaginatedArray<WalletTransaction<WalletCurrency, DisplayCurrency>>>
+> => {
   const wallets = WalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return PartialResult.err(wallet)

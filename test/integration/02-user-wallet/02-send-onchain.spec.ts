@@ -77,6 +77,7 @@ import {
   mineBlockAndSyncAll,
   subscribeToTransactions,
   getUsdWalletIdByTestUserRef,
+  amountByPriceAsMajor,
 } from "test/helpers"
 
 let accountA: Account
@@ -307,7 +308,7 @@ const testExternalSend = async ({
     }
 
     expect(settledTx.settlementFee).toBe(fee)
-    expect(settledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit).toBeGreaterThan(0)
+    expect(settledTx.settlementDisplayPrice.base).toBeGreaterThan(0n)
 
     const settledLedgerTx = await LedgerService().getTransactionById(
       settledTx.id as LedgerTransactionId,
@@ -566,9 +567,7 @@ const testInternalSend = async ({
 
   expect(senderSettledTx.settlementFee).toBe(0)
   expect(senderSettledTx.settlementAmount).toBe(-senderAmount)
-  expect(
-    senderSettledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit,
-  ).toBeGreaterThan(0)
+  expect(senderSettledTx.settlementDisplayPrice.base).toBeGreaterThan(0n)
 
   const senderSettledLedgerTx = await LedgerService().getTransactionById(
     senderSettledTx.id as LedgerTransactionId,
@@ -602,30 +601,32 @@ const testInternalSend = async ({
 
   expect(recipientSettledTx.settlementFee).toBe(0)
   expect(recipientSettledTx.settlementAmount).toBe(recipientAmount)
-  expect(
-    recipientSettledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit,
-  ).toBeGreaterThan(0)
+  expect(recipientSettledTx.settlementDisplayPrice.base).toBeGreaterThan(0n)
 
   const exponent = getCurrencyMajorExponent(
     recipientSettledTx.settlementDisplayCurrency as DisplayCurrency,
   )
 
   expect(recipientSettledTx.settlementDisplayAmount).toBe(
-    (
-      recipientSettledTx.settlementAmount *
-      (recipientSettledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0)
-    ).toFixed(exponent),
+    amountByPriceAsMajor({
+      amount: recipientSettledTx.settlementAmount,
+      price: recipientSettledTx.settlementDisplayPrice,
+      walletCurrency: recipientSettledTx.settlementCurrency,
+      displayCurrency: recipientSettledTx.settlementDisplayCurrency,
+    }).toFixed(exponent),
   )
   expect(recipientSettledTx.settlementDisplayFee).toBe(
-    (
-      recipientSettledTx.settlementFee *
-      (recipientSettledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit || 0)
-    ).toFixed(exponent),
+    amountByPriceAsMajor({
+      amount: recipientSettledTx.settlementFee,
+      price: recipientSettledTx.settlementDisplayPrice,
+      walletCurrency: recipientSettledTx.settlementCurrency,
+      displayCurrency: recipientSettledTx.settlementDisplayCurrency,
+    }).toFixed(exponent),
   )
 
   // Check memos
   // ===
-  const matchTx = (tx: WalletTransaction<DisplayCurrency>) =>
+  const matchTx = (tx: WalletTransaction<WalletCurrency, DisplayCurrency>) =>
     tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
     tx.initiationVia.address === address
 
@@ -825,7 +826,10 @@ describe("BtcWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction<DisplayCurrency>
+      const settledTx = settledTxs[0] as WalletTransaction<
+        WalletCurrency,
+        DisplayCurrency
+      >
 
       expect(settledTx.memo).toBe(memo)
     }
@@ -898,13 +902,14 @@ describe("BtcWallet - onChainPay", () => {
           settlementVia.type === SettlementMethod.IntraLedger,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction<DisplayCurrency>
+      const settledTx = settledTxs[0] as WalletTransaction<
+        WalletCurrency,
+        DisplayCurrency
+      >
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserF)
-      expect(settledTx.settlementDisplayPrice?.priceOfOneSatInMajorUnit).toBeGreaterThan(
-        0,
-      )
+      expect(settledTx.settlementDisplayPrice.base).toBeGreaterThan(0n)
 
       const finalBalance = await getBalanceHelper(walletIdF)
       expect(finalBalance).toBe(0)
@@ -993,7 +998,10 @@ describe("BtcWallet - onChainPay", () => {
       )
       expect(pendingTxs.length).toBe(1)
 
-      const pendingTx = pendingTxs[0] as WalletOnChainSettledTransaction<DisplayCurrency>
+      const pendingTx = pendingTxs[0] as WalletOnChainSettledTransaction<
+        WalletCurrency,
+        DisplayCurrency
+      >
       const finalBalanceUserA = await getBalanceHelper(walletIdA)
       expect(finalBalanceUserA).toBe(
         initialBalanceUserA - amount - pendingTx.settlementFee,
