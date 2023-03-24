@@ -101,46 +101,45 @@ export const WalletPriceRatio = ({
   }
 }
 
+const toNewDisplayAmount = <T extends DisplayCurrency>({
+  amountInMinor,
+  currency,
+}: {
+  amountInMinor: bigint
+  currency: T
+}): NewDisplayAmount<T> => {
+  const displayMajorExponent = getCurrencyMajorExponent(currency)
+
+  const displayInMajor = (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(
+    displayMajorExponent,
+  )
+
+  return {
+    amountInMinor,
+    currency,
+    displayInMajor,
+  }
+}
+
 export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCurrency>({
-  displayAmountInMinorUnit,
+  displayAmount,
   walletAmount,
 }: {
-  displayAmountInMinorUnit: DisplayAmount<T>
+  displayAmount: NewDisplayAmount<T>
   walletAmount: PaymentAmount<S>
 }): DisplayPriceRatio<S, T> | ValidationError => {
-  const { currency: displayCurrency } = displayAmountInMinorUnit
+  const { currency: displayCurrency } = displayAmount
 
-  const displayAmountValue = safeBigInt(displayAmountInMinorUnit.amount)
-  if (displayAmountValue instanceof Error) return displayAmountValue
+  const { amountInMinor: displayAmountValue } = displayAmount
   const priceRatio = PriceRatio({
     other: displayAmountValue,
     walletAmount,
   })
   if (priceRatio instanceof Error) return priceRatio
 
-  const displayMajorExponent = getCurrencyMajorExponent(displayCurrency)
-
-  const toNewDisplayAmount = ({
-    amountInMinor,
-    currency,
-  }: {
-    amountInMinor: bigint
-    currency: T
-  }): NewDisplayAmount<T> => {
-    const displayInMajor = (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(
-      displayMajorExponent,
-    )
-
-    return {
-      amountInMinor,
-      currency,
-      displayInMajor,
-    }
-  }
-
   return {
-    convertFromDisplayMinorUnit: (displayAmount: DisplayAmount<T>): PaymentAmount<S> =>
-      priceRatio.convertFromOther(BigInt(displayAmount.amount)),
+    convertFromDisplayMinorUnit: (displayAmount: NewDisplayAmount<T>): PaymentAmount<S> =>
+      priceRatio.convertFromOther(displayAmount.amountInMinor),
 
     convertFromWallet: (walletAmountToConvert: PaymentAmount<S>): NewDisplayAmount<T> =>
       toNewDisplayAmount({
@@ -171,8 +170,11 @@ export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCur
 export const toWalletPriceRatio = (ratio: number): WalletPriceRatio | ValidationError => {
   const precision = RATIO_PRECISION
 
+  const amount = safeBigInt(Math.floor(ratio * precision))
+  if (amount instanceof Error) return amount
+
   const usd: UsdPaymentAmount = {
-    amount: BigInt(Math.floor(ratio * precision)),
+    amount,
     currency: WalletCurrency.Usd,
   }
 
@@ -195,15 +197,18 @@ export const toDisplayPriceRatio = <S extends WalletCurrency, T extends DisplayC
 }): DisplayPriceRatio<S, T> | ValidationError => {
   const precision = RATIO_PRECISION
 
-  const displayAmountInMinorUnit: DisplayAmount<T> = {
-    amount: Math.floor(ratio * precision),
+  const amountInMinor = safeBigInt(Math.floor(ratio * precision))
+  if (amountInMinor instanceof Error) return amountInMinor
+
+  const displayAmount: NewDisplayAmount<T> = toNewDisplayAmount({
+    amountInMinor,
     currency: displayCurrency,
-  }
+  })
 
   const walletAmount: PaymentAmount<S> = {
     amount: BigInt(precision),
     currency: walletCurrency,
   }
 
-  return DisplayPriceRatio({ displayAmountInMinorUnit, walletAmount })
+  return DisplayPriceRatio({ displayAmount, walletAmount })
 }

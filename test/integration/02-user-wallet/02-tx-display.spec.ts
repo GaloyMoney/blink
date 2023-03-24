@@ -12,7 +12,7 @@ import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
 import * as LnFeesImpl from "@domain/payments/ln-fees"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { TxStatus } from "@domain/wallets"
-import { DisplayCurrency, minorToMajorUnitFormatted } from "@domain/fiat"
+import { DisplayCurrency, newDisplayAmountFromNumber } from "@domain/fiat"
 
 import { updateDisplayCurrency } from "@app/accounts"
 
@@ -766,15 +766,22 @@ describe("Display properties on transactions", () => {
           satsAmount: toSats(recipientTxn.settlementAmount),
           satsFee: toSats(recipientTxn.settlementFee),
         })
+
+        const settlementDisplayAmountObj = newDisplayAmountFromNumber({
+          amount: expectedRecipientDisplayProps.displayAmount,
+          currency: expectedRecipientDisplayProps.displayCurrency,
+        })
+        if (settlementDisplayAmountObj instanceof Error) throw settlementDisplayAmountObj
+
+        const settlementDisplayFeeObj = newDisplayAmountFromNumber({
+          amount: expectedRecipientDisplayProps.displayFee,
+          currency: expectedRecipientDisplayProps.displayCurrency,
+        })
+        if (settlementDisplayFeeObj instanceof Error) throw settlementDisplayFeeObj
+
         const expectedRecipientWalletTxnDisplayProps = {
-          settlementDisplayAmount: minorToMajorUnitFormatted({
-            amount: expectedRecipientDisplayProps.displayAmount,
-            displayCurrency: expectedRecipientDisplayProps.displayCurrency,
-          }),
-          settlementDisplayFee: minorToMajorUnitFormatted({
-            amount: expectedRecipientDisplayProps.displayFee,
-            displayCurrency: expectedRecipientDisplayProps.displayCurrency,
-          }),
+          settlementDisplayAmount: settlementDisplayAmountObj.displayInMajor,
+          settlementDisplayFee: settlementDisplayFeeObj.displayInMajor,
           settlementDisplayCurrency: expectedRecipientDisplayProps.displayCurrency,
         }
 

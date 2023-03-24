@@ -4,12 +4,7 @@ import {
   OnboardingEarn,
 } from "@config"
 
-import {
-  DisplayCurrency,
-  minorToMajorUnitFormatted,
-  priceAmountFromNumber,
-  toCents,
-} from "@domain/fiat"
+import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
@@ -75,16 +70,10 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
               const displayAmount =
                 displayPriceRatio.convertFromWallet(btcSettlementAmount)
               const displayCurrency = displayAmount.currency
-              settlementDisplayAmount = minorToMajorUnitFormatted({
-                amount: displayAmount.amountInMinor,
-                displayCurrency,
-              })
+              settlementDisplayAmount = displayAmount.displayInMajor
 
               const displayFee = displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
-              settlementDisplayFee = minorToMajorUnitFormatted({
-                amount: displayFee.amountInMinor,
-                displayCurrency,
-              })
+              settlementDisplayFee = displayFee.displayInMajor
               ;({ priceOfOneSatInMajorUnit: displayCurrencyPerSettlementCurrencyUnit } =
                 priceAmountFromNumber({
                   priceOfOneSatInMinorUnit:

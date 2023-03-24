@@ -107,24 +107,24 @@ type SetOnChainTxSendHashArgs = {
   newTxHash: OnChainTxHash
 }
 
-type AddColdStorageTxReceiveArgs = {
+type AddColdStorageTxReceiveArgs<T extends DisplayCurrency> = {
   txHash: OnChainTxHash
   payeeAddress: OnChainAddress
   description: string
   sats: Satoshis
   fee: Satoshis
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: NewDisplayAmount<T>
+  feeDisplayCurrency: NewDisplayAmount<T>
 }
 
-type AddColdStorageTxSendArgs = {
+type AddColdStorageTxSendArgs<T extends DisplayCurrency> = {
   txHash: OnChainTxHash
   payeeAddress: OnChainAddress
   description: string
   sats: Satoshis
   fee: Satoshis
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: NewDisplayAmount<T>
+  feeDisplayCurrency: NewDisplayAmount<T>
 }
 
 type IntraledgerTxArgs = {
@@ -319,12 +319,12 @@ interface ILedgerService {
 
   listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
 
-  addColdStorageTxReceive(
-    args: AddColdStorageTxReceiveArgs,
+  addColdStorageTxReceive<T extends DisplayCurrency>(
+    args: AddColdStorageTxReceiveArgs<T>,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addColdStorageTxSend(
-    args: AddColdStorageTxSendArgs,
+  addColdStorageTxSend<T extends DisplayCurrency>(
+    args: AddColdStorageTxSendArgs<T>,
   ): Promise<LedgerJournal | LedgerServiceError>
 }
 

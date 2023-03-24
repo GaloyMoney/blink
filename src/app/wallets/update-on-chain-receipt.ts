@@ -12,11 +12,7 @@ import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
-import {
-  DisplayCurrency,
-  minorToMajorUnit,
-  newDisplayAmountFromNumber,
-} from "@domain/fiat"
+import { DisplayCurrency, newDisplayAmountFromNumber } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
 
@@ -246,15 +242,6 @@ const processTxForWallet = async (
           })
           if (displayAmount instanceof Error) return displayAmount
 
-          const displayPaymentAmount = {
-            amount: Number(
-              minorToMajorUnit({
-                displayAmount,
-              }),
-            ),
-            currency: displayCurrency,
-          }
-
           const paymentAmount = paymentAmountFromNumber({
             amount: sats,
             currency: wallet.currency,
@@ -265,7 +252,7 @@ const processTxForWallet = async (
             recipientAccountId: wallet.accountId,
             recipientWalletId: wallet.id,
             paymentAmount,
-            displayPaymentAmount,
+            displayPaymentAmount: displayAmount,
             txHash: tx.rawTx.txHash,
             recipientDeviceTokens: recipientUser.deviceTokens,
             recipientLanguage: recipientUser.language,
@@ -349,12 +336,8 @@ const processTxForHotWallet = async ({
           description,
           sats,
           fee,
-          amountDisplayCurrency: minorToMajorUnit({
-            displayAmount: amountDisplayCurrencyAmount,
-          }) as DisplayCurrencyBaseAmount,
-          feeDisplayCurrency: minorToMajorUnit({
-            displayAmount: feeDisplayCurrencyAmount,
-          }) as DisplayCurrencyBaseAmount,
+          amountDisplayCurrency: amountDisplayCurrencyAmount,
+          feeDisplayCurrency: feeDisplayCurrencyAmount,
           payeeAddress: address,
         })
 

@@ -15,7 +15,6 @@ import { sat2btc, toSats } from "@domain/bitcoin"
 import {
   DisplayCurrency,
   getCurrencyMajorExponent,
-  minorToMajorUnit,
   newDisplayAmountFromNumber,
   toCents,
 } from "@domain/fiat"
@@ -189,17 +188,11 @@ describe("UserWallet - On chain", () => {
       currency: displayCurrency || DisplayCurrency.Usd,
     })
     if (displayAmountForMajor instanceof Error) throw displayAmountForMajor
-    const displayAmountMajorUnit = minorToMajorUnit({
-      displayAmount: displayAmountForMajor,
-    })
 
     const displayAmount =
       displayAmountRaw === undefined || displayCurrency === undefined
         ? undefined
-        : {
-            currency: displayCurrency,
-            amount: Number(displayAmountMajorUnit),
-          }
+        : displayAmountForMajor
 
     // Check received notification
     const receivedNotification = createPushNotificationContent({
@@ -421,9 +414,8 @@ describe("UserWallet - On chain", () => {
     expect(pendingTx.initiationVia.address).toBe(address)
     expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
-    const exponent = getCurrencyMajorExponent(
-      pendingTx.settlementDisplayCurrency as DisplayCurrency,
-    )
+    const { settlementDisplayCurrency: displayCurrency } = pendingTx
+    const exponent = getCurrencyMajorExponent(displayCurrency)
 
     expect(pendingTx.settlementDisplayAmount).toBe(
       (
@@ -460,10 +452,11 @@ describe("UserWallet - On chain", () => {
       currency: WalletCurrency.Btc,
     }
 
-    const displayPaymentAmount = {
-      amount: Number(pendingTx.settlementDisplayAmount),
-      currency: pendingTx.settlementDisplayCurrency as DisplayCurrency,
-    }
+    const displayPaymentAmount = newDisplayAmountFromNumber({
+      amount: Number(pendingTx.settlementDisplayAmount) * 10 ** exponent,
+      currency: displayCurrency,
+    })
+    if (displayPaymentAmount instanceof Error) throw displayPaymentAmount
 
     const pendingNotification = createPushNotificationContent({
       type: NotificationType.OnchainReceiptPending,

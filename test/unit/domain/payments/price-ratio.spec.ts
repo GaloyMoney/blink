@@ -387,23 +387,25 @@ describe("WalletPriceRatio", () => {
 
 describe("DisplayPriceRatio", () => {
   const displayQuoteAmount = {
-    amount: 100,
+    amountInMinor: 100n,
     currency: DisplayCurrency.Usd,
+    displayInMajor: "1.00" as DisplayCurrencyMajorAmount,
   }
   const btcQuoteAmount = {
     amount: 1000n,
     currency: WalletCurrency.Btc,
   }
   const displayPriceRatio = DisplayPriceRatio({
-    displayAmountInMinorUnit: displayQuoteAmount,
+    displayAmount: displayQuoteAmount,
     walletAmount: btcQuoteAmount,
   })
   if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
   it("convertFromDisplayMinorUnit", () => {
     const result = displayPriceRatio.convertFromDisplayMinorUnit({
-      amount: 40,
+      amountInMinor: 40n,
       currency: DisplayCurrency.Usd,
+      displayInMajor: "0.40" as DisplayCurrencyMajorAmount,
     })
 
     expect(result).toStrictEqual({
