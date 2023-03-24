@@ -49,7 +49,7 @@ describe("translates ledger txs to wallet txs", () => {
     satsAmount: Satoshis
     centsAmount: UsdCents
     currency: WalletCurrency
-  }): LedgerTransaction<WalletCurrency>[] => {
+  }): LedgerTransaction<WalletCurrency, DisplayCurrency>[] => {
     const currencyBaseLedgerTxns = {
       ...baseLedgerTransaction,
       walletId,
@@ -121,7 +121,7 @@ describe("translates ledger txs to wallet txs", () => {
     settlementAmount: Satoshis | UsdCents
     centsAmount: UsdCents
     currency: WalletCurrency
-  }): WalletTransaction[] => {
+  }): WalletTransaction<DisplayCurrency>[] => {
     const settlementFee = currency === WalletCurrency.Btc ? satsFee : centsFee
     const displayCurrencyPerSettlementCurrencyUnit = Math.abs(
       centsAmount / 100 / settlementAmount,

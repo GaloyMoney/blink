@@ -12,23 +12,19 @@ import { baseLogger } from "@services/logger"
 import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
 
-import { WalletPriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 import { getOnChainTxs } from "./private/get-on-chain-txs"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-export const getTransactionsForWallets = async <
-  S extends WalletCurrency,
-  T extends DisplayCurrency,
->({
+export const getTransactionsForWallets = async <T extends DisplayCurrency>({
   wallets,
   paginationArgs,
 }: {
   wallets: Wallet[]
   paginationArgs?: PaginationArgs
-}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction<DisplayCurrency>>>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()
@@ -55,7 +51,7 @@ export const getTransactionsForWallets = async <
 
   const addresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
-  const walletDetailsByWalletId: WalletDetailsByWalletId<S, T> = {}
+  const walletDetailsByWalletId: WalletDetailsByWalletId<T> = {}
 
   const accountRepo = AccountsRepository()
   for (const wallet of wallets) {
@@ -93,7 +89,7 @@ export const getTransactionsForWallets = async <
     }
 
     walletDetailsByWalletId[wallet.id] = {
-      walletCurrency: wallet.currency as S,
+      walletCurrency: wallet.currency,
       walletPriceRatio,
       depositFeeRatio,
       displayCurrency,

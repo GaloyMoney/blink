@@ -46,7 +46,7 @@ type SettlementViaOnChain = {
   transactionHash: OnChainTxHash
 }
 
-type BaseWalletTransaction = {
+type BaseWalletTransaction<T extends DisplayCurrency> = {
   readonly id: LedgerTransactionId | OnChainTxHash
   readonly walletId: WalletId | undefined
   readonly settlementAmount: Satoshis | UsdCents
@@ -54,68 +54,72 @@ type BaseWalletTransaction = {
   readonly settlementCurrency: WalletCurrency
   readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayFee: DisplayCurrencyMajorAmount
-  readonly settlementDisplayCurrency: DisplayCurrency
+  readonly settlementDisplayCurrency: T
   readonly displayCurrencyPerSettlementCurrencyUnit: number
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date
 }
 
-type IntraLedgerTransaction = BaseWalletTransaction & {
+type IntraLedgerTransaction<T extends DisplayCurrency> = BaseWalletTransaction<T> & {
   readonly initiationVia: InitiationViaIntraledger
   readonly settlementVia: SettlementViaIntraledger
 }
 
-type WalletOnChainIntraledgerTransaction = BaseWalletTransaction & {
-  readonly initiationVia: InitiationViaOnChain
-  readonly settlementVia: SettlementViaIntraledger
-}
+type WalletOnChainIntraledgerTransaction<T extends DisplayCurrency> =
+  BaseWalletTransaction<T> & {
+    readonly initiationVia: InitiationViaOnChain
+    readonly settlementVia: SettlementViaIntraledger
+  }
 
-type WalletOnChainSettledTransaction = BaseWalletTransaction & {
-  readonly initiationVia: InitiationViaOnChain
-  readonly settlementVia: SettlementViaOnChain
-}
+type WalletOnChainSettledTransaction<T extends DisplayCurrency> =
+  BaseWalletTransaction<T> & {
+    readonly initiationVia: InitiationViaOnChain
+    readonly settlementVia: SettlementViaOnChain
+  }
 
-type WalletLegacyOnChainIntraledgerTransaction = BaseWalletTransaction & {
-  readonly initiationVia: InitiationViaOnChainLegacy
-  readonly settlementVia: SettlementViaIntraledger
-}
+type WalletLegacyOnChainIntraledgerTransaction<T extends DisplayCurrency> =
+  BaseWalletTransaction<T> & {
+    readonly initiationVia: InitiationViaOnChainLegacy
+    readonly settlementVia: SettlementViaIntraledger
+  }
 
-type WalletLegacyOnChainSettledTransaction = BaseWalletTransaction & {
-  readonly initiationVia: InitiationViaOnChainLegacy
-  readonly settlementVia: SettlementViaOnChain
-}
+type WalletLegacyOnChainSettledTransaction<T extends DisplayCurrency> =
+  BaseWalletTransaction<T> & {
+    readonly initiationVia: InitiationViaOnChainLegacy
+    readonly settlementVia: SettlementViaOnChain
+  }
 
-type WalletLnIntraledgerTransaction = BaseWalletTransaction & {
-  readonly initiationVia: InitiationViaLn
-  readonly settlementVia: SettlementViaIntraledger
-}
+type WalletLnIntraledgerTransaction<T extends DisplayCurrency> =
+  BaseWalletTransaction<T> & {
+    readonly initiationVia: InitiationViaLn
+    readonly settlementVia: SettlementViaIntraledger
+  }
 
-type WalletLnSettledTransaction = BaseWalletTransaction & {
+type WalletLnSettledTransaction<T extends DisplayCurrency> = BaseWalletTransaction<T> & {
   readonly initiationVia: InitiationViaLn
   readonly settlementVia: SettlementViaLn
 }
 
-type WalletOnChainTransaction =
-  | WalletOnChainIntraledgerTransaction
-  | WalletOnChainSettledTransaction
-  | WalletLegacyOnChainIntraledgerTransaction
-  | WalletLegacyOnChainSettledTransaction
+type WalletOnChainTransaction<T extends DisplayCurrency> =
+  | WalletOnChainIntraledgerTransaction<T>
+  | WalletOnChainSettledTransaction<T>
+  | WalletLegacyOnChainIntraledgerTransaction<T>
+  | WalletLegacyOnChainSettledTransaction<T>
 
-type WalletLnTransaction = WalletLnIntraledgerTransaction | WalletLnSettledTransaction
+type WalletLnTransaction<T extends DisplayCurrency> =
+  | WalletLnIntraledgerTransaction<T>
+  | WalletLnSettledTransaction<T>
 
-type WalletTransaction =
-  | IntraLedgerTransaction
-  | WalletOnChainTransaction
-  | WalletLnTransaction
+type WalletTransaction<T extends DisplayCurrency> =
+  | IntraLedgerTransaction<T>
+  | WalletOnChainTransaction<T>
+  | WalletLnTransaction<T>
 
-type WalletDetailsByWalletId<
-  S extends WalletCurrency,
-  T extends DisplayCurrency,
-> = Record<
+type WalletDetailsByWalletId<T extends DisplayCurrency> = Record<
   WalletId,
   {
-    walletCurrency: S
+    walletCurrency: WalletCurrency
     // TODO: Add conditional type here to be: S extends "BTC" ? undefined : WalletPriceRatio
     walletPriceRatio: WalletPriceRatio | undefined
     depositFeeRatio: DepositFeeRatio
@@ -124,21 +128,19 @@ type WalletDetailsByWalletId<
   }
 >
 
-type AddPendingIncomingArgs<S extends WalletCurrency, T extends DisplayCurrency> = {
+type AddPendingIncomingArgs = {
   pendingIncoming: IncomingOnChainTransaction[]
   addressesByWalletId: { [key: WalletId]: OnChainAddress[] }
-  walletDetailsByWalletId: WalletDetailsByWalletId<S, T>
+  walletDetailsByWalletId: WalletDetailsByWalletId<DisplayCurrency>
 }
 
-type ConfirmedTransactionHistory<S extends WalletCurrency, T extends DisplayCurrency> = {
-  readonly transactions: WalletTransaction[]
-  addPendingIncoming(
-    args: AddPendingIncomingArgs<S, T>,
-  ): WalletTransactionHistoryWithPending
+type ConfirmedTransactionHistory = {
+  readonly transactions: WalletTransaction<DisplayCurrency>[]
+  addPendingIncoming(args: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
 }
 
 type WalletTransactionHistoryWithPending = {
-  readonly transactions: WalletTransaction[]
+  readonly transactions: WalletTransaction<DisplayCurrency>[]
 }
 
 type NewWalletInfo = {

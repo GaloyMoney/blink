@@ -22,7 +22,7 @@ import { MainBook } from "@services/ledger/books"
 const PUBKEY = process.argv[2]
 
 const listAllPendingPayments = async (): Promise<
-  LedgerTransaction<WalletCurrency>[] | LedgerError
+  LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerError
 > => {
   try {
     const { results } = await MainBook.ledger({

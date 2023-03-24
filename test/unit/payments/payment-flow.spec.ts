@@ -225,14 +225,14 @@ describe("inputAmountFromLedgerTransaction", () => {
     credit: toSats(0),
     currency: "BTC",
     ...baseLedgerTransaction,
-  } as LedgerTransaction<"BTC">
+  } as LedgerTransaction<"BTC", DisplayCurrency>
 
   const usdLedgerTransaction = {
     debit: toCents(21),
     credit: toCents(0),
     currency: "USD",
     ...baseLedgerTransaction,
-  } as LedgerTransaction<"USD">
+  } as LedgerTransaction<"USD", DisplayCurrency>
 
   it("calculates the correct input amount given a BTC LedgerTransaction", () => {
     const inputAmount = inputAmountFromLedgerTransaction(btcLedgerTransaction)

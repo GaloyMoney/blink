@@ -87,13 +87,13 @@ export const updatePendingPaymentsByWalletId = wrapAsyncToRunInSpan({
 const updatePendingPayment = wrapAsyncToRunInSpan({
   namespace: "app.payments",
   fnName: "updatePendingPayment",
-  fn: async ({
+  fn: async <S extends WalletCurrency, T extends DisplayCurrency>({
     walletId,
     pendingPayment,
     logger,
   }: {
     walletId: WalletId
-    pendingPayment: LedgerTransaction<WalletCurrency>
+    pendingPayment: LedgerTransaction<S, T>
     logger: Logger
   }): Promise<true | ApplicationError> => {
     const { paymentHash, pubkey, type: txType } = pendingPayment
@@ -255,6 +255,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
 const reconstructPendingPaymentFlow = async <
   S extends WalletCurrency,
   R extends WalletCurrency,
+  T extends DisplayCurrency,
 >({
   paymentHash,
   inputAmount,
@@ -274,7 +275,7 @@ const reconstructPendingPaymentFlow = async <
       tx.debit > 0 &&
       tx.walletId !== undefined &&
       !nonEndUserWalletIds.includes(tx.walletId),
-  ) as LedgerTransaction<S>[] | undefined
+  ) as LedgerTransaction<S, T>[] | undefined
   if (!(payments && payments.length)) return new CouldNotFindTransactionError()
 
   const { walletId: senderWalletId } = payments[0]

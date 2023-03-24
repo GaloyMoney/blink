@@ -144,7 +144,7 @@ const BusinessAccount = GT.Object({
           throw mapError(nullError)
         }
 
-        return connectionFromPaginatedArray<WalletTransaction>(
+        return connectionFromPaginatedArray<WalletTransaction<DisplayCurrency>>(
           result.slice,
           result.total,
           paginationArgs,

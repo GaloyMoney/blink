@@ -621,7 +621,7 @@ const testInternalSend = async ({
 
   // Check memos
   // ===
-  const matchTx = (tx: WalletTransaction) =>
+  const matchTx = (tx: WalletTransaction<DisplayCurrency>) =>
     tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
     tx.initiationVia.address === address
 
@@ -821,7 +821,7 @@ describe("BtcWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction<DisplayCurrency>
 
       expect(settledTx.memo).toBe(memo)
     }
@@ -894,7 +894,7 @@ describe("BtcWallet - onChainPay", () => {
           settlementVia.type === SettlementMethod.IntraLedger,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction<DisplayCurrency>
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserF)
@@ -987,7 +987,7 @@ describe("BtcWallet - onChainPay", () => {
       )
       expect(pendingTxs.length).toBe(1)
 
-      const pendingTx = pendingTxs[0] as WalletOnChainSettledTransaction
+      const pendingTx = pendingTxs[0] as WalletOnChainSettledTransaction<DisplayCurrency>
       const finalBalanceUserA = await getBalanceHelper(walletIdA)
       expect(finalBalanceUserA).toBe(
         initialBalanceUserA - amount - pendingTx.settlementFee,

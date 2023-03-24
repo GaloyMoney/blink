@@ -10,11 +10,12 @@ import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 export const PaymentFlowFromLedgerTransaction = <
   S extends WalletCurrency,
   R extends WalletCurrency,
+  T extends DisplayCurrency,
 >({
   ledgerTxn,
   senderAccountId,
 }: {
-  ledgerTxn: LedgerTransaction<S>
+  ledgerTxn: LedgerTransaction<S, T>
   senderAccountId: AccountId
 }): PaymentFlow<S, R> | ValidationError => {
   if (ledgerTxn.type !== LedgerTransactionType.Payment) {

@@ -9,6 +9,7 @@ import { recordExceptionInCurrentSpan } from "@services/tracing"
 export const reimburseFailedUsdPayment = async <
   S extends WalletCurrency,
   R extends WalletCurrency,
+  T extends DisplayCurrency,
 >({
   walletId,
   paymentFlow,
@@ -16,7 +17,7 @@ export const reimburseFailedUsdPayment = async <
 }: {
   walletId: WalletId
   paymentFlow: PaymentFlow<S, R>
-  pendingPayment: LedgerTransaction<S>
+  pendingPayment: LedgerTransaction<S, T>
 }): Promise<true | ApplicationError> => {
   const {
     journalId,
@@ -43,7 +44,7 @@ export const reimburseFailedUsdPayment = async <
     if (wallet instanceof Error) return wallet
     const account = await AccountsRepository().findById(wallet.accountId)
     if (account instanceof Error) return account
-    ;({ displayCurrency } = account)
+    displayCurrency = account.displayCurrency as T
   }
 
   const paymentHash = paymentFlow.paymentHashForFlow()

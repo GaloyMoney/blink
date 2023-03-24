@@ -30,7 +30,7 @@ export const getTransactionsForWalletsByAddresses = async <
   wallets: Wallet[]
   addresses: OnChainAddress[]
   paginationArgs?: PaginationArgs
-}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction<DisplayCurrency>>>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()
@@ -59,7 +59,7 @@ export const getTransactionsForWalletsByAddresses = async <
 
   const allAddresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
-  const walletDetailsByWalletId: WalletDetailsByWalletId<S, T> = {}
+  const walletDetailsByWalletId: WalletDetailsByWalletId<T> = {}
 
   const accountRepo = AccountsRepository()
   for (const wallet of wallets) {

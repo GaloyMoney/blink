@@ -14,12 +14,12 @@ import { DepositFeeCalculator } from "./deposit-fee-calculator"
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { SettlementAmounts } from "./settlement-amounts"
 
-const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurrency>({
+const filterPendingIncoming = ({
   pendingIncoming,
   addressesByWalletId,
   walletDetailsByWalletId,
-}: AddPendingIncomingArgs<S, T>): WalletOnChainTransaction[] => {
-  const walletTransactions: WalletOnChainTransaction[] = []
+}: AddPendingIncomingArgs): WalletOnChainTransaction<DisplayCurrency>[] => {
+  const walletTransactions: WalletOnChainTransaction<DisplayCurrency>[] = []
   pendingIncoming.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
       if (address) {
@@ -112,13 +112,16 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
   return walletTransactions
 }
 
-const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
+const translateLedgerTxnToWalletTxn = <
+  S extends WalletCurrency,
+  T extends DisplayCurrency,
+>({
   txn,
   nonEndUserWalletIds,
 }: {
-  txn: LedgerTransaction<S>
+  txn: LedgerTransaction<S, T>
   nonEndUserWalletIds: WalletId[]
-}): WalletTransaction => {
+}): WalletTransaction<T> => {
   const {
     type,
     credit,
@@ -129,12 +132,14 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     centsFee: centsFeeRaw,
     displayAmount: displayAmountRaw,
     displayFee: displayFeeRaw,
-    displayCurrency,
+    displayCurrency: displayCurrencyRaw,
     lnMemo,
     memoFromPayer,
     journalId,
     walletId,
   } = txn
+
+  const displayCurrency = displayCurrencyRaw || (DisplayCurrency.Usd as T)
 
   const isAdmin = Object.values(AdminLedgerTransactionType).includes(
     type as AdminLedgerTransactionType,
@@ -171,7 +176,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 
   const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
 
-  const baseTransaction: BaseWalletTransaction = {
+  const baseTransaction: BaseWalletTransaction<T> = {
     id: txn.id,
     walletId: txn.walletId,
     settlementAmount,
@@ -179,7 +184,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     settlementCurrency: txn.currency,
     settlementDisplayAmount,
     settlementDisplayFee,
-    settlementDisplayCurrency: displayCurrency || DisplayCurrency.Usd,
+    settlementDisplayCurrency: displayCurrency,
     displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
       displayAmount,
       baseAmount: txn.currency === WalletCurrency.Btc ? satsAmount : centsAmount,
@@ -198,7 +203,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 
   const { recipientWalletId, username, pubkey, paymentHash, txHash, address } = txn
 
-  let walletTransaction: WalletTransaction
+  let walletTransaction: WalletTransaction<T>
   switch (txType) {
     case LedgerTransactionType.IntraLedger:
     case LedgerTransactionType.WalletIdTradeIntraAccount:
@@ -300,13 +305,13 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   return walletTransaction
 }
 
-const fromLedger = <S extends WalletCurrency, T extends DisplayCurrency>({
+const fromLedger = ({
   ledgerTransactions,
   nonEndUserWalletIds,
 }: {
-  ledgerTransactions: LedgerTransaction<S>[]
+  ledgerTransactions: LedgerTransaction<WalletCurrency, DisplayCurrency>[]
   nonEndUserWalletIds: WalletId[]
-}): ConfirmedTransactionHistory<S, T> => {
+}): ConfirmedTransactionHistory => {
   const transactions = ledgerTransactions.map((txn) =>
     translateLedgerTxnToWalletTxn({ txn, nonEndUserWalletIds }),
   )

@@ -28,12 +28,12 @@ type LedgerJournal = {
 }
 
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
-type LedgerTransaction<S extends WalletCurrency> = {
+type LedgerTransaction<S extends WalletCurrency, T extends DisplayCurrency> = {
   readonly id: LedgerTransactionId
   readonly walletId: WalletId | undefined // FIXME create a subclass so that this field is always set for liabilities wallets
   readonly type: LedgerTransactionType
-  readonly debit: S extends "BTC" ? Satoshis : UsdCents
-  readonly credit: S extends "BTC" ? Satoshis : UsdCents
+  readonly debit: Satoshis | UsdCents
+  readonly credit: Satoshis | UsdCents
   readonly currency: S
   readonly timestamp: Date
   readonly pendingConfirmation: boolean
@@ -58,7 +58,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
 
   readonly displayAmount?: DisplayCurrencyBaseAmount
   readonly displayFee?: DisplayCurrencyBaseAmount
-  readonly displayCurrency?: DisplayCurrency
+  readonly displayCurrency?: T
 
   // for onchain
   readonly address?: OnChainAddress
@@ -224,32 +224,38 @@ interface ILedgerService {
       | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | LedgerServiceError>
 
-  getTransactionById(
+  getTransactionById<S extends WalletCurrency, T extends DisplayCurrency>(
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError>
+  ): Promise<LedgerTransaction<S, T> | LedgerServiceError>
 
   getTransactionsByHash(
     paymentHash: PaymentHash | OnChainTxHash,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerServiceError>
 
   getTransactionsByWalletId(
     walletId: WalletId,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerServiceError>
 
   getTransactionsByWalletIds(args: {
     walletIds: WalletId[]
     paginationArgs?: PaginationArgs
-  }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerServiceError>
+  }): Promise<
+    | PaginatedArray<LedgerTransaction<WalletCurrency, DisplayCurrency>>
+    | LedgerServiceError
+  >
 
   getTransactionsByWalletIdAndContactUsername(args: {
     walletIds: WalletId[]
     contactUsername: Username
     paginationArgs?: PaginationArgs
-  }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerServiceError>
+  }): Promise<
+    | PaginatedArray<LedgerTransaction<WalletCurrency, DisplayCurrency>>
+    | LedgerServiceError
+  >
 
   listPendingPayments(
     walletId: WalletId,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerServiceError>
 
   listAllPaymentHashes(): AsyncGenerator<PaymentHash | LedgerError>
 
