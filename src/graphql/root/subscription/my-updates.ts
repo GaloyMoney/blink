@@ -1,8 +1,11 @@
-import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
-
 import { Prices } from "@app"
 
-import { majorToMinorUnit, DisplayCurrency } from "@domain/fiat"
+import {
+  majorToMinorUnit,
+  DisplayCurrency,
+  SAT_PRICE_PRECISION_OFFSET,
+  USD_PRICE_PRECISION_OFFSET,
+} from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
 import { GT } from "@graphql/index"

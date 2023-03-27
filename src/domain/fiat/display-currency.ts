@@ -1,7 +1,10 @@
-import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
 import { safeBigInt, WalletCurrency } from "@domain/shared"
 
 export const CENTS_PER_USD = 100
+
+export const SAT_PRICE_PRECISION_OFFSET = 12
+export const USD_PRICE_PRECISION_OFFSET = 6
+export const BTC_PRICE_PRECISION_OFFSET = 4
 
 export const MajorExponent = {
   STANDARD: 2,

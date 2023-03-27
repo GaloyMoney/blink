@@ -1,9 +1,7 @@
-import { BTC_PRICE_PRECISION_OFFSET } from "@config"
-
 import { Prices } from "@app"
 
 import { SATS_PER_BTC } from "@domain/bitcoin"
-import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrency, BTC_PRICE_PRECISION_OFFSET } from "@domain/fiat"
 import { PriceInterval, PriceRange } from "@domain/price"
 
 import { GT } from "@graphql/index"
