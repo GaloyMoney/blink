@@ -3,6 +3,7 @@ import dedent from "dedent"
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import { connectionDefinitions } from "@graphql/connections"
+import { normalizeDisplayPrice } from "@graphql/root/mutation"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
 import { checkedToDisplayCurrency } from "@domain/fiat"
@@ -86,7 +87,10 @@ const Transaction = GT.Object<WalletTransaction<WalletCurrency, DisplayCurrency>
         const displayCurrency = checkedToDisplayCurrency(source.settlementDisplayCurrency)
         if (displayCurrency instanceof Error) throw mapError(displayCurrency)
 
-        const { settlementDisplayPrice } = source
+        const settlementDisplayPrice = normalizeDisplayPrice(
+          source.settlementDisplayPrice,
+        )
+
         const formattedAmount = `${
           Number(settlementDisplayPrice.base) /
           10 ** Number(settlementDisplayPrice.offset)
