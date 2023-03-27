@@ -27,7 +27,7 @@ import {
   TxDecoder,
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { newDisplayAmountFromNumber } from "@domain/fiat"
+import { displayAmountFromNumber } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
@@ -387,7 +387,7 @@ const executePaymentViaIntraledger = async <
       amount = paymentFlow.usdPaymentAmount.amount
     }
 
-    const recipientDisplayAmount = newDisplayAmountFromNumber({
+    const recipientDisplayAmount = displayAmountFromNumber({
       amount: recipientAmountDisplayCurrencyAsNumber,
       currency: recipientAccount.displayCurrency,
     })

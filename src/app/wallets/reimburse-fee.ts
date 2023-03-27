@@ -1,4 +1,4 @@
-import { newDisplayAmountFromNumber } from "@domain/fiat"
+import { displayAmountFromNumber } from "@domain/fiat"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
 import {
@@ -62,7 +62,7 @@ export const reimburseFee = async <
     return true
   }
 
-  const displayAmount = newDisplayAmountFromNumber({
+  const displayAmount = displayAmountFromNumber({
     amount: senderDisplayAmount,
     currency: senderDisplayCurrency,
   })

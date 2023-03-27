@@ -18,7 +18,7 @@ type Amount<T extends WalletCurrency> = {
   amount: bigint
 }
 
-type NewDisplayAmount<T extends DisplayCurrency> = {
+type DisplayAmount<T extends DisplayCurrency> = {
   amountInMinor: bigint
   currency: T
   displayInMajor: DisplayCurrencyMajorAmount

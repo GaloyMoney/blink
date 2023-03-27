@@ -101,13 +101,13 @@ export const WalletPriceRatio = ({
   }
 }
 
-const toNewDisplayAmount = <T extends DisplayCurrency>({
+const toDisplayAmount = <T extends DisplayCurrency>({
   amountInMinor,
   currency,
 }: {
   amountInMinor: bigint
   currency: T
-}): NewDisplayAmount<T> => {
+}): DisplayAmount<T> => {
   const displayMajorExponent = getCurrencyMajorExponent(currency)
 
   const displayInMajor = (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(
@@ -125,7 +125,7 @@ export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCur
   displayAmount,
   walletAmount,
 }: {
-  displayAmount: NewDisplayAmount<T>
+  displayAmount: DisplayAmount<T>
   walletAmount: PaymentAmount<S>
 }): DisplayPriceRatio<S, T> | ValidationError => {
   const { currency: displayCurrency } = displayAmount
@@ -138,27 +138,27 @@ export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCur
   if (priceRatio instanceof Error) return priceRatio
 
   return {
-    convertFromDisplayMinorUnit: (displayAmount: NewDisplayAmount<T>): PaymentAmount<S> =>
+    convertFromDisplayMinorUnit: (displayAmount: DisplayAmount<T>): PaymentAmount<S> =>
       priceRatio.convertFromOther(displayAmount.amountInMinor),
 
-    convertFromWallet: (walletAmountToConvert: PaymentAmount<S>): NewDisplayAmount<T> =>
-      toNewDisplayAmount({
+    convertFromWallet: (walletAmountToConvert: PaymentAmount<S>): DisplayAmount<T> =>
+      toDisplayAmount({
         amountInMinor: priceRatio.convertFromWallet(walletAmountToConvert),
         currency: displayCurrency,
       }),
 
     convertFromWalletToFloor: (
       walletAmountToConvert: PaymentAmount<S>,
-    ): NewDisplayAmount<T> =>
-      toNewDisplayAmount({
+    ): DisplayAmount<T> =>
+      toDisplayAmount({
         amountInMinor: priceRatio.convertFromWalletToFloor(walletAmountToConvert),
         currency: displayCurrency,
       }),
 
     convertFromWalletToCeil: (
       walletAmountToConvert: PaymentAmount<S>,
-    ): NewDisplayAmount<T> =>
-      toNewDisplayAmount({
+    ): DisplayAmount<T> =>
+      toDisplayAmount({
         amountInMinor: priceRatio.convertFromWalletToCeil(walletAmountToConvert),
         currency: displayCurrency,
       }),
@@ -200,7 +200,7 @@ export const toDisplayPriceRatio = <S extends WalletCurrency, T extends DisplayC
   const amountInMinor = safeBigInt(Math.floor(ratio * precision))
   if (amountInMinor instanceof Error) return amountInMinor
 
-  const displayAmount: NewDisplayAmount<T> = toNewDisplayAmount({
+  const displayAmount: DisplayAmount<T> = toDisplayAmount({
     amountInMinor,
     currency: displayCurrency,
   })

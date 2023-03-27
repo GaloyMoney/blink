@@ -45,13 +45,13 @@ export const getCurrencyMajorExponent = (
   }
 }
 
-export const newDisplayAmountFromNumber = <T extends DisplayCurrency>({
+export const displayAmountFromNumber = <T extends DisplayCurrency>({
   amount,
   currency,
 }: {
   amount: number
   currency: T
-}): NewDisplayAmount<T> | ValidationError => {
+}): DisplayAmount<T> | ValidationError => {
   const amountInMinor = safeBigInt(amount)
   if (amountInMinor instanceof Error) return amountInMinor
 
