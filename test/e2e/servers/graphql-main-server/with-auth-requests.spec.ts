@@ -126,10 +126,12 @@ describe("setup", () => {
 describe("graphql", () => {
   describe("main query", () => {
     it("returns valid data", async () => {
-      const { data } = await apolloClient.query({
+      const { errors, data } = await apolloClient.query({
         query: MAIN,
         variables: { hasToken: true },
       })
+      expect(errors).toBeUndefined()
+
       expect(data.globals).toBeTruthy()
       expect(data.me).toBeTruthy()
       expect(data.mobileVersions).toBeTruthy()
@@ -141,45 +143,53 @@ describe("graphql", () => {
           id: expect.any(String),
           language: expect.any(String),
           phone: expect.stringContaining("+1"),
-          defaultAccount: expect.objectContaining({
-            quiz: expect.arrayContaining([
-              expect.objectContaining({
-                id: expect.any(String),
-                amount: expect.any(Number),
-                completed: expect.any(Boolean),
-              }),
-            ]),
-            id: expect.any(String),
-            defaultWalletId: expect.any(String),
-            wallets: expect.arrayContaining([
-              expect.objectContaining({
-                id: expect.any(String),
-                balance: expect.any(Number),
-                walletCurrency: expect.any(String),
-                transactions: expect.objectContaining({
-                  edges: expect.arrayContaining([
-                    expect.objectContaining({
-                      cursor: expect.any(String),
-                      node: expect.objectContaining({
-                        id: expect.any(String),
-                        direction: expect.any(String),
-                        status: expect.any(String),
-                        settlementAmount: expect.any(Number),
-                        settlementFee: expect.any(Number),
-                        settlementDisplayAmount: expect.any(String),
-                        settlementDisplayFee: expect.any(String),
-                        settlementDisplayCurrency: DisplayCurrency.Usd,
-                        createdAt: expect.any(Number),
-                      }),
-                    }),
-                  ]),
-                  pageInfo: expect.any(Object),
-                }),
-              }),
-            ]),
-          }),
         }),
       )
+      expect(data.me.defaultAccount).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          defaultWalletId: expect.any(String),
+        }),
+      )
+
+      expect(data.me.defaultAccount.quiz).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            amount: expect.any(Number),
+            completed: expect.any(Boolean),
+          }),
+        ]),
+      )
+      expect(data.me.defaultAccount.wallets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            balance: expect.any(Number),
+            walletCurrency: expect.any(String),
+            transactions: expect.objectContaining({
+              edges: expect.arrayContaining([
+                expect.objectContaining({
+                  cursor: expect.any(String),
+                  node: expect.objectContaining({
+                    id: expect.any(String),
+                    direction: expect.any(String),
+                    status: expect.any(String),
+                    settlementAmount: expect.any(Number),
+                    settlementFee: expect.any(Number),
+                    settlementDisplayAmount: expect.any(String),
+                    settlementDisplayFee: expect.any(String),
+                    settlementDisplayCurrency: DisplayCurrency.Usd,
+                    createdAt: expect.any(Number),
+                  }),
+                }),
+              ]),
+              pageInfo: expect.any(Object),
+            }),
+          }),
+        ]),
+      )
+
       expect(data.mobileVersions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -202,11 +212,12 @@ describe("graphql", () => {
 
   describe("transactionsByWalletId selection in 'me' query", () => {
     it("returns valid data for walletIds passed", async () => {
-      const meResult = await apolloClient.query({
+      const { errors, data: meData } = await apolloClient.query({
         query: ME,
       })
+      expect(errors).toBeUndefined()
 
-      const { wallets } = meResult.data.me.defaultAccount
+      const { wallets } = meData.me.defaultAccount
       expect(wallets).toBeTruthy()
       for (const wallet of wallets) {
         if (wallet.walletCurrency === WalletCurrency.Usd) {
@@ -249,11 +260,12 @@ describe("graphql", () => {
     })
 
     it("returns valid data for no walletIds passed", async () => {
-      const meResult = await apolloClient.query({
+      const { errors, data: meData } = await apolloClient.query({
         query: ME,
       })
+      expect(errors).toBeUndefined()
 
-      const { wallets } = meResult.data.me.defaultAccount
+      const { wallets } = meData.me.defaultAccount
       expect(wallets).toBeTruthy()
       for (const wallet of wallets) {
         if (wallet.walletCurrency === WalletCurrency.Usd) {
