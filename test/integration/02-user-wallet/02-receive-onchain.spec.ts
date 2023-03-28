@@ -408,10 +408,7 @@ describe("UserWallet - On chain", () => {
     const pendingTxs = txs.slice.filter(({ status }) => status === TxStatus.Pending)
     expect(pendingTxs.length).toBe(1)
 
-    const pendingTx = pendingTxs[0] as WalletOnChainTransaction<
-      WalletCurrency,
-      DisplayCurrency
-    >
+    const pendingTx = pendingTxs[0] as WalletOnChainTransaction<WalletCurrency>
     expect(pendingTx.settlementVia.type).toBe("onchain")
     expect(pendingTx.settlementAmount).toBe(amountSats - feeSats)
     expect(pendingTx.settlementFee).toBe(feeSats)
@@ -565,10 +562,7 @@ async function sendToWalletTestWrapper({
 
     expect(transactions.slice.length).toBe(initTransactions.slice.length + 1)
 
-    const txn = transactions.slice[0] as WalletOnChainTransaction<
-      WalletCurrency,
-      DisplayCurrency
-    >
+    const txn = transactions.slice[0] as WalletOnChainTransaction<WalletCurrency>
     expect(txn.settlementVia.type).toBe("onchain")
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
     expect(txn.settlementAmount).toBe(
@@ -706,10 +700,7 @@ async function testTxnsByAddressWrapper({
       initTransactions.slice.length + addresses.length,
     )
 
-    const txn = transactions.slice[0] as WalletOnChainTransaction<
-      WalletCurrency,
-      DisplayCurrency
-    >
+    const txn = transactions.slice[0] as WalletOnChainTransaction<WalletCurrency>
     expect(txn.settlementVia.type).toBe("onchain")
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
     expect(txn.settlementAmount).toBe(

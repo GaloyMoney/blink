@@ -100,9 +100,7 @@ afterAll(async () => {
 describe("Display properties on transactions", () => {
   const getAllTransactionsByHash = async (
     hash: PaymentHash | OnChainTxHash,
-  ): Promise<
-    LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerServiceError
-  > => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
     try {
       const { results } = await MainBook.ledger({
         hash,
@@ -117,9 +115,7 @@ describe("Display properties on transactions", () => {
 
   const getAllTransactionsByJournalId = async (
     journalId: LedgerJournalId,
-  ): Promise<
-    LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerServiceError
-  > => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
     try {
       const { results } = await MainBook.ledger({
         _journal: toObjectId(journalId),
@@ -134,9 +130,7 @@ describe("Display properties on transactions", () => {
 
   const getAllTransactionsByMemo = async (
     memoPayer: string,
-  ): Promise<
-    LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerServiceError
-  > => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
     try {
       const { results } = await MainBook.ledger({
         memoPayer,

@@ -19,10 +19,7 @@ import { getOnChainTxs } from "./private/get-on-chain-txs"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-export const getTransactionsForWalletsByAddresses = async <
-  S extends WalletCurrency,
-  T extends DisplayCurrency,
->({
+export const getTransactionsForWalletsByAddresses = async <S extends WalletCurrency>({
   wallets,
   addresses,
   paginationArgs,
@@ -30,9 +27,7 @@ export const getTransactionsForWalletsByAddresses = async <
   wallets: Wallet[]
   addresses: OnChainAddress[]
   paginationArgs?: PaginationArgs
-}): Promise<
-  PartialResult<PaginatedArray<WalletTransaction<WalletCurrency, DisplayCurrency>>>
-> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction<WalletCurrency>>>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()
@@ -61,7 +56,7 @@ export const getTransactionsForWalletsByAddresses = async <
 
   const allAddresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
-  const walletDetailsByWalletId: WalletDetailsByWalletId<T> = {}
+  const walletDetailsByWalletId: WalletDetailsByWalletId = {}
 
   const accountRepo = AccountsRepository()
   for (const wallet of wallets) {
@@ -74,11 +69,9 @@ export const getTransactionsForWalletsByAddresses = async <
       account instanceof Error ? (0 as DepositFeeRatio) : account.depositFeeRatio
 
     const displayCurrency =
-      account instanceof Error
-        ? (DisplayCurrency.Usd as T)
-        : (account.displayCurrency as T)
+      account instanceof Error ? DisplayCurrency.Usd : account.displayCurrency
 
-    const displayPriceRatioForPending = await getCurrentPriceAsDisplayPriceRatio<T>({
+    const displayPriceRatioForPending = await getCurrentPriceAsDisplayPriceRatio({
       currency: displayCurrency,
     })
     if (displayPriceRatioForPending instanceof Error) {
@@ -99,7 +92,6 @@ export const getTransactionsForWalletsByAddresses = async <
       walletCurrency: wallet.currency as S,
       walletPriceRatio,
       depositFeeRatio,
-      displayCurrency,
       displayPriceRatio: displayPriceRatioForPending,
     }
   }

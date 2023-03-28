@@ -24,9 +24,7 @@ export const getTransactionsForWallets = async <T extends DisplayCurrency>({
 }: {
   wallets: Wallet[]
   paginationArgs?: PaginationArgs
-}): Promise<
-  PartialResult<PaginatedArray<WalletTransaction<WalletCurrency, DisplayCurrency>>>
-> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction<WalletCurrency>>>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()
@@ -53,7 +51,7 @@ export const getTransactionsForWallets = async <T extends DisplayCurrency>({
 
   const addresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
-  const walletDetailsByWalletId: WalletDetailsByWalletId<T> = {}
+  const walletDetailsByWalletId: WalletDetailsByWalletId = {}
 
   const accountRepo = AccountsRepository()
   for (const wallet of wallets) {
@@ -91,7 +89,6 @@ export const getTransactionsForWallets = async <T extends DisplayCurrency>({
       walletCurrency: wallet.currency,
       walletPriceRatio,
       depositFeeRatio,
-      displayCurrency,
       displayPriceRatio: displayPriceRatioForPending,
     }
   }

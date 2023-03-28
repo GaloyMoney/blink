@@ -64,9 +64,9 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<true | LedgerServiceError | RepositoryError> =>
     TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)
 
-  const getTransactionById = async <S extends WalletCurrency, T extends DisplayCurrency>(
+  const getTransactionById = async <S extends WalletCurrency>(
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction<S, T> | LedgerServiceError> => {
+  ): Promise<LedgerTransaction<S> | LedgerServiceError> => {
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
       const { results } = await MainBook.ledger({
@@ -84,9 +84,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getTransactionsByHash = async (
     hash: PaymentHash | OnChainTxHash,
-  ): Promise<
-    LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerServiceError
-  > => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
     try {
       const { results } = await MainBook.ledger({
         hash,
@@ -102,7 +100,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getTransactionsByWalletId = async (
     walletId: WalletId,
-  ): Promise<LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerError> => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { results } = await MainBook.ledger({
@@ -121,9 +119,7 @@ export const LedgerService = (): ILedgerService => {
   }: {
     walletIds: WalletId[]
     paginationArgs: PaginationArgs
-  }): Promise<
-    PaginatedArray<LedgerTransaction<WalletCurrency, DisplayCurrency>> | LedgerError
-  > => {
+  }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
       const ledgerResp = await paginatedLedger({
@@ -154,9 +150,7 @@ export const LedgerService = (): ILedgerService => {
     walletIds: WalletId[]
     contactUsername: Username
     paginationArgs?: PaginationArgs
-  }): Promise<
-    PaginatedArray<LedgerTransaction<WalletCurrency, DisplayCurrency>> | LedgerError
-  > => {
+  }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
       const ledgerResp = await paginatedLedger({
@@ -181,7 +175,7 @@ export const LedgerService = (): ILedgerService => {
 
   const listPendingPayments = async (
     walletId: WalletId,
-  ): Promise<LedgerTransaction<WalletCurrency, DisplayCurrency>[] | LedgerError> => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { results } = await MainBook.ledger({
@@ -413,7 +407,7 @@ export const LedgerService = (): ILedgerService => {
 
 export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayCurrency>(
   tx: ILedgerTransaction,
-): LedgerTransaction<S, T> => {
+): LedgerTransaction<S> => {
   const currency = tx.currency as S
 
   const displayCurrency =

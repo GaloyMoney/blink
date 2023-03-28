@@ -5,7 +5,7 @@ import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 
 export const getTransactionById = async (
   id: string,
-): Promise<WalletTransaction<WalletCurrency, DisplayCurrency> | ApplicationError> => {
+): Promise<WalletTransaction<WalletCurrency> | ApplicationError> => {
   const ledger = LedgerService()
 
   const ledgerTxId = checkedToLedgerTransactionId(id)

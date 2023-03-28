@@ -159,9 +159,11 @@ const ConsumerAccount = GT.Object<Account>({
           throw mapError(nullError)
         }
 
-        return connectionFromPaginatedArray<
-          WalletTransaction<WalletCurrency, DisplayCurrency>
-        >(result.slice, result.total, paginationArgs)
+        return connectionFromPaginatedArray<WalletTransaction<WalletCurrency>>(
+          result.slice,
+          result.total,
+          paginationArgs,
+        )
       },
     },
   }),

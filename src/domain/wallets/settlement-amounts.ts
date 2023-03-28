@@ -10,8 +10,8 @@ import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 export const SettlementAmounts = () => {
-  const fromTxn = <S extends WalletCurrency, T extends DisplayCurrency>(
-    txn: LedgerTransaction<S, T>,
+  const fromTxn = <S extends WalletCurrency>(
+    txn: LedgerTransaction<S>,
   ): {
     settlementAmount: Satoshis | UsdCents
     settlementDisplayAmount: DisplayCurrencyMajorAmount

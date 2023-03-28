@@ -64,9 +64,11 @@ const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
           throw mapError(resp)
         }
 
-        return connectionFromPaginatedArray<
-          WalletTransaction<WalletCurrency, DisplayCurrency>
-        >(resp.slice, resp.total, paginationArgs)
+        return connectionFromPaginatedArray<WalletTransaction<WalletCurrency>>(
+          resp.slice,
+          resp.total,
+          paginationArgs,
+        )
       },
       description: "Paginated list of transactions sent to/from this contact.",
     },

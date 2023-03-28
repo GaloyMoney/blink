@@ -99,16 +99,13 @@ const filterPendingIncoming = ({
   return walletTransactions
 }
 
-const translateLedgerTxnToWalletTxn = <
-  S extends WalletCurrency,
-  T extends DisplayCurrency,
->({
+const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   txn,
   nonEndUserWalletIds,
 }: {
-  txn: LedgerTransaction<S, T>
+  txn: LedgerTransaction<S>
   nonEndUserWalletIds: WalletId[]
-}): WalletTransaction<S, T> => {
+}): WalletTransaction<S> => {
   const {
     type,
     credit,
@@ -126,7 +123,7 @@ const translateLedgerTxnToWalletTxn = <
     walletId,
   } = txn
 
-  const displayCurrency = displayCurrencyRaw || (DisplayCurrency.Usd as T)
+  const displayCurrency = displayCurrencyRaw || DisplayCurrency.Usd
 
   const isAdmin = Object.values(AdminLedgerTransactionType).includes(
     type as AdminLedgerTransactionType,
@@ -163,7 +160,7 @@ const translateLedgerTxnToWalletTxn = <
 
   const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
 
-  const baseTransaction: BaseWalletTransaction<S, T> = {
+  const baseTransaction: BaseWalletTransaction<S> = {
     id: txn.id,
     walletId: txn.walletId,
     settlementAmount,
@@ -191,7 +188,7 @@ const translateLedgerTxnToWalletTxn = <
 
   const { recipientWalletId, username, pubkey, paymentHash, txHash, address } = txn
 
-  let walletTransaction: WalletTransaction<S, T>
+  let walletTransaction: WalletTransaction<S>
   switch (txType) {
     case LedgerTransactionType.IntraLedger:
     case LedgerTransactionType.WalletIdTradeIntraAccount:
@@ -297,7 +294,7 @@ const fromLedger = ({
   ledgerTransactions,
   nonEndUserWalletIds,
 }: {
-  ledgerTransactions: LedgerTransaction<WalletCurrency, DisplayCurrency>[]
+  ledgerTransactions: LedgerTransaction<WalletCurrency>[]
   nonEndUserWalletIds: WalletId[]
 }): ConfirmedTransactionHistory => {
   const transactions = ledgerTransactions.map((txn) =>

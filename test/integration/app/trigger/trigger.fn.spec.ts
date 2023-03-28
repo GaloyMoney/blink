@@ -74,7 +74,7 @@ afterAll(async () => {
 
 type WalletState = {
   balance: CurrencyBaseAmount
-  transactions: WalletTransaction<WalletCurrency, DisplayCurrency>[]
+  transactions: WalletTransaction<WalletCurrency>[]
   onchainAddress: OnChainAddress
 }
 
@@ -179,8 +179,8 @@ describe("onchainBlockEventHandler", () => {
       )
       expect(lastTransaction.settlementAmount).toBe(finalAmount)
       expect(
-        (lastTransaction as WalletOnChainTransaction<WalletCurrency, DisplayCurrency>)
-          .initiationVia.address,
+        (lastTransaction as WalletOnChainTransaction<WalletCurrency>).initiationVia
+          .address,
       ).toBe(address)
       expect(balance).toBe(initialState.balance + finalAmount)
       expect(onchainAddress).not.toBe(initialState.onchainAddress)

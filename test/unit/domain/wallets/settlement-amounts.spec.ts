@@ -82,7 +82,7 @@ describe("SettlementAmounts", () => {
           const expectedSettlementAmountForDebit = -debit
           const expectedDisplayAmount = -testValues.display
 
-          const txnDebit: LedgerTransaction<"BTC", DisplayCurrency> = {
+          const txnDebit: LedgerTransaction<"BTC"> = {
             ...txnForBtcWallet,
             credit: toSats(0),
             debit: toSats(debit),
@@ -117,7 +117,7 @@ describe("SettlementAmounts", () => {
           const expectedSettlementAmountForCredit = credit
           const expectedDisplayAmount = testValues.display
 
-          const txnCredit: LedgerTransaction<"BTC", DisplayCurrency> = {
+          const txnCredit: LedgerTransaction<"BTC"> = {
             ...txnForBtcWallet,
             credit: toSats(credit),
             debit: toSats(0),
@@ -160,7 +160,7 @@ describe("SettlementAmounts", () => {
           const expectedSettlementAmountForDebit = -debit
           const expectedDisplayAmount = -testValues.display
 
-          const txnDebit: LedgerTransaction<"USD", DisplayCurrency> = {
+          const txnDebit: LedgerTransaction<"USD"> = {
             ...txnForBtcWallet,
             credit: toCents(0),
             debit: toCents(debit),
@@ -195,7 +195,7 @@ describe("SettlementAmounts", () => {
           const expectedSettlementAmountForCredit = credit
           const expectedDisplayAmount = testValues.display
 
-          const txnCredit: LedgerTransaction<"USD", DisplayCurrency> = {
+          const txnCredit: LedgerTransaction<"USD"> = {
             ...txnForBtcWallet,
             credit: toCents(credit),
             debit: toCents(0),

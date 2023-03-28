@@ -76,9 +76,11 @@ const UsdWallet = GT.Object<Wallet>({
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
 
-        return connectionFromPaginatedArray<
-          WalletTransaction<WalletCurrency, DisplayCurrency>
-        >(result.slice, result.total, paginationArgs)
+        return connectionFromPaginatedArray<WalletTransaction<WalletCurrency>>(
+          result.slice,
+          result.total,
+          paginationArgs,
+        )
       },
     },
     transactionsByAddress: {
@@ -111,9 +113,11 @@ const UsdWallet = GT.Object<Wallet>({
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
 
-        return connectionFromPaginatedArray<
-          WalletTransaction<WalletCurrency, DisplayCurrency>
-        >(result.slice, result.total, paginationArgs)
+        return connectionFromPaginatedArray<WalletTransaction<WalletCurrency>>(
+          result.slice,
+          result.total,
+          paginationArgs,
+        )
       },
     },
   }),

@@ -620,13 +620,13 @@ const testInternalSend = async ({
       amount: recipientSettledTx.settlementFee,
       price: recipientSettledTx.settlementDisplayPrice,
       walletCurrency: recipientSettledTx.settlementCurrency,
-      displayCurrency: recipientSettledTx.settlementDisplayCurrency,
+      displayCurrency: recipientSettledTx.settlementDisplayPrice.displayCurrency,
     }).toFixed(exponent),
   )
 
   // Check memos
   // ===
-  const matchTx = (tx: WalletTransaction<WalletCurrency, DisplayCurrency>) =>
+  const matchTx = (tx: WalletTransaction<WalletCurrency>) =>
     tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
     tx.initiationVia.address === address
 
@@ -826,10 +826,7 @@ describe("BtcWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction<
-        WalletCurrency,
-        DisplayCurrency
-      >
+      const settledTx = settledTxs[0] as WalletTransaction<WalletCurrency>
 
       expect(settledTx.memo).toBe(memo)
     }
@@ -902,10 +899,7 @@ describe("BtcWallet - onChainPay", () => {
           settlementVia.type === SettlementMethod.IntraLedger,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction<
-        WalletCurrency,
-        DisplayCurrency
-      >
+      const settledTx = settledTxs[0] as WalletTransaction<WalletCurrency>
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserF)
@@ -998,10 +992,7 @@ describe("BtcWallet - onChainPay", () => {
       )
       expect(pendingTxs.length).toBe(1)
 
-      const pendingTx = pendingTxs[0] as WalletOnChainSettledTransaction<
-        WalletCurrency,
-        DisplayCurrency
-      >
+      const pendingTx = pendingTxs[0] as WalletOnChainSettledTransaction<WalletCurrency>
       const finalBalanceUserA = await getBalanceHelper(walletIdA)
       expect(finalBalanceUserA).toBe(
         initialBalanceUserA - amount - pendingTx.settlementFee,

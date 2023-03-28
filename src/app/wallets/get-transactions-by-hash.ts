@@ -4,7 +4,7 @@ import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 
 export const getTransactionsByHash = async (
   hash: PaymentHash | OnChainTxHash,
-): Promise<WalletTransaction<WalletCurrency, DisplayCurrency>[] | ApplicationError> => {
+): Promise<WalletTransaction<WalletCurrency>[] | ApplicationError> => {
   const ledger = LedgerService()
   const ledgerTransactions = await ledger.getTransactionsByHash(hash)
   if (ledgerTransactions instanceof Error) return ledgerTransactions
