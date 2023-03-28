@@ -84,7 +84,9 @@ const Transaction = GT.Object<WalletTransaction<WalletCurrency, DisplayCurrency>
     settlementPrice: {
       type: GT.NonNull(PriceOfOneSettlementMinorUnitInDisplayMinorUnit),
       resolve: (source) => {
-        const displayCurrency = checkedToDisplayCurrency(source.settlementDisplayCurrency)
+        const displayCurrency = checkedToDisplayCurrency(
+          source.settlementDisplayPrice.displayCurrency,
+        )
         if (displayCurrency instanceof Error) throw mapError(displayCurrency)
 
         const settlementDisplayPrice = normalizeDisplayPrice(
@@ -118,6 +120,7 @@ const Transaction = GT.Object<WalletTransaction<WalletCurrency, DisplayCurrency>
     },
     settlementDisplayCurrency: {
       type: GT.NonNull(DisplayCurrency),
+      resolve: (source) => source.settlementDisplayPrice.displayCurrency,
     },
     direction: {
       type: GT.NonNull(TxDirection),

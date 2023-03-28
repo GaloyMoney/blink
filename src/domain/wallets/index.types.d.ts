@@ -54,8 +54,7 @@ type BaseWalletTransaction<S extends WalletCurrency, T extends DisplayCurrency> 
   readonly settlementCurrency: S
   readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayFee: DisplayCurrencyMajorAmount
-  readonly settlementDisplayCurrency: T
-  readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<S, T>
+  readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<S, DisplayCurrency>
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date
@@ -132,22 +131,21 @@ type WalletTransaction<S extends WalletCurrency, T extends DisplayCurrency> =
   | WalletOnChainTransaction<S, T>
   | WalletLnTransaction<S, T>
 
-type WalletDetailsByWalletId<T extends DisplayCurrency> = Record<
+type WalletDetailsByWalletId = Record<
   WalletId,
   {
     walletCurrency: WalletCurrency
     // TODO: Add conditional type here to be: S extends "BTC" ? undefined : WalletPriceRatio
     walletPriceRatio: WalletPriceRatio | undefined
     depositFeeRatio: DepositFeeRatio
-    displayCurrency: T
-    displayPriceRatio: DisplayPriceRatio<"BTC", T>
+    displayPriceRatio: DisplayPriceRatio<"BTC", DisplayCurrency>
   }
 >
 
 type AddPendingIncomingArgs = {
   pendingIncoming: IncomingOnChainTransaction[]
   addressesByWalletId: { [key: WalletId]: OnChainAddress[] }
-  walletDetailsByWalletId: WalletDetailsByWalletId<DisplayCurrency>
+  walletDetailsByWalletId: WalletDetailsByWalletId
 }
 
 type ConfirmedTransactionHistory = {

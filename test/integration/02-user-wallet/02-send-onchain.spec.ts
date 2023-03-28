@@ -604,7 +604,7 @@ const testInternalSend = async ({
   expect(recipientSettledTx.settlementDisplayPrice.base).toBeGreaterThan(0n)
 
   const exponent = getCurrencyMajorExponent(
-    recipientSettledTx.settlementDisplayCurrency as DisplayCurrency,
+    recipientSettledTx.settlementDisplayPrice.displayCurrency,
   )
 
   expect(recipientSettledTx.settlementDisplayAmount).toBe(
@@ -612,7 +612,7 @@ const testInternalSend = async ({
       amount: recipientSettledTx.settlementAmount,
       price: recipientSettledTx.settlementDisplayPrice,
       walletCurrency: recipientSettledTx.settlementCurrency,
-      displayCurrency: recipientSettledTx.settlementDisplayCurrency,
+      displayCurrency: recipientSettledTx.settlementDisplayPrice.displayCurrency,
     }).toFixed(exponent),
   )
   expect(recipientSettledTx.settlementDisplayFee).toBe(

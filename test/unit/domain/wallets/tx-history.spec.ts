@@ -155,7 +155,6 @@ describe("translates ledger txs to wallet txs", () => {
       settlementFee,
       settlementDisplayAmount: (centsAmount / 100).toFixed(2),
       settlementDisplayFee: (centsFee / 100).toFixed(2),
-      settlementDisplayCurrency: DisplayCurrency.Usd,
       settlementDisplayPrice,
     }
 
@@ -324,7 +323,6 @@ describe("translates ledger txs to wallet txs", () => {
           settlementFee,
           settlementDisplayAmount,
           settlementDisplayFee,
-          settlementDisplayCurrency,
           settlementDisplayPrice,
           ...rest
         } = tx
@@ -333,7 +331,6 @@ describe("translates ledger txs to wallet txs", () => {
           settlementFee,
           settlementDisplayAmount,
           settlementDisplayFee,
-          settlementDisplayCurrency,
           settlementDisplayPrice,
         ]
         removed // dummy call to satisfy type-checker
@@ -342,10 +339,9 @@ describe("translates ledger txs to wallet txs", () => {
           settlementFee: 0,
           settlementDisplayAmount: "0.00",
           settlementDisplayFee: "0.00",
-          settlementDisplayCurrency: DisplayCurrency.Usd,
           settlementDisplayPrice: priceAmountFromNumber({
             priceOfOneSatInMinorUnit: 0,
-            displayCurrency: settlementDisplayCurrency,
+            displayCurrency: DisplayCurrency.Usd,
             walletCurrency: tx.settlementCurrency,
           }),
           ...rest,
@@ -517,7 +513,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           walletCurrency: WalletCurrency.Btc,
           walletPriceRatio,
           depositFeeRatio: 0 as DepositFeeRatio,
-          displayCurrency: "EUR" as DisplayCurrency,
           displayPriceRatio,
         },
       },
@@ -539,7 +534,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementFee: toSats(0),
         settlementDisplayAmount: (25000 * 0.00016).toFixed(2),
         settlementDisplayFee: (0).toFixed(2),
-        settlementDisplayCurrency: "EUR",
         settlementCurrency: WalletCurrency.Btc,
         settlementDisplayPrice: priceAmountFromNumber({
           priceOfOneSatInMinorUnit: 0.016,
@@ -564,7 +558,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementCurrency: WalletCurrency.Btc,
         settlementDisplayAmount: (50000 * 0.00016).toFixed(2),
         settlementDisplayFee: (0).toFixed(2),
-        settlementDisplayCurrency: "EUR",
         memo: null,
         settlementFee: toSats(0),
         settlementDisplayPrice: priceAmountFromNumber({

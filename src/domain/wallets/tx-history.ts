@@ -18,24 +18,16 @@ const filterPendingIncoming = ({
   pendingIncoming,
   addressesByWalletId,
   walletDetailsByWalletId,
-}: AddPendingIncomingArgs): WalletOnChainTransaction<
-  WalletCurrency,
-  DisplayCurrency
->[] => {
-  const walletTransactions: WalletOnChainTransaction<WalletCurrency, DisplayCurrency>[] =
-    []
+}: AddPendingIncomingArgs): WalletOnChainTransaction<WalletCurrency>[] => {
+  const walletTransactions: WalletOnChainTransaction<WalletCurrency>[] = []
   pendingIncoming.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
       if (address) {
         for (const walletIdString in addressesByWalletId) {
           const walletId = walletIdString as WalletId
-          const {
-            walletCurrency,
-            walletPriceRatio,
-            depositFeeRatio,
-            displayCurrency,
-            displayPriceRatio,
-          } = walletDetailsByWalletId[walletId]
+          const { walletCurrency, walletPriceRatio, depositFeeRatio, displayPriceRatio } =
+            walletDetailsByWalletId[walletId]
+          const { displayCurrency } = displayPriceRatio
 
           if (addressesByWalletId[walletId].includes(address)) {
             const fee = DepositFeeCalculator().onChainDepositFee({
@@ -86,7 +78,6 @@ const filterPendingIncoming = ({
               settlementCurrency: walletCurrency,
               settlementDisplayAmount,
               settlementDisplayFee,
-              settlementDisplayCurrency: displayCurrency,
               settlementDisplayPrice,
               status: TxStatus.Pending,
               memo: null,
@@ -180,7 +171,6 @@ const translateLedgerTxnToWalletTxn = <
     settlementCurrency: txn.currency,
     settlementDisplayAmount,
     settlementDisplayFee,
-    settlementDisplayCurrency: displayCurrency,
     settlementDisplayPrice: displayCurrencyPerBaseUnitFromAmounts({
       displayAmount,
       displayCurrency,

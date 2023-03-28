@@ -260,7 +260,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(userBTxn.settlementDisplayPrice).toStrictEqual(
       priceAmountFromNumber({
         priceOfOneSatInMinorUnit: 0.05,
-        displayCurrency: userBTxn.settlementDisplayCurrency,
+        displayCurrency: userBTxn.settlementDisplayPrice.displayCurrency,
         walletCurrency: userBTxn.settlementCurrency,
       }),
     )
@@ -276,7 +276,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(userCTxn.settlementDisplayPrice).toStrictEqual(
       priceAmountFromNumber({
         priceOfOneSatInMinorUnit: 0.05,
-        displayCurrency: userCTxn.settlementDisplayCurrency,
+        displayCurrency: userCTxn.settlementDisplayPrice.displayCurrency,
         walletCurrency: userCTxn.settlementCurrency,
       }),
     )

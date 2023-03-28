@@ -418,7 +418,9 @@ describe("UserWallet - On chain", () => {
     expect(pendingTx.initiationVia.address).toBe(address)
     expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
-    const { settlementDisplayCurrency: displayCurrency } = pendingTx
+    const {
+      settlementDisplayPrice: { displayCurrency },
+    } = pendingTx
     const exponent = getCurrencyMajorExponent(displayCurrency)
 
     expect(pendingTx.settlementDisplayAmount).toBe(
@@ -426,7 +428,7 @@ describe("UserWallet - On chain", () => {
         amount: pendingTx.settlementAmount,
         price: pendingTx.settlementDisplayPrice,
         walletCurrency: pendingTx.settlementCurrency,
-        displayCurrency: pendingTx.settlementDisplayCurrency,
+        displayCurrency: pendingTx.settlementDisplayPrice.displayCurrency,
       }).toFixed(exponent),
     )
 
@@ -437,7 +439,7 @@ describe("UserWallet - On chain", () => {
             amount: pendingTx.settlementFee,
             price: pendingTx.settlementDisplayPrice,
             walletCurrency: pendingTx.settlementCurrency,
-            displayCurrency: pendingTx.settlementDisplayCurrency,
+            displayCurrency: pendingTx.settlementDisplayPrice.displayCurrency,
           }) *
             10 ** exponent,
         ) /
