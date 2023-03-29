@@ -2660,14 +2660,14 @@
   dependencies:
     "@opentelemetry/semantic-conventions" "1.10.1"
 
-"@opentelemetry/exporter-jaeger@^1.10.0":
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-jaeger/-/exporter-jaeger-1.10.0.tgz#95decba859364a2c2bc46c391ab9cfeb7a71316c"
-  integrity sha512-KEE82DOaqaeP5/iUfPbhmGh5L8az5d+Bv+0etm6UIBb2cc6KKxn4/Jlf4ZvJAz/VG90M2wnRsoSWdeZ1SXqFkw==
+"@opentelemetry/exporter-jaeger@^1.10.1":
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/exporter-jaeger/-/exporter-jaeger-1.10.1.tgz#c792ee1887f812a1d144402a09a33be166902b6a"
+  integrity sha512-bZIoSD6M7uxO19HtRJCAceAahX56LUmj5N/XQFHmoi3iFqA2JfR7bqsyHQCYbgINdiee155UejaqkNpgvjV7fw==
   dependencies:
-    "@opentelemetry/core" "1.10.0"
-    "@opentelemetry/sdk-trace-base" "1.10.0"
-    "@opentelemetry/semantic-conventions" "1.10.0"
+    "@opentelemetry/core" "1.10.1"
+    "@opentelemetry/sdk-trace-base" "1.10.1"
+    "@opentelemetry/semantic-conventions" "1.10.1"
     jaeger-client "^3.15.0"
 
 "@opentelemetry/instrumentation-graphql@^0.33.2":
@@ -2767,7 +2767,7 @@
     "@opentelemetry/core" "1.10.0"
     "@opentelemetry/semantic-conventions" "1.10.0"
 
-"@opentelemetry/resources@^1.10.1":
+"@opentelemetry/resources@1.10.1", "@opentelemetry/resources@^1.10.1":
   version "1.10.1"
   resolved "https://registry.yarnpkg.com/@opentelemetry/resources/-/resources-1.10.1.tgz#a2537ea241e09a63d5d1afd566f89e2ef5889370"
   integrity sha512-e+wwdyO44jZtsT1aqGiWMFOfN1XuP9Tv4+H0OYP3yQajBtGdsZjdSUn9UNjw46JsW0Mb+RaTxJwsb2uvfHar0g==
@@ -2775,7 +2775,7 @@
     "@opentelemetry/core" "1.10.1"
     "@opentelemetry/semantic-conventions" "1.10.1"
 
-"@opentelemetry/sdk-trace-base@1.10.0", "@opentelemetry/sdk-trace-base@^1.10.0":
+"@opentelemetry/sdk-trace-base@1.10.0":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-base/-/sdk-trace-base-1.10.0.tgz#abbffa0ae39234f4c441357edc3f4da45dc73ef5"
   integrity sha512-X4rRShtVQ893LCU4GNKS1TKFua9nSjVmo0VJvigfSFSOmyyOLfiyTWmVL9MKV7Ws0HqLOIWJixJY0x28fw3Tzg==
@@ -2783,6 +2783,15 @@
     "@opentelemetry/core" "1.10.0"
     "@opentelemetry/resources" "1.10.0"
     "@opentelemetry/semantic-conventions" "1.10.0"
+
+"@opentelemetry/sdk-trace-base@1.10.1", "@opentelemetry/sdk-trace-base@^1.10.0":
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-base/-/sdk-trace-base-1.10.1.tgz#fce06a810f9052d3c1b935d134979f4254bc8ae2"
+  integrity sha512-jutSP5t22wrPKReJKzI5uKht4mJ4cQdF/mGFJkN+emFFsDXru9CuFv/NfUrD0jEqoaaiqjcZtPSyTzMgu9LXvw==
+  dependencies:
+    "@opentelemetry/core" "1.10.1"
+    "@opentelemetry/resources" "1.10.1"
+    "@opentelemetry/semantic-conventions" "1.10.1"
 
 "@opentelemetry/sdk-trace-node@^1.10.0":
   version "1.10.0"
