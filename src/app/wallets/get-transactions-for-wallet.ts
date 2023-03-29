@@ -18,7 +18,7 @@ import { getOnChainTxs } from "./private/get-on-chain-txs"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-export const getTransactionsForWallets = async <T extends DisplayCurrency>({
+export const getTransactionsForWallets = async ({
   wallets,
   paginationArgs,
 }: {
@@ -64,11 +64,9 @@ export const getTransactionsForWallets = async <T extends DisplayCurrency>({
       account instanceof Error ? (0 as DepositFeeRatio) : account.depositFeeRatio
 
     const displayCurrency =
-      account instanceof Error
-        ? (DisplayCurrency.Usd as T)
-        : (account.displayCurrency as T)
+      account instanceof Error ? DisplayCurrency.Usd : account.displayCurrency
 
-    const displayPriceRatioForPending = await getCurrentPriceAsDisplayPriceRatio<T>({
+    const displayPriceRatioForPending = await getCurrentPriceAsDisplayPriceRatio({
       currency: displayCurrency,
     })
     if (displayPriceRatioForPending instanceof Error) {
