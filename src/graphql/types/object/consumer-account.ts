@@ -159,7 +159,7 @@ const ConsumerAccount = GT.Object<Account>({
           throw mapError(nullError)
         }
 
-        return connectionFromPaginatedArray<WalletTransaction<WalletCurrency>>(
+        return connectionFromPaginatedArray<WalletTransaction>(
           result.slice,
           result.total,
           paginationArgs,

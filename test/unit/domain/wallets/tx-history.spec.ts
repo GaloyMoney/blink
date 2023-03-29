@@ -125,7 +125,7 @@ describe("translates ledger txs to wallet txs", () => {
     settlementAmount: Satoshis | UsdCents
     centsAmount: UsdCents
     currency: WalletCurrency
-  }): WalletTransaction<WalletCurrency>[] => {
+  }): WalletTransaction[] => {
     const displayCurrency = DisplayCurrency.Usd
 
     const settlementFee = currency === WalletCurrency.Btc ? satsFee : centsFee

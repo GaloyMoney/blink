@@ -103,7 +103,7 @@ describe("UserWallet - addEarn", () => {
     const { result: transactionsBefore } = await getTransactionsForWalletId(walletIdB)
 
     let OnboardingEarnId = ""
-    let txCheck: WalletTransaction<WalletCurrency> | undefined
+    let txCheck: WalletTransaction | undefined
     for (OnboardingEarnId of OnboardingEarnIds) {
       txCheck = transactionsBefore?.slice.find((tx) => tx.memo === OnboardingEarnId)
       if (!txCheck) break

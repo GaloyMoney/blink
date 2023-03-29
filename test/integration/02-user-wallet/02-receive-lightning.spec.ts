@@ -166,7 +166,7 @@ describe("UserWallet - Lightning", () => {
       (txn) =>
         txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
         txn.initiationVia.paymentHash === hash,
-    ) as WalletTransaction<WalletCurrency>
+    ) as WalletTransaction
     expect(noSpamTxn.memo).toBe(memo)
 
     const finalBalance = await getBalanceHelper(walletIdB)
@@ -691,7 +691,7 @@ describe("UserWallet - Lightning", () => {
       (txn) =>
         txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
         txn.initiationVia.paymentHash === hash,
-    ) as WalletTransaction<WalletCurrency>
+    ) as WalletTransaction
     expect(spamTxn.memo).toBeNull()
 
     // confirm expected final balance

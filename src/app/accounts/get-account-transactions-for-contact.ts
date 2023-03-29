@@ -12,7 +12,7 @@ export const getAccountTransactionsForContact = async ({
   account: Account
   contactUsername: Username
   paginationArgs?: PaginationArgs
-}): Promise<PaginatedArray<WalletTransaction<WalletCurrency>> | ApplicationError> => {
+}): Promise<PaginatedArray<WalletTransaction> | ApplicationError> => {
   const ledger = LedgerService()
 
   const wallets = await WalletsRepository().listByAccountId(account.id)

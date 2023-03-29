@@ -24,7 +24,7 @@ export const getTransactionsForWallets = async <T extends DisplayCurrency>({
 }: {
   wallets: Wallet[]
   paginationArgs?: PaginationArgs
-}): Promise<PartialResult<PaginatedArray<WalletTransaction<WalletCurrency>>>> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()

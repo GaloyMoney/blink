@@ -224,9 +224,9 @@ interface ILedgerService {
       | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | LedgerServiceError>
 
-  getTransactionById<S extends WalletCurrency>(
+  getTransactionById(
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction<S> | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError>
 
   getTransactionsByHash(
     paymentHash: PaymentHash | OnChainTxHash,

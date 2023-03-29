@@ -77,8 +77,8 @@ export const checkedToLedgerTransactionId = (
   return new InvalidLedgerTransactionId(ledgerTransactionId)
 }
 
-export const inputAmountFromLedgerTransaction = <S extends WalletCurrency>(
-  txn: LedgerTransaction<S>,
+export const inputAmountFromLedgerTransaction = (
+  txn: LedgerTransaction<WalletCurrency>,
 ) => {
   const fee = txn.currency === WalletCurrency.Usd ? txn.centsFee : txn.satsFee
   if (fee === undefined) return new InvalidLedgerTransactionStateError()

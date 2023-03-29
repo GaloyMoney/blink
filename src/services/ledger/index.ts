@@ -64,9 +64,9 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<true | LedgerServiceError | RepositoryError> =>
     TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)
 
-  const getTransactionById = async <S extends WalletCurrency>(
+  const getTransactionById = async (
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction<S> | LedgerServiceError> => {
+  ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
       const { results } = await MainBook.ledger({

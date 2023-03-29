@@ -87,13 +87,13 @@ export const updatePendingPaymentsByWalletId = wrapAsyncToRunInSpan({
 const updatePendingPayment = wrapAsyncToRunInSpan({
   namespace: "app.payments",
   fnName: "updatePendingPayment",
-  fn: async <S extends WalletCurrency>({
+  fn: async ({
     walletId,
     pendingPayment,
     logger,
   }: {
     walletId: WalletId
-    pendingPayment: LedgerTransaction<S>
+    pendingPayment: LedgerTransaction<WalletCurrency>
     logger: Logger
   }): Promise<true | ApplicationError> => {
     const { paymentHash, pubkey, type: txType } = pendingPayment

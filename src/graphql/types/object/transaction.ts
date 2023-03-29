@@ -22,7 +22,7 @@ import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 
 import PriceOfOneSettlementMinorUnitInDisplayMinorUnit from "./price-of-one-settlement-minor-unit-in-display-minor-unit"
 
-const Transaction = GT.Object<WalletTransaction<WalletCurrency>>({
+const Transaction = GT.Object<WalletTransaction>({
   name: "Transaction",
   description: dedent`Give details about an individual transaction.
   Galoy have a smart routing system which is automatically

@@ -18,8 +18,8 @@ const filterPendingIncoming = ({
   pendingIncoming,
   addressesByWalletId,
   walletDetailsByWalletId,
-}: AddPendingIncomingArgs): WalletOnChainTransaction<WalletCurrency>[] => {
-  const walletTransactions: WalletOnChainTransaction<WalletCurrency>[] = []
+}: AddPendingIncomingArgs): WalletOnChainTransaction[] => {
+  const walletTransactions: WalletOnChainTransaction[] = []
   pendingIncoming.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
       if (address) {
@@ -105,7 +105,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 }: {
   txn: LedgerTransaction<S>
   nonEndUserWalletIds: WalletId[]
-}): WalletTransaction<S> => {
+}): WalletTransaction => {
   const {
     type,
     credit,
@@ -160,7 +160,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 
   const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
 
-  const baseTransaction: BaseWalletTransaction<S> = {
+  const baseTransaction: BaseWalletTransaction = {
     id: txn.id,
     walletId: txn.walletId,
     settlementAmount,
@@ -188,7 +188,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 
   const { recipientWalletId, username, pubkey, paymentHash, txHash, address } = txn
 
-  let walletTransaction: WalletTransaction<S>
+  let walletTransaction: WalletTransaction
   switch (txType) {
     case LedgerTransactionType.IntraLedger:
     case LedgerTransactionType.WalletIdTradeIntraAccount:
