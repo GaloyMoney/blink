@@ -12,6 +12,8 @@ import { ValidationError, WalletCurrency } from "@domain/shared"
 
 const muunPubkey =
   "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6" as Pubkey
+const breezChanId = "1x0x0" as ChanId
+const flagged = { pubkey: [muunPubkey], chanId: [breezChanId] }
 
 describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
@@ -20,6 +22,9 @@ describe("LightningPaymentFlowBuilder", () => {
   const muunPaymentRequestWithAmount =
     "lnbc10u1p3w0mf7pp5v9xg3eksnsyrsa3vk5uv00rvye4wf9n0744xgtx0kcrafeanvx7sdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhddrwgrqy63w5eyqqqqryqqqqthqqpyrzjqw8c7yfutqqy3kz8662fxutjvef7q2ujsxtt45csu0k688lkzu3lddrwgrqy63w5eyqqqqryqqqqthqqpysp53n0sc9hvqgdkrv4ppwrm2pa0gcysa8r2swjkrkjnxkcyrsjmxu4s9qypqsq5zvh7glzpas4l9ptxkdhgefyffkn8humq6amkrhrh2gq02gv8emxrynkwke3uwgf4cfevek89g4020lgldxgusmse79h4caqg30qq2cqmyrc7d" as EncodedPaymentRequest
   const muunInvoiceWithAmount = decodeInvoice(muunPaymentRequestWithAmount) as LnInvoice
+  const breezPaymentRequestWithAmount =
+    "lnbc1m1pjz2963pp5eeed387k90rxz9ggkarh3qzf42tw5epay0v3adv79aldgjf2a0nqdqqcqzpgxqrrssrzjqvgptfurj3528snx6e3dtwepafxw5fpzdymw9pj20jj09sunnqmwqqqqqyqqqqqqqqqqqqlgqqqqqqgqjqnp4qdruvn0zq9wqqhtryvch753zm6hqq4kyt48dsstkemjjc3njvggnqsp5s4pla42w34ekurw8ywfwjpwcakz5h3ynn8hx5znfckda8udmn5sq9qyyssq4sll8vh2n6kds0ht7l942jqa33nrrrhd9fhfdrdfec6mwtms05ppdrnztn2zg87cm4q7lye39f0gmt9tpjwy26hafrkqza4esjmctuqpxchx3a" as EncodedPaymentRequest
+  const breezInvoiceWithAmount = decodeInvoice(breezPaymentRequestWithAmount) as LnInvoice
   const paymentRequestWithNoAmount =
     "lnbc1p3zn402pp54skf32qeal5jnfm73u5e3d9h5448l4yutszy0kr9l56vdsy8jefsdqqcqzpuxqyz5vqsp5c6z7a4lrey4ejvhx5q4l83jm9fhy34dsqgxnceem4dgz6fmh456s9qyyssqkxkg6ke6nt39dusdhpansu8j0r5f7gadwcampnw2g8ap0fccteer7hzjc8tgat9m5wxd98nxjxhwx0ha6g95v9edmgd30f0m8kujslgpxtzt6w" as EncodedPaymentRequest
   const invoiceWithNoAmount = decodeInvoice(paymentRequestWithNoAmount) as LnInvoice
@@ -138,7 +143,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("ln initiated, ln settled", () => {
     const lightningBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
-      flaggedPubkeys: [muunPubkey],
+      flagged,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -152,6 +157,7 @@ describe("LightningPaymentFlowBuilder", () => {
     describe("invoice with amount", () => {
       const withAmountBuilder = lightningBuilder.withInvoice(invoiceWithAmount)
       const withMuunAmountBuilder = lightningBuilder.withInvoice(muunInvoiceWithAmount)
+      const withBreezAmountBuilder = lightningBuilder.withInvoice(breezInvoiceWithAmount)
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -167,6 +173,10 @@ describe("LightningPaymentFlowBuilder", () => {
           .withoutRecipientWallet()
 
         const withMuunBtcWalletBuilder = withMuunAmountBuilder
+          .withSenderWallet(senderBtcWallet)
+          .withoutRecipientWallet()
+
+        const withBreezBtcWalletBuilder = withBreezAmountBuilder
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
 
@@ -186,6 +196,13 @@ describe("LightningPaymentFlowBuilder", () => {
             hedgeSellUsd,
           })
           expect(muunBuilder.skipProbeForDestination()).toBeTruthy()
+
+          const breezBuilder = await withBreezBtcWalletBuilder.withConversion({
+            mid,
+            hedgeBuyUsd,
+            hedgeSellUsd,
+          })
+          expect(breezBuilder.skipProbeForDestination()).toBeTruthy()
         })
 
         it("uses mid price and max btc fees", async () => {
@@ -489,7 +506,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("ln initiated, intraledger settled", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [invoiceWithAmount.destination, invoiceWithNoAmount.destination],
-      flaggedPubkeys: [muunPubkey],
+      flagged,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -966,7 +983,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("intraledger initiated, intraledger settled", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
-      flaggedPubkeys: [muunPubkey],
+      flagged,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -1226,7 +1243,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
-          flaggedPubkeys: [muunPubkey],
+          flagged,
         })
           .withInvoice(invoiceWithNoAmount)
           .withSenderWallet(senderBtcWallet)
@@ -1245,7 +1262,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
-          flaggedPubkeys: [muunPubkey],
+          flagged,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0.4 })
           .withSenderWallet(senderBtcWallet)
@@ -1264,7 +1281,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
-          flaggedPubkeys: [muunPubkey],
+          flagged,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0 })
           .withSenderWallet(senderBtcWallet)
@@ -1283,7 +1300,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
-          flaggedPubkeys: [muunPubkey],
+          flagged,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
@@ -1303,7 +1320,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
-          flaggedPubkeys: [muunPubkey],
+          flagged,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
@@ -1323,7 +1340,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithNoAmount.destination],
-          flaggedPubkeys: [muunPubkey],
+          flagged,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 1000 })
           .withSenderWallet(senderBtcWallet)
@@ -1346,7 +1363,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
-          flaggedPubkeys: [muunPubkey],
+          flagged,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)

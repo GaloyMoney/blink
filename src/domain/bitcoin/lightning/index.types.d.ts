@@ -12,6 +12,7 @@ type RevealedPreImage = string & { readonly brand: unique symbol }
 type PaymentIdentifyingSecret = string & { readonly brand: unique symbol }
 type FeatureBit = number & { readonly brand: unique symbol }
 type FeatureType = string & { readonly brand: unique symbol }
+type ChanId = string & { readonly brand: unique symbol }
 
 type PagingStartToken = undefined
 type PagingContinueToken = string & { readonly brand: unique symbol }
@@ -31,7 +32,7 @@ type PaymentSendStatus =
 
 type Hop = {
   baseFeeMTokens?: string
-  channel?: string
+  channel?: ChanId
   cltvDelta?: number
   feeRate?: number
   nodePubkey: Pubkey

@@ -652,12 +652,28 @@ export const configSchema = {
       default: { mandatory: false },
     },
     skipFeeProbe: {
-      type: "array",
-      items: { type: "string", maxLength: 66, minLength: 66 },
-      uniqueItems: true,
-      default: [
-        "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6", // Muun
-      ],
+      type: "object",
+      properties: {
+        pubkey: {
+          type: "array",
+          items: { type: "string", maxLength: 66, minLength: 66 },
+          uniqueItems: true,
+        },
+        chanId: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
+      },
+      additionalProperties: false,
+      default: {
+        pubkey: [
+          "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6", // Muun
+        ],
+        chanId: [
+          "1x0x0", // Breez on-the-fly channel
+        ],
+      },
     },
   },
   required: [

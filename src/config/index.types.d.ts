@@ -23,3 +23,5 @@ type QuizQuestionId =
   | "HighlyDivisible"
   | "securePartOne"
   | "securePartTwo"
+
+type SkipFeeProbeConfig = { pubkey: Pubkey[]; chanId: ChanId[] }

@@ -199,4 +199,7 @@ oathkeeperConfig:
 captcha:
   mandatory: false
 skipFeeProbe:
-  - 038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6
+  pubkey:
+    - 038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6
+  chanId:
+    - 1x0x0
