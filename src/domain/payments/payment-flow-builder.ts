@@ -8,6 +8,8 @@ import {
   parseFinalHopsFromInvoice,
 } from "@domain/bitcoin/lightning"
 
+import { addAttributesToCurrentSpan } from "@services/tracing"
+
 import { ModifiedSet } from "@utils"
 
 import {
@@ -55,6 +57,14 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     const invoiceChanIdSet = new ModifiedSet(parseFinalChanIdFromInvoice(invoice))
     const flaggedChanIdSet = new ModifiedSet(config.flagged.chanId)
     const chanIdIsFlagged = invoiceChanIdSet.intersect(flaggedChanIdSet).size > 0
+
+    addAttributesToCurrentSpan({
+      pubkeyIsFlagged: `${pubkeyIsFlagged}`,
+      pubkeysFromInvoice: `${Array.from(invoicePubkeySet)}`,
+
+      chanIdIsFlagged: `${chanIdIsFlagged}`,
+      chanIdsFromInvoice: `${Array.from(invoiceChanIdSet)}`,
+    })
 
     return pubkeyIsFlagged || chanIdIsFlagged
   }
