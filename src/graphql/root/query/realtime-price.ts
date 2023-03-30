@@ -1,8 +1,11 @@
-import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
-
 import { Prices } from "@app"
 
-import { majorToMinorUnit, DisplayCurrency } from "@domain/fiat"
+import {
+  majorToMinorUnit,
+  DisplayCurrency,
+  USD_PRICE_PRECISION_OFFSET,
+  SAT_PRICE_PRECISION_OFFSET,
+} from "@domain/fiat"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"

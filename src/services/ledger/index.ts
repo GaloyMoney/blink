@@ -22,6 +22,7 @@ import {
   balanceAmountFromNumber,
   BigIntFloatConversionError,
   ErrorLevel,
+  WalletCurrency,
 } from "@domain/shared"
 import { fromObjectId, toObjectId } from "@services/mongoose/utils"
 import {
@@ -404,51 +405,58 @@ export const LedgerService = (): ILedgerService => {
   })
 }
 
-export const translateToLedgerTx = (
+export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayCurrency>(
   tx: ILedgerTransaction,
-): LedgerTransaction<WalletCurrency> => ({
-  id: fromObjectId<LedgerTransactionId>(tx._id || ""),
-  walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
-  type: tx.type,
-  debit: toSats(tx.debit),
-  credit: toSats(tx.credit),
-  currency: tx.currency,
-  timestamp: tx.timestamp,
-  pendingConfirmation: tx.pending,
-  journalId: tx._journal.toString() as LedgerJournalId,
-  lnMemo: tx.memo,
-  username: (tx.username as Username) || undefined,
-  memoFromPayer: tx.memoPayer,
-  paymentHash: (tx.hash as PaymentHash) || undefined,
-  pubkey: (tx.pubkey as Pubkey) || undefined,
-  address:
-    tx.payee_addresses && tx.payee_addresses.length > 0
-      ? (tx.payee_addresses[0] as OnChainAddress)
-      : undefined,
-  txHash: (tx.hash as OnChainTxHash) || undefined,
-  feeKnownInAdvance: tx.feeKnownInAdvance || false,
+): LedgerTransaction<S> => {
+  const currency = tx.currency as S
 
-  satsAmount: tx.satsAmount !== undefined ? toSats(tx.satsAmount) : undefined,
-  centsAmount: tx.centsAmount !== undefined ? toCents(tx.centsAmount) : undefined,
-  satsFee: tx.satsFee !== undefined ? toSats(tx.satsFee) : undefined,
-  centsFee: tx.centsFee !== undefined ? toCents(tx.centsFee) : undefined,
-  displayAmount:
-    tx.displayAmount !== undefined
-      ? (tx.displayAmount as DisplayCurrencyBaseAmount)
-      : undefined,
-  displayFee:
-    tx.displayFee !== undefined
-      ? (tx.displayFee as DisplayCurrencyBaseAmount)
-      : undefined,
-  displayCurrency:
-    tx.displayCurrency !== undefined
-      ? (tx.displayCurrency as DisplayCurrency)
-      : undefined,
+  const displayCurrency =
+    tx.displayCurrency !== undefined ? (tx.displayCurrency as T) : undefined
 
-  fee: tx.fee,
-  usd: tx.usd,
-  feeUsd: tx.feeUsd,
-})
+  const debit = currency === WalletCurrency.Btc ? toSats(tx.debit) : toCents(tx.debit)
+  const credit = currency === WalletCurrency.Btc ? toSats(tx.credit) : toCents(tx.credit)
+
+  return {
+    id: fromObjectId<LedgerTransactionId>(tx._id || ""),
+    walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
+    type: tx.type,
+    debit,
+    credit,
+    currency,
+    timestamp: tx.timestamp,
+    pendingConfirmation: tx.pending,
+    journalId: tx._journal.toString() as LedgerJournalId,
+    lnMemo: tx.memo,
+    username: (tx.username as Username) || undefined,
+    memoFromPayer: tx.memoPayer,
+    paymentHash: (tx.hash as PaymentHash) || undefined,
+    pubkey: (tx.pubkey as Pubkey) || undefined,
+    address:
+      tx.payee_addresses && tx.payee_addresses.length > 0
+        ? (tx.payee_addresses[0] as OnChainAddress)
+        : undefined,
+    txHash: (tx.hash as OnChainTxHash) || undefined,
+    feeKnownInAdvance: tx.feeKnownInAdvance || false,
+
+    satsAmount: tx.satsAmount !== undefined ? toSats(tx.satsAmount) : undefined,
+    centsAmount: tx.centsAmount !== undefined ? toCents(tx.centsAmount) : undefined,
+    satsFee: tx.satsFee !== undefined ? toSats(tx.satsFee) : undefined,
+    centsFee: tx.centsFee !== undefined ? toCents(tx.centsFee) : undefined,
+    displayAmount:
+      tx.displayAmount !== undefined
+        ? (tx.displayAmount as DisplayCurrencyBaseAmount)
+        : undefined,
+    displayFee:
+      tx.displayFee !== undefined
+        ? (tx.displayFee as DisplayCurrencyBaseAmount)
+        : undefined,
+    displayCurrency,
+
+    fee: tx.fee,
+    usd: tx.usd,
+    feeUsd: tx.feeUsd,
+  }
+}
 
 // @ts-ignore-next-line no-implicit-any error
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({

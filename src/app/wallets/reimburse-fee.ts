@@ -11,11 +11,7 @@ import {
 import * as LedgerFacade from "@services/ledger/facade"
 import { baseLogger } from "@services/logger"
 
-export const reimburseFee = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
-  T extends DisplayCurrency,
->({
+export const reimburseFee = async <S extends WalletCurrency, R extends WalletCurrency>({
   paymentFlow,
   senderDisplayAmount,
   senderDisplayCurrency,
@@ -25,7 +21,7 @@ export const reimburseFee = async <
 }: {
   paymentFlow: PaymentFlow<S, R>
   senderDisplayAmount: DisplayCurrencyBaseAmount
-  senderDisplayCurrency: T
+  senderDisplayCurrency: DisplayCurrency
   journalId: LedgerJournalId
   actualFee: Satoshis
   revealedPreImage?: RevealedPreImage

@@ -32,8 +32,8 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly id: LedgerTransactionId
   readonly walletId: WalletId | undefined // FIXME create a subclass so that this field is always set for liabilities wallets
   readonly type: LedgerTransactionType
-  readonly debit: S extends "BTC" ? Satoshis : UsdCents
-  readonly credit: S extends "BTC" ? Satoshis : UsdCents
+  readonly debit: Satoshis | UsdCents
+  readonly credit: Satoshis | UsdCents
   readonly currency: S
   readonly timestamp: Date
   readonly pendingConfirmation: boolean

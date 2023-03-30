@@ -24,10 +24,11 @@ type DisplayAmount<T extends DisplayCurrency> = {
   displayInMajor: DisplayCurrencyMajorAmount
 }
 
-type PriceAmount<T extends DisplayCurrency> = {
-  priceOfOneSatInMinorUnit: number
-  priceOfOneSatInMajorUnit: number
-  currency: T
+type WalletMinorUnitDisplayPrice<S extends WalletCurrency, T extends DisplayCurrency> = {
+  base: bigint
+  offset: bigint
+  displayCurrency: T
+  walletCurrency: S
 }
 
 type PaymentAmount<T extends WalletCurrency> = Amount<T> & {

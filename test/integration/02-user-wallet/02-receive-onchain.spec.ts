@@ -37,6 +37,7 @@ import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
 
 import {
   amountAfterFeeDeduction,
+  amountByPriceAsMajor,
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
@@ -414,20 +415,29 @@ describe("UserWallet - On chain", () => {
     expect(pendingTx.initiationVia.address).toBe(address)
     expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
-    const { settlementDisplayCurrency: displayCurrency } = pendingTx
+    const {
+      settlementDisplayPrice: { displayCurrency },
+    } = pendingTx
     const exponent = getCurrencyMajorExponent(displayCurrency)
 
     expect(pendingTx.settlementDisplayAmount).toBe(
-      (
-        pendingTx.settlementAmount * pendingTx.displayCurrencyPerSettlementCurrencyUnit
-      ).toFixed(exponent),
+      amountByPriceAsMajor({
+        amount: pendingTx.settlementAmount,
+        price: pendingTx.settlementDisplayPrice,
+        walletCurrency: pendingTx.settlementCurrency,
+        displayCurrency: pendingTx.settlementDisplayPrice.displayCurrency,
+      }).toFixed(exponent),
     )
 
     expect(pendingTx.settlementDisplayFee).toBe(
       (
         Math.ceil(
-          pendingTx.settlementFee *
-            pendingTx.displayCurrencyPerSettlementCurrencyUnit *
+          amountByPriceAsMajor({
+            amount: pendingTx.settlementFee,
+            price: pendingTx.settlementDisplayPrice,
+            walletCurrency: pendingTx.settlementCurrency,
+            displayCurrency: pendingTx.settlementDisplayPrice.displayCurrency,
+          }) *
             10 ** exponent,
         ) /
         10 ** exponent

@@ -12,17 +12,13 @@ import { baseLogger } from "@services/logger"
 import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
 
-import { WalletPriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 import { getOnChainTxs } from "./private/get-on-chain-txs"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-export const getTransactionsForWallets = async <
-  S extends WalletCurrency,
-  T extends DisplayCurrency,
->({
+export const getTransactionsForWallets = async ({
   wallets,
   paginationArgs,
 }: {
@@ -55,7 +51,7 @@ export const getTransactionsForWallets = async <
 
   const addresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
-  const walletDetailsByWalletId: WalletDetailsByWalletId<S, T> = {}
+  const walletDetailsByWalletId: WalletDetailsByWalletId = {}
 
   const accountRepo = AccountsRepository()
   for (const wallet of wallets) {
@@ -68,18 +64,13 @@ export const getTransactionsForWallets = async <
       account instanceof Error ? (0 as DepositFeeRatio) : account.depositFeeRatio
 
     const displayCurrency =
-      account instanceof Error
-        ? (DisplayCurrency.Usd as T)
-        : (account.displayCurrency as T)
+      account instanceof Error ? DisplayCurrency.Usd : account.displayCurrency
 
-    let displayPriceRatioForPending:
-      | DisplayPriceRatio<"BTC", T>
-      | PriceServiceError
-      | undefined = await getCurrentPriceAsDisplayPriceRatio<T>({
+    const displayPriceRatioForPending = await getCurrentPriceAsDisplayPriceRatio({
       currency: displayCurrency,
     })
     if (displayPriceRatioForPending instanceof Error) {
-      displayPriceRatioForPending = undefined
+      return PartialResult.err(displayPriceRatioForPending)
     }
 
     let walletPriceRatio: WalletPriceRatio | undefined = undefined
@@ -93,10 +84,9 @@ export const getTransactionsForWallets = async <
     }
 
     walletDetailsByWalletId[wallet.id] = {
-      walletCurrency: wallet.currency as S,
+      walletCurrency: wallet.currency,
       walletPriceRatio,
       depositFeeRatio,
-      displayCurrency,
       displayPriceRatio: displayPriceRatioForPending,
     }
   }

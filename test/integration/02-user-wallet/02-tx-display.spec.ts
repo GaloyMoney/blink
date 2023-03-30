@@ -782,11 +782,15 @@ describe("Display properties on transactions", () => {
         const expectedRecipientWalletTxnDisplayProps = {
           settlementDisplayAmount: settlementDisplayAmountObj.displayInMajor,
           settlementDisplayFee: settlementDisplayFeeObj.displayInMajor,
-          settlementDisplayCurrency: expectedRecipientDisplayProps.displayCurrency,
         }
 
         expect(recipientTxn).toEqual(
           expect.objectContaining(expectedRecipientWalletTxnDisplayProps),
+        )
+        expect(recipientTxn.settlementDisplayPrice).toEqual(
+          expect.objectContaining({
+            displayCurrency: expectedRecipientDisplayProps.displayCurrency,
+          }),
         )
 
         // Settle pending

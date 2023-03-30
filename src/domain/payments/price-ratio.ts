@@ -129,6 +129,7 @@ export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCur
   walletAmount: PaymentAmount<S>
 }): DisplayPriceRatio<S, T> | ValidationError => {
   const { currency: displayCurrency } = displayAmount
+  const { currency: walletCurrency } = walletAmount
 
   const { amountInMinor: displayAmountValue } = displayAmount
   const priceRatio = PriceRatio({
@@ -164,6 +165,8 @@ export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCur
       }),
 
     displayMinorUnitPerWalletUnit: priceRatio.otherUnitPerWalletUnit,
+    displayCurrency,
+    walletCurrency,
   }
 }
 

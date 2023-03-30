@@ -1,10 +1,12 @@
 import getUuidByString from "uuid-by-string"
 
-import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
-
 import { Accounts, Prices, Wallets } from "@app"
 
-import { majorToMinorUnit } from "@domain/fiat"
+import {
+  majorToMinorUnit,
+  SAT_PRICE_PRECISION_OFFSET,
+  USD_PRICE_PRECISION_OFFSET,
+} from "@domain/fiat"
 import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 
 import { GT } from "@graphql/index"

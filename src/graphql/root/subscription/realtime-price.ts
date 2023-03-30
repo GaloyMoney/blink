@@ -1,11 +1,15 @@
 import crypto from "crypto"
 
-import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
-
 import { Prices } from "@app"
 
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
-import { checkedToDisplayCurrency, majorToMinorUnit, DisplayCurrency } from "@domain/fiat"
+import {
+  checkedToDisplayCurrency,
+  majorToMinorUnit,
+  DisplayCurrency,
+  SAT_PRICE_PRECISION_OFFSET,
+  USD_PRICE_PRECISION_OFFSET,
+} from "@domain/fiat"
 
 import { GT } from "@graphql/index"
 import { UnknownClientError } from "@graphql/error"

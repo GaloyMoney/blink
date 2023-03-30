@@ -2,12 +2,16 @@ import crypto from "crypto"
 
 import { LedgerTransactionType } from "@domain/ledger"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
-import { translateMemo, WalletTransactionHistory } from "@domain/wallets/tx-history"
+import {
+  displayCurrencyPerBaseUnitFromAmounts,
+  translateMemo,
+  WalletTransactionHistory,
+} from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import { MEMO_SHARING_CENTS_THRESHOLD, MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { WalletCurrency } from "@domain/shared"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
 
 describe("translates ledger txs to wallet txs", () => {
@@ -122,13 +126,24 @@ describe("translates ledger txs to wallet txs", () => {
     centsAmount: UsdCents
     currency: WalletCurrency
   }): WalletTransaction[] => {
+    const displayCurrency = DisplayCurrency.Usd
+
     const settlementFee = currency === WalletCurrency.Btc ? satsFee : centsFee
-    const displayCurrencyPerSettlementCurrencyUnit = Math.abs(
-      centsAmount / 100 / settlementAmount,
-    )
+    const settlementDisplayPrice = displayCurrencyPerBaseUnitFromAmounts({
+      displayAmount: centsAmount,
+      displayCurrency,
+      walletAmount: settlementAmount,
+      walletCurrency: currency,
+    })
 
     if (currency === WalletCurrency.Usd) {
-      expect(displayCurrencyPerSettlementCurrencyUnit).toEqual(0.01)
+      expect(settlementDisplayPrice).toEqual(
+        priceAmountFromNumber({
+          priceOfOneSatInMinorUnit: 1,
+          displayCurrency,
+          walletCurrency: currency,
+        }),
+      )
     }
 
     const currencyBaseWalletTxns = {
@@ -140,8 +155,7 @@ describe("translates ledger txs to wallet txs", () => {
       settlementFee,
       settlementDisplayAmount: (centsAmount / 100).toFixed(2),
       settlementDisplayFee: (centsFee / 100).toFixed(2),
-      settlementDisplayCurrency: DisplayCurrency.Usd,
-      displayCurrencyPerSettlementCurrencyUnit,
+      settlementDisplayPrice,
     }
 
     return [
@@ -309,8 +323,7 @@ describe("translates ledger txs to wallet txs", () => {
           settlementFee,
           settlementDisplayAmount,
           settlementDisplayFee,
-          settlementDisplayCurrency,
-          displayCurrencyPerSettlementCurrencyUnit,
+          settlementDisplayPrice,
           ...rest
         } = tx
 
@@ -318,8 +331,7 @@ describe("translates ledger txs to wallet txs", () => {
           settlementFee,
           settlementDisplayAmount,
           settlementDisplayFee,
-          settlementDisplayCurrency,
-          displayCurrencyPerSettlementCurrencyUnit,
+          settlementDisplayPrice,
         ]
         removed // dummy call to satisfy type-checker
 
@@ -327,8 +339,11 @@ describe("translates ledger txs to wallet txs", () => {
           settlementFee: 0,
           settlementDisplayAmount: "0.00",
           settlementDisplayFee: "0.00",
-          settlementDisplayCurrency: DisplayCurrency.Usd,
-          displayCurrencyPerSettlementCurrencyUnit: 0,
+          settlementDisplayPrice: priceAmountFromNumber({
+            priceOfOneSatInMinorUnit: 0,
+            displayCurrency: DisplayCurrency.Usd,
+            walletCurrency: tx.settlementCurrency,
+          }),
           ...rest,
         }
       })
@@ -450,7 +465,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
   const displayPriceRatio = DisplayPriceRatio({
     displayAmount: {
       amountInMinor: 16n,
-      currency: DisplayCurrency.Usd,
+      currency: "EUR" as DisplayCurrency,
       displayInMajor: "0.16" as DisplayCurrencyMajorAmount,
     },
     walletAmount: { amount: 1000n, currency: WalletCurrency.Btc },
@@ -498,7 +513,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           walletCurrency: WalletCurrency.Btc,
           walletPriceRatio,
           depositFeeRatio: 0 as DepositFeeRatio,
-          displayCurrency: "EUR" as DisplayCurrency,
           displayPriceRatio,
         },
       },
@@ -520,9 +534,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementFee: toSats(0),
         settlementDisplayAmount: (25000 * 0.00016).toFixed(2),
         settlementDisplayFee: (0).toFixed(2),
-        settlementDisplayCurrency: "EUR",
         settlementCurrency: WalletCurrency.Btc,
-        displayCurrencyPerSettlementCurrencyUnit: 0.00016,
+        settlementDisplayPrice: priceAmountFromNumber({
+          priceOfOneSatInMinorUnit: 0.016,
+          displayCurrency: "EUR" as DisplayCurrency,
+          walletCurrency: WalletCurrency.Btc,
+        }),
         status: TxStatus.Pending,
         createdAt: timestamp,
       },
@@ -541,76 +558,14 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementCurrency: WalletCurrency.Btc,
         settlementDisplayAmount: (50000 * 0.00016).toFixed(2),
         settlementDisplayFee: (0).toFixed(2),
-        settlementDisplayCurrency: "EUR",
         memo: null,
         settlementFee: toSats(0),
-        displayCurrencyPerSettlementCurrencyUnit: 0.00016,
-
-        status: TxStatus.Pending,
-        createdAt: timestamp,
-      },
-    ]
-    expect(result.transactions).toEqual(expected)
-  })
-
-  it("translates handles price NaN", () => {
-    const walletId = crypto.randomUUID() as WalletId
-
-    const timestamp = new Date(Date.now())
-    const incomingTxs: IncomingOnChainTransaction[] = [
-      IncomingOnChainTransaction({
-        confirmations: 1,
-        fee: toSats(1000),
-        rawTx: {
-          txHash: "txHash" as OnChainTxHash,
-          outs: [
-            {
-              sats: toSats(25000),
-              address: "userAddress1" as OnChainAddress,
-            },
-          ],
-        },
-        createdAt: timestamp,
-      }),
-    ]
-    const history = WalletTransactionHistory.fromLedger({
-      ledgerTransactions: [],
-      nonEndUserWalletIds: [],
-    })
-    const addresses = ["userAddress1"] as OnChainAddress[]
-    const result = history.addPendingIncoming({
-      pendingIncoming: incomingTxs,
-      addressesByWalletId: { [walletId]: addresses },
-      walletDetailsByWalletId: {
-        [walletId]: {
-          walletCurrency: WalletCurrency.Btc,
-          walletPriceRatio,
-          depositFeeRatio: 0 as DepositFeeRatio,
+        settlementDisplayPrice: priceAmountFromNumber({
+          priceOfOneSatInMinorUnit: 0.016,
           displayCurrency: "EUR" as DisplayCurrency,
-          displayPriceRatio: undefined,
-        },
-      },
-    })
-    const expected = [
-      {
-        id: "txHash" as OnChainTxHash,
-        walletId,
-        initiationVia: {
-          type: PaymentInitiationMethod.OnChain,
-          address: "userAddress1" as OnChainAddress,
-        },
-        settlementVia: {
-          type: SettlementMethod.OnChain,
-          transactionHash: "txHash",
-        },
-        memo: null,
-        settlementAmount: toSats(25000),
-        settlementFee: toSats(0),
-        settlementCurrency: WalletCurrency.Btc,
-        settlementDisplayAmount: "NaN",
-        settlementDisplayFee: "NaN",
-        settlementDisplayCurrency: "EUR",
-        displayCurrencyPerSettlementCurrencyUnit: NaN,
+          walletCurrency: WalletCurrency.Btc,
+        }),
+
         status: TxStatus.Pending,
         createdAt: timestamp,
       },

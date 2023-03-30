@@ -43,7 +43,7 @@ export const reimburseFailedUsdPayment = async <
     if (wallet instanceof Error) return wallet
     const account = await AccountsRepository().findById(wallet.accountId)
     if (account instanceof Error) return account
-    ;({ displayCurrency } = account)
+    displayCurrency = account.displayCurrency
   }
 
   const paymentHash = paymentFlow.paymentHashForFlow()

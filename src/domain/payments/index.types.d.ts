@@ -20,6 +20,8 @@ type DisplayPriceRatio<S extends WalletCurrency, T extends DisplayCurrency> = {
   convertFromWalletToFloor(convert: PaymentAmount<S>): DisplayAmount<T>
   convertFromWalletToCeil(convert: PaymentAmount<S>): DisplayAmount<T>
   displayMinorUnitPerWalletUnit(): DisplayCurrencyBasePerSat
+  walletCurrency: S
+  displayCurrency: T
 }
 
 type XorPaymentHashProperty = XOR<

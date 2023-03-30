@@ -1,14 +1,12 @@
 import dedent from "dedent"
 
-import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
-
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import { connectionDefinitions } from "@graphql/connections"
+import { normalizeDisplayPrice } from "@graphql/root/mutation"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
-import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
-import { checkedToDisplayCurrency, majorToMinorUnit } from "@domain/fiat"
+import { checkedToDisplayCurrency } from "@domain/fiat"
 
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
@@ -86,24 +84,24 @@ const Transaction = GT.Object<WalletTransaction>({
     settlementPrice: {
       type: GT.NonNull(PriceOfOneSettlementMinorUnitInDisplayMinorUnit),
       resolve: (source) => {
-        const displayCurrency = checkedToDisplayCurrency(source.settlementDisplayCurrency)
+        const displayCurrency = checkedToDisplayCurrency(
+          source.settlementDisplayPrice.displayCurrency,
+        )
         if (displayCurrency instanceof Error) throw mapError(displayCurrency)
 
-        const displayCurrencyPriceInMinorUnit = majorToMinorUnit({
-          amount: source.displayCurrencyPerSettlementCurrencyUnit,
-          displayCurrency,
-        })
+        const settlementDisplayPrice = normalizeDisplayPrice(
+          source.settlementDisplayPrice,
+        )
 
-        let offset = SAT_PRICE_PRECISION_OFFSET
-        if (source.settlementCurrency === WalletCurrencyDomain.Usd) {
-          offset = USD_PRICE_PRECISION_OFFSET
-        }
+        const formattedAmount = `${
+          Number(settlementDisplayPrice.base) /
+          10 ** Number(settlementDisplayPrice.offset)
+        }`
 
         return {
-          base: Math.round(displayCurrencyPriceInMinorUnit * 10 ** offset),
-          offset,
+          ...settlementDisplayPrice,
+          formattedAmount,
           currencyUnit: "MINOR",
-          formattedAmount: `${displayCurrencyPriceInMinorUnit}`,
         }
       },
       description: "Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement.",
@@ -122,6 +120,7 @@ const Transaction = GT.Object<WalletTransaction>({
     },
     settlementDisplayCurrency: {
       type: GT.NonNull(DisplayCurrency),
+      resolve: (source) => source.settlementDisplayPrice.displayCurrency,
     },
     direction: {
       type: GT.NonNull(TxDirection),

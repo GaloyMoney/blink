@@ -28,7 +28,7 @@ import {
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { NotificationType } from "@domain/notifications"
@@ -257,7 +257,13 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const userBTxn = txResultB.result.slice.filter(matchTx)[0]
     expect(userBTxn.memo).toBe(memo)
-    expect(userBTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
+    expect(userBTxn.settlementDisplayPrice).toStrictEqual(
+      priceAmountFromNumber({
+        priceOfOneSatInMinorUnit: 0.05,
+        displayCurrency: userBTxn.settlementDisplayPrice.displayCurrency,
+        walletCurrency: userBTxn.settlementCurrency,
+      }),
+    )
     expect(userBTxn.settlementVia.type).toBe("intraledger")
     // expect(userBTxn.recipientUsername).toBe("lily")
 
@@ -267,7 +273,13 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const userCTxn = txResultC.result.slice.filter(matchTx)[0]
     expect(userCTxn.memo).toBe(memo)
-    expect(userCTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
+    expect(userCTxn.settlementDisplayPrice).toStrictEqual(
+      priceAmountFromNumber({
+        priceOfOneSatInMinorUnit: 0.05,
+        displayCurrency: userCTxn.settlementDisplayPrice.displayCurrency,
+        walletCurrency: userCTxn.settlementCurrency,
+      }),
+    )
     expect(userCTxn.settlementVia.type).toBe("intraledger")
 
     // Check ledger transaction metadata for BTC 'LedgerTransactionType.LnIntraLedger'
