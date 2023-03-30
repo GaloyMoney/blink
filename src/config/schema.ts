@@ -651,7 +651,16 @@ export const configSchema = {
       additionalProperties: false,
       default: { mandatory: false },
     },
+    // deprecated: use skipFeeProbeConfig instead
     skipFeeProbe: {
+      type: "array",
+      items: { type: "string", maxLength: 66, minLength: 66 },
+      uniqueItems: true,
+      default: [
+        "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6", // Muun
+      ],
+    },
+    skipFeeProbeConfig: {
       type: "object",
       properties: {
         pubkey: {
