@@ -10,21 +10,28 @@ import {
 } from "@domain/payments"
 import { ValidationError, WalletCurrency } from "@domain/shared"
 
-const muunPubkey =
+const skippedPubkey =
   "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6" as Pubkey
-const breezChanId = "1x0x0" as ChanId
-const flagged = { pubkey: [muunPubkey], chanId: [breezChanId] }
+const skippedChanId = "1x0x0" as ChanId
+const flagged = { pubkey: [skippedPubkey], chanId: [skippedChanId] }
 
 describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
     "lnbc210u1p32zq9xpp5dpzhj6e7y6d4ggs6awh7m4eupuemas0gq06pqjgy9tq35740jlfsdqqcqzpgxqyz5vqsp58t3zalj5sc563g0xpcgx9lfkeqrx7m7xw53v2txc2pr60jcwn0vq9qyyssqkatadajwt0n285teummg4urul9t3shddnf05cfxzsfykvscxm4zqz37j87sahvz3kul0lzgz2svltdm933yr96du84zpyn8rx6fst4sp43jh32" as EncodedPaymentRequest
   const invoiceWithAmount = decodeInvoice(paymentRequestWithAmount) as LnInvoice
-  const muunPaymentRequestWithAmount =
+
+  const skippedPubkeyPaymentRequestWithAmount =
     "lnbc10u1p3w0mf7pp5v9xg3eksnsyrsa3vk5uv00rvye4wf9n0744xgtx0kcrafeanvx7sdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhddrwgrqy63w5eyqqqqryqqqqthqqpyrzjqw8c7yfutqqy3kz8662fxutjvef7q2ujsxtt45csu0k688lkzu3lddrwgrqy63w5eyqqqqryqqqqthqqpysp53n0sc9hvqgdkrv4ppwrm2pa0gcysa8r2swjkrkjnxkcyrsjmxu4s9qypqsq5zvh7glzpas4l9ptxkdhgefyffkn8humq6amkrhrh2gq02gv8emxrynkwke3uwgf4cfevek89g4020lgldxgusmse79h4caqg30qq2cqmyrc7d" as EncodedPaymentRequest
-  const muunInvoiceWithAmount = decodeInvoice(muunPaymentRequestWithAmount) as LnInvoice
-  const breezPaymentRequestWithAmount =
+  const skippedPubkeyInvoiceWithAmount = decodeInvoice(
+    skippedPubkeyPaymentRequestWithAmount,
+  ) as LnInvoice
+
+  const skippedChanIdPaymentRequestWithAmount =
     "lnbc1m1pjz2963pp5eeed387k90rxz9ggkarh3qzf42tw5epay0v3adv79aldgjf2a0nqdqqcqzpgxqrrssrzjqvgptfurj3528snx6e3dtwepafxw5fpzdymw9pj20jj09sunnqmwqqqqqyqqqqqqqqqqqqlgqqqqqqgqjqnp4qdruvn0zq9wqqhtryvch753zm6hqq4kyt48dsstkemjjc3njvggnqsp5s4pla42w34ekurw8ywfwjpwcakz5h3ynn8hx5znfckda8udmn5sq9qyyssq4sll8vh2n6kds0ht7l942jqa33nrrrhd9fhfdrdfec6mwtms05ppdrnztn2zg87cm4q7lye39f0gmt9tpjwy26hafrkqza4esjmctuqpxchx3a" as EncodedPaymentRequest
-  const breezInvoiceWithAmount = decodeInvoice(breezPaymentRequestWithAmount) as LnInvoice
+  const skippedChanIdInvoiceWithAmount = decodeInvoice(
+    skippedChanIdPaymentRequestWithAmount,
+  ) as LnInvoice
+
   const paymentRequestWithNoAmount =
     "lnbc1p3zn402pp54skf32qeal5jnfm73u5e3d9h5448l4yutszy0kr9l56vdsy8jefsdqqcqzpuxqyz5vqsp5c6z7a4lrey4ejvhx5q4l83jm9fhy34dsqgxnceem4dgz6fmh456s9qyyssqkxkg6ke6nt39dusdhpansu8j0r5f7gadwcampnw2g8ap0fccteer7hzjc8tgat9m5wxd98nxjxhwx0ha6g95v9edmgd30f0m8kujslgpxtzt6w" as EncodedPaymentRequest
   const invoiceWithNoAmount = decodeInvoice(paymentRequestWithNoAmount) as LnInvoice
@@ -156,8 +163,12 @@ describe("LightningPaymentFlowBuilder", () => {
 
     describe("invoice with amount", () => {
       const withAmountBuilder = lightningBuilder.withInvoice(invoiceWithAmount)
-      const withMuunAmountBuilder = lightningBuilder.withInvoice(muunInvoiceWithAmount)
-      const withBreezAmountBuilder = lightningBuilder.withInvoice(breezInvoiceWithAmount)
+      const withSkippedPubkeyAmountBuilder = lightningBuilder.withInvoice(
+        skippedPubkeyInvoiceWithAmount,
+      )
+      const withSkippedChanIdAmountBuilder = lightningBuilder.withInvoice(
+        skippedChanIdInvoiceWithAmount,
+      )
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -172,11 +183,11 @@ describe("LightningPaymentFlowBuilder", () => {
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
 
-        const withMuunBtcWalletBuilder = withMuunAmountBuilder
+        const withSkippedPubkeyBtcWalletBuilder = withSkippedPubkeyAmountBuilder
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
 
-        const withBreezBtcWalletBuilder = withBreezAmountBuilder
+        const withSkippedChanIdBtcWalletBuilder = withSkippedChanIdAmountBuilder
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
 
@@ -190,19 +201,21 @@ describe("LightningPaymentFlowBuilder", () => {
         }
 
         it("sets 'skipProbe' property to true for flagged destination invoice", async () => {
-          const muunBuilder = await withMuunBtcWalletBuilder.withConversion({
-            mid,
-            hedgeBuyUsd,
-            hedgeSellUsd,
-          })
-          expect(muunBuilder.skipProbeForDestination()).toBeTruthy()
+          const skippedPubkeyBuilder =
+            await withSkippedPubkeyBtcWalletBuilder.withConversion({
+              mid,
+              hedgeBuyUsd,
+              hedgeSellUsd,
+            })
+          expect(skippedPubkeyBuilder.skipProbeForDestination()).toBeTruthy()
 
-          const breezBuilder = await withBreezBtcWalletBuilder.withConversion({
-            mid,
-            hedgeBuyUsd,
-            hedgeSellUsd,
-          })
-          expect(breezBuilder.skipProbeForDestination()).toBeTruthy()
+          const skippedChanIdBuilder =
+            await withSkippedChanIdBtcWalletBuilder.withConversion({
+              mid,
+              hedgeBuyUsd,
+              hedgeSellUsd,
+            })
+          expect(skippedChanIdBuilder.skipProbeForDestination()).toBeTruthy()
         })
 
         it("uses mid price and max btc fees", async () => {

@@ -676,12 +676,8 @@ export const configSchema = {
       },
       additionalProperties: false,
       default: {
-        pubkey: [
-          "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6", // Muun
-        ],
-        chanId: [
-          "1x0x0", // Breez on-the-fly channel
-        ],
+        pubkey: [],
+        chanId: [],
       },
     },
   },

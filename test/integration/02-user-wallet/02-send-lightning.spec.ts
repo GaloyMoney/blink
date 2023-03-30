@@ -982,23 +982,23 @@ describe("UserWallet - Lightning Pay", () => {
     expect(fee).toStrictEqual({ amount: 0n, currency: WalletCurrency.Btc })
 
     // Test that flagged destination skips feeProbe lightning service method
-    const muunRequest =
+    const skippedPubkeyRequest =
       "lnbc10u1p3w0mf7pp5v9xg3eksnsyrsa3vk5uv00rvye4wf9n0744xgtx0kcrafeanvx7sdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhddrwgrqy63w5eyqqqqryqqqqthqqpyrzjqw8c7yfutqqy3kz8662fxutjvef7q2ujsxtt45csu0k688lkzu3lddrwgrqy63w5eyqqqqryqqqqthqqpysp53n0sc9hvqgdkrv4ppwrm2pa0gcysa8r2swjkrkjnxkcyrsjmxu4s9qypqsq5zvh7glzpas4l9ptxkdhgefyffkn8humq6amkrhrh2gq02gv8emxrynkwke3uwgf4cfevek89g4020lgldxgusmse79h4caqg30qq2cqmyrc7d" as EncodedPaymentRequest
-    const muunInvoice = decodeInvoice(muunRequest)
-    if (muunInvoice instanceof Error) throw muunInvoice
-    if (!muunInvoice.paymentAmount) throw new Error("No-amount Invoice")
-    expect(muunInvoice.paymentAmount.amount).toEqual(BigInt(sats))
+    const skippedPubkeyInvoice = decodeInvoice(skippedPubkeyRequest)
+    if (skippedPubkeyInvoice instanceof Error) throw skippedPubkeyInvoice
+    if (!skippedPubkeyInvoice.paymentAmount) throw new Error("No-amount Invoice")
+    expect(skippedPubkeyInvoice.paymentAmount.amount).toEqual(BigInt(sats))
 
     feeProbeCallsBefore = feeProbeCallCount()
-    const { result: feeMuun, error: errorMuun } =
+    const { result: feeSkippedPubkey, error: errorSkippedPubkey } =
       await Payments.getLightningFeeEstimationForBtcWallet({
         walletId: walletIdH,
-        uncheckedPaymentRequest: muunRequest,
+        uncheckedPaymentRequest: skippedPubkeyRequest,
       })
     expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore)
-    expect(errorMuun).toBeUndefined()
-    expect(feeMuun).toStrictEqual(
-      LnFees().maxProtocolAndBankFee(muunInvoice.paymentAmount),
+    expect(errorSkippedPubkey).toBeUndefined()
+    expect(feeSkippedPubkey).toStrictEqual(
+      LnFees().maxProtocolAndBankFee(skippedPubkeyInvoice.paymentAmount),
     )
   })
 
