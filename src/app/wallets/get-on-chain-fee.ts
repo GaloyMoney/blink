@@ -21,6 +21,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   walletId,
   account: senderAccount,
   amount,
+  amountCurrency,
   address,
   targetConfirmations,
 }: GetOnChainFeeArgs): Promise<PaymentAmount<S> | ApplicationError> => {
@@ -102,7 +103,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
         userId: recipientAccount.kratosUserId,
         username: recipientAccount.username,
       })
-      .withAmount(amountChecked)
+      .withAmount({ amount: amountChecked, amountCurrency })
       .withConversion(withConversionArgs)
       .withoutMinerFee()
     if (paymentFlow instanceof Error) return paymentFlow
@@ -112,7 +113,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
 
   const builder = withSenderBuilder
     .withoutRecipientWallet()
-    .withAmount(amount)
+    .withAmount({ amount, amountCurrency })
     .withConversion(withConversionArgs)
 
   const btcPaymentAmount = await builder.btcProposedAmount()
@@ -175,15 +176,19 @@ export const getMinerFeeAndPaymentFlow = async <
 }
 
 export const getOnChainFeeForBtcWallet = async <S extends WalletCurrency>(
-  args: GetOnChainFeeArgs,
+  args: GetOnChainFeeWithoutCurrencyArgs,
 ): Promise<PaymentAmount<S> | ApplicationError> => {
   const validated = await validateIsBtcWallet(args.walletId)
-  return validated instanceof Error ? validated : getOnChainFee(args)
+  return validated instanceof Error
+    ? validated
+    : getOnChainFee({ ...args, amountCurrency: WalletCurrency.Btc })
 }
 
 export const getOnChainFeeForUsdWallet = async <S extends WalletCurrency>(
-  args: GetOnChainFeeArgs,
+  args: GetOnChainFeeWithoutCurrencyArgs,
 ): Promise<PaymentAmount<S> | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.walletId)
-  return validated instanceof Error ? validated : getOnChainFee(args)
+  return validated instanceof Error
+    ? validated
+    : getOnChainFee({ ...args, amountCurrency: WalletCurrency.Usd })
 }
