@@ -199,3 +199,12 @@ export const getOnChainFeeForUsdWallet = async <S extends WalletCurrency>(
     ? validated
     : getOnChainFee({ ...args, amountCurrency: WalletCurrency.Usd })
 }
+
+export const getOnChainFeeForUsdWalletAndBtcAmount = async <S extends WalletCurrency>(
+  args: GetOnChainFeeWithoutCurrencyArgs,
+): Promise<PaymentAmount<S> | ApplicationError> => {
+  const validated = await validateIsUsdWallet(args.walletId)
+  return validated instanceof Error
+    ? validated
+    : getOnChainFee({ ...args, amountCurrency: WalletCurrency.Btc })
+}
