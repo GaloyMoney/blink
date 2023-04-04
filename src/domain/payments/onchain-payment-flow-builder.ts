@@ -1,6 +1,7 @@
 import { getFeesConfig } from "@config"
 import {
   AmountCalculator,
+  ONE_CENT,
   paymentAmountFromNumber,
   ValidationError,
   WalletCurrency,
@@ -121,11 +122,17 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
 const OPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurrency>(
   state: OPFBWithRecipientWalletState<S, R>,
 ): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
-  const withAmount = (uncheckedAmount: number): OPFBWithAmount<S, R> | OPFBWithError => {
+  const withAmount = ({
+    amount,
+    amountCurrency,
+  }: {
+    amount: number
+    amountCurrency: WalletCurrency
+  }): OPFBWithAmount<S, R> | OPFBWithError => {
     const paymentAmount =
-      state.senderWalletCurrency === WalletCurrency.Btc
-        ? checkedToBtcPaymentAmount(uncheckedAmount)
-        : checkedToUsdPaymentAmount(uncheckedAmount)
+      amountCurrency === WalletCurrency.Btc
+        ? checkedToBtcPaymentAmount(amount)
+        : checkedToUsdPaymentAmount(amount)
     if (paymentAmount instanceof ValidationError) {
       return OPFBWithError(paymentAmount)
     }
@@ -187,8 +194,14 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
         const updatedStateFromBtcProposedAmount = async (
           btcProposedAmount: BtcPaymentAmount,
         ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-          const convertedAmount = await mid.usdFromBtc(btcProposedAmount)
-          if (convertedAmount instanceof Error) return convertedAmount
+          const convertedAmountRaw = await mid.usdFromBtc(btcProposedAmount)
+          if (convertedAmountRaw instanceof Error) return convertedAmountRaw
+
+          // Round up USD if sats is non-zero in intraledger (mid-price) case and cents is zero
+          const convertedAmount =
+            btcProposedAmount.amount > 0n && convertedAmountRaw.amount === 0n
+              ? ONE_CENT
+              : convertedAmountRaw
 
           const priceRatio = WalletPriceRatio({
             usd: convertedAmount,
