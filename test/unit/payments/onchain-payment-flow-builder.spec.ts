@@ -214,7 +214,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             describe("with amount", () => {
               const withAmountBuilder = withBtcWalletBuilder
                 .withoutRecipientWallet()
-                .withAmount({ amount: uncheckedAmount, amountCurrency })
+                .withAmount({ amount: BigInt(uncheckedAmount), currency: amountCurrency })
               const checkAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -293,21 +293,24 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                 const paymentLowest = await withBtcWalletBuilder
                   .withoutRecipientWallet()
-                  .withAmount({ amount: 51, amountCurrency }) // Close to 1 cent
+                  .withAmount({ amount: BigInt(51), currency: amountCurrency }) // Close to 1 cent
                   .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 expect(paymentLowest).toBeInstanceOf(LessThanDustThresholdError)
 
                 const paymentBelow = await withBtcWalletBuilder
                   .withoutRecipientWallet()
-                  .withAmount({ amount: dustAmount, amountCurrency })
+                  .withAmount({ amount: BigInt(dustAmount), currency: amountCurrency })
                   .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 expect(paymentBelow).toBeInstanceOf(LessThanDustThresholdError)
 
                 const paymentAbove = await withBtcWalletBuilder
                   .withoutRecipientWallet()
-                  .withAmount({ amount: dustAmount + 1, amountCurrency })
+                  .withAmount({
+                    amount: BigInt(dustAmount + 1),
+                    currency: amountCurrency,
+                  })
                   .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 expect(paymentAbove).not.toBeInstanceOf(Error)
@@ -349,7 +352,7 @@ describe("OnChainPaymentFlowBuilder", () => {
               describe(`${name}`, () => {
                 const withAmountBuilder = withBtcWalletBuilder
                   .withRecipientWallet(recipientBtcWallet)
-                  .withAmount({ amount, amountCurrency })
+                  .withAmount({ amount: BigInt(amount), currency: amountCurrency })
                 const checkAmount = (payment) => {
                   expect(payment).toEqual(
                     expect.objectContaining({
@@ -415,7 +418,7 @@ describe("OnChainPaymentFlowBuilder", () => {
               describe(`${name}`, () => {
                 const withAmountBuilder = withBtcWalletBuilder
                   .withRecipientWallet(recipientUsdWallet)
-                  .withAmount({ amount, amountCurrency })
+                  .withAmount({ amount: BigInt(amount), currency: amountCurrency })
                 const checkAmount = (payment) => {
                   expect(payment).toEqual(
                     expect.objectContaining({
@@ -509,7 +512,10 @@ describe("OnChainPaymentFlowBuilder", () => {
                 describe("with amount", () => {
                   const withAmountBuilder = withUsdWalletBuilder
                     .withoutRecipientWallet()
-                    .withAmount({ amount: uncheckedAmount, amountCurrency })
+                    .withAmount({
+                      amount: BigInt(uncheckedAmount),
+                      currency: amountCurrency,
+                    })
                   const checkInputAmount = (payment) => {
                     expect(payment).toEqual(
                       expect.objectContaining({
@@ -606,7 +612,7 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                     const paymentLowest = await withUsdWalletBuilder
                       .withoutRecipientWallet()
-                      .withAmount({ amount: 1, amountCurrency })
+                      .withAmount({ amount: BigInt(1), currency: amountCurrency })
                       .withConversion(withConversionArgs)
                       .withMinerFee(minerFee)
                     expect(paymentLowest).toBeInstanceOf(LessThanDustThresholdError)
@@ -614,8 +620,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                     const paymentBelow = await withUsdWalletBuilder
                       .withoutRecipientWallet()
                       .withAmount({
-                        amount: Number(dustUsdAmount.amount),
-                        amountCurrency,
+                        amount: BigInt(dustUsdAmount.amount),
+                        currency: amountCurrency,
                       })
                       .withConversion(withConversionArgs)
                       .withMinerFee(minerFee)
@@ -628,8 +634,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                     const paymentAbove = await withUsdWalletBuilder
                       .withoutRecipientWallet()
                       .withAmount({
-                        amount: Number(dustSendAmount.amount + 1n),
-                        amountCurrency,
+                        amount: BigInt(dustSendAmount.amount + 1n),
+                        currency: amountCurrency,
                       })
                       .withConversion(withConversionArgs)
                       .withMinerFee(minerFee)
@@ -671,7 +677,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                   describe(`${name}`, () => {
                     const withAmountBuilder = withUsdWalletBuilder
                       .withRecipientWallet(recipientBtcWallet)
-                      .withAmount({ amount, amountCurrency })
+                      .withAmount({ amount: BigInt(amount), currency: amountCurrency })
                     const checkInputAmount = (payment) => {
                       expect(payment).toEqual(
                         expect.objectContaining({
@@ -744,7 +750,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                   describe(`${name}`, () => {
                     const withAmountBuilder = withUsdWalletBuilder
                       .withRecipientWallet(recipientUsdWallet)
-                      .withAmount({ amount, amountCurrency })
+                      .withAmount({ amount: BigInt(amount), currency: amountCurrency })
                     const checkInputAmount = (payment) => {
                       expect(payment).toEqual(
                         expect.objectContaining({
@@ -808,31 +814,6 @@ describe("OnChainPaymentFlowBuilder", () => {
   describe("error states", () => {
     const amountCurrency = WalletCurrency.Btc
 
-    describe("non-integer uncheckedAmount", () => {
-      it("returns a ValidationError", async () => {
-        const isIntraLedger = false
-        const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
-
-        const payment = await OnChainPaymentFlowBuilder({
-          volumeLightningFn,
-          volumeOnChainFn,
-          isExternalAddress: async () => Promise.resolve(!isIntraLedger),
-          sendAll: false,
-          dustThreshold,
-        })
-          .withAddress("address" as OnChainAddress)
-          .withSenderWalletAndAccount({
-            wallet: senderBtcWallet,
-            account: senderAccount,
-          })
-          .withoutRecipientWallet()
-          .withAmount({ amount: 0.4, amountCurrency })
-          .withConversion(withConversionArgs)
-          .withMinerFee(minerFee)
-
-        expect(payment).toBeInstanceOf(ValidationError)
-      })
-    })
     describe("zero-value uncheckedAmount", () => {
       it("returns a ValidationError", async () => {
         const isIntraLedger = false
@@ -851,7 +832,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             account: senderAccount,
           })
           .withoutRecipientWallet()
-          .withAmount({ amount: 0, amountCurrency })
+          .withAmount({ amount: BigInt(0), currency: amountCurrency })
           .withConversion(withConversionArgs)
           .withMinerFee(minerFee)
 
@@ -874,7 +855,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             account: senderAccount,
           })
           .withoutRecipientWallet()
-          .withAmount({ amount: uncheckedAmount, amountCurrency })
+          .withAmount({ amount: BigInt(uncheckedAmount), currency: amountCurrency })
           .withConversion(withConversionArgs)
           .withoutMinerFee()
 
@@ -897,7 +878,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             account: senderAccount,
           })
           .withRecipientWallet(senderBtcWallet)
-          .withAmount({ amount: uncheckedAmount, amountCurrency })
+          .withAmount({ amount: BigInt(uncheckedAmount), currency: amountCurrency })
           .withConversion(withConversionArgs)
           .withoutMinerFee()
 
@@ -920,7 +901,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             account: senderAccount,
           })
           .withoutRecipientWallet()
-          .withAmount({ amount: dustAmount, amountCurrency })
+          .withAmount({ amount: BigInt(dustAmount), currency: amountCurrency })
           .withConversion(withConversionArgs)
 
         const proposedBtcAmount = await builder.btcProposedAmount()

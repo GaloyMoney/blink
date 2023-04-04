@@ -76,20 +76,21 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   const validator = PaymentInputValidator(WalletsRepository().findById)
   const validationResult = await validator.validatePaymentInput({
     amount: amountToSendRaw,
+    amountCurrency: amountCurrencyRaw,
     senderAccount,
     senderWalletId,
   })
   if (validationResult instanceof Error) return validationResult
 
   const { amount, senderWallet } = validationResult
-  const amountCurrency = amountCurrencyRaw || senderWallet.currency
 
   const onchainLogger = baseLogger.child({
     topic: "payment",
     protocol: "onchain",
     transactionType: "payment",
     address,
-    amount,
+    amount: Number(amount.amount), // separating here because BigInts don't always parse well
+    currencyForAmount: amount.currency,
     memo,
     sendAll,
   })
@@ -157,7 +158,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
         userId: recipientAccount.kratosUserId,
         username: recipientAccount.username,
       })
-      .withAmount({ amount, amountCurrency })
+      .withAmount(amount)
       .withConversion(withConversionArgs)
 
     return executePaymentViaIntraledger({
@@ -172,7 +173,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
 
   const builder = withSenderBuilder
     .withoutRecipientWallet()
-    .withAmount({ amount, amountCurrency })
+    .withAmount(amount)
     .withConversion(withConversionArgs)
 
   return executePaymentViaOnChain({

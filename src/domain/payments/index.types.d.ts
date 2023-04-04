@@ -211,13 +211,7 @@ type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency>
 }
 
 type OPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
-  withAmount({
-    amount,
-    amountCurrency,
-  }: {
-    amount: number
-    amountCurrency: WalletCurrency
-  }): OPFBWithAmount<S, R> | OPFBWithError
+  withAmount(amount: PaymentAmount<WalletCurrency>): OPFBWithAmount<S, R> | OPFBWithError
 }
 
 type OPFBWithAmount<S extends WalletCurrency, R extends WalletCurrency> = {

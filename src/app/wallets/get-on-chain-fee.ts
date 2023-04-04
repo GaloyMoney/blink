@@ -1,11 +1,15 @@
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
+
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
-import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+
+import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
 import { CouldNotFindError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
+import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
+
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -25,7 +29,10 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   address,
   targetConfirmations,
 }: GetOnChainFeeArgs): Promise<PaymentAmount<S> | ApplicationError> => {
-  const amountChecked = checkedToSats(amount)
+  const amountChecked =
+    amountCurrency === WalletCurrency.Btc
+      ? checkedToBtcPaymentAmount(amount)
+      : checkedToUsdPaymentAmount(amount)
   if (amountChecked instanceof Error) return amountChecked
 
   const targetConfsChecked = checkedToTargetConfs(targetConfirmations)
@@ -103,7 +110,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
         userId: recipientAccount.kratosUserId,
         username: recipientAccount.username,
       })
-      .withAmount({ amount: amountChecked, amountCurrency })
+      .withAmount(amountChecked)
       .withConversion(withConversionArgs)
       .withoutMinerFee()
     if (paymentFlow instanceof Error) return paymentFlow
@@ -113,7 +120,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
 
   const builder = withSenderBuilder
     .withoutRecipientWallet()
-    .withAmount({ amount, amountCurrency })
+    .withAmount(amountChecked)
     .withConversion(withConversionArgs)
 
   const btcPaymentAmount = await builder.btcProposedAmount()

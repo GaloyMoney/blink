@@ -13,13 +13,16 @@ import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
-  InvalidCurrencyBaseAmountError,
   LessThanDustThresholdError,
   LimitsExceededError,
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
+import {
+  InvalidBtcPaymentAmountError,
+  InvalidZeroAmountPriceRatioInputError,
+  WalletPriceRatio,
+} from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -1098,7 +1101,7 @@ describe("BtcWallet - onChainPay", () => {
       memo: null,
       sendAll: false,
     })
-    expect(status).toBeInstanceOf(InvalidCurrencyBaseAmountError)
+    expect(status).toBeInstanceOf(InvalidBtcPaymentAmountError)
   })
 
   it("fails if withdrawal limit hit", async () => {

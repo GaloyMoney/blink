@@ -205,12 +205,13 @@ type PaymentInputValidatorConfig = (
 
 type ValidatePaymentInputArgs<T extends undefined | string> = {
   amount: number
+  amountCurrency: WalletCurrency | undefined
   senderWalletId: string
   senderAccount: Account
   recipientWalletId?: T
 }
 type ValidatePaymentInputRetBase = {
-  amount: CurrencyBaseAmount
+  amount: PaymentAmount<WalletCurrency>
   senderWallet: Wallet
 }
 type ValidatePaymentInputRet<T extends undefined | string> = T extends undefined

@@ -9,7 +9,6 @@ import {
 } from "@domain/shared"
 import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
-import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import { InvalidOnChainPaymentFlowBuilderStateError } from "./errors"
@@ -122,31 +121,19 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
 const OPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurrency>(
   state: OPFBWithRecipientWalletState<S, R>,
 ): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
-  const withAmount = ({
-    amount,
-    amountCurrency,
-  }: {
-    amount: number
-    amountCurrency: WalletCurrency
-  }): OPFBWithAmount<S, R> | OPFBWithError => {
-    const paymentAmount =
-      amountCurrency === WalletCurrency.Btc
-        ? checkedToBtcPaymentAmount(amount)
-        : checkedToUsdPaymentAmount(amount)
-    if (paymentAmount instanceof ValidationError) {
-      return OPFBWithError(paymentAmount)
-    }
-
+  const withAmount = (
+    paymentAmount: PaymentAmount<WalletCurrency>,
+  ): OPFBWithAmount<S, R> | OPFBWithError => {
     return paymentAmount.currency === WalletCurrency.Btc
       ? OPFBWithAmount({
           ...state,
           inputAmount: paymentAmount.amount,
-          btcProposedAmount: paymentAmount,
+          btcProposedAmount: paymentAmount as BtcPaymentAmount,
         })
       : OPFBWithAmount({
           ...state,
           inputAmount: paymentAmount.amount,
-          usdProposedAmount: paymentAmount,
+          usdProposedAmount: paymentAmount as UsdPaymentAmount,
         })
   }
 
