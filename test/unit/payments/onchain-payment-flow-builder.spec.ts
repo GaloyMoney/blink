@@ -211,17 +211,15 @@ describe("OnChainPaymentFlowBuilder", () => {
             )
           }
           describe("without recipient wallet", () => {
+            const convertForBtcWalletToBtcAddress = mid
+
             describe("with amount", () => {
               const withAmountBuilder = withBtcWalletBuilder
                 .withoutRecipientWallet()
                 .withAmount({ amount: BigInt(uncheckedAmount), currency: amountCurrency })
-              const checkAmount = (payment) => {
+              const checkInputAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
-                    btcPaymentAmount: {
-                      amount: BigInt(uncheckedAmount),
-                      currency: WalletCurrency.Btc,
-                    },
                     inputAmount: BigInt(uncheckedAmount),
                   }),
                 )
@@ -234,10 +232,14 @@ describe("OnChainPaymentFlowBuilder", () => {
                   .withMinerFee(minerFee)
                 if (payment instanceof Error) throw payment
 
-                const usdPaymentAmount = await usdFromBtcMid({
+                const btcPaymentAmount = {
                   amount: BigInt(uncheckedAmount),
                   currency: WalletCurrency.Btc,
-                })
+                }
+
+                const usdPaymentAmount = await convertForBtcWalletToBtcAddress.usdFromBtc(
+                  btcPaymentAmount,
+                )
 
                 const sendAmount = paymentAmountFromNumber({
                   amount: uncheckedAmount,
@@ -270,15 +272,24 @@ describe("OnChainPaymentFlowBuilder", () => {
                 })
                 if (withdrawFees instanceof Error) throw withdrawFees
 
+                const walletPriceRatio = WalletPriceRatio({
+                  usd: usdPaymentAmount,
+                  btc: btcPaymentAmount,
+                })
+                if (walletPriceRatio instanceof Error) throw walletPriceRatio
+
                 const btcProtocolAndBankFee = withdrawFees.totalFee
-                const usdProtocolAndBankFee = await usdFromBtcMid(btcProtocolAndBankFee)
+                const usdProtocolAndBankFee = await walletPriceRatio.convertFromBtcToCeil(
+                  btcProtocolAndBankFee,
+                )
 
                 checkAddress(payment)
                 checkSettlementMethod(payment)
-                checkAmount(payment)
+                checkInputAmount(payment)
                 checkSenderWallet(payment)
                 expect(payment).toEqual(
                   expect.objectContaining({
+                    btcPaymentAmount,
                     usdPaymentAmount,
                     btcProtocolAndBankFee,
                     usdProtocolAndBankFee,
@@ -332,6 +343,8 @@ describe("OnChainPaymentFlowBuilder", () => {
           }
 
           describe("with btc recipient wallet", () => {
+            const convertForBtcWalletToBtcWallet = mid
+
             const checkRecipientWallet = (payment) => {
               expect(payment).toEqual(
                 expect.objectContaining({
@@ -353,13 +366,9 @@ describe("OnChainPaymentFlowBuilder", () => {
                 const withAmountBuilder = withBtcWalletBuilder
                   .withRecipientWallet(recipientBtcWallet)
                   .withAmount({ amount: BigInt(amount), currency: amountCurrency })
-                const checkAmount = (payment) => {
+                const checkInputAmount = (payment) => {
                   expect(payment).toEqual(
                     expect.objectContaining({
-                      btcPaymentAmount: {
-                        amount: BigInt(amount),
-                        currency: WalletCurrency.Btc,
-                      },
                       inputAmount: BigInt(amount),
                     }),
                   )
@@ -371,18 +380,21 @@ describe("OnChainPaymentFlowBuilder", () => {
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const usdPaymentAmount = await usdFromBtcMid({
+                  const btcPaymentAmount = {
                     amount: BigInt(amount),
                     currency: WalletCurrency.Btc,
-                  })
+                  }
+                  const usdPaymentAmount =
+                    await convertForBtcWalletToBtcWallet.usdFromBtc(btcPaymentAmount)
 
                   checkAddress(payment)
                   checkSettlementMethod(payment)
-                  checkAmount(payment)
+                  checkInputAmount(payment)
                   checkSenderWallet(payment)
                   checkRecipientWallet(payment)
                   expect(payment).toEqual(
                     expect.objectContaining({
+                      btcPaymentAmount,
                       usdPaymentAmount,
                       btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
                       usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
@@ -398,6 +410,8 @@ describe("OnChainPaymentFlowBuilder", () => {
           })
 
           describe("with usd recipient wallet", () => {
+            const convertForBtcWalletToUsdWallet = hedgeBuyUsd
+
             const checkRecipientWallet = (payment) => {
               expect(payment).toEqual(
                 expect.objectContaining({
@@ -419,13 +433,9 @@ describe("OnChainPaymentFlowBuilder", () => {
                 const withAmountBuilder = withBtcWalletBuilder
                   .withRecipientWallet(recipientUsdWallet)
                   .withAmount({ amount: BigInt(amount), currency: amountCurrency })
-                const checkAmount = (payment) => {
+                const checkInputAmount = (payment) => {
                   expect(payment).toEqual(
                     expect.objectContaining({
-                      btcPaymentAmount: {
-                        amount: BigInt(amount),
-                        currency: WalletCurrency.Btc,
-                      },
                       inputAmount: BigInt(amount),
                     }),
                   )
@@ -437,18 +447,21 @@ describe("OnChainPaymentFlowBuilder", () => {
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const usdPaymentAmount = await usdFromBtcBuy({
+                  const btcPaymentAmount = {
                     amount: BigInt(amount),
                     currency: WalletCurrency.Btc,
-                  })
+                  }
+                  const usdPaymentAmount =
+                    await convertForBtcWalletToUsdWallet.usdFromBtc(btcPaymentAmount)
 
                   checkAddress(payment)
                   checkSettlementMethod(payment)
-                  checkAmount(payment)
+                  checkInputAmount(payment)
                   checkSenderWallet(payment)
                   checkRecipientWallet(payment)
                   expect(payment).toEqual(
                     expect.objectContaining({
+                      btcPaymentAmount,
                       usdPaymentAmount,
                       btcProtocolAndBankFee: onChainFees.intraLedgerFees().btc,
                       usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
@@ -509,6 +522,9 @@ describe("OnChainPaymentFlowBuilder", () => {
               }
 
               describe("without recipient wallet", () => {
+                const convertForUsdWalletToBtcAddress = hedgeSellUsd
+                const convertReverseForUsdWalletToBtcAddress = mid // an approximation to reverse functions
+
                 describe("with amount", () => {
                   const withAmountBuilder = withUsdWalletBuilder
                     .withoutRecipientWallet()
@@ -540,12 +556,16 @@ describe("OnChainPaymentFlowBuilder", () => {
                     const btcPaymentAmount =
                       amountCurrency === WalletCurrency.Btc
                         ? (sendAmount as BtcPaymentAmount)
-                        : await btcFromUsdSell(sendAmount as UsdPaymentAmount)
+                        : await convertForUsdWalletToBtcAddress.btcFromUsd(
+                            sendAmount as UsdPaymentAmount,
+                          )
 
                     const usdPaymentAmount =
                       amountCurrency === WalletCurrency.Usd
                         ? (sendAmount as UsdPaymentAmount)
-                        : await usdFromBtcSell(sendAmount as BtcPaymentAmount)
+                        : await convertForUsdWalletToBtcAddress.usdFromBtc(
+                            sendAmount as BtcPaymentAmount,
+                          )
 
                     const minBankFee = paymentAmountFromNumber({
                       amount: senderAccount.withdrawFee,
@@ -563,7 +583,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                       await imbalanceCalculator.getSwapOutImbalanceAmount(senderUsdWallet)
                     if (imbalanceForWallet instanceof Error) throw imbalanceForWallet
 
-                    const imbalance = await btcFromUsdSell({
+                    const imbalance = await convertForUsdWalletToBtcAddress.btcFromUsd({
                       amount: imbalanceForWallet.amount,
                       currency: WalletCurrency.Usd,
                     })
@@ -606,7 +626,11 @@ describe("OnChainPaymentFlowBuilder", () => {
                       amount: BigInt(dustAmount),
                       currency: WalletCurrency.Btc,
                     }
-                    const dustUsdAmount = await usdFromBtcMid(dustBtcAmount)
+                    const dustUsdAmount =
+                      await convertReverseForUsdWalletToBtcAddress.usdFromBtc(
+                        dustBtcAmount,
+                      )
+
                     expect(dustUsdAmount.amount).toBeGreaterThan(1n)
                     const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
 
@@ -658,6 +682,8 @@ describe("OnChainPaymentFlowBuilder", () => {
               }
 
               describe("with btc recipient wallet", () => {
+                const convertForUsdWalletToBtcWallet = hedgeSellUsd
+
                 const checkRecipientWallet = (payment) => {
                   expect(payment).toEqual(
                     expect.objectContaining({
@@ -701,12 +727,16 @@ describe("OnChainPaymentFlowBuilder", () => {
                       const btcPaymentAmount =
                         amountCurrency === WalletCurrency.Btc
                           ? (sendAmount as BtcPaymentAmount)
-                          : await btcFromUsdSell(sendAmount as UsdPaymentAmount)
+                          : await convertForUsdWalletToBtcWallet.btcFromUsd(
+                              sendAmount as UsdPaymentAmount,
+                            )
 
                       const usdPaymentAmount =
                         amountCurrency === WalletCurrency.Usd
                           ? (sendAmount as UsdPaymentAmount)
-                          : await usdFromBtcSell(sendAmount as BtcPaymentAmount)
+                          : await convertForUsdWalletToBtcWallet.usdFromBtc(
+                              sendAmount as BtcPaymentAmount,
+                            )
 
                       checkAddress(payment)
                       checkSettlementMethod(payment)
@@ -731,6 +761,8 @@ describe("OnChainPaymentFlowBuilder", () => {
               })
 
               describe("with usd recipient wallet", () => {
+                const convertForUsdWalletToUsdWallet = mid
+
                 const checkRecipientWallet = (payment) => {
                   expect(payment).toEqual(
                     expect.objectContaining({
@@ -774,14 +806,18 @@ describe("OnChainPaymentFlowBuilder", () => {
                       const btcPaymentAmount =
                         amountCurrency === WalletCurrency.Btc
                           ? (sendAmount as BtcPaymentAmount)
-                          : await btcFromUsdMid(sendAmount as UsdPaymentAmount)
+                          : await convertForUsdWalletToUsdWallet.btcFromUsd(
+                              sendAmount as UsdPaymentAmount,
+                            )
 
                       const usdPaymentAmount =
                         amountCurrency === WalletCurrency.Usd
                           ? (sendAmount as UsdPaymentAmount)
                           : sendAmount.amount === 1n
                           ? ONE_CENT
-                          : await usdFromBtcMid(sendAmount as BtcPaymentAmount)
+                          : await convertForUsdWalletToUsdWallet.usdFromBtc(
+                              sendAmount as BtcPaymentAmount,
+                            )
 
                       checkAddress(payment)
                       checkSettlementMethod(payment)
