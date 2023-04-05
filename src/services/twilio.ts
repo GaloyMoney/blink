@@ -11,6 +11,7 @@ import {
   UnsubscribedRecipientPhoneProviderError,
   PhoneProviderRateLimitExceededError,
   RestrictedRecipientPhoneNumberError,
+  PhoneProviderUnavailableError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 
@@ -132,6 +133,9 @@ const handleCommonErrors = (err: Error | string) => {
     case match(KnownTwilioErrorMessages.BadPhoneProviderConnection):
       return new PhoneProviderConnectionError(errMsg)
 
+    case match(KnownTwilioErrorMessages.ServiceUnavailable):
+      return new PhoneProviderUnavailableError(errMsg)
+
     case match(KnownTwilioErrorMessages.RateLimitsExceeded):
     case match(KnownTwilioErrorMessages.TooManyConcurrentRequests):
       return new PhoneProviderRateLimitExceededError(errMsg)
@@ -158,4 +162,5 @@ export const KnownTwilioErrorMessages = {
   TooManyConcurrentRequests: /Too many concurrent requests/,
   FraudulentActivityBlock:
     /The destination phone number has been temporarily blocked by Twilio due to fraudulent activities/,
+  ServiceUnavailable: /Service is unavailable. Please try again/,
 } as const
