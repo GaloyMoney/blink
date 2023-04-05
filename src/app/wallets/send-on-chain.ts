@@ -58,6 +58,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   senderAccount,
   senderWalletId,
   amount: amountRaw,
+  amountCurrency: amountCurrencyRaw,
   address,
   targetConfirmations,
   memo,
@@ -75,6 +76,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   const validator = PaymentInputValidator(WalletsRepository().findById)
   const validationResult = await validator.validatePaymentInput({
     amount: amountToSendRaw,
+    amountCurrency: amountCurrencyRaw,
     senderAccount,
     senderWalletId,
   })
@@ -87,7 +89,8 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
     protocol: "onchain",
     transactionType: "payment",
     address,
-    amount,
+    amount: Number(amount.amount), // separating here because BigInts don't always parse well
+    currencyForAmount: amount.currency,
     memo,
     sendAll,
   })
@@ -184,23 +187,36 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
 }
 
 export const payOnChainByWalletIdForBtcWallet = async (
-  args: PayOnChainByWalletIdArgs,
+  args: PayOnChainByWalletIdWithoutCurrencyArgs,
 ): Promise<PaymentSendStatus | ApplicationError> => {
   const validated = await validateIsBtcWallet(args.senderWalletId)
-  return validated instanceof Error ? validated : payOnChainByWalletId(args)
+  return validated instanceof Error
+    ? validated
+    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Btc })
 }
 
 export const payOnChainByWalletIdForUsdWallet = async (
-  args: PayOnChainByWalletIdArgs,
+  args: PayOnChainByWalletIdWithoutCurrencyArgs,
 ): Promise<PaymentSendStatus | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.senderWalletId)
-  return validated instanceof Error ? validated : payOnChainByWalletId(args)
+  return validated instanceof Error
+    ? validated
+    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Usd })
+}
+
+export const payOnChainByWalletIdForUsdWalletAndBtcAmount = async (
+  args: PayOnChainByWalletIdWithoutCurrencyArgs,
+): Promise<PaymentSendStatus | ApplicationError> => {
+  const validated = await validateIsUsdWallet(args.senderWalletId)
+  return validated instanceof Error
+    ? validated
+    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Btc })
 }
 
 export const payAllOnChainByWalletId = async (
-  args: PayOnChainByWalletIdArgs,
+  args: PayOnChainByWalletIdWithoutCurrencyArgs,
 ): Promise<PaymentSendStatus | ApplicationError> =>
-  payOnChainByWalletId({ ...args, sendAll: true })
+  payOnChainByWalletId({ ...args, amountCurrency: undefined, sendAll: true })
 
 const executePaymentViaIntraledger = async <
   S extends WalletCurrency,

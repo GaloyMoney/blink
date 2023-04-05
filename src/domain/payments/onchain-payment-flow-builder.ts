@@ -1,6 +1,7 @@
 import { getFeesConfig } from "@config"
 import {
   AmountCalculator,
+  ONE_CENT,
   paymentAmountFromNumber,
   ValidationError,
   WalletCurrency,
@@ -8,7 +9,6 @@ import {
 } from "@domain/shared"
 import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
-import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import { InvalidOnChainPaymentFlowBuilderStateError } from "./errors"
@@ -121,25 +121,19 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
 const OPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurrency>(
   state: OPFBWithRecipientWalletState<S, R>,
 ): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
-  const withAmount = (uncheckedAmount: number): OPFBWithAmount<S, R> | OPFBWithError => {
-    const paymentAmount =
-      state.senderWalletCurrency === WalletCurrency.Btc
-        ? checkedToBtcPaymentAmount(uncheckedAmount)
-        : checkedToUsdPaymentAmount(uncheckedAmount)
-    if (paymentAmount instanceof ValidationError) {
-      return OPFBWithError(paymentAmount)
-    }
-
+  const withAmount = (
+    paymentAmount: PaymentAmount<WalletCurrency>,
+  ): OPFBWithAmount<S, R> | OPFBWithError => {
     return paymentAmount.currency === WalletCurrency.Btc
       ? OPFBWithAmount({
           ...state,
           inputAmount: paymentAmount.amount,
-          btcProposedAmount: paymentAmount,
+          btcProposedAmount: paymentAmount as BtcPaymentAmount,
         })
       : OPFBWithAmount({
           ...state,
           inputAmount: paymentAmount.amount,
-          usdProposedAmount: paymentAmount,
+          usdProposedAmount: paymentAmount as UsdPaymentAmount,
         })
   }
 
@@ -187,8 +181,14 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
         const updatedStateFromBtcProposedAmount = async (
           btcProposedAmount: BtcPaymentAmount,
         ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-          const convertedAmount = await mid.usdFromBtc(btcProposedAmount)
-          if (convertedAmount instanceof Error) return convertedAmount
+          const convertedAmountRaw = await mid.usdFromBtc(btcProposedAmount)
+          if (convertedAmountRaw instanceof Error) return convertedAmountRaw
+
+          // Round up USD if sats is non-zero in intraledger (mid-price) case and cents is zero
+          const convertedAmount =
+            btcProposedAmount.amount > 0n && convertedAmountRaw.amount === 0n
+              ? ONE_CENT
+              : convertedAmountRaw
 
           const priceRatio = WalletPriceRatio({
             usd: convertedAmount,

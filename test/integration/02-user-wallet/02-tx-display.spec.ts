@@ -961,7 +961,9 @@ describe("Display properties on transactions", () => {
 
     describe("send", () => {
       const payOnChainForPromiseAll = async (
-        args: { senderCurrency: WalletCurrency } & PayOnChainByWalletIdArgs,
+        args: {
+          senderCurrency: WalletCurrency
+        } & PayOnChainByWalletIdWithoutCurrencyArgs,
       ) => {
         const { senderCurrency, ...payArgs } = args
         const res =

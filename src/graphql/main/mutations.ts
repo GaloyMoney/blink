@@ -29,6 +29,7 @@ import UserContactUpdateAliasMutation from "@graphql/root/mutation/user-contact-
 import UserQuizQuestionUpdateCompletedMutation from "@graphql/root/mutation/user-quiz-question-update-completed"
 import OnChainPaymentSendMutation from "@graphql/root/mutation/onchain-payment-send"
 import OnChainUsdPaymentSendMutation from "@graphql/root/mutation/onchain-usd-payment-send"
+import OnChainUsdPaymentSendAsBtcDenominatedMutation from "@graphql/root/mutation/onchain-usd-payment-send-as-sats"
 import OnChainPaymentSendAllMutation from "@graphql/root/mutation/onchain-payment-send-all"
 import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-request-auth-code"
 import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
@@ -84,6 +85,8 @@ export const mutationFields = {
       onChainAddressCurrent: OnChainAddressCurrentMutation,
       onChainPaymentSend: OnChainPaymentSendMutation,
       onChainUsdPaymentSend: OnChainUsdPaymentSendMutation,
+      onChainUsdPaymentSendAsBtcDenominated:
+        OnChainUsdPaymentSendAsBtcDenominatedMutation,
       onChainPaymentSendAll: OnChainPaymentSendAllMutation,
     },
   },

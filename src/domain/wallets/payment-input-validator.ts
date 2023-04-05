@@ -1,6 +1,7 @@
 import { AccountStatus } from "@domain/accounts"
-import { checkedToCurrencyBaseAmount } from "@domain/bitcoin"
 import { InactiveAccountError, InvalidWalletId, SelfPaymentError } from "@domain/errors"
+import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
+import { WalletCurrency } from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
 
 export const PaymentInputValidator = (
@@ -8,13 +9,11 @@ export const PaymentInputValidator = (
 ): PaymentInputValidator => {
   const validatePaymentInput = async <T extends undefined | string>({
     amount,
+    amountCurrency: amountCurrencyRaw,
     senderWalletId: uncheckedSenderWalletId,
     senderAccount,
     recipientWalletId: uncheckedRecipientWalletId,
   }: ValidatePaymentInputArgs<T>) => {
-    const validAmount = checkedToCurrencyBaseAmount(amount)
-    if (validAmount instanceof Error) return validAmount
-
     if (senderAccount.status !== AccountStatus.Active) {
       return new InactiveAccountError(senderAccount.id)
     }
@@ -26,6 +25,13 @@ export const PaymentInputValidator = (
     if (senderWallet instanceof Error) return senderWallet
 
     if (senderWallet.accountId !== senderAccount.id) return new InvalidWalletId()
+
+    const amountCurrency = amountCurrencyRaw || senderWallet.currency
+    const validAmount =
+      amountCurrency === WalletCurrency.Btc
+        ? checkedToBtcPaymentAmount(amount)
+        : checkedToUsdPaymentAmount(amount)
+    if (validAmount instanceof Error) return validAmount
 
     if (uncheckedRecipientWalletId) {
       const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)

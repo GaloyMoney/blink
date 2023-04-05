@@ -13,13 +13,16 @@ import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
-  InvalidCurrencyBaseAmountError,
   LessThanDustThresholdError,
   LimitsExceededError,
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
+import {
+  InvalidBtcPaymentAmountError,
+  InvalidZeroAmountPriceRatioInputError,
+  WalletPriceRatio,
+} from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -145,7 +148,9 @@ const payOnChainForPromiseAll = async (
   const res =
     senderCurrency === WalletCurrency.Btc
       ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
-      : await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
+      : args.amountCurrency === WalletCurrency.Usd
+      ? await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
+      : await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount(payArgs)
   if (res instanceof Error) throw res
   return res
 }
@@ -154,11 +159,13 @@ const testExternalSend = async ({
   senderAccount,
   senderWalletId,
   amount,
+  amountCurrency,
   sendAll,
 }: {
   senderAccount: Account
   senderWalletId: WalletId
   amount: Satoshis | UsdCents
+  amountCurrency: WalletCurrency
   sendAll: boolean
 }) => {
   const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
@@ -185,13 +192,26 @@ const testExternalSend = async ({
   if (senderWallet instanceof Error) return senderWallet
 
   let amountToSendSats: number = amountToSend
-  if (senderWallet.currency !== WalletCurrency.Btc) {
-    const amountResult = await dealerFns.getSatsFromCentsForImmediateSell({
+  let priceRatio: WalletPriceRatio | undefined = undefined
+  if (
+    senderWallet.currency === WalletCurrency.Usd &&
+    senderWallet.currency === amountCurrency
+  ) {
+    const usdPaymentAmount = {
       amount: BigInt(amountToSend),
       currency: WalletCurrency.Usd,
-    })
+    }
+    const amountResult = await dealerFns.getSatsFromCentsForImmediateSell(
+      usdPaymentAmount,
+    )
     if (amountResult instanceof Error) return amountResult
     amountToSendSats = Number(amountResult.amount)
+
+    if (amountToSend > 0) {
+      const priceRatioRaw = WalletPriceRatio({ usd: usdPaymentAmount, btc: amountResult })
+      if (priceRatioRaw instanceof Error) throw priceRatioRaw
+      priceRatio = priceRatioRaw
+    }
   }
 
   const minerFee =
@@ -214,6 +234,7 @@ const testExternalSend = async ({
         senderWalletId,
         address,
         amount,
+        amountCurrency,
         targetConfirmations,
         memo: null,
         sendAll,
@@ -232,8 +253,31 @@ const testExternalSend = async ({
   // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
   // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
-  let pendingTxHash: OnChainTxHash
+  let txnAmount = amount
+  if (
+    senderWallet.currency === WalletCurrency.Usd &&
+    senderWallet.currency !== amountCurrency
+  ) {
+    const btcPaymentAmount = {
+      amount: BigInt(amount),
+      currency: WalletCurrency.Btc,
+    }
+    const usdPaymentAmount = await dealerFns.getCentsFromSatsForImmediateSell(
+      btcPaymentAmount,
+    )
+    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+    txnAmount = toCents(usdPaymentAmount.amount)
 
+    const priceRatioRaw = WalletPriceRatio({
+      usd: usdPaymentAmount,
+      btc: btcPaymentAmount,
+    })
+    if (priceRatioRaw instanceof Error) throw priceRatioRaw
+
+    priceRatio = priceRatioRaw
+  }
+
+  let pendingTxHash: OnChainTxHash
   {
     const txResult = await getTransactionsForWalletId(senderWalletId)
     if (txResult.error instanceof Error || txResult.result === null) {
@@ -259,8 +303,10 @@ const testExternalSend = async ({
       expect(pendingTx.settlementAmount).toBe(-initialWalletBalance)
       expect(interimBalance).toBe(0)
     } else {
-      expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
-      expect(interimBalance).toBe(initialWalletBalance - amount - pendingTx.settlementFee)
+      expect(pendingTx.settlementAmount).toBe(-txnAmount - pendingTx.settlementFee)
+      expect(interimBalance).toBe(
+        initialWalletBalance - txnAmount - pendingTx.settlementFee,
+      )
     }
 
     pendingTxHash = pendingTx.id as OnChainTxHash
@@ -297,13 +343,15 @@ const testExternalSend = async ({
     const settledTx = settledTxs[0]
 
     const feeRates = getFeesConfig()
-    let fee: number = feeRates.withdrawDefaultMin + minerFee
-    if (senderWallet.currency !== WalletCurrency.Btc) {
-      const feeResult = await dealerFns.getCentsFromSatsForImmediateSell({
+    const feeSats: number = feeRates.withdrawDefaultMin + minerFee
+
+    let fee = feeSats
+    if (senderWallet.currency === WalletCurrency.Usd) {
+      if (priceRatio === undefined) throw new Error("Unexpected undefined priceRatio")
+      const feeResult = await priceRatio.convertFromBtcToCeil({
         amount: BigInt(fee),
         currency: WalletCurrency.Btc,
       })
-      if (feeResult instanceof Error) throw feeResult
       fee = Number(feeResult.amount)
     }
 
@@ -325,8 +373,8 @@ const testExternalSend = async ({
       expect(settledTx.settlementAmount).toBe(-initialWalletBalance)
       expect(finalBalance).toBe(0)
     } else {
-      expect(settledTx.settlementAmount).toBe(-amount - fee)
-      expect(finalBalance).toBe(initialWalletBalance - amount - fee)
+      expect(settledTx.settlementAmount).toBe(-txnAmount - fee)
+      expect(finalBalance).toBe(initialWalletBalance - txnAmount - fee)
     }
 
     // Check ledger transaction metadata for USD & BTC 'LedgerTransactionType.OnchainPayment'
@@ -343,30 +391,46 @@ const testExternalSend = async ({
     expect(txnPayment).not.toBeUndefined()
 
     let debit, satsAmount, centsAmount, satsFee, centsFee
-    if (senderWallet.currency === WalletCurrency.Btc) {
+    if (amountCurrency === WalletCurrency.Btc) {
       satsAmount = sendAll ? amountToSend - fee : amountToSend
-      const centsPaymentAmount = await usdFromBtcMidPriceFn({
+      const btcPaymentAmount = {
         amount: BigInt(satsAmount),
         currency: WalletCurrency.Btc,
-      })
-      if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
-      centsAmount = toCents(centsPaymentAmount.amount)
+      }
+      if (senderWallet.currency === WalletCurrency.Btc) {
+        const centsPaymentAmount = await usdFromBtcMidPriceFn(btcPaymentAmount)
+        if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
+        centsAmount = toCents(centsPaymentAmount.amount)
 
-      satsFee = fee
+        satsFee = fee
 
-      const priceRatio = WalletPriceRatio({
-        usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
-        btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
-      })
-      if (priceRatio instanceof Error) throw priceRatio
-      const centsFeeAmount = priceRatio.convertFromBtcToCeil({
-        amount: BigInt(satsFee),
-        currency: WalletCurrency.Btc,
-      })
-      centsFee = toCents(centsFeeAmount.amount)
+        const priceRatio = WalletPriceRatio({
+          usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
+          btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
+        })
+        if (priceRatio instanceof Error) throw priceRatio
+        const centsFeeAmount = priceRatio.convertFromBtcToCeil({
+          amount: BigInt(satsFee),
+          currency: WalletCurrency.Btc,
+        })
+        centsFee = toCents(centsFeeAmount.amount)
 
-      debit = satsAmount + satsFee
-    } else {
+        debit = satsAmount + satsFee
+      } else {
+        const centsPaymentAmount = await dealerFns.getCentsFromSatsForImmediateSell(
+          btcPaymentAmount,
+        )
+        if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
+        centsAmount = toCents(centsPaymentAmount.amount)
+
+        centsFee = fee
+        satsFee = feeSats
+
+        debit = centsAmount + centsFee
+      }
+    }
+
+    if (amountCurrency === WalletCurrency.Usd) {
       centsAmount = sendAll ? amountToSend - fee : amountToSend
 
       const btcAmount = await dealerFns.getSatsFromCentsForImmediateSell({
@@ -423,7 +487,8 @@ const testExternalSend = async ({
 
     // Check notification sent
     // ===
-    const amountForNotification = sendAll ? amountToSend - fee : amountToSend
+    const amountForNotification =
+      senderWallet.currency === WalletCurrency.Btc ? satsAmount : centsAmount
 
     const paymentAmount = {
       amount: BigInt(amountForNotification),
@@ -460,14 +525,17 @@ const testInternalSend = async ({
   senderWalletId,
   recipientWalletId,
   senderAmount,
+  amountCurrency,
 }: {
   senderAccount: Account
   senderWalletId: WalletId
   recipientWalletId: WalletId
   senderAmount: Satoshis | UsdCents
+  amountCurrency: WalletCurrency
 }) => {
   const sendAll = false
   const fee = 0
+  const feeSats = 0
 
   const memo = "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
 
@@ -481,13 +549,44 @@ const testInternalSend = async ({
 
   let amountResult: PaymentAmount<WalletCurrency> | DealerPriceServiceError
   let recipientAmount: number
+  let senderAmountRecorded = senderAmount
   switch (true) {
     case senderCurrency === recipientCurrency:
+      if (senderCurrency === WalletCurrency.Usd && senderCurrency !== amountCurrency) {
+        // USD sender, BTC amount
+        const btcPaymentAmount = {
+          amount: BigInt(senderAmount),
+          currency: WalletCurrency.Btc,
+        }
+        const amountResult = await usdFromBtcMidPriceFn(btcPaymentAmount)
+        if (amountResult instanceof Error) throw amountResult
+
+        senderAmountRecorded = toCents(amountResult.amount)
+        recipientAmount = senderAmountRecorded
+        break
+      }
+
       recipientAmount = senderAmount
       break
 
     case senderCurrency === WalletCurrency.Usd &&
       recipientCurrency === WalletCurrency.Btc:
+      if (senderCurrency !== amountCurrency) {
+        // USD sender, BTC amount
+        const btcPaymentAmount = {
+          amount: BigInt(senderAmount),
+          currency: WalletCurrency.Btc,
+        }
+        const amountResult = await dealerFns.getCentsFromSatsForImmediateSell(
+          btcPaymentAmount,
+        )
+        if (amountResult instanceof Error) throw amountResult
+
+        senderAmountRecorded = toCents(amountResult.amount)
+        recipientAmount = senderAmount
+        break
+      }
+
       amountResult = await dealerFns.getSatsFromCentsForImmediateSell({
         amount: BigInt(senderAmount),
         currency: WalletCurrency.Usd,
@@ -530,9 +629,11 @@ const testInternalSend = async ({
     sendAll,
   }
   const paid =
-    senderWallet.currency === WalletCurrency.Btc
+    senderCurrency === WalletCurrency.Btc
       ? await Wallets.payOnChainByWalletIdForBtcWallet(sendArgs)
-      : await Wallets.payOnChainByWalletIdForUsdWallet(sendArgs)
+      : amountCurrency === WalletCurrency.Usd
+      ? await Wallets.payOnChainByWalletIdForUsdWallet(sendArgs)
+      : await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount(sendArgs)
   if (paid instanceof Error) return paid
 
   // Check balances for both wallets
@@ -541,7 +642,7 @@ const testInternalSend = async ({
   const finalRecipient = await getBalanceHelper(recipientWalletId)
 
   expect(paid).toBe(PaymentSendStatus.Success)
-  expect(finalSenderBalance).toBe(initialSenderBalance - senderAmount)
+  expect(finalSenderBalance).toBe(initialSenderBalance - senderAmountRecorded)
   expect(finalRecipient).toBe(initialRecipientBalance + recipientAmount)
 
   // Check txn details for sent wallet
@@ -566,7 +667,7 @@ const testInternalSend = async ({
   const senderSettledTx = settledTxsSender[0]
 
   expect(senderSettledTx.settlementFee).toBe(0)
-  expect(senderSettledTx.settlementAmount).toBe(-senderAmount)
+  expect(senderSettledTx.settlementAmount).toBe(-senderAmountRecorded)
   expect(senderSettledTx.settlementDisplayPrice.base).toBeGreaterThan(0n)
 
   const senderSettledLedgerTx = await LedgerService().getTransactionById(
@@ -656,35 +757,51 @@ const testInternalSend = async ({
   const amountToSend = senderAmount
 
   let debit, satsAmount, centsAmount, satsFee, centsFee
-  if (senderWallet.currency === WalletCurrency.Btc) {
+  if (amountCurrency === WalletCurrency.Btc) {
     satsAmount = sendAll ? amountToSend - fee : amountToSend
     const btcPaymentAmount = {
       amount: BigInt(satsAmount),
       currency: WalletCurrency.Btc,
     }
-    const centsPaymentAmount =
-      senderCurrency === recipientCurrency
-        ? await usdFromBtcMidPriceFn(btcPaymentAmount)
-        : await dealerFns.getCentsFromSatsForImmediateBuy(btcPaymentAmount)
+    if (senderWallet.currency === WalletCurrency.Btc) {
+      const centsPaymentAmount =
+        senderCurrency === recipientCurrency
+          ? await usdFromBtcMidPriceFn(btcPaymentAmount)
+          : await dealerFns.getCentsFromSatsForImmediateBuy(btcPaymentAmount)
 
-    if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
-    centsAmount = toCents(centsPaymentAmount.amount)
+      if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
+      centsAmount = toCents(centsPaymentAmount.amount)
 
-    satsFee = fee
+      satsFee = fee
 
-    const priceRatio = WalletPriceRatio({
-      usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
-      btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
-    })
-    if (priceRatio instanceof Error) throw priceRatio
-    const centsFeeAmount = priceRatio.convertFromBtcToCeil({
-      amount: BigInt(satsFee),
-      currency: WalletCurrency.Btc,
-    })
-    centsFee = toCents(centsFeeAmount.amount)
+      const priceRatio = WalletPriceRatio({
+        usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
+        btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
+      })
+      if (priceRatio instanceof Error) throw priceRatio
+      const centsFeeAmount = priceRatio.convertFromBtcToCeil({
+        amount: BigInt(satsFee),
+        currency: WalletCurrency.Btc,
+      })
+      centsFee = toCents(centsFeeAmount.amount)
 
-    debit = satsAmount + satsFee
-  } else {
+      debit = satsAmount + satsFee
+    } else {
+      const centsPaymentAmount =
+        senderCurrency === recipientCurrency
+          ? await usdFromBtcMidPriceFn(btcPaymentAmount)
+          : await dealerFns.getCentsFromSatsForImmediateSell(btcPaymentAmount)
+      if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
+      centsAmount = toCents(centsPaymentAmount.amount)
+
+      centsFee = fee
+      satsFee = feeSats
+
+      debit = centsAmount + centsFee
+    }
+  }
+
+  if (amountCurrency === WalletCurrency.Usd) {
     centsAmount = sendAll ? amountToSend - fee : amountToSend
     const usdPaymentAmount = {
       amount: BigInt(centsAmount),
@@ -746,6 +863,7 @@ describe("BtcWallet - onChainPay", () => {
       senderAccount: accountA,
       senderWalletId: walletIdA,
       amount,
+      amountCurrency: WalletCurrency.Btc,
       sendAll: false,
     })
     expect(res).not.toBeInstanceOf(Error)
@@ -756,6 +874,7 @@ describe("BtcWallet - onChainPay", () => {
       senderAccount: accountE,
       senderWalletId: walletIdE,
       amount,
+      amountCurrency: WalletCurrency.Btc,
       sendAll: true,
     })
     expect(res).not.toBeInstanceOf(Error)
@@ -766,6 +885,7 @@ describe("BtcWallet - onChainPay", () => {
       senderAccount: accountE,
       senderWalletId: walletIdE,
       amount,
+      amountCurrency: WalletCurrency.Btc,
       sendAll: true,
     })
 
@@ -842,6 +962,7 @@ describe("BtcWallet - onChainPay", () => {
       senderWalletId: walletIdA,
       recipientWalletId: walletIdD,
       senderAmount: amount,
+      amountCurrency: WalletCurrency.Btc,
     })
     expect(res).not.toBeInstanceOf(Error)
   })
@@ -852,6 +973,7 @@ describe("BtcWallet - onChainPay", () => {
       senderWalletId: walletIdA,
       recipientWalletId: walletIdD,
       senderAmount: toSats(amountBelowDustThreshold),
+      amountCurrency: WalletCurrency.Btc,
     })
     expect(res).not.toBeInstanceOf(Error)
   })
@@ -1017,6 +1139,7 @@ describe("BtcWallet - onChainPay", () => {
       senderWalletId: walletIdA,
       recipientWalletId: walletIdA,
       senderAmount: amount,
+      amountCurrency: WalletCurrency.Btc,
     })
     expect(res).toBeInstanceOf(SelfPaymentError)
   })
@@ -1027,6 +1150,7 @@ describe("BtcWallet - onChainPay", () => {
       senderWalletId: walletIdE,
       recipientWalletId: walletIdD,
       senderAmount: amount,
+      amountCurrency: WalletCurrency.Btc,
     })
     expect(res).toBeInstanceOf(InsufficientBalanceError)
   })
@@ -1098,7 +1222,7 @@ describe("BtcWallet - onChainPay", () => {
       memo: null,
       sendAll: false,
     })
-    expect(status).toBeInstanceOf(InvalidCurrencyBaseAmountError)
+    expect(status).toBeInstanceOf(InvalidBtcPaymentAmountError)
   })
 
   it("fails if withdrawal limit hit", async () => {
@@ -1181,25 +1305,10 @@ describe("BtcWallet - onChainPay", () => {
 
 describe("UsdWallet - onChainPay", () => {
   describe("to an internal address", () => {
-    it("sends from usd wallet to usd wallet", async () => {
-      const res = await testInternalSend({
-        senderAccount: accountB,
-        senderWalletId: walletIdUsdB,
-        recipientWalletId: walletIdUsdA,
-        senderAmount: usdAmount,
-      })
-      expect(res).not.toBeInstanceOf(Error)
-    })
-
-    it("sends from usd wallet to btc wallet", async () => {
-      const res = await testInternalSend({
-        senderAccount: accountB,
-        senderWalletId: walletIdUsdB,
-        recipientWalletId: walletIdA,
-        senderAmount: usdAmount,
-      })
-      expect(res).not.toBeInstanceOf(Error)
-    })
+    const amountCases = [
+      { amountCurrency: WalletCurrency.Usd, senderAmount: usdAmount },
+      { amountCurrency: WalletCurrency.Btc, senderAmount: amount },
+    ]
 
     it("sends from btc wallet to usd wallet", async () => {
       const res = await testInternalSend({
@@ -1207,6 +1316,7 @@ describe("UsdWallet - onChainPay", () => {
         senderWalletId: walletIdA,
         recipientWalletId: walletIdUsdB,
         senderAmount: amount,
+        amountCurrency: WalletCurrency.Btc,
       })
       expect(res).not.toBeInstanceOf(Error)
     })
@@ -1228,8 +1338,35 @@ describe("UsdWallet - onChainPay", () => {
         senderWalletId: walletIdA,
         recipientWalletId: walletIdUsdB,
         senderAmount: btcSendAmount,
+        amountCurrency: WalletCurrency.Btc,
       })
       expect(res).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+    })
+
+    amountCases.forEach(({ amountCurrency, senderAmount }) => {
+      describe(`with ${amountCurrency} amount currency`, () => {
+        it("sends from usd wallet to usd wallet", async () => {
+          const res = await testInternalSend({
+            senderAccount: accountB,
+            senderWalletId: walletIdUsdB,
+            recipientWalletId: walletIdUsdA,
+            senderAmount,
+            amountCurrency,
+          })
+          expect(res).not.toBeInstanceOf(Error)
+        })
+
+        it("sends from usd wallet to btc wallet", async () => {
+          const res = await testInternalSend({
+            senderAccount: accountB,
+            senderWalletId: walletIdUsdB,
+            recipientWalletId: walletIdA,
+            senderAmount,
+            amountCurrency,
+          })
+          expect(res).not.toBeInstanceOf(Error)
+        })
+      })
     })
   })
 
@@ -1239,6 +1376,18 @@ describe("UsdWallet - onChainPay", () => {
         senderAccount: accountB,
         senderWalletId: walletIdUsdB,
         amount: usdAmount,
+        amountCurrency: WalletCurrency.Usd,
+        sendAll: false,
+      })
+      expect(res).not.toBeInstanceOf(Error)
+    })
+
+    it("send sats from usd wallet", async () => {
+      const res = await testExternalSend({
+        senderAccount: accountB,
+        senderWalletId: walletIdUsdB,
+        amount,
+        amountCurrency: WalletCurrency.Btc,
         sendAll: false,
       })
       expect(res).not.toBeInstanceOf(Error)
@@ -1249,6 +1398,7 @@ describe("UsdWallet - onChainPay", () => {
         senderAccount: accountB,
         senderWalletId: walletIdUsdB,
         amount: usdAmount,
+        amountCurrency: WalletCurrency.Usd,
         sendAll: true,
       })
       expect(res).not.toBeInstanceOf(Error)
@@ -1259,6 +1409,7 @@ describe("UsdWallet - onChainPay", () => {
         senderAccount: accountB,
         senderWalletId: walletIdUsdB,
         amount: usdAmount,
+        amountCurrency: WalletCurrency.Usd,
         sendAll: true,
       })
 

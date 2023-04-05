@@ -2,13 +2,10 @@ import crypto from "crypto"
 
 import { DisplayCurrency } from "@domain/fiat"
 import { AccountLevel, AccountStatus } from "@domain/accounts"
-import {
-  InvalidAccountStatusError,
-  InvalidCurrencyBaseAmountError,
-  SelfPaymentError,
-} from "@domain/errors"
+import { InvalidAccountStatusError, SelfPaymentError } from "@domain/errors"
 import { PaymentInputValidator, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
+import { InvalidBtcPaymentAmountError } from "@domain/payments"
 
 describe("PaymentInputValidator", () => {
   const dummyAccount: Account = {
@@ -65,6 +62,7 @@ describe("PaymentInputValidator", () => {
     const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
     const result = await validator.validatePaymentInput({
       amount: 2,
+      amountCurrency: WalletCurrency.Btc,
       senderWalletId: dummySenderWallet.id,
       senderAccount: dummyAccount,
       recipientWalletId: dummyRecipientWallet.id,
@@ -72,7 +70,7 @@ describe("PaymentInputValidator", () => {
     if (result instanceof Error) throw result
 
     const { amount, senderWallet, recipientWallet } = result
-    expect(amount).toBe(2)
+    expect(amount).toStrictEqual({ amount: 2n, currency: WalletCurrency.Btc })
     expect(senderWallet).toEqual(expect.objectContaining(dummySenderWallet))
     expect(recipientWallet).toEqual(expect.objectContaining(dummyRecipientWallet))
   })
@@ -81,17 +79,19 @@ describe("PaymentInputValidator", () => {
     const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
     const result = await validator.validatePaymentInput({
       amount: -1,
+      amountCurrency: WalletCurrency.Btc,
       senderWalletId: dummySenderWallet.id,
       senderAccount: dummyAccount,
       recipientWalletId: dummyRecipientWallet.id,
     })
-    expect(result).toBeInstanceOf(InvalidCurrencyBaseAmountError)
+    expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
   })
 
   it("Fails when sender === recipient", async () => {
     const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
     const result = await validator.validatePaymentInput({
       amount: 2,
+      amountCurrency: WalletCurrency.Btc,
       senderWalletId: dummySenderWallet.id,
       senderAccount: dummyAccount,
       recipientWalletId: dummySenderWallet.id,
@@ -103,6 +103,7 @@ describe("PaymentInputValidator", () => {
     const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
     const result = await validator.validatePaymentInput({
       amount: 2,
+      amountCurrency: WalletCurrency.Btc,
       senderWalletId: dummySenderWallet.id,
       senderAccount: {
         ...dummyAccount,

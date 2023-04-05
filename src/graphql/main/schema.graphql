@@ -736,6 +736,9 @@ type Mutation {
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
+  onChainUsdPaymentSendAsBtcDenominated(
+    input: OnChainUsdPaymentSendAsBtcDenominatedInput!
+  ): PaymentSendPayload!
   quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
@@ -813,6 +816,14 @@ type OnChainUpdate {
   txHash: OnChainTxHash!
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
+  walletId: WalletId!
+}
+
+input OnChainUsdPaymentSendAsBtcDenominatedInput {
+  address: OnChainAddress!
+  amount: SatAmount!
+  memo: Memo
+  targetConfirmations: TargetConfirmations = 1
   walletId: WalletId!
 }
 
