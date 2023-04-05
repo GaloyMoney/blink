@@ -14,6 +14,9 @@ export class PhoneCodeInvalidError extends PhoneProviderServiceError {}
 export class PhoneProviderConnectionError extends PhoneProviderServiceError {
   level = ErrorLevel.Warn
 }
+export class PhoneProviderUnavailableError extends PhoneProviderServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownPhoneProviderServiceError extends PhoneProviderServiceError {
   level = ErrorLevel.Critical
 }

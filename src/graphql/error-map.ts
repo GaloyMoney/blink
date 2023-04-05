@@ -146,6 +146,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "PhoneProviderConnectionError":
+    case "PhoneProviderUnavailableError":
       message = "Phone provider temporarily unreachable"
       return new PhoneProviderError({ message, logger: baseLogger })
 
