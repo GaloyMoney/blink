@@ -1019,6 +1019,12 @@ type Query {
     targetConfirmations: TargetConfirmations = 1
     walletId: WalletId!
   ): OnChainUsdTxFee!
+  onChainUsdTxFeeAsBtcDenominated(
+    address: OnChainAddress!
+    amount: SatAmount!
+    targetConfirmations: TargetConfirmations = 1
+    walletId: WalletId!
+  ): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion]
     @deprecated(
       reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated"
