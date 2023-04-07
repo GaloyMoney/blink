@@ -10,6 +10,7 @@ import RealtimePriceQuery from "@graphql/root/query/realtime-price"
 import MobileVersionsQuery from "@graphql/root/query/mobile-versions"
 import OnChainTxFeeQuery from "@graphql/root/query/on-chain-tx-fee-query"
 import OnChainUsdTxFeeQuery from "@graphql/root/query/on-chain-usd-tx-fee-query"
+import OnChainUsdTxFeeAsBtcDenominatedQuery from "@graphql/root/query/on-chain-usd-tx-fee-query-as-sats"
 import UsernameAvailableQuery from "@graphql/root/query/username-available"
 import BusinessMapMarkersQuery from "@graphql/root/query/business-map-markers"
 import AccountDefaultWalletQuery from "@graphql/root/query/account-default-wallet"
@@ -38,6 +39,7 @@ export const queryFields = {
     atWalletLevel: {
       onChainTxFee: OnChainTxFeeQuery,
       onChainUsdTxFee: OnChainUsdTxFeeQuery,
+      onChainUsdTxFeeAsBtcDenominated: OnChainUsdTxFeeAsBtcDenominatedQuery,
     },
   },
 } as const
