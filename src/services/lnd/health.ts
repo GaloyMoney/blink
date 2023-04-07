@@ -43,7 +43,7 @@ const isLndUp = async (param: LndConnect): Promise<void> => {
     lndStatusEvent.emit("stopped", param)
   }
 
-  baseLogger.debug({ socket, active, pastStateActive }, "lnd pulse")
+  baseLogger.trace({ socket, active, pastStateActive }, "lnd pulse")
 }
 
 export const isUp = isLndUp
