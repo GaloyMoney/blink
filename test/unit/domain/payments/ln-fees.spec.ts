@@ -1,4 +1,4 @@
-import { AmountCalculator, ONE_SAT, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, ONE_CENT, ONE_SAT, WalletCurrency } from "@domain/shared"
 import { LnFees, WalletPriceRatio } from "@domain/payments"
 import { MaxFeeTooLargeForRoutelessPaymentError } from "@domain/bitcoin/lightning"
 
@@ -94,7 +94,7 @@ describe("LnFees", () => {
     it("correctly verifies 1 sat Usd payment", () => {
       expect(
         LnFees().verifyMaxFee({
-          maxFeeAmount: validUsdMaxFeeInBtcToVerify,
+          maxFeeAmount: priceRatio.convertFromUsd(ONE_CENT),
           btcPaymentAmount: ONE_SAT,
           priceRatio,
           senderWalletCurrency: WalletCurrency.Usd,
