@@ -42,11 +42,11 @@ describe("LnFees", () => {
 
   describe("verifyMaxFee", () => {
     const btc = {
-      amount: 4995n,
+      amount: 871_652n,
       currency: WalletCurrency.Btc,
     }
     const usd = {
-      amount: 100n,
+      amount: 24_346n,
       currency: WalletCurrency.Usd,
     }
 
