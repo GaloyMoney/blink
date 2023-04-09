@@ -552,6 +552,17 @@ export const startApolloServer = async ({
       console.log(
         `🚀 "${type}" server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
       )
+
+      if (isDev) {
+        console.log(
+          `in dev mode, ${type} server should be access through oathkeeper reverse proxy at ${
+            type === "admin"
+              ? "http://localhost::4002/admin/graphql"
+              : "http://localhost::4002/graphql"
+          }`,
+        )
+      }
+
       resolve({ app, httpServer, apolloServer })
     })
 

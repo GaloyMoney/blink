@@ -1,22 +1,25 @@
 # Dev environment
 
-- [Setup](#setup)
-- [Runtime dependencies](#runtime-dependencies)
-- [Development](#development)
-- [Config](#config)
-- [Using GraphQL Playground](#using-graphql-playground)
-- [Docker compose](#docker-compose)
-- [Testing](#testing)
-  - [Unit Tests](#run-unit-tests)
-  - [Integrations Tests](#run-integration-tests)
-  - [E2E Tests](#run-e2e-tests)
-  - [Run specific test file](#run-specific-test-file)
-- [Migrations](#migrations)
-  - [Testing migrations](#testing-migrations)
-  - [Create a new migration](#create-a-new-migration)
-- [Known issues](#known-issues)
-- [Running checks](#running-checks)
-- [Contributing](#contributing)
+- [Dev environment](#dev-environment)
+  - [Setup](#setup)
+    - [Runtime dependencies](#runtime-dependencies)
+  - [Development](#development)
+    - [Config](#config)
+    - [Using GraphQL Playground](#using-graphql-playground)
+    - [Docker compose](#docker-compose)
+  - [Testing](#testing)
+    - [Run unit tests](#run-unit-tests)
+    - [Run integration tests](#run-integration-tests)
+    - [Run e2e tests](#run-e2e-tests)
+    - [Run specific test file](#run-specific-test-file)
+      - [Unit](#unit)
+      - [Integration](#integration)
+  - [Migrations](#migrations)
+    - [Testing migrations](#testing-migrations)
+      - [Create a new migration](#create-a-new-migration)
+    - [Known issues](#known-issues)
+  - [Running checks](#running-checks)
+  - [Contributing](#contributing)
 
 ## Setup
 
@@ -98,7 +101,7 @@ fees:
 You can load the Apollo GraphQL Playground, a web GUI for GraphQL. Start the server and open the following url:
 
 - http://localhost:4002/admin/graphql (admin API, proxied thru oathkeeper)
-- http://localhost:4002/graphql (end user API)
+- http://localhost:4002/graphql (end user API, proxied thru oathkeeper)
 
 ### Docker compose
 
