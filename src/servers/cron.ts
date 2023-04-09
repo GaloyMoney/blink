@@ -88,18 +88,15 @@ const main = async () => {
 
   for (const task of tasks) {
     try {
-      const fn = async () => {
-        const result = await task()
-        addAttributesToCurrentSpan({ jobCompleted: "true" })
-        return result
-      }
-      Object.defineProperty(fn, "name", { value: task.name })
-
-      logger.info(`starting ${fn.name}`)
+      logger.info(`starting ${task.name}`)
       const wrappedTask = wrapAsyncToRunInSpan({
         namespace: "cron",
         spanAttributes: { jobCompleted: "false" },
-        fn,
+        fn: async () => {
+          const result = await task()
+          addAttributesToCurrentSpan({ jobCompleted: "true" })
+          return result
+        },
       })
       await wrappedTask()
       results.push(true)
