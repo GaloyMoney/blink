@@ -168,8 +168,7 @@ if (require.main === module) {
     .then(async () => {
       // TODO: handle disposition on SIGTERM
       server()
+      console.log(`🚀 websocket server ready at http://localhost:${port}${path}`)
     })
     .catch((err) => baseLogger.error(err, "ws server error"))
 }
-
-console.log(`🚀 websocket server ready at http://localhost:${port}${path}`)
