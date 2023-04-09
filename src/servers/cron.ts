@@ -1,4 +1,4 @@
-import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import {
   deleteExpiredLightningPaymentFlows,
@@ -89,15 +89,7 @@ const main = async () => {
   for (const task of tasks) {
     try {
       logger.info(`starting ${task.name}`)
-      const wrappedTask = wrapAsyncToRunInSpan({
-        namespace: "cron",
-        spanAttributes: { jobCompleted: "false" },
-        fn: async () => {
-          const result = await task()
-          addAttributesToCurrentSpan({ jobCompleted: "true" })
-          return result
-        },
-      })
+      const wrappedTask = wrapAsyncToRunInSpan({ namespace: "cron", fn: task })
       await wrappedTask()
       results.push(true)
     } catch (error) {
