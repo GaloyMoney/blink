@@ -1,4 +1,4 @@
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import {
   deleteExpiredLightningPaymentFlows,
@@ -17,6 +17,7 @@ import { BtcNetwork } from "@domain/bitcoin"
 
 import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
 import { extendSessions } from "@app/auth"
+import { sleep } from "@utils"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -89,7 +90,46 @@ const main = async () => {
   for (const task of tasks) {
     try {
       logger.info(`starting ${task.name}`)
-      const wrappedTask = wrapAsyncToRunInSpan({ namespace: "cron", fn: task })
+
+      const wrappedTask = wrapAsyncToRunInSpan({
+        namespace: "cron",
+        fnName: task.name,
+        fn: async () => {
+          const span = addAttributesToCurrentSpan({ jobCompleted: "false" })
+
+          const signalHandler = async () => {
+            const finishDelay = 1
+
+            logger.info(`Received SIGINT signal. Finishing span...`)
+            span?.end()
+            await sleep(finishDelay)
+            logger.info(`Finished span after setTimeout '${finishDelay}'`)
+
+            process.exit()
+          }
+          process.on("SIGINT", signalHandler)
+
+          // Alway remove listener on loop continue, else signalHandler will target incorrect span
+          try {
+            if (task.name === "extendSessions") {
+              console.log("Sleeping...")
+              await sleep(30_000)
+            }
+            const res = await task()
+
+            process.removeListener("SIGINT", signalHandler)
+            addAttributesToCurrentSpan({ jobCompleted: "true" })
+
+            return res
+          } catch (error) {
+            process.removeListener("SIGINT", signalHandler)
+            addAttributesToCurrentSpan({ jobCompleted: "true" })
+
+            throw error
+          }
+        },
+      })
+
       await wrappedTask()
       results.push(true)
     } catch (error) {
