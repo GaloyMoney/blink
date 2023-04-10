@@ -87,6 +87,7 @@ const main = async () => {
     extendSessions,
   ]
 
+  const PROCESS_KILL_EVENTS = ["SIGINT"]
   for (const task of tasks) {
     try {
       logger.info(`starting ${task.name}`)
@@ -97,6 +98,8 @@ const main = async () => {
         fn: async () => {
           const span = addAttributesToCurrentSpan({ jobCompleted: "false" })
 
+          // Same function reference must be passed to process.on & process.removeListener. Listeners
+          // aren't removed if an anonymous function or different functions are used
           const signalHandler = async () => {
             const finishDelay = 1
 
@@ -107,18 +110,26 @@ const main = async () => {
 
             process.exit()
           }
-          process.on("SIGINT", signalHandler)
 
-          // Alway remove listener on loop continue, else signalHandler will target incorrect span
+          for (const event of PROCESS_KILL_EVENTS) {
+            process.on(event, signalHandler)
+          }
+
+          // Always remove listener on loop continue, else signalHandler could target incorrect span
           try {
             const res = await task()
 
-            process.removeListener("SIGINT", signalHandler)
+            for (const event of PROCESS_KILL_EVENTS) {
+              process.removeListener(event, signalHandler)
+            }
+
             addAttributesToCurrentSpan({ jobCompleted: "true" })
 
             return res
           } catch (error) {
-            process.removeListener("SIGINT", signalHandler)
+            for (const event of PROCESS_KILL_EVENTS) {
+              process.removeListener(event, signalHandler)
+            }
             addAttributesToCurrentSpan({ jobCompleted: "true" })
 
             throw error
