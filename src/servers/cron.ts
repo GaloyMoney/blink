@@ -111,10 +111,6 @@ const main = async () => {
 
           // Alway remove listener on loop continue, else signalHandler will target incorrect span
           try {
-            if (task.name === "extendSessions") {
-              console.log("Sleeping...")
-              await sleep(30_000)
-            }
             const res = await task()
 
             process.removeListener("SIGINT", signalHandler)
