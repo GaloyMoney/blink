@@ -87,7 +87,7 @@ const main = async () => {
     extendSessions,
   ]
 
-  const PROCESS_KILL_EVENTS = ["SIGINT"]
+  const PROCESS_KILL_EVENTS = ["SIGTERM", "SIGINT"]
   for (const task of tasks) {
     try {
       logger.info(`starting ${task.name}`)
