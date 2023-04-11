@@ -1,5 +1,17 @@
-import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
+import { extendSessions } from "@app/auth"
 
+import { getCronConfig, TWO_MONTHS_IN_MS, BTC_NETWORK } from "@config"
+
+import { BtcNetwork } from "@domain/bitcoin"
+import { ErrorLevel } from "@domain/shared"
+import { OperationInterruptedError } from "@domain/errors"
+
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
 import {
   deleteExpiredLightningPaymentFlows,
   deleteExpiredWalletInvoice,
@@ -7,17 +19,12 @@ import {
   updateEscrows,
   updateRoutingRevenues,
 } from "@services/lnd/utils"
+import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
-
 import { activateLndHealthCheck } from "@services/lnd/health"
-import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
-import { getCronConfig, TWO_MONTHS_IN_MS, BTC_NETWORK } from "@config"
-import { BtcNetwork } from "@domain/bitcoin"
 
-import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
-import { extendSessions } from "@app/auth"
-import { sleep } from "@utils"
+import { elapsedSinceTimestamp, sleep } from "@utils"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -61,6 +68,7 @@ const swapOutJob = async () => {
 
 const main = async () => {
   console.log("cronjob started")
+  const start = new Date(Date.now())
 
   const cronConfig = getCronConfig()
   const results: Array<boolean> = []
@@ -104,9 +112,17 @@ const main = async () => {
             const finishDelay = 5_000
 
             logger.info(`Received ${eventName} signal. Finishing span...`)
+            const elapsed = elapsedSinceTimestamp(start)
+            recordExceptionInCurrentSpan({
+              error: new OperationInterruptedError(
+                `Operation was interrupted by '${eventName}' signal after ${elapsed.toLocaleString()}s`,
+              ),
+              level: ErrorLevel.Critical,
+              attributes: { killSignal: eventName, elapsedBeforeKillInSeconds: elapsed },
+            })
             span?.end()
             await sleep(finishDelay)
-            logger.info(`Finished span after setTimeout '${finishDelay}'`)
+            logger.info(`Finished span with '${finishDelay}'ms delay to flush.`)
 
             process.exit()
           }
