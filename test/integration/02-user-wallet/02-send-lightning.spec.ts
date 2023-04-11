@@ -1208,10 +1208,24 @@ describe("UserWallet - Lightning Pay", () => {
             }),
           ).not.toBeInstanceOf(Error)
         }
-
-        const accountRecordA = await getAccountRecordByTestUserRef("A")
-        const accountRecordB = await getAccountRecordByTestUserRef("B")
-        const accountRecordC = await getAccountRecordByTestUserRef("C")
+        accountA.contacts = []
+        accountB.contacts = []
+        accountC.contacts = []
+        await AccountsRepository().update(accountA)
+        await AccountsRepository().update(accountB)
+        await AccountsRepository().update(accountC)
+        let accountRecordA = await getAccountRecordByTestUserRef("A")
+        let accountRecordB = await getAccountRecordByTestUserRef("B")
+        let accountRecordC = await getAccountRecordByTestUserRef("C")
+        expect(accountRecordA.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
+        )
+        expect(accountRecordB.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameC })]),
+        )
+        expect(accountRecordC.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
+        )
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdB,
@@ -1235,6 +1249,10 @@ describe("UserWallet - Lightning Pay", () => {
         //     .mockReturnValueOnce(addProps(inputs.shift()))
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWalletB, walletPayer: userwalletC})
+
+        accountRecordA = await getAccountRecordByTestUserRef("A")
+        accountRecordB = await getAccountRecordByTestUserRef("B")
+        accountRecordC = await getAccountRecordByTestUserRef("C")
         expect(accountRecordA.contacts).toEqual(
           expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
         )
