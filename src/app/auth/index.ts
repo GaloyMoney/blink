@@ -12,17 +12,30 @@ import {
   addAttributesToCurrentSpan,
 } from "@services/tracing"
 
-export const extendSessions = async (): Promise<void | KratosError> => {
+export const extendSessions = async (
+  parentLogger: Logger,
+): Promise<void | KratosError> => {
+  const logger = parentLogger.child({
+    topic: "extendSessions",
+  })
+
   const users = await IdentityRepository().listIdentities()
   if (users instanceof Error) return users
 
   const countOfTotalUsers = users.length
+  logger.info(`Total users: ${countOfTotalUsers}`)
+
   let countOfTotalSessions = 0
   let countOfExtendedSessions = 0
   let countOfExtendedSessionErrors = 0
   let countOfInactiveSessions = 0
 
-  for (const user of users) {
+  for (const [i, user] of users.entries()) {
+    const logInterval = 100
+    if (i % logInterval === 0 || i === users.length - 1) {
+      logger.info(`Processing user at index: ${i}`)
+    }
+
     const sessions = await listSessionsInternal(user.id)
     if (sessions instanceof Error) {
       recordExceptionInCurrentSpan({
@@ -47,6 +60,11 @@ export const extendSessions = async (): Promise<void | KratosError> => {
       hasExtended ? countOfExtendedSessions++ : countOfInactiveSessions++
     }
   }
+  logger.info(`Total sessions: ${countOfTotalSessions}`)
+  logger.info(`Extended sessions: ${countOfExtendedSessions}`)
+  logger.info(`Extended-error sessions: ${countOfExtendedSessionErrors}`)
+  logger.info(`Inactive sessions: ${countOfInactiveSessions}`)
+
   addAttributesToCurrentSpan({
     countOfTotalUsers: countOfTotalUsers === 0 ? "none" : countOfTotalUsers, // *0 does not log in honeycomb properly sometimes, so set to none
     countOfTotalSessions: countOfTotalSessions === 0 ? "none" : countOfTotalSessions,

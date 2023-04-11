@@ -97,6 +97,8 @@ const main = async () => {
 
   const PROCESS_KILL_EVENTS = ["SIGTERM", "SIGINT"]
   for (const task of tasks) {
+    const taskStart = new Date(Date.now())
+
     try {
       logger.info(`starting ${task.name}`)
 
@@ -133,7 +135,7 @@ const main = async () => {
 
           // Always remove listener on loop continue, else signalHandler could target incorrect span
           try {
-            const res = await task()
+            const res = await task(logger)
 
             for (const event of PROCESS_KILL_EVENTS) {
               process.removeListener(event, signalHandler)
@@ -154,9 +156,17 @@ const main = async () => {
       })
 
       await wrappedTask()
+
+      logger.info(
+        `finished ${task.name} in ${elapsedSinceTimestamp(taskStart)}s (success: true)`,
+      )
       results.push(true)
     } catch (error) {
       logger.error({ error }, `issue with task ${task.name}`)
+
+      logger.info(
+        `finished ${task.name} in ${elapsedSinceTimestamp(taskStart)}s (success: false)`,
+      )
       results.push(false)
     }
   }
