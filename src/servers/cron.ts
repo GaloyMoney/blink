@@ -101,7 +101,7 @@ const main = async () => {
           // Same function reference must be passed to process.on & process.removeListener. Listeners
           // aren't removed if an anonymous function or different functions are used
           const signalHandler = async (eventName: string) => {
-            const finishDelay = 1_000
+            const finishDelay = 5_000
 
             logger.info(`Received ${eventName} signal. Finishing span...`)
             span?.end()
