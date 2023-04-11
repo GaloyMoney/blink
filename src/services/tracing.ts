@@ -230,6 +230,7 @@ export const addAttributesToCurrentSpan = (attributes: Attributes) => {
       }
     }
   }
+  return span
 }
 
 export const addEventToCurrentSpan = (

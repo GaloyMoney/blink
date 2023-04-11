@@ -2,6 +2,8 @@ import { ValidationError, DomainError, ErrorLevel } from "./shared"
 
 export class InconsistentDataError extends DomainError {}
 
+export class OperationInterruptedError extends DomainError {}
+
 export class AuthorizationError extends DomainError {}
 
 export class RepositoryError extends DomainError {}

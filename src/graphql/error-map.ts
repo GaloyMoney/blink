@@ -369,6 +369,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LnPaymentPendingError":
     case "LnAlreadyPaidError":
     case "PaymentNotFoundError":
+    case "OperationInterruptedError":
     case "InconsistentDataError":
     case "AuthorizationError":
     case "RepositoryError":

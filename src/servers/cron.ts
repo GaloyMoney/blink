@@ -1,5 +1,17 @@
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
+import { extendSessions } from "@app/auth"
 
+import { getCronConfig, TWO_MONTHS_IN_MS, BTC_NETWORK } from "@config"
+
+import { BtcNetwork } from "@domain/bitcoin"
+import { ErrorLevel } from "@domain/shared"
+import { OperationInterruptedError } from "@domain/errors"
+
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
 import {
   deleteExpiredLightningPaymentFlows,
   deleteExpiredWalletInvoice,
@@ -7,16 +19,12 @@ import {
   updateEscrows,
   updateRoutingRevenues,
 } from "@services/lnd/utils"
+import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
-
 import { activateLndHealthCheck } from "@services/lnd/health"
-import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
-import { getCronConfig, TWO_MONTHS_IN_MS, BTC_NETWORK } from "@config"
-import { BtcNetwork } from "@domain/bitcoin"
 
-import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
-import { extendSessions } from "@app/auth"
+import { elapsedSinceTimestamp, sleep } from "@utils"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -60,6 +68,7 @@ const swapOutJob = async () => {
 
 const main = async () => {
   console.log("cronjob started")
+  const start = new Date(Date.now())
 
   const cronConfig = getCronConfig()
   const results: Array<boolean> = []
@@ -86,10 +95,64 @@ const main = async () => {
     extendSessions,
   ]
 
+  const PROCESS_KILL_EVENTS = ["SIGTERM", "SIGINT"]
   for (const task of tasks) {
     try {
       logger.info(`starting ${task.name}`)
-      const wrappedTask = wrapAsyncToRunInSpan({ namespace: "cron", fn: task })
+
+      const wrappedTask = wrapAsyncToRunInSpan({
+        namespace: "cron",
+        fnName: task.name,
+        fn: async () => {
+          const span = addAttributesToCurrentSpan({ jobCompleted: "false" })
+
+          // Same function reference must be passed to process.on & process.removeListener. Listeners
+          // aren't removed if an anonymous function or different functions are used
+          const signalHandler = async (eventName: string) => {
+            const finishDelay = 5_000
+
+            logger.info(`Received ${eventName} signal. Finishing span...`)
+            const elapsed = elapsedSinceTimestamp(start)
+            recordExceptionInCurrentSpan({
+              error: new OperationInterruptedError(
+                `Operation was interrupted by '${eventName}' signal after ${elapsed.toLocaleString()}s`,
+              ),
+              level: ErrorLevel.Critical,
+              attributes: { killSignal: eventName, elapsedBeforeKillInSeconds: elapsed },
+            })
+            span?.end()
+            await sleep(finishDelay)
+            logger.info(`Finished span with '${finishDelay}'ms delay to flush.`)
+
+            process.exit()
+          }
+
+          for (const event of PROCESS_KILL_EVENTS) {
+            process.on(event, signalHandler)
+          }
+
+          // Always remove listener on loop continue, else signalHandler could target incorrect span
+          try {
+            const res = await task()
+
+            for (const event of PROCESS_KILL_EVENTS) {
+              process.removeListener(event, signalHandler)
+            }
+
+            addAttributesToCurrentSpan({ jobCompleted: "true" })
+
+            return res
+          } catch (error) {
+            for (const event of PROCESS_KILL_EVENTS) {
+              process.removeListener(event, signalHandler)
+            }
+            addAttributesToCurrentSpan({ jobCompleted: "true" })
+
+            throw error
+          }
+        },
+      })
+
       await wrappedTask()
       results.push(true)
     } catch (error) {
