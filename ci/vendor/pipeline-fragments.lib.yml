@@ -89,7 +89,7 @@ plan:
     - path: cargo-home
     - path: cargo-target-dir
     run:
-      path: pipeline-tasks/ci/vendor/tasks/check-code.sh
+      path: pipeline-tasks/ci/vendor/tasks/rust-check-code.sh
 on_failure: #@ slack_failure_notification()
 #@ end
 
@@ -176,7 +176,7 @@ plan:
       SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
       SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
     run:
-      path: pipeline-tasks/ci/vendor/tasks/test-integration.sh
+      path: pipeline-tasks/ci/vendor/tasks/chart-test-integration.sh
 on_failure: #@ slack_failure_notification()
 #@ end
 
@@ -219,7 +219,7 @@ plan:
     outputs:
     - name: repo
     run:
-      path: pipeline-tasks/ci/vendor/tasks/prep-docker-build-env.sh
+      path: pipeline-tasks/ci/vendor/tasks/docker-prep-docker-build-env.sh
 - task: build
   privileged: true
   config:

@@ -1,13 +1,15 @@
 #! Auto synced from Shared CI Resources repository
 #! Don't change this file, instead change it in github.com/GaloyMoney/concourse-shared
 
-name: "Audit"
+name: "Nodejs Check Code"
+
 on:
   pull_request:
     branches: [main]
+
 jobs:
-  audit:
-    name: Audit
+  check-code:
+    name: Nodejs Check Code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,5 +18,5 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "yarn"
       - run: yarn install --frozen-lockfile
-      - name: Run audit
-        run: make audit
+      - name: Run check code
+        run: make check-code
