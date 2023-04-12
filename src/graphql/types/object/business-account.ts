@@ -25,6 +25,8 @@ import Wallet from "../abstract/wallet"
 import WalletId from "../scalar/wallet-id"
 import DisplayCurrency from "../scalar/display-currency"
 
+import AccountLevel from "../scalar/account-level"
+
 import RealtimePrice from "./realtime-price"
 import { TransactionConnection } from "./transaction"
 
@@ -49,6 +51,11 @@ const BusinessAccount = GT.Object({
       type: GT.NonNull(WalletId),
       resolve: (source, args, { domainAccount }: { domainAccount: Account }) =>
         domainAccount.defaultWalletId,
+    },
+
+    level: {
+      type: GT.NonNull(AccountLevel),
+      resolve: (source) => source.level,
     },
 
     displayCurrency: {

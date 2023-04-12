@@ -3,6 +3,7 @@ interface Account {
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
+  level: AccountLevel!
   limits: AccountLimits!
   realtimePrice: RealtimePrice!
   transactions(
@@ -28,6 +29,11 @@ interface Account {
     walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
+}
+
+enum AccountLevel {
+  ONE
+  TWO
 }
 
 interface AccountLimit {
@@ -206,6 +212,7 @@ type ConsumerAccount implements Account {
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
+  level: AccountLevel!
   limits: AccountLimits!
 
   """
