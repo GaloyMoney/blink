@@ -112,7 +112,7 @@
   },
   "devDependencies": {
     "@apollo/client": "^3.7.9",
-    "@babel/core": "^7.21.0",
+    "@babel/core": "^7.21.4",
     "@babel/preset-env": "^7.19.4",
     "@graphql-tools/jest-transform": "^1.2.2",
     "@jest/test-sequencer": "^29.5.0",
