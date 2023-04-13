@@ -1,5 +1,5 @@
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
-import { Accounts } from "@app"
+import { addNewContact } from "@app/accounts/add-new-contact"
 import {
   getAccountLimits,
   getPubkeysToSkipProbe,
@@ -303,7 +303,7 @@ export const addContactsAfterSend = async ({
   }
 
   if (recipientAccount.username) {
-    const addContactToPayerResult = await Accounts.addNewContact({
+    const addContactToPayerResult = await addNewContact({
       accountId: senderAccount.id,
       contactUsername: recipientAccount.username,
     })
@@ -311,7 +311,7 @@ export const addContactsAfterSend = async ({
   }
 
   if (senderAccount.username) {
-    const addContactToPayeeResult = await Accounts.addNewContact({
+    const addContactToPayeeResult = await addNewContact({
       accountId: recipientAccount.id,
       contactUsername: senderAccount.username,
     })
