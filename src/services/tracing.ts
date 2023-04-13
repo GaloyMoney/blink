@@ -272,7 +272,8 @@ const updateErrorForSpan = ({
   span: Span
   errorLevel: ErrorLevel
 }): boolean => {
-  const spanErrorLevel = (span && span.attributes["error.level"]) || ErrorLevel.Info
+  const spanErrorLevel =
+    (span && span.attributes && span.attributes["error.level"]) || ErrorLevel.Info
   const spanErrorRank = RankedErrorLevel.indexOf(spanErrorLevel)
   const errorRank = RankedErrorLevel.indexOf(errorLevel)
 
