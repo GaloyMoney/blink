@@ -1,9 +1,15 @@
 apiVersion: vendir.k14s.io/v1alpha1
 directories:
-  - contents:
-      - git:
-          commitTitle: "fix: REPO_PATH initialization"
-          sha: 70728a1b62e43be803a337bfae5968b2324f7ea8
-        path: .
-    path: vendor
+- contents:
+  - git:
+      commitTitle: fix yaml strings
+      sha: 4c7183895c01a2f90292411cb8187e3cc1b823bc
+    path: .
+  path: ../.github/workflows/vendor
+- contents:
+  - git:
+      commitTitle: fix yaml strings
+      sha: 4c7183895c01a2f90292411cb8187e3cc1b823bc
+    path: .
+  path: ./vendor
 kind: LockConfig
