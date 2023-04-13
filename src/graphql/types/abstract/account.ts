@@ -7,6 +7,8 @@ import RealtimePrice from "@graphql/types/object/realtime-price"
 import DisplayCurrency from "@graphql/types/scalar/display-currency"
 import { TransactionConnection } from "@graphql/types/object/transaction"
 
+import AccountLevel from "../scalar/account-level"
+
 import Wallet from "./wallet"
 
 const IAccount = GT.Interface({
@@ -23,6 +25,9 @@ const IAccount = GT.Interface({
     },
     displayCurrency: {
       type: GT.NonNull(DisplayCurrency),
+    },
+    level: {
+      type: GT.NonNull(AccountLevel),
     },
     realtimePrice: {
       type: GT.NonNull(RealtimePrice),

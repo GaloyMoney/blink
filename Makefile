@@ -158,12 +158,16 @@ mine-block:
 	container_id=$$(docker ps -q -f status=running -f name="bitcoind"); \
 	docker exec -it "$$container_id" /bin/sh -c 'ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
 
-lncli1:
+lncli-1:
 	container_id=$$(docker ps -q -f status=running -f name="lnd1"); \
 	docker exec -it "$$container_id" /bin/sh -c 'lncli -n regtest ${command}'
 
 # to pay an invoice: make lncli-outside-1 command="payinvoice lnbcrt1... --amt=100 -f"
 lncli-outside-1:
 	container_id=$$(docker ps -q -f status=running -f name="galoy-lnd-outside-1"); \
+	docker exec -it "$$container_id" /bin/sh -c 'lncli -n regtest ${command}'
+
+lncli-outside-2:
+	container_id=$$(docker ps -q -f status=running -f name="galoy-lnd-outside-2"); \
 	docker exec -it "$$container_id" /bin/sh -c 'lncli -n regtest ${command}'
 

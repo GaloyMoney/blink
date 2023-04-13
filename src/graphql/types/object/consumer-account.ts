@@ -25,6 +25,8 @@ import DisplayCurrency from "@graphql/types/scalar/display-currency"
 
 import { WalletsRepository } from "@services/mongoose"
 
+import AccountLevel from "../scalar/account-level"
+
 import AccountLimits from "./account-limits"
 import { TransactionConnection } from "./transaction"
 import Quiz from "./quiz"
@@ -55,6 +57,11 @@ const ConsumerAccount = GT.Object<Account>({
     displayCurrency: {
       type: GT.NonNull(DisplayCurrency),
       resolve: (source) => source.displayCurrency,
+    },
+
+    level: {
+      type: GT.NonNull(AccountLevel),
+      resolve: (source) => source.level,
     },
 
     realtimePrice: {
