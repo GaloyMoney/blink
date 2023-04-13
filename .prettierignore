@@ -5,5 +5,7 @@ charts
 protos
 .vscode
 
-ci/vendor
+.github
+ci/**/*
+
 **/*.md
