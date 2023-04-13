@@ -1,4 +1,7 @@
-name: "Nodejs Check Code"
+#! Auto synced from Shared CI Resources repository
+#! Don't change this file, instead change it in github.com/GaloyMoney/concourse-shared
+
+name: Check Code
 
 on:
   pull_request:
@@ -6,7 +9,7 @@ on:
 
 jobs:
   check-code:
-    name: Nodejs Check Code
+    name: Check Code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
