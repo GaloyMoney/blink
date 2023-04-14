@@ -14,9 +14,18 @@ import { WalletCurrency } from "@domain/shared"
 
 import { LedgerService } from "@services/ledger"
 
-import USER_CREATE_DEVICE_ACCOUNT from "../servers/graphql-main-server/mutations/user-device-account-create.gql"
-import USER_LOGIN_UPGRADE from "../servers/graphql-main-server/mutations/user-login-upgrade.gql"
-import MAIN from "../servers/graphql-main-server/queries/main.gql"
+import { gql } from "apollo-server-core"
+
+import { loginFromPhoneAndCode } from "../account-creation-e2e"
+
+import {
+  MainQueryDocument,
+  MainQueryQuery,
+  UserDeviceAccountCreateDocument,
+  UserDeviceAccountCreateMutation,
+  UserLoginUpgradeDocument,
+  UserLoginUpgradeMutation,
+} from "../generated"
 
 import {
   bitcoindClient,
@@ -34,7 +43,6 @@ import {
   randomPhone,
   startServer,
 } from "test/helpers"
-import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>, serverPid: PID
 let disposeClient: () => void = () => null
@@ -78,10 +86,27 @@ afterAll(async () => {
       const kratostoken = generateKratosIdentity()
       return kratostoken
     }
-
 */
 
-// look at approov.io?
+gql`
+  mutation UserDeviceAccountCreate($input: UserDeviceAccountCreateInput!) {
+    userDeviceAccountCreate(input: $input) {
+      errors {
+        message
+      }
+      authToken
+    }
+  }
+
+  mutation UserLoginUpgrade($input: UserLoginUpgradeInput!) {
+    userLoginUpgrade(input: $input) {
+      errors {
+        message
+      }
+      authToken
+    }
+  }
+`
 
 describe("DeviceAccountService", () => {
   const authService = AuthWithDeviceAccountService()
@@ -115,40 +140,59 @@ describe("DeviceAccountGraphQL", () => {
 
     ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
 
-    const result = await apolloClient.mutate({
-      mutation: USER_CREATE_DEVICE_ACCOUNT,
+    const result = await apolloClient.mutate<UserDeviceAccountCreateMutation>({
+      mutation: UserDeviceAccountCreateDocument,
       variables: { input: { deviceId: randomUUID() } },
     })
 
     // Create a first authenticated client
-    const authToken = result.data.userDeviceAccountCreate.authToken
+    const authToken = result?.data?.userDeviceAccountCreate.authToken as SessionToken
+    if (!authToken) throw new Error("no auth token")
+
     disposeClient()
     ;({ apolloClient, disposeClient } = createApolloClient(
       defaultTestClientConfig(authToken),
     ))
 
-    const meResult1 = await apolloClient.query({
-      query: MAIN,
+    const meResult1 = await apolloClient.query<MainQueryQuery>({
+      query: MainQueryDocument,
       variables: { hasToken: true },
     })
+    if (!meResult1.data.me) throw new Error("no me")
+
     const walletId = meResult1.data.me.defaultAccount.defaultWalletId
     expect(walletId).toBeDefined()
 
-    const result2 = await apolloClient.mutate({
-      mutation: USER_LOGIN_UPGRADE,
+    const wallets = meResult1.data.me.defaultAccount.wallets
+    expect(wallets.length).toBe(2)
+
+    const level = meResult1.data.me.defaultAccount.level
+    expect(level).toBe("ZERO")
+
+    const result2 = await apolloClient.mutate<UserLoginUpgradeMutation>({
+      mutation: UserLoginUpgradeDocument,
       variables: { input: { phone, code, authToken } },
     })
 
     // Create a new upgraded authenticated graphql client
-    const newAuthToken = result2.data.userLoginUpgrade.authToken
+    const newAuthToken = result2?.data?.userLoginUpgrade.authToken as SessionToken
+    if (!newAuthToken) throw new Error("no auth token")
+
+    expect(newAuthToken).not.toBeNull()
+
     const { apolloClient: apolloNewClient, disposeClient: disposeNewClient } =
       createApolloClient(defaultTestClientConfig(newAuthToken))
 
-    const meResult2 = await apolloNewClient.query({
-      query: MAIN,
+    const meResult2 = await apolloNewClient.query<MainQueryQuery>({
+      query: MainQueryDocument,
       variables: { hasToken: true },
     })
+    if (!meResult2.data.me) throw new Error("no me")
+
     expect(walletId).toBe(meResult2.data.me.defaultAccount.defaultWalletId)
+
+    const level2 = meResult2.data.me.defaultAccount.level
+    expect(level2).toBe("ONE")
 
     // FIXME:
     // kratos token not revoked
@@ -182,27 +226,32 @@ describe("DeviceAccountGraphQL", () => {
 
       // create device account client
     ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
-    const result = await apolloClient.mutate({
-      mutation: USER_CREATE_DEVICE_ACCOUNT,
+    const result = await apolloClient.mutate<UserDeviceAccountCreateMutation>({
+      mutation: UserDeviceAccountCreateDocument,
       variables: { input: { deviceId: randomUUID() } },
     })
 
+    // Create a first authenticated client
+    const authToken = result?.data?.userDeviceAccountCreate.authToken as SessionToken
+    if (!authToken) throw new Error("no auth token")
+
     // get authenticated graphql device account client
     disposeClient()
-    const authToken = result.data.userDeviceAccountCreate.authToken
     ;({ apolloClient, disposeClient } = createApolloClient(
       defaultTestClientConfig(authToken),
     ))
 
-    const meResult1 = await apolloClient.query({
-      query: MAIN,
+    const meResult1 = await apolloClient.query<MainQueryQuery>({
+      query: MainQueryDocument,
       variables: { hasToken: true },
     })
-    const walletId = meResult1.data.me.defaultAccount.defaultWalletId
+    if (!meResult1.data.me) throw new Error("no me")
+
+    const walletId = meResult1.data.me.defaultAccount.defaultWalletId as WalletId
     expect(walletId).toBeDefined()
 
     // quirks because the accountId in graphql is not accountId in db...
-    const userId = meResult1.data.me.id
+    const userId = meResult1.data.me.id as UserId
     const account = await Accounts.getAccountFromUserId(userId)
     if (account instanceof Error) throw account
 
@@ -223,20 +272,24 @@ describe("DeviceAccountGraphQL", () => {
     await fundWalletIdFromLightning({ walletId: usdWalletId, amount: 100 })
 
     // upgrade to phone account
-    const result2 = await apolloClient.mutate({
-      mutation: USER_LOGIN_UPGRADE,
+    const result2 = await apolloClient.mutate<UserLoginUpgradeMutation>({
+      mutation: UserLoginUpgradeDocument,
       variables: { input: { phone, code, authToken } },
     })
 
     // Create a new upgraded authenticated graphql client
-    const newAuthToken = result2.data.userLoginUpgrade.authToken
+    const newAuthToken = result2?.data?.userLoginUpgrade.authToken as SessionToken
+    if (!newAuthToken) throw new Error("no auth token")
+
     const { apolloClient: apolloNewClient, disposeClient: disposeNewClient } =
       createApolloClient(defaultTestClientConfig(newAuthToken))
 
-    const meResult2 = await apolloNewClient.query({
-      query: MAIN,
+    const meResult2 = await apolloNewClient.query<MainQueryQuery>({
+      query: MainQueryDocument,
       variables: { hasToken: true },
     })
+    if (!meResult2.data.me) throw new Error("no me")
+
     const newWalletId = meResult2.data.me.defaultAccount.defaultWalletId
     expect(walletId).not.toBe(newWalletId)
     expect(newWalletId).toBe(orgWalletId)
