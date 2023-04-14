@@ -1,4 +1,4 @@
-mutation UserLoginUpgrade($input: UserLoginUpgrade!) {
+mutation UserLoginUpgrade($input: UserLoginUpgradeInput!) {
   userLoginUpgrade(input: $input) {
     errors {
       message
