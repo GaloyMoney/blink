@@ -33,7 +33,7 @@ import { PhoneCodeInvalidError } from "@domain/phone-provider"
 import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
 import { LedgerService } from "@services/ledger"
 
-import { Payments } from "@app"
+import { Accounts, Payments } from "@app"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 
 export const loginWithPhoneToken = async ({
@@ -166,7 +166,6 @@ export const loginUpgradeWithPhone = async ({
   // DeviceAccount has no tx. phone identity doesn't exist, domainAccount has no tx.
   //
   // --> migrate schema for the identity
-  // can use the same token
   // don't deactivate orgDomainAccount
   // balance transfer not needed
 
@@ -174,7 +173,6 @@ export const loginUpgradeWithPhone = async ({
   // DeviceAccount has no tx. phone identity exist, domainAccount has no tx.
   //
   // --> no schema migration is needed
-  // need to send a new token because the current Token would be for a different identity
   // deactivate currentToken/orgDomainAccount
   // balance transfer not needed
 
@@ -182,33 +180,29 @@ export const loginUpgradeWithPhone = async ({
   // DeviceAccount has no tx. phone identity exist, domainAccount has tx.
   //
   // --> no schema migration is needed
-  // need to send a new token because the current Token would be for a different identity
   // deactivate currentToken/orgDomainAccount
   // balance transfer not needed
 
   // scenario 4.
   // DeviceAccount has tx, phone identity doesn't exist, domainAccount has no tx.
   // --> migrate schema for the identity
-  // can use the same token
   // don't deactivate orgDomainAccount
   // balance transfer not needed
 
   // scenario 5.
   // DeviceAccount has tx, phone identity exist, domainAccount has no tx.
   // --> no schema migration is needed
-  // need to send a new token because the current Token would be for a different identity
   // deactivate currentToken/orgDomainAccount
   // balance transfer needed
 
   // scenario 6.
   // DeviceAccount has tx, phone identity exist, domainAccount has tx.
   // --> no schema migration is needed
-  // need to send a new token because the current Token would be for a different identity
   // deactivate currentToken/orgDomainAccount
   // balance transfer needed
 
   const authPhone = AuthWithPhonePasswordlessService()
-  let kratosResult = await authPhone.loginToken(phone)
+  let kratosResult = await authPhone.loginToken({ phone })
 
   // FIXME: this is a fuzzy error.
   // it exists because we currently make no difference between a registration and login
@@ -226,8 +220,14 @@ export const loginUpgradeWithPhone = async ({
 
     if (res instanceof Error) return res
 
-    kratosResult = await authPhone.loginToken(phone)
+    kratosResult = await authPhone.loginToken({ phone })
     if (kratosResult instanceof Error) return kratosResult
+
+    const newAccount = await AccountsRepository().findByUserId(kratosResult.kratosUserId)
+    if (newAccount instanceof Error) return newAccount
+
+    const res2 = await Accounts.updateAccountLevel({ id: newAccount.id, level: 1 })
+    if (res2 instanceof Error) return res2
 
     addAttributesToCurrentSpan({
       "login.migrateFromBearerToPhoneWithNoExistingAccount": true,
@@ -291,9 +291,9 @@ export const loginUpgradeWithPhone = async ({
   const res = await revokeKratosToken(authToken)
   if (res instanceof Error) {
     recordExceptionInCurrentSpan({
-      error: "error revokating session token on upgrade",
+      error: res,
       level: ErrorLevel.Critical,
-      attributes: { ...res },
+      attributes: { ...res, description: "error revokating session token on upgrade" },
     })
   }
 

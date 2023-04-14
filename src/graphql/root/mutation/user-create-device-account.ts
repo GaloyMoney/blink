@@ -38,12 +38,16 @@ const UserDeviceAccountCreateMutation = GT.Field<{
       return { errors: [{ message: "ip is undefined" }] }
     }
 
+    // TODO: remove once ready for production
     if (BTC_NETWORK === "mainnet") {
       return { errors: [{ message: "currently not available on mainnet" }] }
     }
 
     addAttributesToCurrentSpan({ deviceId })
 
+    // TODO: pass in deviceId
+    // TODO: add deviceId to user
+    // TODO: add deviceToken
     const authToken = await Auth.createDeviceAccount(ip)
 
     if (authToken instanceof Error) {
