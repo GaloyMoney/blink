@@ -32,9 +32,9 @@ interface Account {
 }
 
 enum AccountLevel {
-  ZERO
   ONE
   TWO
+  ZERO
 }
 
 interface AccountLimit {
@@ -754,7 +754,7 @@ type Mutation {
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userDeviceAccountCreate(input: UserDeviceAccountCreateInput!): AuthTokenPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userLoginUpgrade(input: UserLoginUpgrade!): AuthTokenPayload!
+  userLoginUpgrade(input: UserLoginUpgradeInput!): AuthTokenPayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
@@ -1432,7 +1432,7 @@ input UserLoginInput {
   phone: Phone!
 }
 
-input UserLoginUpgrade {
+input UserLoginUpgradeInput {
   authToken: AuthToken!
   code: OneTimeAuthCode!
   phone: Phone!

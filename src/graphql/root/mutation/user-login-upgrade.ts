@@ -7,8 +7,8 @@ import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import AuthToken from "@graphql/types/scalar/auth-token"
 
-const UserLoginUpgrade = GT.Input({
-  name: "UserLoginUpgrade",
+const UserLoginUpgradeInput = GT.Input({
+  name: "UserLoginUpgradeInput",
   fields: () => ({
     phone: {
       type: GT.NonNull(Phone),
@@ -38,7 +38,7 @@ const UserLoginUpgradeMutation = GT.Field<
   },
   type: GT.NonNull(AuthTokenPayload),
   args: {
-    input: { type: GT.NonNull(UserLoginUpgrade) },
+    input: { type: GT.NonNull(UserLoginUpgradeInput) },
   },
   resolve: async (_, args, { ip, domainAccount }) => {
     const { phone, code, authToken: orgAuthToken } = args.input

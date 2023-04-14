@@ -149,6 +149,7 @@ gql`
           }
         }
         id
+        level
         defaultWalletId
         wallets {
           id
