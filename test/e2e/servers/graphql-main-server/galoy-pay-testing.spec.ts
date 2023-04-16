@@ -3,6 +3,8 @@ import crypto from "crypto"
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 import { toSats } from "@domain/bitcoin"
 
+import { sleep } from "@utils"
+
 import LN_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-invoice-create-on-behalf-of-recipient.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import LN_NO_AMOUNT_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-no-amount-invoice-create-on-behalf-of-recipient.gql"
@@ -230,6 +232,8 @@ describe("galoy-pay", () => {
         variables: { input: makePaymentInput },
       })
       expect(makePayment.data.lnInvoicePaymentSend.status).toEqual("SUCCESS")
+
+      sleep(3000)
 
       const result = (await promisifiedSubscription(subscription)) as { data }
 
