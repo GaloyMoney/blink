@@ -3,8 +3,6 @@ import crypto from "crypto"
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 import { toSats } from "@domain/bitcoin"
 
-import { sleep } from "@utils"
-
 import LN_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-invoice-create-on-behalf-of-recipient.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import LN_NO_AMOUNT_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-no-amount-invoice-create-on-behalf-of-recipient.gql"
@@ -216,13 +214,6 @@ describe("galoy-pay", () => {
       })
       const paymentRequest = createInvoice.data.mutationData.invoice.paymentRequest
 
-      // Subscribe to the invoice
-      const subscribeToPaymentInput = { paymentRequest }
-      const subscription = apolloClient.subscribe({
-        query: subscriptionQuery,
-        variables: { input: subscribeToPaymentInput },
-      })
-
       // Pay the invoice
       const fundingWalletId = (await apolloClient.query({ query: ME })).data.me
         .defaultAccount.defaultWalletId
@@ -233,8 +224,12 @@ describe("galoy-pay", () => {
       })
       expect(makePayment.data.lnInvoicePaymentSend.status).toEqual("SUCCESS")
 
-      sleep(3000)
-
+      // Subscribe to the invoice
+      const subscribeToPaymentInput = { paymentRequest }
+      const subscription = apolloClient.subscribe({
+        query: subscriptionQuery,
+        variables: { input: subscribeToPaymentInput },
+      })
       const result = (await promisifiedSubscription(subscription)) as { data }
 
       // Assert the the invoice is paid
