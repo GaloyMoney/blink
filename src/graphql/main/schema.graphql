@@ -382,6 +382,7 @@ input IntraLedgerUsdPaymentSendInput {
 }
 
 enum InvoicePaymentStatus {
+  EXPIRED
   PAID
   PENDING
 }

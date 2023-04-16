@@ -80,9 +80,19 @@ const LnInvoicePaymentStatusSubscription = {
         payload: { errors: [mapAndParseErrorForGqlResponse(paid)] },
       })
     }
-
     if (paid) {
       pubsub.publishImmediate({ trigger, payload: { status: "PAID" } })
+      return pubsub.createAsyncIterator({ trigger })
+    }
+
+    const status = paymentStatusChecker.isExpired ? "EXPIRED" : "PENDING"
+    pubsub.publishImmediate({ trigger, payload: { status } })
+
+    if (!paymentStatusChecker.isExpired) {
+      const timeout = Math.max(paymentStatusChecker.expiresAt.getTime() - Date.now(), 0)
+      setTimeout(() => {
+        pubsub.publish({ trigger, payload: { status: "EXPIRED" } })
+      }, timeout + 1000)
     }
 
     return pubsub.createAsyncIterator({ trigger })
