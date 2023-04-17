@@ -24,7 +24,8 @@
     "check-yaml": "prettier --check '**/*.(yaml|yml)'",
     "watch-main": ". ./.envrc && nodemon -V -e ts,graphql -w ./src --exec yarn run start-main",
     "start-main": ". ./.envrc && yarn run build && node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js",
-    "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'"
+    "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'",
+    "e2e-codegen": "graphql-codegen --config codegen.yml"
   },
   "engines": {
     "node": "18"
@@ -113,6 +114,12 @@
     "@apollo/client": "^3.7.9",
     "@babel/core": "^7.21.4",
     "@babel/preset-env": "^7.19.4",
+    "@graphql-codegen/add": "^4.0.1",
+    "@graphql-codegen/cli": "^3.3.0",
+    "@graphql-codegen/client-preset": "^3.0.0",
+    "@graphql-codegen/typescript": "^3.0.3",
+    "@graphql-codegen/typescript-operations": "^3.0.3",
+    "@graphql-codegen/typescript-react-apollo": "^3.3.7",
     "@graphql-tools/jest-transform": "^1.2.2",
     "@jest/test-sequencer": "^29.5.0",
     "@types/babel__core": "^7.20.0",
@@ -162,6 +169,7 @@
     "pg": "^8.10.0",
     "pino-pretty": "^10.0.0",
     "prettier": "^2.8.7",
+    "react": "^18.2.0",
     "spectaql": "^2.0.5",
     "tiny-secp256k1": "^2.2.1",
     "tree-kill": "^1.2.2",

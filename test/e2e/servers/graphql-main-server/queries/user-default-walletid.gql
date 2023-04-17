@@ -1,3 +1,0 @@
-query userDefaultWalletId($username: Username!) {
-  userDefaultWalletId(username: $username)
-}

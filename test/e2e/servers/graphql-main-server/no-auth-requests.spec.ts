@@ -14,12 +14,7 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
 import { publishCurrentPrices } from "@servers/trigger"
 
-import USER_LOGIN from "./mutations/user-login.gql"
-import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
-import MAIN from "./queries/main.gql"
-
-import PRICE from "./subscriptions/price.gql"
-import REALTIME_PRICE from "./subscriptions/realtime-price.gql"
+import { gql } from "apollo-server-core"
 
 import {
   clearAccountLocks,
@@ -34,7 +29,19 @@ import {
   promisifiedSubscription,
   startServer,
 } from "test/helpers"
-import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
+import { loginFromPhoneAndCode } from "test/e2e/account-creation-e2e"
+import {
+  MainQueryDocument,
+  MainQueryQuery,
+  PriceDocument,
+  PriceSubscription,
+  RealtimePriceDocument,
+  RealtimePriceSubscription,
+  UserLoginDocument,
+  UserLoginMutation,
+  UserRequestAuthCodeDocument,
+  UserRequestAuthCodeMutation,
+} from "test/e2e/generated"
 
 let correctCode: PhoneCode,
   apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -64,7 +71,31 @@ afterAll(async () => {
 
 describe("graphql", () => {
   describe("price", () => {
-    const subscriptionQuery = PRICE
+    gql`
+      subscription price(
+        $amount: SatAmount!
+        $amountCurrencyUnit: ExchangeCurrencyUnit!
+        $priceCurrencyUnit: ExchangeCurrencyUnit!
+      ) {
+        price(
+          input: {
+            amount: $amount
+            amountCurrencyUnit: $amountCurrencyUnit
+            priceCurrencyUnit: $priceCurrencyUnit
+          }
+        ) {
+          errors {
+            message
+          }
+          price {
+            base
+            offset
+            currencyUnit
+            formattedAmount
+          }
+        }
+      }
+    `
 
     it("returns data with valid inputs", async () => {
       const input = {
@@ -73,8 +104,8 @@ describe("graphql", () => {
         priceCurrencyUnit: "USDCENT",
       }
 
-      const subscription = apolloClient.subscribe({
-        query: subscriptionQuery,
+      const subscription = apolloClient.subscribe<PriceSubscription>({
+        query: PriceDocument,
         variables: input,
       })
 
@@ -94,13 +125,36 @@ describe("graphql", () => {
   })
 
   describe("realtime price", () => {
-    const subscriptionQuery = REALTIME_PRICE
+    gql`
+      subscription realtimePrice($currency: DisplayCurrency!) {
+        realtimePrice(input: { currency: $currency }) {
+          errors {
+            message
+          }
+          realtimePrice {
+            id
+            timestamp
+            denominatorCurrency
+            btcSatPrice {
+              base
+              offset
+              currencyUnit
+            }
+            usdCentPrice {
+              base
+              offset
+              currencyUnit
+            }
+          }
+        }
+      }
+    `
 
     it("returns data with valid inputs", async () => {
       const input = { currency: "EUR" }
 
-      const subscription = apolloClient.subscribe({
-        query: subscriptionQuery,
+      const subscription = apolloClient.subscribe<RealtimePriceSubscription>({
+        query: RealtimePriceDocument,
         variables: input,
       })
 
@@ -130,16 +184,18 @@ describe("graphql", () => {
 
   describe("main query", () => {
     it("returns valid data", async () => {
-      const { data } = await apolloClient.query({
-        query: MAIN,
+      const { data } = await apolloClient.query<MainQueryQuery>({
+        query: MainQueryDocument,
         variables: { hasToken: false },
       })
       expect(data.globals).toBeTruthy()
       expect(data.mobileVersions).toBeTruthy()
       expect(data.quizQuestions).toBeTruthy()
 
-      expect(data.globals.nodesIds).toEqual(expect.arrayContaining([expect.any(String)]))
-      expect(data.globals.network).toEqual(BTC_NETWORK)
+      expect(data?.globals?.nodesIds).toEqual(
+        expect.arrayContaining([expect.any(String)]),
+      )
+      expect(data?.globals?.network).toEqual(BTC_NETWORK)
       expect(data.mobileVersions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -161,12 +217,24 @@ describe("graphql", () => {
   })
 
   describe("userRequestAuthCode", () => {
-    const mutation = USER_REQUEST_AUTH_CODE
+    gql`
+      mutation UserRequestAuthCode($input: UserRequestAuthCodeInput!) {
+        userRequestAuthCode(input: $input) {
+          errors {
+            message
+          }
+          success
+        }
+      }
+    `
 
     it("success with a valid phone", async () => {
       const input = { phone }
-      const result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userRequestAuthCode).toEqual(
+      const result = await apolloClient.mutate<UserRequestAuthCodeMutation>({
+        mutation: UserRequestAuthCodeDocument,
+        variables: { input },
+      })
+      expect(result?.data?.userRequestAuthCode).toEqual(
         expect.objectContaining({ success: true }),
       )
     })
@@ -175,62 +243,81 @@ describe("graphql", () => {
       const message = "Phone number is not a valid phone number"
       let input = { phone: "+123" }
 
-      let result = await apolloClient.mutate({ mutation, variables: { input } })
+      let result = await apolloClient.mutate({
+        mutation: UserRequestAuthCodeDocument,
+        variables: { input },
+      })
       expect(result.data.userRequestAuthCode.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       input = { phone: "abcd" }
-      result = await apolloClient.mutate({ mutation, variables: { input } })
+      result = await apolloClient.mutate({
+        mutation: UserRequestAuthCodeDocument,
+        variables: { input },
+      })
       expect(result.data.userRequestAuthCode.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       input = { phone: "" }
-      result = await apolloClient.mutate({ mutation, variables: { input } })
+      result = await apolloClient.mutate({
+        mutation: UserRequestAuthCodeDocument,
+        variables: { input },
+      })
       expect(result.data.userRequestAuthCode.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
     })
 
     it("rate limits too many phone requests", async () => {
-      await testPhoneCodeAttemptPerPhoneMinInterval(mutation)
-      await testPhoneCodeAttemptPerPhone(mutation)
-      await testPhoneCodeAttemptPerIp(mutation)
+      await testPhoneCodeAttemptPerPhoneMinInterval(UserRequestAuthCodeDocument)
+      await testPhoneCodeAttemptPerPhone(UserRequestAuthCodeDocument)
+      await testPhoneCodeAttemptPerIp(UserRequestAuthCodeDocument)
     })
   })
 
   describe("userLogin", () => {
-    const mutation = USER_LOGIN
-
     it("returns a bearer token for a valid phone/code", async () => {
       const input = { phone, code: correctCode }
-      const result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userLogin).toHaveProperty("authToken")
-      expect(result.data.userLogin.authToken).toHaveLength(32)
+      const result = await apolloClient.mutate<UserLoginMutation>({
+        mutation: UserLoginDocument,
+        variables: { input },
+      })
+      expect(result?.data?.userLogin).toHaveProperty("authToken")
+      expect(result?.data?.userLogin.authToken).toHaveLength(32)
     })
 
     it("returns error for invalid phone", async () => {
       let phone = "+1999"
       const message = "Phone number is not a valid phone number"
       let input = { phone, code: correctCode }
-      let result = await apolloClient.mutate({ mutation, variables: { input } })
+      let result = await apolloClient.mutate<UserLoginMutation>({
+        mutation: UserLoginDocument,
+        variables: { input },
+      })
 
-      expect(result.data.userLogin.errors).toEqual(
+      expect(result?.data?.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       phone = "abcd"
       input = { phone, code: correctCode }
-      result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userLogin.errors).toEqual(
+      result = await apolloClient.mutate<UserLoginMutation>({
+        mutation: UserLoginDocument,
+        variables: { input },
+      })
+      expect(result?.data?.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       phone = ""
       input = { phone, code: correctCode }
-      result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userLogin.errors).toEqual(
+      result = await apolloClient.mutate<UserLoginMutation>({
+        mutation: UserLoginDocument,
+        variables: { input },
+      })
+      expect(result?.data?.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
     })
@@ -238,21 +325,30 @@ describe("graphql", () => {
     it("returns error for invalid code", async () => {
       let message = "Invalid or incorrect phone code entered."
       let input = { phone, code: "113566" }
-      let result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userLogin.errors).toEqual(
+      let result = await apolloClient.mutate<UserLoginMutation>({
+        mutation: UserLoginDocument,
+        variables: { input },
+      })
+      expect(result?.data?.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       message = "Invalid value for OneTimeAuthCode"
       input = { phone, code: "abcdef" }
-      result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userLogin.errors).toEqual(
+      result = await apolloClient.mutate<UserLoginMutation>({
+        mutation: UserLoginDocument,
+        variables: { input },
+      })
+      expect(result?.data?.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       input = { phone, code: "" }
-      result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userLogin.errors).toEqual(
+      result = await apolloClient.mutate<UserLoginMutation>({
+        mutation: UserLoginDocument,
+        variables: { input },
+      })
+      expect(result?.data?.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
     })
@@ -261,7 +357,7 @@ describe("graphql", () => {
       const args = {
         input: { phone, code: "000000" as PhoneCode },
         expectedMessage: "Invalid or incorrect phone code entered.",
-        mutation,
+        mutation: UserLoginDocument,
       }
       await testRateLimitLoginByPhone(args)
       await testRateLimitLoginByIp(args)
@@ -271,7 +367,7 @@ describe("graphql", () => {
       const args = {
         input: { phone, code: "<invalid>" as PhoneCode },
         expectedMessage: "Invalid value for OneTimeAuthCode",
-        mutation,
+        mutation: UserLoginDocument,
       }
       await testRateLimitLoginByPhone(args)
       await testRateLimitLoginByIp(args)
@@ -281,7 +377,7 @@ describe("graphql", () => {
       const args = {
         input: { phone: "+19999999999" as PhoneNumber, code: correctCode },
         expectedMessage: "Phone number is not a valid phone number",
-        mutation,
+        mutation: UserLoginDocument,
       }
       await testRateLimitLoginByPhone(args)
       await testRateLimitLoginByIp(args)
@@ -291,7 +387,7 @@ describe("graphql", () => {
       const args = {
         input: { phone: "<invalid>" as PhoneNumber, code: correctCode },
         expectedMessage: "Phone number is not a valid phone number",
-        mutation,
+        mutation: UserLoginDocument,
       }
       await testRateLimitLoginByPhone(args)
       await testRateLimitLoginByIp(args)
