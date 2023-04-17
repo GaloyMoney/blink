@@ -22,7 +22,8 @@ const LnInvoicePaymentStatusQuery = GT.Field({
 
     if (paid) return { errors: [], status: "PAID" }
 
-    return { errors: [], status: "PENDING" }
+    const status = paymentStatusChecker.isExpired ? "EXPIRED" : "PENDING"
+    return { errors: [], status }
   },
 })
 
