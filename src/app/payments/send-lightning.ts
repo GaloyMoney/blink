@@ -18,7 +18,7 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
   WalletPriceRatio,
 } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
+import { WalletCurrency, ErrorLevel } from "@domain/shared"
 import {
   checkedToWalletId,
   PaymentInitiationMethod,
@@ -41,7 +41,10 @@ import { LockService } from "@services/lock"
 import { NotificationsService } from "@services/notifications"
 
 import * as LedgerFacade from "@services/ledger/facade"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 
 import { Wallets } from "@app"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
@@ -55,6 +58,7 @@ import {
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
+  addContactsAfterSend,
 } from "./helpers"
 
 const dealer = DealerPriceService()
@@ -525,6 +529,16 @@ const executePaymentViaIntraledger = async <
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
     })
+
+    if (senderAccount.id !== recipientAccount.id) {
+      const addContactResult = await addContactsAfterSend({
+        senderAccount,
+        recipientAccount,
+      })
+      if (addContactResult instanceof Error) {
+        recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+      }
+    }
 
     return PaymentSendStatus.Success
   })

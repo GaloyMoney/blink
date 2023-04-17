@@ -29,7 +29,6 @@ import {
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
-import { Accounts } from "@app"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
@@ -41,6 +40,7 @@ import {
   getPriceRatioForLimits,
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
+  addContactsAfterSend,
 } from "./helpers"
 
 const dealer = DealerPriceService()
@@ -374,34 +374,4 @@ const executePaymentViaIntraledger = async <
 
     return PaymentSendStatus.Success
   })
-}
-
-const addContactsAfterSend = async ({
-  senderAccount,
-  recipientAccount,
-}: {
-  senderAccount: Account
-  recipientAccount: Account
-}): Promise<true | ApplicationError> => {
-  if (!(senderAccount.contactEnabled && recipientAccount.contactEnabled)) {
-    return true
-  }
-
-  if (recipientAccount.username) {
-    const addContactToPayerResult = await Accounts.addNewContact({
-      accountId: senderAccount.id,
-      contactUsername: recipientAccount.username,
-    })
-    if (addContactToPayerResult instanceof Error) return addContactToPayerResult
-  }
-
-  if (senderAccount.username) {
-    const addContactToPayeeResult = await Accounts.addNewContact({
-      accountId: recipientAccount.id,
-      contactUsername: senderAccount.username,
-    })
-    if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
-  }
-
-  return true
 }

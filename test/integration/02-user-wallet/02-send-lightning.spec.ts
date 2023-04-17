@@ -23,6 +23,8 @@ import {
   PaymentStatus,
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
+import { toObjectId } from "@services/mongoose/utils"
+import { Account, WalletInvoice } from "@services/mongoose/schema"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   SelfPaymentError as DomainSelfPaymentError,
@@ -62,7 +64,6 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { WalletInvoice } from "@services/mongoose/schema"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
@@ -1221,15 +1222,29 @@ describe("UserWallet - Lightning Pay", () => {
             }),
           ).not.toBeInstanceOf(Error)
         }
-
-        const accountRecordA = await getAccountRecordByTestUserRef("A")
+        await Account.updateMany(
+          { _id: { $in: [accountA.id, accountB.id, accountC.id].map(toObjectId) } },
+          { $set: { contacts: [] } },
+        )
+        let accountRecordA = await getAccountRecordByTestUserRef("A")
+        let accountRecordB = await getAccountRecordByTestUserRef("B")
+        let accountRecordC = await getAccountRecordByTestUserRef("C")
+        expect(accountRecordA.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
+        )
+        expect(accountRecordB.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameC })]),
+        )
+        expect(accountRecordC.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
+        )
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdB,
           accountPayer: accountB,
         })
         await paymentOtherGaloyUser({
-          walletIdPayee: walletIdC,
+          walletIdPayee: walletIdB,
           walletIdPayer: walletIdA,
           accountPayer: accountA,
         })
@@ -1246,8 +1261,18 @@ describe("UserWallet - Lightning Pay", () => {
         //     .mockReturnValueOnce(addProps(inputs.shift()))
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWalletB, walletPayer: userwalletC})
+
+        accountRecordA = await getAccountRecordByTestUserRef("A")
+        accountRecordB = await getAccountRecordByTestUserRef("B")
+        accountRecordC = await getAccountRecordByTestUserRef("C")
         expect(accountRecordA.contacts).toEqual(
-          expect.not.arrayContaining([expect.objectContaining({ id: usernameC })]),
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
+        )
+        expect(accountRecordB.contacts).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameC })]),
+        )
+        expect(accountRecordC.contacts).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
         )
       })
 
