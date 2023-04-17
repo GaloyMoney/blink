@@ -214,6 +214,25 @@ describe("galoy-pay", () => {
       })
       const paymentRequest = createInvoice.data.mutationData.invoice.paymentRequest
 
+      // Subscribe to the invoice
+      const subscribeToPaymentInput = { paymentRequest }
+      const subscription = apolloClient.subscribe({
+        query: subscriptionQuery,
+        variables: { input: subscribeToPaymentInput },
+      })
+      const resultPending = (await promisifiedSubscription(subscription)) as { data }
+      expect(resultPending.data.lnInvoicePaymentStatus.status).toEqual("PENDING")
+
+      const statusQuery = async () => {
+        await apolloClient.resetStore()
+        return apolloClient.query({
+          query: LN_INVOICE_PAYMENT_STATUS_QUERY,
+          variables: { input: subscribeToPaymentInput },
+        })
+      }
+      const pendingStatusResult = await statusQuery()
+      expect(pendingStatusResult.data.lnInvoicePaymentStatus.status).toEqual("PENDING")
+
       // Pay the invoice
       const fundingWalletId = (await apolloClient.query({ query: ME })).data.me
         .defaultAccount.defaultWalletId
@@ -224,23 +243,11 @@ describe("galoy-pay", () => {
       })
       expect(makePayment.data.lnInvoicePaymentSend.status).toEqual("SUCCESS")
 
-      // Subscribe to the invoice
-      const subscribeToPaymentInput = { paymentRequest }
-      const subscription = apolloClient.subscribe({
-        query: subscriptionQuery,
-        variables: { input: subscribeToPaymentInput },
-      })
-      const result = (await promisifiedSubscription(subscription)) as { data }
-
-      // Assert the the invoice is paid
-      expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")
-
-      const statusQueryResult = await apolloClient.query({
-        query: LN_INVOICE_PAYMENT_STATUS_QUERY,
-        variables: { input: subscribeToPaymentInput },
-      })
-
+      const statusQueryResult = await statusQuery()
       expect(statusQueryResult.data.lnInvoicePaymentStatus.status).toEqual("PAID")
+
+      const result = (await promisifiedSubscription(subscription)) as { data }
+      expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")
     })
   })
 
