@@ -54,6 +54,7 @@ import {
   UnknownLightningServiceError,
   UnknownRouteNotFoundError,
   DestinationMissingDependentFeatureError,
+  LookupPaymentTimedOutError,
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
@@ -728,12 +729,17 @@ const lookupPaymentByPubkeyAndHash = async ({
     const lnd = getLndFromPubkey({ pubkey })
     if (lnd instanceof Error) return lnd
 
-    const result: GetPaymentResult = await getPayment({
+    const resultPromise = getPayment({
       lnd,
       id: paymentHash,
     })
-    const { payment, pending } = result
+    const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+    const result = (await Promise.race([
+      resultPromise,
+      timeoutPromise,
+    ])) as GetPaymentResult
 
+    const { payment, pending } = result
     const status = await resolvePaymentStatus({ lnd, result })
 
     if (payment) {
@@ -754,7 +760,9 @@ const lookupPaymentByPubkeyAndHash = async ({
         },
         attempts: undefined,
       }
-    } else if (pending) {
+    }
+
+    if (pending) {
       return {
         createdAt: new Date(pending.created_at),
         status,
@@ -765,12 +773,15 @@ const lookupPaymentByPubkeyAndHash = async ({
         confirmedDetails: undefined,
         attempts: undefined,
       }
-    } else if (status === PaymentStatus.Failed) {
+    }
+
+    if (status === PaymentStatus.Failed) {
       return { status: PaymentStatus.Failed }
     }
 
     return new BadPaymentDataError(JSON.stringify(result))
   } catch (err) {
+    if (err.message === "Timeout") return new LookupPaymentTimedOutError()
     const errDetails = parseLndErrorDetails(err)
     const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
     switch (true) {

@@ -491,6 +491,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "BigIntFloatConversionError":
     case "SafeWrapperError":
     case "InvalidFeeProbeStateError":
+    case "LookupPaymentTimedOutError":
     case "InvalidPubKeyError":
     case "SkipProbeForPubkeyError":
     case "SecretDoesNotMatchAnyExistingHodlInvoiceError":
