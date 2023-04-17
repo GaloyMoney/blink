@@ -73,7 +73,7 @@ type Account = {
   title: BusinessMapTitle | null
   coordinates: Coordinates | null
   contactEnabled: boolean
-  contacts: AccountContact[]
+  readonly contacts: AccountContact[]
   readonly isEditor: boolean
   readonly quizQuestions: UserQuizQuestion[] // deprecated
   readonly quiz: Quiz[]

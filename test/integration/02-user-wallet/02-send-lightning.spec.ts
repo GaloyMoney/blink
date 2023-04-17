@@ -21,6 +21,8 @@ import {
   PaymentStatus,
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
+import { toObjectId } from "@services/mongoose/utils"
+import { Account, WalletInvoice } from "@services/mongoose/schema"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   SelfPaymentError as DomainSelfPaymentError,
@@ -60,7 +62,6 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { WalletInvoice } from "@services/mongoose/schema"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
@@ -1208,12 +1209,10 @@ describe("UserWallet - Lightning Pay", () => {
             }),
           ).not.toBeInstanceOf(Error)
         }
-        accountA.contacts = []
-        accountB.contacts = []
-        accountC.contacts = []
-        await AccountsRepository().update(accountA)
-        await AccountsRepository().update(accountB)
-        await AccountsRepository().update(accountC)
+        await Account.updateMany(
+          { _id: { $in: [accountA.id, accountB.id, accountC.id].map(toObjectId) } },
+          { $set: { contacts: [] } },
+        )
         let accountRecordA = await getAccountRecordByTestUserRef("A")
         let accountRecordB = await getAccountRecordByTestUserRef("B")
         let accountRecordC = await getAccountRecordByTestUserRef("C")
