@@ -1,5 +1,9 @@
 # Galoy
 
+[![Mattermost](https://img.shields.io/badge/chat-on%20mattermost-blue?style=social&logo=mattermost)](https://chat.galoy.io)
+[![GitHub Repo stars](https://img.shields.io/github/stars/GaloyMoney/galoy?style=social)](https://github.com/GaloyMoney/galoy/stargazers)
+[![Twitter Follow](https://img.shields.io/twitter/follow/GaloyMoney?style=social)](https://twitter.com/GaloyMoney)
+
 ### TLDR
 
 Galoy is an opinionated bitcoin banking platform.
