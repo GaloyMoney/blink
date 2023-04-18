@@ -67,7 +67,7 @@ plan:
     - name: pipeline-tasks
     - name: repo
     run:
-      path: pipeline-tasks/ci/vendor/tasks/check-code.sh
+      path: pipeline-tasks/ci/vendor/tasks/nodejs-check-code.sh
 on_failure: #@ slack_failure_notification()
 #@ end
 
@@ -89,7 +89,7 @@ plan:
     - path: cargo-home
     - path: cargo-target-dir
     run:
-      path: pipeline-tasks/ci/vendor/tasks/check-code.sh
+      path: pipeline-tasks/ci/vendor/tasks/rust-check-code.sh
 on_failure: #@ slack_failure_notification()
 #@ end
 
@@ -111,7 +111,7 @@ plan:
     outputs:
     - name: bundled-deps
     run:
-      path: pipeline-tasks/ci/vendor/tasks/cache-yarn-deps.sh
+      path: pipeline-tasks/ci/vendor/tasks/nodejs-cache-yarn-deps.sh
 - put: bundled-deps
   params:
     file: bundled-deps/bundled-deps-*.tgz
@@ -145,7 +145,7 @@ plan:
       SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
       JEST_TIMEOUT: 90000
     run:
-      path: pipeline-tasks/ci/vendor/tasks/test-integration.sh
+      path: pipeline-tasks/ci/vendor/tasks/chart-test-integration.sh
 on_failure: #@ slack_failure_notification()
 #@ end
 
@@ -176,7 +176,7 @@ plan:
       SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
       SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
     run:
-      path: pipeline-tasks/ci/vendor/tasks/test-integration.sh
+      path: pipeline-tasks/ci/vendor/tasks/chart-test-integration.sh
 on_failure: #@ slack_failure_notification()
 #@ end
 
@@ -316,7 +316,7 @@ plan:
         BRANCH: #@ data.values.git_charts_branch
         CHARTS_SUBDIR: #@ data.values.gh_repository
       run:
-        path: pipeline-tasks/ci/vendor/tasks/bump-image-digest.sh
+        path: pipeline-tasks/ci/vendor/tasks/docker-bump-image-digest.sh
   - put: charts-repo-bot-branch
     params:
       repository: charts-repo
@@ -335,7 +335,7 @@ plan:
         BOT_BRANCH: #@ data.values.git_charts_bot_branch
         CHARTS_SUBDIR: #@ data.values.gh_repository
       run:
-        path: pipeline-tasks/ci/vendor/tasks/open-charts-pr.sh
+        path: pipeline-tasks/ci/vendor/tasks/chart-open-charts-pr.sh
 #@ end
 
 #@ def repo_resource():

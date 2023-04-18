@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: unpack_deps function for rust'
-      sha: f866f388e2bc4508e518d442b4782a2c8f25d2f8
+      commitTitle: 'chore: pipeline fragments file names'
+      sha: 0a916f2074c900552639e84e379a2deb90b416db
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: unpack_deps function for rust'
-      sha: f866f388e2bc4508e518d442b4782a2c8f25d2f8
+      commitTitle: 'chore: pipeline fragments file names'
+      sha: 0a916f2074c900552639e84e379a2deb90b416db
     path: .
   path: ./vendor
 kind: LockConfig
