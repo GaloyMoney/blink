@@ -1,17 +1,1 @@
-name: "Audit"
-on:
-  pull_request:
-    branches: [main]
-jobs:
-  audit:
-    name: Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "yarn"
-      - run: yarn install --frozen-lockfile
-      - name: Run audit
-        run: make audit
+./vendor/audit.yml
