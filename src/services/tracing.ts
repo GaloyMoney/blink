@@ -292,7 +292,7 @@ const recordException = (span: Span, exception: Exception, level?: ErrorLevel) =
 
   // Append error with next index
   let nextIdx = 0
-  while (span.attributes[`error.${nextIdx}.level`] !== undefined) {
+  while (span.attributes && span.attributes[`error.${nextIdx}.level`] !== undefined) {
     nextIdx++
   }
   span.setAttribute(`error.${nextIdx}.level`, errorLevel)
