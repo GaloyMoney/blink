@@ -1,7 +1,11 @@
+#! Auto synced from Shared CI Resources repository
+#! Don't change this file, instead change it in github.com/GaloyMoney/concourse-shared
+
 name: Spelling
+
 on:
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   spelling:
