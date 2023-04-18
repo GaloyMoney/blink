@@ -1,9 +1,10 @@
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-import USER_LOGIN from "../e2e/servers/graphql-main-server/mutations/user-login.gql"
-import USER_UPDATE_MUTATION from "../e2e/servers/graphql-main-server/mutations/user-update-username.gql"
+import { gql } from "apollo-server-core"
 
-import { createApolloClient, defaultTestClientConfig } from "./apollo-client"
+import { createApolloClient, defaultTestClientConfig } from "../helpers/apollo-client"
+
+import { UserLoginDocument, UserUpdateUsernameDocument } from "test/e2e/generated"
 
 export const loginFromPhoneAndCode = async ({
   phone,
@@ -20,7 +21,7 @@ export const loginFromPhoneAndCode = async ({
     ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
     const input = { phone, code }
     const result = await apolloClient.mutate({
-      mutation: USER_LOGIN,
+      mutation: UserLoginDocument,
       variables: { input },
     })
 
@@ -40,6 +41,22 @@ export const loginFromPhoneAndCode = async ({
   }
 }
 
+gql`
+  mutation userUpdateUsername($input: UserUpdateUsernameInput!) {
+    userUpdateUsername(input: $input) {
+      errors {
+        __typename
+        message
+      }
+      user {
+        __typename
+        id
+        username
+      }
+    }
+  }
+`
+
 export const updateUsername = async ({
   username,
   apolloClient,
@@ -50,7 +67,7 @@ export const updateUsername = async ({
   const input = { username }
 
   await apolloClient.mutate({
-    mutation: USER_UPDATE_MUTATION,
+    mutation: UserUpdateUsernameDocument,
     variables: { input },
   })
 }

@@ -3,8 +3,6 @@ import { decode } from "jsonwebtoken"
 import { OathkeeperUnauthorizedServiceError } from "@domain/oathkeeper/errors"
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 
-import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
-
 import {
   createApolloClient,
   defaultTestClientConfig,
@@ -12,6 +10,7 @@ import {
   killServer,
   startServer,
 } from "test/helpers"
+import { UserLoginDocument } from "test/e2e/generated"
 let serverPid: PID
 
 beforeAll(async () => {
@@ -49,7 +48,7 @@ describe("Oathkeeper", () => {
     const input = { phone, code }
 
     const result = await apolloClient.mutate({
-      mutation: USER_LOGIN,
+      mutation: UserLoginDocument,
       variables: { input },
     })
     disposeClient()
