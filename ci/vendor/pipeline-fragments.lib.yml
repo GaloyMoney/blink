@@ -219,7 +219,7 @@ plan:
     outputs:
     - name: repo
     run:
-      path: pipeline-tasks/ci/vendor/tasks/prep-docker-build-env.sh
+      path: pipeline-tasks/ci/vendor/tasks/docker-prep-docker-build-env.sh
 - task: build
   privileged: true
   config:

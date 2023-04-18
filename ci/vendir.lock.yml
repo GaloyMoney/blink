@@ -1,9 +1,15 @@
 apiVersion: vendir.k14s.io/v1alpha1
 directories:
-  - contents:
-      - git:
-          commitTitle: "fix: REPO_PATH initialization"
-          sha: 70728a1b62e43be803a337bfae5968b2324f7ea8
-        path: .
-    path: vendor
+- contents:
+  - git:
+      commitTitle: 'fix: featflags and files (#25)...'
+      sha: 3cfa8cdf8e9c56d2fa7c3109f3fb62fb3dd52148
+    path: .
+  path: ../.github/workflows/vendor
+- contents:
+  - git:
+      commitTitle: 'fix: featflags and files (#25)...'
+      sha: 3cfa8cdf8e9c56d2fa7c3109f3fb62fb3dd52148
+    path: .
+  path: ./vendor
 kind: LockConfig
