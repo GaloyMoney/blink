@@ -176,3 +176,6 @@ kill-graphql:
 
 redis-cli:
 	docker-compose exec redis redis-cli
+
+e2e-codegen:
+	yarn e2e-codegen
