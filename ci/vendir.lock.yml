@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: featflags and files (#25)...'
-      sha: 3cfa8cdf8e9c56d2fa7c3109f3fb62fb3dd52148
+      commitTitle: 'fix: bump image digest generic'
+      sha: c15eb602081f067cec3394fa9221b333fe53b29a
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'fix: featflags and files (#25)...'
-      sha: 3cfa8cdf8e9c56d2fa7c3109f3fb62fb3dd52148
+      commitTitle: 'fix: bump image digest generic'
+      sha: c15eb602081f067cec3394fa9221b333fe53b29a
     path: .
   path: ./vendor
 kind: LockConfig

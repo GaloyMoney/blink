@@ -8,7 +8,7 @@ directories:
   - path: . # Copy this folder out to ..
     git:
       url: https://github.com/GaloyMoney/concourse-shared.git
-      ref: 3cfa8cdf8e9c56d2fa7c3109f3fb62fb3dd52148
+      ref: c15eb602081f067cec3394fa9221b333fe53b29a
     includePaths:
     - shared/actions/*
     excludePaths:
@@ -20,7 +20,7 @@ directories:
   - path: .
     git:
       url: https://github.com/GaloyMoney/concourse-shared.git
-      ref: 3cfa8cdf8e9c56d2fa7c3109f3fb62fb3dd52148
+      ref: c15eb602081f067cec3394fa9221b333fe53b29a
     includePaths:
     - shared/ci/**/*
     excludePaths:
