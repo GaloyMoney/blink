@@ -105,9 +105,12 @@ jest.mock("@config", () => {
   return {
     ...jest.requireActual("@config"),
     getAccountLimits: jest.fn().mockReturnValue({
-      intraLedgerLimit: 100_000 as UsdCents,
-      withdrawalLimit: 100_000 as UsdCents,
-      tradeIntraAccountLimit: 100_000 as UsdCents,
+      intraLedgerLimit: { "24h": 100_000 as UsdCents, "30d": 1_000_000 as UsdCents },
+      withdrawalLimit: { "24h": 100_000 as UsdCents, "30d": 1_000_000 as UsdCents },
+      tradeIntraAccountLimit: {
+        "24h": 100_000 as UsdCents,
+        "30d": 1_000_000 as UsdCents,
+      },
     }),
   }
 })
@@ -2749,9 +2752,12 @@ describe("UserWalletLimit - handles 1 sat send with high btc outgoing volume", (
   const usdLimit = toCents(100_000)
 
   const accountLimits = {
-    intraLedgerLimit: usdLimit,
-    withdrawalLimit: usdLimit,
-    tradeIntraAccountLimit: usdLimit,
+    intraLedgerLimit: { "24h": 100_000 as UsdCents, "30d": 1_000_000 as UsdCents },
+    withdrawalLimit: { "24h": 100_000 as UsdCents, "30d": 1_000_000 as UsdCents },
+    tradeIntraAccountLimit: {
+      "24h": 100_000 as UsdCents,
+      "30d": 1_000_000 as UsdCents,
+    },
   }
 
   const walletVolumes = [

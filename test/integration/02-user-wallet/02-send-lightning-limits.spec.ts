@@ -20,9 +20,9 @@ import {
   lndOutside1,
 } from "test/helpers"
 
-const MOCKED_LIMIT = 100 as UsdCents
+const MOCKED_LIMIT = { "24h": 100 as UsdCents, "30d": 1000 as UsdCents }
 const AMOUNT_ABOVE_THRESHOLD = 10 as UsdCents
-const MOCKED_BALANCE_ABOVE_THRESHOLD = (MOCKED_LIMIT + 20) as UsdCents
+const MOCKED_BALANCE_ABOVE_THRESHOLD = { "24h": 120 as UsdCents, "30d": 1000 as UsdCents }
 const accountLimits: IAccountLimits = {
   intraLedgerLimit: MOCKED_LIMIT,
   withdrawalLimit: MOCKED_LIMIT,
@@ -148,7 +148,7 @@ const successLimitsPaymentTests = ({
     } else {
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
       const expectedError = `Cannot transfer more than ${centsToUsdString(
-        accountLimits.withdrawalLimit,
+        accountLimits.withdrawalLimit["24h"],
       )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
@@ -162,7 +162,7 @@ const successLimitsPaymentTests = ({
       })
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
       const expectedError = `Cannot transfer more than ${centsToUsdString(
-        accountLimits.intraLedgerLimit,
+        accountLimits.withdrawalLimit["24h"],
       )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
@@ -195,7 +195,7 @@ const successLimitsPaymentTests = ({
     } else {
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
       const expectedError = `Cannot transfer more than ${centsToUsdString(
-        accountLimits.intraLedgerLimit,
+        accountLimits.intraLedgerLimit["24h"],
       )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
@@ -209,7 +209,7 @@ const successLimitsPaymentTests = ({
       })
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
       const expectedError = `Cannot transfer more than ${centsToUsdString(
-        accountLimits.intraLedgerLimit,
+        accountLimits.intraLedgerLimit["24h"],
       )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
@@ -266,7 +266,7 @@ const successLimitsPaymentTests = ({
     } else {
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
       const expectedError = `Cannot transfer more than ${centsToUsdString(
-        accountLimits.tradeIntraAccountLimit,
+        accountLimits.tradeIntraAccountLimit["24h"],
       )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
@@ -294,7 +294,7 @@ const successLimitsPaymentTests = ({
       })
       expect(paymentResult).toBeInstanceOf(LimitsExceededError)
       const expectedError = `Cannot transfer more than ${centsToUsdString(
-        accountLimits.tradeIntraAccountLimit,
+        accountLimits.tradeIntraAccountLimit["24h"],
       )} in 24 hours`
       expect((paymentResult as Error).message).toBe(expectedError)
     }
@@ -311,12 +311,14 @@ describe("UserWallet Limits - Lightning Pay", () => {
       // Create new wallet
       const newWallet = await createAndFundNewWallet({
         accountId,
-        balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
+        balanceAmount: await btcAmountFromUsdNumber(
+          MOCKED_BALANCE_ABOVE_THRESHOLD["24h"],
+        ),
       })
 
       // Test limits
       const usdAmountAboveThreshold =
-        accountLimits.withdrawalLimit + AMOUNT_ABOVE_THRESHOLD
+        accountLimits.withdrawalLimit["24h"] + AMOUNT_ABOVE_THRESHOLD
       const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
       const senderAccount = await AccountsRepository().findById(newWallet.accountId)
@@ -332,12 +334,14 @@ describe("UserWallet Limits - Lightning Pay", () => {
       // Create new wallet
       const newWallet = await createAndFundNewWallet({
         accountId,
-        balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
+        balanceAmount: await btcAmountFromUsdNumber(
+          MOCKED_BALANCE_ABOVE_THRESHOLD["24h"],
+        ),
       })
 
       // Test limits
       const usdAmountAboveThreshold =
-        accountLimits.intraLedgerLimit + AMOUNT_ABOVE_THRESHOLD
+        accountLimits.intraLedgerLimit["24h"] + AMOUNT_ABOVE_THRESHOLD
       const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
       const senderAccount = await AccountsRepository().findById(newWallet.accountId)
@@ -351,7 +355,7 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
     it("fails to pay when amount exceeds tradeIntraAccount limit", async () => {
       const usdFundingAmount = paymentAmountFromNumber({
-        amount: MOCKED_BALANCE_ABOVE_THRESHOLD,
+        amount: MOCKED_BALANCE_ABOVE_THRESHOLD["24h"],
         currency: WalletCurrency.Usd,
       })
       if (usdFundingAmount instanceof Error) throw usdFundingAmount
@@ -369,7 +373,7 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
       // Test limits
       const usdAmountAboveThreshold =
-        accountLimits.tradeIntraAccountLimit + AMOUNT_ABOVE_THRESHOLD
+        accountLimits.tradeIntraAccountLimit["24h"] + AMOUNT_ABOVE_THRESHOLD
       const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
       const senderAccount = await AccountsRepository().findById(newBtcWallet.accountId)
@@ -392,14 +396,16 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
       // Create new wallet
       const usdFundingAmount = paymentAmountFromNumber({
-        amount: MOCKED_BALANCE_ABOVE_THRESHOLD,
+        amount: MOCKED_BALANCE_ABOVE_THRESHOLD["24h"],
         currency: WalletCurrency.Usd,
       })
       if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
       const newBtcWallet = await createAndFundNewWallet({
         accountId,
-        balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
+        balanceAmount: await btcAmountFromUsdNumber(
+          MOCKED_BALANCE_ABOVE_THRESHOLD["24h"],
+        ),
       })
 
       const newUsdWallet = await createAndFundNewWallet({
@@ -409,7 +415,7 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
       // Construct payments
       const SPLITS = 2
-      let partialUsdSendAmount = Math.floor(accountLimits[limit] / SPLITS)
+      let partialUsdSendAmount = Math.floor(accountLimits[limit]["24h"] / SPLITS)
       const bufferForSpread = 2
       partialUsdSendAmount -= bufferForSpread
       const partialBtcSendAmount = await btcAmountFromUsdNumber(partialUsdSendAmount)
@@ -423,12 +429,12 @@ describe("UserWallet Limits - Lightning Pay", () => {
       const checkPartialUsdAmount = await dealerUsdFromBtc(partialBtcSendAmount)
       if (checkPartialUsdAmount instanceof Error) throw checkPartialUsdAmount
       const expectedUsdSuccessfulAmount = checkPartialUsdAmount.amount * BigInt(SPLITS)
-      expect(expectedUsdSuccessfulAmount).toBeLessThan(accountLimits[limit])
+      expect(expectedUsdSuccessfulAmount).toBeLessThan(accountLimits[limit]["24h"])
 
       const checkUsdAboveThreshold = await dealerUsdFromBtc(btcAmountAboveThreshold)
       if (checkUsdAboveThreshold instanceof Error) throw checkUsdAboveThreshold
       expect(expectedUsdSuccessfulAmount + checkUsdAboveThreshold.amount).toBeGreaterThan(
-        accountLimits[limit],
+        accountLimits[limit]["24h"],
       )
 
       // Test direct limits

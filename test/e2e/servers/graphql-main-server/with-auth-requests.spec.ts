@@ -246,7 +246,7 @@ gql`
   }
 `
 
-describe.only("setup", () => {
+describe("setup", () => {
   it("create main user", async () => {
     await loginFromPhoneAndCode({ phone, code })
   })
@@ -1069,7 +1069,7 @@ describe("graphql", () => {
     })
   })
 
-  describe.only("Limits", () => {
+  describe("Limits", () => {
     afterAll(async () => {
       jest.restoreAllMocks()
     })
@@ -1109,14 +1109,14 @@ describe("graphql", () => {
         }
       `
 
-      // apolloClient = await loginFromPhoneAndCode({ phone, code })
-
       const limitsResult = await apolloClient.query<AccountLimitsQuery>({
         query: AccountLimitsDocument,
       })
 
-      console.dir(limitsResult, { depth: null })
-      expect("true").toBe("true")
+      // TODO: better testing of values, specially the remaining limit
+      expect(limitsResult.data.me?.defaultAccount.limits.withdrawal[0].totalLimit).toBe(
+        100000,
+      )
     })
   })
 })

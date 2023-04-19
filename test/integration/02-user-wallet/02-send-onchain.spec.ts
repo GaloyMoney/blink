@@ -1243,7 +1243,9 @@ describe("BtcWallet - onChainPay", () => {
 
     const { outgoingBaseAmount } = walletVolume
 
-    const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
+    const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit[
+      "24h"
+    ]
 
     const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
       currency: WalletCurrency.Usd,
