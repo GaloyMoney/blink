@@ -10,13 +10,20 @@ import { AccountLimitsType } from "./primitives"
 
 const calc = AmountCalculator()
 
+export const LimitTimeframe = {
+  "24h": "24h",
+  "30d": "30d",
+} as const
+
 export const calculateLimitsInUsd = async ({
+  limitTimeframe,
   limitName,
   limitAmount,
   priceRatio,
 
   walletVolumes,
 }: {
+  limitTimeframe: LimitTimeframe
   limitName: AccountLimitsType
   limitAmount: UsdPaymentAmount
   priceRatio: WalletPriceRatio
@@ -37,9 +44,9 @@ export const calculateLimitsInUsd = async ({
   }
 
   addAttributesToCurrentSpan({
-    "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
-    "txVolume.threshold": `${limitAmount.amount}`,
-    "txVolume.limitCheck": limitName,
+    [`txVolume.outgoingInBase.${limitTimeframe}`]: `${volumeInUsdAmount.amount}`,
+    [`txVolume.threshold.${limitTimeframe}`]: `${limitAmount.amount}`,
+    [`txVolume.limitCheck.${limitTimeframe}`]: limitName,
   })
 
   return {
@@ -51,16 +58,19 @@ export const calculateLimitsInUsd = async ({
 
 const volumesForLimit =
   ({
+    limitTimeframe,
     limitName,
     limitAmount,
     priceRatio,
   }: {
+    limitTimeframe: LimitTimeframe
     limitName: AccountLimitsType
     limitAmount: UsdPaymentAmount
     priceRatio: WalletPriceRatio
   }) =>
   async (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) =>
     calculateLimitsInUsd({
+      limitTimeframe,
       limitName,
       limitAmount,
       priceRatio,
@@ -69,17 +79,20 @@ const volumesForLimit =
     })
 
 export const AccountLimitsVolumes = ({
+  limitTimeframe,
   accountLimits,
   priceRatio,
 }: {
+  limitTimeframe: LimitTimeframe
   accountLimits: IAccountLimits
   priceRatio: WalletPriceRatio
 }): AccountLimitsVolumes => {
   const accountLimitAmounts = {} as IAccountLimitAmounts
   for (const rawKey of Object.keys(accountLimits)) {
-    const key = rawKey as keyof IAccountLimits
+    const key = rawKey as TypeLimits
+    const amount = accountLimits[key][limitTimeframe]
     const limitAmount = paymentAmountFromNumber({
-      amount: accountLimits[key],
+      amount,
       currency: WalletCurrency.Usd,
     })
     if (limitAmount instanceof Error) return limitAmount
@@ -88,16 +101,19 @@ export const AccountLimitsVolumes = ({
 
   return {
     volumesIntraledger: volumesForLimit({
+      limitTimeframe,
       limitName: AccountLimitsType.IntraLedger,
       limitAmount: accountLimitAmounts.intraLedgerLimit,
       priceRatio,
     }),
     volumesWithdrawal: volumesForLimit({
+      limitTimeframe,
       limitName: AccountLimitsType.Withdrawal,
       limitAmount: accountLimitAmounts.withdrawalLimit,
       priceRatio,
     }),
     volumesTradeIntraAccount: volumesForLimit({
+      limitTimeframe,
       limitName: AccountLimitsType.SelfTrade,
       limitAmount: accountLimitAmounts.tradeIntraAccountLimit,
       priceRatio,

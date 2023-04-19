@@ -17,6 +17,8 @@ import { toDays, toSeconds } from "@domain/primitives"
 import { checkedToPubkey } from "@domain/bitcoin/lightning"
 import { WalletCurrency } from "@domain/shared"
 
+import { LimitTimeframe } from "@domain/accounts/limits-volume"
+
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
 
@@ -182,9 +184,22 @@ export const getAccountLimits = ({
   accountLimits = yamlConfig.accountLimits,
 }: AccountLimitsArgs): IAccountLimits => {
   return {
-    intraLedgerLimit: toCents(accountLimits.intraLedger.level[level]),
-    withdrawalLimit: toCents(accountLimits.withdrawal.level[level]),
-    tradeIntraAccountLimit: toCents(accountLimits.tradeIntraAccount.level[level]),
+    intraLedgerLimit: {
+      [LimitTimeframe["24h"]]: toCents(accountLimits.intraLedger["24h"].level[level]),
+      [LimitTimeframe["30d"]]: toCents(accountLimits.intraLedger["30d"].level[level]),
+    },
+    withdrawalLimit: {
+      [LimitTimeframe["24h"]]: toCents(accountLimits.withdrawal["24h"].level[level]),
+      [LimitTimeframe["30d"]]: toCents(accountLimits.withdrawal["30d"].level[level]),
+    },
+    tradeIntraAccountLimit: {
+      [LimitTimeframe["24h"]]: toCents(
+        accountLimits.tradeIntraAccount["24h"].level[level],
+      ),
+      [LimitTimeframe["30d"]]: toCents(
+        accountLimits.tradeIntraAccount["30d"].level[level],
+      ),
+    },
   }
 }
 

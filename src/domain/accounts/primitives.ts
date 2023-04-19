@@ -12,6 +12,7 @@ export const AccountStatus = {
 
 export const AccountLimitsRange = {
   ONE_DAY: "ONE_DAY",
+  THIRTY_DAY: "THIRTY_DAY",
 } as const
 
 export const AccountLimitsType = {

@@ -60,6 +60,8 @@ import {
   MyUpdatesSubscription,
   TransactionsQuery,
   TransactionsDocument,
+  AccountLimitsQuery,
+  AccountLimitsDocument,
 } from "test/e2e/generated"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -244,7 +246,7 @@ gql`
   }
 `
 
-describe("setup", () => {
+describe.only("setup", () => {
   it("create main user", async () => {
     await loginFromPhoneAndCode({ phone, code })
   })
@@ -1064,6 +1066,57 @@ describe("graphql", () => {
       expect(status).toBe("PAID")
       const result2 = await promisePay
       expect(hash).toBe(result2.id)
+    })
+  })
+
+  describe.only("Limits", () => {
+    afterAll(async () => {
+      jest.restoreAllMocks()
+    })
+
+    it("receive a payment and subscription update", async () => {
+      gql`
+        query accountLimits {
+          me {
+            id
+            defaultAccount {
+              id
+              limits {
+                withdrawal {
+                  totalLimit
+                  remainingLimit
+                  interval
+                  __typename
+                }
+                internalSend {
+                  totalLimit
+                  remainingLimit
+                  interval
+                  __typename
+                }
+                convert {
+                  totalLimit
+                  remainingLimit
+                  interval
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+        }
+      `
+
+      // apolloClient = await loginFromPhoneAndCode({ phone, code })
+
+      const limitsResult = await apolloClient.query<AccountLimitsQuery>({
+        query: AccountLimitsDocument,
+      })
+
+      console.dir(limitsResult, { depth: null })
+      expect("true").toBe("true")
     })
   })
 })

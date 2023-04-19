@@ -81,9 +81,18 @@ type YamlSchema = {
     initialWallets: WalletCurrency[]
   }
   accountLimits: {
-    withdrawal: AccountLimitsConfig
-    intraLedger: AccountLimitsConfig
-    tradeIntraAccount: AccountLimitsConfig
+    withdrawal: {
+      "24h": AccountLimitsConfig
+      "30d": AccountLimitsConfig
+    }
+    intraLedger: {
+      "24h": AccountLimitsConfig
+      "30d": AccountLimitsConfig
+    }
+    tradeIntraAccount: {
+      "24h": AccountLimitsConfig
+      "30d": AccountLimitsConfig
+    }
   }
   spamLimits: {
     memoSharingSatsThreshold: number

@@ -177,6 +177,8 @@ const volumesAndLimitsForAccountId = async ({
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
+  const accountLimits = getAccountLimits({ level: account.level })
+
   const walletVolumes = await volumesForAccountId({
     accountId,
     period: ONE_DAY,
@@ -185,7 +187,7 @@ const volumesAndLimitsForAccountId = async ({
   if (walletVolumes instanceof Error) return walletVolumes
 
   return {
-    accountLimits: getAccountLimits({ level: account.level }),
+    accountLimits,
     walletVolumes,
   }
 }

@@ -1,15 +1,26 @@
 import { volumesForAccountId } from "@app/payments/helpers"
 import { getMidPriceRatio } from "@app/prices"
-import { getAccountLimits, getDealerConfig, ONE_DAY } from "@config"
+import { getAccountLimits, getDealerConfig, ONE_DAY, THIRTY_DAY } from "@config"
 import { AccountLimitsType } from "@domain/accounts"
-import { AccountLimitsVolumes } from "@domain/accounts/limits-volume"
+import { AccountLimitsVolumes, LimitTimeframe } from "@domain/accounts/limits-volume"
 import { InvalidAccountLimitTypeError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 
+const limitTimeframeToSecondsSince = (timeframe: LimitTimeframe) => {
+  switch (timeframe) {
+    case LimitTimeframe["24h"]:
+      return ONE_DAY
+    case LimitTimeframe["30d"]:
+      return THIRTY_DAY
+  }
+}
+
 export const remainingLimit = async ({
+  limitTimeframe,
   account,
   limitType,
 }: {
+  limitTimeframe: LimitTimeframe
   account: Account
   limitType: AccountLimitsType
 }): Promise<UsdPaymentAmount | ApplicationError> => {
@@ -20,7 +31,11 @@ export const remainingLimit = async ({
 
   const accountLimits = getAccountLimits({ level: account.level })
 
-  const accountVolumes = AccountLimitsVolumes({ accountLimits, priceRatio })
+  const accountVolumes = AccountLimitsVolumes({
+    accountLimits,
+    priceRatio,
+    limitTimeframe,
+  })
   if (accountVolumes instanceof Error) return accountVolumes
 
   const ledger = LedgerService()
@@ -44,9 +59,11 @@ export const remainingLimit = async ({
       return new InvalidAccountLimitTypeError(limitType)
   }
 
+  const period = limitTimeframeToSecondsSince(limitTimeframe)
+
   const walletVolumes = await volumesForAccountId({
     accountId: account.id,
-    period: ONE_DAY,
+    period,
     volumeAmountSinceFn: getVolumeFn,
   })
   if (walletVolumes instanceof Error) return walletVolumes
@@ -58,20 +75,22 @@ export const remainingLimit = async ({
 }
 
 export const totalLimit = async ({
+  limitTimeframe,
   level,
   limitType,
 }: {
+  limitTimeframe: LimitTimeframe
   level: AccountLevel
   limitType: AccountLimitsType
 }): Promise<UsdCents | ApplicationError> => {
   const config = getAccountLimits({ level })
   switch (limitType) {
     case AccountLimitsType.IntraLedger:
-      return config.intraLedgerLimit
+      return config.intraLedgerLimit[limitTimeframe]
     case AccountLimitsType.Withdrawal:
-      return config.withdrawalLimit
+      return config.withdrawalLimit[limitTimeframe]
     case AccountLimitsType.SelfTrade:
-      return config.tradeIntraAccountLimit
+      return config.tradeIntraAccountLimit[limitTimeframe]
     default:
       return new InvalidAccountLimitTypeError(limitType)
   }

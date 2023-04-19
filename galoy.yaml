@@ -128,17 +128,32 @@ accounts:
     - BTC
 accountLimits:
   withdrawal:
-    level:
-      "1": 100000
-      "2": 5000000
+    24h:
+      level:
+        "1": 100000
+        "2": 5000000
+    30d:
+      level:
+        "1": 999999999999
+        "2": 999999999999
   intraLedger:
-    level:
-      "1": 200000
-      "2": 5000000
+    24h:
+      level:
+        "1": 200000
+        "2": 5000000
+    30d:
+      level:
+        "1": 999999999999
+        "2": 999999999999
   tradeIntraAccount:
-    level:
-      "1": 5000000
-      "2": 20000000
+    24h:
+      level:
+        "1": 5000000
+        "2": 20000000
+    30d:
+      level:
+        "1": 999999999999
+        "2": 999999999999
 spamLimits:
   memoSharingSatsThreshold: 1000
   memoSharingCentsThreshold: 50

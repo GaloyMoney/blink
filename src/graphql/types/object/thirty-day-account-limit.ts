@@ -7,26 +7,26 @@ import { normalizePaymentAmount } from "@graphql/root/mutation"
 
 import { Accounts } from "@app"
 import { AccountLimitsRange } from "@domain/accounts"
-import { SECS_PER_DAY } from "@config"
+import { SECS_PER_THIRTY_DAY } from "@config"
 import { LimitTimeframe } from "@domain/accounts/limits-volume"
 
-const OneDayAccountLimit = GT.Object<{
+const ThirtyDayAccountLimit = GT.Object<{
   account: Account
   limitType: AccountLimitsType
   range: AccountLimitsRange
 }>({
-  name: "OneDayAccountLimit",
+  name: "ThirtyDayAccountLimit",
   interfaces: () => [IAccountLimit],
-  isTypeOf: ({ range }) => range === AccountLimitsRange.ONE_DAY,
+  isTypeOf: ({ range }) => range === AccountLimitsRange.THIRTY_DAY,
 
   fields: () => ({
     totalLimit: {
       type: GT.NonNull(CentAmount),
-      description: `The current maximum limit for a given 24 hour period.`,
+      description: `The current maximum limit for a given 30 days period.`,
       resolve: async (source) => {
         const { account, limitType } = source
         const limit = await Accounts.totalLimit({
-          limitTimeframe: LimitTimeframe["24h"],
+          limitTimeframe: LimitTimeframe["30d"],
           level: account.level,
           limitType,
         })
@@ -37,11 +37,11 @@ const OneDayAccountLimit = GT.Object<{
     },
     remainingLimit: {
       type: CentAmount,
-      description: `The amount of cents remaining below the limit for the current 24 hour period.`,
+      description: `The amount of cents remaining below the limit for the current 30 days period.`,
       resolve: async (source) => {
         const { account, limitType } = source
         const volumeRemaining = await Accounts.remainingLimit({
-          limitTimeframe: LimitTimeframe["24h"],
+          limitTimeframe: LimitTimeframe["30d"],
           account,
           limitType,
         })
@@ -52,10 +52,10 @@ const OneDayAccountLimit = GT.Object<{
     },
     interval: {
       type: Seconds,
-      description: `The rolling time interval value in seconds for the current 24 hour period.`,
-      resolve: () => SECS_PER_DAY,
+      description: `The rolling time interval value in seconds for the current 30 days period.`,
+      resolve: () => SECS_PER_THIRTY_DAY,
     },
   }),
 })
 
-export default OneDayAccountLimit
+export default ThirtyDayAccountLimit
