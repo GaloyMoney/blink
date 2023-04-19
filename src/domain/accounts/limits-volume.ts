@@ -30,9 +30,7 @@ export const calculateLimitsInUsd = async ({
   for (const walletVolume of walletVolumes) {
     const outgoingUsdAmount =
       walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await priceRatio.convertFromBtc(
-            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-          )
+        ? priceRatio.convertFromBtc(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
 
     volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
