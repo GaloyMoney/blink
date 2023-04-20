@@ -67,7 +67,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-jwt": "^8.4.1",
-    "firebase-admin": "^11.5.0",
+    "firebase-admin": "^11.7.0",
     "google-protobuf": "^3.21.2",
     "graphql": "^16.6.0",
     "graphql-middleware": "^6.1.33",
