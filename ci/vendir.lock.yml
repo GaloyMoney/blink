@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: pipeline fragments file names'
-      sha: 0a916f2074c900552639e84e379a2deb90b416db
+      commitTitle: 'fix: rust helpers'
+      sha: 32ff38a66a0ffa588dc1b9e245a38e83b097da32
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: pipeline fragments file names'
-      sha: 0a916f2074c900552639e84e379a2deb90b416db
+      commitTitle: 'fix: rust helpers'
+      sha: 32ff38a66a0ffa588dc1b9e245a38e83b097da32
     path: .
   path: ./vendor
 kind: LockConfig
