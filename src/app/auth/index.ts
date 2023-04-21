@@ -7,6 +7,7 @@ import { extendSession, IdentityRepository } from "@services/kratos"
 
 // TODO: interface/type should be reworked so that it doesn't have to come from private
 import { listSessionsInternal } from "@services/kratos/private"
+import { ExtendSessionKratosError } from "@services/kratos/errors"
 import {
   recordExceptionInCurrentSpan,
   addAttributesToCurrentSpan,
@@ -39,7 +40,7 @@ export const extendSessions = async (
     const sessions = await listSessionsInternal(user.id)
     if (sessions instanceof Error) {
       recordExceptionInCurrentSpan({
-        error: "impossible to get session",
+        error: sessions,
         level: ErrorLevel.Info,
         attributes: { user: user.id, phone: user.phone },
       })
@@ -52,7 +53,7 @@ export const extendSessions = async (
       if (hasExtended instanceof Error) {
         countOfExtendedSessionErrors++
         recordExceptionInCurrentSpan({
-          error: "impossible to extend session",
+          error: new ExtendSessionKratosError("impossible to extend session"),
           level: ErrorLevel.Info,
           attributes: { user: user.id, phone: user.phone },
         })

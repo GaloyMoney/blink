@@ -546,6 +546,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownBigIntConversionError":
     case "KratosError":
     case "AuthenticationKratosError":
+    case "ExtendSessionKratosError":
+    case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
     case "MissingTotpKratosError":
     case "IncompatibleSchemaUpgradeError":

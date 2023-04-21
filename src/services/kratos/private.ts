@@ -4,7 +4,11 @@ import { ErrorLevel } from "@domain/shared"
 import { Configuration, FrontendApi, IdentityApi } from "@ory/client"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
-import { MissingExpiredAtKratosError, UnknownKratosError } from "./errors"
+import {
+  MissingCreatedAtKratosError,
+  MissingExpiredAtKratosError,
+  UnknownKratosError,
+} from "./errors"
 
 const { publicApi, adminApi } = getKratosConfig()
 
@@ -28,7 +32,9 @@ export const toDomainIdentityPhone = (identity: KratosIdentity): IdentityPhone =
     createdAt = new Date(identity.created_at)
   } else {
     recordExceptionInCurrentSpan({
-      error: "createdAt should always be set? type approximation from kratos",
+      error: new MissingCreatedAtKratosError(
+        "createdAt should always be set? type approximation from kratos",
+      ),
       level: ErrorLevel.Critical,
     })
     createdAt = new Date()
@@ -49,6 +55,6 @@ export const listSessionsInternal = async (
     if (res.data === null) return []
     return res.data
   } catch (err) {
-    return new UnknownKratosError(err)
+    return new UnknownKratosError(err.message || err)
   }
 }

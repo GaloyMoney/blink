@@ -76,7 +76,7 @@ export const updateAccountIPsInfo = async ({
 
     if (ipFetcherInfo instanceof IpFetcherServiceError) {
       recordExceptionInCurrentSpan({
-        error: ipFetcherInfo.message,
+        error: ipFetcherInfo,
         level: ErrorLevel.Warn,
         attributes: {
           ip,
@@ -103,9 +103,9 @@ export const updateAccountIPsInfo = async ({
       ipFetcherInfo.proxy === undefined ||
       !ipFetcherInfo.asn
     ) {
-      const error = `missing mandatory fields. isoCode: ${ipFetcherInfo.isoCode}, proxy: ${ipFetcherInfo.proxy}, asn: ${ipFetcherInfo.asn}`
+      const errorMsg = `missing mandatory fields. isoCode: ${ipFetcherInfo.isoCode}, proxy: ${ipFetcherInfo.proxy}, asn: ${ipFetcherInfo.asn}`
       recordExceptionInCurrentSpan({
-        error,
+        error: new IpFetcherServiceError(errorMsg),
         level: ErrorLevel.Warn,
         attributes: {
           ip,
