@@ -1,5 +1,4 @@
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-nocheck
 
 import {
   SemanticAttributes,
@@ -20,24 +19,28 @@ import {
   trace,
   context,
   propagation,
-  Span,
+  Span as OriginalSpan,
   Attributes,
   SpanStatusCode,
   SpanOptions,
   TimeInput,
   Exception,
   Context,
+  AttributeValue,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config"
 import { ErrorLevel, RankedErrorLevel } from "@domain/shared"
 
 import type * as graphqlTypes from "graphql"
+type ExtendedException = Exclude<Exception, string> & {
+  level?: ErrorLevel
+}
 
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client
-const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
+const gqlResponseHook = (span: ExtendedSpan, data: graphqlTypes.ExecutionResult) => {
   if (data.errors && data.errors.length > 0) {
     recordGqlErrors({ errors: data.errors, span, subPathName: "" })
   }
@@ -64,7 +67,7 @@ const recordGqlErrors = ({
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errors: any
-  span: Span
+  span: ExtendedSpan
   subPathName: string
 }) => {
   const subPath = subPathName ? `${subPathName}.` : ""
@@ -78,7 +81,13 @@ const recordGqlErrors = ({
     ErrorLevel.Warn,
   )
 
-  const setErrorAttribute = ({ attribute, value }) =>
+  const setErrorAttribute = ({
+    attribute,
+    value,
+  }: {
+    attribute: string
+    value: AttributeValue
+  }) =>
     span.setAttribute(`graphql.${subPath ? "data." : subPath}error.${attribute}`, value)
 
   const firstErr = errors[0]
@@ -249,12 +258,12 @@ export const recordExceptionInCurrentSpan = ({
   level,
   attributes,
 }: {
-  error: Exception
+  error: ExtendedException
   level?: ErrorLevel
   attributes?: Attributes
 }) => {
   const span = trace.getSpan(context.active())
-  if (!span) return
+  if (!span || !error) return
 
   if (attributes) {
     for (const [key, value] of Object.entries(attributes)) {
@@ -269,25 +278,30 @@ const updateErrorForSpan = ({
   span,
   errorLevel,
 }: {
-  span: Span
+  span: ExtendedSpan
   errorLevel: ErrorLevel
 }): boolean => {
   const spanErrorLevel =
-    (span && span.attributes && span.attributes["error.level"]) || ErrorLevel.Info
+    (span && span.attributes && (span.attributes["error.level"] as ErrorLevel)) ||
+    ErrorLevel.Info
   const spanErrorRank = RankedErrorLevel.indexOf(spanErrorLevel)
   const errorRank = RankedErrorLevel.indexOf(errorLevel)
 
   return errorRank >= spanErrorRank
 }
 
-const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
+const recordException = (
+  span: ExtendedSpan,
+  exception: ExtendedException,
+  level?: ErrorLevel,
+) => {
   const errorLevel = level || exception["level"] || ErrorLevel.Warn
 
   // Write error attributes if update checks pass
   if (updateErrorForSpan({ span, errorLevel })) {
     span.setAttribute("error.level", errorLevel)
-    span.setAttribute("error.name", exception["name"])
-    span.setAttribute("error.message", exception["message"])
+    span.setAttribute("error.name", exception["name"] || "undefined")
+    span.setAttribute("error.message", exception["message"] || "undefined")
   }
 
   // Append error with next index
@@ -296,8 +310,8 @@ const recordException = (span: Span, exception: Exception, level?: ErrorLevel) =
     nextIdx++
   }
   span.setAttribute(`error.${nextIdx}.level`, errorLevel)
-  span.setAttribute(`error.${nextIdx}.name`, exception["name"])
-  span.setAttribute(`error.${nextIdx}.message`, exception["message"])
+  span.setAttribute(`error.${nextIdx}.name`, exception["name"] || "undefined")
+  span.setAttribute(`error.${nextIdx}.message`, exception["message"] || "undefined")
 
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
@@ -369,7 +383,7 @@ export const wrapToRunInSpan = <
   spanAttributes,
   root,
 }: {
-  fn: (...args: A) => R
+  fn: (...args: A) => PromiseReturnType<R>
   fnName?: string
   namespace: string
   spanAttributes?: Attributes
@@ -377,7 +391,7 @@ export const wrapToRunInSpan = <
 }) => {
   const functionName = fnName || fn.name || "unknown"
 
-  const wrappedFn = (...args: A): R => {
+  const wrappedFn = (...args: A): PromiseReturnType<R> => {
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,
@@ -469,36 +483,50 @@ export const wrapAsyncToRunInSpan = <
   return wrappedFn
 }
 
+type FunctionReturn = PartialResult<unknown> | unknown
+type FunctionType = (...args: unknown[]) => PromiseReturnType<FunctionReturn>
+type AsyncFunctionType = (
+  ...args: unknown[]
+) => Promise<PromiseReturnType<FunctionReturn>>
+
 export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
   namespace,
   fns,
+  spanAttributes,
 }: {
   namespace: string
   fns: F
+  spanAttributes?: Attributes
 }): F => {
-  const functions = { ...fns }
-  for (const fn of Object.keys(functions)) {
-    const fnType = fns[fn].constructor.name
+  const functions: Record<string, FunctionType | AsyncFunctionType> = {}
+  for (const fnKey of Object.keys(fns)) {
+    const fn = fnKey as keyof typeof fns
+    const func = fns[fn] as FunctionType
+    const fnType = func.constructor.name
     if (fnType === "Function") {
-      functions[fn] = wrapToRunInSpan({
+      functions[fnKey] = wrapToRunInSpan({
         namespace,
-        fn: fns[fn],
-        fnName: fn,
+        fn: func,
+        fnName: fnKey,
+        spanAttributes,
       })
       continue
     }
 
     if (fnType === "AsyncFunction") {
-      functions[fn] = wrapAsyncToRunInSpan({
+      functions[fnKey] = wrapAsyncToRunInSpan({
         namespace,
-        fn: fns[fn],
-        fnName: fn,
+        fn: fns[fn] as AsyncFunctionType,
+        fnName: fnKey,
+        spanAttributes,
       })
       continue
     }
-    functions[fn] = fns[fn]
   }
-  return functions
+  return {
+    ...fns,
+    ...functions,
+  }
 }
 
 export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnType<F>>(
@@ -519,33 +547,15 @@ export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnTyp
   return context.with(propagation.setBaggage(ctx, baggage), fn)
 }
 
-export const wrapToAddAttributes = <F extends object>({
-  fns,
-  attributes,
-}: {
-  fns: F
-  attributes: Attributes
-}): F => {
-  const addAttributesToMethod = <T extends (...args: Parameters<T>) => ReturnType<T>>(
-    fn: T,
-  ) => {
-    return (args) => {
-      addAttributesToCurrentSpan(attributes)
-      return fn(args)
-    }
-  }
-
-  const functions = { ...fns }
-  for (const fn of Object.keys(functions)) {
-    functions[fn] = addAttributesToMethod(fns[fn])
-  }
-  return functions
-}
-
 export const shutdownTracing = async () => {
-  provider.shutdown()
+  await provider.forceFlush()
+  await provider.shutdown()
 }
 
 export { SemanticAttributes, SemanticResourceAttributes }
 
 export const ACCOUNT_USERNAME = "account.username"
+
+export interface ExtendedSpan extends OriginalSpan {
+  attributes?: Attributes
+}

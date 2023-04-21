@@ -49,7 +49,7 @@ const sendToDevice = async (
     response.results.forEach((item) => {
       if (item?.error?.message) {
         recordExceptionInCurrentSpan({
-          error: item.error.message,
+          error: new InvalidDeviceNotificationsServiceError(item.error.message),
           level: ErrorLevel.Info,
         })
       }
@@ -84,13 +84,10 @@ const sendToDevice = async (
 
     return true
   } catch (err) {
-    recordExceptionInCurrentSpan({
-      error: err.message,
-      level: ErrorLevel.Warn,
-    })
-
     logger.error({ err, tokens, message }, "impossible to send notification")
-    return handleCommonNotificationErrors(err)
+    const error = handleCommonNotificationErrors(err)
+    recordExceptionInCurrentSpan({ error, level: ErrorLevel.Warn })
+    return error
   }
 }
 

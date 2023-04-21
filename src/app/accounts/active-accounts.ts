@@ -34,7 +34,7 @@ export const getRecentlyActiveAccounts = async function* ():
     const wallets = await WalletsRepository().listByAccountId(account.id)
     if (wallets instanceof Error) {
       recordExceptionInCurrentSpan({
-        error: "impossible to listByAccountId",
+        error: wallets,
         level: ErrorLevel.Critical,
         attributes: { account: account.id },
       })
@@ -44,7 +44,7 @@ export const getRecentlyActiveAccounts = async function* ():
     const isActive = await activityChecker.aboveThreshold(wallets)
     if (isActive instanceof Error) {
       recordExceptionInCurrentSpan({
-        error: "impossible to get aboveThreshold value",
+        error: isActive,
         level: ErrorLevel.Critical,
         attributes: { account: account.id, wallets: JSON.stringify(wallets) },
       })

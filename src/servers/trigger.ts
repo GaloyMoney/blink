@@ -55,6 +55,7 @@ import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import healthzHandler from "./middlewares/healthz"
+import { SubscriptionInterruptedError } from "./errors"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
@@ -319,7 +320,7 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
   subTransactions.on("error", (err) => {
     baseLogger.error({ err }, "error subTransactions")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subTransactions"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subTransactions" },
     })
@@ -337,7 +338,7 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
   subBlocks.on("error", (err) => {
     baseLogger.error({ err }, "error subBlocks")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subBlocks"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subBlocks" },
     })
@@ -370,9 +371,9 @@ const listenerHodlInvoice = ({
   subInvoice.on("error", (err) => {
     baseLogger.info({ err }, "error subChannels")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subInvoice"),
       level: ErrorLevel.Warn,
-      attributes: { ["error.subscription"]: "subChannels" },
+      attributes: { ["error.subscription"]: "subInvoice" },
     })
     subInvoice.removeAllListeners()
   })
@@ -440,7 +441,7 @@ export const setupInvoiceSubscribe = ({
   subInvoices.on("error", (err) => {
     baseLogger.info({ err }, "error subInvoices")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subInvoices"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subInvoices" },
     })
@@ -465,7 +466,7 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   subChannels.on("error", (err) => {
     baseLogger.info({ err }, "error subChannels")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subChannels"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subChannels" },
     })
@@ -484,7 +485,7 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   subBackups.on("error", (err) => {
     baseLogger.info({ err }, "error subBackups")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subBackups"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subBackups" },
     })
