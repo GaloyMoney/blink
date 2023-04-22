@@ -44,7 +44,7 @@ watch:
 	yarn nodemon -V -e ts,graphql -w ./src -x make start
 
 clean-deps:
-	docker compose down
+	docker compose down -t 3
 
 reset-deps: clean-deps start-deps
 reset-deps-integration: clean-deps start-deps-integration
@@ -52,7 +52,7 @@ reset-deps-integration: clean-deps start-deps-integration
 test: unit integration
 
 test-migrate:
-	docker compose down -v
+	docker compose down -v -t 3
 	docker compose build
 	docker compose -f docker-compose.yml up mongodb-migrate --exit-code-from mongodb-migrate
 
@@ -159,7 +159,7 @@ mine-block:
 	container_id=$$(docker ps -q -f status=running -f name="bitcoind"); \
 	docker exec -it "$$container_id" /bin/sh -c 'ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
 
-lncli1:
+lncli-1:
 	container_id=$$(docker ps -q -f status=running -f name="lnd1"); \
 	docker exec -it "$$container_id" /bin/sh -c 'lncli -n regtest ${command}'
 
@@ -168,3 +168,15 @@ lncli-outside-1:
 	container_id=$$(docker ps -q -f status=running -f name="galoy-lnd-outside-1"); \
 	docker exec -it "$$container_id" /bin/sh -c 'lncli -n regtest ${command}'
 
+lncli-outside-2:
+	container_id=$$(docker ps -q -f status=running -f name="galoy-lnd-outside-2"); \
+	docker exec -it "$$container_id" /bin/sh -c 'lncli -n regtest ${command}'
+
+kill-graphql:
+	kill $(lsof -t -i:4001) & kill $(lsof -t -i:4012) & kill $(lsof -t -i:4000)
+
+redis-cli:
+	docker-compose exec redis redis-cli
+
+e2e-codegen:
+	yarn e2e-codegen

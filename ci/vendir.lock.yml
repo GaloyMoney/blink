@@ -1,9 +1,15 @@
 apiVersion: vendir.k14s.io/v1alpha1
 directories:
-  - contents:
-      - git:
-          commitTitle: "fix: REPO_PATH initialization"
-          sha: 70728a1b62e43be803a337bfae5968b2324f7ea8
-        path: .
-    path: vendor
+- contents:
+  - git:
+      commitTitle: 'chore: pipeline fragments file names'
+      sha: 0a916f2074c900552639e84e379a2deb90b416db
+    path: .
+  path: ../.github/workflows/vendor
+- contents:
+  - git:
+      commitTitle: 'chore: pipeline fragments file names'
+      sha: 0a916f2074c900552639e84e379a2deb90b416db
+    path: .
+  path: ./vendor
 kind: LockConfig

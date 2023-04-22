@@ -12,7 +12,12 @@ import {
 } from "@config"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { DisplayCurrency, MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
+import {
+  DisplayCurrency,
+  getCurrencyMajorExponent,
+  displayAmountFromNumber,
+  toCents,
+} from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { WalletPriceRatio } from "@domain/payments"
@@ -32,6 +37,7 @@ import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
 
 import {
   amountAfterFeeDeduction,
+  amountByPriceAsMajor,
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
@@ -178,18 +184,16 @@ describe("UserWallet - On chain", () => {
 
     expect(Number(expectedSatsFee.amount)).toEqual(satsFee)
 
-    const displayAmountMajorUnit = minorToMajorUnit({
+    const displayAmountForMajor = displayAmountFromNumber({
       amount: displayAmountRaw || 0,
-      displayMajorExponent: MajorExponent.STANDARD,
+      currency: displayCurrency || DisplayCurrency.Usd,
     })
+    if (displayAmountForMajor instanceof Error) throw displayAmountForMajor
 
     const displayAmount =
       displayAmountRaw === undefined || displayCurrency === undefined
         ? undefined
-        : {
-            currency: displayCurrency,
-            amount: Number(displayAmountMajorUnit),
-          }
+        : displayAmountForMajor
 
     // Check received notification
     const receivedNotification = createPushNotificationContent({
@@ -262,11 +266,11 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
+    const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
+      currency: WalletCurrency.Usd,
     })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-    const satsAmount = displayPriceRatio.convertFromUsd({
+    if (walletPriceRatio instanceof Error) throw walletPriceRatio
+    const satsAmount = walletPriceRatio.convertFromUsd({
       amount: BigInt(withdrawalLimitAccountLevel1),
       currency: WalletCurrency.Usd,
     })
@@ -287,11 +291,11 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const displayPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
+    const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
+      currency: WalletCurrency.Usd,
     })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-    const satsAmount = displayPriceRatio.convertFromUsd({
+    if (walletPriceRatio instanceof Error) throw walletPriceRatio
+    const satsAmount = walletPriceRatio.convertFromUsd({
       amount: BigInt(intraLedgerLimitAccountLevel1),
       currency: WalletCurrency.Usd,
     })
@@ -411,20 +415,33 @@ describe("UserWallet - On chain", () => {
     expect(pendingTx.initiationVia.address).toBe(address)
     expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
+    const {
+      settlementDisplayPrice: { displayCurrency },
+    } = pendingTx
+    const exponent = getCurrencyMajorExponent(displayCurrency)
+
     expect(pendingTx.settlementDisplayAmount).toBe(
-      (
-        pendingTx.settlementAmount * pendingTx.displayCurrencyPerSettlementCurrencyUnit
-      ).toFixed(MajorExponent.STANDARD),
+      amountByPriceAsMajor({
+        amount: pendingTx.settlementAmount,
+        price: pendingTx.settlementDisplayPrice,
+        walletCurrency: pendingTx.settlementCurrency,
+        displayCurrency: pendingTx.settlementDisplayPrice.displayCurrency,
+      }).toFixed(exponent),
     )
 
     expect(pendingTx.settlementDisplayFee).toBe(
       (
         Math.ceil(
-          pendingTx.settlementFee *
-            pendingTx.displayCurrencyPerSettlementCurrencyUnit *
-            100,
-        ) / 100
-      ).toFixed(MajorExponent.STANDARD),
+          amountByPriceAsMajor({
+            amount: pendingTx.settlementFee,
+            price: pendingTx.settlementDisplayPrice,
+            walletCurrency: pendingTx.settlementCurrency,
+            displayCurrency: pendingTx.settlementDisplayPrice.displayCurrency,
+          }) *
+            10 ** exponent,
+        ) /
+        10 ** exponent
+      ).toFixed(exponent),
     )
 
     // Check pendingTx from cache
@@ -445,10 +462,11 @@ describe("UserWallet - On chain", () => {
       currency: WalletCurrency.Btc,
     }
 
-    const displayPaymentAmount = {
-      amount: Number(pendingTx.settlementDisplayAmount),
-      currency: pendingTx.settlementDisplayCurrency as DisplayCurrency,
-    }
+    const displayPaymentAmount = displayAmountFromNumber({
+      amount: Number(pendingTx.settlementDisplayAmount) * 10 ** exponent,
+      currency: displayCurrency,
+    })
+    if (displayPaymentAmount instanceof Error) throw displayPaymentAmount
 
     const pendingNotification = createPushNotificationContent({
       type: NotificationType.OnchainReceiptPending,

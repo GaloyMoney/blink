@@ -1,5 +1,0 @@
-query LnInvoicePaymentStatus($input: LnInvoicePaymentStatusInput!) {
-  lnInvoicePaymentStatus(input: $input) {
-    status
-  }
-}

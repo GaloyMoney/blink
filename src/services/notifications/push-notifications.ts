@@ -2,7 +2,7 @@ import * as admin from "firebase-admin"
 
 import {
   InvalidDeviceNotificationsServiceError,
-  NotificationsServiceBadGatewayError,
+  NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
 } from "@domain/notifications"
 import { baseLogger } from "@services/logger"
@@ -49,7 +49,7 @@ const sendToDevice = async (
     response.results.forEach((item) => {
       if (item?.error?.message) {
         recordExceptionInCurrentSpan({
-          error: item.error.message,
+          error: new InvalidDeviceNotificationsServiceError(item.error.message),
           level: ErrorLevel.Info,
         })
       }
@@ -84,13 +84,10 @@ const sendToDevice = async (
 
     return true
   } catch (err) {
-    recordExceptionInCurrentSpan({
-      error: err.message,
-      level: ErrorLevel.Warn,
-    })
-
     logger.error({ err, tokens, message }, "impossible to send notification")
-    return handleCommonNotificationErrors(err)
+    const error = handleCommonNotificationErrors(err)
+    recordExceptionInCurrentSpan({ error, level: ErrorLevel.Warn })
+    return error
   }
 }
 
@@ -133,7 +130,8 @@ export const handleCommonNotificationErrors = (err: Error | string) => {
 
   switch (true) {
     case match(KnownNotificationErrorMessages.GoogleBadGatewayError):
-      return new NotificationsServiceBadGatewayError(errMsg)
+    case match(KnownNotificationErrorMessages.GoogleInternalServerError):
+      return new NotificationsServiceUnreachableServerError(errMsg)
 
     default:
       return new UnknownNotificationsServiceError(errMsg)
@@ -142,4 +140,5 @@ export const handleCommonNotificationErrors = (err: Error | string) => {
 
 export const KnownNotificationErrorMessages = {
   GoogleBadGatewayError: /Raw server response .* Error 502/,
+  GoogleInternalServerError: /Raw server response .* Error 500/,
 } as const

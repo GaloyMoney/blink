@@ -19,10 +19,7 @@ import { getOnChainTxs } from "./private/get-on-chain-txs"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-export const getTransactionsForWalletsByAddresses = async <
-  S extends WalletCurrency,
-  T extends DisplayCurrency,
->({
+export const getTransactionsForWalletsByAddresses = async <S extends WalletCurrency>({
   wallets,
   addresses,
   paginationArgs,
@@ -59,7 +56,7 @@ export const getTransactionsForWalletsByAddresses = async <
 
   const allAddresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
-  const walletDetailsByWalletId: WalletDetailsByWalletId<S, T> = {}
+  const walletDetailsByWalletId: WalletDetailsByWalletId = {}
 
   const accountRepo = AccountsRepository()
   for (const wallet of wallets) {
@@ -72,27 +69,16 @@ export const getTransactionsForWalletsByAddresses = async <
       account instanceof Error ? (0 as DepositFeeRatio) : account.depositFeeRatio
 
     const displayCurrency =
-      account instanceof Error
-        ? (DisplayCurrency.Usd as T)
-        : (account.displayCurrency as T)
+      account instanceof Error ? DisplayCurrency.Usd : account.displayCurrency
 
-    let displayPriceRatioForPending:
-      | DisplayPriceRatio<"BTC", T>
-      | PriceServiceError
-      | undefined = await getCurrentPriceAsDisplayPriceRatio<T>({
+    const displayPriceRatioForPending = await getCurrentPriceAsDisplayPriceRatio({
       currency: displayCurrency,
     })
     if (displayPriceRatioForPending instanceof Error) {
-      displayPriceRatioForPending = undefined
+      return PartialResult.err(displayPriceRatioForPending)
     }
 
-    let walletPriceRatio = WalletPriceRatio({
-      usd: { amount: 1n, currency: WalletCurrency.Usd },
-      btc: { amount: 1n, currency: WalletCurrency.Btc },
-    })
-    if (walletPriceRatio instanceof Error) {
-      return PartialResult.err(walletPriceRatio)
-    }
+    let walletPriceRatio: WalletPriceRatio | undefined = undefined
     if (wallet.currency !== WalletCurrency.Btc) {
       const walletPriceRatioResult = await getMidPriceRatio(usdHedgeEnabled)
       if (walletPriceRatioResult instanceof Error) {
@@ -106,7 +92,6 @@ export const getTransactionsForWalletsByAddresses = async <
       walletCurrency: wallet.currency as S,
       walletPriceRatio,
       depositFeeRatio,
-      displayCurrency,
       displayPriceRatio: displayPriceRatioForPending,
     }
   }

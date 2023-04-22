@@ -1,10 +1,12 @@
 import getUuidByString from "uuid-by-string"
 
-import { SAT_PRICE_PRECISION_OFFSET, USD_PRICE_PRECISION_OFFSET } from "@config"
-
 import { Accounts, Prices, Wallets } from "@app"
 
-import { usdMajorToMinorUnit } from "@domain/fiat"
+import {
+  majorToMinorUnit,
+  SAT_PRICE_PRECISION_OFFSET,
+  USD_PRICE_PRECISION_OFFSET,
+} from "@domain/fiat"
 import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 
 import { GT } from "@graphql/index"
@@ -22,6 +24,8 @@ import RealtimePrice from "@graphql/types/object/realtime-price"
 import DisplayCurrency from "@graphql/types/scalar/display-currency"
 
 import { WalletsRepository } from "@services/mongoose"
+
+import AccountLevel from "../scalar/account-level"
 
 import AccountLimits from "./account-limits"
 import { TransactionConnection } from "./transaction"
@@ -55,6 +59,11 @@ const ConsumerAccount = GT.Object<Account>({
       resolve: (source) => source.displayCurrency,
     },
 
+    level: {
+      type: GT.NonNull(AccountLevel),
+      resolve: (source) => source.level,
+    },
+
     realtimePrice: {
       type: GT.NonNull(RealtimePrice),
       resolve: async (source) => {
@@ -65,21 +74,27 @@ const ConsumerAccount = GT.Object<Account>({
         const usdPrice = await Prices.getCurrentUsdCentPrice({ currency })
         if (usdPrice instanceof Error) throw mapError(usdPrice)
 
-        const centsPerSat = usdMajorToMinorUnit(btcPrice.price)
-        const centsPerUsdCent = usdMajorToMinorUnit(usdPrice.price)
+        const minorUnitPerSat = majorToMinorUnit({
+          amount: btcPrice.price,
+          displayCurrency: currency,
+        })
+        const minorUnitPerUsdCent = majorToMinorUnit({
+          amount: usdPrice.price,
+          displayCurrency: currency,
+        })
 
         return {
           timestamp: btcPrice.timestamp,
           denominatorCurrency: currency,
           btcSatPrice: {
-            base: Math.round(centsPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
+            base: Math.round(minorUnitPerSat * 10 ** SAT_PRICE_PRECISION_OFFSET),
             offset: SAT_PRICE_PRECISION_OFFSET,
-            currencyUnit: `${currency}CENT`,
+            currencyUnit: "MINOR",
           },
           usdCentPrice: {
-            base: Math.round(centsPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
+            base: Math.round(minorUnitPerUsdCent * 10 ** USD_PRICE_PRECISION_OFFSET),
             offset: USD_PRICE_PRECISION_OFFSET,
-            currencyUnit: `${currency}CENT`,
+            currencyUnit: "MINOR",
           },
         }
       },

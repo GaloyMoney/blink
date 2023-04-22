@@ -3,7 +3,7 @@ import { SECS_PER_10_MINS } from "@config"
 import { CacheKeys } from "@domain/cache"
 import { WalletCurrency } from "@domain/shared"
 import { PriceNotAvailableError } from "@domain/price"
-import { CENTS_PER_USD, checkedToDisplayCurrency } from "@domain/fiat"
+import { checkedToDisplayCurrency, getCurrencyMajorExponent } from "@domain/fiat"
 import { toDisplayPriceRatio, toWalletPriceRatio } from "@domain/payments"
 
 import { PriceService } from "@services/price"
@@ -72,7 +72,9 @@ export const getCurrentPriceAsWalletPriceRatio = async ({
   const price = await getCurrentSatPrice({ currency })
   if (price instanceof Error) return price
 
-  return toWalletPriceRatio(price.price * CENTS_PER_USD)
+  const exponent = getCurrencyMajorExponent(currency)
+
+  return toWalletPriceRatio(price.price * 10 ** exponent)
 }
 
 export const getCurrentPriceAsDisplayPriceRatio = async <T extends DisplayCurrency>({
@@ -81,8 +83,10 @@ export const getCurrentPriceAsDisplayPriceRatio = async <T extends DisplayCurren
   const price = await getCurrentSatPrice({ currency })
   if (price instanceof Error) return price
 
+  const exponent = getCurrencyMajorExponent(currency)
+
   return toDisplayPriceRatio({
-    ratio: price.price * CENTS_PER_USD,
+    ratio: price.price * 10 ** exponent,
     displayCurrency: currency as T,
   })
 }

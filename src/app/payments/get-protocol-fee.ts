@@ -5,7 +5,6 @@ import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
   SkipProbeForPubkeyError,
-  WalletPriceRatio,
 } from "@domain/payments"
 import { LndService } from "@services/lnd"
 
@@ -22,6 +21,7 @@ import {
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
+  getPriceRatioForLimits,
 } from "./helpers"
 
 const getLightningFeeEstimation = async ({
@@ -167,15 +167,18 @@ const estimateLightningFee = async ({
       : "undefined",
   })
 
-  const priceRatio = WalletPriceRatio({ usd: usdPaymentAmount, btc: btcPaymentAmount })
-  if (priceRatio instanceof Error) return PartialResult.err(priceRatio)
+  const priceRatioForLimits = await getPriceRatioForLimits({
+    usd: usdPaymentAmount,
+    btc: btcPaymentAmount,
+  })
+  if (priceRatioForLimits instanceof Error) return PartialResult.err(priceRatioForLimits)
 
   let paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency> | ApplicationError
   if (await builder.isTradeIntraAccount()) {
     const limitCheck = await checkTradeIntraAccountLimits({
       amount: usdPaymentAmount,
       accountId: senderWallet.accountId,
-      priceRatio,
+      priceRatio: priceRatioForLimits,
     })
     if (limitCheck instanceof Error) return PartialResult.err(limitCheck)
 
@@ -184,7 +187,7 @@ const estimateLightningFee = async ({
     const limitCheck = await checkIntraledgerLimits({
       amount: usdPaymentAmount,
       accountId: senderWallet.accountId,
-      priceRatio,
+      priceRatio: priceRatioForLimits,
     })
     if (limitCheck instanceof Error) return PartialResult.err(limitCheck)
 
@@ -193,7 +196,7 @@ const estimateLightningFee = async ({
     const limitCheck = await checkWithdrawalLimits({
       amount: usdPaymentAmount,
       accountId: senderWallet.accountId,
-      priceRatio,
+      priceRatio: priceRatioForLimits,
     })
     if (limitCheck instanceof Error) return PartialResult.err(limitCheck)
 

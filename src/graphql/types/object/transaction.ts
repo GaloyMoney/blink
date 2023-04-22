@@ -1,25 +1,26 @@
 import dedent from "dedent"
 
 import { GT } from "@graphql/index"
+import { mapError } from "@graphql/error-map"
 import { connectionDefinitions } from "@graphql/connections"
-
-import { SAT_PRICE_PRECISION_OFFSET } from "@config"
+import { normalizeDisplayPrice } from "@graphql/root/mutation"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
-
-import Memo from "../scalar/memo"
+import { checkedToDisplayCurrency } from "@domain/fiat"
 
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
-import Timestamp from "../scalar/timestamp"
-import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
+
+import Memo from "../scalar/memo"
 import TxStatus from "../scalar/tx-status"
+import Timestamp from "../scalar/timestamp"
 import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
-import SignedDisplayMajorAmount from "../scalar/signed-display-amount"
 import DisplayCurrency from "../scalar/display-currency"
+import SignedDisplayMajorAmount from "../scalar/signed-display-amount"
+import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 
-import Price from "./price"
+import PriceOfOneSettlementMinorUnitInDisplayMinorUnit from "./price-of-one-settlement-minor-unit-in-display-minor-unit"
 
 const Transaction = GT.Object<WalletTransaction>({
   name: "Transaction",
@@ -81,21 +82,29 @@ const Transaction = GT.Object<WalletTransaction>({
       type: GT.NonNull(SignedAmount),
     },
     settlementPrice: {
-      type: GT.NonNull(Price),
+      type: GT.NonNull(PriceOfOneSettlementMinorUnitInDisplayMinorUnit),
       resolve: (source) => {
-        const displayCurrencyPerSettlementCurrencyUnitInCents =
-          source.displayCurrencyPerSettlementCurrencyUnit * 100
+        const displayCurrency = checkedToDisplayCurrency(
+          source.settlementDisplayPrice.displayCurrency,
+        )
+        if (displayCurrency instanceof Error) throw mapError(displayCurrency)
+
+        const settlementDisplayPrice = normalizeDisplayPrice(
+          source.settlementDisplayPrice,
+        )
+
+        const formattedAmount = `${
+          Number(settlementDisplayPrice.base) /
+          10 ** Number(settlementDisplayPrice.offset)
+        }`
+
         return {
-          formattedAmount: displayCurrencyPerSettlementCurrencyUnitInCents.toString(),
-          base: Math.round(
-            displayCurrencyPerSettlementCurrencyUnitInCents *
-              10 ** SAT_PRICE_PRECISION_OFFSET,
-          ),
-          offset: SAT_PRICE_PRECISION_OFFSET,
-          currencyUnit: "USDCENT",
+          ...settlementDisplayPrice,
+          formattedAmount,
+          currencyUnit: "MINOR",
         }
       },
-      description: "Price in USDCENT/SETTLEMENTUNIT at time of settlement.",
+      description: "Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement.",
     },
     settlementCurrency: {
       type: GT.NonNull(WalletCurrency),
@@ -111,6 +120,7 @@ const Transaction = GT.Object<WalletTransaction>({
     },
     settlementDisplayCurrency: {
       type: GT.NonNull(DisplayCurrency),
+      resolve: (source) => source.settlementDisplayPrice.displayCurrency,
     },
     direction: {
       type: GT.NonNull(TxDirection),

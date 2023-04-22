@@ -30,7 +30,6 @@ import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
 import USER_UPDATE_PHONE from "../../../e2e/servers/graphql-main-server/mutations/user-update-phone.gql"
 import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-server/queries/account-details-by-user-phone.gql"
-import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
 import {
   adminTestClientConfig,
@@ -48,6 +47,7 @@ import {
   startServer,
 } from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
+import { UserLoginDocument } from "test/e2e/generated"
 
 const identityRepo = IdentityRepository()
 
@@ -537,14 +537,14 @@ describe("updates user phone", () => {
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
 
     await apolloClient.mutate({
-      mutation: USER_LOGIN,
+      mutation: UserLoginDocument,
       variables: { input: { phone, code } },
     })
 
     const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
 
     const loginResult = await apolloClient.mutate({
-      mutation: USER_LOGIN,
+      mutation: UserLoginDocument,
       variables: { input: { phone: adminPhone, code: adminCode } },
     })
 
@@ -584,23 +584,21 @@ describe("updates user phone", () => {
     const walletId = await getDefaultWalletIdByTestUserRef("I")
 
     apolloClient.mutate({
-      mutation: USER_LOGIN,
+      mutation: UserLoginDocument,
       variables: { input: { phone, code } },
     })
 
     const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
 
     const loginResult = await apolloClient.mutate({
-      mutation: USER_LOGIN,
+      mutation: UserLoginDocument,
       variables: { input: { phone: adminPhone, code: adminCode } },
     })
 
-    await disposeClient()
+    disposeClient()
 
     const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
-      await createApolloClient(
-        adminTestClientConfig(loginResult.data.userLogin.authToken),
-      )
+      createApolloClient(adminTestClientConfig(loginResult.data.userLogin.authToken))
 
     const accountDetails = await adminApolloClient.query({
       query: ACCOUNT_DETAILS_BY_USER_PHONE,

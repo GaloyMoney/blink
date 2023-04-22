@@ -1,9 +1,9 @@
 import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
-import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency } from "@domain/fiat"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
@@ -29,7 +29,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
 
-  const displayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: DisplayCurrency.Usd,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
@@ -80,20 +80,14 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
     currency: WalletCurrency.Btc,
   })
   if (rebalanceBtcAmount instanceof Error) return rebalanceBtcAmount
-  const amountDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(rebalanceBtcAmount)
-  const amountDisplayCurrency = usdMinorToMajorUnit(
-    amountDisplayCurrencyAmount.amount,
-  ) as DisplayCurrencyBaseAmount
+  const amountDisplayCurrency = displayPriceRatio.convertFromWallet(rebalanceBtcAmount)
 
   const feeBtcAmount = paymentAmountFromNumber({
     amount: fee,
     currency: WalletCurrency.Btc,
   })
   if (feeBtcAmount instanceof Error) return feeBtcAmount
-  const feeDisplayCurrencyAmount = displayPriceRatio.convertFromBtc(feeBtcAmount)
-  const feeDisplayCurrency = usdMinorToMajorUnit(
-    feeDisplayCurrencyAmount.amount,
-  ) as DisplayCurrencyBaseAmount
+  const feeDisplayCurrency = displayPriceRatio.convertFromWallet(feeBtcAmount)
 
   const journal = await ledgerService.addColdStorageTxReceive({
     txHash,

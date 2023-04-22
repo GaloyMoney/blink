@@ -9,7 +9,7 @@ import {
 import axios from "axios"
 
 export const sendOathkeeperRequest = async (
-  token: LegacyJwtToken | SessionToken | undefined,
+  token: SessionToken | undefined,
 ): Promise<JwtToken | OathkeeperError> => {
   const requestUrl = `${decisionsApi()}graphql`
 

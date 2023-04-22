@@ -34,12 +34,16 @@ type AddInvoiceArgs = {
   ) => Promise<ValidationError | DealerPriceServiceError | WIBWithAmount>
 }
 
-type GetOnChainFeeArgs = {
+type GetOnChainFeeWithoutCurrencyArgs = {
   walletId: WalletId
   account: Account
   amount: number
   address: OnChainAddress
   targetConfirmations: number
+}
+
+type GetOnChainFeeArgs = GetOnChainFeeWithoutCurrencyArgs & {
+  amountCurrency: WalletCurrency
 }
 
 type PaymentSendArgs = {
@@ -69,7 +73,7 @@ type IntraLedgerPaymentSendWalletIdArgs = PaymentSendArgs & {
   amount: number
 }
 
-type PayOnChainByWalletIdArgs = {
+type PayOnChainByWalletIdWithoutCurrencyArgs = {
   senderWalletId: WalletId
   senderAccount: Account
   amount: number
@@ -77,4 +81,8 @@ type PayOnChainByWalletIdArgs = {
   targetConfirmations: number
   memo: string | null
   sendAll: boolean
+}
+
+type PayOnChainByWalletIdArgs = PayOnChainByWalletIdWithoutCurrencyArgs & {
+  amountCurrency: WalletCurrency | undefined
 }

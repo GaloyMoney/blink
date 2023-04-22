@@ -4,6 +4,7 @@ import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
 import { AccountsRepository } from "@services/mongoose"
+import { getCurrencyMajorExponent, priceAmountFromNumber } from "@domain/fiat"
 
 export * from "./apollo-client"
 export * from "./bitcoin-core"
@@ -53,6 +54,35 @@ export const resetDatabase = async (mongoose: typeof import("mongoose")) => {
   for (const collectionName of collectionNames) {
     await db.dropCollection(collectionName)
   }
+}
+
+export const amountByPriceAsMajor = <
+  S extends WalletCurrency,
+  T extends DisplayCurrency,
+>({
+  amount,
+  price,
+  walletCurrency,
+  displayCurrency,
+}: {
+  amount: Satoshis | UsdCents
+  price: WalletMinorUnitDisplayPrice<S, T> | undefined
+  walletCurrency: S
+  displayCurrency: T
+}): number => {
+  const priceAmount =
+    price === undefined
+      ? priceAmountFromNumber({
+          priceOfOneSatInMinorUnit: 0,
+          displayCurrency,
+          walletCurrency,
+        })
+      : price
+
+  const exponent = getCurrencyMajorExponent(displayCurrency)
+  return (
+    (amount * Number(priceAmount.base)) / 10 ** (Number(priceAmount.offset) + exponent)
+  )
 }
 
 export const chunk = (a, n) =>

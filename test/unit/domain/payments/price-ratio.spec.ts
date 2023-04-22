@@ -7,7 +7,7 @@ import {
   toWalletPriceRatio,
   WalletPriceRatio,
 } from "@domain/payments"
-import { DisplayCurrency, MajorExponent } from "@domain/fiat"
+import { DisplayCurrency } from "@domain/fiat"
 
 describe("PriceRatio", () => {
   const otherQuoteAmount = 100n
@@ -387,24 +387,25 @@ describe("WalletPriceRatio", () => {
 
 describe("DisplayPriceRatio", () => {
   const displayQuoteAmount = {
-    amount: 100,
+    amountInMinor: 100n,
     currency: DisplayCurrency.Usd,
+    displayInMajor: "1.00" as DisplayCurrencyMajorAmount,
   }
   const btcQuoteAmount = {
     amount: 1000n,
     currency: WalletCurrency.Btc,
   }
   const displayPriceRatio = DisplayPriceRatio({
-    displayAmountInMinorUnit: displayQuoteAmount,
+    displayAmount: displayQuoteAmount,
     walletAmount: btcQuoteAmount,
-    displayMajorExponent: MajorExponent.STANDARD,
   })
   if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
   it("convertFromDisplayMinorUnit", () => {
     const result = displayPriceRatio.convertFromDisplayMinorUnit({
-      amount: 40,
+      amountInMinor: 40n,
       currency: DisplayCurrency.Usd,
+      displayInMajor: "0.40" as DisplayCurrencyMajorAmount,
     })
 
     expect(result).toStrictEqual({

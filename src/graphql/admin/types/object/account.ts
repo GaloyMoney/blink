@@ -7,7 +7,7 @@ import { GraphQLObjectType } from "graphql"
 import Wallet from "@graphql/types/abstract/wallet"
 import { mapError } from "@graphql/error-map"
 
-import AccountLevel from "../scalar/account-level"
+import AccountLevel from "../../../types/scalar/account-level"
 import AccountStatus from "../scalar/account-status"
 
 import GraphQLUser from "./user"

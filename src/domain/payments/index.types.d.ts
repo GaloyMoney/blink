@@ -16,10 +16,12 @@ type WalletPriceRatio = {
 
 type DisplayPriceRatio<S extends WalletCurrency, T extends DisplayCurrency> = {
   convertFromDisplayMinorUnit(convert: DisplayAmount<T>): PaymentAmount<S>
-  convertFromWallet(convert: PaymentAmount<S>): NewDisplayAmount<T>
-  convertFromWalletToFloor(convert: PaymentAmount<S>): NewDisplayAmount<T>
-  convertFromWalletToCeil(convert: PaymentAmount<S>): NewDisplayAmount<T>
+  convertFromWallet(convert: PaymentAmount<S>): DisplayAmount<T>
+  convertFromWalletToFloor(convert: PaymentAmount<S>): DisplayAmount<T>
+  convertFromWalletToCeil(convert: PaymentAmount<S>): DisplayAmount<T>
   displayMinorUnitPerWalletUnit(): DisplayCurrencyBasePerSat
+  walletCurrency: S
+  displayCurrency: T
 }
 
 type XorPaymentHashProperty = XOR<
@@ -209,7 +211,7 @@ type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency>
 }
 
 type OPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
-  withAmount(uncheckedAmount: number): OPFBWithAmount<S, R> | OPFBWithError
+  withAmount(amount: PaymentAmount<WalletCurrency>): OPFBWithAmount<S, R> | OPFBWithError
 }
 
 type OPFBWithAmount<S extends WalletCurrency, R extends WalletCurrency> = {

@@ -35,12 +35,7 @@ import { SwapTriggerError } from "@domain/swap/errors"
 import { CouldNotFindTransactionError } from "@domain/ledger"
 import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import {
-  checkedToDisplayCurrency,
-  MajorExponent,
-  minorToMajorUnit,
-  usdMinorToMajorUnit,
-} from "@domain/fiat"
+import { checkedToDisplayCurrency } from "@domain/fiat"
 
 import {
   AccountsRepository,
@@ -60,6 +55,7 @@ import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import healthzHandler from "./middlewares/healthz"
+import { SubscriptionInterruptedError } from "./errors"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
@@ -117,7 +113,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
     if (senderAccount instanceof Error) return senderAccount
     const { displayCurrency: senderDisplayCurrency } = senderAccount
 
-    let displayPaymentAmount: DisplayPaymentAmount<T> | undefined
+    let displayAmount: DisplayAmount<T> | undefined = undefined
 
     const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
       {
@@ -130,16 +126,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
         currency: WalletCurrency.Btc,
       })
       if (!(satsAmount instanceof Error)) {
-        const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
-        displayPaymentAmount = {
-          ...paymentAmount,
-          amount: Number(
-            minorToMajorUnit({
-              amount: paymentAmount.amountInMinor,
-              displayMajorExponent: MajorExponent.STANDARD,
-            }),
-          ),
-        }
+        displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
       }
     }
 
@@ -174,7 +161,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
       senderWalletId: senderWallet.id,
       // TODO: tx.tokens represent the total sum, need to segregate amount by address
       paymentAmount,
-      displayPaymentAmount,
+      displayPaymentAmount: displayAmount,
       txHash,
       senderDeviceTokens: senderUser.deviceTokens,
       senderLanguage: senderUser.language,
@@ -198,7 +185,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
         "mempool appearance",
       )
 
-      let displayPaymentAmount: DisplayPaymentAmount<T> | undefined
+      let displayAmount: DisplayAmount<T> | undefined = undefined
 
       const displayPriceRatios = {} as Record<
         T,
@@ -239,11 +226,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
             currency: WalletCurrency.Btc,
           })
           if (!(satsAmount instanceof Error)) {
-            const paymentAmount = displayPriceRatio.convertFromWallet(satsAmount)
-            displayPaymentAmount = {
-              ...paymentAmount,
-              amount: usdMinorToMajorUnit(paymentAmount.amountInMinor),
-            }
+            displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
           }
         }
 
@@ -252,7 +235,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
           recipientWalletId: wallet.id,
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
           paymentAmount: { amount: BigInt(tx.tokens - fee), currency: wallet.currency },
-          displayPaymentAmount,
+          displayPaymentAmount: displayAmount,
           txHash,
           recipientDeviceTokens: recipientUser.deviceTokens,
           recipientLanguage: recipientUser.language,
@@ -337,7 +320,7 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
   subTransactions.on("error", (err) => {
     baseLogger.error({ err }, "error subTransactions")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subTransactions"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subTransactions" },
     })
@@ -355,7 +338,7 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
   subBlocks.on("error", (err) => {
     baseLogger.error({ err }, "error subBlocks")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subBlocks"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subBlocks" },
     })
@@ -388,9 +371,9 @@ const listenerHodlInvoice = ({
   subInvoice.on("error", (err) => {
     baseLogger.info({ err }, "error subChannels")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subInvoice"),
       level: ErrorLevel.Warn,
-      attributes: { ["error.subscription"]: "subChannels" },
+      attributes: { ["error.subscription"]: "subInvoice" },
     })
     subInvoice.removeAllListeners()
   })
@@ -458,7 +441,7 @@ export const setupInvoiceSubscribe = ({
   subInvoices.on("error", (err) => {
     baseLogger.info({ err }, "error subInvoices")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subInvoices"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subInvoices" },
     })
@@ -483,7 +466,7 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   subChannels.on("error", (err) => {
     baseLogger.info({ err }, "error subChannels")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subChannels"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subChannels" },
     })
@@ -502,7 +485,7 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   subBackups.on("error", (err) => {
     baseLogger.info({ err }, "error subBackups")
     recordExceptionInCurrentSpan({
-      error: err,
+      error: new SubscriptionInterruptedError((err && err.message) || "subBackups"),
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subBackups" },
     })

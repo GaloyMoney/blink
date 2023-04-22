@@ -4,7 +4,7 @@ import {
   OnboardingEarn,
 } from "@config"
 
-import { MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
+import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
@@ -14,24 +14,20 @@ import { DepositFeeCalculator } from "./deposit-fee-calculator"
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { SettlementAmounts } from "./settlement-amounts"
 
-const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurrency>({
+const filterPendingIncoming = ({
   pendingIncoming,
   addressesByWalletId,
   walletDetailsByWalletId,
-}: AddPendingIncomingArgs<S, T>): WalletOnChainTransaction[] => {
+}: AddPendingIncomingArgs): WalletOnChainTransaction[] => {
   const walletTransactions: WalletOnChainTransaction[] = []
   pendingIncoming.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
       if (address) {
         for (const walletIdString in addressesByWalletId) {
           const walletId = walletIdString as WalletId
-          const {
-            walletCurrency,
-            walletPriceRatio,
-            depositFeeRatio,
-            displayCurrency,
-            displayPriceRatio,
-          } = walletDetailsByWalletId[walletId]
+          const { walletCurrency, walletPriceRatio, depositFeeRatio, displayPriceRatio } =
+            walletDetailsByWalletId[walletId]
+          const { displayCurrency } = displayPriceRatio
 
           if (addressesByWalletId[walletId].includes(address)) {
             const fee = DepositFeeCalculator().onChainDepositFee({
@@ -63,31 +59,16 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
                 ? toCents(0)
                 : toCents(walletPriceRatio.convertFromBtcToCeil(btcFeeAmount).amount)
 
-            const settlementDisplayAmount =
-              displayPriceRatio === undefined
-                ? `${NaN}`
-                : minorToMajorUnit({
-                    amount:
-                      displayPriceRatio.convertFromWallet(btcSettlementAmount)
-                        .amountInMinor,
-                    displayMajorExponent: MajorExponent.STANDARD,
-                  })
+            const displayAmount = displayPriceRatio.convertFromWallet(btcSettlementAmount)
+            const settlementDisplayAmount = displayAmount.displayInMajor
 
-            const settlementDisplayFee =
-              displayPriceRatio === undefined
-                ? `${NaN}`
-                : minorToMajorUnit({
-                    amount:
-                      displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
-                        .amountInMinor,
-                    displayMajorExponent: MajorExponent.STANDARD,
-                  })
-
-            const displayCurrencyPerSettlementCurrencyMajorUnit =
-              displayPriceRatio === undefined
-                ? (NaN as number)
-                : displayPriceRatio.displayMinorUnitPerWalletUnit() /
-                  10 ** MajorExponent.STANDARD
+            const displayFee = displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
+            const settlementDisplayFee = displayFee.displayInMajor
+            const settlementDisplayPrice = priceAmountFromNumber({
+              priceOfOneSatInMinorUnit: displayPriceRatio.displayMinorUnitPerWalletUnit(),
+              displayCurrency: displayCurrency,
+              walletCurrency,
+            })
 
             walletTransactions.push({
               id: rawTx.txHash,
@@ -97,9 +78,7 @@ const filterPendingIncoming = <S extends WalletCurrency, T extends DisplayCurren
               settlementCurrency: walletCurrency,
               settlementDisplayAmount,
               settlementDisplayFee,
-              settlementDisplayCurrency: displayCurrency,
-              displayCurrencyPerSettlementCurrencyUnit:
-                displayCurrencyPerSettlementCurrencyMajorUnit,
+              settlementDisplayPrice,
               status: TxStatus.Pending,
               memo: null,
               createdAt: createdAt,
@@ -137,12 +116,14 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     centsFee: centsFeeRaw,
     displayAmount: displayAmountRaw,
     displayFee: displayFeeRaw,
-    displayCurrency,
+    displayCurrency: displayCurrencyRaw,
     lnMemo,
     memoFromPayer,
     journalId,
     walletId,
   } = txn
+
+  const displayCurrency = displayCurrencyRaw || DisplayCurrency.Usd
 
   const isAdmin = Object.values(AdminLedgerTransactionType).includes(
     type as AdminLedgerTransactionType,
@@ -187,10 +168,11 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     settlementCurrency: txn.currency,
     settlementDisplayAmount,
     settlementDisplayFee,
-    settlementDisplayCurrency: displayCurrency || "",
-    displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
+    settlementDisplayPrice: displayCurrencyPerBaseUnitFromAmounts({
       displayAmount,
-      baseAmount: txn.currency === WalletCurrency.Btc ? satsAmount : centsAmount,
+      displayCurrency,
+      walletAmount: txn.currency === WalletCurrency.Btc ? satsAmount : centsAmount,
+      walletCurrency: txn.currency,
     }),
     status,
     memo,
@@ -308,13 +290,13 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   return walletTransaction
 }
 
-const fromLedger = <S extends WalletCurrency, T extends DisplayCurrency>({
+const fromLedger = ({
   ledgerTransactions,
   nonEndUserWalletIds,
 }: {
-  ledgerTransactions: LedgerTransaction<S>[]
+  ledgerTransactions: LedgerTransaction<WalletCurrency>[]
   nonEndUserWalletIds: WalletId[]
-}): ConfirmedTransactionHistory<S, T> => {
+}): ConfirmedTransactionHistory => {
   const transactions = ledgerTransactions.map((txn) =>
     translateLedgerTxnToWalletTxn({ txn, nonEndUserWalletIds }),
   )
@@ -381,18 +363,25 @@ export const WalletTransactionHistory = {
 
 // TODO: refactor this to use WalletPriceRatio eventually instead after
 // 'usd' property removal from db
-const displayCurrencyPerBaseUnitFromAmounts = ({
+export const displayCurrencyPerBaseUnitFromAmounts = <
+  S extends WalletCurrency,
+  T extends DisplayCurrency,
+>({
   displayAmount,
-  baseAmount,
+  displayCurrency,
+  walletAmount,
+  walletCurrency,
 }: {
   displayAmount: number
-  baseAmount: number
-}): number => {
-  if (baseAmount === 0) {
-    return 0
-  }
+  displayCurrency: T
+  walletAmount: number
+  walletCurrency: S
+}): WalletMinorUnitDisplayPrice<S, T> => {
+  const priceInMinorUnit = walletAmount !== 0 ? displayAmount / walletAmount : 0
 
-  const majorExponent = 2
-  const priceInMinorUnit = displayAmount / baseAmount
-  return Number(priceInMinorUnit / 10 ** majorExponent)
+  return priceAmountFromNumber({
+    priceOfOneSatInMinorUnit: priceInMinorUnit,
+    displayCurrency,
+    walletCurrency,
+  })
 }

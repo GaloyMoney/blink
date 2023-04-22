@@ -3,6 +3,7 @@ interface Account {
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
+  level: AccountLevel!
   limits: AccountLimits!
   realtimePrice: RealtimePrice!
   transactions(
@@ -28,6 +29,11 @@ interface Account {
     walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
+}
+
+enum AccountLevel {
+  ONE
+  TWO
 }
 
 interface AccountLimit {
@@ -206,6 +212,7 @@ type ConsumerAccount implements Account {
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
   id: ID!
+  level: AccountLevel!
   limits: AccountLimits!
 
   """
@@ -375,6 +382,7 @@ input IntraLedgerUsdPaymentSendInput {
 }
 
 enum InvoicePaymentStatus {
+  EXPIRED
   PAID
   PENDING
 }
@@ -736,6 +744,9 @@ type Mutation {
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
+  onChainUsdPaymentSendAsBtcDenominated(
+    input: OnChainUsdPaymentSendAsBtcDenominatedInput!
+  ): PaymentSendPayload!
   quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
@@ -813,6 +824,14 @@ type OnChainUpdate {
   txHash: OnChainTxHash!
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
+  walletId: WalletId!
+}
+
+input OnChainUsdPaymentSendAsBtcDenominatedInput {
+  address: OnChainAddress!
+  amount: SatAmount!
+  memo: Memo
+  targetConfirmations: TargetConfirmations = 1
   walletId: WalletId!
 }
 
@@ -929,25 +948,35 @@ input PriceInput {
 
 interface PriceInterface {
   base: SafeInt!
-  currencyUnit: String!
+  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
   offset: Int!
 }
 
 """
 Price of 1 sat in base/offset. To calculate, use: `base / 10^offset`
 """
-type PriceOfOneSat implements PriceInterface {
+type PriceOfOneSatInMinorUnit implements PriceInterface {
   base: SafeInt!
-  currencyUnit: String!
+  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
+  offset: Int!
+}
+
+"""
+Price of 1 sat or 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
+"""
+type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
+  base: SafeInt!
+  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
+  formattedAmount: String! @deprecated(reason: "Deprecated please use `base / 10^offset`")
   offset: Int!
 }
 
 """
 Price of 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
 """
-type PriceOfOneUsdCent implements PriceInterface {
+type PriceOfOneUsdCentInMinorUnit implements PriceInterface {
   base: SafeInt!
-  currencyUnit: String!
+  currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
   offset: Int!
 }
 
@@ -998,6 +1027,12 @@ type Query {
     targetConfirmations: TargetConfirmations = 1
     walletId: WalletId!
   ): OnChainUsdTxFee!
+  onChainUsdTxFeeAsBtcDenominated(
+    address: OnChainAddress!
+    amount: SatAmount!
+    targetConfirmations: TargetConfirmations = 1
+    walletId: WalletId!
+  ): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion]
     @deprecated(
       reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated"
@@ -1039,7 +1074,7 @@ type QuizQuestion {
 }
 
 type RealtimePrice {
-  btcSatPrice: PriceOfOneSat!
+  btcSatPrice: PriceOfOneSatInMinorUnit!
   denominatorCurrency: DisplayCurrency!
   id: ID!
 
@@ -1047,7 +1082,7 @@ type RealtimePrice {
   Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
   """
   timestamp: Timestamp!
-  usdCentPrice: PriceOfOneUsdCent!
+  usdCentPrice: PriceOfOneUsdCentInMinorUnit!
 }
 
 input RealtimePriceInput {
@@ -1172,9 +1207,9 @@ type Transaction {
   settlementFee: SignedAmount!
 
   """
-  Price in USDCENT/SETTLEMENTUNIT at time of settlement.
+  Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement.
   """
-  settlementPrice: Price!
+  settlementPrice: PriceOfOneSettlementMinorUnitInDisplayMinorUnit!
 
   """
   To which protocol the payment has settled on.

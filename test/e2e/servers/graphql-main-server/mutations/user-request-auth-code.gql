@@ -1,8 +1,0 @@
-mutation UserRequestAuthCode($input: UserRequestAuthCodeInput!) {
-  userRequestAuthCode(input: $input) {
-    errors {
-      message
-    }
-    success
-  }
-}

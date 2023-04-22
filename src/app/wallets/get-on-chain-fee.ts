@@ -1,11 +1,15 @@
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
+
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
-import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+
+import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
 import { CouldNotFindError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
+import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
+
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -21,10 +25,14 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   walletId,
   account: senderAccount,
   amount,
+  amountCurrency,
   address,
   targetConfirmations,
 }: GetOnChainFeeArgs): Promise<PaymentAmount<S> | ApplicationError> => {
-  const amountChecked = checkedToSats(amount)
+  const amountChecked =
+    amountCurrency === WalletCurrency.Btc
+      ? checkedToBtcPaymentAmount(amount)
+      : checkedToUsdPaymentAmount(amount)
   if (amountChecked instanceof Error) return amountChecked
 
   const targetConfsChecked = checkedToTargetConfs(targetConfirmations)
@@ -112,7 +120,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
 
   const builder = withSenderBuilder
     .withoutRecipientWallet()
-    .withAmount(amount)
+    .withAmount(amountChecked)
     .withConversion(withConversionArgs)
 
   const btcPaymentAmount = await builder.btcProposedAmount()
@@ -175,15 +183,28 @@ export const getMinerFeeAndPaymentFlow = async <
 }
 
 export const getOnChainFeeForBtcWallet = async <S extends WalletCurrency>(
-  args: GetOnChainFeeArgs,
+  args: GetOnChainFeeWithoutCurrencyArgs,
 ): Promise<PaymentAmount<S> | ApplicationError> => {
   const validated = await validateIsBtcWallet(args.walletId)
-  return validated instanceof Error ? validated : getOnChainFee(args)
+  return validated instanceof Error
+    ? validated
+    : getOnChainFee({ ...args, amountCurrency: WalletCurrency.Btc })
 }
 
 export const getOnChainFeeForUsdWallet = async <S extends WalletCurrency>(
-  args: GetOnChainFeeArgs,
+  args: GetOnChainFeeWithoutCurrencyArgs,
 ): Promise<PaymentAmount<S> | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.walletId)
-  return validated instanceof Error ? validated : getOnChainFee(args)
+  return validated instanceof Error
+    ? validated
+    : getOnChainFee({ ...args, amountCurrency: WalletCurrency.Usd })
+}
+
+export const getOnChainFeeForUsdWalletAndBtcAmount = async <S extends WalletCurrency>(
+  args: GetOnChainFeeWithoutCurrencyArgs,
+): Promise<PaymentAmount<S> | ApplicationError> => {
+  const validated = await validateIsUsdWallet(args.walletId)
+  return validated instanceof Error
+    ? validated
+    : getOnChainFee({ ...args, amountCurrency: WalletCurrency.Btc })
 }

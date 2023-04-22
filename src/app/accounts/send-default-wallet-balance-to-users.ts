@@ -1,4 +1,4 @@
-import { DisplayCurrency, usdMinorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
 import {
@@ -34,34 +34,24 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         currency: displayCurrency,
       })
 
-      let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
+      let displayAmount: DisplayAmount<DisplayCurrency> | undefined
       if (!(displayPriceRatio instanceof Error)) {
         if (balanceAmount.currency === WalletCurrency.Btc) {
-          const displayAmount = displayPriceRatio.convertFromWallet(
+          displayAmount = displayPriceRatio.convertFromWallet(
             balanceAmount as BtcPaymentAmount,
           )
-          // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
-          displayBalanceAmount = {
-            amount: usdMinorToMajorUnit(displayAmount.amountInMinor),
-            currency: displayCurrency,
-          }
         }
 
         if (balanceAmount.currency === WalletCurrency.Usd) {
-          const usdDisplayPriceRatio = await getCurrentPriceAsWalletPriceRatio({
+          const usdWalletPriceRatio = await getCurrentPriceAsWalletPriceRatio({
             currency: DisplayCurrency.Usd,
           })
 
-          if (!(usdDisplayPriceRatio instanceof Error)) {
-            const btcBalanceAmount = usdDisplayPriceRatio.convertFromUsd(
+          if (!(usdWalletPriceRatio instanceof Error)) {
+            const btcBalanceAmount = usdWalletPriceRatio.convertFromUsd(
               balanceAmount as UsdPaymentAmount,
             )
-            const displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)
-            // TODO: unify PaymentAmount, BalanceAmount, DisplayBalanceAmount types
-            displayBalanceAmount = {
-              amount: usdMinorToMajorUnit(displayAmount.amountInMinor),
-              currency: displayCurrency,
-            }
+            displayAmount = displayPriceRatio.convertFromWallet(btcBalanceAmount)
           }
         }
       }
@@ -69,7 +59,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
       return NotificationsService().sendBalance({
         balanceAmount,
         deviceTokens: user.deviceTokens,
-        displayBalanceAmount,
+        displayBalanceAmount: displayAmount,
         recipientLanguage: user.language,
       })
     },

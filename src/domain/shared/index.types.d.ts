@@ -19,27 +19,22 @@ type Amount<T extends WalletCurrency> = {
 }
 
 type DisplayAmount<T extends DisplayCurrency> = {
-  currency: T
-  amount: number
-}
-
-type NewDisplayAmount<T extends DisplayCurrency> = {
   amountInMinor: bigint
   currency: T
   displayInMajor: DisplayCurrencyMajorAmount
 }
 
+type WalletMinorUnitDisplayPrice<S extends WalletCurrency, T extends DisplayCurrency> = {
+  base: bigint
+  offset: bigint
+  displayCurrency: T
+  walletCurrency: S
+}
+
 type PaymentAmount<T extends WalletCurrency> = Amount<T> & {
   readonly brand?: unique symbol
 }
-type DisplayPaymentAmount<T extends DisplayCurrency> = DisplayAmount<T> & {
-  readonly brand?: unique symbol
-}
-
 type BalanceAmount<T extends WalletCurrency> = Amount<T> & {
-  readonly brand?: unique symbol
-}
-type DisplayBalanceAmount<T extends DisplayCurrency> = DisplayAmount<T> & {
   readonly brand?: unique symbol
 }
 

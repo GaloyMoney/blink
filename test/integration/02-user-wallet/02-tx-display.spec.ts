@@ -12,7 +12,7 @@ import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
 import * as LnFeesImpl from "@domain/payments/ln-fees"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { TxStatus } from "@domain/wallets"
-import { DisplayCurrency, MajorExponent, minorToMajorUnit } from "@domain/fiat"
+import { DisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
 
 import { updateDisplayCurrency } from "@app/accounts"
 
@@ -766,20 +766,31 @@ describe("Display properties on transactions", () => {
           satsAmount: toSats(recipientTxn.settlementAmount),
           satsFee: toSats(recipientTxn.settlementFee),
         })
+
+        const settlementDisplayAmountObj = displayAmountFromNumber({
+          amount: expectedRecipientDisplayProps.displayAmount,
+          currency: expectedRecipientDisplayProps.displayCurrency,
+        })
+        if (settlementDisplayAmountObj instanceof Error) throw settlementDisplayAmountObj
+
+        const settlementDisplayFeeObj = displayAmountFromNumber({
+          amount: expectedRecipientDisplayProps.displayFee,
+          currency: expectedRecipientDisplayProps.displayCurrency,
+        })
+        if (settlementDisplayFeeObj instanceof Error) throw settlementDisplayFeeObj
+
         const expectedRecipientWalletTxnDisplayProps = {
-          settlementDisplayAmount: minorToMajorUnit({
-            amount: expectedRecipientDisplayProps.displayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
-          }),
-          settlementDisplayFee: minorToMajorUnit({
-            amount: expectedRecipientDisplayProps.displayFee,
-            displayMajorExponent: MajorExponent.STANDARD,
-          }),
-          settlementDisplayCurrency: expectedRecipientDisplayProps.displayCurrency,
+          settlementDisplayAmount: settlementDisplayAmountObj.displayInMajor,
+          settlementDisplayFee: settlementDisplayFeeObj.displayInMajor,
         }
 
         expect(recipientTxn).toEqual(
           expect.objectContaining(expectedRecipientWalletTxnDisplayProps),
+        )
+        expect(recipientTxn.settlementDisplayPrice).toEqual(
+          expect.objectContaining({
+            displayCurrency: expectedRecipientDisplayProps.displayCurrency,
+          }),
         )
 
         // Settle pending
@@ -950,7 +961,9 @@ describe("Display properties on transactions", () => {
 
     describe("send", () => {
       const payOnChainForPromiseAll = async (
-        args: { senderCurrency: WalletCurrency } & PayOnChainByWalletIdArgs,
+        args: {
+          senderCurrency: WalletCurrency
+        } & PayOnChainByWalletIdWithoutCurrencyArgs,
       ) => {
         const { senderCurrency, ...payArgs } = args
         const res =

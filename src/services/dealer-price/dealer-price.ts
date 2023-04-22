@@ -17,7 +17,7 @@ import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
 import { toWalletPriceRatio } from "@domain/payments"
 
-import { wrapToAddAttributes } from "@services/tracing"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { baseLogger } from "../logger"
 
@@ -253,8 +253,9 @@ export const DealerPriceService = (
     }
   }
 
-  return wrapToAddAttributes({
-    attributes: { ["slo.dealerCalled"]: "true" },
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.dealer-price",
+    spanAttributes: { ["slo.dealerCalled"]: "true" },
     fns: {
       getCentsFromSatsForImmediateBuy,
       getCentsFromSatsForImmediateSell,

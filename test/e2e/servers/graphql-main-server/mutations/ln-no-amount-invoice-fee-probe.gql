@@ -1,8 +1,0 @@
-mutation LnNoAmountInvoiceFeeProbe($input: LnNoAmountInvoiceFeeProbeInput!) {
-  lnNoAmountInvoiceFeeProbe(input: $input) {
-    errors {
-      message
-    }
-    amount
-  }
-}

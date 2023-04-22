@@ -9,3 +9,13 @@ export const normalizePaymentAmount = (
       ? ExchangeCurrencyUnit.Usd
       : ExchangeCurrencyUnit.Btc,
 })
+
+export const normalizeDisplayPrice = <
+  S extends WalletCurrency,
+  T extends DisplayCurrency,
+>(
+  displayPrice: WalletMinorUnitDisplayPrice<S, T>,
+): DisplayPricePayload => ({
+  base: Number(displayPrice.base),
+  offset: Number(displayPrice.offset),
+})

@@ -54,8 +54,10 @@ type BaseWalletTransaction = {
   readonly settlementCurrency: WalletCurrency
   readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayFee: DisplayCurrencyMajorAmount
-  readonly settlementDisplayCurrency: DisplayCurrency | ""
-  readonly displayCurrencyPerSettlementCurrencyUnit: number
+  readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<
+    WalletCurrency,
+    DisplayCurrency
+  >
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date
@@ -109,32 +111,26 @@ type WalletTransaction =
   | WalletOnChainTransaction
   | WalletLnTransaction
 
-type WalletDetailsByWalletId<
-  S extends WalletCurrency,
-  T extends DisplayCurrency,
-> = Record<
+type WalletDetailsByWalletId = Record<
   WalletId,
   {
-    walletCurrency: S
+    walletCurrency: WalletCurrency
     // TODO: Add conditional type here to be: S extends "BTC" ? undefined : WalletPriceRatio
     walletPriceRatio: WalletPriceRatio | undefined
     depositFeeRatio: DepositFeeRatio
-    displayCurrency: T
-    displayPriceRatio: DisplayPriceRatio<"BTC", T> | undefined
+    displayPriceRatio: DisplayPriceRatio<"BTC", DisplayCurrency>
   }
 >
 
-type AddPendingIncomingArgs<S extends WalletCurrency, T extends DisplayCurrency> = {
+type AddPendingIncomingArgs = {
   pendingIncoming: IncomingOnChainTransaction[]
   addressesByWalletId: { [key: WalletId]: OnChainAddress[] }
-  walletDetailsByWalletId: WalletDetailsByWalletId<S, T>
+  walletDetailsByWalletId: WalletDetailsByWalletId
 }
 
-type ConfirmedTransactionHistory<S extends WalletCurrency, T extends DisplayCurrency> = {
+type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
-  addPendingIncoming(
-    args: AddPendingIncomingArgs<S, T>,
-  ): WalletTransactionHistoryWithPending
+  addPendingIncoming(args: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
 }
 
 type WalletTransactionHistoryWithPending = {
@@ -209,12 +205,13 @@ type PaymentInputValidatorConfig = (
 
 type ValidatePaymentInputArgs<T extends undefined | string> = {
   amount: number
+  amountCurrency: WalletCurrency | undefined
   senderWalletId: string
   senderAccount: Account
   recipientWalletId?: T
 }
 type ValidatePaymentInputRetBase = {
-  amount: CurrencyBaseAmount
+  amount: PaymentAmount<WalletCurrency>
   senderWallet: Wallet
 }
 type ValidatePaymentInputRet<T extends undefined | string> = T extends undefined

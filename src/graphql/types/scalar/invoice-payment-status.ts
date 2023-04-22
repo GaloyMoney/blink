@@ -5,6 +5,7 @@ const InvoicePaymentStatus = GT.Enum({
   values: {
     PENDING: {},
     PAID: {},
+    EXPIRED: {},
   },
 })
 

@@ -1,6 +1,13 @@
 import { toSats } from "@domain/bitcoin"
-import { MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
+import {
+  DisplayCurrency,
+  getCurrencyMajorExponent,
+  displayAmountFromNumber,
+  toCents,
+} from "@domain/fiat"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
+
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 export const SettlementAmounts = () => {
   const fromTxn = <S extends WalletCurrency>(
@@ -14,7 +21,8 @@ export const SettlementAmounts = () => {
     // Calculate: settlementAmount
     // ======
 
-    const { debit, credit, currency } = txn
+    const { debit, credit, currency, displayCurrency: displayCurrencyRaw } = txn
+    const displayCurrency = displayCurrencyRaw || DisplayCurrency.Usd
     const settlementAmount =
       currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
 
@@ -91,22 +99,50 @@ export const SettlementAmounts = () => {
     }
 
     // Calculate settlementDisplayAmount with matched combination
-    let settlementDisplayAmountAsNumber = 0
+    let settlementDisplayAmountMinorAsNumber = 0
     if (matchIndex >= 0) {
       const [amountToUse, feeToUse] = combinations[matchIndex]
-      settlementDisplayAmountAsNumber = amountToUse.display + feeToUse.display
+      settlementDisplayAmountMinorAsNumber = amountToUse.display + feeToUse.display
+    }
+
+    const exponent = getCurrencyMajorExponent(displayCurrency)
+
+    let settlementDisplayAmountObj = displayAmountFromNumber({
+      amount: settlementDisplayAmountMinorAsNumber,
+      currency: displayCurrency,
+    })
+    if (settlementDisplayAmountObj instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: settlementDisplayAmountObj,
+        level: ErrorLevel.Critical,
+      })
+      settlementDisplayAmountObj = {
+        amountInMinor: 0n,
+        currency: displayCurrency,
+        displayInMajor: (0).toFixed(exponent),
+      }
+    }
+
+    let settlementDisplayFeeObj = displayAmountFromNumber({
+      amount: displayFee,
+      currency: displayCurrency,
+    })
+    if (settlementDisplayFeeObj instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: settlementDisplayFeeObj,
+        level: ErrorLevel.Critical,
+      })
+      settlementDisplayFeeObj = {
+        amountInMinor: 0n,
+        currency: displayCurrency,
+        displayInMajor: (0).toFixed(exponent),
+      }
     }
 
     return {
       settlementAmount,
-      settlementDisplayAmount: minorToMajorUnit({
-        amount: settlementDisplayAmountAsNumber,
-        displayMajorExponent: MajorExponent.STANDARD,
-      }),
-      settlementDisplayFee: minorToMajorUnit({
-        amount: displayFee,
-        displayMajorExponent: MajorExponent.STANDARD,
-      }),
+      settlementDisplayAmount: settlementDisplayAmountObj.displayInMajor,
+      settlementDisplayFee: settlementDisplayFeeObj.displayInMajor,
     }
   }
 

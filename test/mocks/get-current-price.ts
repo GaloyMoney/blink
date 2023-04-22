@@ -1,4 +1,4 @@
-import { CENTS_PER_USD } from "@domain/fiat"
+import { getCurrencyMajorExponent } from "@domain/fiat"
 import { toDisplayPriceRatio, toWalletPriceRatio } from "@domain/payments"
 
 export const getCurrentSatPrice = async ({
@@ -48,7 +48,9 @@ export const getCurrentPriceAsWalletPriceRatio = async ({
   const price = await getCurrentSatPrice({ currency })
   if (price instanceof Error) return price
 
-  return toWalletPriceRatio(price.price * CENTS_PER_USD)
+  const exponent = getCurrencyMajorExponent(currency)
+
+  return toWalletPriceRatio(price.price * 10 ** exponent)
 }
 
 export const getCurrentPriceAsDisplayPriceRatio = async <T extends WalletCurrency>({
@@ -57,8 +59,10 @@ export const getCurrentPriceAsDisplayPriceRatio = async <T extends WalletCurrenc
   const price = await getCurrentSatPrice({ currency })
   if (price instanceof Error) return price
 
+  const exponent = getCurrencyMajorExponent(currency)
+
   return toDisplayPriceRatio({
-    ratio: price.price * CENTS_PER_USD,
+    ratio: price.price * 10 ** exponent,
     displayCurrency: currency as T,
   })
 }

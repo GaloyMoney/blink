@@ -146,6 +146,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "PhoneProviderConnectionError":
+    case "PhoneProviderUnavailableError":
       message = "Phone provider temporarily unreachable"
       return new PhoneProviderError({ message, logger: baseLogger })
 
@@ -368,6 +369,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LnPaymentPendingError":
     case "LnAlreadyPaidError":
     case "PaymentNotFoundError":
+    case "OperationInterruptedError":
     case "InconsistentDataError":
     case "AuthorizationError":
     case "RepositoryError":
@@ -489,6 +491,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "BigIntFloatConversionError":
     case "SafeWrapperError":
     case "InvalidFeeProbeStateError":
+    case "LookupPaymentTimedOutError":
     case "InvalidPubKeyError":
     case "SkipProbeForPubkeyError":
     case "SecretDoesNotMatchAnyExistingHodlInvoiceError":
@@ -502,7 +505,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LikelyUserAlreadyExistError":
     case "PhoneIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
-    case "NotificationsServiceBadGatewayError":
+    case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
@@ -543,6 +546,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownBigIntConversionError":
     case "KratosError":
     case "AuthenticationKratosError":
+    case "ExtendSessionKratosError":
+    case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
     case "MissingTotpKratosError":
     case "IncompatibleSchemaUpgradeError":

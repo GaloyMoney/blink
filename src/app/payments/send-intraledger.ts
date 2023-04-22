@@ -2,7 +2,7 @@ import { getPubkeysToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { usdMinorToMajorUnit } from "@domain/fiat"
+import { displayAmountFromNumber } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
@@ -29,7 +29,6 @@ import {
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
-import { Accounts } from "@app"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
@@ -41,6 +40,7 @@ import {
   getPriceRatioForLimits,
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
+  addContactsAfterSend,
 } from "./helpers"
 
 const dealer = DealerPriceService()
@@ -356,6 +356,12 @@ const executePaymentViaIntraledger = async <
       amount = totalSendAmounts.usd.amount
     }
 
+    const recipientDisplayAmount = displayAmountFromNumber({
+      amount: recipientAmountDisplayCurrencyAsNumber,
+      currency: recipientAccount.displayCurrency,
+    })
+    if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
+
     const notificationsService = NotificationsService()
     notificationsService.intraLedgerTxReceived({
       recipientAccountId: recipientWallet.accountId,
@@ -363,42 +369,9 @@ const executePaymentViaIntraledger = async <
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
       paymentAmount: { amount, currency: recipientWallet.currency },
-      displayPaymentAmount: {
-        amount: usdMinorToMajorUnit(recipientAmountDisplayCurrencyAsNumber),
-        currency: recipientAccount.displayCurrency,
-      },
+      displayPaymentAmount: recipientDisplayAmount,
     })
 
     return PaymentSendStatus.Success
   })
-}
-
-const addContactsAfterSend = async ({
-  senderAccount,
-  recipientAccount,
-}: {
-  senderAccount: Account
-  recipientAccount: Account
-}): Promise<true | ApplicationError> => {
-  if (!(senderAccount.contactEnabled && recipientAccount.contactEnabled)) {
-    return true
-  }
-
-  if (recipientAccount.username) {
-    const addContactToPayerResult = await Accounts.addNewContact({
-      accountId: senderAccount.id,
-      contactUsername: recipientAccount.username,
-    })
-    if (addContactToPayerResult instanceof Error) return addContactToPayerResult
-  }
-
-  if (senderAccount.username) {
-    const addContactToPayeeResult = await Accounts.addNewContact({
-      accountId: recipientAccount.id,
-      contactUsername: senderAccount.username,
-    })
-    if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
-  }
-
-  return true
 }

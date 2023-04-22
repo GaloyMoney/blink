@@ -18,8 +18,8 @@ import {
   getUsdWalletIdByTestUserRef,
 } from "test/helpers"
 
-const defaultAmount = toSats(6000)
-const defaultUsdAmount = toSats(105)
+const defaultAmount = toSats(5244)
+const defaultUsdAmount = toCents(105)
 const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
 let walletIdA: WalletId, walletIdB: WalletId, walletIdUsdA: WalletId, accountA: Account
@@ -135,147 +135,210 @@ describe("UserWallet - getOnchainFee", () => {
   })
 
   describe("from usd wallet", () => {
-    it("returns a fee greater than zero for an external address", async () => {
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
-      if (onChainService instanceof Error) throw onChainService
+    const amountCases = [
+      { amountCurrency: WalletCurrency.Usd, senderAmount: defaultUsdAmount },
+      { amountCurrency: WalletCurrency.Btc, senderAmount: defaultAmount },
+    ]
+    const testAmountCaseAmounts = async (
+      convert: (
+        amount: UsdPaymentAmount,
+      ) => Promise<BtcPaymentAmount | DealerPriceServiceError>,
+    ) => {
+      const usdAmount = amountCases.filter(
+        (testCase) => testCase.amountCurrency === WalletCurrency.Usd,
+      )[0].senderAmount
 
-      const minerFee = await onChainService.getOnChainFeeEstimate({
-        amount: defaultAmount,
-        address,
-        targetConfirmations: 1 as TargetConfirmations,
+      const convertedBtcFromUsdAmount = await convert({
+        amount: BigInt(usdAmount),
+        currency: WalletCurrency.Usd,
       })
-      if (minerFee instanceof Error) throw minerFee
+      if (convertedBtcFromUsdAmount instanceof Error) throw convertedBtcFromUsdAmount
 
-      const feeRates = getFeesConfig()
-      const feeSats = toSats(feeRates.withdrawDefaultMin + minerFee)
+      expect(defaultAmount).toEqual(Number(convertedBtcFromUsdAmount.amount))
+    }
 
-      // Fund empty USD wallet
-      const payResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-        recipientWalletId: walletIdUsdA,
-        memo: "",
-        amount: defaultAmount + feeSats,
-        senderWalletId: walletIdA,
-        senderAccount: accountA,
+    amountCases.forEach(({ amountCurrency, senderAmount }) => {
+      describe(`${amountCurrency.toLowerCase()} send amount`, () => {
+        it("returns a fee greater than zero for an external address", async () => {
+          await testAmountCaseAmounts(dealerFns.getSatsFromCentsForImmediateSell)
+
+          const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+          const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
+          if (onChainService instanceof Error) throw onChainService
+
+          const minerFee = await onChainService.getOnChainFeeEstimate({
+            amount: defaultAmount,
+            address,
+            targetConfirmations: 1 as TargetConfirmations,
+          })
+          if (minerFee instanceof Error) throw minerFee
+
+          const feeRates = getFeesConfig()
+          const feeSats = toSats(feeRates.withdrawDefaultMin + minerFee)
+
+          // Fund empty USD wallet
+          const payResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+            recipientWalletId: walletIdUsdA,
+            memo: "",
+            amount: defaultAmount + feeSats,
+            senderWalletId: walletIdA,
+            senderAccount: accountA,
+          })
+          if (payResult instanceof Error) throw payResult
+
+          const getFeeArgs = {
+            walletId: walletIdUsdA,
+            account: accountA,
+            address,
+            targetConfirmations: defaultTarget,
+            amount: senderAmount,
+          }
+          const feeAmount =
+            amountCurrency === WalletCurrency.Usd
+              ? await Wallets.getOnChainFeeForUsdWallet(getFeeArgs)
+              : await Wallets.getOnChainFeeForUsdWalletAndBtcAmount(getFeeArgs)
+          if (feeAmount instanceof Error) throw feeAmount
+          expect(feeAmount.currency).toBe(WalletCurrency.Usd)
+          const fee = Number(feeAmount.amount)
+          expect(fee).toBeGreaterThan(0)
+
+          const wallet = await WalletsRepository().findById(walletIdUsdA)
+          if (wallet instanceof Error) throw wallet
+
+          const account = await AccountsRepository().findById(wallet.accountId)
+          if (account instanceof Error) throw account
+
+          const usdAmount = await dealerFns.getCentsFromSatsForImmediateSell({
+            amount: BigInt(account.withdrawFee),
+            currency: WalletCurrency.Btc,
+          })
+          if (usdAmount instanceof Error) throw usdAmount
+          const withdrawFeeAsUsd = Number(usdAmount.amount)
+          expect(fee).toBeGreaterThan(withdrawFeeAsUsd)
+
+          const centsFeeAmount = await dealerFns.getCentsFromSatsForImmediateSell({
+            amount: BigInt(feeSats),
+            currency: WalletCurrency.Btc,
+          })
+          if (centsFeeAmount instanceof Error) throw centsFeeAmount
+          const expectedFee = Number(centsFeeAmount.amount)
+          expect(expectedFee).toEqual(fee)
+        })
+
+        it("returns zero for an on us address", async () => {
+          const address = await Wallets.createOnChainAddressForBtcWallet(walletIdB)
+          if (address instanceof Error) throw address
+
+          const getFeeArgs = {
+            walletId: walletIdUsdA,
+            account: accountA,
+            address,
+            targetConfirmations: defaultTarget,
+            amount: senderAmount,
+          }
+          const feeAmount =
+            amountCurrency === WalletCurrency.Usd
+              ? await Wallets.getOnChainFeeForUsdWallet(getFeeArgs)
+              : await Wallets.getOnChainFeeForUsdWalletAndBtcAmount(getFeeArgs)
+          if (feeAmount instanceof Error) throw feeAmount
+          const fee = Number(feeAmount.amount)
+          expect(fee).toBe(0)
+        })
+
+        it("returns error for dust amount", async () => {
+          const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+          const amount = toSats(dustThreshold - 1)
+
+          const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
+            amount: BigInt(amount),
+            currency: WalletCurrency.Btc,
+          })
+          if (usdAmount instanceof Error) throw usdAmount
+          const amountInUsd = Number(usdAmount.amount)
+
+          const getFeeArgsPartial = {
+            walletId: walletIdUsdA,
+            account: accountA,
+            address,
+            targetConfirmations: defaultTarget,
+          }
+          const fee =
+            amountCurrency === WalletCurrency.Usd
+              ? await Wallets.getOnChainFeeForUsdWallet({
+                  ...getFeeArgsPartial,
+                  amount: amountInUsd,
+                })
+              : await Wallets.getOnChainFeeForUsdWalletAndBtcAmount({
+                  ...getFeeArgsPartial,
+                  amount,
+                })
+          expect(fee).toBeInstanceOf(LessThanDustThresholdError)
+          expect(fee).toHaveProperty(
+            "message",
+            `Use lightning to send amounts less than ${dustThreshold} sats`,
+          )
+        })
+
+        it("returns error for minimum amount", async () => {
+          const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+
+          const getFeeArgsPartial = {
+            walletId: walletIdUsdA,
+            account: accountA,
+            address,
+            targetConfirmations: defaultTarget,
+          }
+          const fee =
+            amountCurrency === WalletCurrency.Usd
+              ? await Wallets.getOnChainFeeForUsdWallet({
+                  ...getFeeArgsPartial,
+                  amount: toCents(1),
+                })
+              : await Wallets.getOnChainFeeForUsdWalletAndBtcAmount({
+                  ...getFeeArgsPartial,
+                  amount: toSats(1),
+                })
+          expect(fee).toBeInstanceOf(LessThanDustThresholdError)
+          expect(fee).toHaveProperty(
+            "message",
+            `Use lightning to send amounts less than ${dustThreshold} sats`,
+          )
+        })
+
+        it("returns error for balance too low", async () => {
+          const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+          const amount = toSats(1_000_000_000)
+
+          const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
+            amount: BigInt(amount),
+            currency: WalletCurrency.Btc,
+          })
+          if (usdAmount instanceof Error) throw usdAmount
+          const amountInUsd = Number(usdAmount.amount)
+
+          const getFeeArgsPartial = {
+            walletId: walletIdUsdA,
+            account: accountA,
+            address,
+            targetConfirmations: defaultTarget,
+          }
+          const fee =
+            amountCurrency === WalletCurrency.Usd
+              ? await Wallets.getOnChainFeeForUsdWallet({
+                  ...getFeeArgsPartial,
+                  amount: amountInUsd,
+                })
+              : await Wallets.getOnChainFeeForUsdWalletAndBtcAmount({
+                  ...getFeeArgsPartial,
+                  amount,
+                })
+          expect(fee).toBeInstanceOf(InsufficientBalanceError)
+          expect(fee).toHaveProperty(
+            "message",
+            expect.stringMatching(/Payment amount '\d+' cents exceeds balance '\d+'/),
+          )
+        })
       })
-      if (payResult instanceof Error) throw payResult
-
-      const feeAmount = await Wallets.getOnChainFeeForUsdWallet({
-        walletId: walletIdUsdA,
-        account: accountA,
-        amount: defaultUsdAmount,
-        address,
-        targetConfirmations: defaultTarget,
-      })
-      if (feeAmount instanceof Error) throw feeAmount
-      expect(feeAmount.currency).toBe(WalletCurrency.Usd)
-      const fee = Number(feeAmount.amount)
-      expect(fee).toBeGreaterThan(0)
-
-      const wallet = await WalletsRepository().findById(walletIdUsdA)
-      if (wallet instanceof Error) throw wallet
-
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) throw account
-
-      const usdAmount = await dealerFns.getCentsFromSatsForImmediateSell({
-        amount: BigInt(account.withdrawFee),
-        currency: WalletCurrency.Btc,
-      })
-      if (usdAmount instanceof Error) throw usdAmount
-      const withdrawFeeAsUsd = Number(usdAmount.amount)
-      expect(fee).toBeGreaterThan(withdrawFeeAsUsd)
-
-      const centsFeeAmount = await dealerFns.getCentsFromSatsForImmediateSell({
-        amount: BigInt(feeSats),
-        currency: WalletCurrency.Btc,
-      })
-      if (centsFeeAmount instanceof Error) throw centsFeeAmount
-      const expectedFee = Number(centsFeeAmount.amount)
-      expect(expectedFee).toEqual(fee)
-    })
-
-    it("returns zero for an on us address", async () => {
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdB)
-      if (address instanceof Error) throw address
-      const feeAmount = await Wallets.getOnChainFeeForUsdWallet({
-        walletId: walletIdUsdA,
-        account: accountA,
-        amount: defaultUsdAmount,
-        address,
-        targetConfirmations: defaultTarget,
-      })
-      if (feeAmount instanceof Error) throw feeAmount
-      const fee = Number(feeAmount.amount)
-      expect(fee).toBe(0)
-    })
-
-    it("returns error for dust amount", async () => {
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const amount = toSats(dustThreshold - 1)
-
-      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
-        amount: BigInt(amount),
-        currency: WalletCurrency.Btc,
-      })
-      if (usdAmount instanceof Error) throw usdAmount
-      const amountInUsd = Number(usdAmount.amount)
-
-      const fee = await Wallets.getOnChainFeeForUsdWallet({
-        walletId: walletIdUsdA,
-        account: accountA,
-        amount: amountInUsd,
-        address,
-        targetConfirmations: defaultTarget,
-      })
-      expect(fee).toBeInstanceOf(LessThanDustThresholdError)
-      expect(fee).toHaveProperty(
-        "message",
-        `Use lightning to send amounts less than ${dustThreshold} sats`,
-      )
-    })
-
-    it("returns error for minimum amount", async () => {
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const usdAmount = toCents(1)
-
-      const fee = await Wallets.getOnChainFeeForUsdWallet({
-        walletId: walletIdUsdA,
-        account: accountA,
-        amount: usdAmount,
-        address,
-        targetConfirmations: defaultTarget,
-      })
-      expect(fee).toBeInstanceOf(LessThanDustThresholdError)
-      expect(fee).toHaveProperty(
-        "message",
-        `Use lightning to send amounts less than ${dustThreshold} sats`,
-      )
-    })
-
-    it("returns error for balance too low", async () => {
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const amount = toSats(1_000_000_000)
-
-      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
-        amount: BigInt(amount),
-        currency: WalletCurrency.Btc,
-      })
-      if (usdAmount instanceof Error) throw usdAmount
-      const amountInUsd = Number(usdAmount.amount)
-
-      const fee = await Wallets.getOnChainFeeForUsdWallet({
-        walletId: walletIdUsdA,
-        account: accountA,
-        amount: amountInUsd,
-        address,
-        targetConfirmations: defaultTarget,
-      })
-      expect(fee).toBeInstanceOf(InsufficientBalanceError)
-      expect(fee).toHaveProperty(
-        "message",
-        expect.stringMatching(/Payment amount '\d+' cents exceeds balance '\d+'/),
-      )
     })
   })
 })

@@ -8,7 +8,9 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
 } from "@app/prices"
+import * as PaymentsHelpers from "@app/payments/helpers"
 
+import { AccountLimitsChecker } from "@domain/accounts"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
@@ -21,12 +23,14 @@ import {
   PaymentStatus,
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
+import { toObjectId } from "@services/mongoose/utils"
+import { Account, WalletInvoice } from "@services/mongoose/schema"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { NotificationType } from "@domain/notifications"
@@ -60,7 +64,6 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { WalletInvoice } from "@services/mongoose/schema"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
@@ -255,7 +258,13 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const userBTxn = txResultB.result.slice.filter(matchTx)[0]
     expect(userBTxn.memo).toBe(memo)
-    expect(userBTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
+    expect(userBTxn.settlementDisplayPrice).toStrictEqual(
+      priceAmountFromNumber({
+        priceOfOneSatInMinorUnit: 0.05,
+        displayCurrency: userBTxn.settlementDisplayPrice.displayCurrency,
+        walletCurrency: userBTxn.settlementCurrency,
+      }),
+    )
     expect(userBTxn.settlementVia.type).toBe("intraledger")
     // expect(userBTxn.recipientUsername).toBe("lily")
 
@@ -265,7 +274,13 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const userCTxn = txResultC.result.slice.filter(matchTx)[0]
     expect(userCTxn.memo).toBe(memo)
-    expect(userCTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
+    expect(userCTxn.settlementDisplayPrice).toStrictEqual(
+      priceAmountFromNumber({
+        priceOfOneSatInMinorUnit: 0.05,
+        displayCurrency: userCTxn.settlementDisplayPrice.displayCurrency,
+        walletCurrency: userCTxn.settlementCurrency,
+      }),
+    )
     expect(userCTxn.settlementVia.type).toBe("intraledger")
 
     // Check ledger transaction metadata for BTC 'LedgerTransactionType.LnIntraLedger'
@@ -417,11 +432,13 @@ describe("UserWallet - Lightning Pay", () => {
     const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
     if (satsPrice instanceof Error) throw satsPrice
 
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
+
     const paymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
-    const displayPaymentAmount = {
-      amount: amountInvoice * satsPrice.price,
-      currency: satsPrice.currency,
-    }
+    const displayPaymentAmount = displayPriceRatio.convertFromWallet(paymentAmount)
 
     const { title: titleReceipt, body: bodyReceipt } = createPushNotificationContent({
       type: NotificationType.IntraLedgerReceipt,
@@ -1147,19 +1164,16 @@ describe("UserWallet - Lightning Pay", () => {
           expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
 
-          const satsPrice = await Prices.getCurrentSatPrice({
+          const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
             currency: DisplayCurrency.Usd,
           })
-          if (satsPrice instanceof Error) throw satsPrice
+          if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
           const paymentAmount = {
             amount: BigInt(amountInvoice),
             currency: WalletCurrency.Btc,
           }
-          const displayPaymentAmount = {
-            amount: amountInvoice * satsPrice.price,
-            currency: satsPrice.currency,
-          }
+          const displayPaymentAmount = displayPriceRatio.convertFromWallet(paymentAmount)
 
           const { title, body } = createPushNotificationContent({
             type: NotificationType.LnInvoicePaid,
@@ -1208,15 +1222,29 @@ describe("UserWallet - Lightning Pay", () => {
             }),
           ).not.toBeInstanceOf(Error)
         }
-
-        const accountRecordA = await getAccountRecordByTestUserRef("A")
+        await Account.updateMany(
+          { _id: { $in: [accountA.id, accountB.id, accountC.id].map(toObjectId) } },
+          { $set: { contacts: [] } },
+        )
+        let accountRecordA = await getAccountRecordByTestUserRef("A")
+        let accountRecordB = await getAccountRecordByTestUserRef("B")
+        let accountRecordC = await getAccountRecordByTestUserRef("C")
+        expect(accountRecordA.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
+        )
+        expect(accountRecordB.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameC })]),
+        )
+        expect(accountRecordC.contacts).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
+        )
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdB,
           accountPayer: accountB,
         })
         await paymentOtherGaloyUser({
-          walletIdPayee: walletIdC,
+          walletIdPayee: walletIdB,
           walletIdPayer: walletIdA,
           accountPayer: accountA,
         })
@@ -1233,8 +1261,18 @@ describe("UserWallet - Lightning Pay", () => {
         //     .mockReturnValueOnce(addProps(inputs.shift()))
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWalletB, walletPayer: userwalletC})
+
+        accountRecordA = await getAccountRecordByTestUserRef("A")
+        accountRecordB = await getAccountRecordByTestUserRef("B")
+        accountRecordC = await getAccountRecordByTestUserRef("C")
         expect(accountRecordA.contacts).toEqual(
-          expect.not.arrayContaining([expect.objectContaining({ id: usernameC })]),
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
+        )
+        expect(accountRecordB.contacts).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameC })]),
+        )
+        expect(accountRecordC.contacts).toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
         )
       })
 
@@ -2704,6 +2742,126 @@ describe("Handle pending payments - Lightning Pay", () => {
 
     const isRecordedVoided = await ledger.isLnTxRecorded(paymentHash as PaymentHash)
     expect(isRecordedVoided).toBeTruthy()
+  })
+})
+
+describe("UserWalletLimit - handles 1 sat send with high btc outgoing volume", () => {
+  const usdLimit = toCents(100_000)
+
+  const accountLimits = {
+    intraLedgerLimit: usdLimit,
+    withdrawalLimit: usdLimit,
+    tradeIntraAccountLimit: usdLimit,
+  }
+
+  const walletVolumes = [
+    {
+      outgoingBaseAmount: {
+        amount: BigInt(usdLimit),
+        currency: WalletCurrency.Btc,
+      },
+      incomingBaseAmount: { amount: 0n, currency: WalletCurrency.Btc },
+    },
+    {
+      outgoingBaseAmount: { amount: 0n, currency: WalletCurrency.Usd },
+      incomingBaseAmount: { amount: 0n, currency: WalletCurrency.Usd },
+    },
+  ]
+
+  const mockedCheckWithdrawalLimits = ({
+    amount,
+    priceRatio,
+  }: {
+    amount: UsdPaymentAmount
+    priceRatio: WalletPriceRatio
+  }) => {
+    return AccountLimitsChecker({
+      accountLimits,
+      priceRatio,
+    }).checkWithdrawal({
+      amount,
+      walletVolumes,
+    })
+  }
+
+  const mockedCheckIntraledgerLimits = ({
+    amount,
+    priceRatio,
+  }: {
+    amount: UsdPaymentAmount
+    priceRatio: WalletPriceRatio
+  }) => {
+    return AccountLimitsChecker({
+      accountLimits,
+      priceRatio,
+    }).checkIntraledger({
+      amount,
+      walletVolumes,
+    })
+  }
+
+  it("estimate fee for zero amount invoice with 1 sat amount", async () => {
+    jest
+      .spyOn(PaymentsHelpers, "checkWithdrawalLimits")
+      .mockImplementationOnce(mockedCheckWithdrawalLimits)
+      .mockImplementationOnce(mockedCheckWithdrawalLimits)
+
+    const senderWalletId = walletIdB
+    const { request } = await createInvoice({ lnd: lndOutside1 })
+
+    // Estimate fee with 2,000 sats
+    const { error } = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+      walletId: senderWalletId,
+      uncheckedPaymentRequest: request,
+      amount: toSats(2_000),
+    })
+    expect(error).not.toBeInstanceOf(Error)
+
+    // Estimate fee with 1 sat
+    // This tests that a suitable WalletPriceRatio is passed into limits checker
+    const { error: error1Sat } =
+      await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+        walletId: senderWalletId,
+        uncheckedPaymentRequest: request,
+        amount: toSats(1),
+      })
+    expect(error1Sat).not.toBeInstanceOf(Error)
+  })
+
+  it("pay zero amount invoice with 1 sat amount", async () => {
+    jest
+      .spyOn(PaymentsHelpers, "checkWithdrawalLimits")
+      .mockImplementationOnce(mockedCheckWithdrawalLimits)
+
+    const senderWalletId = walletIdB
+    const senderAccount = accountB
+    const { request } = await createInvoice({ lnd: lndOutside1 })
+
+    const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+      senderWalletId,
+      senderAccount,
+      uncheckedPaymentRequest: request,
+      amount: toSats(1),
+      memo: "",
+    })
+    expect(paid).not.toBeInstanceOf(Error)
+  })
+
+  it("pay other Galoy user with 1 sat amount", async () => {
+    jest
+      .spyOn(PaymentsHelpers, "checkIntraledgerLimits")
+      .mockImplementationOnce(mockedCheckIntraledgerLimits)
+
+    const senderWalletId = walletIdB
+    const senderAccount = accountB
+    const paidIntraledger = Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+      senderWalletId,
+      senderAccount,
+      recipientWalletId: walletIdC,
+      amount: toSats(1),
+      memo: "",
+    })
+    expect(paidIntraledger).not.toBeInstanceOf(Error)
   })
 })
 

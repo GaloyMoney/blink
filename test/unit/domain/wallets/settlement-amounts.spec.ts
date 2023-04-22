@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { MajorExponent, minorToMajorUnit, toCents } from "@domain/fiat"
+import { DisplayCurrency, displayAmountFromNumber, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
@@ -36,10 +36,12 @@ describe("SettlementAmounts", () => {
     displayCurrency,
   }
 
-  const expectedDisplayFee = minorToMajorUnit({
+  const expectedDisplayFeeObj = displayAmountFromNumber({
     amount: displayFee,
-    displayMajorExponent: MajorExponent.STANDARD,
+    currency: displayCurrency,
   })
+  if (expectedDisplayFeeObj instanceof Error) throw expectedDisplayFeeObj
+  const expectedDisplayFee = expectedDisplayFeeObj.displayInMajor
 
   const debitCreditScenarios = {
     "amount": {
@@ -89,10 +91,16 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForDebit = minorToMajorUnit({
+          const expectedDisplayAmountForDebitObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
+            currency: txnDebit.displayCurrency || DisplayCurrency.Usd,
           })
+          if (expectedDisplayAmountForDebitObj instanceof Error) {
+            throw expectedDisplayAmountForDebitObj
+          }
+          const expectedDisplayAmountForDebit =
+            expectedDisplayAmountForDebitObj.displayInMajor
+
           expect(settlementAmount).toEqual(expectedSettlementAmountForDebit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForDebit)
           expect(settlementDisplayFee).toEqual(expectedDisplayFee)
@@ -118,10 +126,16 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForCredit = minorToMajorUnit({
+          const expectedDisplayAmountForCreditObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
+            currency: txnCredit.displayCurrency || DisplayCurrency.Usd,
           })
+          if (expectedDisplayAmountForCreditObj instanceof Error) {
+            throw expectedDisplayAmountForCreditObj
+          }
+          const expectedDisplayAmountForCredit =
+            expectedDisplayAmountForCreditObj.displayInMajor
+
           expect(settlementAmount).toEqual(expectedSettlementAmountForCredit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForCredit)
           expect(settlementDisplayFee).toEqual(expectedDisplayFee)
@@ -155,10 +169,16 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForDebit = minorToMajorUnit({
+          const expectedDisplayAmountForDebitObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
+            currency: txnDebit.displayCurrency || DisplayCurrency.Usd,
           })
+          if (expectedDisplayAmountForDebitObj instanceof Error) {
+            throw expectedDisplayAmountForDebitObj
+          }
+          const expectedDisplayAmountForDebit =
+            expectedDisplayAmountForDebitObj.displayInMajor
+
           expect(settlementAmount).toEqual(expectedSettlementAmountForDebit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForDebit)
           expect(settlementDisplayFee).toEqual(expectedDisplayFee)
@@ -184,10 +204,16 @@ describe("SettlementAmounts", () => {
           const { settlementAmount, settlementDisplayAmount, settlementDisplayFee } =
             settlementAmounts
 
-          const expectedDisplayAmountForCredit = minorToMajorUnit({
+          const expectedDisplayAmountForCreditObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
-            displayMajorExponent: MajorExponent.STANDARD,
+            currency: txnCredit.displayCurrency || DisplayCurrency.Usd,
           })
+          if (expectedDisplayAmountForCreditObj instanceof Error) {
+            throw expectedDisplayAmountForCreditObj
+          }
+          const expectedDisplayAmountForCredit =
+            expectedDisplayAmountForCreditObj.displayInMajor
+
           expect(settlementAmount).toEqual(expectedSettlementAmountForCredit)
           expect(settlementDisplayAmount).toEqual(expectedDisplayAmountForCredit)
           expect(settlementDisplayFee).toEqual(expectedDisplayFee)

@@ -238,14 +238,12 @@ describe("onchainBlockEventHandler", () => {
     expect(ledgerTx.credit).toBe(sats)
     expect(ledgerTx.pendingConfirmation).toBe(false)
 
-    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (satsPrice instanceof Error) throw satsPrice
+    const displayPriceRatio = await Prices.getCurrentPriceAsDisplayPriceRatio({
+      currency: DisplayCurrency.Usd,
+    })
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
     const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
-    const displayPaymentAmount = {
-      amount: sats * satsPrice.price,
-      currency: satsPrice.currency,
-    }
 
     // floor/ceil is needed here because the price can sometimes shift in the time between
     // function execution and 'getCurrentPrice' call above here resulting in different rounding
@@ -254,19 +252,13 @@ describe("onchainBlockEventHandler", () => {
       type: NotificationType.LnInvoicePaid,
       userLanguage: locale as UserLanguage,
       amount: paymentAmount,
-      displayAmount: {
-        ...displayPaymentAmount,
-        amount: Math.floor(displayPaymentAmount.amount * 100) / 100,
-      },
+      displayAmount: displayPriceRatio.convertFromWalletToFloor(paymentAmount),
     })
     const { body: bodyCeil } = createPushNotificationContent({
       type: NotificationType.LnInvoicePaid,
       userLanguage: locale as UserLanguage,
       amount: paymentAmount,
-      displayAmount: {
-        ...displayPaymentAmount,
-        amount: Math.ceil(displayPaymentAmount.amount * 100) / 100,
-      },
+      displayAmount: displayPriceRatio.convertFromWalletToCeil(paymentAmount),
     })
 
     expect(sendNotification.mock.calls.length).toBe(1)
