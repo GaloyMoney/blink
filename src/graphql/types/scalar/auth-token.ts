@@ -12,7 +12,9 @@ const AuthToken = GT.Scalar({
 })
 
 function validAuthTokenValue(value: string) {
-  if (value.length !== 32) {
+  // 32 is the length of a session token in kratos v11
+  // 39 is the length of a session token in kratos v13
+  if (value.length !== 32 && value.length !== 39) {
     return "Invalid value for AuthToken"
   }
 

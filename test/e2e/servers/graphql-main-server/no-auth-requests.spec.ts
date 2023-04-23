@@ -285,7 +285,7 @@ describe("graphql", () => {
         variables: { input },
       })
       expect(result?.data?.userLogin).toHaveProperty("authToken")
-      expect(result?.data?.userLogin.authToken).toHaveLength(32)
+      expect(result?.data?.userLogin.authToken).toHaveLength(39)
     })
 
     it("returns error for invalid phone", async () => {
