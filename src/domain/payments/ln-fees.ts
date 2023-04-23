@@ -45,12 +45,13 @@ export const LnFees = () => {
     priceRatio: WalletPriceRatio
     senderWalletCurrency: WalletCurrency
   }) => {
-    const calculatedMaxFeeAmount =
-      senderWalletCurrency === WalletCurrency.Btc
-        ? maxProtocolAndBankFee(btcPaymentAmount)
-        : priceRatio.convertFromUsd(
-            maxProtocolAndBankFee(priceRatio.convertFromBtc(btcPaymentAmount)),
-          )
+    let calculatedMaxFeeAmount = maxProtocolAndBankFee(btcPaymentAmount)
+    if (senderWalletCurrency === WalletCurrency.Usd) {
+      const usdAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+      const maxFeeInUsd = maxProtocolAndBankFee(usdAmount)
+      calculatedMaxFeeAmount = priceRatio.convertFromUsd(maxFeeInUsd)
+    }
+
     const calculatedMinFeeAmount = priceRatio.convertFromUsd(ONE_CENT)
 
     if (
