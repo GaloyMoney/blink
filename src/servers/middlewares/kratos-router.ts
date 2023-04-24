@@ -4,7 +4,7 @@ import cors from "cors"
 import express from "express"
 
 import { getDefaultAccountsConfig, getKratosPasswords } from "@config"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 import {
   createAccountForEmailIdentifier,
   createAccountWithPhoneIdentifier,
@@ -12,6 +12,7 @@ import {
 import { checkedToPhoneNumber } from "@domain/users"
 import { checkedToUserId } from "@domain/accounts"
 import { UsersRepository } from "@services/mongoose"
+import { ErrorLevel } from "@domain/shared"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
@@ -20,6 +21,7 @@ const { callbackApiKey } = getKratosPasswords()
 kratosRouter.use(cors({ origin: true, credentials: true }))
 kratosRouter.use(express.json())
 
+// This flow is currently not used in production
 kratosRouter.post(
   "/preregistration",
   wrapAsyncToRunInSpan({
@@ -107,7 +109,13 @@ kratosRouter.post(
 
       const userIdChecked = checkedToUserId(userId)
       if (userIdChecked instanceof Error) {
-        // TODO: log this error as critical to honeycomb
+        recordExceptionInCurrentSpan({
+          error: userIdChecked,
+          level: ErrorLevel.Critical,
+          attributes: {
+            userId,
+          },
+        })
         console.log("invalid userId")
         res.status(400).send("invalid userId")
         return
@@ -118,7 +126,14 @@ kratosRouter.post(
       if (phoneRaw) {
         const phone = checkedToPhoneNumber(phoneRaw)
         if (phone instanceof Error) {
-          // TODO: log this error as critical to honeycomb
+          recordExceptionInCurrentSpan({
+            error: phone,
+            level: ErrorLevel.Critical,
+            attributes: {
+              userId,
+              phoneRaw,
+            },
+          })
           console.log("invalid phone")
           res.status(400).send("invalid phone")
           return
@@ -141,7 +156,14 @@ kratosRouter.post(
       }
 
       if (account instanceof Error) {
-        // TODO: log this error as critical to honeycomb
+        recordExceptionInCurrentSpan({
+          error: account,
+          level: ErrorLevel.Critical,
+          attributes: {
+            userId,
+            phoneRaw,
+          },
+        })
         console.log(`error createAccountWithPhoneIdentifier: ${account}`)
         res.status(500).send(`error createAccountWithPhoneIdentifier: ${account}`)
         return
