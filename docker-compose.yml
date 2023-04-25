@@ -8,6 +8,7 @@ services:
       - price-history
       - price-history-migrate
       - stablesats
+      - bria
       - redis
       - mongodb
       - postgres-price-history
@@ -28,6 +29,7 @@ services:
       - mongodb
       - bitcoind
       - stablesats
+      - bria
       - lnd1
       - lnd2
       - lnd-outside-1
@@ -296,6 +298,30 @@ services:
     restart: on-failure:10
     volumes:
       - ./:/repo
+  bria:
+    image: us.gcr.io/galoy-org/bria:edge
+    environment:
+      - PG_CON=postgres://user:password@postgres-bria:5432/pg
+    command: ["bria", "daemon", "--config", "bria.yml"]
+    working_dir: /repo/dev
+    depends_on:
+      - otel-agent
+      - fulcrum
+      - postgres-bria
+    restart: on-failure:10
+    volumes:
+      - ./:/repo
+  postgres-bria:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   oathkeeper:
     image: oryd/oathkeeper:v0.40.1
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
@@ -325,3 +351,15 @@ services:
       - POSTGRES_DB=default
   mailslurper:
     image: oryd/mailslurper:latest-smtps
+  fulcrum:
+    image: cculianu/fulcrum:latest
+    depends_on: [ bitcoind ]
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/dev/fulcrum/fulcrum.conf:/fulcrum.conf
+      - ${HOST_PROJECT_PATH:-.}/dev/fulcrum/tls.key:/tls.key
+      - ${HOST_PROJECT_PATH:-.}/dev/fulcrum/tls.cert:/tls.cert
+    environment:
+      - DATA_DIR=/db
+      - SSL_CERTFILE=/tls.cert
+      - SSL_KEYFILE=/tls.key
+    command: [ "Fulcrum", "/fulcrum.conf" ]
