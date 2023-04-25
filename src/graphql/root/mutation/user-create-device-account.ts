@@ -4,36 +4,13 @@ import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { BTC_NETWORK } from "@config"
-import { addAttributesToCurrentSpan } from "@services/tracing"
 
-const UserDeviceAccountCreateInput = GT.Input({
-  name: "UserDeviceAccountCreateInput",
-  fields: () => ({
-    deviceId: {
-      type: GT.NonNull(GT.String), // TODO: DeviceId
-    },
-  }),
-})
-
-const UserDeviceAccountCreateMutation = GT.Field<{
-  input: {
-    deviceId: string | InputValidationError
-  }
-}>({
+const UserDeviceAccountCreateMutation = GT.Field({
   extensions: {
     complexity: 120,
   },
   type: GT.NonNull(AuthTokenPayload),
-  args: {
-    input: { type: GT.NonNull(UserDeviceAccountCreateInput) },
-  },
-  resolve: async (_, args, { ip }) => {
-    const { deviceId } = args.input
-
-    if (deviceId instanceof Error) {
-      return { errors: [{ message: deviceId.message }] }
-    }
-
+  resolve: async (_, args, { ip, sub, iss }) => {
     if (ip === undefined) {
       return { errors: [{ message: "ip is undefined" }] }
     }
@@ -43,12 +20,20 @@ const UserDeviceAccountCreateMutation = GT.Field<{
       return { errors: [{ message: "currently not available on mainnet" }] }
     }
 
-    addAttributesToCurrentSpan({ deviceId })
+    if (iss === undefined) {
+      return { errors: [{ message: "iss is undefined" }] }
+    }
 
-    // TODO: pass in deviceId
-    // TODO: add deviceId to user
-    // TODO: add deviceToken
-    const authToken = await Auth.createDeviceAccount(ip)
+    if (iss === "galoy") {
+      return { errors: [{ message: "wrong issuer" }] }
+    }
+
+    const userId = sub
+    if (userId === undefined) {
+      return { errors: [{ message: "user is undefined" }] }
+    }
+
+    const authToken = await Auth.createDeviceAccount({ ip, userId })
 
     if (authToken instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(authToken)] }

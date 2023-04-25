@@ -147,6 +147,8 @@ export const sessionContext = ({
     async () => {
       // note: value should match (ie: "anon") if not an accountId
       // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
+
+      // UUID-v4 check. could be removed or updated
       const maybeUserId = checkedToUserId(tokenPayload?.sub || "")
       if (!(maybeUserId instanceof ValidationError)) {
         const userId = maybeUserId
