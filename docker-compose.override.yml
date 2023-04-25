@@ -40,6 +40,13 @@ services:
   stablesats:
     ports:
       - "3325:3325"
+  bria:
+    ports:
+      - "2743:2743"
+      - "2742:2742"
+  postgres-bria:
+    ports:
+      - "5434:5432"
   loopserver:
     ports:
       - "11009:11009"
@@ -74,3 +81,6 @@ services:
   kratos-pg:
     ports:
       - "5433:5432"
+  fulcrum:
+    ports:
+      - "50001:50001"
