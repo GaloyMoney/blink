@@ -54,12 +54,12 @@ export const loginWithPhoneToken = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.loginToken(phone)
+  let kratosResult = await authService.loginToken({ phone })
   // FIXME: this is a fuzzy error.
   // it exists because we currently make no difference between a registration and login
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
     // user is a new user
-    kratosResult = await authService.createIdentityWithSession(phone)
+    kratosResult = await authService.createIdentityWithSession({ phone })
     if (kratosResult instanceof Error) return kratosResult
     addAttributesToCurrentSpan({ "login.newAccount": true })
   } else if (kratosResult instanceof Error) {
@@ -101,12 +101,12 @@ export const loginWithPhoneCookie = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.loginCookie(phone)
+  let kratosResult = await authService.loginCookie({ phone })
   // FIXME: this is a fuzzy error.
   // it exists because we currently make no difference between a registration and login
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
     // user is a new user
-    kratosResult = await authService.createIdentityWithCookie(phone)
+    kratosResult = await authService.createIdentityWithCookie({ phone })
     if (kratosResult instanceof Error) return kratosResult
     addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
   }

@@ -1,24 +1,19 @@
-import { PhoneCodeInvalidError } from "@domain/phone-provider"
-
-import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
-
 import { getKratosPasswords } from "@config"
 
-import { SuccessfulNativeLogin } from "@ory/client"
+import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
-import { UnknownKratosError } from "./errors"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { kratosPublic } from "./private"
+import { UnknownKratosError } from "./errors"
 
 // login with email
 
-export const AuthWithEmailPasswordlessService = () => {
-  const initiateEmailVerification = async (email: EmailAddress) => {
-    const { data } = await kratosPublic.createNativeRecoveryFlow()
-
+export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessService => {
+  const initiateEmailVerification = async ({ email }: { email: EmailAddress }) => {
     const method = "code"
-
     try {
+      const { data } = await kratosPublic.createNativeRecoveryFlow()
       await kratosPublic.updateRecoveryFlow({
         flow: data.id,
         updateRecoveryFlowBody: {
@@ -29,7 +24,7 @@ export const AuthWithEmailPasswordlessService = () => {
 
       return data.id
     } catch (err) {
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
   }
 
@@ -57,7 +52,6 @@ export const AuthWithEmailPasswordlessService = () => {
         return new PhoneCodeInvalidError()
       }
 
-      // baseLogger.warn({ state: res.data.state }, "state")
       return new UnknownKratosError("happy case should error :/")
     } catch (err) {
       if (err.response.status === 422) {
@@ -66,24 +60,22 @@ export const AuthWithEmailPasswordlessService = () => {
         return true
       }
 
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
   }
 
   const password = getKratosPasswords().masterUserPassword
 
-  const login = async (
-    email: EmailAddress,
-  ): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
-    const flow = await kratosPublic.createNativeLoginFlow()
-
+  const login = async ({
+    email,
+  }: {
+    email: EmailAddress
+  }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
     const identifier = email
     const method = "password"
-
-    let result: AxiosResponse<SuccessfulNativeLogin>
-
     try {
-      result = await kratosPublic.updateLoginFlow({
+      const flow = await kratosPublic.createNativeLoginFlow()
+      const result = await kratosPublic.updateLoginFlow({
         flow: flow.data.id,
         updateLoginFlowBody: {
           identifier,
@@ -91,21 +83,23 @@ export const AuthWithEmailPasswordlessService = () => {
           password,
         },
       })
+      const sessionToken = result.data.session_token as SessionToken
+
+      // note: this only works when whoami: required_aal = aal1
+      const kratosUserId = result.data.session.identity.id as UserId
+
+      return { sessionToken, kratosUserId }
     } catch (err) {
-      return new UnknownKratosError(err)
+      return new UnknownKratosError(err.message || err)
     }
-
-    const sessionToken = result.data.session_token as SessionToken
-
-    // note: this only works when whoami: required_aal = aal1
-    const kratosUserId = result.data.session.identity.id as UserId
-
-    return { sessionToken, kratosUserId }
   }
 
-  return {
-    initiateEmailVerification,
-    validateEmailVerification,
-    login,
-  }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.kratos.auth-email-no-password",
+    fns: {
+      initiateEmailVerification,
+      validateEmailVerification,
+      login,
+    },
+  })
 }
