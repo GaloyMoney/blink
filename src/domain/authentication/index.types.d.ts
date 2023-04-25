@@ -35,21 +35,25 @@ type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
 type CreateKratosUserForPhoneNoPasswordSchemaCookieResponse = WithCookieResponse
 
 interface IAuthWithPhonePasswordlessService {
-  loginToken(
-    phone: PhoneNumber,
-  ): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
-  loginCookie(
-    phone: PhoneNumber,
-  ): Promise<LoginWithPhoneCookieSchemaResponse | AuthenticationError>
-  logoutToken(token: SessionToken): Promise<void | AuthenticationError>
-  logoutCookie(cookie: SessionCookie): Promise<void | AuthenticationError>
-  createIdentityWithSession(
-    phone: PhoneNumber,
-  ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
-  createIdentityWithCookie(
-    phone: PhoneNumber,
-  ): Promise<CreateKratosUserForPhoneNoPasswordSchemaCookieResponse | AuthenticationError>
-  createIdentityNoSession(phone: PhoneNumber): Promise<UserId | AuthenticationError>
+  loginToken(args: {
+    phone: PhoneNumber
+  }): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
+  loginCookie(args: {
+    phone: PhoneNumber
+  }): Promise<LoginWithPhoneCookieSchemaResponse | AuthenticationError>
+  logoutToken(args: { token: SessionToken }): Promise<void | AuthenticationError>
+  logoutCookie(args: { cookie: SessionCookie }): Promise<void | AuthenticationError>
+  createIdentityWithSession(args: {
+    phone: PhoneNumber
+  }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
+  createIdentityWithCookie(args: {
+    phone: PhoneNumber
+  }): Promise<
+    CreateKratosUserForPhoneNoPasswordSchemaCookieResponse | AuthenticationError
+  >
+  createIdentityNoSession(args: {
+    phone: PhoneNumber
+  }): Promise<UserId | AuthenticationError>
   upgradeToPhoneAndEmailSchema(input: {
     kratosUserId: UserId
     email: EmailAddress
@@ -58,6 +62,17 @@ interface IAuthWithPhonePasswordlessService {
     kratosUserId: UserId
     phone: PhoneNumber
   }): Promise<IdentityPhone | AuthenticationError>
+}
+
+interface IAuthWithEmailPasswordlessService {
+  initiateEmailVerification(args: { email: EmailAddress }): Promise<string | KratosError>
+  validateEmailVerification(args: {
+    code: string
+    flow: string
+  }): Promise<true | KratosError>
+  login(args: {
+    email: EmailAddress
+  }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError>
 }
 
 interface IIdentityRepository {
