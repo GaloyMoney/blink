@@ -1,5 +1,5 @@
-import { createAccountForEmailIdentifier } from "@app/accounts/create-account"
 import { updateAccountStatus } from "@app/accounts"
+import { createAccountForEmailIdentifier } from "@app/accounts/create-account"
 import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
@@ -15,26 +15,23 @@ import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/erro
 
 import {
   CouldNotFindAccountFromKratosIdError,
-  NotImplementedError,
   CouldNotListWalletsFromWalletCurrencyError,
+  NotImplementedError,
 } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
-import { AuthWithPhonePasswordlessService, revokeKratosToken } from "@services/kratos"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-} from "@services/tracing"
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
 import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
 import { LedgerService } from "@services/ledger"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Accounts, Payments } from "@app"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -131,7 +128,6 @@ export const loginUpgradeWithPhone = async ({
   code,
   ip,
   account,
-  authToken,
 }: {
   authToken: SessionToken
   phone: PhoneNumber
@@ -279,22 +275,11 @@ export const loginUpgradeWithPhone = async ({
 
     const res = await updateAccountStatus({
       id: account.id,
-      status: AccountStatus.Locked,
+      status: AccountStatus.Locked, // TODO: not necessarily lock it
       comment: "migration",
       updatedByUserId: account.kratosUserId,
     })
     if (res instanceof Error) return res
-  }
-
-  // deactivating current session token
-  // FIXME: doesn't seem to work
-  const res = await revokeKratosToken(authToken)
-  if (res instanceof Error) {
-    recordExceptionInCurrentSpan({
-      error: res,
-      level: ErrorLevel.Critical,
-      attributes: { ...res, description: "error revokating session token on upgrade" },
-    })
   }
 
   // returning a new session token

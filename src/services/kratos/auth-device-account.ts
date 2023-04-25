@@ -1,92 +1,16 @@
-import crypto from "crypto"
+import { LikelyUserAlreadyExistError } from "@domain/authentication/errors"
+import { Identity, UpdateIdentityBody } from "@ory/client"
 
 import { getKratosPasswords } from "@config"
 
-import {
-  LikelyNoUserWithThisPhoneExistError,
-  LikelyUserAlreadyExistError,
-} from "@domain/authentication/errors"
-import {
-  CreateIdentityBody,
-  Identity,
-  SuccessfulNativeLogin,
-  UpdateIdentityBody,
-} from "@ory/client"
+import { IncompatibleSchemaUpgradeError, KratosError, UnknownKratosError } from "./errors"
 
-import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
+import { kratosAdmin, toDomainIdentityPhone } from "./private"
 
-import {
-  AuthenticationKratosError,
-  IncompatibleSchemaUpgradeError,
-  KratosError,
-  UnknownKratosError,
-} from "./errors"
-
-import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
-
-// login with bearer token
+// login with device account
 
 export const AuthWithDeviceAccountService = () => {
   const password = getKratosPasswords().masterUserPassword
-
-  const create = async (): Promise<CreateDeviceAccountSchemaResponse | KratosError> => {
-    const random = crypto.randomUUID()
-
-    const adminIdentity: CreateIdentityBody = {
-      credentials: { password: { config: { password } } },
-      state: "active",
-      schema_id: "device_account_v0",
-      traits: { random },
-    }
-
-    let kratosUserId: UserId
-
-    try {
-      const { data: identity } = await kratosAdmin.createIdentity({
-        createIdentityBody: adminIdentity,
-      })
-
-      kratosUserId = identity.id as UserId
-    } catch (err) {
-      if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
-      }
-
-      return new UnknownKratosError(err)
-    }
-
-    const flow = await kratosPublic.createNativeLoginFlow()
-
-    const identifier = random
-    const method = "password"
-
-    let result: AxiosResponse<SuccessfulNativeLogin>
-
-    try {
-      result = await kratosPublic.updateLoginFlow({
-        flow: flow.data.id,
-        updateLoginFlowBody: {
-          identifier,
-          method,
-          password,
-        },
-      })
-    } catch (err) {
-      if (err.message === "Request failed with status code 400") {
-        return new LikelyNoUserWithThisPhoneExistError(err)
-      }
-
-      if (err.message === "Request failed with status code 401") {
-        return new AuthenticationKratosError(err)
-      }
-
-      return new UnknownKratosError(err)
-    }
-
-    const sessionToken = result.data.session_token as SessionToken
-
-    return { sessionToken, kratosUserId }
-  }
 
   const upgradeToPhoneSchema = async ({
     kratosUserId,
@@ -132,7 +56,6 @@ export const AuthWithDeviceAccountService = () => {
   }
 
   return {
-    create,
     upgradeToPhoneSchema,
   }
 }
