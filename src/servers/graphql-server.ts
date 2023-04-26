@@ -155,6 +155,7 @@ export const sessionContext = ({
       // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
 
       // UUID-v4 check. could be removed or updated
+      const iss = tokenPayload?.iss
       const maybeUserId = checkedToUserId(tokenPayload?.sub || "")
       if (!(maybeUserId instanceof ValidationError)) {
         const userId = maybeUserId
