@@ -1,17 +1,17 @@
 import { createAccountForDeviceAccount } from "@app/accounts"
 import { getDefaultAccountsConfig } from "@config"
-import { AccountLevel } from "@domain/accounts"
+import { AccountLevel, checkedToDeviceAccountUserId } from "@domain/accounts"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { consumeLimiter } from "@services/rate-limit"
 
 export const createDeviceAccount = async ({
   ip,
-  userId,
+  sub,
 }: {
   ip: IpAddress
-  userId: UserId
-}): Promise<"SUCCESS" | ApplicationError> => {
+  sub: string
+}): Promise<true | ApplicationError> => {
   {
     const limitOk = await checkCreateDeviceAccountPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -25,13 +25,16 @@ export const createDeviceAccount = async ({
   const configDefault = getDefaultAccountsConfig()
   const config = { ...configDefault, initialLevel: AccountLevel.Zero }
 
+  const userId = checkedToDeviceAccountUserId(sub)
+  if (userId instanceof Error) return userId
+
   const account = await createAccountForDeviceAccount({
     config,
     userId,
   })
   if (account instanceof Error) throw account
 
-  return "SUCCESS" // TODO: proper type
+  return true
 }
 
 const checkCreateDeviceAccountPerIpLimits = async (
