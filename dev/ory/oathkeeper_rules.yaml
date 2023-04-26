@@ -33,6 +33,14 @@
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphql<.*>"
     methods: ["POST"]
   authenticators:
+    - handler: jwt
+      config:
+        trusted_issuers:
+          - https://firebaseappcheck.googleapis.com/1076318732193
+        target_audience:
+          - projects/1076318732193
+        jwks_urls:
+          - https://firebaseappcheck.googleapis.com/v1beta/jwks
     - handler: cookie_session
       config:
         check_session_url: http://kratos:4433/sessions/whoami
