@@ -1,8 +1,4 @@
-import { randomUUID } from "crypto"
-
 import { kratosAdmin } from "@services/kratos/private"
-
-import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
@@ -40,7 +36,6 @@ import {
   getPhoneAndCodeFromRef,
   initializeTestingState,
   killServer,
-  randomPhone,
   startServer,
 } from "test/helpers"
 
@@ -89,12 +84,12 @@ afterAll(async () => {
 */
 
 gql`
-  mutation UserDeviceAccountCreate($input: UserDeviceAccountCreateInput!) {
-    userDeviceAccountCreate(input: $input) {
+  mutation UserDeviceAccountCreate {
+    userDeviceAccountCreate {
       errors {
         message
       }
-      authToken
+      success
     }
   }
 
@@ -109,7 +104,6 @@ gql`
 `
 
 describe("DeviceAccountService", () => {
-  const authService = AuthWithDeviceAccountService()
   let kratosUserId: UserId
 
   it("create a user", async () => {
@@ -119,7 +113,7 @@ describe("DeviceAccountService", () => {
 
   it("upgrade user", async () => {
     // TODO: test if there is a phone (or phone+email) collision
-    await authService.upgradeToPhoneSchema({ kratosUserId, phone: randomPhone() })
+    // await authService.upgradeToPhoneSchema({ kratosUserId, phone: randomPhone() })
 
     const { data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId })
     expect(identity.schema_id).toBe("phone_no_password_v0")
@@ -133,19 +127,19 @@ describe("DeviceAccountGraphQL", () => {
 
     ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
 
+    // TODO: create a JWT token with some identitier in sub
+    const JWT = `{ sub: "some-identifier" }` as SessionToken
+
     const result = await apolloClient.mutate<UserDeviceAccountCreateMutation>({
       mutation: UserDeviceAccountCreateDocument,
-      variables: { input: { deviceId: randomUUID() } },
     })
 
     // Create a first authenticated client
-    const authToken = result?.data?.userDeviceAccountCreate.authToken as SessionToken
-    if (!authToken) throw new Error("no auth token")
+    const success = result?.data?.userDeviceAccountCreate.success
+    expect(success).toBe(true)
 
     disposeClient()
-    ;({ apolloClient, disposeClient } = createApolloClient(
-      defaultTestClientConfig(authToken),
-    ))
+    ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig(JWT)))
 
     const meResult1 = await apolloClient.query<MainQueryQuery>({
       query: MainQueryDocument,
@@ -164,7 +158,7 @@ describe("DeviceAccountGraphQL", () => {
 
     const result2 = await apolloClient.mutate<UserLoginUpgradeMutation>({
       mutation: UserLoginUpgradeDocument,
-      variables: { input: { phone, code, authToken } },
+      variables: { input: { phone, code } },
     })
 
     // Create a new upgraded authenticated graphql client
@@ -214,25 +208,24 @@ describe("DeviceAccountGraphQL", () => {
       type: WalletType.Checking,
       currency: WalletCurrency.Usd,
     })
-    if (orgUsdWallet instanceof Error)
-      throw orgUsdWallet
+    if (orgUsdWallet instanceof Error) throw orgUsdWallet
 
-      // create device account client
-    ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
+    // TODO: create a JWT token with some identitier in sub
+    const JWT = `{ sub: "some-identifier" }` as SessionToken
+
+    // TODO: pass JWT to createApolloClient
+
     const result = await apolloClient.mutate<UserDeviceAccountCreateMutation>({
       mutation: UserDeviceAccountCreateDocument,
-      variables: { input: { deviceId: randomUUID() } },
     })
 
     // Create a first authenticated client
-    const authToken = result?.data?.userDeviceAccountCreate.authToken as SessionToken
-    if (!authToken) throw new Error("no auth token")
+    const success = result?.data?.userDeviceAccountCreate.success
+    expect(success).toBe(true)
 
     // get authenticated graphql device account client
     disposeClient()
-    ;({ apolloClient, disposeClient } = createApolloClient(
-      defaultTestClientConfig(authToken),
-    ))
+    ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig(JWT)))
 
     const meResult1 = await apolloClient.query<MainQueryQuery>({
       query: MainQueryDocument,
@@ -267,7 +260,7 @@ describe("DeviceAccountGraphQL", () => {
     // upgrade to phone account
     const result2 = await apolloClient.mutate<UserLoginUpgradeMutation>({
       mutation: UserLoginUpgradeDocument,
-      variables: { input: { phone, code, authToken } },
+      variables: { input: { phone, code } },
     })
 
     // Create a new upgraded authenticated graphql client
