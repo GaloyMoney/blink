@@ -9,6 +9,15 @@ tracing:
       local_agent_address: otel-agent:6831
 
 authenticators:
+  jwt:
+    enabled: true
+    config:
+      trusted_issuers:
+        - https://firebaseappcheck.googleapis.com/1076318732193
+      target_audience:
+        - projects/1076318732193
+      jwks_urls:
+        - https://firebaseappcheck.googleapis.com/v1beta/jwks
   bearer_token:
     enabled: true
     config:
