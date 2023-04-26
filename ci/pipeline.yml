@@ -506,7 +506,7 @@ jobs:
             - name: pipeline-tasks
             - name: repo
           params:
-            BRANCH: #@ data.values.git_branch
+            BRANCH: #@ data.values.bria_spike_branch
             BOT_BRANCH: #@ data.values.git_bria_api_proto_bot_branch
             GH_TOKEN: #@ data.values.github_token
             MODULE: bria-api
