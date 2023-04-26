@@ -24,7 +24,6 @@ import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
-import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
 import { LedgerService } from "@services/ledger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
@@ -208,15 +207,7 @@ export const loginUpgradeWithPhone = async ({
     // scenario 1 or 4
     // upgrading current session
 
-    const authBearer = AuthWithDeviceAccountService()
-    const res = await authBearer.upgradeToPhoneSchema({
-      kratosUserId: account.kratosUserId,
-      phone,
-    })
-
-    if (res instanceof Error) return res
-
-    kratosResult = await authPhone.loginToken({ phone })
+    kratosResult = await authPhone.createIdentityWithSession({ phone })
     if (kratosResult instanceof Error) return kratosResult
 
     const newAccount = await AccountsRepository().findByUserId(kratosResult.kratosUserId)
@@ -224,6 +215,9 @@ export const loginUpgradeWithPhone = async ({
 
     const res2 = await Accounts.updateAccountLevel({ id: newAccount.id, level: 1 })
     if (res2 instanceof Error) return res2
+
+    // TODO: need to modify the User collection to update the userId
+    // and add the phone number
 
     addAttributesToCurrentSpan({
       "login.migrateFromBearerToPhoneWithNoExistingAccount": true,
@@ -280,6 +274,8 @@ export const loginUpgradeWithPhone = async ({
       updatedByUserId: account.kratosUserId,
     })
     if (res instanceof Error) return res
+
+    // TODO: need to delete the associated UserId
   }
 
   // returning a new session token
