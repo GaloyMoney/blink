@@ -10,7 +10,8 @@ const UserDeviceAccountCreateMutation = GT.Field({
     complexity: 120,
   },
   type: GT.NonNull(AuthTokenPayload),
-  resolve: async (_, args, { ip, sub, iss }) => {
+  // sub, iss
+  resolve: async (_, args, { ip }) => {
     if (ip === undefined) {
       return { errors: [{ message: "ip is undefined" }] }
     }
@@ -20,20 +21,23 @@ const UserDeviceAccountCreateMutation = GT.Field({
       return { errors: [{ message: "currently not available on mainnet" }] }
     }
 
-    if (iss === undefined) {
-      return { errors: [{ message: "iss is undefined" }] }
-    }
+    // if (iss === undefined) {
+    //   return { errors: [{ message: "iss is undefined" }] }
+    // }
 
-    if (iss === "galoy") {
-      return { errors: [{ message: "wrong issuer" }] }
-    }
+    // if (iss === "galoy") {
+    //   return { errors: [{ message: "wrong issuer" }] }
+    // }
 
-    const userId = sub
-    if (userId === undefined) {
-      return { errors: [{ message: "user is undefined" }] }
-    }
+    // const userId = sub
+    // if (userId === undefined) {
+    //   return { errors: [{ message: "user is undefined" }] }
+    // }
 
-    const authToken = await Auth.createDeviceAccount({ ip, userId })
+    const authToken = await Auth.createDeviceAccount({
+      ip,
+      userId: "TODO GET FROM SUB" as UserId,
+    })
 
     if (authToken instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(authToken)] }
