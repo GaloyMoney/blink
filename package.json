@@ -117,7 +117,7 @@
     "@graphql-codegen/add": "^4.0.1",
     "@graphql-codegen/cli": "^3.3.0",
     "@graphql-codegen/client-preset": "^3.0.0",
-    "@graphql-codegen/typescript": "^3.0.3",
+    "@graphql-codegen/typescript": "^3.0.4",
     "@graphql-codegen/typescript-operations": "^3.0.3",
     "@graphql-codegen/typescript-react-apollo": "^3.3.7",
     "@graphql-tools/jest-transform": "^1.2.2",
