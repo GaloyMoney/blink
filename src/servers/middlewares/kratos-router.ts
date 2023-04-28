@@ -8,6 +8,7 @@ import { wrapAsyncToRunInSpan } from "@services/tracing"
 import {
   createAccountForEmailIdentifier,
   createAccountWithPhoneIdentifier,
+  createAccountForDeviceAccount,
 } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
 import { checkedToUserId } from "@domain/accounts"
@@ -95,11 +96,11 @@ kratosRouter.post(
       }
 
       const body = req.body
-      const { identity_id: userId, phone: phoneRaw, schema_id, email } = body
+      const { identity_id: userId, phone: phoneRaw, device, schema_id, email } = body
 
       assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
-      if ((!phoneRaw && !email) || !userId) {
+      if ((!phoneRaw && !email && !device) || !userId) {
         console.log("missing inputs")
         res.status(400).send("missing inputs")
         return
@@ -132,6 +133,13 @@ kratosRouter.post(
         // kratos user exists from self registration flow
         account = await createAccountForEmailIdentifier({
           kratosUserId: userIdChecked,
+          config: getDefaultAccountsConfig(),
+        })
+      } else if (device) {
+        // device flow
+        // kratos user exists from self registration flow
+        account = await createAccountForDeviceAccount({
+          userId: userIdChecked,
           config: getDefaultAccountsConfig(),
         })
       } else {
