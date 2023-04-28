@@ -31,6 +31,7 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Accounts, Payments } from "@app"
 import { WalletCurrency } from "@domain/shared"
+import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -279,6 +280,49 @@ export const loginUpgradeWithPhone = async ({
   }
 
   // returning a new session token
+  return kratosResult.sessionToken
+}
+
+export const loginWithDevice = async ({
+  jwt,
+  ip,
+}: {
+  jwt: string
+  ip: IpAddress
+}): Promise<SessionToken | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  // {
+  //   const limitOk = await checkFailedLoginAttemptPerDeviceLimits(device)
+  //   if (limitOk instanceof Error) return limitOk
+  // }
+
+  // TODO:
+  // add fibonachi on failed login
+  // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
+
+  const authService = AuthWithDeviceAccountService()
+  const decodedJwt = await authService.verifyJwt(jwt)
+  if (decodedJwt instanceof Error) return decodedJwt
+  const deviceId = decodedJwt.sub as DeviceToken
+
+  await rewardFailedLoginAttemptPerIpLimits(ip)
+  // await rewardFailedLoginAttemptPerDeviceLimits(device)
+
+  let kratosResult = await authService.loginDeviceAccount({ deviceId })
+  // FIXME: this is a fuzzy error.
+  // it exists because we currently make no difference between a registration and login
+  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+    // user is a new user
+    kratosResult = await authService.createDeviceIdentity({ deviceId })
+    if (kratosResult instanceof Error) return kratosResult
+    addAttributesToCurrentSpan({ "login.newAccount": true })
+  } else if (kratosResult instanceof Error) {
+    return kratosResult
+  }
   return kratosResult.sessionToken
 }
 
