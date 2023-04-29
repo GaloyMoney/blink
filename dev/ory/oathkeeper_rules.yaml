@@ -22,10 +22,6 @@
   authorizer:
     handler: allow
   mutators:
-    - handler: header
-      config:
-        headers:
-          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
     - handler: id_token
       config:
         claims: '{"sub": "{{ print .Subject }}"}'
@@ -55,10 +51,6 @@
   authorizer:
     handler: allow
   mutators:
-    - handler: header
-      config:
-        headers:
-          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
     - handler: id_token
       config:
         claims: '{"sub": "{{ print .Subject }}"}'
@@ -88,10 +80,6 @@
   authorizer:
     handler: allow
   mutators:
-    - handler: header
-      config:
-        headers:
-          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
     - handler: id_token
       config:
         claims: '{"sub": "{{ print .Subject }}"}'
@@ -122,10 +110,6 @@
   authorizer:
     handler: allow
   mutators:
-    - handler: header
-      config:
-        headers:
-          orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}'
     - handler: id_token
       config:
         claims: '{"sub": "{{ print .Subject }}"}'

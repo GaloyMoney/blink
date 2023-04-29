@@ -48,12 +48,6 @@ mutators:
   noop:
     enabled: true
 
-  header:
-    enabled: true
-    config:
-      headers:
-        orgauthorization: '{{ .MatchContext.Header.Get "Authorization" }}' # tmp during migration of LegacyJWT
-
 errors:
   fallback:
     - json
