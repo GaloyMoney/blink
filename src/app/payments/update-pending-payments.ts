@@ -84,6 +84,26 @@ export const updatePendingPaymentsByWalletId = wrapAsyncToRunInSpan({
   },
 })
 
+export const updatePendingPaymentByHash = wrapAsyncToRunInSpan({
+  namespace: "app.payments",
+  fnName: "updatePendingPaymentByHash",
+  fn: async ({
+    paymentHash,
+    logger,
+  }: {
+    paymentHash: PaymentHash
+    logger: Logger
+  }): Promise<void | ApplicationError> => {
+    const walletId = await LedgerService().getWalletIdByTransactionHash(paymentHash)
+    if (walletId instanceof Error) return walletId
+
+    return updatePendingPaymentsByWalletId({
+      walletId,
+      logger,
+    })
+  },
+})
+
 const updatePendingPayment = wrapAsyncToRunInSpan({
   namespace: "app.payments",
   fnName: "updatePendingPayment",

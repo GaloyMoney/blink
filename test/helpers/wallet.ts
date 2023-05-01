@@ -1,16 +1,12 @@
 import { PartialResult } from "@app/partial-result"
 import { getBalanceForWallet, getTransactionsForWallets } from "@app/wallets"
 import { RepositoryError } from "@domain/errors"
-import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
 
 export const getBalanceHelper = async (
   walletId: WalletId,
 ): Promise<CurrencyBaseAmount> => {
-  const balance = await getBalanceForWallet({
-    walletId,
-    logger: baseLogger,
-  })
+  const balance = await getBalanceForWallet({ walletId })
   if (balance instanceof Error) throw balance
   return balance
 }

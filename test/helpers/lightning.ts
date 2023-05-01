@@ -375,7 +375,7 @@ export const fundWalletIdFromLightning = async ({
     }),
   ).not.toBeInstanceOf(Error)
 
-  const balance = await Wallets.getBalanceForWallet({ walletId, logger: baseLogger })
+  const balance = await Wallets.getBalanceForWallet({ walletId })
   if (balance instanceof Error) throw balance
 }
 

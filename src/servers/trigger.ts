@@ -9,6 +9,8 @@ import {
   SubscribeToInvoiceInvoiceUpdatedEvent,
   subscribeToInvoices,
   SubscribeToInvoicesInvoiceUpdatedEvent,
+  subscribeToPayments,
+  SubscribeToPaymentsPaymentEvent,
   subscribeToTransactions,
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
@@ -17,6 +19,7 @@ import express from "express"
 import { getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import {
+  Payments,
   Prices as PricesWithSpans,
   Swap as SwapWithSpans,
   Wallets as WalletWithSpans,
@@ -451,10 +454,45 @@ export const setupInvoiceSubscribe = ({
   listenerExistingHodlInvoices({ lnd, pubkey })
 }
 
+export const setupPaymentSubscribe = async ({
+  subPayments,
+}: {
+  subPayments: EventEmitter
+}) => {
+  const paymentUpdateHandler = wrapAsyncToRunInSpan({
+    root: true,
+    namespace: "servers.trigger",
+    fnName: "paymentUpdateEventHandler",
+    fn: async (payment: SubscribeToPaymentsPaymentEvent) => {
+      logger.info({ payment }, "paymentUpdateEventHandler")
+
+      const paymentHash = payment.id as PaymentHash
+      return Payments.updatePendingPaymentByHash({ paymentHash, logger })
+    },
+  })
+
+  subPayments.on("confirmed", paymentUpdateHandler)
+  subPayments.on("failed", paymentUpdateHandler)
+  subPayments.on("error", (err) => {
+    baseLogger.info({ err }, "error subPayments")
+    recordExceptionInCurrentSpan({
+      error: new SubscriptionInterruptedError((err && err.message) || "subPayments"),
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subPayments" },
+    })
+    subPayments.removeAllListeners()
+  })
+
+  // Update existing pending payments
+  Payments.updatePendingPayments(logger)
+}
+
 const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
   const subInvoices = subscribeToInvoices({ lnd })
-
   setupInvoiceSubscribe({ lnd, pubkey, subInvoices })
+
+  const subPayments = subscribeToPayments({ lnd })
+  setupPaymentSubscribe({ subPayments })
 
   const subChannels = subscribeToChannels({ lnd })
   subChannels.on("channel_opened", (channel) =>
