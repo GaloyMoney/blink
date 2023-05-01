@@ -69,6 +69,8 @@ import * as PushNotificationsServiceImpl from "@services/notifications/push-noti
 
 import { sleep } from "@utils"
 
+import { setupPaymentSubscribe } from "@servers/trigger"
+
 import {
   cancelHodlInvoice,
   checkIsBalanced,
@@ -87,6 +89,7 @@ import {
   getInvoiceAttempt,
   getTransactionsForWalletId,
   getUsdWalletIdByTestUserRef,
+  lnd1,
   lndOutside1,
   lndOutside2,
   lndOutside3,
@@ -94,6 +97,7 @@ import {
   markSuccessfulTransactionAsPending,
   pay,
   settleHodlInvoice,
+  subscribeToPayments,
   waitFor,
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
@@ -1186,10 +1190,10 @@ describe("UserWallet - Lightning Pay", () => {
           expect(sendNotification.mock.calls[0][0].title).toBe(title)
           expect(sendNotification.mock.calls[0][0].body).toBe(body)
 
-          const hash = getHash(request)
+          const paymentHash = getHash(request)
           const matchTx = (tx) =>
             tx.settlementVia.type === PaymentInitiationMethod.IntraLedger &&
-            tx.initiationVia.paymentHash === hash
+            tx.initiationVia.paymentHash === paymentHash
 
           let txResult = await getTransactionsForWalletId(walletIdPayee)
           if (txResult.error instanceof Error || txResult.result === null) {
@@ -1211,13 +1215,13 @@ describe("UserWallet - Lightning Pay", () => {
           // making request twice because there is a cancel state, and this should be re-entrant
           expect(
             await Wallets.updatePendingInvoiceByPaymentHash({
-              paymentHash: hash as PaymentHash,
+              paymentHash,
               logger: baseLogger,
             }),
           ).not.toBeInstanceOf(Error)
           expect(
             await Wallets.updatePendingInvoiceByPaymentHash({
-              paymentHash: hash as PaymentHash,
+              paymentHash,
               logger: baseLogger,
             }),
           ).not.toBeInstanceOf(Error)
@@ -1325,10 +1329,14 @@ describe("UserWallet - Lightning Pay", () => {
 
       it("pay hodl invoice & ln payments repo updates", async () => {
         const { id, secret } = createInvoiceHash()
+        const paymentHash = id as PaymentHash
+
+        const subPayments = subscribeToPayments({ lnd: lnd1 })
+        setupPaymentSubscribe({ subPayments })
 
         const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
         const paymentFlowIndex: PaymentFlowStateIndex = {
-          paymentHash: id as PaymentHash,
+          paymentHash,
           walletId: walletIdB,
           inputAmount: BigInt(amountInvoice),
         }
@@ -1366,7 +1374,7 @@ describe("UserWallet - Lightning Pay", () => {
         const lnPaymentsRepo = LnPaymentsRepository()
 
         // Test 'lnpayment' is pending
-        const lnPaymentOnPay = await lnPaymentsRepo.findByPaymentHash(id as PaymentHash)
+        const lnPaymentOnPay = await lnPaymentsRepo.findByPaymentHash(paymentHash)
         expect(lnPaymentOnPay).not.toBeInstanceOf(Error)
         if (lnPaymentOnPay instanceof Error) throw lnPaymentOnPay
         expect(lnPaymentOnPay.paymentHash).toBe(id)
@@ -1380,9 +1388,7 @@ describe("UserWallet - Lightning Pay", () => {
         if (lnPaymentUpdateOnPending instanceof Error) throw lnPaymentUpdateOnPending
 
         // Test 'lnpayment' is still pending
-        const lnPaymentOnPending = await lnPaymentsRepo.findByPaymentHash(
-          id as PaymentHash,
-        )
+        const lnPaymentOnPending = await lnPaymentsRepo.findByPaymentHash(paymentHash)
         expect(lnPaymentOnPending).not.toBeInstanceOf(Error)
         if (lnPaymentOnPending instanceof Error) throw lnPaymentOnPending
 
@@ -1416,12 +1422,6 @@ describe("UserWallet - Lightning Pay", () => {
         })
 
         await waitFor(async () => {
-          const updatedPayments = await Payments.updatePendingPaymentsByWalletId({
-            walletId: walletIdB,
-            logger: baseLogger,
-          })
-          if (updatedPayments instanceof Error) throw updatedPayments
-
           const count = await LedgerService().getPendingPaymentsCount(walletIdB)
           if (count instanceof Error) throw count
 
@@ -1445,9 +1445,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(payment).not.toBeUndefined()
         if (payment === undefined) throw new Error("Could not find payment in lnd")
 
-        const lnPaymentOnSettled = await lnPaymentsRepo.findByPaymentHash(
-          id as PaymentHash,
-        )
+        const lnPaymentOnSettled = await lnPaymentsRepo.findByPaymentHash(paymentHash)
         expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
         if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
 
@@ -1475,10 +1473,16 @@ describe("UserWallet - Lightning Pay", () => {
 
         const finalBalance = await getBalanceHelper(walletIdB)
         expect(finalBalance).toBe(initBalanceB - amountInvoice)
+
+        subPayments.removeAllListeners()
       }, 60000)
 
       it("don't settle hodl invoice", async () => {
         const { id } = createInvoiceHash()
+        const paymentHash = id as PaymentHash
+
+        const subPayments = subscribeToPayments({ lnd: lnd1 })
+        setupPaymentSubscribe({ subPayments })
 
         const { request } = await createHodlInvoice({
           id,
@@ -1518,12 +1522,6 @@ describe("UserWallet - Lightning Pay", () => {
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
         await waitFor(async () => {
-          const updatedPayments = await Payments.updatePendingPaymentsByWalletId({
-            walletId: walletIdB,
-            logger: baseLogger,
-          })
-          if (updatedPayments instanceof Error) throw updatedPayments
-
           const count = await LedgerService().getPendingPaymentsCount(walletIdB)
           if (count instanceof Error) throw count
 
@@ -1535,7 +1533,7 @@ describe("UserWallet - Lightning Pay", () => {
         if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
 
         const lnPaymentOnSettled = await LnPaymentsRepository().findByPaymentHash(
-          id as PaymentHash,
+          paymentHash,
         )
         expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
         if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
@@ -1572,10 +1570,16 @@ describe("UserWallet - Lightning Pay", () => {
 
         const finalBalance = await getBalanceHelper(walletIdB)
         expect(finalBalance).toBe(initBalanceB)
+
+        subPayments.removeAllListeners()
       }, 60000)
 
       it("reimburse failed USD payment", async () => {
         const { id } = createInvoiceHash()
+        const paymentHash = id as PaymentHash
+
+        const subPayments = subscribeToPayments({ lnd: lnd1 })
+        setupPaymentSubscribe({ subPayments })
 
         const btcInvoiceAmount = paymentAmountFromNumber({
           amount: amountInvoice,
@@ -1623,12 +1627,6 @@ describe("UserWallet - Lightning Pay", () => {
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
         await waitFor(async () => {
-          const updatedPayments = await Payments.updatePendingPaymentsByWalletId({
-            walletId: walletIdUsdB,
-            logger: baseLogger,
-          })
-          if (updatedPayments instanceof Error) throw updatedPayments
-
           const count = await LedgerService().getPendingPaymentsCount(walletIdUsdB)
           if (count instanceof Error) throw count
 
@@ -1640,7 +1638,7 @@ describe("UserWallet - Lightning Pay", () => {
         if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
 
         const lnPaymentOnSettled = await LnPaymentsRepository().findByPaymentHash(
-          id as PaymentHash,
+          paymentHash,
         )
         expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
         if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
@@ -1679,6 +1677,8 @@ describe("UserWallet - Lightning Pay", () => {
         expect(finalBalanceUsd).toBe(
           initBalanceUsdB - Number(amountInvoiceWithFee.amount),
         )
+
+        subPayments.removeAllListeners()
       }, 60000)
     })
   })
@@ -2606,8 +2606,8 @@ describe("Handle pending payments - Lightning Pay", () => {
     expect(isRecordedPending).toBeFalsy()
 
     // Run update pending payments
-    await Payments.updatePendingPaymentsByWalletId({
-      walletId: senderWalletId,
+    await Payments.updatePendingPaymentByHash({
+      paymentHash,
       logger: baseLogger,
     })
 
@@ -2680,10 +2680,11 @@ describe("Handle pending payments - Lightning Pay", () => {
 
     // Pay lndOutside3 twice and fail
     const amountInvoice = 1000
-    const { request, id: paymentHash } = await createInvoice({
+    const { request, id } = await createInvoice({
       lnd: lndOutside3,
       tokens: Math.max(amountInvoice, remoteBalance + 1),
     })
+    const paymentHash = id as PaymentHash
 
     for (let i = 0; i < 2; i++) {
       const result = await Payments.payInvoiceByWalletId({
@@ -2723,12 +2724,12 @@ describe("Handle pending payments - Lightning Pay", () => {
     if (txnsPending instanceof Error) throw txnsPending
     expect(txnsPending[0].lnMemo).not.toBe("Payment canceled")
 
-    const isRecordedPending = await ledger.isLnTxRecorded(paymentHash as PaymentHash)
+    const isRecordedPending = await ledger.isLnTxRecorded(paymentHash)
     expect(isRecordedPending).toBeFalsy()
 
     // Run update pending payments
-    await Payments.updatePendingPaymentsByWalletId({
-      walletId: senderWalletId,
+    await Payments.updatePendingPaymentByHash({
+      paymentHash,
       logger: baseLogger,
     })
 
@@ -2740,7 +2741,7 @@ describe("Handle pending payments - Lightning Pay", () => {
     if (txnsVoided instanceof Error) throw txnsVoided
     expect(txnsVoided[0].lnMemo).toBe("Payment canceled")
 
-    const isRecordedVoided = await ledger.isLnTxRecorded(paymentHash as PaymentHash)
+    const isRecordedVoided = await ledger.isLnTxRecorded(paymentHash)
     expect(isRecordedVoided).toBeTruthy()
   })
 })
