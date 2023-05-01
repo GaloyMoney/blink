@@ -385,12 +385,14 @@ export const configSchema = {
             enum: Object.values(WalletCurrency),
           },
         },
+        randomizeDefaultWallet: { type: "boolean" },
       },
       required: ["initialStatus", "initialWallets"],
       additionalProperties: false,
       default: {
         initialStatus: "active",
         initialWallets: ["BTC"],
+        randomizeDefaultWallet: false,
       },
     },
     accountLimits: {

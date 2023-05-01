@@ -9,6 +9,13 @@ import {
 } from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
 
+function isUserIdEven(userId: UserId): boolean {
+  const lastChar = userId[userId.length - 1].toLowerCase()
+  const evenChars = new Set(["0", "2", "4", "6", "8", "a", "c", "e"])
+
+  return evenChars.has(lastChar)
+}
+
 const initializeCreatedAccount = async ({
   account,
   config,
@@ -35,10 +42,17 @@ const initializeCreatedAccount = async ({
     enabledWallets[currency] = wallet
   }
 
-  // Set default wallet explicitly as BTC, or implicitly as 1st element in
+  // If enabled, randomly assign a default wallet based on the user id in order to A/B test the default wallet
+  const desiredDefaultWalletCurrency =
+    isUserIdEven(account.kratosUserId) || !config.randomizeDefaultWallet
+      ? WalletCurrency.Btc
+      : WalletCurrency.Usd
+
+  // Set default wallet as desiredDefaultWalletCurrency, or implicitly as 1st element in
   // walletsEnabledConfig array.
   const defaultWalletId =
-    enabledWallets[WalletCurrency.Btc]?.id || enabledWallets[walletsEnabledConfig[0]]?.id
+    enabledWallets[desiredDefaultWalletCurrency]?.id ||
+    enabledWallets[walletsEnabledConfig[0]]?.id
 
   if (defaultWalletId === undefined) {
     return new ConfigError("NoWalletsEnabledInConfigError")
