@@ -31,6 +31,7 @@ export const createDeviceAccount = async ({
   const account = await createAccountForDeviceAccount({
     config,
     userId,
+    device: sub as DeviceId,
   })
   if (account instanceof Error) throw account
 
