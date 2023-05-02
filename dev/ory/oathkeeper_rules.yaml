@@ -36,10 +36,8 @@
     - handler: jwt
       config:
         trusted_issuers:
-          - https://firebaseappcheck.googleapis.com/1076318732193
           - https://firebaseappcheck.googleapis.com/72279297366
         target_audience:
-          - projects/1076318732193
           - projects/72279297366
         jwks_urls:
           - https://firebaseappcheck.googleapis.com/v1beta/jwks

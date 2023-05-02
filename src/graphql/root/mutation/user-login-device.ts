@@ -1,8 +1,8 @@
 import { GT } from "@graphql/index"
 
-import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import JwtPayload from "@graphql/types/payload/jwt"
 
 const UserLoginDeviceInput = GT.Input({
   name: "UserLoginDeviceInput",
@@ -21,7 +21,7 @@ const UserLoginDeviceMutation = GT.Field<{
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(AuthTokenPayload),
+  type: GT.NonNull(JwtPayload),
   args: {
     input: { type: GT.NonNull(UserLoginDeviceInput) },
   },
@@ -45,7 +45,7 @@ const UserLoginDeviceMutation = GT.Field<{
       return { errors: [mapAndParseErrorForGqlResponse(authToken)] }
     }
 
-    return { errors: [], authToken }
+    return { errors: [], authToken: jwt }
   },
 })
 

@@ -388,6 +388,11 @@ enum InvoicePaymentStatus {
   PENDING
 }
 
+type JwtPayload {
+  authToken: String
+  errors: [Error!]!
+}
+
 scalar Language
 
 type LnInvoice {
@@ -754,7 +759,7 @@ type Mutation {
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userDeviceAccountCreate: SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userLoginDevice(input: UserLoginDeviceInput!): AuthTokenPayload!
+  userLoginDevice(input: UserLoginDeviceInput!): JwtPayload!
   userLoginUpgrade(input: UserLoginUpgradeInput!): AuthTokenPayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userQuizQuestionUpdateCompleted(
@@ -1350,6 +1355,11 @@ type User {
   contacts: [UserContact!]! @deprecated(reason: "will be moved to account")
   createdAt: Timestamp!
   defaultAccount: Account!
+
+  """
+  Device ID of the user's device.
+  """
+  device: String
   id: ID!
 
   """

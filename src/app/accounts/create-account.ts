@@ -75,12 +75,14 @@ const initializeCreatedAccount = async ({
 
 export const createAccountForDeviceAccount = async ({
   userId,
+  device,
   config,
 }: {
   userId: UserId
+  device: DeviceId
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  const user = await UsersRepository().update({ id: userId })
+  const user = await UsersRepository().update({ id: userId, device })
   if (user instanceof Error) return user
 
   const accountNew = await AccountsRepository().persistNew(userId)
