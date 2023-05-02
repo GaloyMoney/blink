@@ -90,6 +90,7 @@ describe("LnFees", () => {
           LnFees().verifyMaxFee({
             maxFeeAmount: validBtcMaxFeeToVerify,
             btcPaymentAmount: btc,
+            usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
           }),
@@ -101,6 +102,7 @@ describe("LnFees", () => {
           LnFees().verifyMaxFee({
             maxFeeAmount: validUsdMaxFeeInBtcToVerify,
             btcPaymentAmount: btc,
+            usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
           }),
@@ -112,6 +114,7 @@ describe("LnFees", () => {
           LnFees().verifyMaxFee({
             maxFeeAmount: ONE_SAT,
             btcPaymentAmount: ONE_SAT,
+            usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
           }),
@@ -123,6 +126,7 @@ describe("LnFees", () => {
           LnFees().verifyMaxFee({
             maxFeeAmount: priceRatio.convertFromUsd(ONE_CENT),
             btcPaymentAmount: ONE_SAT,
+            usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
           }),
@@ -134,6 +138,7 @@ describe("LnFees", () => {
           LnFees().verifyMaxFee({
             maxFeeAmount: calc.add(validBtcMaxFeeToVerify, ONE_SAT),
             btcPaymentAmount: btc,
+            usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
           }),
@@ -145,6 +150,7 @@ describe("LnFees", () => {
           LnFees().verifyMaxFee({
             maxFeeAmount: calc.add(validUsdMaxFeeInBtcToVerify, ONE_SAT),
             btcPaymentAmount: btc,
+            usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
           }),
@@ -156,6 +162,7 @@ describe("LnFees", () => {
           LnFees().verifyMaxFee({
             maxFeeAmount: calc.add(ONE_SAT, ONE_SAT),
             btcPaymentAmount: ONE_SAT,
+            usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
           }),
@@ -167,6 +174,7 @@ describe("LnFees", () => {
           LnFees().verifyMaxFee({
             maxFeeAmount: calc.add(validUsdMaxFeeInBtcToVerify, ONE_SAT),
             btcPaymentAmount: ONE_SAT,
+            usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
           }),
