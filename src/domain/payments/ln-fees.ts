@@ -37,18 +37,19 @@ export const LnFees = () => {
   const verifyMaxFee = ({
     maxFeeAmount,
     btcPaymentAmount,
+    usdPaymentAmount,
     priceRatio,
     senderWalletCurrency,
   }: {
     maxFeeAmount: BtcPaymentAmount
     btcPaymentAmount: BtcPaymentAmount
+    usdPaymentAmount: UsdPaymentAmount
     priceRatio: WalletPriceRatio
     senderWalletCurrency: WalletCurrency
   }) => {
     let calculatedMaxFeeAmount = maxProtocolAndBankFee(btcPaymentAmount)
     if (senderWalletCurrency === WalletCurrency.Usd) {
-      const usdAmount = priceRatio.convertFromBtc(btcPaymentAmount)
-      const maxFeeInUsd = maxProtocolAndBankFee(usdAmount)
+      const maxFeeInUsd = maxProtocolAndBankFee(usdPaymentAmount)
       calculatedMaxFeeAmount = priceRatio.convertFromUsd(maxFeeInUsd)
     }
 
@@ -62,7 +63,9 @@ export const LnFees = () => {
       return new MaxFeeTooLargeForRoutelessPaymentError(
         JSON.stringify({
           btcPaymentAmount: Number(btcPaymentAmount.amount),
+          usdPaymentAmount: Number(usdPaymentAmount.amount),
           maxFeeBtcAmount: Number(maxFeeAmount.amount),
+          senderWalletCurrency: senderWalletCurrency,
           calculatedMaxFeeBtcAmount: Number(calculatedMaxFeeAmount.amount),
         }),
       )

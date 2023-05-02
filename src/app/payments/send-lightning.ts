@@ -666,6 +666,7 @@ const executePaymentViaLn = async ({
       const maxFeeCheckArgs = {
         maxFeeAmount: paymentFlow.btcProtocolAndBankFee,
         btcPaymentAmount: paymentFlow.btcPaymentAmount,
+        usdPaymentAmount: paymentFlow.usdPaymentAmount,
         priceRatio: walletPriceRatio,
         senderWalletCurrency: paymentFlow.senderWalletDescriptor().currency,
       }
