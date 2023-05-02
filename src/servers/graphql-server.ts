@@ -54,7 +54,7 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { checkedToUserId } from "@domain/accounts"
+import { checkedToUserId, isDeviceId } from "@domain/accounts"
 
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 
@@ -159,8 +159,18 @@ export const sessionContext = ({
 
       const maybeUserId = checkedToUserId(sub)
       if (!(maybeUserId instanceof ValidationError)) {
-        const userId = maybeUserId
+        let userId = maybeUserId
 
+        if (isDeviceId(userId)) {
+          const deviceId = userId as unknown as DeviceId
+          const deviceUser = await UsersRepository().findByDeviceId(deviceId)
+          if (deviceUser instanceof Error) {
+            // TODO - handle this
+            addAttributesToCurrentSpan({ [DEVICE_USER_ERROR]: "deviceUser error" })
+          } else {
+            userId = deviceUser.id
+          }
+        }
         const account = await Accounts.getAccountFromUserId(userId)
 
         // FIXME: can't throw for deviceAccountCreate use case
