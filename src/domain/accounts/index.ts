@@ -36,12 +36,18 @@ export const checkedToUserId = (userId: string): UserId | ValidationError => {
     return userId as UserId
   }
 
-  // user id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
-  if (userId.match(/^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i)) {
-    return userId as UserId
-  }
+  // kratosUserId is a firebase jwt subject
+  if (isDeviceId(userId)) return userId as UserId
 
   return new InvalidUserId(userId)
+}
+
+export const isDeviceId = (userId: string) => {
+  // user id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
+  if (userId.match(/^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i)) {
+    return true
+  }
+  return false
 }
 
 export const checkedCoordinates = ({

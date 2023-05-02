@@ -343,6 +343,12 @@ const UserSchema = new Schema(
       unique: true,
       sparse: true,
     },
+    device: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+    },
   },
   { id: false },
 )

@@ -156,6 +156,7 @@ kratosRouter.post(
         account = await createAccountForDeviceAccount({
           userId: userIdChecked,
           config: getDefaultAccountsConfig(),
+          device,
         })
       } else {
         // insert new flow, such as email with code
