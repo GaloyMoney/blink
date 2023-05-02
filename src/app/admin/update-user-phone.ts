@@ -1,7 +1,6 @@
 import { UserWithPhoneAlreadyExistsError } from "@domain/authentication/errors"
 import { AuthWithPhonePasswordlessService } from "@services/kratos/auth-phone-no-password"
 import { IdentityRepository } from "@services/kratos/identity"
-import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
 import { addAttributesToCurrentSpan } from "@services/tracing"
@@ -21,7 +20,7 @@ const deleteUserIfNew = async ({
   if (wallets instanceof Error) return wallets
 
   for (const wallet of wallets) {
-    const balance = await getBalanceForWallet({ walletId: wallet.id, logger: baseLogger })
+    const balance = await getBalanceForWallet({ walletId: wallet.id })
     if (balance instanceof Error) return balance
     if (balance > 0) {
       return new UserWithPhoneAlreadyExistsError(
