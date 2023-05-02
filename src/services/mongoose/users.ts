@@ -13,6 +13,7 @@ export const translateToUser = (user: UserRecord): User => {
   const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone
+  const device = user.device
   const createdAt = user.createdAt
 
   return {
@@ -21,6 +22,7 @@ export const translateToUser = (user: UserRecord): User => {
     deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
     phone,
+    device,
     createdAt,
   }
 }
@@ -55,12 +57,25 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const findByDeviceId = async (device: DeviceId): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOne({ device })
+      if (!result) return new CouldNotFindUserFromPhoneError()
+
+      return translateToUser(result)
+    } catch (err) {
+      //  else
+      return parseRepositoryError(err)
+    }
+  }
+
   const update = async ({
     id,
     language,
     deviceTokens,
     phoneMetadata,
     phone,
+    device,
     createdAt,
   }: UserUpdateInput): Promise<User | RepositoryError> => {
     try {
@@ -71,7 +86,7 @@ export const UsersRepository = (): IUsersRepository => {
           phoneMetadata,
           language,
           phone,
-
+          device,
           createdAt, // TODO: remove post migration
         },
         {
@@ -109,6 +124,7 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByPhone,
+    findByDeviceId,
     update,
     adminUnsetPhoneForUserPreservation,
   }

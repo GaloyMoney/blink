@@ -341,6 +341,12 @@ const UserSchema = new Schema(
       sparse: true,
     },
     deletedPhone: { type: String },
+    device: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+    },
   },
   { id: false },
 )

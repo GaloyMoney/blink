@@ -118,6 +118,7 @@ interface UserRecord {
   phoneMetadata?: TwilioObjectForUser
   phone?: PhoneNumber
   deletedPhone?: PhoneNumber
+  device?: DeviceId
   createdAt: Date
 }
 
