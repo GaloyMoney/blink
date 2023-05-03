@@ -11,7 +11,7 @@ import {
   createAccountForDeviceAccount,
 } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
-import { checkedToUserId } from "@domain/accounts"
+import { AccountLevel, checkedToUserId } from "@domain/accounts"
 import { UsersRepository } from "@services/mongoose"
 import { ErrorLevel } from "@domain/shared"
 import { baseLogger } from "@services/logger"
@@ -152,10 +152,12 @@ kratosRouter.post(
         })
       } else if (device) {
         // device flow
+        const levelZeroAccountsConfig = getDefaultAccountsConfig()
+        levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
         // kratos user exists from self registration flow
         account = await createAccountForDeviceAccount({
           userId: userIdChecked,
-          config: getDefaultAccountsConfig(),
+          config: levelZeroAccountsConfig,
           device,
         })
       } else {
