@@ -166,7 +166,6 @@ export const sessionContext = ({
           const deviceUser = await UsersRepository().findByDeviceId(deviceId)
           if (deviceUser instanceof Error) {
             // TODO - handle this
-            addAttributesToCurrentSpan({ [DEVICE_USER_ERROR]: "deviceUser error" })
           } else {
             userId = deviceUser.id
           }
