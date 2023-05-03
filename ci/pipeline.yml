@@ -64,6 +64,7 @@ groups:
     jobs:
       - sync-dealer-proto
       - sync-price-history-proto
+      - sync-bria-api-proto
 
 jobs:
   -  #@ install_yarn_deps()
@@ -489,7 +490,7 @@ jobs:
           params:
             PROTO_FILES_SRC_PATH: proto/api
             PROTO_FILES_DEST_PATH: src/services/bria-api/protos
-            RUN_BUF_GENERATE: "true"
+            RUN_BUF_GENERATE: "false"
             BRANCH: #@ data.values.git_branch
             MODULE: bria-api
           run:
@@ -541,6 +542,13 @@ resources:
     source:
       uri: #@ data.values.git_uri
       branch: #@ data.values.git_price_history_proto_bot_branch
+      private_key: #@ data.values.github_private_key
+
+  - name: bria-api-proto-bot-branch
+    type: git
+    source:
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_bria_api_proto_bot_branch
       private_key: #@ data.values.github_private_key
 
   - name: charts-repo
@@ -626,6 +634,14 @@ resources:
     source:
       paths: ["history/src/servers/protos/*"]
       uri: #@ data.values.git_price_uri
+      branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key
+
+  - name: bria-api-proto
+    type: git
+    source:
+      paths: ["proto/api/*"]
+      uri: #@ data.values.git_bria_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
 
