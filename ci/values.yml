@@ -4,12 +4,12 @@ git_uri: git@github.com:GaloyMoney/galoy.git
 git_branch: main
 bria_spike_branch: introduce-bria
 git_charts_uri: git@github.com:GaloyMoney/charts.git
-git_dealer_uri: git@github.com:GaloyMoney/dealer.git
+git_stablesats_uri: git@github.com:GaloyMoney/stablesats-rs.git
 git_price_uri: git@github.com:GaloyMoney/price.git
 git_bria_uri: git@github.com:GaloyMoney/bria.git
 git_charts_branch: main
 git_charts_bot_branch: bot-bump-galoy-image
-git_dealer_proto_bot_branch: bot-bump-dealer-proto
+git_stablesats_proto_bot_branch: bot-bump-stablesats-proto
 git_price_history_proto_bot_branch: bot-bump-price-history-proto
 git_bria_api_proto_bot_branch: bot-bump-bria-api-proto
 github_private_key: ((github.private_key))
