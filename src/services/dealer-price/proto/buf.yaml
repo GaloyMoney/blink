@@ -1,8 +1,5 @@
 # /proto/buf.yaml
-version: v1beta1
-build:
-  roots:
-    - .
+version: v1
 lint:
   use:
     - DEFAULT
