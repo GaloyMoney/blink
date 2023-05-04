@@ -669,6 +669,8 @@ const executePaymentViaLn = async ({
         usdPaymentAmount: paymentFlow.usdPaymentAmount,
         priceRatio: walletPriceRatio,
         senderWalletCurrency: paymentFlow.senderWalletDescriptor().currency,
+        isFromNoAmountInvoice:
+          decodedInvoice.amount === 0 || decodedInvoice.amount === null,
       }
       const maxFeeCheck = LnFees().verifyMaxFee(maxFeeCheckArgs)
 

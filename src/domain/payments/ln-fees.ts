@@ -40,17 +40,28 @@ export const LnFees = () => {
     usdPaymentAmount,
     priceRatio,
     senderWalletCurrency,
+    isFromNoAmountInvoice,
   }: {
     maxFeeAmount: BtcPaymentAmount
     btcPaymentAmount: BtcPaymentAmount
     usdPaymentAmount: UsdPaymentAmount
     priceRatio: WalletPriceRatio
     senderWalletCurrency: WalletCurrency
+    isFromNoAmountInvoice: boolean
   }) => {
-    let calculatedMaxFeeAmount = maxProtocolAndBankFee(btcPaymentAmount)
+    const btcCalculatedMaxFeeAmount = maxProtocolAndBankFee(btcPaymentAmount)
+    let calculatedMaxFeeAmount = btcCalculatedMaxFeeAmount
     if (senderWalletCurrency === WalletCurrency.Usd) {
       const maxFeeInUsd = maxProtocolAndBankFee(usdPaymentAmount)
-      calculatedMaxFeeAmount = priceRatio.convertFromUsd(maxFeeInUsd)
+      const usdCalculatedMaxFeeAmount = priceRatio.convertFromUsd(maxFeeInUsd)
+
+      calculatedMaxFeeAmount = usdCalculatedMaxFeeAmount
+      if (isFromNoAmountInvoice === false) {
+        calculatedMaxFeeAmount =
+          btcCalculatedMaxFeeAmount.amount > usdCalculatedMaxFeeAmount.amount
+            ? btcCalculatedMaxFeeAmount
+            : usdCalculatedMaxFeeAmount
+      }
     }
 
     const calculatedMinFeeAmount = priceRatio.convertFromUsd(ONE_CENT)

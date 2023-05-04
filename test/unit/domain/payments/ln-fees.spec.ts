@@ -93,6 +93,7 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
+            isFromNoAmountInvoice: true,
           }),
         ).toBe(true)
       })
@@ -105,6 +106,7 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: false,
           }),
         ).toBe(true)
       })
@@ -117,6 +119,7 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: true,
           }),
         ).toBe(true)
       })
@@ -129,6 +132,7 @@ describe("LnFees", () => {
             usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
+            isFromNoAmountInvoice: true,
           }),
         ).toBe(true)
       })
@@ -141,6 +145,7 @@ describe("LnFees", () => {
             usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: true,
           }),
         ).toBe(true)
       })
@@ -153,6 +158,7 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
+            isFromNoAmountInvoice: true,
           }),
         ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
       })
@@ -165,6 +171,7 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: true,
           }),
         ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
       })
@@ -177,6 +184,7 @@ describe("LnFees", () => {
             usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
+            isFromNoAmountInvoice: true,
           }),
         ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
       })
@@ -189,6 +197,7 @@ describe("LnFees", () => {
             usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: true,
           }),
         ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
       })
