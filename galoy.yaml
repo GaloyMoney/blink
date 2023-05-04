@@ -126,6 +126,7 @@ accounts:
   initialStatus: active
   initialWallets:
     - BTC
+  randomizeDefaultWallet: false
 accountLimits:
   withdrawal:
     level:

@@ -113,14 +113,26 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
   await createUserAndWallet(entry)
 }
 
-export const createAccount = async (initialWallets: WalletCurrency[]) => {
+export const createAccount = async ({
+  initialWallets,
+  userId,
+  randomizeDefaultWallet,
+}: {
+  initialWallets: WalletCurrency[]
+  userId?: UserId
+  randomizeDefaultWallet?: boolean
+}) => {
   const phone = randomPhone()
 
-  const kratosUserId = randomUserId()
+  const kratosUserId = userId || randomUserId()
 
   const account = await Accounts.createAccountWithPhoneIdentifier({
     newAccountInfo: { phone, kratosUserId },
-    config: { initialStatus: AccountStatus.Active, initialWallets },
+    config: {
+      initialStatus: AccountStatus.Active,
+      initialWallets,
+      randomizeDefaultWallet,
+    },
   })
   if (account instanceof Error) throw account
 
