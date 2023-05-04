@@ -63,14 +63,14 @@ describe("LnFees", () => {
         currency: WalletCurrency.Usd,
       },
     },
-    // Live prod error case #2 (fails in the same way as case #1, likely redundant)
+    // Live prod error case #2 (a Usd payment, with max fee from btc passed in)
     {
       btc: {
-        amount: 11140n,
+        amount: 1342241n,
         currency: WalletCurrency.Btc,
       },
       usd: {
-        amount: 320n,
+        amount: 38254n,
         currency: WalletCurrency.Usd,
       },
     },
@@ -93,6 +93,20 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
+            isFromNoAmountInvoice: true,
+          }),
+        ).toBe(true)
+      })
+
+      it("correctly verifies a valid Btc maxFee from Usd wallet", () => {
+        expect(
+          LnFees().verifyMaxFee({
+            maxFeeAmount: validBtcMaxFeeToVerify,
+            btcPaymentAmount: btc,
+            usdPaymentAmount: usd,
+            priceRatio,
+            senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: false,
           }),
         ).toBe(true)
       })
@@ -105,6 +119,7 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: true,
           }),
         ).toBe(true)
       })
@@ -117,6 +132,7 @@ describe("LnFees", () => {
             usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
+            isFromNoAmountInvoice: true,
           }),
         ).toBe(true)
       })
@@ -129,6 +145,7 @@ describe("LnFees", () => {
             usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: true,
           }),
         ).toBe(true)
       })
@@ -141,6 +158,7 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
+            isFromNoAmountInvoice: true,
           }),
         ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
       })
@@ -153,6 +171,7 @@ describe("LnFees", () => {
             usdPaymentAmount: usd,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: true,
           }),
         ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
       })
@@ -165,6 +184,7 @@ describe("LnFees", () => {
             usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Btc,
+            isFromNoAmountInvoice: true,
           }),
         ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
       })
@@ -177,6 +197,7 @@ describe("LnFees", () => {
             usdPaymentAmount: ONE_CENT,
             priceRatio,
             senderWalletCurrency: WalletCurrency.Usd,
+            isFromNoAmountInvoice: true,
           }),
         ).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
       })
