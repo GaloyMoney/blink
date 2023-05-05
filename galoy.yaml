@@ -140,6 +140,7 @@ accounts:
   initialStatus: active
   initialWallets:
     - BTC
+    - USD
   randomizeDefaultWallet: false
 accountLimits:
   withdrawal:
