@@ -28,6 +28,8 @@ import { AuthWithEmailPasswordlessService } from "@services/kratos/auth-email-no
 
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
+import { sleep } from "@utils"
+
 import USER_UPDATE_PHONE from "../../../e2e/servers/graphql-main-server/mutations/user-update-phone.gql"
 import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-server/queries/account-details-by-user-phone.gql"
 
@@ -48,7 +50,6 @@ import {
 } from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
 import { UserLoginDocument } from "test/e2e/generated"
-import { sleep } from "@utils"
 
 const identityRepo = IdentityRepository()
 
@@ -371,7 +372,7 @@ it("extend session", async () => {
   const initialExpiresAt = new Date(session.expires_at)
 
   await extendSession({ session })
-  await sleep(1)
+  await sleep(200)
   const res3 = await kratosPublic.toSession({ xSessionToken: res.sessionToken })
   const newSession = res3.data
   if (!newSession.expires_at) throw Error("should have expired_at")
