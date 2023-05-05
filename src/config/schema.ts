@@ -438,7 +438,7 @@ export const configSchema = {
       additionalProperties: false,
       default: {
         initialStatus: "active",
-        initialWallets: ["BTC"],
+        initialWallets: ["BTC", "USD"],
         randomizeDefaultWallet: false,
       },
     },
