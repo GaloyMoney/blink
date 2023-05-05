@@ -130,6 +130,7 @@ export const createAccount = async ({
       initialStatus: AccountStatus.Active,
       initialWallets,
       initialLevel: AccountLevel.One,
+      randomizeDefaultWallet,
     },
   })
   if (account instanceof Error) throw account
