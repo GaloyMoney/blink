@@ -121,11 +121,28 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const unsetDeviceIdForUser = async (id: UserId): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOneAndUpdate(
+        { userId: id },
+        { $unset: { device: true } },
+        { new: true },
+      )
+      if (!result) {
+        return new CouldNotUnsetPhoneFromUserError()
+      }
+      return translateToUser(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   return {
     findById,
     findByPhone,
     findByDeviceId,
     update,
     adminUnsetPhoneForUserPreservation,
+    unsetDeviceIdForUser,
   }
 }
