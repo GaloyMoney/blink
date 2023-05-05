@@ -48,6 +48,7 @@ import {
 } from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
 import { UserLoginDocument } from "test/e2e/generated"
+import { sleep } from "@utils"
 
 const identityRepo = IdentityRepository()
 
@@ -370,7 +371,7 @@ it("extend session", async () => {
   const initialExpiresAt = new Date(session.expires_at)
 
   await extendSession({ session })
-
+  await sleep(1)
   const res3 = await kratosPublic.toSession({ xSessionToken: res.sessionToken })
   const newSession = res3.data
   if (!newSession.expires_at) throw Error("should have expired_at")
