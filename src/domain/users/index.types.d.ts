@@ -68,4 +68,5 @@ interface IUsersRepository {
   findByDeviceId(device: DeviceId): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
   adminUnsetPhoneForUserPreservation(id: UserId): Promise<User | RepositoryError>
+  unsetDeviceIdForUser(id: UserId): Promise<User | RepositoryError>
 }

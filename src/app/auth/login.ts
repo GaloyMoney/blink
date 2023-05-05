@@ -9,7 +9,7 @@ import {
 } from "@config"
 import { TwilioClient } from "@services/twilio"
 
-import { AccountStatus, checkedToUserId } from "@domain/accounts"
+import { AccountLevel, AccountStatus, checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 
@@ -25,7 +25,11 @@ import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
 import { LedgerService } from "@services/ledger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
@@ -280,6 +284,92 @@ export const loginUpgradeWithPhone = async ({
   }
 
   // returning a new session token
+  return kratosResult.sessionToken
+}
+
+export const loginUpgradeWithPhoneV2 = async ({
+  phone,
+  code,
+  ip,
+  account,
+}: {
+  authToken: SessionToken
+  phone: PhoneNumber
+  code: PhoneCode
+  ip: IpAddress
+  account: Account
+}): Promise<SessionToken | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  const validCode = await isCodeValid({ phone, code })
+  if (validCode instanceof Error) return validCode
+
+  await rewardFailedLoginAttemptPerIpLimits(ip)
+  await rewardFailedLoginAttemptPerPhoneLimits(phone)
+
+  /// Scenario 1) Happy Path - User logs in with device jwt, no phone account exists, upgrade device to phone account
+  ///             kratos => update schema to phone_no_password_v0, remove device trait
+  ///             mongo => update account to level 1
+  ///                      update user collection and remove device field, add phone
+  ///                      should we have a history table recording to upgrade?
+  ///
+  /// Scenario 2) Double Account Path (no txn) - User logs in with device jwt then he
+  ///             wants to upgrade to a phone account that already exists. there are no txns on the device account
+  ///             Tell the user to logout and log back in with the phone account
+  ///
+  /// Scenario 2.5) Double Account Path (txns) - User logs in with device jwt (and does some txns) then he
+  ///             wants to upgrade to a phone account that already exists.
+  ///             throw an error stating that a phone account already exists and the user needs to manually sweep funds
+  ///             to the new account. Here are the steps the user need to perform:
+  ///               1. login with phone account and create an invoice (save this invoice)
+  ///               2. logout of the phone account
+  ///               3. login with device account (it should auto login)
+  ///               4  Pay the invoice with max wallet amount.
+  ///               5. Logout of the device account
+  ///               5. Log into the phone account and check for the funds
+  ///
+  /// Scenario 3) Unhappy path - User sells phone and forgets to sweep funds to phone account
+  ///             Option 1 - too bad, we can't help them
+  ///             Option 2 - create some kind of recovery code process?
+
+  const kratosAccount = await AccountsRepository().findByUserId(account.kratosUserId)
+  if (kratosAccount instanceof Error) return kratosAccount
+
+  // Scenario 1
+  // 1. update kratos
+  const updatedKratosAccount = await AuthWithDeviceAccountService().upgradeToPhoneSchema({
+    kratosUserId: account.kratosUserId,
+    phone,
+  })
+  if (updatedKratosAccount instanceof Error) return new Error("updatedKratosAccount")
+  // 2. update user
+  const userRemovedDevice = await UsersRepository().unsetDeviceIdForUser(
+    account.kratosUserId,
+  )
+  if (userRemovedDevice instanceof Error) return userRemovedDevice
+  const userAddedPhone = await UsersRepository().update({
+    id: account.kratosUserId,
+    phone,
+  })
+  if (userAddedPhone instanceof Error) return userAddedPhone
+  // 3. update account
+  kratosAccount.level = AccountLevel.One
+  const accountLevelOne = await AccountsRepository().update(kratosAccount)
+  if (accountLevelOne instanceof Error) return accountLevelOne
+  // End Scenario 1
+
+  // returning a new session token
+  const authPhone = AuthWithPhonePasswordlessService()
+  const kratosResult = await authPhone.loginToken({ phone })
+  if (kratosResult instanceof Error) return kratosResult
   return kratosResult.sessionToken
 }
 
