@@ -276,6 +276,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new LightningPaymentError({ message, logger: baseLogger })
 
     case "TemporaryChannelFailureError":
+    case "TemporaryNodeFailureError":
       message = "Issue with lightning payment, please try again."
       return new LightningPaymentError({ message, logger: baseLogger })
 

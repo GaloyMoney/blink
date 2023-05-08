@@ -55,6 +55,7 @@ import {
   UnknownRouteNotFoundError,
   DestinationMissingDependentFeatureError,
   LookupPaymentTimedOutError,
+  TemporaryNodeFailureError,
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
@@ -811,6 +812,7 @@ export const KnownLndErrorDetails = {
   SecretDoesNotMatchAnyExistingHodlInvoice: /SecretDoesNotMatchAnyExistingHodlInvoice/,
   ConnectionDropped: /Connection dropped/,
   TemporaryChannelFailure: /TemporaryChannelFailure/,
+  TemporaryNodeFailure: /TemporaryNodeFailure/,
   InvoiceAlreadySettled: /invoice already settled/,
   NoConnectionEstablished: /No connection established/,
   MissingDependentFeature: /missing dependent feature/,
@@ -935,6 +937,8 @@ const handleSendPaymentLndErrors = ({
       return new PaymentInTransitionError(paymentHash)
     case match(KnownLndErrorDetails.TemporaryChannelFailure):
       return new TemporaryChannelFailureError(paymentHash)
+    case match(KnownLndErrorDetails.TemporaryNodeFailure):
+      return new TemporaryNodeFailureError(paymentHash)
     case match(KnownLndErrorDetails.InsufficientBalanceToAttemptPayment):
       return new InsufficientBalanceForLnPaymentError()
 
