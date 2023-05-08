@@ -29,7 +29,7 @@ const updateFee = async (fee: number) => {
   return mongoose.connection.close()
 }
 
-const fee = process.argv[2]
+const fee = Number(process.argv[2])
 if (typeof fee !== "number") throw new Error("fee is not a number")
 
 updateFee(fee).then(console.log).catch(console.error)
