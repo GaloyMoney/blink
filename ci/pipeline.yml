@@ -398,9 +398,9 @@ jobs:
           outputs:
             - name: repo
           params:
-            PROTO_FILES_SRC_PATH: proto
-            PROTO_FILES_DEST_PATH: src/services/dealer-price/proto
-            RUN_BUF_GENERATE: "true"
+            PROTO_FILES_SRC_PATH: proto/price
+            PROTO_FILES_DEST_PATH: src/services/dealer-price/proto/services/price/v1
+            BUF_CONFIG_PATH: src/services/dealer-price/proto
             BRANCH: #@ data.values.git_branch
             MODULE: stablesats
           run:
