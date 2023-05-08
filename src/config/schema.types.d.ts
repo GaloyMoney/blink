@@ -149,7 +149,5 @@ type YamlSchema = {
   captcha: {
     mandatory: boolean
   }
-  // deprecated: use skipFeeProbeConfig instead
-  skipFeeProbe: string[]
   skipFeeProbeConfig: { pubkey: string[]; chanId: string[] }
 }

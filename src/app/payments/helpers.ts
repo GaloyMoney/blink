@@ -2,7 +2,6 @@ import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 import { addNewContact } from "@app/accounts/add-new-contact"
 import {
   getAccountLimits,
-  getPubkeysToSkipProbe,
   getValuesToSkipProbe,
   MIN_SATS_FOR_PRICE_RATIO_PRECISION,
   ONE_DAY,
@@ -46,14 +45,9 @@ export const constructPaymentFlowBuilder = async <
 }): Promise<LPFBWithConversion<S, R> | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
-  const skipProbePubkeysLegacy = getPubkeysToSkipProbe()
-  const skipProbeValues = getValuesToSkipProbe()
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: lndService.listAllPubkeys(),
-    skipProbe: {
-      pubkey: Array.from(new Set([...skipProbeValues.pubkey, ...skipProbePubkeysLegacy])),
-      chanId: skipProbeValues.chanId,
-    },
+    skipProbe: getValuesToSkipProbe(),
   })
   const builderWithInvoice = uncheckedAmount
     ? (paymentBuilder.withNoAmountInvoice({
