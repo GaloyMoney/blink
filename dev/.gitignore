@@ -6,3 +6,7 @@
 lnd/loopserver/*
 # except regtest
 !/dev/lnd/regtest/*
+
+# ignore bria data files
+.bria/*
+bin/.bria_profile_api_key
