@@ -60,6 +60,8 @@ import {
   MyUpdatesSubscription,
   TransactionsQuery,
   TransactionsDocument,
+  AccountLimitsQuery,
+  AccountLimitsDocument,
 } from "test/e2e/generated"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -1064,6 +1066,57 @@ describe("graphql", () => {
       expect(status).toBe("PAID")
       const result2 = await promisePay
       expect(hash).toBe(result2.id)
+    })
+  })
+
+  describe("Limits", () => {
+    afterAll(async () => {
+      jest.restoreAllMocks()
+    })
+
+    it("receive a payment and subscription update", async () => {
+      gql`
+        query accountLimits {
+          me {
+            id
+            defaultAccount {
+              id
+              limits {
+                withdrawal {
+                  totalLimit
+                  remainingLimit
+                  interval
+                  __typename
+                }
+                internalSend {
+                  totalLimit
+                  remainingLimit
+                  interval
+                  __typename
+                }
+                convert {
+                  totalLimit
+                  remainingLimit
+                  interval
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+        }
+      `
+
+      const limitsResult = await apolloClient.query<AccountLimitsQuery>({
+        query: AccountLimitsDocument,
+      })
+
+      // TODO: better testing of values, specially the remaining limit
+      expect(limitsResult.data.me?.defaultAccount.limits.withdrawal[0].totalLimit).toBe(
+        100000,
+      )
     })
   })
 })

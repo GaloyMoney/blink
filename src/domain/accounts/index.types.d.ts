@@ -17,34 +17,70 @@ type DepositFeeRatio = number & { readonly brand: unique symbol }
 
 type ContactAlias = string & { readonly brand: unique symbol }
 
+type LimitTimeframe =
+  typeof import("./limits-volume").LimitTimeframe[keyof typeof import("./limits-volume").LimitTimeframe]
+
+type LimitAllTimeframe = { [key in LimitTimeframe]: UsdCents }
+
+interface IAccountLimits {
+  intraLedgerLimit: LimitAllTimeframe
+  withdrawalLimit: LimitAllTimeframe
+  tradeIntraAccountLimit: LimitAllTimeframe
+}
+
+type TypeLimits = keyof IAccountLimits
+
 type AccountLimitsArgs = {
   level: AccountLevel
   accountLimits?: {
     intraLedger: {
-      level: {
-        [l: number]: number
+      "24h": {
+        level: {
+          [l: number]: number
+        }
+      }
+      "30d": {
+        level: {
+          [l: number]: number
+        }
       }
     }
     withdrawal: {
-      level: {
-        [l: number]: number
+      "24h": {
+        level: {
+          [l: number]: number
+        }
+      }
+      "30d": {
+        level: {
+          [l: number]: number
+        }
       }
     }
     tradeIntraAccount: {
-      level: {
-        [l: number]: number
+      "24h": {
+        level: {
+          [l: number]: number
+        }
+      }
+      "30d": {
+        level: {
+          [l: number]: number
+        }
       }
     }
   }
 }
 
-interface IAccountLimits {
+interface IAccountLimitsPerTimeframe {
   intraLedgerLimit: UsdCents
   withdrawalLimit: UsdCents
   tradeIntraAccountLimit: UsdCents
 }
 
-type IAccountLimitAmounts = { [key in keyof IAccountLimits]: UsdPaymentAmount }
+type IAccountLimitAmounts = {
+  [key in keyof IAccountLimitsPerTimeframe]: UsdPaymentAmount
+}
 
 type AccountContact = {
   readonly id: Username

@@ -10,21 +10,45 @@ let validate
 
 const accountLimits = {
   withdrawal: {
-    level: {
-      1: toCents(2_000_000),
-      2: toCents(100_000_000),
+    "24h": {
+      level: {
+        1: toCents(2_000_000),
+        2: toCents(100_000_000),
+      },
+    },
+    "30d": {
+      level: {
+        1: toCents(5_000_000),
+        2: toCents(100_000_000),
+      },
     },
   },
   intraLedger: {
-    level: {
-      1: toCents(5_000_000),
-      2: toCents(100_000_000),
+    "24h": {
+      level: {
+        1: toCents(5_000_000),
+        2: toCents(100_000_000),
+      },
+    },
+    "30d": {
+      level: {
+        1: toCents(10_000_000),
+        2: toCents(100_000_000),
+      },
     },
   },
   tradeIntraAccount: {
-    level: {
-      1: toCents(5_000_000),
-      2: toCents(100_000_000),
+    "24h": {
+      level: {
+        1: toCents(5_000_000),
+        2: toCents(100_000_000),
+      },
+    },
+    "30d": {
+      level: {
+        1: toCents(10_000_000),
+        2: toCents(100_000_000),
+      },
     },
   },
 }
@@ -135,16 +159,34 @@ describe("config.ts", () => {
   describe("generates expected constants from a limits config object", () => {
     it("selects user limits for level 1", () => {
       const userLimits = getAccountLimits({ level: 1, accountLimits })
-      expect(userLimits.tradeIntraAccountLimit).toEqual(5_000_000)
-      expect(userLimits.intraLedgerLimit).toEqual(5_000_000)
-      expect(userLimits.withdrawalLimit).toEqual(2_000_000)
+      expect(userLimits.tradeIntraAccountLimit).toEqual({
+        "24h": 5_000_000,
+        "30d": 10_000_000,
+      })
+      expect(userLimits.intraLedgerLimit).toEqual({
+        "24h": 5_000_000,
+        "30d": 10_000_000,
+      })
+      expect(userLimits.withdrawalLimit).toEqual({
+        "24h": 2_000_000,
+        "30d": 5_000_000,
+      })
     })
 
     it("selects user limits for level 2", () => {
       const userLimits = getAccountLimits({ level: 2, accountLimits })
-      expect(userLimits.tradeIntraAccountLimit).toEqual(100_000_000)
-      expect(userLimits.intraLedgerLimit).toEqual(100_000_000)
-      expect(userLimits.withdrawalLimit).toEqual(100_000_000)
+      expect(userLimits.tradeIntraAccountLimit).toEqual({
+        "24h": 100_000_000,
+        "30d": 100_000_000,
+      })
+      expect(userLimits.intraLedgerLimit).toEqual({
+        "24h": 100_000_000,
+        "30d": 100_000_000,
+      })
+      expect(userLimits.withdrawalLimit).toEqual({
+        "24h": 100_000_000,
+        "30d": 100_000_000,
+      })
     })
   })
 })

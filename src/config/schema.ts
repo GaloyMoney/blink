@@ -62,6 +62,16 @@ const accountLimitConfigSchema = {
   additionalProperties: false,
 }
 
+const accountLimitTimeframeConfigSchema = {
+  type: "object",
+  properties: {
+    "24h": accountLimitConfigSchema,
+    "30d": accountLimitConfigSchema,
+  },
+  required: ["24h", "30d"],
+  additionalProperties: false,
+}
+
 const rateLimitConfigSchema = {
   type: "object",
   properties: {
@@ -398,29 +408,53 @@ export const configSchema = {
     accountLimits: {
       type: "object",
       properties: {
-        withdrawal: accountLimitConfigSchema,
-        intraLedger: accountLimitConfigSchema,
-        tradeIntraAccount: accountLimitConfigSchema,
+        withdrawal: accountLimitTimeframeConfigSchema,
+        intraLedger: accountLimitTimeframeConfigSchema,
+        tradeIntraAccount: accountLimitTimeframeConfigSchema,
       },
       required: ["withdrawal", "intraLedger", "tradeIntraAccount"],
       additionalProperties: false,
       default: {
         withdrawal: {
-          level: {
-            "1": 100000,
-            "2": 5000000,
+          "24h": {
+            level: {
+              "1": 100000,
+              "2": 5000000,
+            },
+          },
+          "30d": {
+            level: {
+              "1": 999999999999,
+              "2": 999999999999,
+            },
           },
         },
         intraLedger: {
-          level: {
-            "1": 200000,
-            "2": 5000000,
+          "24h": {
+            level: {
+              "1": 200000,
+              "2": 5000000,
+            },
+          },
+          "30d": {
+            level: {
+              "1": 999999999999,
+              "2": 999999999999,
+            },
           },
         },
         tradeIntraAccount: {
-          level: {
-            "1": 5000000,
-            "2": 20000000,
+          "24h": {
+            level: {
+              "1": 5000000,
+              "2": 20000000,
+            },
+          },
+          "30d": {
+            level: {
+              "1": 999999999999,
+              "2": 999999999999,
+            },
           },
         },
       },

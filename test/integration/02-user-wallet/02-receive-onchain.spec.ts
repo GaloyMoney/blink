@@ -260,7 +260,7 @@ describe("UserWallet - On chain", () => {
 
   it("receives on-chain transaction with max limit for withdrawal level1", async () => {
     /// TODO? add sendAll tests in which the user has more than the limit?
-    const withdrawalLimitAccountLevel1 = accountLimits.withdrawalLimit // cents
+    const withdrawalLimitAccountLevel1 = accountLimits.withdrawalLimit["24h"]
     await createUserAndWalletFromUserRef("E")
     const walletIdE = await getDefaultWalletIdByTestUserRef("E")
     await createUserAndWalletFromUserRef("G")
@@ -286,7 +286,7 @@ describe("UserWallet - On chain", () => {
   })
 
   it("receives on-chain transaction with max limit for onUs level1", async () => {
-    const intraLedgerLimitAccountLevel1 = accountLimits.intraLedgerLimit // cents
+    const intraLedgerLimitAccountLevel1 = accountLimits.intraLedgerLimit["24h"] // cents
 
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")

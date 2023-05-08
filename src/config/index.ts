@@ -14,8 +14,10 @@ export const SECS_PER_MIN = 60 as Seconds
 export const SECS_PER_5_MINS = (60 * 5) as Seconds
 export const SECS_PER_10_MINS = (SECS_PER_5_MINS * 2) as Seconds
 export const SECS_PER_DAY = (24 * 60 * 60) as Seconds
+export const SECS_PER_THIRTY_DAY = (24 * 60 * 60 * 30) as Seconds
 
 export const ONE_DAY = toDays(1)
+export const THIRTY_DAY = toDays(30)
 
 export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 

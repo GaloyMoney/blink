@@ -41,7 +41,7 @@ beforeAll(async () => {
   })
 
   const intraLedgerOutgoingBaseAmount = paymentAmountFromNumber({
-    amount: accountLimits.intraLedgerLimit - Number(usdPaymentAmount.amount),
+    amount: accountLimits.intraLedgerLimit["24h"] - Number(usdPaymentAmount.amount),
     currency: WalletCurrency.Usd,
   })
   if (intraLedgerOutgoingBaseAmount instanceof Error) throw intraLedgerOutgoingBaseAmount
@@ -51,7 +51,7 @@ beforeAll(async () => {
   }
 
   const withdrawalOutgoingBaseAmount = paymentAmountFromNumber({
-    amount: accountLimits.withdrawalLimit - Number(usdPaymentAmount.amount),
+    amount: accountLimits.withdrawalLimit["24h"] - Number(usdPaymentAmount.amount),
     currency: WalletCurrency.Usd,
   })
   if (withdrawalOutgoingBaseAmount instanceof Error) throw withdrawalOutgoingBaseAmount

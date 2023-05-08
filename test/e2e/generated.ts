@@ -1600,6 +1600,11 @@ export type MyUpdatesSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 export type MyUpdatesSubscription = { readonly __typename: 'Subscription', readonly myUpdates: { readonly __typename: 'MyUpdatesPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly id: string, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number }> } } | null, readonly update?: { readonly __typename: 'IntraLedgerUpdate', readonly txNotificationType: TxNotificationType, readonly amount: number, readonly usdPerSat: number, readonly type: 'IntraLedgerUpdate' } | { readonly __typename: 'LnUpdate', readonly paymentHash: string, readonly status: InvoicePaymentStatus, readonly type: 'LnUpdate' } | { readonly __typename: 'OnChainUpdate', readonly txNotificationType: TxNotificationType, readonly txHash: string, readonly amount: number, readonly usdPerSat: number, readonly type: 'OnChainUpdate' } | { readonly __typename: 'Price', readonly base: number, readonly offset: number, readonly currencyUnit: string, readonly formattedAmount: string, readonly type: 'Price' } | { readonly __typename: 'RealtimePrice', readonly id: string, readonly timestamp: number, readonly denominatorCurrency: string, readonly type: 'RealtimePrice', readonly btcSatPrice: { readonly __typename: 'PriceOfOneSatInMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string }, readonly usdCentPrice: { readonly __typename: 'PriceOfOneUsdCentInMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string } } | null } };
 
+export type AccountLimitsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AccountLimitsQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly id: string, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly id: string, readonly limits: { readonly __typename: 'AccountLimits', readonly withdrawal: ReadonlyArray<{ readonly __typename: 'OneDayAccountLimit', readonly totalLimit: number, readonly remainingLimit?: number | null, readonly interval?: number | null }>, readonly internalSend: ReadonlyArray<{ readonly __typename: 'OneDayAccountLimit', readonly totalLimit: number, readonly interval?: number | null }>, readonly convert: ReadonlyArray<{ readonly __typename: 'OneDayAccountLimit', readonly totalLimit: number, readonly interval?: number | null }> } } } | null };
+
 export const TransactionListFragmentDoc = gql`
     fragment TransactionList on TransactionConnection {
   pageInfo {
@@ -2581,3 +2586,61 @@ export function useMyUpdatesSubscription(baseOptions?: Apollo.SubscriptionHookOp
       }
 export type MyUpdatesSubscriptionHookResult = ReturnType<typeof useMyUpdatesSubscription>;
 export type MyUpdatesSubscriptionResult = Apollo.SubscriptionResult<MyUpdatesSubscription>;
+export const AccountLimitsDocument = gql`
+    query accountLimits {
+  me {
+    id
+    defaultAccount {
+      id
+      limits {
+        withdrawal {
+          totalLimit
+          remainingLimit
+          interval
+          __typename
+        }
+        internalSend {
+          totalLimit
+          interval
+          __typename
+        }
+        convert {
+          totalLimit
+          interval
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+    `;
+
+/**
+ * __useAccountLimitsQuery__
+ *
+ * To run a query within a React component, call `useAccountLimitsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAccountLimitsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAccountLimitsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAccountLimitsQuery(baseOptions?: Apollo.QueryHookOptions<AccountLimitsQuery, AccountLimitsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AccountLimitsQuery, AccountLimitsQueryVariables>(AccountLimitsDocument, options);
+      }
+export function useAccountLimitsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AccountLimitsQuery, AccountLimitsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AccountLimitsQuery, AccountLimitsQueryVariables>(AccountLimitsDocument, options);
+        }
+export type AccountLimitsQueryHookResult = ReturnType<typeof useAccountLimitsQuery>;
+export type AccountLimitsLazyQueryHookResult = ReturnType<typeof useAccountLimitsLazyQuery>;
+export type AccountLimitsQueryResult = Apollo.QueryResult<AccountLimitsQuery, AccountLimitsQueryVariables>;

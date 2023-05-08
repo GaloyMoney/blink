@@ -142,8 +142,8 @@ export const volumesForAccountId = async ({
   period: Days
   volumeAmountSinceFn: GetVolumeAmountSinceFn
 }): Promise<TxBaseVolumeAmount<WalletCurrency>[] | ApplicationError> => {
-  const timestamp1Day = timestampDaysAgo(period)
-  if (timestamp1Day instanceof Error) return timestamp1Day
+  const timestamp = timestampDaysAgo(period)
+  if (timestamp instanceof Error) return timestamp
 
   const wallets = await WalletsRepository().listByAccountId(accountId)
   if (wallets instanceof Error) return wallets
@@ -152,7 +152,7 @@ export const volumesForAccountId = async ({
     wallets.map((wallet) =>
       volumeAmountSinceFn({
         walletDescriptor: wallet,
-        timestamp: timestamp1Day,
+        timestamp,
       }),
     ),
   )
@@ -177,6 +177,8 @@ const volumesAndLimitsForAccountId = async ({
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
+  const accountLimits = getAccountLimits({ level: account.level })
+
   const walletVolumes = await volumesForAccountId({
     accountId,
     period: ONE_DAY,
@@ -185,7 +187,7 @@ const volumesAndLimitsForAccountId = async ({
   if (walletVolumes instanceof Error) return walletVolumes
 
   return {
-    accountLimits: getAccountLimits({ level: account.level }),
+    accountLimits,
     walletVolumes,
   }
 }

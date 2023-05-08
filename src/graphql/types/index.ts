@@ -4,6 +4,7 @@ import ConsumerAccount from "./object/consumer-account"
 import UsdWallet from "./object/usd-wallet"
 import GraphQLApplicationError from "./object/graphql-application-error"
 import OneDayAccountLimit from "./object/one-day-account-limit"
+import ThirtyDayAccountLimit from "./object/thirty-day-account-limit"
 
 // The following types are not directly included
 // in the GraphQL schema. They only implement interfaces.
@@ -15,4 +16,5 @@ export const ALL_INTERFACE_TYPES = [
   BtcWallet,
   UsdWallet,
   OneDayAccountLimit,
+  ThirtyDayAccountLimit,
 ]

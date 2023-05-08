@@ -7,11 +7,11 @@ const IAccountLimit = GT.Interface({
   fields: () => ({
     totalLimit: {
       type: GT.NonNull(CentAmount),
-      description: `The current maximum limit for a given 24 hour period.`,
+      description: `The current maximum limit for a given period.`,
     },
     remainingLimit: {
       type: CentAmount,
-      description: `The amount of cents remaining below the limit for the current 24 hour period.`,
+      description: `The amount of cents remaining below the limit for the current period.`,
     },
     interval: {
       type: Seconds,
