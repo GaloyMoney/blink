@@ -70,7 +70,7 @@ const intraledgerPaymentSendWalletId = async ({
 
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
-    flagged: getValuesToSkipProbe(),
+    skipProbe: getValuesToSkipProbe(),
   })
   const builderWithInvoice = paymentBuilder.withoutInvoice({
     uncheckedAmount,

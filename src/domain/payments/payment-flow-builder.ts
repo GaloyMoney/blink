@@ -51,11 +51,11 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
 
   const skipProbeFromInvoice = (invoice: LnInvoice): boolean => {
     const invoicePubkeySet = new ModifiedSet(parseFinalHopsFromInvoice(invoice))
-    const flaggedPubkeySet = new ModifiedSet(config.flagged.pubkey)
+    const flaggedPubkeySet = new ModifiedSet(config.skipProbe.pubkey)
     const pubkeyIsFlagged = invoicePubkeySet.intersect(flaggedPubkeySet).size > 0
 
     const invoiceChanIdSet = new ModifiedSet(parseFinalChanIdFromInvoice(invoice))
-    const flaggedChanIdSet = new ModifiedSet(config.flagged.chanId)
+    const flaggedChanIdSet = new ModifiedSet(config.skipProbe.chanId)
     const chanIdIsFlagged = invoiceChanIdSet.intersect(flaggedChanIdSet).size > 0
 
     addAttributesToCurrentSpan({

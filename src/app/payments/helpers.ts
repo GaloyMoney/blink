@@ -50,7 +50,7 @@ export const constructPaymentFlowBuilder = async <
   const skipProbeValues = getValuesToSkipProbe()
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: lndService.listAllPubkeys(),
-    flagged: {
+    skipProbe: {
       pubkey: Array.from(new Set([...skipProbeValues.pubkey, ...skipProbePubkeysLegacy])),
       chanId: skipProbeValues.chanId,
     },

@@ -13,7 +13,7 @@ import { ValidationError, WalletCurrency } from "@domain/shared"
 const skippedPubkey =
   "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6" as Pubkey
 const skippedChanId = "1x0x0" as ChanId
-const flagged = { pubkey: [skippedPubkey], chanId: [skippedChanId] }
+const skipProbe = { pubkey: [skippedPubkey], chanId: [skippedChanId] }
 
 describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
@@ -150,7 +150,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("ln initiated, ln settled", () => {
     const lightningBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
-      flagged,
+      skipProbe,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -200,7 +200,7 @@ describe("LightningPaymentFlowBuilder", () => {
           )
         }
 
-        it("sets 'skipProbe' property to true for flagged destination invoice", async () => {
+        it("sets 'skipProbe' property to true for skipProbe destination invoice", async () => {
           const skippedPubkeyBuilder =
             await withSkippedPubkeyBtcWalletBuilder.withConversion({
               mid,
@@ -519,7 +519,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("ln initiated, intraledger settled", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [invoiceWithAmount.destination, invoiceWithNoAmount.destination],
-      flagged,
+      skipProbe,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -996,7 +996,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("intraledger initiated, intraledger settled", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
-      flagged,
+      skipProbe,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -1256,7 +1256,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
-          flagged,
+          skipProbe,
         })
           .withInvoice(invoiceWithNoAmount)
           .withSenderWallet(senderBtcWallet)
@@ -1275,7 +1275,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
-          flagged,
+          skipProbe,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0.4 })
           .withSenderWallet(senderBtcWallet)
@@ -1294,7 +1294,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
-          flagged,
+          skipProbe,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0 })
           .withSenderWallet(senderBtcWallet)
@@ -1313,7 +1313,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
-          flagged,
+          skipProbe,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
@@ -1333,7 +1333,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
-          flagged,
+          skipProbe,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
@@ -1353,7 +1353,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithNoAmount.destination],
-          flagged,
+          skipProbe,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 1000 })
           .withSenderWallet(senderBtcWallet)
@@ -1376,7 +1376,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
-          flagged,
+          skipProbe,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)

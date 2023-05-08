@@ -318,7 +318,7 @@ type BtcFromUsdMidPriceFn = (
 
 type LightningPaymentFlowBuilderConfig = {
   localNodeIds: Pubkey[]
-  flagged: SkipFeeProbeConfig
+  skipProbe: SkipFeeProbeConfig
 }
 
 type OnChainPaymentFlowBuilderConfig = {
