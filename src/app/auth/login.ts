@@ -343,7 +343,7 @@ export const loginUpgradeWithPhoneV2 = async ({
   ///             Option 1 - too bad, we can't help them
   ///             Option 2 - create some kind of recovery code process?
 
-  /// Senario 1 - does phone account already exist?
+  /// Scenario 1 - does phone account already exist?
   const phoneAccount = await UsersRepository().findByPhone(phone)
   let hasPhoneAccount = true
   if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
@@ -379,7 +379,7 @@ export const loginUpgradeWithPhoneV2 = async ({
     } else {
       /// Scenario 1 - no txns on device account but phone account exists
       return new PhoneAccountAlreadyExists(
-        "Phone Acount already exists. Please logout and log back in with your phone account.",
+        "Phone Account already exists. Please logout and log back in with your phone account.",
       )
     }
   }
