@@ -19,7 +19,7 @@ export const BriaPayloadType = {
   UtxoSettled: "utxo_settled",
 } as const
 
-export const BriaService = (): INewOnChainService => {
+export const BriaSubscriber = () => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
 
@@ -31,7 +31,10 @@ export const BriaService = (): INewOnChainService => {
       try {
         listener = subscribeAll({}, metadata)
 
-        listener.on("data", callback)
+        listener.on("data", (rawEvent) => {
+          // const should_resubscriber = callback(transalate(rawEvent))
+          callback(transalate(rawEvent))
+        })
 
         listener.on("error", (error) => {
           if (!error.message.includes("Cancelled on client")) {
@@ -45,4 +48,10 @@ export const BriaService = (): INewOnChainService => {
       return listener
     },
   }
+}
+
+// const transalate = (rawEvent: protoRelatedType): BriaEvent => {
+const transalate = (rawEvent: BriaEvent): BriaEvent => {
+  // execute transalation
+  return rawEvent
 }

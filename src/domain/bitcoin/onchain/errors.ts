@@ -21,7 +21,3 @@ export class CouldNotFindOnChainTransactionError extends OnChainServiceError {}
 export class OnChainServiceUnavailableError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }
-
-export class InvalidBriaEventError extends OnChainServiceError {
-  level = ErrorLevel.Critical
-}
