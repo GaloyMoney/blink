@@ -10206,10 +10206,10 @@ media-typer@0.3.0:
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
   integrity sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==
 
-medici@^5.2.2:
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/medici/-/medici-5.2.2.tgz#2b369bf84ca4866119513d5fb4fcfd5466b7ed2e"
-  integrity sha512-x54u/6IWT8WnWEMN2YRaLO7cRYL5wr2KX78FlcpJVVmYWjS3p3KK74EyX0n2lNJRaF0YMs0apcMj3xa/3ifQNg==
+medici@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/medici/-/medici-6.1.0.tgz#fd40f6c4323d4e4bb18534ea8813559afed2cc2b"
+  integrity sha512-mrOGboEHrlhGon6rxoZR7coejGtLZsEeTAn67CG0ZsdLch5AWfYRc0twbnJeeIJghi3JF9dgi0b+tXGPP30E4A==
   dependencies:
     mongoose "5 - 6"
 
