@@ -1444,7 +1444,6 @@ input UserLoginInput {
 }
 
 input UserLoginUpgradeInput {
-  authToken: AuthToken!
   code: OneTimeAuthCode!
   phone: Phone!
 }
