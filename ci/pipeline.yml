@@ -628,6 +628,8 @@ resources:
       uri: #@ data.values.git_stablesats_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
+      commit_filter:
+        include: ["ci(release)"]
 
   - name: price-history-proto
     type: git
