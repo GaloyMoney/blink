@@ -22,10 +22,10 @@ for (key in BRIA_HEADERS) {
 
 export const BriaService = (): INewOnChainService => {
   return {
-    subscribeToAll: (callback: UtxoEventHandler) => {
+    subscribeToAll: (callback: BriaEventHandler) => {
       const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
 
-      let listener: ClientReadableStream<UtxoEvent>
+      let listener: ClientReadableStream<BriaEvent>
       try {
         listener = subscribeAll({}, metadata)
 

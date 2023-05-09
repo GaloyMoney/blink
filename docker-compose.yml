@@ -314,7 +314,7 @@ services:
       # TODO: add nc to image upstream
       - ${PWD}/dev/bin/bria-healthcheck.sh:/healthcheck.sh
     healthcheck:
-      test: [ "CMD", "/healthcheck.sh" ]
+      test: ["CMD", "/healthcheck.sh"]
       interval: 5s
       timeout: 3s
       start_period: 2s
@@ -326,7 +326,7 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=pg
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -361,7 +361,7 @@ services:
     image: oryd/mailslurper:latest-smtps
   fulcrum:
     image: cculianu/fulcrum:latest
-    depends_on: [ bitcoind ]
+    depends_on: [bitcoind]
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/fulcrum/fulcrum.conf:/fulcrum.conf
       - ${HOST_PROJECT_PATH:-.}/dev/fulcrum/tls.key:/tls.key
@@ -370,4 +370,4 @@ services:
       - DATA_DIR=/db
       - SSL_CERTFILE=/tls.cert
       - SSL_KEYFILE=/tls.key
-    command: [ "Fulcrum", "/fulcrum.conf" ]
+    command: ["Fulcrum", "/fulcrum.conf"]

@@ -30,10 +30,11 @@ type UtxoSettledEvent = {
 
 type UtxoEvent = UtxoDetectedEvent | UtxoSettledEvent
 
-type UtxoEventHandler = (event: UtxoEvent) => true | ApplicationError
+type BriaEvent = UtxoEvent
+type BriaEventHandler = (event: BriaEvent) => true | ApplicationError
 
 interface INewOnChainService {
   subscribeToAll(
-    callback: UtxoEventHandler,
-  ): ClientReadableStream<UtxoEvent> | OnChainServiceError
+    callback: BriaEventHandler,
+  ): ClientReadableStream<BriaEvent> | OnChainServiceError
 }
