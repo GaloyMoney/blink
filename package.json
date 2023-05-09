@@ -96,7 +96,7 @@
     "lodash.mergewith": "^4.6.2",
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
-    "medici": "^5.2.2",
+    "medici": "^6.1.0",
     "mongoose": "^6.9.2",
     "node-cache": "^5.1.2",
     "otplib": "^12.0.1",
