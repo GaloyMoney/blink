@@ -1,9 +1,10 @@
 type ClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
 
-type UtxoDetectedEvent = {
-  payload: "utxo_detected"
-  sequence: string
-  recorded_at: number
+type BriaPayloadType =
+  typeof import("./index").BriaPayloadType[keyof typeof import("./index").BriaPayloadType]
+
+interface UtxoDetectedEvent extends OnChainEvent {
+  payload: Extract<BriaPayloadType, "utxo_detected">
   utxo_detected: {
     wallet_id: WalletId
     tx_id: OnChainTxHash
@@ -13,10 +14,8 @@ type UtxoDetectedEvent = {
   }
 }
 
-type UtxoSettledEvent = {
-  payload: "utxo_settled"
-  sequence: string
-  recorded_at: number
+interface UtxoSettledEvent extends OnChainEvent {
+  payload: Extract<BriaPayloadType, "utxo_settled">
   utxo_settled: {
     wallet_id: WalletId
     tx_id: OnChainTxHash
@@ -32,9 +31,3 @@ type UtxoEvent = UtxoDetectedEvent | UtxoSettledEvent
 
 type BriaEvent = UtxoEvent
 type BriaEventHandler = (event: BriaEvent) => true | ApplicationError
-
-interface INewOnChainService {
-  subscribeToAll(
-    callback: BriaEventHandler,
-  ): ClientReadableStream<BriaEvent> | OnChainServiceError
-}
