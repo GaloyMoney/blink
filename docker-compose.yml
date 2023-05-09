@@ -85,7 +85,7 @@ services:
     environment:
       - MONGODB_ADDRESS=mongodb
   mongodb:
-    image: mongo:${MONGODB_VERSION:-5.0.10}
+    image: mongo:${MONGODB_VERSION:-6.0.5}
     environment:
       - MONGO_INITDB_DATABASE=galoy
   postgres-price-history:
