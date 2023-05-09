@@ -1,17 +1,10 @@
 BIN_DIR=node_modules/.bin
 
-# TODO: Change sleep below out for port 2742 healthcheck
-bootstrap-bria:
-	container_id=$$(docker ps -q -f status=running -f name="galoy-bria"); \
-	sleep 8; \
-	docker exec -it -e tpub=$(shell cat dev/lnd/lnd1.tpub) "$$container_id" /bin/sh -c 'bria import-xpub -x $$tpub -n lnd_key -d m/84h/0h/0h'; \
-	docker exec -it "$$container_id" /bin/sh -c 'bria create-wallet -n default wpkh -x lnd_key'
-
 start-deps:
-	docker compose up e2e-deps -d && make bootstrap-bria
+	docker compose up e2e-deps -d
 
 start-deps-integration:
-	docker compose up integration-deps -d && make bootstrap-bria
+	docker compose up integration-deps -d
 
 update-price-history:
 	docker compose run price-history node servers/history/cron.js
