@@ -62,7 +62,7 @@ groups:
       - release
   - name: sync-proto
     jobs:
-      - sync-dealer-proto
+      - sync-stablesats-proto
       - sync-price-history-proto
       - sync-bria-api-proto
 
@@ -379,12 +379,12 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/open-charts-pr.sh
 
-  - name: sync-dealer-proto
+  - name: sync-stablesats-proto
     plan:
       - in_parallel:
           - get: repo
           - get: pipeline-tasks
-          - get: dealer-price-proto
+          - get: stablesats-price-proto
             trigger: true
       - task: sync-proto
         config:
@@ -393,19 +393,19 @@ jobs:
           inputs:
             - name: repo
             - name: pipeline-tasks
-            - name: dealer-price-proto
+            - name: stablesats-price-proto
               path: src-repo
           outputs:
             - name: repo
           params:
-            PROTO_FILES_SRC_PATH: dealer/proto
-            PROTO_FILES_DEST_PATH: src/services/dealer-price/proto
-            RUN_BUF_GENERATE: "true"
+            PROTO_FILES_SRC_PATH: proto/price
+            PROTO_FILES_DEST_PATH: src/services/dealer-price/proto/services/price/v1
+            BUF_CONFIG_PATH: src/services/dealer-price/proto
             BRANCH: #@ data.values.git_branch
-            MODULE: dealer
+            MODULE: stablesats
           run:
             path: pipeline-tasks/ci/tasks/sync-proto.sh
-      - put: dealer-proto-bot-branch
+      - put: stablesats-proto-bot-branch
         params:
           repository: repo
           force: true
@@ -418,9 +418,9 @@ jobs:
             - name: repo
           params:
             BRANCH: #@ data.values.git_branch
-            BOT_BRANCH: #@ data.values.git_dealer_proto_bot_branch
+            BOT_BRANCH: #@ data.values.git_stablesats_proto_bot_branch
             GH_TOKEN: #@ data.values.github_token
-            MODULE: dealer
+            MODULE: stablesats
           run:
             path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
@@ -530,11 +530,11 @@ resources:
       branch: #@ data.values.git_charts_bot_branch
       private_key: #@ data.values.github_private_key
 
-  - name: dealer-proto-bot-branch
+  - name: stablesats-proto-bot-branch
     type: git
     source:
       uri: #@ data.values.git_uri
-      branch: #@ data.values.git_dealer_proto_bot_branch
+      branch: #@ data.values.git_stablesats_proto_bot_branch
       private_key: #@ data.values.github_private_key
 
   - name: price-history-proto-bot-branch
@@ -621,13 +621,15 @@ resources:
       repository: #@ data.values.gh_repository
       access_token: #@ data.values.github_token
 
-  - name: dealer-price-proto
+  - name: stablesats-price-proto
     type: git
     source:
-      paths: ["dealer/proto/*"]
-      uri: #@ data.values.git_dealer_uri
+      paths: ["proto/*"]
+      uri: #@ data.values.git_stablesats_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
+      commit_filter:
+        include: ["ci(release)"]
 
   - name: price-history-proto
     type: git
