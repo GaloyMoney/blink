@@ -281,7 +281,12 @@ services:
     image: us.gcr.io/galoy-org/bria:edge
     environment:
       - PG_CON=postgres://user:password@postgres-bria:5432/pg
-    command: ["bria", "daemon", "--config", "bria.yml", "--dev"]
+    command: bash -c "
+      bria daemon \
+      --config bria.yml \
+      dev \
+      -x tpubDD4vFnWuTMEcZiaaZPgvzeGyMzWe6qHW8gALk5Md9kutDvtdDjYFwzauEFFRHgov8pAwup5jX88j5YFyiACsPf3pqn5hBjvuTLRAseaJ6b4
+      -d m/84h/0h/0h"
     working_dir: /repo/dev
     depends_on:
       - otel-agent
@@ -290,14 +295,6 @@ services:
     restart: on-failure:10
     volumes:
       - ./:/repo
-      # TODO: add nc to image upstream
-      - ${PWD}/dev/bin/bria-healthcheck.sh:/healthcheck.sh
-    healthcheck:
-      test: ["CMD", "/healthcheck.sh"]
-      interval: 5s
-      timeout: 3s
-      start_period: 2s
-      retries: 10
   postgres-bria:
     image: postgres:14.1
     environment:
