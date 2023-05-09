@@ -2,7 +2,7 @@ import { Wallets } from "@app"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
 
-import { BriaService } from "@services/bria"
+import { BriaSubscriber } from "@services/bria"
 import { sleep } from "@utils"
 
 import {
@@ -28,8 +28,8 @@ afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
-describe("BriaService", () => {
-  const bria = BriaService()
+describe("BriaSubscriber", () => {
+  const bria = BriaSubscriber()
 
   it("subscribeToAll", async () => {
     const amountSats = toSats(5_000)
