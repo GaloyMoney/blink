@@ -14,6 +14,11 @@ const bitcoinBridgeClient = new BriaProtoDescriptor.services.bria.v1.BriaService
   credentials.createInsecure(),
 )
 
+export const BriaPayloadType = {
+  UtxoDetected: "utxo_detected",
+  UtxoSettled: "utxo_settled",
+} as const
+
 const metadata = new Metadata()
 let key: keyof typeof BRIA_HEADERS
 for (key in BRIA_HEADERS) {

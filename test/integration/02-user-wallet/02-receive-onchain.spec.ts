@@ -516,7 +516,7 @@ describe("BriaService", () => {
 
     let count = 0
     let expectedTxId = ""
-    const listener = bria.subscribeToAll((response: BriaEvent) => {
+    const listener = bria.subscribeToAll((response) => {
       const txId =
         (response as UtxoDetectedEvent).utxo_detected?.tx_id ||
         (response as UtxoSettledEvent).utxo_settled?.tx_id
