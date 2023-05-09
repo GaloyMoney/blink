@@ -5,7 +5,6 @@ import Phone from "@graphql/types/scalar/phone"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import AuthToken from "@graphql/types/scalar/auth-token"
 
 const UserLoginUpgradeInput = GT.Input({
   name: "UserLoginUpgradeInput",
@@ -16,9 +15,6 @@ const UserLoginUpgradeInput = GT.Input({
     code: {
       type: GT.NonNull(OneTimeAuthCode),
     },
-    authToken: {
-      type: GT.NonNull(AuthToken),
-    },
   }),
 })
 
@@ -27,7 +23,6 @@ const UserLoginUpgradeMutation = GT.Field<
     input: {
       phone: PhoneNumber | InputValidationError
       code: PhoneCode | InputValidationError
-      authToken: SessionToken | InputValidationError
     }
   },
   null,
@@ -41,7 +36,7 @@ const UserLoginUpgradeMutation = GT.Field<
     input: { type: GT.NonNull(UserLoginUpgradeInput) },
   },
   resolve: async (_, args, { ip, domainAccount }) => {
-    const { phone, code, authToken: orgAuthToken } = args.input
+    const { phone, code } = args.input
 
     if (phone instanceof Error) {
       return { errors: [{ message: phone.message }] }
@@ -49,10 +44,6 @@ const UserLoginUpgradeMutation = GT.Field<
 
     if (code instanceof Error) {
       return { errors: [{ message: code.message }] }
-    }
-
-    if (orgAuthToken instanceof Error) {
-      return { errors: [{ message: orgAuthToken.message }] }
     }
 
     if (ip === undefined) {
@@ -64,7 +55,6 @@ const UserLoginUpgradeMutation = GT.Field<
       code,
       ip,
       account: domainAccount,
-      authToken: orgAuthToken,
     })
 
     if (authToken instanceof Error) {

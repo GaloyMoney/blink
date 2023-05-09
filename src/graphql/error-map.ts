@@ -573,6 +573,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "KratosError":
     case "AuthenticationKratosError":
     case "ExtendSessionKratosError":
+    case "PhoneAccountAlreadyExists":
+    case "PhoneAccountAlreadyExistsNeedToSweepFunds":
     case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
     case "MissingTotpKratosError":
