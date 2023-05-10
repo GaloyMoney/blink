@@ -66,6 +66,7 @@ type LnReceiveLedgerMetadata = LedgerMetadata &
 type OnChainReceiveLedgerMetadata = LedgerMetadata &
   SendAmountsMetadata & {
     hash: OnChainTxHash
+    vout: number
     payee_addresses: OnChainAddress[]
   }
 

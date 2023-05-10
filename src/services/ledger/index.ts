@@ -316,6 +316,30 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const newIsOnChainTxRecorded = async ({
+    walletId,
+    vout,
+    txHash,
+  }: {
+    walletId: WalletId
+    vout: number
+    txHash: OnChainTxHash
+  }): Promise<boolean | LedgerServiceError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+
+    try {
+      const result = await Transaction.countDocuments({
+        accounts: liabilitiesWalletId,
+        type: LedgerTransactionType.OnchainReceipt,
+        hash: txHash,
+        vout,
+      })
+      return result > 0
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const isLnTxRecorded = async (
     paymentHash: PaymentHash,
   ): Promise<boolean | LedgerServiceError> => {
@@ -395,6 +419,7 @@ export const LedgerService = (): ILedgerService => {
       getWalletBalance,
       getWalletBalanceAmount,
       isOnChainTxRecorded,
+      newIsOnChainTxRecorded,
       isLnTxRecorded,
       getWalletIdByTransactionHash,
       listWalletIdsWithPendingPayments,
@@ -436,6 +461,7 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
         ? (tx.payee_addresses[0] as OnChainAddress)
         : undefined,
     txHash: (tx.hash as OnChainTxHash) || undefined,
+    vout: tx.vout || undefined,
     feeKnownInAdvance: tx.feeKnownInAdvance || false,
 
     satsAmount: tx.satsAmount !== undefined ? toSats(tx.satsAmount) : undefined,

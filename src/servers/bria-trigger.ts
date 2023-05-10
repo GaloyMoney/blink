@@ -1,49 +1,132 @@
 // import { InvalidBriaEventError } from "@domain/bitcoin/onchain"
 
 import { Wallets } from "@app"
-import { BriaPayloadType } from "@services/bria-api"
+import { BriaPayloadType, BriaSubscriber } from "@services/bria"
 
-export const briaEventHandler = (event: BriaEvent) => {
+export const briaEventHandler = async (
+  event: BriaEvent,
+): Promise<true | ApplicationError> => {
   if (!event.augmentation) {
     //error - resubscribe
-    return
+    return new Error("augmentation missing")
   }
   let result: any = null
-  let addressInfo, payload
+  const addressInfo = event.augmentation.addressInfo
   switch (event.payloadType) {
     case BriaPayloadType.UtxoDetected:
-      addressInfo = event.augmentation.addressInfo
       if (!addressInfo) {
         // error resubscribe
-        return
+        return new Error("addressInfo missing")
       }
-      payload = event.payload as UtxoDetected
-      result = utxoDetectedEventHandler(payload, addressInfo)
+      return utxoDetectedEventHandler({
+        event: event.payload as UtxoDetected,
+        addressInfo,
+      })
+
+    case BriaPayloadType.UtxoSettled:
+      if (!addressInfo) {
+        // error resubscribe
+        return new Error("addressInfo missing")
+      }
+      result = utxoSettledEventHandler({
+        event: event.payload as UtxoSettled,
+        addressInfo,
+      })
   }
 
   if (result) {
     // persist sequence
   }
+
+  return true
 }
 
-export const utxoDetectedEventHandler = (
-  event: UtxoDetected,
-  addressInfo: AddressAugmentation,
-) => {
+const utxoDetectedEventHandler = async ({
+  event,
+  addressInfo,
+}: {
+  event: UtxoDetected
+  addressInfo: AddressAugmentation
+}): Promise<true | ApplicationError> => {
   const { seenByGaloy, userId } = addressInfo.metadata
   if (seenByGaloy && userId === undefined) {
-    return // Error
+    return true
   }
-  Wallets.addPendingTransaction({
+
+  const result = await Wallets.addPendingTransaction({
     rawUserId: userId,
     txHash: event.txId,
     vout: event.vout,
     amount: event.satoshis,
   })
+
+  return result instanceof Error ? result : true
 }
 
-// export const utxoSettledEventHandler = (event: UtxoSettledEvent) => {
-//   // Remove txn from pending transactions collection
-//   // Record ledger transaction
-//   event
-// }
+const utxoSettledEventHandler = ({
+  event,
+  addressInfo,
+}: {
+  event: UtxoSettled
+  addressInfo: AddressAugmentation
+}) => {
+  const { seenByGaloy, userId } = addressInfo.metadata
+  if (seenByGaloy && userId === undefined) {
+    return true
+  }
+
+  // Check if transaction recorded as yet
+  const recorded = false
+  if (recorded) {
+    return
+  }
+
+  // Record ledger transaction
+  Wallets.addSettledTransaction({
+    rawUserId: userId,
+    address: event.address,
+    txHash: event.txId,
+    vout: event.vout,
+    amount: event.satoshis,
+    blockNumber: event.blockNumber,
+  })
+
+  // Remove txn from pending transactions collection
+}
+
+const listenerBria = () => {
+  const subBria = BriaSubscriber().subscribeToAll()
+  if (subBria instanceof Error) throw subBria
+
+  subBria.on("data", async (rawEvent) => {
+    const event = translateEvent(rawEvent)
+    const handled = await briaEventHandler(event)
+    if (!(handled === true)) {
+      subBria.cancel()
+      // TODO: Restart subscription somehow
+    }
+  })
+
+  subBria.on("error", (error) => {
+    if (!error.message.includes("Cancelled on client")) {
+      throw error
+    }
+  })
+}
+
+const translateEvent = (rawEvent) => ({} as BriaEvent)
+
+const main = () => {
+  listenerBria()
+
+  console.log("Bria trigger server ready")
+}
+
+// only execute if it is the main module
+if (require.main === module) {
+  main()
+  // healthCheck()
+  // setupMongoConnection()
+  // .then(main)
+  // .catch((err) => logger.error(err))
+}

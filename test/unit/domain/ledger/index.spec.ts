@@ -28,6 +28,7 @@ describe("LedgerService", () => {
       currency: "BTC",
       feeKnownInAdvance: true,
       payee_addresses: [],
+      vout: 0,
       memoPayer: "memoPayer",
       sats: 1000,
       username: "username",
@@ -58,6 +59,7 @@ describe("LedgerService", () => {
       paymentHash: "hash",
       pubkey: "pubkey",
       address: undefined,
+      vout: 0,
       txHash: "hash",
       feeKnownInAdvance: true,
 

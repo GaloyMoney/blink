@@ -26,6 +26,7 @@ type UtxoSettled = {
   vout: number
   satoshis: BtcPaymentAmount
   address: OnChainAddress
+  blockNumber: number
 }
 type BriaPayload = UtxoDetected | UtxoSettled
 type BriaEvent = {
