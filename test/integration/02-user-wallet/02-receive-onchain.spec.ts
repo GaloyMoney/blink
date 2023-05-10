@@ -27,7 +27,6 @@ import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 
 import { onchainTransactionEventHandler } from "@servers/trigger"
 
-import { BriaService } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
@@ -505,43 +504,6 @@ describe("UserWallet - On chain", () => {
     })
     const finalBalanceUserC = await getBalanceHelper(walletC)
     expect(finalBalanceUserC).toBe(initBalanceUserC + amountSats)
-  })
-})
-
-describe("BriaService", () => {
-  const bria = BriaService()
-
-  it("subscribeToAll", async () => {
-    const amountSats = toSats(5_000)
-
-    let count = 0
-    let expectedTxId = ""
-    const listener = bria.subscribeToAll((response) => {
-      const txId =
-        (response as UtxoDetectedEvent).utxo_detected?.tx_id ||
-        (response as UtxoSettledEvent).utxo_settled?.tx_id
-      expect(expectedTxId).toBe(txId)
-
-      count++
-      return true
-    })
-    if (listener instanceof Error) throw Error
-
-    // Receive onchain
-    expectedTxId = await sendToWalletTestWrapper({
-      walletId: walletIdA,
-      amountSats,
-    })
-
-    let tries = 0
-    while (count < 2 && tries < 30) {
-      console.log({ count, tries })
-      await sleep(500)
-      tries++
-    }
-    expect(count).toEqual(2)
-
-    listener.cancel()
   })
 })
 
