@@ -24,6 +24,7 @@ interface ILedgerTransaction {
   feeKnownInAdvance?: boolean
   related_journal?: ObjectId
   payee_addresses?: string[]
+  vout?: number
   memoPayer?: string
   sats?: number
   username?: string

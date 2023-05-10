@@ -26,7 +26,7 @@ export const addPendingTransaction = async ({
   }
 
   // SECTION: Repo add transaction
-  const pendingTxn = PendingOnChainTransactionsRepository().persist({
+  const pendingTxn = PendingOnChainTransactionsRepository().persistNew({
     userId,
     txHash,
     vout,

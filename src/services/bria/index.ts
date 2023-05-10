@@ -24,23 +24,12 @@ export const BriaSubscriber = () => {
   metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
 
   return {
-    subscribeToAll: (callback: BriaEventHandler) => {
+    subscribeToAll: () => {
       const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
 
       let listener: ClientReadableStream<BriaEvent>
       try {
         listener = subscribeAll({}, metadata)
-
-        listener.on("data", (rawEvent) => {
-          // const should_resubscriber = callback(transalate(rawEvent))
-          callback(transalate(rawEvent))
-        })
-
-        listener.on("error", (error) => {
-          if (!error.message.includes("Cancelled on client")) {
-            throw error
-          }
-        })
       } catch (error) {
         return new UnknownOnChainServiceError(error.message || error)
       }
@@ -51,7 +40,7 @@ export const BriaSubscriber = () => {
 }
 
 // const transalate = (rawEvent: protoRelatedType): BriaEvent => {
-const transalate = (rawEvent: BriaEvent): BriaEvent => {
+const translate = (rawEvent: BriaEvent): BriaEvent => {
   // execute transalation
   return rawEvent
 }

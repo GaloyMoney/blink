@@ -40,16 +40,16 @@ describe("BriaSubscriber", () => {
 
     let count = 0
     let expectedTxId: string | Error = ""
-    const listener = bria.subscribeToAll((response) => {
-      const txId =
-        (response as UtxoDetectedEvent).utxo_detected?.tx_id ||
-        (response as UtxoSettledEvent).utxo_settled?.tx_id
+    const listener = bria.subscribeToAll()
+    if (listener instanceof Error) throw Error
+
+    listener.on("data", (response) => {
+      const { txId } = response
       expect(expectedTxId).toBe(txId)
 
       count++
       return true
     })
-    if (listener instanceof Error) throw Error
 
     // Receive onchain
     const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)

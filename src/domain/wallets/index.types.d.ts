@@ -172,9 +172,21 @@ type onChainDepositFeeArgs = {
   ratio: DepositFeeRatio
 }
 
+type newOnChainDepositFeeArgs = {
+  amount: BtcPaymentAmount
+  ratio: DepositFeeRatio
+}
+
 type DepositFeeCalculator = {
   onChainDepositFee({ amount, ratio }: onChainDepositFeeArgs): Satoshis
   lnDepositFee(): Satoshis
+}
+
+type NewDepositFeeCalculator = {
+  onChainDepositFee({
+    amount,
+    ratio,
+  }: newOnChainDepositFeeArgs): BtcPaymentAmount | ValidationError
 }
 
 type OnchainWithdrawalConfig = {
