@@ -1,6 +1,6 @@
 import { credentials, Metadata } from "@grpc/grpc-js"
 
-import { BRIA_HEADERS } from "@config"
+import { BRIA_PROFILE_API_KEY } from "@config"
 import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
 
 import { BriaProtoDescriptor } from "./grpc"
@@ -19,13 +19,10 @@ export const BriaPayloadType = {
   UtxoSettled: "utxo_settled",
 } as const
 
-const metadata = new Metadata()
-let key: keyof typeof BRIA_HEADERS
-for (key in BRIA_HEADERS) {
-  metadata.set(key, BRIA_HEADERS[key])
-}
-
 export const BriaService = (): INewOnChainService => {
+  const metadata = new Metadata()
+  metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
+
   return {
     subscribeToAll: (callback: BriaEventHandler) => {
       const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
