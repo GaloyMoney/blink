@@ -163,3 +163,12 @@ type PaymentFlowStateRecordIndex = XOR<
   senderWalletId: string
   inputAmount: number
 }
+
+type PendingIncomingUTXORecord = {
+  _id: ObjectId
+  address: string
+  amount: number
+  txHash: string
+  vout: number
+  createdAt: Date
+}

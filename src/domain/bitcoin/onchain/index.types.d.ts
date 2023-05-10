@@ -4,6 +4,7 @@ type OnChainServiceError = import("./errors").OnChainServiceError
 
 type OnChainAddress = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
+type PendingIncomingOnChainTransactionId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
 type ScanDepth = number & { readonly brand: unique symbol }
 type TxOut = {
@@ -110,4 +111,28 @@ interface IOnChainService {
     address,
     targetConfirmations,
   }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError>
+}
+
+type PendingIncomingOnChainTransaction = {
+  id: PendingIncomingOnChainTransactionId
+  address: OnChainAddress
+  amount: Satoshis
+  txHash: OnChainTxHash
+  vout: number
+  createdAt: Date
+}
+
+type PersistNewPendingIncomingOnChainTransactionArgs = Omit<
+  PendingIncomingOnChainTransaction,
+  "id" | "createdAt"
+>
+
+interface IPendingIncomingUTXORepository {
+  listByAddresses(
+    args: OnChainAddress[],
+  ): Promise<PendingIncomingOnChainTransaction[] | RepositoryError>
+  persistNew(
+    args: PersistNewPendingIncomingOnChainTransactionArgs,
+  ): Promise<PendingIncomingOnChainTransaction | RepositoryError>
+  remove(args: PendingIncomingOnChainTransaction): Promise<true | RepositoryError>
 }

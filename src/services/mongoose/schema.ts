@@ -387,3 +387,21 @@ export const PaymentFlowState = mongoose.model(
   "Payment_Flow_State",
   paymentFlowStateSchema,
 )
+
+const PendingIncomingUTXOSchema = new Schema<PendingIncomingUTXORecord>(
+  {
+    address: { type: String, required: true },
+    amount: { type: Number, required: true },
+    txHash: { type: String, required: true },
+    vout: { type: Number, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { id: false },
+)
+
+PendingIncomingUTXOSchema.index({ address: 1, createdAt: -1 })
+
+export const PendingIncomingUTXO = mongoose.model<PendingIncomingUTXORecord>(
+  "PendingIncomingUTXO",
+  PendingIncomingUTXOSchema,
+)
