@@ -401,10 +401,12 @@ describe("Tx metadata", () => {
     const onchainMetadataArgs = {
       onChainTxHash,
       payeeAddresses,
+      vout,
     }
     const expectedOnChainMetadataArgs = {
       hash: onchainMetadataArgs.onChainTxHash,
       payee_addresses: onchainMetadataArgs.payeeAddresses,
+      vout: 
     }
 
     const lnMetadataArgs = {

@@ -297,6 +297,16 @@ interface ILedgerService {
     txHash: OnChainTxHash
   }): Promise<boolean | LedgerServiceError>
 
+  newIsOnChainTxRecorded({
+    walletId,
+    txHash,
+    vout,
+  }: {
+    walletId: WalletId
+    txHash: OnChainTxHash
+    vout: number
+  }): Promise<boolean | LedgerServiceError>
+
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
