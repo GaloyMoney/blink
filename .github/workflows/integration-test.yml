@@ -19,5 +19,8 @@ jobs:
       - name: Run integration tests
         run: |
           make integration-in-ci
+          docker ps -a
+          bria_container_id=$(docker ps -q -f name="galoy-bria")
+          docker logs $bria_container_id
           container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-integration-tests-")
           exit $(docker inspect $container_id --format='{{.State.ExitCode}}')
