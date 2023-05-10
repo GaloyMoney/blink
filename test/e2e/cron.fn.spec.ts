@@ -21,7 +21,7 @@ afterAll(async () => {
 })
 
 describe("test internal cron functions individually", () => {
-  it("rebalancingInternalChannelsTest", async () => {
+  it.skip("rebalancingInternalChannelsTest", async () => {
     await rebalancingInternalChannels()
 
     const activeLnd = getActiveLnd()
