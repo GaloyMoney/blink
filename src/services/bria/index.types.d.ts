@@ -28,7 +28,25 @@ type UtxoSettled = {
   address: OnChainAddress
   blockNumber: number
 }
-type BriaPayload = UtxoDetected | UtxoSettled
+type PaymentSubmitted = {
+  id: string
+}
+type PaymentCommitted = {
+  id: string
+}
+type PaymentBroadcast = {
+  id: string
+}
+type PaymentSettled = {
+  id: string
+}
+type BriaPayload =
+  | UtxoDetected
+  | UtxoSettled
+  | PaymentSubmitted
+  | PaymentCommitted
+  | PaymentBroadcast
+  | PaymentSettled
 type BriaEvent = {
   payloadType: BriaPayloadType
   payload: BriaPayload
