@@ -43,7 +43,6 @@ import {
 export * from "lightning"
 
 export const lnd1 = offchainLnds[0].lnd
-export const lnd2 = offchainLnds[1].lnd
 export const lndonchain = onchainLnds[0].lnd
 
 export const getHash = (request: EncodedPaymentRequest) => {
@@ -90,7 +89,7 @@ export const lndOutside3 = authenticatedLndGrpc({
   socket: `${process.env.LNDOUTSIDE3ADDR}:${process.env.LNDOUTSIDE3RPCPORT ?? 10009}`,
 }).lnd
 
-export const lnds = [lnd1, lnd2, lndOutside1, lndOutside2, lndOutside3]
+export const lnds = [lnd1, lndOutside1, lndOutside2, lndOutside3]
 
 export const waitUntilBlockHeight = async ({ lnd, blockHeight = 0 }) => {
   let block = blockHeight
@@ -329,7 +328,7 @@ export const waitFor = async (f) => {
   return res
 }
 
-export const waitUntilGraphIsReady = async ({ lnd, numNodes = 4 }) => {
+export const waitUntilGraphIsReady = async ({ lnd, numNodes = 3 }) => {
   await waitFor(async () => {
     const graph = await getNetworkGraph({ lnd })
     if (graph.nodes.length < numNodes) {

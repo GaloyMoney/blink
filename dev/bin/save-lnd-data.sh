@@ -21,7 +21,7 @@ fetch_lnd_data() {
   fi
 }
 
-for i in lnd1 lnd2 lnd-outside-1 lnd-outside-2 lnd-outside-3; do
+for i in lnd1 lnd-outside-1 lnd-outside-2 lnd-outside-3; do
   echo "Saving data for $i"
   fetch_lnd_data "$i"
 done

@@ -161,10 +161,6 @@ lnds:
       - offchain
       - onchain
     priority: 2
-  - name: LND2
-    type:
-      - offchain
-    priority: 3
 onChainWallet:
   dustThreshold: 5000
   minConfirmations: 2
@@ -179,7 +175,8 @@ swap:
   lnd1loopRestEndpoint: https://localhost:8081
   lnd1loopRpcEndpoint: localhost:11010
   lnd2loopRestEndpoint: https://localhost:8082
-  lnd2loopRpcEndpoint: localhost:11011
+
+  loopRpcEndpoint: localhost:11011
   feeAccountingEnabled: true
 apollo:
   playground: true
