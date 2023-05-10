@@ -61,7 +61,6 @@ describe("BriaService", () => {
 
     let tries = 0
     while (count < 2 && tries < 30) {
-      console.log({ count, tries })
       await sleep(500)
       tries++
     }
