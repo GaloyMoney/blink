@@ -1,16 +1,16 @@
 export const PendingOnChainTransactionsRepository = () => {
   const persistNew = async ({
-    userId,
+    address,
     txHash,
     vout,
     amount,
   }: {
-    userId: UserId
+    address: OnChainAddress
     txHash: OnChainTxHash
     vout: number
     amount: BtcPaymentAmount
   }) => {
-    userId
+    address
     txHash
     vout
     amount
@@ -18,18 +18,21 @@ export const PendingOnChainTransactionsRepository = () => {
     return Error("Unimplemented")
   }
 
-  const deletePendingTransaction = async ({
+  const remove = async ({
     txHash,
     vout,
   }: {
     txHash: OnChainTxHash
     vout: number
   }): Promise<boolean | RepositoryError> => {
+    txHash
+    vout
+
     return true
   }
 
   return {
     persistNew,
-    deletePendingTransaction,
+    remove,
   }
 }

@@ -41,20 +41,15 @@ export const briaEventHandler = async (
   return true
 }
 
-const utxoDetectedEventHandler = async ({
-  event,
-  addressInfo,
-}: {
-  event: UtxoDetected
-  addressInfo: AddressAugmentation
-}): Promise<true | ApplicationError> => {
-  const { seenByGaloy, userId } = addressInfo.metadata
-  if (seenByGaloy && userId === undefined) {
-    return true
-  }
-
+const utxoDetectedEventHandler = async (
+  event: UtxoDetected,
+): Promise<true | ApplicationError> => {
+  // Note: I'm thinking to skip the 'seenByGaloy' logic here if we
+  //       are only persisting bitcoin-related data only and multiple
+  //       persists on same object shouldn't happen often (at all?),
+  //       and don't matter if they do(?).
   const result = await Wallets.addPendingTransaction({
-    rawUserId: userId,
+    address: event.address,
     txHash: event.txId,
     vout: event.vout,
     amount: event.satoshis,
