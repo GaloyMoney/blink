@@ -78,11 +78,24 @@ class BriaEventError extends Error {
 
 const translate = (rawEvent): BriaEvent | BriaEventError => {
   const sequence = BigInt(rawEvent.sequence)
-  const augmentation = rawEvent.augmentation as BriaEventAugmentation
+  const rawAugmentation = rawEvent.augmentation
 
-  if (!augmentation) {
+  if (!rawAugmentation) {
     return new BriaEventError("augmentation is not initialized.")
   }
+  let augmentation: BriaEventAugmentation | undefined
+  if (rawAugmentation.address_info) {
+    augmentation = {
+      addressInfo: {
+        address: rawAugmentation.address_info.address as OnChainAddress,
+        externalId: rawAugmentation.address_info.external_id,
+        metadata: unpackStruct(rawAugmentation.address_info.metadata) as {
+          galoy?: GaloyAddressMetadata
+        },
+      },
+    }
+  }
+
   let payload: BriaPayload | undefined
   if (rawEvent.payload == BriaPayloadType.UtxoDetected) {
     payload = {
@@ -120,13 +133,28 @@ const translate = (rawEvent): BriaEvent | BriaEventError => {
     payload = rawEvent.payout_settled as PayoutSettled
     payload.type = BriaPayloadType.PayoutSettled
   }
-  if (!payload) {
+  if (!payload || !augmentation) {
     return new BriaEventError("Unknown payload")
   }
 
   return {
     payload,
     augmentation,
-    sequence: sequence,
+    sequence,
   }
+}
+
+const unpackStruct = (struct) => {
+  const jsonObj = {}
+
+  for (const key in struct.fields) {
+    const field = struct.fields[key]
+    if (field.kind === "structValue") {
+      jsonObj[key] = unpackStruct(field.structValue)
+    } else {
+      jsonObj[key] = field[field.kind]
+    }
+  }
+
+  return jsonObj
 }
