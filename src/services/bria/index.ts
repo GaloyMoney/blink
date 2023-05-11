@@ -97,11 +97,10 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
     addressInfo: addressAugmentation,
   }
 
-  let payloadType: BriaPayloadType
   let payload: BriaPayload
 
   if (rawEvent.hasUtxoDetected()) {
-    payloadType = BriaPayloadType.UtxoDetected
+    const type = BriaPayloadType.UtxoDetected
     const utxoDetected = rawEvent.getUtxoDetected()
 
     if (!utxoDetected) {
@@ -119,9 +118,15 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
       )
     }
 
-    payload = { txId, vout, satoshis: { amount, currency: WalletCurrency.Btc }, address }
+    payload = {
+      type,
+      txId,
+      vout,
+      satoshis: { amount, currency: WalletCurrency.Btc },
+      address,
+    }
   } else if (rawEvent.hasUtxoSettled()) {
-    payloadType = BriaPayloadType.UtxoSettled
+    const type = BriaPayloadType.UtxoSettled
     const utxoSettled = rawEvent.getUtxoSettled()
 
     if (!utxoSettled) {
@@ -141,6 +146,7 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
     }
 
     payload = {
+      type,
       txId,
       vout,
       satoshis: { amount, currency: WalletCurrency.Btc },
@@ -148,7 +154,7 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
       blockNumber,
     }
   } else if (rawEvent.hasPayoutSubmitted()) {
-    payloadType = BriaPayloadType.PayoutSubmitted
+    const type = BriaPayloadType.PayoutSubmitted
     const payoutSubmitted = rawEvent.getPayoutSubmitted()
 
     if (!payoutSubmitted) {
@@ -164,10 +170,11 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
     }
 
     payload = {
+      type,
       id,
     }
   } else if (rawEvent.hasPayoutCommitted()) {
-    payloadType = BriaPayloadType.PayoutCommitted
+    const type = BriaPayloadType.PayoutCommitted
     const payoutCommitted = rawEvent.getPayoutSubmitted()
 
     if (!payoutCommitted) {
@@ -183,10 +190,11 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
     }
 
     payload = {
+      type,
       id,
     }
   } else if (rawEvent.hasPayoutBroadcast()) {
-    payloadType = BriaPayloadType.PayoutBroadcast
+    const type = BriaPayloadType.PayoutBroadcast
     const payoutBroadcast = rawEvent.getPayoutSubmitted()
 
     if (!payoutBroadcast) {
@@ -202,10 +210,11 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
     }
 
     payload = {
+      type,
       id,
     }
   } else if (rawEvent.hasPayoutSettled()) {
-    payloadType = BriaPayloadType.PayoutSettled
+    const type = BriaPayloadType.PayoutSettled
     const payoutSettled = rawEvent.getPayoutSubmitted()
 
     if (!payoutSettled) {
@@ -221,6 +230,7 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
     }
 
     payload = {
+      type,
       id,
     }
   } else {
@@ -228,7 +238,6 @@ const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldErro
   }
 
   return {
-    payloadType,
     payload,
     augmentation: briaEventAugmentation,
     sequence: sequence as BriaEventSequence,

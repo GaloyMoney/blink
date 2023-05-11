@@ -10,18 +10,15 @@ export const briaEventHandler = async (
     //error - resubscribe
     return new Error("augmentation missing")
   }
-  let result: any = null
+  let result: true | undefined = undefined
   const addressInfo = event.augmentation.addressInfo
-  switch (event.payloadType) {
+  switch (event.payload.type) {
     case BriaPayloadType.UtxoDetected:
       if (!addressInfo) {
         // error resubscribe
         return new Error("addressInfo missing")
       }
-      return utxoDetectedEventHandler({
-        event: event.payload as UtxoDetected,
-        addressInfo,
-      })
+      return utxoDetectedEventHandler(event.payload)
 
     case BriaPayloadType.UtxoSettled:
       if (!addressInfo) {
@@ -29,7 +26,7 @@ export const briaEventHandler = async (
         return new Error("addressInfo missing")
       }
       result = utxoSettledEventHandler({
-        event: event.payload as UtxoSettled,
+        event: event.payload,
         addressInfo,
       })
   }
