@@ -41,6 +41,7 @@
           - projects/72279297366
         jwks_urls:
           - https://firebaseappcheck.googleapis.com/v1beta/jwks
+          - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
     - handler: cookie_session
       config:
         check_session_url: http://kratos:4433/sessions/whoami
