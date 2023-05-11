@@ -334,6 +334,11 @@ export const loginUpgradeWithPhoneV2 = async ({
   ///               5. Logout of the device account
   ///               6. Log into the phone account and check for the funds
   ///
+  ///         * FUTURE USE CASE: is it a risk to have txn history persist if user sells phone?
+  ///         * can a user manually sweep funds to new account then click a btn in the mobile app to delete device account?
+  ///               /// if device account bal is 0 and user clicks nuke account then delete kratos and mongo entries with
+  ///                      mutation nukeDeviceAccountMutation ?
+  ///
   /// Scenario 2) Happy Path - User logs in with device jwt, no phone account exists, upgrade device to phone account
   ///             a. update kratos => update schema to phone_no_password_v0, remove device trait
   ///             b. mongo (user) => update user collection and remove device field, add phone
@@ -437,9 +442,9 @@ export const loginWithDevice = async ({
   // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
   const authService = AuthWithDeviceAccountService()
-  const decodedJwt = await authService.verifyJwt(jwt)
-  if (decodedJwt instanceof Error) return decodedJwt
-  const deviceId = decodedJwt.sub as DeviceToken
+  const verifiedJwt = await authService.verifyJwt(jwt)
+  if (verifiedJwt instanceof Error) return verifiedJwt
+  const deviceId = verifiedJwt.sub as DeviceToken
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
   // await rewardFailedLoginAttemptPerDeviceLimits(device)

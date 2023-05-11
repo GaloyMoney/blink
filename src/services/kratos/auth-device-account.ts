@@ -1,10 +1,13 @@
+import path from "path"
+
 import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
 import { Identity, UpdateIdentityBody } from "@ory/client"
+import * as jose from "node-jose"
 
-import { getKratosPasswords } from "@config"
+import { getKratosPasswords, isDev } from "@config"
 
 import jwksRsa from "jwks-rsa"
 import jsonwebtoken from "jsonwebtoken"
@@ -135,22 +138,48 @@ export const AuthWithDeviceAccountService = () => {
   }
 
   const verifyJwt = async (token: string) => {
-    // TODO if DEV then pass thru device sub with local jwks
-    const jwksUri = "https://firebaseappcheck.googleapis.com/v1beta/jwks"
+    // TODO Read from config
     const audience = "projects/72279297366"
     const issuer = "https://firebaseappcheck.googleapis.com/72279297366"
+    const jwksUri = "https://firebaseappcheck.googleapis.com/v1beta/jwks"
 
+    // Get the JSON web keys (JWKS)
+    const client = await jwksRsa({
+      jwksUri,
+    })
+    let jwkJson
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jwkJson = (await client.getKeys()) as Array<any>
+
+    // Decode the token
     const decodedToken = jsonwebtoken.decode(token, { complete: true })
     if (!decodedToken) return Error("problem with jwt")
+
+    // Find the kid (Key Id) used to sign the token
     const kid = decodedToken.header.kid
+    let kidJwk = jwkJson.find((j) => j.kid === kid)
 
-    const keyJwks = await jwksRsa({ jwksUri }).getSigningKey(kid)
+    // if in dev environment, use local jwks.json if you dont have access to firebase appcheck debug token
+    if (!kidJwk && isDev) {
+      const jwkPath = path.resolve(__dirname, "../../../dev/ory", "jwks.json")
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const jwksFile = require(jwkPath)
+      jwkJson = jwksFile.keys
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      kidJwk = jwkJson.find((j: any) => j.kid === kid)
+    }
 
-    const verifiedToken = jsonwebtoken.verify(token, keyJwks.getPublicKey(), {
+    // Create a Key object from the JWK and to PEM format
+    const jwtAskey = await jose.JWK.asKey(kidJwk)
+    const pem = jwtAskey.toPEM(false)
+
+    // Verify the token
+    const verifiedToken = jsonwebtoken.verify(token, pem, {
       algorithms: ["RS256"],
       audience,
       issuer,
     })
+
     return verifiedToken
   }
 
