@@ -27,66 +27,26 @@ const notifications = NotificationsService()
 const logger = baseLogger
 
 export const addSettledTransaction = async ({
-  address,
-  txHash,
+  txId: txHash,
   vout,
-  amount,
-}: {
-  address: OnChainAddress
-  txHash: OnChainTxHash
-  vout: number
-  amount: BtcPaymentAmount
-  blockNumber: number
-}) => {
-  const walletId = "TODO" as WalletId
+  satoshis: amount,
+  address,
+}: UtxoSettled) => {
+  const wallet = await WalletsRepository().findByAddress(address)
+  if (wallet instanceof Error) return wallet
 
   // Do checks
 
   // Record in ledger
   // const lockService = LockService()
   const recorded = await ledger.newIsOnChainTxRecorded({
-    walletId,
+    walletId: wallet.id,
     txHash,
     vout,
   })
   if (recorded === true || recorded instanceof Error) {
     // logger.error({ error: recorded }, "Could not query ledger")
     return recorded
-  }
-
-  const processedTx = await processTxn({
-    walletId,
-    amount,
-    address,
-    txHash,
-    vout,
-  })
-  if (processedTx instanceof Error) return processedTx
-
-  // Remove from pending
-  return PendingOnChainTransactionsRepository().remove({ txHash, vout })
-}
-
-// Note: temporarily separated for visibility. Can inline when fully implemented.
-const processTxn = async ({
-  walletId,
-  amount,
-  address,
-  txHash,
-  vout,
-}: {
-  walletId: WalletId
-  amount: BtcPaymentAmount
-  address: OnChainAddress
-  txHash: OnChainTxHash
-  vout: number
-}) => {
-  // QUES: do we need this check still?
-  const wallet = await WalletsRepository().findById(walletId)
-  if (wallet instanceof Error) return wallet
-  const walletAddresses = wallet.onChainAddresses()
-  if (!walletAddresses.includes(address)) {
-    return new Error("Address for wallet check")
   }
 
   const account = await AccountsRepository().findById(wallet.accountId)
@@ -110,24 +70,21 @@ const processTxn = async ({
   })
   if (walletAddressReceiver instanceof Error) return walletAddressReceiver
 
-  const recipientAccount = await AccountsRepository().findById(wallet.accountId)
-  if (recipientAccount instanceof Error) return recipientAccount
-  const { displayCurrency } = recipientAccount
+  const { displayCurrency } = account
 
-  const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: displayCurrency,
   })
-  if (recipientDisplayPriceRatio instanceof Error) {
-    return recipientDisplayPriceRatio
+  if (displayPriceRatio instanceof Error) {
+    return displayPriceRatio
   }
   const amountDisplayCurrency = Number(
-    recipientDisplayPriceRatio.convertFromWallet(
-      walletAddressReceiver.btcToCreditReceiver,
-    ).amountInMinor,
+    displayPriceRatio.convertFromWallet(walletAddressReceiver.btcToCreditReceiver)
+      .amountInMinor,
   ) as DisplayCurrencyBaseAmount
 
   const feeDisplayCurrency = Number(
-    recipientDisplayPriceRatio.convertFromWalletToCeil(walletAddressReceiver.btcBankFee)
+    displayPriceRatio.convertFromWalletToCeil(walletAddressReceiver.btcBankFee)
       .amountInMinor,
   ) as DisplayCurrencyBaseAmount
 
@@ -172,8 +129,8 @@ const processTxn = async ({
     return result
   }
 
-  const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
-  if (recipientUser instanceof Error) return recipientUser
+  const user = await UsersRepository().findById(account.kratosUserId)
+  if (user instanceof Error) return user
 
   const displayAmount = displayAmountFromNumber({
     amount: creditAccountAdditionalMetadata.displayAmount,
@@ -187,8 +144,8 @@ const processTxn = async ({
     paymentAmount: amount,
     displayPaymentAmount: displayAmount,
     txHash,
-    recipientDeviceTokens: recipientUser.deviceTokens,
-    recipientLanguage: recipientUser.language,
+    recipientDeviceTokens: user.deviceTokens,
+    recipientLanguage: user.language,
   })
 
   const currentAddress = await getLastOnChainAddress(wallet.id)
@@ -196,4 +153,6 @@ const processTxn = async ({
     const newAddress = await createOnChainAddressByWallet(wallet)
     if (newAddress instanceof Error) return newAddress
   }
+  // Remove from pending
+  return PendingOnChainTransactionsRepository().remove({ txHash, vout })
 }
