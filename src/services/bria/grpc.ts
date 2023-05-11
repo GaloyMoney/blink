@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const PROTO_PATH_BRIA = __dirname + "/protos/bria.proto"
+const PROTO_PATH_BRIA = __dirname + "/proto/bria.proto"
 
 const grpc = require("@grpc/grpc-js")
 const protoLoader = require("@grpc/proto-loader")
