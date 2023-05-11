@@ -14,7 +14,7 @@ import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
 import { DisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
-import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
+import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 
 import { RedisCacheService } from "@services/cache"
 import { ColdStorageService } from "@services/cold-storage"
