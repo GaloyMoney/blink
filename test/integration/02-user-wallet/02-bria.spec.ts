@@ -2,8 +2,7 @@ import { Wallets } from "@app"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
 
-import { BriaPayloadType, BriaSubscriber } from "@services/bria"
-import { sleep } from "@utils"
+import { BriaSubscriber, BriaPayloadType } from "@services/bria"
 
 import {
   bitcoindClient,
@@ -31,30 +30,32 @@ afterAll(async () => {
 describe("BriaSubscriber", () => {
   const bria = BriaSubscriber()
 
-  it("temp", () => {
-    expect(true).toBeTruthy()
-  })
-
-  it.skip("subscribeToAll", async () => {
+  it.only("subscribeToAll", async () => {
     const amountSats = toSats(5_000)
 
-    let count = 0
     let expectedTxId: string | Error = ""
-    const listener = bria.subscribeToAll(async (event) => {
-      const { type: payloadType } = event.payload
-      if (
-        payloadType !== BriaPayloadType.UtxoDetected &&
-        payloadType !== BriaPayloadType.UtxoSettled
-      ) {
-        throw new Error()
-      }
-      const { txId } = event.payload
-      expect(expectedTxId).toBe(txId)
 
-      count++
-      return true
+    const receivedEvents: BriaEvent[] = []
+    const nExpectedEvents = 2
+    const testEventHandler = (resolver) => {
+      return (event: BriaEvent): Promise<true | ApplicationError> => {
+        receivedEvents.push(event)
+        if (receivedEvents.length === nExpectedEvents) {
+          resolver(receivedEvents)
+        }
+        resolver(event)
+        return Promise.resolve(true)
+      }
+    }
+
+    const timeout = 60000
+    let listener
+    const promise = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Promise timed out after ${timeout} ms`))
+      }, timeout)
+      listener = bria.subscribeToAll(testEventHandler(resolve))
     })
-    if (listener instanceof Error) throw Error
 
     // Receive onchain
     const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
@@ -68,13 +69,16 @@ describe("BriaSubscriber", () => {
     })
     if (expectedTxId instanceof Error) throw expectedTxId
 
-    let tries = 0
-    while (count < 2 && tries < 60) {
-      await sleep(500)
-      tries++
+    const res = await promise
+    if (res instanceof Error) throw res
+    if (receivedEvents[0].payload.type != BriaPayloadType.UtxoDetected) {
+      throw new Error("unexpected event type")
     }
-    expect(count).toEqual(2)
+    expect(receivedEvents[0].payload.txId).toEqual(expectedTxId)
 
+    listener.on("error", () => {
+      // supress error caused by cancel
+    })
     listener.cancel()
   })
 })

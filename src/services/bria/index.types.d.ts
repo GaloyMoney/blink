@@ -1,5 +1,3 @@
-type BriaEventSequence = number & { readonly brand: unique symbol }
-
 type ClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
 
 type BriaPayloadType =
@@ -9,7 +7,9 @@ type AddressAugmentation = {
   address: OnChainAddress
   externalId: string
 
-  metadata: any
+  metadata: {
+    galoy?: GaloyAddressMetadata
+  }
 }
 
 interface UtxoSettledEvent extends OnChainEvent {
@@ -44,33 +44,33 @@ type UtxoSettled = {
   address: OnChainAddress
   blockNumber: number
 }
-type PaymentSubmitted = {
+type PayoutSubmitted = {
   type: "payout_submitted"
   id: string
 }
-type PaymentCommitted = {
+type PayoutCommitted = {
   type: "payout_committed"
   id: string
 }
-type PaymentBroadcast = {
+type PayoutBroadcast = {
   type: "payout_broadcast"
   id: string
 }
-type PaymentSettled = {
+type PayoutSettled = {
   type: "payout_settled"
   id: string
 }
 type BriaPayload =
   | UtxoDetected
   | UtxoSettled
-  | PaymentSubmitted
-  | PaymentCommitted
-  | PaymentBroadcast
-  | PaymentSettled
+  | PayoutSubmitted
+  | PayoutCommitted
+  | PayoutBroadcast
+  | PayoutSettled
 type BriaEvent = {
   payload: BriaPayload
   augmentation: BriaEventAugmentation
-  sequence: BriaEventSequence
+  sequence: bigint
 }
 
 type BriaEventHandler = (event: BriaEvent) => Promise<true | ApplicationError>

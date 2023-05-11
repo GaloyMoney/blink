@@ -1,3 +1,4 @@
+import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
 import { credentials, Metadata } from "@grpc/grpc-js"
 import { BRIA_PROFILE_API_KEY } from "@config"
 import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
@@ -34,26 +35,33 @@ export const BriaSubscriber = () => {
 
       let listener: ClientReadableStream<ProtoBriaEvent>
       try {
-        listener = subscribeAll({}, metadata)
+        listener = subscribeAll({ augment: true }, metadata)
       } catch (error) {
         return new UnknownOnChainServiceError(error.message || error)
       }
 
-      listener.on("data", (rawEvent: ProtoBriaEvent) => {
-        try {
-          const event = translate(rawEvent)
-          if (event instanceof UninitializedFieldError) {
-            // console.error("Error translating BriaEvent:", event.message)
-            return
-          }
-          const result = eventHandler(event)
+      listener.on("data", (rawEvent) => {
+        asyncRunInSpan(
+          "service.bria.eventReceived",
+          {
+            attributes: {
+              [SemanticAttributes.CODE_FUNCTION]: "eventReceived",
+              [SemanticAttributes.CODE_NAMESPACE]: "services.bria",
+              rawEvent,
+            },
+          },
+          async () => {
+            const event = translate(rawEvent)
+            if (event instanceof BriaEventError) {
+              throw event
+            }
+            const result = await eventHandler(event)
 
-          if (result instanceof Error) {
-            console.error("Error handling BriaEvent:", result.message)
-          }
-        } catch (error) {
-          console.error("Error translating BriaEvent:", error.message)
-        }
+            if (result instanceof Error) {
+              throw result
+            }
+          },
+        )
       })
 
       return listener
@@ -61,185 +69,64 @@ export const BriaSubscriber = () => {
   }
 }
 
-class UninitializedFieldError extends Error {
+class BriaEventError extends Error {
   constructor(message: string) {
     super(message)
     this.name = "UninitializedFieldError"
   }
 }
 
-const translate = (rawEvent: ProtoBriaEvent): BriaEvent | UninitializedFieldError => {
-  const sequence = rawEvent.getSequence()
-  const augmentation = rawEvent.getAugmentation()
-  const addressInfo = augmentation?.getAddressInfo()
+const translate = (rawEvent): BriaEvent | BriaEventError => {
+  const sequence = BigInt(rawEvent.sequence)
+  const augmentation = rawEvent.augmentation as BriaEventAugmentation
 
-  if (!addressInfo) {
-    return new UninitializedFieldError("AddressInfo is not initialized.")
+  if (!augmentation) {
+    return new BriaEventError("augmentation is not initialized.")
   }
-
-  const address = addressInfo.getAddress()
-  const externalId = addressInfo.getExternalId()
-  const metadata = addressInfo.getMetadata()
-
-  if (!address || !externalId || !metadata) {
-    return new UninitializedFieldError(
-      "One or more fields in AddressInfo are not initialized.",
-    )
+  let payload: BriaPayload | undefined
+  if (rawEvent.payload == BriaPayloadType.UtxoDetected) {
+    payload = {
+      type: BriaPayloadType.UtxoDetected,
+      txId: rawEvent.utxo_detected.tx_id,
+      vout: rawEvent.utxo_detected.vout,
+      address: rawEvent.utxo_detected.address as OnChainAddress,
+      satoshis: {
+        amount: BigInt(rawEvent.utxo_detected.satoshis),
+        currency: WalletCurrency.Btc,
+      },
+    }
+  } else if (rawEvent.payload == BriaPayloadType.UtxoSettled) {
+    payload = {
+      type: BriaPayloadType.UtxoSettled,
+      txId: rawEvent.utxo_settled.tx_id,
+      vout: rawEvent.utxo_settled.vout,
+      address: rawEvent.utxo_settled.address as OnChainAddress,
+      satoshis: {
+        amount: BigInt(rawEvent.utxo_settled.satoshis),
+        currency: WalletCurrency.Btc,
+      },
+      blockNumber: rawEvent.utxo_settled.block_number,
+    }
+  } else if (rawEvent.payload == BriaPayloadType.PayoutSubmitted) {
+    payload = rawEvent.payout_submitted as PayoutSubmitted
+    payload.type = BriaPayloadType.PayoutSubmitted
+  } else if (rawEvent.payload == BriaPayloadType.PayoutCommitted) {
+    payload = rawEvent.payout_committed as PayoutCommitted
+    payload.type = BriaPayloadType.PayoutCommitted
+  } else if (rawEvent.payload == BriaPayloadType.PayoutBroadcast) {
+    payload = rawEvent.payout_broadcast as PayoutBroadcast
+    payload.type = BriaPayloadType.PayoutBroadcast
+  } else if (rawEvent.payload == BriaPayloadType.PayoutSettled) {
+    payload = rawEvent.payout_settled as PayoutSettled
+    payload.type = BriaPayloadType.PayoutSettled
   }
-
-  const addressAugmentation: AddressAugmentation = {
-    address: address as OnChainAddress,
-    externalId,
-    metadata,
-  }
-
-  const briaEventAugmentation: BriaEventAugmentation = {
-    addressInfo: addressAugmentation,
-  }
-
-  let payload: BriaPayload
-
-  if (rawEvent.hasUtxoDetected()) {
-    const type = BriaPayloadType.UtxoDetected
-    const utxoDetected = rawEvent.getUtxoDetected()
-
-    if (!utxoDetected) {
-      return new UninitializedFieldError("UtxoDetected is not initialized.")
-    }
-
-    const txId = utxoDetected.getTxId() as OnChainTxHash
-    const vout = utxoDetected.getVout()
-    const amount = BigInt(utxoDetected.getSatoshis())
-    const address = utxoDetected.getAddress() as OnChainAddress
-
-    if (!txId || !vout || !amount || !address) {
-      return new UninitializedFieldError(
-        "One or more fields in UtxoDetected are not initialized.",
-      )
-    }
-
-    payload = {
-      type,
-      txId,
-      vout,
-      satoshis: { amount, currency: WalletCurrency.Btc },
-      address,
-    }
-  } else if (rawEvent.hasUtxoSettled()) {
-    const type = BriaPayloadType.UtxoSettled
-    const utxoSettled = rawEvent.getUtxoSettled()
-
-    if (!utxoSettled) {
-      return new UninitializedFieldError("UtxoSettled is not initialized.")
-    }
-
-    const txId = utxoSettled.getTxId() as OnChainTxHash
-    const vout = utxoSettled.getVout()
-    const amount = BigInt(utxoSettled.getSatoshis())
-    const address = utxoSettled.getAddress() as OnChainAddress
-    const blockNumber = utxoSettled.getBlockHeight()
-
-    if (!txId || !vout || !amount || !address || !blockNumber) {
-      return new UninitializedFieldError(
-        "One or more fields in UtxoSettled are not initialized.",
-      )
-    }
-
-    payload = {
-      type,
-      txId,
-      vout,
-      satoshis: { amount, currency: WalletCurrency.Btc },
-      address,
-      blockNumber,
-    }
-  } else if (rawEvent.hasPayoutSubmitted()) {
-    const type = BriaPayloadType.PayoutSubmitted
-    const payoutSubmitted = rawEvent.getPayoutSubmitted()
-
-    if (!payoutSubmitted) {
-      return new UninitializedFieldError("PayoutSubmitted is not initialized.")
-    }
-
-    const id = payoutSubmitted.getId()
-
-    if (!id) {
-      return new UninitializedFieldError(
-        "One or more fields in PayoutSubmitted are not initialized.",
-      )
-    }
-
-    payload = {
-      type,
-      id,
-    }
-  } else if (rawEvent.hasPayoutCommitted()) {
-    const type = BriaPayloadType.PayoutCommitted
-    const payoutCommitted = rawEvent.getPayoutSubmitted()
-
-    if (!payoutCommitted) {
-      return new UninitializedFieldError("PayoutCommitted is not initialized.")
-    }
-
-    const id = payoutCommitted.getId()
-
-    if (!id) {
-      return new UninitializedFieldError(
-        "One or more fields in PayoutCommitted are not initialized.",
-      )
-    }
-
-    payload = {
-      type,
-      id,
-    }
-  } else if (rawEvent.hasPayoutBroadcast()) {
-    const type = BriaPayloadType.PayoutBroadcast
-    const payoutBroadcast = rawEvent.getPayoutSubmitted()
-
-    if (!payoutBroadcast) {
-      return new UninitializedFieldError("PayoutBroadcast is not initialized.")
-    }
-
-    const id = payoutBroadcast.getId()
-
-    if (!id) {
-      return new UninitializedFieldError(
-        "One or more fields in PayoutBroadcast are not initialized.",
-      )
-    }
-
-    payload = {
-      type,
-      id,
-    }
-  } else if (rawEvent.hasPayoutSettled()) {
-    const type = BriaPayloadType.PayoutSettled
-    const payoutSettled = rawEvent.getPayoutSubmitted()
-
-    if (!payoutSettled) {
-      return new UninitializedFieldError("PayoutSettled is not initialized.")
-    }
-
-    const id = payoutSettled.getId()
-
-    if (!id) {
-      return new UninitializedFieldError(
-        "One or more fields in PayoutSettled are not initialized.",
-      )
-    }
-
-    payload = {
-      type,
-      id,
-    }
-  } else {
-    return new UninitializedFieldError("Invalid payload type")
+  if (!payload) {
+    return new BriaEventError("Unknown payload")
   }
 
   return {
     payload,
-    augmentation: briaEventAugmentation,
-    sequence: sequence as BriaEventSequence,
+    augmentation,
+    sequence: sequence,
   }
 }

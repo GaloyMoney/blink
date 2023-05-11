@@ -18,7 +18,7 @@ export const briaEventHandler = async (
         // error resubscribe
         return new Error("addressInfo missing")
       }
-      return utxoDetectedEventHandler(event.payload)
+      return utxoDetectedEventHandler(event.payload, addressInfo)
 
     case BriaPayloadType.UtxoSettled:
       if (!addressInfo) {
@@ -40,12 +40,15 @@ export const briaEventHandler = async (
 
 const utxoDetectedEventHandler = async (
   event: UtxoDetected,
+  addressInfo: AddressAugmentation,
 ): Promise<true | ApplicationError> => {
-  // Note: I'm thinking to skip the 'seenByGaloy' logic here if we
-  //       are only persisting bitcoin-related data only and multiple
-  //       persists on same object shouldn't happen often (at all?),
-  //       and don't matter if they do(?).
+  const { seen, walletId } = addressInfo.metadata.galoy || {}
+  if (seen && !walletId) {
+    return true
+  }
+
   const result = await Wallets.addPendingTransaction({
+    walletId: addressInfo.metadata.galoy?.walletId,
     address: event.address,
     txHash: event.txId,
     vout: event.vout,
@@ -62,8 +65,8 @@ const utxoSettledEventHandler = ({
   event: UtxoSettled
   addressInfo: AddressAugmentation
 }) => {
-  const { seenByGaloy, userId } = addressInfo.metadata
-  if (seenByGaloy && userId === undefined) {
+  const { seen, walletId } = addressInfo.metadata.galoy || {}
+  if (seen && !walletId) {
     return true
   }
 

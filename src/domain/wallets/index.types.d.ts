@@ -7,6 +7,11 @@ type TxStatus =
 type WalletType =
   typeof import("./primitives").WalletType[keyof typeof import("./primitives").WalletType]
 
+type GaloyAddressMetadata = {
+  walletId?: WalletId
+  seen?: boolean
+}
+
 type InitiationViaIntraledger = {
   readonly type: "intraledger"
   readonly counterPartyWalletId: WalletId
