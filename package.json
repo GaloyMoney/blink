@@ -41,7 +41,7 @@
     "@opentelemetry/instrumentation-graphql": "^0.34.0",
     "@opentelemetry/instrumentation-grpc": "^0.37.0",
     "@opentelemetry/instrumentation-http": "^0.38.0",
-    "@opentelemetry/instrumentation-ioredis": "^0.34.0",
+    "@opentelemetry/instrumentation-ioredis": "^0.34.1",
     "@opentelemetry/instrumentation-mongodb": "^0.34.1",
     "@opentelemetry/resources": "^1.11.0",
     "@opentelemetry/sdk-trace-base": "^1.11.0",
