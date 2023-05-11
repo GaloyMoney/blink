@@ -49,10 +49,7 @@ const utxoDetectedEventHandler = async (
 
   const result = await Wallets.addPendingTransaction({
     walletId: addressInfo.metadata.galoy?.walletId,
-    address: event.address,
-    txHash: event.txId,
-    vout: event.vout,
-    amount: event.satoshis,
+    ...event,
   })
 
   return result instanceof Error ? result : true

@@ -52,6 +52,12 @@ type SettlementViaOnChain = {
   vout?: OnChainTxVout
 }
 
+type NewSettlementViaOnChain = {
+  readonly type: "onchain"
+  transactionHash: OnChainTxHash
+  vout: number
+}
+
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId | OnChainTxHash
   readonly walletId: WalletId | undefined
@@ -60,6 +66,23 @@ type BaseWalletTransaction = {
   readonly settlementCurrency: WalletCurrency
   readonly settlementDisplayAmount: DisplayCurrencyMajorAmount
   readonly settlementDisplayFee: DisplayCurrencyMajorAmount
+  readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<
+    WalletCurrency,
+    DisplayCurrency
+  >
+  readonly status: TxStatus
+  readonly memo: string | null
+  readonly createdAt: Date
+}
+
+type NewBaseWalletTransaction = {
+  readonly id: LedgerTransactionId | OnChainTxHash
+  readonly walletId: WalletId | undefined
+  readonly settlementAmount: PaymentAmount<WalletCurrency>
+  readonly settlementFee: PaymentAmount<WalletCurrency>
+  readonly settlementCurrency: WalletCurrency
+  readonly settlementDisplayAmount: DisplayAmount<DisplayCurrency>
+  readonly settlementDisplayFee: DisplayAmount<DisplayCurrency>
   readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<
     WalletCurrency,
     DisplayCurrency
@@ -82,6 +105,11 @@ type WalletOnChainIntraledgerTransaction = BaseWalletTransaction & {
 type WalletOnChainSettledTransaction = BaseWalletTransaction & {
   readonly initiationVia: InitiationViaOnChain
   readonly settlementVia: SettlementViaOnChain
+}
+
+type NewWalletOnChainSettledTransaction = NewBaseWalletTransaction & {
+  readonly initiationVia: InitiationViaOnChain
+  readonly settlementVia: NewSettlementViaOnChain
 }
 
 type WalletLegacyOnChainIntraledgerTransaction = BaseWalletTransaction & {

@@ -95,6 +95,9 @@ type WalletAddressReceiver = {
   usdBankFee: UsdPaymentAmount
   btcBankFee: BtcPaymentAmount
   receivedAmount: () => BtcPaymentAmount | UsdPaymentAmount
+  settlementAmounts: () =>
+    | { amountToCreditReceiver: BtcPaymentAmount; bankFee: BtcPaymentAmount }
+    | { amountToCreditReceiver: UsdPaymentAmount; bankFee: UsdPaymentAmount }
 }
 
 type WalletReceiverArgs = {

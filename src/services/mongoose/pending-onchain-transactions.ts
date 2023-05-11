@@ -1,19 +1,8 @@
 export const PendingOnChainTransactionsRepository = () => {
-  const persistNew = async ({
-    address,
-    txHash,
-    vout,
-    amount,
-  }: {
-    address: OnChainAddress
-    txHash: OnChainTxHash
-    vout: number
-    amount: BtcPaymentAmount
-  }) => {
-    address
-    txHash
-    vout
-    amount
+  const persistNew = async (
+    pendingTransaction: NewWalletOnChainSettledTransaction,
+  ): Promise<NewWalletOnChainSettledTransaction | RepositoryError> => {
+    pendingTransaction
 
     return Error("Unimplemented")
   }

@@ -28,13 +28,26 @@ export const WalletAddressReceiver = async <S extends WalletCurrency>({
     btcBankFee: satsFee,
   }
 
+  const btcToCreditReceiver = calc.sub(receivedBtc, satsFee)
+  const usdToCreditReceiver = calc.sub(receivedUsd, bankFee.usdBankFee)
+
   return {
-    btcToCreditReceiver: calc.sub(receivedBtc, satsFee),
-    usdToCreditReceiver: calc.sub(receivedUsd, bankFee.usdBankFee),
+    btcToCreditReceiver,
+    usdToCreditReceiver,
     ...bankFee,
     receivedAmount: () =>
       walletAddress.recipientWalletDescriptor.currency === WalletCurrency.Btc
         ? receivedBtc
         : receivedUsd,
+    settlementAmounts: () =>
+      walletAddress.recipientWalletDescriptor.currency === WalletCurrency.Btc
+        ? {
+            amountToCreditReceiver: btcToCreditReceiver,
+            bankFee: bankFee.btcBankFee,
+          }
+        : {
+            amountToCreditReceiver: usdToCreditReceiver,
+            bankFee: bankFee.usdBankFee,
+          },
   }
 }
