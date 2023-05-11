@@ -75,7 +75,6 @@ const utxoSettledEventHandler = ({
 
   // Record ledger transaction
   Wallets.addSettledTransaction({
-    rawUserId: userId,
     address: event.address,
     txHash: event.txId,
     vout: event.vout,
@@ -87,26 +86,9 @@ const utxoSettledEventHandler = ({
 }
 
 const listenerBria = () => {
-  const subBria = BriaSubscriber().subscribeToAll()
+  const subBria = BriaSubscriber().subscribeToAll(briaEventHandler)
   if (subBria instanceof Error) throw subBria
-
-  subBria.on("data", async (rawEvent) => {
-    const event = translateEvent(rawEvent)
-    const handled = await briaEventHandler(event)
-    if (!(handled === true)) {
-      subBria.cancel()
-      // TODO: Restart subscription somehow
-    }
-  })
-
-  subBria.on("error", (error) => {
-    if (!error.message.includes("Cancelled on client")) {
-      throw error
-    }
-  })
 }
-
-const translateEvent = (rawEvent) => ({} as BriaEvent)
 
 const main = () => {
   listenerBria()

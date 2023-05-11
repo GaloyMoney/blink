@@ -2,7 +2,7 @@ import { Wallets } from "@app"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
 
-import { BriaSubscriber } from "@services/bria"
+import { BriaPayloadType, BriaSubscriber } from "@services/bria"
 import { sleep } from "@utils"
 
 import {
@@ -40,16 +40,21 @@ describe("BriaSubscriber", () => {
 
     let count = 0
     let expectedTxId: string | Error = ""
-    const listener = bria.subscribeToAll()
-    if (listener instanceof Error) throw Error
-
-    listener.on("data", (response) => {
-      const { txId } = response
+    const listener = bria.subscribeToAll(async (event) => {
+      const { type: payloadType } = event.payload
+      if (
+        payloadType !== BriaPayloadType.UtxoDetected &&
+        payloadType !== BriaPayloadType.UtxoSettled
+      ) {
+        throw new Error()
+      }
+      const { txId } = event.payload
       expect(expectedTxId).toBe(txId)
 
       count++
       return true
     })
+    if (listener instanceof Error) throw Error
 
     // Receive onchain
     const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
