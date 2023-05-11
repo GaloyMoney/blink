@@ -443,9 +443,8 @@ jobs:
           outputs:
             - name: repo
           params:
-            PROTO_FILES_SRC_PATH: history/src/servers/proto
-            PROTO_FILES_DEST_PATH: src/services/price/proto
-            RUN_BUF_GENERATE: "false"
+            PROTO_FILES_SRC_PATH: history/src/servers/protos
+            PROTO_FILES_DEST_PATH: src/services/price/protos
             BRANCH: #@ data.values.git_branch
             MODULE: price-history
           run:
@@ -628,8 +627,7 @@ resources:
       uri: #@ data.values.git_stablesats_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
-      commit_filter:
-        include: ["ci(release)"]
+      tag_regex: .+
 
   - name: price-history-proto
     type: git
@@ -646,8 +644,7 @@ resources:
       uri: #@ data.values.git_bria_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
-      commit_filter:
-        include: ["ci(release)"]
+      tag_regex: .+
 
 resource_types:
   -  #@ gcr_resource_type()

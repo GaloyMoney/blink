@@ -6,11 +6,11 @@ export ref=$(cat ./src-repo/.git/short_ref)
 
 cp -R src-repo/${PROTO_FILES_SRC_PATH}/* repo/${PROTO_FILES_DEST_PATH}
 
-if [[ -n "$BUF_CONFIG_PATH" ]]; then
+if [[ -n "${BUF_CONFIG_PATH:-}" ]]; then
   pushd repo
   yarn install
   export PATH=$PATH:$(pwd)/node_modules/.bin
-  pushd ${BUF_CONFIG_PATH}/
+  pushd "${BUF_CONFIG_PATH}/"
   buf generate
 fi
 
