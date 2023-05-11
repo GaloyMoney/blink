@@ -1,7 +1,7 @@
 import { WalletPriceRatio } from "@domain/payments"
 import { AmountCalculator, BtcPaymentAmount, WalletCurrency } from "@domain/shared"
 
-import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
+import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 
 const calc = AmountCalculator()
 
