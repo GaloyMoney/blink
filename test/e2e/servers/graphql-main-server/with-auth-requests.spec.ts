@@ -464,6 +464,64 @@ describe("graphql", () => {
       )
     })
 
+    it("returns valid data using after cursor", async () => {
+      const { errors, data: meData } = await apolloClient.query<MeQuery>({
+        query: MeDocument,
+      })
+      expect(errors).toBeUndefined()
+
+      const wallets = meData?.me?.defaultAccount.wallets ?? []
+      expect(wallets).toBeTruthy()
+      for (const wallet of wallets) {
+        if (wallet.walletCurrency === WalletCurrency.Usd) {
+          await fundWalletIdFromLightning({
+            walletId: wallet.id as WalletId,
+            amount: centsAmount,
+          })
+        }
+      }
+
+      const { data } = await apolloClient.query<TransactionsQuery>({
+        query: TransactionsDocument,
+        variables: { first: 100 },
+      })
+
+      const txns = data?.me?.defaultAccount.transactions?.edges
+      expect(txns).toBeTruthy()
+      if (!txns) throw new Error("invalid data")
+
+      const firstTxCursor = txns[0].cursor
+      {
+        const { data, errors } = await apolloClient.query<TransactionsQuery>({
+          query: TransactionsDocument,
+          variables: { after: firstTxCursor },
+        })
+
+        expect(data?.me?.defaultAccount.transactions).toBeTruthy()
+        expect(errors).toBeUndefined()
+      }
+    })
+
+    it("returns error for invalid after cursor", async () => {
+      const { data, errors } = await apolloClient.query<TransactionsQuery>({
+        query: TransactionsDocument,
+        variables: {
+          after: "86fe6c5ee72b41a934c84b127c8c4bf5fd75c077b4c9ab0cd53b1b93e7becedf",
+        },
+      })
+
+      expect(data?.me?.defaultAccount.transactions).toBeNull()
+      expect(errors).not.toBeUndefined()
+      expect(errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: "INVALID_INPUT",
+            message: `Argument "after" must be a valid cursor`,
+          }),
+        ]),
+      )
+    })
+
     it("returns an error if non-owned walletId is included", async () => {
       const expectedErrorMessage = "Invalid walletId for account."
       const otherWalletId = await getDefaultWalletIdByTestUserRef(otherRef)
