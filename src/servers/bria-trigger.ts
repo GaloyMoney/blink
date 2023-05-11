@@ -74,15 +74,7 @@ const utxoSettledEventHandler = ({
   }
 
   // Record ledger transaction
-  Wallets.addSettledTransaction({
-    address: event.address,
-    txHash: event.txId,
-    vout: event.vout,
-    amount: event.satoshis,
-    blockNumber: event.blockNumber,
-  })
-
-  // Remove txn from pending transactions collection
+  Wallets.addSettledTransaction(event)
 }
 
 const listenerBria = () => {
