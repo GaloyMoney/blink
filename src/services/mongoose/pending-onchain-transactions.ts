@@ -31,8 +31,22 @@ export const PendingOnChainTransactionsRepository = () => {
     return true
   }
 
+  const listByWalletIds = async ({
+    walletIds,
+    paginationArgs,
+  }: {
+    walletIds: WalletId[]
+    paginationArgs?: PaginationArgs
+  }): Promise<WalletOnChainSettledTransaction[] | RepositoryError> => {
+    walletIds
+    paginationArgs
+
+    return undefined as unknown as WalletOnChainSettledTransaction[]
+  }
+
   return {
     persistNew,
+    listByWalletIds,
     remove,
   }
 }

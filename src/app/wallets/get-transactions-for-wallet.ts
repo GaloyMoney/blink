@@ -11,6 +11,7 @@ import { WalletTransactionHistory } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
 import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
+import { PendingOnChainTransactionsRepository } from "@services/mongoose/pending-onchain-transactions"
 
 import { WalletCurrency } from "@domain/shared"
 
@@ -106,4 +107,67 @@ export const getTransactionsForWallets = async ({
     }).transactions,
     total: resp.total,
   })
+}
+
+export const newGetTransactionsForWallets = async ({
+  wallets,
+  paginationArgs,
+}: {
+  wallets: Wallet[]
+  paginationArgs?: PaginationArgs
+}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+  const walletIds = wallets.map((wallet) => wallet.id)
+
+  const pendingHistory = await PendingOnChainTransactionsRepository().listByWalletIds({
+    walletIds,
+    paginationArgs,
+  })
+  if (pendingHistory instanceof Error) {
+    return PartialResult.err(pendingHistory)
+  }
+
+  const paginationHandoffArgs =
+    paginationArgs === undefined
+      ? paginationArgs
+      : handoffPagination({
+          walletTransactions: pendingHistory,
+          paginationArgs,
+        })
+
+  const confirmedLedgerTxns = await LedgerService().getTransactionsByWalletIds({
+    walletIds,
+    paginationArgs: paginationHandoffArgs,
+  })
+
+  if (confirmedLedgerTxns instanceof LedgerError) {
+    return PartialResult.partial(
+      { slice: pendingHistory, total: pendingHistory.length },
+      confirmedLedgerTxns,
+    )
+  }
+
+  const confirmedHistory = WalletTransactionHistory.fromLedger({
+    ledgerTransactions: confirmedLedgerTxns.slice,
+    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+  })
+
+  const transactions = [...pendingHistory, ...confirmedHistory.transactions]
+
+  return PartialResult.ok({
+    slice: transactions,
+    total: transactions.length,
+  })
+}
+
+const handoffPagination = ({
+  walletTransactions,
+  paginationArgs,
+}: {
+  walletTransactions: WalletTransaction[]
+  paginationArgs: PaginationArgs
+}): PaginationArgs => {
+  walletTransactions
+  paginationArgs
+
+  return undefined as unknown as PaginationArgs
 }
