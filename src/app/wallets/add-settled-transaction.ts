@@ -1,5 +1,5 @@
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
-import { WalletAddressReceiver } from "@domain/wallet-on-chain-addresses/wallet-address-receiver"
+import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import { NewDepositFeeCalculator } from "@domain/wallets"
 import { displayAmountFromNumber } from "@domain/fiat"
 
