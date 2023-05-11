@@ -45,12 +45,7 @@ const utxoDetectedEventHandler = async (
   //       are only persisting bitcoin-related data only and multiple
   //       persists on same object shouldn't happen often (at all?),
   //       and don't matter if they do(?).
-  const result = await Wallets.addPendingTransaction({
-    address: event.address,
-    txHash: event.txId,
-    vout: event.vout,
-    amount: event.satoshis,
-  })
+  const result = await Wallets.addPendingTransaction(event)
 
   return result instanceof Error ? result : true
 }
