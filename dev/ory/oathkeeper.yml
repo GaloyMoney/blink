@@ -18,6 +18,7 @@ authenticators:
         - projects/72279297366
       jwks_urls:
         - https://firebaseappcheck.googleapis.com/v1beta/jwks
+        - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
   bearer_token:
     enabled: true
     config:
