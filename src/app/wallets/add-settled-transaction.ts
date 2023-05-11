@@ -27,13 +27,11 @@ const notifications = NotificationsService()
 const logger = baseLogger
 
 export const addSettledTransaction = async ({
-  rawUserId,
   address,
   txHash,
   vout,
   amount,
 }: {
-  rawUserId: UserId | undefined
   address: OnChainAddress
   txHash: OnChainTxHash
   vout: number
@@ -66,10 +64,23 @@ export const addSettledTransaction = async ({
   if (processedTx instanceof Error) return processedTx
 
   // Remove from pending
-  return PendingOnChainTransactionsRepository().deletePendingTransaction({ txHash, vout })
+  return PendingOnChainTransactionsRepository().remove({ txHash, vout })
 }
 
-const processTxn = async ({ walletId, amount, address, txHash, vout }) => {
+// Note: temporarily separated for visibility. Can inline when fully implemented.
+const processTxn = async ({
+  walletId,
+  amount,
+  address,
+  txHash,
+  vout,
+}: {
+  walletId: WalletId
+  amount: BtcPaymentAmount
+  address: OnChainAddress
+  txHash: OnChainTxHash
+  vout: number
+}) => {
   // QUES: do we need this check still?
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
@@ -126,6 +137,7 @@ const processTxn = async ({ walletId, amount, address, txHash, vout }) => {
     internalAccountsAdditionalMetadata,
   } = LedgerFacade.OnChainReceiveLedgerMetadata({
     onChainTxHash: txHash,
+    vout,
     paymentAmounts: {
       btcPaymentAmount: walletAddressReceiver.btcToCreditReceiver,
       usdPaymentAmount: walletAddressReceiver.usdToCreditReceiver,

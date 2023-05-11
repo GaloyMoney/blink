@@ -197,6 +197,9 @@ const processTxForWallet = async (
             internalAccountsAdditionalMetadata,
           } = LedgerFacade.OnChainReceiveLedgerMetadata({
             onChainTxHash: tx.rawTx.txHash,
+
+            vout: undefined as unknown as number, // for compiler, entire method to be removed
+
             paymentAmounts: {
               btcPaymentAmount: walletAddressReceiver.btcToCreditReceiver,
               usdPaymentAmount: walletAddressReceiver.usdToCreditReceiver,

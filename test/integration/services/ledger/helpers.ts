@@ -58,6 +58,7 @@ export const recordReceiveOnChainPayment = async <S extends WalletCurrency>({
   displayAmounts,
 }: RecordExternalTxTestArgs<S>) => {
   const onChainTxHash = crypto.randomUUID() as OnChainTxHash
+  const vout = 0
 
   const {
     metadata,
@@ -65,6 +66,7 @@ export const recordReceiveOnChainPayment = async <S extends WalletCurrency>({
     internalAccountsAdditionalMetadata,
   } = LedgerFacade.OnChainReceiveLedgerMetadata({
     onChainTxHash,
+    vout,
     paymentAmounts: {
       btcPaymentAmount: paymentAmount.btc,
       usdPaymentAmount: paymentAmount.usd,

@@ -8,6 +8,7 @@ type BriaPayloadType =
 type AddressAugmentation = {
   address: OnChainAddress
   externalId: string
+
   metadata: any
 }
 
@@ -59,4 +60,4 @@ type BriaEvent = {
   sequence: BriaEventSequence
 }
 
-type BriaEventHandler = (event: BriaEvent) => true | ApplicationError
+type BriaEventHandler = (event: BriaEvent) => Promise<true | ApplicationError>
