@@ -6,6 +6,8 @@ import { DEFAULT_MAX_CONNECTION_LIMIT } from "@services/ledger/paginated-ledger"
 
 import { GT } from "."
 
+const CURSOR_REGEX = /^[A-Fa-f0-9]{24}$/
+
 // The following function is temporary. It shloud be replaced by db pagination.
 
 // It's a slightly modified version of the same function in graphql-relay.
@@ -152,16 +154,30 @@ export const checkedConnectionArgs = (args: PaginationArgs): PaginationArgs | Er
   }
 
   if (typeof args.first === "number" && args.first <= 0) {
-    throw new InputValidationError({ message: 'Argument "first" must be greater than 0' })
+    return new InputValidationError({
+      message: 'Argument "first" must be greater than 0',
+    })
   }
 
   if (typeof args.last === "number" && args.last <= 0) {
-    throw new InputValidationError({ message: 'Argument "last" must be greater than 0' })
+    return new InputValidationError({ message: 'Argument "last" must be greater than 0' })
   }
 
   // FIXME: make first or last required (after making sure no one is using them as optional)
   if (args.first === undefined && args.last === undefined) {
     args.first = DEFAULT_MAX_CONNECTION_LIMIT
+  }
+
+  if (args.after && typeof args.after === "string" && !CURSOR_REGEX.test(args.after)) {
+    return new InputValidationError({
+      message: 'Argument "after" must be a valid cursor',
+    })
+  }
+
+  if (args.before && typeof args.before === "string" && !CURSOR_REGEX.test(args.before)) {
+    return new InputValidationError({
+      message: 'Argument "before" must be a valid cursor',
+    })
   }
 
   return args
