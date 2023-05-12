@@ -1,7 +1,11 @@
-import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
+import {
+  asyncRunInSpan,
+  SemanticAttributes,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 import { credentials, Metadata } from "@grpc/grpc-js"
 import { BRIA_PROFILE_API_KEY } from "@config"
-import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
+import { UnknownOnChainServiceError, OnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
 import { BriaEvent as ProtoBriaEvent } from "./proto/bria_pb"
@@ -32,47 +36,63 @@ export const BriaSubscriber = () => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
 
-  return {
-    subscribeToAll: async (eventHandler: BriaEventHandler) => {
-      const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
+  const subscribeToAll = async (
+    eventHandler: BriaEventHandler,
+  ): Promise<ListenerWrapper<ProtoBriaEvent> | OnChainServiceError> => {
+    let listenerWrapper: ListenerWrapper<ProtoBriaEvent>
+    const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
 
-      let listener: ClientReadableStream<ProtoBriaEvent>
-      try {
-        const lastSequence = await sequenceRepo.getSequence()
-        if (lastSequence instanceof Error) {
-          return lastSequence
-        }
-        listener = subscribeAll({ augment: true, after_sequence: lastSequence }, metadata)
-      } catch (error) {
-        return new UnknownOnChainServiceError(error.message || error)
+    try {
+      const lastSequence = await sequenceRepo.getSequence()
+      if (lastSequence instanceof Error) {
+        return lastSequence
       }
+      listenerWrapper = {
+        listener: subscribeAll({ augment: true, after_sequence: lastSequence }, metadata),
+      }
+    } catch (error) {
+      return new UnknownOnChainServiceError(error.message || error)
+    }
 
-      listener.on("data", (rawEvent) => {
-        asyncRunInSpan(
-          "service.bria.eventReceived",
-          {
-            attributes: {
-              [SemanticAttributes.CODE_FUNCTION]: "eventReceived",
-              [SemanticAttributes.CODE_NAMESPACE]: "services.bria",
-              rawEvent,
-            },
+    listenerWrapper.listener.on("data", (rawEvent) => {
+      asyncRunInSpan(
+        "service.bria.eventReceived",
+        {
+          attributes: {
+            [SemanticAttributes.CODE_FUNCTION]: "eventReceived",
+            [SemanticAttributes.CODE_NAMESPACE]: "services.bria",
+            rawEvent,
           },
-          async () => {
-            const event = translate(rawEvent)
-            if (event instanceof BriaEventError) {
-              throw event
-            }
-            const result = await eventHandler(event)
+        },
+        async () => {
+          const sequence = rawEvent.sequence
+          const event = translate(rawEvent)
+          if (event instanceof BriaEventError) {
+            recordExceptionInCurrentSpan({ error: event })
+            throw event
+          }
+          const result = await eventHandler(event)
 
-            if (result instanceof Error) {
-              throw result
+          if (result instanceof Error) {
+            recordExceptionInCurrentSpan({ error: result })
+            listenerWrapper.listener.cancel()
+            const resubscribe = await subscribeToAll(eventHandler)
+            if (resubscribe instanceof Error) {
+              throw resubscribe
             }
-          },
-        )
-      })
+            listenerWrapper.listener = resubscribe.listener
+          }
 
-      return listener
-    },
+          await sequenceRepo.updateSequence(sequence)
+        },
+      )
+    })
+
+    return listenerWrapper
+  }
+
+  return {
+    subscribeToAll,
   }
 }
 

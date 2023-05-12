@@ -34,41 +34,48 @@ describe("BriaSubscriber", () => {
   describe("subscribeToAll", () => {
     it("receives utxo events", async () => {
       const amountSats = toSats(5_000)
-
-      let expectedTxId: string | Error = ""
-
-      const receivedEvents: BriaEvent[] = []
-      const nExpectedEvents = 2
-      const testEventHandler = (resolver) => {
-        return (event: BriaEvent): Promise<true | ApplicationError> => {
-          receivedEvents.push(event)
-          if (receivedEvents.length === nExpectedEvents) {
-            resolver(receivedEvents)
-          }
-          return Promise.resolve(true)
-        }
-      }
-
-      const timeout = 60000
-      let listener
-      const promise = new Promise((resolve, reject) => {
-        setTimeout(() => {
-          reject(new Error(`Promise timed out after ${timeout} ms`))
-        }, timeout)
-        listener = bria.subscribeToAll(testEventHandler(resolve))
-      })
-
       // Receive onchain
       const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
       if (address instanceof Error) throw address
       expect(address.substring(0, 4)).toBe("bcrt")
 
+      let expectedTxId: string | Error = ""
       expectedTxId = await sendToAddressAndConfirm({
         walletClient: bitcoindOutside,
         address,
         amount: sat2btc(amountSats),
       })
       if (expectedTxId instanceof Error) throw expectedTxId
+
+      const receivedEvents: BriaEvent[] = []
+      const nExpectedEvents = 2
+      let recording = false
+      const testEventHandler = (resolver) => {
+        return (event: BriaEvent): Promise<true | ApplicationError> => {
+          if (
+            event.payload.type === BriaPayloadType.UtxoDetected &&
+            event.payload.txId === expectedTxId
+          ) {
+            recording = true
+          }
+          if (recording) {
+            receivedEvents.push(event)
+            if (receivedEvents.length === nExpectedEvents) {
+              resolver(receivedEvents)
+            }
+          }
+          return Promise.resolve(true)
+        }
+      }
+
+      const timeout = 60000
+      let wrapper
+      const promise = new Promise(async (resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error(`Promise timed out after ${timeout} ms`))
+        }, timeout)
+        wrapper = await bria.subscribeToAll(testEventHandler(resolve))
+      })
 
       const res = await promise
       if (res instanceof Error) throw res
@@ -77,10 +84,10 @@ describe("BriaSubscriber", () => {
       }
       expect(receivedEvents[0].payload.txId).toEqual(expectedTxId)
 
-      listener.on("error", () => {
-        // supress error caused by cancel
+      wrapper.listener.on("error", (err) => {
+        // eat cancel
       })
-      listener.cancel()
+      wrapper.listener.cancel()
     })
 
     it("re-subscribes", async () => {
@@ -94,7 +101,7 @@ describe("BriaSubscriber", () => {
         return (event: BriaEvent): Promise<true | ApplicationError> => {
           receivedEvents.push(event)
           if (receivedEvents.length == 2) {
-            return Promise.reject(new UnknownRepositoryError())
+            return Promise.resolve(new UnknownRepositoryError())
           }
           if (receivedEvents.length === nExpectedEvents) {
             resolver(receivedEvents)
@@ -104,12 +111,12 @@ describe("BriaSubscriber", () => {
       }
 
       const timeout = 60000
-      let listener
-      const promise = new Promise((resolve, reject) => {
+      let wrapper
+      const promise = new Promise(async (resolve, reject) => {
         setTimeout(() => {
           reject(new Error(`Promise timed out after ${timeout} ms`))
         }, timeout)
-        listener = bria.subscribeToAll(testEventHandler(resolve))
+        wrapper = await bria.subscribeToAll(testEventHandler(resolve))
       })
 
       // Receive onchain
@@ -128,10 +135,10 @@ describe("BriaSubscriber", () => {
       if (res instanceof Error) throw res
       expect(receivedEvents[1]).toEqual(receivedEvents[2])
 
-      listener.on("error", () => {
-        // supress error caused by cancel
+      wrapper.listener.on("error", (err) => {
+        // eat cancel
       })
-      listener.cancel()
+      wrapper.listener.cancel()
     })
   })
 })
