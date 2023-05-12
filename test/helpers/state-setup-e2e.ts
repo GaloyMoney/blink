@@ -23,7 +23,6 @@ import {
   createMandatoryUsers,
   fundWalletIdFromOnchain,
   lnd1,
-  lnd2,
   lndOutside1,
   lndOutside2,
   mineAndConfirm,
@@ -57,11 +56,6 @@ export const defaultStateConfig = (): TestingStateConfig => ({
   },
   lndFunding: [lndOutside1, lndOutside2],
   channelOpens: [
-    {
-      lnd: lnd1,
-      lndPartner: lnd2,
-      socket: `lnd2:9735`,
-    },
     {
       lnd: lnd1,
       lndPartner: lndOutside1,
