@@ -10,71 +10,31 @@ export const briaEventHandler = async (
     //error - resubscribe
     return new Error("augmentation missing")
   }
-  let result: true | undefined = undefined
-  const addressInfo = event.augmentation.addressInfo
   switch (event.payload.type) {
-    case BriaPayloadType.UtxoDetected:
-      if (!addressInfo) {
-        // error resubscribe
-        return new Error("addressInfo missing")
-      }
-      return utxoDetectedEventHandler(event.payload, addressInfo)
+    case BriaPayloadType.UtxoDetected: {
+      return utxoDetectedEventHandler({ event: event.payload })
+    }
 
-    case BriaPayloadType.UtxoSettled:
-      if (!addressInfo) {
-        // error resubscribe
-        return new Error("addressInfo missing")
-      }
-      result = utxoSettledEventHandler({
+    case BriaPayloadType.UtxoSettled: {
+      return utxoSettledEventHandler({
         event: event.payload,
-        addressInfo,
       })
+    }
+    default:
+      return true
   }
-
-  if (result) {
-    // persist sequence
-  }
-
-  return true
 }
 
-const utxoDetectedEventHandler = async (
-  event: UtxoDetected,
-  addressInfo: AddressAugmentation,
-): Promise<true | ApplicationError> => {
-  const { seen, walletId } = addressInfo.metadata.galoy || {}
-  if (seen && !walletId) {
-    return true
-  }
-
-  const result = await Wallets.addPendingTransaction({
-    walletId: addressInfo.metadata.galoy?.walletId,
-    ...event,
-  })
-
-  return result instanceof Error ? result : true
-}
-
-const utxoSettledEventHandler = ({
+const utxoDetectedEventHandler = async ({
   event,
-  addressInfo,
 }: {
-  event: UtxoSettled
-  addressInfo: AddressAugmentation
-}) => {
-  const { seen, walletId } = addressInfo.metadata.galoy || {}
-  if (seen && !walletId) {
-    return true
-  }
+  event: UtxoDetected
+}): Promise<true | ApplicationError> => {
+  return Wallets.addPendingTransaction(event)
+}
 
-  // Check if transaction recorded as yet
-  const recorded = false
-  if (recorded) {
-    return
-  }
-
-  // Record ledger transaction
-  Wallets.addSettledTransaction(event)
+const utxoSettledEventHandler = ({ event }: { event: UtxoSettled }) => {
+  return Wallets.addSettledTransaction(event)
 }
 
 const listenerBria = () => {

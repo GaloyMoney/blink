@@ -31,7 +31,12 @@ export const addSettledTransaction = async ({
   vout,
   satoshis: amount,
   address,
-}: UtxoSettled) => {
+}: {
+  txId: OnChainTxHash
+  vout: number
+  satoshis: BtcPaymentAmount
+   address: OnChainAddress
+}): Promise<true | ApplicationError> => {
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 
@@ -154,5 +159,7 @@ export const addSettledTransaction = async ({
     if (newAddress instanceof Error) return newAddress
   }
   // Remove from pending
-  return PendingOnChainTransactionsRepository().remove({ txHash, vout })
+  const res = await PendingOnChainTransactionsRepository().remove({ txHash, vout })
+  if (res instanceof Error) return res
+  return true
 }

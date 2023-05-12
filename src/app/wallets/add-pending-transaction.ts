@@ -15,19 +15,19 @@ import { PendingOnChainTransactionsRepository } from "@services/mongoose/pending
 const dealer = DealerPriceService()
 
 export const addPendingTransaction = async ({
-  walletId,
   txId,
   vout,
   satoshis,
   address,
-}: { walletId?: WalletId } & UtxoDetected) => {
+}: {
+  txId: OnChainTxHash
+  vout: number
+  satoshis: BtcPaymentAmount
+  address: OnChainAddress
+}): Promise<true | ApplicationError> => {
   // Step 1: walletId from address
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
-  if (walletId && walletId !== wallet.id) {
-    // TODO: add Error
-    return new Error("")
-  }
 
   // Step 2: Calculate deposit fee?
   const account = await AccountsRepository().findById(wallet.accountId)
@@ -93,5 +93,7 @@ export const addPendingTransaction = async ({
     },
   }
 
-  return PendingOnChainTransactionsRepository().persistNew(pendingTransaction)
+  const res = await PendingOnChainTransactionsRepository().persistNew(pendingTransaction)
+  if (res instanceof Error) return res
+  return true
 }

@@ -89,9 +89,6 @@ const translate = (rawEvent): BriaEvent | BriaEventError => {
       addressInfo: {
         address: rawAugmentation.address_info.address as OnChainAddress,
         externalId: rawAugmentation.address_info.external_id,
-        metadata: unpackStruct(rawAugmentation.address_info.metadata) as {
-          galoy?: GaloyAddressMetadata
-        },
       },
     }
   }

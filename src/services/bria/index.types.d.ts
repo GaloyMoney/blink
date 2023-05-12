@@ -6,10 +6,6 @@ type BriaPayloadType =
 type AddressAugmentation = {
   address: OnChainAddress
   externalId: string
-
-  metadata: {
-    galoy?: GaloyAddressMetadata
-  }
 }
 
 interface UtxoSettledEvent extends OnChainEvent {
