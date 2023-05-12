@@ -20,7 +20,7 @@ import {
 } from "test/helpers"
 
 //this is the fixed opening and closing channel fee on devnet
-const channelFee = 7700
+const channelFee = 8237
 const lnds = [lnd1, lndOutside1, lndOutside1]
 let channelLengthMain: number, channelLengthOutside1: number
 
