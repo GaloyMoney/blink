@@ -6,6 +6,7 @@ import { WalletCurrency } from "@domain/shared/primitives"
 
 import { BriaEvent as ProtoBriaEvent } from "./proto/bria_pb"
 import { BriaProtoDescriptor } from "./grpc"
+import { SequenceRepo } from "./sequence"
 
 const briaUrl = process.env.BRIA_HOST ?? "localhost"
 const briaPort = process.env.BRIA_PORT ?? "2742"
@@ -25,17 +26,23 @@ export const BriaPayloadType = {
   PayoutSettled: "payout_settled",
 } as const
 
+const sequenceRepo = SequenceRepo()
+
 export const BriaSubscriber = () => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
 
   return {
-    subscribeToAll: (eventHandler: BriaEventHandler) => {
+    subscribeToAll: async (eventHandler: BriaEventHandler) => {
       const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
 
       let listener: ClientReadableStream<ProtoBriaEvent>
       try {
-        listener = subscribeAll({ augment: true }, metadata)
+        const lastSequence = await sequenceRepo.getSequence()
+        if (lastSequence instanceof Error) {
+          return lastSequence
+        }
+        listener = subscribeAll({ augment: true, after_sequence: lastSequence }, metadata)
       } catch (error) {
         return new UnknownOnChainServiceError(error.message || error)
       }

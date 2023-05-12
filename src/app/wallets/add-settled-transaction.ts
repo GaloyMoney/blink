@@ -35,7 +35,7 @@ export const addSettledTransaction = async ({
   txId: OnChainTxHash
   vout: number
   satoshis: BtcPaymentAmount
-   address: OnChainAddress
+  address: OnChainAddress
 }): Promise<true | ApplicationError> => {
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
