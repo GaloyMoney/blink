@@ -12,6 +12,8 @@ import { BriaEvent as ProtoBriaEvent } from "./proto/bria_pb"
 import { BriaProtoDescriptor } from "./grpc"
 import { SequenceRepo } from "./sequence"
 
+export { ListenerWrapper } from "./listener_wrapper"
+
 const briaUrl = process.env.BRIA_HOST ?? "localhost"
 const briaPort = process.env.BRIA_PORT ?? "2742"
 const fullUrl = `${briaUrl}:${briaPort}`
@@ -38,23 +40,28 @@ export const BriaSubscriber = () => {
 
   const subscribeToAll = async (
     eventHandler: BriaEventHandler,
-  ): Promise<ListenerWrapper<ProtoBriaEvent> | OnChainServiceError> => {
-    let listenerWrapper: ListenerWrapper<ProtoBriaEvent>
+  ): Promise<ListenerWrapper | OnChainServiceError> => {
     const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
 
+    let listenerWrapper: ListenerWrapper
     try {
       const lastSequence = await sequenceRepo.getSequence()
       if (lastSequence instanceof Error) {
         return lastSequence
       }
-      listenerWrapper = {
-        listener: subscribeAll({ augment: true, after_sequence: lastSequence }, metadata),
-      }
+      listenerWrapper = new ListenerWrapper(
+        subscribeAll({ augment: true, after_sequence: lastSequence }, metadata),
+        (error) => {
+          if (!error.message.includes("CANCELLED")) {
+            throw error
+          }
+        },
+      )
     } catch (error) {
       return new UnknownOnChainServiceError(error.message || error)
     }
 
-    listenerWrapper.listener.on("data", (rawEvent) => {
+    listenerWrapper._setDataHandler((rawEvent) => {
       asyncRunInSpan(
         "service.bria.eventReceived",
         {
@@ -75,12 +82,11 @@ export const BriaSubscriber = () => {
 
           if (result instanceof Error) {
             recordExceptionInCurrentSpan({ error: result })
-            listenerWrapper.listener.cancel()
             const resubscribe = await subscribeToAll(eventHandler)
             if (resubscribe instanceof Error) {
               throw resubscribe
             }
-            listenerWrapper.listener = resubscribe.listener
+            listenerWrapper._merge(resubscribe)
           }
 
           await sequenceRepo.updateSequence(sequence)

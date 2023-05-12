@@ -84,10 +84,7 @@ describe("BriaSubscriber", () => {
       }
       expect(receivedEvents[0].payload.txId).toEqual(expectedTxId)
 
-      wrapper.listener.on("error", (err) => {
-        // eat cancel
-      })
-      wrapper.listener.cancel()
+      wrapper.cancel()
     })
 
     it("re-subscribes", async () => {
@@ -144,10 +141,7 @@ describe("BriaSubscriber", () => {
       if (res instanceof Error) throw res
       expect(receivedEvents[1]).toEqual(receivedEvents[2])
 
-      wrapper.listener.on("error", (err) => {
-        // eat cancel
-      })
-      wrapper.listener.cancel()
+      wrapper.cancel()
     })
   })
 })

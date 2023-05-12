@@ -1,7 +1,4 @@
 type ClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
-type ListenerWrapper<T> = {
-  listener: ClientReadableStream<T>
-}
 
 type BriaPayloadType =
   typeof import("./index").BriaPayloadType[keyof typeof import("./index").BriaPayloadType]
