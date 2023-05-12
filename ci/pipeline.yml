@@ -64,6 +64,7 @@ groups:
     jobs:
       - sync-stablesats-proto
       - sync-price-history-proto
+      - sync-price-realtime-proto
       - sync-bria-api-proto
 
 jobs:
@@ -468,6 +469,50 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
+  - name: sync-price-realtime-proto
+    plan:
+      - in_parallel:
+          - get: repo
+          - get: pipeline-tasks
+          - get: price-realtime-proto
+            trigger: true
+      - task: sync-proto
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: repo
+            - name: pipeline-tasks
+            - name: price-realtime-proto
+              path: src-repo
+          outputs:
+            - name: repo
+          params:
+            PROTO_FILES_SRC_PATH: realtime/src/servers/protos
+            PROTO_FILES_DEST_PATH: src/services/price/protos
+            BRANCH: #@ data.values.git_branch
+            MODULE: price-realtime
+          run:
+            path: pipeline-tasks/ci/tasks/sync-proto.sh
+      - put: price-realtime-proto-bot-branch
+        params:
+          repository: repo
+          force: true
+      - task: open-bump-proto-pr
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          params:
+            BRANCH: #@ data.values.git_branch
+            BOT_BRANCH: #@ data.values.git_price_realtime_proto_bot_branch
+            GH_TOKEN: #@ data.values.github_token
+            MODULE: price-realtime
+          run:
+            path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
+
   - name: sync-bria-api-proto
     plan:
       - in_parallel:
@@ -541,6 +586,13 @@ resources:
     source:
       uri: #@ data.values.git_uri
       branch: #@ data.values.git_price_history_proto_bot_branch
+      private_key: #@ data.values.github_private_key
+
+  - name: price-realtime-proto-bot-branch
+    type: git
+    source:
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_price_realtime_proto_bot_branch
       private_key: #@ data.values.github_private_key
 
   - name: bria-api-proto-bot-branch
@@ -633,6 +685,14 @@ resources:
     type: git
     source:
       paths: ["history/src/servers/protos/*"]
+      uri: #@ data.values.git_price_uri
+      branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key
+
+  - name: price-realtime-proto
+    type: git
+    source:
+      paths: ["realtime/src/servers/protos/*"]
       uri: #@ data.values.git_price_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
