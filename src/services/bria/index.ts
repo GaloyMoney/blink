@@ -8,9 +8,9 @@ import { BRIA_PROFILE_API_KEY } from "@config"
 import { UnknownOnChainServiceError, OnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
-import { BriaEvent as ProtoBriaEvent } from "./proto/bria_pb"
 import { BriaProtoDescriptor } from "./grpc"
 import { SequenceRepo } from "./sequence"
+import { ListenerWrapper } from "./listener_wrapper"
 
 export { ListenerWrapper } from "./listener_wrapper"
 
@@ -51,7 +51,7 @@ export const BriaSubscriber = () => {
       }
       listenerWrapper = new ListenerWrapper(
         subscribeAll({ augment: true, after_sequence: lastSequence }, metadata),
-        (error) => {
+        (error: Error) => {
           if (!error.message.includes("CANCELLED")) {
             throw error
           }
@@ -68,7 +68,7 @@ export const BriaSubscriber = () => {
           attributes: {
             [SemanticAttributes.CODE_FUNCTION]: "eventReceived",
             [SemanticAttributes.CODE_NAMESPACE]: "services.bria",
-            rawEvent,
+            rawEvent: JSON.stringify(rawEvent),
           },
         },
         async () => {
@@ -92,12 +92,6 @@ export const BriaSubscriber = () => {
           await sequenceRepo.updateSequence(sequence)
         },
       )
-    })
-
-    listenerWrapper.listener.on("error", (error) => {
-      if (!error.message.includes("CANCELLED")) {
-        throw error
-      }
     })
 
     return listenerWrapper

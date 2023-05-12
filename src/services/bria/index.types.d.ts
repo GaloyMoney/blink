@@ -70,3 +70,5 @@ type BriaEvent = {
 }
 
 type BriaEventHandler = (event: BriaEvent) => Promise<true | ApplicationError>
+
+type BriaErrorHandler = (err: Error) => void

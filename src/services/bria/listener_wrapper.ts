@@ -2,9 +2,12 @@ import { BriaEvent as ProtoBriaEvent } from "./proto/bria_pb"
 
 export class ListenerWrapper {
   _listener: ClientReadableStream<ProtoBriaEvent>
-  _errorHandler: (err: Error) => void
+  _errorHandler: BriaErrorHandler
 
-  constructor(listener: ClientReadableStream<ProtoBriaEvent>, errorHandler) {
+  constructor(
+    listener: ClientReadableStream<ProtoBriaEvent>,
+    errorHandler: BriaErrorHandler,
+  ) {
     this._listener = listener
     this._errorHandler = errorHandler
     this.setErrorHandler(errorHandler)
@@ -14,7 +17,7 @@ export class ListenerWrapper {
     this._listener.cancel()
   }
 
-  setErrorHandler(errorHandler) {
+  setErrorHandler(errorHandler: BriaErrorHandler) {
     this._errorHandler = errorHandler
     this._listener.on("error", this._errorHandler)
   }
