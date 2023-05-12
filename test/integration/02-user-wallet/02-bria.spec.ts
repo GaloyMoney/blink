@@ -93,20 +93,41 @@ describe("BriaSubscriber", () => {
     it("re-subscribes", async () => {
       const amountSats = toSats(5_000)
 
-      let expectedTxId: string | Error = ""
+      // Receive onchain
+      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
+      if (address instanceof Error) throw address
+      expect(address.substring(0, 4)).toBe("bcrt")
 
+      const expectedTxId = await sendToAddressAndConfirm({
+        walletClient: bitcoindOutside,
+        address,
+        amount: sat2btc(amountSats),
+      })
+      if (expectedTxId instanceof Error) throw expectedTxId
+
+      let recording = false
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 3
       const testEventHandler = (resolver) => {
-        return (event: BriaEvent): Promise<true | ApplicationError> => {
-          receivedEvents.push(event)
+        return async (event: BriaEvent): Promise<true | ApplicationError> => {
+          if (
+            event.payload.type === BriaPayloadType.UtxoDetected &&
+            event.payload.txId === expectedTxId
+          ) {
+            recording = true
+          }
+
+          if (recording) {
+            receivedEvents.push(event)
+          }
+
           if (receivedEvents.length == 2) {
-            return Promise.resolve(new UnknownRepositoryError())
+            return new UnknownRepositoryError()
           }
           if (receivedEvents.length === nExpectedEvents) {
             resolver(receivedEvents)
           }
-          return Promise.resolve(true)
+          return true
         }
       }
 
@@ -118,18 +139,6 @@ describe("BriaSubscriber", () => {
         }, timeout)
         wrapper = await bria.subscribeToAll(testEventHandler(resolve))
       })
-
-      // Receive onchain
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
-      if (address instanceof Error) throw address
-      expect(address.substring(0, 4)).toBe("bcrt")
-
-      expectedTxId = await sendToAddressAndConfirm({
-        walletClient: bitcoindOutside,
-        address,
-        amount: sat2btc(amountSats),
-      })
-      if (expectedTxId instanceof Error) throw expectedTxId
 
       const res = await promise
       if (res instanceof Error) throw res

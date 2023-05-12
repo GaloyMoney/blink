@@ -167,18 +167,3 @@ const translate = (rawEvent): BriaEvent | BriaEventError => {
     sequence,
   }
 }
-
-const unpackStruct = (struct) => {
-  const jsonObj = {}
-
-  for (const key in struct.fields) {
-    const field = struct.fields[key]
-    if (field.kind === "structValue") {
-      jsonObj[key] = unpackStruct(field.structValue)
-    } else {
-      jsonObj[key] = field[field.kind]
-    }
-  }
-
-  return jsonObj
-}
