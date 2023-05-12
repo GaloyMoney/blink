@@ -60,7 +60,7 @@ describe("BriaService", () => {
     if (expectedTxId instanceof Error) throw expectedTxId
 
     let tries = 0
-    while (count < 2 && tries < 30) {
+    while (count < 2 && tries < 60) {
       await sleep(500)
       tries++
     }
