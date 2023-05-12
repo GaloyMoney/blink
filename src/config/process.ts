@@ -11,6 +11,13 @@ type TwilioConfig = {
 export const GALOY_API_PORT = process.env.GALOY_API_PORT || 4012
 export const GALOY_ADMIN_PORT = process.env.GALOY_ADMIN_PORT || 4001
 
+export const BRIA_PROFILE_API_KEY =
+  process.env.BRIA_PROFILE_API_KEY || "bria_dev_000000000000000000000"
+
+if (!BRIA_PROFILE_API_KEY) {
+  throw new ConfigError(`missing or invalid bria api key: ${BRIA_PROFILE_API_KEY}`)
+}
+
 const jwtSecret = process.env.JWT_SECRET
 if (!jwtSecret) {
   throw new ConfigError("missing JWT_SECRET")

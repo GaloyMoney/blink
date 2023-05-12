@@ -111,3 +111,17 @@ interface IOnChainService {
     targetConfirmations,
   }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError>
 }
+
+interface OnChainEvent {
+  payload: string
+  sequence: string
+  recorded_at: number
+}
+
+type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
+
+interface INewOnChainService {
+  subscribeToAll(
+    callback: OnChainEventHandler,
+  ): ClientReadableStream<OnChainEvent> | OnChainServiceError
+}
