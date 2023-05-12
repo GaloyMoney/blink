@@ -88,6 +88,12 @@ export const BriaSubscriber = () => {
       )
     })
 
+    listenerWrapper.listener.on("error", (error) => {
+      if (!error.message.includes("CANCELLED")) {
+        throw error
+      }
+    })
+
     return listenerWrapper
   }
 
