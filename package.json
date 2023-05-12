@@ -112,7 +112,7 @@
   },
   "devDependencies": {
     "@apollo/client": "^3.7.9",
-    "@babel/core": "^7.21.4",
+    "@babel/core": "^7.21.8",
     "@babel/preset-env": "^7.21.4",
     "@graphql-codegen/add": "^4.0.1",
     "@graphql-codegen/cli": "^3.3.1",
