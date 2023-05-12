@@ -163,3 +163,18 @@ type PaymentFlowStateRecordIndex = XOR<
   senderWalletId: string
   inputAmount: number
 }
+
+type WalletOnChainPendingReceiveRecord = {
+  walletId: string
+  address: string
+  transactionHash: string
+  amount: number
+  fee: number
+  currency: string
+  displayAmount: string
+  displayFee: string
+  displayPriceBase: string
+  displayPriceOffset: string
+  displayPriceCurrency: string
+  createdAt: Date
+}
