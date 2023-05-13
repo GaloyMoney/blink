@@ -432,11 +432,6 @@ export const loginWithDevice = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  // {
-  //   const limitOk = await checkFailedLoginAttemptPerDeviceLimits(device)
-  //   if (limitOk instanceof Error) return limitOk
-  // }
-
   // TODO:
   // add fibonachi on failed login
   // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
@@ -444,10 +439,9 @@ export const loginWithDevice = async ({
   const authService = AuthWithDeviceAccountService()
   const verifiedJwt = await authService.verifyJwt(jwt)
   if (verifiedJwt instanceof Error) return verifiedJwt
-  const deviceId = verifiedJwt.sub as DeviceToken
+  const deviceId = verifiedJwt.sub as DeviceId
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
-  // await rewardFailedLoginAttemptPerDeviceLimits(device)
 
   let kratosResult = await authService.loginDeviceAccount({ deviceId })
   // FIXME: this is a fuzzy error.
