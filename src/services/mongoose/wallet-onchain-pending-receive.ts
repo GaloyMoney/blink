@@ -9,15 +9,15 @@ import { WalletOnChainPendingReceive } from "./schema"
 
 export const WalletOnChainPendingReceiveRepository =
   (): IWalletOnChainPendingReceiveRepository => {
-    const listByWalletId = async ({
-      walletId,
+    const listByWalletIds = async ({
+      walletIds,
     }: ListWalletOnChainPendingReceiveArgs): Promise<
       WalletOnChainSettledTransaction[] | RepositoryError
     > => {
       try {
         const result: WalletOnChainPendingReceiveRecord[] =
           await WalletOnChainPendingReceive.find({
-            walletId,
+            walletId: { $in: walletIds },
           })
         if (!result || result.length === 0) {
           return new CouldNotFindWalletOnChainPendingReceiveError()
@@ -44,10 +44,15 @@ export const WalletOnChainPendingReceiveRepository =
 
     const remove = async ({
       walletId,
-      txHash,
+      transactionHash,
+      vout,
     }: RemoveWalletOnChainPendingReceiveArgs): Promise<true | RepositoryError> => {
       try {
-        const result = await WalletOnChainPendingReceive.deleteOne({ walletId, txHash })
+        const result = await WalletOnChainPendingReceive.deleteOne({
+          walletId,
+          transactionHash,
+          vout,
+        })
         if (result.deletedCount === 0) {
           return new CouldNotFindWalletOnChainPendingReceiveError()
         }
@@ -57,19 +62,19 @@ export const WalletOnChainPendingReceiveRepository =
       }
     }
 
-    return { listByWalletId, persistNew, remove }
+    return { listByWalletIds, persistNew, remove }
   }
 
 const translateToWalletOnChainTransaction = (
   result: WalletOnChainPendingReceiveRecord,
 ): WalletOnChainSettledTransaction => {
-  const walletCurrency = result.currency as WalletCurrency
+  const walletCurrency = result.walletCurrency as WalletCurrency
   const toCurrency = walletCurrency === WalletCurrency.Btc ? toSats : toCents
   return {
     id: result.transactionHash as OnChainTxHash,
     walletId: result.walletId as WalletId,
-    settlementAmount: toCurrency(result.amount),
-    settlementFee: toCurrency(result.fee),
+    settlementAmount: toCurrency(result.walletAmount),
+    settlementFee: toCurrency(result.walletFee),
     settlementCurrency: walletCurrency,
     settlementDisplayAmount: result.displayAmount as DisplayCurrencyMajorAmount,
     settlementDisplayFee: result.displayFee as DisplayCurrencyMajorAmount,
@@ -88,6 +93,7 @@ const translateToWalletOnChainTransaction = (
     settlementVia: {
       type: "onchain",
       transactionHash: result.transactionHash as OnChainTxHash,
+      vout: result.vout,
     },
     createdAt: new Date(result.createdAt),
   }
@@ -99,9 +105,10 @@ const translateToDbRecord = (
   walletId: tx.walletId || "",
   address: tx.initiationVia.address,
   transactionHash: tx.settlementVia.transactionHash,
-  amount: tx.settlementAmount,
-  fee: tx.settlementFee,
-  currency: tx.settlementCurrency,
+  vout: tx.settlementVia.vout || 0,
+  walletAmount: tx.settlementAmount,
+  walletFee: tx.settlementFee,
+  walletCurrency: tx.settlementCurrency,
   displayAmount: tx.settlementDisplayAmount,
   displayFee: tx.settlementDisplayFee,
   displayPriceBase: tx.settlementDisplayPrice.base.toString(),

@@ -168,9 +168,10 @@ type WalletOnChainPendingReceiveRecord = {
   walletId: string
   address: string
   transactionHash: string
-  amount: number
-  fee: number
-  currency: string
+  vout: number
+  walletAmount: number
+  walletFee: number
+  walletCurrency: string
   displayAmount: string
   displayFee: string
   displayPriceBase: string

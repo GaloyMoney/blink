@@ -21,6 +21,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
     settlementVia: {
       type: "onchain",
       transactionHash: "txHash1" as OnChainTxHash,
+      vout: 1,
     },
     settlementAmount: toSats(10000),
     settlementFee: toSats(2000),
@@ -45,7 +46,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       expect(result.id).toBeTruthy()
       expect(result.createdAt).toBeInstanceOf(Date)
 
-      const savedRecords = await repo.listByWalletId({ walletId })
+      const savedRecords = await repo.listByWalletIds({ walletIds: [walletId] })
       if (savedRecords instanceof Error) throw savedRecords
       expect(savedRecords.length).toBe(1)
       expect(savedRecords[0]).toMatchObject(newPendingIncomingTransaction)
@@ -63,7 +64,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
 
   describe("listByAddresses", () => {
     const walletId = "walletlListByAddresses1" as WalletId
-    it("should return a list of PendingIncomingOnChainTransactions for given addresses", async () => {
+    it("should return a list of PendingIncomingOnChainTransactions for given wallet", async () => {
       const newPendingIncomingTransaction1: PersistWalletOnChainPendingReceiveArgs = {
         ...newPendingIncomingTransaction,
         walletId,
@@ -78,6 +79,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
         settlementVia: {
           type: "onchain",
           transactionHash: "txHash2" as OnChainTxHash,
+          vout: 2,
         },
         createdAt: new Date(Date.now()),
       }
@@ -87,7 +89,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       const result2 = await repo.persistNew(newPendingIncomingTransaction2)
       if (result2 instanceof Error) throw result2
 
-      const results = await repo.listByWalletId({ walletId })
+      const results = await repo.listByWalletIds({ walletIds: [walletId] })
       if (results instanceof Error) throw results
 
       expect(results.length).toBe(2)
@@ -99,9 +101,9 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       )
     })
 
-    it("should return CouldNotFindWalletOnChainPendingReceiveError when not found for the given addresses", async () => {
-      const results = await repo.listByWalletId({
-        walletId: "walletWithoutTxs" as WalletId,
+    it("should return CouldNotFindWalletOnChainPendingReceiveError when not found for the given wallet", async () => {
+      const results = await repo.listByWalletIds({
+        walletIds: ["walletWithoutTxs" as WalletId],
       })
       expect(results).toBeInstanceOf(CouldNotFindWalletOnChainPendingReceiveError)
     })
@@ -119,20 +121,22 @@ describe("WalletOnChainPendingReceiveRepository", () => {
 
       const removeResult = await repo.remove({
         walletId,
-        txHash: result.settlementVia.transactionHash,
+        transactionHash: result.settlementVia.transactionHash,
+        vout: 1,
       })
       if (removeResult instanceof Error) throw removeResult
 
       expect(removeResult).toBe(true)
 
-      const listResult = await repo.listByWalletId({ walletId })
+      const listResult = await repo.listByWalletIds({ walletIds: [walletId] })
       expect(listResult).toBeInstanceOf(CouldNotFindWalletOnChainPendingReceiveError)
     })
 
     it("should return CouldNotFindWalletOnChainPendingReceiveError if the transaction to be removed is not found", async () => {
       const result = await repo.remove({
         walletId,
-        txHash: "nonexistent_txHash" as OnChainTxHash,
+        transactionHash: "nonexistent_txHash" as OnChainTxHash,
+        vout: 1,
       })
 
       expect(result).toBeInstanceOf(CouldNotFindWalletOnChainPendingReceiveError)
@@ -153,7 +157,8 @@ describe("WalletOnChainPendingReceiveRepository", () => {
 
       const removeResult = await repo.remove({
         walletId,
-        txHash: result.settlementVia.transactionHash,
+        transactionHash: result.settlementVia.transactionHash,
+        vout: 1,
       })
       expect(removeResult).toBeInstanceOf(UnknownRepositoryError)
     })

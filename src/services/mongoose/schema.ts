@@ -393,9 +393,10 @@ const WalletOnChainPendingReceiveSchema = new Schema<WalletOnChainPendingReceive
     walletId: { type: String, required: true },
     address: { type: String, required: true },
     transactionHash: { type: String, required: true },
-    amount: { type: Number, required: true },
-    fee: { type: Number, required: true },
-    currency: { type: String, required: true },
+    vout: { type: Number, required: true },
+    walletAmount: { type: Number, required: true },
+    walletFee: { type: Number, required: true },
+    walletCurrency: { type: String, required: true },
 
     displayAmount: { type: String, required: true },
     displayFee: { type: String, required: true },

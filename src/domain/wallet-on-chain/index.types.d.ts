@@ -17,7 +17,7 @@ interface IWalletOnChainAddressesRepository {
 }
 
 type ListWalletOnChainPendingReceiveArgs = {
-  walletId: WalletId
+  walletIds: WalletId[]
 }
 
 type PersistWalletOnChainPendingReceiveArgs = Omit<
@@ -27,11 +27,12 @@ type PersistWalletOnChainPendingReceiveArgs = Omit<
 
 type RemoveWalletOnChainPendingReceiveArgs = {
   walletId: WalletId
-  txHash: OnChainTxHash
+  transactionHash: OnChainTxHash
+  vout: number
 }
 
 interface IWalletOnChainPendingReceiveRepository {
-  listByWalletId(
+  listByWalletIds(
     args: ListWalletOnChainPendingReceiveArgs,
   ): Promise<WalletOnChainSettledTransaction[] | RepositoryError>
   persistNew(
