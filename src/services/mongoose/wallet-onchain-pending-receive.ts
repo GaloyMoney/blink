@@ -100,17 +100,17 @@ const translateToWalletOnChainTransaction = (
 }
 
 const translateToDbRecord = (
-  tx: PersistWalletOnChainPendingReceiveArgs,
+  tx: WalletOnChainPendingTransaction,
 ): WalletOnChainPendingReceiveRecord => ({
   walletId: tx.walletId || "",
   address: tx.initiationVia.address,
   transactionHash: tx.settlementVia.transactionHash,
   vout: tx.settlementVia.vout || 0,
-  walletAmount: tx.settlementAmount,
-  walletFee: tx.settlementFee,
+  walletAmount: Number(tx.settlementAmount.amount),
+  walletFee: Number(tx.settlementFee.amount),
   walletCurrency: tx.settlementCurrency,
-  displayAmount: tx.settlementDisplayAmount,
-  displayFee: tx.settlementDisplayFee,
+  displayAmount: tx.settlementDisplayAmount.displayInMajor,
+  displayFee: tx.settlementDisplayFee.displayInMajor,
   displayPriceBase: tx.settlementDisplayPrice.base.toString(),
   displayPriceOffset: tx.settlementDisplayPrice.offset.toString(),
   displayPriceCurrency: tx.settlementDisplayPrice.displayCurrency,

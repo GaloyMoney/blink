@@ -1,4 +1,3 @@
-import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import {
@@ -23,11 +22,19 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       transactionHash: "txHash1" as OnChainTxHash,
       vout: 1 as OnChainTxVout,
     },
-    settlementAmount: toSats(10000),
-    settlementFee: toSats(2000),
+    settlementAmount: { amount: 10000n, currency: WalletCurrency.Btc },
+    settlementFee: { amount: 2000n, currency: WalletCurrency.Btc },
     settlementCurrency: WalletCurrency.Btc,
-    settlementDisplayAmount: "1.00",
-    settlementDisplayFee: "0.02",
+    settlementDisplayAmount: {
+      amountInMinor: 100n,
+      currency: DisplayCurrency.Usd,
+      displayInMajor: "1.00",
+    },
+    settlementDisplayFee: {
+      amountInMinor: 2n,
+      currency: DisplayCurrency.Usd,
+      displayInMajor: "0.02",
+    },
     settlementDisplayPrice: {
       base: 27454545454n,
       offset: 12n,

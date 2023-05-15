@@ -47,8 +47,21 @@ type SettlementViaOnChain = {
   vout?: OnChainTxVout
 }
 
+type PartialBaseWalletTransaction = {
+  readonly walletId: WalletId | undefined
+  readonly settlementAmount: PaymentAmount<WalletCurrency>
+  readonly settlementFee: PaymentAmount<WalletCurrency>
+  readonly settlementCurrency: WalletCurrency
+  readonly settlementDisplayAmount: DisplayAmount<DisplayCurrency>
+  readonly settlementDisplayFee: DisplayAmount<DisplayCurrency>
+  readonly settlementDisplayPrice: WalletMinorUnitDisplayPrice<
+    WalletCurrency,
+    DisplayCurrency
+  >
+  readonly createdAt: Date
+}
+
 type BaseWalletTransaction = {
-  readonly id: LedgerTransactionId | OnChainTxHash
   readonly walletId: WalletId | undefined
   readonly settlementAmount: Satoshis | UsdCents
   readonly settlementFee: Satoshis | UsdCents
@@ -59,9 +72,11 @@ type BaseWalletTransaction = {
     WalletCurrency,
     DisplayCurrency
   >
+  readonly createdAt: Date
+
+  readonly id: LedgerTransactionId | OnChainTxHash
   readonly status: TxStatus
   readonly memo: string | null
-  readonly createdAt: Date
 }
 
 type IntraLedgerTransaction = BaseWalletTransaction & {
@@ -72,6 +87,11 @@ type IntraLedgerTransaction = BaseWalletTransaction & {
 type WalletOnChainIntraledgerTransaction = BaseWalletTransaction & {
   readonly initiationVia: InitiationViaOnChain
   readonly settlementVia: SettlementViaIntraledger
+}
+
+type WalletOnChainPendingTransaction = PartialBaseWalletTransaction & {
+  readonly initiationVia: InitiationViaOnChain
+  readonly settlementVia: SettlementViaOnChain
 }
 
 type WalletOnChainSettledTransaction = BaseWalletTransaction & {
@@ -172,9 +192,21 @@ type onChainDepositFeeArgs = {
   ratio: DepositFeeRatio
 }
 
+type newOnChainDepositFeeArgs = {
+  amount: BtcPaymentAmount
+  ratio: DepositFeeRatio
+}
+
 type DepositFeeCalculator = {
   onChainDepositFee({ amount, ratio }: onChainDepositFeeArgs): Satoshis
   lnDepositFee(): Satoshis
+}
+
+type NewDepositFeeCalculator = {
+  onChainDepositFee({
+    amount,
+    ratio,
+  }: newOnChainDepositFeeArgs): BtcPaymentAmount | ValidationError
 }
 
 type OnchainWithdrawalConfig = {

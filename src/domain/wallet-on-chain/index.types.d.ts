@@ -20,10 +20,7 @@ type ListWalletOnChainPendingReceiveArgs = {
   walletIds: WalletId[]
 }
 
-type PersistWalletOnChainPendingReceiveArgs = Omit<
-  WalletOnChainSettledTransaction,
-  "id" | "status" | "memo"
->
+type PersistWalletOnChainPendingReceiveArgs = WalletOnChainPendingTransaction
 
 type RemoveWalletOnChainPendingReceiveArgs = {
   walletId: WalletId
