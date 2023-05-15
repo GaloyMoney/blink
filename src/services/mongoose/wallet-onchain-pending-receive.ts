@@ -4,20 +4,49 @@ import { TxStatus } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
 
-import { parseRepositoryError } from "./utils"
 import { WalletOnChainPendingReceive } from "./schema"
+import { parseRepositoryError } from "./utils"
 
 export const WalletOnChainPendingReceiveRepository =
   (): IWalletOnChainPendingReceiveRepository => {
     const listByWalletIds = async ({
       walletIds,
+      paginationArgs,
     }: ListWalletOnChainPendingReceiveArgs): Promise<
       WalletOnChainSettledTransaction[] | RepositoryError
     > => {
+      // TODO: implement pagination
+      !!paginationArgs
+
       try {
         const result: WalletOnChainPendingReceiveRecord[] =
           await WalletOnChainPendingReceive.find({
             walletId: { $in: walletIds },
+          })
+        if (!result || result.length === 0) {
+          return new CouldNotFindWalletOnChainPendingReceiveError()
+        }
+        return result.map(translateToWalletOnChainTransaction)
+      } catch (err) {
+        return parseRepositoryError(err)
+      }
+    }
+
+    const listByWalletIdsAndAddresses = async ({
+      walletIds,
+      addresses,
+      paginationArgs,
+    }: ListWalletOnChainPendingReceiveByAddressesArgs): Promise<
+      WalletOnChainSettledTransaction[] | RepositoryError
+    > => {
+      // TODO: implement pagination
+      !!paginationArgs
+
+      try {
+        const result: WalletOnChainPendingReceiveRecord[] =
+          await WalletOnChainPendingReceive.find({
+            walletId: { $in: walletIds },
+            address: { $in: addresses },
           })
         if (!result || result.length === 0) {
           return new CouldNotFindWalletOnChainPendingReceiveError()
@@ -62,7 +91,7 @@ export const WalletOnChainPendingReceiveRepository =
       }
     }
 
-    return { listByWalletIds, persistNew, remove }
+    return { listByWalletIds, listByWalletIdsAndAddresses, persistNew, remove }
   }
 
 const translateToWalletOnChainTransaction = (

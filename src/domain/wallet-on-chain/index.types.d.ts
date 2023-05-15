@@ -18,6 +18,13 @@ interface IWalletOnChainAddressesRepository {
 
 type ListWalletOnChainPendingReceiveArgs = {
   walletIds: WalletId[]
+  paginationArgs?: PaginationArgs
+}
+
+type ListWalletOnChainPendingReceiveByAddressesArgs = {
+  walletIds: WalletId[]
+  addresses: OnChainAddress[]
+  paginationArgs?: PaginationArgs
 }
 
 type PersistWalletOnChainPendingReceiveArgs = WalletOnChainPendingTransaction
@@ -31,6 +38,9 @@ type RemoveWalletOnChainPendingReceiveArgs = {
 interface IWalletOnChainPendingReceiveRepository {
   listByWalletIds(
     args: ListWalletOnChainPendingReceiveArgs,
+  ): Promise<WalletOnChainSettledTransaction[] | RepositoryError>
+  listByWalletIdsAndAddresses(
+    args: ListWalletOnChainPendingReceiveByAddressesArgs,
   ): Promise<WalletOnChainSettledTransaction[] | RepositoryError>
   persistNew(
     args: PersistWalletOnChainPendingReceiveArgs,

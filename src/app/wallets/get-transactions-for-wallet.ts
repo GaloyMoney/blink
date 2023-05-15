@@ -7,10 +7,14 @@ import { LedgerError } from "@domain/ledger"
 import { DisplayCurrency } from "@domain/fiat"
 import { TxFilter } from "@domain/bitcoin/onchain"
 import { WalletTransactionHistory } from "@domain/wallets"
+import { CouldNotFindError } from "@domain/errors"
 
 import { baseLogger } from "@services/logger"
 import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
-import { AccountsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletOnChainPendingReceiveRepository,
+} from "@services/mongoose"
 
 import { WalletCurrency } from "@domain/shared"
 
@@ -105,5 +109,50 @@ export const getTransactionsForWallets = async ({
       walletDetailsByWalletId,
     }).transactions,
     total: resp.total,
+  })
+}
+
+export const newGetTransactionsForWallets = async ({
+  wallets,
+  paginationArgs,
+}: {
+  wallets: Wallet[]
+  paginationArgs?: PaginationArgs
+}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+  const walletIds = wallets.map((wallet) => wallet.id)
+
+  let pendingHistory = await WalletOnChainPendingReceiveRepository().listByWalletIds({
+    walletIds,
+  })
+  if (pendingHistory instanceof Error) {
+    if (pendingHistory instanceof CouldNotFindError) {
+      pendingHistory = []
+    } else {
+      return PartialResult.err(pendingHistory)
+    }
+  }
+
+  const confirmedLedgerTxns = await LedgerService().getTransactionsByWalletIds({
+    walletIds,
+    paginationArgs,
+  })
+
+  if (confirmedLedgerTxns instanceof LedgerError) {
+    return PartialResult.partial(
+      { slice: pendingHistory, total: pendingHistory.length },
+      confirmedLedgerTxns,
+    )
+  }
+
+  const confirmedHistory = WalletTransactionHistory.fromLedger({
+    ledgerTransactions: confirmedLedgerTxns.slice,
+    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+  })
+
+  const transactions = [...pendingHistory, ...confirmedHistory.transactions]
+
+  return PartialResult.ok({
+    slice: transactions,
+    total: transactions.length,
   })
 }
