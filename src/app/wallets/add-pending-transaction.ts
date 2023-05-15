@@ -27,11 +27,9 @@ export const addPendingTransaction = async ({
   satoshis: BtcPaymentAmount
   address: OnChainAddress
 }): Promise<true | ApplicationError> => {
-  // Step 1: walletId from address
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 
-  // Step 2: Calculate deposit fee?
   const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
 
@@ -41,9 +39,6 @@ export const addPendingTransaction = async ({
   })
   if (satsFee instanceof Error) return satsFee
 
-  // Step 3: Calculate display amounts
-  //         (should this be done on the fly instead, since
-  //          it'll likely change?)
   const walletAddressReceiver = await WalletAddressReceiver({
     walletAddress: {
       address,
@@ -65,7 +60,6 @@ export const addPendingTransaction = async ({
     return displayPriceRatio
   }
 
-  // Step 4
   const pendingTransaction: WalletOnChainPendingTransaction = {
     walletId: wallet.id,
     settlementAmount,
@@ -93,5 +87,6 @@ export const addPendingTransaction = async ({
 
   const res = await WalletOnChainPendingReceiveRepository().persistNew(pendingTransaction)
   if (res instanceof Error) return res
+
   return true
 }
