@@ -88,7 +88,12 @@ export const getLightningAddressDomainAliases = (): string[] =>
   yamlConfig.lightningAddressDomainAliases
 export const getLocale = (): UserLanguage => yamlConfig.locale as UserLanguage
 
-export const getPubkeysToSkipProbe = (): Pubkey[] => yamlConfig.skipFeeProbe
+export const getValuesToSkipProbe = (): SkipFeeProbeConfig => {
+  return {
+    pubkey: (yamlConfig.skipFeeProbeConfig.pubkey || []) as Pubkey[],
+    chanId: (yamlConfig.skipFeeProbeConfig.chanId || []) as ChanId[],
+  }
+}
 
 const i18n = new I18n()
 i18n.configure({

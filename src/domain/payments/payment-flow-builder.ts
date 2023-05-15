@@ -3,7 +3,12 @@ import { SelfPaymentError } from "@domain/errors"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { generateIntraLedgerHash } from "@domain/payments/get-intraledger-hash"
-import { parseFinalHopsFromInvoice } from "@domain/bitcoin/lightning"
+import {
+  parseFinalChanIdFromInvoice,
+  parseFinalHopsFromInvoice,
+} from "@domain/bitcoin/lightning"
+
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { ModifiedSet } from "@utils"
 
@@ -46,9 +51,22 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
 
   const skipProbeFromInvoice = (invoice: LnInvoice): boolean => {
     const invoicePubkeySet = new ModifiedSet(parseFinalHopsFromInvoice(invoice))
-    const flaggedPubkeySet = new ModifiedSet(config.flaggedPubkeys)
+    const flaggedPubkeySet = new ModifiedSet(config.skipProbe.pubkey)
+    const pubkeyIsFlagged = invoicePubkeySet.intersect(flaggedPubkeySet).size > 0
 
-    return invoicePubkeySet.intersect(flaggedPubkeySet).size > 0
+    const invoiceChanIdSet = new ModifiedSet(parseFinalChanIdFromInvoice(invoice))
+    const flaggedChanIdSet = new ModifiedSet(config.skipProbe.chanId)
+    const chanIdIsFlagged = invoiceChanIdSet.intersect(flaggedChanIdSet).size > 0
+
+    addAttributesToCurrentSpan({
+      pubkeyIsFlagged: `${pubkeyIsFlagged}`,
+      pubkeysFromInvoice: `${Array.from(invoicePubkeySet)}`,
+
+      chanIdIsFlagged: `${chanIdIsFlagged}`,
+      chanIdsFromInvoice: `${Array.from(invoiceChanIdSet)}`,
+    })
+
+    return pubkeyIsFlagged || chanIdIsFlagged
   }
 
   const withInvoice = (invoice: LnInvoice): LPFBWithInvoice<S> | LPFBWithError => {

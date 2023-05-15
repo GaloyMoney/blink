@@ -1,4 +1,4 @@
-import { getPubkeysToSkipProbe } from "@config"
+import { getValuesToSkipProbe } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -70,7 +70,7 @@ const intraledgerPaymentSendWalletId = async ({
 
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
-    flaggedPubkeys: getPubkeysToSkipProbe(),
+    skipProbe: getValuesToSkipProbe(),
   })
   const builderWithInvoice = paymentBuilder.withoutInvoice({
     uncheckedAmount,

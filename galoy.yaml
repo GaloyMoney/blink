@@ -194,5 +194,6 @@ oathkeeperConfig:
   decisionsApi: http://127.0.0.1:4456/decisions/
 captcha:
   mandatory: false
-skipFeeProbe:
-  - 038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6
+skipFeeProbeConfig:
+  pubkey: []
+  chanId: []

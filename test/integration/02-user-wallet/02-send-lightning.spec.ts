@@ -113,6 +113,10 @@ jest.mock("@config", () => {
       withdrawalLimit: 100_000 as UsdCents,
       tradeIntraAccountLimit: 100_000 as UsdCents,
     }),
+    getValuesToSkipProbe: jest.fn().mockReturnValue({
+      pubkey: ["038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6"],
+      chanId: ["1x0x0"],
+    }),
   }
 })
 
@@ -982,23 +986,59 @@ describe("UserWallet - Lightning Pay", () => {
     expect(fee).toStrictEqual({ amount: 0n, currency: WalletCurrency.Btc })
 
     // Test that flagged destination skips feeProbe lightning service method
-    const muunRequest =
+    const skippedPubkeyRequest =
       "lnbc10u1p3w0mf7pp5v9xg3eksnsyrsa3vk5uv00rvye4wf9n0744xgtx0kcrafeanvx7sdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhddrwgrqy63w5eyqqqqryqqqqthqqpyrzjqw8c7yfutqqy3kz8662fxutjvef7q2ujsxtt45csu0k688lkzu3lddrwgrqy63w5eyqqqqryqqqqthqqpysp53n0sc9hvqgdkrv4ppwrm2pa0gcysa8r2swjkrkjnxkcyrsjmxu4s9qypqsq5zvh7glzpas4l9ptxkdhgefyffkn8humq6amkrhrh2gq02gv8emxrynkwke3uwgf4cfevek89g4020lgldxgusmse79h4caqg30qq2cqmyrc7d" as EncodedPaymentRequest
-    const muunInvoice = decodeInvoice(muunRequest)
-    if (muunInvoice instanceof Error) throw muunInvoice
-    if (!muunInvoice.paymentAmount) throw new Error("No-amount Invoice")
-    expect(muunInvoice.paymentAmount.amount).toEqual(BigInt(sats))
+    const skippedPubkeyInvoice = decodeInvoice(skippedPubkeyRequest)
+    if (skippedPubkeyInvoice instanceof Error) throw skippedPubkeyInvoice
+    if (!skippedPubkeyInvoice.paymentAmount) throw new Error("No-amount Invoice")
+    expect(skippedPubkeyInvoice.paymentAmount.amount).toEqual(BigInt(sats))
 
     feeProbeCallsBefore = feeProbeCallCount()
-    const { result: feeMuun, error: errorMuun } =
+    const { result: feeSkippedPubkey, error: errorSkippedPubkey } =
       await Payments.getLightningFeeEstimationForBtcWallet({
         walletId: walletIdH,
-        uncheckedPaymentRequest: muunRequest,
+        uncheckedPaymentRequest: skippedPubkeyRequest,
       })
     expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore)
-    expect(errorMuun).toBeUndefined()
-    expect(feeMuun).toStrictEqual(
-      LnFees().maxProtocolAndBankFee(muunInvoice.paymentAmount),
+    expect(errorSkippedPubkey).toBeUndefined()
+    expect(feeSkippedPubkey).toStrictEqual(
+      LnFees().maxProtocolAndBankFee(skippedPubkeyInvoice.paymentAmount),
+    )
+  })
+
+  it("skips fee probe for flagged chanIds", async () => {
+    const sats = toSats(100_000)
+    const feeProbeCallCount = () => lndServiceCallCount.findRouteForInvoice
+
+    // Test that non-flagged destination calls feeProbe lightning service method
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: sats })
+    let feeProbeCallsBefore = feeProbeCallCount()
+    const { result: fee, error } = await Payments.getLightningFeeEstimationForBtcWallet({
+      walletId: walletIdH,
+      uncheckedPaymentRequest: request,
+    })
+    expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore + 1)
+    expect(error).not.toBeInstanceOf(Error)
+    expect(fee).toStrictEqual({ amount: 0n, currency: WalletCurrency.Btc })
+
+    // Test that flagged destination skips feeProbe lightning service method
+    const skippedChanIdRequest =
+      "lnbc1m1pjz2963pp5eeed387k90rxz9ggkarh3qzf42tw5epay0v3adv79aldgjf2a0nqdqqcqzpgxqrrssrzjqvgptfurj3528snx6e3dtwepafxw5fpzdymw9pj20jj09sunnqmwqqqqqyqqqqqqqqqqqqlgqqqqqqgqjqnp4qdruvn0zq9wqqhtryvch753zm6hqq4kyt48dsstkemjjc3njvggnqsp5s4pla42w34ekurw8ywfwjpwcakz5h3ynn8hx5znfckda8udmn5sq9qyyssq4sll8vh2n6kds0ht7l942jqa33nrrrhd9fhfdrdfec6mwtms05ppdrnztn2zg87cm4q7lye39f0gmt9tpjwy26hafrkqza4esjmctuqpxchx3a" as EncodedPaymentRequest
+    const skippedChanIdInvoice = decodeInvoice(skippedChanIdRequest)
+    if (skippedChanIdInvoice instanceof Error) throw skippedChanIdInvoice
+    if (!skippedChanIdInvoice.paymentAmount) throw new Error("No-amount Invoice")
+    expect(skippedChanIdInvoice.paymentAmount.amount).toEqual(BigInt(sats))
+
+    feeProbeCallsBefore = feeProbeCallCount()
+    const { result: feeSkippedChanId, error: errorSkippedChanId } =
+      await Payments.getLightningFeeEstimationForBtcWallet({
+        walletId: walletIdH,
+        uncheckedPaymentRequest: skippedChanIdRequest,
+      })
+    expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore)
+    expect(errorSkippedChanId).toBeUndefined()
+    expect(feeSkippedChanId).toStrictEqual(
+      LnFees().maxProtocolAndBankFee(skippedChanIdInvoice.paymentAmount),
     )
   })
 

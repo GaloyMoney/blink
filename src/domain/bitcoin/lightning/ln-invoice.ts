@@ -41,7 +41,7 @@ export const decodeInvoice = (
     routeHints = invoicesRoutes.map((rawRoute) =>
       rawRoute.map((route) => ({
         baseFeeMTokens: route.base_fee_mtokens,
-        channel: route.channel,
+        channel: route.channel as ChanId,
         cltvDelta: route.cltv_delta,
         feeRate: route.fee_rate,
         nodePubkey: route.public_key as Pubkey,
