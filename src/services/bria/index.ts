@@ -179,8 +179,8 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         return new BriaEventError("payout_submitted is not initialized.")
       }
       payload = {
-        id,
         type: BriaPayloadType.PayoutSubmitted,
+        id: rawPayload.getId(),
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
@@ -193,8 +193,8 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         return new BriaEventError("payout_submitted is not initialized.")
       }
       payload = {
-        id,
         type: BriaPayloadType.PayoutCommitted,
+        id: rawPayload.getId(),
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
@@ -207,8 +207,8 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         return new BriaEventError("payout_submitted is not initialized.")
       }
       payload = {
-        id,
         type: BriaPayloadType.PayoutBroadcast,
+        id: rawPayload.getId(),
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
@@ -221,8 +221,8 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         return new BriaEventError("payout_submitted is not initialized.")
       }
       payload = {
-        id,
         type: BriaPayloadType.PayoutSettled,
+        id: rawPayload.getId(),
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
