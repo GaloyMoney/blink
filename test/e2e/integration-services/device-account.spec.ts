@@ -5,7 +5,6 @@ import { gql } from "apollo-server-core"
 import { UserLoginDeviceMutation, UserLoginDeviceDocument } from "../generated"
 
 import {
-  bitcoindClient,
   clearAccountLocks,
   clearLimiters,
   createApolloClient,
@@ -30,7 +29,6 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await bitcoindClient.unloadWallet({ walletName: "outside" })
   await killServer(serverPid)
 })
 
