@@ -33,7 +33,7 @@ export const addSettledTransaction = async ({
   address,
 }: {
   txId: OnChainTxHash
-  vout: number
+  vout: OnChainTxVout
   satoshis: BtcPaymentAmount
   address: OnChainAddress
 }): Promise<true | ApplicationError> => {
@@ -99,7 +99,7 @@ export const addSettledTransaction = async ({
     internalAccountsAdditionalMetadata,
   } = LedgerFacade.OnChainReceiveLedgerMetadata({
     onChainTxHash: txHash,
-    vout,
+    onChainTxVout: vout,
     paymentAmounts: {
       btcPaymentAmount: walletAddressReceiver.btcToCreditReceiver,
       usdPaymentAmount: walletAddressReceiver.usdToCreditReceiver,

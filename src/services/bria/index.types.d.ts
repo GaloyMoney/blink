@@ -28,14 +28,14 @@ type BriaEventAugmentation = {
 type UtxoDetected = {
   type: "utxo_detected"
   txId: OnChainTxHash
-  vout: number
+  vout: OnChainTxVout
   satoshis: BtcPaymentAmount
   address: OnChainAddress
 }
 type UtxoSettled = {
   type: "utxo_settled"
   txId: OnChainTxHash
-  vout: number
+  vout: OnChainTxVout
   satoshis: BtcPaymentAmount
   address: OnChainAddress
   blockNumber: number
