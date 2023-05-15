@@ -136,7 +136,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
   }
 
   let payload: BriaPayload | undefined
-  let id, rawPayload
+  let rawPayload
   switch (rawEvent.getPayloadCase()) {
     case RawBriaEvent.PayloadCase.PAYLOAD_NOT_SET:
       return new BriaEventError("payload is not set.")

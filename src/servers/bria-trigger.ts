@@ -37,6 +37,7 @@ const utxoSettledEventHandler = ({ event }: { event: UtxoSettled }) => {
   return Wallets.addSettledTransaction(event)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const listenerBria = () => {
   const subBria = BriaSubscriber().subscribeToAll(briaEventHandler)
   if (subBria instanceof Error) throw subBria
