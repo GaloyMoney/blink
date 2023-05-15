@@ -731,6 +731,21 @@ export const configSchema = {
       items: { type: "string" },
       default: [],
     },
+    appcheckConfig: {
+      type: "object",
+      properties: {
+        audience: { type: "string" },
+        issuer: { type: "string" },
+        jwksUri: { type: "string" },
+      },
+      required: ["audience", "issuer", "jwksUri"],
+      additionalProperties: false,
+      default: {
+        audience: process.env.APPCHECK_AUDIENCE,
+        issuer: process.env.APPCHECK_ISSUER,
+        jwksUri: process.env.APPCHECK_JWKSURI,
+      },
+    },
   },
   required: [
     "name",
