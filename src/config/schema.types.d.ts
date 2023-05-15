@@ -160,4 +160,9 @@ type YamlSchema = {
   skipFeeProbeConfig: { pubkey: string[]; chanId: string[] }
   smsAuthUnsupportedCountries: string[]
   whatsAppAuthUnsupportedCountries: string[]
+  appcheckConfig: {
+    audience: string
+    issuer: string
+    jwksUri: string
+  }
 }

@@ -1,5 +1,3 @@
-import path from "path"
-
 import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
@@ -7,7 +5,13 @@ import {
 import { CreateIdentityBody, Identity, UpdateIdentityBody } from "@ory/client"
 import * as jose from "node-jose"
 
-import { getDefaultAccountsConfig, getKratosPasswords, isDev } from "@config"
+import {
+  getAppCheckConfig,
+  getDefaultAccountsConfig,
+  getJwksArgs,
+  getKratosPasswords,
+  isDev,
+} from "@config"
 
 import jwksRsa from "jwks-rsa"
 import jsonwebtoken from "jsonwebtoken"
@@ -177,13 +181,12 @@ export const AuthWithDeviceAccountService = () => {
   }
 
   const verifyJwt = async (token: string) => {
-    // TODO Read from config
-    const audience = "projects/72279297366"
-    const issuer = "https://firebaseappcheck.googleapis.com/72279297366"
-    const jwksUri = "https://firebaseappcheck.googleapis.com/v1beta/jwks"
+    const audience = getAppCheckConfig().audience
+    const issuer = getAppCheckConfig().issuer
+    const jwksUri = getAppCheckConfig().jwksUri
 
     // Get the JSON web keys (JWKS)
-    const client = await jwksRsa({
+    let client = await jwksRsa({
       jwksUri,
     })
     let jwkJson
@@ -200,10 +203,11 @@ export const AuthWithDeviceAccountService = () => {
 
     // if in dev environment, use local jwks.json if you dont have access to firebase appcheck debug token
     if (!kidJwk && isDev) {
-      const jwkPath = path.resolve(__dirname, "../../../dev/ory", "jwks.json")
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const jwksFile = require(jwkPath)
-      jwkJson = jwksFile.keys
+      client = await jwksRsa({
+        jwksUri: getJwksArgs().jwksUri,
+      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      jwkJson = (await client.getKeys()) as Array<any>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       kidJwk = jwkJson.find((j: any) => j.kid === kid)
     }
