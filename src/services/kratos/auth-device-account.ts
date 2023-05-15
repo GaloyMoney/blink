@@ -203,7 +203,6 @@ export const AuthWithDeviceAccountService = () => {
     let kidJwk = jwkJson.find((j) => j.kid === kid)
 
     // if in dev environment, use local jwks.json if you dont have access to firebase appcheck debug
-    console.log("isCI: ", isCI)
     if (!kidJwk && (isDev || isCI)) {
       client = await jwksRsa({
         jwksUri: getJwksArgs().jwksUri,
