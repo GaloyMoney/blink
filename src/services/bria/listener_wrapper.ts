@@ -22,7 +22,7 @@ export class ListenerWrapper {
     this._listener.on("error", this._errorHandler)
   }
 
-  _setDataHandler(dataHandler) {
+  _setDataHandler(dataHandler: (rawEvent: ProtoBriaEvent) => void) {
     this._listener.on("data", dataHandler)
   }
 

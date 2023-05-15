@@ -8,19 +8,6 @@ type AddressAugmentation = {
   externalId: string
 }
 
-interface UtxoSettledEvent extends OnChainEvent {
-  payload: Extract<BriaPayloadType, "utxo_settled">
-  utxo_settled: {
-    wallet_id: WalletId
-    tx_id: OnChainTxHash
-    vout: OnChainTxVout
-    satoshis: string
-    address: OnChainAddress
-    block_height: number
-    block_time: string
-  }
-}
-
 type BriaEventAugmentation = {
   addressInfo?: AddressAugmentation
 }

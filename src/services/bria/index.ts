@@ -11,6 +11,7 @@ import { WalletCurrency } from "@domain/shared/primitives"
 import { SequenceRepo } from "./sequence"
 import { ListenerWrapper } from "./listener_wrapper"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
+import { SubscribeAllRequest, BriaEvent as RawBriaEvent } from "./proto/bria_pb"
 
 export { ListenerWrapper } from "./listener_wrapper"
 
@@ -47,8 +48,12 @@ export const BriaSubscriber = () => {
         return lastSequence
       }
 
+      const request = new SubscribeAllRequest()
+      request.setAugment(true)
+      request.setAfterSequence(lastSequence)
+
       listenerWrapper = new ListenerWrapper(
-        subscribeAll({ augment: true, after_sequence: lastSequence }, metadata),
+        subscribeAll(request, metadata),
         (error: Error) => {
           if (!error.message.includes("CANCELLED")) {
             throw error
@@ -59,7 +64,7 @@ export const BriaSubscriber = () => {
       return new UnknownOnChainServiceError(error.message || error)
     }
 
-    listenerWrapper._setDataHandler((rawEvent) => {
+    listenerWrapper._setDataHandler((rawEvent: RawBriaEvent) => {
       asyncRunInSpan(
         "service.bria.eventReceived",
         {
@@ -70,7 +75,7 @@ export const BriaSubscriber = () => {
           },
         },
         async () => {
-          const sequence = rawEvent.sequence
+          const sequence = rawEvent.getSequence()
           const event = translate(rawEvent)
           if (event instanceof BriaEventError) {
             recordExceptionInCurrentSpan({ error: event })
@@ -107,59 +112,105 @@ class BriaEventError extends Error {
   }
 }
 
-const translate = (rawEvent): BriaEvent | BriaEventError => {
-  const sequence = BigInt(rawEvent.sequence)
-  const rawAugmentation = rawEvent.augmentation
+const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
+  const sequence = BigInt(rawEvent.getSequence())
+  const rawAugmentation = rawEvent.getAugmentation()
 
   if (!rawAugmentation) {
     return new BriaEventError("augmentation is not initialized.")
   }
   let augmentation: BriaEventAugmentation | undefined
-  if (rawAugmentation.address_info) {
+  const rawInfo = rawAugmentation.getAddressInfo()
+  if (rawInfo) {
+    const info = rawInfo.toObject()
     augmentation = {
       addressInfo: {
-        address: rawAugmentation.address_info.address as OnChainAddress,
-        externalId: rawAugmentation.address_info.external_id,
+        address: info.address as OnChainAddress,
+        externalId: info.externalId,
       },
     }
   }
 
   let payload: BriaPayload | undefined
-  if (rawEvent.payload == BriaPayloadType.UtxoDetected) {
-    payload = {
-      type: BriaPayloadType.UtxoDetected,
-      txId: rawEvent.utxo_detected.tx_id,
-      vout: rawEvent.utxo_detected.vout,
-      address: rawEvent.utxo_detected.address as OnChainAddress,
-      satoshis: {
-        amount: BigInt(rawEvent.utxo_detected.satoshis),
-        currency: WalletCurrency.Btc,
-      },
-    }
-  } else if (rawEvent.payload == BriaPayloadType.UtxoSettled) {
-    payload = {
-      type: BriaPayloadType.UtxoSettled,
-      txId: rawEvent.utxo_settled.tx_id,
-      vout: rawEvent.utxo_settled.vout,
-      address: rawEvent.utxo_settled.address as OnChainAddress,
-      satoshis: {
-        amount: BigInt(rawEvent.utxo_settled.satoshis),
-        currency: WalletCurrency.Btc,
-      },
-      blockNumber: rawEvent.utxo_settled.block_number,
-    }
-  } else if (rawEvent.payload == BriaPayloadType.PayoutSubmitted) {
-    payload = rawEvent.payout_submitted as PayoutSubmitted
-    payload.type = BriaPayloadType.PayoutSubmitted
-  } else if (rawEvent.payload == BriaPayloadType.PayoutCommitted) {
-    payload = rawEvent.payout_committed as PayoutCommitted
-    payload.type = BriaPayloadType.PayoutCommitted
-  } else if (rawEvent.payload == BriaPayloadType.PayoutBroadcast) {
-    payload = rawEvent.payout_broadcast as PayoutBroadcast
-    payload.type = BriaPayloadType.PayoutBroadcast
-  } else if (rawEvent.payload == BriaPayloadType.PayoutSettled) {
-    payload = rawEvent.payout_settled as PayoutSettled
-    payload.type = BriaPayloadType.PayoutSettled
+  let id, rawPayload
+  switch (rawEvent.getPayloadCase()) {
+    case RawBriaEvent.PayloadCase.PAYLOAD_NOT_SET:
+      return new BriaEventError("payload is not set.")
+    case RawBriaEvent.PayloadCase.UTXO_DETECTED:
+      rawPayload = rawEvent.getUtxoDetected()
+      if (!rawPayload) {
+        return new BriaEventError("utxo_detected is not initialized.")
+      }
+      payload = {
+        type: BriaPayloadType.UtxoDetected,
+        txId: rawPayload.getTxId() as OnChainTxHash,
+        vout: rawPayload.getVout() as OnChainTxVout,
+        address: rawPayload.getAddress() as OnChainAddress,
+        satoshis: {
+          amount: BigInt(rawPayload.getSatoshis()),
+          currency: WalletCurrency.Btc,
+        },
+      }
+      break
+    case RawBriaEvent.PayloadCase.UTXO_SETTLED:
+      rawPayload = rawEvent.getUtxoSettled()
+      if (!rawPayload) {
+        return new BriaEventError("utxo_detected is not initialized.")
+      }
+      payload = {
+        type: BriaPayloadType.UtxoSettled,
+        txId: rawPayload.getTxId() as OnChainTxHash,
+        vout: rawPayload.getVout() as OnChainTxVout,
+        address: rawPayload.getAddress() as OnChainAddress,
+        satoshis: {
+          amount: BigInt(rawPayload.getSatoshis()),
+          currency: WalletCurrency.Btc,
+        },
+        blockNumber: rawPayload.getBlockHeight(),
+      }
+      break
+    case RawBriaEvent.PayloadCase.PAYOUT_SUBMITTED:
+      id = rawEvent.getPayoutSettled()?.getId()
+      if (!id) {
+        return new BriaEventError("id is not initialized.")
+      }
+      payload = {
+        id,
+        type: BriaPayloadType.PayoutSubmitted,
+      }
+      break
+    case RawBriaEvent.PayloadCase.PAYOUT_COMMITTED:
+      id = rawEvent.getPayoutSettled()?.getId()
+      if (!id) {
+        return new BriaEventError("id is not initialized.")
+      }
+      payload = {
+        id,
+        type: BriaPayloadType.PayoutCommitted,
+      }
+      break
+    case RawBriaEvent.PayloadCase.PAYOUT_BROADCAST:
+      id = rawEvent.getPayoutSettled()?.getId()
+      if (!id) {
+        return new BriaEventError("id is not initialized.")
+      }
+      payload = {
+        id,
+        type: BriaPayloadType.PayoutBroadcast,
+      }
+      break
+    case RawBriaEvent.PayloadCase.PAYOUT_SETTLED:
+      id = rawEvent.getPayoutSettled()?.getId()
+      if (!id) {
+        return new BriaEventError("id is not initialized.")
+      }
+      payload = {
+        id,
+        type: BriaPayloadType.PayoutSettled,
+      }
+      break
+    default:
+      return new BriaEventError("Unknown payload type.")
   }
   if (!payload || !augmentation) {
     return new BriaEventError("Unknown payload")
