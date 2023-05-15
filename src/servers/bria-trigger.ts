@@ -41,18 +41,3 @@ const listenerBria = () => {
   const subBria = BriaSubscriber().subscribeToAll(briaEventHandler)
   if (subBria instanceof Error) throw subBria
 }
-
-const main = () => {
-  listenerBria()
-
-  console.log("Bria trigger server ready")
-}
-
-// only execute if it is the main module
-if (require.main === module) {
-  main()
-  // healthCheck()
-  // setupMongoConnection()
-  // .then(main)
-  // .catch((err) => logger.error(err))
-}
