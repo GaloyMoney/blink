@@ -387,3 +387,32 @@ export const PaymentFlowState = mongoose.model(
   "Payment_Flow_State",
   paymentFlowStateSchema,
 )
+
+const WalletOnChainPendingReceiveSchema = new Schema<WalletOnChainPendingReceiveRecord>(
+  {
+    walletId: { type: String, required: true },
+    address: { type: String, required: true },
+    transactionHash: { type: String, required: true },
+    vout: { type: Number, required: true },
+    walletAmount: { type: Number, required: true },
+    walletFee: { type: Number, required: true },
+    walletCurrency: { type: String, required: true },
+
+    displayAmount: { type: String, required: true },
+    displayFee: { type: String, required: true },
+    displayPriceBase: { type: String, required: true },
+    displayPriceOffset: { type: String, required: true },
+    displayPriceCurrency: { type: String, required: true },
+
+    createdAt: { type: Date, default: Date.now },
+  },
+  { id: false },
+)
+
+WalletOnChainPendingReceiveSchema.index({ walletId: 1, createdAt: -1 })
+
+export const WalletOnChainPendingReceive =
+  mongoose.model<WalletOnChainPendingReceiveRecord>(
+    "WalletOnChainPendingReceive",
+    WalletOnChainPendingReceiveSchema,
+  )
