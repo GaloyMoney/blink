@@ -27,10 +27,12 @@ const incomingTxns: IncomingOnChainTransaction[] = [
         {
           address: "walletId0-address1" as OnChainAddress,
           sats: toSats(100),
+          vout: 0 as OnChainTxVout,
         },
         {
           sats: toSats(200),
           address: "change-address1" as OnChainAddress,
+          vout: 1 as OnChainTxVout,
         },
       ],
     },

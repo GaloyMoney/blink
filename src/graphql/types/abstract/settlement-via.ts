@@ -49,6 +49,7 @@ const SettlementViaOnChain = GT.Object({
     transactionHash: {
       type: GT.NonNull(OnChainTxHash),
     },
+    vout: { type: GT.Int },
   }),
 })
 

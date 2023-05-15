@@ -298,9 +298,11 @@ export const LedgerService = (): ILedgerService => {
   const isOnChainTxRecorded = async ({
     walletId,
     txHash,
+    vout,
   }: {
     walletId: WalletId
     txHash: OnChainTxHash
+    vout: OnChainTxVout
   }): Promise<boolean | LedgerServiceError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
@@ -309,6 +311,7 @@ export const LedgerService = (): ILedgerService => {
         accounts: liabilitiesWalletId,
         type: LedgerTransactionType.OnchainReceipt,
         hash: txHash,
+        $or: [{ vout: { $exists: false } }, { vout }],
       })
       return result > 0
     } catch (err) {
@@ -436,6 +439,7 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
         ? (tx.payee_addresses[0] as OnChainAddress)
         : undefined,
     txHash: (tx.hash as OnChainTxHash) || undefined,
+    vout: (tx.vout as OnChainTxVout) || undefined,
     feeKnownInAdvance: tx.feeKnownInAdvance || false,
 
     satsAmount: tx.satsAmount !== undefined ? toSats(tx.satsAmount) : undefined,

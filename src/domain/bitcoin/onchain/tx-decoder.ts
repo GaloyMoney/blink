@@ -25,7 +25,7 @@ export const TxDecoder = (networkName: BtcNetwork): TxDecoder => {
 }
 
 const decodeOutput = (tx: Transaction, network: Network): TxOut[] => {
-  const format = (out: TxOutput, network: Network) => {
+  const format = (out: TxOutput, vout: number, network: Network) => {
     let decodedAddress: OnChainAddress | null = null
     try {
       decodedAddress = address.fromOutputScript(out.script, network) as OnChainAddress
@@ -35,8 +35,9 @@ const decodeOutput = (tx: Transaction, network: Network): TxOut[] => {
     return {
       sats: toSats(out.value),
       address: decodedAddress,
+      vout: vout as OnChainTxVout,
     }
   }
 
-  return tx.outs.map((out) => format(out, network))
+  return tx.outs.map((out, index) => format(out, index, network))
 }

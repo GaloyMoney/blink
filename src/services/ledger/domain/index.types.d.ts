@@ -11,6 +11,7 @@ type TxMetadata = Record<
   | DisplayCurrencyBaseAmount
   | boolean
   | OnChainAddress[]
+  | OnChainTxVout
   | undefined
 >
 

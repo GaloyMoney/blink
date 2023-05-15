@@ -381,6 +381,7 @@ type SettlementViaLn {
 
 type SettlementViaOnChain {
   transactionHash: OnChainTxHash!
+  vout: Int
 }
 
 """
