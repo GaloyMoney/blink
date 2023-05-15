@@ -3,15 +3,9 @@ type ClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
 type BriaPayloadType =
   typeof import("./index").BriaPayloadType[keyof typeof import("./index").BriaPayloadType]
 
-interface UtxoDetectedEvent extends OnChainEvent {
-  payload: Extract<BriaPayloadType, "utxo_detected">
-  utxo_detected: {
-    wallet_id: WalletId
-    tx_id: OnChainTxHash
-    vout: number
-    satoshis: string
-    address: OnChainAddress
-  }
+type AddressAugmentation = {
+  address: OnChainAddress
+  externalId: string
 }
 
 interface UtxoSettledEvent extends OnChainEvent {
@@ -27,7 +21,54 @@ interface UtxoSettledEvent extends OnChainEvent {
   }
 }
 
-type UtxoEvent = UtxoDetectedEvent | UtxoSettledEvent
+type BriaEventAugmentation = {
+  addressInfo?: AddressAugmentation
+}
 
-type BriaEvent = UtxoEvent
-type BriaEventHandler = (event: BriaEvent) => true | ApplicationError
+type UtxoDetected = {
+  type: "utxo_detected"
+  txId: OnChainTxHash
+  vout: OnChainTxVout
+  satoshis: BtcPaymentAmount
+  address: OnChainAddress
+}
+type UtxoSettled = {
+  type: "utxo_settled"
+  txId: OnChainTxHash
+  vout: OnChainTxVout
+  satoshis: BtcPaymentAmount
+  address: OnChainAddress
+  blockNumber: number
+}
+type PayoutSubmitted = {
+  type: "payout_submitted"
+  id: string
+}
+type PayoutCommitted = {
+  type: "payout_committed"
+  id: string
+}
+type PayoutBroadcast = {
+  type: "payout_broadcast"
+  id: string
+}
+type PayoutSettled = {
+  type: "payout_settled"
+  id: string
+}
+type BriaPayload =
+  | UtxoDetected
+  | UtxoSettled
+  | PayoutSubmitted
+  | PayoutCommitted
+  | PayoutBroadcast
+  | PayoutSettled
+type BriaEvent = {
+  payload: BriaPayload
+  augmentation: BriaEventAugmentation
+  sequence: bigint
+}
+
+type BriaEventHandler = (event: BriaEvent) => Promise<true | ApplicationError>
+
+type BriaErrorHandler = (err: Error) => void
