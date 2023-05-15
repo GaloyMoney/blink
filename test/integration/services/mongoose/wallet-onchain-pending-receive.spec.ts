@@ -21,7 +21,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
     settlementVia: {
       type: "onchain",
       transactionHash: "txHash1" as OnChainTxHash,
-      vout: 1,
+      vout: 1 as OnChainTxVout,
     },
     settlementAmount: toSats(10000),
     settlementFee: toSats(2000),
@@ -79,7 +79,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
         settlementVia: {
           type: "onchain",
           transactionHash: "txHash2" as OnChainTxHash,
-          vout: 2,
+          vout: 2 as OnChainTxVout,
         },
         createdAt: new Date(Date.now()),
       }

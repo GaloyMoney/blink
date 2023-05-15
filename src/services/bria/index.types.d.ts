@@ -19,7 +19,7 @@ interface UtxoSettledEvent extends OnChainEvent {
   utxo_settled: {
     wallet_id: WalletId
     tx_id: OnChainTxHash
-    vout: number
+    vout: OnChainTxVout
     satoshis: string
     address: OnChainAddress
     block_height: number

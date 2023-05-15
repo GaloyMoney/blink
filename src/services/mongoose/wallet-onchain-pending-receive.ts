@@ -93,7 +93,7 @@ const translateToWalletOnChainTransaction = (
     settlementVia: {
       type: "onchain",
       transactionHash: result.transactionHash as OnChainTxHash,
-      vout: result.vout,
+      vout: result.vout as OnChainTxVout,
     },
     createdAt: new Date(result.createdAt),
   }
