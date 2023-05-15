@@ -123,146 +123,147 @@ const processTxForWallet = async (
 
   const walletAddresses = wallet.onChainAddresses()
 
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) return account
+
   const lockService = LockService()
   return lockService.lockOnChainTxHash(tx.rawTx.txHash, async () => {
-    const recorded = await ledger.isOnChainTxRecorded({
-      walletId: wallet.id,
-      txHash: tx.rawTx.txHash,
-    })
-    if (recorded instanceof Error) {
-      logger.error({ error: recorded }, "Could not query ledger")
-      return recorded
-    }
+    for (const { sats, address, vout } of tx.rawTx.outs) {
+      const recorded = await ledger.isOnChainTxRecorded({
+        walletId: wallet.id,
+        txHash: tx.rawTx.txHash,
+        vout,
+      })
+      if (recorded instanceof Error) {
+        logger.error({ error: recorded }, "Could not query ledger")
+        return recorded
+      }
+      if (recorded) continue
 
-    if (!recorded) {
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) return account
+      if (address !== null && walletAddresses.includes(address)) {
+        const fee = DepositFeeCalculator().onChainDepositFee({
+          amount: sats,
+          ratio: account.depositFeeRatio,
+        })
 
-      for (const { sats, address } of tx.rawTx.outs) {
-        if (address !== null && walletAddresses.includes(address)) {
-          const fee = DepositFeeCalculator().onChainDepositFee({
-            amount: sats,
-            ratio: account.depositFeeRatio,
-          })
+        const receivedBtc = paymentAmountFromNumber({
+          amount: sats,
+          currency: WalletCurrency.Btc,
+        })
+        if (receivedBtc instanceof Error) return receivedBtc
 
-          const receivedBtc = paymentAmountFromNumber({
-            amount: sats,
-            currency: WalletCurrency.Btc,
-          })
-          if (receivedBtc instanceof Error) return receivedBtc
+        const satsFee = paymentAmountFromNumber({
+          amount: fee,
+          currency: WalletCurrency.Btc,
+        })
+        if (satsFee instanceof Error) return satsFee
 
-          const satsFee = paymentAmountFromNumber({
-            amount: fee,
-            currency: WalletCurrency.Btc,
-          })
-          if (satsFee instanceof Error) return satsFee
-
-          const walletAddressReceiver = await WalletAddressReceiver({
-            walletAddress: {
-              address,
-              recipientWalletDescriptor: wallet,
-            },
-            receivedBtc,
-            satsFee,
-            usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-            usdFromBtcMidPrice: usdFromBtcMidPriceFn,
-          })
-          if (walletAddressReceiver instanceof Error) return walletAddressReceiver
-
-          const recipientAccount = await AccountsRepository().findById(wallet.accountId)
-          if (recipientAccount instanceof Error) return recipientAccount
-          const { displayCurrency } = recipientAccount
-
-          const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-            currency: displayCurrency,
-          })
-          if (recipientDisplayPriceRatio instanceof Error) {
-            return recipientDisplayPriceRatio
-          }
-          const amountDisplayCurrency = Number(
-            recipientDisplayPriceRatio.convertFromWallet(
-              walletAddressReceiver.btcToCreditReceiver,
-            ).amountInMinor,
-          ) as DisplayCurrencyBaseAmount
-
-          const feeDisplayCurrency = Number(
-            recipientDisplayPriceRatio.convertFromWalletToCeil(
-              walletAddressReceiver.btcBankFee,
-            ).amountInMinor,
-          ) as DisplayCurrencyBaseAmount
-
-          const {
-            metadata,
-            creditAccountAdditionalMetadata,
-            internalAccountsAdditionalMetadata,
-          } = LedgerFacade.OnChainReceiveLedgerMetadata({
-            onChainTxHash: tx.rawTx.txHash,
-            paymentAmounts: {
-              btcPaymentAmount: walletAddressReceiver.btcToCreditReceiver,
-              usdPaymentAmount: walletAddressReceiver.usdToCreditReceiver,
-              btcProtocolAndBankFee: walletAddressReceiver.btcBankFee,
-              usdProtocolAndBankFee: walletAddressReceiver.usdBankFee,
-            },
-            feeDisplayCurrency,
-            amountDisplayCurrency,
-            displayCurrency,
-
-            payeeAddresses: [address],
-          })
-
-          const result = await LedgerFacade.recordReceive({
-            description: "",
+        const walletAddressReceiver = await WalletAddressReceiver({
+          walletAddress: {
+            address,
             recipientWalletDescriptor: wallet,
-            amountToCreditReceiver: {
-              usd: walletAddressReceiver.usdToCreditReceiver,
-              btc: walletAddressReceiver.btcToCreditReceiver,
-            },
-            bankFee: {
-              usd: walletAddressReceiver.usdBankFee,
-              btc: walletAddressReceiver.btcBankFee,
-            },
-            metadata,
-            additionalCreditMetadata: creditAccountAdditionalMetadata,
-            additionalInternalMetadata: internalAccountsAdditionalMetadata,
-          })
+          },
+          receivedBtc,
+          satsFee,
+          usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+          usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+        })
+        if (walletAddressReceiver instanceof Error) return walletAddressReceiver
 
-          if (result instanceof Error) {
-            logger.error({ error: result }, "Could not record onchain tx in ledger")
-            return result
-          }
+        const recipientAccount = await AccountsRepository().findById(wallet.accountId)
+        if (recipientAccount instanceof Error) return recipientAccount
+        const { displayCurrency } = recipientAccount
 
-          const recipientUser = await UsersRepository().findById(
-            recipientAccount.kratosUserId,
-          )
-          if (recipientUser instanceof Error) return recipientUser
+        const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+          currency: displayCurrency,
+        })
+        if (recipientDisplayPriceRatio instanceof Error) {
+          return recipientDisplayPriceRatio
+        }
+        const amountDisplayCurrency = Number(
+          recipientDisplayPriceRatio.convertFromWallet(
+            walletAddressReceiver.btcToCreditReceiver,
+          ).amountInMinor,
+        ) as DisplayCurrencyBaseAmount
 
-          const displayAmount = displayAmountFromNumber({
-            amount: creditAccountAdditionalMetadata.displayAmount,
-            currency: creditAccountAdditionalMetadata.displayCurrency,
-          })
-          if (displayAmount instanceof Error) return displayAmount
+        const feeDisplayCurrency = Number(
+          recipientDisplayPriceRatio.convertFromWalletToCeil(
+            walletAddressReceiver.btcBankFee,
+          ).amountInMinor,
+        ) as DisplayCurrencyBaseAmount
 
-          const paymentAmount = paymentAmountFromNumber({
-            amount: sats,
-            currency: wallet.currency,
-          })
-          if (paymentAmount instanceof Error) return paymentAmount
+        const {
+          metadata,
+          creditAccountAdditionalMetadata,
+          internalAccountsAdditionalMetadata,
+        } = LedgerFacade.OnChainReceiveLedgerMetadata({
+          onChainTxHash: tx.rawTx.txHash,
+          onChainTxVout: vout,
+          paymentAmounts: {
+            btcPaymentAmount: walletAddressReceiver.btcToCreditReceiver,
+            usdPaymentAmount: walletAddressReceiver.usdToCreditReceiver,
+            btcProtocolAndBankFee: walletAddressReceiver.btcBankFee,
+            usdProtocolAndBankFee: walletAddressReceiver.usdBankFee,
+          },
+          feeDisplayCurrency,
+          amountDisplayCurrency,
+          displayCurrency,
 
-          await notifications.onChainTxReceived({
-            recipientAccountId: wallet.accountId,
-            recipientWalletId: wallet.id,
-            paymentAmount,
-            displayPaymentAmount: displayAmount,
-            txHash: tx.rawTx.txHash,
-            recipientDeviceTokens: recipientUser.deviceTokens,
-            recipientLanguage: recipientUser.language,
-          })
+          payeeAddresses: [address],
+        })
 
-          const currentAddress = await getLastOnChainAddress(wallet.id)
-          if (address === currentAddress) {
-            const newAddress = await createOnChainAddressByWallet(wallet)
-            if (newAddress instanceof Error) return newAddress
-          }
+        const result = await LedgerFacade.recordReceive({
+          description: "",
+          recipientWalletDescriptor: wallet,
+          amountToCreditReceiver: {
+            usd: walletAddressReceiver.usdToCreditReceiver,
+            btc: walletAddressReceiver.btcToCreditReceiver,
+          },
+          bankFee: {
+            usd: walletAddressReceiver.usdBankFee,
+            btc: walletAddressReceiver.btcBankFee,
+          },
+          metadata,
+          additionalCreditMetadata: creditAccountAdditionalMetadata,
+          additionalInternalMetadata: internalAccountsAdditionalMetadata,
+        })
+
+        if (result instanceof Error) {
+          logger.error({ error: result }, "Could not record onchain tx in ledger")
+          return result
+        }
+
+        const recipientUser = await UsersRepository().findById(
+          recipientAccount.kratosUserId,
+        )
+        if (recipientUser instanceof Error) return recipientUser
+
+        const displayAmount = displayAmountFromNumber({
+          amount: creditAccountAdditionalMetadata.displayAmount,
+          currency: creditAccountAdditionalMetadata.displayCurrency,
+        })
+        if (displayAmount instanceof Error) return displayAmount
+
+        const paymentAmount = paymentAmountFromNumber({
+          amount: sats,
+          currency: wallet.currency,
+        })
+        if (paymentAmount instanceof Error) return paymentAmount
+
+        await notifications.onChainTxReceived({
+          recipientAccountId: wallet.accountId,
+          recipientWalletId: wallet.id,
+          paymentAmount,
+          displayPaymentAmount: displayAmount,
+          txHash: tx.rawTx.txHash,
+          recipientDeviceTokens: recipientUser.deviceTokens,
+          recipientLanguage: recipientUser.language,
+        })
+
+        const currentAddress = await getLastOnChainAddress(wallet.id)
+        if (address === currentAddress) {
+          const newAddress = await createOnChainAddressByWallet(wallet)
+          if (newAddress instanceof Error) return newAddress
         }
       }
     }

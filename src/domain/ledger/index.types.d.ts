@@ -63,6 +63,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   // for onchain
   readonly address?: OnChainAddress
   readonly txHash?: OnChainTxHash
+  readonly vout?: OnChainTxVout
 
   // for admin, to be removed when we switch those to satsAmount props
   readonly fee: number | undefined // Satoshis
@@ -292,9 +293,11 @@ interface ILedgerService {
   isOnChainTxRecorded({
     walletId,
     txHash,
+    vout,
   }: {
     walletId: WalletId
     txHash: OnChainTxHash
+    vout: OnChainTxVout
   }): Promise<boolean | LedgerServiceError>
 
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>

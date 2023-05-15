@@ -486,14 +486,17 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
             {
               sats: toSats(25000),
               address: "userAddress1" as OnChainAddress,
+              vout: 0 as OnChainTxVout,
             },
             {
               sats: toSats(50000),
               address: "userAddress2" as OnChainAddress,
+              vout: 1 as OnChainTxVout,
             },
             {
               sats: toSats(25000),
               address: "address3" as OnChainAddress,
+              vout: 2 as OnChainTxVout,
             },
           ],
         },
@@ -529,6 +532,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementVia: {
           type: SettlementMethod.OnChain,
           transactionHash: "txHash",
+          vout: 0,
         },
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
@@ -553,6 +557,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementVia: {
           type: SettlementMethod.OnChain,
           transactionHash: "txHash",
+          vout: 1,
         },
         settlementAmount: toSats(50000),
         settlementCurrency: WalletCurrency.Btc,

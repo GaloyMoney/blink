@@ -5,11 +5,13 @@ type OnChainServiceError = import("./errors").OnChainServiceError
 type OnChainAddress = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
+type OnChainTxVout = number & { readonly brand: unique symbol }
 type ScanDepth = number & { readonly brand: unique symbol }
 type TxOut = {
   sats: Satoshis
   // OP_RETURN utxos don't have valid addresses associated with them
   address: OnChainAddress | null
+  vout: OnChainTxVout
 }
 
 type OnChainTransaction = {

@@ -21,7 +21,7 @@ const filterPendingIncoming = ({
 }: AddPendingIncomingArgs): WalletOnChainTransaction[] => {
   const walletTransactions: WalletOnChainTransaction[] = []
   pendingIncoming.forEach(({ rawTx, createdAt }) => {
-    rawTx.outs.forEach(({ sats, address }) => {
+    rawTx.outs.forEach(({ sats, address, vout }) => {
       if (address) {
         for (const walletIdString in addressesByWalletId) {
           const walletId = walletIdString as WalletId
@@ -89,6 +89,7 @@ const filterPendingIncoming = ({
               settlementVia: {
                 type: SettlementMethod.OnChain,
                 transactionHash: rawTx.txHash,
+                vout,
               },
             })
           }
@@ -186,7 +187,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 
   const defaultOnChainAddress = "<no-address>" as OnChainAddress
 
-  const { recipientWalletId, username, pubkey, paymentHash, txHash, address } = txn
+  const { recipientWalletId, username, pubkey, paymentHash, txHash, vout, address } = txn
 
   let walletTransaction: WalletTransaction
   switch (txType) {
@@ -234,6 +235,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
         settlementVia: {
           type: SettlementMethod.OnChain,
           transactionHash: txHash as OnChainTxHash,
+          vout: vout as OnChainTxVout,
         },
       }
       break

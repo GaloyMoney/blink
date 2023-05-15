@@ -240,6 +240,7 @@ export const OnChainSendLedgerMetadata = ({
 
 export const OnChainReceiveLedgerMetadata = ({
   onChainTxHash,
+  onChainTxVout,
   paymentAmounts,
   feeDisplayCurrency: displayFee,
   amountDisplayCurrency: displayAmount,
@@ -248,6 +249,7 @@ export const OnChainReceiveLedgerMetadata = ({
   payeeAddresses,
 }: {
   onChainTxHash: OnChainTxHash
+  onChainTxVout: OnChainTxVout
   paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount
@@ -267,6 +269,7 @@ export const OnChainReceiveLedgerMetadata = ({
     type: LedgerTransactionType.OnchainReceipt,
     pending: false,
     hash: onChainTxHash,
+    vout: onChainTxVout,
     payee_addresses: payeeAddresses,
 
     // Amounts are after fee is deducted

@@ -16,6 +16,7 @@ const transactionSchema = new Schema<ILedgerTransaction>(
       ref: "invoiceusers",
       // TODO: not always, use another hashOnchain?
     },
+    vout: Number,
 
     // used for escrow transaction, to know which channel this transaction is associated with
     // FIXME? hash is currently used for onchain tx but txid should be used instead?

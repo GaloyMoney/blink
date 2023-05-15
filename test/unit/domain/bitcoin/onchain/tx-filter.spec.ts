@@ -14,6 +14,7 @@ describe("TxFilter", () => {
             {
               sats: toSats(1),
               address: "address1" as OnChainAddress,
+              vout: 0 as OnChainTxVout,
             },
           ],
         },
@@ -28,6 +29,7 @@ describe("TxFilter", () => {
             {
               sats: toSats(1),
               address: "address2" as OnChainAddress,
+              vout: 0 as OnChainTxVout,
             },
           ],
         },
@@ -50,6 +52,7 @@ describe("TxFilter", () => {
             {
               sats: toSats(1),
               address: "address1" as OnChainAddress,
+              vout: 0 as OnChainTxVout,
             },
           ],
         },
@@ -64,6 +67,7 @@ describe("TxFilter", () => {
             {
               sats: toSats(1),
               address: "address2" as OnChainAddress,
+              vout: 0 as OnChainTxVout,
             },
           ],
         },
@@ -86,6 +90,7 @@ describe("TxFilter", () => {
             {
               sats: toSats(1),
               address: "address1" as OnChainAddress,
+              vout: 0 as OnChainTxVout,
             },
           ],
         },
@@ -100,6 +105,7 @@ describe("TxFilter", () => {
             {
               sats: toSats(1),
               address: "address2" as OnChainAddress,
+              vout: 0 as OnChainTxVout,
             },
           ],
         },

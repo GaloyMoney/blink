@@ -44,6 +44,7 @@ type SettlementViaLn = {
 type SettlementViaOnChain = {
   readonly type: "onchain"
   transactionHash: OnChainTxHash
+  vout?: OnChainTxVout
 }
 
 type BaseWalletTransaction = {

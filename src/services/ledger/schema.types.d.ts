@@ -15,6 +15,7 @@ interface ILedgerTransaction {
   _original_journal?: ObjectId
 
   hash?: string
+  vout?: number
   txid?: string
   type: LedgerTransactionType
   pending: boolean

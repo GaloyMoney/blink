@@ -30,10 +30,12 @@ describe("handleIncomingOnChainTransactions", () => {
           {
             sats: toSats(100),
             address: "walletId0-address1" as OnChainAddress,
+            vout: 0 as OnChainTxVout,
           },
           {
             sats: toSats(200),
             address: "change-address1" as OnChainAddress,
+            vout: 1 as OnChainTxVout,
           },
         ],
       },
@@ -51,10 +53,12 @@ describe("handleIncomingOnChainTransactions", () => {
           {
             sats: toSats(300),
             address: "walletId0-address2" as OnChainAddress,
+            vout: 0 as OnChainTxVout,
           },
           {
             sats: toSats(400),
             address: "change-address2" as OnChainAddress,
+            vout: 1 as OnChainTxVout,
           },
         ],
       },
@@ -72,10 +76,12 @@ describe("handleIncomingOnChainTransactions", () => {
           {
             sats: toSats(500),
             address: "walletId1-address1" as OnChainAddress,
+            vout: 0 as OnChainTxVout,
           },
           {
             sats: toSats(600),
             address: "change-address3" as OnChainAddress,
+            vout: 1 as OnChainTxVout,
           },
         ],
       },
@@ -93,14 +99,17 @@ describe("handleIncomingOnChainTransactions", () => {
           {
             sats: toSats(700),
             address: "walletId0-address1" as OnChainAddress,
+            vout: 0 as OnChainTxVout,
           },
           {
             sats: toSats(800),
             address: "walletId0-address2" as OnChainAddress,
+            vout: 1 as OnChainTxVout,
           },
           {
             sats: toSats(900),
             address: "walletId1-address1" as OnChainAddress,
+            vout: 2 as OnChainTxVout,
           },
         ],
       },

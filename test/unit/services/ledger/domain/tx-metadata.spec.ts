@@ -25,6 +25,7 @@ describe("Tx metadata", () => {
   const payeeAddresses: OnChainAddress[] = ["Address" as OnChainAddress]
   const paymentHash = "paymenthash" as PaymentHash
   const onChainTxHash = "onChainTxHash" as OnChainTxHash
+  const onChainTxVout = 1 as OnChainTxVout
   const journalId = "journalId" as LedgerJournalId
 
   const senderAmountDisplayCurrency = 100 as DisplayCurrencyBaseAmount
@@ -395,7 +396,7 @@ describe("Tx metadata", () => {
       pending: true,
     }
 
-    const receiveMetadataArgs = {}
+    const receiveMetadataArgs = { onChainTxVout }
     const expectedReceiveMetadataArgs = { pending: false }
 
     const onchainMetadataArgs = {
