@@ -1,7 +1,8 @@
 files.extend-exclude = [
   "dev",
   "src/domain/users/languages.ts",
-  "src/services/loopd/protos"
+  "src/services/loopd/protos",
+  "docs/postman-collection/galoy_graphql_main_api.postman_collection.json"
 ]
 
 [default.extend-words]
