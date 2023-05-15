@@ -380,3 +380,11 @@ export const getSmsAuthUnsupportedCountries = (): CountryCode[] => {
 export const getWhatsAppAuthUnsupportedCountries = (): CountryCode[] => {
   return yamlConfig.whatsAppAuthUnsupportedCountries as CountryCode[]
 }
+
+export const getAppCheckConfig = (config = yamlConfig) => {
+  return {
+    audience: config.appcheckConfig.audience,
+    issuer: config.appcheckConfig.issuer,
+    jwksUri: config.appcheckConfig.jwksUri,
+  }
+}
