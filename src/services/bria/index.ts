@@ -8,9 +8,9 @@ import { BRIA_PROFILE_API_KEY } from "@config"
 import { UnknownOnChainServiceError, OnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
-import { BriaProtoDescriptor } from "./grpc"
 import { SequenceRepo } from "./sequence"
 import { ListenerWrapper } from "./listener_wrapper"
+import { BriaServiceClient } from "./proto/bria_grpc_pb"
 
 export { ListenerWrapper } from "./listener_wrapper"
 
@@ -18,10 +18,7 @@ const briaUrl = process.env.BRIA_HOST ?? "localhost"
 const briaPort = process.env.BRIA_PORT ?? "2742"
 const fullUrl = `${briaUrl}:${briaPort}`
 
-const bitcoinBridgeClient = new BriaProtoDescriptor.services.bria.v1.BriaService(
-  fullUrl,
-  credentials.createInsecure(),
-)
+const bitcoinBridgeClient = new BriaServiceClient(fullUrl, credentials.createInsecure())
 
 export const BriaPayloadType = {
   UtxoDetected: "utxo_detected",
@@ -49,6 +46,7 @@ export const BriaSubscriber = () => {
       if (lastSequence instanceof Error) {
         return lastSequence
       }
+
       listenerWrapper = new ListenerWrapper(
         subscribeAll({ augment: true, after_sequence: lastSequence }, metadata),
         (error: Error) => {
