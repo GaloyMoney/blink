@@ -152,4 +152,9 @@ type YamlSchema = {
     mandatory: boolean
   }
   skipFeeProbeConfig: { pubkey: string[]; chanId: string[] }
+  appcheckConfig: {
+    audience: string
+    issuer: string
+    jwksUri: string
+  }
 }

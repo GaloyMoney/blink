@@ -368,3 +368,11 @@ export const getJwksArgs = (config = yamlConfig) => {
     jwksUri: urlJkws,
   }
 }
+
+export const getAppCheckConfig = (config = yamlConfig) => {
+  return {
+    audience: config.appcheckConfig.audience,
+    issuer: config.appcheckConfig.issuer,
+    jwksUri: config.appcheckConfig.jwksUri,
+  }
+}
