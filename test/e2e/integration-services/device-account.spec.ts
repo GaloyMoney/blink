@@ -68,7 +68,6 @@ describe("DeviceAccountService", () => {
         },
       },
     })
-    console.log(result)
     disposeClient()
     expect(result.data?.userLoginDevice.authToken).toBeDefined()
   })
