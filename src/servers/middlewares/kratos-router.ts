@@ -13,6 +13,7 @@ import { checkedToPhoneNumber } from "@domain/users"
 import { checkedToUserId } from "@domain/accounts"
 import { UsersRepository } from "@services/mongoose"
 import { ErrorLevel } from "@domain/shared"
+import { baseLogger } from "@services/logger"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
@@ -30,13 +31,13 @@ kratosRouter.post(
       const key = req.headers.authorization
 
       if (!key) {
-        console.log("missing authorization header")
+        baseLogger.error("missing authorization header")
         res.status(401).send("missing authorization header")
         return
       }
 
       if (key !== callbackApiKey) {
-        console.log("incorrect authorization header")
+        baseLogger.error("incorrect authorization header")
         res.status(401).send("incorrect authorization header")
         return
       }
@@ -50,7 +51,7 @@ kratosRouter.post(
       if (phoneRaw) {
         const phone = checkedToPhoneNumber(phoneRaw)
         if (phone instanceof Error) {
-          console.log("invalid phone")
+          baseLogger.error({ phoneRaw, phone }, "invalid phone")
           res.status(400).send("invalid phone")
           return
         }
@@ -59,12 +60,11 @@ kratosRouter.post(
 
         // we expect the phone number to not exist
         if (user instanceof Error) {
-          console.log("phone doesn't already exist")
           res.sendStatus(200)
           return
         }
 
-        console.error("phone already exist")
+        baseLogger.error({ phone }, "phone already exist")
         res.status(500).send(`phone already exist`)
         return
       }
@@ -85,13 +85,13 @@ kratosRouter.post(
       const key = req.headers.authorization
 
       if (!key) {
-        console.log("missing authorization header")
+        baseLogger.error("missing authorization header")
         res.status(401).send("missing authorization header")
         return
       }
 
       if (key !== callbackApiKey) {
-        console.log("incorrect authorization header")
+        baseLogger.error("incorrect authorization header")
         res.status(401).send("incorrect authorization header")
         return
       }
@@ -102,7 +102,7 @@ kratosRouter.post(
       assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
       if ((!phoneRaw && !email) || !userId) {
-        console.log("missing inputs")
+        baseLogger.error({ phoneRaw, email }, "missing inputs")
         res.status(400).send("missing inputs")
         return
       }
@@ -116,7 +116,7 @@ kratosRouter.post(
             userId,
           },
         })
-        console.log("invalid userId")
+        baseLogger.error({ userIdChecked, userId }, "invalid userId")
         res.status(400).send("invalid userId")
         return
       }
@@ -134,7 +134,7 @@ kratosRouter.post(
               phoneRaw,
             },
           })
-          console.log("invalid phone")
+          baseLogger.error({ phone, phoneRaw, userId }, "invalid phone")
           res.status(400).send("invalid phone")
           return
         }
@@ -164,7 +164,10 @@ kratosRouter.post(
             phoneRaw,
           },
         })
-        console.log(`error createAccountWithPhoneIdentifier: ${account}`)
+        baseLogger.error(
+          { account, phoneRaw, email },
+          `error createAccountWithPhoneIdentifier`,
+        )
         res.status(500).send(`error createAccountWithPhoneIdentifier: ${account}`)
         return
       }
