@@ -36,12 +36,6 @@ export const getAccountFromUserId = async (
   return accounts.findByUserId(kratosUserId)
 }
 
-export const getAccountFromDeviceId = async (
-  deviceId: DeviceId,
-): Promise<Account | RepositoryError> => {
-  return accounts.findByUserId(deviceId as unknown as UserId)
-}
-
 export const hasPermissions = async (
   accountId: AccountId,
   walletId: WalletId,

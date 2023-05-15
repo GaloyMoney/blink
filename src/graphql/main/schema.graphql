@@ -778,7 +778,6 @@ type Mutation {
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
-  userDeviceAccountCreate: SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userLoginDevice(input: UserLoginDeviceInput!): JwtPayload!
   userLoginUpgrade(input: UserLoginUpgradeInput!): AuthTokenPayload!

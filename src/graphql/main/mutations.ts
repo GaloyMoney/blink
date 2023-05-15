@@ -22,7 +22,6 @@ import UserLoginMutation from "@graphql/root/mutation/user-login"
 import UserLoginDeviceMutation from "@graphql/root/mutation/user-login-device"
 
 import UserLogoutMutation from "@graphql/root/mutation/user-logout"
-import UserDeviceAccountCreate from "@graphql/root/mutation/user-create-device-account"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
 import UserUpdateUsernameMutation from "@graphql/root/mutation/user-update-username"
@@ -47,7 +46,6 @@ export const mutationFields = {
     userLogin: UserLoginMutation,
     userLoginDevice: UserLoginDeviceMutation,
     userLogout: UserLogoutMutation,
-    userDeviceAccountCreate: UserDeviceAccountCreate,
 
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
     captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
