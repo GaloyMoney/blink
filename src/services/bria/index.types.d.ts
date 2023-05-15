@@ -30,18 +30,22 @@ type UtxoSettled = {
 type PayoutSubmitted = {
   type: "payout_submitted"
   id: string
+  satoshis: BtcPaymentAmount
 }
 type PayoutCommitted = {
   type: "payout_committed"
   id: string
+  satoshis: BtcPaymentAmount
 }
 type PayoutBroadcast = {
   type: "payout_broadcast"
   id: string
+  satoshis: BtcPaymentAmount
 }
 type PayoutSettled = {
   type: "payout_settled"
   id: string
+  satoshis: BtcPaymentAmount
 }
 type BriaPayload =
   | UtxoDetected
@@ -53,7 +57,7 @@ type BriaPayload =
 type BriaEvent = {
   payload: BriaPayload
   augmentation: BriaEventAugmentation
-  sequence: bigint
+  sequence: number
 }
 
 type BriaEventHandler = (event: BriaEvent) => Promise<true | ApplicationError>

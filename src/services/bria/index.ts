@@ -8,7 +8,7 @@ import { BRIA_PROFILE_API_KEY } from "@config"
 import { UnknownOnChainServiceError, OnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
-import { SequenceRepo } from "./sequence"
+import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
 import { SubscribeAllRequest, BriaEvent as RawBriaEvent } from "./proto/bria_pb"
@@ -30,7 +30,7 @@ export const BriaPayloadType = {
   PayoutSettled: "payout_settled",
 } as const
 
-const sequenceRepo = SequenceRepo()
+const eventRepo = BriaEventRepo()
 
 export const BriaSubscriber = () => {
   const metadata = new Metadata()
@@ -43,7 +43,7 @@ export const BriaSubscriber = () => {
 
     let listenerWrapper: ListenerWrapper
     try {
-      const lastSequence = await sequenceRepo.getSequence()
+      const lastSequence = await eventRepo.getLatestSequence()
       if (lastSequence instanceof Error) {
         return lastSequence
       }
@@ -56,6 +56,7 @@ export const BriaSubscriber = () => {
         subscribeAll(request, metadata),
         (error: Error) => {
           if (!error.message.includes("CANCELLED")) {
+            listenerWrapper._listener.cancel()
             throw error
           }
         },
@@ -71,11 +72,10 @@ export const BriaSubscriber = () => {
           attributes: {
             [SemanticAttributes.CODE_FUNCTION]: "eventReceived",
             [SemanticAttributes.CODE_NAMESPACE]: "services.bria",
-            rawEvent: JSON.stringify(rawEvent),
+            rawEvent: JSON.stringify(rawEvent.toObject()),
           },
         },
         async () => {
-          const sequence = rawEvent.getSequence()
           const event = translate(rawEvent)
           if (event instanceof BriaEventError) {
             recordExceptionInCurrentSpan({ error: event })
@@ -92,7 +92,11 @@ export const BriaSubscriber = () => {
             listenerWrapper._merge(resubscribe)
           }
 
-          await sequenceRepo.updateSequence(sequence)
+          const res = await eventRepo.persistEvent(event)
+          if (res instanceof Error) {
+            recordExceptionInCurrentSpan({ error: res })
+            throw res
+          }
         },
       )
     })
@@ -113,7 +117,7 @@ class BriaEventError extends Error {
 }
 
 const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
-  const sequence = BigInt(rawEvent.getSequence())
+  const sequence = rawEvent.getSequence()
   const rawAugmentation = rawEvent.getAugmentation()
 
   if (!rawAugmentation) {
@@ -170,43 +174,59 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       }
       break
     case RawBriaEvent.PayloadCase.PAYOUT_SUBMITTED:
-      id = rawEvent.getPayoutSettled()?.getId()
-      if (!id) {
-        return new BriaEventError("id is not initialized.")
+      rawPayload = rawEvent.getPayoutSubmitted()
+      if (!rawPayload) {
+        return new BriaEventError("payout_submitted is not initialized.")
       }
       payload = {
         id,
         type: BriaPayloadType.PayoutSubmitted,
+        satoshis: {
+          amount: BigInt(rawPayload.getSatoshis()),
+          currency: WalletCurrency.Btc,
+        },
       }
       break
     case RawBriaEvent.PayloadCase.PAYOUT_COMMITTED:
-      id = rawEvent.getPayoutSettled()?.getId()
-      if (!id) {
-        return new BriaEventError("id is not initialized.")
+      rawPayload = rawEvent.getPayoutCommitted()
+      if (!rawPayload) {
+        return new BriaEventError("payout_submitted is not initialized.")
       }
       payload = {
         id,
         type: BriaPayloadType.PayoutCommitted,
+        satoshis: {
+          amount: BigInt(rawPayload.getSatoshis()),
+          currency: WalletCurrency.Btc,
+        },
       }
       break
     case RawBriaEvent.PayloadCase.PAYOUT_BROADCAST:
-      id = rawEvent.getPayoutSettled()?.getId()
-      if (!id) {
-        return new BriaEventError("id is not initialized.")
+      rawPayload = rawEvent.getPayoutBroadcast()
+      if (!rawPayload) {
+        return new BriaEventError("payout_submitted is not initialized.")
       }
       payload = {
         id,
         type: BriaPayloadType.PayoutBroadcast,
+        satoshis: {
+          amount: BigInt(rawPayload.getSatoshis()),
+          currency: WalletCurrency.Btc,
+        },
       }
       break
     case RawBriaEvent.PayloadCase.PAYOUT_SETTLED:
-      id = rawEvent.getPayoutSettled()?.getId()
-      if (!id) {
-        return new BriaEventError("id is not initialized.")
+      rawPayload = rawEvent.getPayoutSettled()
+      if (!rawPayload) {
+        return new BriaEventError("payout_submitted is not initialized.")
       }
       payload = {
         id,
         type: BriaPayloadType.PayoutSettled,
+        satoshis: {
+          amount: BigInt(rawPayload.getSatoshis()),
+          currency: WalletCurrency.Btc,
+        },
       }
       break
     default:
