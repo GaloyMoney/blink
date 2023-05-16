@@ -61,7 +61,9 @@ describe("BriaSubscriber", () => {
           if (recording) {
             receivedEvents.push(event)
             if (receivedEvents.length === nExpectedEvents) {
-              resolver(receivedEvents)
+              setTimeout(() => {
+                resolver(receivedEvents)
+              }, 1)
             }
           }
           return Promise.resolve(true)
@@ -122,9 +124,11 @@ describe("BriaSubscriber", () => {
             return new UnknownRepositoryError()
           }
           if (receivedEvents.length === nExpectedEvents) {
-            resolver(receivedEvents)
+            setTimeout(() => {
+              resolver(receivedEvents)
+            }, 1)
           }
-          return true
+          return Promise.resolve(true)
         }
       }
 
