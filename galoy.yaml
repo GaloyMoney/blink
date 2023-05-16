@@ -113,7 +113,7 @@ rateLimits:
     duration: 86400
     blockDuration: 864000
   createDeviceAccountGlobal:
-    points: 180
+    points: 500
     duration: 3600
     blockDuration: 3600
   failedLoginAttemptPerPhone:
