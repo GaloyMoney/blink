@@ -1,4 +1,5 @@
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import { DuplicateKeyForPersistError } from "@domain/errors"
 import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import {
@@ -86,7 +87,9 @@ export const addPendingTransaction = async ({
   }
 
   const res = await WalletOnChainPendingReceiveRepository().persistNew(pendingTransaction)
-  if (res instanceof Error) return res
+  if (res instanceof Error && !(res instanceof DuplicateKeyForPersistError)) {
+    return res
+  }
 
   return true
 }

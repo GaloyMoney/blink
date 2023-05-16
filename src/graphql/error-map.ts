@@ -427,6 +427,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindTransactionMetadataError":
     case "CouldNotFindExpectedTransactionMetadataError":
     case "InvalidDocumentIdForDbError":
+    case "DuplicateKeyForPersistError":
     case "MismatchedResultForTransactionMetadataQuery":
     case "InvalidLedgerTransactionId":
     case "MultiplePendingPaymentsForHashError":

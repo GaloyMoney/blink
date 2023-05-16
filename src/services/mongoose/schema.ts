@@ -410,6 +410,7 @@ const WalletOnChainPendingReceiveSchema = new Schema<WalletOnChainPendingReceive
 )
 
 WalletOnChainPendingReceiveSchema.index({ walletId: 1, createdAt: -1 })
+WalletOnChainPendingReceiveSchema.index({ transactionHash: 1, vout: 1 }, { unique: true })
 
 export const WalletOnChainPendingReceive =
   mongoose.model<WalletOnChainPendingReceiveRecord>(
