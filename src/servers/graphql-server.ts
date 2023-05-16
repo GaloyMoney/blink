@@ -54,7 +54,7 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { checkedToUserId, isDeviceId } from "@domain/accounts"
+import { checkedToUserId, checkedToDeviceId } from "@domain/accounts"
 
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 
@@ -154,43 +154,33 @@ export const sessionContext = ({
     async () => {
       // note: value should match (ie: "anon") if not an accountId
       // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-
       const sub = tokenPayload?.sub || ""
 
       const maybeUserId = checkedToUserId(sub)
+      const maybeDeviceId = checkedToDeviceId(sub)
+      let userId: UserId | undefined
       if (!(maybeUserId instanceof ValidationError)) {
-        let userId = maybeUserId
+        userId = maybeUserId
+      } else if (!(maybeDeviceId instanceof ValidationError)) {
+        const deviceId = maybeDeviceId
+        const deviceUser = await UsersRepository().findByDeviceId(deviceId)
+        if (!(deviceUser instanceof Error)) userId = deviceUser.id
+      }
 
-        if (isDeviceId(userId)) {
-          const deviceId = userId as unknown as DeviceId
-          const deviceUser = await UsersRepository().findByDeviceId(deviceId)
-          if (deviceUser instanceof Error) {
-            // TODO - handle this
-          } else {
-            userId = deviceUser.id
-          }
-        }
+      if (userId) {
         const account = await Accounts.getAccountFromUserId(userId)
-
-        // FIXME: can't throw for deviceAccountCreate use case
-        // if (account instanceof Error) throw mapError(account)
-        if (account instanceof Error) domainAccount = undefined
-        else {
-          domainAccount = account
-
-          // not awaiting on purpose. just updating metadata
-          // TODO: look if this can be a source of memory leaks
-          Accounts.updateAccountIPsInfo({
-            accountId: account.id,
-            ip,
-            logger,
-          })
-
-          const userRes = await UsersRepository().findById(account.kratosUserId)
-          if (userRes instanceof Error) throw mapError(userRes)
-          user = userRes
-        }
-
+        if (account instanceof Error) throw mapError(account)
+        domainAccount = account
+        // not awaiting on purpose. just updating metadata
+        // TODO: look if this can be a source of memory leaks
+        Accounts.updateAccountIPsInfo({
+          accountId: account.id,
+          ip,
+          logger,
+        })
+        const userRes = await UsersRepository().findById(account.kratosUserId)
+        if (userRes instanceof Error) throw mapError(userRes)
+        user = userRes
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
       }
 
