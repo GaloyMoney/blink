@@ -385,7 +385,7 @@ export const configSchema = {
           blockDuration: 86400 * 10,
         },
         createDeviceAccountGlobal: {
-          points: 180,
+          points: 500,
           duration: 3600,
           blockDuration: 3600,
         },
