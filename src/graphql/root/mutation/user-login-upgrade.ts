@@ -50,7 +50,7 @@ const UserLoginUpgradeMutation = GT.Field<
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const authToken = await Auth.loginUpgradeWithPhoneV2({
+    const authToken = await Auth.loginUpgradeWithPhone({
       phone,
       code,
       ip,
