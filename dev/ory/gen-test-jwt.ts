@@ -1,3 +1,6 @@
+// this script generates and verifies a JSON Web Token (JWT), using the 'node-jose', 'jsonwebtoken', and 'jwks-rsa' packages.
+// It uses a local 'jwks.json' file for key storage and verification
+
 // cd dev/ory && ts-node gen-test-jwt.ts
 import fs from "fs"
 import * as jose from "node-jose"
