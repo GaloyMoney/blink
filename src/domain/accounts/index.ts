@@ -7,6 +7,7 @@ import {
   InvalidContactAlias,
   InvalidWithdrawFeeError,
   InvalidUserId,
+  InvalidDeviceId,
   InvalidAccountLevelError,
 } from "@domain/errors"
 
@@ -22,6 +23,9 @@ export * from "./primitives"
 const UserIdRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+// device id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
+const DeviceIdRegex = /^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i
+
 export const checkedToDeviceAccountUserId = (userId: string) => {
   if (userId.match(/^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i)) {
     return userId as UserId
@@ -35,19 +39,18 @@ export const checkedToUserId = (userId: string): UserId | ValidationError => {
   if (userId.match(UserIdRegex)) {
     return userId as UserId
   }
-
-  // kratosUserId is a firebase jwt subject
-  if (isDeviceId(userId)) return userId as UserId
-
   return new InvalidUserId(userId)
 }
 
-export const isDeviceId = (userId: string) => {
-  // user id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
-  if (userId.match(/^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i)) {
-    return true
+export const checkedToDeviceId = (deviceId: string): DeviceId | ValidationError => {
+  if (deviceId.match(DeviceIdRegex)) {
+    return deviceId as DeviceId
   }
-  return false
+  return new InvalidDeviceId(deviceId)
+}
+
+export const isDeviceId = (deviceId: string) => {
+  return deviceId.match(DeviceIdRegex)
 }
 
 export const checkedCoordinates = ({
