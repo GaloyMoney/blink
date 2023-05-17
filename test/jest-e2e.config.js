@@ -1,9 +1,11 @@
+const swcConfig = require("./swc-config.json")
+
 module.exports = {
   moduleFileExtensions: ["js", "json", "ts", "gql", "cjs", "mjs"],
   rootDir: "../",
   roots: ["<rootDir>/test/e2e"],
   transform: {
-    "^.+\\.(ts)$": "ts-jest",
+    "^.+\\.(t|j)sx?$": ["@swc/jest", swcConfig],
     "^.+\\.(gql)$": "@graphql-tools/jest-transform",
   },
   testRegex: ".*\\.spec\\.ts$",

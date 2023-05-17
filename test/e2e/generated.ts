@@ -1138,6 +1138,7 @@ export type SettlementViaLn = {
 export type SettlementViaOnChain = {
   readonly __typename: 'SettlementViaOnChain';
   readonly transactionHash: Scalars['OnChainTxHash'];
+  readonly vout?: Maybe<Scalars['Int']>;
 };
 
 export type Subscription = {

@@ -1,9 +1,11 @@
+const swcConfig = require("./swc-config.json")
+
 module.exports = {
   moduleFileExtensions: ["js", "json", "ts", "cjs", "mjs"],
   rootDir: "../",
   roots: ["<rootDir>/test/unit", "<rootDir>/src"],
   transform: {
-    "^.+\\.(ts)$": "ts-jest",
+    "^.+\\.(t|j)sx?$": ["@swc/jest", swcConfig],
   },
   testRegex: ".*\\.spec\\.ts$",
   testEnvironment: "node",
