@@ -20,6 +20,8 @@ import jsonwebtoken from "jsonwebtoken"
 import { AccountLevel } from "@domain/accounts"
 import { createAccountForDeviceAccount } from "@app/accounts"
 
+import { baseLogger } from "@services/logger"
+
 import {
   AuthenticationKratosError,
   IncompatibleSchemaUpgradeError,
@@ -157,8 +159,11 @@ export const AuthWithDeviceAccountService = () => {
         // new data
         identity.metadata_admin = [{ device: identity.traits.device, updated_at }]
       }
-    } catch (err) {
-      console.log(err)
+    } catch (error) {
+      baseLogger.error(
+        { error },
+        "error saving history of the device to the kratos metadata",
+      )
     }
 
     if (identity.state === undefined)
