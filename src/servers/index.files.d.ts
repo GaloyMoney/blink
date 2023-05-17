@@ -13,7 +13,6 @@ type GraphQLContext = {
   domainAccount: Account | undefined
   geetest: GeetestType
   ip: IpAddress | undefined
-  sub: string
 }
 
 type GraphQLContextAuth = {
