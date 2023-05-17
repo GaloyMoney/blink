@@ -150,10 +150,9 @@ export const sessionContext = ({
     async () => {
       // note: value should match (ie: "anon") if not an accountId
       // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-      const sub = tokenPayload?.sub
-      const userId = tokenPayload?.userId
+      const userId = tokenPayload?.userId ?? tokenPayload?.sub
 
-      if (userId && sub !== "anon") {
+      if (userId) {
         const account = await Accounts.getAccountFromUserId(userId)
         if (account instanceof Error) throw mapError(account)
         domainAccount = account
