@@ -675,7 +675,7 @@ resources:
   - name: stablesats-price-proto
     type: git
     source:
-      paths: ["proto/*"]
+      paths: ["proto/price/price_service.proto"]
       uri: #@ data.values.git_stablesats_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
@@ -684,7 +684,7 @@ resources:
   - name: price-history-proto
     type: git
     source:
-      paths: ["history/src/servers/protos/*"]
+      paths: ["history/src/servers/protos/price_history.proto"]
       uri: #@ data.values.git_price_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
@@ -692,7 +692,7 @@ resources:
   - name: price-realtime-proto
     type: git
     source:
-      paths: ["realtime/src/servers/protos/*"]
+      paths: ["realtime/src/servers/protos/price.proto"]
       uri: #@ data.values.git_price_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
@@ -700,7 +700,7 @@ resources:
   - name: bria-api-proto
     type: git
     source:
-      paths: ["proto/api/*"]
+      paths: ["proto/api/bria.proto"]
       uri: #@ data.values.git_bria_uri
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
