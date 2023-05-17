@@ -54,11 +54,7 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { checkedToUserId, checkedToDeviceId } from "@domain/accounts"
-
 import { sendOathkeeperRequest } from "@services/oathkeeper"
-
-import { ValidationError } from "@domain/shared"
 
 import { UsersRepository } from "@services/mongoose"
 
@@ -155,17 +151,7 @@ export const sessionContext = ({
       // note: value should match (ie: "anon") if not an accountId
       // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
       const sub = tokenPayload?.sub || ""
-
-      const maybeUserId = checkedToUserId(sub)
-      const maybeDeviceId = checkedToDeviceId(sub)
-      let userId: UserId | undefined
-      if (!(maybeUserId instanceof ValidationError)) {
-        userId = maybeUserId
-      } else if (!(maybeDeviceId instanceof ValidationError)) {
-        const deviceId = maybeDeviceId
-        const deviceUser = await UsersRepository().findByDeviceId(deviceId)
-        if (!(deviceUser instanceof Error)) userId = deviceUser.id
-      }
+      const userId = tokenPayload?.userId || ""
 
       if (userId) {
         const account = await Accounts.getAccountFromUserId(userId)
