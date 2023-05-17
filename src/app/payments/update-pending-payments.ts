@@ -164,7 +164,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
 
     if (status === PaymentStatus.Pending) return true
 
-    return LockService().lockPaymentHash(paymentHash, async () => {
+    return LockService().lockWalletId(walletId, async () => {
       const ledgerService = LedgerService()
       const recorded = await ledgerService.isLnTxRecorded(paymentHash)
       if (recorded instanceof Error) {

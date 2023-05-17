@@ -28,7 +28,7 @@
     "e2e-codegen": "graphql-codegen --config codegen.yml"
   },
   "engines": {
-    "node": "18"
+    "node": ">=18"
   },
   "dependencies": {
     "@google-cloud/storage": "^6.9.5",

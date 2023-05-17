@@ -20,7 +20,7 @@ jobs:
           path: docs
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
       - run: yarn install --frozen-lockfile
         working-directory: main
       - uses: vmware-tanzu/carvel-setup-action@v1
