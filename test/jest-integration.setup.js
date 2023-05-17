@@ -11,6 +11,7 @@ jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 jest.mock("@services/price", () => require("test/mocks/price"))
 
+
 let mongoose
 
 beforeAll(async () => {
@@ -23,21 +24,6 @@ afterAll(async () => {
   if (mongoose) {
     await mongoose.connection.close()
   }
-})
-
-afterEach(() => {
-  const bytesToGB = (bytes) => {
-    return (bytes / 1e9).toFixed(4) + " GB"
-  }
-
-  const usage = process.memoryUsage()
-  console.log(
-    `MEMORY USAGE: RSS = ${bytesToGB(usage.rss)}, Heap Total = ${bytesToGB(
-      usage.heapTotal,
-    )}, Heap Used = ${bytesToGB(usage.heapUsed)}, External = ${bytesToGB(
-      usage.external,
-    )}`,
-  )
 })
 
 jest.setTimeout(process.env.JEST_TIMEOUT || 30000)
