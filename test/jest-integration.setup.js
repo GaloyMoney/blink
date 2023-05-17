@@ -25,4 +25,19 @@ afterAll(async () => {
   }
 })
 
+afterEach(() => {
+  const bytesToGB = (bytes) => {
+    return (bytes / 1e9).toFixed(4) + " GB"
+  }
+
+  const usage = process.memoryUsage()
+  console.log(
+    `MEMORY USAGE: RSS = ${bytesToGB(usage.rss)}, Heap Total = ${bytesToGB(
+      usage.heapTotal,
+    )}, Heap Used = ${bytesToGB(usage.heapUsed)}, External = ${bytesToGB(
+      usage.external,
+    )}`,
+  )
+})
+
 jest.setTimeout(process.env.JEST_TIMEOUT || 30000)
