@@ -210,11 +210,13 @@ kratosRouter.post(
           const deviceUser = await UsersRepository().findByDeviceId(deviceId)
           if (!(deviceUser instanceof Error)) userId = deviceUser.id
         }
+        const extra = {}
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        if (userId) extra["userId"] = userId
         res.status(200).json({
-          subject, // subject: userId, // <=== this breaks if you try to mutate the subject (i.e changing deviceId subject to userId)
-          extra: {
-            userId, // <==== need to use extra
-          },
+          subject,
+          extra,
         })
         return
       } catch (e) {
