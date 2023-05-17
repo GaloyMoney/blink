@@ -1,6 +1,7 @@
 import {
   CouldNotUnsetPhoneFromUserError,
   CouldNotFindUserFromPhoneError,
+  CouldNotFindUserFromDeviceError,
   RepositoryError,
 } from "@domain/errors"
 
@@ -60,7 +61,7 @@ export const UsersRepository = (): IUsersRepository => {
   const findByDeviceId = async (device: DeviceId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ device })
-      if (!result) return new CouldNotFindUserFromPhoneError()
+      if (!result) return new CouldNotFindUserFromDeviceError()
 
       return translateToUser(result)
     } catch (err) {
