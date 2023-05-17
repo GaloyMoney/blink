@@ -6,10 +6,10 @@ import {
 import { UnknownOnChainServiceError, OnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
-import { bria, briaMetadata } from "./client"
+import { BriaClient } from "./client"
 import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
-import { SubscribeAllRequest, BriaEvent as RawBriaEvent } from "./proto/bria_pb"
+import { BriaEvent as RawBriaEvent } from "./proto/bria_pb"
 import { BriaEventError } from "./errors"
 
 export { ListenerWrapper } from "./listener_wrapper"
@@ -25,30 +25,27 @@ export const BriaPayloadType = {
 
 const eventRepo = BriaEventRepo()
 
+const bria = BriaClient()
+
 export const BriaSubscriber = () => {
   const subscribeToAll = async (
     eventHandler: BriaEventHandler,
   ): Promise<ListenerWrapper | OnChainServiceError> => {
     let listenerWrapper: ListenerWrapper
+    const lastSequence = await eventRepo.getLatestSequence()
+    if (lastSequence instanceof Error) {
+      return lastSequence
+    }
     try {
-      const lastSequence = await eventRepo.getLatestSequence()
-      if (lastSequence instanceof Error) {
-        return lastSequence
+      const listener = bria.subscribeAll({ augment: true, afterSequence: lastSequence })
+      const errorHandler = (error: Error) => {
+        if (!error.message.includes("CANCELLED")) {
+          listenerWrapper._listener.cancel()
+          throw error
+        }
       }
 
-      const request = new SubscribeAllRequest()
-      request.setAugment(true)
-      request.setAfterSequence(lastSequence)
-
-      listenerWrapper = new ListenerWrapper(
-        bria.subscribeAll(request, briaMetadata),
-        (error: Error) => {
-          if (!error.message.includes("CANCELLED")) {
-            listenerWrapper._listener.cancel()
-            throw error
-          }
-        },
-      )
+      listenerWrapper = new ListenerWrapper(listener, errorHandler)
     } catch (error) {
       return new UnknownOnChainServiceError(error.message || error)
     }
