@@ -344,6 +344,7 @@ const UserSchema = new Schema(
       sparse: true,
     },
     device: {
+      // TODO do we still need this after hydrator code
       type: String,
       index: true,
       unique: true,

@@ -1,3 +1,4 @@
+// TODO do we still need this??
 module.exports = {
   async up(db) {
     try {
