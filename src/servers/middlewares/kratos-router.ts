@@ -11,9 +11,9 @@ import {
   createAccountForDeviceAccount,
 } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
-import { AccountLevel, checkedToUserId } from "@domain/accounts"
+import { AccountLevel, checkedToDeviceId, checkedToUserId } from "@domain/accounts"
 import { UsersRepository } from "@services/mongoose"
-import { ErrorLevel } from "@domain/shared"
+import { ErrorLevel, ValidationError } from "@domain/shared"
 import { baseLogger } from "@services/logger"
 
 const kratosRouter = express.Router({ caseSensitive: true })
@@ -184,6 +184,42 @@ kratosRouter.post(
       }
 
       res.status(200).send("ok\n")
+    },
+  }),
+)
+
+kratosRouter.post(
+  "/subjectToUserId",
+  wrapAsyncToRunInSpan({
+    namespace: "subjectToUserId",
+    fn: async (req: express.Request, res: express.Response) => {
+      // TODO check basic auth
+      // console.log("missing authorization header")
+      // res.status(401).send("missing authorization header")
+      // return
+
+      let userId: UserId | undefined
+      try {
+        const { subject } = req.body
+        const maybeUserId = checkedToUserId(subject)
+        const maybeDeviceId = checkedToDeviceId(subject)
+        if (!(maybeUserId instanceof ValidationError)) {
+          userId = maybeUserId
+        } else if (!(maybeDeviceId instanceof ValidationError)) {
+          const deviceId = maybeDeviceId
+          const deviceUser = await UsersRepository().findByDeviceId(deviceId)
+          if (!(deviceUser instanceof Error)) userId = deviceUser.id
+        }
+        res.status(200).json({
+          subject, // subject: userId, // <=== this breaks if you try to mutate the subject (i.e changing deviceId subject to userId)
+          extra: {
+            userId, // <==== need to use extra
+          },
+        })
+        return
+      } catch (e) {
+        res.status(500).json({ error: e.message })
+      }
     },
   }),
 )
