@@ -25,7 +25,7 @@ export const BriaPayloadType = {
 
 const eventRepo = BriaEventRepo()
 
-const bria = BriaClient()
+const bria = BriaClient("" as BriaWalletName)
 
 export const BriaSubscriber = () => {
   const subscribeToAll = async (
