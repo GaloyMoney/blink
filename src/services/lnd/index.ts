@@ -70,6 +70,7 @@ import sumBy from "lodash.sumby"
 
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds, parseLndErrorDetails } from "./utils"
+import { KnownLndErrorDetails } from "./errors"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   const activeNode = getActiveLnd()
@@ -794,30 +795,6 @@ const lookupPaymentByPubkeyAndHash = async ({
   }
 }
 
-export const KnownLndErrorDetails = {
-  InsufficientBalance: /insufficient local balance/,
-  InsufficientBalanceToAttemptPayment: /InsufficientBalanceToAttemptPayment/,
-  InvoiceNotFound: /unable to locate invoice/,
-  InvoiceAlreadyPaid: /invoice is already paid/,
-  UnableToFindRoute: /PaymentPathfindingFailedToFindPossibleRoute/,
-  UnknownNextPeer: /UnknownNextPeer/,
-  LndDbCorruption: /payment isn't initiated/,
-  PaymentRejectedByDestination: /PaymentRejectedByDestination/,
-  UnknownPaymentHash: /UnknownPaymentHash/,
-  PaymentAttemptsTimedOut: /PaymentAttemptsTimedOut/,
-  ProbeForRouteTimedOut: /ProbeForRouteTimedOut/,
-  SentPaymentNotFound: /SentPaymentNotFound/,
-  PaymentInTransition: /payment is in transition/,
-  PaymentForDeleteNotFound: /non bucket element in payments bucket/,
-  SecretDoesNotMatchAnyExistingHodlInvoice: /SecretDoesNotMatchAnyExistingHodlInvoice/,
-  ConnectionDropped: /Connection dropped/,
-  TemporaryChannelFailure: /TemporaryChannelFailure/,
-  TemporaryNodeFailure: /TemporaryNodeFailure/,
-  InvoiceAlreadySettled: /invoice already settled/,
-  NoConnectionEstablished: /No connection established/,
-  MissingDependentFeature: /missing dependent feature/,
-} as const
-
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
 // @ts-ignore-next-line no-implicit-any error
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
@@ -953,6 +930,7 @@ const handleCommonLightningServiceErrors = (err: Error) => {
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
+    case match(KnownLndErrorDetails.ConnectionRefused):
       return new OffChainServiceUnavailableError()
     default:
       return new UnknownLightningServiceError(msgForUnknown(err))

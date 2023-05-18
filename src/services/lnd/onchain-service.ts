@@ -32,6 +32,7 @@ import {
   getLnds,
   parseLndErrorDetails,
 } from "./utils"
+import { KnownLndErrorDetails } from "./errors"
 
 export const OnChainService = (
   decoder: TxDecoder,
@@ -232,15 +233,6 @@ export const OnChainService = (
   })
 }
 
-const KnownLndErrorDetails = {
-  InsufficientFunds: /insufficient funds available to construct transaction/,
-  ConnectionDropped: /Connection dropped/,
-  CPFPAncestorLimitReached:
-    /unmatched backend error: -26: too-long-mempool-chain, too many .* \[limit: \d+\]/,
-  DustAmount: /transaction output is dust/,
-  NoConnectionEstablished: /No connection established/,
-} as const
-
 export const extractIncomingTransactions = ({
   decoder,
   txs,
@@ -295,6 +287,7 @@ const handleCommonOnChainServiceErrors = (err: Error) => {
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
+    case match(KnownLndErrorDetails.ConnectionRefused):
       return new OnChainServiceUnavailableError()
     default:
       return new UnknownOnChainServiceError(msgForUnknown(err))
