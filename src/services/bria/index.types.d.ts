@@ -1,5 +1,7 @@
 type BriaWalletName = string & { readonly brand: unique symbol }
 
+type BriaEventError = import("./errors").BriaEventError
+
 type ClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
 
 type BriaPayloadType =

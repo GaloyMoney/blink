@@ -9,7 +9,7 @@ import { WalletCurrency } from "@domain/shared/primitives"
 import { BriaClient } from "./client"
 import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
-import { BriaEvent as RawBriaEvent } from "./proto/bria_pb"
+import { BriaEvent as ProtoBriaEvent } from "./proto/bria_pb"
 import { BriaEventError } from "./errors"
 
 export { ListenerWrapper } from "./listener_wrapper"
@@ -36,21 +36,22 @@ export const BriaSubscriber = () => {
     if (lastSequence instanceof Error) {
       return lastSequence
     }
+
+    const listener = bria.subscribeAll({ augment: true, afterSequence: lastSequence })
+    if (listener instanceof Error) return listener
+
     try {
-      const listener = bria.subscribeAll({ augment: true, afterSequence: lastSequence })
-      const errorHandler = (error: Error) => {
+      listenerWrapper = new ListenerWrapper(listener, (error: Error) => {
         if (!error.message.includes("CANCELLED")) {
           listenerWrapper._listener.cancel()
           throw error
         }
-      }
-
-      listenerWrapper = new ListenerWrapper(listener, errorHandler)
+      })
     } catch (error) {
       return new UnknownOnChainServiceError(error.message || error)
     }
 
-    listenerWrapper._setDataHandler((rawEvent: RawBriaEvent) => {
+    listenerWrapper._setDataHandler((rawEvent: ProtoBriaEvent) => {
       asyncRunInSpan(
         "service.bria.eventReceived",
         {
@@ -94,7 +95,7 @@ export const BriaSubscriber = () => {
   }
 }
 
-const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
+const translate = (rawEvent: ProtoBriaEvent): BriaEvent | BriaEventError => {
   const sequence = rawEvent.getSequence()
   const rawAugmentation = rawEvent.getAugmentation()
 
@@ -116,9 +117,9 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
   let payload: BriaPayload | undefined
   let rawPayload
   switch (rawEvent.getPayloadCase()) {
-    case RawBriaEvent.PayloadCase.PAYLOAD_NOT_SET:
+    case ProtoBriaEvent.PayloadCase.PAYLOAD_NOT_SET:
       return new BriaEventError("payload is not set.")
-    case RawBriaEvent.PayloadCase.UTXO_DETECTED:
+    case ProtoBriaEvent.PayloadCase.UTXO_DETECTED:
       rawPayload = rawEvent.getUtxoDetected()
       if (!rawPayload) {
         return new BriaEventError("utxo_detected is not initialized.")
@@ -134,7 +135,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         },
       }
       break
-    case RawBriaEvent.PayloadCase.UTXO_SETTLED:
+    case ProtoBriaEvent.PayloadCase.UTXO_SETTLED:
       rawPayload = rawEvent.getUtxoSettled()
       if (!rawPayload) {
         return new BriaEventError("utxo_detected is not initialized.")
@@ -151,7 +152,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         blockNumber: rawPayload.getBlockHeight(),
       }
       break
-    case RawBriaEvent.PayloadCase.PAYOUT_SUBMITTED:
+    case ProtoBriaEvent.PayloadCase.PAYOUT_SUBMITTED:
       rawPayload = rawEvent.getPayoutSubmitted()
       if (!rawPayload) {
         return new BriaEventError("payout_submitted is not initialized.")
@@ -165,7 +166,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         },
       }
       break
-    case RawBriaEvent.PayloadCase.PAYOUT_COMMITTED:
+    case ProtoBriaEvent.PayloadCase.PAYOUT_COMMITTED:
       rawPayload = rawEvent.getPayoutCommitted()
       if (!rawPayload) {
         return new BriaEventError("payout_submitted is not initialized.")
@@ -179,7 +180,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         },
       }
       break
-    case RawBriaEvent.PayloadCase.PAYOUT_BROADCAST:
+    case ProtoBriaEvent.PayloadCase.PAYOUT_BROADCAST:
       rawPayload = rawEvent.getPayoutBroadcast()
       if (!rawPayload) {
         return new BriaEventError("payout_submitted is not initialized.")
@@ -193,7 +194,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
         },
       }
       break
-    case RawBriaEvent.PayloadCase.PAYOUT_SETTLED:
+    case ProtoBriaEvent.PayloadCase.PAYOUT_SETTLED:
       rawPayload = rawEvent.getPayoutSettled()
       if (!rawPayload) {
         return new BriaEventError("payout_submitted is not initialized.")
