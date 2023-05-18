@@ -3,7 +3,7 @@ import { WebSocketServer } from "ws" // yarn add ws
 // import ws from 'ws'; yarn add ws@7
 // const WebSocketServer = ws.Server;
 import { gqlMainSchema } from "@graphql/main"
-import { useServer } from "graphql-ws/lib/use/ws"
+import { Extra, useServer } from "graphql-ws/lib/use/ws"
 
 import { getJwksArgs, isDev } from "@config"
 import { Context } from "graphql-ws"
@@ -20,6 +20,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { baseLogger } from "@services/logger"
 
 import { sessionContext } from "./graphql-server"
+import { validateKratosCookie } from "@services/kratos"
 
 const schema = gqlMainSchema
 
@@ -36,7 +37,12 @@ const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 const authorizedContexts: Record<string, unknown> = {}
 
 // new ws server
-const getContext = async (ctx: Context) => {
+const getContext = async (
+  ctx: Context<
+    Record<string, unknown> | undefined,
+    Extra & Partial<Record<PropertyKey, never>>
+  >,
+) => {
   const connectionParams = ctx.connectionParams
 
   // TODO: check if nginx pass the ip to the header
@@ -50,21 +56,19 @@ const getContext = async (ctx: Context) => {
 
   const authz = connectionParams?.Authorization as string | undefined
 
-  // TODO: also manage the case where there is a cookie in the request
-  // https://www.ory.sh/docs/oathkeeper/guides/proxy-websockets#configure-ory-oathkeeper-and-ory-kratos
-  // const cookies = request.headers.cookie
-  // if (cookies?.includes("ory_kratos_session")) {
-  //   const kratosCookieRes = await validateKratosCookie(cookies)
-  //   if (kratosCookieRes instanceof Error) return kratosCookieRes
-  //   const tokenPayload = {
-  //     sub: kratosCookieRes.kratosUserId,
-  //   }
-  //   return sessionContext({
-  //     tokenPayload,
-  //     ip: request?.socket?.remoteAddress,
-  //     body: null,
-  //   })
-  // }
+  const cookies = ctx.extra.request.headers.cookie
+  if (cookies?.includes("ory_kratos_session")) {
+    const kratosCookieRes = await validateKratosCookie(cookies)
+    if (kratosCookieRes instanceof Error) return kratosCookieRes
+    const tokenPayload = {
+      sub: kratosCookieRes.kratosUserId,
+    }
+    return sessionContext({
+      tokenPayload,
+      ip: ctx.extra.request?.socket?.remoteAddress as IpAddress,
+      body: null,
+    })
+  }
 
   const kratosToken = authz?.slice(7) as SessionToken
 
@@ -134,18 +138,38 @@ const server = () =>
       },
       onConnect: async (ctx) => {
         baseLogger.debug("Connect", ctx)
-
+        const kratos_cookie = ("; " + ctx.extra.request.headers.cookie)
+          .split(`; ory_kratos_session=`)
+          .pop()
+          ?.split(";")[0]
         // TODO: integrate open telemetry
-        if (typeof ctx.connectionParams?.Authorization !== "string") {
+        if (typeof ctx.connectionParams?.Authorization !== "string" &&
+          !kratos_cookie) {
           return true // anon connection ?
         }
 
         const context = await getContext(ctx)
-        authorizedContexts[ctx.connectionParams.Authorization] = context
+        if (typeof ctx.connectionParams?.Authorization === "string") {
+          authorizedContexts[ctx.connectionParams.Authorization] = context
+        }
+        if (kratos_cookie) {
+          authorizedContexts[kratos_cookie] = context
+        }
+
         return true
       },
       context: (ctx) => {
         // TODO: integrate open telemetry
+        const kratos_cookie = ("; " + ctx.extra.request.headers.cookie)
+          .split(`; ory_kratos_session=`)
+          .pop()
+          ?.split(";")[0]
+
+        // TODO: integrate open telemetry
+        if (kratos_cookie) {
+          return authorizedContexts[kratos_cookie]
+        }
+
         if (typeof ctx.connectionParams?.Authorization === "string") {
           return authorizedContexts[ctx.connectionParams?.Authorization]
         }

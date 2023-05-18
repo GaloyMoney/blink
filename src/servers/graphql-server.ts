@@ -441,7 +441,7 @@ export const startApolloServer = async ({
       }
       return sessionContext({
         tokenPayload,
-        ip: ctx.extra.request?.socket?.remoteAddress as any,
+        ip: ctx.extra.request?.socket?.remoteAddress as IpAddress,
         body: null,
       })
     }
