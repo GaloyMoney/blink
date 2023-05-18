@@ -13,7 +13,7 @@ COPY ./test ./test
 
 RUN yarn build
 
-FROM gcr.io/distroless/nodejs:20-debug
+FROM gcr.io/distroless/nodejs20-debian11:debug
 COPY --from=BUILD_IMAGE /app/lib /app/lib
 COPY --from=BUILD_IMAGE /app/src/config/locales /app/lib/config/locales
 COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
