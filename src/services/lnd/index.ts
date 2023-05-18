@@ -10,7 +10,7 @@ import {
   GetPaymentResult,
   getPayments,
   getPendingPayments,
-  getWalletInfo,
+  getHeight,
   payViaPaymentDetails,
   PayViaPaymentDetailsArgs,
   PayViaPaymentDetailsResult,
@@ -881,7 +881,7 @@ const resolvePaymentStatus = async ({
     key: CacheKeys.BlockHeight,
     ttlSecs: SECS_PER_5_MINS,
     getForCaching: async () => {
-      const { current_block_height } = await getWalletInfo({ lnd })
+      const { current_block_height } = await getHeight({ lnd })
       return current_block_height
     },
   })

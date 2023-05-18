@@ -17,7 +17,7 @@ import {
   getChainTransactions,
   GetChainTransactionsResult,
   getPendingChainBalance,
-  getWalletInfo,
+  getHeight,
   sendToChainAddress,
 } from "lightning"
 
@@ -90,7 +90,7 @@ export const OnChainService = (
     try {
       let blockHeight = await getCachedHeight()
       if (!blockHeight) {
-        ;({ current_block_height: blockHeight } = await getWalletInfo({ lnd }))
+        ;({ current_block_height: blockHeight } = await getHeight({ lnd }))
         await LocalCacheService().set<number>({
           key: CacheKeys.BlockHeight,
           value: blockHeight,

@@ -29,6 +29,7 @@ import {
   getChannels,
   getClosedChannels,
   getForwards,
+  getHeight,
   getPendingChainBalance,
   getWalletInfo,
   SubscribeToChannelsChannelClosedEvent,
@@ -308,7 +309,7 @@ export const onChannelUpdated = async ({
   const { transaction_id: txid } = channel as SubscribeToChannelsChannelOpenedEvent
 
   // TODO: dedupe from onchain
-  const { current_block_height } = await getWalletInfo({ lnd })
+  const { current_block_height } = await getHeight({ lnd })
   const after = Math.max(0, current_block_height - ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await getChainTransactions({ lnd, after })
   // end dedupe
