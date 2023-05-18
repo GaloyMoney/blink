@@ -19,8 +19,9 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { baseLogger } from "@services/logger"
 
-import { sessionContext } from "./graphql-server"
 import { validateKratosCookie } from "@services/kratos"
+
+import { sessionContext } from "./graphql-server"
 
 const schema = gqlMainSchema
 
@@ -143,8 +144,7 @@ const server = () =>
           .pop()
           ?.split(";")[0]
         // TODO: integrate open telemetry
-        if (typeof ctx.connectionParams?.Authorization !== "string" &&
-          !kratos_cookie) {
+        if (typeof ctx.connectionParams?.Authorization !== "string" && !kratos_cookie) {
           return true // anon connection ?
         }
 
