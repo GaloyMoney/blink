@@ -1,12 +1,12 @@
 import { updatePendingPayments } from "@app/payments"
 import { handleHeldInvoices, updateOnChainReceipt } from "@app/wallets"
 import { baseLogger } from "@services/logger"
-import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 
 import { ledgerAdmin } from "@services/mongodb"
 import { lndsBalances } from "@services/lnd/utils"
 
 import { waitUntilChannelBalanceSyncAll } from "./lightning"
+import { getBalance as getBitcoindBalance } from "./bitcoind"
 
 const logger = baseLogger.child({ module: "test" })
 

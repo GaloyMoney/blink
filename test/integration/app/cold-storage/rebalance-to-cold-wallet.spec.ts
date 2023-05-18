@@ -2,9 +2,9 @@ import { ColdStorage } from "@app"
 import * as appConfig from "@config"
 import { btc2sat, toSats } from "@domain/bitcoin"
 import { RebalanceChecker } from "@domain/cold-storage"
-import { BitcoindWalletClient } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 
+import { BitcoindWalletClient } from "test/helpers/bitcoind"
 import { bitcoindClient, checkIsBalanced, mineBlockAndSyncAll } from "test/helpers"
 
 jest.mock("@config", () => {
