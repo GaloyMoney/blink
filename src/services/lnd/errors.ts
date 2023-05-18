@@ -29,4 +29,5 @@ export const KnownLndErrorDetails = {
   // Common
   NoConnectionEstablished: /No connection established/,
   ConnectionDropped: /Connection dropped/,
+  ConnectionRefused: /connection refused/,
 } as const

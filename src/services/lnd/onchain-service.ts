@@ -287,6 +287,7 @@ const handleCommonOnChainServiceErrors = (err: Error) => {
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
+    case match(KnownLndErrorDetails.ConnectionRefused):
       return new OnChainServiceUnavailableError()
     default:
       return new UnknownOnChainServiceError(msgForUnknown(err))

@@ -930,6 +930,7 @@ const handleCommonLightningServiceErrors = (err: Error) => {
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
+    case match(KnownLndErrorDetails.ConnectionRefused):
       return new OffChainServiceUnavailableError()
     default:
       return new UnknownLightningServiceError(msgForUnknown(err))
