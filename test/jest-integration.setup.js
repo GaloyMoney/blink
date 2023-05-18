@@ -3,14 +3,13 @@ const { setupMongoConnection } = require("@services/mongodb")
 
 jest.mock("@services/lnd/auth", () => {
   const module = jest.requireActual("@services/lnd/auth")
-  module.lndsConnect = module.lndsConnect.map((p) => ({ ...p, active: true }))
-  return module
+  const lndsConnect = module.lndsConnect.map((p) => ({ ...p, active: true }))
+  return { ...module, lndsConnect }
 })
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 jest.mock("@services/price", () => require("test/mocks/price"))
-
 
 let mongoose
 
