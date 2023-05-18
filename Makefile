@@ -135,7 +135,7 @@ execute-integration-from-within-container:
 
 unit-in-ci:
 	. ./.envrc && \
-		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/jest-unit.config.js --ci --bail
+		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/jest-unit.config.js --ci --bail --maxWorkers=50%
 
 check-implicit:
 	yarn tsc-check-noimplicitany
