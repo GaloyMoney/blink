@@ -248,7 +248,7 @@ services:
       --restlisten=0.0.0.0:8081\
       --rpclisten=0.0.0.0:11010"
   e2e-tests:
-    image: us.gcr.io/galoy-org/nodejs-concourse:node-20
+    image: us.gcr.io/galoy-org/nodejs-concourse
     depends_on:
       - e2e-deps
     command: ["make", "execute-e2e-from-within-container"]
@@ -258,7 +258,7 @@ services:
     volumes:
       - ./:/repo
   integration-tests:
-    image: us.gcr.io/galoy-org/nodejs-concourse:node-20
+    image: us.gcr.io/galoy-org/nodejs-concourse
     depends_on:
       - integration-deps
     command: ["make", "execute-integration-from-within-container"]
