@@ -26,6 +26,7 @@ import {
 } from "@app"
 import * as Wallets from "@app/wallets"
 import { uploadBackup } from "@app/admin/backup"
+import { getOnChainTxs } from "@app/wallets/private/get-on-chain-txs"
 import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
 
 import {
@@ -172,8 +173,6 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
   } else {
     // incoming transaction
 
-    redisCache.clear({ key: CacheKeys.LastOnChainTransactions })
-
     const walletsRepo = WalletsRepository()
 
     const outputAddresses = tx.output_addresses as OnChainAddress[]
@@ -249,6 +248,9 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
 }
 
 export const onchainBlockEventHandler = async (height: number) => {
+  // Clean LastOnChainTransactions cache
+  redisCache.clear({ key: CacheKeys.LastOnChainTransactions })
+
   const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
   const txNumber = await WalletWithSpans.updateOnChainReceipt({ scanDepth, logger })
   if (txNumber instanceof Error) {
@@ -256,9 +258,17 @@ export const onchainBlockEventHandler = async (height: number) => {
       { error: txNumber },
       `error updating onchain receipt for block ${height}`,
     )
-    return
   }
-  logger.info(`finish block ${height} handler with ${txNumber} transactions`)
+
+  // Set LastOnChainTransactions cache to improve performance in pending balance and txs query
+  const onChainTxs = await getOnChainTxs()
+  if (onChainTxs instanceof Error) {
+    baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
+  }
+
+  if (txNumber >= 0) {
+    logger.info(`finish block ${height} handler with ${txNumber} transactions`)
+  }
 }
 
 export const invoiceUpdateEventHandler = async (
