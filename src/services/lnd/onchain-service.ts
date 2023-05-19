@@ -5,6 +5,7 @@ import {
   CPFPAncestorLimitReachedError,
   IncomingOnChainTransaction,
   InsufficientOnChainFundsError,
+  OnChainServiceBusyError,
   OnChainServiceUnavailableError,
   OutgoingOnChainTransaction,
   UnexpectedDustAmountError,
@@ -287,8 +288,9 @@ const handleCommonOnChainServiceErrors = (err: Error) => {
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
-    case match(KnownLndErrorDetails.ConnectionRefused):
       return new OnChainServiceUnavailableError()
+    case match(KnownLndErrorDetails.ConnectionRefused):
+      return new OnChainServiceBusyError()
     default:
       return new UnknownOnChainServiceError(msgForUnknown(err))
   }

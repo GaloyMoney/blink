@@ -56,6 +56,7 @@ import {
   DestinationMissingDependentFeatureError,
   LookupPaymentTimedOutError,
   TemporaryNodeFailureError,
+  OffChainServiceBusyError,
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
@@ -930,8 +931,9 @@ const handleCommonLightningServiceErrors = (err: Error) => {
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
     case match(KnownLndErrorDetails.NoConnectionEstablished):
-    case match(KnownLndErrorDetails.ConnectionRefused):
       return new OffChainServiceUnavailableError()
+    case match(KnownLndErrorDetails.ConnectionRefused):
+      return new OffChainServiceBusyError()
     default:
       return new UnknownLightningServiceError(msgForUnknown(err))
   }

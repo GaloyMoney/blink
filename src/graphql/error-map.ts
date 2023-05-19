@@ -313,10 +313,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "OffChainServiceUnavailableError":
+    case "OffChainServiceBusyError":
     case "OnChainServiceUnavailableError":
+    case "OnChainServiceBusyError":
       /* eslint-disable-next-line no-case-declarations */
-      const serviceType =
-        errorName === "OffChainServiceUnavailableError" ? "Offchain" : "Onchain"
+      const serviceType = errorName.includes("OffChainService") ? "Offchain" : "Onchain"
       message = `${serviceType} action failed, please try again in a few minutes. If the problem persists, please contact support.`
       return new LndOfflineError({ message, logger: baseLogger })
 
