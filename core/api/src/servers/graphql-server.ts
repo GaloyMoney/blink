@@ -4,6 +4,7 @@ import express, { NextFunction, Request, Response } from "express"
 
 import { getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
+import { ApolloServerPlugin } from "apollo-server-plugin-base"
 import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
@@ -59,6 +60,56 @@ export const startApolloServer = async ({
   const app = express()
   const httpServer = createServer(app)
 
+  const partialAccountTransactionsPlugin: ApolloServerPlugin = {
+    requestDidStart: async () => {
+      const normalizeWalletTransaction = (edge: { node: WalletTransaction }) => ({
+        ...edge,
+        node: {
+          ...edge.node,
+          settlementDisplayPrice: {
+            ...edge.node.settlementDisplayPrice,
+            base: Number(edge.node.settlementDisplayPrice.base),
+            offset: Number(edge.node.settlementDisplayPrice.offset),
+          },
+        },
+      })
+
+      let transactionsFromExtensions:
+        | { edges: { node: WalletTransaction }[] }
+        | undefined = undefined
+      return {
+        didEncounterErrors: async (rc) => {
+          const partialData = rc.errors[0].extensions?.partialData as
+            | Record<"transactions", { edges: { node: WalletTransaction }[] }>
+            | undefined
+          if (partialData?.transactions) {
+            transactionsFromExtensions = partialData.transactions
+          }
+        },
+
+        willSendResponse: async (rc) => {
+          // Filter for 'transactions' property in data
+          if (
+            !(
+              rc.response.data?.me?.defaultAccount &&
+              "transactions" in (rc.response.data.me.defaultAccount || {})
+            )
+          ) {
+            return undefined
+          }
+
+          // Add partial transactions if they exist
+          if (transactionsFromExtensions) {
+            rc.response.data.me.defaultAccount.transactions = {
+              ...transactionsFromExtensions,
+              edges: transactionsFromExtensions.edges.map(normalizeWalletTransaction),
+            }
+          }
+        },
+      }
+    },
+  }
+
   const apolloPlugins = [
     createComplexityPlugin({
       schema,
@@ -70,6 +121,7 @@ export const startApolloServer = async ({
       },
     }),
     ApolloServerPluginDrainHttpServer({ httpServer }),
+    partialAccountTransactionsPlugin,
   ]
 
   const apolloServer = new ApolloServer({
