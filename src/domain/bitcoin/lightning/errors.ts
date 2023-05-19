@@ -27,6 +27,9 @@ export class MaxFeeTooLargeForRoutelessPaymentError extends LightningServiceErro
 export class OffChainServiceUnavailableError extends LightningServiceError {
   level = ErrorLevel.Critical
 }
+export class OffChainServiceBusyError extends LightningServiceError {
+  level = ErrorLevel.Critical
+}
 export class NoValidNodeForPubkeyError extends LightningServiceError {
   level = ErrorLevel.Critical
 }
