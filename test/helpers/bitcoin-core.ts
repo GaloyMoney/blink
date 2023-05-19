@@ -1,10 +1,12 @@
 import BitcoindClient from "bitcoin-core-ts"
 import { Wallets } from "@app"
 import { getBitcoinCoreRPCConfig } from "@config"
-import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
+
 import { LedgerService } from "@services/ledger"
 
 import { toSats } from "@domain/bitcoin"
+
+import { bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
 
 import { descriptors } from "./multisig-wallet"
 import { checkIsBalanced } from "./check-is-balanced"

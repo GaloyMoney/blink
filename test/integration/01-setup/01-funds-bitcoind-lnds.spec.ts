@@ -1,6 +1,5 @@
 import { getColdStorageConfig } from "@config"
 import { btc2sat, sat2btc } from "@domain/bitcoin"
-import { BitcoindWalletClient } from "@services/bitcoind"
 import { getFunderWalletId } from "@services/ledger/caching"
 
 import {
@@ -16,6 +15,7 @@ import {
   lndOutside3,
   mineAndConfirm,
 } from "test/helpers"
+import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
 let bitcoindOutside: BitcoindWalletClient
 

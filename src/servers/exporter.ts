@@ -1,31 +1,34 @@
 import express from "express"
+import sumBy from "lodash.sumby"
 import client, { register } from "prom-client"
 
-import { baseLogger } from "@services/logger"
-import { ledgerAdmin, setupMongoConnection } from "@services/mongodb"
-import { activateLndHealthCheck } from "@services/lnd/health"
+import { SECS_PER_5_MINS } from "@config"
+
+import { ColdStorage, Lightning } from "@app"
+
+import { toSeconds } from "@domain/primitives"
 
 import {
   asyncRunInSpan,
   addAttributesToCurrentSpan,
   wrapAsyncToRunInSpan,
+  recordExceptionInCurrentSpan,
 } from "@services/tracing"
-import { Account } from "@services/mongoose/schema"
-import { LedgerService } from "@services/ledger"
-import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import {
   getBankOwnerWalletId,
   getDealerBtcWalletId,
   getDealerUsdWalletId,
   getFunderWalletId,
 } from "@services/ledger/caching"
-import { ColdStorage, Lightning } from "@app"
-
-import { SECS_PER_5_MINS } from "@config"
-import { LocalCacheService } from "@services/cache"
-import { toSeconds } from "@domain/primitives"
-import { timeout } from "@utils"
 import { LndService } from "@services/lnd"
+import { baseLogger } from "@services/logger"
+import { LedgerService } from "@services/ledger"
+import { Account } from "@services/mongoose/schema"
+import { LocalCacheService } from "@services/cache"
+import { activateLndHealthCheck } from "@services/lnd/health"
+import { ledgerAdmin, setupMongoConnection } from "@services/mongodb"
+
+import { timeout } from "@utils"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -150,11 +153,9 @@ const main = async () => {
     createWalletGauge({ walletName: wallet.name, getId: wallet.getId })
   }
 
-  const coldStorageWallets = await ColdStorage.listWallets()
-  if (!(coldStorageWallets instanceof Error)) {
-    for (const walletName of coldStorageWallets) {
-      createColdStorageWalletGauge(walletName)
-    }
+  const coldStorageWallets = await getColdStorageWallets()
+  for (const walletName of coldStorageWallets) {
+    createColdStorageWalletGauge(walletName)
   }
 
   const server = express()
@@ -269,6 +270,26 @@ const getWalletBalance = async (walletId: WalletId): Promise<number> => {
   return walletBalance
 }
 
+const getColdStorageWallets = async (): Promise<string[]> => {
+  const coldStorageWallets = await ColdStorage.listWallets()
+  if (coldStorageWallets instanceof Error) {
+    recordExceptionInCurrentSpan({ error: coldStorageWallets })
+    return []
+  }
+
+  return coldStorageWallets
+}
+
+const getColdStorageBalance = async (): Promise<number> => {
+  const balances = await ColdStorage.getBalances()
+  if (balances instanceof Error) {
+    recordExceptionInCurrentSpan({ error: balances })
+    return 0
+  }
+
+  return sumBy(balances, "amount")
+}
+
 const createColdStorageWalletGauge = (walletName: string) => {
   const walletNameSanitized = walletName.replace("/", "_")
   const name = `bitcoind_${walletNameSanitized}`
@@ -301,7 +322,7 @@ export const getBookingVersusRealWorldAssets = async () => {
     ledgerAdmin.getLndBalance(),
     ledgerAdmin.getBitcoindBalance(),
     Lightning.getTotalBalance(),
-    getBitcoindBalance(),
+    getColdStorageBalance(),
   ])
 
   const lnd = lndBalance instanceof Error ? 0 : lndBalance

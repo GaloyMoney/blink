@@ -10,7 +10,6 @@ import { baseLogger } from "@services/logger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 
-import { BitcoindWalletClient } from "@services/bitcoind"
 import { btc2sat } from "@domain/bitcoin"
 
 import {
@@ -19,6 +18,7 @@ import {
   checkIsBalanced,
   mineBlockAndSyncAll,
 } from "test/helpers"
+import { BitcoindWalletClient } from "test/helpers/bitcoind"
 import { signer1Base58, signer2Base58 } from "test/helpers/multisig-wallet"
 
 const bip32 = BIP32Factory(ecc)
