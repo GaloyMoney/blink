@@ -1,13 +1,16 @@
-import BitcoindClient from "bitcoin-core-ts"
-import { btc2sat, sat2btc } from "@domain/bitcoin"
+import { RPCClient } from "rpc-bitcoin"
+
 import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config"
+
 import {
   InsufficientBalanceForRebalanceError,
   InvalidCurrentColdStorageWalletServiceError,
   InvalidOrNonWalletTransactionError,
   UnknownColdStorageServiceError,
 } from "@domain/cold-storage/errors"
+import { btc2sat, sat2btc } from "@domain/bitcoin"
 import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
+
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 const { onChainWallet, walletPattern } = getColdStorageConfig()
@@ -20,13 +23,13 @@ export const ColdStorageService = async (): Promise<
 
   const listWallets = async (): Promise<string[] | ColdStorageServiceError> => {
     try {
-      const client = await getBitcoindClient()
+      const client = getBitcoindClient()
       if (client instanceof Error) return client
 
-      const wallets = await client.listWallets()
+      const wallets: string[] = await client.listwallets()
       return wallets.filter((item: string) => item.includes(walletPattern))
     } catch (err) {
-      return new UnknownColdStorageServiceError(err)
+      return new UnknownColdStorageServiceError(err.message || err)
     }
   }
 
@@ -39,15 +42,15 @@ export const ColdStorageService = async (): Promise<
 
       const balances: ColdStorageBalance[] = []
       for await (const walletName of coldStorageWallets) {
-        const client = await getBitcoindClient(walletName)
+        const client = getBitcoindClient(walletName)
         if (client instanceof Error) continue
-        const amount = btc2sat(await client.getBalance())
+        const amount = btc2sat(await client.getbalance({}))
         balances.push({ walletName, amount })
       }
 
       return balances
     } catch (err) {
-      return new UnknownColdStorageServiceError(err)
+      return new UnknownColdStorageServiceError(err.message || err)
     }
   }
 
@@ -55,12 +58,13 @@ export const ColdStorageService = async (): Promise<
     walletName: string,
   ): Promise<ColdStorageBalance | ColdStorageServiceError> => {
     try {
-      const client = await getBitcoindClient(walletName)
-      if (client instanceof Error) client
-      const amount = btc2sat(await client.getBalance())
+      const client = getBitcoindClient(walletName)
+      if (client instanceof Error) return client
+
+      const amount = btc2sat(await client.getbalance({}))
       return { walletName, amount }
     } catch (err) {
-      return new UnknownColdStorageServiceError(err)
+      return new UnknownColdStorageServiceError(err.message || err)
     }
   }
 
@@ -71,13 +75,13 @@ export const ColdStorageService = async (): Promise<
     targetConfirmations,
   }: GetColdStoragePsbtArgs): Promise<ColdStoragePsbt | ColdStorageServiceError> => {
     try {
-      const client = await getBitcoindClient(walletName)
+      const client = getBitcoindClient(walletName)
       if (client instanceof Error) return client
 
       const output0: { [onchainaddress: OnChainAddress]: number } = {}
       output0[onChainAddress] = sat2btc(amount)
 
-      const fundedPsbt = await client.walletCreateFundedPsbt({
+      const fundedPsbt = await client.walletcreatefundedpsbt({
         inputs: [],
         outputs: [output0],
         options: { conf_target: targetConfirmations },
@@ -91,7 +95,7 @@ export const ColdStorageService = async (): Promise<
       if (err && err.message && err.message.includes("Insufficient funds")) {
         return new InsufficientBalanceForRebalanceError(err)
       }
-      return new UnknownColdStorageServiceError(err)
+      return new UnknownColdStorageServiceError(err.message || err)
     }
   }
 
@@ -101,10 +105,10 @@ export const ColdStorageService = async (): Promise<
     try {
       return checkedToOnChainAddress({
         network: BTC_NETWORK,
-        value: await bitcoindCurrentWalletClient.getNewAddress(),
+        value: await bitcoindCurrentWalletClient.getnewaddress({}),
       })
     } catch (err) {
-      return new UnknownColdStorageServiceError(err)
+      return new UnknownColdStorageServiceError(err.message || err)
     }
   }
 
@@ -112,10 +116,12 @@ export const ColdStorageService = async (): Promise<
     address: OnChainAddress,
   ): Promise<boolean | ColdStorageServiceError> => {
     try {
-      const { ismine: isMine } = await bitcoindCurrentWalletClient.getAddressInfo(address)
+      const { ismine: isMine } = await bitcoindCurrentWalletClient.getaddressinfo({
+        address,
+      })
       return !!isMine
     } catch (err) {
-      return new UnknownColdStorageServiceError(err)
+      return new UnknownColdStorageServiceError(err.message || err)
     }
   }
 
@@ -123,12 +129,14 @@ export const ColdStorageService = async (): Promise<
     txHash: OnChainTxHash,
   ): Promise<boolean | ColdStorageServiceError> => {
     try {
-      const { amount } = await bitcoindCurrentWalletClient.getTransaction(txHash)
-      return amount < 0
+      const { amount } = await bitcoindCurrentWalletClient.gettransaction({
+        txid: txHash,
+      })
+      return Number(amount || 0) < 0
     } catch (err) {
       if (err?.message === "Invalid or non-wallet transaction id")
         return new InvalidOrNonWalletTransactionError(err)
-      return new UnknownColdStorageServiceError(err)
+      return new UnknownColdStorageServiceError(err.message || err)
     }
   }
 
@@ -136,10 +144,10 @@ export const ColdStorageService = async (): Promise<
     txHash: OnChainTxHash,
   ): Promise<Satoshis | ColdStorageServiceError> => {
     try {
-      const { fee } = await bitcoindCurrentWalletClient.getTransaction(txHash)
-      return btc2sat(Math.abs(fee))
+      const { fee } = await bitcoindCurrentWalletClient.gettransaction({ txid: txHash })
+      return btc2sat(Math.abs(fee || 0))
     } catch (err) {
-      return new UnknownColdStorageServiceError(err)
+      return new UnknownColdStorageServiceError(err.message || err)
     }
   }
 
@@ -158,21 +166,29 @@ export const ColdStorageService = async (): Promise<
   })
 }
 
-const getBitcoindClient = (wallet?: string) => {
+const getBitcoindClient = (wallet?: string): RPCClient | ColdStorageServiceError => {
   try {
-    const bitcoinCoreRPCConfig = getBitcoinCoreRPCConfig()
-    return new BitcoindClient({ ...bitcoinCoreRPCConfig, wallet })
+    const config = getBitcoinCoreRPCConfig()
+    return new RPCClient({
+      url: `http://${config.host}`,
+      user: config.username,
+      pass: config.password,
+      port: parseInt(config.port, 10),
+      wallet,
+    })
   } catch (err) {
-    return new UnknownColdStorageServiceError(err)
+    return new UnknownColdStorageServiceError(err.message || err)
   }
 }
 
-const getBitcoindCurrentWalletClient = async () => {
+const getBitcoindCurrentWalletClient = async (): Promise<
+  RPCClient | ColdStorageServiceError
+> => {
   try {
     const client = getBitcoindClient()
     if (client instanceof Error) return client
 
-    const wallets = await client.listWallets()
+    const wallets: string[] = await client.listwallets()
     const wallet = wallets
       .filter((item: string) => item.includes(walletPattern))
       .find((item: string) => item.includes(onChainWallet))
@@ -180,6 +196,6 @@ const getBitcoindCurrentWalletClient = async () => {
 
     return new InvalidCurrentColdStorageWalletServiceError()
   } catch (err) {
-    return new UnknownColdStorageServiceError(err)
+    return new UnknownColdStorageServiceError(err.message || err)
   }
 }

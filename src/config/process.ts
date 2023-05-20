@@ -99,9 +99,9 @@ export const getBitcoinCoreRPCConfig = () => {
   return {
     network: process.env.NETWORK,
     username: process.env.BITCOINDRPCUSER || "rpcuser",
-    password: process.env.BITCOINDRPCPASS,
+    password: process.env.BITCOINDRPCPASS || "rpcpassword",
     host: process.env.BITCOINDADDR,
-    port: process.env.BITCOINDPORT,
+    port: process.env.BITCOINDPORT || "8332",
     version: "0.22.0",
   }
 }
