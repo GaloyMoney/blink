@@ -13,6 +13,7 @@ import { rule } from "graphql-shield"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 
+import { normalizeWalletTransaction } from "@graphql/shared/root/mutation"
 import { mapError } from "@graphql/error-map"
 
 import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
@@ -78,18 +79,6 @@ export const startApolloServer = async ({
 
         return getValue({ obj: obj[head], path: tail })
       }
-
-      const normalizeWalletTransaction = (edge: { node: WalletTransaction }) => ({
-        ...edge,
-        node: {
-          ...edge.node,
-          settlementDisplayPrice: {
-            ...edge.node.settlementDisplayPrice,
-            base: Number(edge.node.settlementDisplayPrice.base),
-            offset: Number(edge.node.settlementDisplayPrice.offset),
-          },
-        },
-      })
 
       const selections: "transactions"[] = []
       const parentPaths: (string | number)[][] = []
