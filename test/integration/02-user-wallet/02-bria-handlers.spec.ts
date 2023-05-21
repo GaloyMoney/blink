@@ -1,5 +1,3 @@
-import { createHash, randomBytes } from "crypto"
-
 import {
   addPendingTransaction,
   addSettledTransaction,
@@ -12,7 +10,7 @@ import { toLiabilitiesWalletId } from "@domain/ledger"
 import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
 import { Transaction } from "@services/ledger/schema"
 
-import { randomAccount, addNewWallet } from "test/helpers"
+import { randomAccount, addNewWallet, generateHash } from "test/helpers"
 
 const VOUT_0 = 0 as OnChainTxVout
 const VOUT_1 = 1 as OnChainTxVout
@@ -34,11 +32,6 @@ beforeAll(async () => {
   if (addressResult instanceof Error) throw addressResult
   address = addressResult
 })
-
-const generateHash = () => {
-  const sha256 = (buffer: Buffer) => createHash("sha256").update(buffer).digest("hex")
-  return sha256(randomBytes(32))
-}
 
 const getRandomBtcAmountForOnchain = (): BtcPaymentAmount => {
   const floor = 10_000
