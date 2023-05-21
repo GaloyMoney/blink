@@ -5,7 +5,7 @@ import express, { NextFunction, Request, Response } from "express"
 import { getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
 import { ApolloServerPlugin } from "apollo-server-plugin-base"
-import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
+import { ApolloServerPluginDrainHttpServer, GraphQLResponse } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
 import { GraphQLError, GraphQLSchema } from "graphql"
@@ -62,6 +62,23 @@ export const startApolloServer = async ({
 
   const partialAccountTransactionsPlugin: ApolloServerPlugin = {
     requestDidStart: async () => {
+      const getValue = ({
+        obj,
+        path,
+      }: {
+        obj: GraphQLResponse["data"]
+        path: (string | number)[]
+      }): GraphQLResponse["data"] => {
+        if (!obj) return obj
+
+        if (!path.length) return obj
+
+        const [head, ...tail] = path
+        if (!(head in obj)) return undefined
+
+        return getValue({ obj: obj[head], path: tail })
+      }
+
       const normalizeWalletTransaction = (edge: { node: WalletTransaction }) => ({
         ...edge,
         node: {
@@ -74,33 +91,43 @@ export const startApolloServer = async ({
         },
       })
 
+      let selection: "transactions" | undefined = undefined
+      let parentPath: (string | number)[] | undefined = undefined
       let transactionsFromExtensions:
         | { edges: { node: WalletTransaction }[] }
         | undefined = undefined
       return {
         didEncounterErrors: async (rc) => {
-          const partialData = rc.errors[0].extensions?.partialData as
+          const { path, extensions } = rc.errors[0]
+
+          const rawSelection = path?.[path.length - 1]
+          parentPath = path?.slice(0, path.length - 1)
+          if (parentPath === undefined || rawSelection !== "transactions") return
+          selection = rawSelection
+
+          const partialData = extensions?.partialData as
             | Record<"transactions", { edges: { node: WalletTransaction }[] }>
             | undefined
-          if (partialData?.transactions) {
-            transactionsFromExtensions = partialData.transactions
+          if (partialData?.[selection]) {
+            transactionsFromExtensions = partialData[selection]
           }
         },
 
         willSendResponse: async (rc) => {
           // Filter for 'transactions' property in data
-          if (
-            !(
-              rc.response.data?.me?.defaultAccount &&
-              "transactions" in (rc.response.data.me.defaultAccount || {})
-            )
-          ) {
-            return undefined
+          const { data } = rc.response
+          if (parentPath === undefined || data === undefined || selection === undefined) {
+            return
+          }
+
+          const parentObject = getValue({ obj: data, path: parentPath })
+          if (!(parentObject && selection in parentObject)) {
+            return
           }
 
           // Add partial transactions if they exist
           if (transactionsFromExtensions) {
-            rc.response.data.me.defaultAccount.transactions = {
+            parentObject[selection] = {
               ...transactionsFromExtensions,
               edges: transactionsFromExtensions.edges.map(normalizeWalletTransaction),
             }
