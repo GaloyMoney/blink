@@ -10,6 +10,7 @@ import { mapError } from "@graphql/error-map"
 import { Wallets } from "@app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
+import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 
 import IWallet from "../abstract/wallet"
 
@@ -70,18 +71,31 @@ const UsdWallet = GT.Object<Wallet>({
           wallets: [source],
           paginationArgs,
         })
+
+        const transactions = result?.slice
+          ? connectionFromPaginatedArray<WalletTransaction>(
+              result.slice,
+              result.total,
+              paginationArgs,
+            )
+          : undefined
+
         if (error instanceof Error) {
-          throw mapError(error)
+          const mappedErr = mapError(error)
+          if (transactions !== undefined) {
+            mappedErr.extensions = {
+              ...mappedErr.extensions,
+              partialData: { ...mappedErr.extensions.partialData, transactions },
+            }
+          }
+          throw mappedErr
         }
 
-        // Non-null signal to type checker; consider fixing in PartialResult type
-        if (!result?.slice) throw error
+        if (transactions === undefined) {
+          throw mapError(new CouldNotFindTransactionsForAccountError())
+        }
 
-        return connectionFromPaginatedArray<WalletTransaction>(
-          result.slice,
-          result.total,
-          paginationArgs,
-        )
+        return transactions
       },
     },
     transactionsByAddress: {

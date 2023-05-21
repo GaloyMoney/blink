@@ -60,7 +60,7 @@ export const startApolloServer = async ({
   const app = express()
   const httpServer = createServer(app)
 
-  const partialAccountTransactionsPlugin: ApolloServerPlugin = {
+  const partialTransactionsFromQueryPlugin: ApolloServerPlugin = {
     requestDidStart: async () => {
       const getValue = ({
         obj,
@@ -91,45 +91,56 @@ export const startApolloServer = async ({
         },
       })
 
-      let selection: "transactions" | undefined = undefined
-      let parentPath: (string | number)[] | undefined = undefined
-      let transactionsFromExtensions:
-        | { edges: { node: WalletTransaction }[] }
-        | undefined = undefined
+      const selections: "transactions"[] = []
+      const parentPaths: (string | number)[][] = []
+      const transactionsFromExtensions: { edges: { node: WalletTransaction }[] }[] = []
       return {
         didEncounterErrors: async (rc) => {
-          const { path, extensions } = rc.errors[0]
+          for (const error of rc.errors) {
+            const { path, extensions } = error
 
-          const rawSelection = path?.[path.length - 1]
-          parentPath = path?.slice(0, path.length - 1)
-          if (parentPath === undefined || rawSelection !== "transactions") return
-          selection = rawSelection
+            const selection = path?.[path.length - 1]
+            const parentPath = path?.slice(0, path.length - 1)
+            if (parentPath === undefined || selection !== "transactions") return
 
-          const partialData = extensions?.partialData as
-            | Record<"transactions", { edges: { node: WalletTransaction }[] }>
-            | undefined
-          if (partialData?.[selection]) {
-            transactionsFromExtensions = partialData[selection]
+            const partialData = extensions?.partialData as
+              | Record<"transactions", { edges: { node: WalletTransaction }[] }>
+              | undefined
+            if (partialData?.[selection]) {
+              selections.push(selection)
+              parentPaths.push(parentPath)
+              transactionsFromExtensions.push(partialData[selection])
+            }
           }
         },
 
         willSendResponse: async (rc) => {
-          // Filter for 'transactions' property in data
+          if (
+            !(
+              selections.length &&
+              selections.length === parentPaths.length &&
+              selections.length === transactionsFromExtensions.length
+            )
+          ) {
+            return
+          }
+
           const { data } = rc.response
-          if (parentPath === undefined || data === undefined || selection === undefined) {
-            return
-          }
+          for (const [i, selection] of selections.entries()) {
+            const parentPath = parentPaths[i]
+            const transactionsFromExtension = transactionsFromExtensions[i]
 
-          const parentObject = getValue({ obj: data, path: parentPath })
-          if (!(parentObject && selection in parentObject)) {
-            return
-          }
+            const parentObject = getValue({ obj: data, path: parentPath })
+            if (!(parentObject && selection in parentObject)) {
+              return
+            }
 
-          // Add partial transactions if they exist
-          if (transactionsFromExtensions) {
-            parentObject[selection] = {
-              ...transactionsFromExtensions,
-              edges: transactionsFromExtensions.edges.map(normalizeWalletTransaction),
+            // Add partial transactions if they exist
+            if (transactionsFromExtension) {
+              parentObject[selection] = {
+                ...transactionsFromExtension,
+                edges: transactionsFromExtension.edges.map(normalizeWalletTransaction),
+              }
             }
           }
         },
@@ -148,7 +159,7 @@ export const startApolloServer = async ({
       },
     }),
     ApolloServerPluginDrainHttpServer({ httpServer }),
-    partialAccountTransactionsPlugin,
+    partialTransactionsFromQueryPlugin,
   ]
 
   const apolloServer = new ApolloServer({
