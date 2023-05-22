@@ -34,8 +34,8 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
 import {
-  PhoneAccountAlreadyExists,
-  PhoneAccountAlreadyExistsNeedToSweepFunds,
+  PhoneAccountAlreadyExistsError,
+  PhoneAccountAlreadyExistsNeedToSweepFundsError,
 } from "@services/kratos/errors"
 
 export const loginWithPhoneToken = async ({
@@ -207,21 +207,10 @@ export const loginUpgradeWithPhone = async ({
     }
     if (deviceAccountHasBalance) {
       /// Scenario 1.5 - has txns on device account but phone account exists
-      return new PhoneAccountAlreadyExistsNeedToSweepFunds(
-        `Error phone account already exists. You need to manually sweep funds
-        to your phone account. Here are the steps to do this:
-        1. login with phone account and create an invoice (save this invoice)
-        2. logout of the phone account
-        3. login with device account (click "Explore Wallet Instead" button)
-        4  Pay the invoice with max wallet amount.
-        5. Logout of the device account
-        6. Log into the phone account and check for the funds`,
-      )
+      return new PhoneAccountAlreadyExistsNeedToSweepFundsError()
     } else {
       /// Scenario 1 - no txns on device account but phone account exists
-      return new PhoneAccountAlreadyExists(
-        "Phone Account already exists. Please logout and log back in with your phone account.",
-      )
+      return new PhoneAccountAlreadyExistsError()
     }
   }
 
