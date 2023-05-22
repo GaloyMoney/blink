@@ -1379,7 +1379,7 @@ type User {
   """
   Device ID of the user's device.
   """
-  device: String
+  deviceId: String
   id: ID!
 
   """

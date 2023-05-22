@@ -26,14 +26,6 @@ const UserIdRegex =
 // device id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
 const DeviceIdRegex = /^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i
 
-export const checkedToDeviceAccountUserId = (userId: string) => {
-  if (userId.match(/^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i)) {
-    return userId as UserId
-  }
-
-  return new InvalidUserId(userId)
-}
-
 export const checkedToUserId = (userId: string): UserId | ValidationError => {
   // kratosUserId is a uuid v4
   if (userId.match(UserIdRegex)) {

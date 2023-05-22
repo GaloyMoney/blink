@@ -1285,7 +1285,7 @@ export type User = {
   readonly defaultAccount: Account
   readonly id: Scalars["ID"]["output"]
   /** Device ID of the user's device. */
-  readonly device?: Maybe<Scalars["String"]>
+  readonly deviceId?: Maybe<Scalars["String"]>
   /**
    * Preferred language for user.
    * When value is 'default' the intent is to use preferred language from OS settings.

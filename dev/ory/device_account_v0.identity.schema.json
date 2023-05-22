@@ -7,10 +7,10 @@
     "traits": {
       "type": "object",
       "properties": {
-        "device": {
+        "deviceId": {
           "type": "string",
           "format": "string",
-          "title": "device",
+          "title": "deviceId",
           "minLength": 10,
           "maxLength": 100,
           "ory.sh/kratos": {

@@ -341,7 +341,7 @@ const UserSchema = new Schema(
       sparse: true,
     },
     deletedPhone: { type: String },
-    device: {
+    deviceId: {
       // TODO do we still need this after hydrator code
       type: String,
       index: true,

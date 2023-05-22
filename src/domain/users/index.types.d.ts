@@ -52,7 +52,7 @@ type User = {
   deviceTokens: DeviceToken[]
   phoneMetadata: PhoneMetadata | undefined
   phone?: PhoneNumber | undefined
-  device?: DeviceId | undefined
+  deviceId?: DeviceId | undefined
   createdAt: Date
 }
 
@@ -65,7 +65,7 @@ type UserUpdateInput = Omit<Partial<User>, "language"> & {
 interface IUsersRepository {
   findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  findByDeviceId(device: DeviceId): Promise<User | RepositoryError>
+  findByDeviceId(deviceId: DeviceId): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
   adminUnsetPhoneForUserPreservation(id: UserId): Promise<User | RepositoryError>
   unsetDeviceIdForUser(id: UserId): Promise<User | RepositoryError>
