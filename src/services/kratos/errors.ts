@@ -5,11 +5,11 @@ export class KratosError extends AuthenticationError {}
 export class AuthenticationKratosError extends KratosError {}
 export class ExtendSessionKratosError extends KratosError {}
 
-export class PhoneAccountAlreadyExists extends KratosError {
+export class PhoneAccountAlreadyExistsError extends KratosError {
   level = ErrorLevel.Info
 }
 
-export class PhoneAccountAlreadyExistsNeedToSweepFunds extends KratosError {
+export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends KratosError {
   level = ErrorLevel.Info
 }
 
