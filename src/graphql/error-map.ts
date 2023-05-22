@@ -22,6 +22,8 @@ import {
   PhoneProviderError,
   UnexpectedClientError,
   DealerError,
+  PhoneAccountAlreadyExistsError,
+  PhoneAccountAlreadyExistsNeedToSweepFundsError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -575,8 +577,17 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "KratosError":
     case "AuthenticationKratosError":
     case "ExtendSessionKratosError":
-    case "PhoneAccountAlreadyExists":
-    case "PhoneAccountAlreadyExistsNeedToSweepFunds":
+    case "PhoneAccountAlreadyExistsError":
+      message =
+        "Phone Account already exists. Please logout and log back in with your phone account."
+      return new PhoneAccountAlreadyExistsError({ message, logger: baseLogger })
+    case "PhoneAccountAlreadyExistsNeedToSweepFundsError":
+      message =
+        "Error phone account already exists. You need to manually sweep funds to your phone account."
+      return new PhoneAccountAlreadyExistsNeedToSweepFundsError({
+        message,
+        logger: baseLogger,
+      })
     case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
     case "MissingTotpKratosError":
