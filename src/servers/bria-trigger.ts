@@ -1,24 +1,16 @@
-// import { InvalidBriaEventError } from "@domain/bitcoin/onchain"
-
 import { Wallets } from "@app"
 import { BriaPayloadType, BriaSubscriber } from "@services/bria"
 
 export const briaEventHandler = async (
   event: BriaEvent,
 ): Promise<true | ApplicationError> => {
-  if (!event.augmentation) {
-    //error - resubscribe
-    return new Error("augmentation missing")
-  }
   switch (event.payload.type) {
     case BriaPayloadType.UtxoDetected: {
       return utxoDetectedEventHandler({ event: event.payload })
     }
 
     case BriaPayloadType.UtxoSettled: {
-      return utxoSettledEventHandler({
-        event: event.payload,
-      })
+      return utxoSettledEventHandler({ event: event.payload })
     }
     default:
       return true
@@ -33,7 +25,11 @@ const utxoDetectedEventHandler = async ({
   return Wallets.addPendingTransaction(event)
 }
 
-const utxoSettledEventHandler = ({ event }: { event: UtxoSettled }) => {
+const utxoSettledEventHandler = ({
+  event,
+}: {
+  event: UtxoSettled
+}): Promise<true | ApplicationError> => {
   return Wallets.addSettledTransaction(event)
 }
 

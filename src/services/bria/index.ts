@@ -5,13 +5,25 @@ import {
 } from "@services/tracing"
 import { credentials, Metadata } from "@grpc/grpc-js"
 import { BRIA_PROFILE_API_KEY } from "@config"
-import { UnknownOnChainServiceError, OnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
 import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
 import { SubscribeAllRequest, BriaEvent as RawBriaEvent } from "./proto/bria_pb"
+import {
+  EventAugmentationMissingError,
+  ExpectedAddressInfoMissingInEventError,
+  ExpectedPayoutBroadcastPayloadNotFoundError,
+  ExpectedPayoutCommittedPayloadNotFoundError,
+  ExpectedPayoutSettledPayloadNotFoundError,
+  ExpectedPayoutSubmittedPayloadNotFoundError,
+  ExpectedUtxoDetectedPayloadNotFoundError,
+  ExpectedUtxoSettledPayloadNotFoundError,
+  NoPayloadFoundError,
+  UnknownBriaEventError,
+  UnknownPayloadTypeReceivedError,
+} from "./errors"
 
 export { ListenerWrapper } from "./listener_wrapper"
 
@@ -38,7 +50,7 @@ export const BriaSubscriber = () => {
 
   const subscribeToAll = async (
     eventHandler: BriaEventHandler,
-  ): Promise<ListenerWrapper | OnChainServiceError> => {
+  ): Promise<ListenerWrapper | BriaEventError> => {
     const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
 
     let listenerWrapper: ListenerWrapper
@@ -62,7 +74,7 @@ export const BriaSubscriber = () => {
         },
       )
     } catch (error) {
-      return new UnknownOnChainServiceError(error.message || error)
+      return new UnknownBriaEventError(error.message || error)
     }
 
     listenerWrapper._setDataHandler((rawEvent: RawBriaEvent) => {
@@ -77,7 +89,7 @@ export const BriaSubscriber = () => {
         },
         async () => {
           const event = translate(rawEvent)
-          if (event instanceof BriaEventError) {
+          if (event instanceof Error) {
             recordExceptionInCurrentSpan({ error: event })
             throw event
           }
@@ -109,21 +121,14 @@ export const BriaSubscriber = () => {
   }
 }
 
-class BriaEventError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = "UninitializedFieldError"
-  }
-}
-
 const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
   const sequence = rawEvent.getSequence()
   const rawAugmentation = rawEvent.getAugmentation()
 
   if (!rawAugmentation) {
-    return new BriaEventError("augmentation is not initialized.")
+    return new EventAugmentationMissingError()
   }
-  let augmentation: BriaEventAugmentation | undefined
+  let augmentation: BriaEventAugmentation | undefined = undefined
   const rawInfo = rawAugmentation.getAddressInfo()
   if (rawInfo) {
     const info = rawInfo.toObject()
@@ -134,16 +139,19 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       },
     }
   }
+  if (augmentation === undefined) {
+    return new ExpectedAddressInfoMissingInEventError()
+  }
 
   let payload: BriaPayload | undefined
   let rawPayload
   switch (rawEvent.getPayloadCase()) {
     case RawBriaEvent.PayloadCase.PAYLOAD_NOT_SET:
-      return new BriaEventError("payload is not set.")
+      return new NoPayloadFoundError()
     case RawBriaEvent.PayloadCase.UTXO_DETECTED:
       rawPayload = rawEvent.getUtxoDetected()
       if (!rawPayload) {
-        return new BriaEventError("utxo_detected is not initialized.")
+        return new ExpectedUtxoDetectedPayloadNotFoundError()
       }
       payload = {
         type: BriaPayloadType.UtxoDetected,
@@ -159,7 +167,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     case RawBriaEvent.PayloadCase.UTXO_SETTLED:
       rawPayload = rawEvent.getUtxoSettled()
       if (!rawPayload) {
-        return new BriaEventError("utxo_detected is not initialized.")
+        return new ExpectedUtxoSettledPayloadNotFoundError()
       }
       payload = {
         type: BriaPayloadType.UtxoSettled,
@@ -176,7 +184,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     case RawBriaEvent.PayloadCase.PAYOUT_SUBMITTED:
       rawPayload = rawEvent.getPayoutSubmitted()
       if (!rawPayload) {
-        return new BriaEventError("payout_submitted is not initialized.")
+        return new ExpectedPayoutSubmittedPayloadNotFoundError()
       }
       payload = {
         type: BriaPayloadType.PayoutSubmitted,
@@ -190,7 +198,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     case RawBriaEvent.PayloadCase.PAYOUT_COMMITTED:
       rawPayload = rawEvent.getPayoutCommitted()
       if (!rawPayload) {
-        return new BriaEventError("payout_submitted is not initialized.")
+        return new ExpectedPayoutCommittedPayloadNotFoundError()
       }
       payload = {
         type: BriaPayloadType.PayoutCommitted,
@@ -204,7 +212,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     case RawBriaEvent.PayloadCase.PAYOUT_BROADCAST:
       rawPayload = rawEvent.getPayoutBroadcast()
       if (!rawPayload) {
-        return new BriaEventError("payout_submitted is not initialized.")
+        return new ExpectedPayoutBroadcastPayloadNotFoundError()
       }
       payload = {
         type: BriaPayloadType.PayoutBroadcast,
@@ -218,7 +226,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     case RawBriaEvent.PayloadCase.PAYOUT_SETTLED:
       rawPayload = rawEvent.getPayoutSettled()
       if (!rawPayload) {
-        return new BriaEventError("payout_submitted is not initialized.")
+        return new ExpectedPayoutSettledPayloadNotFoundError()
       }
       payload = {
         type: BriaPayloadType.PayoutSettled,
@@ -230,10 +238,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       }
       break
     default:
-      return new BriaEventError("Unknown payload type.")
-  }
-  if (!payload || !augmentation) {
-    return new BriaEventError("Unknown payload")
+      return new UnknownPayloadTypeReceivedError()
   }
 
   return {
