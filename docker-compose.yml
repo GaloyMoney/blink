@@ -278,7 +278,7 @@ services:
     volumes:
       - ./:/repo
   bria:
-    image: us.gcr.io/galoy-org/bria:edge
+    image: us.gcr.io/galoy-org/bria:latest
     environment:
       - PG_CON=postgres://user:password@postgres-bria:5432/pg
     command:
