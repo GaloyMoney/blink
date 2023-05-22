@@ -1310,7 +1310,7 @@ export type User = {
   readonly createdAt: Scalars['Timestamp'];
   readonly defaultAccount: Account;
   /** Device ID of the user's device. */
-  readonly device?: Maybe<Scalars['String']>;
+  readonly deviceId?: Maybe<Scalars['String']>;
   readonly id: Scalars['ID'];
   /**
    * Preferred language for user.

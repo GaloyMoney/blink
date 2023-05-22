@@ -14,7 +14,7 @@ export const translateToUser = (user: UserRecord): User => {
   const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone
-  const device = user.device
+  const deviceId = user.deviceId
   const createdAt = user.createdAt
 
   return {
@@ -23,7 +23,7 @@ export const translateToUser = (user: UserRecord): User => {
     deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
     phone,
-    device,
+    deviceId,
     createdAt,
   }
 }
@@ -58,9 +58,9 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const findByDeviceId = async (device: DeviceId): Promise<User | RepositoryError> => {
+  const findByDeviceId = async (deviceId: DeviceId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ device })
+      const result = await User.findOne({ deviceId })
       if (!result) return new CouldNotFindUserFromDeviceError()
 
       return translateToUser(result)
@@ -76,7 +76,7 @@ export const UsersRepository = (): IUsersRepository => {
     deviceTokens,
     phoneMetadata,
     phone,
-    device,
+    deviceId,
     createdAt,
   }: UserUpdateInput): Promise<User | RepositoryError> => {
     try {
@@ -87,7 +87,7 @@ export const UsersRepository = (): IUsersRepository => {
           phoneMetadata,
           language,
           phone,
-          device,
+          deviceId,
           createdAt, // TODO: remove post migration
         },
         {
@@ -126,7 +126,7 @@ export const UsersRepository = (): IUsersRepository => {
     try {
       const result = await User.findOneAndUpdate(
         { userId: id },
-        { $unset: { device: true } },
+        { $unset: { deviceId: true } },
         { new: true },
       )
       if (!result) {
