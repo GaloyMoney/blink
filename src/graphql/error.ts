@@ -308,3 +308,27 @@ export class AuthorizationError extends CustomApolloError {
     })
   }
 }
+
+export class PhoneAccountAlreadyExistsError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message:
+        "Phone Account already exists. Please logout and log back in with your phone account",
+      forwardToClient: true,
+      code: "PHONE_ACCOUNT_ALREADY_EXISTS_ERROR",
+      ...errData,
+    })
+  }
+}
+
+export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message:
+        "Error phone account already exists. You need to manually sweep funds to your phone account",
+      forwardToClient: true,
+      code: "PHONE_ACCOUNT_ALREADY_EXISTS_NEED_TO_SWEEP_FUNDS_ERROR",
+      ...errData,
+    })
+  }
+}
