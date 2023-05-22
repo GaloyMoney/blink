@@ -94,3 +94,15 @@ export const priceAmountFromNumber = <
     walletCurrency,
   }
 }
+
+export const priceAmountFromDisplayPriceRatio = <
+  S extends WalletCurrency,
+  T extends DisplayCurrency,
+>(
+  displayPriceRatio: DisplayPriceRatio<S, T>,
+): WalletMinorUnitDisplayPrice<S, T> =>
+  priceAmountFromNumber({
+    priceOfOneSatInMinorUnit: displayPriceRatio.displayMinorUnitPerWalletUnit(),
+    displayCurrency: displayPriceRatio.displayCurrency,
+    walletCurrency: displayPriceRatio.walletCurrency,
+  })

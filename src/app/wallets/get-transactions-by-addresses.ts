@@ -7,10 +7,14 @@ import { LedgerError } from "@domain/ledger"
 import { DisplayCurrency } from "@domain/fiat"
 import { TxFilter } from "@domain/bitcoin/onchain"
 import { WalletTransactionHistory } from "@domain/wallets"
+import { CouldNotFindError } from "@domain/errors"
 
 import { baseLogger } from "@services/logger"
 import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
-import { AccountsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletOnChainPendingReceiveRepository,
+} from "@services/mongoose"
 
 import { WalletPriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
@@ -113,5 +117,56 @@ export const getTransactionsForWalletsByAddresses = async <S extends WalletCurre
       walletDetailsByWalletId,
     }).transactions,
     total: resp.total,
+  })
+}
+
+export const newGetTransactionsForWalletsByAddresses = async ({
+  wallets,
+  addresses,
+  paginationArgs,
+}: {
+  wallets: Wallet[]
+  addresses: OnChainAddress[]
+  paginationArgs?: PaginationArgs
+}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+  const walletIds = wallets.map((wallet) => wallet.id)
+
+  let pendingHistory =
+    await WalletOnChainPendingReceiveRepository().listByWalletIdsAndAddresses({
+      walletIds,
+      addresses,
+    })
+  if (pendingHistory instanceof Error) {
+    if (pendingHistory instanceof CouldNotFindError) {
+      pendingHistory = []
+    } else {
+      return PartialResult.err(pendingHistory)
+    }
+  }
+
+  const confirmedLedgerTxns = await LedgerService().getTransactionsByWalletIds({
+    walletIds,
+    paginationArgs,
+  })
+  if (confirmedLedgerTxns instanceof LedgerError) {
+    return PartialResult.partial(
+      { slice: pendingHistory, total: pendingHistory.length },
+      confirmedLedgerTxns,
+    )
+  }
+  const ledgerTransactions = confirmedLedgerTxns.slice.filter(
+    (tx) => tx.address && addresses.includes(tx.address),
+  )
+
+  const confirmedHistory = WalletTransactionHistory.fromLedger({
+    ledgerTransactions,
+    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+  })
+
+  const transactions = [...pendingHistory, ...confirmedHistory.transactions]
+
+  return PartialResult.ok({
+    slice: transactions,
+    total: transactions.length,
   })
 }

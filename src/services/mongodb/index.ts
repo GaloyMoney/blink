@@ -17,6 +17,7 @@ import {
   PaymentFlowState,
   Account,
   User,
+  WalletOnChainPendingReceive,
 } from "../mongoose/schema"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
@@ -104,6 +105,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
       await Wallet.syncIndexes()
       await WalletInvoice.syncIndexes()
       await User.syncIndexes()
+      await WalletOnChainPendingReceive.syncIndexes()
     }
   } catch (err) {
     baseLogger.fatal(

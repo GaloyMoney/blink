@@ -1,4 +1,3 @@
-import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import {
@@ -8,6 +7,18 @@ import {
 
 import { WalletOnChainPendingReceiveRepository } from "@services/mongoose"
 import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
+
+import { generateHash } from "test/helpers"
+
+// TODO: Remove this when we unify amounts in PartialBaseWalletTransaction and
+// BaseWalletTransaction types
+const translatePendingToSettledTx = (pendingTx) => ({
+  ...pendingTx,
+  settlementAmount: Number(pendingTx.settlementAmount.amount),
+  settlementFee: Number(pendingTx.settlementFee.amount),
+  settlementDisplayAmount: pendingTx.settlementDisplayAmount.displayInMajor,
+  settlementDisplayFee: pendingTx.settlementDisplayFee.displayInMajor,
+})
 
 describe("WalletOnChainPendingReceiveRepository", () => {
   const repo = WalletOnChainPendingReceiveRepository()
@@ -23,11 +34,19 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       transactionHash: "txHash1" as OnChainTxHash,
       vout: 1 as OnChainTxVout,
     },
-    settlementAmount: toSats(10000),
-    settlementFee: toSats(2000),
+    settlementAmount: { amount: 10000n, currency: WalletCurrency.Btc },
+    settlementFee: { amount: 2000n, currency: WalletCurrency.Btc },
     settlementCurrency: WalletCurrency.Btc,
-    settlementDisplayAmount: "1.00",
-    settlementDisplayFee: "0.02",
+    settlementDisplayAmount: {
+      amountInMinor: 100n,
+      currency: DisplayCurrency.Usd,
+      displayInMajor: "1.00",
+    },
+    settlementDisplayFee: {
+      amountInMinor: 2n,
+      currency: DisplayCurrency.Usd,
+      displayInMajor: "0.02",
+    },
     settlementDisplayPrice: {
       base: 27454545454n,
       offset: 12n,
@@ -39,17 +58,26 @@ describe("WalletOnChainPendingReceiveRepository", () => {
 
   describe("persistNew", () => {
     it("should persist a new pending tx and return it", async () => {
-      const result = await repo.persistNew(newPendingIncomingTransaction)
-      if (result instanceof Error) throw result
+      const newPendingTx = {
+        ...newPendingIncomingTransaction,
+        settlementVia: {
+          ...newPendingIncomingTransaction.settlementVia,
+          transactionHash: generateHash() as OnChainTxHash,
+        },
+      }
 
-      expect(result).toMatchObject(newPendingIncomingTransaction)
+      const result = await repo.persistNew(newPendingTx)
+      if (result instanceof Error) throw result
+      const translatedPendingTx = translatePendingToSettledTx(newPendingTx)
+
+      expect(result).toMatchObject(translatedPendingTx)
       expect(result.id).toBeTruthy()
       expect(result.createdAt).toBeInstanceOf(Date)
 
       const savedRecords = await repo.listByWalletIds({ walletIds: [walletId] })
       if (savedRecords instanceof Error) throw savedRecords
       expect(savedRecords.length).toBe(1)
-      expect(savedRecords[0]).toMatchObject(newPendingIncomingTransaction)
+      expect(savedRecords[0]).toMatchObject(translatedPendingTx)
     })
 
     it("should return UnknownRepositoryError when an error occurs during persistence", async () => {
@@ -68,6 +96,10 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       const newPendingIncomingTransaction1: PersistWalletOnChainPendingReceiveArgs = {
         ...newPendingIncomingTransaction,
         walletId,
+        settlementVia: {
+          ...newPendingIncomingTransaction.settlementVia,
+          transactionHash: generateHash() as OnChainTxHash,
+        },
       }
       const newPendingIncomingTransaction2: PersistWalletOnChainPendingReceiveArgs = {
         ...newPendingIncomingTransaction,
@@ -78,7 +110,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
         },
         settlementVia: {
           type: "onchain",
-          transactionHash: "txHash2" as OnChainTxHash,
+          transactionHash: generateHash() as OnChainTxHash,
           vout: 2 as OnChainTxVout,
         },
         createdAt: new Date(Date.now()),
@@ -95,8 +127,12 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       expect(results.length).toBe(2)
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining(newPendingIncomingTransaction1),
-          expect.objectContaining(newPendingIncomingTransaction2),
+          expect.objectContaining(
+            translatePendingToSettledTx(newPendingIncomingTransaction1),
+          ),
+          expect.objectContaining(
+            translatePendingToSettledTx(newPendingIncomingTransaction2),
+          ),
         ]),
       )
     })
@@ -115,6 +151,10 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       const newPendingIncomingTransaction1: PersistWalletOnChainPendingReceiveArgs = {
         ...newPendingIncomingTransaction,
         walletId,
+        settlementVia: {
+          ...newPendingIncomingTransaction.settlementVia,
+          transactionHash: generateHash() as OnChainTxHash,
+        },
       }
       const result = await repo.persistNew(newPendingIncomingTransaction1)
       if (result instanceof Error) throw result
@@ -146,6 +186,10 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       const newPendingIncomingTransaction1: PersistWalletOnChainPendingReceiveArgs = {
         ...newPendingIncomingTransaction,
         walletId,
+        settlementVia: {
+          ...newPendingIncomingTransaction.settlementVia,
+          transactionHash: generateHash() as OnChainTxHash,
+        },
       }
 
       const result = await repo.persistNew(newPendingIncomingTransaction1)

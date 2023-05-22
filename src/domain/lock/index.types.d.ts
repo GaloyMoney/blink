@@ -19,6 +19,10 @@ interface ILockService {
     txHash: OnChainTxHash,
     f: (signal: OnChainTxAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError>
+  lockOnChainTxHashAndVout<Res>(
+    { txHash, vout }: { txHash: OnChainTxHash; vout: OnChainTxVout },
+    f: (signal: OnChainTxAbortSignal) => Promise<Res>,
+  ): Promise<Res | LockServiceError>
 }
 
 type RedlockArgs<Signal, Ret> = {

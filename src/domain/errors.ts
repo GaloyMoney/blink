@@ -16,6 +16,7 @@ export class DuplicateError extends RepositoryError {}
 export class BadInputsForFindError extends RepositoryError {}
 export class CouldNotFindError extends RepositoryError {}
 export class CouldNotUpdateError extends RepositoryError {}
+export class DuplicateKeyForPersistError extends RepositoryError {}
 export class InvalidDocumentIdForDbError extends RepositoryError {
   level = ErrorLevel.Critical
 }

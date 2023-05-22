@@ -1,6 +1,7 @@
 import {
   CannotConnectToDbError,
   DbConnectionClosedError,
+  DuplicateKeyForPersistError,
   InvalidDocumentIdForDbError,
   UnknownRepositoryError,
 } from "@domain/errors"
@@ -32,6 +33,9 @@ export const parseRepositoryError = (err: Error | string) => {
     case match(KnownRepositoryErrorMessages.MongoInvalidDocumentId):
       return new InvalidDocumentIdForDbError()
 
+    case match(KnownRepositoryErrorMessages.MongoDuplicateKeyForPersist):
+      return new DuplicateKeyForPersistError()
+
     default:
       return new UnknownRepositoryError(errMsg)
   }
@@ -46,4 +50,5 @@ const KnownRepositoryErrorMessages = {
 
   MongoInvalidDocumentId:
     /Argument passed in must be a string of 12 bytes or a string of 24 hex characters or an integer/,
+  MongoDuplicateKeyForPersist: /E11000 duplicate key error collection/,
 } as const

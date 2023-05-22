@@ -4,20 +4,49 @@ import { TxStatus } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
 
-import { parseRepositoryError } from "./utils"
 import { WalletOnChainPendingReceive } from "./schema"
+import { parseRepositoryError } from "./utils"
 
 export const WalletOnChainPendingReceiveRepository =
   (): IWalletOnChainPendingReceiveRepository => {
     const listByWalletIds = async ({
       walletIds,
+      paginationArgs,
     }: ListWalletOnChainPendingReceiveArgs): Promise<
       WalletOnChainSettledTransaction[] | RepositoryError
     > => {
+      // TODO: implement pagination
+      !!paginationArgs
+
       try {
         const result: WalletOnChainPendingReceiveRecord[] =
           await WalletOnChainPendingReceive.find({
             walletId: { $in: walletIds },
+          })
+        if (!result || result.length === 0) {
+          return new CouldNotFindWalletOnChainPendingReceiveError()
+        }
+        return result.map(translateToWalletOnChainTransaction)
+      } catch (err) {
+        return parseRepositoryError(err)
+      }
+    }
+
+    const listByWalletIdsAndAddresses = async ({
+      walletIds,
+      addresses,
+      paginationArgs,
+    }: ListWalletOnChainPendingReceiveByAddressesArgs): Promise<
+      WalletOnChainSettledTransaction[] | RepositoryError
+    > => {
+      // TODO: implement pagination
+      !!paginationArgs
+
+      try {
+        const result: WalletOnChainPendingReceiveRecord[] =
+          await WalletOnChainPendingReceive.find({
+            walletId: { $in: walletIds },
+            address: { $in: addresses },
           })
         if (!result || result.length === 0) {
           return new CouldNotFindWalletOnChainPendingReceiveError()
@@ -62,7 +91,7 @@ export const WalletOnChainPendingReceiveRepository =
       }
     }
 
-    return { listByWalletIds, persistNew, remove }
+    return { listByWalletIds, listByWalletIdsAndAddresses, persistNew, remove }
   }
 
 const translateToWalletOnChainTransaction = (
@@ -100,17 +129,17 @@ const translateToWalletOnChainTransaction = (
 }
 
 const translateToDbRecord = (
-  tx: PersistWalletOnChainPendingReceiveArgs,
+  tx: WalletOnChainPendingTransaction,
 ): WalletOnChainPendingReceiveRecord => ({
   walletId: tx.walletId || "",
   address: tx.initiationVia.address,
   transactionHash: tx.settlementVia.transactionHash,
   vout: tx.settlementVia.vout || 0,
-  walletAmount: tx.settlementAmount,
-  walletFee: tx.settlementFee,
+  walletAmount: Number(tx.settlementAmount.amount),
+  walletFee: Number(tx.settlementFee.amount),
   walletCurrency: tx.settlementCurrency,
-  displayAmount: tx.settlementDisplayAmount,
-  displayFee: tx.settlementDisplayFee,
+  displayAmount: tx.settlementDisplayAmount.displayInMajor,
+  displayFee: tx.settlementDisplayFee.displayInMajor,
   displayPriceBase: tx.settlementDisplayPrice.base.toString(),
   displayPriceOffset: tx.settlementDisplayPrice.offset.toString(),
   displayPriceCurrency: tx.settlementDisplayPrice.displayCurrency,

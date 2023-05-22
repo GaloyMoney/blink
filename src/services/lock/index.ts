@@ -45,6 +45,13 @@ const getWalletLockResource = (path: WalletId) => `locks:wallet:${path}`
 const getPaymentHashLockResource = (path: PaymentHash) => `locks:paymenthash:${path}`
 const getOnChainTxHashLockResource = (path: OnChainTxHash) =>
   `locks:onchaintxhash:${path}`
+const getOnChainTxHashAndVoutLockResource = ({
+  txHash,
+  vout,
+}: {
+  txHash: OnChainTxHash
+  vout: OnChainTxVout
+}) => `locks:onchaintxhash:${txHash}:${vout}`
 
 export const redlock = async <Signal extends RedlockAbortSignal, Ret>({
   path,
@@ -99,12 +106,22 @@ export const LockService = (): ILockService => {
     return redlock({ path, asyncFn })
   }
 
+  const lockOnChainTxHashAndVout = async <Res>(
+    { txHash, vout }: { txHash: OnChainTxHash; vout: OnChainTxVout },
+    asyncFn: (signal: OnChainTxAbortSignal) => Promise<Res>,
+  ): Promise<Res | LockServiceError> => {
+    const path = getOnChainTxHashAndVoutLockResource({ txHash, vout })
+
+    return redlock({ path, asyncFn })
+  }
+
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.lock",
     fns: {
       lockWalletId,
       lockPaymentHash,
       lockOnChainTxHash,
+      lockOnChainTxHashAndVout,
     },
   })
 }
