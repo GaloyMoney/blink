@@ -32,7 +32,7 @@ const GraphQLUser = GT.Object({
       description: "Phone number with international calling code.",
     },
 
-    device: {
+    deviceId: {
       type: GT.String,
       description: "Device ID of the user's device.",
     },
