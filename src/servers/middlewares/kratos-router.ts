@@ -98,11 +98,11 @@ kratosRouter.post(
       }
 
       const body = req.body
-      const { identity_id: userId, phone: phoneRaw, device, schema_id, email } = body
+      const { identity_id: userId, phone: phoneRaw, deviceId, schema_id, email } = body
 
       assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
-      if ((!phoneRaw && !email && !device) || !userId) {
+      if ((!phoneRaw && !email && !deviceId) || !userId) {
         baseLogger.error({ phoneRaw, email }, "missing inputs")
         res.status(400).send("missing inputs")
         return
@@ -150,7 +150,7 @@ kratosRouter.post(
           kratosUserId: userIdChecked,
           config: getDefaultAccountsConfig(),
         })
-      } else if (device) {
+      } else if (deviceId) {
         // device flow
         const levelZeroAccountsConfig = getDefaultAccountsConfig()
         levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
@@ -158,7 +158,7 @@ kratosRouter.post(
         account = await createAccountForDeviceAccount({
           userId: userIdChecked,
           config: levelZeroAccountsConfig,
-          device,
+          deviceId,
         })
       } else {
         // insert new flow, such as email with code

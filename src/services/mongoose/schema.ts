@@ -340,7 +340,7 @@ const UserSchema = new Schema(
       unique: true,
       sparse: true,
     },
-    device: {
+    deviceId: {
       // TODO do we still need this after hydrator code
       type: String,
       index: true,

@@ -51,7 +51,7 @@ export const AuthWithDeviceAccountService = () => {
           method,
           password,
           traits: {
-            device_id: identifier,
+            deviceId: identifier,
           },
         },
       })
@@ -79,7 +79,7 @@ export const AuthWithDeviceAccountService = () => {
   }: {
     deviceId: DeviceId
   }): Promise<CreateKratosUserForDeviceSchemaResponse | KratosError> => {
-    const traits = { device: deviceId }
+    const traits = { deviceId: deviceId }
     const identityBody: CreateIdentityBody = {
       credentials: { password: { config: { password } } },
       state: "active",
@@ -101,7 +101,7 @@ export const AuthWithDeviceAccountService = () => {
       const account = await createAccountForDeviceAccount({
         userId: kratosUserId,
         config: levelZeroAccountsConfig,
-        device: deviceId,
+        deviceId,
       })
       if (account instanceof Error) return account
       return { sessionToken, kratosUserId }
@@ -146,18 +146,18 @@ export const AuthWithDeviceAccountService = () => {
         if (Array.isArray(identity.metadata_admin)) {
           identity.metadata_admin = [
             ...identity.metadata_admin,
-            { device: identity.traits.device, updated_at },
+            { deviceId: identity.traits.deviceId, updated_at },
           ]
         } else {
           // is json object
           identity.metadata_admin = [
             identity.metadata_admin,
-            { device: identity.traits.device, updated_at },
+            { deviceId: identity.traits.deviceId, updated_at },
           ]
         }
       } else {
         // new data
-        identity.metadata_admin = [{ device: identity.traits.device, updated_at }]
+        identity.metadata_admin = [{ deviceId: identity.traits.deviceId, updated_at }]
       }
     } catch (error) {
       baseLogger.error(

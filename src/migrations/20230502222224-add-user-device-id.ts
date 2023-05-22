@@ -4,10 +4,10 @@ module.exports = {
     try {
       const result = db
         .collection("users")
-        .createIndex({ device: 1 }, { unique: true, sparse: true })
-      console.log({ result }, "index created for users/device")
+        .createIndex({ deviceId: 1 }, { unique: true, sparse: true })
+      console.log({ result }, "index created for users/deviceId")
     } catch (error) {
-      console.log({ result: error }, "error creating index for users/device")
+      console.log({ result: error }, "error creating index for users/deviceId")
     }
   },
 }
