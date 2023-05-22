@@ -5,6 +5,10 @@ import {
   RepositoryError,
 } from "@domain/errors"
 
+import { checkedToDeviceId } from "@domain/accounts"
+
+import { ValidationError } from "@domain/shared"
+
 import { User } from "./schema"
 
 import { parseRepositoryError } from "./utils"
@@ -60,7 +64,10 @@ export const UsersRepository = (): IUsersRepository => {
 
   const findByDeviceId = async (deviceId: DeviceId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ deviceId })
+      const deviceIdChecked = checkedToDeviceId(deviceId)
+      if (deviceIdChecked instanceof ValidationError)
+        return new RepositoryError("Invalid format for deviceId")
+      const result = await User.findOne({ deviceId: deviceIdChecked })
       if (!result) return new CouldNotFindUserFromDeviceError()
 
       return translateToUser(result)
