@@ -511,6 +511,16 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotUnsetPhoneFromUserError":
     case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
+    case "EventAugmentationMissingError":
+    case "NoPayloadFoundError":
+    case "ExpectedUtxoDetectedPayloadNotFoundError":
+    case "ExpectedUtxoSettledPayloadNotFoundError":
+    case "ExpectedPayoutSubmittedPayloadNotFoundError":
+    case "ExpectedPayoutCommittedPayloadNotFoundError":
+    case "ExpectedPayoutBroadcastPayloadNotFoundError":
+    case "ExpectedPayoutSettledPayloadNotFoundError":
+    case "UnknownPayloadTypeReceivedError":
+    case "ExpectedAddressInfoMissingInEventError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`
@@ -556,6 +566,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MissingTotpKratosError":
     case "IncompatibleSchemaUpgradeError":
     case "UnknownKratosError":
+    case "BriaEventError":
+    case "BriaPayloadError":
+    case "UnknownBriaEventError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

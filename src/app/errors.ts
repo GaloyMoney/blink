@@ -20,6 +20,7 @@ import * as AuthenticationErrors from "@domain/authentication/errors"
 
 import * as LedgerFacadeErrors from "@services/ledger/domain/errors"
 import * as KratosErrors from "@services/kratos/errors"
+import * as BriaEventErrors from "@services/bria/errors"
 
 export const ApplicationErrors = {
   ...SharedErrors,
@@ -44,4 +45,5 @@ export const ApplicationErrors = {
 
   ...KratosErrors,
   ...LedgerFacadeErrors,
+  ...BriaEventErrors,
 } as const
