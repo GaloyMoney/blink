@@ -1,4 +1,5 @@
 import { Wallets } from "@app"
+import { CouldNotFindWalletFromOnChainAddressError } from "@domain/errors"
 import { BriaPayloadType, BriaSubscriber } from "@services/bria"
 
 export const briaEventHandler = async (
@@ -22,15 +23,25 @@ const utxoDetectedEventHandler = async ({
 }: {
   event: UtxoDetected
 }): Promise<true | ApplicationError> => {
-  return Wallets.addPendingTransaction(event)
+  const res = await Wallets.addPendingTransaction(event)
+  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
+    return true
+  }
+
+  return res
 }
 
-const utxoSettledEventHandler = ({
+const utxoSettledEventHandler = async ({
   event,
 }: {
   event: UtxoSettled
 }): Promise<true | ApplicationError> => {
-  return Wallets.addSettledTransaction(event)
+  const res = await Wallets.addSettledTransaction(event)
+  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
+    return true
+  }
+
+  return res
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
