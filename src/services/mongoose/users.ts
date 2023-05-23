@@ -64,10 +64,7 @@ export const UsersRepository = (): IUsersRepository => {
 
   const findByDeviceId = async (deviceId: DeviceId): Promise<User | RepositoryError> => {
     try {
-      const deviceIdChecked = checkedToDeviceId(deviceId)
-      if (deviceIdChecked instanceof ValidationError)
-        return new RepositoryError("Invalid format for deviceId")
-      const result = await User.findOne({ deviceId: deviceIdChecked })
+      const result = await User.findOne({ deviceId })
       if (!result) return new CouldNotFindUserFromDeviceError()
 
       return translateToUser(result)
