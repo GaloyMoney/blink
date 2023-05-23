@@ -157,7 +157,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       return new NoPayloadFoundError()
     case RawBriaEvent.PayloadCase.UTXO_DETECTED:
       rawPayload = rawEvent.getUtxoDetected()
-      if (!rawPayload) {
+      if (rawPayload === undefined) {
         return new ExpectedUtxoDetectedPayloadNotFoundError()
       }
       payload = {
@@ -173,7 +173,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       break
     case RawBriaEvent.PayloadCase.UTXO_SETTLED:
       rawPayload = rawEvent.getUtxoSettled()
-      if (!rawPayload) {
+      if (rawPayload === undefined) {
         return new ExpectedUtxoSettledPayloadNotFoundError()
       }
       payload = {
@@ -190,7 +190,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       break
     case RawBriaEvent.PayloadCase.PAYOUT_SUBMITTED:
       rawPayload = rawEvent.getPayoutSubmitted()
-      if (!rawPayload) {
+      if (rawPayload === undefined) {
         return new ExpectedPayoutSubmittedPayloadNotFoundError()
       }
       payload = {
@@ -204,7 +204,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       break
     case RawBriaEvent.PayloadCase.PAYOUT_COMMITTED:
       rawPayload = rawEvent.getPayoutCommitted()
-      if (!rawPayload) {
+      if (rawPayload === undefined) {
         return new ExpectedPayoutCommittedPayloadNotFoundError()
       }
       payload = {
@@ -218,7 +218,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       break
     case RawBriaEvent.PayloadCase.PAYOUT_BROADCAST:
       rawPayload = rawEvent.getPayoutBroadcast()
-      if (!rawPayload) {
+      if (rawPayload === undefined) {
         return new ExpectedPayoutBroadcastPayloadNotFoundError()
       }
       payload = {
@@ -232,7 +232,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       break
     case RawBriaEvent.PayloadCase.PAYOUT_SETTLED:
       rawPayload = rawEvent.getPayoutSettled()
-      if (!rawPayload) {
+      if (rawPayload === undefined) {
         return new ExpectedPayoutSettledPayloadNotFoundError()
       }
       payload = {

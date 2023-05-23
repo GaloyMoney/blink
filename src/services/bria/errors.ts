@@ -3,7 +3,9 @@ import { DomainError, ErrorLevel } from "@domain/shared"
 export class BriaEventError extends DomainError {}
 export class EventAugmentationMissingError extends BriaEventError {}
 
-export class BriaPayloadError extends BriaEventError {}
+export class BriaPayloadError extends BriaEventError {
+  level = ErrorLevel.Critical
+}
 export class NoPayloadFoundError extends BriaPayloadError {}
 export class ExpectedUtxoDetectedPayloadNotFoundError extends BriaPayloadError {}
 export class ExpectedUtxoSettledPayloadNotFoundError extends BriaPayloadError {}
