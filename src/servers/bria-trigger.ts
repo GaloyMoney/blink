@@ -44,8 +44,7 @@ const utxoSettledEventHandler = async ({
   return res
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const listenerBria = () => {
-  const subBria = BriaSubscriber().subscribeToAll(briaEventHandler)
+export const listenerBria = async () => {
+  const subBria = await BriaSubscriber().subscribeToAll(briaEventHandler)
   if (subBria instanceof Error) throw subBria
 }

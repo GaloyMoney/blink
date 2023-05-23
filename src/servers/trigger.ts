@@ -59,6 +59,7 @@ import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tr
 
 import healthzHandler from "./middlewares/healthz"
 import { SubscriptionInterruptedError } from "./errors"
+import { listenerBria } from "./bria-trigger"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
@@ -555,6 +556,8 @@ const listenerSwapMonitor = async () => {
 }
 
 const main = () => {
+  listenerBria()
+
   lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }: LndConnect) => {
     baseLogger.info({ socket }, "lnd started")
 
