@@ -54,6 +54,9 @@ import { UsersRepository } from "@services/mongoose"
 
 import { validateKratosCookie } from "@services/kratos"
 
+import { checkedToUserId } from "@domain/accounts"
+import { ValidationError } from "@domain/shared"
+
 import { playgroundTabs } from "../graphql/playground"
 
 import authRouter from "./middlewares/auth-router"
@@ -144,9 +147,10 @@ export const sessionContext = ({
     async () => {
       // note: value should match (ie: "anon") if not an accountId
       // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-      const userId = tokenPayload?.userId ?? tokenPayload?.sub
+      const maybeUserId = checkedToUserId(tokenPayload?.userId ?? tokenPayload?.sub)
 
-      if (userId) {
+      if (!(maybeUserId instanceof ValidationError)) {
+        const userId = maybeUserId
         const account = await Accounts.getAccountFromUserId(userId)
         if (account instanceof Error) throw mapError(account)
         domainAccount = account
