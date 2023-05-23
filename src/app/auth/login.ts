@@ -222,7 +222,7 @@ export const loginUpgradeWithPhone = async ({
     kratosUserId: account.kratosUserId,
     phone,
   })
-  if (updatedKratosAccount instanceof Error) return new Error("updatedKratosAccount")
+  if (updatedKratosAccount instanceof Error) return updatedKratosAccount
   // b. update user
   // set phone, remove deviceId
   const updatedUser = await UsersRepository().update({
