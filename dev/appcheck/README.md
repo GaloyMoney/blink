@@ -46,3 +46,17 @@ node jwks-generator.js
 After running the script, you should have a .well-known/jwks.json file that contains your JWKS. You can then serve this file using an HTTP server (such as Express) or upload it to a web server where your identity provider is hosted.
 
 Keep in mind that the JWKS file should be accessible from the URL specified in your Oathkeeper configuration. Update the jwks_urls and trusted_issuers fields in the Oathkeeper configuration to match the actual URL of your identity provider and JWKS file.
+
+
+## Device Login Flow
+
+```mermaid
+sequenceDiagram
+    Mobile->>Firebase: (1) Firebase, here is my unique device id
+    Firebase->>Attestation Provider: (2) Thanks device, let me ask if this is authentic from Play Integrity (android) or App Attest (ios)
+    Attestation Provider-->>Firebase: (3) Yep this device is authentic and unique
+    Firebase-->>Mobile: (4) Here's your jwt, valid for 1 hour
+    Mobile-->>Oathkeeper: (5) Let's have Oathkeeper verify the JWT against the JWKS
+    Oathkeeper-->>Backend: (6) Yep, he's real, here is the subject (deviceId) and kratos userId (if it exists)
+    Backend-->Kratos: (7) Hey Kratos does this deviceId account exist?
+```
