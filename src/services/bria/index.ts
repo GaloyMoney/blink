@@ -1,16 +1,25 @@
+import util from "util"
+
+import { Struct, Value, ListValue } from "google-protobuf/google/protobuf/struct_pb"
+
 import {
   asyncRunInSpan,
   SemanticAttributes,
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
-import { credentials, Metadata } from "@grpc/grpc-js"
-import { BRIA_PROFILE_API_KEY } from "@config"
+import { credentials, Metadata, ServiceError } from "@grpc/grpc-js"
+import { BRIA_PROFILE_API_KEY, BRIA_WALLET_NAME } from "@config"
 import { WalletCurrency } from "@domain/shared/primitives"
 
 import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
-import { SubscribeAllRequest, BriaEvent as RawBriaEvent } from "./proto/bria_pb"
+import {
+  BriaEvent as RawBriaEvent,
+  SubmitPayoutRequest,
+  SubmitPayoutResponse,
+  SubscribeAllRequest,
+} from "./proto/bria_pb"
 import {
   EventAugmentationMissingError,
   ExpectedAddressInfoMissingInEventError,
@@ -125,7 +134,63 @@ export const NewOnChainService = (): INewOnChainService => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
 
-  return {}
+  const queuePayoutToAddress = async ({
+    address,
+    amount,
+    priority,
+    description,
+  }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
+    const submitPayout = async ({
+      priority,
+      address,
+      amount,
+      externalId,
+    }: {
+      priority: PayoutPriority
+      address: OnChainAddress
+      amount: BtcPaymentAmount
+      externalId?: string
+    }): Promise<PayoutId | BriaEventError> => {
+      try {
+        const request = new SubmitPayoutRequest()
+        request.setWalletName(BRIA_WALLET_NAME)
+        request.setPayoutQueueName(priority)
+        request.setOnchainAddress(address)
+        request.setSatoshis(Number(amount.amount))
+        if (externalId) {
+          request.setExternalId(externalId)
+        }
+        if (description) {
+          request.setMetadata(constructMetadata({ description }))
+        }
+
+        const submitPayoutWithMetadataOverload = (
+          { request, metadata }: { request: SubmitPayoutRequest; metadata: Metadata },
+          callback: (error: ServiceError | null, response: SubmitPayoutResponse) => void,
+        ) => {
+          const submitPayout = bitcoinBridgeClient.submitPayout.bind(bitcoinBridgeClient)
+          return submitPayout(request, metadata, callback)
+        }
+
+        const submitPayoutWithMetadata = util.promisify(submitPayoutWithMetadataOverload)
+        const response = await submitPayoutWithMetadata({
+          request,
+          metadata,
+        })
+
+        return response.getId() as PayoutId
+      } catch (error) {
+        return new UnknownBriaEventError(error.message || error)
+      }
+    }
+
+    const payoutId = await submitPayout({ priority, address, amount })
+    if (payoutId instanceof Error) return payoutId
+
+    return payoutId
+  }
+
+  return { queuePayoutToAddress }
 }
 
 const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
@@ -253,4 +318,47 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     augmentation,
     sequence,
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const constructMetadata = (metadataObj: { [key: string]: any }): Struct => {
+  const metadata = new Struct()
+
+  for (const key in metadataObj) {
+    /* eslint-disable-next-line no-prototype-builtins */
+    if (metadataObj.hasOwnProperty(key)) {
+      const value = new Value()
+
+      // Check the type of the value and set the appropriate field on the Value object
+      const fieldValue = metadataObj[key]
+      if (typeof fieldValue === "string") {
+        value.setStringValue(fieldValue)
+      } else if (typeof fieldValue === "number") {
+        value.setNumberValue(fieldValue)
+      } else if (typeof fieldValue === "boolean") {
+        value.setBoolValue(fieldValue)
+      } else if (Array.isArray(fieldValue)) {
+        const listValue = new Value()
+        listValue.setListValue(
+          new ListValue().setValuesList(
+            fieldValue.map((item) => {
+              const listItemValue = new Value()
+              listItemValue.setStringValue(item)
+              return listItemValue
+            }),
+          ),
+        )
+        const fetchedListValue = listValue.getListValue()
+        if (fetchedListValue !== undefined) {
+          value.setListValue(fetchedListValue)
+        }
+      } else if (typeof fieldValue === "object") {
+        value.setStructValue(constructMetadata(fieldValue))
+      }
+
+      metadata.getFieldsMap().set(key, value)
+    }
+  }
+
+  return metadata
 }
