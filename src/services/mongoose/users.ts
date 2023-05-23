@@ -53,7 +53,6 @@ export const UsersRepository = (): IUsersRepository => {
 
       return translateToUser(result)
     } catch (err) {
-      //  else
       return parseRepositoryError(err)
     }
   }
@@ -65,7 +64,6 @@ export const UsersRepository = (): IUsersRepository => {
 
       return translateToUser(result)
     } catch (err) {
-      //  else
       return parseRepositoryError(err)
     }
   }
