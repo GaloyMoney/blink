@@ -32,6 +32,8 @@ import {
   GetWalletBalanceSummaryResponse,
   FindAddressByExternalIdRequest,
   FindAddressByExternalIdResponse,
+  SubmitPayoutRequest,
+  SubmitPayoutResponse,
 } from "./proto/bria_pb"
 import {
   EventAugmentationMissingError,
@@ -69,6 +71,9 @@ const getWalletBalanceSummary = util.promisify<
   Metadata,
   GetWalletBalanceSummaryResponse
 >(bitcoinBridgeClient.getWalletBalanceSummary.bind(bitcoinBridgeClient))
+const submitPayout = util.promisify<SubmitPayoutRequest, Metadata, SubmitPayoutResponse>(
+  bitcoinBridgeClient.submitPayout.bind(bitcoinBridgeClient),
+)
 
 export const BriaPayloadType = {
   UtxoDetected: "utxo_detected",
@@ -229,12 +234,41 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
+  const queuePayoutToAddress = async ({
+    address,
+    amount,
+    priority,
+    requestId,
+    description,
+  }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
+    try {
+      const request = new SubmitPayoutRequest()
+      request.setWalletName(briaConfig.walletName)
+      request.setPayoutQueueName(priority)
+      request.setOnchainAddress(address)
+      request.setSatoshis(Number(amount.amount))
+      if (requestId) {
+        request.setExternalId(requestId)
+      }
+      if (description) {
+        request.setMetadata(constructMetadata({ description }))
+      }
+
+      const response = await submitPayout(request, metadata)
+
+      return response.getId() as PayoutId
+    } catch (error) {
+      return new UnknownBriaEventError(error.message || error)
+    }
+  }
+
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.bria.onchain",
     fns: {
       getBalance,
       createOnChainAddress,
       findAddressByRequestId,
+      queuePayoutToAddress,
     },
   })
 }
@@ -365,11 +399,6 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     sequence,
   }
 }
-
-export const KnownBriaErrorDetails = {
-  DuplicateRequestIdAddressCreate:
-    /duplicate key value violates unique constraint.*bria_addresses_account_id_external_id_key/,
-} as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const constructMetadata = (metadataObj: { [key: string]: any }): Struct => {
