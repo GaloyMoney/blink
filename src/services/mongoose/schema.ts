@@ -116,10 +116,7 @@ const WalletSchema = new Schema<WalletRecord>({
   onchain: {
     type: [
       {
-        pubkey: {
-          type: String,
-          required: true,
-        },
+        pubkey: String,
         address: {
           type: String,
           // TODO: index?

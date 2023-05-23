@@ -616,7 +616,7 @@ const testInternalSend = async ({
     recipientCurrency === WalletCurrency.Btc
       ? Wallets.createOnChainAddressForBtcWallet
       : Wallets.createOnChainAddressForUsdWallet
-  const address = await createAddressFn(recipientWalletId)
+  const address = await createAddressFn({ walletId: recipientWalletId })
   if (address instanceof Error) return address
 
   const sendArgs = {
@@ -981,7 +981,9 @@ describe("BtcWallet - onChainPay", () => {
   it("sends all with an on us transaction", async () => {
     const initialBalanceUserF = await getBalanceHelper(walletIdF)
 
-    const address = await Wallets.createOnChainAddressForBtcWallet(walletIdD)
+    const address = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdD,
+    })
     if (address instanceof Error) throw address
 
     const initialBalanceUserD = await getBalanceHelper(walletIdD)

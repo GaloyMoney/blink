@@ -35,7 +35,9 @@ describe("BriaSubscriber", () => {
     it("receives utxo events", async () => {
       const amountSats = toSats(5_000)
       // Receive onchain
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
+      const address = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: walletIdA,
+      })
       if (address instanceof Error) throw address
       expect(address.substring(0, 4)).toBe("bcrt")
 
@@ -93,7 +95,9 @@ describe("BriaSubscriber", () => {
       const amountSats = toSats(5_000)
 
       // Receive onchain
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
+      const address = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: walletIdA,
+      })
       if (address instanceof Error) throw address
       expect(address.substring(0, 4)).toBe("bcrt")
 

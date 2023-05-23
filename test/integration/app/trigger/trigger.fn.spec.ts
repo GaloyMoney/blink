@@ -118,13 +118,17 @@ describe("onchainBlockEventHandler", () => {
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
 
-    const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
+    const address = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdA,
+    })
     if (address instanceof Error) throw address
 
     const output0 = {}
     output0[address] = sat2btc(amount)
 
-    const address2 = await Wallets.createOnChainAddressForBtcWallet(walletIdD)
+    const address2 = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdD,
+    })
     if (address2 instanceof Error) throw address2
 
     const output1 = {}

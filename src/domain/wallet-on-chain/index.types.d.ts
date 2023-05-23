@@ -1,5 +1,10 @@
-type OnChainAddressIdentifier = {
+type LndOnChainAddressIdentifier = {
   readonly pubkey: Pubkey
+  readonly address: OnChainAddress
+}
+
+type OnChainAddressIdentifier = {
+  readonly pubkey?: Pubkey
   readonly address: OnChainAddress
 }
 

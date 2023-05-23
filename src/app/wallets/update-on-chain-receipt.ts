@@ -262,7 +262,7 @@ const processTxForWallet = async (
 
         const currentAddress = await getLastOnChainAddress(wallet.id)
         if (address === currentAddress) {
-          const newAddress = await createOnChainAddressByWallet(wallet)
+          const newAddress = await createOnChainAddressByWallet({ wallet })
           if (newAddress instanceof Error) return newAddress
         }
       }

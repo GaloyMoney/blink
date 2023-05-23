@@ -649,7 +649,9 @@ describe("Display properties on transactions", () => {
       amountSats: Satoshis
       walletId: WalletId
     }) {
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletId)
+      const address = await Wallets.createOnChainAddressForBtcWallet({
+        walletId,
+      })
       if (address instanceof Error) throw address
       expect(address.substring(0, 4)).toBe("bcrt")
 
@@ -734,7 +736,9 @@ describe("Display properties on transactions", () => {
 
         // Execute receive
 
-        const address = await Wallets.createOnChainAddressForBtcWallet(recipientWalletId)
+        const address = await Wallets.createOnChainAddressForBtcWallet({
+          walletId: recipientWalletId,
+        })
         if (address instanceof Error) throw address
 
         const account = await Accounts.getAccount(recipientAccount.id)
@@ -818,7 +822,9 @@ describe("Display properties on transactions", () => {
         // Execute Send
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const address = await Wallets.createOnChainAddressForBtcWallet(recipientWalletId)
+        const address = await Wallets.createOnChainAddressForBtcWallet({
+          walletId: recipientWalletId,
+        })
         if (address instanceof Error) throw address
 
         const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
@@ -889,7 +895,9 @@ describe("Display properties on transactions", () => {
         // Execute Send
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const address = await Wallets.createOnChainAddressForUsdWallet(recipientWalletId)
+        const address = await Wallets.createOnChainAddressForUsdWallet({
+          walletId: recipientWalletId,
+        })
         if (address instanceof Error) throw address
 
         const paid = await Wallets.payOnChainByWalletIdForBtcWallet({

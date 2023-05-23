@@ -142,13 +142,13 @@ describe("handleIncomingOnChainTransactions", () => {
       {
         id: "walletId0",
         onChainAddressIdentifiers: [
-          { pubkey: "pubkey", address: "walletId0-address1" },
-          { pubkey: "pubkey", address: "walletId0-address2" },
+          { address: "walletId0-address1" },
+          { address: "walletId0-address2" },
         ],
       },
       {
         id: "walletId1",
-        onChainAddressIdentifiers: [{ pubkey: "pubkey", address: "walletId1-address1" }],
+        onChainAddressIdentifiers: [{ address: "walletId1-address1" }],
       },
       {
         id: "walletId2",

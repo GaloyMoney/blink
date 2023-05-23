@@ -68,7 +68,9 @@ describe("UserWallet - getOnchainFee", () => {
     })
 
     it("returns zero for an on us address", async () => {
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdB)
+      const address = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: walletIdB,
+      })
       if (address instanceof Error) throw address
       const feeAmount = await Wallets.getOnChainFeeForBtcWallet({
         walletId: walletIdA,
@@ -226,7 +228,9 @@ describe("UserWallet - getOnchainFee", () => {
         })
 
         it("returns zero for an on us address", async () => {
-          const address = await Wallets.createOnChainAddressForBtcWallet(walletIdB)
+          const address = await Wallets.createOnChainAddressForBtcWallet({
+            walletId: walletIdB,
+          })
           if (address instanceof Error) throw address
 
           const getFeeArgs = {

@@ -131,7 +131,7 @@ export const OnChainService = (
   }
 
   const createOnChainAddress = async (): Promise<
-    OnChainAddressIdentifier | OnChainServiceError
+    LndOnChainAddressIdentifier | OnChainServiceError
   > => {
     try {
       const { address } = await createChainAddress({
