@@ -1,11 +1,13 @@
-import { ColdStorage } from "@app"
 import * as appConfig from "@config"
+
+import { ColdStorage } from "@app"
+
 import { btc2sat, toSats } from "@domain/bitcoin"
 import { RebalanceChecker } from "@domain/cold-storage"
+
 import { lndsBalances } from "@services/lnd/utils"
 
-import { BitcoindWalletClient } from "test/helpers/bitcoind"
-import { bitcoindClient, checkIsBalanced, mineBlockAndSyncAll } from "test/helpers"
+import { checkIsBalanced, mineBlockAndSyncAll } from "test/helpers"
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
@@ -15,16 +17,16 @@ jest.mock("@config", () => {
   }
 })
 
-let coldStorageWalletClient: BitcoindWalletClient
+let walletName: string
 
 beforeAll(async () => {
   const { onChainWallet } = appConfig.getColdStorageConfig()
 
-  const wallets = await bitcoindClient.listWallets()
-  const walletName = wallets.find((item) => item.includes(onChainWallet))
-  if (!walletName) throw new Error("Invalid specter wallet name")
+  const wallets = await ColdStorage.listWallets()
+  if (wallets instanceof Error) throw wallets
 
-  coldStorageWalletClient = new BitcoindWalletClient(walletName)
+  walletName =
+    wallets.find((item) => item.includes(onChainWallet)) || "specter/coldstorage"
 
   // Note: Needed to clean up any pending txns since test adds pending txns to balance
   //       while onChainService does not.
@@ -47,7 +49,9 @@ describe("ColdStorage - rebalanceToColdWallet", () => {
     }
     getColdStorageConfigMock.mockReturnValueOnce(config)
 
-    const initialBalance = await coldStorageWalletClient.getBalance()
+    const initialBalance = await ColdStorage.getBalance(walletName)
+    if (initialBalance instanceof Error) throw initialBalance
+
     const { offChain, onChain } = await lndsBalances()
 
     const rebalanceAmount = RebalanceChecker(config).getWithdrawFromHotWalletAmount({
@@ -61,8 +65,10 @@ describe("ColdStorage - rebalanceToColdWallet", () => {
 
     await mineBlockAndSyncAll()
 
-    const finalBalance = await coldStorageWalletClient.getBalance()
-    expect(btc2sat(finalBalance)).toBe(btc2sat(initialBalance) + rebalanceAmount)
+    const finalBalance = await ColdStorage.getBalance(walletName)
+    if (finalBalance instanceof Error) throw finalBalance
+
+    expect(finalBalance.amount).toBe(initialBalance.amount + rebalanceAmount)
   })
 
   it("returns false if no rebalance is needed", async () => {
@@ -76,7 +82,8 @@ describe("ColdStorage - rebalanceToColdWallet", () => {
     }
     getColdStorageConfigMock.mockReturnValueOnce(config)
 
-    const initialBalance = await coldStorageWalletClient.getBalance()
+    const initialBalance = await ColdStorage.getBalance(walletName)
+    if (initialBalance instanceof Error) throw initialBalance
 
     const result = await ColdStorage.rebalanceToColdWallet()
     expect(result).not.toBeInstanceOf(Error)
@@ -84,7 +91,9 @@ describe("ColdStorage - rebalanceToColdWallet", () => {
 
     await mineBlockAndSyncAll()
 
-    const finalBalance = await coldStorageWalletClient.getBalance()
-    expect(btc2sat(finalBalance)).toBe(btc2sat(initialBalance))
+    const finalBalance = await ColdStorage.getBalance(walletName)
+    if (finalBalance instanceof Error) throw finalBalance
+
+    expect(finalBalance.amount).toBe(initialBalance.amount)
   })
 })

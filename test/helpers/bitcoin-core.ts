@@ -147,6 +147,16 @@ export const createColdStorageWallet = async (walletName: string) => {
   return wallet
 }
 
+export const createRandomColdStorageWallet = async (walletName: string) => {
+  const client = await getBitcoindClient()
+  const wallet = await client.createWallet({
+    wallet_name: walletName,
+    disable_private_keys: true,
+    descriptors: true,
+  })
+  return wallet
+}
+
 const getBitcoindClient = (wallet?: string) => {
   const bitcoinCoreRPCConfig = getBitcoinCoreRPCConfig()
   return new BitcoindClient({ ...bitcoinCoreRPCConfig, wallet })

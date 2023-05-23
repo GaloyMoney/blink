@@ -7,6 +7,7 @@ import {
   checkIsBalanced,
   createColdStorageWallet,
   createMandatoryUsers,
+  createRandomColdStorageWallet,
   fundLnd,
   fundWalletIdFromOnchain,
   getChainBalance,
@@ -39,10 +40,14 @@ describe("Bitcoind", () => {
 
   it("create cold wallet", async () => {
     const { onChainWallet: walletName } = getColdStorageConfig()
+
     const { name } = await createColdStorageWallet(walletName)
     expect(name).toBe(walletName)
+
+    const { name: wallet2 } = await createRandomColdStorageWallet("specter/random")
     const wallets = await bitcoindClient.listWallets()
     expect(wallets).toContain(walletName)
+    expect(wallets).toContain(wallet2)
   })
 
   it("create outside wallet", async () => {

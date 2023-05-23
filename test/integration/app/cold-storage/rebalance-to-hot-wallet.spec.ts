@@ -1,39 +1,32 @@
-import { networks, Psbt } from "bitcoinjs-lib"
 import BIP32Factory from "bip32"
 import * as ecc from "tiny-secp256k1"
+import { networks, Psbt } from "bitcoinjs-lib"
+
+import { BTC_NETWORK, getColdStorageConfig } from "@config"
 
 import { ColdStorage, Wallets } from "@app"
-import { BTC_NETWORK, getColdStorageConfig } from "@config"
+
+import { TxDecoder } from "@domain/bitcoin/onchain"
 import { InsufficientBalanceForRebalanceError } from "@domain/cold-storage/errors"
 
 import { baseLogger } from "@services/logger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { TxDecoder } from "@domain/bitcoin/onchain"
 
-import { btc2sat } from "@domain/bitcoin"
-
-import {
-  bitcoindClient,
-  bitcoindOutside,
-  checkIsBalanced,
-  mineBlockAndSyncAll,
-} from "test/helpers"
-import { BitcoindWalletClient } from "test/helpers/bitcoind"
 import { signer1Base58, signer2Base58 } from "test/helpers/multisig-wallet"
+import { bitcoindOutside, checkIsBalanced, mineBlockAndSyncAll } from "test/helpers"
 
 const bip32 = BIP32Factory(ecc)
 
-let coldStorageWalletClient: BitcoindWalletClient
 let walletName: string
 
 beforeAll(async () => {
   const { onChainWallet } = getColdStorageConfig()
 
-  const wallets = await bitcoindClient.listWallets()
+  const wallets = await ColdStorage.listWallets()
+  if (wallets instanceof Error) throw wallets
+
   walletName =
     wallets.find((item) => item.includes(onChainWallet)) || "specter/coldstorage"
-
-  coldStorageWalletClient = new BitcoindWalletClient(walletName)
 })
 
 afterEach(async () => {
@@ -61,7 +54,10 @@ describe("ColdStorage - rebalanceToHotWallet", () => {
     if (onChainService instanceof Error) throw onChainService
 
     const rebalanceAmount = 10000
-    const initialColdWalletBalance = await coldStorageWalletClient.getBalance()
+
+    const initialColdWalletBalance = await ColdStorage.getBalance(walletName)
+    if (initialColdWalletBalance instanceof Error) throw initialColdWalletBalance
+
     const initialHotWalletBalance = await onChainService.getBalance()
     if (initialHotWalletBalance instanceof Error) throw initialHotWalletBalance
 
@@ -99,13 +95,15 @@ describe("ColdStorage - rebalanceToHotWallet", () => {
     const updateResult = await Wallets.updateOnChainReceipt({ logger: baseLogger })
     if (updateResult instanceof Error) throw updateResult
 
-    const finalColdWalletBalance = await coldStorageWalletClient.getBalance()
+    const finalColdWalletBalance = await ColdStorage.getBalance(walletName)
+    if (finalColdWalletBalance instanceof Error) throw finalColdWalletBalance
+
     const finalHotWalletBalance = await onChainService.getBalance()
     if (finalHotWalletBalance instanceof Error) throw finalHotWalletBalance
 
     expect(finalHotWalletBalance).toBe(initialHotWalletBalance + rebalanceAmount)
-    expect(btc2sat(finalColdWalletBalance)).toBe(
-      btc2sat(initialColdWalletBalance) - txFee - rebalanceAmount,
+    expect(finalColdWalletBalance.amount).toBe(
+      initialColdWalletBalance.amount - txFee - rebalanceAmount,
     )
   })
 

@@ -100,10 +100,11 @@ export const getBitcoinCoreRPCConfig = () => {
   return {
     network: process.env.NETWORK,
     username: process.env.BITCOINDRPCUSER || "rpcuser",
-    password: process.env.BITCOINDRPCPASS,
+    password: process.env.BITCOINDRPCPASS || "rpcpassword",
     host: process.env.BITCOINDADDR,
-    port: process.env.BITCOINDPORT,
-    version: "0.22.0",
+    port: parseInt(process.env.BITCOINDPORT || "8332", 10),
+    timeout: parseInt(process.env.BITCOINDTIMEOUT || "20000", 10),
+    version: "24.0.0",
   }
 }
 

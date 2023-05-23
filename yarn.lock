@@ -5078,6 +5078,14 @@ bip68@1.0.4:
   resolved "https://registry.yarnpkg.com/bip68/-/bip68-1.0.4.tgz#78a95c7a43fad183957995cc2e08d79b0c372c4d"
   integrity sha512-O1htyufFTYy3EO0JkHg2CLykdXEtV2ssqw47Gq9A0WByp662xpJnMEB9m43LZjsSDjIAOozWRExlFQk2hlV1XQ==
 
+bitcoin-cli-ts@^24.0.1:
+  version "24.0.1"
+  resolved "https://registry.yarnpkg.com/bitcoin-cli-ts/-/bitcoin-cli-ts-24.0.1.tgz#daff931234b966f1f3f287c57bd5ce25d0fa03c2"
+  integrity sha512-fCfOqYaBFxkQAYC1Py7rsE/vGL/NG6qryxE+jCoOXQa98OlKOkgWtpLqGOIhKtr4Z2xdd8gmicByBfqyof21UQ==
+  dependencies:
+    json-rpc-2.0 "^1.6.0"
+    undici "^5.22.1"
+
 bitcoin-core-ts@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/bitcoin-core-ts/-/bitcoin-core-ts-3.0.3.tgz#e22586b8349a2ad9efe40b758c6ffeed9171acfb"
@@ -9674,6 +9682,11 @@ json-parse-even-better-errors@^2.3.0:
   resolved "https://registry.yarnpkg.com/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz#7c47805a94319928e05777405dc12e1f7a4ee02d"
   integrity sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==
 
+json-rpc-2.0@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/json-rpc-2.0/-/json-rpc-2.0-1.6.0.tgz#60770ca98f663376126af7335ed2d30164691c89"
+  integrity sha512-+pKxaoIqnA5VjXmZiAI1+CkFG7mHLg+dhtliOe/mp1P5Gdn8P5kE/Xxp2CUBwnGL7pfw6gC8zWTWekhSnKzHFA==
+
 json-schema-traverse@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz#69f6a87d9513ab8bb8fe63bdb0979c448e684660"
@@ -13893,6 +13906,13 @@ underscore@~1.13.2:
   version "1.13.6"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.6.tgz#04786a1f589dc6c09f761fc5f45b89e935136441"
   integrity sha512-+A5Sja4HP1M08MaXya7p5LvjuM7K6q/2EaC0+iovj/wOcMsTzMvDFbasi/oSapiwOlt252IqsKqPjCl7huKS0A==
+
+undici@^5.22.1:
+  version "5.22.1"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-5.22.1.tgz#877d512effef2ac8be65e695f3586922e1a57d7b"
+  integrity sha512-Ji2IJhFXZY0x/0tVBXeQwgPlLWw13GVzpsWPQ3rV50IFMMof2I55PZZxtm4P6iNq+L5znYN9nSTAq0ZyE6lSJw==
+  dependencies:
+    busboy "^1.6.0"
 
 unicode-canonical-property-names-ecmascript@^2.0.0:
   version "2.0.0"
