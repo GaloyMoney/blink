@@ -52,7 +52,7 @@ type User = {
   deviceTokens: DeviceToken[]
   phoneMetadata: PhoneMetadata | undefined
   phone?: PhoneNumber | undefined
-  deviceId?: DeviceId | undefined
+  deviceId?: DeviceId | undefined | null
   createdAt: Date
 }
 
@@ -68,5 +68,4 @@ interface IUsersRepository {
   findByDeviceId(deviceId: DeviceId): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
   adminUnsetPhoneForUserPreservation(id: UserId): Promise<User | RepositoryError>
-  unsetDeviceIdForUser(id: UserId): Promise<User | RepositoryError>
 }
