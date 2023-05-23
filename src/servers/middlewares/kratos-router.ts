@@ -213,7 +213,7 @@ kratosRouter.post(
         const extra = {}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        if (userId) extra["userId"] = userId
+        userId ? (extra["userId"] = userId) : (extra["userId"] = "anon")
         res.status(200).json({
           subject,
           extra,
