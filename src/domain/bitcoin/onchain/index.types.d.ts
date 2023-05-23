@@ -2,9 +2,13 @@ type OnChainError = import("./errors").OnChainError
 type TransactionDecodeError = import("./errors").TransactionDecodeError
 type OnChainServiceError = import("./errors").OnChainServiceError
 
+type PayoutPriority =
+  typeof import("./index").PayoutPriority[keyof typeof import("./index").PayoutPriority]
+
 type OnChainAddress = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
+type PayoutId = string & { readonly brand: unique symbol }
 type OnChainTxVout = number & { readonly brand: unique symbol }
 type ScanDepth = number & { readonly brand: unique symbol }
 type TxOut = {
@@ -122,5 +126,15 @@ interface OnChainEvent {
 
 type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface INewOnChainService {}
+type QueuePayoutToAddressArgs = {
+  address: OnChainAddress
+  amount: BtcPaymentAmount
+  priority: PayoutPriority
+  description: string
+}
+
+interface INewOnChainService {
+  queuePayoutToAddress(
+    args: QueuePayoutToAddressArgs,
+  ): Promise<PayoutId | OnChainServiceError>
+}
