@@ -120,16 +120,12 @@ export const AuthWithDeviceAccountService = () => {
   }: {
     kratosUserId: UserId
     phone: PhoneNumber
-  }) => {
+  }): Promise<IdentityPhone | KratosError> => {
     let identity: Identity
 
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
     } catch (err) {
-      if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
-      }
-
       return new UnknownKratosError(err)
     }
 
