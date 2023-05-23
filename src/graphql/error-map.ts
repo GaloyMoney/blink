@@ -197,10 +197,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Too many account creation attempts on same network, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
-    case "CreateDeviceAccountGlobalRateLimiterExceededError":
-      message = "Too many account creation, please wait for a while and try again."
-      return new TooManyRequestError({ message, logger: baseLogger })
-
     case "PhoneCodeInvalidError":
       message = "Invalid or incorrect phone code entered."
       return new PhoneCodeError({ message, logger: baseLogger })
