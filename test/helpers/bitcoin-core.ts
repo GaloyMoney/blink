@@ -154,18 +154,6 @@ export const createRandomColdStorageWallet = async (walletName: string) => {
     disable_private_keys: true,
     descriptors: true,
   })
-
-  const walletClient = await getBitcoindClient(walletName)
-  // hack to avoid importdescriptors error in bitcoin-core library
-  walletClient.methods["importdescriptors"] = {
-    features: {
-      multiwallet: {
-        supported: true,
-      },
-    },
-    supported: true,
-  }
-
   return wallet
 }
 
