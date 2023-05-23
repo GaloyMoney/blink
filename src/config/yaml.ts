@@ -224,9 +224,6 @@ export const getRequestPhoneCodePerIpLimits = () =>
 export const getCreateDeviceAccountPerIp = () =>
   getRateLimits(yamlConfig.rateLimits.createDeviceAccountPerIp)
 
-export const getCreateDeviceAccountGlobal = () =>
-  getRateLimits(yamlConfig.rateLimits.createDeviceAccountGlobal)
-
 export const getFailedLoginAttemptPerPhoneLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
 
