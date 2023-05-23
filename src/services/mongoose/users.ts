@@ -5,10 +5,6 @@ import {
   RepositoryError,
 } from "@domain/errors"
 
-import { checkedToDeviceId } from "@domain/accounts"
-
-import { ValidationError } from "@domain/shared"
-
 import { User } from "./schema"
 
 import { parseRepositoryError } from "./utils"
@@ -126,28 +122,11 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const unsetDeviceIdForUser = async (id: UserId): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOneAndUpdate(
-        { userId: id },
-        { $unset: { deviceId: true } },
-        { new: true },
-      )
-      if (!result) {
-        return new CouldNotUnsetPhoneFromUserError()
-      }
-      return translateToUser(result)
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   return {
     findById,
     findByPhone,
     findByDeviceId,
     update,
     adminUnsetPhoneForUserPreservation,
-    unsetDeviceIdForUser,
   }
 }
