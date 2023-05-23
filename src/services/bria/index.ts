@@ -19,6 +19,7 @@ import {
   findAddressByExternalId,
   getWalletBalanceSummary,
   newAddress,
+  submitPayout,
   subscribeAll,
 } from "./grpc-client"
 import {
@@ -27,6 +28,7 @@ import {
   NewAddressRequest,
   GetWalletBalanceSummaryRequest,
   FindAddressByExternalIdRequest,
+  SubmitPayoutRequest,
 } from "./proto/bria_pb"
 import { UnknownBriaEventError } from "./errors"
 export { BriaPayloadType } from "./event-handler"
@@ -161,20 +163,44 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
+  const queuePayoutToAddress = async ({
+    address,
+    amount,
+    priority,
+    requestId,
+    description,
+  }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
+    try {
+      const request = new SubmitPayoutRequest()
+      request.setWalletName(briaConfig.walletName)
+      request.setPayoutQueueName(priority)
+      request.setOnchainAddress(address)
+      request.setSatoshis(Number(amount.amount))
+      if (requestId) {
+        request.setExternalId(requestId)
+      }
+      if (description) {
+        request.setMetadata(constructMetadata({ description }))
+      }
+
+      const response = await submitPayout(request, metadata)
+
+      return response.getId() as PayoutId
+    } catch (error) {
+      return new UnknownBriaEventError(error.message || error)
+    }
+  }
+
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.bria.onchain",
     fns: {
       getBalance,
       createOnChainAddress,
       findAddressByRequestId,
+      queuePayoutToAddress,
     },
   })
 }
-
-export const KnownBriaErrorDetails = {
-  DuplicateRequestIdAddressCreate:
-    /duplicate key value violates unique constraint.*bria_addresses_account_id_external_id_key/,
-} as const
 
 const constructMetadata = (metadataObj: JSONObject): Struct => {
   const metadata = new Struct()

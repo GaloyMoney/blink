@@ -2,10 +2,15 @@ type OnChainError = import("./errors").OnChainError
 type TransactionDecodeError = import("./errors").TransactionDecodeError
 type OnChainServiceError = import("./errors").OnChainServiceError
 
+type PayoutPriority =
+  typeof import("./index").PayoutPriority[keyof typeof import("./index").PayoutPriority]
+
 type OnChainAddress = string & { readonly brand: unique symbol }
 type OnChainAddressRequestId = string & { readonly brand: unique symbol }
+type PayoutRequestId = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
+type PayoutId = string & { readonly brand: unique symbol }
 type OnChainTxVout = number & { readonly brand: unique symbol }
 type ScanDepth = number & { readonly brand: unique symbol }
 type TxOut = {
@@ -75,6 +80,14 @@ type PayToAddressArgs = {
   description?: string
 }
 
+type QueuePayoutToAddressArgs = {
+  address: OnChainAddress
+  amount: BtcPaymentAmount
+  priority: PayoutPriority
+  requestId: PayoutRequestId
+  description: string
+}
+
 type IncomingOnChainTxHandler<S extends WalletCurrency> = {
   balancesByAddresses(): { [key: OnChainAddress]: PaymentAmount<S> } | ValidationError
   balanceByWallet(
@@ -132,4 +145,7 @@ interface INewOnChainService {
   findAddressByRequestId(
     requestId: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError>
+  queuePayoutToAddress(
+    args: QueuePayoutToAddressArgs,
+  ): Promise<PayoutId | OnChainServiceError>
 }

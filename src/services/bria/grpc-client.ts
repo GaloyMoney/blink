@@ -11,6 +11,8 @@ import {
   GetWalletBalanceSummaryResponse,
   NewAddressRequest,
   NewAddressResponse,
+  SubmitPayoutRequest,
+  SubmitPayoutResponse,
 } from "./proto/bria_pb"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
 
@@ -36,5 +38,11 @@ export const getWalletBalanceSummary = promisify<
   Metadata,
   GetWalletBalanceSummaryResponse
 >(bitcoinBridgeClient.getWalletBalanceSummary.bind(bitcoinBridgeClient))
+
+export const submitPayout = promisify<
+  SubmitPayoutRequest,
+  Metadata,
+  SubmitPayoutResponse
+>(bitcoinBridgeClient.submitPayout.bind(bitcoinBridgeClient))
 
 export const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)
