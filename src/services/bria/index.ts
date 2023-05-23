@@ -121,6 +121,13 @@ export const BriaSubscriber = () => {
   }
 }
 
+export const NewOnChainService = (): INewOnChainService => {
+  const metadata = new Metadata()
+  metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
+
+  return {}
+}
+
 const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
   const sequence = rawEvent.getSequence()
   const rawAugmentation = rawEvent.getAugmentation()

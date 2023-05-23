@@ -122,8 +122,5 @@ interface OnChainEvent {
 
 type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
 
-interface INewOnChainService {
-  subscribeToAll(
-    callback: OnChainEventHandler,
-  ): ClientReadableStream<OnChainEvent> | OnChainServiceError
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface INewOnChainService {}
