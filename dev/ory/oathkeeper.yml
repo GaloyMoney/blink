@@ -54,15 +54,15 @@ mutators:
     config:
       api:
         url: http://e2e-tests:4012/kratos/subjectToUserId
-        # auth:
-        #   basic:
-        #     username: oathkeeper
-        #     password: The-Value-of-My-Key
-        # retry:
-        #   give_up_after: 2s
-        #   max_delay: 100ms
-      # cache:
-      #   ttl: 60s
+        auth:
+          basic:
+            username: oathkeeper
+            password: The-Value-of-My-Key
+        retry:
+          give_up_after: 2s
+          max_delay: 100ms
+      cache:
+        ttl: 60s
   id_token:
     enabled: true
     config:
