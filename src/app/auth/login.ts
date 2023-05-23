@@ -224,15 +224,13 @@ export const loginUpgradeWithPhone = async ({
   })
   if (updatedKratosAccount instanceof Error) return new Error("updatedKratosAccount")
   // b. update user
-  const userRemovedDevice = await UsersRepository().unsetDeviceIdForUser(
-    account.kratosUserId,
-  )
-  if (userRemovedDevice instanceof Error) return userRemovedDevice
-  const userAddedPhone = await UsersRepository().update({
+  // set phone, remove deviceId
+  const updatedUser = await UsersRepository().update({
     id: account.kratosUserId,
     phone,
+    deviceId: null,
   })
-  if (userAddedPhone instanceof Error) return userAddedPhone
+  if (updatedUser instanceof Error) return updatedUser
   // c. update account
   kratosAccount.level = AccountLevel.One
   const accountLevelOne = await AccountsRepository().update(kratosAccount)
