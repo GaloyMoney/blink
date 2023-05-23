@@ -193,12 +193,20 @@ kratosRouter.post(
   wrapAsyncToRunInSpan({
     namespace: "subjectToUserId",
     fn: async (req: express.Request, res: express.Response) => {
-      // TODO check basic auth
-      // console.log("missing authorization header")
-      // res.status(401).send("missing authorization header")
-      // return
+      const authHeader = req.headers["authorization"]
+      if (!authHeader) return res.status(401).send("Unauthorized")
+      const auth = Buffer.from(authHeader.split(" ")[1], "base64").toString()
+      const password = auth.split(":")[1]
+      if (password !== callbackApiKey) {
+        console.log("incorrect authorization header")
+        res.status(401).send("incorrect authorization header")
+        return
+      }
 
       let userId: UserId | undefined
+      const extra = {
+        userId: "anon",
+      }
       try {
         const { subject } = req.body
         const maybeUserId = checkedToUserId(subject)
@@ -210,10 +218,7 @@ kratosRouter.post(
           const deviceUser = await UsersRepository().findByDeviceId(deviceId)
           if (!(deviceUser instanceof Error)) userId = deviceUser.id
         }
-        const extra = {}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        userId ? (extra["userId"] = userId) : (extra["userId"] = "anon")
+        if (userId) extra.userId = userId
         res.status(200).json({
           subject,
           extra,
