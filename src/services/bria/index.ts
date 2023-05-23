@@ -1,16 +1,24 @@
+import util from "util"
+
 import {
   asyncRunInSpan,
   SemanticAttributes,
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
-import { credentials, Metadata } from "@grpc/grpc-js"
-import { BRIA_PROFILE_API_KEY } from "@config"
+import { credentials, Metadata, ServiceError } from "@grpc/grpc-js"
+import { BRIA_PROFILE_API_KEY, BRIA_WALLET_NAME } from "@config"
+import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
 import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
-import { SubscribeAllRequest, BriaEvent as RawBriaEvent } from "./proto/bria_pb"
+import {
+  SubscribeAllRequest,
+  BriaEvent as RawBriaEvent,
+  NewAddressRequest,
+  NewAddressResponse,
+} from "./proto/bria_pb"
 import {
   EventAugmentationMissingError,
   ExpectedAddressInfoMissingInEventError,
@@ -125,7 +133,38 @@ export const NewOnChainService = (): INewOnChainService => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
 
-  return {}
+  const createOnChainAddress = async (
+    requestId?: OnChainAddressRequestId,
+  ): Promise<OnChainAddressIdentifier | UnknownOnChainServiceError> => {
+    try {
+      const request = new NewAddressRequest()
+      request.setWalletName(BRIA_WALLET_NAME)
+      if (requestId !== undefined) {
+        request.setExternalId(requestId)
+      }
+
+      const newAddressWithMetadataOverload = (
+        { request, metadata }: { request: NewAddressRequest; metadata: Metadata },
+        callback: (error: ServiceError | null, response: NewAddressResponse) => void,
+      ) => {
+        const newAddress = bitcoinBridgeClient.newAddress.bind(bitcoinBridgeClient)
+        return newAddress(request, metadata, callback)
+      }
+
+      const newAddressWithMetadata = util.promisify(newAddressWithMetadataOverload)
+      const response = await newAddressWithMetadata({
+        request,
+        metadata,
+      })
+
+      return { address: response.getAddress() as OnChainAddress }
+    } catch (error) {
+      return new UnknownOnChainServiceError(error.message || error)
+    }
+  }
+  return {
+    createOnChainAddress,
+  }
 }
 
 const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {

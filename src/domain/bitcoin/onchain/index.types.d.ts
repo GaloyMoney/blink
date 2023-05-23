@@ -3,6 +3,7 @@ type TransactionDecodeError = import("./errors").TransactionDecodeError
 type OnChainServiceError = import("./errors").OnChainServiceError
 
 type OnChainAddress = string & { readonly brand: unique symbol }
+type OnChainAddressRequestId = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
 type OnChainTxVout = number & { readonly brand: unique symbol }
@@ -99,7 +100,7 @@ interface IOnChainService {
     scanDepth,
   }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError>
 
-  createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
+  createOnChainAddress(): Promise<LndOnChainAddressIdentifier | OnChainServiceError>
 
   getOnChainFeeEstimate({
     amount,
@@ -122,5 +123,8 @@ interface OnChainEvent {
 
 type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface INewOnChainService {}
+interface INewOnChainService {
+  createOnChainAddress(
+    requestId?: OnChainAddressRequestId,
+  ): Promise<OnChainAddressIdentifier | OnChainServiceError>
+}
