@@ -356,10 +356,15 @@ input IntraLedgerPaymentSendInput {
 }
 
 type IntraLedgerUpdate {
-  amount: SatAmount!
+  amount: SatAmount! @deprecated(reason: "Deprecated in favor of walletAmount")
+  displayAmount: SignedDisplayMajorAmount!
+  displayCurrency: DisplayCurrency!
   displayCurrencyPerSat: Float!
+    @deprecated(reason: "Deprecated in favor of displayAmount")
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
+  walletAmount: SignedAmount!
+  walletCurrency: WalletCurrency!
   walletId: WalletId!
 }
 
@@ -568,8 +573,12 @@ scalar LnPaymentRequest
 scalar LnPaymentSecret
 
 type LnUpdate {
+  displayAmount: SignedDisplayMajorAmount!
+  displayCurrency: DisplayCurrency!
   paymentHash: PaymentHash!
   status: InvoicePaymentStatus!
+  walletAmount: SignedAmount!
+  walletCurrency: WalletCurrency!
   walletId: WalletId!
 }
 
@@ -819,11 +828,16 @@ type OnChainTxFee {
 scalar OnChainTxHash
 
 type OnChainUpdate {
-  amount: SatAmount!
+  amount: SatAmount! @deprecated(reason: "Deprecated in favor of walletAmount")
+  displayAmount: SignedDisplayMajorAmount!
+  displayCurrency: DisplayCurrency!
   displayCurrencyPerSat: Float!
+    @deprecated(reason: "Deprecated in favor of displayAmount")
   txHash: OnChainTxHash!
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
+  walletAmount: SignedAmount!
+  walletCurrency: WalletCurrency!
   walletId: WalletId!
 }
 

@@ -23,6 +23,10 @@ import InvoicePaymentStatus from "@graphql/types/scalar/invoice-payment-status"
 
 import { baseLogger } from "@services/logger"
 import { PubSubService } from "@services/pubsub"
+import SignedAmount from "@graphql/types/scalar/signed-amount"
+import WalletCurrency from "@graphql/types/scalar/wallet-currency"
+import DisplayCurrencyGT from "@graphql/types/scalar/display-currency"
+import SignedDisplayMajorAmount from "@graphql/types/scalar/signed-display-amount"
 
 const pubsub = PubSubService()
 
@@ -30,13 +34,23 @@ const IntraLedgerUpdate = GT.Object({
   name: "IntraLedgerUpdate",
   fields: () => ({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
-    amount: { type: GT.NonNull(SatAmount) },
-    displayCurrencyPerSat: { type: GT.NonNull(GT.Float) },
+    amount: {
+      type: GT.NonNull(SatAmount),
+      deprecationReason: "Deprecated in favor of walletAmount",
+    },
+    displayCurrencyPerSat: {
+      type: GT.NonNull(GT.Float),
+      deprecationReason: "Deprecated in favor of displayAmount",
+    },
     usdPerSat: {
       type: GT.NonNull(GT.Float),
       deprecationReason: "updated over displayCurrencyPerSat",
     },
     walletId: { type: GT.NonNull(WalletId) },
+    walletAmount: { type: GT.NonNull(SignedAmount) },
+    walletCurrency: { type: GT.NonNull(WalletCurrency) },
+    displayAmount: { type: GT.NonNull(SignedDisplayMajorAmount) },
+    displayCurrency: { type: GT.NonNull(DisplayCurrencyGT) },
   }),
 })
 
@@ -46,6 +60,10 @@ const LnUpdate = GT.Object({
     paymentHash: { type: GT.NonNull(PaymentHash) },
     status: { type: GT.NonNull(InvoicePaymentStatus) },
     walletId: { type: GT.NonNull(WalletId) },
+    walletAmount: { type: GT.NonNull(SignedAmount) },
+    walletCurrency: { type: GT.NonNull(WalletCurrency) },
+    displayAmount: { type: GT.NonNull(SignedDisplayMajorAmount) },
+    displayCurrency: { type: GT.NonNull(DisplayCurrencyGT) },
   }),
 })
 
@@ -54,13 +72,23 @@ const OnChainUpdate = GT.Object({
   fields: () => ({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
     txHash: { type: GT.NonNull(OnChainTxHash) },
-    amount: { type: GT.NonNull(SatAmount) },
-    displayCurrencyPerSat: { type: GT.NonNull(GT.Float) },
+    amount: {
+      type: GT.NonNull(SatAmount),
+      deprecationReason: "Deprecated in favor of walletAmount",
+    },
+    displayCurrencyPerSat: {
+      type: GT.NonNull(GT.Float),
+      deprecationReason: "Deprecated in favor of displayAmount",
+    },
     usdPerSat: {
       type: GT.NonNull(GT.Float),
       deprecationReason: "updated over displayCurrencyPerSat",
     },
     walletId: { type: GT.NonNull(WalletId) },
+    walletAmount: { type: GT.NonNull(SignedAmount) },
+    walletCurrency: { type: GT.NonNull(WalletCurrency) },
+    displayAmount: { type: GT.NonNull(SignedDisplayMajorAmount) },
+    displayCurrency: { type: GT.NonNull(DisplayCurrencyGT) },
   }),
 })
 

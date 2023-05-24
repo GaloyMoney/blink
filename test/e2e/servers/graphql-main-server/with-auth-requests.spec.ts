@@ -1,8 +1,8 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "loginFromPhoneAndCode"] }] */
 
-import { Accounts } from "@app"
+import { Accounts, Payments } from "@app"
 import { WalletType } from "@domain/wallets"
-import { toSats } from "@domain/bitcoin"
+import { sat2btc, toSats } from "@domain/bitcoin"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { LnFees } from "@domain/payments"
@@ -11,12 +11,13 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
 import { Subscription } from "zen-observable-ts"
 
-import { sleep } from "@utils"
+import { sleep, timeout } from "@utils"
 
 import { gql } from "apollo-server-core"
 
 import {
   bitcoindClient,
+  bitcoindOutside,
   clearAccountLocks,
   clearLimiters,
   createApolloClient,
@@ -32,6 +33,7 @@ import {
   lndOutside1,
   lndOutside2,
   pay,
+  sendToAddressAndConfirm,
   startServer,
 } from "test/helpers"
 import { loginFromPhoneAndCode } from "test/e2e/account-creation-e2e"
@@ -60,6 +62,11 @@ import {
   MyUpdatesSubscription,
   TransactionsQuery,
   TransactionsDocument,
+  LnUpdate,
+  OnChainAddressCreateMutation,
+  OnChainAddressCreateDocument,
+  OnChainUpdate,
+  IntraLedgerUpdate,
 } from "test/e2e/generated"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -1007,71 +1014,95 @@ describe("graphql", () => {
   })
 
   describe("Trigger + receiving payment", () => {
+    gql`
+      subscription myUpdates {
+        myUpdates {
+          errors {
+            message
+          }
+          me {
+            id
+            defaultAccount {
+              id
+              wallets {
+                id
+                walletCurrency
+                balance
+              }
+            }
+          }
+          update {
+            type: __typename
+            ... on Price {
+              base
+              offset
+              currencyUnit
+              formattedAmount
+            }
+            ... on RealtimePrice {
+              id
+              timestamp
+              denominatorCurrency
+              btcSatPrice {
+                base
+                offset
+                currencyUnit
+              }
+              usdCentPrice {
+                base
+                offset
+                currencyUnit
+              }
+            }
+            ... on LnUpdate {
+              paymentHash
+              status
+              walletId
+              walletAmount
+              walletCurrency
+              displayAmount
+              displayCurrency
+            }
+            ... on OnChainUpdate {
+              txNotificationType
+              txHash
+              amount
+              usdPerSat
+              walletId
+              walletAmount
+              walletCurrency
+              displayAmount
+              displayCurrency
+            }
+            ... on IntraLedgerUpdate {
+              txNotificationType
+              amount
+              usdPerSat
+              walletId
+              walletAmount
+              walletCurrency
+              displayAmount
+              displayCurrency
+            }
+          }
+        }
+      }
+
+      mutation OnChainAddressCreate($input: OnChainAddressCreateInput!) {
+        onChainAddressCreate(input: $input) {
+          errors {
+            message
+          }
+          address
+        }
+      }
+    `
+
     afterAll(async () => {
       jest.restoreAllMocks()
     })
 
-    it("receive a payment and subscription update", async () => {
-      gql`
-        subscription myUpdates {
-          myUpdates {
-            errors {
-              message
-            }
-            me {
-              id
-              defaultAccount {
-                id
-                wallets {
-                  id
-                  walletCurrency
-                  balance
-                }
-              }
-            }
-            update {
-              type: __typename
-              ... on Price {
-                base
-                offset
-                currencyUnit
-                formattedAmount
-              }
-              ... on RealtimePrice {
-                id
-                timestamp
-                denominatorCurrency
-                btcSatPrice {
-                  base
-                  offset
-                  currencyUnit
-                }
-                usdCentPrice {
-                  base
-                  offset
-                  currencyUnit
-                }
-              }
-              ... on LnUpdate {
-                paymentHash
-                status
-              }
-              ... on OnChainUpdate {
-                txNotificationType
-                txHash
-                amount
-                usdPerSat
-              }
-              ... on IntraLedgerUpdate {
-                txNotificationType
-                amount
-                usdPerSat
-              }
-            }
-          }
-        }
-      `
-
+    it("receive a lightning payment and subscription update", async () => {
       const input = { walletId, amount: 1000, memo: "This is a lightning invoice" }
       const result = await apolloClient.mutate<LnInvoiceCreateMutation>({
         mutation: LnInvoiceCreateDocument,
@@ -1083,45 +1114,136 @@ describe("graphql", () => {
         query: MyUpdatesDocument,
       })
 
-      let status = ""
-      let hash = ""
+      const timeoutPromise = timeout(20000, "Payment subscription timeout")
 
       const promisePay = pay({
         lnd: lndOutside1,
         request: invoice?.paymentRequest,
       })
 
-      await new Promise((resolve, reject) => {
-        const res: Subscription = observable.subscribe(
-          async (data) => {
-            // onNext()
-            let i: number
-            for (i = 0; i < 200; i++) {
-              if (data?.data?.myUpdates?.update?.type !== "LnUpdate") {
-                await sleep(10)
-              } else {
-                status = data.data.myUpdates.update.status
-                hash = data.data.myUpdates.update.paymentHash
-                break
-              }
-            }
-            resolve(res) // test will fail if we didn't received the update
+      const subscribePromise = new Promise<LnUpdate>((resolve) => {
+        const res: Subscription = observable.subscribe(async (data) => {
+          if (data?.data?.myUpdates?.update?.type === "LnUpdate") {
             res.unsubscribe()
-          },
-          () => {
-            res.unsubscribe()
-            reject(res)
-          },
-          () => {
-            res.unsubscribe()
-            reject(res)
-          },
-        )
+            resolve(data.data.myUpdates.update)
+          }
+        })
       })
 
-      expect(status).toBe("PAID")
-      const result2 = await promisePay
-      expect(hash).toBe(result2.id)
+      const [{ id }, lnUpdate] = (await Promise.race([
+        Promise.all([promisePay, subscribePromise]),
+        timeoutPromise,
+      ]).catch((err) => {
+        throw new Error(err.message || err)
+      })) as [{ id: string }, LnUpdate]
+
+      expect(lnUpdate).toMatchObject({
+        walletId,
+        paymentHash: id,
+        status: "PAID",
+        walletAmount: "1000",
+        walletCurrency: "BTC",
+        displayAmount: expect.any(String),
+        displayCurrency: "USD",
+      })
+    })
+
+    it("receive an intraLedger payment and subscription update", async () => {
+      const senderAccount = await getAccountByTestUserRef(otherRef)
+      const senderWalletId = await getDefaultWalletIdByTestUserRef(otherRef)
+
+      const payment = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+        senderAccount: await getAccountByTestUserRef(userRef),
+        senderWalletId: walletId,
+        recipientWalletId: senderWalletId,
+        amount: 10000,
+        memo: "funding",
+      })
+      if (payment instanceof Error) throw payment
+
+      const observable = apolloClient.subscribe<MyUpdatesSubscription>({
+        query: MyUpdatesDocument,
+      })
+
+      const timeoutPromise = timeout(20000, "Payment subscription timeout")
+
+      const promisePay = Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+        senderAccount,
+        senderWalletId,
+        recipientWalletId: walletId,
+        amount: 10000,
+        memo: "intraLedger update test",
+      })
+
+      const subscribePromise = new Promise<IntraLedgerUpdate>((resolve) => {
+        const res: Subscription = observable.subscribe(async (data) => {
+          if (data?.data?.myUpdates?.update?.type === "IntraLedgerUpdate") {
+            res.unsubscribe()
+            resolve(data.data.myUpdates.update)
+          }
+        })
+      })
+
+      const [, intraLedgerUpdate] = (await Promise.race([
+        Promise.all([promisePay, subscribePromise]),
+        timeoutPromise,
+      ]).catch((err) => {
+        throw new Error(err.message || err)
+      })) as [unknown, IntraLedgerUpdate]
+
+      expect(intraLedgerUpdate).toMatchObject({
+        walletId,
+        walletAmount: "10000",
+        walletCurrency: "BTC",
+        displayAmount: expect.any(String),
+        displayCurrency: "USD",
+      })
+    })
+
+    it("receive an onchain payment and subscription update", async () => {
+      const input = { walletId }
+      const result = await apolloClient.mutate<OnChainAddressCreateMutation>({
+        mutation: OnChainAddressCreateDocument,
+        variables: { input },
+      })
+      const { address } = result?.data?.onChainAddressCreate ?? {}
+
+      const observable = apolloClient.subscribe<MyUpdatesSubscription>({
+        query: MyUpdatesDocument,
+      })
+
+      const timeoutPromise = timeout(20000, "Payment subscription timeout")
+
+      const promisePay = sendToAddressAndConfirm({
+        walletClient: bitcoindOutside,
+        address: address as OnChainAddress,
+        amount: sat2btc(100_301),
+      })
+
+      const subscribePromise = new Promise<OnChainUpdate>((resolve) => {
+        const res: Subscription = observable.subscribe(async (data) => {
+          if (data?.data?.myUpdates?.update?.type === "OnChainUpdate") {
+            res.unsubscribe()
+            resolve(data.data.myUpdates.update)
+          }
+        })
+      })
+
+      const [id, onChainUpdate] = (await Promise.race([
+        Promise.all([promisePay, subscribePromise]),
+        timeoutPromise,
+      ]).catch((err) => {
+        throw new Error(err.message || err)
+      })) as [string, OnChainUpdate]
+
+      expect(onChainUpdate).toMatchObject({
+        walletId,
+        txHash: id,
+        walletAmount: "100000",
+        walletCurrency: "BTC",
+        displayAmount: expect.any(String),
+        displayCurrency: "USD",
+      })
     })
   })
 })

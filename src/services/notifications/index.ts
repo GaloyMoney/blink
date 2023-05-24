@@ -42,6 +42,7 @@ export const NotificationsService = (): INotificationsService => {
         event: PubSubDefaultTriggers.AccountUpdate,
         suffix: recipientAccountId,
       })
+
       pubsub.publish({
         trigger: accountUpdatedTrigger,
         payload: {
@@ -49,6 +50,10 @@ export const NotificationsService = (): INotificationsService => {
             walletId: recipientWalletId,
             paymentHash,
             status: "PAID",
+            walletAmount: `${paymentAmount.amount}`, //bigint has not serializer
+            walletCurrency: paymentAmount.currency,
+            displayAmount: displayPaymentAmount?.displayInMajor,
+            displayCurrency: displayPaymentAmount?.currency,
           },
         },
       })
@@ -86,18 +91,19 @@ export const NotificationsService = (): INotificationsService => {
         event: PubSubDefaultTriggers.AccountUpdate,
         suffix: recipientAccountId,
       })
+
       const data: NotificationsDataObject = {
         walletId: recipientWalletId,
         txNotificationType: NotificationType.IntraLedgerReceipt,
-        amount: paymentAmount.amount,
-        currency: paymentAmount.currency,
-        displayAmount: displayPaymentAmount
-          ? displayPaymentAmount?.displayInMajor
-          : undefined,
+        walletAmount: `${paymentAmount.amount}`, //bigint has not serializer
+        walletCurrency: paymentAmount.currency,
+        displayAmount: displayPaymentAmount?.displayInMajor,
         displayCurrency: displayPaymentAmount?.currency,
       }
 
       // TODO: remove deprecated fields
+      data["amount"] = `${paymentAmount.amount}`
+      data["currency"] = paymentAmount.currency
       if (displayPaymentAmount)
         data["displayCurrencyPerSat"] =
           Number(displayPaymentAmount.amountInMinor) / Number(paymentAmount.amount)
@@ -158,14 +164,16 @@ export const NotificationsService = (): INotificationsService => {
       const data: NotificationsDataObject = {
         walletId,
         txNotificationType: type,
-        amount: paymentAmount.amount,
-        currency: paymentAmount.currency,
+        walletAmount: `${paymentAmount.amount}`, //bigint has not serializer
+        walletCurrency: paymentAmount.currency,
         displayAmount: displayPaymentAmount?.displayInMajor,
         displayCurrency: displayPaymentAmount?.currency,
         txHash,
       }
 
       // TODO: remove deprecated fields
+      data["amount"] = `${paymentAmount.amount}`
+      data["currency"] = paymentAmount.currency
       if (displayPaymentAmount)
         data["displayCurrencyPerSat"] =
           Number(displayPaymentAmount.amountInMinor) / Number(paymentAmount.amount)

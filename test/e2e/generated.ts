@@ -321,11 +321,17 @@ export type IntraLedgerPaymentSendInput = {
 
 export type IntraLedgerUpdate = {
   readonly __typename: 'IntraLedgerUpdate';
+  /** @deprecated Deprecated in favor of walletAmount */
   readonly amount: Scalars['SatAmount'];
+  readonly displayAmount: Scalars['SignedDisplayMajorAmount'];
+  readonly displayCurrency: Scalars['DisplayCurrency'];
+  /** @deprecated Deprecated in favor of displayAmount */
   readonly displayCurrencyPerSat: Scalars['Float'];
   readonly txNotificationType: TxNotificationType;
   /** @deprecated updated over displayCurrencyPerSat */
   readonly usdPerSat: Scalars['Float'];
+  readonly walletAmount: Scalars['SignedAmount'];
+  readonly walletCurrency: WalletCurrency;
   readonly walletId: Scalars['WalletId'];
 };
 
@@ -466,8 +472,12 @@ export type LnNoAmountUsdInvoicePaymentInput = {
 
 export type LnUpdate = {
   readonly __typename: 'LnUpdate';
+  readonly displayAmount: Scalars['SignedDisplayMajorAmount'];
+  readonly displayCurrency: Scalars['DisplayCurrency'];
   readonly paymentHash: Scalars['PaymentHash'];
   readonly status: InvoicePaymentStatus;
+  readonly walletAmount: Scalars['SignedAmount'];
+  readonly walletCurrency: WalletCurrency;
   readonly walletId: Scalars['WalletId'];
 };
 
@@ -829,12 +839,18 @@ export type OnChainTxFee = {
 
 export type OnChainUpdate = {
   readonly __typename: 'OnChainUpdate';
+  /** @deprecated Deprecated in favor of walletAmount */
   readonly amount: Scalars['SatAmount'];
+  readonly displayAmount: Scalars['SignedDisplayMajorAmount'];
+  readonly displayCurrency: Scalars['DisplayCurrency'];
+  /** @deprecated Deprecated in favor of displayAmount */
   readonly displayCurrencyPerSat: Scalars['Float'];
   readonly txHash: Scalars['OnChainTxHash'];
   readonly txNotificationType: TxNotificationType;
   /** @deprecated updated over displayCurrencyPerSat */
   readonly usdPerSat: Scalars['Float'];
+  readonly walletAmount: Scalars['SignedAmount'];
+  readonly walletCurrency: WalletCurrency;
   readonly walletId: Scalars['WalletId'];
 };
 
@@ -1599,7 +1615,14 @@ export type LnNoAmountInvoicePaymentSendMutation = { readonly __typename: 'Mutat
 export type MyUpdatesSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyUpdatesSubscription = { readonly __typename: 'Subscription', readonly myUpdates: { readonly __typename: 'MyUpdatesPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly id: string, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number }> } } | null, readonly update?: { readonly __typename: 'IntraLedgerUpdate', readonly txNotificationType: TxNotificationType, readonly amount: number, readonly usdPerSat: number, readonly type: 'IntraLedgerUpdate' } | { readonly __typename: 'LnUpdate', readonly paymentHash: string, readonly status: InvoicePaymentStatus, readonly type: 'LnUpdate' } | { readonly __typename: 'OnChainUpdate', readonly txNotificationType: TxNotificationType, readonly txHash: string, readonly amount: number, readonly usdPerSat: number, readonly type: 'OnChainUpdate' } | { readonly __typename: 'Price', readonly base: number, readonly offset: number, readonly currencyUnit: string, readonly formattedAmount: string, readonly type: 'Price' } | { readonly __typename: 'RealtimePrice', readonly id: string, readonly timestamp: number, readonly denominatorCurrency: string, readonly type: 'RealtimePrice', readonly btcSatPrice: { readonly __typename: 'PriceOfOneSatInMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string }, readonly usdCentPrice: { readonly __typename: 'PriceOfOneUsdCentInMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string } } | null } };
+export type MyUpdatesSubscription = { readonly __typename: 'Subscription', readonly myUpdates: { readonly __typename: 'MyUpdatesPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly id: string, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number }> } } | null, readonly update?: { readonly __typename: 'IntraLedgerUpdate', readonly txNotificationType: TxNotificationType, readonly amount: number, readonly usdPerSat: number, readonly walletId: string, readonly walletAmount: number, readonly walletCurrency: WalletCurrency, readonly displayAmount: string, readonly displayCurrency: string, readonly type: 'IntraLedgerUpdate' } | { readonly __typename: 'LnUpdate', readonly paymentHash: string, readonly status: InvoicePaymentStatus, readonly walletId: string, readonly walletAmount: number, readonly walletCurrency: WalletCurrency, readonly displayAmount: string, readonly displayCurrency: string, readonly type: 'LnUpdate' } | { readonly __typename: 'OnChainUpdate', readonly txNotificationType: TxNotificationType, readonly txHash: string, readonly amount: number, readonly usdPerSat: number, readonly walletId: string, readonly walletAmount: number, readonly walletCurrency: WalletCurrency, readonly displayAmount: string, readonly displayCurrency: string, readonly type: 'OnChainUpdate' } | { readonly __typename: 'Price', readonly base: number, readonly offset: number, readonly currencyUnit: string, readonly formattedAmount: string, readonly type: 'Price' } | { readonly __typename: 'RealtimePrice', readonly id: string, readonly timestamp: number, readonly denominatorCurrency: string, readonly type: 'RealtimePrice', readonly btcSatPrice: { readonly __typename: 'PriceOfOneSatInMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string }, readonly usdCentPrice: { readonly __typename: 'PriceOfOneUsdCentInMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string } } | null } };
+
+export type OnChainAddressCreateMutationVariables = Exact<{
+  input: OnChainAddressCreateInput;
+}>;
+
+
+export type OnChainAddressCreateMutation = { readonly __typename: 'Mutation', readonly onChainAddressCreate: { readonly __typename: 'OnChainAddressPayload', readonly address?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
 
 export const TransactionListFragmentDoc = gql`
     fragment TransactionList on TransactionConnection {
@@ -2544,17 +2567,32 @@ export const MyUpdatesDocument = gql`
       ... on LnUpdate {
         paymentHash
         status
+        walletId
+        walletAmount
+        walletCurrency
+        displayAmount
+        displayCurrency
       }
       ... on OnChainUpdate {
         txNotificationType
         txHash
         amount
         usdPerSat
+        walletId
+        walletAmount
+        walletCurrency
+        displayAmount
+        displayCurrency
       }
       ... on IntraLedgerUpdate {
         txNotificationType
         amount
         usdPerSat
+        walletId
+        walletAmount
+        walletCurrency
+        displayAmount
+        displayCurrency
       }
     }
   }
@@ -2582,3 +2620,39 @@ export function useMyUpdatesSubscription(baseOptions?: Apollo.SubscriptionHookOp
       }
 export type MyUpdatesSubscriptionHookResult = ReturnType<typeof useMyUpdatesSubscription>;
 export type MyUpdatesSubscriptionResult = Apollo.SubscriptionResult<MyUpdatesSubscription>;
+export const OnChainAddressCreateDocument = gql`
+    mutation OnChainAddressCreate($input: OnChainAddressCreateInput!) {
+  onChainAddressCreate(input: $input) {
+    errors {
+      message
+    }
+    address
+  }
+}
+    `;
+export type OnChainAddressCreateMutationFn = Apollo.MutationFunction<OnChainAddressCreateMutation, OnChainAddressCreateMutationVariables>;
+
+/**
+ * __useOnChainAddressCreateMutation__
+ *
+ * To run a mutation, you first call `useOnChainAddressCreateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useOnChainAddressCreateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [onChainAddressCreateMutation, { data, loading, error }] = useOnChainAddressCreateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useOnChainAddressCreateMutation(baseOptions?: Apollo.MutationHookOptions<OnChainAddressCreateMutation, OnChainAddressCreateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<OnChainAddressCreateMutation, OnChainAddressCreateMutationVariables>(OnChainAddressCreateDocument, options);
+      }
+export type OnChainAddressCreateMutationHookResult = ReturnType<typeof useOnChainAddressCreateMutation>;
+export type OnChainAddressCreateMutationResult = Apollo.MutationResult<OnChainAddressCreateMutation>;
+export type OnChainAddressCreateMutationOptions = Apollo.BaseMutationOptions<OnChainAddressCreateMutation, OnChainAddressCreateMutationVariables>;

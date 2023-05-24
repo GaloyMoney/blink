@@ -1,8 +1,8 @@
 type NotificationsDataObject = {
   walletId: WalletId
   txNotificationType: NotificationType
-  amount: bigint
-  currency: WalletCurrency
+  walletAmount: string
+  walletCurrency: WalletCurrency
   displayAmount: DisplayCurrencyMajorAmount | undefined
   displayCurrency: DisplayCurrency | undefined
   displayCurrencyPerSat?: number
