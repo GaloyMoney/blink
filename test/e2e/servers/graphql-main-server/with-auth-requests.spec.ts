@@ -249,6 +249,15 @@ gql`
       }
     }
   }
+
+  mutation OnChainAddressCreate($input: OnChainAddressCreateInput!) {
+    onChainAddressCreate(input: $input) {
+      errors {
+        message
+      }
+      address
+    }
+  }
 `
 
 describe("setup", () => {
@@ -1073,6 +1082,7 @@ describe("graphql", () => {
               walletCurrency
               displayAmount
               displayCurrency
+              displayCurrencyPerSat
             }
             ... on IntraLedgerUpdate {
               txNotificationType
@@ -1083,17 +1093,9 @@ describe("graphql", () => {
               walletCurrency
               displayAmount
               displayCurrency
+              displayCurrencyPerSat
             }
           }
-        }
-      }
-
-      mutation OnChainAddressCreate($input: OnChainAddressCreateInput!) {
-        onChainAddressCreate(input: $input) {
-          errors {
-            message
-          }
-          address
         }
       }
     `
