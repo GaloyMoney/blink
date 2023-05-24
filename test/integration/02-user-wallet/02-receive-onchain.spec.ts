@@ -27,6 +27,7 @@ import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 
 import { onchainTransactionEventHandler } from "@servers/trigger"
 
+import { BriaPayloadType, BriaSubscriber } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
@@ -523,6 +524,48 @@ describe("UserWallet - On chain", () => {
   })
 })
 
+const onceBriaSubscribe = async ({
+  type,
+  txId,
+}: {
+  type: BriaPayloadType
+  txId: OnChainTxHash
+}): Promise<BriaEvent | undefined> => {
+  const bria = BriaSubscriber()
+
+  let eventToReturn: BriaEvent | undefined = undefined
+  const eventHandler = (resolver) => {
+    return async (event: BriaEvent): Promise<true | ApplicationError> => {
+      setTimeout(() => {
+        if (
+          event.payload.type === type &&
+          "txId" in event.payload &&
+          event.payload.txId === txId
+        ) {
+          eventToReturn = event
+          resolver(event)
+        }
+      }, 1)
+      return Promise.resolve(true)
+    }
+  }
+
+  const timeout = 30_000
+  let wrapper
+  const promise = new Promise(async (resolve, reject) => {
+    setTimeout(() => {
+      reject(new Error(`Promise timed out after ${timeout} ms`))
+    }, timeout)
+    wrapper = await bria.subscribeToAll(eventHandler(resolve))
+  })
+
+  const res = await promise
+  if (res instanceof Error) throw res
+
+  wrapper.cancel()
+  return eventToReturn
+}
+
 async function sendToWalletTestWrapper({
   amountSats,
   walletId,
@@ -532,75 +575,83 @@ async function sendToWalletTestWrapper({
   walletId: WalletId
   depositFeeRatio?: DepositFeeRatio
 }): Promise<OnChainTxHash> {
-  const lnd = lndonchain
-
   const initialBalance = await getBalanceHelper(walletId)
   const { result: initTransactions, error } = await getTransactionsForWalletId(walletId)
   if (error instanceof Error || initTransactions === null) {
     throw error
   }
 
+  // Get address and send txn
+  // ===
   const address = await Wallets.createOnChainAddressForBtcWallet({ walletId })
   if (address instanceof Error) throw address
 
   expect(address.substring(0, 4)).toBe("bcrt")
 
-  const checkBalance = async (minBlockToWatch = 1) => {
-    const sub = subscribeToChainAddress({
-      lnd,
-      bech32_address: address,
-      min_height: minBlockToWatch,
-    })
-    await once(sub, "confirmation")
-    sub.removeAllListeners()
-
-    await waitUntilBlockHeight({ lnd })
-    // this is done by trigger and/or cron in prod
-    const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
-    if (result instanceof Error) {
-      throw result
-    }
-
-    const balance = await getBalanceHelper(walletId)
-
-    expect(balance).toBe(
-      initialBalance +
-        amountAfterFeeDeduction({
-          amount: amountSats,
-          depositFeeRatio,
-        }),
-    )
-
-    const { result: transactions, error } = await getTransactionsForWalletId(walletId)
-    if (error instanceof Error || transactions === null) {
-      throw error
-    }
-
-    expect(transactions.slice.length).toBe(initTransactions.slice.length + 1)
-
-    const txn = transactions.slice[0] as WalletOnChainTransaction
-    expect(txn.settlementVia.type).toBe("onchain")
-    expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
-    expect(txn.settlementAmount).toBe(
-      amountAfterFeeDeduction({
-        amount: amountSats,
-        depositFeeRatio: depositFeeRatio,
-      }),
-    )
-    expect(txn.initiationVia.address).toBe(address)
-
-    return txn
-  }
-
-  // just to improve performance
-  const blockNumber = await bitcoindClient.getBlockCount()
   const txId = await sendToAddressAndConfirm({
     walletClient: bitcoindOutside,
     address,
     amount: sat2btc(amountSats),
   })
   if (txId instanceof Error) throw txId
-  const txn = await checkBalance(blockNumber)
+
+  // Receive transaction with bria trigger methods
+  // ===
+  const detectedEvent = await onceBriaSubscribe({
+    type: BriaPayloadType.UtxoDetected,
+    txId,
+  })
+  if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
+    throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
+  }
+  const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+  if (resultPending instanceof Error) {
+    throw resultPending
+  }
+
+  const settledEvent = await onceBriaSubscribe({
+    type: BriaPayloadType.UtxoSettled,
+    txId,
+  })
+  if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
+    throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
+  }
+  const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+  if (resultSettled instanceof Error) {
+    throw resultSettled
+  }
+
+  // Start checks
+  // ===
+  const balance = await getBalanceHelper(walletId)
+
+  expect(balance).toBe(
+    initialBalance +
+      amountAfterFeeDeduction({
+        amount: amountSats,
+        depositFeeRatio,
+      }),
+  )
+
+  const { result: transactions, error: txnsError } = await getTransactionsForWalletId(
+    walletId,
+  )
+  if (txnsError instanceof Error || transactions === null) {
+    throw txnsError
+  }
+
+  expect(transactions.slice.length).toBe(initTransactions.slice.length + 1)
+
+  const txn = transactions.slice[0] as WalletOnChainTransaction
+  expect(txn.settlementVia.type).toBe("onchain")
+  expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
+  expect(txn.settlementAmount).toBe(
+    amountAfterFeeDeduction({
+      amount: amountSats,
+      depositFeeRatio: depositFeeRatio,
+    }),
+  )
+  expect(txn.initiationVia.address).toBe(address)
 
   // Check ledger transaction metadata for BTC 'LedgerTransactionType.OnchainReceipt'
   // ===
