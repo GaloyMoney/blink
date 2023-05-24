@@ -207,6 +207,7 @@ type NewDepositFeeCalculator = {
     amount,
     ratio,
   }: newOnChainDepositFeeArgs): BtcPaymentAmount | ValidationError
+  lnDepositFee(): BtcPaymentAmount
 }
 
 type OnchainWithdrawalConfig = {
