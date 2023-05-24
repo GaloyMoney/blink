@@ -7,11 +7,17 @@ import { WalletCurrency } from "@domain/shared"
 export const assetsMainAccount = "Assets"
 export const lndLedgerAccountId =
   `${assetsMainAccount}:Reserve:Lightning` as LedgerAccountId // TODO: rename to Assets:Lnd
+export const briaLedgerAccountId = `${assetsMainAccount}:Bria` as LedgerAccountId
 
 export const coldStorageAccountId = `${assetsMainAccount}:Reserve:Bitcoind`
 
 export const lndLedgerAccountDescriptor = {
   id: lndLedgerAccountId,
+  currency: WalletCurrency.Btc,
+} as LedgerAccountDescriptor<"BTC">
+
+export const briaLedgerAccountDescriptor = {
+  id: briaLedgerAccountId,
   currency: WalletCurrency.Btc,
 } as LedgerAccountDescriptor<"BTC">
 

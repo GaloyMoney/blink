@@ -32,6 +32,7 @@ type RecordReceiveArgs = {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount
   }
+  isBria?: boolean
 }
 
 type RecordIntraledgerArgs = {

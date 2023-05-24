@@ -127,6 +127,7 @@ export const addSettledTransaction = async ({
       metadata,
       additionalCreditMetadata: creditAccountAdditionalMetadata,
       additionalInternalMetadata: internalAccountsAdditionalMetadata,
+      isBria: true,
     })
 
     if (result instanceof Error) {

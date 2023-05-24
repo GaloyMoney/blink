@@ -73,6 +73,7 @@ export const recordReceive = async ({
   txMetadata,
   additionalCreditMetadata,
   additionalInternalMetadata,
+  isBria = false,
 }: RecordReceiveArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
 
@@ -89,14 +90,18 @@ export const recordReceive = async ({
     btcWithFees: calc.add(amountToCreditReceiver.btc, actualFee.btc),
   }
 
-  entry = builder
+  const entryBuilderDebit = builder
     .withTotalAmount(amountWithFees)
     .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
-    .debitLnd()
-    .creditAccount({
-      accountDescriptor: toLedgerAccountDescriptor(recipientWalletDescriptor),
-      additionalMetadata: additionalCreditMetadata,
-    })
+
+  const entryBuilderCredit = isBria
+    ? entryBuilderDebit.debitBria()
+    : entryBuilderDebit.debitLnd()
+
+  entry = entryBuilderCredit.creditAccount({
+    accountDescriptor: toLedgerAccountDescriptor(recipientWalletDescriptor),
+    additionalMetadata: additionalCreditMetadata,
+  })
 
   return persistAndReturnEntry({ entry, ...txMetadata })
 }
