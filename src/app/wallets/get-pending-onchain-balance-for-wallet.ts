@@ -24,3 +24,21 @@ export const getPendingOnChainBalanceForWallets = async (
 
   return IncomingOnChainTxHandler(pendingIncoming).balanceByWallet(wallets)
 }
+
+export const newGetPendingOnChainBalanceForWallets = async (
+  wallets: Wallet[],
+): Promise<{ [key: WalletId]: BtcPaymentAmount } | ApplicationError> => {
+  const onChainTxs = await getOnChainTxs()
+  if (onChainTxs instanceof Error) {
+    baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
+    return onChainTxs
+  }
+
+  const filter = TxFilter({
+    confirmationsLessThan: ONCHAIN_MIN_CONFIRMATIONS,
+    addresses: wallets.flatMap((wallet) => wallet.onChainAddresses()),
+  })
+  const pendingIncoming = filter.apply(onChainTxs)
+
+  return IncomingOnChainTxHandler(pendingIncoming).balanceByWallet(wallets)
+}

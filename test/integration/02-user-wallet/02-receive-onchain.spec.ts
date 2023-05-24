@@ -1,5 +1,4 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "sendToWalletTestWrapper"] }] */
-import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
@@ -51,14 +50,16 @@ import {
   getAccountIdByTestUserRef,
   getAccountRecordByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  lndonchain,
   RANDOM_ADDRESS,
   sendToAddress,
   sendToAddressAndConfirm,
-  subscribeToTransactions,
 } from "test/helpers"
 import { resetOnChainAddressAccountIdLimits } from "test/helpers/rate-limit"
-import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
+import {
+  getBalanceHelper,
+  getTransactionsForWalletId,
+  newGetTransactionsForWalletId,
+} from "test/helpers/wallet"
 
 let walletIdA: WalletId
 let walletIdB: WalletId
@@ -459,29 +460,32 @@ describe("UserWallet - On chain", () => {
     })
     if (address instanceof Error) throw address
 
+    const txId = (await bitcoindOutside.sendToAddress({
+      address,
+      amount: sat2btc(amountSats),
+    })) as OnChainTxHash
+
+    const detectedEvent = await onceBriaSubscribe({
+      type: BriaPayloadType.UtxoDetected,
+      txId,
+    })
+    if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
+      throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
+    }
+    const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+    if (resultPending instanceof Error) {
+      throw resultPending
+    }
+
     const account = await Accounts.getAccount(accountIdA)
     if (account instanceof Error) throw account
-
     const feeSats = DepositFeeCalculator().onChainDepositFee({
       amount: amountSats,
       ratio: account.depositFeeRatio,
     })
 
-    const sub = subscribeToTransactions({ lnd: lndonchain })
-    sub.on("chain_transaction", onchainTransactionEventHandler)
-
-    await Promise.all([
-      once(sub, "chain_transaction"),
-      bitcoindOutside.sendToAddress({
-        address,
-        amount: sat2btc(amountSats),
-      }),
-    ])
-
-    await sleep(1000)
-
     // Check pendingTx from chain
-    const { result: txs, error } = await getTransactionsForWalletId(walletIdA)
+    const { result: txs, error } = await newGetTransactionsForWalletId(walletIdA)
     if (error instanceof Error || txs === null) {
       throw error
     }
@@ -489,6 +493,7 @@ describe("UserWallet - On chain", () => {
     expect(pendingTxs.length).toBe(1)
 
     const pendingTx = pendingTxs[0] as WalletOnChainTransaction
+    expect((pendingTx.settlementVia as SettlementViaOnChain).transactionHash).toBe(txId)
     expect(pendingTx.settlementVia.type).toBe("onchain")
     expect(pendingTx.settlementAmount).toBe(amountSats - feeSats)
     expect(pendingTx.settlementFee).toBe(feeSats)
@@ -526,7 +531,7 @@ describe("UserWallet - On chain", () => {
 
     // Check pendingTx from cache
     const { result: txsFromCache, error: errorFromCache } =
-      await getTransactionsForWalletId(walletIdA)
+      await newGetTransactionsForWalletId(walletIdA)
     if (errorFromCache instanceof Error || txsFromCache === null) {
       throw errorFromCache
     }
@@ -534,8 +539,6 @@ describe("UserWallet - On chain", () => {
       ({ status }) => status === TxStatus.Pending,
     )
     expect(pendingTxsFromCache[0]?.createdAt).toBeInstanceOf(Date)
-
-    await sleep(1000)
 
     const paymentAmount = {
       amount: BigInt(pendingTx.settlementAmount),
@@ -559,13 +562,19 @@ describe("UserWallet - On chain", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(pendingNotification.title)
     expect(sendNotification.mock.calls[0][0].body).toBe(pendingNotification.body)
 
-    await Promise.all([
-      once(sub, "chain_transaction"),
-      bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
-    ])
-
-    await sleep(3000)
-    sub.removeAllListeners()
+    // Mine pendingTxns to clear repository
+    await bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS })
+    const settledEvent = await onceBriaSubscribe({
+      type: BriaPayloadType.UtxoSettled,
+      txId,
+    })
+    if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
+      throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
+    }
+    const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+    if (resultSettled instanceof Error) {
+      throw resultSettled
+    }
   })
 
   it("allows fee exemption for specific users", async () => {

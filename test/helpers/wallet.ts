@@ -1,5 +1,9 @@
 import { PartialResult } from "@app/partial-result"
-import { getBalanceForWallet, getTransactionsForWallets } from "@app/wallets"
+import {
+  getBalanceForWallet,
+  getTransactionsForWallets,
+  newGetTransactionsForWallets,
+} from "@app/wallets"
 import { RepositoryError } from "@domain/errors"
 import { WalletsRepository } from "@services/mongoose"
 
@@ -18,4 +22,13 @@ export const getTransactionsForWalletId = async (
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
   return getTransactionsForWallets({ wallets: [wallet] })
+}
+
+export const newGetTransactionsForWalletId = async (
+  walletId: WalletId,
+): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
+  const wallets = WalletsRepository()
+  const wallet = await wallets.findById(walletId)
+  if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
+  return newGetTransactionsForWallets({ wallets: [wallet] })
 }
