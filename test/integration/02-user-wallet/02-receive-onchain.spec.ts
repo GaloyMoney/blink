@@ -31,7 +31,6 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { BriaPayloadType, BriaSubscriber } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 import { getFunderWalletId } from "@services/ledger/caching"
-import { baseLogger } from "@services/logger"
 import {
   AccountsRepository,
   WalletOnChainPendingReceiveRepository,
@@ -58,7 +57,6 @@ import {
   sendToAddress,
   sendToAddressAndConfirm,
   subscribeToTransactions,
-  waitUntilBlockHeight,
 } from "test/helpers"
 import { resetOnChainAddressAccountIdLimits } from "test/helpers/rate-limit"
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
@@ -321,23 +319,23 @@ describe("UserWallet - On chain", () => {
   })
 
   it("receives batch on-chain transaction", async () => {
-    const address0 = await Wallets.createOnChainAddressForBtcWallet({
+    const addressUserA = await Wallets.createOnChainAddressForBtcWallet({
       walletId: walletIdA,
     })
-    if (address0 instanceof Error) throw address0
+    if (addressUserA instanceof Error) throw addressUserA
 
-    const walletId = await getFunderWalletId()
-
+    const funderWalletId = await getFunderWalletId()
     const addressDealer = await Wallets.createOnChainAddressForBtcWallet({
-      walletId: walletId,
+      walletId: funderWalletId,
     })
     if (addressDealer instanceof Error) throw addressDealer
+    const addresses = [addressUserA, addressDealer]
 
     const initialBalanceUserA = await getBalanceHelper(walletIdA)
-    const initBalanceDealer = await getBalanceHelper(walletId)
+    const initBalanceDealer = await getBalanceHelper(funderWalletId)
 
     const output0 = {}
-    output0[address0] = 1
+    output0[addressUserA] = 1
 
     const output1 = {}
     output1[addressDealer] = 2
@@ -354,30 +352,56 @@ describe("UserWallet - On chain", () => {
       psbt: walletProcessPsbt.psbt,
     })
 
-    await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
-    await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
-    await waitUntilBlockHeight({ lnd: lndonchain })
+    await bitcoindOutside.sendRawTransaction({
+      hexstring: finalizedPsbt.hex,
+    })
 
-    // this is done by trigger and/or cron in prod
-    const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
-    if (result instanceof Error) {
-      throw result
+    const detectedEvents = await manyBriaSubscribe({
+      type: BriaPayloadType.UtxoDetected,
+      addresses,
+    })
+    expect(detectedEvents.length).toEqual(addresses.length)
+    for (const detectedEvent of detectedEvents) {
+      if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
+        throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
+      }
+      const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+      if (resultPending instanceof Error) {
+        throw resultPending
+      }
+    }
+
+    await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
+
+    const settledEvents = await manyBriaSubscribe({
+      type: BriaPayloadType.UtxoSettled,
+      addresses,
+    })
+    expect(settledEvents.length).toEqual(addresses.length)
+    for (const settledEvent of settledEvents) {
+      if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
+        throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
+      }
+      const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+      if (resultSettled instanceof Error) {
+        throw resultSettled
+      }
     }
 
     {
-      const balanceA = await getBalanceHelper(walletIdA)
-      const balance4 = await getBalanceHelper(walletId)
+      const balanceUserA = await getBalanceHelper(walletIdA)
+      const balanceDealer = await getBalanceHelper(funderWalletId)
 
       const depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
 
-      expect(balanceA).toBe(
+      expect(balanceUserA).toBe(
         initialBalanceUserA +
           amountAfterFeeDeduction({
             amount: toSats(100_000_000),
             depositFeeRatio,
           }),
       )
-      expect(balance4).toBe(
+      expect(balanceDealer).toBe(
         initBalanceDealer +
           amountAfterFeeDeduction({
             amount: toSats(200_000_000),
