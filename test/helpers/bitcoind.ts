@@ -1,15 +1,35 @@
-import { btc2sat } from "@domain/bitcoin"
-
-import Client from "bitcoin-core-ts"
 import sumBy from "lodash.sumby"
+import {
+  authenticatedBitcoind,
+  createWallet,
+  generateToAddress,
+  getAddressInfo,
+  getBlockchainInfo,
+  getBlockCount,
+  getNewAddress,
+  getTransaction,
+  listWalletDir,
+  listWallets,
+  loadWallet,
+  sendToAddress,
+  unloadWallet,
+  getBalance as getWalletBalance,
+  walletCreateFundedPsbt,
+  walletProcessPsbt,
+  finalizePsbt,
+  sendRawTransaction,
+} from "bitcoin-cli-ts"
+
+import { btc2sat } from "@domain/bitcoin"
 
 const connection_obj = {
   network: process.env.NETWORK,
-  username: "rpcuser",
-  password: process.env.BITCOINDRPCPASS,
+  username: process.env.BITCOINDRPCUSER || "rpcuser",
+  password: process.env.BITCOINDRPCPASS || "rpcpassword",
   host: process.env.BITCOINDADDR,
-  port: process.env.BITCOINDPORT,
-  version: "0.21.0",
+  port: parseInt(process.env.BITCOINDPORT || "8332", 10),
+  timeout: parseInt(process.env.BITCOINDTIMEOUT || "10000", 10),
+  version: "24.0.0",
 }
 
 type GetAddressInfoResult = {
@@ -44,18 +64,26 @@ type InWalletTransaction = {
 }
 
 export class BitcoindClient {
-  readonly client
+  readonly bitcoind
 
   constructor() {
-    this.client = new Client({ ...connection_obj })
+    const { host, username, password, port, timeout } = connection_obj
+    this.bitcoind = authenticatedBitcoind({
+      protocol: "http",
+      host: host || "",
+      username,
+      password,
+      timeout,
+      port,
+    })
   }
 
   async getBlockCount(): Promise<number> {
-    return this.client.getBlockCount()
+    return getBlockCount({ bitcoind: this.bitcoind })
   }
 
   async getBlockchainInfo(): Promise<{ chain: string }> {
-    return this.client.getBlockchainInfo()
+    return getBlockchainInfo({ bitcoind: this.bitcoind })
   }
 
   async createWallet({
@@ -67,7 +95,8 @@ export class BitcoindClient {
     disablePrivateKeys?: boolean
     descriptors?: boolean
   }): Promise<{ name: string; warning: string }> {
-    return this.client.createWallet({
+    return createWallet({
+      bitcoind: this.bitcoind,
       wallet_name: walletName,
       disable_private_keys: disablePrivateKeys,
       descriptors,
@@ -75,11 +104,11 @@ export class BitcoindClient {
   }
 
   async listWallets(): Promise<[string]> {
-    return this.client.listWallets()
+    return listWallets({ bitcoind: this.bitcoind })
   }
 
   async listWalletDir(): Promise<[{ name: string }]> {
-    return (await this.client.listWalletDir()).wallets
+    return (await listWalletDir({ bitcoind: this.bitcoind })).wallets
   }
 
   // load/unload only used in tests, for now
@@ -89,7 +118,7 @@ export class BitcoindClient {
   }: {
     filename: string
   }): Promise<{ name: string; warning: string }> {
-    return this.client.loadWallet({ filename })
+    return loadWallet({ bitcoind: this.bitcoind, filename })
   }
 
   async unloadWallet({
@@ -97,23 +126,32 @@ export class BitcoindClient {
   }: {
     walletName: string
   }): Promise<{ warning: string }> {
-    return this.client.unloadWallet({ wallet_name: walletName })
+    return unloadWallet({ bitcoind: this.bitcoind, wallet_name: walletName })
   }
 }
 
 export class BitcoindWalletClient {
-  readonly client
+  readonly bitcoind
 
   constructor(walletName: string) {
-    this.client = new Client({ ...connection_obj, wallet: walletName })
+    const { host, username, password, port, timeout } = connection_obj
+    this.bitcoind = authenticatedBitcoind({
+      protocol: "http",
+      host: host || "",
+      username,
+      password,
+      timeout,
+      port,
+      walletName,
+    })
   }
 
   async getNewAddress(): Promise<string> {
-    return this.client.getNewAddress()
+    return getNewAddress({ bitcoind: this.bitcoind })
   }
 
   async getAddressInfo({ address }: { address: string }): Promise<GetAddressInfoResult> {
-    return this.client.getAddressInfo({ address })
+    return getAddressInfo({ bitcoind: this.bitcoind, address })
   }
 
   async sendToAddress({
@@ -123,7 +161,7 @@ export class BitcoindWalletClient {
     address: string
     amount: number
   }): Promise<string> {
-    return this.client.sendToAddress({ address, amount })
+    return sendToAddress({ bitcoind: this.bitcoind, address, amount })
   }
 
   async getTransaction({
@@ -133,7 +171,7 @@ export class BitcoindWalletClient {
     txid: string
     include_watchonly?: boolean
   }): Promise<InWalletTransaction> {
-    return this.client.getTransaction({ txid, include_watchonly })
+    return getTransaction({ bitcoind: this.bitcoind, txid, include_watchonly })
   }
 
   async generateToAddress({
@@ -143,11 +181,11 @@ export class BitcoindWalletClient {
     nblocks: number
     address: string
   }): Promise<[string]> {
-    return this.client.generateToAddress({ nblocks, address })
+    return generateToAddress({ bitcoind: this.bitcoind, nblocks, address })
   }
 
   async getBalance(): Promise<number> {
-    return this.client.getBalance()
+    return getWalletBalance({ bitcoind: this.bitcoind })
   }
 
   async walletCreateFundedPsbt({
@@ -157,11 +195,11 @@ export class BitcoindWalletClient {
     inputs: []
     outputs: Record<string, number>[]
   }): Promise<{ psbt: string }> {
-    return this.client.walletCreateFundedPsbt({ inputs, outputs })
+    return walletCreateFundedPsbt({ bitcoind: this.bitcoind, inputs, outputs })
   }
 
   async walletProcessPsbt({ psbt }: { psbt: string }): Promise<{ psbt: string }> {
-    return this.client.walletProcessPsbt({ psbt })
+    return walletProcessPsbt({ bitcoind: this.bitcoind, psbt })
   }
 
   async finalizePsbt({
@@ -169,11 +207,11 @@ export class BitcoindWalletClient {
   }: {
     psbt: string
   }): Promise<{ psbt: string; hex: string; complete: boolean }> {
-    return this.client.finalizePsbt({ psbt })
+    return finalizePsbt({ bitcoind: this.bitcoind, psbt })
   }
 
   async sendRawTransaction({ hexstring }: { hexstring: string }): Promise<string> {
-    return this.client.sendRawTransaction({ hexstring })
+    return sendRawTransaction({ bitcoind: this.bitcoind, hexstring })
   }
 }
 

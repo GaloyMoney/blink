@@ -1,4 +1,5 @@
-import BitcoindClient from "bitcoin-core-ts"
+import { authenticatedBitcoind, createWallet, importDescriptors } from "bitcoin-cli-ts"
+
 import { Wallets } from "@app"
 import { getBitcoinCoreRPCConfig } from "@config"
 
@@ -123,33 +124,28 @@ export const fundWalletIdFromOnchain = async ({
 }
 
 export const createColdStorageWallet = async (walletName: string) => {
-  const client = await getBitcoindClient()
-  const wallet = await client.createWallet({
+  const bitcoind = getBitcoindClient()
+  const wallet = await createWallet({
+    bitcoind,
     wallet_name: walletName,
     disable_private_keys: true,
     descriptors: true,
   })
 
-  const walletClient = await getBitcoindClient(walletName)
-  // hack to avoid importdescriptors error in bitcoin-core library
-  walletClient.methods["importdescriptors"] = {
-    features: {
-      multiwallet: {
-        supported: true,
-      },
-    },
-    supported: true,
-  }
-
-  const result = await walletClient.command("importdescriptors", descriptors)
+  const bitcoindWallet = getBitcoindClient(walletName)
+  const result = await importDescriptors({
+    bitcoind: bitcoindWallet,
+    requests: descriptors,
+  })
   if (result.some((d) => !d.success)) throw new Error("Invalid descriptors")
 
   return wallet
 }
 
 export const createRandomColdStorageWallet = async (walletName: string) => {
-  const client = await getBitcoindClient()
-  const wallet = await client.createWallet({
+  const bitcoind = getBitcoindClient()
+  const wallet = await createWallet({
+    bitcoind,
     wallet_name: walletName,
     disable_private_keys: true,
     descriptors: true,
@@ -157,7 +153,15 @@ export const createRandomColdStorageWallet = async (walletName: string) => {
   return wallet
 }
 
-const getBitcoindClient = (wallet?: string) => {
-  const bitcoinCoreRPCConfig = getBitcoinCoreRPCConfig()
-  return new BitcoindClient({ ...bitcoinCoreRPCConfig, wallet })
+const getBitcoindClient = (walletName?: string) => {
+  const { host, username, password, port, timeout } = getBitcoinCoreRPCConfig()
+  return authenticatedBitcoind({
+    protocol: "http",
+    host: host || "",
+    username,
+    password,
+    timeout,
+    port,
+    walletName,
+  })
 }
