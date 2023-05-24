@@ -57,6 +57,7 @@ import { ValidationError } from "@domain/shared"
 import { UsersRepository } from "@services/mongoose"
 
 import { validateKratosCookie } from "@services/kratos"
+import cookie from "cookie"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -490,15 +491,14 @@ export const startApolloServer = async ({
             execute,
             subscribe,
             onConnect: async (ctx) => {
-              const kratos_cookie = ("; " + ctx.extra.request.headers.cookie)
-                .split(`; ory_kratos_session=`)
-                .pop()
-                ?.split(";")[0]
+              const cookies = cookie.parse(ctx.extra.request.headers.cookie || "")
+
+              const kratosSessionCookie = cookies.ory_kratos_session
 
               // TODO: integrate open telemetry
               if (
                 typeof ctx.connectionParams?.Authorization !== "string" &&
-                !kratos_cookie
+                !kratosSessionCookie
               ) {
                 return true // anon connection ?
               }
@@ -507,22 +507,22 @@ export const startApolloServer = async ({
               if (typeof ctx.connectionParams?.Authorization === "string") {
                 authorizedContexts[ctx.connectionParams.Authorization] = context
               }
-              if (kratos_cookie) {
-                authorizedContexts[kratos_cookie] = context
+              if (kratosSessionCookie) {
+                authorizedContexts[kratosSessionCookie] = context
               }
 
               return true
             },
             context: (ctx) => {
               // TODO: integrate open telemetry
-              const kratos_cookie = ("; " + ctx.extra.request.headers.cookie)
-                .split(`; ory_kratos_session=`)
-                .pop()
-                ?.split(";")[0]
+
+              const cookies = cookie.parse(ctx.extra.request.headers.cookie || "")
+
+              const kratosSessionCookie = cookies.ory_kratos_session
 
               // TODO: integrate open telemetry
-              if (kratos_cookie) {
-                return authorizedContexts[kratos_cookie]
+              if (kratosSessionCookie) {
+                return authorizedContexts[kratosSessionCookie]
               }
 
               if (typeof ctx.connectionParams?.Authorization === "string") {

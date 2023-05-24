@@ -20,6 +20,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { baseLogger } from "@services/logger"
 
 import { validateKratosCookie } from "@services/kratos"
+import cookie from "cookie"
 
 import { sessionContext } from "./graphql-server"
 
@@ -139,12 +140,16 @@ const server = () =>
       },
       onConnect: async (ctx) => {
         baseLogger.debug("Connect", ctx)
-        const kratos_cookie = ("; " + ctx.extra.request.headers.cookie)
-          .split(`; ory_kratos_session=`)
-          .pop()
-          ?.split(";")[0]
+
+        const cookies = cookie.parse(ctx.extra.request.headers.cookie || "")
+
+        const kratosSessionCookie = cookies.ory_kratos_session
+
         // TODO: integrate open telemetry
-        if (typeof ctx.connectionParams?.Authorization !== "string" && !kratos_cookie) {
+        if (
+          typeof ctx.connectionParams?.Authorization !== "string" &&
+          !kratosSessionCookie
+        ) {
           return true // anon connection ?
         }
 
@@ -152,22 +157,21 @@ const server = () =>
         if (typeof ctx.connectionParams?.Authorization === "string") {
           authorizedContexts[ctx.connectionParams.Authorization] = context
         }
-        if (kratos_cookie) {
-          authorizedContexts[kratos_cookie] = context
+        if (kratosSessionCookie) {
+          authorizedContexts[kratosSessionCookie] = context
         }
 
         return true
       },
       context: (ctx) => {
         // TODO: integrate open telemetry
-        const kratos_cookie = ("; " + ctx.extra.request.headers.cookie)
-          .split(`; ory_kratos_session=`)
-          .pop()
-          ?.split(";")[0]
+        const cookies = cookie.parse(ctx.extra.request.headers.cookie || "")
+
+        const kratosSessionCookie = cookies.ory_kratos_session
 
         // TODO: integrate open telemetry
-        if (kratos_cookie) {
-          return authorizedContexts[kratos_cookie]
+        if (kratosSessionCookie) {
+          return authorizedContexts[kratosSessionCookie]
         }
 
         if (typeof ctx.connectionParams?.Authorization === "string") {
