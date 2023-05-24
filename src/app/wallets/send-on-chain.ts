@@ -504,11 +504,11 @@ const executePaymentViaOnChain = async <
     })
     if (paymentFlow instanceof Error) return paymentFlow
 
-    const bankFee = await paymentFlow.bankFees()
+    const bankFee = paymentFlow.bankFees()
     if (bankFee instanceof Error) return bankFee
     const btcBankFee = bankFee.btc
 
-    const btcTotalFee = await paymentFlow.btcProtocolAndBankFee
+    const btcTotalFee = paymentFlow.btcProtocolAndBankFee
     if (btcTotalFee instanceof Error) return btcTotalFee
 
     addAttributesToCurrentSpan({
