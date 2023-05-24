@@ -534,7 +534,7 @@ const onceBriaSubscribe = async ({
   const bria = BriaSubscriber()
 
   let eventToReturn: BriaEvent | undefined = undefined
-  const eventHandler = (resolver) => {
+  const eventHandler = ({ resolve, timeoutId }) => {
     return async (event: BriaEvent): Promise<true | ApplicationError> => {
       setTimeout(() => {
         if (
@@ -543,7 +543,8 @@ const onceBriaSubscribe = async ({
           event.payload.txId === txId
         ) {
           eventToReturn = event
-          resolver(event)
+          resolve(event)
+          clearTimeout(timeoutId)
         }
       }, 1)
       return Promise.resolve(true)
@@ -553,10 +554,10 @@ const onceBriaSubscribe = async ({
   const timeout = 30_000
   let wrapper
   const promise = new Promise(async (resolve, reject) => {
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       reject(new Error(`Promise timed out after ${timeout} ms`))
     }, timeout)
-    wrapper = await bria.subscribeToAll(eventHandler(resolve))
+    wrapper = await bria.subscribeToAll(eventHandler({ resolve, timeoutId }))
   })
 
   const res = await promise

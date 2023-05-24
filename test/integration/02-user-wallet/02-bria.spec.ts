@@ -52,7 +52,7 @@ describe("BriaSubscriber", () => {
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 2
       let recording = false
-      const testEventHandler = (resolver) => {
+      const testEventHandler = ({ resolve, timeoutId }) => {
         return (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
             event.payload.type === BriaPayloadType.UtxoDetected &&
@@ -64,7 +64,8 @@ describe("BriaSubscriber", () => {
             receivedEvents.push(event)
             if (receivedEvents.length === nExpectedEvents) {
               setTimeout(() => {
-                resolver(receivedEvents)
+                resolve(receivedEvents)
+                clearTimeout(timeoutId)
               }, 1)
             }
           }
@@ -75,10 +76,10 @@ describe("BriaSubscriber", () => {
       const timeout = 60000
       let wrapper
       const promise = new Promise(async (resolve, reject) => {
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           reject(new Error(`Promise timed out after ${timeout} ms`))
         }, timeout)
-        wrapper = await bria.subscribeToAll(testEventHandler(resolve))
+        wrapper = await bria.subscribeToAll(testEventHandler({ resolve, timeoutId }))
       })
 
       const res = await promise
@@ -111,7 +112,7 @@ describe("BriaSubscriber", () => {
       let recording = false
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 3
-      const testEventHandler = (resolver) => {
+      const testEventHandler = ({ resolve, timeoutId }) => {
         return async (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
             event.payload.type === BriaPayloadType.UtxoDetected &&
@@ -129,7 +130,8 @@ describe("BriaSubscriber", () => {
           }
           if (receivedEvents.length === nExpectedEvents) {
             setTimeout(() => {
-              resolver(receivedEvents)
+              resolve(receivedEvents)
+              clearTimeout(timeoutId)
             }, 1)
           }
           return Promise.resolve(true)
@@ -139,10 +141,10 @@ describe("BriaSubscriber", () => {
       const timeout = 60000
       let wrapper
       const promise = new Promise(async (resolve, reject) => {
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           reject(new Error(`Promise timed out after ${timeout} ms`))
         }, timeout)
-        wrapper = await bria.subscribeToAll(testEventHandler(resolve))
+        wrapper = await bria.subscribeToAll(testEventHandler({ resolve, timeoutId }))
       })
 
       const res = await promise
