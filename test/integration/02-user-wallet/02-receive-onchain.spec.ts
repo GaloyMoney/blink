@@ -2,7 +2,7 @@
 import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"
-import { usdFromBtcMidPriceFn } from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import {
   getAccountLimits,
@@ -25,8 +25,7 @@ import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
-
-import { onchainTransactionEventHandler } from "@servers/trigger"
+import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 
 import { BriaPayloadType, BriaSubscriber } from "@services/bria"
 import { LedgerService } from "@services/ledger"
@@ -38,7 +37,7 @@ import {
 } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { sleep } from "@utils"
+import { DealerPriceService } from "@services/dealer-price"
 
 import {
   amountAfterFeeDeduction,
@@ -159,6 +158,9 @@ describe("UserWallet - On chain", () => {
       .mockImplementationOnce(() => ({
         sendNotification,
       }))
+      .mockImplementationOnce(() => ({
+        sendNotification,
+      }))
 
     const amountSats = getRandomAmountOfSats()
     const receivedBtc = { amount: BigInt(amountSats), currency: WalletCurrency.Btc }
@@ -206,7 +208,36 @@ describe("UserWallet - On chain", () => {
         ? undefined
         : displayAmountForMajor
 
-    // Check received notification
+    // Check received notifications
+    const walletAddressReceiver = await WalletAddressReceiver({
+      walletAddress: {
+        address: "" as OnChainAddress,
+        recipientWalletDescriptor: {
+          id: walletIdA,
+          currency: WalletCurrency.Btc,
+          accountId: accountIdA,
+        },
+      },
+      receivedBtc,
+      satsFee: expectedSatsFee,
+      usdFromBtc: DealerPriceService().getCentsFromSatsForImmediateBuy,
+      usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+    })
+    if (walletAddressReceiver instanceof Error) return walletAddressReceiver
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: account.displayCurrency,
+    })
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
+    const settlementDisplayAmount = displayPriceRatio.convertFromWallet(
+      walletAddressReceiver.btcToCreditReceiver,
+    )
+
+    const pendingNotification = createPushNotificationContent({
+      type: NotificationType.OnchainReceiptPending,
+      userLanguage: locale,
+      amount: walletAddressReceiver.btcToCreditReceiver,
+      displayAmount: settlementDisplayAmount,
+    })
     const receivedNotification = createPushNotificationContent({
       type: NotificationType.OnchainReceipt,
       userLanguage: locale,
@@ -214,9 +245,11 @@ describe("UserWallet - On chain", () => {
       displayAmount,
     })
 
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].title).toBe(receivedNotification.title)
-    expect(sendNotification.mock.calls[0][0].body).toBe(receivedNotification.body)
+    expect(sendNotification.mock.calls.length).toBe(2)
+    expect(sendNotification.mock.calls[0][0].title).toBe(pendingNotification.title)
+    expect(sendNotification.mock.calls[0][0].body).toBe(pendingNotification.body)
+    expect(sendNotification.mock.calls[1][0].title).toBe(receivedNotification.title)
+    expect(sendNotification.mock.calls[1][0].body).toBe(receivedNotification.body)
   })
 
   it("retrieves on-chain transactions by address", async () => {
