@@ -88,7 +88,7 @@
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^3.0.1",
-    "lightning": "^9.3.0",
+    "lightning": "^9.4.0",
     "ln-service": "^56.3.1",
     "lodash.groupby": "^4.6.0",
     "lodash.map": "^4.6.0",
