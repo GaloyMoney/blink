@@ -23,8 +23,6 @@ const dealer = DealerPriceService()
 
 const ledger = LedgerService()
 
-const notifications = NotificationsService()
-
 const logger = baseLogger
 
 export const addSettledTransaction = async ({
@@ -144,6 +142,7 @@ export const addSettledTransaction = async ({
     })
     if (displayAmount instanceof Error) return displayAmount
 
+    const notifications = NotificationsService()
     await notifications.onChainTxReceived({
       recipientAccountId: wallet.accountId,
       recipientWalletId: wallet.id,
