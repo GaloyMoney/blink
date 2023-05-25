@@ -9,7 +9,8 @@ import {
 } from "@services/tracing"
 import { credentials, Metadata, ServiceError } from "@grpc/grpc-js"
 import { BRIA_PROFILE_API_KEY, BRIA_WALLET_NAME } from "@config"
-import { WalletCurrency } from "@domain/shared/primitives"
+import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared/primitives"
+import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain/errors"
 
 import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
@@ -19,6 +20,8 @@ import {
   SubmitPayoutRequest,
   SubmitPayoutResponse,
   SubscribeAllRequest,
+  EstimatePayoutFeeRequest,
+  EstimatePayoutFeeResponse,
 } from "./proto/bria_pb"
 import {
   EventAugmentationMissingError,
@@ -157,7 +160,7 @@ export const NewOnChainService = (): INewOnChainService => {
       address: OnChainAddress
       amount: BtcPaymentAmount
       externalId: string
-    }): Promise<PayoutId | BriaEventError> => {
+    }): Promise<PayoutId | OnChainServiceError> => {
       try {
         const request = new SubmitPayoutRequest()
         request.setWalletName(BRIA_WALLET_NAME)
@@ -183,7 +186,7 @@ export const NewOnChainService = (): INewOnChainService => {
 
         return response.getId() as PayoutId
       } catch (error) {
-        return new UnknownBriaEventError(error.message || error)
+        return new UnknownOnChainServiceError(error.message || error)
       }
     }
 
@@ -193,7 +196,65 @@ export const NewOnChainService = (): INewOnChainService => {
     return payoutId
   }
 
-  return { queuePayoutToAddress }
+  const estimatePayoutFee = async ({
+    address,
+    amount,
+    speed,
+  }: EstimatePayoutFeeArgs): Promise<BtcPaymentAmount | OnChainServiceError> => {
+    const estimate = async ({
+      speed,
+      address,
+      amount,
+    }: {
+      speed: PayoutSpeed
+      address: OnChainAddress
+      amount: BtcPaymentAmount
+    }): Promise<BtcPaymentAmount | BriaEventError> => {
+      try {
+        const request = new EstimatePayoutFeeRequest()
+        request.setWalletName(BRIA_WALLET_NAME)
+        request.setPayoutQueueName(queueNameForSpeed(speed))
+        request.setOnchainAddress(address)
+        request.setSatoshis(Number(amount.amount))
+
+        const estimatePayoutFeeWithMetadataOverload = (
+          {
+            request,
+            metadata,
+          }: { request: EstimatePayoutFeeRequest; metadata: Metadata },
+          callback: (
+            error: ServiceError | null,
+            response: EstimatePayoutFeeResponse,
+          ) => void,
+        ) => {
+          const estimateFee =
+            bitcoinBridgeClient.estimatePayoutFee.bind(bitcoinBridgeClient)
+          return estimateFee(request, metadata, callback)
+        }
+
+        const estimatePayoutFeeWithMetadata = util.promisify(
+          estimatePayoutFeeWithMetadataOverload,
+        )
+        const response = await estimatePayoutFeeWithMetadata({
+          request,
+          metadata,
+        })
+        return paymentAmountFromNumber({
+          amount: response.getSatoshis(),
+          currency: WalletCurrency.Btc,
+        })
+      } catch (error) {
+        return new UnknownOnChainServiceError(error.message || error)
+      }
+    }
+
+    const payoutId = await estimate({ address, amount, speed })
+    if (payoutId instanceof Error) return payoutId
+
+    return payoutId
+  }
+
+  return { queuePayoutToAddress, estimatePayoutFee }
 }
 
 const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
