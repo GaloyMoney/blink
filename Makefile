@@ -1,10 +1,17 @@
 BIN_DIR=node_modules/.bin
 
 start-deps:
-	docker compose up e2e-deps -d
+	docker compose up e2e-deps -d && make add-bitcoind-signer-wallet
 
 start-deps-integration:
-	docker compose up integration-deps -d
+	docker compose up integration-deps -d && make add-bitcoind-signer-wallet
+
+add-bitcoind-signer-wallet:
+	docker exec galoy-bitcoind-signer-1 bitcoin-cli createwallet "signer" > /dev/null && \
+	docker exec galoy-bitcoind-signer-1 bitcoin-cli \
+		-rpcwallet=signer \
+		importdescriptors "$$(cat dev/bitcoind/bitcoind_signer_descriptors.json)" \
+		> /dev/null
 
 update-price-history:
 	docker compose run price-history node servers/history/cron.js
