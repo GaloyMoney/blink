@@ -25,6 +25,7 @@ service BriaService {
   rpc ListPayoutQueues (ListPayoutQueuesRequest) returns (ListPayoutQueuesResponse) {}
   rpc UpdatePayoutQueue (UpdatePayoutQueueRequest) returns (UpdatePayoutQueueResponse) {}
   rpc SubmitPayout (SubmitPayoutRequest) returns (SubmitPayoutResponse) {}
+  rpc EstimatePayoutFee (EstimatePayoutFeeRequest) returns (EstimatePayoutFeeResponse) {}
   rpc ListPayouts (ListPayoutsRequest) returns (ListPayoutsResponse) {}
   rpc ListSigningSessions (ListSigningSessionsRequest) returns (ListSigningSessionsResponse) {}
 
@@ -243,8 +244,8 @@ message PayoutQueueConfig {
 
 enum TxPriority {
   NEXT_BLOCK = 0;
-  ONE_HOUR = 1;
-  ECONOMY = 2;
+  HALF_HOUR = 1;
+  ONE_HOUR = 2;
 }
 
 message CreatePayoutQueueResponse {
@@ -271,6 +272,19 @@ message UpdatePayoutQueueRequest{
 }
 
 message UpdatePayoutQueueResponse{}
+
+message EstimatePayoutFeeRequest {
+  string wallet_name = 1;
+  string payout_queue_name = 2;
+  oneof destination {
+    string onchain_address = 3;
+  };
+  uint64 satoshis = 4;
+}
+
+message EstimatePayoutFeeResponse {
+  uint64 satoshis = 1;
+}
 
 message SubmitPayoutRequest {
   string wallet_name = 1;

@@ -104,6 +104,28 @@ function deserialize_services_bria_v1_CreateWalletResponse(buffer_arg) {
   return bria_pb.CreateWalletResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_services_bria_v1_EstimatePayoutFeeRequest(arg) {
+  if (!(arg instanceof bria_pb.EstimatePayoutFeeRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.EstimatePayoutFeeRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_EstimatePayoutFeeRequest(buffer_arg) {
+  return bria_pb.EstimatePayoutFeeRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_EstimatePayoutFeeResponse(arg) {
+  if (!(arg instanceof bria_pb.EstimatePayoutFeeResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.EstimatePayoutFeeResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_EstimatePayoutFeeResponse(buffer_arg) {
+  return bria_pb.EstimatePayoutFeeResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_services_bria_v1_GetAccountBalanceSummaryRequest(arg) {
   if (!(arg instanceof bria_pb.GetAccountBalanceSummaryRequest)) {
     throw new Error('Expected argument of type services.bria.v1.GetAccountBalanceSummaryRequest');
@@ -666,6 +688,17 @@ var BriaServiceService = exports.BriaServiceService = {
     requestDeserialize: deserialize_services_bria_v1_SubmitPayoutRequest,
     responseSerialize: serialize_services_bria_v1_SubmitPayoutResponse,
     responseDeserialize: deserialize_services_bria_v1_SubmitPayoutResponse,
+  },
+  estimatePayoutFee: {
+    path: '/services.bria.v1.BriaService/EstimatePayoutFee',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.EstimatePayoutFeeRequest,
+    responseType: bria_pb.EstimatePayoutFeeResponse,
+    requestSerialize: serialize_services_bria_v1_EstimatePayoutFeeRequest,
+    requestDeserialize: deserialize_services_bria_v1_EstimatePayoutFeeRequest,
+    responseSerialize: serialize_services_bria_v1_EstimatePayoutFeeResponse,
+    responseDeserialize: deserialize_services_bria_v1_EstimatePayoutFeeResponse,
   },
   listPayouts: {
     path: '/services.bria.v1.BriaService/ListPayouts',
