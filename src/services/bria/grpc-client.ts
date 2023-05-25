@@ -5,6 +5,8 @@ import { credentials, Metadata } from "@grpc/grpc-js"
 import { getBriaConfig } from "@config"
 
 import {
+  EstimatePayoutFeeRequest,
+  EstimatePayoutFeeResponse,
   FindAddressByExternalIdRequest,
   FindAddressByExternalIdResponse,
   GetWalletBalanceSummaryRequest,
@@ -44,5 +46,11 @@ export const submitPayout = promisify<
   Metadata,
   SubmitPayoutResponse
 >(bitcoinBridgeClient.submitPayout.bind(bitcoinBridgeClient))
+
+export const estimatePayoutFee = promisify<
+  EstimatePayoutFeeRequest,
+  Metadata,
+  EstimatePayoutFeeResponse
+>(bitcoinBridgeClient.estimatePayoutFee.bind(bitcoinBridgeClient))
 
 export const subscribeAll = bitcoinBridgeClient.subscribeAll.bind(bitcoinBridgeClient)

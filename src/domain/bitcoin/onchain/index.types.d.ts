@@ -89,6 +89,12 @@ type QueuePayoutToAddressArgs = {
   description: string
 }
 
+type EstimatePayoutFeeArgs = {
+  address: OnChainAddress
+  amount: BtcPaymentAmount
+  speed: PayoutSpeed
+}
+
 type IncomingOnChainTxHandler<S extends WalletCurrency> = {
   balancesByAddresses(): { [key: OnChainAddress]: PaymentAmount<S> } | ValidationError
   balanceByWallet(
@@ -149,4 +155,7 @@ interface INewOnChainService {
   queuePayoutToAddress(
     args: QueuePayoutToAddressArgs,
   ): Promise<PayoutId | OnChainServiceError>
+  estimateFeeForPayout(
+    args: EstimatePayoutFeeArgs,
+  ): Promise<BtcPaymentAmount | OnChainServiceError>
 }

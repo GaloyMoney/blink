@@ -25,6 +25,7 @@ import {
   CPFPAncestorLimitReachedError,
   InsufficientOnChainFundsError,
   TxDecoder,
+  PayoutSpeed,
 } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { displayAmountFromNumber } from "@domain/fiat"
@@ -465,7 +466,10 @@ const executePaymentViaOnChain = async <
   const address = await builder.addressForFlow()
 
   // Get estimated miner fee and create 'paymentFlow'
-  const paymentFlow = await getMinerFeeAndPaymentFlow({ builder, targetConfirmations })
+  const paymentFlow = await getMinerFeeAndPaymentFlow({
+    builder,
+    speed: PayoutSpeed.Fast,
+  })
   if (paymentFlow instanceof Error) return paymentFlow
 
   // Check onchain balance
@@ -481,7 +485,7 @@ const executePaymentViaOnChain = async <
     // Get estimated miner fee and create 'paymentFlow'
     const paymentFlowForBalance = await getMinerFeeAndPaymentFlow({
       builder,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
     })
     if (paymentFlowForBalance instanceof Error) return paymentFlowForBalance
 
@@ -500,7 +504,7 @@ const executePaymentViaOnChain = async <
     // Add fees to tracing
     const paymentFlow = await getMinerFeeAndPaymentFlow({
       builder,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
     })
     if (paymentFlow instanceof Error) return paymentFlow
 

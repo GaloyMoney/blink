@@ -16,6 +16,7 @@ import { wrapAsyncToRunInSpan, wrapAsyncFunctionsToRunInSpan } from "@services/t
 import { GrpcStreamClient } from "@utils"
 
 import {
+  estimatePayoutFee,
   findAddressByExternalId,
   getWalletBalanceSummary,
   newAddress,
@@ -29,6 +30,7 @@ import {
   GetWalletBalanceSummaryRequest,
   FindAddressByExternalIdRequest,
   SubmitPayoutRequest,
+  EstimatePayoutFeeRequest,
 } from "./proto/bria_pb"
 import { UnknownBriaEventError } from "./errors"
 export { BriaPayloadType } from "./event-handler"
@@ -195,6 +197,43 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
+  const estimateFeeForPayout = async ({
+    address,
+    amount,
+    speed,
+  }: EstimatePayoutFeeArgs): Promise<BtcPaymentAmount | OnChainServiceError> => {
+    const estimate = async ({
+      speed,
+      address,
+      amount,
+    }: {
+      speed: PayoutSpeed
+      address: OnChainAddress
+      amount: BtcPaymentAmount
+    }): Promise<BtcPaymentAmount | BriaEventError> => {
+      try {
+        const request = new EstimatePayoutFeeRequest()
+        request.setWalletName(briaConfig.walletName)
+        request.setPayoutQueueName(queueNameForSpeed(speed))
+        request.setOnchainAddress(address)
+        request.setSatoshis(Number(amount.amount))
+
+        const response = await estimatePayoutFee(request, metadata)
+        return paymentAmountFromNumber({
+          amount: response.getSatoshis(),
+          currency: WalletCurrency.Btc,
+        })
+      } catch (error) {
+        return new UnknownOnChainServiceError(error.message || error)
+      }
+    }
+
+    const payoutId = await estimate({ address, amount, speed })
+    if (payoutId instanceof Error) return payoutId
+
+    return payoutId
+  }
+
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.bria.onchain",
     fns: {
@@ -202,6 +241,7 @@ export const NewOnChainService = (): INewOnChainService => {
       createOnChainAddress,
       findAddressByRequestId,
       queuePayoutToAddress,
+      estimateFeeForPayout,
     },
   })
 }
