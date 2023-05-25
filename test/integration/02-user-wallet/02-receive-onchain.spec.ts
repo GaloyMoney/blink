@@ -40,7 +40,6 @@ import { DealerPriceService } from "@services/dealer-price"
 
 import {
   amountAfterFeeDeduction,
-  amountByPriceAsMajor,
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
@@ -503,30 +502,30 @@ describe("UserWallet - On chain", () => {
     const {
       settlementDisplayPrice: { displayCurrency },
     } = pendingTx
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: account.displayCurrency,
+    })
+    if (displayPriceRatio instanceof Error) throw displayPriceRatio
+
     const exponent = getCurrencyMajorExponent(displayCurrency)
 
+    expect(pendingTx.settlementCurrency).toBe(WalletCurrency.Btc)
+    const settlementWalletAmount = paymentAmountFromNumber({
+      amount: pendingTx.settlementAmount,
+      currency: WalletCurrency.Btc,
+    })
+    if (settlementWalletAmount instanceof Error) throw settlementWalletAmount
     expect(pendingTx.settlementDisplayAmount).toBe(
-      amountByPriceAsMajor({
-        amount: pendingTx.settlementAmount,
-        price: pendingTx.settlementDisplayPrice,
-        walletCurrency: pendingTx.settlementCurrency,
-        displayCurrency: pendingTx.settlementDisplayPrice.displayCurrency,
-      }).toFixed(exponent),
+      displayPriceRatio.convertFromWallet(settlementWalletAmount).displayInMajor,
     )
 
+    const settlementWalletFee = paymentAmountFromNumber({
+      amount: pendingTx.settlementFee,
+      currency: WalletCurrency.Btc,
+    })
+    if (settlementWalletFee instanceof Error) throw settlementWalletFee
     expect(pendingTx.settlementDisplayFee).toBe(
-      (
-        Math.ceil(
-          amountByPriceAsMajor({
-            amount: pendingTx.settlementFee,
-            price: pendingTx.settlementDisplayPrice,
-            walletCurrency: pendingTx.settlementCurrency,
-            displayCurrency: pendingTx.settlementDisplayPrice.displayCurrency,
-          }) *
-            10 ** exponent,
-        ) /
-        10 ** exponent
-      ).toFixed(exponent),
+      displayPriceRatio.convertFromWalletToCeil(settlementWalletFee).displayInMajor,
     )
 
     // Check pendingTx from cache
