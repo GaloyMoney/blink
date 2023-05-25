@@ -26,7 +26,7 @@ import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 
-import { BriaPayloadType, BriaSubscriber } from "@services/bria"
+import { BriaPayloadType } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import {
@@ -49,6 +49,8 @@ import {
   getAccountIdByTestUserRef,
   getAccountRecordByTestUserRef,
   getDefaultWalletIdByTestUserRef,
+  manyBriaSubscribe,
+  onceBriaSubscribe,
   RANDOM_ADDRESS,
   sendToAddress,
   sendToAddressAndConfirm,
@@ -595,96 +597,7 @@ describe("UserWallet - On chain", () => {
   })
 })
 
-const onceBriaSubscribe = async ({
-  type,
-  txId,
-}: {
-  type: BriaPayloadType
-  txId: OnChainTxHash
-}): Promise<BriaEvent | undefined> => {
-  const bria = BriaSubscriber()
-
-  let eventToReturn: BriaEvent | undefined = undefined
-  const eventHandler = ({ resolve, timeoutId }) => {
-    return async (event: BriaEvent): Promise<true | ApplicationError> => {
-      setTimeout(() => {
-        if (
-          event.payload.type === type &&
-          "txId" in event.payload &&
-          event.payload.txId === txId
-        ) {
-          eventToReturn = event
-          resolve(event)
-          clearTimeout(timeoutId)
-        }
-      }, 1)
-      return Promise.resolve(true)
-    }
-  }
-
-  const timeout = 30_000
-  let wrapper
-  const promise = new Promise(async (resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      reject(new Error(`Promise timed out after ${timeout} ms`))
-    }, timeout)
-    wrapper = await bria.subscribeToAll(eventHandler({ resolve, timeoutId }))
-  })
-
-  const res = await promise
-  if (res instanceof Error) throw res
-
-  wrapper.cancel()
-  return eventToReturn
-}
-
-const manyBriaSubscribe = async ({
-  type,
-  addresses,
-}: {
-  type: BriaPayloadType
-  addresses: OnChainAddress[]
-}): Promise<BriaEvent[]> => {
-  const bria = BriaSubscriber()
-
-  const eventsToReturn: BriaEvent[] = []
-  const eventHandler = ({ resolve, timeoutId }) => {
-    return async (event: BriaEvent): Promise<true | ApplicationError> => {
-      setTimeout(() => {
-        if (
-          event.payload.type === type &&
-          "address" in event.payload &&
-          addresses.includes(event.payload.address)
-        ) {
-          eventsToReturn.push(event)
-
-          if (eventsToReturn.length === addresses.length) {
-            resolve(eventsToReturn)
-            clearTimeout(timeoutId)
-          }
-        }
-      }, 1)
-      return Promise.resolve(true)
-    }
-  }
-
-  const timeout = 30_000
-  let wrapper
-  const promise = new Promise(async (resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      reject(new Error(`Promise timed out after ${timeout} ms`))
-    }, timeout)
-    wrapper = await bria.subscribeToAll(eventHandler({ resolve, timeoutId }))
-  })
-
-  const res = await promise
-  if (res instanceof Error) throw res
-
-  wrapper.cancel()
-  return eventsToReturn
-}
-
-async function sendToWalletTestWrapper({
+const sendToWalletTestWrapper = async ({
   amountSats,
   walletId,
   depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
@@ -692,7 +605,7 @@ async function sendToWalletTestWrapper({
   amountSats: Satoshis
   walletId: WalletId
   depositFeeRatio?: DepositFeeRatio
-}): Promise<OnChainTxHash> {
+}): Promise<OnChainTxHash> => {
   const initialBalance = await getBalanceHelper(walletId)
   const { result: initTransactions, error } = await getTransactionsForWalletId(walletId)
   if (error instanceof Error || initTransactions === null) {
