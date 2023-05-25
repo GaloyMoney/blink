@@ -130,39 +130,42 @@ export const BriaSubscriber = () => {
   }
 }
 
+const queueNameForSpeed = (speed: PayoutSpeed): string => {
+  return speed
+}
+
 export const NewOnChainService = (): INewOnChainService => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
 
   const queuePayoutToAddress = async ({
+    walletId,
     address,
     amount,
-    priority,
-    description,
+    speed,
+    externalId,
   }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
     const submitPayout = async ({
-      priority,
+      walletId,
+      speed,
       address,
       amount,
       externalId,
     }: {
-      priority: PayoutPriority
+      walletId: WalletId
+      speed: PayoutSpeed
       address: OnChainAddress
       amount: BtcPaymentAmount
-      externalId?: string
+      externalId: string
     }): Promise<PayoutId | BriaEventError> => {
       try {
         const request = new SubmitPayoutRequest()
         request.setWalletName(BRIA_WALLET_NAME)
-        request.setPayoutQueueName(priority)
+        request.setPayoutQueueName(queueNameForSpeed(speed))
         request.setOnchainAddress(address)
         request.setSatoshis(Number(amount.amount))
-        if (externalId) {
-          request.setExternalId(externalId)
-        }
-        if (description) {
-          request.setMetadata(constructMetadata({ description }))
-        }
+        request.setExternalId(externalId)
+        request.setMetadata(constructMetadata({ galoy: { walletId } }))
 
         const submitPayoutWithMetadataOverload = (
           { request, metadata }: { request: SubmitPayoutRequest; metadata: Metadata },
@@ -184,7 +187,7 @@ export const NewOnChainService = (): INewOnChainService => {
       }
     }
 
-    const payoutId = await submitPayout({ priority, address, amount })
+    const payoutId = await submitPayout({ walletId, address, amount, speed, externalId })
     if (payoutId instanceof Error) return payoutId
 
     return payoutId

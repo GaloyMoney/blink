@@ -71,4 +71,4 @@ export const uniqueAddressesForTxn = (rawTx: OnChainTransaction) =>
     return a
   }, [])
 
-export const PayoutPriority = { HIGH: "high" } as const
+export const PayoutSpeed = { FAST: "fast" } as const
