@@ -29,6 +29,7 @@ services:
       - redis
       - mongodb
       - bitcoind
+      - bitcoind-signer
       - stablesats
       - bria
       - lnd1
