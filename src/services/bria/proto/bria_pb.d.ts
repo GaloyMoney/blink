@@ -1168,6 +1168,66 @@ export namespace UpdatePayoutQueueResponse {
     }
 }
 
+export class EstimatePayoutFeeRequest extends jspb.Message { 
+    getWalletName(): string;
+    setWalletName(value: string): EstimatePayoutFeeRequest;
+    getPayoutQueueName(): string;
+    setPayoutQueueName(value: string): EstimatePayoutFeeRequest;
+
+    hasOnchainAddress(): boolean;
+    clearOnchainAddress(): void;
+    getOnchainAddress(): string;
+    setOnchainAddress(value: string): EstimatePayoutFeeRequest;
+    getSatoshis(): number;
+    setSatoshis(value: number): EstimatePayoutFeeRequest;
+
+    getDestinationCase(): EstimatePayoutFeeRequest.DestinationCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): EstimatePayoutFeeRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: EstimatePayoutFeeRequest): EstimatePayoutFeeRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: EstimatePayoutFeeRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EstimatePayoutFeeRequest;
+    static deserializeBinaryFromReader(message: EstimatePayoutFeeRequest, reader: jspb.BinaryReader): EstimatePayoutFeeRequest;
+}
+
+export namespace EstimatePayoutFeeRequest {
+    export type AsObject = {
+        walletName: string,
+        payoutQueueName: string,
+        onchainAddress: string,
+        satoshis: number,
+    }
+
+    export enum DestinationCase {
+        DESTINATION_NOT_SET = 0,
+        ONCHAIN_ADDRESS = 3,
+    }
+
+}
+
+export class EstimatePayoutFeeResponse extends jspb.Message { 
+    getSatoshis(): number;
+    setSatoshis(value: number): EstimatePayoutFeeResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): EstimatePayoutFeeResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: EstimatePayoutFeeResponse): EstimatePayoutFeeResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: EstimatePayoutFeeResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EstimatePayoutFeeResponse;
+    static deserializeBinaryFromReader(message: EstimatePayoutFeeResponse, reader: jspb.BinaryReader): EstimatePayoutFeeResponse;
+}
+
+export namespace EstimatePayoutFeeResponse {
+    export type AsObject = {
+        satoshis: number,
+    }
+}
+
 export class SubmitPayoutRequest extends jspb.Message { 
     getWalletName(): string;
     setWalletName(value: string): SubmitPayoutRequest;
@@ -1885,6 +1945,6 @@ export enum KeychainKind {
 
 export enum TxPriority {
     NEXT_BLOCK = 0,
-    ONE_HOUR = 1,
-    ECONOMY = 2,
+    HALF_HOUR = 1,
+    ONE_HOUR = 2,
 }
