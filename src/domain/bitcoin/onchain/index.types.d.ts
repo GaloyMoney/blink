@@ -118,14 +118,6 @@ interface IOnChainService {
   }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError>
 }
 
-interface OnChainEvent {
-  payload: string
-  sequence: string
-  recorded_at: number
-}
-
-type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
-
 type QueuePayoutToAddressArgs = {
   walletId: WalletId
   address: OnChainAddress
@@ -134,8 +126,17 @@ type QueuePayoutToAddressArgs = {
   externalId: string
 }
 
+type EstimatePayoutFeeArgs = {
+  address: OnChainAddress
+  amount: BtcPaymentAmount
+  speed: PayoutSpeed
+}
+
 interface INewOnChainService {
   queuePayoutToAddress(
     args: QueuePayoutToAddressArgs,
   ): Promise<PayoutId | OnChainServiceError>
+  estimatePayoutFee(
+    args: EstimatePayoutFeeArgs,
+  ): Promise<BtcPaymentAmount | OnChainServiceError>
 }
