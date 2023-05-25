@@ -13,6 +13,32 @@ export function timeout(delay: MilliSeconds | number, msg: string) {
   })
 }
 
+export function timeoutWithCancel(
+  delay: MilliSeconds | number,
+  msg: string,
+): [Promise<unknown>, () => void] {
+  let timeoutId: NodeJS.Timeout | null = null
+  let isCanceled = false
+
+  const cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      timeoutId = null
+      isCanceled = true
+    }
+  }
+
+  const timeoutPromise = new Promise((resolve, reject) => {
+    timeoutId = setTimeout(() => {
+      if (!isCanceled) {
+        reject(new Error(msg))
+      }
+    }, delay)
+  })
+
+  return [timeoutPromise, cancel]
+}
+
 /**
  * Process an iterator with N workers
  * @method async
