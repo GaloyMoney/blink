@@ -1,6 +1,7 @@
 import { getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import { Prices, Wallets } from "@app"
+import { newGetTransactionsForWallets } from "@app/wallets"
 
 import { TxStatus } from "@domain/wallets"
 import { DisplayCurrency } from "@domain/fiat"
@@ -12,10 +13,13 @@ import { invoiceUpdateEventHandler, onchainBlockEventHandler } from "@servers/tr
 
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
+import { BriaSubscriber } from "@services/bria"
+import { briaEventHandler } from "@servers/bria-trigger"
+import { WalletsRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
-import { sleep } from "@utils"
+import { sleep, timeoutWithCancel } from "@utils"
 
 import {
   amountAfterFeeDeduction,
@@ -70,6 +74,7 @@ beforeEach(() => {
 
 afterAll(async () => {
   jest.restoreAllMocks()
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 type WalletState = {
@@ -96,7 +101,141 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
 }
 
 describe("onchainBlockEventHandler", () => {
-  it("should process block for incoming transactions", async () => {
+  const waitForSettledTxs = async ({ wallets, addresses }): Promise<true> => {
+    return new Promise<true>(async (resolve) => {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const result = await newGetTransactionsForWallets({ wallets })
+        if (result.error instanceof Error) continue
+
+        const addressesFound = result.result?.slice
+          .filter(
+            (txn): txn is WalletOnChainSettledTransaction =>
+              "address" in txn.initiationVia &&
+              addresses.includes(txn.initiationVia.address) &&
+              txn.status === TxStatus.Success,
+          )
+          .map((txn) => txn.initiationVia.address)
+
+        if (addressesFound && addresses.length === addressesFound.length) {
+          resolve(true)
+          break
+        }
+
+        await sleep(1000)
+      }
+    })
+  }
+
+  it("should process incoming transactions from bria", async () => {
+    const amount = toSats(10_000)
+    const amount2 = toSats(20_000)
+    const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
+
+    // Start trigger subscription
+    const wrapper = await BriaSubscriber().subscribeToAll(briaEventHandler)
+    if (wrapper instanceof Error) throw wrapper
+
+    // Send txn
+    const address = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdA,
+    })
+    if (address instanceof Error) throw address
+
+    const output0 = {}
+    output0[address] = sat2btc(amount)
+
+    const address2 = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdD,
+    })
+    if (address2 instanceof Error) throw address2
+
+    const output1 = {}
+    output1[address2] = sat2btc(amount2)
+
+    const outputs = [output0, output1]
+
+    const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({ inputs: [], outputs })
+    const walletProcessPsbt = await bitcoindOutside.walletProcessPsbt({ psbt })
+    const finalizedPsbt = await bitcoindOutside.finalizePsbt({
+      psbt: walletProcessPsbt.psbt,
+    })
+
+    const initWalletAState = await getWalletState(walletIdA)
+    const initWalletDState = await getWalletState(walletIdD)
+    await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
+    await bitcoindOutside.generateToAddress({
+      nblocks: blocksToMine,
+      address: RANDOM_ADDRESS,
+    })
+
+    // Await txns coming in from event handler
+    const walletA = await WalletsRepository().findById(walletIdA)
+    if (walletA instanceof Error) throw walletA
+    const walletD = await WalletsRepository().findById(walletIdD)
+    if (walletD instanceof Error) throw walletD
+
+    const txnsCheckPromise = waitForSettledTxs({
+      wallets: [walletA, walletD],
+      addresses: [address, address2],
+    })
+
+    const [timeoutPromise, cancelTimeout] = timeoutWithCancel(45_000, "Timeout")
+    const resultWait = await Promise.race([txnsCheckPromise, timeoutPromise])
+    if (resultWait instanceof Error) throw resultWait
+    cancelTimeout()
+
+    // Execute checks
+    const validateWalletState = async ({
+      walletId,
+      userRecord,
+      initialState,
+      amount,
+      address,
+    }: {
+      walletId: WalletId
+      userRecord: AccountRecord
+      initialState: WalletState
+      amount: Satoshis
+      address: string
+    }) => {
+      const { balance, transactions, onchainAddress } = await getWalletState(walletId)
+      const depositFeeRatio = userRecord.depositFeeRatio as DepositFeeRatio
+      const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
+      const lastTransaction = transactions[0]
+
+      expect(transactions.length).toBe(initialState.transactions.length + 1)
+      expect(lastTransaction.status).toBe(TxStatus.Success)
+      expect(lastTransaction.settlementFee).toBe(
+        Math.round(lastTransaction.settlementFee),
+      )
+      expect(lastTransaction.settlementAmount).toBe(finalAmount)
+      expect((lastTransaction as WalletOnChainTransaction).initiationVia.address).toBe(
+        address,
+      )
+      expect(balance).toBe(initialState.balance + finalAmount)
+      expect(onchainAddress).not.toBe(initialState.onchainAddress)
+    }
+
+    await validateWalletState({
+      walletId: walletIdA,
+      userRecord: accountRecordA,
+      initialState: initWalletAState,
+      amount: amount,
+      address: address,
+    })
+    await validateWalletState({
+      walletId: walletIdD,
+      userRecord: accountRecordD,
+      initialState: initWalletDState,
+      amount: amount2,
+      address: address2,
+    })
+
+    wrapper.cancel()
+  })
+
+  it("should process block for incoming transactions from lnd", async () => {
     const amount = toSats(10_000)
     const amount2 = toSats(20_000)
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
@@ -118,17 +257,13 @@ describe("onchainBlockEventHandler", () => {
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
 
-    const address = await Wallets.createOnChainAddressForBtcWallet({
-      walletId: walletIdA,
-    })
+    const address = await Wallets.lndCreateOnChainAddress(walletIdA)
     if (address instanceof Error) throw address
 
     const output0 = {}
     output0[address] = sat2btc(amount)
 
-    const address2 = await Wallets.createOnChainAddressForBtcWallet({
-      walletId: walletIdD,
-    })
+    const address2 = await Wallets.lndCreateOnChainAddress(walletIdD)
     if (address2 instanceof Error) throw address2
 
     const output1 = {}
