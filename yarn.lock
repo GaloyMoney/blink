@@ -5111,11 +5111,12 @@ bip68@1.0.4:
   resolved "https://registry.yarnpkg.com/bip68/-/bip68-1.0.4.tgz#78a95c7a43fad183957995cc2e08d79b0c372c4d"
   integrity sha512-O1htyufFTYy3EO0JkHg2CLykdXEtV2ssqw47Gq9A0WByp662xpJnMEB9m43LZjsSDjIAOozWRExlFQk2hlV1XQ==
 
-bitcoin-cli-ts@^24.0.1:
-  version "24.0.1"
-  resolved "https://registry.yarnpkg.com/bitcoin-cli-ts/-/bitcoin-cli-ts-24.0.1.tgz#daff931234b966f1f3f287c57bd5ce25d0fa03c2"
-  integrity sha512-fCfOqYaBFxkQAYC1Py7rsE/vGL/NG6qryxE+jCoOXQa98OlKOkgWtpLqGOIhKtr4Z2xdd8gmicByBfqyof21UQ==
+bitcoin-cli-ts@^24.0.3:
+  version "24.0.3"
+  resolved "https://registry.yarnpkg.com/bitcoin-cli-ts/-/bitcoin-cli-ts-24.0.3.tgz#15f6f597fea63ea314333bfb855842ae420095ae"
+  integrity sha512-4NcAkNDQC3ojiyklXF+ahvd28JtOY/XaAn6r6TphlX/QZVAoEW47/FKDgnVfd8W56UGssww2+/a6Z6Zo5NpXyA==
   dependencies:
+    json-bigint "^1.0.0"
     json-rpc-2.0 "^1.6.0"
     undici "^5.22.1"
 
