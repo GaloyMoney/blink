@@ -1,6 +1,8 @@
+import { once } from "events"
+
 import { Wallets, Payments } from "@app"
 import { BTC_NETWORK, getFeesConfig, getOnChainWalletConfig } from "@config"
-import { toSats, toTargetConfs } from "@domain/bitcoin"
+import { sat2btc, toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
@@ -8,6 +10,8 @@ import { TxDecoder } from "@domain/bitcoin/onchain"
 import { DealerPriceService } from "@services/dealer-price"
 import * as OnChainServiceImpl from "@services/lnd/onchain-service"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { baseLogger } from "@services/logger"
+import { getFunderWalletId } from "@services/ledger/caching"
 
 import {
   bitcoindClient,
@@ -16,6 +20,10 @@ import {
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getUsdWalletIdByTestUserRef,
+  lndonchain,
+  sendToAddressAndConfirm,
+  subscribeToChainAddress,
+  waitUntilBlockHeight,
 } from "test/helpers"
 
 const defaultAmount = toSats(5244)
@@ -36,11 +44,60 @@ beforeAll(async () => {
   walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
+
+  // Fund walletIdA
+  await sendToLndWalletTestWrapper({
+    amountSats: toSats(defaultAmount * 5),
+    walletId: walletIdA,
+  })
+
+  // Fund lnd
+  const funderWalletId = await getFunderWalletId()
+  await sendToLndWalletTestWrapper({
+    amountSats: toSats(2_000_000_000),
+    walletId: funderWalletId,
+  })
 })
 
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
+
+const sendToLndWalletTestWrapper = async ({
+  amountSats,
+  walletId,
+}: {
+  amountSats: Satoshis
+  walletId: WalletId
+}) => {
+  const address = await Wallets.lndCreateOnChainAddress(walletId)
+  if (address instanceof Error) throw address
+  expect(address.substring(0, 4)).toBe("bcrt")
+
+  const initialBlockNumber = await bitcoindClient.getBlockCount()
+  const txId = await sendToAddressAndConfirm({
+    walletClient: bitcoindOutside,
+    address,
+    amount: sat2btc(amountSats),
+  })
+  if (txId instanceof Error) throw txId
+
+  // Register confirmed txn in database
+  const sub = subscribeToChainAddress({
+    lnd: lndonchain,
+    bech32_address: address,
+    min_height: initialBlockNumber,
+  })
+  await once(sub, "confirmation")
+  sub.removeAllListeners()
+
+  await waitUntilBlockHeight({ lnd: lndonchain })
+
+  const updated = await Wallets.updateOnChainReceipt({ logger: baseLogger })
+  if (updated instanceof Error) throw updated
+
+  return txId as OnChainTxHash
+}
 
 describe("UserWallet - getOnchainFee", () => {
   describe("from btc wallet", () => {
