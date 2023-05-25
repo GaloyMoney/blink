@@ -2,8 +2,8 @@ type OnChainError = import("./errors").OnChainError
 type TransactionDecodeError = import("./errors").TransactionDecodeError
 type OnChainServiceError = import("./errors").OnChainServiceError
 
-type PayoutPriority =
-  typeof import("./index").PayoutPriority[keyof typeof import("./index").PayoutPriority]
+type PayoutSpeed =
+  typeof import("./index").PayoutSpeed[keyof typeof import("./index").PayoutSpeed]
 
 type OnChainAddress = string & { readonly brand: unique symbol }
 type OnChainAddressRequestId = string & { readonly brand: unique symbol }
@@ -81,9 +81,10 @@ type PayToAddressArgs = {
 }
 
 type QueuePayoutToAddressArgs = {
+  walletId: WalletId
   address: OnChainAddress
   amount: BtcPaymentAmount
-  priority: PayoutPriority
+  speed: PayoutSpeed
   requestId: PayoutRequestId
   description: string
 }
