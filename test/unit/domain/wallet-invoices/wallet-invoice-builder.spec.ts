@@ -1,5 +1,6 @@
 import { toSats } from "@domain/bitcoin"
 import { sha256 } from "@domain/bitcoin/lightning"
+import { checkedToMinutes } from "@domain/primitives"
 import { BtcPaymentAmount, WalletCurrency } from "@domain/shared"
 import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
 
@@ -74,6 +75,22 @@ describe("WalletInvoiceBuilder", () => {
     expect(lnInvoice.description).toEqual(testDescription)
   }
 
+  const expirationInMinutes = checkedToMinutes(3)
+  if (expirationInMinutes instanceof Error) throw expirationInMinutes
+  const testExpiration = new Date("2000-01-01T00:03:00.000Z")
+  const checkExpiration = ({ lnInvoice }: LnAndWalletInvoice) => {
+    expect(lnInvoice.expiresAt).toEqual(testExpiration)
+  }
+
+  beforeAll(() => {
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date("2000-01-01T00:00:00.000Z"))
+  })
+
+  afterAll(() => {
+    jest.useRealTimers()
+  })
+
   describe("generated for self", () => {
     const WIBWithCreator = WIBWithDescription.generatedForSelf()
     const checkCreator = ({ walletInvoice }: LnAndWalletInvoice) => {
@@ -88,7 +105,9 @@ describe("WalletInvoiceBuilder", () => {
 
       describe("with amount", () => {
         it("registers and persists invoice with no conversion", async () => {
-          const WIBWithAmount = await WIBWithRecipient.withAmount(uncheckedAmount)
+          const WIBWithAmount = await WIBWithRecipient.withExpiration(
+            expirationInMinutes,
+          ).withAmount(uncheckedAmount)
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
@@ -106,8 +125,8 @@ describe("WalletInvoiceBuilder", () => {
               }),
             )
           }
-          const invoices = await WIBWithAmount.registerInvoice()
 
+          const invoices = await WIBWithAmount.registerInvoice()
           if (invoices instanceof Error) throw invoices
 
           checkSecretAndHash(invoices)
@@ -115,12 +134,15 @@ describe("WalletInvoiceBuilder", () => {
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
+          checkExpiration(invoices)
         })
       })
 
       describe("with no amount", () => {
         it("registers and persists invoice", async () => {
-          const WIBWithAmount = await WIBWithRecipient.withoutAmount()
+          const WIBWithAmount = await WIBWithRecipient.withExpiration(
+            expirationInMinutes,
+          ).withoutAmount()
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
@@ -147,6 +169,7 @@ describe("WalletInvoiceBuilder", () => {
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
+          checkExpiration(invoices)
         })
       })
     })
@@ -159,7 +182,9 @@ describe("WalletInvoiceBuilder", () => {
 
       describe("with amount", () => {
         it("registers and persists invoice with conversion", async () => {
-          const WIBWithAmount = await WIBWithRecipient.withAmount(uncheckedAmount)
+          const WIBWithAmount = await WIBWithRecipient.withExpiration(
+            expirationInMinutes,
+          ).withAmount(uncheckedAmount)
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
@@ -190,12 +215,15 @@ describe("WalletInvoiceBuilder", () => {
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
+          checkExpiration(invoices)
         })
       })
 
       describe("with no amount", () => {
         it("registers and persists invoice", async () => {
-          const WIBWithAmount = await WIBWithRecipient.withoutAmount()
+          const WIBWithAmount = await WIBWithRecipient.withExpiration(
+            expirationInMinutes,
+          ).withoutAmount()
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
@@ -223,6 +251,7 @@ describe("WalletInvoiceBuilder", () => {
           checkDescription(invoices)
           checkCreator(invoices)
           checkRecipientWallet(invoices)
+          checkExpiration(invoices)
         })
       })
     })

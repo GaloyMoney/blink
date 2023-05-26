@@ -528,6 +528,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidNonHodlInvoiceError":
     case "InvalidAccountError":
     case "InvalidAccountIdError":
+    case "InvalidMinutesError":
     case "InvalidWalletForAccountError":
     case "AuthenticationError":
     case "LikelyNoUserWithThisPhoneExistError":
