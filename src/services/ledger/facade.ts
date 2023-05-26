@@ -64,7 +64,7 @@ export const recordSend = async ({
   return persistAndReturnEntry({ entry, hash: metadata.hash })
 }
 
-export const recordReceive = async ({
+export const recordReceiveContraLnd = async ({
   description,
   recipientWalletDescriptor,
   amountToCreditReceiver,
@@ -73,7 +73,6 @@ export const recordReceive = async ({
   txMetadata,
   additionalCreditMetadata,
   additionalInternalMetadata,
-  isBria = false,
 }: RecordReceiveArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
 
@@ -90,18 +89,51 @@ export const recordReceive = async ({
     btcWithFees: calc.add(amountToCreditReceiver.btc, actualFee.btc),
   }
 
-  const entryBuilderDebit = builder
+  entry = builder
     .withTotalAmount(amountWithFees)
     .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
+    .debitLnd()
+    .creditAccount({
+      accountDescriptor: toLedgerAccountDescriptor(recipientWalletDescriptor),
+      additionalMetadata: additionalCreditMetadata,
+    })
 
-  const entryBuilderCredit = isBria
-    ? entryBuilderDebit.debitBria()
-    : entryBuilderDebit.debitLnd()
+  return persistAndReturnEntry({ entry, ...txMetadata })
+}
 
-  entry = entryBuilderCredit.creditAccount({
-    accountDescriptor: toLedgerAccountDescriptor(recipientWalletDescriptor),
-    additionalMetadata: additionalCreditMetadata,
+export const recordReceiveContraOnChain = async ({
+  description,
+  recipientWalletDescriptor,
+  amountToCreditReceiver,
+  bankFee,
+  metadata,
+  txMetadata,
+  additionalCreditMetadata,
+  additionalInternalMetadata,
+}: RecordReceiveArgs) => {
+  const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
+
+  let entry = MainBook.entry(description)
+  const builder = EntryBuilder({
+    staticAccountIds: await staticAccountIds(),
+    entry,
+    metadata,
+    additionalInternalMetadata,
   })
+
+  const amountWithFees = {
+    usdWithFees: calc.add(amountToCreditReceiver.usd, actualFee.usd),
+    btcWithFees: calc.add(amountToCreditReceiver.btc, actualFee.btc),
+  }
+
+  entry = builder
+    .withTotalAmount(amountWithFees)
+    .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
+    .debitOnChain()
+    .creditAccount({
+      accountDescriptor: toLedgerAccountDescriptor(recipientWalletDescriptor),
+      additionalMetadata: additionalCreditMetadata,
+    })
 
   return persistAndReturnEntry({ entry, ...txMetadata })
 }

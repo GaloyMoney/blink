@@ -22,7 +22,7 @@ import {
   recordReceiveLnPayment,
   recordSendLnPayment,
   recordSendOnChainPayment,
-  recordReceiveOnChainPayment,
+  recordReceiveOnChainPaymentContraOnChain,
   recordWalletIdIntraLedgerPayment,
   recordOnChainIntraLedgerPayment,
   recordLnChannelOpenOrClosingFee,
@@ -120,7 +120,7 @@ describe("Volumes", () => {
     walletDescriptor: WalletDescriptor<S>,
   ) => Promise<PaymentAmount<S>>
 
-  // Each "TxFn" execute a transaction for a given type and then checks if
+  // Each "TxFn" executes a transaction for a given type and then checks if
   // the respective tx volume has been affected or not.
   const prepareTxFns = <S extends WalletCurrency, R extends WalletCurrency>(
     fetchVolumeAmount: fetchVolumeAmountType<S>,
@@ -343,7 +343,7 @@ describe("Volumes", () => {
     const txFnsForIncludedTypes = {
       Invoice: () => testExternalTxReceiveWLE({ recordTx: recordReceiveLnPayment }),
       OnchainReceipt: () =>
-        testExternalTxReceiveWLE({ recordTx: recordReceiveOnChainPayment }),
+        testExternalTxReceiveWLE({ recordTx: recordReceiveOnChainPaymentContraOnChain }),
       Payment: () => testExternalTxSendWLE({ recordTx: recordSendLnPayment }),
       OnchainPayment: () => testExternalTxSendWLE({ recordTx: recordSendOnChainPayment }),
       LnFeeReimbursement: () =>
@@ -416,7 +416,8 @@ describe("Volumes", () => {
     // Setting up all 'it' tests for each txn type, to check volume is NOT affected
     const txFnsForExcludedTypes = {
       Invoice: () => testExternalTxNLE({ recordTx: recordReceiveLnPayment }),
-      OnchainReceipt: () => testExternalTxNLE({ recordTx: recordReceiveOnChainPayment }),
+      OnchainReceipt: () =>
+        testExternalTxNLE({ recordTx: recordReceiveOnChainPaymentContraOnChain }),
       Payment: () => testExternalTxNLE({ recordTx: recordSendLnPayment }),
       OnchainPayment: () => testExternalTxNLE({ recordTx: recordSendOnChainPayment }),
       LnFeeReimbursement: () => testExternalTxNLE({ recordTx: recordLnFeeReimbursement }),

@@ -39,7 +39,7 @@ export const recordReceiveLnPayment = async <S extends WalletCurrency>({
     ...displayAmounts,
   })
 
-  return LedgerFacade.recordReceive({
+  return LedgerFacade.recordReceiveContraLnd({
     description: "receives bitcoin via ln",
     amountToCreditReceiver: paymentAmount,
     recipientWalletDescriptor: walletDescriptor,
@@ -51,7 +51,7 @@ export const recordReceiveLnPayment = async <S extends WalletCurrency>({
   })
 }
 
-export const recordReceiveOnChainPayment = async <S extends WalletCurrency>({
+export const recordReceiveOnChainPaymentContraLnd = async <S extends WalletCurrency>({
   walletDescriptor,
   paymentAmount,
   bankFee,
@@ -79,7 +79,46 @@ export const recordReceiveOnChainPayment = async <S extends WalletCurrency>({
     payeeAddresses: ["address1" as OnChainAddress],
   })
 
-  return LedgerFacade.recordReceive({
+  return LedgerFacade.recordReceiveContraLnd({
+    description: "receives bitcoin via onchain",
+    amountToCreditReceiver: paymentAmount,
+    recipientWalletDescriptor: walletDescriptor,
+    bankFee,
+    metadata,
+    additionalCreditMetadata: creditAccountAdditionalMetadata,
+    additionalInternalMetadata: internalAccountsAdditionalMetadata,
+  })
+}
+
+export const recordReceiveOnChainPaymentContraOnChain = async <S extends WalletCurrency>({
+  walletDescriptor,
+  paymentAmount,
+  bankFee,
+  displayAmounts,
+}: RecordExternalTxTestArgs<S>) => {
+  const onChainTxHash = crypto.randomUUID() as OnChainTxHash
+  const onChainTxVout = 0 as OnChainTxVout
+
+  const {
+    metadata,
+    creditAccountAdditionalMetadata,
+    internalAccountsAdditionalMetadata,
+  } = LedgerFacade.OnChainReceiveLedgerMetadata({
+    onChainTxHash,
+    onChainTxVout,
+    paymentAmounts: {
+      btcPaymentAmount: paymentAmount.btc,
+      usdPaymentAmount: paymentAmount.usd,
+      btcProtocolAndBankFee: bankFee.btc,
+      usdProtocolAndBankFee: bankFee.usd,
+    },
+
+    ...displayAmounts,
+
+    payeeAddresses: ["address1" as OnChainAddress],
+  })
+
+  return LedgerFacade.recordReceiveContraOnChain({
     description: "receives bitcoin via onchain",
     amountToCreditReceiver: paymentAmount,
     recipientWalletDescriptor: walletDescriptor,
@@ -180,7 +219,7 @@ export const recordLnFeeReimbursement = async <S extends WalletCurrency>({
     ...displayAmounts,
   })
 
-  return LedgerFacade.recordReceive({
+  return LedgerFacade.recordReceiveContraLnd({
     description: "receives ln fee reimburse",
     amountToCreditReceiver: paymentAmount,
     recipientWalletDescriptor: walletDescriptor,
@@ -217,7 +256,7 @@ export const recordLnFailedPayment = async <S extends WalletCurrency>({
     ...displayAmounts,
   })
 
-  return LedgerFacade.recordReceive({
+  return LedgerFacade.recordReceiveContraLnd({
     description: "receives ln fee reimburse",
     amountToCreditReceiver: paymentAmount,
     recipientWalletDescriptor: walletDescriptor,

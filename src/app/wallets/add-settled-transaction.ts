@@ -111,7 +111,7 @@ export const addSettledTransaction = async ({
       payeeAddresses: [address],
     })
 
-    const result = await LedgerFacade.recordReceive({
+    const result = await LedgerFacade.recordReceiveContraOnChain({
       description: "",
       recipientWalletDescriptor: wallet,
       amountToCreditReceiver: {
@@ -125,7 +125,6 @@ export const addSettledTransaction = async ({
       metadata,
       additionalCreditMetadata: creditAccountAdditionalMetadata,
       additionalInternalMetadata: internalAccountsAdditionalMetadata,
-      isBria: true,
     })
 
     if (result instanceof Error) {

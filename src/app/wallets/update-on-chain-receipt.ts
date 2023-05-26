@@ -212,7 +212,7 @@ const processTxForWallet = async (
           payeeAddresses: [address],
         })
 
-        const result = await LedgerFacade.recordReceive({
+        const result = await LedgerFacade.recordReceiveContraLnd({
           description: "",
           recipientWalletDescriptor: wallet,
           amountToCreditReceiver: {

@@ -131,7 +131,7 @@ const EntryBuilderDebit = <M extends MediciEntry>({
     })
   }
 
-  const debitBria = (): EntryBuilderCredit<M> => {
+  const debitOnChain = (): EntryBuilderCredit<M> => {
     return debitAccount({
       accountDescriptor: briaLedgerAccountDescriptor,
       additionalMetadata: additionalInternalMetadata,
@@ -148,7 +148,7 @@ const EntryBuilderDebit = <M extends MediciEntry>({
   return {
     debitAccount,
     debitLnd,
-    debitBria,
+    debitOnChain,
     debitColdStorage,
   }
 }
