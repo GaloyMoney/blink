@@ -132,3 +132,6 @@ export class InactiveAccountError extends InvalidAccountStatusError {}
 export class InvalidNonHodlInvoiceError extends ValidationError {
   level = ErrorLevel.Critical
 }
+export class MultipleCurrenciesForSingleCurrencyOperationError extends ValidationError {
+  level = ErrorLevel.Critical
+}

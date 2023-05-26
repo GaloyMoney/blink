@@ -701,6 +701,22 @@ describe("With Bria", () => {
         }
       }
 
+      const defaultDepositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
+
+      // Test 'getPendingOnChainBalanceForWallets' use-case method
+      const newWalletA = await WalletsRepository().findById(newWalletIdA)
+      if (newWalletA instanceof Error) throw newWalletA
+      const pendingBalance = await Wallets.getPendingOnChainBalanceForWallets([
+        newWalletA,
+      ])
+      if (pendingBalance instanceof Error) throw pendingBalance
+      expect(Number(pendingBalance[newWalletIdA].amount)).toEqual(
+        amountAfterFeeDeduction({
+          amount: toSats(100_000_000),
+          depositFeeRatio: defaultDepositFeeRatio,
+        }),
+      )
+
       await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 
       const settledEvents = await manyBriaSubscribe({
@@ -722,20 +738,18 @@ describe("With Bria", () => {
         const balanceUserA = await getBalanceHelper(newWalletIdA)
         const balanceDealer = await getBalanceHelper(funderWalletId)
 
-        const depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
-
         expect(balanceUserA).toBe(
           initialBalanceUserA +
             amountAfterFeeDeduction({
               amount: toSats(100_000_000),
-              depositFeeRatio,
+              depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
         expect(balanceDealer).toBe(
           initBalanceDealer +
             amountAfterFeeDeduction({
               amount: toSats(200_000_000),
-              depositFeeRatio,
+              depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
       }

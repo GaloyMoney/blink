@@ -82,6 +82,13 @@ type IncomingOnChainTxHandler = {
   ): { [key: WalletId]: BtcPaymentAmount } | ValidationError
 }
 
+type NewIncomingOnChainTxHandler<S extends WalletCurrency> = {
+  balancesByAddresses(): { [key: OnChainAddress]: PaymentAmount<S> } | ValidationError
+  balanceByWallet(
+    wallets: Wallet[],
+  ): { [key: WalletId]: PaymentAmount<S> } | ValidationError
+}
+
 interface IOnChainService {
   listActivePubkeys(): Pubkey[]
 
