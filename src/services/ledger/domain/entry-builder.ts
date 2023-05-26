@@ -1,7 +1,7 @@
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import {
-  briaLedgerAccountDescriptor,
+  onChainLedgerAccountDescriptor,
   coldStorageAccountDescriptor,
   lndLedgerAccountDescriptor,
 } from "./accounts"
@@ -133,7 +133,7 @@ const EntryBuilderDebit = <M extends MediciEntry>({
 
   const debitOnChain = (): EntryBuilderCredit<M> => {
     return debitAccount({
-      accountDescriptor: briaLedgerAccountDescriptor,
+      accountDescriptor: onChainLedgerAccountDescriptor,
       additionalMetadata: additionalInternalMetadata,
     })
   }
