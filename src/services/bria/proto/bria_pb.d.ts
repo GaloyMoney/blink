@@ -1816,6 +1816,8 @@ export class PayoutCommitted extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutCommitted;
+    getProportionalFeeSats(): number;
+    setProportionalFeeSats(value: number): PayoutCommitted;
 
     getDestinationCase(): PayoutCommitted.DestinationCase;
 
@@ -1837,6 +1839,7 @@ export namespace PayoutCommitted {
         payoutQueueId: string,
         satoshis: number,
         onchainAddress: string,
+        proportionalFeeSats: number,
     }
 
     export enum DestinationCase {
@@ -1862,6 +1865,8 @@ export class PayoutBroadcast extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutBroadcast;
+    getProportionalFeeSats(): number;
+    setProportionalFeeSats(value: number): PayoutBroadcast;
 
     getDestinationCase(): PayoutBroadcast.DestinationCase;
 
@@ -1883,6 +1888,7 @@ export namespace PayoutBroadcast {
         payoutQueueId: string,
         satoshis: number,
         onchainAddress: string,
+        proportionalFeeSats: number,
     }
 
     export enum DestinationCase {
@@ -1908,6 +1914,8 @@ export class PayoutSettled extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutSettled;
+    getProportionalFeeSats(): number;
+    setProportionalFeeSats(value: number): PayoutSettled;
 
     getDestinationCase(): PayoutSettled.DestinationCase;
 
@@ -1929,6 +1937,7 @@ export namespace PayoutSettled {
         payoutQueueId: string,
         satoshis: number,
         onchainAddress: string,
+        proportionalFeeSats: number,
     }
 
     export enum DestinationCase {
