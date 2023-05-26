@@ -4,6 +4,7 @@ import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import { addWallet } from "@app/accounts"
 
 import {
   getAccountLimits,
@@ -54,30 +55,32 @@ import {
   clearLimiters,
   confirmSent,
   createMandatoryUsers,
+  createRandomUserAndWallet,
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getAccountRecordByTestUserRef,
+  getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
+  getTransactionsForWalletId,
   lndonchain,
   manyBriaSubscribe,
+  newGetTransactionsForWalletId,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
+  resetOnChainAddressAccountIdLimits,
   sendToAddress,
   sendToAddressAndConfirm,
   subscribeToChainAddress,
   subscribeToTransactions,
   waitUntilBlockHeight,
 } from "test/helpers"
-import { resetOnChainAddressAccountIdLimits } from "test/helpers/rate-limit"
-import {
-  getBalanceHelper,
-  getTransactionsForWalletId,
-  newGetTransactionsForWalletId,
-} from "test/helpers/wallet"
 
 let walletIdA: WalletId
 let walletIdB: WalletId
 let accountIdA: AccountId
+
+let newAccountIdA: AccountId
+let newWalletIdA: WalletId
 
 const accountLimits = getAccountLimits({ level: 1 })
 
@@ -93,6 +96,8 @@ beforeAll(async () => {
   accountIdA = await getAccountIdByTestUserRef("A")
 
   await createUserAndWalletFromUserRef("C")
+  ;({ accountId: newAccountIdA, walletId: newWalletIdA } =
+    await createRandomUserAndWallet())
 })
 
 beforeEach(async () => {
@@ -397,9 +402,9 @@ describe("With Bria", () => {
   describe("UserWallet - On chain", () => {
     it("get last on chain address", async () => {
       const address = await Wallets.createOnChainAddressForBtcWallet({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
       })
-      const lastAddress = await Wallets.getLastOnChainAddress(walletIdA)
+      const lastAddress = await Wallets.getLastOnChainAddress(newWalletIdA)
 
       expect(address).not.toBeInstanceOf(Error)
       expect(lastAddress).not.toBeInstanceOf(Error)
@@ -408,7 +413,7 @@ describe("With Bria", () => {
 
     it("fails to create onChain Address past rate limit", async () => {
       // Reset limits before starting
-      let resetOk = await resetOnChainAddressAccountIdLimits(accountIdA)
+      let resetOk = await resetOnChainAddressAccountIdLimits(newAccountIdA)
       expect(resetOk).not.toBeInstanceOf(Error)
       if (resetOk instanceof Error) throw resetOk
 
@@ -417,7 +422,7 @@ describe("With Bria", () => {
       const promises: Promise<OnChainAddress | ApplicationError>[] = []
       for (let i = 0; i < limitsNum; i++) {
         const onChainAddressPromise = Wallets.createOnChainAddressForBtcWallet({
-          walletId: walletIdA,
+          walletId: newWalletIdA,
         })
         promises.push(onChainAddressPromise)
       }
@@ -427,12 +432,12 @@ describe("With Bria", () => {
 
       // Test that first address past the limit fails
       const onChainAddress = await Wallets.createOnChainAddressForBtcWallet({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
       })
       expect(onChainAddress).toBeInstanceOf(OnChainAddressCreateRateLimiterExceededError)
 
       // Reset limits when done for other tests
-      resetOk = await resetOnChainAddressAccountIdLimits(accountIdA)
+      resetOk = await resetOnChainAddressAccountIdLimits(newAccountIdA)
       expect(resetOk).not.toBeInstanceOf(Error)
     })
 
@@ -452,12 +457,12 @@ describe("With Bria", () => {
 
       // Execute receive
       const txId = await sendToWalletTestWrapper({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
         amountSats,
       })
 
       // Calculate receive display amount
-      const account = await AccountsRepository().findById(accountIdA)
+      const account = await AccountsRepository().findById(newAccountIdA)
       if (account instanceof Error) throw account
 
       const receivedUsd = await usdFromBtcMidPriceFn({
@@ -498,9 +503,9 @@ describe("With Bria", () => {
         walletAddress: {
           address: "" as OnChainAddress,
           recipientWalletDescriptor: {
-            id: walletIdA,
+            id: newWalletIdA,
             currency: WalletCurrency.Btc,
-            accountId: accountIdA,
+            accountId: newAccountIdA,
           },
         },
         receivedBtc,
@@ -539,34 +544,34 @@ describe("With Bria", () => {
 
     it("retrieves on-chain transactions by address", async () => {
       const address1 = await Wallets.createOnChainAddressForBtcWallet({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
       })
       if (address1 instanceof Error) throw address1
       expect(address1.substr(0, 4)).toBe("bcrt")
       await testTxnsByAddressWrapper({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
         addresses: [address1],
         amountSats: getRandomAmountOfSats(),
       })
 
       const address2 = await Wallets.createOnChainAddressForBtcWallet({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
       })
       if (address2 instanceof Error) throw address2
       expect(address2.substr(0, 4)).toBe("bcrt")
       await testTxnsByAddressWrapper({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
         addresses: [address2],
         amountSats: getRandomAmountOfSats(),
       })
 
       await testTxnsByAddressWrapper({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
         addresses: [address1, address2],
         amountSats: getRandomAmountOfSats(),
       })
 
-      const walletA = await WalletsRepository().findById(walletIdA)
+      const walletA = await WalletsRepository().findById(newWalletIdA)
       if (walletA instanceof Error) throw walletA
       const walletB = await WalletsRepository().findById(walletIdB)
       if (walletB instanceof Error) throw walletB
@@ -594,10 +599,12 @@ describe("With Bria", () => {
     it("receives on-chain transaction with max limit for withdrawal level1", async () => {
       /// TODO? add sendAll tests in which the user has more than the limit?
       const withdrawalLimitAccountLevel1 = accountLimits.withdrawalLimit // cents
-      await createUserAndWalletFromUserRef("E")
-      const walletIdE = await getDefaultWalletIdByTestUserRef("E")
-      await createUserAndWalletFromUserRef("G")
-      const walletIdG = await getDefaultWalletIdByTestUserRef("G")
+      const wallet = await addWallet({
+        accountId: accountIdA,
+        type: "checking",
+        currency: WalletCurrency.Btc,
+      })
+      if (wallet instanceof Error) throw wallet
 
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
         currency: WalletCurrency.Usd,
@@ -609,20 +616,19 @@ describe("With Bria", () => {
       })
 
       await sendToWalletTestWrapper({
-        walletId: walletIdE,
-        amountSats: toSats(satsAmount.amount),
-      })
-      await sendToWalletTestWrapper({
-        walletId: walletIdG,
+        walletId: wallet.id,
         amountSats: toSats(satsAmount.amount),
       })
     })
 
     it("receives on-chain transaction with max limit for onUs level1", async () => {
       const intraLedgerLimitAccountLevel1 = accountLimits.intraLedgerLimit // cents
-
-      await createUserAndWalletFromUserRef("F")
-      const walletId = await getDefaultWalletIdByTestUserRef("F")
+      const wallet = await addWallet({
+        accountId: accountIdA,
+        type: "checking",
+        currency: WalletCurrency.Btc,
+      })
+      if (wallet instanceof Error) throw wallet
 
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
         currency: WalletCurrency.Usd,
@@ -633,12 +639,15 @@ describe("With Bria", () => {
         currency: WalletCurrency.Usd,
       })
 
-      await sendToWalletTestWrapper({ walletId, amountSats: toSats(satsAmount.amount) })
+      await sendToWalletTestWrapper({
+        walletId: wallet.id,
+        amountSats: toSats(satsAmount.amount),
+      })
     })
 
     it("receives batch on-chain transaction", async () => {
       const addressUserA = await Wallets.createOnChainAddressForBtcWallet({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
       })
       if (addressUserA instanceof Error) throw addressUserA
 
@@ -649,7 +658,7 @@ describe("With Bria", () => {
       if (addressDealer instanceof Error) throw addressDealer
       const addresses = [addressUserA, addressDealer]
 
-      const initialBalanceUserA = await getBalanceHelper(walletIdA)
+      const initialBalanceUserA = await getBalanceHelper(newWalletIdA)
       const initBalanceDealer = await getBalanceHelper(funderWalletId)
 
       const output0 = {}
@@ -710,7 +719,7 @@ describe("With Bria", () => {
       }
 
       {
-        const balanceUserA = await getBalanceHelper(walletIdA)
+        const balanceUserA = await getBalanceHelper(newWalletIdA)
         const balanceDealer = await getBalanceHelper(funderWalletId)
 
         const depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
@@ -743,7 +752,7 @@ describe("With Bria", () => {
       const amountSats = getRandomAmountOfSats()
 
       const address = await Wallets.createOnChainAddressForBtcWallet({
-        walletId: walletIdA,
+        walletId: newWalletIdA,
       })
       if (address instanceof Error) throw address
 
@@ -764,7 +773,7 @@ describe("With Bria", () => {
         throw resultPending
       }
 
-      const account = await Accounts.getAccount(accountIdA)
+      const account = await Accounts.getAccount(newAccountIdA)
       if (account instanceof Error) throw account
       const feeSats = DepositFeeCalculator().onChainDepositFee({
         amount: amountSats,
@@ -772,7 +781,7 @@ describe("With Bria", () => {
       })
 
       // Check pendingTx from chain
-      const { result: txs, error } = await newGetTransactionsForWalletId(walletIdA)
+      const { result: txs, error } = await newGetTransactionsForWalletId(newWalletIdA)
       if (error instanceof Error || txs === null) {
         throw error
       }
@@ -818,7 +827,7 @@ describe("With Bria", () => {
 
       // Check pendingTx from cache
       const { result: txsFromCache, error: errorFromCache } =
-        await newGetTransactionsForWalletId(walletIdA)
+        await newGetTransactionsForWalletId(newWalletIdA)
       if (errorFromCache instanceof Error || txsFromCache === null) {
         throw errorFromCache
       }
