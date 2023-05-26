@@ -59,7 +59,7 @@ export const UsersRepository = (): IUsersRepository => {
 
   const findByDeviceId = async (deviceId: DeviceId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ deviceId })
+      const result = await User.findOne({ deviceId: { $eq: deviceId } })
       if (!result) return new CouldNotFindUserFromDeviceError()
 
       return translateToUser(result)
