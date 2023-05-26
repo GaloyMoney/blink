@@ -413,6 +413,7 @@ message PayoutCommitted {
   oneof destination {
     string onchain_address = 6;
   };
+  uint64 proportional_fee_sats = 7;
 }
 
 message PayoutBroadcast {
@@ -424,6 +425,7 @@ message PayoutBroadcast {
   oneof destination {
     string onchain_address = 6;
   };
+  uint64 proportional_fee_sats = 7;
 }
 
 message PayoutSettled {
@@ -435,4 +437,5 @@ message PayoutSettled {
   oneof destination {
     string onchain_address = 6;
   };
+  uint64 proportional_fee_sats = 7;
 }
