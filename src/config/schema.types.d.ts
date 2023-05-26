@@ -53,6 +53,14 @@ type YamlSchema = {
     onChainWallet: string
     targetConfirmations: number
   }
+  bria: {
+    hotWalletName: string
+    queues: {
+      fast: string
+      medium: string
+      slow: string
+    }
+  }
   lndScbBackupBucketName: string
   test_accounts: {
     ref: string

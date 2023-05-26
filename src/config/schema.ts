@@ -205,6 +205,32 @@ export const configSchema = {
         targetConfirmations: 6,
       },
     },
+    bria: {
+      type: "object",
+      properties: {
+        hotWalletName: { type: "string" },
+        queues: {
+          type: "object",
+          properties: {
+            fast: { type: "string" },
+            medium: { type: "string" },
+            slow: { type: "string" },
+          },
+          required: ["fast", "medium", "slow"],
+          additionalProperties: false,
+          default: {
+            fast: "dev",
+            medium: "dev",
+            slow: "dev",
+          },
+        },
+      },
+      required: ["hotWalletName", "queues"],
+      additionalProperties: false,
+      default: {
+        hotWalletName: "dev",
+      },
+    },
     lndScbBackupBucketName: { type: "string", default: "lnd-static-channel-backups" },
     test_accounts: {
       type: "array",

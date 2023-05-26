@@ -82,6 +82,9 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toCents(
   yamlConfig.userActivenessMonthlyVolumeThreshold,
 )
 
+export const BRIA_WALLET_NAME = yamlConfig.bria.hotWalletName
+export const BRIA_QUEUES = yamlConfig.bria.queues
+
 export const getGaloyInstanceName = (): string => yamlConfig.name
 export const getLightningAddressDomain = (): string => yamlConfig.lightningAddressDomain
 export const getLightningAddressDomainAliases = (): string[] =>

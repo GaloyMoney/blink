@@ -11,7 +11,10 @@ type TwilioConfig = {
 export const GALOY_API_PORT = process.env.GALOY_API_PORT || 4012
 export const GALOY_ADMIN_PORT = process.env.GALOY_ADMIN_PORT || 4001
 
-export const BRIA_WALLET_NAME = process.env.BRIA_WALLET_NAME || "dev"
+const briaUrl = process.env.BRIA_HOST ?? "localhost"
+const briaPort = process.env.BRIA_PORT ?? "2742"
+export const BRIA_ENDPOINT = `${briaUrl}:${briaPort}`
+
 export const BRIA_PROFILE_API_KEY =
   process.env.BRIA_PROFILE_API_KEY || "bria_dev_000000000000000000000"
 

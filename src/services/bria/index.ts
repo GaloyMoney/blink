@@ -6,7 +6,7 @@ import {
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import { credentials, Metadata, ServiceError } from "@grpc/grpc-js"
-import { BRIA_PROFILE_API_KEY, BRIA_WALLET_NAME } from "@config"
+import { BRIA_ENDPOINT, BRIA_PROFILE_API_KEY, BRIA_WALLET_NAME } from "@config"
 import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
@@ -35,11 +35,10 @@ import {
 
 export { ListenerWrapper } from "./listener_wrapper"
 
-const briaUrl = process.env.BRIA_HOST ?? "localhost"
-const briaPort = process.env.BRIA_PORT ?? "2742"
-const fullUrl = `${briaUrl}:${briaPort}`
-
-const bitcoinBridgeClient = new BriaServiceClient(fullUrl, credentials.createInsecure())
+const bitcoinBridgeClient = new BriaServiceClient(
+  BRIA_ENDPOINT,
+  credentials.createInsecure(),
+)
 
 export const BriaPayloadType = {
   UtxoDetected: "utxo_detected",
