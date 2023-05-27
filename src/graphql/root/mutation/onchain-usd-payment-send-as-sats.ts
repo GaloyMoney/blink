@@ -63,7 +63,7 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       return { errors: [{ message: requestId.message }] }
     }
 
-    const status = await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount({
+    const result = await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount({
       senderAccount: domainAccount,
       senderWalletId: walletId,
       amount,
@@ -74,13 +74,13 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       sendAll: false,
     })
 
-    if (status instanceof Error) {
-      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
+    if (result instanceof Error) {
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
     }
 
     return {
       errors: [],
-      status: status.value,
+      status: result.status.value,
     }
   },
 })

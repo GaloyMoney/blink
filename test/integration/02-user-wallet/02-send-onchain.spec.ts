@@ -235,7 +235,7 @@ const testExternalSend = async ({
     sendAll,
   })
   if (paid instanceof Error) return paid
-  expect(paid).toBe(PaymentSendStatus.Success)
+  expect(paid.status).toBe(PaymentSendStatus.Success)
 
   const broadcastEvent = await onceBriaSubscribe({
     type: BriaPayloadType.PayoutBroadcast,
@@ -650,7 +650,7 @@ const testInternalSend = async ({
   const finalSenderBalance = await getBalanceHelper(senderWalletId)
   const finalRecipient = await getBalanceHelper(recipientWalletId)
 
-  expect(paid).toBe(PaymentSendStatus.Success)
+  expect(paid.status).toBe(PaymentSendStatus.Success)
   expect(finalSenderBalance).toBe(initialSenderBalance - senderAmountRecorded)
   expect(finalRecipient).toBe(initialRecipientBalance + recipientAmount)
 
@@ -942,11 +942,12 @@ describe("BtcWallet - onChainPay", () => {
       memo: null,
       sendAll: true,
     })
+    if (paid instanceof Error) throw paid
 
     const finalBalanceUserF = await getBalanceHelper(walletIdF)
     const finalBalanceUserD = await getBalanceHelper(walletIdD)
 
-    expect(paid).toBe(PaymentSendStatus.Success)
+    expect(paid.status).toBe(PaymentSendStatus.Success)
     expect(finalBalanceUserF).toBe(0)
     expect(finalBalanceUserD).toBe(initialBalanceUserD + initialBalanceUserF)
 
@@ -1007,7 +1008,7 @@ describe("BtcWallet - onChainPay", () => {
     })
     const initialBalanceUserG = await getBalanceHelper(walletIdG)
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountG,
       senderWalletId: walletIdG,
       address,
@@ -1018,14 +1019,14 @@ describe("BtcWallet - onChainPay", () => {
       sendAll: false,
     })
     //should fail because user does not have balance to pay for on-chain fee
-    expect(status).toBeInstanceOf(InsufficientBalanceError)
+    expect(result).toBeInstanceOf(InsufficientBalanceError)
   })
 
   it("fails if has negative amount", async () => {
     const amount = -1000
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
@@ -1035,7 +1036,7 @@ describe("BtcWallet - onChainPay", () => {
       memo: null,
       sendAll: false,
     })
-    expect(status).toBeInstanceOf(InvalidBtcPaymentAmountError)
+    expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
   })
 
   it("fails if withdrawal limit hit", async () => {
@@ -1072,7 +1073,7 @@ describe("BtcWallet - onChainPay", () => {
 
     const amount = add(subResult, toSats(100))
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
@@ -1083,13 +1084,13 @@ describe("BtcWallet - onChainPay", () => {
       sendAll: false,
     })
 
-    expect(status).toBeInstanceOf(LimitsExceededError)
+    expect(result).toBeInstanceOf(LimitsExceededError)
   })
 
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
@@ -1099,13 +1100,13 @@ describe("BtcWallet - onChainPay", () => {
       memo: null,
       sendAll: false,
     })
-    expect(status).toBeInstanceOf(LessThanDustThresholdError)
+    expect(result).toBeInstanceOf(LessThanDustThresholdError)
   })
 
   it("fails if the amount is less than lnd on-chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
@@ -1115,7 +1116,7 @@ describe("BtcWallet - onChainPay", () => {
       memo: null,
       sendAll: false,
     })
-    expect(status).toBeInstanceOf(LessThanDustThresholdError)
+    expect(result).toBeInstanceOf(LessThanDustThresholdError)
   })
 })
 

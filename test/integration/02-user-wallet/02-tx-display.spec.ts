@@ -835,7 +835,7 @@ describe("Display properties on transactions", () => {
           sendAll: false,
         })
         if (paid instanceof Error) throw paid
-        expect(paid).toBe(PaymentSendStatus.Success)
+        expect(paid.status).toBe(PaymentSendStatus.Success)
 
         // Check entries
         const memoTxns = await getAllTransactionsByMemo(memo)

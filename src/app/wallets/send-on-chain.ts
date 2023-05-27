@@ -58,7 +58,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   requestId,
   memo,
   sendAll,
-}: PayOnChainByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: PayOnChainByWalletIdArgs): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const amountToSendRaw = sendAll
     ? await LedgerService().getWalletBalance(senderWalletId)
     : amountRaw
@@ -181,7 +181,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
 
 export const payOnChainByWalletIdForBtcWallet = async (
   args: PayOnChainByWalletIdWithoutCurrencyArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const validated = await validateIsBtcWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
@@ -190,7 +190,7 @@ export const payOnChainByWalletIdForBtcWallet = async (
 
 export const payOnChainByWalletIdForUsdWallet = async (
   args: PayOnChainByWalletIdWithoutCurrencyArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
@@ -199,7 +199,7 @@ export const payOnChainByWalletIdForUsdWallet = async (
 
 export const payOnChainByWalletIdForUsdWalletAndBtcAmount = async (
   args: PayOnChainByWalletIdWithoutCurrencyArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
@@ -208,7 +208,7 @@ export const payOnChainByWalletIdForUsdWalletAndBtcAmount = async (
 
 export const payAllOnChainByWalletId = async (
   args: PayOnChainByWalletIdWithoutCurrencyArgs,
-): Promise<PaymentSendStatus | ApplicationError> =>
+): Promise<PayOnChainByWalletIdResult | ApplicationError> =>
   payOnChainByWalletId({ ...args, amountCurrency: undefined, sendAll: true })
 
 const executePaymentViaIntraledger = async <
@@ -228,7 +228,7 @@ const executePaymentViaIntraledger = async <
   senderDisplayCurrency: DisplayCurrency
   memo: string | null
   sendAll: boolean
-}): Promise<PaymentSendStatus | ApplicationError> => {
+}): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const paymentFlow = await builder.withoutMinerFee()
   if (paymentFlow instanceof Error) return paymentFlow
 
@@ -413,7 +413,7 @@ const executePaymentViaIntraledger = async <
       recipientLanguage: recipientUser.language,
     })
 
-    return PaymentSendStatus.Success
+    return { status: PaymentSendStatus.Success, payoutId: undefined }
   })
 }
 
@@ -436,7 +436,7 @@ const executePaymentViaOnChain = async <
   memo: string | null
   sendAll: boolean
   logger: Logger
-}): Promise<PaymentSendStatus | ApplicationError> => {
+}): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const senderWalletDescriptor = await builder.senderWalletDescriptor()
   if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
 
@@ -594,6 +594,6 @@ const executePaymentViaOnChain = async <
     })
     if (updated instanceof Error) return updated
 
-    return PaymentSendStatus.Success
+    return { status: PaymentSendStatus.Success, payoutId }
   })
 }
