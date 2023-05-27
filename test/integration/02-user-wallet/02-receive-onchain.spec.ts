@@ -321,7 +321,10 @@ describe("UserWallet - On chain", () => {
     const output1 = {}
     output1[addressDealer] = 2
 
-    const outputs = [output0, output1]
+    const output2 = {}
+    output2["bcrt1qntvhlxgk8jh0a48w49f3z9edlwhv52zz3j9kw9"] = 1
+
+    const outputs = [output0, output1, output2]
 
     const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({ inputs: [], outputs })
     // const decodedPsbt1 = await bitcoindOutside.decodePsbt(psbt)
