@@ -1,5 +1,4 @@
 import crypto from "crypto"
-import { once } from "events"
 
 import { Payments, Wallets } from "@app"
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
@@ -22,7 +21,6 @@ import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { translateToLedgerTx } from "@services/ledger"
 import { MainBook } from "@services/ledger/books"
 import { BriaPayloadType } from "@services/bria"
-import { onchainTransactionEventHandler } from "@servers/trigger"
 import { AccountsRepository } from "@services/mongoose"
 import { toObjectId } from "@services/mongoose/utils"
 import { baseLogger } from "@services/logger"
@@ -44,13 +42,11 @@ import {
   getDefaultWalletIdByTestUserRef,
   getTransactionsForWalletId,
   getUsdWalletIdByTestUserRef,
-  lndonchain,
   lndOutside1,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
   safePay,
   sendToAddressAndConfirm,
-  subscribeToTransactions,
 } from "test/helpers"
 
 let accountB: Account
@@ -864,7 +860,6 @@ describe("Display properties on transactions", () => {
           speed: PayoutSpeed.Fast,
           requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
           memo,
-          sendAll: false,
         })
         if (paid instanceof Error) throw paid
         expect(paid).toBe(PaymentSendStatus.Success)
@@ -939,7 +934,6 @@ describe("Display properties on transactions", () => {
           speed: PayoutSpeed.Fast,
           requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
           memo,
-          sendAll: false,
         })
         if (paid instanceof Error) throw paid
         expect(paid).toBe(PaymentSendStatus.Success)
@@ -1040,7 +1034,6 @@ describe("Display properties on transactions", () => {
           speed: PayoutSpeed.Fast,
           requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
           memo,
-          sendAll: false,
         })
         if (paid instanceof Error) throw paid
         expect(paid.status).toBe(PaymentSendStatus.Success)

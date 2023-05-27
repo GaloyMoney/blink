@@ -133,13 +133,14 @@ const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 const payOnChainForPromiseAll = async (
   args: { senderCurrency: WalletCurrency } & PayOnChainByWalletIdArgs,
 ) => {
-  const { senderCurrency, ...payArgs } = args
-  const res =
-    senderCurrency === WalletCurrency.Btc
-      ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
-      : args.amountCurrency === WalletCurrency.Usd
-      ? await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
-      : await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount(payArgs)
+  const { senderCurrency, sendAll, ...payArgs } = args
+  const res = sendAll
+    ? await Wallets.payAllOnChainByWalletId(payArgs)
+    : senderCurrency === WalletCurrency.Btc
+    ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
+    : args.amountCurrency === WalletCurrency.Usd
+    ? await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
+    : await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount(payArgs)
   return res
 }
 
@@ -936,7 +937,7 @@ describe("BtcWallet - onChainPay", () => {
     const initialBalanceUserD = await getBalanceHelper(walletIdD)
     const senderAccount = await getAccountByTestUserRef("F")
 
-    const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const paid = await Wallets.payAllOnChainByWalletId({
       senderAccount,
       senderWalletId: walletIdF,
       address,
@@ -944,7 +945,6 @@ describe("BtcWallet - onChainPay", () => {
       speed: PayoutSpeed.Fast,
       requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
-      sendAll: true,
     })
 
     const finalBalanceUserF = await getBalanceHelper(walletIdF)
@@ -1019,7 +1019,6 @@ describe("BtcWallet - onChainPay", () => {
       speed: PayoutSpeed.Fast,
       requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
-      sendAll: false,
     })
     //should fail because user does not have balance to pay for on-chain fee
     expect(status).toBeInstanceOf(InsufficientBalanceError)
@@ -1037,7 +1036,6 @@ describe("BtcWallet - onChainPay", () => {
       speed: PayoutSpeed.Fast,
       requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
-      sendAll: false,
     })
     expect(status).toBeInstanceOf(InvalidBtcPaymentAmountError)
   })
@@ -1084,7 +1082,6 @@ describe("BtcWallet - onChainPay", () => {
       speed: PayoutSpeed.Fast,
       requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
-      sendAll: false,
     })
 
     expect(status).toBeInstanceOf(LimitsExceededError)
@@ -1101,7 +1098,6 @@ describe("BtcWallet - onChainPay", () => {
       speed: PayoutSpeed.Fast,
       requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
-      sendAll: false,
     })
     expect(status).toBeInstanceOf(LessThanDustThresholdError)
   })
@@ -1117,7 +1113,6 @@ describe("BtcWallet - onChainPay", () => {
       speed: PayoutSpeed.Fast,
       requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
-      sendAll: false,
     })
     expect(status).toBeInstanceOf(LessThanDustThresholdError)
   })

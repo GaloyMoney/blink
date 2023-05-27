@@ -1,11 +1,14 @@
 import { GT } from "@graphql/index"
 import Memo from "@graphql/types/scalar/memo"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import WalletId from "@graphql/types/scalar/wallet-id"
-import SatsAmount from "@graphql/types/scalar/sat-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
+import PayoutRequestId from "@graphql/types/scalar/payout-request-id"
+import PayoutSpeed from "@graphql/types/scalar/payout-speed"
+import SatsAmount from "@graphql/types/scalar/sat-amount"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
+import WalletId from "@graphql/types/scalar/wallet-id"
+
 import { Wallets } from "@app"
 
 const OnChainUsdPaymentSendAsBtcDenominatedInput = GT.Input({
@@ -14,8 +17,14 @@ const OnChainUsdPaymentSendAsBtcDenominatedInput = GT.Input({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(SatsAmount) },
+    requestId: { type: GT.NonNull(PayoutRequestId) },
+    speed: { type: GT.NonNull(PayoutSpeed) },
     memo: { type: Memo },
-    targetConfirmations: { type: TargetConfirmations, defaultValue: 3 },
+    targetConfirmations: {
+      deprecationReason: "Ignored - will be replaced",
+      type: TargetConfirmations,
+      defaultValue: 0,
+    },
   }),
 })
 
@@ -26,7 +35,8 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       address: OnChainAddress | InputValidationError
       amount: number
       memo: Memo | InputValidationError | null
-      targetConfirmations: TargetConfirmations | InputValidationError
+      speed: PayoutSpeed | InputValidationError
+      requestId: PayoutRequestId | InputValidationError
     }
   },
   null,
@@ -40,7 +50,7 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
     input: { type: GT.NonNull(OnChainUsdPaymentSendAsBtcDenominatedInput) },
   },
   resolve: async (_, args, { domainAccount }) => {
-    const { walletId, address, amount, memo, targetConfirmations } = args.input
+    const { walletId, address, amount, memo, speed, requestId } = args.input
 
     if (walletId instanceof Error) {
       return { errors: [{ message: walletId.message }] }
@@ -54,8 +64,12 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    if (targetConfirmations instanceof Error) {
-      return { errors: [{ message: targetConfirmations.message }] }
+    if (speed instanceof Error) {
+      return { errors: [{ message: speed.message }] }
+    }
+
+    if (requestId instanceof Error) {
+      return { errors: [{ message: requestId.message }] }
     }
 
     const status = await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount({
@@ -63,9 +77,9 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       senderWalletId: walletId,
       amount,
       address,
-      targetConfirmations,
+      speed,
+      requestId,
       memo,
-      sendAll: false,
     })
 
     if (status instanceof Error) {

@@ -81,9 +81,9 @@ type PayOnChainByWalletIdWithoutCurrencyArgs = {
   speed: PayoutSpeed
   requestId: PayoutRequestId
   memo: string | null
-  sendAll: boolean
 }
 
 type PayOnChainByWalletIdArgs = PayOnChainByWalletIdWithoutCurrencyArgs & {
   amountCurrency: WalletCurrency | undefined
+  sendAll: boolean
 }
