@@ -8,6 +8,7 @@ import {
   getChannel,
   getChannels,
   lnd1,
+  lnd2,
   lndOutside1,
   lndOutside2,
   lndOutside3,
@@ -20,8 +21,8 @@ import {
 } from "test/helpers"
 
 //this is the fixed opening and closing channel fee on devnet
-const channelFee = 8237
-const lnds = [lnd1, lndOutside1, lndOutside1]
+const channelFee = 7700
+const lnds = [lnd1, lnd2, lndOutside1, lndOutside1]
 let channelLengthMain: number, channelLengthOutside1: number
 
 beforeEach(async () => {
@@ -35,10 +36,25 @@ afterEach(async () => {
 })
 
 // Setup the next network
-// lnd1 <-> lndOutside1 -> lndOutside2
-//                      <- lndOutside3
+// lnd2 <- lnd1 <-> lndOutside1 -> lndOutside2
+//                              <- lndOutside3
 // this setup avoids close channels for routing fees tests
 describe("Lightning channels", () => {
+  it("opens channel from lnd1 to lnd2", async () => {
+    const socket = `lnd2:9735`
+    const { lndNewChannel: channel } = await openChannelTesting({
+      lnd: lnd1,
+      lndPartner: lnd2,
+      socket,
+    })
+
+    const { channels } = await getChannels({ lnd: lnd1 })
+    expect(channels.length).toEqual(channelLengthMain + 1)
+
+    await setChannelFees({ lnd: lnd1, channel, base: 0, rate: 0 })
+    await setChannelFees({ lnd: lnd2, channel, base: 0, rate: 0 })
+  })
+
   it("opens channel from lnd1 to lndOutside1", async () => {
     const socket = `lnd-outside-1:9735`
 
