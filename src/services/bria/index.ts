@@ -340,16 +340,17 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       },
     }
   }
-  if (augmentation === undefined) {
-    return new ExpectedAddressInfoMissingInEventError()
-  }
 
+  let proportionalFee: BtcPaymentAmount | ValidationError
   let payload: BriaPayload | undefined
   let rawPayload
   switch (rawEvent.getPayloadCase()) {
     case RawBriaEvent.PayloadCase.PAYLOAD_NOT_SET:
       return new NoPayloadFoundError()
     case RawBriaEvent.PayloadCase.UTXO_DETECTED:
+      if (augmentation === undefined) {
+        return new ExpectedAddressInfoMissingInEventError()
+      }
       rawPayload = rawEvent.getUtxoDetected()
       if (rawPayload === undefined) {
         return new ExpectedUtxoDetectedPayloadNotFoundError()
@@ -366,6 +367,10 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       }
       break
     case RawBriaEvent.PayloadCase.UTXO_SETTLED:
+      if (augmentation === undefined) {
+        return new ExpectedAddressInfoMissingInEventError()
+      }
+
       rawPayload = rawEvent.getUtxoSettled()
       if (rawPayload === undefined) {
         return new ExpectedUtxoSettledPayloadNotFoundError()
@@ -389,7 +394,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       }
       payload = {
         type: BriaPayloadType.PayoutSubmitted,
-        id: rawPayload.getId(),
+        id: rawPayload.getId() as PayoutId,
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
@@ -403,7 +408,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       }
       payload = {
         type: BriaPayloadType.PayoutCommitted,
-        id: rawPayload.getId(),
+        id: rawPayload.getId() as PayoutId,
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
@@ -415,13 +420,23 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       if (rawPayload === undefined) {
         return new ExpectedPayoutBroadcastPayloadNotFoundError()
       }
+
+      proportionalFee = paymentAmountFromNumber({
+        amount: rawPayload.getProportionalFeeSats(),
+        currency: WalletCurrency.Btc,
+      })
+      if (proportionalFee instanceof Error) return proportionalFee
+
       payload = {
         type: BriaPayloadType.PayoutBroadcast,
-        id: rawPayload.getId(),
+        id: rawPayload.getId() as PayoutId,
+        proportionalFee,
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
         },
+        txId: rawPayload.getTxId() as OnChainTxHash,
+        address: rawPayload.getOnchainAddress() as OnChainAddress,
       }
       break
     case RawBriaEvent.PayloadCase.PAYOUT_SETTLED:
@@ -429,13 +444,23 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
       if (rawPayload === undefined) {
         return new ExpectedPayoutSettledPayloadNotFoundError()
       }
+
+      proportionalFee = paymentAmountFromNumber({
+        amount: rawPayload.getProportionalFeeSats(),
+        currency: WalletCurrency.Btc,
+      })
+      if (proportionalFee instanceof Error) return proportionalFee
+
       payload = {
         type: BriaPayloadType.PayoutSettled,
-        id: rawPayload.getId(),
+        id: rawPayload.getId() as PayoutId,
+        proportionalFee,
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
         },
+        txId: rawPayload.getTxId() as OnChainTxHash,
+        address: rawPayload.getOnchainAddress() as OnChainAddress,
       }
       break
     default:

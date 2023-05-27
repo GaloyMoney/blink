@@ -31,23 +31,29 @@ type UtxoSettled = {
 }
 type PayoutSubmitted = {
   type: "payout_submitted"
-  id: string
+  id: PayoutId
   satoshis: BtcPaymentAmount
 }
 type PayoutCommitted = {
   type: "payout_committed"
-  id: string
+  id: PayoutId
   satoshis: BtcPaymentAmount
 }
 type PayoutBroadcast = {
   type: "payout_broadcast"
-  id: string
+  id: PayoutId
+  proportionalFee: BtcPaymentAmount
   satoshis: BtcPaymentAmount
+  txId: OnChainTxHash
+  address: OnChainAddress
 }
 type PayoutSettled = {
   type: "payout_settled"
-  id: string
+  id: PayoutId
+  proportionalFee: BtcPaymentAmount
   satoshis: BtcPaymentAmount
+  txId: OnChainTxHash
+  address: OnChainAddress
 }
 type BriaPayload =
   | UtxoDetected
@@ -58,7 +64,7 @@ type BriaPayload =
   | PayoutSettled
 type BriaEvent = {
   payload: BriaPayload
-  augmentation: BriaEventAugmentation
+  augmentation: BriaEventAugmentation | undefined
   sequence: number
 }
 

@@ -106,7 +106,13 @@ type AddOnChainTxSendArgs = OnChainTxArgs & {
 
 type SetOnChainTxSendHashArgs = {
   journalId: LedgerJournalId
-  newTxHash: OnChainTxHash
+  payoutId: PayoutId
+}
+
+type SetOnChainTxIdBySendHashArgs = {
+  payoutId: PayoutId
+  txId: OnChainTxHash
+  vout?: OnChainTxVout
 }
 
 type AddColdStorageTxReceiveArgs<T extends DisplayCurrency> = {
@@ -314,9 +320,13 @@ interface ILedgerService {
 
   setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
 
+  setOnChainTxIdBySendHash(
+    args: SetOnChainTxIdBySendHashArgs,
+  ): Promise<true | LedgerServiceError>
+
   settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
-  settlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
+  settlePendingOnChainPayment(hash: PayoutId): Promise<true | LedgerServiceError>
 
   revertLightningPayment(
     args: RevertLightningPaymentArgs,
