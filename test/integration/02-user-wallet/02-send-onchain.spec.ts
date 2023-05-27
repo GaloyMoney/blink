@@ -50,7 +50,7 @@ import { createPushNotificationContent } from "@services/notifications/create-pu
 import { WalletsRepository } from "@services/mongoose"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency, ZERO_SATS } from "@domain/shared"
 
 import {
   CPFPAncestorLimitReachedError,
@@ -58,11 +58,12 @@ import {
   OnChainServiceUnavailableError,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain/errors"
-import { TxDecoder } from "@domain/bitcoin/onchain"
+import { PayoutSpeed, TxDecoder } from "@domain/bitcoin/onchain"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
 import * as OnChainServiceImpl from "@services/lnd/onchain-service"
 import { DealerPriceService } from "@services/dealer-price"
+import { NewOnChainService } from "@services/bria"
 
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 import {
@@ -171,6 +172,8 @@ const testExternalSend = async ({
   const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
+  const newOnChainService = NewOnChainService()
+
   const initialWalletBalance = await getBalanceHelper(senderWalletId)
 
   const sendNotification = jest.fn()
@@ -216,12 +219,12 @@ const testExternalSend = async ({
 
   const minerFee =
     amountToSend > 0
-      ? await onChainService.getOnChainFeeEstimate({
-          amount: toSats(amountToSendSats),
+      ? await newOnChainService.estimatePayoutFee({
+          amount: { amount: BigInt(amountToSendSats), currency: WalletCurrency.Btc },
           address: address as OnChainAddress,
-          targetConfirmations,
+          speed: PayoutSpeed.Fast,
         })
-      : 0
+      : ZERO_SATS
   if (minerFee instanceof Error) return minerFee
 
   let results
@@ -343,7 +346,7 @@ const testExternalSend = async ({
     const settledTx = settledTxs[0]
 
     const feeRates = getFeesConfig()
-    const feeSats: number = feeRates.withdrawDefaultMin + minerFee
+    const feeSats: number = feeRates.withdrawDefaultMin + Number(minerFee.amount)
 
     let fee = feeSats
     if (senderWallet.currency === WalletCurrency.Usd) {
@@ -441,7 +444,7 @@ const testExternalSend = async ({
       satsAmount = Number(btcAmount.amount)
 
       centsFee = fee
-      satsFee = toSats(feeRates.withdrawDefaultMin + minerFee)
+      satsFee = toSats(feeRates.withdrawDefaultMin + Number(minerFee.amount))
 
       debit = centsAmount + centsFee
     }
