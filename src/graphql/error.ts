@@ -137,18 +137,6 @@ export class RouteFindingError extends CustomApolloError {
   }
 }
 
-export class RebalanceNeededError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
-    super({
-      code: "REBALANCE_NEEDED",
-      message: "Insufficient onchain balance on lnd",
-      level: "error",
-      forwardToClient: false,
-      ...errData,
-    })
-  }
-}
-
 export class DustAmountError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
