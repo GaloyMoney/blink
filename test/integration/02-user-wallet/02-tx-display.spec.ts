@@ -862,7 +862,7 @@ describe("Display properties on transactions", () => {
           memo,
         })
         if (paid instanceof Error) throw paid
-        expect(paid).toBe(PaymentSendStatus.Success)
+        expect(paid.status).toBe(PaymentSendStatus.Success)
 
         // Check entries
         const memoTxns = await getAllTransactionsByMemo(memo)
@@ -936,7 +936,7 @@ describe("Display properties on transactions", () => {
           memo,
         })
         if (paid instanceof Error) throw paid
-        expect(paid).toBe(PaymentSendStatus.Success)
+        expect(paid.status).toBe(PaymentSendStatus.Success)
 
         // Check entries
         const memoTxns = await getAllTransactionsByMemo(memo)
