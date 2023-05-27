@@ -87,3 +87,8 @@ type PayOnChainByWalletIdArgs = PayOnChainByWalletIdWithoutCurrencyArgs & {
   amountCurrency: WalletCurrency | undefined
   sendAll: boolean
 }
+
+type PayOnChainByWalletIdResult = {
+  status: PaymentSendStatus
+  payoutId: PayoutId | undefined
+}
