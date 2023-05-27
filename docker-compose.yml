@@ -14,6 +14,7 @@ services:
       - postgres-price-history
       - bitcoind
       - lnd1
+      - lnd2
       - lnd-outside-1
       - lnd-outside-2
       - lnd-outside-3
@@ -30,6 +31,7 @@ services:
       - stablesats
       - bria
       - lnd1
+      - lnd2
       - lnd-outside-1
       - lnd-outside-2
       - lnd-outside-3
@@ -107,6 +109,24 @@ services:
       - ${PWD}/dev/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
       - ${PWD}/dev/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
       - ${PWD}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
+  lnd2:
+    image: lightninglabs/lnd:v0.16.2-beta
+    volumes:
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
+      - ${PWD}/dev/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
+      - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on: [bitcoind]
     entrypoint: ["/bin/sh", "-c"]
     command:
@@ -224,13 +244,14 @@ services:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
       - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/lnd2.admin.macaroon
       - ${PWD}/dev/lnd/loop/regtest/loopd2-1.macaroons.db:/root/.loop/tmp/macaroons.db
       - ${PWD}/dev/lnd/loop/regtest/loopd2-1.loop.db:/root/.loop/tmp/loop.db
       - ${PWD}/dev/lnd/loop/regtest/loopd2-1.tls.key:/root/.loop/tmp/tls.key
       - ${PWD}/dev/lnd/loop/regtest/loopd2-1.tls.cert:/root/.loop/tmp/tls.cert
       - ${PWD}/dev/lnd/loop/regtest/loopd2-1.loop.macaroon:/root/.loop/tmp/loop.macaroon
     depends_on:
-      - lnd-outside-2
+      - lnd2
       - loopserver
     environment:
       - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
@@ -241,8 +262,8 @@ services:
       --network=regtest\
       --debuglevel=debug\
       --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
-      --server.notls --lnd.host=lnd-outside-2:10009\
-      --lnd.macaroonpath=/root/.lnd/lnd-outside-2.admin.macaroon\
+      --server.notls --lnd.host=lnd2:10009\
+      --lnd.macaroonpath=/root/.lnd/lnd2.admin.macaroon\
       --lnd.tlspath=/root/.lnd/tls.cert\
       --tlsautorefresh\
       --restlisten=0.0.0.0:8081\

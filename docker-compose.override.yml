@@ -28,6 +28,9 @@ services:
   lnd1:
     ports:
       - "10009:10009"
+  lnd2:
+    ports:
+      - "10010:10009"
   lnd-outside-1:
     ports:
       - "10012:10009"

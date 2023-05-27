@@ -3,6 +3,7 @@ import { Account } from "@services/mongoose/schema"
 
 import {
   lnd1,
+  lnd2,
   lndOutside1,
   lndOutside2,
   lndOutside3,
@@ -23,7 +24,7 @@ describe("connects to lnds", () => {
     await resetLnds()
   })
 
-  const lnds = [lnd1]
+  const lnds = [lnd1, lnd2]
   for (const item in lnds) {
     it(`connects to lnd${+item + 1}`, async () => {
       const { public_key } = await getWalletInfo({ lnd: lnds[item] })

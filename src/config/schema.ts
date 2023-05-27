@@ -516,6 +516,11 @@ export const configSchema = {
           type: ["offchain", "onchain"],
           priority: 2,
         },
+        {
+          name: "LND2",
+          type: ["offchain"],
+          priority: 3,
+        },
       ],
     },
     onChainWallet: {
