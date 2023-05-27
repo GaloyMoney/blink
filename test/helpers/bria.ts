@@ -12,7 +12,7 @@ export const onceBriaSubscribe = async ({
   txId,
 }: {
   type: BriaPayloadType
-  txId: OnChainTxHash
+  txId?: OnChainTxHash
 }): Promise<BriaEvent | undefined> => {
   const bria = BriaSubscriber()
 
@@ -22,8 +22,7 @@ export const onceBriaSubscribe = async ({
       setTimeout(() => {
         if (
           event.payload.type === type &&
-          "txId" in event.payload &&
-          event.payload.txId === txId
+          (!txId || ("txId" in event.payload && event.payload.txId === txId))
         ) {
           eventToReturn = event
           resolve(event)
