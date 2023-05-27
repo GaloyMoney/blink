@@ -1,3 +1,4 @@
+import crypto from "crypto"
 import { once } from "events"
 
 import { Accounts, Payments, Wallets } from "@app"
@@ -7,7 +8,7 @@ import {
   MaxFeeTooLargeForRoutelessPaymentError,
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
-import { sat2btc, toSats, toTargetConfs } from "@domain/bitcoin"
+import { sat2btc, toSats } from "@domain/bitcoin"
 import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
 import * as LnFeesImpl from "@domain/payments/ln-fees"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
@@ -15,6 +16,8 @@ import { TxStatus } from "@domain/wallets"
 import { DisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
 
 import { updateDisplayCurrency } from "@app/accounts"
+
+import { PayoutSpeed } from "@domain/bitcoin/onchain"
 
 import { translateToLedgerTx } from "@services/ledger"
 import { MainBook } from "@services/ledger/books"
@@ -826,10 +829,12 @@ describe("Display properties on transactions", () => {
           senderWalletId,
           address,
           amount: amountSats,
-          targetConfirmations: toTargetConfs(1),
+          speed: PayoutSpeed.Fast,
+          requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
           memo,
           sendAll: false,
         })
+        if (paid instanceof Error) throw paid
         expect(paid).toBe(PaymentSendStatus.Success)
 
         // Check entries
@@ -897,10 +902,12 @@ describe("Display properties on transactions", () => {
           senderWalletId,
           address,
           amount: amountSats,
-          targetConfirmations: toTargetConfs(1),
+          speed: PayoutSpeed.Fast,
+          requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
           memo,
           sendAll: false,
         })
+        if (paid instanceof Error) throw paid
         expect(paid).toBe(PaymentSendStatus.Success)
 
         // Check entries
@@ -970,7 +977,6 @@ describe("Display properties on transactions", () => {
           senderCurrency === WalletCurrency.Btc
             ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
             : await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
-        if (res instanceof Error) throw res
         return res
       }
 
@@ -991,31 +997,19 @@ describe("Display properties on transactions", () => {
           lnd: lndOutside1,
         })
 
-        const sub = subscribeToTransactions({ lnd: lndonchain })
-        let paid, chainEvent
-        try {
-          ;[chainEvent, paid] = await Promise.all([
-            once(sub, "chain_transaction"),
-            payOnChainForPromiseAll({
-              senderCurrency: WalletCurrency.Btc,
-              senderAccount,
-              senderWalletId,
-              address,
-              amount: amountSats,
-              targetConfirmations: toTargetConfs(1),
-              memo,
-              sendAll: false,
-            }),
-          ])
-        } catch (err) {
-          sub.removeAllListeners()
-          return err as ApplicationError
-        }
-
-        expect(paid).toBe(PaymentSendStatus.Success)
-        await onchainTransactionEventHandler(chainEvent[0])
-
-        sub.removeAllListeners()
+        const paid = await payOnChainForPromiseAll({
+          senderCurrency: WalletCurrency.Btc,
+          senderAccount,
+          senderWalletId,
+          address,
+          amount: amountSats,
+          speed: PayoutSpeed.Fast,
+          requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
+          memo,
+          sendAll: false,
+        })
+        if (paid instanceof Error) throw paid
+        expect(paid.status).toBe(PaymentSendStatus.Success)
 
         // Check entries
         const txns = await getAllTransactionsByMemo(memo)
