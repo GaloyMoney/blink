@@ -1,9 +1,5 @@
-import {
-  InsufficientBalanceError,
-  InvalidCurrencyForWalletError,
-  RebalanceNeededError,
-} from "@domain/errors"
-import { AmountCalculator, ErrorLevel, WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@domain/errors"
+import { AmountCalculator, ErrorLevel, WalletCurrency } from "@domain/shared"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import {
@@ -183,26 +179,10 @@ export const OnChainPaymentFlow = <S extends WalletCurrency, R extends WalletCur
     return { btc: state.btcBankFee, usd: state.usdBankFee }
   }
 
-  const checkOnChainAvailableBalanceForSend = (
-    balanceAmount: BtcPaymentAmount,
-  ): true | ValidationError => {
-    const totalSendAmount = AmountCalculator().add(
-      state.btcPaymentAmount,
-      state.btcMinerFee || ZERO_SATS,
-    )
-
-    if (balanceAmount.amount < totalSendAmount.amount) {
-      return new RebalanceNeededError()
-    }
-
-    return true
-  }
-
   return {
     ...state,
     ...PaymentFlowCommon(commonState),
     addressForFlow,
     bankFees,
-    checkOnChainAvailableBalanceForSend,
   }
 }
