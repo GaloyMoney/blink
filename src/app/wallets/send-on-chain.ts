@@ -185,7 +185,11 @@ export const payOnChainByWalletIdForBtcWallet = async (
   const validated = await validateIsBtcWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
-    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Btc })
+    : payOnChainByWalletId({
+        ...args,
+        amountCurrency: WalletCurrency.Btc,
+        sendAll: false,
+      })
 }
 
 export const payOnChainByWalletIdForUsdWallet = async (
@@ -194,7 +198,11 @@ export const payOnChainByWalletIdForUsdWallet = async (
   const validated = await validateIsUsdWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
-    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Usd })
+    : payOnChainByWalletId({
+        ...args,
+        amountCurrency: WalletCurrency.Usd,
+        sendAll: false,
+      })
 }
 
 export const payOnChainByWalletIdForUsdWalletAndBtcAmount = async (
@@ -203,7 +211,11 @@ export const payOnChainByWalletIdForUsdWalletAndBtcAmount = async (
   const validated = await validateIsUsdWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
-    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Btc })
+    : payOnChainByWalletId({
+        ...args,
+        amountCurrency: WalletCurrency.Btc,
+        sendAll: false,
+      })
 }
 
 export const payAllOnChainByWalletId = async (

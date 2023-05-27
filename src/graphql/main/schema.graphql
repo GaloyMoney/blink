@@ -814,7 +814,10 @@ type OnChainAddressPayload {
 input OnChainPaymentSendAllInput {
   address: OnChainAddress!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
+  requestId: PayoutRequestId!
+  speed: PayoutSpeed!
+  targetConfirmations: TargetConfirmations = 0
+    @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -822,7 +825,10 @@ input OnChainPaymentSendInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
+  requestId: PayoutRequestId!
+  speed: PayoutSpeed!
+  targetConfirmations: TargetConfirmations = 0
+    @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -846,7 +852,10 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
+  requestId: PayoutRequestId!
+  speed: PayoutSpeed!
+  targetConfirmations: TargetConfirmations = 0
+    @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -854,7 +863,10 @@ input OnChainUsdPaymentSendInput {
   address: OnChainAddress!
   amount: CentAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
+  requestId: PayoutRequestId!
+  speed: PayoutSpeed!
+  targetConfirmations: TargetConfirmations = 0
+    @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -922,6 +934,17 @@ enum PaymentSendResult {
   FAILURE
   PENDING
   SUCCESS
+}
+
+"""
+Unique request id for a payout
+"""
+scalar PayoutRequestId
+
+enum PayoutSpeed {
+  FAST
+  MEDIUM
+  SLOW
 }
 
 """
