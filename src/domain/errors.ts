@@ -101,7 +101,6 @@ export class InvalidTargetConfirmations extends ValidationError {}
 export class NoContactForUsernameError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
 export class NoBtcWalletExistsForAccountError extends ValidationError {}
-export class RebalanceNeededError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
 export class MissingPhoneMetadataError extends ValidationError {}
 export class InvalidPhoneMetadataTypeError extends ValidationError {}

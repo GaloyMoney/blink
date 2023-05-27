@@ -15,7 +15,6 @@ import {
   InsufficientBalanceError,
   LessThanDustThresholdError,
   LimitsExceededError,
-  RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
 import {
@@ -1180,40 +1179,6 @@ describe("BtcWallet - onChainPay", () => {
     })
     //should fail because user does not have balance to pay for on-chain fee
     expect(status).toBeInstanceOf(InsufficientBalanceError)
-  })
-
-  it("fails if onchain service has insufficient balance", async () => {
-    const { address } = await createChainAddress({
-      lnd: lndOutside1,
-      format: "p2wpkh",
-    })
-    const initialBalanceUserG = await getBalanceHelper(walletIdG)
-
-    const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
-    if (onChainService instanceof Error) throw onChainService
-    jest.spyOn(OnChainServiceImpl, "OnChainService").mockImplementationOnce(() => ({
-      ...onChainService,
-      getBalanceAmount: () =>
-        Promise.resolve(
-          paymentAmountFromNumber({
-            amount: initialBalanceUserG,
-            currency: WalletCurrency.Btc,
-          }),
-        ),
-    }))
-
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderAccount: accountG,
-      senderWalletId: walletIdG,
-      address,
-      amount: initialBalanceUserG,
-      targetConfirmations,
-      memo: null,
-      sendAll: false,
-    })
-
-    //should fail because onchain does not have balance to pay for on-chain fee
-    expect(status).toBeInstanceOf(RebalanceNeededError)
   })
 
   it("fails if has negative amount", async () => {
