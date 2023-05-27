@@ -23,7 +23,8 @@ const OnChainPaymentSendAllMutation = GT.Field<
       walletId: WalletId | InputValidationError
       address: OnChainAddress | InputValidationError
       memo: Memo | InputValidationError | null
-      targetConfirmations: TargetConfirmations | InputValidationError
+      speed: PayoutSpeed | InputValidationError
+      requestId: PayoutRequestId | InputValidationError
     }
   },
   null,
@@ -37,7 +38,7 @@ const OnChainPaymentSendAllMutation = GT.Field<
     input: { type: GT.NonNull(OnChainPaymentSendAllInput) },
   },
   resolve: async (_, args, { domainAccount }) => {
-    const { walletId, address, memo, targetConfirmations } = args.input
+    const { walletId, address, memo, speed, requestId } = args.input
 
     if (walletId instanceof Error) {
       return { errors: [{ message: walletId.message }] }
@@ -51,8 +52,12 @@ const OnChainPaymentSendAllMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    if (targetConfirmations instanceof Error) {
-      return { errors: [{ message: targetConfirmations.message }] }
+    if (speed instanceof Error) {
+      return { errors: [{ message: speed.message }] }
+    }
+
+    if (requestId instanceof Error) {
+      return { errors: [{ message: requestId.message }] }
     }
 
     const status = await Wallets.payAllOnChainByWalletId({
@@ -60,7 +65,8 @@ const OnChainPaymentSendAllMutation = GT.Field<
       senderWalletId: walletId,
       amount: 0,
       address,
-      targetConfirmations,
+      speed,
+      requestId,
       memo,
       sendAll: true,
     })
