@@ -3,9 +3,11 @@ import { BriaSubscriber } from "@services/bria"
 export const onceBriaSubscribe = async ({
   type,
   txId,
+  payoutId,
 }: {
   type: BriaPayloadType
   txId?: OnChainTxHash
+  payoutId?: PayoutId
 }): Promise<BriaEvent | undefined> => {
   const bria = BriaSubscriber()
 
@@ -15,7 +17,8 @@ export const onceBriaSubscribe = async ({
       setTimeout(() => {
         if (
           event.payload.type === type &&
-          (!txId || ("txId" in event.payload && event.payload.txId === txId))
+          (!txId || ("txId" in event.payload && event.payload.txId === txId)) &&
+          (!payoutId || ("id" in event.payload && event.payload.id === payoutId))
         ) {
           eventToReturn = event
           resolve(event)
