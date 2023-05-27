@@ -14,13 +14,18 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
     "bria event handler",
   )
   switch (event.payload.type) {
-    case BriaPayloadType.UtxoDetected: {
+    case BriaPayloadType.UtxoDetected:
       return utxoDetectedEventHandler({ event: event.payload })
-    }
 
-    case BriaPayloadType.UtxoSettled: {
+    case BriaPayloadType.UtxoSettled:
       return utxoSettledEventHandler({ event: event.payload })
-    }
+
+    case BriaPayloadType.PayoutBroadcast:
+      return payoutBroadcastEventHandler({ event: event.payload })
+
+    case BriaPayloadType.PayoutSettled:
+      return payoutSettledEventHandler({ event: event.payload })
+
     default:
       return true
   }
@@ -51,6 +56,36 @@ export const utxoSettledEventHandler = async ({
   if (res instanceof LessThanDustThresholdError) {
     return true
   }
+  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
+    return true
+  }
+
+  return res
+}
+
+export const payoutBroadcastEventHandler = async ({
+  event,
+}: {
+  event: PayoutBroadcast
+}): Promise<true | ApplicationError> => {
+  const res = await Wallets.registerBroadcastedPayout({
+    payoutId: event.id,
+    proportionalFee: event.proportionalFee,
+    txId: event.txId,
+  })
+  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
+    return true
+  }
+
+  return res
+}
+
+export const payoutSettledEventHandler = async ({
+  event,
+}: {
+  event: PayoutSettled
+}): Promise<true | ApplicationError> => {
+  const res = await Wallets.settlePayout(event.id)
   if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
     return true
   }
