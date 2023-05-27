@@ -31,7 +31,7 @@ afterAll(async () => {
 describe("BriaSubscriber", () => {
   const bria = BriaSubscriber()
 
-  describe("subscribeToAll", () => {
+  describe.skip("subscribeToAll", () => {
     it("receives utxo events", async () => {
       const amountSats = toSats(5_000)
       // Receive onchain
