@@ -7,10 +7,10 @@ type PayoutSpeed =
 
 type OnChainAddress = string & { readonly brand: unique symbol }
 type OnChainAddressRequestId = string & { readonly brand: unique symbol }
-type PayoutRequestId = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
 type PayoutId = string & { readonly brand: unique symbol }
+type PayoutRequestId = string & { readonly brand: unique symbol }
 type OnChainTxVout = number & { readonly brand: unique symbol }
 type ScanDepth = number & { readonly brand: unique symbol }
 type TxOut = {
@@ -86,7 +86,6 @@ type QueuePayoutToAddressArgs = {
   amount: BtcPaymentAmount
   speed: PayoutSpeed
   requestId: PayoutRequestId
-  description: string
 }
 
 type EstimatePayoutFeeArgs = {

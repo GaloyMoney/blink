@@ -173,7 +173,6 @@ export const NewOnChainService = (): INewOnChainService => {
     amount,
     speed,
     requestId,
-    description,
   }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
     try {
       const request = new SubmitPayoutRequest()
@@ -184,9 +183,6 @@ export const NewOnChainService = (): INewOnChainService => {
       if (requestId) {
         request.setExternalId(requestId)
         request.setMetadata(constructMetadata({ galoy: { walletId } }))
-      }
-      if (description) {
-        request.setMetadata(constructMetadata({ description }))
       }
 
       const response = await submitPayout(request, metadata)
