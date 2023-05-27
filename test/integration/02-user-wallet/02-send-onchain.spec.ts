@@ -240,6 +240,7 @@ const testExternalSend = async ({
 
   const broadcastEvent = await onceBriaSubscribe({
     type: BriaPayloadType.PayoutBroadcast,
+    payoutId: paid.payoutId,
   })
   if (broadcastEvent?.payload.type !== BriaPayloadType.PayoutBroadcast) {
     throw new Error(`Expected ${BriaPayloadType.PayoutBroadcast} event`)
@@ -325,6 +326,7 @@ const testExternalSend = async ({
 
   const settledEvent = await onceBriaSubscribe({
     type: BriaPayloadType.PayoutSettled,
+    payoutId: paid.payoutId,
   })
   if (settledEvent?.payload.type !== BriaPayloadType.PayoutSettled) {
     throw new Error(`Expected ${BriaPayloadType.PayoutSettled} event`)
