@@ -78,7 +78,8 @@ type PayOnChainByWalletIdWithoutCurrencyArgs = {
   senderAccount: Account
   amount: number
   address: string
-  targetConfirmations: number
+  speed: PayoutSpeed
+  requestId: PayoutRequestId
   memo: string | null
   sendAll: boolean
 }
