@@ -39,7 +39,7 @@ type GetOnChainFeeWithoutCurrencyArgs = {
   account: Account
   amount: number
   address: OnChainAddress
-  targetConfirmations: number
+  speed: PayoutSpeed
 }
 
 type GetOnChainFeeArgs = GetOnChainFeeWithoutCurrencyArgs & {

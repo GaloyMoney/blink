@@ -1,12 +1,12 @@
 import { Wallets, Payments } from "@app"
-import { BTC_NETWORK, getFeesConfig, getOnChainWalletConfig } from "@config"
+import { getFeesConfig, getOnChainWalletConfig } from "@config"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
-import { TxDecoder } from "@domain/bitcoin/onchain"
+import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
+import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { DealerPriceService } from "@services/dealer-price"
-import * as OnChainServiceImpl from "@services/lnd/onchain-service"
+import { NewOnChainService } from "@services/bria"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 import {
@@ -19,8 +19,12 @@ import {
 } from "test/helpers"
 
 const defaultAmount = toSats(5244)
+const defaultPaymentAmount = paymentAmountFromNumber({
+  amount: defaultAmount,
+  currency: WalletCurrency.Btc,
+}) as PaymentAmount<"BTC">
+
 const defaultUsdAmount = toCents(105)
-const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
 let walletIdA: WalletId, walletIdB: WalletId, walletIdUsdA: WalletId, accountA: Account
 
@@ -51,7 +55,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount: defaultAmount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: PayoutSpeed.Fast,
       })
       if (feeAmount instanceof Error) throw feeAmount
       expect(feeAmount.currency).toBe(WalletCurrency.Btc)
@@ -75,7 +79,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount: defaultAmount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: PayoutSpeed.Fast,
       })
       if (feeAmount instanceof Error) throw feeAmount
       const fee = Number(feeAmount.amount)
@@ -90,7 +94,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: PayoutSpeed.Fast,
       })
       expect(fee).toBeInstanceOf(LessThanDustThresholdError)
       expect(fee).toHaveProperty(
@@ -107,7 +111,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: PayoutSpeed.Fast,
       })
       expect(fee).toBeInstanceOf(LessThanDustThresholdError)
       expect(fee).toHaveProperty(
@@ -124,7 +128,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: PayoutSpeed.Fast,
       })
       expect(fee).toBeInstanceOf(InsufficientBalanceError)
       expect(fee).toHaveProperty(
@@ -163,18 +167,17 @@ describe("UserWallet - getOnchainFee", () => {
           await testAmountCaseAmounts(dealerFns.getSatsFromCentsForImmediateSell)
 
           const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-          const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
-          if (onChainService instanceof Error) throw onChainService
+          const onChainService = NewOnChainService()
 
-          const minerFee = await onChainService.getOnChainFeeEstimate({
-            amount: defaultAmount,
+          const minerFee = await onChainService.estimatePayoutFee({
+            amount: defaultPaymentAmount,
             address,
-            targetConfirmations: 1 as TargetConfirmations,
+            speed: PayoutSpeed.Fast,
           })
           if (minerFee instanceof Error) throw minerFee
 
           const feeRates = getFeesConfig()
-          const feeSats = toSats(feeRates.withdrawDefaultMin + minerFee)
+          const feeSats = toSats(feeRates.withdrawDefaultMin + Number(minerFee.amount))
 
           // Fund empty USD wallet
           const payResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
@@ -190,7 +193,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: PayoutSpeed.Fast,
             amount: senderAmount,
           }
           const feeAmount =
@@ -233,7 +236,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: PayoutSpeed.Fast,
             amount: senderAmount,
           }
           const feeAmount =
@@ -260,7 +263,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: PayoutSpeed.Fast,
           }
           const fee =
             amountCurrency === WalletCurrency.Usd
@@ -286,7 +289,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: PayoutSpeed.Fast,
           }
           const fee =
             amountCurrency === WalletCurrency.Usd
@@ -320,7 +323,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: PayoutSpeed.Fast,
           }
           const fee =
             amountCurrency === WalletCurrency.Usd

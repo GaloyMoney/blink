@@ -10,6 +10,8 @@ import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 
 import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
 
+import { PayoutSpeed } from "@domain/bitcoin/onchain"
+
 import { normalizePaymentAmount } from "../mutation"
 
 const OnChainTxFeeQuery = GT.Field({
@@ -18,7 +20,11 @@ const OnChainTxFeeQuery = GT.Field({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(SatAmount) },
-    targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
+    targetConfirmations: {
+      deprecationReason: "Ignored - will be replaced",
+      type: TargetConfirmations,
+      defaultValue: 1,
+    },
   },
   resolve: async (_, args, { domainAccount }) => {
     const { walletId, address, amount, targetConfirmations } = args
@@ -32,7 +38,7 @@ const OnChainTxFeeQuery = GT.Field({
       account: domainAccount as Account,
       amount,
       address,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
     })
     if (fee instanceof Error) throw mapError(fee)
 

@@ -8,7 +8,7 @@ import {
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import { credentials, Metadata, ServiceError } from "@grpc/grpc-js"
-import { BRIA_PROFILE_API_KEY, BRIA_WALLET_NAME } from "@config"
+import { BRIA_PROFILE_API_KEY, BRIA_WALLET_NAME, isDev } from "@config"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared/primitives"
 import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain/errors"
 
@@ -134,7 +134,11 @@ export const BriaSubscriber = () => {
 }
 
 const queueNameForSpeed = (speed: PayoutSpeed): string => {
-  return speed
+  if (isDev) {
+    return "dev"
+  } else {
+    return speed
+  }
 }
 
 export const NewOnChainService = (): INewOnChainService => {

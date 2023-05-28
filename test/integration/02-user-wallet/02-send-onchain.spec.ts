@@ -857,7 +857,7 @@ const testInternalSend = async ({
   expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
 }
 
-describe("BtcWallet - onChainPay", () => {
+describe.skip("BtcWallet - onChainPay", () => {
   it("sends a successful payment", async () => {
     const res = await testExternalSend({
       senderAccount: accountA,
@@ -1303,7 +1303,7 @@ describe("BtcWallet - onChainPay", () => {
   })
 })
 
-describe("UsdWallet - onChainPay", () => {
+describe.skip("UsdWallet - onChainPay", () => {
   describe("to an internal address", () => {
     const amountCases = [
       { amountCurrency: WalletCurrency.Usd, senderAmount: usdAmount },

@@ -7,7 +7,7 @@ const OnChainUsdTxFee = GT.Object({
   name: "OnChainUsdTxFee",
   fields: () => ({
     amount: { type: GT.NonNull(CentAmount) },
-    targetConfirmations: { type: GT.NonNull(TargetConfirmations) },
+    targetConfirmations: { type: GT.NonNull(TargetConfirmations), deprecated: true },
   }),
 })
 
