@@ -6,7 +6,7 @@ import {
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import { credentials, Metadata, ServiceError } from "@grpc/grpc-js"
-import { BRIA_ENDPOINT, BRIA_PROFILE_API_KEY, BRIA_WALLET_NAME } from "@config"
+import { getBriaConfig } from "@config"
 import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
 import { WalletCurrency } from "@domain/shared/primitives"
 
@@ -35,8 +35,10 @@ import {
 
 export { ListenerWrapper } from "./listener_wrapper"
 
+const briaConfig = getBriaConfig()
+
 const bitcoinBridgeClient = new BriaServiceClient(
-  BRIA_ENDPOINT,
+  briaConfig.endpoint,
   credentials.createInsecure(),
 )
 
@@ -53,7 +55,7 @@ const eventRepo = BriaEventRepo()
 
 export const BriaSubscriber = () => {
   const metadata = new Metadata()
-  metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
+  metadata.set("x-bria-api-key", briaConfig.apiKey)
 
   const subscribeToAll = async (
     eventHandler: BriaEventHandler,
@@ -130,14 +132,14 @@ export const BriaSubscriber = () => {
 
 export const NewOnChainService = (): INewOnChainService => {
   const metadata = new Metadata()
-  metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
+  metadata.set("x-bria-api-key", briaConfig.apiKey)
 
   const createOnChainAddress = async (
     requestId?: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | UnknownOnChainServiceError> => {
     try {
       const request = new NewAddressRequest()
-      request.setWalletName(BRIA_WALLET_NAME)
+      request.setWalletName(briaConfig.walletName)
       if (requestId !== undefined) {
         request.setExternalId(requestId)
       }
