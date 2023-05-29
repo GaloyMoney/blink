@@ -28,7 +28,7 @@ import { LocalCacheService } from "@services/cache"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { ledgerAdmin, setupMongoConnection } from "@services/mongodb"
 
-import { timeout } from "@utils"
+import { timeoutWithCancel } from "@utils"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -230,8 +230,17 @@ const createWalletGauge = ({
         const walletId = await getId()
         return getWalletBalance(walletId)
       }
+
+      let cancelTimeout = () => {
+        return
+      }
       try {
-        const timeoutPromise = timeout(TIMEOUT_WALLET_BALANCE, "Timeout")
+        const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+          TIMEOUT_WALLET_BALANCE,
+          "Timeout",
+        )
+        cancelTimeout = cancelTimeoutFn
+
         const balance = (await Promise.race([
           getWalletBalancePromise(),
           timeoutPromise,
@@ -247,8 +256,10 @@ const createWalletGauge = ({
       } catch (err) {
         logger.error({ err }, `Could not load wallet id for ${walletName}.`)
 
-        if (err.message === "Timeout")
+        if (err.message === "Timeout") {
+          cancelTimeout()
           logger.info(`Getting ${walletName} wallet balance from cache.`)
+        }
 
         return cache.getOrSet({
           key: name,
