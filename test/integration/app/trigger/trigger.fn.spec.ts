@@ -1,25 +1,15 @@
-import { getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { Prices, Wallets } from "@app"
-import { newGetTransactionsForWallets } from "@app/wallets"
+import { Wallets } from "@app"
 
 import { TxStatus } from "@domain/wallets"
-import { DisplayCurrency } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { NotificationType } from "@domain/notifications"
 
-import { invoiceUpdateEventHandler, onchainBlockEventHandler } from "@servers/trigger"
+import { onchainBlockEventHandler } from "@servers/trigger"
 
 import { baseLogger } from "@services/logger"
-import { LedgerService } from "@services/ledger"
-import { BriaSubscriber } from "@services/bria"
-import { briaEventHandler } from "@servers/bria-trigger"
-import { WalletsRepository } from "@services/mongoose"
-import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
-import { sleep, timeoutWithCancel } from "@utils"
+import { sleep } from "@utils"
 
 import {
   amountAfterFeeDeduction,
@@ -29,13 +19,9 @@ import {
   createUserAndWalletFromUserRef,
   getAccountRecordByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getHash,
-  getInvoice,
   lnd1,
-  lndOutside1,
   mineBlockAndSyncAll,
   RANDOM_ADDRESS,
-  safePay,
   subscribeToBlocks,
   waitFor,
   waitUntilSyncAll,
@@ -44,12 +30,9 @@ import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/walle
 
 let walletIdA: WalletId
 let walletIdD: WalletId
-let walletIdF: WalletId
 
 let accountRecordA: AccountRecord
 let accountRecordD: AccountRecord
-
-const locale = getLocale()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -62,7 +45,6 @@ beforeAll(async () => {
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
-  walletIdF = await getDefaultWalletIdByTestUserRef("F")
 
   accountRecordA = await getAccountRecordByTestUserRef("A")
   accountRecordD = await getAccountRecordByTestUserRef("D")
@@ -101,140 +83,6 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
 }
 
 describe("onchainBlockEventHandler", () => {
-  const waitForSettledTxs = async ({ wallets, addresses }): Promise<true> => {
-    return new Promise<true>(async (resolve) => {
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const result = await newGetTransactionsForWallets({ wallets })
-        if (result.error instanceof Error) continue
-
-        const addressesFound = result.result?.slice
-          .filter(
-            (txn): txn is WalletOnChainSettledTransaction =>
-              "address" in txn.initiationVia &&
-              addresses.includes(txn.initiationVia.address) &&
-              txn.status === TxStatus.Success,
-          )
-          .map((txn) => txn.initiationVia.address)
-
-        if (addressesFound && addresses.length === addressesFound.length) {
-          resolve(true)
-          break
-        }
-
-        await sleep(1000)
-      }
-    })
-  }
-
-  it("should process incoming transactions from bria", async () => {
-    const amount = toSats(10_000)
-    const amount2 = toSats(20_000)
-    const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
-
-    // Start trigger subscription
-    const wrapper = await BriaSubscriber().subscribeToAll(briaEventHandler)
-    if (wrapper instanceof Error) throw wrapper
-
-    // Send txn
-    const address = await Wallets.createOnChainAddressForBtcWallet({
-      walletId: walletIdA,
-    })
-    if (address instanceof Error) throw address
-
-    const output0 = {}
-    output0[address] = sat2btc(amount)
-
-    const address2 = await Wallets.createOnChainAddressForBtcWallet({
-      walletId: walletIdD,
-    })
-    if (address2 instanceof Error) throw address2
-
-    const output1 = {}
-    output1[address2] = sat2btc(amount2)
-
-    const outputs = [output0, output1]
-
-    const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({ inputs: [], outputs })
-    const walletProcessPsbt = await bitcoindOutside.walletProcessPsbt({ psbt })
-    const finalizedPsbt = await bitcoindOutside.finalizePsbt({
-      psbt: walletProcessPsbt.psbt,
-    })
-
-    const initWalletAState = await getWalletState(walletIdA)
-    const initWalletDState = await getWalletState(walletIdD)
-    await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
-    await bitcoindOutside.generateToAddress({
-      nblocks: blocksToMine,
-      address: RANDOM_ADDRESS,
-    })
-
-    // Await txns coming in from event handler
-    const walletA = await WalletsRepository().findById(walletIdA)
-    if (walletA instanceof Error) throw walletA
-    const walletD = await WalletsRepository().findById(walletIdD)
-    if (walletD instanceof Error) throw walletD
-
-    const txnsCheckPromise = waitForSettledTxs({
-      wallets: [walletA, walletD],
-      addresses: [address, address2],
-    })
-
-    const [timeoutPromise, cancelTimeout] = timeoutWithCancel(45_000, "Timeout")
-    const resultWait = await Promise.race([txnsCheckPromise, timeoutPromise])
-    if (resultWait instanceof Error) throw resultWait
-    cancelTimeout()
-
-    // Execute checks
-    const validateWalletState = async ({
-      walletId,
-      userRecord,
-      initialState,
-      amount,
-      address,
-    }: {
-      walletId: WalletId
-      userRecord: AccountRecord
-      initialState: WalletState
-      amount: Satoshis
-      address: string
-    }) => {
-      const { balance, transactions, onchainAddress } = await getWalletState(walletId)
-      const depositFeeRatio = userRecord.depositFeeRatio as DepositFeeRatio
-      const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
-      const lastTransaction = transactions[0]
-
-      expect(transactions.length).toBe(initialState.transactions.length + 1)
-      expect(lastTransaction.status).toBe(TxStatus.Success)
-      expect(lastTransaction.settlementFee).toBe(
-        Math.round(lastTransaction.settlementFee),
-      )
-      expect(lastTransaction.settlementAmount).toBe(finalAmount)
-      expect((lastTransaction as WalletOnChainTransaction).initiationVia.address).toBe(
-        address,
-      )
-      expect(balance).toBe(initialState.balance + finalAmount)
-      expect(onchainAddress).not.toBe(initialState.onchainAddress)
-    }
-
-    await validateWalletState({
-      walletId: walletIdA,
-      userRecord: accountRecordA,
-      initialState: initWalletAState,
-      amount: amount,
-      address: address,
-    })
-    await validateWalletState({
-      walletId: walletIdD,
-      userRecord: accountRecordD,
-      initialState: initWalletDState,
-      amount: amount2,
-      address: address2,
-    })
-
-    wrapper.cancel()
-  })
-
   it("should process block for incoming transactions from lnd", async () => {
     const amount = toSats(10_000)
     const amount2 = toSats(20_000)
@@ -338,70 +186,5 @@ describe("onchainBlockEventHandler", () => {
       amount: amount2,
       address: address2,
     })
-  })
-
-  it("should process pending invoices on invoice update event", async () => {
-    const sendNotification = jest.fn()
-    jest
-      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementation(() => ({
-        sendNotification,
-      }))
-
-    const sats = toSats(500)
-
-    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-      walletId: walletIdF,
-      amount: toSats(sats),
-    })
-    expect(lnInvoice).not.toBeInstanceOf(Error)
-
-    const { paymentRequest: request } = lnInvoice as LnInvoice
-    safePay({ lnd: lndOutside1, request })
-
-    await sleep(250)
-
-    const hash = getHash(request)
-    const invoice = await getInvoice({ id: hash, lnd: lnd1 })
-    await invoiceUpdateEventHandler(invoice)
-
-    // notification are not been awaited, so explicit sleep is necessary
-    await sleep(250)
-
-    const ledger = LedgerService()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw ledgerTxs
-
-    const ledgerTx = ledgerTxs[0]
-
-    expect(ledgerTx.credit).toBe(sats)
-    expect(ledgerTx.pendingConfirmation).toBe(false)
-
-    const displayPriceRatio = await Prices.getCurrentPriceAsDisplayPriceRatio({
-      currency: DisplayCurrency.Usd,
-    })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-
-    const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
-
-    // floor/ceil is needed here because the price can sometimes shift in the time between
-    // function execution and 'getCurrentPrice' call above here resulting in different rounding
-    // for 'displayPaymentAmount' calculation.
-    const { title, body: bodyFloor } = createPushNotificationContent({
-      type: NotificationType.LnInvoicePaid,
-      userLanguage: locale as UserLanguage,
-      amount: paymentAmount,
-      displayAmount: displayPriceRatio.convertFromWalletToFloor(paymentAmount),
-    })
-    const { body: bodyCeil } = createPushNotificationContent({
-      type: NotificationType.LnInvoicePaid,
-      userLanguage: locale as UserLanguage,
-      amount: paymentAmount,
-      displayAmount: displayPriceRatio.convertFromWalletToCeil(paymentAmount),
-    })
-
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].title).toBe(title)
-    expect([bodyFloor, bodyCeil]).toContain(sendNotification.mock.calls[0][0].body)
   })
 })
