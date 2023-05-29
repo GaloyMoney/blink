@@ -625,7 +625,7 @@ const executePaymentViaLn = async ({
       memoOfPayer: memo || paymentFlow.descriptionFromInvoice,
     })
 
-    const journal = await LedgerFacade.recordSend({
+    const journal = await LedgerFacade.recordSendOffChain({
       description: paymentFlow.descriptionFromInvoice || memo || "",
       amountToDebitSender: {
         btc: {

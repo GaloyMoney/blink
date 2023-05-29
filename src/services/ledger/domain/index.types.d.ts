@@ -104,7 +104,8 @@ type EntryBuilderCreditState<M extends MediciEntry> = {
 }
 
 type EntryBuilderCredit<M extends MediciEntry> = {
-  creditLnd: () => M
+  creditOffChain: () => M
+  creditOnChain: () => M
   creditColdStorage: () => M
   creditAccount: <C extends WalletCurrency>({
     accountDescriptor,

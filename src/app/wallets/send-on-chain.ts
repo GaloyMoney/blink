@@ -550,7 +550,7 @@ const executePaymentViaOnChain = async <
     })
 
     // Record transaction
-    const journal = await LedgerFacade.recordSend({
+    const journal = await LedgerFacade.recordSendOnChain({
       description: memo || "",
       amountToDebitSender: {
         btc: {

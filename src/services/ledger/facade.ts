@@ -30,7 +30,7 @@ const staticAccountIds = async () => {
   }
 }
 
-export const recordSend = async ({
+export const recordSendOffChain = async ({
   description,
   senderWalletDescriptor,
   amountToDebitSender,
@@ -59,7 +59,41 @@ export const recordSend = async ({
       accountDescriptor: toLedgerAccountDescriptor(senderWalletDescriptor),
       additionalMetadata: additionalDebitMetadata,
     })
-    .creditLnd()
+    .creditOffChain()
+
+  return persistAndReturnEntry({ entry, hash: metadata.hash })
+}
+
+export const recordSendOnChain = async ({
+  description,
+  senderWalletDescriptor,
+  amountToDebitSender,
+  bankFee,
+  metadata,
+  additionalDebitMetadata,
+  additionalInternalMetadata,
+}: RecordSendArgs) => {
+  const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
+
+  let entry = MainBook.entry(description)
+  const builder = EntryBuilder({
+    staticAccountIds: await staticAccountIds(),
+    entry,
+    metadata,
+    additionalInternalMetadata,
+  })
+
+  entry = builder
+    .withTotalAmount({
+      usdWithFees: amountToDebitSender.usd,
+      btcWithFees: amountToDebitSender.btc,
+    })
+    .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
+    .debitAccount({
+      accountDescriptor: toLedgerAccountDescriptor(senderWalletDescriptor),
+      additionalMetadata: additionalDebitMetadata,
+    })
+    .creditOnChain()
 
   return persistAndReturnEntry({ entry, hash: metadata.hash })
 }
