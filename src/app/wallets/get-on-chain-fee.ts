@@ -2,7 +2,6 @@ import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 
-import { checkedToTargetConfs } from "@domain/bitcoin"
 import { checkedToOnChainAddress, PayoutSpeed } from "@domain/bitcoin/onchain"
 import { CouldNotFindError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
@@ -28,16 +27,13 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   amount,
   amountCurrency,
   address,
-  targetConfirmations,
+  speed,
 }: GetOnChainFeeArgs): Promise<PaymentAmount<S> | ApplicationError> => {
   const amountChecked =
     amountCurrency === WalletCurrency.Btc
       ? checkedToBtcPaymentAmount(amount)
       : checkedToUsdPaymentAmount(amount)
   if (amountChecked instanceof Error) return amountChecked
-
-  const targetConfsChecked = checkedToTargetConfs(targetConfirmations)
-  if (targetConfsChecked instanceof Error) return targetConfsChecked
 
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
@@ -136,7 +132,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
 
   const paymentFlow = await getMinerFeeAndPaymentFlow({
     builder,
-    speed: PayoutSpeed.Fast,
+    speed,
   })
   if (paymentFlow instanceof Error) return paymentFlow
   addAttributesToCurrentSpan({

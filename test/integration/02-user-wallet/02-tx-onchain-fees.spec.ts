@@ -2,7 +2,7 @@ import { once } from "events"
 
 import { Wallets, Payments } from "@app"
 import { getFeesConfig, getOnChainWalletConfig } from "@config"
-import { sat2btc, toSats, toTargetConfs } from "@domain/bitcoin"
+import { sat2btc, toSats } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
@@ -29,7 +29,7 @@ import {
 
 const defaultAmount = toSats(5244)
 const defaultUsdAmount = toCents(105)
-const defaultTarget = toTargetConfs(3)
+const defaultSpeed = PayoutSpeed.Fast
 const { dustThreshold } = getOnChainWalletConfig()
 
 let walletIdA: WalletId
@@ -113,7 +113,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount: defaultAmount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: defaultSpeed,
       })
       if (feeAmount instanceof Error) throw feeAmount
       expect(feeAmount.currency).toBe(WalletCurrency.Btc)
@@ -139,7 +139,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount: defaultAmount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: defaultSpeed,
       })
       if (feeAmount instanceof Error) throw feeAmount
       const fee = Number(feeAmount.amount)
@@ -154,7 +154,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: defaultSpeed,
       })
       expect(fee).toBeInstanceOf(LessThanDustThresholdError)
       expect(fee).toHaveProperty(
@@ -171,7 +171,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: defaultSpeed,
       })
       expect(fee).toBeInstanceOf(LessThanDustThresholdError)
       expect(fee).toHaveProperty(
@@ -188,7 +188,7 @@ describe("UserWallet - getOnchainFee", () => {
         account: accountA,
         amount,
         address,
-        targetConfirmations: defaultTarget,
+        speed: defaultSpeed,
       })
       expect(fee).toBeInstanceOf(InsufficientBalanceError)
       expect(fee).toHaveProperty(
@@ -260,7 +260,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: defaultSpeed,
             amount: senderAmount,
           }
           const feeAmount =
@@ -305,7 +305,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: defaultSpeed,
             amount: senderAmount,
           }
           const feeAmount =
@@ -332,7 +332,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: defaultSpeed,
           }
           const fee =
             amountCurrency === WalletCurrency.Usd
@@ -358,7 +358,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: defaultSpeed,
           }
           const fee =
             amountCurrency === WalletCurrency.Usd
@@ -392,7 +392,7 @@ describe("UserWallet - getOnchainFee", () => {
             walletId: walletIdUsdA,
             account: accountA,
             address,
-            targetConfirmations: defaultTarget,
+            speed: defaultSpeed,
           }
           const fee =
             amountCurrency === WalletCurrency.Usd
