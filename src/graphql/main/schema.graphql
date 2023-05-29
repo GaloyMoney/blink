@@ -843,6 +843,7 @@ input OnChainPaymentSendInput {
 type OnChainTxFee {
   amount: SatAmount!
   targetConfirmations: TargetConfirmations!
+    @deprecated(reason: "Ignored - will be removed")
 }
 
 scalar OnChainTxHash
@@ -881,6 +882,7 @@ input OnChainUsdPaymentSendInput {
 type OnChainUsdTxFee {
   amount: CentAmount!
   targetConfirmations: TargetConfirmations!
+    @deprecated(reason: "Ignored - will be removed")
 }
 
 type OneDayAccountLimit implements AccountLimit {
@@ -1062,19 +1064,25 @@ type Query {
   onChainTxFee(
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 3
+    speed: PayoutSpeed!
+    targetConfirmations: TargetConfirmations = 0
+      @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!
   ): OnChainTxFee!
   onChainUsdTxFee(
     address: OnChainAddress!
     amount: CentAmount!
-    targetConfirmations: TargetConfirmations = 3
+    speed: PayoutSpeed!
+    targetConfirmations: TargetConfirmations = 0
+      @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!
   ): OnChainUsdTxFee!
   onChainUsdTxFeeAsBtcDenominated(
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 3
+    speed: PayoutSpeed!
+    targetConfirmations: TargetConfirmations = 0
+      @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!
   ): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion]
