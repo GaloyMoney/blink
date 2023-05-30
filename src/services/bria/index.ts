@@ -1,14 +1,18 @@
 import util from "util"
 
+import { credentials, Metadata } from "@grpc/grpc-js"
+
+import { getBriaConfig } from "@config"
+
+import { WalletCurrency } from "@domain/shared/primitives"
+import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
+
 import {
   asyncRunInSpan,
   SemanticAttributes,
   recordExceptionInCurrentSpan,
+  wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
-import { credentials, Metadata, ServiceError } from "@grpc/grpc-js"
-import { getBriaConfig } from "@config"
-import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
-import { WalletCurrency } from "@domain/shared/primitives"
 
 import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
@@ -40,6 +44,10 @@ const briaConfig = getBriaConfig()
 const bitcoinBridgeClient = new BriaServiceClient(
   briaConfig.endpoint,
   credentials.createInsecure(),
+)
+
+const newAddress = util.promisify<NewAddressRequest, Metadata, NewAddressResponse>(
+  bitcoinBridgeClient.newAddress.bind(bitcoinBridgeClient),
 )
 
 export const BriaPayloadType = {
@@ -140,32 +148,23 @@ export const NewOnChainService = (): INewOnChainService => {
     try {
       const request = new NewAddressRequest()
       request.setWalletName(briaConfig.walletName)
-      if (requestId !== undefined) {
+      if (requestId) {
         request.setExternalId(requestId)
       }
 
-      const newAddressWithMetadataOverload = (
-        { request, metadata }: { request: NewAddressRequest; metadata: Metadata },
-        callback: (error: ServiceError | null, response: NewAddressResponse) => void,
-      ) => {
-        const newAddress = bitcoinBridgeClient.newAddress.bind(bitcoinBridgeClient)
-        return newAddress(request, metadata, callback)
-      }
-
-      const newAddressWithMetadata = util.promisify(newAddressWithMetadataOverload)
-      const response = await newAddressWithMetadata({
-        request,
-        metadata,
-      })
-
+      const response = await newAddress(request, metadata)
       return { address: response.getAddress() as OnChainAddress }
     } catch (error) {
       return new UnknownOnChainServiceError(error.message || error)
     }
   }
-  return {
-    createOnChainAddress,
-  }
+
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.bria.onchain",
+    fns: {
+      createOnChainAddress,
+    },
+  })
 }
 
 const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
