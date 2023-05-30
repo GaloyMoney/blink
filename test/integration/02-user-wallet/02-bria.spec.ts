@@ -4,6 +4,7 @@ import { sat2btc, toSats } from "@domain/bitcoin"
 import { UnknownRepositoryError } from "@domain/errors"
 
 import { BriaSubscriber, BriaPayloadType } from "@services/bria"
+import { timeoutWithCancel } from "@utils"
 
 import {
   bitcoindClient,
@@ -14,6 +15,8 @@ import {
 } from "test/helpers"
 
 let walletIdA: WalletId
+
+const TIMEOUT_BRIA_EVENT = 60_000
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -52,7 +55,7 @@ describe("BriaSubscriber", () => {
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 2
       let recording = false
-      const testEventHandler = ({ resolve, timeoutId }) => {
+      const testEventHandler = (resolve) => {
         return (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
             event.payload.type === BriaPayloadType.UtxoDetected &&
@@ -65,7 +68,6 @@ describe("BriaSubscriber", () => {
             if (receivedEvents.length === nExpectedEvents) {
               setTimeout(() => {
                 resolve(receivedEvents)
-                clearTimeout(timeoutId)
               }, 1)
             }
           }
@@ -73,17 +75,20 @@ describe("BriaSubscriber", () => {
         }
       }
 
-      const timeout = 60000
+      const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+        TIMEOUT_BRIA_EVENT,
+        "Timeout",
+      )
+
       let wrapper
-      const promise = new Promise(async (resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-          reject(new Error(`Promise timed out after ${timeout} ms`))
-        }, timeout)
-        wrapper = await bria.subscribeToAll(testEventHandler({ resolve, timeoutId }))
+      const eventPromise = new Promise(async (resolve) => {
+        wrapper = await bria.subscribeToAll(testEventHandler(resolve))
       })
 
-      const res = await promise
+      const res = await Promise.race([eventPromise, timeoutPromise])
       if (res instanceof Error) throw res
+      cancelTimeoutFn()
+
       if (receivedEvents[0].payload.type != BriaPayloadType.UtxoDetected) {
         throw new Error("unexpected event type")
       }
@@ -112,7 +117,7 @@ describe("BriaSubscriber", () => {
       let recording = false
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 3
-      const testEventHandler = ({ resolve, timeoutId }) => {
+      const testEventHandler = (resolve) => {
         return async (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
             event.payload.type === BriaPayloadType.UtxoDetected &&
@@ -131,24 +136,26 @@ describe("BriaSubscriber", () => {
           if (receivedEvents.length === nExpectedEvents) {
             setTimeout(() => {
               resolve(receivedEvents)
-              clearTimeout(timeoutId)
             }, 1)
           }
           return Promise.resolve(true)
         }
       }
 
-      const timeout = 60000
+      const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+        TIMEOUT_BRIA_EVENT,
+        "Timeout",
+      )
+
       let wrapper
-      const promise = new Promise(async (resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-          reject(new Error(`Promise timed out after ${timeout} ms`))
-        }, timeout)
-        wrapper = await bria.subscribeToAll(testEventHandler({ resolve, timeoutId }))
+      const eventPromise = new Promise(async (resolve) => {
+        wrapper = await bria.subscribeToAll(testEventHandler(resolve))
       })
 
-      const res = await promise
+      const res = await Promise.race([eventPromise, timeoutPromise])
       if (res instanceof Error) throw res
+      cancelTimeoutFn()
+
       expect(receivedEvents[1]).toEqual(receivedEvents[2])
 
       wrapper.cancel()
