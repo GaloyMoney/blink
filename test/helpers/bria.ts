@@ -2,7 +2,6 @@ import { BriaSubscriber, NewOnChainService } from "@services/bria"
 
 export const getBriaBalance = async (): Promise<Satoshis> => {
   try {
-    // TODO: replace by bria health check query or other bria method
     const service = NewOnChainService()
     const response = await service.getBalance()
     if (response instanceof Error) throw response
