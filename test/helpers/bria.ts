@@ -1,14 +1,10 @@
 import { BriaSubscriber, NewOnChainService } from "@services/bria"
 
 export const getBriaBalance = async (): Promise<Satoshis> => {
-  try {
-    const service = NewOnChainService()
-    const response = await service.getBalance()
-    if (response instanceof Error) throw response
-    return Number(response.amount) as Satoshis
-  } catch {
-    return 0 as Satoshis
-  }
+  const service = NewOnChainService()
+  const response = await service.getBalance()
+  if (response instanceof Error) throw response
+  return Number(response.amount) as Satoshis
 }
 
 export const onceBriaSubscribe = async ({

@@ -4,7 +4,7 @@ import client, { register } from "prom-client"
 
 import { SECS_PER_5_MINS } from "@config"
 
-import { ColdStorage, Lightning } from "@app"
+import { ColdStorage, Lightning, OnChain } from "@app"
 
 import { toSeconds } from "@domain/primitives"
 
@@ -39,7 +39,8 @@ const logger = baseLogger.child({ module: "exporter" })
 const prefix = "galoy"
 
 const main = async () => {
-  const { getLiabilitiesBalance, getLndBalance, getBitcoindBalance } = ledgerAdmin
+  const { getLiabilitiesBalance, getLndBalance, getBitcoindBalance, getOnChainBalance } =
+    ledgerAdmin
   createGauge({
     name: "liabilities",
     description: "how much money customers has",
@@ -132,6 +133,23 @@ const main = async () => {
     name: "bitcoin",
     description: "amount in accounting for cold storage",
     collect: getBitcoindBalance,
+  })
+
+  createGauge({
+    name: "onchain",
+    description: "amount in books for OnChain account",
+    collect: getOnChainBalance,
+  })
+
+  createGauge({
+    name: "bria",
+    description: "how much funds are onChain in bria managed wallets",
+    collect: async () => {
+      const balance = await OnChain.getTotalBalance()
+      if (balance instanceof Error) return 0
+
+      return Number(balance.amount)
+    },
   })
 
   createGauge({
@@ -331,20 +349,25 @@ const getAssetsLiabilitiesDifference = async () => {
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
-  const [lightning, bitcoin, lndBalance, bitcoind] = await Promise.all([
-    ledgerAdmin.getLndBalance(),
-    ledgerAdmin.getBitcoindBalance(),
-    Lightning.getTotalBalance(),
-    getColdStorageBalance(),
-  ])
+  const [lightning, bitcoin, onChain, lndBalance, bitcoind, briaBalance] =
+    await Promise.all([
+      ledgerAdmin.getLndBalance(),
+      ledgerAdmin.getBitcoindBalance(),
+      ledgerAdmin.getOnChainBalance(),
+      Lightning.getTotalBalance(),
+      getColdStorageBalance(),
+      OnChain.getTotalBalance(),
+    ])
 
   const lnd = lndBalance instanceof Error ? 0 : lndBalance
+  const bria = briaBalance instanceof Error ? 0 : Number(briaBalance.amount)
 
   return (
     lnd + // physical assets
     bitcoind + // physical assets
-    (lightning + bitcoin)
-  ) // value in accounting
+    bria + // physical assets
+    (lightning + bitcoin + onChain) // value in accounting
+  )
 }
 
 createGauge({

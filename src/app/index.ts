@@ -5,6 +5,7 @@ import * as AuthMod from "./auth"
 import * as AdminMod from "./admin"
 import * as ColdStorageMod from "./cold-storage"
 import * as LightningMod from "./lightning"
+import * as OnChainMod from "./on-chain"
 import * as PricesMod from "./prices"
 import * as TransactionsMod from "./transactions"
 import * as UsersMod from "./users"
@@ -18,6 +19,7 @@ const allFunctions = {
   Admin: { ...AdminMod },
   ColdStorage: { ...ColdStorageMod },
   Lightning: { ...LightningMod },
+  OnChain: { ...OnChainMod },
   Prices: { ...PricesMod },
   Transactions: { ...TransactionsMod },
   Users: { ...UsersMod },
@@ -45,6 +47,7 @@ export const {
   Admin,
   ColdStorage,
   Lightning,
+  OnChain,
   Prices,
   Transactions,
   Users,
