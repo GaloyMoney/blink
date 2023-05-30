@@ -9,11 +9,12 @@ import { DuplicateError } from "@domain/errors"
 import { SwapProvider } from "@domain/swap"
 import { sha256 } from "@domain/bitcoin/lightning"
 
-import { bitcoindAccountingPath, lndAccountingPath } from "./accounts"
 import { MainBook, Transaction } from "./books"
 import { getBankOwnerWalletId } from "./caching"
 
 import { TransactionsMetadataRepository } from "./services"
+
+import { coldStorageAccountId, lndLedgerAccountId } from "./domain/accounts"
 
 import { translateToLedgerJournal } from "."
 
@@ -59,9 +60,9 @@ export const admin = {
       const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
       const entry = MainBook.entry(description)
-        .credit(lndAccountingPath, sats + fee, metadata)
+        .credit(lndLedgerAccountId, sats + fee, metadata)
         .debit(bankOwnerPath, fee, metadata)
-        .debit(bitcoindAccountingPath, sats, metadata)
+        .debit(coldStorageAccountId, sats, metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -95,9 +96,9 @@ export const admin = {
       const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
       const entry = MainBook.entry(description)
-        .credit(bitcoindAccountingPath, sats + fee, metadata)
+        .credit(coldStorageAccountId, sats + fee, metadata)
         .debit(bankOwnerPath, fee, metadata)
-        .debit(lndAccountingPath, sats, metadata)
+        .debit(lndLedgerAccountId, sats, metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -133,7 +134,7 @@ export const admin = {
         const bankOwnerWalletId = await getBankOwnerWalletId()
         const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
         const entry = MainBook.entry(description)
-          .credit(lndAccountingPath, Number(totalSwapFee), {
+          .credit(lndLedgerAccountId, Number(totalSwapFee), {
             currency: WalletCurrency.Btc,
             pending: false,
             type: LedgerTransactionType.Fee,

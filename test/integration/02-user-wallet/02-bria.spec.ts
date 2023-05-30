@@ -2,6 +2,7 @@ import { Wallets } from "@app"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { UnknownRepositoryError } from "@domain/errors"
+import { utxoSettledEventHandler } from "@servers/event-handlers/bria"
 
 import { BriaSubscriber, BriaPayloadType } from "@services/bria"
 import { timeoutWithCancel } from "@utils"
@@ -9,6 +10,7 @@ import { timeoutWithCancel } from "@utils"
 import {
   bitcoindClient,
   bitcoindOutside,
+  checkIsBalanced,
   createMandatoryUsers,
   getDefaultWalletIdByTestUserRef,
   sendToAddressAndConfirm,
@@ -24,6 +26,10 @@ beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
+})
+
+afterEach(async () => {
+  await checkIsBalanced()
 })
 
 afterAll(async () => {
@@ -56,13 +62,18 @@ describe("BriaSubscriber", () => {
       const nExpectedEvents = 2
       let recording = false
       const testEventHandler = (resolve) => {
-        return (event: BriaEvent): Promise<true | ApplicationError> => {
+        return async (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
             event.payload.type === BriaPayloadType.UtxoDetected &&
             event.payload.txId === expectedTxId
           ) {
             recording = true
           }
+          // required to avoid checkIsBalanced error
+          if (event.payload.type === BriaPayloadType.UtxoSettled) {
+            await utxoSettledEventHandler({ event: event.payload })
+          }
+
           if (recording) {
             receivedEvents.push(event)
             if (receivedEvents.length === nExpectedEvents) {
@@ -124,6 +135,11 @@ describe("BriaSubscriber", () => {
             event.payload.txId === expectedTxId
           ) {
             recording = true
+          }
+
+          // required to avoid checkIsBalanced error
+          if (event.payload.type === BriaPayloadType.UtxoSettled) {
+            await utxoSettledEventHandler({ event: event.payload })
           }
 
           if (recording) {

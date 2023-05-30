@@ -1,4 +1,16 @@
-import { BriaSubscriber } from "@services/bria"
+import { BriaSubscriber, NewOnChainService } from "@services/bria"
+
+export const getBriaBalance = async (): Promise<Satoshis> => {
+  try {
+    // TODO: replace by bria health check query or other bria method
+    const service = NewOnChainService()
+    const response = await service.getBalance()
+    if (response instanceof Error) throw response
+    return Number(response.amount) as Satoshis
+  } catch {
+    return 0 as Satoshis
+  }
+}
 
 export const onceBriaSubscribe = async ({
   type,

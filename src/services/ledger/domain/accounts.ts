@@ -10,6 +10,7 @@ export const lndLedgerAccountId =
 export const onChainLedgerAccountId = `${assetsMainAccount}:OnChain` as LedgerAccountId
 
 export const coldStorageAccountId = `${assetsMainAccount}:Reserve:Bitcoind`
+export const escrowAccountId = `${assetsMainAccount}:Reserve:Escrow` // TODO: rename to Assets:Lnd:Escrow
 
 export const lndLedgerAccountDescriptor = {
   id: lndLedgerAccountId,

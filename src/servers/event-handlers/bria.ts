@@ -20,7 +20,7 @@ export const briaEventHandler = async (
   }
 }
 
-const utxoDetectedEventHandler = async ({
+export const utxoDetectedEventHandler = async ({
   event,
 }: {
   event: UtxoDetected
@@ -33,7 +33,7 @@ const utxoDetectedEventHandler = async ({
   return res
 }
 
-const utxoSettledEventHandler = async ({
+export const utxoSettledEventHandler = async ({
   event,
 }: {
   event: UtxoSettled

@@ -7,6 +7,7 @@ import { lndsBalances } from "@services/lnd/utils"
 
 import { waitUntilChannelBalanceSyncAll } from "./lightning"
 import { getBalance as getBitcoindBalance } from "./bitcoind"
+import { getBriaBalance } from "./bria"
 
 const logger = baseLogger.child({ module: "test" })
 
@@ -29,23 +30,26 @@ export const checkIsBalanced = async () => {
 }
 
 const getLedgerAccounts = async () => {
-  const [assets, liabilities, lightning, bitcoin, bankOwnerBalance] = await Promise.all([
-    ledgerAdmin.getAssetsBalance(),
-    ledgerAdmin.getLiabilitiesBalance(),
-    ledgerAdmin.getLndBalance(),
-    ledgerAdmin.getBitcoindBalance(),
-    ledgerAdmin.getBankOwnerBalance(),
-  ])
+  const [assets, liabilities, lightning, bitcoin, bankOwnerBalance, onChain] =
+    await Promise.all([
+      ledgerAdmin.getAssetsBalance(),
+      ledgerAdmin.getLiabilitiesBalance(),
+      ledgerAdmin.getLndBalance(),
+      ledgerAdmin.getBitcoindBalance(),
+      ledgerAdmin.getBankOwnerBalance(),
+      ledgerAdmin.getOnChainBalance(),
+    ])
 
-  return { assets, liabilities, lightning, bitcoin, bankOwnerBalance }
+  return { assets, liabilities, lightning, bitcoin, bankOwnerBalance, onChain }
 }
 
 const balanceSheetIsBalanced = async () => {
-  const { assets, liabilities, lightning, bitcoin, bankOwnerBalance } =
+  const { assets, liabilities, lightning, bitcoin, bankOwnerBalance, onChain } =
     await getLedgerAccounts()
   const { total: lnd } = await lndsBalances() // doesnt include escrow amount
 
   const bitcoind = await getBitcoindBalance()
+  const bria = await getBriaBalance()
 
   const assetsLiabilitiesDifference =
     assets /* assets is ___ */ + liabilities /* liabilities is ___ */
@@ -53,7 +57,8 @@ const balanceSheetIsBalanced = async () => {
   const bookingVersusRealWorldAssets =
     lnd + // physical assets
     bitcoind + // physical assets
-    (lightning + bitcoin) // value in accounting
+    bria + // physical assets
+    (lightning + bitcoin + onChain) // value in accounting
 
   if (!!bookingVersusRealWorldAssets || !!assetsLiabilitiesDifference) {
     logger.warn(
@@ -67,6 +72,8 @@ const balanceSheetIsBalanced = async () => {
         lightning,
         bitcoind,
         bitcoin,
+        bria,
+        onChain,
       },
       `not balanced`,
     )

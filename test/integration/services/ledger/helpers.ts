@@ -7,10 +7,10 @@ import * as LedgerFacade from "@services/ledger/facade"
 import { MainBook } from "@services/ledger/books"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
 import {
-  bitcoindAccountingPath,
-  escrowAccountingPath,
-  lndAccountingPath,
-} from "@services/ledger/accounts"
+  coldStorageAccountId,
+  escrowAccountId,
+  lndLedgerAccountId,
+} from "@services/ledger/domain"
 import { translateToLedgerJournal } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 
@@ -519,7 +519,7 @@ export const recordLnChannelOpenOrClosingFee = async ({ paymentAmount }) => {
 
   const savedEntry = await MainBook.entry("LnChannelOpenOrClosingFee")
     .debit(bankOwnerPath, amount, { ...metadata, currency: WalletCurrency.Btc })
-    .credit(lndAccountingPath, amount, { ...metadata, currency: WalletCurrency.Btc })
+    .credit(lndLedgerAccountId, amount, { ...metadata, currency: WalletCurrency.Btc })
     .commit()
 
   return translateToLedgerJournal(savedEntry)
@@ -530,8 +530,8 @@ export const recordLndEscrowDebit = async ({ paymentAmount }) => {
   const metadata = LedgerFacade.Escrow()
 
   const savedEntry = await MainBook.entry("escrow")
-    .debit(escrowAccountingPath, amount, { ...metadata, currency: WalletCurrency.Btc })
-    .credit(lndAccountingPath, amount, { ...metadata, currency: WalletCurrency.Btc })
+    .debit(escrowAccountId, amount, { ...metadata, currency: WalletCurrency.Btc })
+    .credit(lndLedgerAccountId, amount, { ...metadata, currency: WalletCurrency.Btc })
     .commit()
 
   return translateToLedgerJournal(savedEntry)
@@ -542,8 +542,8 @@ export const recordLndEscrowCredit = async ({ paymentAmount }) => {
   const metadata = LedgerFacade.Escrow()
 
   const savedEntry = await MainBook.entry("escrow")
-    .debit(lndAccountingPath, amount, { ...metadata, currency: WalletCurrency.Btc })
-    .credit(escrowAccountingPath, amount, { ...metadata, currency: WalletCurrency.Btc })
+    .debit(lndLedgerAccountId, amount, { ...metadata, currency: WalletCurrency.Btc })
+    .credit(escrowAccountId, amount, { ...metadata, currency: WalletCurrency.Btc })
     .commit()
 
   return translateToLedgerJournal(savedEntry)
@@ -556,7 +556,7 @@ export const recordLnRoutingRevenue = async ({ paymentAmount }) => {
   const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
 
   const savedEntry = await MainBook.entry("routing fee")
-    .debit(lndAccountingPath, amount, { ...metadata, currency: WalletCurrency.Btc })
+    .debit(lndLedgerAccountId, amount, { ...metadata, currency: WalletCurrency.Btc })
     .credit(bankOwnerPath, amount, { ...metadata, currency: WalletCurrency.Btc })
     .commit()
 
@@ -586,8 +586,8 @@ export const recordColdStorageTxReceive = async ({
 
   const savedEntry = await MainBook.entry("cold storage receive")
     .debit(bankOwnerPath, fee, metadata)
-    .debit(bitcoindAccountingPath, amount, metadata)
-    .credit(lndAccountingPath, amount + fee, metadata)
+    .debit(coldStorageAccountId, amount, metadata)
+    .credit(lndLedgerAccountId, amount + fee, metadata)
     .commit()
 
   return translateToLedgerJournal(savedEntry)
@@ -616,8 +616,8 @@ export const recordColdStorageTxSend = async ({
 
   const savedEntry = await MainBook.entry("cold storage send")
     .debit(bankOwnerPath, fee, metadata)
-    .debit(lndAccountingPath, amount, metadata)
-    .credit(bitcoindAccountingPath, amount + fee, metadata)
+    .debit(lndLedgerAccountId, amount, metadata)
+    .credit(coldStorageAccountId, amount + fee, metadata)
     .commit()
 
   return translateToLedgerJournal(savedEntry)
