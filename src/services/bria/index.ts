@@ -4,8 +4,8 @@ import { credentials, Metadata } from "@grpc/grpc-js"
 
 import { getBriaConfig } from "@config"
 
-import { WalletCurrency } from "@domain/shared/primitives"
 import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared/primitives"
 
 import {
   asyncRunInSpan,
@@ -22,6 +22,8 @@ import {
   BriaEvent as RawBriaEvent,
   NewAddressRequest,
   NewAddressResponse,
+  GetWalletBalanceSummaryRequest,
+  GetWalletBalanceSummaryResponse,
 } from "./proto/bria_pb"
 import {
   EventAugmentationMissingError,
@@ -49,6 +51,11 @@ const bitcoinBridgeClient = new BriaServiceClient(
 const newAddress = util.promisify<NewAddressRequest, Metadata, NewAddressResponse>(
   bitcoinBridgeClient.newAddress.bind(bitcoinBridgeClient),
 )
+const getWalletBalanceSummary = util.promisify<
+  GetWalletBalanceSummaryRequest,
+  Metadata,
+  GetWalletBalanceSummaryResponse
+>(bitcoinBridgeClient.getWalletBalanceSummary.bind(bitcoinBridgeClient))
 
 export const BriaPayloadType = {
   UtxoDetected: "utxo_detected",
@@ -142,6 +149,22 @@ export const NewOnChainService = (): INewOnChainService => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", briaConfig.apiKey)
 
+  const getBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
+    try {
+      const request = new GetWalletBalanceSummaryRequest()
+      request.setWalletName(briaConfig.walletName)
+
+      const response = await getWalletBalanceSummary(request, metadata)
+
+      return paymentAmountFromNumber({
+        amount: response.getEffectiveSettled(),
+        currency: WalletCurrency.Btc,
+      })
+    } catch (error) {
+      return new UnknownOnChainServiceError(error.message || error)
+    }
+  }
+
   const createOnChainAddress = async (
     requestId?: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | UnknownOnChainServiceError> => {
@@ -162,6 +185,7 @@ export const NewOnChainService = (): INewOnChainService => {
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.bria.onchain",
     fns: {
+      getBalance,
       createOnChainAddress,
     },
   })

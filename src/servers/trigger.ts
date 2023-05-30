@@ -49,6 +49,7 @@ import {
 import { LndService } from "@services/lnd"
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"
+import { BriaSubscriber } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { onChannelUpdated } from "@services/lnd/utils"
@@ -59,7 +60,7 @@ import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tr
 
 import healthzHandler from "./middlewares/healthz"
 import { SubscriptionInterruptedError } from "./errors"
-import { listenerBria } from "./bria-trigger"
+import { briaEventHandler } from "./event-handlers/bria"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
@@ -555,6 +556,33 @@ const listenerSwapMonitor = async () => {
   }
 }
 
+const listenerBria = async () => {
+  const wrappedBriaEventHandler = wrapAsyncToRunInSpan({
+    root: true,
+    namespace: "servers.trigger",
+    fnName: "briaEventHandler",
+    fn: briaEventHandler,
+  })
+
+  const subBria = await BriaSubscriber().subscribeToAll(wrappedBriaEventHandler)
+  if (subBria instanceof Error) {
+    baseLogger.error({ err: subBria }, "error initializing bria subscriber")
+    return
+  }
+
+  subBria._listener.on("error", (err) => {
+    baseLogger.error({ err }, "error subBria")
+    recordExceptionInCurrentSpan({
+      error: new SubscriptionInterruptedError((err && err.message) || "subBria"),
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subBria" },
+    })
+    // remove listener is done in interal error handler
+  })
+
+  baseLogger.info("bria listener started")
+}
+
 const main = () => {
   listenerBria()
 
@@ -591,6 +619,7 @@ const healthCheck = () => {
       checkDbConnectionStatus: true,
       checkRedisStatus: true,
       checkLndsStatus: true,
+      checkBriaStatus: true,
     }),
   )
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))

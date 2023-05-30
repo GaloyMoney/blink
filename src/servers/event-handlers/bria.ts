@@ -1,6 +1,8 @@
 import { Wallets } from "@app"
+
 import { CouldNotFindWalletFromOnChainAddressError } from "@domain/errors"
-import { BriaPayloadType, BriaSubscriber } from "@services/bria"
+
+import { BriaPayloadType } from "@services/bria"
 
 export const briaEventHandler = async (
   event: BriaEvent,
@@ -42,9 +44,4 @@ const utxoSettledEventHandler = async ({
   }
 
   return res
-}
-
-export const listenerBria = async () => {
-  const subBria = await BriaSubscriber().subscribeToAll(briaEventHandler)
-  if (subBria instanceof Error) throw subBria
 }
