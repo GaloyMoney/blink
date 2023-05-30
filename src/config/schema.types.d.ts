@@ -55,10 +55,8 @@ type YamlSchema = {
   }
   bria: {
     hotWalletName: string
-    queues: {
+    queueNames: {
       fast: string
-      medium: string
-      slow: string
     }
   }
   lndScbBackupBucketName: string

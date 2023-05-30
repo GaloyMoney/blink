@@ -36,10 +36,8 @@ coldStorage:
   targetConfirmations: 6
 bria:
   hotWalletName: dev
-  queues:
+  queueNames:
     fast: dev
-    medium: dev
-    slow: dev
 lndScbBackupBucketName: lnd-static-channel-backups
 test_accounts:
   - ref: A

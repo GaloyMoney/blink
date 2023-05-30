@@ -209,23 +209,19 @@ export const configSchema = {
       type: "object",
       properties: {
         hotWalletName: { type: "string" },
-        queues: {
+        queueNames: {
           type: "object",
           properties: {
             fast: { type: "string" },
-            medium: { type: "string" },
-            slow: { type: "string" },
           },
-          required: ["fast", "medium", "slow"],
+          required: ["fast"],
           additionalProperties: false,
           default: {
             fast: "dev",
-            medium: "dev",
-            slow: "dev",
           },
         },
       },
-      required: ["hotWalletName", "queues"],
+      required: ["hotWalletName", "queueNames"],
       additionalProperties: false,
       default: {
         hotWalletName: "dev",
