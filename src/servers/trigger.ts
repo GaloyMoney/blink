@@ -577,7 +577,7 @@ const listenerBria = async () => {
       level: ErrorLevel.Warn,
       attributes: { ["error.subscription"]: "subBria" },
     })
-    // remove listener is done in interal error handler
+    // remove listener is done in internal error handler
   })
 
   baseLogger.info("bria listener started")
