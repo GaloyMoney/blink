@@ -2487,7 +2487,7 @@
     change-case-all "1.0.14"
     tslib "~2.4.0"
 
-"@graphql-codegen/typescript@^3.0.3", "@graphql-codegen/typescript@^3.0.4":
+"@graphql-codegen/typescript@^3.0.4":
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/typescript/-/typescript-3.0.4.tgz#e12dc106a2722ebc7d18556980ccf47fa9d0805f"
   integrity sha512-x4O47447DZrWNtE/l5CU9QzzW4m1RbmCEdijlA3s2flG/y1Ckqdemob4CWfilSm5/tZ3w1junVDY616RDTSvZw==
