@@ -245,6 +245,7 @@ const createWalletGauge = ({
           getWalletBalancePromise(),
           timeoutPromise,
         ])) as number
+        cancelTimeout()
 
         await cache.set<number>({
           key: name,
@@ -257,9 +258,9 @@ const createWalletGauge = ({
         logger.error({ err }, `Could not load wallet id for ${walletName}.`)
 
         if (err.message === "Timeout") {
-          cancelTimeout()
           logger.info(`Getting ${walletName} wallet balance from cache.`)
         }
+        cancelTimeout()
 
         return cache.getOrSet({
           key: name,

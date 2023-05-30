@@ -332,13 +332,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
       cancelTimeout = cancelTimeoutFn
 
       const { route } = await Promise.race([routePromise, timeoutPromise])
+      cancelTimeout()
       if (!route) return new RouteNotFoundError()
       return route
     } catch (err) {
       if (err.message === "Timeout") {
-        cancelTimeout()
         return new ProbeForRouteTimedOutFromApplicationError()
       }
+      cancelTimeout()
 
       const errDetails = parseLndErrorDetails(err)
       const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
@@ -630,6 +631,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
         paymentPromise,
         timeoutPromise,
       ])) as PayViaRoutesResult
+      cancelTimeout()
+
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,
@@ -637,9 +640,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
     } catch (err) {
       if (err.message === "Timeout") {
-        cancelTimeout()
         return new LnPaymentPendingError()
       }
+      cancelTimeout()
 
       return handleSendPaymentLndErrors({ err, paymentHash })
     }
@@ -703,6 +706,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
         paymentPromise,
         timeoutPromise,
       ])) as PayViaPaymentDetailsResult
+      cancelTimeout()
+
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,
@@ -710,9 +715,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
     } catch (err) {
       if (err.message === "Timeout") {
-        cancelTimeout()
         return new LnPaymentPendingError()
       }
+      cancelTimeout()
       return handleSendPaymentLndErrors({ err, paymentHash: decodedInvoice.paymentHash })
     }
   }
@@ -779,6 +784,7 @@ const lookupPaymentByPubkeyAndHash = async ({
       resultPromise,
       timeoutPromise,
     ])) as GetPaymentResult
+    cancelTimeout()
 
     const { payment, pending } = result
     const status = await resolvePaymentStatus({ lnd, result })
@@ -823,9 +829,9 @@ const lookupPaymentByPubkeyAndHash = async ({
     return new BadPaymentDataError(JSON.stringify(result))
   } catch (err) {
     if (err.message === "Timeout") {
-      cancelTimeout()
       return new LookupPaymentTimedOutError()
     }
+    cancelTimeout()
     const errDetails = parseLndErrorDetails(err)
     const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
     switch (true) {
