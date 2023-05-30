@@ -1,8 +1,11 @@
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import { TxFilter } from "@domain/bitcoin/onchain"
-import { AmountCalculator, ZERO_SATS } from "@domain/shared"
-import { CouldNotFindError } from "@domain/errors"
+import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@domain/shared"
+import {
+  CouldNotFindError,
+  MultipleCurrenciesForSingleCurrencyOperationError,
+} from "@domain/errors"
 
 import { WalletOnChainPendingReceiveRepository } from "@services/mongoose"
 import { baseLogger } from "@services/logger"
@@ -13,9 +16,18 @@ import {
 
 import { getOnChainTxs } from "./private/get-on-chain-txs"
 
+// Note: We have not turned on "create address" for stablesats wallets so
+//       this function should only have to handle transactions for wallets
+//       that are BTC-currency ones (no USD-wallet addresses should exist
+//       in lnd).
 const lndGetPendingOnChainBalanceForWallets = async (
   wallets: Wallet[],
 ): Promise<{ [key: WalletId]: BtcPaymentAmount } | ApplicationError> => {
+  const walletCurrencies = new Set(wallets.map((w) => w.currency))
+  if (!(walletCurrencies.size === 1 && walletCurrencies.has(WalletCurrency.Btc))) {
+    return new MultipleCurrenciesForSingleCurrencyOperationError()
+  }
+
   const onChainTxs = await getOnChainTxs()
   if (onChainTxs instanceof Error) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
@@ -49,9 +61,17 @@ const briaGetPendingOnChainBalanceForWallets = async <S extends WalletCurrency>(
 export const getPendingOnChainBalanceForWallets = async <S extends WalletCurrency>(
   wallets: Wallet[],
 ): Promise<{ [key: WalletId]: PaymentAmount<S> } | ApplicationError> => {
-  const balancesFromLnd = await lndGetPendingOnChainBalanceForWallets(wallets)
-  if (balancesFromLnd instanceof Error) return balancesFromLnd
+  const walletCurrencies = new Set(wallets.map((w) => w.currency))
+  if (walletCurrencies.size !== 1) {
+    return new MultipleCurrenciesForSingleCurrencyOperationError()
+  }
 
+  let balancesFromLnd: { [key: WalletId]: BtcPaymentAmount } = {}
+  if (wallets[0].currency === WalletCurrency.Btc) {
+    const result = await lndGetPendingOnChainBalanceForWallets(wallets)
+    if (result instanceof Error) return result
+    balancesFromLnd = result
+  }
   const balancesFromBria = await briaGetPendingOnChainBalanceForWallets<S>(wallets)
   if (balancesFromBria instanceof Error) return balancesFromBria
 

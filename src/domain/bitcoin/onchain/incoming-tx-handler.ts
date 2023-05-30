@@ -86,11 +86,12 @@ export const IncomingOnChainTxHandler = (
 export const NewIncomingOnChainTxHandler = <S extends WalletCurrency>(
   txns: WalletOnChainSettledTransaction[],
 ): NewIncomingOnChainTxHandler<S> | ValidationError => {
-  const walletCurrency = txns[0].settlementCurrency
   const settlementCurrencies = new Set(txns.map((tx) => tx.settlementCurrency))
   if (settlementCurrencies.size !== 1) {
     return new MultipleCurrenciesForSingleCurrencyOperationError()
   }
+
+  const walletCurrency = txns[0].settlementCurrency
 
   const balancesByAddresses = ():
     | { [key: OnChainAddress]: PaymentAmount<S> }
