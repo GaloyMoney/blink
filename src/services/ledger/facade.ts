@@ -64,7 +64,7 @@ export const recordSend = async ({
   return persistAndReturnEntry({ entry, hash: metadata.hash })
 }
 
-export const recordReceiveContraLnd = async ({
+export const recordReceiveOffChain = async ({
   description,
   recipientWalletDescriptor,
   amountToCreditReceiver,
@@ -101,7 +101,7 @@ export const recordReceiveContraLnd = async ({
   return persistAndReturnEntry({ entry, ...txMetadata })
 }
 
-export const recordReceiveContraOnChain = async ({
+export const recordReceiveOnChain = async ({
   description,
   recipientWalletDescriptor,
   amountToCreditReceiver,

@@ -237,7 +237,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     })
 
     //TODO: add displayCurrency: displayPaymentAmount.currency,
-    const result = await LedgerFacade.recordReceiveContraLnd({
+    const result = await LedgerFacade.recordReceiveOffChain({
       description,
       recipientWalletDescriptor: {
         ...walletInvoice.recipientWalletDescriptor,

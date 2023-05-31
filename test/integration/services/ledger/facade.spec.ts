@@ -16,8 +16,7 @@ import {
   recordOnChainIntraLedgerPayment,
   recordOnChainTradeIntraAccountTxn,
   recordReceiveLnPayment,
-  recordReceiveOnChainPaymentContraLnd,
-  recordReceiveOnChainPaymentContraOnChain,
+  recordReceiveOnChainPayment,
   recordSendLnPayment,
   recordSendOnChainPayment,
   recordWalletIdIntraLedgerPayment,
@@ -167,13 +166,8 @@ describe("Facade", () => {
         metadata: LedgerTransactionType.Invoice,
       },
       {
-        name: "recordReceiveOnChainPaymentContraLnd",
-        recordFn: recordReceiveOnChainPaymentContraLnd,
-        metadata: LedgerTransactionType.OnchainReceipt,
-      },
-      {
-        name: "recordReceiveOnChainPaymentContraOnChain",
-        recordFn: recordReceiveOnChainPaymentContraOnChain,
+        name: "recordReceiveOnChainPayment",
+        recordFn: recordReceiveOnChainPayment,
         metadata: LedgerTransactionType.OnchainReceipt,
       },
       {

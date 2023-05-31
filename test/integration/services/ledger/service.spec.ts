@@ -22,7 +22,7 @@ import {
   recordReceiveLnPayment,
   recordSendLnPayment,
   recordSendOnChainPayment,
-  recordReceiveOnChainPaymentContraOnChain,
+  recordReceiveOnChainPayment,
   recordWalletIdIntraLedgerPayment,
   recordOnChainIntraLedgerPayment,
   recordLnChannelOpenOrClosingFee,
@@ -343,7 +343,7 @@ describe("Volumes", () => {
     const txFnsForIncludedTypes = {
       Invoice: () => testExternalTxReceiveWLE({ recordTx: recordReceiveLnPayment }),
       OnchainReceipt: () =>
-        testExternalTxReceiveWLE({ recordTx: recordReceiveOnChainPaymentContraOnChain }),
+        testExternalTxReceiveWLE({ recordTx: recordReceiveOnChainPayment }),
       Payment: () => testExternalTxSendWLE({ recordTx: recordSendLnPayment }),
       OnchainPayment: () => testExternalTxSendWLE({ recordTx: recordSendOnChainPayment }),
       LnFeeReimbursement: () =>
@@ -416,8 +416,7 @@ describe("Volumes", () => {
     // Setting up all 'it' tests for each txn type, to check volume is NOT affected
     const txFnsForExcludedTypes = {
       Invoice: () => testExternalTxNLE({ recordTx: recordReceiveLnPayment }),
-      OnchainReceipt: () =>
-        testExternalTxNLE({ recordTx: recordReceiveOnChainPaymentContraOnChain }),
+      OnchainReceipt: () => testExternalTxNLE({ recordTx: recordReceiveOnChainPayment }),
       Payment: () => testExternalTxNLE({ recordTx: recordSendLnPayment }),
       OnchainPayment: () => testExternalTxNLE({ recordTx: recordSendOnChainPayment }),
       LnFeeReimbursement: () => testExternalTxNLE({ recordTx: recordLnFeeReimbursement }),
