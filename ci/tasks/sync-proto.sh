@@ -27,5 +27,5 @@ fi
   git merge --no-edit ${BRANCH}
   git add -A
   git status
-  git commit -m "chore(deps): bump ${MODULE} proto to '${ref}'"
+  git commit -m "chore(deps): bump ${MODULE} proto to '${ref}'" || true
 )
