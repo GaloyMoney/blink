@@ -166,7 +166,10 @@ export const AccountsRepository = (): IAccountsRepository => {
     kratosUserId: UserId,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result = await Account.findOne({ kratosUserId }, { lastIPs: 0 })
+      const result = await Account.findOne(
+        { kratosUserId: { $eq: kratosUserId } },
+        { lastIPs: 0 },
+      )
 
       if (!result) {
         return new CouldNotFindAccountFromKratosIdError(kratosUserId)
