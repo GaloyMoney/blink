@@ -7,7 +7,6 @@ type UserLanguage = typeof import("./languages").Languages[number]
 type UserLanguageOrEmpty = UserLanguage | ""
 
 type DeviceToken = string & { readonly brand: unique symbol }
-type DeviceId = string & { readonly brand: unique symbol }
 
 type CarrierType =
   typeof import("../phone-provider/index").CarrierType[keyof typeof import("../phone-provider/index").CarrierType]
@@ -52,7 +51,6 @@ type User = {
   deviceTokens: DeviceToken[]
   phoneMetadata: PhoneMetadata | undefined
   phone?: PhoneNumber | undefined
-  deviceId?: DeviceId | undefined | null
   createdAt: Date
 }
 
@@ -65,8 +63,11 @@ type UserUpdateInput = Omit<Partial<User>, "language"> & {
 interface IUsersRepository {
   findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  findByDeviceId(deviceId: DeviceId): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
-  update2(user: UserUpdateInput): Promise<User | RepositoryError>
   adminUnsetPhoneForUserPreservation(id: UserId): Promise<User | RepositoryError>
+  migrateUserIdSubject({
+    currentUserIdSubject,
+    newUserIdSubject,
+    phone,
+  }): Promise<User | RepositoryError>
 }

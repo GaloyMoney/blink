@@ -7,7 +7,6 @@ import {
   InvalidContactAlias,
   InvalidWithdrawFeeError,
   InvalidUserId,
-  InvalidDeviceId,
   InvalidAccountLevelError,
 } from "@domain/errors"
 
@@ -35,13 +34,6 @@ export const checkedToUserId = (userId: string): UserId | ValidationError => {
     return userId as UserId
   }
   return new InvalidUserId(userId)
-}
-
-export const checkedToDeviceId = (deviceId: string): DeviceId | ValidationError => {
-  if (deviceId.match(DeviceIdRegex)) {
-    return deviceId as DeviceId
-  }
-  return new InvalidDeviceId(deviceId)
 }
 
 export const isDeviceId = (deviceId: string) => {
