@@ -42,6 +42,10 @@ import * as PushNotificationsServiceImpl from "@services/notifications/push-noti
 import { DealerPriceService } from "@services/dealer-price"
 import { baseLogger } from "@services/logger"
 
+import {
+  utxoDetectedEventHandler,
+  utxoSettledEventHandler,
+} from "@servers/event-handlers/bria"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 
 import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
@@ -159,7 +163,8 @@ describe("With Bria", () => {
     if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
       throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
     }
-    const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+
+    const resultPending = await utxoDetectedEventHandler({ event: detectedEvent.payload })
     if (resultPending instanceof Error) {
       throw resultPending
     }
@@ -171,7 +176,7 @@ describe("With Bria", () => {
     if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
       throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
     }
-    const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+    const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
     if (resultSettled instanceof Error) {
       throw resultSettled
     }
@@ -299,7 +304,9 @@ describe("With Bria", () => {
         throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
       }
       // this is done by trigger and/or cron in prod
-      const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+      const resultPending = await utxoDetectedEventHandler({
+        event: detectedEvent.payload,
+      })
       if (resultPending instanceof Error) {
         throw resultPending
       }
@@ -332,7 +339,7 @@ describe("With Bria", () => {
         throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
       }
       // this is done by trigger and/or cron in prod
-      const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+      const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
       if (resultSettled instanceof Error) {
         throw resultSettled
       }
@@ -678,7 +685,9 @@ describe("With Bria", () => {
         if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
           throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
         }
-        const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+        const resultPending = await utxoDetectedEventHandler({
+          event: detectedEvent.payload,
+        })
         if (resultPending instanceof Error) {
           throw resultPending
         }
@@ -711,7 +720,9 @@ describe("With Bria", () => {
         if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
           throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
         }
-        const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+        const resultSettled = await utxoSettledEventHandler({
+          event: settledEvent.payload,
+        })
         if (resultSettled instanceof Error) {
           throw resultSettled
         }
@@ -765,7 +776,9 @@ describe("With Bria", () => {
       if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
         throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
       }
-      const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+      const resultPending = await utxoDetectedEventHandler({
+        event: detectedEvent.payload,
+      })
       if (resultPending instanceof Error) {
         throw resultPending
       }
@@ -867,7 +880,7 @@ describe("With Bria", () => {
       if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
         throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
       }
-      const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+      const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
       if (resultSettled instanceof Error) {
         throw resultSettled
       }

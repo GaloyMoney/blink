@@ -24,6 +24,11 @@ import { AccountsRepository } from "@services/mongoose"
 import { toObjectId } from "@services/mongoose/utils"
 import { baseLogger } from "@services/logger"
 
+import {
+  utxoDetectedEventHandler,
+  utxoSettledEventHandler,
+} from "@servers/event-handlers/bria"
+
 import { sleep } from "@utils"
 
 import {
@@ -670,7 +675,9 @@ describe("Display properties on transactions", () => {
       if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
         throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
       }
-      const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+      const resultPending = await utxoDetectedEventHandler({
+        event: detectedEvent.payload,
+      })
       if (resultPending instanceof Error) {
         throw resultPending
       }
@@ -682,7 +689,7 @@ describe("Display properties on transactions", () => {
       if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
         throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
       }
-      const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+      const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
       if (resultSettled instanceof Error) {
         throw resultSettled
       }
@@ -762,7 +769,9 @@ describe("Display properties on transactions", () => {
         if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
           throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
         }
-        const resultPending = await Wallets.addPendingTransaction(detectedEvent.payload)
+        const resultPending = await utxoDetectedEventHandler({
+          event: detectedEvent.payload,
+        })
         if (resultPending instanceof Error) {
           throw resultPending
         }
@@ -817,7 +826,9 @@ describe("Display properties on transactions", () => {
         if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
           throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
         }
-        const resultSettled = await Wallets.addSettledTransaction(settledEvent.payload)
+        const resultSettled = await utxoSettledEventHandler({
+          event: settledEvent.payload,
+        })
         if (resultSettled instanceof Error) {
           throw resultSettled
         }
