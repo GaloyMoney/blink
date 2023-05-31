@@ -197,3 +197,5 @@ captcha:
 skipFeeProbeConfig:
   pubkey: []
   chanId: []
+smsAuthUnsupportedCountries: []
+whatsAppAuthUnsupportedCountries: []

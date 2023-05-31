@@ -259,6 +259,16 @@ type Coordinates {
   longitude: Float!
 }
 
+type Country {
+  id: CountryCode!
+  supportedAuthChannels: [PhoneCodeChannelType!]!
+}
+
+"""
+A CCA2 country code (ex US, FR, etc)
+"""
+scalar CountryCode
+
 type Currency {
   flag: String!
   fractionDigits: Int!
@@ -309,6 +319,11 @@ type Globals {
   This can be used to know if an invoice belongs to one of our nodes.
   """
   nodesIds: [String!]!
+
+  """
+  A list of countries and their supported auth channels
+  """
+  supportedCountries: [Country!]!
 }
 
 type GraphQLApplicationError implements Error {

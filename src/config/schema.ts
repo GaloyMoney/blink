@@ -666,6 +666,16 @@ export const configSchema = {
         chanId: [],
       },
     },
+    smsAuthUnsupportedCountries: {
+      type: "array",
+      items: { type: "string" },
+      default: [],
+    },
+    whatsAppAuthUnsupportedCountries: {
+      type: "array",
+      items: { type: "string" },
+      default: [],
+    },
   },
   required: [
     "name",
@@ -683,6 +693,8 @@ export const configSchema = {
     "cronConfig",
     "kratosConfig",
     "captcha",
+    "smsAuthUnsupportedCountries",
+    "whatsAppAuthUnsupportedCountries",
   ],
   additionalProperties: false,
 } as const
