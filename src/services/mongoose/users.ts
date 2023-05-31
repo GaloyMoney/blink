@@ -95,7 +95,7 @@ export const UsersRepository = (): IUsersRepository => {
     newUserIdSubject: UserId
     phone: PhoneNumber
   }): Promise<User | RepositoryError> => {
-    const filter = { userId: currentUserIdSubject }
+    const filter = { userId: { $eq: currentUserIdSubject } }
     const update = {
       $set: {
         userId: newUserIdSubject,
