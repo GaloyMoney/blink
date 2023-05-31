@@ -8,10 +8,10 @@ import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tr
 import {
   createAccountForEmailIdentifier,
   createAccountWithPhoneIdentifier,
-  createAccountForDeviceAccount,
+  upgradeAccountFromDeviceToPhone,
 } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
-import { AccountLevel, checkedToDeviceId, checkedToUserId } from "@domain/accounts"
+import { checkedToDeviceId, checkedToUserId } from "@domain/accounts"
 import { UsersRepository } from "@services/mongoose"
 import { ErrorLevel, ValidationError } from "@domain/shared"
 import { baseLogger } from "@services/logger"
@@ -123,8 +123,16 @@ kratosRouter.post(
       }
 
       let account: Account | RepositoryError
-      // phone+code flow
-      if (phoneRaw) {
+
+      // upgrade device to phone flow if both traits are present
+      if (deviceId && phoneRaw) {
+        account = await upgradeAccountFromDeviceToPhone({
+          userId: userIdChecked,
+          deviceId,
+          phone: phoneRaw,
+        })
+      } else if (phoneRaw) {
+        // phone+code flow
         const phone = checkedToPhoneNumber(phoneRaw)
         if (phone instanceof Error) {
           recordExceptionInCurrentSpan({
@@ -149,16 +157,6 @@ kratosRouter.post(
         account = await createAccountForEmailIdentifier({
           kratosUserId: userIdChecked,
           config: getDefaultAccountsConfig(),
-        })
-      } else if (deviceId) {
-        // device flow
-        const levelZeroAccountsConfig = getDefaultAccountsConfig()
-        levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
-        // kratos user exists from self registration flow
-        account = await createAccountForDeviceAccount({
-          userId: userIdChecked,
-          config: levelZeroAccountsConfig,
-          deviceId,
         })
       } else {
         // insert new flow, such as email with code

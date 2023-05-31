@@ -49,6 +49,10 @@ interface IAuthWithPhonePasswordlessService {
   createIdentityWithSession(args: {
     phone: PhoneNumber
   }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
+  createIdentityWithDeviceId(args: {
+    phone: PhoneNumber
+    deviceId: UserId
+  }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
   createIdentityWithCookie(args: {
     phone: PhoneNumber
   }): Promise<
