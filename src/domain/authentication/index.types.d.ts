@@ -81,3 +81,11 @@ interface IIdentityRepository {
   slowFindByPhone(phone: PhoneNumber): Promise<IdentityPhone | KratosError>
   deleteIdentity(id: UserId): Promise<void | KratosError>
 }
+
+// CCA2 country code such as "US" or "FR"
+type CountryCode = string & { readonly brand: unique symbol }
+
+type Country = {
+  id: CountryCode
+  supportedAuthChannels: ChannelType[]
+}
