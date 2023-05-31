@@ -246,20 +246,17 @@ export const loginWithDevice = async ({
     await rewardFailedLoginAttemptPerIpLimits(ip)
     return verifiedJwt
   }
-  const deviceId = verifiedJwt.sub as DeviceId
+  const deviceId = verifiedJwt.sub as UserId
 
   // 1. Does account exist in mongo?
-  const accountExist = await AccountsRepository().findByUserId(
-    deviceId as unknown as UserId, // TODO fix casting
-  )
+  const accountExist = await AccountsRepository().findByUserId(deviceId)
   // 2. If not, then create account in mongo
   if (accountExist instanceof CouldNotFindAccountFromKratosIdError) {
     const levelZeroAccountsConfig = getDefaultAccountsConfig()
     levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
     const account = await createAccountForDeviceAccount({
-      userId: deviceId as unknown as UserId, // TODO fix casting
+      userId: deviceId,
       config: levelZeroAccountsConfig,
-      deviceId,
     })
     if (account instanceof Error) return account
   }

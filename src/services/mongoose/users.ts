@@ -1,7 +1,6 @@
 import {
   CouldNotUnsetPhoneFromUserError,
   CouldNotFindUserFromPhoneError,
-  CouldNotFindUserFromDeviceError,
   RepositoryError,
 } from "@domain/errors"
 
@@ -14,7 +13,6 @@ export const translateToUser = (user: UserRecord): User => {
   const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone
-  const deviceId = user.deviceId
   const createdAt = user.createdAt
 
   return {
@@ -23,7 +21,6 @@ export const translateToUser = (user: UserRecord): User => {
     deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
     phone,
-    deviceId,
     createdAt,
   }
 }
@@ -57,24 +54,12 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const findByDeviceId = async (deviceId: DeviceId): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOne({ deviceId: { $eq: deviceId } })
-      if (!result) return new CouldNotFindUserFromDeviceError()
-
-      return translateToUser(result)
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   const update = async ({
     id,
     language,
     deviceTokens,
     phoneMetadata,
     phone,
-    deviceId,
     createdAt,
   }: UserUpdateInput): Promise<User | RepositoryError> => {
     try {
@@ -85,7 +70,6 @@ export const UsersRepository = (): IUsersRepository => {
           phoneMetadata,
           language,
           phone,
-          deviceId,
           createdAt, // TODO: remove post migration
         },
         {
@@ -102,26 +86,26 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  // TODO fix this, can we just tweak update or will it break other things without including new/upsert?
-  const update2 = async ({
-    id,
-    language,
-    deviceTokens,
-    phoneMetadata,
+  const migrateUserIdSubject = async ({
+    currentUserIdSubject,
+    newUserIdSubject,
     phone,
-    deviceId,
-    createdAt,
-  }: UserUpdateInput): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOneAndUpdate({
-        userId: id,
-        deviceTokens,
-        phoneMetadata,
-        language,
+  }: {
+    currentUserIdSubject: UserId
+    newUserIdSubject: UserId
+    phone: PhoneNumber
+  }): Promise<User | RepositoryError> => {
+    const filter = { userId: currentUserIdSubject }
+    const update = {
+      $set: {
+        userId: newUserIdSubject,
         phone,
-        deviceId,
-        createdAt,
-      })
+      },
+    }
+    const options = { upsert: true, returnOriginal: false }
+
+    try {
+      const result = await User.findOneAndUpdate(filter, update, options)
       if (!result) {
         return new RepositoryError("Couldn't update user")
       }
@@ -152,9 +136,8 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByPhone,
-    findByDeviceId,
     update,
-    update2,
     adminUnsetPhoneForUserPreservation,
+    migrateUserIdSubject,
   }
 }

@@ -76,14 +76,12 @@ const initializeCreatedAccount = async ({
 
 export const createAccountForDeviceAccount = async ({
   userId,
-  deviceId,
   config,
 }: {
   userId: UserId
-  deviceId: DeviceId
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  const user = await UsersRepository().update({ id: userId, deviceId })
+  const user = await UsersRepository().update({ id: userId })
   if (user instanceof Error) return user
 
   const accountNew = await AccountsRepository().persistNew(userId)
@@ -104,13 +102,11 @@ export const upgradeAccountFromDeviceToPhone = async ({
   phone,
 }: {
   userId: UserId
-  deviceId: DeviceId
+  deviceId: UserId
   phone: PhoneNumber
 }): Promise<Account | RepositoryError> => {
   // 1. update account
-  const accountDevice = await AccountsRepository().findByUserId(
-    deviceId as unknown as UserId, // TODO fix casting
-  )
+  const accountDevice = await AccountsRepository().findByUserId(deviceId)
   if (accountDevice instanceof Error) return accountDevice
   accountDevice.kratosUserId = userId
   accountDevice.level = AccountLevel.One
@@ -118,12 +114,11 @@ export const upgradeAccountFromDeviceToPhone = async ({
   if (accountUpdated instanceof Error) return accountUpdated
 
   // 2. update user
-  const userDevice = await UsersRepository().findById(deviceId as unknown as UserId) // TODO fix casting
-  if (userDevice instanceof Error) return userDevice
-  userDevice.id = userId
-  userDevice.phone = phone
-  userDevice.deviceId = null
-  const userUpdated = await UsersRepository().update2(userDevice)
+  const userUpdated = await UsersRepository().migrateUserIdSubject({
+    currentUserIdSubject: deviceId,
+    newUserIdSubject: userId,
+    phone,
+  })
   if (userUpdated instanceof Error) return userUpdated
 
   return accountUpdated

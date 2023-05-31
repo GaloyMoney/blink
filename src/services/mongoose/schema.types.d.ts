@@ -117,7 +117,6 @@ interface UserRecord {
   deviceTokens: string[]
   phoneMetadata?: TwilioObjectForUser
   phone?: PhoneNumber
-  deviceId?: DeviceId
   createdAt: Date
 }
 
