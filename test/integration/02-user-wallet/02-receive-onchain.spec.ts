@@ -64,7 +64,6 @@ import {
   getTransactionsForWalletId,
   lndonchain,
   manyBriaSubscribe,
-  newGetTransactionsForWalletId,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
   resetOnChainAddressAccountIdLimits,
@@ -130,9 +129,7 @@ describe("With Bria", () => {
     depositFeeRatio?: DepositFeeRatio
   }): Promise<OnChainTxHash> => {
     const initialBalance = await getBalanceHelper(walletId)
-    const { result: initTransactions, error } = await newGetTransactionsForWalletId(
-      walletId,
-    )
+    const { result: initTransactions, error } = await getTransactionsForWalletId(walletId)
     if (error instanceof Error || initTransactions === null) {
       throw error
     }
@@ -189,8 +186,9 @@ describe("With Bria", () => {
         }),
     )
 
-    const { result: transactions, error: txnsError } =
-      await newGetTransactionsForWalletId(walletId)
+    const { result: transactions, error: txnsError } = await getTransactionsForWalletId(
+      walletId,
+    )
     if (txnsError instanceof Error || transactions === null) {
       throw txnsError
     }
@@ -279,9 +277,7 @@ describe("With Bria", () => {
   }) {
     // Step 1: get initial balance and transactions list
     const initialBalance = await getBalanceHelper(walletId)
-    const { result: initTransactions, error } = await newGetTransactionsForWalletId(
-      walletId,
-    )
+    const { result: initTransactions, error } = await getTransactionsForWalletId(walletId)
     if (error instanceof Error || initTransactions === null) {
       throw error
     }
@@ -355,12 +351,10 @@ describe("With Bria", () => {
 
     const wallet = await WalletsRepository().findById(walletId)
     if (wallet instanceof Error) throw wallet
-    const { result: settledTxns } = await Wallets.newGetTransactionsForWalletsByAddresses(
-      {
-        wallets: [wallet],
-        addresses,
-      },
-    )
+    const { result: settledTxns } = await Wallets.getTransactionsForWalletsByAddresses({
+      wallets: [wallet],
+      addresses,
+    })
     if (settledTxns === null) throw new Error("'settledTxns' is null")
 
     const settledTxIds = settledEvents
@@ -795,7 +789,7 @@ describe("With Bria", () => {
       })
 
       // Check pendingTx from chain
-      const { result: txs, error } = await newGetTransactionsForWalletId(newWalletIdA)
+      const { result: txs, error } = await getTransactionsForWalletId(newWalletIdA)
       if (error instanceof Error || txs === null) {
         throw error
       }
@@ -841,7 +835,7 @@ describe("With Bria", () => {
 
       // Check pendingTx from cache
       const { result: txsFromCache, error: errorFromCache } =
-        await newGetTransactionsForWalletId(newWalletIdA)
+        await getTransactionsForWalletId(newWalletIdA)
       if (errorFromCache instanceof Error || txsFromCache === null) {
         throw errorFromCache
       }
@@ -1196,7 +1190,11 @@ describe("With Lnd", () => {
     // Test pending onchain transactions balance use-case
     const pendingBalances = await Wallets.getPendingOnChainBalanceForWallets([wallet])
     if (pendingBalances instanceof Error) throw pendingBalances
-    const expectedPendingBalance = amountSats * addresses.length
+    const expectedPendingBalance =
+      amountAfterFeeDeduction({
+        amount: amountSats,
+        depositFeeRatio,
+      }) * addresses.length
     expect(Number(pendingBalances[walletId].amount)).toEqual(expectedPendingBalance)
 
     // Confirm pending onchain transactions

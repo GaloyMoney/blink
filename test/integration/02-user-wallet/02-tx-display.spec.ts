@@ -34,10 +34,10 @@ import {
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
+  getTransactionsForWalletId,
   getUsdWalletIdByTestUserRef,
   lndonchain,
   lndOutside1,
-  newGetTransactionsForWalletId,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
   safePay,
@@ -768,9 +768,7 @@ describe("Display properties on transactions", () => {
         }
 
         // Check entries
-        const { result: txs, error } = await newGetTransactionsForWalletId(
-          recipientWalletId,
-        )
+        const { result: txs, error } = await getTransactionsForWalletId(recipientWalletId)
         if (error instanceof Error || txs === null) {
           throw error
         }

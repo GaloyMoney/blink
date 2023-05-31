@@ -40,7 +40,7 @@ export const addSettledTransaction = async ({
   if (wallet instanceof Error) return wallet
 
   return LockService().lockOnChainTxHashAndVout({ txHash, vout }, async () => {
-    const recorded = await ledger.isOnChainTxRecorded({
+    const recorded = await ledger.isOnChainTxRecordedForWallet({
       walletId: wallet.id,
       txHash,
       vout,
