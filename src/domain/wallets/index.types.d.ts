@@ -151,7 +151,6 @@ type AddPendingIncomingArgs = {
 
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
-  addPendingIncoming(args: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
 }
 
 type WalletTransactionHistoryWithPending = {

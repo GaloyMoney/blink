@@ -8,11 +8,9 @@ import {
   WalletTransactionHistory,
 } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
-import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import { MEMO_SHARING_CENTS_THRESHOLD, MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
-import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
 
 describe("translates ledger txs to wallet txs", () => {
   const timestamp = new Date(Date.now())
@@ -452,129 +450,5 @@ describe("translateDescription", () => {
       ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
-  })
-})
-
-describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
-  const walletPriceRatio = WalletPriceRatio({
-    usd: { amount: 20n, currency: WalletCurrency.Usd },
-    btc: { amount: 1000n, currency: WalletCurrency.Btc },
-  })
-  if (walletPriceRatio instanceof Error) throw walletPriceRatio
-
-  const displayPriceRatio = DisplayPriceRatio({
-    displayAmount: {
-      amountInMinor: 16n,
-      currency: "EUR" as DisplayCurrency,
-      displayInMajor: "0.16" as DisplayCurrencyMajorAmount,
-    },
-    walletAmount: { amount: 1000n, currency: WalletCurrency.Btc },
-  })
-  if (displayPriceRatio instanceof Error) throw displayPriceRatio
-
-  it("translates submitted txs to wallet txs", () => {
-    const walletId = crypto.randomUUID() as WalletId
-
-    const timestamp = new Date(Date.now())
-    const incomingTxs: IncomingOnChainTransaction[] = [
-      IncomingOnChainTransaction({
-        confirmations: 1,
-        fee: toSats(1000),
-        rawTx: {
-          txHash: "txHash" as OnChainTxHash,
-          outs: [
-            {
-              sats: toSats(25000),
-              address: "userAddress1" as OnChainAddress,
-              vout: 0 as OnChainTxVout,
-            },
-            {
-              sats: toSats(50000),
-              address: "userAddress2" as OnChainAddress,
-              vout: 1 as OnChainTxVout,
-            },
-            {
-              sats: toSats(25000),
-              address: "address3" as OnChainAddress,
-              vout: 2 as OnChainTxVout,
-            },
-          ],
-        },
-        createdAt: timestamp,
-      }),
-    ]
-    const history = WalletTransactionHistory.fromLedger({
-      ledgerTransactions: [],
-      nonEndUserWalletIds: [],
-    })
-    const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
-    const result = history.addPendingIncoming({
-      pendingIncoming: incomingTxs,
-      addressesByWalletId: { [walletId]: addresses },
-      walletDetailsByWalletId: {
-        [walletId]: {
-          walletCurrency: WalletCurrency.Btc,
-          walletPriceRatio,
-          depositFeeRatio: 0 as DepositFeeRatio,
-          displayPriceRatio,
-        },
-      },
-    })
-    const expected = [
-      {
-        id: "txHash" as OnChainTxHash,
-        walletId,
-        initiationVia: {
-          type: PaymentInitiationMethod.OnChain,
-          address: "userAddress1" as OnChainAddress,
-        },
-        memo: null,
-        settlementVia: {
-          type: SettlementMethod.OnChain,
-          transactionHash: "txHash",
-          vout: 0,
-        },
-        settlementAmount: toSats(25000),
-        settlementFee: toSats(0),
-        settlementDisplayAmount: (25000 * 0.00016).toFixed(2),
-        settlementDisplayFee: (0).toFixed(2),
-        settlementCurrency: WalletCurrency.Btc,
-        settlementDisplayPrice: priceAmountFromNumber({
-          priceOfOneSatInMinorUnit: 0.016,
-          displayCurrency: "EUR" as DisplayCurrency,
-          walletCurrency: WalletCurrency.Btc,
-        }),
-        status: TxStatus.Pending,
-        createdAt: timestamp,
-      },
-      {
-        id: "txHash" as OnChainTxHash,
-        walletId,
-        initiationVia: {
-          type: PaymentInitiationMethod.OnChain,
-          address: "userAddress2" as OnChainAddress,
-        },
-        settlementVia: {
-          type: SettlementMethod.OnChain,
-          transactionHash: "txHash",
-          vout: 1,
-        },
-        settlementAmount: toSats(50000),
-        settlementCurrency: WalletCurrency.Btc,
-        settlementDisplayAmount: (50000 * 0.00016).toFixed(2),
-        settlementDisplayFee: (0).toFixed(2),
-        memo: null,
-        settlementFee: toSats(0),
-        settlementDisplayPrice: priceAmountFromNumber({
-          priceOfOneSatInMinorUnit: 0.016,
-          displayCurrency: "EUR" as DisplayCurrency,
-          walletCurrency: WalletCurrency.Btc,
-        }),
-
-        status: TxStatus.Pending,
-        createdAt: timestamp,
-      },
-    ]
-    expect(result.transactions).toEqual(expected)
   })
 })

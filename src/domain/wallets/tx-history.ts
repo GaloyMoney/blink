@@ -10,95 +10,8 @@ import { WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
 
 import { TxStatus } from "./tx-status"
-import { DepositFeeCalculator } from "./deposit-fee-calculator"
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { SettlementAmounts } from "./settlement-amounts"
-
-const filterPendingIncoming = ({
-  pendingIncoming,
-  addressesByWalletId,
-  walletDetailsByWalletId,
-}: AddPendingIncomingArgs): WalletOnChainTransaction[] => {
-  const walletTransactions: WalletOnChainTransaction[] = []
-  pendingIncoming.forEach(({ rawTx, createdAt }) => {
-    rawTx.outs.forEach(({ sats, address, vout }) => {
-      if (address) {
-        for (const walletIdString in addressesByWalletId) {
-          const walletId = walletIdString as WalletId
-          const { walletCurrency, walletPriceRatio, depositFeeRatio, displayPriceRatio } =
-            walletDetailsByWalletId[walletId]
-          const { displayCurrency } = displayPriceRatio
-
-          if (addressesByWalletId[walletId].includes(address)) {
-            const fee = DepositFeeCalculator().onChainDepositFee({
-              amount: sats,
-              ratio: depositFeeRatio,
-            })
-            const btcFeeAmount = {
-              amount: BigInt(fee),
-              currency: WalletCurrency.Btc,
-            }
-
-            const settlementAmountSats = toSats(sats - fee)
-            const btcSettlementAmount = {
-              amount: BigInt(settlementAmountSats),
-              currency: WalletCurrency.Btc,
-            }
-
-            const settlementAmount =
-              walletCurrency === WalletCurrency.Btc
-                ? settlementAmountSats
-                : walletPriceRatio === undefined // This should not be 'undefined' when walletCurrency === "USD"
-                ? toCents(0)
-                : toCents(walletPriceRatio.convertFromBtc(btcSettlementAmount).amount)
-
-            const settlementFee =
-              walletCurrency === WalletCurrency.Btc
-                ? fee
-                : walletPriceRatio === undefined // This should not be 'undefined' when walletCurrency === "USD"
-                ? toCents(0)
-                : toCents(walletPriceRatio.convertFromBtcToCeil(btcFeeAmount).amount)
-
-            const displayAmount = displayPriceRatio.convertFromWallet(btcSettlementAmount)
-            const settlementDisplayAmount = displayAmount.displayInMajor
-
-            const displayFee = displayPriceRatio.convertFromWalletToCeil(btcFeeAmount)
-            const settlementDisplayFee = displayFee.displayInMajor
-            const settlementDisplayPrice = priceAmountFromNumber({
-              priceOfOneSatInMinorUnit: displayPriceRatio.displayMinorUnitPerWalletUnit(),
-              displayCurrency: displayCurrency,
-              walletCurrency,
-            })
-
-            walletTransactions.push({
-              id: rawTx.txHash,
-              walletId,
-              settlementAmount,
-              settlementFee,
-              settlementCurrency: walletCurrency,
-              settlementDisplayAmount,
-              settlementDisplayFee,
-              settlementDisplayPrice,
-              status: TxStatus.Pending,
-              memo: null,
-              createdAt: createdAt,
-              initiationVia: {
-                type: PaymentInitiationMethod.OnChain,
-                address,
-              },
-              settlementVia: {
-                type: SettlementMethod.OnChain,
-                transactionHash: rawTx.txHash,
-                vout,
-              },
-            })
-          }
-        }
-      }
-    })
-  })
-  return walletTransactions
-}
 
 const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   txn,
@@ -305,9 +218,6 @@ const fromLedger = ({
 
   return {
     transactions,
-    addPendingIncoming: (args) => ({
-      transactions: [...filterPendingIncoming(args), ...transactions],
-    }),
   }
 }
 
