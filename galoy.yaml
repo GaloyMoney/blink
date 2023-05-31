@@ -215,3 +215,5 @@ appcheckConfig:
   audience: projects/72279297366
   issuer: https://firebaseappcheck.googleapis.com/72279297366
   jwksUri: https://firebaseappcheck.googleapis.com/v1beta/jwks
+smsAuthUnsupportedCountries: []
+whatsAppAuthUnsupportedCountries: []

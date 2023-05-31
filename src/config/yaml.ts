@@ -373,3 +373,11 @@ export const getAppCheckConfig = (config = yamlConfig) => {
     jwksUri: config.appcheckConfig.jwksUri,
   }
 }
+
+export const getSmsAuthUnsupportedCountries = (): CountryCode[] => {
+  return yamlConfig.smsAuthUnsupportedCountries as CountryCode[]
+}
+
+export const getWhatsAppAuthUnsupportedCountries = (): CountryCode[] => {
+  return yamlConfig.whatsAppAuthUnsupportedCountries as CountryCode[]
+}

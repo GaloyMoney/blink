@@ -156,4 +156,6 @@ type YamlSchema = {
     issuer: string
     jwksUri: string
   }
+  smsAuthUnsupportedCountries: string[]
+  whatsAppAuthUnsupportedCountries: string[]
 }

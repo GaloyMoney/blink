@@ -1,6 +1,7 @@
 export * from "./login"
 export * from "./logout"
 export * from "./request-phone-code"
+export * from "./get-supported-countries"
 
 import { ErrorLevel } from "@domain/shared"
 import { extendSession, IdentityRepository } from "@services/kratos"

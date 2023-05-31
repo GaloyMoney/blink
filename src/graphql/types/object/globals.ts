@@ -4,6 +4,7 @@ import { GT } from "@graphql/index"
 import Network from "../scalar/network"
 
 import BuildInformation from "./build-information"
+import Country from "./country"
 
 const Globals = GT.Object({
   name: "Globals",
@@ -23,6 +24,10 @@ const Globals = GT.Object({
     lightningAddressDomain: {
       type: GT.NonNull(GT.String),
       description: dedent`The domain name for lightning addresses accepted by this Galoy instance`,
+    },
+    supportedCountries: {
+      type: GT.NonNullList(Country),
+      description: dedent`A list of countries and their supported auth channels`,
     },
     lightningAddressDomainAliases: {
       type: GT.NonNullList(GT.String),

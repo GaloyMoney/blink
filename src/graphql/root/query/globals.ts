@@ -9,6 +9,7 @@ import { Lightning } from "@app"
 
 import { GT } from "@graphql/index"
 import Globals from "@graphql/types/object/globals"
+import { getSupportedCountries } from "@app/auth/get-supported-countries"
 
 const GlobalsQuery = GT.Field({
   type: Globals,
@@ -22,6 +23,7 @@ const GlobalsQuery = GT.Field({
       lightningAddressDomain: getLightningAddressDomain(),
       lightningAddressDomainAliases: getLightningAddressDomainAliases(),
       buildInformation: getGaloyBuildInformation(),
+      supportedCountries: getSupportedCountries(),
     }
   },
 })
