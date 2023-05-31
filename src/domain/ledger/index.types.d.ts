@@ -290,7 +290,7 @@ interface ILedgerService {
 
   onChainTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
 
-  isOnChainTxRecorded({
+  isOnChainTxRecordedForWallet({
     walletId,
     txHash,
     vout,
@@ -299,6 +299,8 @@ interface ILedgerService {
     txHash: OnChainTxHash
     vout: OnChainTxVout
   }): Promise<boolean | LedgerServiceError>
+
+  isOnChainTxHashRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 

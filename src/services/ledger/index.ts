@@ -295,7 +295,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const isOnChainTxRecorded = async ({
+  const isOnChainTxRecordedForWallet = async ({
     walletId,
     txHash,
     vout,
@@ -312,6 +312,20 @@ export const LedgerService = (): ILedgerService => {
         type: LedgerTransactionType.OnchainReceipt,
         hash: txHash,
         $or: [{ vout: { $exists: false } }, { vout }],
+      })
+      return result > 0
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const isOnChainTxHashRecorded = async (
+    txHash: OnChainTxHash,
+  ): Promise<boolean | LedgerServiceError> => {
+    try {
+      const result = await Transaction.countDocuments({
+        type: LedgerTransactionType.OnchainReceipt,
+        hash: txHash,
       })
       return result > 0
     } catch (err) {
@@ -397,7 +411,8 @@ export const LedgerService = (): ILedgerService => {
       getPendingPaymentsCount,
       getWalletBalance,
       getWalletBalanceAmount,
-      isOnChainTxRecorded,
+      isOnChainTxRecordedForWallet,
+      isOnChainTxHashRecorded,
       isLnTxRecorded,
       getWalletIdByTransactionHash,
       listWalletIdsWithPendingPayments,
