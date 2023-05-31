@@ -1,4 +1,7 @@
-import { createAccountForEmailIdentifier } from "@app/accounts/create-account"
+import {
+  createAccountForDeviceAccount,
+  createAccountForEmailIdentifier,
+} from "@app/accounts/create-account"
 import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
@@ -215,32 +218,14 @@ export const loginUpgradeWithPhone = async ({
   }
 
   // Scenario 2 - Happy Path
-  // a. update kratos
-  const kratosAccount = await AccountsRepository().findByUserId(account.kratosUserId)
-  if (kratosAccount instanceof Error) return kratosAccount
-  const updatedKratosAccount = await AuthWithDeviceAccountService().upgradeToPhoneSchema({
-    kratosUserId: account.kratosUserId,
+  // a. create kratos account
+  // b. and c. update account/user mongo in kratos/registration webhook
+  const kratosToken = await AuthWithDeviceAccountService().upgradeToPhoneSchema({
     phone,
+    deviceId: account.kratosUserId,
   })
-  if (updatedKratosAccount instanceof Error) return updatedKratosAccount
-  // b. update user
-  // set phone, remove deviceId
-  const updatedUser = await UsersRepository().update({
-    id: account.kratosUserId,
-    phone,
-    deviceId: null,
-  })
-  if (updatedUser instanceof Error) return updatedUser
-  // c. update account
-  kratosAccount.level = AccountLevel.One
-  const accountLevelOne = await AccountsRepository().update(kratosAccount)
-  if (accountLevelOne instanceof Error) return accountLevelOne
-
-  // returning a new session token
-  const authPhone = AuthWithPhonePasswordlessService()
-  const kratosResult = await authPhone.loginToken({ phone })
-  if (kratosResult instanceof Error) return kratosResult
-  return kratosResult.sessionToken
+  if (kratosToken instanceof Error) return kratosToken
+  return kratosToken
 }
 
 export const loginWithDevice = async ({
@@ -255,29 +240,30 @@ export const loginWithDevice = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  // TODO:
-  // add fibonachi on failed login
-  // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
-
   const authService = AuthWithDeviceAccountService()
   const verifiedJwt = await authService.verifyJwt(jwt)
-  if (verifiedJwt instanceof Error) return verifiedJwt
+  if (verifiedJwt instanceof Error) {
+    await rewardFailedLoginAttemptPerIpLimits(ip)
+    return verifiedJwt
+  }
   const deviceId = verifiedJwt.sub as DeviceId
 
-  await rewardFailedLoginAttemptPerIpLimits(ip)
-
-  let kratosResult = await authService.loginDeviceAccount({ deviceId })
-  // FIXME: this is a fuzzy error.
-  // it exists because we currently make no difference between a registration and login
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-    // user is a new user
-    kratosResult = await authService.createDeviceIdentity({ deviceId })
-    if (kratosResult instanceof Error) return kratosResult
-    addAttributesToCurrentSpan({ "login.newAccount": true })
-  } else if (kratosResult instanceof Error) {
-    return kratosResult
+  // 1. Does account exist in mongo?
+  const accountExist = await AccountsRepository().findByUserId(
+    deviceId as unknown as UserId, // TODO fix casting
+  )
+  // 2. If not, then create account in mongo
+  if (accountExist instanceof CouldNotFindAccountFromKratosIdError) {
+    const levelZeroAccountsConfig = getDefaultAccountsConfig()
+    levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
+    const account = await createAccountForDeviceAccount({
+      userId: deviceId as unknown as UserId, // TODO fix casting
+      config: levelZeroAccountsConfig,
+      deviceId,
+    })
+    if (account instanceof Error) return account
   }
-  return kratosResult.sessionToken
+  return jwt as SessionToken
 }
 
 // deprecated

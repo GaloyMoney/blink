@@ -102,6 +102,35 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  // TODO fix this, can we just tweak update or will it break other things without including new/upsert?
+  const update2 = async ({
+    id,
+    language,
+    deviceTokens,
+    phoneMetadata,
+    phone,
+    deviceId,
+    createdAt,
+  }: UserUpdateInput): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOneAndUpdate({
+        userId: id,
+        deviceTokens,
+        phoneMetadata,
+        language,
+        phone,
+        deviceId,
+        createdAt,
+      })
+      if (!result) {
+        return new RepositoryError("Couldn't update user")
+      }
+      return translateToUser(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   const adminUnsetPhoneForUserPreservation = async (
     id: UserId,
   ): Promise<User | RepositoryError> => {
@@ -125,6 +154,7 @@ export const UsersRepository = (): IUsersRepository => {
     findByPhone,
     findByDeviceId,
     update,
+    update2,
     adminUnsetPhoneForUserPreservation,
   }
 }
