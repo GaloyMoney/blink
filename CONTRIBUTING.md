@@ -108,19 +108,25 @@ For example, our fee calculator is typed as follows:
 ```ts
 // In '.d.ts' file
 type DepositFeeCalculator = {
-  onChainDepositFee({ amount, ratio }: onChainDepositFeeArgs): Satoshis
-  lnDepositFee(): Satoshis
+  onChainDepositFee({
+    amount,
+    ratio,
+  }: onChainDepositFeeArgs): BtcPaymentAmount | ValidationError
+  lnDepositFee(): BtcPaymentAmount
 }
+
 
 // In implementation file
 export const DepositFeeCalculator = (): DepositFeeCalculator => {
   const onChainDepositFee = ({ amount, ratio }: onChainDepositFeeArgs) => {
-    return toSats(Math.round(amount * ratio))
+    return ratio === 0
+      ? ZERO_SATS
+      : checkedToBtcPaymentAmount(Math.round(Number(amount.amount) * ratio))
   }
 
   return {
     onChainDepositFee,
-    lnDepositFee: () => toSats(0),
+    lnDepositFee: () => ZERO_SATS, // TODO: implement
   }
 }
 ```

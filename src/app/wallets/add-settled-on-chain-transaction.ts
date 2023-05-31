@@ -1,6 +1,6 @@
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
-import { NewDepositFeeCalculator } from "@domain/wallets"
+import { DepositFeeCalculator } from "@domain/wallets"
 import { displayAmountFromNumber } from "@domain/fiat"
 
 import { DealerPriceService } from "@services/dealer-price"
@@ -55,7 +55,7 @@ export const addSettledTransaction = async ({
     const account = await AccountsRepository().findById(wallet.accountId)
     if (account instanceof Error) return account
 
-    const fee = NewDepositFeeCalculator().onChainDepositFee({
+    const fee = DepositFeeCalculator().onChainDepositFee({
       amount,
       ratio: account.depositFeeRatio,
     })

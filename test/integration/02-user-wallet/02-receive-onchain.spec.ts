@@ -24,7 +24,7 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { WalletPriceRatio } from "@domain/payments"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
@@ -85,6 +85,8 @@ const accountLimits = getAccountLimits({ level: 1 })
 
 const locale = getLocale()
 
+const calc = AmountCalculator()
+
 beforeAll(async () => {
   await createMandatoryUsers()
 
@@ -124,7 +126,7 @@ describe("With Bria", () => {
     walletId,
     depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
   }: {
-    amountSats: Satoshis
+    amountSats: BtcPaymentAmount
     walletId: WalletId
     depositFeeRatio?: DepositFeeRatio
   }): Promise<OnChainTxHash> => {
@@ -144,7 +146,7 @@ describe("With Bria", () => {
     const txId = await sendToAddressAndConfirm({
       walletClient: bitcoindOutside,
       address,
-      amount: sat2btc(amountSats),
+      amount: sat2btc(Number(amountSats.amount)),
     })
     if (txId instanceof Error) throw txId
 
@@ -181,7 +183,7 @@ describe("With Bria", () => {
     expect(balance).toBe(
       initialBalance +
         amountAfterFeeDeduction({
-          amount: amountSats,
+          amount: toSats(amountSats.amount),
           depositFeeRatio,
         }),
     )
@@ -200,7 +202,7 @@ describe("With Bria", () => {
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
     expect(txn.settlementAmount).toBe(
       amountAfterFeeDeduction({
-        amount: amountSats,
+        amount: toSats(amountSats.amount),
         depositFeeRatio: depositFeeRatio,
       }),
     )
@@ -224,34 +226,29 @@ describe("With Bria", () => {
       amount: amountSats,
       ratio: account.depositFeeRatio,
     })
+    if (fee instanceof Error) throw fee
 
-    const usdPaymentAmount = await usdFromBtcMidPriceFn({
-      amount: BigInt(amountSats),
-      currency: WalletCurrency.Btc,
-    })
+    const usdPaymentAmount = await usdFromBtcMidPriceFn(amountSats)
     if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
     const centsAmount = Number(usdPaymentAmount.amount)
 
     const priceRatio = WalletPriceRatio({
       usd: usdPaymentAmount,
-      btc: { amount: BigInt(amountSats), currency: WalletCurrency.Btc },
+      btc: amountSats,
     })
     if (priceRatio instanceof Error) throw priceRatio
 
-    const feeAmountCents = priceRatio.convertFromBtcToCeil({
-      amount: BigInt(fee),
-      currency: WalletCurrency.Btc,
-    })
+    const feeAmountCents = priceRatio.convertFromBtcToCeil(fee)
     const centsFee = toCents(feeAmountCents.amount)
 
     const expectedFields = {
       type: LedgerTransactionType.OnchainReceipt,
 
       debit: 0,
-      credit: amountSats - fee,
+      credit: Number(calc.sub(amountSats, fee).amount),
 
-      satsAmount: amountSats - fee,
-      satsFee: fee,
+      satsAmount: Number(calc.sub(amountSats, fee).amount),
+      satsFee: Number(fee.amount),
       centsAmount: centsAmount - centsFee,
       centsFee,
       displayAmount: centsAmount - centsFee,
@@ -388,7 +385,7 @@ describe("With Bria", () => {
       const funderWalletId = await getFunderWalletId()
       await sendToWalletTestWrapper({
         walletId: funderWalletId,
-        amountSats: getRandomAmountOfSats(),
+        amountSats: getRandomBtcAmount(),
       })
     })
   })
@@ -446,32 +443,24 @@ describe("With Bria", () => {
           sendNotification,
         }))
 
-      const amountSats = getRandomAmountOfSats()
-      const receivedBtc = { amount: BigInt(amountSats), currency: WalletCurrency.Btc }
+      const receivedBtc = getRandomBtcAmount()
 
       // Execute receive
       const txId = await sendToWalletTestWrapper({
         walletId: newWalletIdA,
-        amountSats,
+        amountSats: receivedBtc,
       })
 
       // Calculate receive display amount
       const account = await AccountsRepository().findById(newAccountIdA)
       if (account instanceof Error) throw account
 
-      const receivedUsd = await usdFromBtcMidPriceFn({
-        amount: BigInt(amountSats),
-        currency: WalletCurrency.Btc,
-      })
+      const receivedUsd = await usdFromBtcMidPriceFn(receivedBtc)
       if (receivedUsd instanceof Error) return receivedUsd
 
-      const fee = DepositFeeCalculator().onChainDepositFee({
-        amount: amountSats,
+      const expectedSatsFee = DepositFeeCalculator().onChainDepositFee({
+        amount: receivedBtc,
         ratio: account.depositFeeRatio,
-      })
-      const expectedSatsFee = paymentAmountFromNumber({
-        amount: fee,
-        currency: WalletCurrency.Btc,
       })
       if (expectedSatsFee instanceof Error) throw expectedSatsFee
 
@@ -611,7 +600,7 @@ describe("With Bria", () => {
 
       await sendToWalletTestWrapper({
         walletId: wallet.id,
-        amountSats: toSats(satsAmount.amount),
+        amountSats: satsAmount,
       })
     })
 
@@ -635,7 +624,7 @@ describe("With Bria", () => {
 
       await sendToWalletTestWrapper({
         walletId: wallet.id,
-        amountSats: toSats(satsAmount.amount),
+        amountSats: satsAmount,
       })
     })
 
@@ -757,7 +746,7 @@ describe("With Bria", () => {
           sendNotification,
         }))
 
-      const amountSats = getRandomAmountOfSats()
+      const amountSats = getRandomBtcAmount()
 
       const address = await Wallets.createOnChainAddressForBtcWallet({
         walletId: newWalletIdA,
@@ -766,7 +755,7 @@ describe("With Bria", () => {
 
       const txId = (await bitcoindOutside.sendToAddress({
         address,
-        amount: sat2btc(amountSats),
+        amount: sat2btc(Number(amountSats.amount)),
       })) as OnChainTxHash
 
       const detectedEvent = await onceBriaSubscribe({
@@ -787,6 +776,7 @@ describe("With Bria", () => {
         amount: amountSats,
         ratio: account.depositFeeRatio,
       })
+      if (feeSats instanceof Error) throw feeSats
 
       // Check pendingTx from chain
       const { result: txs, error } = await getTransactionsForWalletId(newWalletIdA)
@@ -799,8 +789,10 @@ describe("With Bria", () => {
       const pendingTx = pendingTxs[0] as WalletOnChainTransaction
       expect((pendingTx.settlementVia as SettlementViaOnChain).transactionHash).toBe(txId)
       expect(pendingTx.settlementVia.type).toBe("onchain")
-      expect(pendingTx.settlementAmount).toBe(amountSats - feeSats)
-      expect(pendingTx.settlementFee).toBe(feeSats)
+      expect(pendingTx.settlementAmount).toBe(
+        Number(calc.sub(amountSats, feeSats).amount),
+      )
+      expect(pendingTx.settlementFee).toBe(Number(feeSats.amount))
       expect(pendingTx.initiationVia.address).toBe(address)
       expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
@@ -882,7 +874,7 @@ describe("With Bria", () => {
     })
 
     it("allows fee exemption for specific users", async () => {
-      const amountSats = getRandomAmountOfSats()
+      const amountSats = getRandomBtcAmount()
 
       const accountRecordC = await getAccountRecordByTestUserRef("C")
       accountRecordC.depositFeeRatio = 0
@@ -896,7 +888,7 @@ describe("With Bria", () => {
         amountSats,
       })
       const finalBalanceUserC = await getBalanceHelper(walletC)
-      expect(finalBalanceUserC).toBe(initBalanceUserC + amountSats)
+      expect(finalBalanceUserC).toBe(initBalanceUserC + Number(amountSats.amount))
     })
   })
 })
@@ -907,7 +899,7 @@ describe("With Lnd", () => {
     walletId,
     depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
   }: {
-    amountSats: Satoshis
+    amountSats: BtcPaymentAmount
     walletId: WalletId
     depositFeeRatio?: DepositFeeRatio
   }): Promise<OnChainTxHash> => {
@@ -945,7 +937,7 @@ describe("With Lnd", () => {
       expect(balance).toBe(
         initialBalance +
           amountAfterFeeDeduction({
-            amount: amountSats,
+            amount: toSats(amountSats.amount),
             depositFeeRatio,
           }),
       )
@@ -962,7 +954,7 @@ describe("With Lnd", () => {
       expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
       expect(txn.settlementAmount).toBe(
         amountAfterFeeDeduction({
-          amount: amountSats,
+          amount: toSats(amountSats.amount),
           depositFeeRatio: depositFeeRatio,
         }),
       )
@@ -976,7 +968,7 @@ describe("With Lnd", () => {
     const txId = await sendToAddressAndConfirm({
       walletClient: bitcoindOutside,
       address,
-      amount: sat2btc(amountSats),
+      amount: sat2btc(Number(amountSats.amount)),
     })
     if (txId instanceof Error) throw txId
     const txn = await checkBalance(blockNumber)
@@ -999,34 +991,29 @@ describe("With Lnd", () => {
       amount: amountSats,
       ratio: account.depositFeeRatio,
     })
+    if (fee instanceof Error) throw fee
 
-    const usdPaymentAmount = await usdFromBtcMidPriceFn({
-      amount: BigInt(amountSats),
-      currency: WalletCurrency.Btc,
-    })
+    const usdPaymentAmount = await usdFromBtcMidPriceFn(amountSats)
     if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
     const centsAmount = Number(usdPaymentAmount.amount)
 
     const priceRatio = WalletPriceRatio({
       usd: usdPaymentAmount,
-      btc: { amount: BigInt(amountSats), currency: WalletCurrency.Btc },
+      btc: amountSats,
     })
     if (priceRatio instanceof Error) throw priceRatio
 
-    const feeAmountCents = priceRatio.convertFromBtcToCeil({
-      amount: BigInt(fee),
-      currency: WalletCurrency.Btc,
-    })
+    const feeAmountCents = priceRatio.convertFromBtcToCeil(fee)
     const centsFee = toCents(feeAmountCents.amount)
 
     const expectedFields = {
       type: LedgerTransactionType.OnchainReceipt,
 
       debit: 0,
-      credit: amountSats - fee,
+      credit: Number(calc.sub(amountSats, fee).amount),
 
-      satsAmount: amountSats - fee,
-      satsFee: fee,
+      satsAmount: Number(calc.sub(amountSats, fee).amount),
+      satsFee: Number(fee.amount),
       centsAmount: centsAmount - centsFee,
       centsFee,
       displayAmount: centsAmount - centsFee,
@@ -1241,7 +1228,7 @@ describe("With Lnd", () => {
       const funderWalletId = await getFunderWalletId()
       await sendToWalletTestWrapper({
         walletId: funderWalletId,
-        amountSats: getRandomAmountOfSats(),
+        amountSats: getRandomBtcAmount(),
       })
     })
   })
@@ -1290,8 +1277,7 @@ describe("With Lnd", () => {
           sendNotification,
         }))
 
-      const amountSats = getRandomAmountOfSats()
-      const receivedBtc = { amount: BigInt(amountSats), currency: WalletCurrency.Btc }
+      const amountSats = getRandomBtcAmount()
 
       // Execute receive
       const txId = await sendToWalletTestWrapper({
@@ -1303,19 +1289,12 @@ describe("With Lnd", () => {
       const account = await AccountsRepository().findById(accountIdA)
       if (account instanceof Error) throw account
 
-      const receivedUsd = await usdFromBtcMidPriceFn({
-        amount: BigInt(amountSats),
-        currency: WalletCurrency.Btc,
-      })
+      const receivedUsd = await usdFromBtcMidPriceFn(amountSats)
       if (receivedUsd instanceof Error) return receivedUsd
 
-      const fee = DepositFeeCalculator().onChainDepositFee({
+      const expectedSatsFee = DepositFeeCalculator().onChainDepositFee({
         amount: amountSats,
         ratio: account.depositFeeRatio,
-      })
-      const expectedSatsFee = paymentAmountFromNumber({
-        amount: fee,
-        currency: WalletCurrency.Btc,
       })
       if (expectedSatsFee instanceof Error) throw expectedSatsFee
 
@@ -1340,7 +1319,7 @@ describe("With Lnd", () => {
       const receivedNotification = createPushNotificationContent({
         type: NotificationType.OnchainReceipt,
         userLanguage: locale,
-        amount: receivedBtc,
+        amount: amountSats,
         displayAmount,
       })
 
@@ -1418,11 +1397,11 @@ describe("With Lnd", () => {
 
       await sendToWalletTestWrapper({
         walletId: walletIdE,
-        amountSats: toSats(satsAmount.amount),
+        amountSats: satsAmount,
       })
       await sendToWalletTestWrapper({
         walletId: walletIdG,
-        amountSats: toSats(satsAmount.amount),
+        amountSats: satsAmount,
       })
     })
 
@@ -1441,7 +1420,7 @@ describe("With Lnd", () => {
         currency: WalletCurrency.Usd,
       })
 
-      await sendToWalletTestWrapper({ walletId, amountSats: toSats(satsAmount.amount) })
+      await sendToWalletTestWrapper({ walletId, amountSats: satsAmount })
     })
 
     it("receives batch on-chain transaction", async () => {
@@ -1518,7 +1497,7 @@ describe("With Lnd", () => {
           sendNotification,
         }))
 
-      const amountSats = getRandomAmountOfSats()
+      const amountSats = getRandomBtcAmount()
 
       const address = await Wallets.lndCreateOnChainAddress(walletIdA)
       if (address instanceof Error) throw address
@@ -1530,6 +1509,7 @@ describe("With Lnd", () => {
         amount: amountSats,
         ratio: account.depositFeeRatio,
       })
+      if (feeSats instanceof Error) throw feeSats
 
       const sub = subscribeToTransactions({ lnd: lndonchain })
       sub.on("chain_transaction", onchainTransactionEventHandler)
@@ -1538,7 +1518,7 @@ describe("With Lnd", () => {
         once(sub, "chain_transaction"),
         bitcoindOutside.sendToAddress({
           address,
-          amount: sat2btc(amountSats),
+          amount: sat2btc(Number(amountSats.amount)),
         }),
       ])
 
@@ -1554,8 +1534,10 @@ describe("With Lnd", () => {
 
       const pendingTx = pendingTxs[0] as WalletOnChainTransaction
       expect(pendingTx.settlementVia.type).toBe("onchain")
-      expect(pendingTx.settlementAmount).toBe(amountSats - feeSats)
-      expect(pendingTx.settlementFee).toBe(feeSats)
+      expect(pendingTx.settlementAmount).toBe(
+        Number(calc.sub(amountSats, feeSats).amount),
+      )
+      expect(pendingTx.settlementFee).toBe(Number(feeSats.amount))
       expect(pendingTx.initiationVia.address).toBe(address)
       expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
@@ -1633,7 +1615,7 @@ describe("With Lnd", () => {
     })
 
     it("allows fee exemption for specific users", async () => {
-      const amountSats = getRandomAmountOfSats()
+      const amountSats = getRandomBtcAmount()
 
       const accountRecordC = await getAccountRecordByTestUserRef("C")
       accountRecordC.depositFeeRatio = 0
@@ -1647,10 +1629,19 @@ describe("With Lnd", () => {
         amountSats,
       })
       const finalBalanceUserC = await getBalanceHelper(walletC)
-      expect(finalBalanceUserC).toBe(initBalanceUserC + amountSats)
+      expect(finalBalanceUserC).toBe(initBalanceUserC + Number(amountSats.amount))
     })
   })
 })
 
-const getRandomAmountOfSats = () =>
+const getRandomAmountOfSats = (): Satoshis =>
   toSats(+100_000_000 + Math.floor(Math.random() * 10 ** 6))
+
+const getRandomBtcAmount = (): BtcPaymentAmount => {
+  const amount = paymentAmountFromNumber({
+    amount: getRandomAmountOfSats(),
+    currency: WalletCurrency.Btc,
+  })
+  if (amount instanceof Error) throw amount
+  return amount
+}

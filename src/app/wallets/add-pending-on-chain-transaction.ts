@@ -3,7 +3,7 @@ import { DuplicateKeyForPersistError } from "@domain/errors"
 import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import {
-  NewDepositFeeCalculator,
+  DepositFeeCalculator,
   PaymentInitiationMethod,
   SettlementMethod,
 } from "@domain/wallets"
@@ -36,7 +36,7 @@ export const addPendingTransaction = async ({
   const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
 
-  const satsFee = NewDepositFeeCalculator().onChainDepositFee({
+  const satsFee = DepositFeeCalculator().onChainDepositFee({
     amount: satoshis,
     ratio: account.depositFeeRatio,
   })

@@ -1,34 +1,8 @@
-import { toSats } from "@domain/bitcoin"
-import { DepositFeeCalculator, NewDepositFeeCalculator } from "@domain/wallets"
+import { DepositFeeCalculator } from "@domain/wallets"
 import { WalletCurrency, ZERO_SATS } from "@domain/shared"
 
 describe("DepositFeeCalculator", () => {
   const calculator = DepositFeeCalculator()
-  const amount = toSats(100)
-  describe("onChainDepositFee", () => {
-    it("applies a depositFeeRatio", () => {
-      const ratio = 0.02 as DepositFeeRatio
-      const fee = calculator.onChainDepositFee({ amount, ratio })
-      expect(fee).toEqual(2)
-    })
-
-    it("applies a depositFeeRatio of 0", () => {
-      const ratio = 0 as DepositFeeRatio
-      const fee = calculator.onChainDepositFee({ amount, ratio })
-      expect(fee).toEqual(0)
-    })
-  })
-
-  describe("lnDepositFee", () => {
-    it("is free", () => {
-      const fee = calculator.lnDepositFee()
-      expect(fee).toEqual(0)
-    })
-  })
-})
-
-describe("NewDepositFeeCalculator", () => {
-  const calculator = NewDepositFeeCalculator()
   const amount = {
     amount: 100n,
     currency: WalletCurrency.Btc,
