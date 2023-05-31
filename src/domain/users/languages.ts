@@ -193,7 +193,6 @@ export const Languages = [
   "sl-SI",
   "sq",
   "sq-AL",
-  "sr",
   "sr-BA",
   "sr-BA",
   "sr-SP",
