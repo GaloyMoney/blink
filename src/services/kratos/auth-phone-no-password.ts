@@ -336,8 +336,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
     if (
       identity.schema_id !== "phone_no_password_v0" &&
-      identity.schema_id !== "phone_or_email_password_v0" &&
-      identity.schema_id !== "device_account_v0"
+      identity.schema_id !== "phone_or_email_password_v0"
     ) {
       return new IncompatibleSchemaUpgradeError()
     }

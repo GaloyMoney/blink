@@ -11,9 +11,9 @@ import {
   upgradeAccountFromDeviceToPhone,
 } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
-import { checkedToDeviceId, checkedToUserId } from "@domain/accounts"
+import { checkedToUserId } from "@domain/accounts"
 import { UsersRepository } from "@services/mongoose"
-import { ErrorLevel, ValidationError } from "@domain/shared"
+import { ErrorLevel } from "@domain/shared"
 import { baseLogger } from "@services/logger"
 
 const kratosRouter = express.Router({ caseSensitive: true })
@@ -182,49 +182,6 @@ kratosRouter.post(
       }
 
       res.status(200).send("ok\n")
-    },
-  }),
-)
-
-kratosRouter.post(
-  "/subjectToUserId",
-  wrapAsyncToRunInSpan({
-    namespace: "subjectToUserId",
-    fn: async (req: express.Request, res: express.Response) => {
-      const authHeader = req.headers["authorization"]
-      if (!authHeader) return res.status(401).send("Unauthorized")
-      const auth = Buffer.from(authHeader.split(" ")[1], "base64").toString()
-      const password = auth.split(":")[1]
-      if (password !== callbackApiKey) {
-        console.log("incorrect authorization header")
-        res.status(401).send("incorrect authorization header")
-        return
-      }
-
-      let userId: UserId | undefined
-      const extra = {
-        userId: "anon",
-      }
-      try {
-        const { subject } = req.body
-        const maybeUserId = checkedToUserId(subject)
-        const maybeDeviceId = checkedToDeviceId(subject)
-        if (!(maybeUserId instanceof ValidationError)) {
-          userId = maybeUserId
-        } else if (!(maybeDeviceId instanceof ValidationError)) {
-          const deviceId = maybeDeviceId
-          const deviceUser = await UsersRepository().findByDeviceId(deviceId)
-          if (!(deviceUser instanceof Error)) userId = deviceUser.id
-        }
-        if (userId) extra.userId = userId
-        res.status(200).json({
-          subject,
-          extra,
-        })
-        return
-      } catch (e) {
-        res.status(500).json({ error: e.message })
-      }
     },
   }),
 )
