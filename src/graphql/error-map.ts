@@ -491,7 +491,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindAccountFromKratosIdError":
     case "MissingPhoneError":
     case "InvalidUserId":
-    case "InvalidDeviceId":
     case "InvalidLightningPaymentFlowBuilderStateError":
     case "InvalidOnChainPaymentFlowBuilderStateError":
     case "NonLnPaymentTransactionForPaymentFlowError":

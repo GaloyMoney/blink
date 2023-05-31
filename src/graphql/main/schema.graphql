@@ -1375,11 +1375,6 @@ type User {
   contacts: [UserContact!]! @deprecated(reason: "will be moved to account")
   createdAt: Timestamp!
   defaultAccount: Account!
-
-  """
-  Device ID of the user's device.
-  """
-  deviceId: String
   id: ID!
 
   """
