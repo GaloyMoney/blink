@@ -62,6 +62,7 @@ import { validateKratosCookie } from "@services/kratos"
 
 import { checkedToUserId } from "@domain/accounts"
 import { ValidationError } from "@domain/shared"
+import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -158,19 +159,24 @@ export const sessionContext = ({
       if (!(maybeUserId instanceof ValidationError)) {
         const userId = maybeUserId
         const account = await Accounts.getAccountFromUserId(userId)
-        if (account instanceof Error) throw mapError(account)
-        domainAccount = account
-        // not awaiting on purpose. just updating metadata
-        // TODO: look if this can be a source of memory leaks
-        Accounts.updateAccountIPsInfo({
-          accountId: account.id,
-          ip,
-          logger,
-        })
-        const userRes = await UsersRepository().findById(account.kratosUserId)
-        if (userRes instanceof Error) throw mapError(userRes)
-        user = userRes
-        addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
+        if (account instanceof CouldNotFindAccountFromKratosIdError) {
+          // do nothing, the jwt is valid but the account does not exist
+        } else if (account instanceof Error) {
+          throw mapError(account)
+        } else {
+          domainAccount = account
+          // not awaiting on purpose. just updating metadata
+          // TODO: look if this can be a source of memory leaks
+          Accounts.updateAccountIPsInfo({
+            accountId: account.id,
+            ip,
+            logger,
+          })
+          const userRes = await UsersRepository().findById(account.kratosUserId)
+          if (userRes instanceof Error) throw mapError(userRes)
+          user = userRes
+          addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
+        }
       }
 
       const loaders = {
