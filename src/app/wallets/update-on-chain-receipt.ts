@@ -89,7 +89,7 @@ export const updateOnChainReceipt = async ({
       const walletId = wallet.id
       logger.trace({ walletId, txHash }, "updating onchain receipt")
 
-      const result = await processTxForWallet(wallet, tx, logger)
+      const result = await processTxForWallet({ tx, logger })
       if (result instanceof Error) {
         logError({ walletId, txHash, error: result })
       }
@@ -101,11 +101,13 @@ export const updateOnChainReceipt = async ({
   return onChainTxs.length
 }
 
-const processTxForWallet = async (
-  wallet: Wallet,
-  tx: IncomingOnChainTransaction,
-  logger: Logger,
-): Promise<void | ApplicationError> => {
+const processTxForWallet = async ({
+  tx,
+  logger,
+}: {
+  tx: IncomingOnChainTransaction
+  logger: Logger
+}): Promise<void | ApplicationError> => {
   for (const { sats, address, vout } of tx.rawTx.outs) {
     const satoshis = paymentAmountFromNumber({
       amount: sats,
