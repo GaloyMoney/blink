@@ -6,6 +6,7 @@ import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
+  getJwksArgs,
   getTestAccounts,
   getTwilioConfig,
 } from "@config"
@@ -40,6 +41,9 @@ import {
   PhoneAccountAlreadyExistsError,
   PhoneAccountAlreadyExistsNeedToSweepFundsError,
 } from "@services/kratos/errors"
+import { sendOathkeeperRequest } from "@services/oathkeeper"
+import jwksRsa from "jwks-rsa"
+import jsonwebtoken from "jsonwebtoken"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -240,8 +244,7 @@ export const loginWithDevice = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  const authService = AuthWithDeviceAccountService()
-  const verifiedJwt = await authService.verifyJwt(jwt)
+  const verifiedJwt = await verifyJwt(jwt)
   if (verifiedJwt instanceof Error) {
     await rewardFailedLoginAttemptPerIpLimits(ip)
     return verifiedJwt
@@ -377,4 +380,17 @@ export const isCodeValid = async ({
   }
 
   return TwilioClient().validateVerify({ to: phone, code })
+}
+
+export const verifyJwt = async (token: string) => {
+  const newToken = await sendOathkeeperRequest(token as SessionToken)
+  if (newToken instanceof Error) return newToken
+  const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
+  const verifiedToken = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
+    algorithms: ["RS256"],
+  })
+  if (typeof verifiedToken === "string") {
+    throw new Error("tokenPayload should be an object")
+  }
+  return verifiedToken
 }
