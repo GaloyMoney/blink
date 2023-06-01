@@ -45,6 +45,7 @@ import {
   lndOutside1,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
+  resetOnChainAddressAccountIdLimits,
   safePay,
   sendToAddressAndConfirm,
   subscribeToTransactions,
@@ -839,6 +840,7 @@ describe("Display properties on transactions", () => {
       it("(OnChainIntraledgerLedgerMetadata) pays another galoy user via onchain address", async () => {
         // TxMetadata:
         // - OnChainIntraledgerLedgerMetadata
+        await resetOnChainAddressAccountIdLimits(accountC.id)
 
         const amountSats = toSats(20_000)
 
