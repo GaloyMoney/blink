@@ -1,0 +1,30 @@
+import { AccountLevel } from "@domain/accounts"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
+
+export const upgradeAccountFromDeviceToPhone = async ({
+  userId,
+  deviceId,
+  phone,
+}: {
+  userId: UserId
+  deviceId: UserId
+  phone: PhoneNumber
+}): Promise<Account | RepositoryError> => {
+  // 1. update account
+  const accountDevice = await AccountsRepository().findByUserId(deviceId)
+  if (accountDevice instanceof Error) return accountDevice
+  accountDevice.kratosUserId = userId
+  accountDevice.level = AccountLevel.One
+  const accountUpdated = await AccountsRepository().update(accountDevice)
+  if (accountUpdated instanceof Error) return accountUpdated
+
+  // 2. update user
+  const userUpdated = await UsersRepository().migrateUserIdSubject({
+    currentUserIdSubject: deviceId,
+    newUserIdSubject: userId,
+    phone,
+  })
+  if (userUpdated instanceof Error) return userUpdated
+
+  return accountUpdated
+}
