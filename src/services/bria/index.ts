@@ -370,7 +370,7 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
 
 export const KnownBriaErrorDetails = {
   DuplicateRequestIdAddressCreate:
-    /duplicate key value violates unique constraint.*bria_addresses_account_id_external_id_key/,
+    /duplicate key value violates unique constraint.*bria_addresses_account_id_\w*_key/,
 } as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
