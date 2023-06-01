@@ -533,6 +533,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "ExpectedPayoutBroadcastPayloadNotFoundError":
     case "ExpectedPayoutSettledPayloadNotFoundError":
     case "UnknownPayloadTypeReceivedError":
+    case "RevokeKratosTokenError":
     case "ExpectedAddressInfoMissingInEventError":
     case "MultipleCurrenciesForSingleCurrencyOperationError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
