@@ -65,7 +65,7 @@ import { briaEventHandler } from "./event-handlers/bria"
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
 
-const handleLndIncomingOnChainTx = async ({
+const handleLndPendingIncomingOnChainTx = async ({
   tx,
   logger,
 }: {
@@ -219,7 +219,9 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
     })
   } else {
     redisCache.clear({ key: CacheKeys.LastOnChainTransactions })
-    await handleLndIncomingOnChainTx({ tx, logger: onchainLogger })
+    if (!tx.is_confirmed) {
+      await handleLndPendingIncomingOnChainTx({ tx, logger: onchainLogger })
+    }
   }
 }
 
