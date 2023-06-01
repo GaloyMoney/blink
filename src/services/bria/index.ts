@@ -6,6 +6,7 @@ import { getBriaConfig } from "@config"
 
 import {
   OnChainAddressAlreadyCreatedForRequestIdError,
+  OnChainAddressNotFoundError,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared/primitives"
@@ -201,19 +202,22 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
-  const listOnChainAddresses = async (): Promise<
-    | { address: OnChainAddress; requestId: OnChainAddressRequestId }[]
-    | OnChainServiceError
-  > => {
+  const findAddressByRequestId = async (
+    requestId: OnChainAddressRequestId,
+  ): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
     try {
       const request = new ListAddressesRequest()
       request.setWalletName(briaConfig.walletName)
 
       const response = await listAddresses(request, metadata)
-      return response.getAddressesList().map((walletAddress) => ({
-        address: walletAddress.getAddress() as OnChainAddress,
-        requestId: walletAddress.getExternalId() as OnChainAddressRequestId,
-      }))
+      const foundAddress = response
+        .getAddressesList()
+        .find((walletAddress) => walletAddress.getExternalId() === requestId)
+
+      if (foundAddress === undefined) return new OnChainAddressNotFoundError()
+      return {
+        address: foundAddress.getAddress() as OnChainAddress,
+      }
     } catch (err) {
       const errMsg = typeof err === "string" ? err : err.message
       return new UnknownOnChainServiceError(errMsg)
@@ -225,7 +229,7 @@ export const NewOnChainService = (): INewOnChainService => {
     fns: {
       getBalance,
       createOnChainAddress,
-      listOnChainAddresses,
+      findAddressByRequestId,
     },
   })
 }

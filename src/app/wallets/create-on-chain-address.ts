@@ -1,7 +1,6 @@
 import { BTC_NETWORK } from "@config"
 
 import {
-  InvalidOnChainServiceStateError,
   OnChainAddressAlreadyCreatedForRequestIdError,
   TxDecoder,
 } from "@domain/bitcoin/onchain"
@@ -56,15 +55,13 @@ const createOnChainAddress = async ({
 
   const onChain = NewOnChainService()
   let onChainAddress = await onChain.createOnChainAddress(requestId)
-  if (onChainAddress instanceof OnChainAddressAlreadyCreatedForRequestIdError) {
-    const addresses = await onChain.listOnChainAddresses()
-    if (addresses instanceof Error) return addresses
-
-    const addressFromAddresses = addresses.find(
-      ({ requestId: requestIdFromAddresses }) => requestIdFromAddresses === requestId,
-    )
-    if (addressFromAddresses === undefined) return new InvalidOnChainServiceStateError()
-    onChainAddress = addressFromAddresses
+  if (
+    onChainAddress instanceof OnChainAddressAlreadyCreatedForRequestIdError &&
+    requestId
+  ) {
+    const foundAddress = await onChain.findAddressByRequestId(requestId)
+    if (foundAddress instanceof Error) return foundAddress
+    onChainAddress = foundAddress
   } else if (onChainAddress instanceof Error) {
     return onChainAddress
   }

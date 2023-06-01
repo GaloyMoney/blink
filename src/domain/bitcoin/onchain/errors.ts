@@ -6,7 +6,7 @@ export class TransactionDecodeError extends OnChainError {}
 
 export class OnChainServiceError extends OnChainError {}
 export class OnChainAddressAlreadyCreatedForRequestIdError extends OnChainServiceError {}
-export class InvalidOnChainServiceStateError extends OnChainServiceError {}
+export class OnChainAddressNotFoundError extends OnChainServiceError {}
 export class CPFPAncestorLimitReachedError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }
