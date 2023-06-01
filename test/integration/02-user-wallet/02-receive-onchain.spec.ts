@@ -28,7 +28,6 @@ import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@doma
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
-import { OnChainAddressAlreadyCreatedForRequestIdError } from "@domain/bitcoin/onchain"
 
 import { BriaPayloadType } from "@services/bria"
 import { LedgerService } from "@services/ledger"
@@ -67,7 +66,6 @@ import {
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
   getTransactionsForWalletId,
-  findAddressByRequestId,
   lndonchain,
   manyBriaSubscribe,
   onceBriaSubscribe,
@@ -418,10 +416,7 @@ describe("With Bria", () => {
         walletId: newWalletIdA,
         requestId,
       })
-      expect(addressAgain).toBeInstanceOf(OnChainAddressAlreadyCreatedForRequestIdError)
-
-      const addressesFromService = await findAddressByRequestId(requestId)
-      expect(addressesFromService.address).toEqual(address)
+      expect(addressAgain).toBe(address)
     })
 
     it("fails to create onChain Address past rate limit", async () => {
