@@ -3,7 +3,7 @@ import { DuplicateKeyForPersistError } from "@domain/errors"
 import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import {
-  NewDepositFeeCalculator,
+  DepositFeeCalculator,
   PaymentInitiationMethod,
   SettlementMethod,
 } from "@domain/wallets"
@@ -11,9 +11,11 @@ import {
 import { DealerPriceService } from "@services/dealer-price"
 import {
   AccountsRepository,
+  UsersRepository,
   WalletOnChainPendingReceiveRepository,
   WalletsRepository,
 } from "@services/mongoose"
+import { NotificationsService } from "@services/notifications"
 
 const dealer = DealerPriceService()
 
@@ -34,7 +36,7 @@ export const addPendingTransaction = async ({
   const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
 
-  const satsFee = NewDepositFeeCalculator().onChainDepositFee({
+  const satsFee = DepositFeeCalculator().onChainDepositFee({
     amount: satoshis,
     ratio: account.depositFeeRatio,
   })
@@ -61,14 +63,16 @@ export const addPendingTransaction = async ({
     return displayPriceRatio
   }
 
+  const settlementDisplayAmount = displayPriceRatio.convertFromWallet(
+    walletAddressReceiver.btcToCreditReceiver,
+  )
+
   const pendingTransaction: WalletOnChainPendingTransaction = {
     walletId: wallet.id,
     settlementAmount,
     settlementFee,
     settlementCurrency: wallet.currency,
-    settlementDisplayAmount: displayPriceRatio.convertFromWallet(
-      walletAddressReceiver.btcToCreditReceiver,
-    ),
+    settlementDisplayAmount,
     settlementDisplayFee: displayPriceRatio.convertFromWalletToCeil(
       walletAddressReceiver.btcBankFee,
     ),
@@ -90,6 +94,19 @@ export const addPendingTransaction = async ({
   if (res instanceof Error && !(res instanceof DuplicateKeyForPersistError)) {
     return res
   }
+
+  const recipientUser = await UsersRepository().findById(account.kratosUserId)
+  if (recipientUser instanceof Error) return recipientUser
+
+  NotificationsService().onChainTxReceivedPending({
+    recipientAccountId: wallet.accountId,
+    recipientWalletId: wallet.id,
+    paymentAmount: settlementAmount,
+    displayPaymentAmount: settlementDisplayAmount,
+    txHash: txId,
+    recipientDeviceTokens: recipientUser.deviceTokens,
+    recipientLanguage: recipientUser.language,
+  })
 
   return true
 }

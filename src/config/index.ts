@@ -1,5 +1,8 @@
 import { toDays } from "@domain/primitives"
 
+import { getBriaPartialConfigFromProcess } from "./process"
+import { getBriaPartialConfigFromYaml } from "./yaml"
+
 export * from "./error"
 export * from "./process"
 export * from "./yaml"
@@ -50,3 +53,8 @@ export const OnboardingEarn: Record<QuizQuestionId, Satoshis> = {
   securePartOne: 6 as Satoshis,
   securePartTwo: 6 as Satoshis,
 } as const
+
+export const getBriaConfig = () => ({
+  ...getBriaPartialConfigFromProcess(),
+  ...getBriaPartialConfigFromYaml(),
+})

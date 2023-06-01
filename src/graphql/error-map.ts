@@ -416,6 +416,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OnChainError":
     case "TransactionDecodeError":
     case "OnChainServiceError":
+    case "OnChainAddressAlreadyCreatedForRequestIdError":
+    case "OnChainAddressNotFoundError":
     case "CouldNotFindOnChainTransactionError":
     case "NotificationsError":
     case "NotificationsServiceError":
@@ -521,6 +523,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "ExpectedPayoutSettledPayloadNotFoundError":
     case "UnknownPayloadTypeReceivedError":
     case "ExpectedAddressInfoMissingInEventError":
+    case "MultipleCurrenciesForSingleCurrencyOperationError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

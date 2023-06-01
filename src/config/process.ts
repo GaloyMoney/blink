@@ -15,14 +15,6 @@ export const GALOY_API_KEEPALIVE_TIMEOUT_MS = parseInt(
 export const GALOY_API_PORT = process.env.GALOY_API_PORT || 4012
 export const GALOY_ADMIN_PORT = process.env.GALOY_ADMIN_PORT || 4001
 
-export const BRIA_WALLET_NAME = process.env.BRIA_WALLET_NAME || "dev"
-export const BRIA_PROFILE_API_KEY =
-  process.env.BRIA_PROFILE_API_KEY || "bria_dev_000000000000000000000"
-
-if (!BRIA_PROFILE_API_KEY) {
-  throw new ConfigError(`missing or invalid bria api key: ${BRIA_PROFILE_API_KEY}`)
-}
-
 const jwtSecret = process.env.JWT_SECRET
 if (!jwtSecret) {
   throw new ConfigError("missing JWT_SECRET")
@@ -52,6 +44,22 @@ export const getGaloyBuildInformation = () => {
   }
 }
 
+export const getBriaPartialConfigFromProcess = () => {
+  const briaUrl = process.env.BRIA_HOST ?? "localhost"
+  const briaPort = process.env.BRIA_PORT ?? "2742"
+
+  const BRIA_PROFILE_API_KEY =
+    process.env.BRIA_PROFILE_API_KEY || "bria_dev_000000000000000000000"
+
+  if (!BRIA_PROFILE_API_KEY) {
+    throw new ConfigError(`missing or invalid bria api key: ${BRIA_PROFILE_API_KEY}`)
+  }
+
+  return {
+    endpoint: `${briaUrl}:${briaPort}`,
+    apiKey: BRIA_PROFILE_API_KEY,
+  }
+}
 export const getGeetestConfig = () => {
   // FIXME: Geetest should be optional.
   if (!process.env.GEETEST_ID || !process.env.GEETEST_KEY) {

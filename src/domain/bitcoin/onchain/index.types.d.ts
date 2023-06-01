@@ -3,6 +3,7 @@ type TransactionDecodeError = import("./errors").TransactionDecodeError
 type OnChainServiceError = import("./errors").OnChainServiceError
 
 type OnChainAddress = string & { readonly brand: unique symbol }
+type OnChainAddressRequestId = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
 type OnChainTxVout = number & { readonly brand: unique symbol }
@@ -74,11 +75,11 @@ type PayToAddressArgs = {
   description?: string
 }
 
-type IncomingOnChainTxHandler = {
-  balancesByAddresses(): { [key: OnChainAddress]: BtcPaymentAmount } | ValidationError
+type IncomingOnChainTxHandler<S extends WalletCurrency> = {
+  balancesByAddresses(): { [key: OnChainAddress]: PaymentAmount<S> } | ValidationError
   balanceByWallet(
     wallets: Wallet[],
-  ): { [key: WalletId]: BtcPaymentAmount } | ValidationError
+  ): { [key: WalletId]: PaymentAmount<S> } | ValidationError
 }
 
 interface IOnChainService {
@@ -99,7 +100,7 @@ interface IOnChainService {
     scanDepth,
   }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError>
 
-  createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
+  createOnChainAddress(): Promise<LndOnChainAddressIdentifier | OnChainServiceError>
 
   getOnChainFeeEstimate({
     amount,
@@ -122,5 +123,13 @@ interface OnChainEvent {
 
 type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface INewOnChainService {}
+interface INewOnChainService {
+  getBalance(): Promise<BtcPaymentAmount | OnChainServiceError>
+  createOnChainAddress(args: {
+    walletId: WalletId
+    requestId?: OnChainAddressRequestId
+  }): Promise<OnChainAddressIdentifier | OnChainServiceError>
+  findAddressByRequestId(
+    requestId: OnChainAddressRequestId,
+  ): Promise<OnChainAddressIdentifier | OnChainServiceError>
+}

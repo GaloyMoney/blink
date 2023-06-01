@@ -6,14 +6,15 @@ import {
 } from "@domain/ledger"
 import { WalletCurrency } from "@domain/shared"
 
-import {
-  assetsMainAccount,
-  bitcoindAccountingPath,
-  escrowAccountingPath,
-  lndAccountingPath,
-} from "./accounts"
 import { MainBook } from "./books"
 import { getBankOwnerWalletId } from "./caching"
+import {
+  assetsMainAccount,
+  coldStorageAccountId,
+  escrowAccountId,
+  lndLedgerAccountId,
+  onChainLedgerAccountId,
+} from "./domain/accounts"
 
 const getWalletBalance = async (account: string, query = {}) => {
   const params = { account, currency: "BTC", ...query }
@@ -27,11 +28,13 @@ export const getAssetsBalance = (currency = "BTC") =>
 export const getLiabilitiesBalance = (currency = "BTC") =>
   getWalletBalance(liabilitiesMainAccount, { currency })
 
-export const getLndBalance = () => getWalletBalance(lndAccountingPath)
+export const getLndBalance = () => getWalletBalance(lndLedgerAccountId)
 
-export const getLndEscrowBalance = () => getWalletBalance(escrowAccountingPath)
+export const getLndEscrowBalance = () => getWalletBalance(escrowAccountId)
 
-export const getBitcoindBalance = () => getWalletBalance(bitcoindAccountingPath)
+export const getBitcoindBalance = () => getWalletBalance(coldStorageAccountId)
+
+export const getOnChainBalance = () => getWalletBalance(onChainLedgerAccountId)
 
 export const getBankOwnerBalance = async (currency = "BTC") => {
   const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
@@ -60,12 +63,12 @@ export const updateLndEscrow = async (amount: Satoshis) => {
 
   if (diff > 0) {
     entry
-      .credit(lndAccountingPath, diff, metadata)
-      .debit(escrowAccountingPath, diff, metadata)
+      .credit(lndLedgerAccountId, diff, metadata)
+      .debit(escrowAccountId, diff, metadata)
   } else if (diff < 0) {
     entry
-      .debit(lndAccountingPath, -diff, metadata)
-      .credit(escrowAccountingPath, -diff, metadata)
+      .debit(lndLedgerAccountId, -diff, metadata)
+      .credit(escrowAccountId, -diff, metadata)
   }
 
   await entry.commit()
@@ -94,7 +97,7 @@ export const addLndChannelOpeningOrClosingFee = async ({
   try {
     await MainBook.entry(description)
       .debit(bankOwnerPath, fee, txMetadata)
-      .credit(lndAccountingPath, fee, txMetadata)
+      .credit(lndLedgerAccountId, fee, txMetadata)
       .commit()
 
     return true
@@ -122,7 +125,7 @@ export const addLndRoutingRevenue = async ({
   try {
     await MainBook.entry("routing fee")
       .credit(bankOwnerPath, amount, metadata)
-      .debit(lndAccountingPath, amount, metadata)
+      .debit(lndLedgerAccountId, amount, metadata)
       .commit()
 
     return true

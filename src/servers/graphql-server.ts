@@ -296,6 +296,7 @@ export const startApolloServer = async ({
       checkDbConnectionStatus: true,
       checkRedisStatus: true,
       checkLndsStatus: false,
+      checkBriaStatus: false,
     }),
   )
 

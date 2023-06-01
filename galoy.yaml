@@ -34,6 +34,10 @@ coldStorage:
   walletPattern: specter
   onChainWallet: specter/coldstorage
   targetConfirmations: 6
+bria:
+  hotWalletName: dev
+  queueNames:
+    fast: dev
 lndScbBackupBucketName: lnd-static-channel-backups
 test_accounts:
   - ref: A

@@ -81,6 +81,7 @@ import {
   subscribeToTransactions,
   getUsdWalletIdByTestUserRef,
   amountByPriceAsMajor,
+  resetOnChainAddressAccountIdLimits,
 } from "test/helpers"
 
 let accountA: Account
@@ -125,6 +126,7 @@ beforeAll(async () => {
   accountG = await getAccountByTestUserRef("G")
 
   await bitcoindClient.loadWallet({ filename: "outside" })
+  await resetOnChainAddressAccountIdLimits(accountA.id)
 })
 
 afterEach(async () => {
@@ -616,7 +618,7 @@ const testInternalSend = async ({
     recipientCurrency === WalletCurrency.Btc
       ? Wallets.createOnChainAddressForBtcWallet
       : Wallets.createOnChainAddressForUsdWallet
-  const address = await createAddressFn(recipientWalletId)
+  const address = await createAddressFn({ walletId: recipientWalletId })
   if (address instanceof Error) return address
 
   const sendArgs = {
@@ -981,7 +983,9 @@ describe("BtcWallet - onChainPay", () => {
   it("sends all with an on us transaction", async () => {
     const initialBalanceUserF = await getBalanceHelper(walletIdF)
 
-    const address = await Wallets.createOnChainAddressForBtcWallet(walletIdD)
+    const address = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdD,
+    })
     if (address instanceof Error) throw address
 
     const initialBalanceUserD = await getBalanceHelper(walletIdD)
@@ -1134,6 +1138,7 @@ describe("BtcWallet - onChainPay", () => {
   )
 
   it("fails if try to send a transaction to self", async () => {
+    await resetOnChainAddressAccountIdLimits(accountA.id)
     const res = await testInternalSend({
       senderAccount: accountA,
       senderWalletId: walletIdA,
@@ -1346,6 +1351,7 @@ describe("UsdWallet - onChainPay", () => {
     amountCases.forEach(({ amountCurrency, senderAmount }) => {
       describe(`with ${amountCurrency} amount currency`, () => {
         it("sends from usd wallet to usd wallet", async () => {
+          await resetOnChainAddressAccountIdLimits(accountA.id)
           const res = await testInternalSend({
             senderAccount: accountB,
             senderWalletId: walletIdUsdB,
@@ -1357,6 +1363,7 @@ describe("UsdWallet - onChainPay", () => {
         })
 
         it("sends from usd wallet to btc wallet", async () => {
+          await resetOnChainAddressAccountIdLimits(accountA.id)
           const res = await testInternalSend({
             senderAccount: accountB,
             senderWalletId: walletIdUsdB,

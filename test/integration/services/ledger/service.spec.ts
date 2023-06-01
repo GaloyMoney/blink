@@ -120,7 +120,7 @@ describe("Volumes", () => {
     walletDescriptor: WalletDescriptor<S>,
   ) => Promise<PaymentAmount<S>>
 
-  // Each "TxFn" execute a transaction for a given type and then checks if
+  // Each "TxFn" executes a transaction for a given type and then checks if
   // the respective tx volume has been affected or not.
   const prepareTxFns = <S extends WalletCurrency, R extends WalletCurrency>(
     fetchVolumeAmount: fetchVolumeAmountType<S>,

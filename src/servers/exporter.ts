@@ -4,7 +4,7 @@ import client, { register } from "prom-client"
 
 import { SECS_PER_5_MINS } from "@config"
 
-import { ColdStorage, Lightning } from "@app"
+import { ColdStorage, Lightning, OnChain } from "@app"
 
 import { toSeconds } from "@domain/primitives"
 
@@ -28,7 +28,7 @@ import { LocalCacheService } from "@services/cache"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { ledgerAdmin, setupMongoConnection } from "@services/mongodb"
 
-import { timeout } from "@utils"
+import { timeoutWithCancel } from "@utils"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -39,7 +39,8 @@ const logger = baseLogger.child({ module: "exporter" })
 const prefix = "galoy"
 
 const main = async () => {
-  const { getLiabilitiesBalance, getLndBalance, getBitcoindBalance } = ledgerAdmin
+  const { getLiabilitiesBalance, getLndBalance, getBitcoindBalance, getOnChainBalance } =
+    ledgerAdmin
   createGauge({
     name: "liabilities",
     description: "how much money customers has",
@@ -135,6 +136,23 @@ const main = async () => {
   })
 
   createGauge({
+    name: "onchain",
+    description: "amount in books for OnChain account",
+    collect: getOnChainBalance,
+  })
+
+  createGauge({
+    name: "bria",
+    description: "how much funds are onChain in bria managed wallets",
+    collect: async () => {
+      const balance = await OnChain.getTotalBalance()
+      if (balance instanceof Error) return 0
+
+      return Number(balance.amount)
+    },
+  })
+
+  createGauge({
     name: "business",
     description: "number of businesses in the app",
     collect: async () => {
@@ -172,6 +190,7 @@ const main = async () => {
       checkDbConnectionStatus: true,
       checkRedisStatus: false,
       checkLndsStatus: true,
+      checkBriaStatus: true,
     }),
   )
 
@@ -230,12 +249,22 @@ const createWalletGauge = ({
         const walletId = await getId()
         return getWalletBalance(walletId)
       }
+
+      let cancelTimeout = () => {
+        return
+      }
       try {
-        const timeoutPromise = timeout(TIMEOUT_WALLET_BALANCE, "Timeout")
+        const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+          TIMEOUT_WALLET_BALANCE,
+          "Timeout",
+        )
+        cancelTimeout = cancelTimeoutFn
+
         const balance = (await Promise.race([
           getWalletBalancePromise(),
           timeoutPromise,
         ])) as number
+        cancelTimeout()
 
         await cache.set<number>({
           key: name,
@@ -247,8 +276,10 @@ const createWalletGauge = ({
       } catch (err) {
         logger.error({ err }, `Could not load wallet id for ${walletName}.`)
 
-        if (err.message === "Timeout")
+        if (err.message === "Timeout") {
           logger.info(`Getting ${walletName} wallet balance from cache.`)
+        }
+        cancelTimeout()
 
         return cache.getOrSet({
           key: name,
@@ -318,20 +349,25 @@ const getAssetsLiabilitiesDifference = async () => {
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
-  const [lightning, bitcoin, lndBalance, bitcoind] = await Promise.all([
-    ledgerAdmin.getLndBalance(),
-    ledgerAdmin.getBitcoindBalance(),
-    Lightning.getTotalBalance(),
-    getColdStorageBalance(),
-  ])
+  const [lightning, bitcoin, onChain, lndBalance, bitcoind, briaBalance] =
+    await Promise.all([
+      ledgerAdmin.getLndBalance(),
+      ledgerAdmin.getBitcoindBalance(),
+      ledgerAdmin.getOnChainBalance(),
+      Lightning.getTotalBalance(),
+      getColdStorageBalance(),
+      OnChain.getTotalBalance(),
+    ])
 
   const lnd = lndBalance instanceof Error ? 0 : lndBalance
+  const bria = briaBalance instanceof Error ? 0 : Number(briaBalance.amount)
 
   return (
     lnd + // physical assets
     bitcoind + // physical assets
-    (lightning + bitcoin)
-  ) // value in accounting
+    bria + // physical assets
+    (lightning + bitcoin + onChain) // value in accounting
+  )
 }
 
 createGauge({

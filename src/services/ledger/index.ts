@@ -295,7 +295,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const isOnChainTxRecorded = async ({
+  const isOnChainReceiptTxRecordedForWallet = async ({
     walletId,
     txHash,
     vout,
@@ -303,15 +303,35 @@ export const LedgerService = (): ILedgerService => {
     walletId: WalletId
     txHash: OnChainTxHash
     vout: OnChainTxVout
-  }): Promise<boolean | LedgerServiceError> => {
+  }): Promise<IsOnChainReceiptTxRecordedForWalletResult | LedgerServiceError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
     try {
-      const result = await Transaction.countDocuments({
+      const entry = await Transaction.findOne({
         accounts: liabilitiesWalletId,
         type: LedgerTransactionType.OnchainReceipt,
         hash: txHash,
         $or: [{ vout: { $exists: false } }, { vout }],
+      })
+
+      if (!entry) {
+        return { recorded: false, newAddressRequestId: undefined }
+      }
+
+      const tx = translateToLedgerTx(entry)
+      return { recorded: true, newAddressRequestId: tx.newAddressRequestId }
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const isOnChainTxHashRecorded = async (
+    txHash: OnChainTxHash,
+  ): Promise<boolean | LedgerServiceError> => {
+    try {
+      const result = await Transaction.countDocuments({
+        type: LedgerTransactionType.OnchainReceipt,
+        hash: txHash,
       })
       return result > 0
     } catch (err) {
@@ -397,7 +417,8 @@ export const LedgerService = (): ILedgerService => {
       getPendingPaymentsCount,
       getWalletBalance,
       getWalletBalanceAmount,
-      isOnChainTxRecorded,
+      isOnChainReceiptTxRecordedForWallet,
+      isOnChainTxHashRecorded,
       isLnTxRecorded,
       getWalletIdByTransactionHash,
       listWalletIdsWithPendingPayments,
@@ -438,6 +459,8 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
       tx.payee_addresses && tx.payee_addresses.length > 0
         ? (tx.payee_addresses[0] as OnChainAddress)
         : undefined,
+    newAddressRequestId:
+      (tx.new_address_request_id as OnChainAddressRequestId) || undefined,
     txHash: (tx.hash as OnChainTxHash) || undefined,
     vout: (tx.vout as OnChainTxVout) || undefined,
     feeKnownInAdvance: tx.feeKnownInAdvance || false,

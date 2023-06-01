@@ -14,6 +14,7 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
   }): Promise<OnChainAddressIdentifier | RepositoryError> => {
     try {
       const { address, pubkey } = onChainAddress
+
       const result = await Wallet.updateOne(
         { id: walletId },
         { $push: { onchain: { address, pubkey } } },
@@ -47,8 +48,8 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
       }
 
       return {
-        pubkey: result.lastAddress.pubkey as Pubkey,
-        address: result.lastAddress.address as OnChainAddress,
+        pubkey: result.lastAddress.pubkey,
+        address: result.lastAddress.address,
       }
     } catch (err) {
       baseLogger.warn({ err }, "issue findLastByWalletId")

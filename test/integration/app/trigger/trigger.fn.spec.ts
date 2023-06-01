@@ -1,19 +1,14 @@
-import { getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { Prices, Wallets } from "@app"
+import { Wallets } from "@app"
 
 import { TxStatus } from "@domain/wallets"
-import { DisplayCurrency } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { NotificationType } from "@domain/notifications"
 
-import { invoiceUpdateEventHandler, onchainBlockEventHandler } from "@servers/trigger"
+import { WalletsRepository } from "@services/mongoose"
+import { onchainBlockEventHandler } from "@servers/trigger"
 
 import { baseLogger } from "@services/logger"
-import { LedgerService } from "@services/ledger"
-import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
 import { sleep } from "@utils"
 
@@ -25,13 +20,10 @@ import {
   createUserAndWalletFromUserRef,
   getAccountRecordByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getHash,
-  getInvoice,
   lnd1,
-  lndOutside1,
   mineBlockAndSyncAll,
   RANDOM_ADDRESS,
-  safePay,
+  resetOnChainAddressAccountIdLimits,
   subscribeToBlocks,
   waitFor,
   waitUntilSyncAll,
@@ -40,12 +32,9 @@ import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/walle
 
 let walletIdA: WalletId
 let walletIdD: WalletId
-let walletIdF: WalletId
 
 let accountRecordA: AccountRecord
 let accountRecordD: AccountRecord
-
-const locale = getLocale()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -58,7 +47,6 @@ beforeAll(async () => {
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
-  walletIdF = await getDefaultWalletIdByTestUserRef("F")
 
   accountRecordA = await getAccountRecordByTestUserRef("A")
   accountRecordD = await getAccountRecordByTestUserRef("D")
@@ -70,6 +58,7 @@ beforeEach(() => {
 
 afterAll(async () => {
   jest.restoreAllMocks()
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 type WalletState = {
@@ -96,7 +85,15 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
 }
 
 describe("onchainBlockEventHandler", () => {
-  it("should process block for incoming transactions", async () => {
+  it("should process block for incoming transactions from lnd", async () => {
+    const walletA = await WalletsRepository().findById(walletIdA)
+    if (walletA instanceof Error) throw walletA
+    await resetOnChainAddressAccountIdLimits(walletA.accountId)
+
+    const walletD = await WalletsRepository().findById(walletIdD)
+    if (walletD instanceof Error) throw walletD
+    await resetOnChainAddressAccountIdLimits(walletD.accountId)
+
     const amount = toSats(10_000)
     const amount2 = toSats(20_000)
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
@@ -118,13 +115,13 @@ describe("onchainBlockEventHandler", () => {
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
 
-    const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
+    const address = await Wallets.lndCreateOnChainAddress(walletIdA)
     if (address instanceof Error) throw address
 
     const output0 = {}
     output0[address] = sat2btc(amount)
 
-    const address2 = await Wallets.createOnChainAddressForBtcWallet(walletIdD)
+    const address2 = await Wallets.lndCreateOnChainAddress(walletIdD)
     if (address2 instanceof Error) throw address2
 
     const output1 = {}
@@ -199,70 +196,5 @@ describe("onchainBlockEventHandler", () => {
       amount: amount2,
       address: address2,
     })
-  })
-
-  it("should process pending invoices on invoice update event", async () => {
-    const sendNotification = jest.fn()
-    jest
-      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementation(() => ({
-        sendNotification,
-      }))
-
-    const sats = toSats(500)
-
-    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-      walletId: walletIdF,
-      amount: toSats(sats),
-    })
-    expect(lnInvoice).not.toBeInstanceOf(Error)
-
-    const { paymentRequest: request } = lnInvoice as LnInvoice
-    safePay({ lnd: lndOutside1, request })
-
-    await sleep(250)
-
-    const hash = getHash(request)
-    const invoice = await getInvoice({ id: hash, lnd: lnd1 })
-    await invoiceUpdateEventHandler(invoice)
-
-    // notification are not been awaited, so explicit sleep is necessary
-    await sleep(250)
-
-    const ledger = LedgerService()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw ledgerTxs
-
-    const ledgerTx = ledgerTxs[0]
-
-    expect(ledgerTx.credit).toBe(sats)
-    expect(ledgerTx.pendingConfirmation).toBe(false)
-
-    const displayPriceRatio = await Prices.getCurrentPriceAsDisplayPriceRatio({
-      currency: DisplayCurrency.Usd,
-    })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-
-    const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
-
-    // floor/ceil is needed here because the price can sometimes shift in the time between
-    // function execution and 'getCurrentPrice' call above here resulting in different rounding
-    // for 'displayPaymentAmount' calculation.
-    const { title, body: bodyFloor } = createPushNotificationContent({
-      type: NotificationType.LnInvoicePaid,
-      userLanguage: locale as UserLanguage,
-      amount: paymentAmount,
-      displayAmount: displayPriceRatio.convertFromWalletToFloor(paymentAmount),
-    })
-    const { body: bodyCeil } = createPushNotificationContent({
-      type: NotificationType.LnInvoicePaid,
-      userLanguage: locale as UserLanguage,
-      amount: paymentAmount,
-      displayAmount: displayPriceRatio.convertFromWalletToCeil(paymentAmount),
-    })
-
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].title).toBe(title)
-    expect([bodyFloor, bodyCeil]).toContain(sendNotification.mock.calls[0][0].body)
   })
 })

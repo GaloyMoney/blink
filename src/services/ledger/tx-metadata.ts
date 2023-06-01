@@ -247,6 +247,7 @@ export const OnChainReceiveLedgerMetadata = ({
   displayCurrency,
 
   payeeAddresses,
+  newAddressRequestId,
 }: {
   onChainTxHash: OnChainTxHash
   onChainTxVout: OnChainTxVout
@@ -257,6 +258,7 @@ export const OnChainReceiveLedgerMetadata = ({
   displayCurrency: DisplayCurrency
 
   payeeAddresses: OnChainAddress[]
+  newAddressRequestId: OnChainAddressRequestId | undefined
 }) => {
   const {
     btcPaymentAmount: { amount: satsAmount },
@@ -271,6 +273,7 @@ export const OnChainReceiveLedgerMetadata = ({
     hash: onChainTxHash,
     vout: onChainTxVout,
     payee_addresses: payeeAddresses,
+    new_address_request_id: newAddressRequestId,
 
     // Amounts are after fee is deducted
     satsAmount: toSats(satsAmount),

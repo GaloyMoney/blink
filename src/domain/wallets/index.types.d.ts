@@ -151,7 +151,6 @@ type AddPendingIncomingArgs = {
 
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
-  addPendingIncoming(args: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
 }
 
 type WalletTransactionHistoryWithPending = {
@@ -188,25 +187,16 @@ interface IWalletsRepository {
 }
 
 type onChainDepositFeeArgs = {
-  amount: Satoshis
-  ratio: DepositFeeRatio
-}
-
-type newOnChainDepositFeeArgs = {
   amount: BtcPaymentAmount
   ratio: DepositFeeRatio
 }
 
 type DepositFeeCalculator = {
-  onChainDepositFee({ amount, ratio }: onChainDepositFeeArgs): Satoshis
-  lnDepositFee(): Satoshis
-}
-
-type NewDepositFeeCalculator = {
   onChainDepositFee({
     amount,
     ratio,
-  }: newOnChainDepositFeeArgs): BtcPaymentAmount | ValidationError
+  }: onChainDepositFeeArgs): BtcPaymentAmount | ValidationError
+  lnDepositFee(): BtcPaymentAmount
 }
 
 type OnchainWithdrawalConfig = {

@@ -2,11 +2,13 @@ import express from "express"
 import mongoose from "mongoose"
 import { redis } from "@services/redis"
 import { lndStatusEvent } from "@services/lnd/health"
+import { NewOnChainService } from "@services/bria"
 
 type HealthzArgs = {
   checkDbConnectionStatus: boolean
   checkRedisStatus: boolean
   checkLndsStatus: boolean
+  checkBriaStatus: boolean
 }
 
 type EventLndActive = {
@@ -18,6 +20,7 @@ export default function ({
   checkDbConnectionStatus,
   checkRedisStatus,
   checkLndsStatus,
+  checkBriaStatus,
 }: HealthzArgs) {
   const lndStatus: { [key: string]: boolean } = {}
   if (checkLndsStatus) {
@@ -33,16 +36,30 @@ export default function ({
   return async (_req: express.Request, res: express.Response) => {
     const isMongoAlive = !checkDbConnectionStatus || mongoose.connection.readyState === 1
     const isRedisAlive = !checkRedisStatus || (await isRedisAvailable())
+    const isBriaAlive = !checkBriaStatus || (await isBriaAvailable())
     const statuses = Object.values(lndStatus)
     const areLndsAlive =
       !checkLndsStatus || (statuses.length > 0 && statuses.some((s) => s))
-    res.status(isMongoAlive && isRedisAlive && areLndsAlive ? 200 : 503).send()
+    res
+      .status(isMongoAlive && isRedisAlive && isBriaAlive && areLndsAlive ? 200 : 503)
+      .send()
   }
 }
 
 const isRedisAvailable = async (): Promise<boolean> => {
   try {
     return (await redis.ping()) === "PONG"
+  } catch {
+    return false
+  }
+}
+
+const isBriaAvailable = async (): Promise<boolean> => {
+  try {
+    // TODO: replace by bria health check query or other bria method
+    const service = NewOnChainService()
+    const response = await service.getBalance()
+    return !(response instanceof Error)
   } catch {
     return false
   }

@@ -20,106 +20,91 @@ describe("handleIncomingOnChainTransactions", () => {
     return balances
   }
 
-  const incomingTxns: IncomingOnChainTransaction[] = [
-    // walletId0 1st txn
+  const newIncomingTxns: WalletOnChainSettledTransaction[] = [
+    // walletId0 1st txn: vout 0
     {
-      confirmations: 0,
-      rawTx: {
-        txHash: "txHash1" as OnChainTxHash,
-        outs: [
-          {
-            sats: toSats(100),
-            address: "walletId0-address1" as OnChainAddress,
-            vout: 0 as OnChainTxVout,
-          },
-          {
-            sats: toSats(200),
-            address: "change-address1" as OnChainAddress,
-            vout: 1 as OnChainTxVout,
-          },
-        ],
+      settlementAmount: toSats(100),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "walletId0-address1" as OnChainAddress,
       },
-      fee: toSats(0),
-      createdAt: new Date(Date.now()),
-      uniqueAddresses: () => [] as OnChainAddress[],
-    },
+    } as WalletOnChainSettledTransaction,
 
-    // walletId0 2nd txn
+    // walletId0 1st txn: vout 1
     {
-      confirmations: 0,
-      rawTx: {
-        txHash: "txHash2" as OnChainTxHash,
-        outs: [
-          {
-            sats: toSats(300),
-            address: "walletId0-address2" as OnChainAddress,
-            vout: 0 as OnChainTxVout,
-          },
-          {
-            sats: toSats(400),
-            address: "change-address2" as OnChainAddress,
-            vout: 1 as OnChainTxVout,
-          },
-        ],
+      settlementAmount: toSats(200),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "change-address1" as OnChainAddress,
       },
-      fee: toSats(0),
-      createdAt: new Date(Date.now()),
-      uniqueAddresses: () => [] as OnChainAddress[],
-    },
+    } as WalletOnChainSettledTransaction,
 
-    // walletId1 1st txn
+    // walletId0 2nd txn: vout 0
     {
-      confirmations: 0,
-      rawTx: {
-        txHash: "txHash3" as OnChainTxHash,
-        outs: [
-          {
-            sats: toSats(500),
-            address: "walletId1-address1" as OnChainAddress,
-            vout: 0 as OnChainTxVout,
-          },
-          {
-            sats: toSats(600),
-            address: "change-address3" as OnChainAddress,
-            vout: 1 as OnChainTxVout,
-          },
-        ],
+      settlementAmount: toSats(300),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "walletId0-address2" as OnChainAddress,
       },
-      fee: toSats(0),
-      createdAt: new Date(Date.now()),
-      uniqueAddresses: () => [] as OnChainAddress[],
-    },
+    } as WalletOnChainSettledTransaction,
 
-    // Tx with multiple outputs from walletId0 & walletId1
+    // walletId0 2nd txn: vout 1
     {
-      confirmations: 0,
-      rawTx: {
-        txHash: "txHash4" as OnChainTxHash,
-        outs: [
-          {
-            sats: toSats(700),
-            address: "walletId0-address1" as OnChainAddress,
-            vout: 0 as OnChainTxVout,
-          },
-          {
-            sats: toSats(800),
-            address: "walletId0-address2" as OnChainAddress,
-            vout: 1 as OnChainTxVout,
-          },
-          {
-            sats: toSats(900),
-            address: "walletId1-address1" as OnChainAddress,
-            vout: 2 as OnChainTxVout,
-          },
-        ],
+      settlementAmount: toSats(400),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "change-address2" as OnChainAddress,
       },
-      fee: toSats(0),
-      createdAt: new Date(Date.now()),
-      uniqueAddresses: () => [] as OnChainAddress[],
-    },
+    } as WalletOnChainSettledTransaction,
+
+    // walletId1 1st txn: vout 0
+    {
+      settlementAmount: toSats(500),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "walletId1-address1" as OnChainAddress,
+      },
+    } as WalletOnChainSettledTransaction,
+
+    // walletId1 1st txn: vout 1
+    {
+      settlementAmount: toSats(600),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "change-address3" as OnChainAddress,
+      },
+    } as WalletOnChainSettledTransaction,
+
+    // Tx with multiple outputs from walletId0 & walletId1: vout 0
+    {
+      settlementAmount: toSats(700),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "walletId0-address1" as OnChainAddress,
+      },
+    } as WalletOnChainSettledTransaction,
+
+    // Tx with multiple outputs from walletId0 & walletId1: vout 1
+    {
+      settlementAmount: toSats(800),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "walletId0-address2" as OnChainAddress,
+      },
+    } as WalletOnChainSettledTransaction,
+
+    // Tx with multiple outputs from walletId0 & walletId1: vout 2
+    {
+      settlementAmount: toSats(900),
+      settlementCurrency: WalletCurrency.Btc,
+      initiationVia: {
+        address: "walletId1-address1" as OnChainAddress,
+      },
+    } as WalletOnChainSettledTransaction,
   ]
 
-  const handler = IncomingOnChainTxHandler(incomingTxns)
+  const handler = IncomingOnChainTxHandler(newIncomingTxns)
+  if (handler instanceof Error) throw handler
 
   describe("balance by address", () => {
     it("calculates balances by addresses in txns", () => {
@@ -142,13 +127,13 @@ describe("handleIncomingOnChainTransactions", () => {
       {
         id: "walletId0",
         onChainAddressIdentifiers: [
-          { pubkey: "pubkey", address: "walletId0-address1" },
-          { pubkey: "pubkey", address: "walletId0-address2" },
+          { address: "walletId0-address1" },
+          { address: "walletId0-address2" },
         ],
       },
       {
         id: "walletId1",
-        onChainAddressIdentifiers: [{ pubkey: "pubkey", address: "walletId1-address1" }],
+        onChainAddressIdentifiers: [{ address: "walletId1-address1" }],
       },
       {
         id: "walletId2",

@@ -80,6 +80,7 @@ type EntryBuilderDebit<M extends MediciEntry> = {
     additionalMetadata: TxMetadata
   }) => EntryBuilderCredit<M>
   debitLnd: () => EntryBuilderCredit<M>
+  debitOnChain: () => EntryBuilderCredit<M>
   debitColdStorage: () => EntryBuilderCredit<M>
 }
 

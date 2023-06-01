@@ -10,7 +10,7 @@ export const getLastOnChainAddress = async (
   const lastOnChainAddress = await onChainAddressesRepo.findLastByWalletId(walletId)
 
   if (lastOnChainAddress instanceof CouldNotFindError)
-    return createOnChainAddressForBtcWallet(walletId)
+    return createOnChainAddressForBtcWallet({ walletId })
 
   if (lastOnChainAddress instanceof Error) return lastOnChainAddress
 

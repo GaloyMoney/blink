@@ -1,6 +1,6 @@
 import { once } from "events"
 
-import { Accounts, Payments, Wallets } from "@app"
+import { Payments, Wallets } from "@app"
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import {
@@ -18,10 +18,16 @@ import { updateDisplayCurrency } from "@app/accounts"
 
 import { translateToLedgerTx } from "@services/ledger"
 import { MainBook } from "@services/ledger/books"
+import { BriaPayloadType } from "@services/bria"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { AccountsRepository } from "@services/mongoose"
 import { toObjectId } from "@services/mongoose/utils"
 import { baseLogger } from "@services/logger"
+
+import {
+  utxoDetectedEventHandler,
+  utxoSettledEventHandler,
+} from "@servers/event-handlers/bria"
 
 import { sleep } from "@utils"
 
@@ -37,12 +43,12 @@ import {
   getUsdWalletIdByTestUserRef,
   lndonchain,
   lndOutside1,
+  onceBriaSubscribe,
   RANDOM_ADDRESS,
+  resetOnChainAddressAccountIdLimits,
   safePay,
   sendToAddressAndConfirm,
-  subscribeToChainAddress,
   subscribeToTransactions,
-  waitUntilBlockHeight,
 } from "test/helpers"
 
 let accountB: Account
@@ -642,18 +648,19 @@ describe("Display properties on transactions", () => {
   })
 
   describe("onchain", () => {
-    async function sendToWalletTestWrapper({
+    const sendToWalletTestWrapper = async ({
       amountSats,
       walletId,
     }: {
       amountSats: Satoshis
       walletId: WalletId
-    }) {
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletId)
+    }) => {
+      const address = await Wallets.createOnChainAddressForBtcWallet({
+        walletId,
+      })
       if (address instanceof Error) throw address
       expect(address.substring(0, 4)).toBe("bcrt")
 
-      const initialBlockNumber = await bitcoindClient.getBlockCount()
       const txId = await sendToAddressAndConfirm({
         walletClient: bitcoindOutside,
         address,
@@ -662,20 +669,33 @@ describe("Display properties on transactions", () => {
       if (txId instanceof Error) throw txId
 
       // Register confirmed txn in database
-      const sub = subscribeToChainAddress({
-        lnd: lndonchain,
-        bech32_address: address,
-        min_height: initialBlockNumber,
+      const detectedEvent = await onceBriaSubscribe({
+        type: BriaPayloadType.UtxoDetected,
+        txId,
       })
-      await once(sub, "confirmation")
-      sub.removeAllListeners()
+      if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
+        throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
+      }
+      const resultPending = await utxoDetectedEventHandler({
+        event: detectedEvent.payload,
+      })
+      if (resultPending instanceof Error) {
+        throw resultPending
+      }
 
-      await waitUntilBlockHeight({ lnd: lndonchain })
+      const settledEvent = await onceBriaSubscribe({
+        type: BriaPayloadType.UtxoSettled,
+        txId,
+      })
+      if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
+        throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
+      }
+      const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
+      if (resultSettled instanceof Error) {
+        throw resultSettled
+      }
 
-      const updated = await Wallets.updateOnChainReceipt({ logger: baseLogger })
-      if (updated instanceof Error) throw updated
-
-      return txId as OnChainTxHash
+      return txId
     }
 
     describe("receive", () => {
@@ -730,28 +750,32 @@ describe("Display properties on transactions", () => {
         const amountSats = toSats(20_000)
 
         const recipientWalletId = walletIdB
-        const recipientAccount = accountB
 
         // Execute receive
 
-        const address = await Wallets.createOnChainAddressForBtcWallet(recipientWalletId)
+        const address = await Wallets.createOnChainAddressForBtcWallet({
+          walletId: recipientWalletId,
+        })
         if (address instanceof Error) throw address
 
-        const account = await Accounts.getAccount(recipientAccount.id)
-        if (account instanceof Error) throw account
+        const txId = (await bitcoindOutside.sendToAddress({
+          address,
+          amount: sat2btc(amountSats),
+        })) as OnChainTxHash
 
-        const sub = subscribeToTransactions({ lnd: lndonchain })
-        sub.on("chain_transaction", onchainTransactionEventHandler)
-
-        await Promise.all([
-          once(sub, "chain_transaction"),
-          bitcoindOutside.sendToAddress({
-            address,
-            amount: sat2btc(amountSats),
-          }),
-        ])
-
-        await sleep(1000)
+        const detectedEvent = await onceBriaSubscribe({
+          type: BriaPayloadType.UtxoDetected,
+          txId,
+        })
+        if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
+          throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
+        }
+        const resultPending = await utxoDetectedEventHandler({
+          event: detectedEvent.payload,
+        })
+        if (resultPending instanceof Error) {
+          throw resultPending
+        }
 
         // Check entries
         const { result: txs, error } = await getTransactionsForWalletId(recipientWalletId)
@@ -794,13 +818,21 @@ describe("Display properties on transactions", () => {
         )
 
         // Settle pending
-        await Promise.all([
-          once(sub, "chain_transaction"),
-          bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
-        ])
+        await bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS })
 
-        await sleep(3000)
-        sub.removeAllListeners()
+        const settledEvent = await onceBriaSubscribe({
+          type: BriaPayloadType.UtxoSettled,
+          txId,
+        })
+        if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
+          throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
+        }
+        const resultSettled = await utxoSettledEventHandler({
+          event: settledEvent.payload,
+        })
+        if (resultSettled instanceof Error) {
+          throw resultSettled
+        }
       })
     })
 
@@ -808,6 +840,7 @@ describe("Display properties on transactions", () => {
       it("(OnChainIntraledgerLedgerMetadata) pays another galoy user via onchain address", async () => {
         // TxMetadata:
         // - OnChainIntraledgerLedgerMetadata
+        await resetOnChainAddressAccountIdLimits(accountC.id)
 
         const amountSats = toSats(20_000)
 
@@ -818,7 +851,9 @@ describe("Display properties on transactions", () => {
         // Execute Send
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const address = await Wallets.createOnChainAddressForBtcWallet(recipientWalletId)
+        const address = await Wallets.createOnChainAddressForBtcWallet({
+          walletId: recipientWalletId,
+        })
         if (address instanceof Error) throw address
 
         const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
@@ -889,7 +924,9 @@ describe("Display properties on transactions", () => {
         // Execute Send
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const address = await Wallets.createOnChainAddressForUsdWallet(recipientWalletId)
+        const address = await Wallets.createOnChainAddressForUsdWallet({
+          walletId: recipientWalletId,
+        })
         if (address instanceof Error) throw address
 
         const paid = await Wallets.payOnChainByWalletIdForBtcWallet({

@@ -65,7 +65,7 @@ import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { LocalCacheService } from "@services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
-import { timeout } from "@utils"
+import { timeoutWithCancel } from "@utils"
 
 import sumBy from "lodash.sumby"
 
@@ -288,6 +288,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     maxFee: Satoshis
     amount: Satoshis
   }): Promise<RawRoute | LightningServiceError> => {
+    let cancelTimeout = () => {
+      return
+    }
     try {
       const routes: ProbeForRouteRoutes = decodedInvoice.routeHints.map((route) =>
         route.map((hop) => ({
@@ -322,14 +325,21 @@ export const LndService = (): ILightningService | LightningServiceError => {
         total_mtokens: decodedInvoice.paymentSecret ? mTokens : undefined,
       }
       const routePromise = lnService.probeForRoute(probeForRouteArgs)
-      const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+      const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+        TIMEOUT_PAYMENT,
+        "Timeout",
+      )
+      cancelTimeout = cancelTimeoutFn
+
       const { route } = await Promise.race([routePromise, timeoutPromise])
+      cancelTimeout()
       if (!route) return new RouteNotFoundError()
       return route
     } catch (err) {
       if (err.message === "Timeout") {
         return new ProbeForRouteTimedOutFromApplicationError()
       }
+      cancelTimeout()
 
       const errDetails = parseLndErrorDetails(err)
       const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
@@ -600,6 +610,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     rawRoute: RawRoute
     pubkey: Pubkey
   }): Promise<PayInvoiceResult | LightningServiceError> => {
+    let cancelTimeout = () => {
+      return
+    }
     try {
       const lnd = getLndFromPubkey({ pubkey })
       if (lnd instanceof Error) return lnd
@@ -609,18 +622,27 @@ export const LndService = (): ILightningService | LightningServiceError => {
         routes: [rawRoute],
         id: paymentHash,
       })
-      const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+      const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+        TIMEOUT_PAYMENT,
+        "Timeout",
+      )
+      cancelTimeout = cancelTimeoutFn
       const paymentResult = (await Promise.race([
         paymentPromise,
         timeoutPromise,
       ])) as PayViaRoutesResult
+      cancelTimeout()
+
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,
         sentFromPubkey: pubkey,
       }
     } catch (err) {
-      if (err.message === "Timeout") return new LnPaymentPendingError()
+      if (err.message === "Timeout") {
+        return new LnPaymentPendingError()
+      }
+      cancelTimeout()
 
       return handleSendPaymentLndErrors({ err, paymentHash })
     }
@@ -669,20 +691,33 @@ export const LndService = (): ILightningService | LightningServiceError => {
       routes,
     }
 
+    let cancelTimeout = () => {
+      return
+    }
     try {
       const paymentPromise = payViaPaymentDetails(paymentDetailsArgs)
-      const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+      const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+        TIMEOUT_PAYMENT,
+        "Timeout",
+      )
+      cancelTimeout = cancelTimeoutFn
+
       const paymentResult = (await Promise.race([
         paymentPromise,
         timeoutPromise,
       ])) as PayViaPaymentDetailsResult
+      cancelTimeout()
+
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,
         sentFromPubkey: defaultPubkey,
       }
     } catch (err) {
-      if (err.message === "Timeout") return new LnPaymentPendingError()
+      if (err.message === "Timeout") {
+        return new LnPaymentPendingError()
+      }
+      cancelTimeout()
       return handleSendPaymentLndErrors({ err, paymentHash: decodedInvoice.paymentHash })
     }
   }
@@ -728,6 +763,9 @@ const lookupPaymentByPubkeyAndHash = async ({
   pubkey: Pubkey
   paymentHash: PaymentHash
 }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError> => {
+  let cancelTimeout = () => {
+    return
+  }
   try {
     const lnd = getLndFromPubkey({ pubkey })
     if (lnd instanceof Error) return lnd
@@ -736,11 +774,17 @@ const lookupPaymentByPubkeyAndHash = async ({
       lnd,
       id: paymentHash,
     })
-    const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+    const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+      TIMEOUT_PAYMENT,
+      "Timeout",
+    )
+    cancelTimeout = cancelTimeoutFn
+
     const result = (await Promise.race([
       resultPromise,
       timeoutPromise,
     ])) as GetPaymentResult
+    cancelTimeout()
 
     const { payment, pending } = result
     const status = await resolvePaymentStatus({ lnd, result })
@@ -784,7 +828,10 @@ const lookupPaymentByPubkeyAndHash = async ({
 
     return new BadPaymentDataError(JSON.stringify(result))
   } catch (err) {
-    if (err.message === "Timeout") return new LookupPaymentTimedOutError()
+    if (err.message === "Timeout") {
+      return new LookupPaymentTimedOutError()
+    }
+    cancelTimeout()
     const errDetails = parseLndErrorDetails(err)
     const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
     switch (true) {

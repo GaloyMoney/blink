@@ -1,26 +1,19 @@
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { CouldNotFindError } from "@domain/errors"
 
-import { TxFilter } from "@domain/bitcoin/onchain"
-
-import { baseLogger } from "@services/logger"
+import { WalletOnChainPendingReceiveRepository } from "@services/mongoose"
 import { IncomingOnChainTxHandler } from "@domain/bitcoin/onchain/incoming-tx-handler"
 
-import { getOnChainTxs } from "./private/get-on-chain-txs"
-
-export const getPendingOnChainBalanceForWallets = async (
+export const getPendingOnChainBalanceForWallets = async <S extends WalletCurrency>(
   wallets: Wallet[],
-): Promise<{ [key: WalletId]: BtcPaymentAmount } | ApplicationError> => {
-  const onChainTxs = await getOnChainTxs()
-  if (onChainTxs instanceof Error) {
-    baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
-    return onChainTxs
-  }
-
-  const filter = TxFilter({
-    confirmationsLessThan: ONCHAIN_MIN_CONFIRMATIONS,
-    addresses: wallets.flatMap((wallet) => wallet.onChainAddresses()),
+): Promise<{ [key: WalletId]: PaymentAmount<S> } | ApplicationError> => {
+  const pendingIncoming = await WalletOnChainPendingReceiveRepository().listByWalletIds({
+    walletIds: wallets.map((wallet) => wallet.id),
   })
-  const pendingIncoming = filter.apply(onChainTxs)
+  if (pendingIncoming instanceof CouldNotFindError) return {}
+  if (pendingIncoming instanceof Error) return pendingIncoming
 
-  return IncomingOnChainTxHandler(pendingIncoming).balanceByWallet(wallets)
+  const incomingTxHandler = IncomingOnChainTxHandler<S>(pendingIncoming)
+  if (incomingTxHandler instanceof Error) return incomingTxHandler
+
+  return incomingTxHandler.balanceByWallet(wallets)
 }

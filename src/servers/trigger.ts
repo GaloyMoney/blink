@@ -16,7 +16,7 @@ import {
 } from "lightning"
 import express from "express"
 
-import { getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { BTC_NETWORK, getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import {
   Payments,
@@ -29,14 +29,14 @@ import { uploadBackup } from "@app/admin/backup"
 import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
 
 import {
+  CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletInvoiceError,
   InvalidLedgerTransactionStateError,
 } from "@domain/errors"
-import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
 import { SwapTriggerError } from "@domain/swap/errors"
 import { CouldNotFindTransactionError } from "@domain/ledger"
-import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
+import { TxDecoder } from "@domain/bitcoin/onchain"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToDisplayCurrency } from "@domain/fiat"
 
@@ -49,6 +49,7 @@ import {
 import { LndService } from "@services/lnd"
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"
+import { BriaSubscriber } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { onChannelUpdated } from "@services/lnd/utils"
@@ -59,9 +60,56 @@ import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tr
 
 import healthzHandler from "./middlewares/healthz"
 import { SubscriptionInterruptedError } from "./errors"
+import { briaEventHandler } from "./event-handlers/bria"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
+
+const handleLndPendingIncomingOnChainTx = async ({
+  tx,
+  logger,
+}: {
+  tx: SubscribeToTransactionsChainTransactionEvent
+  logger: Logger
+}) => {
+  if (!tx.transaction) return
+
+  const txHash = tx.id as OnChainTxHash
+  const recorded = await LedgerService().isOnChainTxHashRecorded(txHash)
+  if (recorded) {
+    if (recorded instanceof Error) {
+      logger.error({ error: recorded }, "Could not query ledger")
+      return recorded
+    }
+    return
+  }
+
+  const outs = TxDecoder(BTC_NETWORK).decode(tx.transaction).outs
+  for (const { vout, sats, address } of outs) {
+    const satoshis = paymentAmountFromNumber({
+      amount: sats,
+      currency: WalletCurrency.Btc,
+    })
+    if (satoshis instanceof Error || address === null) continue
+
+    const res = await Wallets.addPendingTransaction({
+      txId: txHash,
+      vout,
+      satoshis,
+      address,
+    })
+
+    if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
+      continue
+    }
+    if (res instanceof Error) {
+      logger.error(
+        { error: res },
+        `error adding txid:vout "${tx.id}:${vout}" to pending txns repository`,
+      )
+    }
+  }
+}
 
 export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
   tx: SubscribeToTransactionsChainTransactionEvent,
@@ -170,80 +218,9 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
       senderLanguage: senderUser.language,
     })
   } else {
-    // incoming transaction
-
     redisCache.clear({ key: CacheKeys.LastOnChainTransactions })
-
-    const walletsRepo = WalletsRepository()
-
-    const outputAddresses = tx.output_addresses as OnChainAddress[]
-
-    const wallets = await walletsRepo.listByAddresses(outputAddresses)
-    if (wallets instanceof Error) return
-
-    // we only handle pending notification here because we wait more than 1 block
     if (!tx.is_confirmed) {
-      onchainLogger.info(
-        { transactionType: "receipt", pending: true },
-        "mempool appearance",
-      )
-
-      let displayAmount: DisplayAmount<T> | undefined = undefined
-
-      const displayPriceRatios = {} as Record<
-        T,
-        DisplayPriceRatio<"BTC", T> | PriceServiceError | undefined
-      >
-      wallets.forEach(async (wallet) => {
-        const recipientAccount = await AccountsRepository().findById(wallet.accountId)
-        if (recipientAccount instanceof Error) return recipientAccount
-        const { displayCurrency: displayCurrencyRaw } = recipientAccount
-        const displayCurrency = displayCurrencyRaw as T
-
-        let displayPriceRatio = displayPriceRatios[displayCurrency]
-        if (displayPriceRatio === undefined) {
-          displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
-            {
-              currency: displayCurrency,
-            },
-          )
-          if (!(displayPriceRatio instanceof Error)) {
-            displayPriceRatios[displayCurrency] = displayPriceRatio
-          }
-        }
-
-        const fee = DepositFeeCalculator().onChainDepositFee({
-          amount: toSats(tx.tokens),
-          ratio: recipientAccount.depositFeeRatio,
-        })
-
-        const recipientUser = await UsersRepository().findById(
-          recipientAccount.kratosUserId,
-        )
-        if (recipientUser instanceof Error) return recipientUser
-
-        if (!(displayPriceRatio instanceof Error)) {
-          const satsAmount = paymentAmountFromNumber({
-            // TODO: tx.tokens represent the total sum, need to segregate amount by address
-            amount: tx.tokens - fee,
-            currency: WalletCurrency.Btc,
-          })
-          if (!(satsAmount instanceof Error)) {
-            displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
-          }
-        }
-
-        NotificationsService().onChainTxReceivedPending({
-          recipientAccountId: wallet.accountId,
-          recipientWalletId: wallet.id,
-          // TODO: tx.tokens represent the total sum, need to segregate amount by address
-          paymentAmount: { amount: BigInt(tx.tokens - fee), currency: wallet.currency },
-          displayPaymentAmount: displayAmount,
-          txHash,
-          recipientDeviceTokens: recipientUser.deviceTokens,
-          recipientLanguage: recipientUser.language,
-        })
-      })
+      await handleLndPendingIncomingOnChainTx({ tx, logger: onchainLogger })
     }
   }
 }
@@ -554,7 +531,36 @@ const listenerSwapMonitor = async () => {
   }
 }
 
+const listenerBria = async () => {
+  const wrappedBriaEventHandler = wrapAsyncToRunInSpan({
+    root: true,
+    namespace: "servers.trigger",
+    fnName: "briaEventHandler",
+    fn: briaEventHandler,
+  })
+
+  const subBria = await BriaSubscriber().subscribeToAll(wrappedBriaEventHandler)
+  if (subBria instanceof Error) {
+    baseLogger.error({ err: subBria }, "error initializing bria subscriber")
+    return
+  }
+
+  subBria._listener.on("error", (err) => {
+    baseLogger.error({ err }, "error subBria")
+    recordExceptionInCurrentSpan({
+      error: new SubscriptionInterruptedError((err && err.message) || "subBria"),
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subBria" },
+    })
+    // remove listener is done in internal error handler
+  })
+
+  baseLogger.info("bria listener started")
+}
+
 const main = () => {
+  listenerBria()
+
   lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }: LndConnect) => {
     baseLogger.info({ socket }, "lnd started")
 
@@ -588,6 +594,7 @@ const healthCheck = () => {
       checkDbConnectionStatus: true,
       checkRedisStatus: true,
       checkLndsStatus: true,
+      checkBriaStatus: true,
     }),
   )
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))

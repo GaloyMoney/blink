@@ -8,6 +8,7 @@ import { getCurrencyMajorExponent, priceAmountFromNumber } from "@domain/fiat"
 
 export * from "./apollo-client"
 export * from "./bitcoin-core"
+export * from "./bria"
 export * from "./check-is-balanced"
 export * from "./get-error"
 export * from "./generate-hash"

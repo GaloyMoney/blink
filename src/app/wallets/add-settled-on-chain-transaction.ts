@@ -1,7 +1,10 @@
+import crypto from "crypto"
+
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
-import { NewDepositFeeCalculator } from "@domain/wallets"
+import { DepositFeeCalculator } from "@domain/wallets"
 import { displayAmountFromNumber } from "@domain/fiat"
+import { CouldNotFindError } from "@domain/errors"
 
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
@@ -23,11 +26,9 @@ const dealer = DealerPriceService()
 
 const ledger = LedgerService()
 
-const notifications = NotificationsService()
-
 const logger = baseLogger
 
-export const addSettledTransaction = async ({
+const addSettledTransactionBeforeFinally = async ({
   txId: txHash,
   vout,
   satoshis: amount,
@@ -37,27 +38,38 @@ export const addSettledTransaction = async ({
   vout: OnChainTxVout
   satoshis: BtcPaymentAmount
   address: OnChainAddress
-}): Promise<true | ApplicationError> => {
+}): Promise<
+  | {
+      walletDescriptor: WalletDescriptor<WalletCurrency>
+      newAddressRequestId: OnChainAddressRequestId | undefined
+    }
+  | ApplicationError
+> => {
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 
   return LockService().lockOnChainTxHashAndVout({ txHash, vout }, async () => {
-    const recorded = await ledger.isOnChainTxRecorded({
+    const recordedResult = await ledger.isOnChainReceiptTxRecordedForWallet({
       walletId: wallet.id,
       txHash,
       vout,
     })
+    if (recordedResult instanceof Error) {
+      logger.error({ error: recordedResult }, "Could not query ledger")
+      return recordedResult
+    }
+    const { recorded, newAddressRequestId: recordedAddressRequestId } = recordedResult
     if (recorded) {
-      if (recorded instanceof Error) {
-        logger.error({ error: recorded }, "Could not query ledger")
+      return {
+        walletDescriptor: wallet,
+        newAddressRequestId: recordedAddressRequestId,
       }
-      return recorded
     }
 
     const account = await AccountsRepository().findById(wallet.accountId)
     if (account instanceof Error) return account
 
-    const fee = NewDepositFeeCalculator().onChainDepositFee({
+    const fee = DepositFeeCalculator().onChainDepositFee({
       amount,
       ratio: account.depositFeeRatio,
     })
@@ -93,6 +105,12 @@ export const addSettledTransaction = async ({
         .amountInMinor,
     ) as DisplayCurrencyBaseAmount
 
+    let newAddressRequestId: OnChainAddressRequestId | undefined = undefined
+    const currentAddress = await getLastOnChainAddress(wallet.id)
+    if (address === currentAddress) {
+      newAddressRequestId = crypto.randomUUID() as OnChainAddressRequestId
+    }
+
     const {
       metadata,
       creditAccountAdditionalMetadata,
@@ -111,9 +129,10 @@ export const addSettledTransaction = async ({
       displayCurrency,
 
       payeeAddresses: [address],
+      newAddressRequestId,
     })
 
-    const result = await LedgerFacade.recordReceive({
+    const result = await LedgerFacade.recordReceiveOnChain({
       description: "",
       recipientWalletDescriptor: wallet,
       amountToCreditReceiver: {
@@ -143,6 +162,7 @@ export const addSettledTransaction = async ({
     })
     if (displayAmount instanceof Error) return displayAmount
 
+    const notifications = NotificationsService()
     await notifications.onChainTxReceived({
       recipientAccountId: wallet.accountId,
       recipientWalletId: wallet.id,
@@ -153,17 +173,43 @@ export const addSettledTransaction = async ({
       recipientLanguage: user.language,
     })
 
-    const currentAddress = await getLastOnChainAddress(wallet.id)
-    if (address === currentAddress) {
-      const newAddress = await createOnChainAddressByWallet(wallet)
+    return {
+      walletDescriptor: wallet,
+      newAddressRequestId: newAddressRequestId,
+    }
+  })
+}
+
+export const addSettledTransaction = async (args: {
+  txId: OnChainTxHash
+  vout: OnChainTxVout
+  satoshis: BtcPaymentAmount
+  address: OnChainAddress
+}): Promise<true | ApplicationError> => {
+  const res = await addSettledTransactionBeforeFinally(args)
+
+  if (!(res instanceof Error)) {
+    const { newAddressRequestId, walletDescriptor } = res
+
+    if (newAddressRequestId !== undefined) {
+      const newAddress = await createOnChainAddressByWallet({
+        wallet: walletDescriptor,
+        requestId: newAddressRequestId,
+      })
       if (newAddress instanceof Error) return newAddress
     }
-    const res = await WalletOnChainPendingReceiveRepository().remove({
-      walletId: wallet.id,
-      transactionHash: txHash,
-      vout,
+
+    const removed = await WalletOnChainPendingReceiveRepository().remove({
+      walletId: walletDescriptor.id,
+      transactionHash: args.txId,
+      vout: args.vout,
     })
-    if (res instanceof Error) return res
+    if (removed instanceof Error && !(removed instanceof CouldNotFindError)) {
+      return removed
+    }
+
     return true
-  })
+  }
+
+  return res
 }

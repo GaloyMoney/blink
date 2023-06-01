@@ -2,12 +2,15 @@ import { Wallets } from "@app"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { UnknownRepositoryError } from "@domain/errors"
+import { utxoSettledEventHandler } from "@servers/event-handlers/bria"
 
 import { BriaSubscriber, BriaPayloadType } from "@services/bria"
+import { timeoutWithCancel } from "@utils"
 
 import {
   bitcoindClient,
   bitcoindOutside,
+  checkIsBalanced,
   createMandatoryUsers,
   getDefaultWalletIdByTestUserRef,
   sendToAddressAndConfirm,
@@ -15,12 +18,18 @@ import {
 
 let walletIdA: WalletId
 
+const TIMEOUT_BRIA_EVENT = 60_000
+
 beforeAll(async () => {
   await createMandatoryUsers()
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
+})
+
+afterEach(async () => {
+  await checkIsBalanced()
 })
 
 afterAll(async () => {
@@ -35,7 +44,9 @@ describe("BriaSubscriber", () => {
     it("receives utxo events", async () => {
       const amountSats = toSats(5_000)
       // Receive onchain
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
+      const address = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: walletIdA,
+      })
       if (address instanceof Error) throw address
       expect(address.substring(0, 4)).toBe("bcrt")
 
@@ -50,19 +61,24 @@ describe("BriaSubscriber", () => {
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 2
       let recording = false
-      const testEventHandler = (resolver) => {
-        return (event: BriaEvent): Promise<true | ApplicationError> => {
+      const testEventHandler = (resolve) => {
+        return async (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
             event.payload.type === BriaPayloadType.UtxoDetected &&
             event.payload.txId === expectedTxId
           ) {
             recording = true
           }
+          // required to avoid checkIsBalanced error
+          if (event.payload.type === BriaPayloadType.UtxoSettled) {
+            await utxoSettledEventHandler({ event: event.payload })
+          }
+
           if (recording) {
             receivedEvents.push(event)
             if (receivedEvents.length === nExpectedEvents) {
               setTimeout(() => {
-                resolver(receivedEvents)
+                resolve(receivedEvents)
               }, 1)
             }
           }
@@ -70,17 +86,20 @@ describe("BriaSubscriber", () => {
         }
       }
 
-      const timeout = 60000
+      const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+        TIMEOUT_BRIA_EVENT,
+        "Timeout",
+      )
+
       let wrapper
-      const promise = new Promise(async (resolve, reject) => {
-        setTimeout(() => {
-          reject(new Error(`Promise timed out after ${timeout} ms`))
-        }, timeout)
+      const eventPromise = new Promise(async (resolve) => {
         wrapper = await bria.subscribeToAll(testEventHandler(resolve))
       })
 
-      const res = await promise
+      const res = await Promise.race([eventPromise, timeoutPromise])
       if (res instanceof Error) throw res
+      cancelTimeoutFn()
+
       if (receivedEvents[0].payload.type != BriaPayloadType.UtxoDetected) {
         throw new Error("unexpected event type")
       }
@@ -93,7 +112,9 @@ describe("BriaSubscriber", () => {
       const amountSats = toSats(5_000)
 
       // Receive onchain
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdA)
+      const address = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: walletIdA,
+      })
       if (address instanceof Error) throw address
       expect(address.substring(0, 4)).toBe("bcrt")
 
@@ -107,13 +128,18 @@ describe("BriaSubscriber", () => {
       let recording = false
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 3
-      const testEventHandler = (resolver) => {
+      const testEventHandler = (resolve) => {
         return async (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
             event.payload.type === BriaPayloadType.UtxoDetected &&
             event.payload.txId === expectedTxId
           ) {
             recording = true
+          }
+
+          // required to avoid checkIsBalanced error
+          if (event.payload.type === BriaPayloadType.UtxoSettled) {
+            await utxoSettledEventHandler({ event: event.payload })
           }
 
           if (recording) {
@@ -125,24 +151,27 @@ describe("BriaSubscriber", () => {
           }
           if (receivedEvents.length === nExpectedEvents) {
             setTimeout(() => {
-              resolver(receivedEvents)
+              resolve(receivedEvents)
             }, 1)
           }
           return Promise.resolve(true)
         }
       }
 
-      const timeout = 60000
+      const [timeoutPromise, cancelTimeoutFn] = timeoutWithCancel(
+        TIMEOUT_BRIA_EVENT,
+        "Timeout",
+      )
+
       let wrapper
-      const promise = new Promise(async (resolve, reject) => {
-        setTimeout(() => {
-          reject(new Error(`Promise timed out after ${timeout} ms`))
-        }, timeout)
+      const eventPromise = new Promise(async (resolve) => {
         wrapper = await bria.subscribeToAll(testEventHandler(resolve))
       })
 
-      const res = await promise
+      const res = await Promise.race([eventPromise, timeoutPromise])
       if (res instanceof Error) throw res
+      cancelTimeoutFn()
+
       expect(receivedEvents[1]).toEqual(receivedEvents[2])
 
       wrapper.cancel()

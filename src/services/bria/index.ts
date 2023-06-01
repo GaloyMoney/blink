@@ -1,16 +1,38 @@
+import util from "util"
+
+import { Struct, Value, ListValue } from "google-protobuf/google/protobuf/struct_pb"
+
+import { credentials, Metadata } from "@grpc/grpc-js"
+
+import { getBriaConfig } from "@config"
+
+import {
+  OnChainAddressAlreadyCreatedForRequestIdError,
+  OnChainAddressNotFoundError,
+  UnknownOnChainServiceError,
+} from "@domain/bitcoin/onchain"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared/primitives"
+
 import {
   asyncRunInSpan,
   SemanticAttributes,
   recordExceptionInCurrentSpan,
+  wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
-import { credentials, Metadata } from "@grpc/grpc-js"
-import { BRIA_PROFILE_API_KEY } from "@config"
-import { WalletCurrency } from "@domain/shared/primitives"
 
 import { BriaEventRepo } from "./repo"
 import { ListenerWrapper } from "./listener_wrapper"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
-import { SubscribeAllRequest, BriaEvent as RawBriaEvent } from "./proto/bria_pb"
+import {
+  SubscribeAllRequest,
+  BriaEvent as RawBriaEvent,
+  NewAddressRequest,
+  NewAddressResponse,
+  GetWalletBalanceSummaryRequest,
+  GetWalletBalanceSummaryResponse,
+  ListAddressesRequest,
+  ListAddressesResponse,
+} from "./proto/bria_pb"
 import {
   EventAugmentationMissingError,
   ExpectedAddressInfoMissingInEventError,
@@ -27,11 +49,26 @@ import {
 
 export { ListenerWrapper } from "./listener_wrapper"
 
-const briaUrl = process.env.BRIA_HOST ?? "localhost"
-const briaPort = process.env.BRIA_PORT ?? "2742"
-const fullUrl = `${briaUrl}:${briaPort}`
+const briaConfig = getBriaConfig()
 
-const bitcoinBridgeClient = new BriaServiceClient(fullUrl, credentials.createInsecure())
+const bitcoinBridgeClient = new BriaServiceClient(
+  briaConfig.endpoint,
+  credentials.createInsecure(),
+)
+
+const newAddress = util.promisify<NewAddressRequest, Metadata, NewAddressResponse>(
+  bitcoinBridgeClient.newAddress.bind(bitcoinBridgeClient),
+)
+const listAddresses = util.promisify<
+  ListAddressesRequest,
+  Metadata,
+  ListAddressesResponse
+>(bitcoinBridgeClient.listAddresses.bind(bitcoinBridgeClient))
+const getWalletBalanceSummary = util.promisify<
+  GetWalletBalanceSummaryRequest,
+  Metadata,
+  GetWalletBalanceSummaryResponse
+>(bitcoinBridgeClient.getWalletBalanceSummary.bind(bitcoinBridgeClient))
 
 export const BriaPayloadType = {
   UtxoDetected: "utxo_detected",
@@ -46,7 +83,7 @@ const eventRepo = BriaEventRepo()
 
 export const BriaSubscriber = () => {
   const metadata = new Metadata()
-  metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
+  metadata.set("x-bria-api-key", briaConfig.apiKey)
 
   const subscribeToAll = async (
     eventHandler: BriaEventHandler,
@@ -123,9 +160,85 @@ export const BriaSubscriber = () => {
 
 export const NewOnChainService = (): INewOnChainService => {
   const metadata = new Metadata()
-  metadata.set("x-bria-api-key", BRIA_PROFILE_API_KEY)
+  metadata.set("x-bria-api-key", briaConfig.apiKey)
 
-  return {}
+  const getBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
+    try {
+      const request = new GetWalletBalanceSummaryRequest()
+      request.setWalletName(briaConfig.walletName)
+
+      const response = await getWalletBalanceSummary(request, metadata)
+
+      return paymentAmountFromNumber({
+        amount: response.getEffectiveSettled(),
+        currency: WalletCurrency.Btc,
+      })
+    } catch (error) {
+      return new UnknownOnChainServiceError(error.message || error)
+    }
+  }
+
+  const createOnChainAddress = async ({
+    walletId,
+    requestId,
+  }: {
+    walletId: WalletId
+    requestId?: OnChainAddressRequestId
+  }): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
+    try {
+      const request = new NewAddressRequest()
+      request.setWalletName(briaConfig.walletName)
+      request.setMetadata(constructMetadata({ galoy: { walletId } }))
+      if (requestId) {
+        request.setExternalId(requestId)
+      }
+
+      const response = await newAddress(request, metadata)
+      return { address: response.getAddress() as OnChainAddress }
+    } catch (err) {
+      const errMsg = typeof err === "string" ? err : err.message
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
+
+      switch (true) {
+        case match(KnownBriaErrorDetails.DuplicateRequestIdAddressCreate):
+          return new OnChainAddressAlreadyCreatedForRequestIdError()
+
+        default:
+          return new UnknownOnChainServiceError(errMsg)
+      }
+    }
+  }
+
+  const findAddressByRequestId = async (
+    requestId: OnChainAddressRequestId,
+  ): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
+    try {
+      const request = new ListAddressesRequest()
+      request.setWalletName(briaConfig.walletName)
+
+      const response = await listAddresses(request, metadata)
+      const foundAddress = response
+        .getAddressesList()
+        .find((walletAddress) => walletAddress.getExternalId() === requestId)
+
+      if (foundAddress === undefined) return new OnChainAddressNotFoundError()
+      return {
+        address: foundAddress.getAddress() as OnChainAddress,
+      }
+    } catch (err) {
+      const errMsg = typeof err === "string" ? err : err.message
+      return new UnknownOnChainServiceError(errMsg)
+    }
+  }
+
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.bria.onchain",
+    fns: {
+      getBalance,
+      createOnChainAddress,
+      findAddressByRequestId,
+    },
+  })
 }
 
 const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
@@ -253,4 +366,52 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     augmentation,
     sequence,
   }
+}
+
+export const KnownBriaErrorDetails = {
+  DuplicateRequestIdAddressCreate:
+    /duplicate key value violates unique constraint.*bria_addresses_account_id_external_id_key/,
+} as const
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const constructMetadata = (metadataObj: { [key: string]: any }): Struct => {
+  const metadata = new Struct()
+
+  for (const key in metadataObj) {
+    /* eslint-disable-next-line no-prototype-builtins */
+    if (metadataObj.hasOwnProperty(key)) {
+      const value = new Value()
+
+      // Check the type of the value and set the appropriate field on the Value object
+      const fieldValue = metadataObj[key]
+      if (typeof fieldValue === "string") {
+        value.setStringValue(fieldValue)
+      } else if (typeof fieldValue === "number") {
+        value.setNumberValue(fieldValue)
+      } else if (typeof fieldValue === "boolean") {
+        value.setBoolValue(fieldValue)
+      } else if (Array.isArray(fieldValue)) {
+        const listValue = new Value()
+        listValue.setListValue(
+          new ListValue().setValuesList(
+            fieldValue.map((item) => {
+              const listItemValue = new Value()
+              listItemValue.setStringValue(item)
+              return listItemValue
+            }),
+          ),
+        )
+        const fetchedListValue = listValue.getListValue()
+        if (fetchedListValue !== undefined) {
+          value.setListValue(fetchedListValue)
+        }
+      } else if (typeof fieldValue === "object") {
+        value.setStructValue(constructMetadata(fieldValue))
+      }
+
+      metadata.getFieldsMap().set(key, value)
+    }
+  }
+
+  return metadata
 }

@@ -1,6 +1,8 @@
+import { once } from "events"
+
 import { Wallets, Payments } from "@app"
 import { BTC_NETWORK, getFeesConfig, getOnChainWalletConfig } from "@config"
-import { toSats, toTargetConfs } from "@domain/bitcoin"
+import { sat2btc, toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
@@ -8,6 +10,8 @@ import { TxDecoder } from "@domain/bitcoin/onchain"
 import { DealerPriceService } from "@services/dealer-price"
 import * as OnChainServiceImpl from "@services/lnd/onchain-service"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { baseLogger } from "@services/logger"
+import { getFunderWalletId } from "@services/ledger/caching"
 
 import {
   bitcoindClient,
@@ -16,13 +20,23 @@ import {
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getUsdWalletIdByTestUserRef,
+  lndonchain,
+  resetOnChainAddressAccountIdLimits,
+  sendToAddressAndConfirm,
+  subscribeToChainAddress,
+  waitUntilBlockHeight,
 } from "test/helpers"
 
 const defaultAmount = toSats(5244)
 const defaultUsdAmount = toCents(105)
 const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
-let walletIdA: WalletId, walletIdB: WalletId, walletIdUsdA: WalletId, accountA: Account
+
+let walletIdA: WalletId
+let walletIdB: WalletId
+let walletIdUsdA: WalletId
+let accountA: Account
+let accountB: Account
 
 const dealerFns = DealerPriceService()
 
@@ -35,12 +49,66 @@ beforeAll(async () => {
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
+  accountB = await getAccountByTestUserRef("B")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
+
+  // Fund walletIdA
+  await resetOnChainAddressAccountIdLimits(accountA.id)
+  await sendToLndWalletTestWrapper({
+    amountSats: toSats(defaultAmount * 5),
+    walletId: walletIdA,
+  })
+
+  // Fund lnd
+  const funderWalletId = await getFunderWalletId()
+  const funderWallet = await WalletsRepository().findById(funderWalletId)
+  if (funderWallet instanceof Error) throw funderWallet
+  await resetOnChainAddressAccountIdLimits(funderWallet.accountId)
+  await sendToLndWalletTestWrapper({
+    amountSats: toSats(2_000_000_000),
+    walletId: funderWalletId,
+  })
 })
 
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
+
+const sendToLndWalletTestWrapper = async ({
+  amountSats,
+  walletId,
+}: {
+  amountSats: Satoshis
+  walletId: WalletId
+}) => {
+  const address = await Wallets.lndCreateOnChainAddress(walletId)
+  if (address instanceof Error) throw address
+  expect(address.substring(0, 4)).toBe("bcrt")
+
+  const initialBlockNumber = await bitcoindClient.getBlockCount()
+  const txId = await sendToAddressAndConfirm({
+    walletClient: bitcoindOutside,
+    address,
+    amount: sat2btc(amountSats),
+  })
+  if (txId instanceof Error) throw txId
+
+  // Register confirmed txn in database
+  const sub = subscribeToChainAddress({
+    lnd: lndonchain,
+    bech32_address: address,
+    min_height: initialBlockNumber,
+  })
+  await once(sub, "confirmation")
+  sub.removeAllListeners()
+
+  await waitUntilBlockHeight({ lnd: lndonchain })
+
+  const updated = await Wallets.updateOnChainReceipt({ logger: baseLogger })
+  if (updated instanceof Error) throw updated
+
+  return txId as OnChainTxHash
+}
 
 describe("UserWallet - getOnchainFee", () => {
   describe("from btc wallet", () => {
@@ -68,7 +136,10 @@ describe("UserWallet - getOnchainFee", () => {
     })
 
     it("returns zero for an on us address", async () => {
-      const address = await Wallets.createOnChainAddressForBtcWallet(walletIdB)
+      await resetOnChainAddressAccountIdLimits(accountB.id)
+      const address = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: walletIdB,
+      })
       if (address instanceof Error) throw address
       const feeAmount = await Wallets.getOnChainFeeForBtcWallet({
         walletId: walletIdA,
@@ -226,7 +297,10 @@ describe("UserWallet - getOnchainFee", () => {
         })
 
         it("returns zero for an on us address", async () => {
-          const address = await Wallets.createOnChainAddressForBtcWallet(walletIdB)
+          await resetOnChainAddressAccountIdLimits(accountB.id)
+          const address = await Wallets.createOnChainAddressForBtcWallet({
+            walletId: walletIdB,
+          })
           if (address instanceof Error) throw address
 
           const getFeeArgs = {

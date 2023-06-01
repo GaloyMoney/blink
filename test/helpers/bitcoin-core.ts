@@ -106,7 +106,7 @@ export const fundWalletIdFromOnchain = async ({
   amountInBitcoin: number
   lnd: AuthenticatedLnd
 }): Promise<Satoshis> => {
-  const address = await Wallets.createOnChainAddressForBtcWallet(walletId)
+  const address = await Wallets.lndCreateOnChainAddress(walletId)
   if (address instanceof Error) throw address
 
   await sendToAddressAndConfirm({

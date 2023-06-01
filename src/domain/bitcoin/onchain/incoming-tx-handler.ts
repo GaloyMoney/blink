@@ -1,21 +1,30 @@
+import { MultipleCurrenciesForSingleCurrencyOperationError } from "@domain/errors"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
   WalletCurrency,
+  ZERO_CENTS,
   ZERO_SATS,
 } from "@domain/shared"
 
 const calc = AmountCalculator()
 
-export const IncomingOnChainTxHandler = (
-  txns: IncomingOnChainTransaction[],
-): IncomingOnChainTxHandler => {
-  const balancesByAddresses = ():
-    | { [key: OnChainAddress]: BtcPaymentAmount }
-    | ValidationError => {
-    const pendingBalances = txns.map(balanceFromIncomingTx)
+export const IncomingOnChainTxHandler = <S extends WalletCurrency>(
+  txns: WalletOnChainSettledTransaction[],
+): IncomingOnChainTxHandler<S> | ValidationError => {
+  const settlementCurrencies = new Set(txns.map((tx) => tx.settlementCurrency))
+  if (settlementCurrencies.size !== 1) {
+    return new MultipleCurrenciesForSingleCurrencyOperationError()
+  }
 
-    const balancesByAddress: { [key: OnChainAddress]: BtcPaymentAmount } = {}
+  const walletCurrency = txns[0].settlementCurrency
+
+  const balancesByAddresses = ():
+    | { [key: OnChainAddress]: PaymentAmount<S> }
+    | ValidationError => {
+    const pendingBalances = txns.map(balanceFromIncomingTx<S>)
+
+    const balancesByAddress: { [key: OnChainAddress]: PaymentAmount<S> } = {}
     for (const balances of pendingBalances) {
       if (balances instanceof Error) return balances
       for (const key of Object.keys(balances)) {
@@ -31,13 +40,17 @@ export const IncomingOnChainTxHandler = (
 
   const balanceByWallet = (
     wallets: Wallet[],
-  ): { [key: WalletId]: BtcPaymentAmount } | ValidationError => {
+  ): { [key: WalletId]: PaymentAmount<S> } | ValidationError => {
     const balancesByAddress = balancesByAddresses()
     if (balancesByAddress instanceof Error) return balancesByAddress
 
-    const balancesByWallet: { [key: WalletId]: BtcPaymentAmount } = {}
+    const balancesByWallet: { [key: WalletId]: PaymentAmount<S> } = {}
     for (const wallet of wallets) {
-      balancesByWallet[wallet.id] = ZERO_SATS
+      balancesByWallet[wallet.id] =
+        walletCurrency === WalletCurrency.Btc
+          ? (ZERO_SATS as PaymentAmount<S>)
+          : (ZERO_CENTS as PaymentAmount<S>)
+
       for (const key of Object.keys(balancesByAddress)) {
         const address = key as OnChainAddress
         if (wallet.onChainAddresses().includes(address)) {
@@ -52,27 +65,18 @@ export const IncomingOnChainTxHandler = (
     return balancesByWallet
   }
 
-  const balanceFromIncomingTx = (
-    tx: IncomingOnChainTransaction,
-  ): { [key: OnChainAddress]: BtcPaymentAmount } | ValidationError => {
-    const balanceByAddress: { [key: OnChainAddress]: BtcPaymentAmount } = {}
-    const {
-      rawTx: { outs },
-    } = tx
-    for (const out of outs) {
-      if (!out.address) continue
-      const outAmount = paymentAmountFromNumber({
-        amount: out.sats,
-        currency: WalletCurrency.Btc,
-      })
-      if (outAmount instanceof Error) return outAmount
+  const balanceFromIncomingTx = <S extends WalletCurrency>(
+    tx: WalletOnChainSettledTransaction,
+  ): { [key: OnChainAddress]: PaymentAmount<S> } | ValidationError => {
+    const paymentAmount = paymentAmountFromNumber<S>({
+      amount: tx.settlementAmount,
+      currency: tx.settlementCurrency as S,
+    })
+    if (paymentAmount instanceof Error) return paymentAmount
 
-      balanceByAddress[out.address] = calc.add(
-        balanceByAddress[out.address] || ZERO_SATS,
-        outAmount,
-      )
+    return {
+      [tx.initiationVia.address]: paymentAmount,
     }
-    return balanceByAddress
   }
 
   return {

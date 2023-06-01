@@ -64,6 +64,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly address?: OnChainAddress
   readonly txHash?: OnChainTxHash
   readonly vout?: OnChainTxVout
+  readonly newAddressRequestId?: OnChainAddressRequestId
 
   // for admin, to be removed when we switch those to satsAmount props
   readonly fee: number | undefined // Satoshis
@@ -218,6 +219,11 @@ type RevertOnChainPaymentArgs = {
   description?: string
 }
 
+type IsOnChainReceiptTxRecordedForWalletResult = {
+  recorded: boolean
+  newAddressRequestId: OnChainAddressRequestId | undefined
+}
+
 interface ILedgerService {
   updateMetadataByHash(
     ledgerTxMetadata:
@@ -290,7 +296,7 @@ interface ILedgerService {
 
   onChainTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
 
-  isOnChainTxRecorded({
+  isOnChainReceiptTxRecordedForWallet({
     walletId,
     txHash,
     vout,
@@ -298,7 +304,9 @@ interface ILedgerService {
     walletId: WalletId
     txHash: OnChainTxHash
     vout: OnChainTxVout
-  }): Promise<boolean | LedgerServiceError>
+  }): Promise<IsOnChainReceiptTxRecordedForWalletResult | LedgerServiceError>
+
+  isOnChainTxHashRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 

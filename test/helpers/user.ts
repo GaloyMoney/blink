@@ -139,6 +139,12 @@ export const createAccount = async ({
   return account
 }
 
+const getRandomPhoneNumber = () => `+1${Math.floor(Math.random() * 10 ** 10)}`
+
+export const createRandomUserAndWallet = async () => {
+  const randomEntry: TestEntry = { phone: getRandomPhoneNumber() }
+  return createUserAndWallet(randomEntry)
+}
 export const createUserAndWallet = async (entry: TestEntry) => {
   let kratosUserId: UserId
 
@@ -222,6 +228,8 @@ export const createUserAndWallet = async (entry: TestEntry) => {
       { title: entry.title, coordinates: { latitude: -1, longitude: 1 } },
     )
   }
+
+  return { accountId: account.id, walletId: account.defaultWalletId }
 }
 
 export const addNewWallet = async ({
