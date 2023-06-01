@@ -83,7 +83,7 @@ export const createOnChainAddressByWallet = async ({
   wallet,
   requestId,
 }: {
-  wallet: Wallet
+  wallet: WalletDescriptor<WalletCurrency>
   requestId?: OnChainAddressRequestId
 }): Promise<OnChainAddress | ApplicationError> => {
   if (wallet.currency === WalletCurrency.Btc) {
