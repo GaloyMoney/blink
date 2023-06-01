@@ -32,3 +32,7 @@ export class IncompatibleSchemaUpgradeError extends KratosError {
 export class UnknownKratosError extends KratosError {
   level = ErrorLevel.Critical
 }
+
+export class RevokeKratosTokenError extends KratosError {
+  level = ErrorLevel.Critical
+}

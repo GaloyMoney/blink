@@ -162,44 +162,43 @@ export const loginUpgradeWithPhone = async ({
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
 
-  /// Scenario 1) Phone account already exists (no txn with device acct) - User logs in with device jwt then he
-  ///             wants to upgrade to a phone account that already exists. there are no txns on the device account
-  ///             Tell the user to logout and log back in with the phone account
-  ///
-  /// Scenario 1.5) Phone account already exists  (txns with device acct) - User logs in with device jwt (and does some txns) then he
-  ///             wants to upgrade to a phone account that already exists.
-  ///             throw an error stating that a phone account already exists and the user needs to manually sweep funds
-  ///             to the new account. Here are the steps the user need to perform:
-  ///               1. login with phone account and create an invoice (save this invoice)
-  ///               2. logout of the phone account
-  ///               3. login with device account (it should auto login)
-  ///               4  Pay the invoice with max wallet amount.
-  ///               5. Logout of the device account
-  ///               6. Log into the phone account and check for the funds
-  ///
-  ///         * FUTURE USE CASE: is it a risk to have txn history persist if user sells phone?
-  ///         * can a user manually sweep funds to new account then click a btn in the mobile app to delete device account?
-  ///               /// if device account bal is 0 and user clicks nuke account then delete kratos and mongo entries with
-  ///                      mutation nukeDeviceAccountMutation ?
-  ///
-  /// Scenario 2) Happy Path - User logs in with device jwt, no phone account exists, upgrade device to phone account
-  ///             a. update kratos => update schema to phone_no_password_v0, remove device trait
-  ///             b. mongo (user) => update user collection and remove device field, add phone
-  ///             c. mongo (account) => update account to level 1
-  ///
-  /// Scenario 3) Unhappy path - User sells phone and forgets to sweep funds to phone account
-  ///             Option 1 - too bad, we can't help them
-  ///             Option 2 - create some kind of recovery code process?
+  // Scenario 1) Phone account already exists (no txn with device acct) - User logs in with device jwt then he
+  //             wants to upgrade to a phone account that already exists. there are no txns on the device account
+  //             Tell the user to logout and log back in with the phone account
+  //
+  // Scenario 1.5) Phone account already exists  (txns with device acct) - User logs in with device jwt (and does some txns) then he
+  //             wants to upgrade to a phone account that already exists.
+  //             throw an error stating that a phone account already exists and the user needs to manually sweep funds
+  //             to the new account. Here are the steps the user need to perform:
+  //               1. login with phone account and create an invoice (save this invoice)
+  //               2. logout of the phone account
+  //               3. login with device account (it should auto login)
+  //               4  Pay the invoice with max wallet amount.
+  //               5. Logout of the device account
+  //               6. Log into the phone account and check for the funds
+  //
+  //         * FUTURE USE CASE: is it a risk to have txn history persist if user sells phone?
+  //         * can a user manually sweep funds to new account then click a btn in the mobile app to delete device account?
+  //               // if device account bal is 0 and user clicks nuke account then delete kratos and mongo entries with
+  //                      mutation nukeDeviceAccountMutation ?
+  //
+  // Scenario 2) Happy Path - User logs in with device jwt, no phone account exists, upgrade device to phone account
+  //             a. update kratos => update schema to phone_no_password_v0, remove device trait
+  //             b. mongo (user) => update user collection and remove device field, add phone
+  //             c. mongo (account) => update account to level 1
+  //
+  // Scenario 3) Unhappy path - User sells phone and forgets to sweep funds to phone account
+  //             Option 1 - too bad, we can't help them
+  //             Option 2 - create some kind of recovery code process?
 
-  /// Scenario 1 - does phone account already exist?
+  // Scenario 1 - does phone account already exist?
   const phoneAccount = await UsersRepository().findByPhone(phone)
   let hasPhoneAccount = true
   if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
     hasPhoneAccount = false
-  } else {
-    if (phoneAccount instanceof Error) return phoneAccount
-  }
-  if (hasPhoneAccount) {
+  } else if (phoneAccount instanceof Error) {
+    return phoneAccount
+  } else if (hasPhoneAccount) {
     // is there still txns left over on the device account?
     const deviceWallets = await WalletsRepository().listByAccountId(account.id)
     if (deviceWallets instanceof Error) return deviceWallets
@@ -213,17 +212,17 @@ export const loginUpgradeWithPhone = async ({
       }
     }
     if (deviceAccountHasBalance) {
-      /// Scenario 1.5 - has txns on device account but phone account exists
+      // Scenario 1.5 - has txns on device account but phone account exists
       return new PhoneAccountAlreadyExistsNeedToSweepFundsError()
     } else {
-      /// Scenario 1 - no txns on device account but phone account exists
+      // Scenario 1 - no txns on device account but phone account exists
       return new PhoneAccountAlreadyExistsError()
     }
   }
 
   // Scenario 2 - Happy Path
   // a. create kratos account
-  // b. and c. update account/user mongo in kratos/registration webhook
+  // b. and c. migrate account/user collection in mongo via kratos/registration webhook
   const kratosToken = await AuthWithDeviceAccountService().upgradeToPhoneSchema({
     phone,
     deviceId: account.kratosUserId,

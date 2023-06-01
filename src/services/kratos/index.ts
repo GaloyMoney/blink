@@ -1,4 +1,8 @@
-import { AuthenticationKratosError, UnknownKratosError } from "./errors"
+import {
+  AuthenticationKratosError,
+  RevokeKratosTokenError,
+  UnknownKratosError,
+} from "./errors"
 import { kratosPublic, listSessionsInternal, toDomainSession } from "./private"
 
 export * from "./auth-phone-no-password"
@@ -63,8 +67,9 @@ export const revokeKratosToken = async (token: string): Promise<void | KratosErr
       },
     })
     if (res.status !== 204) {
-      // TODO
-      return new UnknownKratosError("unsuccessful token revocation")
+      return new RevokeKratosTokenError(
+        `unsuccessful token revocation. ${res.statusText}`,
+      )
     }
   } catch (err) {
     return new UnknownKratosError(err)
