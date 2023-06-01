@@ -71,13 +71,4 @@ describe("DeviceAccountService", () => {
     disposeClient()
     expect(result.data?.userLoginDevice.authToken).toBeDefined()
   })
-
-  it("upgrade a device account to phone user", async () => {
-    // TODO fix this test. is this e2e?
-    // AuthWithDeviceAccountService().upgradeToPhoneSchema({
-    //   kratosUserId: "",
-    //   phone: randomPhone(),
-    // })
-    expect(true).toBeDefined()
-  })
 })
