@@ -7,6 +7,13 @@ export const getBriaBalance = async (): Promise<Satoshis> => {
   return Number(response.amount) as Satoshis
 }
 
+export const listBriaAddresses = async () => {
+  const service = NewOnChainService()
+  const response = await service.listOnChainAddresses()
+  if (response instanceof Error) throw response
+  return response
+}
+
 export const onceBriaSubscribe = async ({
   type,
   txId,

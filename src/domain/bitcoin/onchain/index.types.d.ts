@@ -128,4 +128,8 @@ interface INewOnChainService {
   createOnChainAddress(
     requestId?: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError>
+  listOnChainAddresses(): Promise<
+    | Array<{ address: OnChainAddress; requestId: OnChainAddressRequestId }>
+    | OnChainServiceError
+  >
 }

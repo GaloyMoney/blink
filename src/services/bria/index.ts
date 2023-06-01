@@ -27,6 +27,8 @@ import {
   NewAddressResponse,
   GetWalletBalanceSummaryRequest,
   GetWalletBalanceSummaryResponse,
+  ListAddressesRequest,
+  ListAddressesResponse,
 } from "./proto/bria_pb"
 import {
   EventAugmentationMissingError,
@@ -54,6 +56,11 @@ const bitcoinBridgeClient = new BriaServiceClient(
 const newAddress = util.promisify<NewAddressRequest, Metadata, NewAddressResponse>(
   bitcoinBridgeClient.newAddress.bind(bitcoinBridgeClient),
 )
+const listAddresses = util.promisify<
+  ListAddressesRequest,
+  Metadata,
+  ListAddressesResponse
+>(bitcoinBridgeClient.listAddresses.bind(bitcoinBridgeClient))
 const getWalletBalanceSummary = util.promisify<
   GetWalletBalanceSummaryRequest,
   Metadata,
@@ -194,11 +201,31 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
+  const listOnChainAddresses = async (): Promise<
+    | { address: OnChainAddress; requestId: OnChainAddressRequestId }[]
+    | OnChainServiceError
+  > => {
+    try {
+      const request = new ListAddressesRequest()
+      request.setWalletName(briaConfig.walletName)
+
+      const response = await listAddresses(request, metadata)
+      return response.getAddressesList().map((walletAddress) => ({
+        address: walletAddress.getAddress() as OnChainAddress,
+        requestId: walletAddress.getExternalId() as OnChainAddressRequestId,
+      }))
+    } catch (err) {
+      const errMsg = typeof err === "string" ? err : err.message
+      return new UnknownOnChainServiceError(errMsg)
+    }
+  }
+
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.bria.onchain",
     fns: {
       getBalance,
       createOnChainAddress,
+      listOnChainAddresses,
     },
   })
 }

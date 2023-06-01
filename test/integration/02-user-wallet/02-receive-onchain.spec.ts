@@ -67,6 +67,7 @@ import {
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
   getTransactionsForWalletId,
+  listBriaAddresses,
   lndonchain,
   manyBriaSubscribe,
   onceBriaSubscribe,
@@ -418,6 +419,11 @@ describe("With Bria", () => {
         requestId,
       })
       expect(addressAgain).toBeInstanceOf(OnChainAddressAlreadyCreatedForRequestIdError)
+
+      const addressesFromService = await listBriaAddresses()
+      expect(addressesFromService).toEqual(
+        expect.arrayContaining([expect.objectContaining({ address, requestId })]),
+      )
     })
 
     it("fails to create onChain Address past rate limit", async () => {
