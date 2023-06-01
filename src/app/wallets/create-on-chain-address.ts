@@ -54,7 +54,7 @@ const createOnChainAddress = async ({
   if (limitOk instanceof Error) return limitOk
 
   const onChain = NewOnChainService()
-  let onChainAddress = await onChain.createOnChainAddress(requestId)
+  let onChainAddress = await onChain.createOnChainAddress({ walletId, requestId })
   if (
     onChainAddress instanceof OnChainAddressAlreadyCreatedForRequestIdError &&
     requestId
