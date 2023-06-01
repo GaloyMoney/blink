@@ -30,12 +30,9 @@ type WithCookieResponse = {
   kratosUserId: UserId
 }
 
-type CreateDeviceAccountSchemaResponse = WithSessionResponse
 type LoginWithPhoneNoPasswordSchemaResponse = WithSessionResponse
-type LoginWithDeviceSchemaResponse = WithSessionResponse
 type LoginWithPhoneCookieSchemaResponse = WithCookieResponse
 type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
-type CreateKratosUserForDeviceSchemaResponse = WithSessionResponse
 type CreateKratosUserForPhoneNoPasswordSchemaCookieResponse = WithCookieResponse
 
 interface IAuthWithPhonePasswordlessService {
