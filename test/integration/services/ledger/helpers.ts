@@ -58,6 +58,7 @@ export const recordReceiveOnChainPayment = async <S extends WalletCurrency>({
   displayAmounts,
 }: RecordExternalTxTestArgs<S>) => {
   const onChainTxHash = crypto.randomUUID() as OnChainTxHash
+  const newAddressRequestId = crypto.randomUUID() as OnChainAddressRequestId
   const onChainTxVout = 0 as OnChainTxVout
 
   const {
@@ -77,6 +78,7 @@ export const recordReceiveOnChainPayment = async <S extends WalletCurrency>({
     ...displayAmounts,
 
     payeeAddresses: ["address1" as OnChainAddress],
+    newAddressRequestId,
   })
 
   return LedgerFacade.recordReceiveOnChain({
