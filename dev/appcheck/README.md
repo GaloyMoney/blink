@@ -57,6 +57,6 @@ sequenceDiagram
     Attestation Provider-->>Firebase: (3) Yep this device is authentic and unique
     Firebase-->>Mobile: (4) Here's your jwt, valid for 1 hour
     Mobile-->>Oathkeeper: (5) Let's have Oathkeeper verify the JWT against the JWKS
-    Oathkeeper-->>Backend: (6) Yep, he's real, here is the subject (deviceId) and kratos userId (if it exists)
-    Backend-->Kratos: (7) Hey Kratos does this deviceId account exist?
+    Oathkeeper-->>Backend: (6) Yep, he's real, here is the subject (deviceId)
+    Backend-->Mongo: (7) Hey mongo does this user exist in the Accounts collection? (check userId field for the deviceId subject)
 ```
