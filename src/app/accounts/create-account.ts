@@ -1,5 +1,4 @@
 import { ConfigError, getTestAccounts, getTwilioConfig, isRunningJest } from "@config"
-import { AccountLevel } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
@@ -94,34 +93,6 @@ export const createAccountForDeviceAccount = async ({
   if (account instanceof Error) return account
 
   return account
-}
-
-export const upgradeAccountFromDeviceToPhone = async ({
-  userId,
-  deviceId,
-  phone,
-}: {
-  userId: UserId
-  deviceId: UserId
-  phone: PhoneNumber
-}): Promise<Account | RepositoryError> => {
-  // 1. update account
-  const accountDevice = await AccountsRepository().findByUserId(deviceId)
-  if (accountDevice instanceof Error) return accountDevice
-  accountDevice.kratosUserId = userId
-  accountDevice.level = AccountLevel.One
-  const accountUpdated = await AccountsRepository().update(accountDevice)
-  if (accountUpdated instanceof Error) return accountUpdated
-
-  // 2. update user
-  const userUpdated = await UsersRepository().migrateUserIdSubject({
-    currentUserIdSubject: deviceId,
-    newUserIdSubject: userId,
-    phone,
-  })
-  if (userUpdated instanceof Error) return userUpdated
-
-  return accountUpdated
 }
 
 export const createAccountWithPhoneIdentifier = async ({
