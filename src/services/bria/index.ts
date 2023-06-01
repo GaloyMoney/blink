@@ -1,5 +1,7 @@
 import util from "util"
 
+import { Struct, Value, ListValue } from "google-protobuf/google/protobuf/struct_pb"
+
 import { credentials, Metadata } from "@grpc/grpc-js"
 
 import { getBriaConfig } from "@config"
@@ -365,3 +367,46 @@ export const KnownBriaErrorDetails = {
   DuplicateRequestIdAddressCreate:
     /duplicate key value violates unique constraint.*bria_addresses_account_id_external_id_key/,
 } as const
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const constructMetadata = (metadataObj: { [key: string]: any }): Struct => {
+  const metadata = new Struct()
+
+  for (const key in metadataObj) {
+    /* eslint-disable-next-line no-prototype-builtins */
+    if (metadataObj.hasOwnProperty(key)) {
+      const value = new Value()
+
+      // Check the type of the value and set the appropriate field on the Value object
+      const fieldValue = metadataObj[key]
+      if (typeof fieldValue === "string") {
+        value.setStringValue(fieldValue)
+      } else if (typeof fieldValue === "number") {
+        value.setNumberValue(fieldValue)
+      } else if (typeof fieldValue === "boolean") {
+        value.setBoolValue(fieldValue)
+      } else if (Array.isArray(fieldValue)) {
+        const listValue = new Value()
+        listValue.setListValue(
+          new ListValue().setValuesList(
+            fieldValue.map((item) => {
+              const listItemValue = new Value()
+              listItemValue.setStringValue(item)
+              return listItemValue
+            }),
+          ),
+        )
+        const fetchedListValue = listValue.getListValue()
+        if (fetchedListValue !== undefined) {
+          value.setListValue(fetchedListValue)
+        }
+      } else if (typeof fieldValue === "object") {
+        value.setStructValue(constructMetadata(fieldValue))
+      }
+
+      metadata.getFieldsMap().set(key, value)
+    }
+  }
+
+  return metadata
+}
