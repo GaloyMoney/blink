@@ -2,7 +2,7 @@ import util from "util"
 
 import { Struct, Value, ListValue } from "google-protobuf/google/protobuf/struct_pb"
 
-import { credentials, Metadata } from "@grpc/grpc-js"
+import { credentials, Metadata, status } from "@grpc/grpc-js"
 
 import { getBriaConfig } from "@config"
 
@@ -196,16 +196,11 @@ export const NewOnChainService = (): INewOnChainService => {
       const response = await newAddress(request, metadata)
       return { address: response.getAddress() as OnChainAddress }
     } catch (err) {
-      const errMsg = typeof err === "string" ? err : err.message
-      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
-
-      switch (true) {
-        case match(KnownBriaErrorDetails.DuplicateRequestIdAddressCreate):
-          return new OnChainAddressAlreadyCreatedForRequestIdError()
-
-        default:
-          return new UnknownOnChainServiceError(errMsg)
+      if (err.code == status.ALREADY_EXISTS) {
+        return new OnChainAddressAlreadyCreatedForRequestIdError()
       }
+      const errMsg = typeof err === "string" ? err : err.message
+      return new UnknownOnChainServiceError(errMsg)
     }
   }
 
