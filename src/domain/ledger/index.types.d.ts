@@ -219,6 +219,11 @@ type RevertOnChainPaymentArgs = {
   description?: string
 }
 
+type IsOnChainReceiptTxRecordedForWalletResult = {
+  recorded: boolean
+  newAddressRequestId: OnChainAddressRequestId | undefined
+}
+
 interface ILedgerService {
   updateMetadataByHash(
     ledgerTxMetadata:
@@ -291,7 +296,7 @@ interface ILedgerService {
 
   onChainTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
 
-  isOnChainTxRecordedForWallet({
+  isOnChainReceiptTxRecordedForWallet({
     walletId,
     txHash,
     vout,
@@ -299,7 +304,7 @@ interface ILedgerService {
     walletId: WalletId
     txHash: OnChainTxHash
     vout: OnChainTxVout
-  }): Promise<boolean | LedgerServiceError>
+  }): Promise<IsOnChainReceiptTxRecordedForWalletResult | LedgerServiceError>
 
   isOnChainTxHashRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
