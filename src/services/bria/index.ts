@@ -4,7 +4,10 @@ import { credentials, Metadata } from "@grpc/grpc-js"
 
 import { getBriaConfig } from "@config"
 
-import { UnknownOnChainServiceError } from "@domain/bitcoin/onchain"
+import {
+  OnChainAddressAlreadyCreatedForRequestIdError,
+  UnknownOnChainServiceError,
+} from "@domain/bitcoin/onchain"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared/primitives"
 
 import {
@@ -167,7 +170,7 @@ export const NewOnChainService = (): INewOnChainService => {
 
   const createOnChainAddress = async (
     requestId?: OnChainAddressRequestId,
-  ): Promise<OnChainAddressIdentifier | UnknownOnChainServiceError> => {
+  ): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
     try {
       const request = new NewAddressRequest()
       request.setWalletName(briaConfig.walletName)
@@ -177,8 +180,17 @@ export const NewOnChainService = (): INewOnChainService => {
 
       const response = await newAddress(request, metadata)
       return { address: response.getAddress() as OnChainAddress }
-    } catch (error) {
-      return new UnknownOnChainServiceError(error.message || error)
+    } catch (err) {
+      const errMsg = typeof err === "string" ? err : err.message
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
+
+      switch (true) {
+        case match(KnownBriaErrorDetails.DuplicateRequestIdAddressCreate):
+          return new OnChainAddressAlreadyCreatedForRequestIdError()
+
+        default:
+          return new UnknownOnChainServiceError(errMsg)
+      }
     }
   }
 
@@ -317,3 +329,8 @@ const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError => {
     sequence,
   }
 }
+
+export const KnownBriaErrorDetails = {
+  DuplicateRequestIdAddressCreate:
+    /duplicate key value violates unique constraint.*bria_addresses_account_id_external_id_key/,
+} as const

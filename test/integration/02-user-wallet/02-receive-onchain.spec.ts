@@ -26,8 +26,9 @@ import { WalletPriceRatio } from "@domain/payments"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
-import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
+import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
+import { OnChainAddressAlreadyCreatedForRequestIdError } from "@domain/bitcoin/onchain"
 
 import { BriaPayloadType } from "@services/bria"
 import { LedgerService } from "@services/ledger"
@@ -399,14 +400,24 @@ describe("With Bria", () => {
 
   describe("UserWallet - On chain", () => {
     it("get last on chain address", async () => {
+      const requestId = ("requestId #" +
+        (Math.random() * 1_000_000).toFixed()) as OnChainAddressRequestId
+
       const address = await Wallets.createOnChainAddressForBtcWallet({
         walletId: newWalletIdA,
+        requestId,
       })
       const lastAddress = await Wallets.getLastOnChainAddress(newWalletIdA)
 
       expect(address).not.toBeInstanceOf(Error)
       expect(lastAddress).not.toBeInstanceOf(Error)
       expect(lastAddress).toBe(address)
+
+      const addressAgain = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: newWalletIdA,
+        requestId,
+      })
+      expect(addressAgain).toBeInstanceOf(OnChainAddressAlreadyCreatedForRequestIdError)
     })
 
     it("fails to create onChain Address past rate limit", async () => {

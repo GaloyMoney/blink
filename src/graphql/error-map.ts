@@ -416,6 +416,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OnChainError":
     case "TransactionDecodeError":
     case "OnChainServiceError":
+    case "OnChainAddressAlreadyCreatedForRequestIdError":
     case "CouldNotFindOnChainTransactionError":
     case "NotificationsError":
     case "NotificationsServiceError":
