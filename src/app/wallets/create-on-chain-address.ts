@@ -1,6 +1,10 @@
 import { BTC_NETWORK } from "@config"
 
-import { TxDecoder } from "@domain/bitcoin/onchain"
+import {
+  InvalidOnChainServiceStateError,
+  OnChainAddressAlreadyCreatedForRequestIdError,
+  TxDecoder,
+} from "@domain/bitcoin/onchain"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletCurrency } from "@domain/shared"
@@ -50,8 +54,20 @@ const createOnChainAddress = async ({
   const limitOk = await checkOnChainAddressAccountIdLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
-  const onChainAddress = await NewOnChainService().createOnChainAddress(requestId)
-  if (onChainAddress instanceof Error) return onChainAddress
+  const onChain = NewOnChainService()
+  let onChainAddress = await onChain.createOnChainAddress(requestId)
+  if (onChainAddress instanceof OnChainAddressAlreadyCreatedForRequestIdError) {
+    const addresses = await onChain.listOnChainAddresses()
+    if (addresses instanceof Error) return addresses
+
+    const addressFromAddresses = addresses.find(
+      ({ requestId: requestIdFromAddresses }) => requestIdFromAddresses === requestId,
+    )
+    if (addressFromAddresses === undefined) return new InvalidOnChainServiceStateError()
+    onChainAddress = addressFromAddresses
+  } else if (onChainAddress instanceof Error) {
+    return onChainAddress
+  }
 
   const onChainAddressesRepo = WalletOnChainAddressesRepository()
   const savedOnChainAddress = await onChainAddressesRepo.persistNew({
