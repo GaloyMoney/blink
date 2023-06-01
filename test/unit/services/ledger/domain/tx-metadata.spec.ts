@@ -23,6 +23,8 @@ describe("Tx metadata", () => {
   const memoOfPayer = "sample payer memo"
   const pubkey = "pubkey" as Pubkey
   const payeeAddresses: OnChainAddress[] = ["Address" as OnChainAddress]
+  const newAddressRequestId: OnChainAddressRequestId =
+    "newAddressRequestId" as OnChainAddressRequestId
   const paymentHash = "paymenthash" as PaymentHash
   const onChainTxHash = "onChainTxHash" as OnChainTxHash
   const onChainTxVout = 1 as OnChainTxVout
@@ -402,6 +404,7 @@ describe("Tx metadata", () => {
     const onchainMetadataArgs = {
       onChainTxHash,
       payeeAddresses,
+      newAddressRequestId,
     }
     const expectedOnChainMetadataArgs = {
       hash: onchainMetadataArgs.onChainTxHash,
