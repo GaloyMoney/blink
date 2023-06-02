@@ -225,17 +225,24 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
   }
 }
 
+const debounceTimeMs = 2000
+let debounceTimer: string | number | NodeJS.Timeout | undefined
+
 export const onchainBlockEventHandler = async (height: number) => {
-  const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
-  const txNumber = await WalletWithSpans.updateOnChainReceipt({ scanDepth, logger })
-  if (txNumber instanceof Error) {
-    logger.error(
-      { error: txNumber },
-      `error updating onchain receipt for block ${height}`,
-    )
-    return
-  }
-  logger.info(`finish block ${height} handler with ${txNumber} transactions`)
+  clearTimeout(debounceTimer)
+
+  debounceTimer = setTimeout(async () => {
+    const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
+    const txNumber = await WalletWithSpans.updateOnChainReceipt({ scanDepth, logger })
+    if (txNumber instanceof Error) {
+      logger.error(
+        { error: txNumber },
+        `error updating onchain receipt for block ${height}`,
+      )
+      return
+    }
+    logger.info(`finish block ${height} handler with ${txNumber} transactions`)
+  }, debounceTimeMs)
 }
 
 export const invoiceUpdateEventHandler = async (
