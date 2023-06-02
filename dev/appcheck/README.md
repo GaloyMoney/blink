@@ -45,7 +45,7 @@ node jwks-generator.js
 
 After running the script, you should have a .well-known/jwks.json file that contains your JWKS. You can then serve this file using an HTTP server (such as Express) or upload it to a web server where your identity provider is hosted.
 
-Keep in mind that the JWKS file should be accessible from the URL specified in your Oathkeeper configuration. Update the jwks_urls and trusted_issuers fields in the Oathkeeper configuration to match the actual URL of your identity provider and JWKS file.
+The JWKS file should be accessible from the URL specified in your Oathkeeper configuration. Update the `jwks_urls` and `trusted_issuers` fields in the Oathkeeper configuration to match the actual URL of your identity provider and JWKS file.
 
 
 ## Device Login Flow
