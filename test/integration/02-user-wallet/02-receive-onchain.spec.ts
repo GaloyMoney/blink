@@ -1148,13 +1148,13 @@ describe("With Lnd", () => {
     // Send payments to addresses
     const subTransactions = subscribeToTransactions({ lnd })
     const addressesForReceivedTxns = [] as OnChainAddress[]
-    const onChainTxHandler = (tx) => {
+    const onChainTxHandler = async (tx) => {
+      await onchainTransactionEventHandler(tx)
       for (const address of tx.output_addresses) {
         if (addresses.includes(address)) {
           addressesForReceivedTxns.push(address)
         }
       }
-      return onchainTransactionEventHandler(tx)
     }
     subTransactions.on("chain_transaction", onChainTxHandler)
     // just to improve performance
