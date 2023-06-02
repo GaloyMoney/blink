@@ -340,7 +340,6 @@ export const configSchema = {
         requestPhoneCodePerPhone: rateLimitConfigSchema,
         requestPhoneCodePerPhoneMinInterval: rateLimitConfigSchema,
         requestPhoneCodePerIp: rateLimitConfigSchema,
-        createDeviceAccountPerIp: rateLimitConfigSchema,
         failedLoginAttemptPerPhone: rateLimitConfigSchema,
         failedLoginAttemptPerEmailAddress: rateLimitConfigSchema,
         failedLoginAttemptPerIp: rateLimitConfigSchema,
@@ -352,7 +351,6 @@ export const configSchema = {
         "requestPhoneCodePerPhone",
         "requestPhoneCodePerPhoneMinInterval",
         "requestPhoneCodePerIp",
-        "createDeviceAccountPerIp",
         "failedLoginAttemptPerPhone",
         "failedLoginAttemptPerEmailAddress",
         "failedLoginAttemptPerIp",
@@ -376,11 +374,6 @@ export const configSchema = {
           points: 8,
           duration: 3600,
           blockDuration: 86400,
-        },
-        createDeviceAccountPerIp: {
-          points: 4,
-          duration: 86400,
-          blockDuration: 86400 * 10,
         },
         failedLoginAttemptPerPhone: {
           points: 8,
