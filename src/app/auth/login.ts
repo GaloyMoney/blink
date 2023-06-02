@@ -12,7 +12,7 @@ import {
 } from "@config"
 import { TwilioClient } from "@services/twilio"
 
-import { AccountLevel, checkedToUserId } from "@domain/accounts"
+import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 
@@ -193,12 +193,12 @@ export const loginUpgradeWithPhone = async ({
 
   // Scenario 1 - does phone account already exist?
   const phoneAccount = await UsersRepository().findByPhone(phone)
-  let hasPhoneAccount = true
+
   if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
-    hasPhoneAccount = false
+    // nothing to do, we'll go to scenario 2
   } else if (phoneAccount instanceof Error) {
     return phoneAccount
-  } else if (hasPhoneAccount) {
+  } else {
     // is there still txns left over on the device account?
     const deviceWallets = await WalletsRepository().listByAccountId(account.id)
     if (deviceWallets instanceof Error) return deviceWallets
@@ -254,11 +254,8 @@ export const loginWithDevice = async ({
   const accountExist = await AccountsRepository().findByUserId(deviceId)
   // 2. If not, then create account in mongo
   if (accountExist instanceof CouldNotFindAccountFromKratosIdError) {
-    const levelZeroAccountsConfig = getDefaultAccountsConfig()
-    levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
     const account = await createAccountForDeviceAccount({
       userId: deviceId,
-      config: levelZeroAccountsConfig,
     })
     if (account instanceof Error) return account
   }
