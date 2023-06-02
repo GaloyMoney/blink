@@ -179,16 +179,18 @@ export const NewOnChainService = (): INewOnChainService => {
   }
 
   const createOnChainAddress = async ({
-    walletId,
+    walletDescriptor,
     requestId,
   }: {
-    walletId: WalletId
+    walletDescriptor: WalletDescriptor<WalletCurrency>
     requestId?: OnChainAddressRequestId
   }): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
     try {
       const request = new NewAddressRequest()
       request.setWalletName(briaConfig.walletName)
-      request.setMetadata(constructMetadata({ galoy: { walletId } }))
+      request.setMetadata(
+        constructMetadata({ galoy: { walletDetails: walletDescriptor } }),
+      )
       if (requestId) {
         request.setExternalId(requestId)
       }
