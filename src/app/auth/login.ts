@@ -193,12 +193,12 @@ export const loginUpgradeWithPhone = async ({
 
   // Scenario 1 - does phone account already exist?
   const phoneAccount = await UsersRepository().findByPhone(phone)
-  let hasPhoneAccount = true
+
   if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
-    hasPhoneAccount = false
+    // nothing to do, we'll go to scenario 2
   } else if (phoneAccount instanceof Error) {
     return phoneAccount
-  } else if (hasPhoneAccount) {
+  } else {
     // is there still txns left over on the device account?
     const deviceWallets = await WalletsRepository().listByAccountId(account.id)
     if (deviceWallets instanceof Error) return deviceWallets
