@@ -30,8 +30,8 @@ import {
   NewAddressResponse,
   GetWalletBalanceSummaryRequest,
   GetWalletBalanceSummaryResponse,
-  ListAddressesRequest,
-  ListAddressesResponse,
+  FindAddressByExternalIdRequest,
+  FindAddressByExternalIdResponse,
 } from "./proto/bria_pb"
 import {
   EventAugmentationMissingError,
@@ -59,11 +59,11 @@ const bitcoinBridgeClient = new BriaServiceClient(
 const newAddress = util.promisify<NewAddressRequest, Metadata, NewAddressResponse>(
   bitcoinBridgeClient.newAddress.bind(bitcoinBridgeClient),
 )
-const listAddresses = util.promisify<
-  ListAddressesRequest,
+const findAddressByExternalId = util.promisify<
+  FindAddressByExternalIdRequest,
   Metadata,
-  ListAddressesResponse
->(bitcoinBridgeClient.listAddresses.bind(bitcoinBridgeClient))
+  FindAddressByExternalIdResponse
+>(bitcoinBridgeClient.findAddressByExternalId.bind(bitcoinBridgeClient))
 const getWalletBalanceSummary = util.promisify<
   GetWalletBalanceSummaryRequest,
   Metadata,
@@ -208,19 +208,20 @@ export const NewOnChainService = (): INewOnChainService => {
     requestId: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
     try {
-      const request = new ListAddressesRequest()
-      request.setWalletName(briaConfig.walletName)
+      const request = new FindAddressByExternalIdRequest()
+      request.setExternalId(requestId)
 
-      const response = await listAddresses(request, metadata)
-      const foundAddress = response
-        .getAddressesList()
-        .find((walletAddress) => walletAddress.getExternalId() === requestId)
+      const response = await findAddressByExternalId(request, metadata)
+      const foundAddress = response.getAddress()
 
       if (foundAddress === undefined) return new OnChainAddressNotFoundError()
       return {
         address: foundAddress.getAddress() as OnChainAddress,
       }
     } catch (err) {
+      if (err.code == status.NOT_FOUND) {
+        return new OnChainAddressNotFoundError()
+      }
       const errMsg = typeof err === "string" ? err : err.message
       return new UnknownOnChainServiceError(errMsg)
     }

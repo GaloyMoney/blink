@@ -126,6 +126,28 @@ function deserialize_services_bria_v1_EstimatePayoutFeeResponse(buffer_arg) {
   return bria_pb.EstimatePayoutFeeResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_services_bria_v1_FindAddressByExternalIdRequest(arg) {
+  if (!(arg instanceof bria_pb.FindAddressByExternalIdRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.FindAddressByExternalIdRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_FindAddressByExternalIdRequest(buffer_arg) {
+  return bria_pb.FindAddressByExternalIdRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_FindAddressByExternalIdResponse(arg) {
+  if (!(arg instanceof bria_pb.FindAddressByExternalIdResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.FindAddressByExternalIdResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_FindAddressByExternalIdResponse(buffer_arg) {
+  return bria_pb.FindAddressByExternalIdResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_services_bria_v1_GetAccountBalanceSummaryRequest(arg) {
   if (!(arg instanceof bria_pb.GetAccountBalanceSummaryRequest)) {
     throw new Error('Expected argument of type services.bria.v1.GetAccountBalanceSummaryRequest');
@@ -611,6 +633,17 @@ var BriaServiceService = exports.BriaServiceService = {
     requestDeserialize: deserialize_services_bria_v1_NewAddressRequest,
     responseSerialize: serialize_services_bria_v1_NewAddressResponse,
     responseDeserialize: deserialize_services_bria_v1_NewAddressResponse,
+  },
+  findAddressByExternalId: {
+    path: '/services.bria.v1.BriaService/FindAddressByExternalId',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.FindAddressByExternalIdRequest,
+    responseType: bria_pb.FindAddressByExternalIdResponse,
+    requestSerialize: serialize_services_bria_v1_FindAddressByExternalIdRequest,
+    requestDeserialize: deserialize_services_bria_v1_FindAddressByExternalIdRequest,
+    responseSerialize: serialize_services_bria_v1_FindAddressByExternalIdResponse,
+    responseDeserialize: deserialize_services_bria_v1_FindAddressByExternalIdResponse,
   },
   updateAddress: {
     path: '/services.bria.v1.BriaService/UpdateAddress',
