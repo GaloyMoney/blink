@@ -57,7 +57,6 @@ import {
   bitcoindOutside,
   checkIsBalanced,
   clearLimiters,
-  confirmSent,
   createMandatoryUsers,
   createRandomUserAndWallet,
   createUserAndWalletFromUserRef,
@@ -68,6 +67,7 @@ import {
   getTransactionsForWalletId,
   lndonchain,
   manyBriaSubscribe,
+  mineBlockAndSyncAll,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
   resetOnChainAddressAccountIdLimits,
@@ -76,6 +76,7 @@ import {
   subscribeToChainAddress,
   subscribeToTransactions,
   waitUntilBlockHeight,
+  waitUntilSyncAll,
 } from "test/helpers"
 
 let walletIdA: WalletId
@@ -1100,7 +1101,7 @@ describe("With Lnd", () => {
         sub.removeAllListeners()
       }
 
-      await waitUntilBlockHeight({ lnd })
+      await waitUntilSyncAll()
       // this is done by trigger and/or cron in prod
       const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
       if (result instanceof Error) {
@@ -1140,6 +1141,9 @@ describe("With Lnd", () => {
 
     const wallet = await WalletsRepository().findById(walletId)
     if (wallet instanceof Error) return wallet
+
+    // sync all lnds previous to subscription use
+    await waitUntilSyncAll()
 
     // Send payments to addresses
     const subTransactions = subscribeToTransactions({ lnd })
@@ -1187,9 +1191,11 @@ describe("With Lnd", () => {
     })
     const txnsWithPending = txnsWithPendingResult?.result?.slice
     expect(txnsWithPending).not.toBeNull()
-    if (txnsWithPending === undefined) throw new Error()
+    if (!txnsWithPending) throw new Error()
+    expect(txnsWithPending.length).toBeGreaterThan(0)
     const pendingTxn = txnsWithPending[0]
     expect(pendingTxn.initiationVia.type).toEqual("onchain")
+    expect(pendingTxn.settlementVia.type).toEqual("onchain")
     if (
       pendingTxn.initiationVia.type !== "onchain" ||
       pendingTxn.settlementVia.type !== "onchain"
@@ -1229,9 +1235,7 @@ describe("With Lnd", () => {
     expect(Number(pendingBalances[walletId].amount)).toEqual(expectedPendingBalance)
 
     // Confirm pending onchain transactions
-    await confirmSent({
-      walletClient: bitcoindOutside,
-    })
+    await mineBlockAndSyncAll()
     await checkBalance(addresses, blockNumber)
 
     // Fetch txns with confirmed
