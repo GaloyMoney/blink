@@ -594,7 +594,7 @@ const healthCheck = () => {
       checkDbConnectionStatus: true,
       checkRedisStatus: true,
       checkLndsStatus: true,
-      checkBriaStatus: true,
+      checkBriaStatus: false,
     }),
   )
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))

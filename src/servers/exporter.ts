@@ -190,7 +190,7 @@ const main = async () => {
       checkDbConnectionStatus: true,
       checkRedisStatus: false,
       checkLndsStatus: true,
-      checkBriaStatus: true,
+      checkBriaStatus: false,
     }),
   )
 
