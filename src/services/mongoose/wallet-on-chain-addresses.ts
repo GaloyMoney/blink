@@ -57,8 +57,31 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
     }
   }
 
+  const isRecorded = async ({
+    walletId,
+    onChainAddress,
+  }: {
+    walletId: WalletId
+    onChainAddress: OnChainAddressIdentifier
+  }) => {
+    try {
+      const result = await Wallet.countDocuments({
+        id: walletId,
+        onchain: {
+          $elemMatch: {
+            address: onChainAddress.address,
+          },
+        },
+      })
+
+      return result > 0
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
   return {
     persistNew,
     findLastByWalletId,
+    isRecorded,
   }
 }
