@@ -52,11 +52,11 @@ The JWKS file should be accessible from the URL specified in your Oathkeeper con
 
 ```mermaid
 sequenceDiagram
-    Mobile->>Firebase: (1) Firebase, here is my unique device id
-    Firebase->>Attestation Provider: (2) Thanks device, let me ask if this is authentic from Play Integrity (android) or App Attest (ios)
-    Attestation Provider-->>Firebase: (3) Yep this device is authentic and unique
-    Firebase-->>Mobile: (4) Here's your jwt, valid for 1 hour
-    Mobile-->>Oathkeeper: (5) Let's have Oathkeeper verify the JWT against the JWKS
-    Oathkeeper-->>Backend: (6) Yep, he's real, here is the subject (deviceId)
-    Backend-->Mongo: (7) Hey mongo does this user exist in the Accounts collection? (check userId field for the deviceId subject)
+    Mobile->>Firebase: (1) Unique device id
+    Firebase->>Attestation Provider: (2) Check device authenticity
+    Attestation Provider-->>Firebase: (3) Device authenticated
+    Firebase-->>Mobile: (4) Here's jwt (1 hour validity)
+    Mobile-->>Oathkeeper: (5) Verify jwt against JWKS
+    Oathkeeper-->>Backend: (6) User authenticated, here's deviceId
+    Backend-->Mongo: (7) Check user in Accounts collection
 ```
