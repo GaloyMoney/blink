@@ -11,7 +11,10 @@ import { toSats } from "@domain/bitcoin"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
+import {
+  CouldNotFindWalletFromOnChainAddressError,
+  CouldNotFindWalletFromOnChainAddressesError,
+} from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
 
 import { LockService } from "@services/lock"
@@ -122,7 +125,10 @@ const processTxForWallet = async ({
       satoshis,
       address,
     })
-    if (result instanceof Error) {
+    if (
+      result instanceof Error &&
+      !(result instanceof CouldNotFindWalletFromOnChainAddressError)
+    ) {
       logger.error({ error: result }, "Error adding settled transaction")
       recordExceptionInCurrentSpan({ error: result })
     }
