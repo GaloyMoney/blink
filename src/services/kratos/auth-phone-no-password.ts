@@ -182,7 +182,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
   }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | KratosError> => {
     // need to use phone and deviceId as the identifier for the kratos webhook callback to work
     //  in /kratos/registration
-    const traits = { phone, deviceId }
+    const traits = { phone }
     const method = "password"
     try {
       const flow = await kratosPublic.createNativeRegistrationFlow()
@@ -192,6 +192,9 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
           traits,
           method,
           password,
+          transient_payload: {
+            deviceId,
+          },
         },
       })
       const sessionToken = result.data.session_token as SessionToken

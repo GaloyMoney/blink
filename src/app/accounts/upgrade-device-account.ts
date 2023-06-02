@@ -19,6 +19,7 @@ export const upgradeAccountFromDeviceToPhone = async ({
   if (accountUpdated instanceof Error) return accountUpdated
 
   // 2. update user
+  // TODO maybe add deviceId to user metadata
   const userUpdated = await UsersRepository().migrateUserIdSubject({
     currentUserIdSubject: deviceId,
     newUserIdSubject: userId,
