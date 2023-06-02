@@ -3,7 +3,6 @@ import { GT } from "@graphql/index"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import JwtPayload from "@graphql/types/payload/jwt"
-import { BTC_NETWORK } from "@config"
 
 const UserLoginDeviceInput = GT.Input({
   name: "UserLoginDeviceInput",
@@ -35,11 +34,6 @@ const UserLoginDeviceMutation = GT.Field<{
 
     if (ip === undefined) {
       return { errors: [{ message: "ip is undefined" }] }
-    }
-
-    // TODO: remove once ready for production
-    if (BTC_NETWORK === "mainnet") {
-      return { errors: [{ message: "currently not available on mainnet" }] }
     }
 
     const authToken = await Auth.loginWithDevice({
