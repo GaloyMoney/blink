@@ -21,7 +21,6 @@ import {
   getDefaultWalletIdByTestUserRef,
   getUsdWalletIdByTestUserRef,
   lndonchain,
-  resetOnChainAddressAccountIdLimits,
   sendToAddressAndConfirm,
   subscribeToChainAddress,
   waitUntilBlockHeight,
@@ -36,7 +35,6 @@ let walletIdA: WalletId
 let walletIdB: WalletId
 let walletIdUsdA: WalletId
 let accountA: Account
-let accountB: Account
 
 const dealerFns = DealerPriceService()
 
@@ -49,11 +47,9 @@ beforeAll(async () => {
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
-  accountB = await getAccountByTestUserRef("B")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
 
   // Fund walletIdA
-  await resetOnChainAddressAccountIdLimits(accountA.id)
   await sendToLndWalletTestWrapper({
     amountSats: toSats(defaultAmount * 5),
     walletId: walletIdA,
@@ -61,9 +57,6 @@ beforeAll(async () => {
 
   // Fund lnd
   const funderWalletId = await getFunderWalletId()
-  const funderWallet = await WalletsRepository().findById(funderWalletId)
-  if (funderWallet instanceof Error) throw funderWallet
-  await resetOnChainAddressAccountIdLimits(funderWallet.accountId)
   await sendToLndWalletTestWrapper({
     amountSats: toSats(2_000_000_000),
     walletId: funderWalletId,
@@ -136,7 +129,6 @@ describe("UserWallet - getOnchainFee", () => {
     })
 
     it("returns zero for an on us address", async () => {
-      await resetOnChainAddressAccountIdLimits(accountB.id)
       const address = await Wallets.createOnChainAddressForBtcWallet({
         walletId: walletIdB,
       })
@@ -297,7 +289,6 @@ describe("UserWallet - getOnchainFee", () => {
         })
 
         it("returns zero for an on us address", async () => {
-          await resetOnChainAddressAccountIdLimits(accountB.id)
           const address = await Wallets.createOnChainAddressForBtcWallet({
             walletId: walletIdB,
           })

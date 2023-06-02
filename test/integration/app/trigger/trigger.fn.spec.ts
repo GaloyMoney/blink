@@ -5,7 +5,6 @@ import { Wallets } from "@app"
 import { TxStatus } from "@domain/wallets"
 import { sat2btc, toSats } from "@domain/bitcoin"
 
-import { WalletsRepository } from "@services/mongoose"
 import { onchainBlockEventHandler } from "@servers/trigger"
 
 import { baseLogger } from "@services/logger"
@@ -23,7 +22,6 @@ import {
   lnd1,
   mineBlockAndSyncAll,
   RANDOM_ADDRESS,
-  resetOnChainAddressAccountIdLimits,
   subscribeToBlocks,
   waitFor,
   waitUntilSyncAll,
@@ -86,14 +84,6 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
 
 describe("onchainBlockEventHandler", () => {
   it("should process block for incoming transactions from lnd", async () => {
-    const walletA = await WalletsRepository().findById(walletIdA)
-    if (walletA instanceof Error) throw walletA
-    await resetOnChainAddressAccountIdLimits(walletA.accountId)
-
-    const walletD = await WalletsRepository().findById(walletIdD)
-    if (walletD instanceof Error) throw walletD
-    await resetOnChainAddressAccountIdLimits(walletD.accountId)
-
     const amount = toSats(10_000)
     const amount2 = toSats(20_000)
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
