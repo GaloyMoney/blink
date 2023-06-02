@@ -19,6 +19,13 @@ interface IWalletOnChainAddressesRepository {
   findLastByWalletId(
     walletId: WalletId,
   ): Promise<OnChainAddressIdentifier | RepositoryError>
+  isRecorded({
+    walletId,
+    onChainAddress,
+  }: {
+    walletId: WalletId
+    onChainAddress: OnChainAddressIdentifier
+  }): Promise<boolean | RepositoryError>
 }
 
 type ListWalletOnChainPendingReceiveArgs = {
