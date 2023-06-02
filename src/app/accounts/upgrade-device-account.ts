@@ -10,6 +10,9 @@ export const upgradeAccountFromDeviceToPhone = async ({
   deviceId: UserId
   phone: PhoneNumber
 }): Promise<Account | RepositoryError> => {
+  // TODO: ideally both 1. and 2. should be done in a transaction,
+  // so that if one fails, the other is rolled back
+
   // 1. update account
   const accountDevice = await AccountsRepository().findByUserId(deviceId)
   if (accountDevice instanceof Error) return accountDevice

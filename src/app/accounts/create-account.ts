@@ -1,4 +1,11 @@
-import { ConfigError, getTestAccounts, getTwilioConfig, isRunningJest } from "@config"
+import {
+  ConfigError,
+  getDefaultAccountsConfig,
+  getTestAccounts,
+  getTwilioConfig,
+  isRunningJest,
+} from "@config"
+import { AccountLevel } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
@@ -59,10 +66,8 @@ const initializeCreatedAccount = async ({
 
 export const createAccountForDeviceAccount = async ({
   userId,
-  config,
 }: {
   userId: UserId
-  config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
   const user = await UsersRepository().update({ id: userId })
   if (user instanceof Error) return user
@@ -70,9 +75,12 @@ export const createAccountForDeviceAccount = async ({
   const accountNew = await AccountsRepository().persistNew(userId)
   if (accountNew instanceof Error) return accountNew
 
+  const levelZeroAccountsConfig = getDefaultAccountsConfig()
+  levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
+
   const account = await initializeCreatedAccount({
     account: accountNew,
-    config,
+    config: levelZeroAccountsConfig,
   })
   if (account instanceof Error) return account
 
