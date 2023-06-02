@@ -8,7 +8,7 @@ We've included the following files here that can be imported into Postman to get
 **Environment variables:**
 - `galoy-dev.postman_environment.json`: environment variables to hit our testing local setup
 - `galoy-staging.postman_environment.json`: environment variables to hit our deployed staging with _testnet_ bitcoin
-- `galoy-mainnet.postman_environment.json`: environment variables to hit our deployed Bitcoin Beach Wallet production environment with _mainnet_ bitcoin
+- `galoy-mainnet.postman_environment.json`: environment variables to hit our deployed Blink production environment with _mainnet_ bitcoin
 
 ### Usage
 
