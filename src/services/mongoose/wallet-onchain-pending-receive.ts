@@ -1,3 +1,5 @@
+import getUuidByString from "uuid-by-string"
+
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { TxStatus } from "@domain/wallets"
@@ -100,7 +102,9 @@ const translateToWalletOnChainTransaction = (
   const walletCurrency = result.walletCurrency as WalletCurrency
   const toCurrency = walletCurrency === WalletCurrency.Btc ? toSats : toCents
   return {
-    id: result.transactionHash as OnChainTxHash,
+    id: getUuidByString(
+      `${result.transactionHash}:${result.vout}`,
+    ) as LedgerTransactionId,
     walletId: result.walletId as WalletId,
     settlementAmount: toCurrency(result.walletAmount),
     settlementFee: toCurrency(result.walletFee),
