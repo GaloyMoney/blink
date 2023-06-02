@@ -309,7 +309,8 @@ const testExternalSend = async ({
       )
     }
 
-    pendingTxHash = pendingTx.id as OnChainTxHash
+    pendingTxHash = (pendingTx as WalletOnChainSettledTransaction).settlementVia
+      .transactionHash
 
     await checkIsBalanced()
   }
@@ -334,10 +335,11 @@ const testExternalSend = async ({
     expect(pendingTxs.length).toBe(0)
 
     const settledTxs = txResult.result.slice.filter(
-      ({ status, initiationVia, id }) =>
+      ({ status, initiationVia, settlementVia }) =>
         status === TxStatus.Success &&
         initiationVia.type === PaymentInitiationMethod.OnChain &&
-        id === pendingTxHash,
+        "transactionHash" in settlementVia &&
+        settlementVia.transactionHash === pendingTxHash,
     )
     expect(settledTxs.length).toBe(1)
     const settledTx = settledTxs[0]

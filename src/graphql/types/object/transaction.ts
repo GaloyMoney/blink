@@ -1,4 +1,5 @@
 import dedent from "dedent"
+import getUuidByString from "uuid-by-string"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
@@ -46,7 +47,8 @@ const Transaction = GT.Object<WalletTransaction>({
         // Filter out source.id as OnChainTxHash
         if (
           settlementVia.type === "onchain" &&
-          source.id === settlementVia.transactionHash &&
+          source.id ===
+            getUuidByString(`${settlementVia.transactionHash}:${settlementVia.vout}`) &&
           // If not pending, we would like this to error in the next step with invalid source.id
           source.status === DomainTxStatus.Pending
         ) {

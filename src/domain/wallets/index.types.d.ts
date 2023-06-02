@@ -74,7 +74,7 @@ type BaseWalletTransaction = {
   >
   readonly createdAt: Date
 
-  readonly id: LedgerTransactionId | OnChainTxHash
+  readonly id: LedgerTransactionId
   readonly status: TxStatus
   readonly memo: string | null
 }

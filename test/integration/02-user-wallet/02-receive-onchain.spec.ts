@@ -646,28 +646,36 @@ describe("With Bria", () => {
     })
 
     it("receives batch on-chain transaction", async () => {
-      const addressUserA = await Wallets.createOnChainAddressForBtcWallet({
+      const address1UserA = await Wallets.createOnChainAddressForBtcWallet({
         walletId: newWalletIdA,
       })
-      if (addressUserA instanceof Error) throw addressUserA
+      if (address1UserA instanceof Error) throw address1UserA
+
+      const address2UserA = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: newWalletIdA,
+      })
+      if (address2UserA instanceof Error) throw address2UserA
 
       const funderWalletId = await getFunderWalletId()
       const addressDealer = await Wallets.createOnChainAddressForBtcWallet({
         walletId: funderWalletId,
       })
       if (addressDealer instanceof Error) throw addressDealer
-      const addresses = [addressUserA, addressDealer]
+      const addresses = [address1UserA, addressDealer, address2UserA]
 
       const initialBalanceUserA = await getBalanceHelper(newWalletIdA)
       const initBalanceDealer = await getBalanceHelper(funderWalletId)
 
       const output0 = {}
-      output0[addressUserA] = 1
+      output0[address1UserA] = 1
 
       const output1 = {}
       output1[addressDealer] = 2
 
-      const outputs = [output0, output1]
+      const output2 = {}
+      output2[address2UserA] = 2
+
+      const outputs = [output0, output1, output2]
 
       const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({
         inputs: [],
@@ -682,7 +690,7 @@ describe("With Bria", () => {
         psbt: walletProcessPsbt.psbt,
       })
 
-      await bitcoindOutside.sendRawTransaction({
+      const txHash = await bitcoindOutside.sendRawTransaction({
         hexstring: finalizedPsbt.hex,
       })
 
@@ -714,10 +722,23 @@ describe("With Bria", () => {
       if (pendingBalance instanceof Error) throw pendingBalance
       expect(Number(pendingBalance[newWalletIdA].amount)).toEqual(
         amountAfterFeeDeduction({
-          amount: toSats(100_000_000),
+          amount: toSats(300_000_000),
           depositFeeRatio: defaultDepositFeeRatio,
         }),
       )
+
+      const pendingTxnsResult = await Wallets.getTransactionsForWallets({
+        wallets: [newWalletA],
+      })
+      if (pendingTxnsResult instanceof Error) throw pendingTxnsResult
+      const pendingTxns = pendingTxnsResult.result?.slice.filter(
+        (tx) =>
+          "transactionHash" in tx.settlementVia &&
+          tx.settlementVia.transactionHash === txHash,
+      )
+      expect(pendingTxns?.length).toEqual(2)
+      expect(pendingTxns?.[0].walletId).toBe(pendingTxns?.[1].walletId)
+      expect(pendingTxns?.[0].id).not.toBe(pendingTxns?.[1].id)
 
       await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 
@@ -745,7 +766,7 @@ describe("With Bria", () => {
         expect(balanceUserA).toBe(
           initialBalanceUserA +
             amountAfterFeeDeduction({
-              amount: toSats(100_000_000),
+              amount: toSats(300_000_000),
               depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
@@ -1447,24 +1468,29 @@ describe("With Lnd", () => {
     })
 
     it("receives batch on-chain transaction", async () => {
-      const address0 = await Wallets.lndCreateOnChainAddress(walletIdA)
-      if (address0 instanceof Error) throw address0
+      const address1UserA = await Wallets.lndCreateOnChainAddress(newWalletIdA)
+      if (address1UserA instanceof Error) throw address1UserA
 
-      const walletId = await getFunderWalletId()
+      const address2UserA = await Wallets.lndCreateOnChainAddress(newWalletIdA)
+      if (address2UserA instanceof Error) throw address2UserA
 
-      const addressDealer = await Wallets.lndCreateOnChainAddress(walletId)
+      const funderWalletId = await getFunderWalletId()
+      const addressDealer = await Wallets.lndCreateOnChainAddress(funderWalletId)
       if (addressDealer instanceof Error) throw addressDealer
 
-      const initialBalanceUserA = await getBalanceHelper(walletIdA)
-      const initBalanceDealer = await getBalanceHelper(walletId)
+      const initialBalanceUserA = await getBalanceHelper(newWalletIdA)
+      const initBalanceDealer = await getBalanceHelper(funderWalletId)
 
       const output0 = {}
-      output0[address0] = 1
+      output0[address1UserA] = 1
 
       const output1 = {}
       output1[addressDealer] = 2
 
-      const outputs = [output0, output1]
+      const output2 = {}
+      output2[address2UserA] = 2
+
+      const outputs = [output0, output1, output2]
 
       const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({
         inputs: [],
@@ -1479,7 +1505,46 @@ describe("With Lnd", () => {
         psbt: walletProcessPsbt.psbt,
       })
 
-      await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
+      const sub = subscribeToTransactions({ lnd: lndonchain })
+      sub.on("chain_transaction", onchainTransactionEventHandler)
+
+      const [_, txHash] = await Promise.all([
+        once(sub, "chain_transaction"),
+        bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex }),
+      ])
+      _
+      await sleep(1000)
+
+      const defaultDepositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
+
+      // Test 'getPendingOnChainBalanceForWallets' use-case method
+      const newWalletA = await WalletsRepository().findById(newWalletIdA)
+      if (newWalletA instanceof Error) throw newWalletA
+      const pendingBalance = await Wallets.getPendingOnChainBalanceForWallets([
+        newWalletA,
+      ])
+      if (pendingBalance instanceof Error) throw pendingBalance
+      expect(Number(pendingBalance[newWalletIdA].amount)).toEqual(
+        amountAfterFeeDeduction({
+          amount: toSats(300_000_000),
+          depositFeeRatio: defaultDepositFeeRatio,
+        }),
+      )
+
+      const pendingTxnsResult = await Wallets.getTransactionsForWallets({
+        wallets: [newWalletA],
+      })
+      if (pendingTxnsResult instanceof Error) throw pendingTxnsResult
+      const pendingTxns = pendingTxnsResult.result?.slice.filter(
+        (tx) =>
+          "transactionHash" in tx.settlementVia &&
+          tx.settlementVia.transactionHash === txHash,
+      )
+      expect(pendingTxns?.length).toEqual(2)
+      expect(pendingTxns?.[0].walletId).toBe(pendingTxns?.[1].walletId)
+      expect(pendingTxns?.[0].id).not.toBe(pendingTxns?.[1].id)
+
+      // Mine transaction and run checks for confirmed status
       await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
       await waitUntilBlockHeight({ lnd: lndonchain })
 
@@ -1490,19 +1555,19 @@ describe("With Lnd", () => {
       }
 
       {
-        const balanceA = await getBalanceHelper(walletIdA)
-        const balance4 = await getBalanceHelper(walletId)
+        const balanceA = await getBalanceHelper(newWalletIdA)
+        const balanceFunder = await getBalanceHelper(funderWalletId)
 
         const depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
 
         expect(balanceA).toBe(
           initialBalanceUserA +
             amountAfterFeeDeduction({
-              amount: toSats(100_000_000),
+              amount: toSats(300_000_000),
               depositFeeRatio,
             }),
         )
-        expect(balance4).toBe(
+        expect(balanceFunder).toBe(
           initBalanceDealer +
             amountAfterFeeDeduction({
               amount: toSats(200_000_000),
@@ -1510,6 +1575,8 @@ describe("With Lnd", () => {
             }),
         )
       }
+
+      sub.removeAllListeners()
     })
 
     it("identifies unconfirmed incoming on-chain transactions", async () => {
