@@ -98,11 +98,17 @@ kratosRouter.post(
       }
 
       const body = req.body
-      const { identity_id: userId, phone: phoneRaw, deviceId, schema_id, email } = body
+      const {
+        identity_id: userId,
+        phone: phoneRaw,
+        schema_id,
+        email,
+        transient_payload,
+      } = body
 
       assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
-      if ((!phoneRaw && !email && !deviceId) || !userId) {
+      if ((!phoneRaw && !email) || !userId) {
         baseLogger.error({ phoneRaw, email }, "missing inputs")
         res.status(400).send("missing inputs")
         return
@@ -125,10 +131,10 @@ kratosRouter.post(
       let account: Account | RepositoryError
 
       // upgrade device to phone flow if both traits are present
-      if (deviceId && phoneRaw) {
+      if (transient_payload?.deviceId && phoneRaw) {
         account = await upgradeAccountFromDeviceToPhone({
           userId: userIdChecked,
-          deviceId,
+          deviceId: transient_payload.deviceId,
           phone: phoneRaw,
         })
       } else if (phoneRaw) {
