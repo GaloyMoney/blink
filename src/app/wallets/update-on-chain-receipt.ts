@@ -14,12 +14,13 @@ import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
 
-import { RedisCacheService } from "@services/cache"
-import { ColdStorageService } from "@services/cold-storage"
-import { LedgerService } from "@services/ledger"
-import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services/lock"
+import { LedgerService } from "@services/ledger"
+import { RedisCacheService } from "@services/cache"
 import { WalletsRepository } from "@services/mongoose"
+import { ColdStorageService } from "@services/cold-storage"
+import { OnChainService } from "@services/lnd/onchain-service"
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import { addSettledTransaction } from "./add-settled-on-chain-transaction"
 
@@ -48,16 +49,14 @@ export const updateOnChainReceipt = async ({
 
   const walletRepo = WalletsRepository()
   const logError = ({
-    walletId,
     txHash,
     error,
   }: {
-    walletId: WalletId | undefined
     txHash: OnChainTxHash
     error: RepositoryError
   }) => {
     logger.error(
-      { walletId, txHash, error },
+      { txHash, error },
       "Could not updateOnChainReceipt from updateOnChainReceiptForWallet",
     )
   }
@@ -81,18 +80,15 @@ export const updateOnChainReceipt = async ({
     }
 
     if (wallets instanceof Error) {
-      logError({ walletId: undefined, txHash, error: wallets })
+      logError({ txHash, error: wallets })
       continue
     }
 
-    for (const wallet of wallets) {
-      const walletId = wallet.id
-      logger.trace({ walletId, txHash }, "updating onchain receipt")
+    logger.trace({ txHash }, "updating onchain receipt")
 
-      const result = await processTxForWallet({ tx, logger })
-      if (result instanceof Error) {
-        logError({ walletId, txHash, error: result })
-      }
+    const result = await processTxForWallet({ tx, logger })
+    if (result instanceof Error) {
+      logError({ txHash, error: result })
     }
   }
 
@@ -114,18 +110,22 @@ const processTxForWallet = async ({
       currency: WalletCurrency.Btc,
     })
     if (satoshis instanceof Error) {
-      logger.error({ error: satoshis }, "")
+      logger.error({ error: satoshis }, "Invalid amount")
       continue
     }
 
-    if (address === null) continue
+    if (!address) continue
 
-    await addSettledTransaction({
+    const result = await addSettledTransaction({
       txId: tx.rawTx.txHash,
       vout,
       satoshis,
       address,
     })
+    if (result instanceof Error) {
+      logger.error({ error: result }, "Error adding settled transaction")
+      recordExceptionInCurrentSpan({ error: result })
+    }
   }
 }
 
