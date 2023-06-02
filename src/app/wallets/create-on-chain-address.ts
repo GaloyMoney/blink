@@ -1,9 +1,6 @@
 import { BTC_NETWORK } from "@config"
 
-import {
-  OnChainAddressAlreadyCreatedForRequestIdError,
-  TxDecoder,
-} from "@domain/bitcoin/onchain"
+import { OnChainAddressNotFoundError, TxDecoder } from "@domain/bitcoin/onchain"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletCurrency } from "@domain/shared"
@@ -47,33 +44,52 @@ const createOnChainAddress = async ({
   walletId: WalletId
   requestId?: OnChainAddressRequestId
 }) => {
+  const onChain = NewOnChainService()
+
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  const limitOk = await checkOnChainAddressAccountIdLimits(wallet.accountId)
-  if (limitOk instanceof Error) return limitOk
-
-  const onChain = NewOnChainService()
-  let onChainAddress = await onChain.createOnChainAddress({ walletId, requestId })
-  if (
-    onChainAddress instanceof OnChainAddressAlreadyCreatedForRequestIdError &&
-    requestId
-  ) {
+  let onChainAddress: OnChainAddressIdentifier | undefined = undefined
+  if (requestId) {
     const foundAddress = await onChain.findAddressByRequestId(requestId)
-    if (foundAddress instanceof Error) return foundAddress
-    onChainAddress = foundAddress
-  } else if (onChainAddress instanceof Error) {
-    return onChainAddress
+    if (
+      foundAddress instanceof Error &&
+      !(foundAddress instanceof OnChainAddressNotFoundError)
+    ) {
+      return foundAddress
+    }
+
+    if (!(foundAddress instanceof OnChainAddressNotFoundError)) {
+      onChainAddress = foundAddress
+    }
+  }
+
+  if (onChainAddress === undefined) {
+    const limitOk = await checkOnChainAddressAccountIdLimits(wallet.accountId)
+    if (limitOk instanceof Error) return limitOk
+
+    const newOnChainAddress = await onChain.createOnChainAddress({ walletId, requestId })
+    if (newOnChainAddress instanceof Error) return newOnChainAddress
+    onChainAddress = newOnChainAddress
   }
 
   const onChainAddressesRepo = WalletOnChainAddressesRepository()
-  const savedOnChainAddress = await onChainAddressesRepo.persistNew({
+
+  const addressRecorded = await onChainAddressesRepo.isRecorded({
     walletId,
     onChainAddress,
   })
-  if (savedOnChainAddress instanceof Error) return savedOnChainAddress
+  if (addressRecorded instanceof Error) return addressRecorded
 
-  return savedOnChainAddress.address
+  if (!addressRecorded) {
+    const savedOnChainAddress = await onChainAddressesRepo.persistNew({
+      walletId,
+      onChainAddress,
+    })
+    if (savedOnChainAddress instanceof Error) return savedOnChainAddress
+  }
+
+  return onChainAddress.address
 }
 
 export const createOnChainAddressByWallet = async ({
