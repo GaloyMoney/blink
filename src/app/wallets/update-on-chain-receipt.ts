@@ -89,7 +89,12 @@ export const updateOnChainReceipt = async ({
 
     logger.trace({ txHash }, "updating onchain receipt")
 
-    const result = await processTxForWallet({ tx, logger })
+    const briaAddresses = wallets
+      .flatMap((wallet) => wallet.onChainAddressIdentifiers)
+      .filter((identifier) => !identifier.pubkey)
+      .map((identifier) => identifier.address)
+
+    const result = await processTxForWallet({ tx, briaAddresses, logger })
     if (result instanceof Error) {
       logError({ txHash, error: result })
     }
@@ -102,12 +107,16 @@ export const updateOnChainReceipt = async ({
 
 const processTxForWallet = async ({
   tx,
+  briaAddresses,
   logger,
 }: {
   tx: IncomingOnChainTransaction
+  briaAddresses: OnChainAddress[]
   logger: Logger
 }): Promise<void | ApplicationError> => {
   for (const { sats, address, vout } of tx.rawTx.outs) {
+    if (!address || briaAddresses.includes(address)) continue
+
     const satoshis = paymentAmountFromNumber({
       amount: sats,
       currency: WalletCurrency.Btc,
@@ -116,8 +125,6 @@ const processTxForWallet = async ({
       logger.error({ error: satoshis }, "Invalid amount")
       continue
     }
-
-    if (!address) continue
 
     const result = await addSettledTransaction({
       txId: tx.rawTx.txHash,
