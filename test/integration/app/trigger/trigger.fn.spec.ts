@@ -30,6 +30,7 @@ import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/walle
 
 let walletIdA: WalletId
 let walletIdD: WalletId
+let walletIdF: WalletId
 
 let accountRecordA: AccountRecord
 let accountRecordD: AccountRecord
@@ -45,6 +46,7 @@ beforeAll(async () => {
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
+  walletIdF = await getDefaultWalletIdByTestUserRef("F")
 
   accountRecordA = await getAccountRecordByTestUserRef("A")
   accountRecordD = await getAccountRecordByTestUserRef("D")
@@ -86,6 +88,7 @@ describe("onchainBlockEventHandler", () => {
   it("should process block for incoming transactions from lnd", async () => {
     const amount = toSats(10_000)
     const amount2 = toSats(20_000)
+    const amountBria = toSats(21_000)
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
     const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
 
@@ -117,7 +120,14 @@ describe("onchainBlockEventHandler", () => {
     const output1 = {}
     output1[address2] = sat2btc(amount2)
 
-    const outputs = [output0, output1]
+    const addressBria = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdF,
+    })
+    if (addressBria instanceof Error) throw addressBria
+
+    const outputBria = { [addressBria]: sat2btc(amountBria) }
+
+    const outputs = [output0, output1, outputBria]
 
     const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({ inputs: [], outputs })
     const walletProcessPsbt = await bitcoindOutside.walletProcessPsbt({ psbt })
@@ -127,6 +137,7 @@ describe("onchainBlockEventHandler", () => {
 
     const initWalletAState = await getWalletState(walletIdA)
     const initWalletDState = await getWalletState(walletIdD)
+    const initWalletFState = await getWalletState(walletIdF)
     await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
     await bitcoindOutside.generateToAddress({
       nblocks: blocksToMine,
@@ -186,5 +197,11 @@ describe("onchainBlockEventHandler", () => {
       amount: amount2,
       address: address2,
     })
+
+    // Wallet with bria address should not be processed by onchainBlockEventHandler
+    const { balance, transactions, onchainAddress } = await getWalletState(walletIdF)
+    expect(balance).toBe(initWalletFState.balance)
+    expect(onchainAddress).toBe(initWalletFState.onchainAddress)
+    expect(transactions.length).toBe(initWalletFState.transactions.length)
   })
 })
