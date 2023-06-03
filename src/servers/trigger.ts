@@ -4,6 +4,7 @@ import {
   GetInvoiceResult,
   subscribeToBackups,
   subscribeToBlocks,
+  SubscribeToBlocksBlockEvent,
   subscribeToChannels,
   subscribeToInvoice,
   SubscribeToInvoiceInvoiceUpdatedEvent,
@@ -15,6 +16,7 @@ import {
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
 import express from "express"
+import debounce from "lodash.debounce"
 
 import { BTC_NETWORK, getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
@@ -225,24 +227,17 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
   }
 }
 
-const debounceTimeMs = 2000
-let debounceTimer: string | number | NodeJS.Timeout | undefined
-
 export const onchainBlockEventHandler = async (height: number) => {
-  clearTimeout(debounceTimer)
-
-  debounceTimer = setTimeout(async () => {
-    const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
-    const txNumber = await WalletWithSpans.updateOnChainReceipt({ scanDepth, logger })
-    if (txNumber instanceof Error) {
-      logger.error(
-        { error: txNumber },
-        `error updating onchain receipt for block ${height}`,
-      )
-      return
-    }
-    logger.info(`finish block ${height} handler with ${txNumber} transactions`)
-  }, debounceTimeMs)
+  const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
+  const txNumber = await WalletWithSpans.updateOnChainReceipt({ scanDepth, logger })
+  if (txNumber instanceof Error) {
+    logger.error(
+      { error: txNumber },
+      `error updating onchain receipt for block ${height}`,
+    )
+    return
+  }
+  logger.info(`finish block ${height} handler with ${txNumber} transactions`)
 }
 
 export const invoiceUpdateEventHandler = async (
@@ -318,9 +313,17 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
     root: true,
     namespace: "servers.trigger",
     fnName: "onchainBlockEventHandler",
-    fn: ({ height }: { height: number }) => onchainBlockEventHandler(height),
+    fn: ({ height }: SubscribeToBlocksBlockEvent) => onchainBlockEventHandler(height),
   })
-  subBlocks.on("block", onChainBlockHandler)
+  const debouncedOnChainBlockHandler = debounce(onChainBlockHandler, 1000, {
+    leading: true,
+    trailing: false,
+    isEqual: (
+      prevBlock: SubscribeToBlocksBlockEvent,
+      currBlock: SubscribeToBlocksBlockEvent,
+    ) => prevBlock.height === currBlock.height,
+  })
+  subBlocks.on("block", debouncedOnChainBlockHandler)
 
   subBlocks.on("error", (err) => {
     baseLogger.error({ err }, "error subBlocks")
