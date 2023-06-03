@@ -1509,6 +1509,9 @@ describe("With Lnd", () => {
         psbt: walletProcessPsbt.psbt,
       })
 
+      // mine and sync all before use tx subscription
+      await mineBlockAndSyncAll()
+
       const sub = subscribeToTransactions({ lnd: lndonchain })
       sub.on("chain_transaction", onchainTransactionEventHandler)
 
