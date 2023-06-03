@@ -68,7 +68,7 @@ type OnChainReceiveLedgerMetadata = LedgerMetadata &
     hash: OnChainTxHash
     vout: OnChainTxVout
     payee_addresses: OnChainAddress[]
-    new_address_request_id: OnChainAddressRequestId | undefined
+    request_id: OnChainAddressRequestId | undefined
   }
 
 type SendAmountsMetadata = {

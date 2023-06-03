@@ -319,7 +319,7 @@ export const LedgerService = (): ILedgerService => {
       }
 
       const tx = translateToLedgerTx(entry)
-      return { recorded: true, newAddressRequestId: tx.newAddressRequestId }
+      return { recorded: true, newAddressRequestId: tx.requestId }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -459,8 +459,9 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
       tx.payee_addresses && tx.payee_addresses.length > 0
         ? (tx.payee_addresses[0] as OnChainAddress)
         : undefined,
-    newAddressRequestId:
-      (tx.new_address_request_id as OnChainAddressRequestId) || undefined,
+    requestId:
+      ((tx.request_id || tx.new_address_request_id) as OnChainAddressRequestId) ||
+      undefined,
     txHash: (tx.hash as OnChainTxHash) || undefined,
     vout: (tx.vout as OnChainTxVout) || undefined,
     feeKnownInAdvance: tx.feeKnownInAdvance || false,

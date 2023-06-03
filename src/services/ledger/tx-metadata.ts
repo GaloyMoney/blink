@@ -273,7 +273,7 @@ export const OnChainReceiveLedgerMetadata = ({
     hash: onChainTxHash,
     vout: onChainTxVout,
     payee_addresses: payeeAddresses,
-    new_address_request_id: newAddressRequestId,
+    request_id: newAddressRequestId,
 
     // Amounts are after fee is deducted
     satsAmount: toSats(satsAmount),
