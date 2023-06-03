@@ -318,10 +318,6 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
   const debouncedOnChainBlockHandler = debounce(onChainBlockHandler, 1000, {
     leading: true,
     trailing: false,
-    isEqual: (
-      prevBlock: SubscribeToBlocksBlockEvent,
-      currBlock: SubscribeToBlocksBlockEvent,
-    ) => prevBlock.height === currBlock.height,
   })
   subBlocks.on("block", debouncedOnChainBlockHandler)
 
