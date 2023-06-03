@@ -37,10 +37,7 @@ import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
-import {
-  PhoneAccountAlreadyExistsError,
-  PhoneAccountAlreadyExistsNeedToSweepFundsError,
-} from "@services/kratos/errors"
+import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@services/kratos/errors"
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 import jwksRsa from "jwks-rsa"
 import jsonwebtoken from "jsonwebtoken"
@@ -216,7 +213,11 @@ export const loginUpgradeWithPhone = async ({
       return new PhoneAccountAlreadyExistsNeedToSweepFundsError()
     } else {
       // Scenario 1 - no txns on device account but phone account exists
-      return new PhoneAccountAlreadyExistsError()
+      // just log the user in with the phone account
+      const authService = AuthWithPhonePasswordlessService()
+      const kratosResult = await authService.loginToken({ phone })
+      if (kratosResult instanceof Error) return kratosResult
+      return kratosResult.sessionToken
     }
   }
 
