@@ -4,6 +4,7 @@ import {
   GetInvoiceResult,
   subscribeToBackups,
   subscribeToBlocks,
+  SubscribeToBlocksBlockEvent,
   subscribeToChannels,
   subscribeToInvoice,
   SubscribeToInvoiceInvoiceUpdatedEvent,
@@ -15,6 +16,7 @@ import {
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
 import express from "express"
+import debounce from "lodash.debounce"
 
 import { BTC_NETWORK, getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
@@ -311,9 +313,13 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
     root: true,
     namespace: "servers.trigger",
     fnName: "onchainBlockEventHandler",
-    fn: ({ height }: { height: number }) => onchainBlockEventHandler(height),
+    fn: ({ height }: SubscribeToBlocksBlockEvent) => onchainBlockEventHandler(height),
   })
-  subBlocks.on("block", onChainBlockHandler)
+  const debouncedOnChainBlockHandler = debounce(onChainBlockHandler, 1000, {
+    leading: true,
+    trailing: false,
+  })
+  subBlocks.on("block", debouncedOnChainBlockHandler)
 
   subBlocks.on("error", (err) => {
     baseLogger.error({ err }, "error subBlocks")
