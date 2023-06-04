@@ -85,7 +85,6 @@ type YamlSchema = {
   accounts: {
     initialStatus: string
     initialWallets: WalletCurrency[]
-    randomizeDefaultWallet: boolean
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig

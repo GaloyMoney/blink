@@ -90,48 +90,6 @@ describe("Users - wallets", () => {
       }
       expect(account.defaultWalletId).toEqual(usdWallet.id)
     })
-
-    it("sets default wallet to USD if randomizeDefaultWallet is true and userId is odd", async () => {
-      const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
-
-      const account: Account | RepositoryError = await createAccount({
-        initialWallets,
-        userId: "660be61b-1e34-4f33-ba9f-764c17949381" as UserId,
-        randomizeDefaultWallet: true,
-      })
-
-      const wallets = await WalletsRepository().listByAccountId(account.id)
-      if (wallets instanceof Error) throw wallets
-
-      const usdWallet = wallets.filter(
-        (wallet) => wallet.currency === WalletCurrency.Usd,
-      )[0]
-      if (usdWallet === undefined) {
-        throw new Error(`${WalletCurrency.Usd} wallet not found`)
-      }
-      expect(account.defaultWalletId).toEqual(usdWallet.id)
-    })
-
-    it("sets default wallet to BTC if randomizeDefaultWallet is true and userId is even", async () => {
-      const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
-
-      const account: Account | RepositoryError = await createAccount({
-        initialWallets,
-        userId: "660be61b-1e34-4f33-ba9f-764c17949380" as UserId,
-        randomizeDefaultWallet: true,
-      })
-
-      const wallets = await WalletsRepository().listByAccountId(account.id)
-      if (wallets instanceof Error) throw wallets
-
-      const btcWallet = wallets.filter(
-        (wallet) => wallet.currency === WalletCurrency.Btc,
-      )[0]
-      if (btcWallet === undefined) {
-        throw new Error(`${WalletCurrency.Btc} wallet not found`)
-      }
-      expect(account.defaultWalletId).toEqual(btcWallet.id)
-    })
   })
 
   describe("with 'createAccountForEmailIdentifier'", () => {
