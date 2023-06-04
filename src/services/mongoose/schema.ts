@@ -340,6 +340,9 @@ const UserSchema = new Schema(
       unique: true,
       sparse: true,
     },
+    deviceId: {
+      type: String,
+    },
   },
   { id: false },
 )
