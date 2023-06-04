@@ -522,6 +522,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LikelyUserAlreadyExistError":
     case "PhoneIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
+    case "JwtSubjectUndefinedError":
+    case "JwtVerifyTokenError":
     case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
     case "EventAugmentationMissingError":
