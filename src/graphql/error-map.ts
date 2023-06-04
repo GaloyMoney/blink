@@ -83,7 +83,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for phone ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
-    case "CouldNotFindUserFromDeviceError":
+    case "CouldNotFindUserFromDeviceIdError":
       message = `User does not exist for device ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 

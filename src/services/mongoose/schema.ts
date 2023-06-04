@@ -304,7 +304,6 @@ const UserSchema = new Schema(
       default: Date.now,
     },
     userId: {
-      // this would need to be migrated
       type: String,
       required: true,
       index: true,
