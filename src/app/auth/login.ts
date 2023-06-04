@@ -14,7 +14,11 @@ import { TwilioClient } from "@services/twilio"
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
+import {
+  JwtSubjectUndefinedError,
+  JwtVerifyTokenError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@domain/authentication/errors"
 
 import {
   CouldNotFindAccountFromKratosIdError,
@@ -250,6 +254,7 @@ export const loginWithDevice = async ({
     return verifiedJwt
   }
   const deviceId = verifiedJwt.sub as UserId
+  if (!deviceId) return new JwtSubjectUndefinedError("deviceId sub is undefined")
 
   // 1. Does account exist in mongo?
   const accountExist = await AccountsRepository().findByUserId(deviceId)
@@ -387,7 +392,7 @@ export const verifyJwt = async (token: string) => {
     algorithms: ["RS256"],
   })
   if (typeof verifiedToken === "string") {
-    throw new Error("tokenPayload should be an object")
+    throw new JwtVerifyTokenError("tokenPayload should be an object")
   }
   return verifiedToken
 }
