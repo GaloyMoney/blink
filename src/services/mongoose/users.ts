@@ -100,6 +100,7 @@ export const UsersRepository = (): IUsersRepository => {
       $set: {
         userId: newUserIdSubject,
         phone,
+        deviceId: currentUserIdSubject,
       },
     }
     const options = { upsert: true, returnOriginal: false }

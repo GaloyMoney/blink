@@ -342,11 +342,7 @@ const UserSchema = new Schema(
     },
     deletedPhone: { type: String },
     deviceId: {
-      // TODO do we still need this after hydrator code
       type: String,
-      index: true,
-      unique: true,
-      sparse: true,
     },
   },
   { id: false },
