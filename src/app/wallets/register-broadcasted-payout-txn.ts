@@ -16,5 +16,5 @@ export const registerBroadcastedPayout = async ({
   // - ignore?
   proportionalFee
 
-  return LedgerService().setOnChainTxIdBySendHash({ payoutId, txId, vout })
+  return LedgerService().setOnChainTxIdByPayoutId({ payoutId, txId, vout })
 }

@@ -65,6 +65,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly txHash?: OnChainTxHash
   readonly vout?: OnChainTxVout
   readonly requestId?: OnChainAddressRequestId
+  readonly payoutId?: PayoutId
 
   // for admin, to be removed when we switch those to satsAmount props
   readonly fee: number | undefined // Satoshis
@@ -104,12 +105,12 @@ type AddOnChainTxSendArgs = OnChainTxArgs & {
   totalFeeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
-type SetOnChainTxSendHashArgs = {
+type SetOnChainTxPayoutIdArgs = {
   journalId: LedgerJournalId
   payoutId: PayoutId
 }
 
-type SetOnChainTxIdBySendHashArgs = {
+type SetOnChainTxIdByPayoutIdArgs = {
   payoutId: PayoutId
   txId: OnChainTxHash
   vout?: OnChainTxVout
@@ -260,6 +261,10 @@ interface ILedgerService {
     paginationArgs?: PaginationArgs
   }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerServiceError>
 
+  getTransactionsByPayoutId(
+    payoutId: PayoutId,
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+
   listPendingPayments(
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
@@ -318,15 +323,17 @@ interface ILedgerService {
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
-  setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
+  setOnChainTxPayoutId(args: SetOnChainTxPayoutIdArgs): Promise<true | LedgerServiceError>
 
-  setOnChainTxIdBySendHash(
-    args: SetOnChainTxIdBySendHashArgs,
+  setOnChainTxIdByPayoutId(
+    args: SetOnChainTxIdByPayoutIdArgs,
   ): Promise<true | LedgerServiceError>
 
   settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
-  settlePendingOnChainPayment(hash: PayoutId): Promise<true | LedgerServiceError>
+  settlePendingOnChainPayment(payoutId: PayoutId): Promise<true | LedgerServiceError>
+
+  oldSettlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
 
   revertLightningPayment(
     args: RevertLightningPaymentArgs,

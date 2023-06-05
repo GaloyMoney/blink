@@ -600,7 +600,7 @@ const executePaymentViaOnChain = async <
       return payoutId
     }
 
-    const updated = await LedgerService().setOnChainTxSendHash({
+    const updated = await LedgerService().setOnChainTxPayoutId({
       journalId: journal.journalId,
       payoutId,
     })

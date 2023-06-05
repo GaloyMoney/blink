@@ -16,14 +16,14 @@ import { translateToLedgerJournal } from "."
 const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
-  setOnChainTxSendHash: async ({
+  setOnChainTxPayoutId: async ({
     journalId,
     payoutId,
-  }: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError> => {
+  }: SetOnChainTxPayoutIdArgs): Promise<true | LedgerServiceError> => {
     try {
       const result = await Transaction.updateMany(
         { _journal: toObjectId(journalId) },
-        { hash: payoutId },
+        { payout_id: payoutId },
       )
       const success = result.modifiedCount > 0
       if (!success) {
@@ -35,15 +35,15 @@ export const send = {
     }
   },
 
-  setOnChainTxIdBySendHash: async ({
+  setOnChainTxIdByPayoutId: async ({
     payoutId,
     txId,
     vout,
-  }: SetOnChainTxIdBySendHashArgs): Promise<true | LedgerServiceError> => {
+  }: SetOnChainTxIdByPayoutIdArgs): Promise<true | LedgerServiceError> => {
     try {
       const result = await Transaction.updateMany(
-        { hash: payoutId },
-        { txid: txId, vout },
+        { payout_id: payoutId },
+        { hash: txId, vout },
       )
       const success = result.modifiedCount > 0
       if (!success) {
@@ -74,7 +74,24 @@ export const send = {
   },
 
   settlePendingOnChainPayment: async (
-    hash: PayoutId,
+    payoutId: PayoutId,
+  ): Promise<true | LedgerServiceError> => {
+    if (!payoutId) return new NoTransactionToSettleError(`payoutId: ${payoutId}`)
+
+    try {
+      const result = await Transaction.updateMany({ payoutId }, { pending: false })
+      const success = result.modifiedCount > 0
+      if (!success) {
+        return new NoTransactionToSettleError()
+      }
+      return true
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  },
+
+  oldSettlePendingOnChainPayment: async (
+    hash: OnChainTxHash,
   ): Promise<true | LedgerServiceError> => {
     try {
       const result = await Transaction.updateMany({ hash }, { pending: false })

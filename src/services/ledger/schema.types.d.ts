@@ -25,6 +25,7 @@ interface ILedgerTransaction {
   related_journal?: ObjectId
   payee_addresses?: string[]
   request_id?: string
+  payout_id?: string
   memoPayer?: string
   sats?: number
   username?: string

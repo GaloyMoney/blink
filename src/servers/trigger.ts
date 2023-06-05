@@ -136,9 +136,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
       // transaction has been sent. and this events is trigger before
     }
 
-    const settled = await LedgerService().settlePendingOnChainPayment(
-      txHash as unknown as PayoutId,
-    )
+    const settled = await LedgerService().oldSettlePendingOnChainPayment(txHash)
 
     if (settled instanceof Error) {
       onchainLogger.error(

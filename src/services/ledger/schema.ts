@@ -53,6 +53,7 @@ const transactionSchema = new Schema<ILedgerTransaction>(
     // for onchain transactions.
     payee_addresses: [String],
     request_id: String,
+    payout_id: String,
 
     memoPayer: String,
 

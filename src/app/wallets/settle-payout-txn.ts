@@ -20,9 +20,7 @@ export const settlePayout = async (
   if (settled instanceof Error) return settled
 
   // Get transaction info for notification
-  const ledgerTxns = await ledger.getTransactionsByHash(
-    payoutId as unknown as OnChainTxHash,
-  )
+  const ledgerTxns = await ledger.getTransactionsByPayoutId(payoutId)
   if (ledgerTxns instanceof Error) return ledgerTxns
   const nonUserWalletIds = Object.values(await getNonEndUserWalletIds())
   const userLedgerTxns = ledgerTxns.filter(

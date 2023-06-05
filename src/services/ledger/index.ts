@@ -173,6 +173,22 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const getTransactionsByPayoutId = async (
+    payoutId: PayoutId,
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
+    try {
+      const { results } = await MainBook.ledger({
+        payout_id: payoutId,
+        account: liabilitiesMainAccount,
+      })
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
+      return results.map((tx) => translateToLedgerTx(tx))
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const listPendingPayments = async (
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
@@ -412,6 +428,7 @@ export const LedgerService = (): ILedgerService => {
       getTransactionsByWalletId,
       getTransactionsByWalletIds,
       getTransactionsByWalletIdAndContactUsername,
+      getTransactionsByPayoutId,
       listPendingPayments,
       listAllPaymentHashes,
       getPendingPaymentsCount,
@@ -460,6 +477,7 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
         ? (tx.payee_addresses[0] as OnChainAddress)
         : undefined,
     requestId: (tx.request_id as OnChainAddressRequestId) || undefined,
+    payoutId: (tx.payout_id as PayoutId) || undefined,
     txHash: (tx.hash as OnChainTxHash) || undefined,
     vout: (tx.vout as OnChainTxVout) || undefined,
     feeKnownInAdvance: tx.feeKnownInAdvance || false,
