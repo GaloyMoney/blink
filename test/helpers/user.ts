@@ -116,11 +116,9 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
 export const createAccount = async ({
   initialWallets,
   userId,
-  randomizeDefaultWallet,
 }: {
   initialWallets: WalletCurrency[]
   userId?: UserId
-  randomizeDefaultWallet?: boolean
 }) => {
   const phone = randomPhone()
 
@@ -131,7 +129,6 @@ export const createAccount = async ({
     config: {
       initialStatus: AccountStatus.Active,
       initialWallets,
-      randomizeDefaultWallet,
     },
   })
   if (account instanceof Error) throw account

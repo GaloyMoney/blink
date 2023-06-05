@@ -28,5 +28,4 @@ type ApolloConfig = {
 type AccountsConfig = {
   initialStatus: AccountStatus
   initialWallets: WalletCurrency[]
-  randomizeDefaultWallet?: boolean
 }
