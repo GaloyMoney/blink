@@ -61,6 +61,7 @@ export const UsersRepository = (): IUsersRepository => {
     phoneMetadata,
     phone,
     createdAt,
+    deviceId,
   }: UserUpdateInput): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -70,6 +71,7 @@ export const UsersRepository = (): IUsersRepository => {
           phoneMetadata,
           language,
           phone,
+          deviceId,
           createdAt, // TODO: remove post migration
         },
         {
@@ -100,7 +102,6 @@ export const UsersRepository = (): IUsersRepository => {
       $set: {
         userId: newUserIdSubject,
         phone,
-        deviceId: currentUserIdSubject,
       },
     }
     const options = { upsert: true, returnOriginal: false }

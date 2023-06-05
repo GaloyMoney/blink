@@ -69,7 +69,7 @@ export const createAccountForDeviceAccount = async ({
 }: {
   userId: UserId
 }): Promise<Account | RepositoryError> => {
-  const user = await UsersRepository().update({ id: userId })
+  const user = await UsersRepository().update({ id: userId, deviceId: userId })
   if (user instanceof Error) return user
 
   const accountNew = await AccountsRepository().persistNew(userId)

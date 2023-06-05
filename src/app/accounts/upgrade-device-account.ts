@@ -25,7 +25,7 @@ export const upgradeAccountFromDeviceToPhone = async ({
   const userUpdated = await UsersRepository().migrateUserIdSubject({
     currentUserIdSubject: deviceId,
     newUserIdSubject: userId,
-    phone,
+    phone, // TODO: we are fetching phone metadata in the "normal" flow. Not sure we're doing it in this upgrade path
   })
   if (userUpdated instanceof Error) return userUpdated
 

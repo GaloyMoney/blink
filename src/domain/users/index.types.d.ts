@@ -52,6 +52,7 @@ type User = {
   phoneMetadata: PhoneMetadata | undefined
   phone?: PhoneNumber | undefined
   createdAt: Date
+  deviceId?: UserId | undefined
 }
 
 type UserUpdateInput = Omit<Partial<User>, "language"> & {
