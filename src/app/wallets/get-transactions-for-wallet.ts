@@ -48,6 +48,6 @@ export const getTransactionsForWallets = async ({
 
   return PartialResult.ok({
     slice: transactions,
-    total: transactions.length,
+    total: confirmedLedgerTxns.total + pendingHistory.length,
   })
 }
