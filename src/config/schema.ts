@@ -438,21 +438,21 @@ export const configSchema = {
       default: {
         withdrawal: {
           level: {
-            "0": 5000,
+            "0": 12500,
             "1": 100000,
             "2": 5000000,
           },
         },
         intraLedger: {
           level: {
-            "0": 5000,
+            "0": 12500,
             "1": 200000,
             "2": 5000000,
           },
         },
         tradeIntraAccount: {
           level: {
-            "0": 100000,
+            "0": 200000,
             "1": 5000000,
             "2": 20000000,
           },
