@@ -1,6 +1,5 @@
 import {
   AuthenticationKratosError,
-  RevokeKratosTokenError,
   UnknownKratosError,
 } from "./errors"
 import { kratosPublic, listSessionsInternal, toDomainSession } from "./private"
@@ -56,22 +55,5 @@ export const validateKratosCookie = async (
   return {
     kratosUserId: session.identity.id,
     session,
-  }
-}
-
-export const revokeKratosToken = async (token: string): Promise<void | KratosError> => {
-  try {
-    const res = await kratosPublic.performNativeLogout({
-      performNativeLogoutBody: {
-        session_token: token,
-      },
-    })
-    if (res.status !== 204) {
-      return new RevokeKratosTokenError(
-        `unsuccessful token revocation. ${res.statusText}`,
-      )
-    }
-  } catch (err) {
-    return new UnknownKratosError(err)
   }
 }
