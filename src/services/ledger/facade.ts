@@ -8,6 +8,7 @@ import {
 
 import { MainBook, Transaction } from "./books"
 import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./domain"
+import { FeeOnlyEntryBuilder } from "./domain/fee-only-entry-builder"
 import { persistAndReturnEntry } from "./helpers"
 import * as caching from "./caching"
 import { TransactionsMetadataRepository } from "./services"
@@ -170,6 +171,44 @@ export const recordReceiveOnChain = async ({
     })
 
   return persistAndReturnEntry({ entry, ...txMetadata })
+}
+
+export const recordReceiveOnChainFeeReconciliation = async ({
+  estimatedFee,
+  actualFee,
+  hash,
+  metadata,
+}: {
+  estimatedFee: BtcPaymentAmount
+  actualFee: BtcPaymentAmount
+  hash: OnChainTxHash
+  metadata: TxMetadata
+}) => {
+  let entry = MainBook.entry("")
+  if (actualFee.amount > estimatedFee.amount) {
+    const btcFeeDifference = calc.sub(actualFee, estimatedFee)
+    const builder = FeeOnlyEntryBuilder({
+      staticAccountIds: await staticAccountIds(),
+      entry,
+      metadata,
+      btcFee: btcFeeDifference,
+    })
+    entry = builder.debitBankOwner().creditOnChain()
+  } else {
+    const btcFeeDifference = calc.sub(estimatedFee, actualFee)
+    const builder = FeeOnlyEntryBuilder({
+      staticAccountIds: await staticAccountIds(),
+      entry,
+      metadata,
+      btcFee: btcFeeDifference,
+    })
+    entry = builder.debitOnChain().creditBankOwner()
+  }
+
+  return persistAndReturnEntry({
+    entry,
+    hash,
+  })
 }
 
 export const getLedgerAccountBalanceForWalletId = async <T extends WalletCurrency>({

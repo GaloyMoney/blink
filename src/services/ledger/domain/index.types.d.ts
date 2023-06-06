@@ -116,6 +116,25 @@ type EntryBuilderCredit<M extends MediciEntry> = {
   }) => M
 }
 
+type FeeOnlyEntryBuilderConfig<M extends MediciEntry> = {
+  entry: M
+  metadata: TxMetadata
+  staticAccountIds: {
+    bankOwnerAccountId: LedgerAccountId
+  }
+  btcFee: BtcPaymentAmount
+}
+
+type FeeOnlyEntryBuilderDebit<M extends MediciEntry> = {
+  debitBankOwner: () => FeeOnlyEntryBuilderCredit<M>
+  debitOnChain: () => FeeOnlyEntryBuilderCredit<M>
+}
+
+type FeeOnlyEntryBuilderCredit<M extends MediciEntry> = {
+  creditBankOwner: () => M
+  creditOnChain: () => M
+}
+
 type BaseLedgerTransactionMetadata = {
   id: LedgerTransactionId
 }
