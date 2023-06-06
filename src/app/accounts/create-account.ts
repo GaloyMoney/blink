@@ -78,13 +78,10 @@ export const createAccountForDeviceAccount = async ({
   const levelZeroAccountsConfig = getDefaultAccountsConfig()
   levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
 
-  const account = await initializeCreatedAccount({
+  return initializeCreatedAccount({
     account: accountNew,
     config: levelZeroAccountsConfig,
   })
-  if (account instanceof Error) return account
-
-  return account
 }
 
 export const createAccountWithPhoneIdentifier = async ({

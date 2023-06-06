@@ -6,9 +6,8 @@ import fs from "fs"
 import * as jose from "node-jose"
 import jsonwebtoken from "jsonwebtoken"
 import jwksRsa from "jwks-rsa"
-import path from "path"
 
-const jwksFilePath = "./jwks.json"
+const jwksFilePath = "./dev/ory/jwks.json"
 const jwksUri = "https://firebaseappcheck.googleapis.com/v1beta/jwks"
 const sub = "1:72279297366:android:TESTE2EACCOUNT5aa75af7"
 const aud = ["projects/72279297366", "projects/galoyapp"]
@@ -33,8 +32,8 @@ async function main() {
   // const token =
   //   "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWIzNyJ9.eyJzdWIiOiIxOjcyMjc5Mjk3MzY2OmFuZHJvaWQ6VEVTVEUyRUFDQ09VTlQ1YWE3NWFmNyIsImF1ZCI6WyJwcm9qZWN0cy83MjI3OTI5NzM2NiIsInByb2plY3RzL2dhbG95YXBwIl0sInByb3ZpZGVyIjoiZGVidWciLCJpc3MiOiJodHRwczovL2ZpcmViYXNlYXBwY2hlY2suZ29vZ2xlYXBpcy5jb20vNzIyNzkyOTczNjYiLCJleHAiOjI2MzkwMDAwNjl9.Fh11HcuTal_S_26xFwIUWYivY0NzKGYrpBwNgQ-1QnfLZwUaHlMCX4hj4tcRJiKMX2UU_pnZCWgVnBqM9rbeSLFj35OvyP0z4rnflLOOl-UBrQQs4pVSUCpmh8eLX5lkh27KhdGOifND3jJPkKhPeVI9-hpZKNTYdU9y3M1yFF4BjvHs05nf8Zu3tWfpj0_LNPE-H0eXiiHaEUDv_GPA4HgLSAyxdh8bFoVC36UjpG-vm8Tt7jOUDnGc3s7jQk_lIJ3uCs8JXU4LfhSAQS6Q9UYmpFFUgsrUaZ6T_o2XTZtHgd_9qOUVvTChL-0dDGyDvB1tzofwIzLwxj7TGoEDGQ"
 
-  const verifiedToken = await verifyToken(token)
-  console.log("verifiedToken:", verifiedToken)
+  // const verifiedToken = await verifyToken(token)
+  // console.log("verifiedToken:", verifiedToken)
 }
 
 async function genToken(payload) {

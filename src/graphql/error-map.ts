@@ -24,6 +24,7 @@ import {
   DealerError,
   PhoneAccountAlreadyExistsError,
   PhoneAccountAlreadyExistsNeedToSweepFundsError,
+  JwtVerifyTokenError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -363,6 +364,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message =
         "The phone is associated with an existing wallet that has a non zero balance. Sweep the funds and try again."
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "JwtVerifyTokenError":
+      message = "JWT Token Validation failed"
+      return new JwtVerifyTokenError({ message, logger: baseLogger })
     // ----------
     // Unhandled below here
     // ----------
@@ -523,7 +528,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "PhoneIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
     case "JwtSubjectUndefinedError":
-    case "JwtVerifyTokenError":
     case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
     case "EventAugmentationMissingError":

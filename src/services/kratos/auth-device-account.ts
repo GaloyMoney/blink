@@ -2,7 +2,7 @@ import { KratosError } from "./errors"
 
 import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
 
-export const AuthWithDeviceAccountService = () => {
+export const AuthWithDeviceAccountService = (): IAuthWithDeviceAccountService => {
   const upgradeToPhoneSchema = async ({
     phone,
     deviceId,

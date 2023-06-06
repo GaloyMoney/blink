@@ -41,15 +41,6 @@ gql`
       authToken
     }
   }
-
-  mutation UserLoginUpgrade($input: UserLoginUpgradeInput!) {
-    userLoginUpgrade(input: $input) {
-      errors {
-        message
-      }
-      authToken
-    }
-  }
 `
 
 // dev/ory/gen-test-jwt.ts

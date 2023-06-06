@@ -80,6 +80,13 @@ interface IAuthWithEmailPasswordlessService {
   }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError>
 }
 
+interface IAuthWithDeviceAccountService {
+  upgradeToPhoneSchema(args: {
+    phone: PhoneNumber
+    deviceId: UserId
+  }): Promise<SessionToken | KratosError>
+}
+
 interface IIdentityRepository {
   getIdentity(id: UserId): Promise<IdentityPhone | KratosError>
   listIdentities(): Promise<IdentityPhone[] | KratosError>
