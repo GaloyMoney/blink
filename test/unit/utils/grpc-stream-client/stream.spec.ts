@@ -7,6 +7,10 @@ const { Stream, StreamEvents } = GrpcStreamClient
 
 jest.useFakeTimers()
 
+afterAll(() => {
+  jest.useRealTimers()
+})
+
 describe("Stream", () => {
   let mockStreamMethod
   let mockGrpcData
