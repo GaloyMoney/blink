@@ -118,6 +118,44 @@ plan:
 on_failure: #@ slack_failure_notification()
 #@ end
 
+#@ def test_on_docker_host(container):
+name: #@ container
+serial: true
+plan:
+- { put: docker-host, params: { acquire: true } }
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+- task: #@ container
+  timeout: 12m
+  tags: ["galoy-staging"]
+  config:
+    platform: linux
+    image_resource: #@ rust_task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: docker-host
+    - name: repo
+      path: #@ data.values.gh_repository + "-" + container
+    caches:
+    - path: cargo-home
+    - path: cargo-target-dir
+    params:
+      REPO_PATH: #@ data.values.gh_repository + "-" + container
+      GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
+      SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
+      SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
+      TEST_CONTAINER: #@ container
+      JEST_TIMEOUT: 90000
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+  ensure:
+    put: docker-host
+    params:
+      release: docker-host
+on_failure: #@ slack_failure_notification()
+#@ end
+
 #@ def nodejs_integration_test():
 name: test-integration
 serial: true
@@ -451,6 +489,16 @@ type: git
 source:
   uri: #@ data.values.git_charts_uri
   branch: #@ "bot-bump-" + data.values.gh_repository + "-image"
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def docker_host_pool():
+name: docker-host
+type: pool
+source:
+  uri: git@github.com:GaloyMoney/concourse-locks.git
+  branch: main
+  pool: docker-hosts
   private_key: #@ data.values.github_private_key
 #@ end
 
