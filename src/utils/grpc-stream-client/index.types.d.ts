@@ -18,22 +18,26 @@ type GrpcStreamRetryEventDetails = {
   readonly backoff: number
 }
 
-type Listener<T extends GrpcData, K extends keyof StreamEventMap> = (
-  instance: Stream<T>,
+type Listener<T extends GrpcData, R extends GrpcData, K extends keyof StreamEventMap> = (
+  instance: Stream<T, R>,
   ev: StreamEventMap[K],
 ) => unknown
 
-type GrpcStreamEventsListener<T extends GrpcData, K extends keyof StreamEventMap> = {
-  readonly listener: Listener<T, K>
+type GrpcStreamEventsListener<
+  T extends GrpcData,
+  R extends GrpcData,
+  K extends keyof StreamEventMap,
+> = {
+  readonly listener: Listener<T, R, K>
   readonly options?: boolean | EventListenerOptions
 }
 
-type StreamEventMapA<T extends GrpcData> = {
-  metadata: GrpcStreamEventsListener<T, "metadata">[]
-  data: GrpcStreamEventsListener<T, "data">[]
-  end: GrpcStreamEventsListener<T, "end">[]
-  error: GrpcStreamEventsListener<T, "error">[]
-  retry: GrpcStreamEventsListener<T, "retry">[]
+type StreamEventMapA<T extends GrpcData, R extends GrpcData = GrpcData> = {
+  metadata: GrpcStreamEventsListener<T, R, "metadata">[]
+  data: GrpcStreamEventsListener<T, R, "data">[]
+  end: GrpcStreamEventsListener<T, R, "end">[]
+  error: GrpcStreamEventsListener<T, R, "error">[]
+  retry: GrpcStreamEventsListener<T, R, "retry">[]
 }
 
 type StreamEventMap = {

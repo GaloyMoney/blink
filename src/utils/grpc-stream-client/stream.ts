@@ -58,29 +58,33 @@ export class Stream<T extends GrpcData, R extends GrpcData> {
 
   public addEventListener<K extends StreamEvents>(
     type: K,
-    listener: Listener<T, K>,
+    listener: Listener<T, R, K>,
     options?: boolean | EventListenerOptions,
   ): void {
-    const _eventListener = { listener, options } as GrpcStreamEventsListener<T, K>
-    const eventListeners = this.eventListeners[type] as GrpcStreamEventsListener<T, K>[]
+    const _eventListener = { listener, options } as GrpcStreamEventsListener<T, R, K>
+    const eventListeners = this.eventListeners[type] as GrpcStreamEventsListener<
+      T,
+      R,
+      K
+    >[]
     eventListeners.push(_eventListener)
   }
 
   public removeEventListener<K extends StreamEvents>(
     type: K,
-    listener: Listener<T, K>,
+    listener: Listener<T, R, K>,
     options?: boolean | EventListenerOptions,
   ): void {
-    ;(this.eventListeners[type] as GrpcStreamEventsListener<T, K>[]) = (
-      this.eventListeners[type] as GrpcStreamEventsListener<T, K>[]
+    ;(this.eventListeners[type] as GrpcStreamEventsListener<T, R, K>[]) = (
+      this.eventListeners[type] as GrpcStreamEventsListener<T, R, K>[]
     ).filter((l) => {
       return l.listener !== listener && (l.options === undefined || l.options !== options)
     })
   }
 
   private dispatchEvent<K extends StreamEvents>(type: K, ev: StreamEventMap[K]) {
-    const listeners = this.eventListeners[type] as GrpcStreamEventsListener<T, K>[]
-    const onceListeners = [] as GrpcStreamEventsListener<T, K>[]
+    const listeners = this.eventListeners[type] as GrpcStreamEventsListener<T, R, K>[]
+    const onceListeners = [] as GrpcStreamEventsListener<T, R, K>[]
     listeners.forEach((l) => {
       l.listener(this, ev)
       if (l.options !== undefined && (l.options as AddEventListenerOptions).once)

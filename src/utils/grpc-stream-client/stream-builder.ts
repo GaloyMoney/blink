@@ -8,20 +8,20 @@ export const streamBuilder = <T extends GrpcData, R extends GrpcData>(
   options?: StreamOptions,
   listeners: Array<{
     type: keyof typeof StreamEvents
-    listener: Listener<T, keyof StreamEventMap>
+    listener: Listener<T, R, keyof StreamEventMap>
     listenerOptions?: boolean | EventListenerOptions
   }> = [],
 ) => {
   const addEventListener = <K extends keyof StreamEventMap>(
     type: K,
-    listener: Listener<T, K>,
+    listener: Listener<T, R, K>,
     listenerOptions?: boolean | EventListenerOptions,
   ) =>
     streamBuilder<T, R>(method, request, metadata, backoff, options, [
       ...listeners,
       {
         type,
-        listener: listener as Listener<T, keyof StreamEventMap>,
+        listener: listener as Listener<T, R, keyof StreamEventMap>,
         listenerOptions,
       },
     ])
@@ -51,7 +51,7 @@ export const streamBuilder = <T extends GrpcData, R extends GrpcData>(
 
     addEventListener: <K extends keyof StreamEventMap>(
       type: K,
-      listener: Listener<T, K>,
+      listener: Listener<T, R, K>,
       listenerOptions?: boolean | EventListenerOptions,
     ) => addEventListener(type, listener, listenerOptions),
 
@@ -61,27 +61,27 @@ export const streamBuilder = <T extends GrpcData, R extends GrpcData>(
     ) =>
       addEventListener(
         StreamEvents.data,
-        listener as Listener<T, "data">,
+        listener as Listener<T, R, "data">,
         listenerOptions,
       ),
 
     onEnd: (
-      listener: Listener<T, "end">,
+      listener: Listener<T, R, "end">,
       listenerOptions?: boolean | EventListenerOptions,
     ) => addEventListener(StreamEvents.end, listener, listenerOptions),
 
     onError: (
-      listener: Listener<T, "error">,
+      listener: Listener<T, R, "error">,
       listenerOptions?: boolean | EventListenerOptions,
     ) => addEventListener(StreamEvents.error, listener, listenerOptions),
 
     onRetry: (
-      listener: Listener<T, "retry">,
+      listener: Listener<T, R, "retry">,
       listenerOptions?: boolean | EventListenerOptions,
     ) => addEventListener(StreamEvents.retry, listener, listenerOptions),
 
     onMetadata: (
-      listener: Listener<T, "metadata">,
+      listener: Listener<T, R, "metadata">,
       listenerOptions?: boolean | EventListenerOptions,
     ) => addEventListener(StreamEvents.metadata, listener, listenerOptions),
 
