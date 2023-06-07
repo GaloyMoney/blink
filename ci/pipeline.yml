@@ -7,7 +7,8 @@
 #@   "install_yarn_deps",
 #@   "nodejs_check_code",
 #@   "nodejs_audit",
-#@   "nodejs_integration_test",
+#@   "test_on_docker_host",
+#@   "docker_host_pool",
 #@   "nodejs_deps_resource",
 #@   "deps_version_resource",
 #@   "bundled_deps_resource",
@@ -48,8 +49,8 @@ source:
 groups:
   - name: galoy
     jobs:
-      - test-integration
-      - test-e2e
+      - integration-tests
+      - e2e-tests
       - test-unit
       - check-code
       - audit
@@ -68,67 +69,12 @@ groups:
       - sync-bria-api-proto
 
 jobs:
-  -  #@ install_yarn_deps()
-  -  #@ nodejs_check_code()
-  -  #@ nodejs_audit()
+  - #@ install_yarn_deps()
+  - #@ nodejs_check_code()
+  - #@ nodejs_audit()
 
-  - name: test-e2e
-    serial: true
-    plan:
-      - in_parallel:
-          - { get: repo, trigger: true }
-          - { get: pipeline-tasks }
-          - { get: bundled-deps, tags: ["galoy-staging"], trigger: true }
-      - task: test-e2e
-        timeout: 12m
-        tags: ["galoy-staging"]
-        config:
-          platform: linux
-          image_resource: #@ nodejs_task_image_config()
-          inputs:
-            - name: bundled-deps
-            - name: pipeline-tasks
-            - name: repo
-              path: galoy-e2e
-          params:
-            REPO_PATH: galoy-e2e
-            DOCKER_HOST_IP: #@ data.values.docker_host_ip
-            GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
-            SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
-            SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
-            JEST_TIMEOUT: 90000
-          run:
-            path: pipeline-tasks/ci/tasks/test-e2e.sh
-    on_failure: #@ slack_failure_notification()
-
-  - name: test-integration
-    serial: true
-    plan:
-      - in_parallel:
-          - { get: repo, trigger: true }
-          - { get: pipeline-tasks }
-          - { get: bundled-deps, tags: ["galoy-staging"], trigger: true }
-      - task: test-integration
-        timeout: 12m
-        tags: ["galoy-staging"]
-        config:
-          platform: linux
-          image_resource: #@ nodejs_task_image_config()
-          inputs:
-            - name: bundled-deps
-            - name: pipeline-tasks
-            - name: repo
-              path: galoy-integration
-          params:
-            REPO_PATH: galoy-integration
-            DOCKER_HOST_IP: #@ data.values.docker_host_ip
-            GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
-            SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
-            SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
-            JEST_TIMEOUT: 90000
-          run:
-            path: pipeline-tasks/ci/tasks/test-integration.sh
-    on_failure: #@ slack_failure_notification()
+  - #@ test_on_docker_host("integration-tests")
+  - #@ test_on_docker_host("e2e-tests")
 
   - name: test-unit
     serial: true
@@ -274,8 +220,8 @@ jobs:
               - check-code
               - audit
               - test-unit
-              - test-integration
-              - test-e2e
+              - integration-tests
+              - e2e-tests
               - build-debug-edge-image
               - build-migrate-edge-image
               - build-edge-image
@@ -705,6 +651,7 @@ resources:
       branch: #@ data.values.git_branch
       private_key: #@ data.values.github_private_key
       tag_regex: .+
+  - #@ docker_host_pool()
 
 resource_types:
   -  #@ gcr_resource_type()
