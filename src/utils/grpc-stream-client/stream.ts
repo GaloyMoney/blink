@@ -1,4 +1,4 @@
-import { Metadata, status } from "@grpc/grpc-js"
+import { Metadata } from "@grpc/grpc-js"
 import { Empty } from "google-protobuf/google/protobuf/empty_pb"
 
 export const StreamEvents = {
@@ -136,7 +136,7 @@ export class Stream<T extends GrpcData, R extends GrpcData> {
     switch (type) {
       case StreamEvents.end:
       case StreamEvents.error:
-        if ((ev as GrpcServiceError).code !== status.CANCELLED && this.options?.retry) {
+        if (this.options?.retry) {
           this.reconnect()
         }
         break

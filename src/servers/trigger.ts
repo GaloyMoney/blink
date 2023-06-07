@@ -539,9 +539,7 @@ const listenerSwapMonitor = async () => {
 
 const listenerBria = async () => {
   const wrappedBriaEventHandler = wrapAsyncToRunInSpan({
-    root: true,
     namespace: "servers.trigger",
-    fnName: "briaEventHandler",
     fn: briaEventHandler,
   })
 
@@ -550,16 +548,6 @@ const listenerBria = async () => {
     baseLogger.error({ err: subBria }, "error initializing bria subscriber")
     return
   }
-
-  subBria._listener.on("error", (err) => {
-    baseLogger.error({ err }, "error subBria")
-    recordExceptionInCurrentSpan({
-      error: new SubscriptionInterruptedError((err && err.message) || "subBria"),
-      level: ErrorLevel.Warn,
-      attributes: { ["error.subscription"]: "subBria" },
-    })
-    // remove listener is done in internal error handler
-  })
 
   baseLogger.info("bria listener started")
 }
