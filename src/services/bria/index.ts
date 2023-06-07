@@ -65,7 +65,16 @@ export const BriaSubscriber = () => {
         .withRequest(request)
         .withMetadata(metadata)
         .onData(onDataHandler)
-        .onError((_, error) => baseLogger.info({ error }, "Error subscribeToAll stream"))
+        .onError(async (stream, error) => {
+          baseLogger.info({ error }, "Error subscribeToAll stream")
+          const sequence = await BriaEventRepo().getLatestSequence()
+          if (sequence instanceof Error) {
+            // worst case it will reprocess some events
+            baseLogger.error({ error: sequence }, "Error getting last sequence")
+            return
+          }
+          stream.request.setAfterSequence(sequence)
+        })
         .onRetry((_, { detail }) =>
           baseLogger.info({ ...detail }, "Retry subscribeToAll stream"),
         )
