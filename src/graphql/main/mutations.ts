@@ -34,6 +34,7 @@ import OnChainPaymentSendAllMutation from "@graphql/root/mutation/onchain-paymen
 import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-request-auth-code"
 import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
 import QuizCompletedMutation from "@graphql/root/mutation/quiz-completed"
+import AccountDeleteMutation from "@graphql/root/mutation/account-delete"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 export const mutationFields = {
@@ -59,9 +60,10 @@ export const mutationFields = {
 
       userUpdateLanguage: UserUpdateLanguageMutation,
       userUpdateUsername: UserUpdateUsernameMutation,
+      userContactUpdateAlias: UserContactUpdateAliasMutation,
       accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
       accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
-      userContactUpdateAlias: UserContactUpdateAliasMutation,
+      accountDelete: AccountDeleteMutation,
     },
 
     atWalletLevel: {

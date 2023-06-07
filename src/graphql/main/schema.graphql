@@ -31,6 +31,11 @@ interface Account {
   wallets: [Wallet!]!
 }
 
+type AccountDeletePayload {
+  errors: [Error!]!
+  success: Boolean!
+}
+
 enum AccountLevel {
   ONE
   TWO
@@ -650,6 +655,7 @@ type MobileVersions {
 }
 
 type Mutation {
+  accountDelete: AccountDeletePayload!
   accountUpdateDefaultWalletId(
     input: AccountUpdateDefaultWalletIdInput!
   ): AccountUpdateDefaultWalletIdPayload!

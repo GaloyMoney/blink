@@ -337,6 +337,7 @@ const UserSchema = new Schema(
       unique: true,
       sparse: true,
     },
+    deletedPhone: { type: String },
   },
   { id: false },
 )

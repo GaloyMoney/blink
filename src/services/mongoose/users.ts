@@ -94,7 +94,7 @@ export const UsersRepository = (): IUsersRepository => {
     try {
       const result = await User.findOneAndUpdate(
         { userId: id },
-        { $unset: { phone: true } },
+        { $rename: { phone: "deletedPhone" } },
         { new: true },
       )
       if (!result) {
