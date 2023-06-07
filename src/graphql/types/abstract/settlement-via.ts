@@ -46,9 +46,7 @@ const SettlementViaOnChain = GT.Object({
   name: "SettlementViaOnChain",
   isTypeOf: (source) => source.type === SettlementMethod.OnChain,
   fields: () => ({
-    transactionHash: {
-      type: GT.NonNull(OnChainTxHash),
-    },
+    transactionHash: { type: OnChainTxHash },
     vout: { type: GT.Int },
   }),
 })
