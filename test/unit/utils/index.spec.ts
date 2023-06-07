@@ -1,7 +1,7 @@
 import { btc2sat, sat2btc } from "@domain/bitcoin"
 import { elapsedSinceTimestamp } from "@utils"
 
-describe("utils.ts", () => {
+describe("utils", () => {
   describe("btc2sat", () => {
     it("converts from BTC to Satoshis", () => {
       expect(btc2sat(0)).toEqual(0)

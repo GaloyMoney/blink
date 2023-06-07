@@ -62,6 +62,6 @@ type BriaEvent = {
   sequence: number
 }
 
-type BriaEventHandler = (event: BriaEvent) => Promise<true | ApplicationError>
+type BriaEventHandler = (event: BriaEvent) => Promise<true | DomainError>
 
 type BriaErrorHandler = (err: Error) => void

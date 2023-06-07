@@ -5,7 +5,7 @@ import { UnknownRepositoryError } from "@domain/errors"
 import { utxoSettledEventHandler } from "@servers/event-handlers/bria"
 
 import { BriaSubscriber, BriaPayloadType } from "@services/bria"
-import { timeoutWithCancel } from "@utils"
+import { GrpcStreamClient, timeoutWithCancel } from "@utils"
 
 import {
   bitcoindClient,
@@ -165,7 +165,10 @@ describe("BriaSubscriber", () => {
 
       let wrapper
       const eventPromise = new Promise(async (resolve) => {
-        wrapper = await bria.subscribeToAll(testEventHandler(resolve))
+        const stream = await bria.subscribeToAll(testEventHandler(resolve))
+        if (stream instanceof Error) throw stream
+        stream.backoff = new GrpcStreamClient.FibonacciBackoff(100, 1)
+        wrapper = stream
       })
 
       const res = await Promise.race([eventPromise, timeoutPromise])
