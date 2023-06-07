@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: pipeline fragments file names'
-      sha: 0a916f2074c900552639e84e379a2deb90b416db
+      commitTitle: 'chore: add test-on-docker-host'
+      sha: 94a38695d812e48366edff19745041ee0a64d9ac
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: pipeline fragments file names'
-      sha: 0a916f2074c900552639e84e379a2deb90b416db
+      commitTitle: 'chore: add test-on-docker-host'
+      sha: 94a38695d812e48366edff19745041ee0a64d9ac
     path: .
   path: ./vendor
 kind: LockConfig
