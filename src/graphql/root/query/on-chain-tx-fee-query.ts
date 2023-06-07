@@ -1,5 +1,7 @@
 import { Wallets } from "@app"
 
+import { PayoutSpeed as DomainPayoutSpeed } from "@domain/bitcoin/onchain"
+
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 
@@ -19,7 +21,10 @@ const OnChainTxFeeQuery = GT.Field({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(SatAmount) },
-    speed: { type: GT.NonNull(PayoutSpeed) },
+    speed: {
+      type: PayoutSpeed,
+      defaultValue: DomainPayoutSpeed.Fast,
+    },
     targetConfirmations: {
       deprecationReason: "Ignored - will be replaced",
       type: TargetConfirmations,

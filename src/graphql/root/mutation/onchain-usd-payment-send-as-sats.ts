@@ -1,3 +1,5 @@
+import { PayoutSpeed as DomainPayoutSpeed } from "@domain/bitcoin/onchain"
+
 import { GT } from "@graphql/index"
 import Memo from "@graphql/types/scalar/memo"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
@@ -17,8 +19,11 @@ const OnChainUsdPaymentSendAsBtcDenominatedInput = GT.Input({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(SatsAmount) },
-    requestId: { type: GT.NonNull(PayoutRequestId) },
-    speed: { type: GT.NonNull(PayoutSpeed) },
+    requestId: { type: PayoutRequestId },
+    speed: {
+      type: PayoutSpeed,
+      defaultValue: DomainPayoutSpeed.Fast,
+    },
     memo: { type: Memo },
     targetConfirmations: {
       deprecationReason: "Ignored - will be replaced",

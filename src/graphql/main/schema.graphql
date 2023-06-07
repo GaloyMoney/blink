@@ -822,8 +822,8 @@ type OnChainAddressPayload {
 input OnChainPaymentSendAllInput {
   address: OnChainAddress!
   memo: Memo
-  requestId: PayoutRequestId!
-  speed: PayoutSpeed!
+  requestId: PayoutRequestId
+  speed: PayoutSpeed = FAST
   targetConfirmations: TargetConfirmations = 0
     @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
@@ -833,8 +833,8 @@ input OnChainPaymentSendInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  requestId: PayoutRequestId!
-  speed: PayoutSpeed!
+  requestId: PayoutRequestId
+  speed: PayoutSpeed = FAST
   targetConfirmations: TargetConfirmations = 0
     @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
@@ -861,8 +861,8 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  requestId: PayoutRequestId!
-  speed: PayoutSpeed!
+  requestId: PayoutRequestId
+  speed: PayoutSpeed = FAST
   targetConfirmations: TargetConfirmations = 0
     @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
@@ -872,8 +872,8 @@ input OnChainUsdPaymentSendInput {
   address: OnChainAddress!
   amount: CentAmount!
   memo: Memo
-  requestId: PayoutRequestId!
-  speed: PayoutSpeed!
+  requestId: PayoutRequestId
+  speed: PayoutSpeed = FAST
   targetConfirmations: TargetConfirmations = 0
     @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
@@ -1064,7 +1064,7 @@ type Query {
   onChainTxFee(
     address: OnChainAddress!
     amount: SatAmount!
-    speed: PayoutSpeed!
+    speed: PayoutSpeed = FAST
     targetConfirmations: TargetConfirmations = 0
       @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!
@@ -1072,7 +1072,7 @@ type Query {
   onChainUsdTxFee(
     address: OnChainAddress!
     amount: CentAmount!
-    speed: PayoutSpeed!
+    speed: PayoutSpeed = FAST
     targetConfirmations: TargetConfirmations = 0
       @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!
@@ -1080,7 +1080,7 @@ type Query {
   onChainUsdTxFeeAsBtcDenominated(
     address: OnChainAddress!
     amount: SatAmount!
-    speed: PayoutSpeed!
+    speed: PayoutSpeed = FAST
     targetConfirmations: TargetConfirmations = 0
       @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!

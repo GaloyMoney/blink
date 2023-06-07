@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 import { checkedToPayoutRequestId } from "@domain/bitcoin"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
@@ -6,6 +8,10 @@ const PayoutRequestId = GT.Scalar<PayoutRequestId | InputValidationError>({
   name: "PayoutRequestId",
   description: "Unique request id for a payout",
   parseValue(value) {
+    if (value === null) {
+      return validPayoutRequestIdValue(crypto.randomUUID())
+    }
+
     if (typeof value !== "string") {
       return new InputValidationError({ message: "Invalid type for PayoutRequestId" })
     }
