@@ -1,7 +1,7 @@
 import { IdentityRepository } from "@services/kratos"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 
-export const deleteAccount = async ({
+export const markAccountForDeletion = async ({
   accountId,
 }: {
   accountId: AccountId
