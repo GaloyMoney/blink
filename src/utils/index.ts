@@ -1,6 +1,8 @@
 import { MS_PER_DAY } from "@config"
 import { NonIntegerError } from "@domain/errors"
 
+export * as GrpcStreamClient from "./grpc-stream-client"
+
 export async function sleep(ms: MilliSeconds | number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
