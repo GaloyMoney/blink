@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: pipeline fragments file names'
-      sha: 0a916f2074c900552639e84e379a2deb90b416db
+      commitTitle: 'chore: bump nodejs actions'
+      sha: 5070acbec19e25e274eaa23714012d88c51a2ad1
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: pipeline fragments file names'
-      sha: 0a916f2074c900552639e84e379a2deb90b416db
+      commitTitle: 'chore: bump nodejs actions'
+      sha: 5070acbec19e25e274eaa23714012d88c51a2ad1
     path: .
   path: ./vendor
 kind: LockConfig
