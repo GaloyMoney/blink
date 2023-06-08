@@ -45,3 +45,4 @@ generates:
         Seconds: "number"
         DisplayCurrency: "string"
         SignedDisplayMajorAmount: "string"
+        CountryCode: "string"

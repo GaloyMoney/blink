@@ -6,8 +6,9 @@ import {
   HttpLink,
   split,
   NormalizedCacheObject,
+  FetchResult,
 } from "@apollo/client/core"
-import { getMainDefinition } from "@apollo/client/utilities"
+import { getMainDefinition, Observable } from "@apollo/client/utilities"
 
 import { onError } from "@apollo/client/link/error"
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
@@ -15,6 +16,7 @@ import { baseLogger } from "@services/logger"
 
 import { createClient } from "graphql-ws"
 import WebSocket from "ws"
+import { Subscription } from "zen-observable-ts"
 
 export const localIpAddress = "127.0.0.1" as IpAddress
 
@@ -132,8 +134,19 @@ export const createApolloClient = (
 // whereas a real client would just wait for next()
 //
 // also the backend currently send price on subscribe.
-export const promisifiedSubscription = (subscription) => {
-  return new Promise((resolve, reject) => {
-    subscription.subscribe({ next: resolve, error: reject })
+export const promisifiedSubscription = <T>(subscription: Observable<FetchResult<T>>) => {
+  let sub: Subscription | undefined
+  const promise = new Promise((resolve, reject) => {
+    sub = subscription.subscribe({ next: resolve, error: reject })
   })
+
+  return {
+    promise,
+    unsubscribe: () => {
+      if (sub) {
+        sub.unsubscribe()
+        sub = undefined
+      }
+    },
+  }
 }

@@ -110,9 +110,10 @@ describe("graphql", () => {
       })
 
       const pricePublish = setTimeout(publishCurrentPrices, 1000)
-
-      const result = (await promisifiedSubscription(subscription)) as { data }
+      const { promise, unsubscribe } = promisifiedSubscription(subscription)
+      const result = (await promise) as { data }
       clearTimeout(pricePublish)
+      unsubscribe()
       const price_ = result.data?.price
       const { price, errors } = price_
 
@@ -160,8 +161,10 @@ describe("graphql", () => {
 
       const pricePublish = setTimeout(publishCurrentPrices, 1000)
 
-      const result = (await promisifiedSubscription(subscription)) as { data }
+      const { promise, unsubscribe } = promisifiedSubscription(subscription)
+      const result = (await promise) as { data }
       clearTimeout(pricePublish)
+      unsubscribe()
       const price_ = result.data?.realtimePrice
       const { realtimePrice, errors } = price_
 
