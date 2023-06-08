@@ -7,8 +7,8 @@ files.extend-exclude = [
 ]
 
 default.extend-ignore-identifiers-re = [
-  "^bc1\w+",
-  "^lnbc1\w+"
+  "^bc1\\w+",
+  "^lnbc1\\w+"
 ]
 
 [default.extend-words]
