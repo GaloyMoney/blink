@@ -3,8 +3,12 @@ files.extend-exclude = [
   "src/domain/users/languages.ts",
   "src/services/loopd/protos",
   "docs/postman-collection/galoy_graphql_main_api.postman_collection.json",
-  "docker-compose.yml",
-  "test/unit/domain/bitcoin/onchain/checked-to-on-chain-address.spec.ts"
+  "docker-compose.yml"
+]
+
+default.extend-ignore-identifiers-re = [
+  "^bc1\w+",
+  "^lnbc1\w+"
 ]
 
 [default.extend-words]
