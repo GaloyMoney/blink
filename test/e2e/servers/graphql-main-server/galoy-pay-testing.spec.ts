@@ -356,7 +356,9 @@ describe("galoy-pay", () => {
           query: LnInvoicePaymentStatusSubscriptionDocument,
           variables: { input: subscribeToPaymentInput },
         })
-      const resultPending = (await promisifiedSubscription(subscription)) as { data }
+      const { promise, unsubscribe } = promisifiedSubscription(subscription)
+      const resultPending = (await promise) as { data }
+      unsubscribe()
       expect(resultPending.data.lnInvoicePaymentStatus.status).toEqual("PENDING")
 
       const statusQuery = async () => {
@@ -384,7 +386,15 @@ describe("galoy-pay", () => {
       const statusQueryResult = await statusQuery()
       expect(statusQueryResult.data.lnInvoicePaymentStatus.status).toEqual("PAID")
 
-      const result = (await promisifiedSubscription(subscription)) as { data }
+      const subscriptionPaid =
+        apolloClient.subscribe<LnInvoicePaymentStatusSubscriptionSubscription>({
+          query: LnInvoicePaymentStatusSubscriptionDocument,
+          variables: { input: subscribeToPaymentInput },
+        })
+      const { promise: statusPromise, unsubscribe: statusUnsubscribe } =
+        promisifiedSubscription(subscriptionPaid)
+      const result = (await statusPromise) as { data }
+      statusUnsubscribe()
       expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")
     })
   })
