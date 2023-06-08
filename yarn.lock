@@ -5230,10 +5230,10 @@ bip68@1.0.4:
   resolved "https://registry.yarnpkg.com/bip68/-/bip68-1.0.4.tgz#78a95c7a43fad183957995cc2e08d79b0c372c4d"
   integrity sha512-O1htyufFTYy3EO0JkHg2CLykdXEtV2ssqw47Gq9A0WByp662xpJnMEB9m43LZjsSDjIAOozWRExlFQk2hlV1XQ==
 
-bitcoin-cli-ts@^24.0.3:
-  version "24.1.0"
-  resolved "https://registry.yarnpkg.com/bitcoin-cli-ts/-/bitcoin-cli-ts-24.1.0.tgz#34910062645351c589cb21432ff5149a41845dc1"
-  integrity sha512-MpbgZPFgyK6icA+L40HJ2/1wRmoCavkc4pSM9oF5kcpqggxKd+FLdL6aqR47bfGfpc7cxODJeu3+E7JioajykQ==
+bitcoin-cli-ts@^25.0.1:
+  version "25.0.1"
+  resolved "https://registry.yarnpkg.com/bitcoin-cli-ts/-/bitcoin-cli-ts-25.0.1.tgz#22af654df3cbe3c05b0f35b8e0962b7ca32f6be5"
+  integrity sha512-L2klHSZKwqzAX4IlfKpXdwz/RoZ4DWGtKb0/7gi5WMjxG+/9Dm1AibEZHT5oXx9oH5YJViKxwJYYqhB8MVz2ig==
   dependencies:
     json-bigint "^1.0.0"
     json-rpc-2.0 "^1.6.0"
