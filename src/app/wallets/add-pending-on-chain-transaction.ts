@@ -1,3 +1,5 @@
+import { getOnChainWalletConfig } from "@config"
+
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import {
@@ -5,7 +7,7 @@ import {
   PaymentInitiationMethod,
   SettlementMethod,
 } from "@domain/wallets"
-import { DuplicateKeyForPersistError } from "@domain/errors"
+import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@domain/errors"
 import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 
@@ -22,6 +24,7 @@ import { DealerPriceService } from "@services/dealer-price"
 import { NotificationsService } from "@services/notifications"
 
 const dealer = DealerPriceService()
+const { dustThreshold } = getOnChainWalletConfig()
 
 export const addPendingTransaction = async ({
   txId,
@@ -34,6 +37,10 @@ export const addPendingTransaction = async ({
   satoshis: BtcPaymentAmount
   address: OnChainAddress
 }): Promise<true | ApplicationError> => {
+  if (satoshis.amount < dustThreshold) {
+    return new LessThanDustThresholdError(`${dustThreshold}`)
+  }
+
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 

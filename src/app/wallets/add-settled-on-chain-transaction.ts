@@ -1,30 +1,33 @@
 import crypto from "crypto"
 
+import { getOnChainWalletConfig } from "@config"
+
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
-import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
+
+import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { displayAmountFromNumber } from "@domain/fiat"
-import { CouldNotFindError } from "@domain/errors"
+import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 
-import { DealerPriceService } from "@services/dealer-price"
-import { LedgerService } from "@services/ledger"
-import { LockService } from "@services/lock"
 import {
   AccountsRepository,
   UsersRepository,
   WalletOnChainPendingReceiveRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import * as LedgerFacade from "@services/ledger/facade"
+import { LockService } from "@services/lock"
 import { baseLogger } from "@services/logger"
+import { LedgerService } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
+import { DealerPriceService } from "@services/dealer-price"
 import { NotificationsService } from "@services/notifications"
 
 import { getLastOnChainAddress } from "./get-last-on-chain-address"
 import { createOnChainAddressByWallet } from "./create-on-chain-address"
 
-const dealer = DealerPriceService()
-
 const ledger = LedgerService()
+const dealer = DealerPriceService()
+const { dustThreshold } = getOnChainWalletConfig()
 
 const logger = baseLogger
 
@@ -45,6 +48,10 @@ const addSettledTransactionBeforeFinally = async ({
     }
   | ApplicationError
 > => {
+  if (amount.amount < dustThreshold) {
+    return new LessThanDustThresholdError(`${dustThreshold}`)
+  }
+
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 

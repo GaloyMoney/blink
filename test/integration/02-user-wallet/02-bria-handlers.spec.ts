@@ -1,3 +1,5 @@
+import { getOnChainWalletConfig } from "@config"
+
 import {
   addPendingTransaction,
   addSettledTransaction,
@@ -10,10 +12,13 @@ import { toLiabilitiesWalletId } from "@domain/ledger"
 import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
 import { Transaction } from "@services/ledger/schema"
 
+import { LessThanDustThresholdError } from "@domain/errors"
+
 import { randomAccount, addNewWallet, generateHash } from "test/helpers"
 
 const VOUT_0 = 0 as OnChainTxVout
 const VOUT_1 = 1 as OnChainTxVout
+const { dustThreshold } = getOnChainWalletConfig()
 
 let walletId: WalletId
 let address: OnChainAddress
@@ -37,6 +42,11 @@ const getRandomBtcAmountForOnchain = (): BtcPaymentAmount => {
   const floor = 10_000
   const amount = floor + Math.round(Math.random() * floor)
   return { amount: BigInt(amount), currency: WalletCurrency.Btc }
+}
+
+const dustAmount: BtcPaymentAmount = {
+  amount: BigInt(dustThreshold - 1),
+  currency: WalletCurrency.Btc,
 }
 
 describe("Bria Event Handlers", () => {
@@ -119,6 +129,21 @@ describe("Bria Event Handlers", () => {
         transactionHash: txId,
       })
       expect(resultTxId).toEqual(2)
+    })
+
+    it("fails if the amount is less than on chain dust amount", async () => {
+      const txId = generateHash() as OnChainTxHash
+      const vout = VOUT_0
+      const satoshis = dustAmount
+
+      const result = await addPendingTransaction({
+        txId,
+        vout,
+        satoshis,
+        address,
+      })
+
+      expect(result).toBeInstanceOf(LessThanDustThresholdError)
     })
   })
 
@@ -273,6 +298,21 @@ describe("Bria Event Handlers", () => {
 
       // Cleanup to clear tests accounting
       await Transaction.deleteMany({ hash: txId })
+    })
+
+    it("fails if the amount is less than on chain dust amount", async () => {
+      const txId = generateHash() as OnChainTxHash
+      const vout = VOUT_0
+      const satoshis = dustAmount
+
+      const result = await addSettledTransaction({
+        txId,
+        vout,
+        satoshis,
+        address,
+      })
+
+      expect(result).toBeInstanceOf(LessThanDustThresholdError)
     })
   })
 })

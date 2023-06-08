@@ -1,6 +1,9 @@
 import { Wallets } from "@app"
 
-import { CouldNotFindWalletFromOnChainAddressError } from "@domain/errors"
+import {
+  CouldNotFindWalletFromOnChainAddressError,
+  LessThanDustThresholdError,
+} from "@domain/errors"
 
 import { baseLogger } from "@services/logger"
 import { BriaPayloadType } from "@services/bria"
@@ -29,6 +32,9 @@ export const utxoDetectedEventHandler = async ({
   event: UtxoDetected
 }): Promise<true | DomainError> => {
   const res = await Wallets.addPendingTransaction(event)
+  if (res instanceof LessThanDustThresholdError) {
+    return true
+  }
   if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
     return true
   }
@@ -42,6 +48,9 @@ export const utxoSettledEventHandler = async ({
   event: UtxoSettled
 }): Promise<true | DomainError> => {
   const res = await Wallets.addSettledTransaction(event)
+  if (res instanceof LessThanDustThresholdError) {
+    return true
+  }
   if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
     return true
   }
