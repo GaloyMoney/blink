@@ -9,7 +9,7 @@ import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@doma
 import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose"
 
-import { createAndFundNewWallet, getBalanceHelper, randomAccount } from "test/helpers"
+import { createAccount, createAndFundNewWallet, getBalanceHelper } from "test/helpers"
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
@@ -57,7 +57,12 @@ const usdFundingAmount = paymentAmountFromNumber({
 if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
 const newAccountAndWallets = async () => {
-  const accountId = (await randomAccount()).id
+  const initialWallets = [WalletCurrency.Btc]
+  const account: Account | RepositoryError = await createAccount({
+    initialWallets,
+  })
+
+  const accountId = account.id
 
   const newBtcWallet = await createAndFundNewWallet({
     accountId,
