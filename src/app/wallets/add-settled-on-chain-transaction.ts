@@ -187,29 +187,26 @@ export const addSettledTransaction = async (args: {
   address: OnChainAddress
 }): Promise<true | ApplicationError> => {
   const res = await addSettledTransactionBeforeFinally(args)
+  if (res instanceof Error) return res
 
-  if (!(res instanceof Error)) {
-    const { newAddressRequestId, walletDescriptor } = res
+  const { newAddressRequestId, walletDescriptor } = res
 
-    if (newAddressRequestId !== undefined) {
-      const newAddress = await createOnChainAddressByWallet({
-        wallet: walletDescriptor,
-        requestId: newAddressRequestId,
-      })
-      if (newAddress instanceof Error) return newAddress
-    }
-
-    const removed = await WalletOnChainPendingReceiveRepository().remove({
-      walletId: walletDescriptor.id,
-      transactionHash: args.txId,
-      vout: args.vout,
-    })
-    if (removed instanceof Error && !(removed instanceof CouldNotFindError)) {
-      return removed
-    }
-
-    return true
+  const removed = await WalletOnChainPendingReceiveRepository().remove({
+    walletId: walletDescriptor.id,
+    transactionHash: args.txId,
+    vout: args.vout,
+  })
+  if (removed instanceof Error && !(removed instanceof CouldNotFindError)) {
+    return removed
   }
 
-  return res
+  if (newAddressRequestId) {
+    const newAddress = await createOnChainAddressByWallet({
+      wallet: walletDescriptor,
+      requestId: newAddressRequestId,
+    })
+    if (newAddress instanceof Error) return newAddress
+  }
+
+  return true
 }
