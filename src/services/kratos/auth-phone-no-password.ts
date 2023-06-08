@@ -173,6 +173,43 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     }
   }
 
+  const createIdentityWithDeviceId = async ({
+    phone,
+    deviceId,
+  }: {
+    phone: PhoneNumber
+    deviceId: UserId
+  }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | KratosError> => {
+    // need to use phone and deviceId as the identifier for the kratos webhook callback to work
+    //  in /kratos/registration
+    const traits = { phone }
+    const method = "password"
+    try {
+      const flow = await kratosPublic.createNativeRegistrationFlow()
+      const result = await kratosPublic.updateRegistrationFlow({
+        flow: flow.data.id,
+        updateRegistrationFlowBody: {
+          traits,
+          method,
+          password,
+          transient_payload: {
+            deviceId,
+          },
+        },
+      })
+      const sessionToken = result.data.session_token as SessionToken
+      const kratosUserId = result.data.identity.id as UserId
+
+      return { sessionToken, kratosUserId }
+    } catch (err) {
+      if (err.message === "Request failed with status code 400") {
+        return new LikelyUserAlreadyExistError(err.message || err)
+      }
+
+      return new UnknownKratosError(err.message || err)
+    }
+  }
+
   const createIdentityWithCookie = async ({
     phone,
   }: {
@@ -339,6 +376,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       logoutToken,
       logoutCookie,
       createIdentityWithSession,
+      createIdentityWithDeviceId,
       createIdentityWithCookie,
       createIdentityNoSession,
       upgradeToPhoneAndEmailSchema,

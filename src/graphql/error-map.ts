@@ -22,6 +22,9 @@ import {
   PhoneProviderError,
   UnexpectedClientError,
   DealerError,
+  PhoneAccountAlreadyExistsError,
+  PhoneAccountAlreadyExistsNeedToSweepFundsError,
+  JwtVerifyTokenError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -79,6 +82,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "CouldNotFindUserFromPhoneError":
       message = `User does not exist for phone ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
+    case "CouldNotFindUserFromDeviceIdError":
+      message = `User does not exist for device ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "CouldNotFindUserFromWalletIdError":
@@ -184,6 +191,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UserPhoneCodeAttemptIpRateLimiterExceededError":
       message =
         "Too many phone code attempts on same network, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
+    case "CreateDeviceAccountIpRateLimiterExceededError":
+      message =
+        "Too many account creation attempts on same network, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
     case "PhoneCodeInvalidError":
@@ -352,6 +364,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message =
         "The phone is associated with an existing wallet that has a non zero balance. Sweep the funds and try again."
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "JwtVerifyTokenError":
+      message = "JWT Token Validation failed"
+      return new JwtVerifyTokenError({ message, logger: baseLogger })
     // ----------
     // Unhandled below here
     // ----------
@@ -511,6 +527,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LikelyUserAlreadyExistError":
     case "PhoneIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
+    case "JwtSubjectUndefinedError":
     case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
     case "EventAugmentationMissingError":
@@ -564,6 +581,17 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "KratosError":
     case "AuthenticationKratosError":
     case "ExtendSessionKratosError":
+    case "PhoneAccountAlreadyExistsError":
+      message =
+        "Phone Account already exists. Please logout and log back in with your phone account."
+      return new PhoneAccountAlreadyExistsError({ message, logger: baseLogger })
+    case "PhoneAccountAlreadyExistsNeedToSweepFundsError":
+      message =
+        "Error phone account already exists. You need to manually sweep funds to your phone account."
+      return new PhoneAccountAlreadyExistsNeedToSweepFundsError({
+        message,
+        logger: baseLogger,
+      })
     case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
     case "MissingTotpKratosError":

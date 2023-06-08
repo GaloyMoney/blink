@@ -89,6 +89,12 @@ test_accounts:
     phone: "+198765432113"
     code: "321321"
     username: tester4
+  - ref: M
+    phone: "+198765432114"
+    code: "321321"
+  - ref: "N"
+    phone: "+198765432115"
+    code: "321321"
 rateLimits:
   requestPhoneCodePerPhone:
     points: 4
@@ -133,14 +139,17 @@ accounts:
 accountLimits:
   withdrawal:
     level:
+      "0": 12500
       "1": 100000
       "2": 5000000
   intraLedger:
     level:
+      "0": 12500
       "1": 200000
       "2": 5000000
   tradeIntraAccount:
     level:
+      "0": 200000
       "1": 5000000
       "2": 20000000
 spamLimits:
@@ -206,3 +215,7 @@ skipFeeProbeConfig:
   chanId: []
 smsAuthUnsupportedCountries: []
 whatsAppAuthUnsupportedCountries: []
+appcheckConfig:
+  audience: projects/72279297366
+  issuer: https://firebaseappcheck.googleapis.com/72279297366
+  jwksUri: https://firebaseappcheck.googleapis.com/v1beta/jwks

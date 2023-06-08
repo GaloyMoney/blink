@@ -51,10 +51,11 @@ const accountLimitConfigSchema = {
     level: {
       type: "object",
       properties: {
+        0: { type: "integer" },
         1: { type: "integer" },
         2: { type: "integer" },
       },
-      required: ["1", "2"],
+      required: ["0", "1", "2"],
       additionalProperties: false,
     },
   },
@@ -320,6 +321,16 @@ export const configSchema = {
           code: "321321",
           username: "tester4",
         },
+        {
+          ref: "M",
+          phone: "+198765432114",
+          code: "321321",
+        },
+        {
+          ref: "N",
+          phone: "+198765432115",
+          code: "321321",
+        },
       ],
       uniqueItems: true,
     },
@@ -427,18 +438,21 @@ export const configSchema = {
       default: {
         withdrawal: {
           level: {
+            "0": 12500,
             "1": 100000,
             "2": 5000000,
           },
         },
         intraLedger: {
           level: {
+            "0": 12500,
             "1": 200000,
             "2": 5000000,
           },
         },
         tradeIntraAccount: {
           level: {
+            "0": 200000,
             "1": 5000000,
             "2": 20000000,
           },
@@ -700,6 +714,21 @@ export const configSchema = {
       type: "array",
       items: { type: "string" },
       default: [],
+    },
+    appcheckConfig: {
+      type: "object",
+      properties: {
+        audience: { type: "string" },
+        issuer: { type: "string" },
+        jwksUri: { type: "string" },
+      },
+      required: ["audience", "issuer", "jwksUri"],
+      additionalProperties: false,
+      default: {
+        audience: process.env.APPCHECK_AUDIENCE,
+        issuer: process.env.APPCHECK_ISSUER,
+        jwksUri: process.env.APPCHECK_JWKSURI,
+      },
     },
   },
   required: [

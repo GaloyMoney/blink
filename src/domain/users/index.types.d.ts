@@ -52,6 +52,7 @@ type User = {
   phoneMetadata: PhoneMetadata | undefined
   phone?: PhoneNumber | undefined
   createdAt: Date
+  deviceId?: UserId | undefined
 }
 
 type UserUpdateInput = Omit<Partial<User>, "language"> & {
@@ -65,4 +66,9 @@ interface IUsersRepository {
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
   adminUnsetPhoneForUserPreservation(id: UserId): Promise<User | RepositoryError>
+  migrateUserIdSubject({
+    currentUserIdSubject,
+    newUserIdSubject,
+    phone,
+  }): Promise<User | RepositoryError>
 }

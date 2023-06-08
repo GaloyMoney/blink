@@ -24,7 +24,7 @@ export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 
 export const MIN_SATS_FOR_PRICE_RATIO_PRECISION = 5000n
 
-export const levels: Levels = [1, 2]
+export const Levels: Levels = [0, 1, 2]
 
 // onboarding
 export const OnboardingEarn: Record<QuizQuestionId, Satoshis> = {

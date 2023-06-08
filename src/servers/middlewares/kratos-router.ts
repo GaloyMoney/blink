@@ -8,6 +8,7 @@ import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tr
 import {
   createAccountForEmailIdentifier,
   createAccountWithPhoneIdentifier,
+  upgradeAccountFromDeviceToPhone,
 } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
 import { checkedToUserId } from "@domain/accounts"
@@ -97,7 +98,13 @@ kratosRouter.post(
       }
 
       const body = req.body
-      const { identity_id: userId, phone: phoneRaw, schema_id, email } = body
+      const {
+        identity_id: userId,
+        phone: phoneRaw,
+        schema_id,
+        email,
+        transient_payload,
+      } = body
 
       assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
@@ -122,8 +129,16 @@ kratosRouter.post(
       }
 
       let account: Account | RepositoryError
-      // phone+code flow
-      if (phoneRaw) {
+
+      // upgrade device to phone flow if both traits are present
+      if (transient_payload?.deviceId && phoneRaw) {
+        account = await upgradeAccountFromDeviceToPhone({
+          userId: userIdChecked,
+          deviceId: transient_payload.deviceId,
+          phone: phoneRaw,
+        })
+      } else if (phoneRaw) {
+        // phone+code flow
         const phone = checkedToPhoneNumber(phoneRaw)
         if (phone instanceof Error) {
           recordExceptionInCurrentSpan({

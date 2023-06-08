@@ -179,3 +179,6 @@ redis-cli:
 
 e2e-codegen:
 	yarn e2e-codegen
+
+gen-test-jwt:
+	yarn gen-test-jwt

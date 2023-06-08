@@ -39,6 +39,7 @@ type AccountDeletePayload {
 enum AccountLevel {
   ONE
   TWO
+  ZERO
 }
 
 interface AccountLimit {
@@ -407,6 +408,11 @@ enum InvoicePaymentStatus {
   PENDING
 }
 
+type JwtPayload {
+  authToken: String
+  errors: [Error!]!
+}
+
 scalar Language
 
 type LnInvoice {
@@ -773,6 +779,8 @@ type Mutation {
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  userLoginDevice(input: UserLoginDeviceInput!): JwtPayload!
+  userLoginUpgrade(input: UserLoginUpgradeInput!): AuthTokenPayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
@@ -1441,7 +1449,16 @@ type UserContactUpdateAliasPayload {
   errors: [Error!]!
 }
 
+input UserLoginDeviceInput {
+  jwt: String
+}
+
 input UserLoginInput {
+  code: OneTimeAuthCode!
+  phone: Phone!
+}
+
+input UserLoginUpgradeInput {
   code: OneTimeAuthCode!
   phone: Phone!
 }

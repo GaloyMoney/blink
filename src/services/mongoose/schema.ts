@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getDefaultAccountsConfig, getFeesConfig, levels } from "@config"
+import { getDefaultAccountsConfig, getFeesConfig, Levels } from "@config"
 import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
@@ -183,13 +183,12 @@ const AccountSchema = new Schema<AccountRecord>(
       enum: ["user", "editor", "dealer", "bankowner", "funder"],
       required: true,
       default: "user",
-      // TODO : enfore the fact there can be only one dealer/bankowner/funder
+      // TODO : enforce the fact there can be only one dealer/bankowner/funder
     },
 
     level: {
       type: Number,
-      enum: levels,
-      default: 1,
+      enum: Levels,
     },
 
     kratosUserId: {
@@ -274,7 +273,10 @@ const AccountSchema = new Schema<AccountRecord>(
         },
       ],
       default: [
-        { status: getDefaultAccountsConfig().initialStatus, comment: "Initial Status" },
+        {
+          status: getDefaultAccountsConfig().initialStatus,
+          comment: "to be overridden by createAccount",
+        },
       ],
     },
 
@@ -338,6 +340,9 @@ const UserSchema = new Schema(
       sparse: true,
     },
     deletedPhone: { type: String },
+    deviceId: {
+      type: String,
+    },
   },
   { id: false },
 )

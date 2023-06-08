@@ -11,6 +11,7 @@ export class RateLimiterExceededError extends RateLimitServiceError {}
 export class UserPhoneCodeAttemptPhoneRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserPhoneCodeAttemptIpRateLimiterExceededError extends RateLimiterExceededError {}
+export class CreateDeviceAccountIpRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserLoginIpRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserLoginPhoneRateLimiterExceededError extends RateLimiterExceededError {}
 export class InvoiceCreateRateLimiterExceededError extends RateLimiterExceededError {}

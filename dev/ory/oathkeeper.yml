@@ -9,6 +9,16 @@ tracing:
       local_agent_address: otel-agent:6831
 
 authenticators:
+  jwt:
+    enabled: true
+    config:
+      trusted_issuers:
+        - https://firebaseappcheck.googleapis.com/72279297366
+      target_audience:
+        - projects/72279297366
+      jwks_urls:
+        - https://firebaseappcheck.googleapis.com/v1beta/jwks
+        - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
   bearer_token:
     enabled: true
     config:
@@ -44,6 +54,7 @@ mutators:
     config:
       jwks_url: file:///home/ory/jwks.json
       issuer_url: "galoy.io"
+      claims: '{"sub": "{{ print .Subject }}" }'
 
   noop:
     enabled: true

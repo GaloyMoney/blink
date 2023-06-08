@@ -1,4 +1,11 @@
-import { ConfigError, getTestAccounts, getTwilioConfig, isRunningJest } from "@config"
+import {
+  ConfigError,
+  getDefaultAccountsConfig,
+  getTestAccounts,
+  getTwilioConfig,
+  isRunningJest,
+} from "@config"
+import { AccountLevel } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
@@ -48,10 +55,33 @@ const initializeCreatedAccount = async ({
   account.role = role || "user"
   account.contactEnabled = account.role === "user" || account.role === "editor"
 
+  account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
+  account.level = config.initialLevel
+
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount
 
   return updatedAccount
+}
+
+export const createAccountForDeviceAccount = async ({
+  userId,
+}: {
+  userId: UserId
+}): Promise<Account | RepositoryError> => {
+  const user = await UsersRepository().update({ id: userId, deviceId: userId })
+  if (user instanceof Error) return user
+
+  const accountNew = await AccountsRepository().persistNew(userId)
+  if (accountNew instanceof Error) return accountNew
+
+  const levelZeroAccountsConfig = getDefaultAccountsConfig()
+  levelZeroAccountsConfig.initialLevel = AccountLevel.Zero
+
+  return initializeCreatedAccount({
+    account: accountNew,
+    config: levelZeroAccountsConfig,
+  })
 }
 
 export const createAccountWithPhoneIdentifier = async ({

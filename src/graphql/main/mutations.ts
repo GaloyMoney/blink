@@ -19,6 +19,8 @@ import LnNoAmountUsdInvoicePaymentSendMutation from "@graphql/root/mutation/ln-n
 import OnChainAddressCreateMutation from "@graphql/root/mutation/on-chain-address-create"
 import OnChainAddressCurrentMutation from "@graphql/root/mutation/on-chain-address-current"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
+import UserLoginDeviceMutation from "@graphql/root/mutation/user-login-device"
+
 import UserLogoutMutation from "@graphql/root/mutation/user-logout"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
@@ -35,12 +37,14 @@ import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-reque
 import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
 import QuizCompletedMutation from "@graphql/root/mutation/quiz-completed"
 import AccountDeleteMutation from "@graphql/root/mutation/account-delete"
+import UserLoginUpgradeMutation from "@graphql/root/mutation/user-login-upgrade"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 export const mutationFields = {
   unauthed: {
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
+    userLoginDevice: UserLoginDeviceMutation,
     userLogout: UserLogoutMutation,
 
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
@@ -54,6 +58,8 @@ export const mutationFields = {
 
   authed: {
     atAccountLevel: {
+      userLoginUpgrade: UserLoginUpgradeMutation,
+
       userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
       quizCompleted: QuizCompletedMutation,
       deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,

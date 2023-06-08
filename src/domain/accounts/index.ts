@@ -19,14 +19,24 @@ export * from "./limits-checker"
 export * from "./account-validator"
 export * from "./primitives"
 
-const UserIdRegex =
+const KratosUserIdRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+// device id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
+const DeviceIdRegex = /^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i
+
 export const checkedToUserId = (userId: string): UserId | ValidationError => {
-  if (!userId.match(UserIdRegex)) {
-    return new InvalidUserId(userId)
+  if (userId.match(KratosUserIdRegex)) {
+    return userId as UserId
   }
-  return userId as UserId
+  if (userId.match(DeviceIdRegex)) {
+    return userId as UserId
+  }
+  return new InvalidUserId(userId)
+}
+
+export const isDeviceId = (deviceId: string) => {
+  return deviceId.match(DeviceIdRegex)
 }
 
 export const checkedCoordinates = ({

@@ -1,8 +1,12 @@
-import { createAccountForEmailIdentifier } from "@app/accounts/create-account"
+import {
+  createAccountForDeviceAccount,
+  createAccountForEmailIdentifier,
+} from "@app/accounts/create-account"
 import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
+  getJwksArgs,
   getTestAccounts,
   getTwilioConfig,
 } from "@config"
@@ -10,18 +14,37 @@ import { TwilioClient } from "@services/twilio"
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
+import {
+  JwtSubjectUndefinedError,
+  JwtVerifyTokenError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@domain/authentication/errors"
 
-import { CouldNotFindAccountFromKratosIdError, NotImplementedError } from "@domain/errors"
+import {
+  CouldNotFindAccountFromKratosIdError,
+  CouldNotFindUserFromPhoneError,
+  NotImplementedError,
+} from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
-import { AccountsRepository } from "@services/mongoose"
-import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
-import { addAttributesToCurrentSpan } from "@services/tracing"
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
+import { LedgerService } from "@services/ledger"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
+import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
+import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
+import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@services/kratos/errors"
+import { sendOathkeeperRequest } from "@services/oathkeeper"
+import jwksRsa from "jwks-rsa"
+import jsonwebtoken from "jsonwebtoken"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -111,6 +134,97 @@ export const loginWithPhoneCookie = async ({
     addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
   }
   return kratosResult
+}
+
+export const loginUpgradeWithPhone = async ({
+  phone,
+  code,
+  ip,
+  account,
+}: {
+  phone: PhoneNumber
+  code: PhoneCode
+  ip: IpAddress
+  account: Account
+}): Promise<SessionToken | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+  {
+    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  const validCode = await isCodeValid({ phone, code })
+  if (validCode instanceof Error) return validCode
+
+  await rewardFailedLoginAttemptPerIpLimits(ip)
+  await rewardFailedLoginAttemptPerPhoneLimits(phone)
+
+  const phoneAccount = await UsersRepository().findByPhone(phone)
+
+  // Happy Path - phone account does not exist
+  if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
+    // a. create kratos account
+    // b. and c. migrate account/user collection in mongo via kratos/registration webhook
+    const kratosToken = await AuthWithDeviceAccountService().upgradeToPhoneSchema({
+      phone,
+      deviceId: account.kratosUserId,
+    })
+    if (kratosToken instanceof Error) return kratosToken
+    return kratosToken
+  }
+
+  if (phoneAccount instanceof Error) return phoneAccount
+
+  // Complex path - Phone account already exists
+  // is there still txns left over on the device account?
+  const deviceWallets = await WalletsRepository().listByAccountId(account.id)
+  if (deviceWallets instanceof Error) return deviceWallets
+  const ledger = LedgerService()
+  let deviceAccountHasBalance = false
+  for (const wallet of deviceWallets) {
+    const balance = await ledger.getWalletBalance(wallet.id)
+    if (balance instanceof Error) return balance
+    if (balance > 0) {
+      deviceAccountHasBalance = true
+    }
+  }
+  if (deviceAccountHasBalance) return new PhoneAccountAlreadyExistsNeedToSweepFundsError()
+
+  // no txns on device account but phone account exists, just log the user in with the phone account
+  const authService = AuthWithPhonePasswordlessService()
+  const kratosResult = await authService.loginToken({ phone })
+  if (kratosResult instanceof Error) return kratosResult
+  return kratosResult.sessionToken
+}
+
+export const loginWithDevice = async ({
+  jwt,
+  ip,
+}: {
+  jwt: string
+  ip: IpAddress
+}): Promise<SessionToken | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  const verifiedJwt = await verifyJwt(jwt)
+  if (verifiedJwt instanceof Error) return verifiedJwt
+  const deviceId = verifiedJwt.sub as UserId
+  if (!deviceId) return new JwtSubjectUndefinedError("deviceId sub is undefined")
+
+  const accountExist = await AccountsRepository().findByUserId(deviceId)
+  if (accountExist instanceof CouldNotFindAccountFromKratosIdError) {
+    const account = await createAccountForDeviceAccount({
+      userId: deviceId,
+    })
+    if (account instanceof Error) return account
+  }
+  return jwt as SessionToken
 }
 
 // deprecated
@@ -227,4 +341,17 @@ export const isCodeValid = async ({
   }
 
   return TwilioClient().validateVerify({ to: phone, code })
+}
+
+export const verifyJwt = async (token: string) => {
+  const newToken = await sendOathkeeperRequest(token as SessionToken)
+  if (newToken instanceof Error) return newToken
+  const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
+  const verifiedToken = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
+    algorithms: ["RS256"],
+  })
+  if (typeof verifiedToken === "string") {
+    return new JwtVerifyTokenError("tokenPayload should be an object")
+  }
+  return verifiedToken
 }

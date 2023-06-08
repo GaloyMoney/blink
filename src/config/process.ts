@@ -100,6 +100,7 @@ export const getDealerPriceConfig = () => {
 
 export const isProd = process.env.NODE_ENV === "production"
 export const isDev = process.env.NODE_ENV === "development"
+export const isCI = process.env.IS_CI === "true"
 export const isRunningJest = typeof jest !== "undefined"
 
 export const DropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN

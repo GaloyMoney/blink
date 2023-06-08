@@ -22,6 +22,7 @@ type GraphQLContextAuth = {
   domainAccount: Account
   geetest: GeetestType
   ip: IpAddress
+  sub: string
 }
 
 // globally used types

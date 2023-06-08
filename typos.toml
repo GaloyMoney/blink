@@ -6,6 +6,11 @@ files.extend-exclude = [
   "docker-compose.yml"
 ]
 
+default.extend-ignore-identifiers-re = [
+  "^bc1\\w+",
+  "^lnbc1\\w+"
+]
+
 [default.extend-words]
 # returned from twilio API referenced in src/debug/text-sms.ts
 Ons = "Ons"

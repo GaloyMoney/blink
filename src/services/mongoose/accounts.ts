@@ -166,7 +166,10 @@ export const AccountsRepository = (): IAccountsRepository => {
     kratosUserId: UserId,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result = await Account.findOne({ kratosUserId })
+      const result = await Account.findOne(
+        { kratosUserId: { $eq: kratosUserId } },
+        { lastIPs: 0 },
+      )
 
       if (!result) {
         return new CouldNotFindAccountFromKratosIdError(kratosUserId)
@@ -194,7 +197,7 @@ const translateToAccount = (result: AccountRecord): Account => ({
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,
-  level: (result.level as AccountLevel) || AccountLevel.One,
+  level: result.level as AccountLevel,
   status: result.statusHistory.slice(-1)[0].status,
   statusHistory: (result.statusHistory || []) as AccountStatusHistory,
   title: result.title as BusinessMapTitle,

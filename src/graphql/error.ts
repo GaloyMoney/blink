@@ -232,6 +232,17 @@ export class PhoneCodeError extends CustomApolloError {
   }
 }
 
+export class JwtVerifyTokenError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "JWT Token Validation failed",
+      forwardToClient: true,
+      code: "JWT_VERIFY_TOKEN_ERROR",
+      ...errData,
+    })
+  }
+}
+
 export class PhoneProviderError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
@@ -304,6 +315,30 @@ export class AuthorizationError extends CustomApolloError {
       message: "Not authorized",
       forwardToClient: true,
       code: "NOT_AUTHORIZED",
+      ...errData,
+    })
+  }
+}
+
+export class PhoneAccountAlreadyExistsError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message:
+        "Phone Account already exists. Please logout and log back in with your phone account",
+      forwardToClient: true,
+      code: "PHONE_ACCOUNT_ALREADY_EXISTS_ERROR",
+      ...errData,
+    })
+  }
+}
+
+export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message:
+        "Error phone account already exists. You need to manually sweep funds to your phone account",
+      forwardToClient: true,
+      code: "PHONE_ACCOUNT_ALREADY_EXISTS_NEED_TO_SWEEP_FUNDS_ERROR",
       ...errData,
     })
   }

@@ -11,7 +11,6 @@
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
     "graphql-check": "curl -fsS https://raw.githubusercontent.com/GaloyMoney/galoy-mobile/main/app/graphql/generated.gql -o generated.gql && npx @graphql-inspector/cli validate ./generated.gql src/graphql/main/schema.graphql --apollo --noStrictFragments",
-    "kill-graphql": "kill $(lsof -t -i:4001) & kill $(lsof -t -i:4012) & kill $(lsof -t -i:4000)",
     "cron": ". ./.envrc && yarn build && node lib/servers/cron.js",
     "exporter": "yarn build && node lib/servers/exporter.js",
     "daily-notif": "yarn build && node lib/servers/daily-balance-notification.js",
@@ -25,7 +24,8 @@
     "watch-main": ". ./.envrc && nodemon -V -e ts,graphql -w ./src --exec yarn run start-main",
     "start-main": ". ./.envrc && yarn run build && node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js",
     "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'",
-    "e2e-codegen": "graphql-codegen --config codegen.yml"
+    "e2e-codegen": "graphql-codegen --config codegen.yml",
+    "gen-test-jwt": "ts-node ./dev/bin/gen-test-jwt.ts"
   },
   "engines": {
     "node": "20"
@@ -150,6 +150,7 @@
     "@types/lodash.sumby": "^4.6.6",
     "@types/migrate-mongo": "^10.0.0",
     "@types/node": "^20.2.5",
+    "@types/node-jose": "^1.1.10",
     "@types/nodemon": "^1.19.2",
     "@types/prettier": "^2.7.3",
     "@types/set-cookie-parser": "^2.4.2",
@@ -171,6 +172,7 @@
     "lodash.difference": "^4.5.0",
     "lodash.find": "^4.6.0",
     "migrate-mongo": "^10.0.0",
+    "node-jose": "^2.2.0",
     "nodemon": "^2.0.21",
     "pg": "^8.10.0",
     "pino-pretty": "^10.0.0",
