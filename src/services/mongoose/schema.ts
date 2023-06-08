@@ -183,7 +183,7 @@ const AccountSchema = new Schema<AccountRecord>(
       enum: ["user", "editor", "dealer", "bankowner", "funder"],
       required: true,
       default: "user",
-      // TODO : enfore the fact there can be only one dealer/bankowner/funder
+      // TODO : enforce the fact there can be only one dealer/bankowner/funder
     },
 
     level: {
