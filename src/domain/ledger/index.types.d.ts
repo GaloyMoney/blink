@@ -64,7 +64,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly address?: OnChainAddress
   readonly txHash?: OnChainTxHash
   readonly vout?: OnChainTxVout
-  readonly newAddressRequestId?: OnChainAddressRequestId
+  readonly requestId?: OnChainAddressRequestId
 
   // for admin, to be removed when we switch those to satsAmount props
   readonly fee: number | undefined // Satoshis

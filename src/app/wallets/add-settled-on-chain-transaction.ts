@@ -175,7 +175,7 @@ const addSettledTransactionBeforeFinally = async ({
 
     return {
       walletDescriptor: wallet,
-      newAddressRequestId: newAddressRequestId,
+      newAddressRequestId,
     }
   })
 }
