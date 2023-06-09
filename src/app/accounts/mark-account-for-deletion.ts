@@ -19,15 +19,16 @@ export const markAccountForDeletion = async ({
   if (user.deviceId) {
     const result = await usersRepo.adminUnsetDeviceIdForUserPreservation(kratosUserId)
     if (result instanceof Error) return result
-    return true
   }
 
-  const result = await usersRepo.adminUnsetPhoneForUserPreservation(kratosUserId)
-  if (result instanceof Error) return result
+  if (user.phone) {
+    const result = await usersRepo.adminUnsetPhoneForUserPreservation(kratosUserId)
+    if (result instanceof Error) return result
 
-  const identityRepo = IdentityRepository()
-  const deletionResult = await identityRepo.deleteIdentity(kratosUserId)
-  if (deletionResult instanceof Error) return deletionResult
+    const identityRepo = IdentityRepository()
+    const deletionResult = await identityRepo.deleteIdentity(kratosUserId)
+    if (deletionResult instanceof Error) return deletionResult
+  }
 
   return true
 }
