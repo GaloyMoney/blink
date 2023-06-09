@@ -30,6 +30,7 @@ interface IBriaServiceService extends grpc.ServiceDefinition<grpc.UntypedService
     submitPayout: IBriaServiceService_ISubmitPayout;
     estimatePayoutFee: IBriaServiceService_IEstimatePayoutFee;
     listPayouts: IBriaServiceService_IListPayouts;
+    findPayoutByExternalId: IBriaServiceService_IFindPayoutByExternalId;
     listSigningSessions: IBriaServiceService_IListSigningSessions;
     subscribeAll: IBriaServiceService_ISubscribeAll;
 }
@@ -223,6 +224,15 @@ interface IBriaServiceService_IListPayouts extends grpc.MethodDefinition<bria_pb
     responseSerialize: grpc.serialize<bria_pb.ListPayoutsResponse>;
     responseDeserialize: grpc.deserialize<bria_pb.ListPayoutsResponse>;
 }
+interface IBriaServiceService_IFindPayoutByExternalId extends grpc.MethodDefinition<bria_pb.FindPayoutByExternalIdRequest, bria_pb.FindPayoutByExternalIdResponse> {
+    path: "/services.bria.v1.BriaService/FindPayoutByExternalId";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<bria_pb.FindPayoutByExternalIdRequest>;
+    requestDeserialize: grpc.deserialize<bria_pb.FindPayoutByExternalIdRequest>;
+    responseSerialize: grpc.serialize<bria_pb.FindPayoutByExternalIdResponse>;
+    responseDeserialize: grpc.deserialize<bria_pb.FindPayoutByExternalIdResponse>;
+}
 interface IBriaServiceService_IListSigningSessions extends grpc.MethodDefinition<bria_pb.ListSigningSessionsRequest, bria_pb.ListSigningSessionsResponse> {
     path: "/services.bria.v1.BriaService/ListSigningSessions";
     requestStream: false;
@@ -266,6 +276,7 @@ export interface IBriaServiceServer extends grpc.UntypedServiceImplementation {
     submitPayout: grpc.handleUnaryCall<bria_pb.SubmitPayoutRequest, bria_pb.SubmitPayoutResponse>;
     estimatePayoutFee: grpc.handleUnaryCall<bria_pb.EstimatePayoutFeeRequest, bria_pb.EstimatePayoutFeeResponse>;
     listPayouts: grpc.handleUnaryCall<bria_pb.ListPayoutsRequest, bria_pb.ListPayoutsResponse>;
+    findPayoutByExternalId: grpc.handleUnaryCall<bria_pb.FindPayoutByExternalIdRequest, bria_pb.FindPayoutByExternalIdResponse>;
     listSigningSessions: grpc.handleUnaryCall<bria_pb.ListSigningSessionsRequest, bria_pb.ListSigningSessionsResponse>;
     subscribeAll: grpc.handleServerStreamingCall<bria_pb.SubscribeAllRequest, bria_pb.BriaEvent>;
 }
@@ -334,6 +345,9 @@ export interface IBriaServiceClient {
     listPayouts(request: bria_pb.ListPayoutsRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.ListPayoutsResponse) => void): grpc.ClientUnaryCall;
     listPayouts(request: bria_pb.ListPayoutsRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.ListPayoutsResponse) => void): grpc.ClientUnaryCall;
     listPayouts(request: bria_pb.ListPayoutsRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.ListPayoutsResponse) => void): grpc.ClientUnaryCall;
+    findPayoutByExternalId(request: bria_pb.FindPayoutByExternalIdRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.FindPayoutByExternalIdResponse) => void): grpc.ClientUnaryCall;
+    findPayoutByExternalId(request: bria_pb.FindPayoutByExternalIdRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.FindPayoutByExternalIdResponse) => void): grpc.ClientUnaryCall;
+    findPayoutByExternalId(request: bria_pb.FindPayoutByExternalIdRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.FindPayoutByExternalIdResponse) => void): grpc.ClientUnaryCall;
     listSigningSessions(request: bria_pb.ListSigningSessionsRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.ListSigningSessionsResponse) => void): grpc.ClientUnaryCall;
     listSigningSessions(request: bria_pb.ListSigningSessionsRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.ListSigningSessionsResponse) => void): grpc.ClientUnaryCall;
     listSigningSessions(request: bria_pb.ListSigningSessionsRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.ListSigningSessionsResponse) => void): grpc.ClientUnaryCall;
@@ -406,6 +420,9 @@ export class BriaServiceClient extends grpc.Client implements IBriaServiceClient
     public listPayouts(request: bria_pb.ListPayoutsRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.ListPayoutsResponse) => void): grpc.ClientUnaryCall;
     public listPayouts(request: bria_pb.ListPayoutsRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.ListPayoutsResponse) => void): grpc.ClientUnaryCall;
     public listPayouts(request: bria_pb.ListPayoutsRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.ListPayoutsResponse) => void): grpc.ClientUnaryCall;
+    public findPayoutByExternalId(request: bria_pb.FindPayoutByExternalIdRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.FindPayoutByExternalIdResponse) => void): grpc.ClientUnaryCall;
+    public findPayoutByExternalId(request: bria_pb.FindPayoutByExternalIdRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.FindPayoutByExternalIdResponse) => void): grpc.ClientUnaryCall;
+    public findPayoutByExternalId(request: bria_pb.FindPayoutByExternalIdRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.FindPayoutByExternalIdResponse) => void): grpc.ClientUnaryCall;
     public listSigningSessions(request: bria_pb.ListSigningSessionsRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.ListSigningSessionsResponse) => void): grpc.ClientUnaryCall;
     public listSigningSessions(request: bria_pb.ListSigningSessionsRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.ListSigningSessionsResponse) => void): grpc.ClientUnaryCall;
     public listSigningSessions(request: bria_pb.ListSigningSessionsRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.ListSigningSessionsResponse) => void): grpc.ClientUnaryCall;
