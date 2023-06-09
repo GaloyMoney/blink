@@ -1,23 +1,30 @@
+import { getOnChainWalletConfig } from "@config"
+
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
-import { DuplicateKeyForPersistError } from "@domain/errors"
-import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
-import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
+
 import {
   DepositFeeCalculator,
   PaymentInitiationMethod,
   SettlementMethod,
 } from "@domain/wallets"
+import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@domain/errors"
+import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
+import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 
-import { DealerPriceService } from "@services/dealer-price"
 import {
   AccountsRepository,
   UsersRepository,
   WalletOnChainPendingReceiveRepository,
   WalletsRepository,
 } from "@services/mongoose"
+import { LockService } from "@services/lock"
+import { baseLogger } from "@services/logger"
+import { LedgerService } from "@services/ledger"
+import { DealerPriceService } from "@services/dealer-price"
 import { NotificationsService } from "@services/notifications"
 
 const dealer = DealerPriceService()
+const { dustThreshold } = getOnChainWalletConfig()
 
 export const addPendingTransaction = async ({
   txId,
@@ -30,6 +37,10 @@ export const addPendingTransaction = async ({
   satoshis: BtcPaymentAmount
   address: OnChainAddress
 }): Promise<true | ApplicationError> => {
+  if (satoshis.amount < dustThreshold) {
+    return new LessThanDustThresholdError(`${dustThreshold}`)
+  }
+
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 
@@ -42,71 +53,94 @@ export const addPendingTransaction = async ({
   })
   if (satsFee instanceof Error) return satsFee
 
-  const walletAddressReceiver = await WalletAddressReceiver({
-    walletAddress: {
-      address,
-      recipientWalletDescriptor: wallet,
-    },
-    receivedBtc: satoshis,
-    satsFee,
-    usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-    usdFromBtcMidPrice: usdFromBtcMidPriceFn,
-  })
-  if (walletAddressReceiver instanceof Error) return walletAddressReceiver
-  const { amountToCreditReceiver: settlementAmount, bankFee: settlementFee } =
-    walletAddressReceiver.settlementAmounts()
-
-  const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: account.displayCurrency,
-  })
-  if (displayPriceRatio instanceof Error) {
-    return displayPriceRatio
-  }
-
-  const settlementDisplayAmount = displayPriceRatio.convertFromWallet(
-    walletAddressReceiver.btcToCreditReceiver,
-  )
-
-  const pendingTransaction: WalletOnChainPendingTransaction = {
-    walletId: wallet.id,
-    settlementAmount,
-    settlementFee,
-    settlementCurrency: wallet.currency,
-    settlementDisplayAmount,
-    settlementDisplayFee: displayPriceRatio.convertFromWalletToCeil(
-      walletAddressReceiver.btcBankFee,
-    ),
-    settlementDisplayPrice: priceAmountFromDisplayPriceRatio(displayPriceRatio),
-
-    createdAt: new Date(Date.now()),
-    initiationVia: {
-      type: PaymentInitiationMethod.OnChain,
-      address,
-    },
-    settlementVia: {
-      type: SettlementMethod.OnChain,
-      transactionHash: txId,
+  return LockService().lockOnChainTxHashAndVout({ txHash: txId, vout }, async () => {
+    // this validation is necessary in case we need to reprocess bria events
+    const recordedResult = await LedgerService().isOnChainReceiptTxRecordedForWallet({
+      walletId: wallet.id,
+      txHash: txId,
       vout,
-    },
-  }
+    })
+    if (recordedResult instanceof Error) {
+      baseLogger.error({ error: recordedResult }, "Could not query ledger")
+      return recordedResult
+    }
+    if (recordedResult.recorded) {
+      await WalletOnChainPendingReceiveRepository().remove({
+        walletId: wallet.id,
+        transactionHash: txId,
+        vout,
+      })
+      return true
+    }
 
-  const res = await WalletOnChainPendingReceiveRepository().persistNew(pendingTransaction)
-  if (res instanceof Error && !(res instanceof DuplicateKeyForPersistError)) {
-    return res
-  }
+    const walletAddressReceiver = await WalletAddressReceiver({
+      walletAddress: {
+        address,
+        recipientWalletDescriptor: wallet,
+      },
+      receivedBtc: satoshis,
+      satsFee,
+      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+      usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+    })
+    if (walletAddressReceiver instanceof Error) return walletAddressReceiver
+    const { amountToCreditReceiver: settlementAmount, bankFee: settlementFee } =
+      walletAddressReceiver.settlementAmounts()
 
-  const recipientUser = await UsersRepository().findById(account.kratosUserId)
-  if (recipientUser instanceof Error) return recipientUser
+    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
+      currency: account.displayCurrency,
+    })
+    if (displayPriceRatio instanceof Error) {
+      return displayPriceRatio
+    }
 
-  NotificationsService().onChainTxReceivedPending({
-    recipientAccountId: wallet.accountId,
-    recipientWalletId: wallet.id,
-    paymentAmount: settlementAmount,
-    displayPaymentAmount: settlementDisplayAmount,
-    txHash: txId,
-    recipientDeviceTokens: recipientUser.deviceTokens,
-    recipientLanguage: recipientUser.language,
+    const settlementDisplayAmount = displayPriceRatio.convertFromWallet(
+      walletAddressReceiver.btcToCreditReceiver,
+    )
+
+    const pendingTransaction: WalletOnChainPendingTransaction = {
+      walletId: wallet.id,
+      settlementAmount,
+      settlementFee,
+      settlementCurrency: wallet.currency,
+      settlementDisplayAmount,
+      settlementDisplayFee: displayPriceRatio.convertFromWalletToCeil(
+        walletAddressReceiver.btcBankFee,
+      ),
+      settlementDisplayPrice: priceAmountFromDisplayPriceRatio(displayPriceRatio),
+
+      createdAt: new Date(Date.now()),
+      initiationVia: {
+        type: PaymentInitiationMethod.OnChain,
+        address,
+      },
+      settlementVia: {
+        type: SettlementMethod.OnChain,
+        transactionHash: txId,
+        vout,
+      },
+    }
+
+    const res = await WalletOnChainPendingReceiveRepository().persistNew(
+      pendingTransaction,
+    )
+    if (res instanceof Error && !(res instanceof DuplicateKeyForPersistError)) {
+      return res
+    }
+
+    const recipientUser = await UsersRepository().findById(account.kratosUserId)
+    if (recipientUser instanceof Error) return recipientUser
+
+    NotificationsService().onChainTxReceivedPending({
+      recipientAccountId: wallet.accountId,
+      recipientWalletId: wallet.id,
+      paymentAmount: settlementAmount,
+      displayPaymentAmount: settlementDisplayAmount,
+      txHash: txId,
+      recipientDeviceTokens: recipientUser.deviceTokens,
+      recipientLanguage: recipientUser.language,
+    })
+
+    return true
   })
-
-  return true
 }
