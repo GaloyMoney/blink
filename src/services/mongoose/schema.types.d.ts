@@ -120,6 +120,7 @@ interface UserRecord {
   deletedPhone?: PhoneNumber
   createdAt: Date
   deviceId?: string
+  deletedDeviceId?: PhoneNumber
 }
 
 type PaymentFlowStateRecord = {

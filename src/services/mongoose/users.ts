@@ -122,8 +122,26 @@ export const UsersRepository = (): IUsersRepository => {
   ): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
-        { userId: id },
+        { userId: id, phone: { $exists: true } },
         { $rename: { phone: "deletedPhone" } },
+        { new: true },
+      )
+      if (!result) {
+        return new CouldNotUnsetPhoneFromUserError()
+      }
+      return translateToUser(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
+  const adminUnsetDeviceIdForUserPreservation = async (
+    id: UserId,
+  ): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOneAndUpdate(
+        { userId: id, deviceId: { $exists: true } },
+        { $rename: { deviceId: "deletedDeviceId" } },
         { new: true },
       )
       if (!result) {
@@ -140,6 +158,7 @@ export const UsersRepository = (): IUsersRepository => {
     findByPhone,
     update,
     adminUnsetPhoneForUserPreservation,
+    adminUnsetDeviceIdForUserPreservation,
     migrateUserIdSubject,
   }
 }
