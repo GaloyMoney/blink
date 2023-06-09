@@ -28,6 +28,7 @@ service BriaService {
   rpc SubmitPayout (SubmitPayoutRequest) returns (SubmitPayoutResponse) {}
   rpc EstimatePayoutFee (EstimatePayoutFeeRequest) returns (EstimatePayoutFeeResponse) {}
   rpc ListPayouts (ListPayoutsRequest) returns (ListPayoutsResponse) {}
+  rpc FindPayoutByExternalId (FindPayoutByExternalIdRequest) returns (FindPayoutByExternalIdResponse) {}
   rpc ListSigningSessions (ListSigningSessionsRequest) returns (ListSigningSessionsResponse) {}
 
   rpc SubscribeAll (SubscribeAllRequest) returns (stream BriaEvent) {}
@@ -330,6 +331,14 @@ message Payout {
 
 message ListPayoutsResponse {
   repeated Payout payouts = 1;
+}
+
+message FindPayoutByExternalIdRequest {
+  string external_id = 1;
+}
+
+message FindPayoutByExternalIdResponse {
+  Payout payout = 1;
 }
 
 message ListSigningSessionsRequest {

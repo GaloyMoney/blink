@@ -1446,6 +1446,49 @@ export namespace ListPayoutsResponse {
     }
 }
 
+export class FindPayoutByExternalIdRequest extends jspb.Message { 
+    getExternalId(): string;
+    setExternalId(value: string): FindPayoutByExternalIdRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): FindPayoutByExternalIdRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: FindPayoutByExternalIdRequest): FindPayoutByExternalIdRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: FindPayoutByExternalIdRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): FindPayoutByExternalIdRequest;
+    static deserializeBinaryFromReader(message: FindPayoutByExternalIdRequest, reader: jspb.BinaryReader): FindPayoutByExternalIdRequest;
+}
+
+export namespace FindPayoutByExternalIdRequest {
+    export type AsObject = {
+        externalId: string,
+    }
+}
+
+export class FindPayoutByExternalIdResponse extends jspb.Message { 
+
+    hasPayout(): boolean;
+    clearPayout(): void;
+    getPayout(): Payout | undefined;
+    setPayout(value?: Payout): FindPayoutByExternalIdResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): FindPayoutByExternalIdResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: FindPayoutByExternalIdResponse): FindPayoutByExternalIdResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: FindPayoutByExternalIdResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): FindPayoutByExternalIdResponse;
+    static deserializeBinaryFromReader(message: FindPayoutByExternalIdResponse, reader: jspb.BinaryReader): FindPayoutByExternalIdResponse;
+}
+
+export namespace FindPayoutByExternalIdResponse {
+    export type AsObject = {
+        payout?: Payout.AsObject,
+    }
+}
+
 export class ListSigningSessionsRequest extends jspb.Message { 
     getBatchId(): string;
     setBatchId(value: string): ListSigningSessionsRequest;
