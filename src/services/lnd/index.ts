@@ -103,18 +103,17 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const getInboundOutboundBalance = async (pubkey?: Pubkey) => {
+  const getInboundOutboundBalance = async (
+    pubkey?: Pubkey,
+  ): Promise<{ inbound: Satoshis; outbound: Satoshis } | LightningServiceError> => {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
       const { channel_balance, inbound } = await getChannelBalance({ lnd })
-      const inboundBal = inbound ?? 0
-      const outbound = channel_balance - inboundBal
 
       return {
-        channelBalance: toSats(channel_balance),
-        inbound: toSats(inboundBal),
-        outbound: toSats(outbound),
+        outbound: toSats(channel_balance),
+        inbound: toSats(inbound || 0),
       }
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
