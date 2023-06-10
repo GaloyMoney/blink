@@ -26,8 +26,6 @@ export const getTotalBalance = async (): Promise<Satoshis | ApplicationError> =>
 export const getInboundBalance = async (): Promise<Satoshis | ApplicationError> => {
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
-  const offChainChannelBalances = await offChainService.getInboundOutboundBalance()
-  if (offChainChannelBalances instanceof Error) return offChainChannelBalances
 
   const inboundOutboundBalance = await Promise.all(
     offChainService
@@ -46,8 +44,6 @@ export const getInboundBalance = async (): Promise<Satoshis | ApplicationError> 
 export const getOutboundBalance = async (): Promise<Satoshis | ApplicationError> => {
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
-  const offChainChannelBalances = await offChainService.getInboundOutboundBalance()
-  if (offChainChannelBalances instanceof Error) return offChainChannelBalances
 
   const inboundOutboundBalance = await Promise.all(
     offChainService
