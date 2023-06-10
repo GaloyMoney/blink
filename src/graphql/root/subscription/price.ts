@@ -100,6 +100,14 @@ const PriceSubscription = {
       suffix: crypto.randomUUID(),
     })
 
+    if (amount instanceof Error) {
+      pubsub.publishImmediate({
+        trigger: immediateTrigger,
+        payload: { errors: [{ message: amount.message }] },
+      })
+      return pubsub.createAsyncIterator({ trigger: immediateTrigger })
+    }
+
     for (const input of [amountCurrencyUnit, priceCurrencyUnit]) {
       if (input instanceof Error) {
         pubsub.publishImmediate({
