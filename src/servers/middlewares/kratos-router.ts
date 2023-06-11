@@ -6,7 +6,6 @@ import express from "express"
 import { getDefaultAccountsConfig, getKratosPasswords } from "@config"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 import {
-  createAccountForEmailIdentifier,
   createAccountWithPhoneIdentifier,
   upgradeAccountFromDeviceToPhone,
 } from "@app/accounts"
@@ -70,8 +69,6 @@ kratosRouter.post(
         return
       }
 
-      // TODO
-      // email+password flow
       res.status(500).send(`unsupported flow`)
       return
     },
@@ -98,22 +95,16 @@ kratosRouter.post(
       }
 
       const body = req.body
-      const {
-        identity_id: userId,
-        phone: phoneRaw,
-        schema_id,
-        email,
-        transient_payload,
-      } = body
+      const { identity_id: userId, phone: phoneRaw, schema_id, transient_payload } = body
 
       assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
-      if ((!phoneRaw && !email) || !userId) {
-        baseLogger.error({ phoneRaw, email }, "missing inputs")
+      if (!phoneRaw || !userId) {
+        baseLogger.error({ phoneRaw, userId }, "missing inputs")
         res.status(400).send("missing inputs")
         return
       }
-
+      // true and false // false
       const userIdChecked = checkedToUserId(userId)
       if (userIdChecked instanceof Error) {
         recordExceptionInCurrentSpan({
@@ -157,16 +148,8 @@ kratosRouter.post(
           newAccountInfo: { phone, kratosUserId: userIdChecked },
           config: getDefaultAccountsConfig(),
         })
-      } else if (email) {
-        // email+password flow
-        // kratos user exists from self registration flow
-        account = await createAccountForEmailIdentifier({
-          kratosUserId: userIdChecked,
-          config: getDefaultAccountsConfig(),
-        })
       } else {
-        // insert new flow, such as email with code
-        res.status(500).send("Invalid login flow")
+        res.status(500).send("Invalid or unsupported login flow")
         return
       }
 
@@ -179,10 +162,7 @@ kratosRouter.post(
             phoneRaw,
           },
         })
-        baseLogger.error(
-          { account, phoneRaw, email },
-          `error createAccountWithPhoneIdentifier`,
-        )
+        baseLogger.error({ account, phoneRaw }, `error createAccountWithPhoneIdentifier`)
         res.status(500).send(`error createAccountWithPhoneIdentifier: ${account}`)
         return
       }

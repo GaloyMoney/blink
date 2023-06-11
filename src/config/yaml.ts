@@ -224,9 +224,6 @@ export const getRequestPhoneCodePerIpLimits = () =>
 export const getFailedLoginAttemptPerPhoneLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
 
-export const getfailedLoginAttemptPerEmailAddressLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerEmailAddress)
-
 export const getFailedLoginAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerIp)
 

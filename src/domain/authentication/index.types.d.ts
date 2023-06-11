@@ -59,10 +59,6 @@ interface IAuthWithPhonePasswordlessService {
   createIdentityNoSession(args: {
     phone: PhoneNumber
   }): Promise<UserId | AuthenticationError>
-  upgradeToPhoneAndEmailSchema(input: {
-    kratosUserId: UserId
-    email: EmailAddress
-  }): Promise<IdentityPhone | AuthenticationError> // TODO: should be IdentityPhoneWithPassword
   updatePhone(input: {
     kratosUserId: UserId
     phone: PhoneNumber
@@ -70,7 +66,18 @@ interface IAuthWithPhonePasswordlessService {
 }
 
 interface IAuthWithEmailPasswordlessService {
+  removeEmailFromIdentity: (args: {
+    kratosUserId: UserId
+  }) => Promise<IdentityPhone | AuthenticationError>
+  removePhoneFromIdentity: (args: {
+    kratosUserId: UserId
+  }) => Promise<IdentityPhone | AuthenticationError>
+  addUnverifiedEmailToIdentity(args: {
+    kratosUserId: UserId
+    email: EmailAddress
+  }): Promise<IdentityPhone | AuthenticationError>
   initiateEmailVerification(args: { email: EmailAddress }): Promise<string | KratosError>
+  isEmailVerified(args: { email: EmailAddress }): Promise<boolean | KratosError>
   validateEmailVerification(args: {
     code: string
     flow: string

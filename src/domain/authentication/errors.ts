@@ -7,3 +7,6 @@ export class PhoneIdentityDoesNotExistError extends AuthenticationError {}
 export class UserWithPhoneAlreadyExistsError extends AuthenticationError {}
 export class JwtVerifyTokenError extends AuthenticationError {}
 export class JwtSubjectUndefinedError extends AuthenticationError {}
+
+export class EmailCodeInvalidError extends AuthenticationError {}
+export class EmailNotVerifiedError extends AuthenticationError {}

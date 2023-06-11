@@ -1,12 +1,17 @@
-import { decisionsApi } from "@config"
+import { decisionsApi, getJwksArgs } from "@config"
 import {
-  OathkeeperUnauthorizedServiceError,
   OathkeeperError,
   OathkeeperForbiddenServiceError,
-  UnknownOathkeeperServiceError,
   OathkeeperMissingAuthorizationHeaderError,
+  OathkeeperUnauthorizedServiceError,
+  UnknownOathkeeperServiceError,
 } from "@domain/oathkeeper/errors"
 import axios from "axios"
+
+import { JwtVerifyTokenError } from "@domain/authentication/errors"
+
+import jsonwebtoken from "jsonwebtoken"
+import jwksRsa from "jwks-rsa"
 
 export const sendOathkeeperRequest = async (
   token: SessionToken | undefined,
@@ -46,4 +51,17 @@ export const sendOathkeeperRequest = async (
 
     return new UnknownOathkeeperServiceError(err.message || err)
   }
+}
+
+export const verifyJwt = async (token: string) => {
+  const newToken = await sendOathkeeperRequest(token as SessionToken)
+  if (newToken instanceof Error) return newToken
+  const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
+  const verifiedToken = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
+    algorithms: ["RS256"],
+  })
+  if (typeof verifiedToken === "string") {
+    return new JwtVerifyTokenError("tokenPayload should be an object")
+  }
+  return verifiedToken
 }

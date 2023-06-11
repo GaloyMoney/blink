@@ -23,13 +23,15 @@ export const getEmailCode = async ({ email }) => {
     .from(table)
     .orderBy("created_at", "desc")
 
-  const code = res
-    .find((item) => item.recipient === email)
-    .body.split("code:\n\n")[1]
-    .slice(0, 6)
-
   await knex.destroy()
 
+  const message = res.find((item) => item.recipient === email)
+
+  if (!message) {
+    throw new Error(`no message for email ${email}`)
+  }
+
+  const code = message.body.split("code:\n\n")[1].slice(0, 6)
   return code
 }
 

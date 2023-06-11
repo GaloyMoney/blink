@@ -12,7 +12,7 @@ import {
   RouteFindingError,
   InvalidCoordinatesError,
   InvalidBusinessTitleLengthError,
-  PhoneCodeError,
+  VerificationCodeError,
   UsernameError,
   RebalanceNeededError,
   DealerOfflineError,
@@ -25,6 +25,7 @@ import {
   PhoneAccountAlreadyExistsError,
   PhoneAccountAlreadyExistsNeedToSweepFundsError,
   JwtVerifyTokenError,
+  EmailNotVerifiedError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -200,15 +201,19 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "PhoneCodeInvalidError":
       message = "Invalid or incorrect phone code entered."
-      return new PhoneCodeError({ message, logger: baseLogger })
+      return new VerificationCodeError({ message, logger: baseLogger })
 
     case "ExpiredOrNonExistentPhoneNumberError":
       message = "Invalid or incorrect phone code entered."
-      return new PhoneCodeError({ message, logger: baseLogger })
+      return new VerificationCodeError({ message, logger: baseLogger })
 
     case "CouldNotFindAccountFromPhoneError":
       message = "Invalid or incorrect phone entered."
-      return new PhoneCodeError({ message, logger: baseLogger })
+      return new VerificationCodeError({ message, logger: baseLogger })
+
+    case "EmailCodeInvalidError":
+      message = "Invalid or incorrect phone code entered."
+      return new VerificationCodeError({ message, logger: baseLogger })
 
     case "UserLoginPhoneRateLimiterExceededError":
       message = "Too many login attempts, please wait for a while and try again."
@@ -368,6 +373,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "JwtVerifyTokenError":
       message = "JWT Token Validation failed"
       return new JwtVerifyTokenError({ message, logger: baseLogger })
+
+    case "EmailNotVerifiedError":
+      return new EmailNotVerifiedError({ logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------

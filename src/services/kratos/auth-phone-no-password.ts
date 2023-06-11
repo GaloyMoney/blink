@@ -11,12 +11,7 @@ import {
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
-import {
-  AuthenticationKratosError,
-  IncompatibleSchemaUpgradeError,
-  KratosError,
-  UnknownKratosError,
-} from "./errors"
+import { AuthenticationKratosError, KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
 
 // login with phone
@@ -318,56 +313,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     }
   }
 
-  const upgradeToPhoneAndEmailSchema = async ({
-    kratosUserId,
-    email,
-  }: {
-    kratosUserId: UserId
-    email: EmailAddress
-  }) => {
-    let identity: Identity
-
-    try {
-      ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
-    } catch (err) {
-      if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err.message || err)
-      }
-
-      return new UnknownKratosError(err.message || err)
-    }
-
-    if (
-      identity.schema_id !== "phone_no_password_v0" &&
-      identity.schema_id !== "phone_or_email_password_v0"
-    ) {
-      return new IncompatibleSchemaUpgradeError()
-    }
-
-    if (identity.state === undefined)
-      throw new KratosError("state undefined, probably impossible state") // type issue
-
-    identity.traits = { ...identity.traits, email }
-
-    const adminIdentity: UpdateIdentityBody = {
-      ...identity,
-      credentials: { password: { config: { password } } },
-      state: identity.state,
-      schema_id: "phone_email_no_password_v0",
-    }
-
-    try {
-      const { data: newIdentity } = await kratosAdmin.updateIdentity({
-        id: kratosUserId,
-        updateIdentityBody: adminIdentity,
-      })
-
-      return toDomainIdentityPhone(newIdentity)
-    } catch (err) {
-      return new UnknownKratosError(err.message || err)
-    }
-  }
-
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.kratos.auth-phone-no-password",
     fns: {
@@ -379,7 +324,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       createIdentityWithDeviceId,
       createIdentityWithCookie,
       createIdentityNoSession,
-      upgradeToPhoneAndEmailSchema,
       updatePhone,
     },
   })
