@@ -151,6 +151,9 @@ interface INewOnChainService {
   findAddressByRequestId(
     requestId: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError>
+  findPayoutByRequestId(
+    requestId: PayoutRequestId,
+  ): Promise<PayoutId | OnChainServiceError>
   queuePayoutToAddress(
     args: QueuePayoutToAddressArgs,
   ): Promise<PayoutId | OnChainServiceError>

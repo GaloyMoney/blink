@@ -425,6 +425,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OnChainServiceError":
     case "OnChainAddressAlreadyCreatedForRequestIdError":
     case "OnChainAddressNotFoundError":
+    case "PayoutNotFoundError":
     case "CouldNotFindOnChainTransactionError":
     case "NotificationsError":
     case "NotificationsServiceError":

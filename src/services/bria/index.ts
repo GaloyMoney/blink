@@ -6,6 +6,7 @@ import { getBriaConfig } from "@config"
 import {
   OnChainAddressAlreadyCreatedForRequestIdError,
   OnChainAddressNotFoundError,
+  PayoutNotFoundError,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared/primitives"
@@ -18,6 +19,7 @@ import { GrpcStreamClient } from "@utils"
 import {
   estimatePayoutFee,
   findAddressByExternalId,
+  findPayoutByExternalId,
   getWalletBalanceSummary,
   newAddress,
   submitPayout,
@@ -31,6 +33,7 @@ import {
   FindAddressByExternalIdRequest,
   SubmitPayoutRequest,
   EstimatePayoutFeeRequest,
+  FindPayoutByExternalIdRequest,
 } from "./proto/bria_pb"
 import { UnknownBriaEventError } from "./errors"
 export { BriaPayloadType } from "./event-handler"
@@ -167,6 +170,27 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
+  const findPayoutByRequestId = async (
+    requestId: PayoutRequestId,
+  ): Promise<PayoutId | OnChainServiceError> => {
+    try {
+      const request = new FindPayoutByExternalIdRequest()
+      request.setExternalId(requestId)
+
+      const response = await findPayoutByExternalId(request, metadata)
+      const foundPayout = response.getPayout()
+
+      if (foundPayout === undefined) return new PayoutNotFoundError()
+      return foundPayout.getPayoutQueueId() as PayoutId
+    } catch (err) {
+      if (err.code == status.NOT_FOUND) {
+        return new PayoutNotFoundError()
+      }
+      const errMsg = typeof err === "string" ? err : err.message
+      return new UnknownOnChainServiceError(errMsg)
+    }
+  }
+
   const queuePayoutToAddress = async ({
     walletId,
     address,
@@ -236,6 +260,7 @@ export const NewOnChainService = (): INewOnChainService => {
       getBalance,
       createOnChainAddress,
       findAddressByRequestId,
+      findPayoutByRequestId,
       queuePayoutToAddress,
       estimateFeeForPayout,
     },
