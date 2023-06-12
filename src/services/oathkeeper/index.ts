@@ -15,8 +15,9 @@ import jwksRsa from "jwks-rsa"
 
 export const sendOathkeeperRequest = async (
   token: SessionToken | undefined,
+  endpoint: "graphql" | "oathkeeper-appcheck",
 ): Promise<JwtToken | OathkeeperError> => {
-  const requestUrl = `${decisionsApi()}graphql`
+  const requestUrl = `${decisionsApi()}${endpoint}`
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -54,7 +55,7 @@ export const sendOathkeeperRequest = async (
 }
 
 export const verifyJwt = async (token: string) => {
-  const newToken = await sendOathkeeperRequest(token as SessionToken)
+  const newToken = await sendOathkeeperRequest(token as SessionToken, "graphql")
   if (newToken instanceof Error) return newToken
   const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
   const verifiedToken = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {

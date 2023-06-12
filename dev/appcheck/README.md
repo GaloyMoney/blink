@@ -10,6 +10,57 @@ sequenceDiagram
     Oathkeeper-->>Backend: (6) User authenticated, here's deviceId
     Backend-->Mongo: (7) Check user in Accounts collection
 ```
+
+## Device Account V3
+
+```mermaid
+```
+
+New User/Password Flow
+-----------------
+1) get app-check jwt add to header X-Appcheck-Token
+2) mobile app generates locally a uuidV4UserName and uuidV4password
+3) REST
+```
+POST `/auth/create/device-account`
+Authorization: basic base64(username:password)
+X-DeviceId: deviceId
+```
+4) oathkeeper decision api to verify appcheck jwt via rule
+- kratos will create identity with and uuidV4Username and uuidV4Password
+  -  In our backend (transient_payload?) store DeviceId in mongo user collection,
+- RETURN kratos session token
+  - mobile app needs to backup uuidV4Username and uuidV4Password to keychain
+
+Login User/Password Flow
+------
+1) get app-check jwt add to header X-Appcheck-Token
+2) retrieve uuidV4 from apollo client storage (or keychain if uninstalled)
+3) REST
+```
+POST /auth/login/device-account
+Authorization:  basic base64(username:password)
+```
+RETURN kratos session token
+
+Upgrade To Phone Flow
+-----------------
+1) captcha flow in mobile app
+2) grapqhl
+```
+Post /graphql MUTATION UserLoginUpgrade (or REST /auth/upgrade/phone ??)
+Authorization: bearer kratosSessionToken
+BODY: phone + code
+```
+3) backend
+```
+  isValid(code) then upgrade
+    a) kratos add phone trait
+    b) change scheme from "username_password_device_v0" to "phone_no_pasword_v0"
+    c) change password from uuidV4password to KratosMasterPassword
+```
+RETURN kratos session token
+
 ## Gen Test JWT
 To simulate logging in with a device account a helper function has been created in `dev/bin/gen-test-jwt`. If you run `make gen-test-jwt` it will generate a test jwt. You can then open the graphql playground and simulate logging in with a device account with this mutation:
 
