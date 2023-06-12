@@ -231,6 +231,18 @@ type IsOnChainReceiptTxRecordedForWalletResult = {
   newAddressRequestId: OnChainAddressRequestId | undefined
 }
 
+type IsOnChainSendRecordedForWalletResult =
+  | {
+      recorded: false
+    }
+  | {
+      recorded: true
+      journalId: LedgerJournalId
+      payoutId: PayoutId | undefined
+      isPending: boolean
+      isIntraLedger: boolean
+    }
+
 interface ILedgerService {
   updateMetadataByHash(
     ledgerTxMetadata:
@@ -318,6 +330,11 @@ interface ILedgerService {
   }): Promise<IsOnChainReceiptTxRecordedForWalletResult | LedgerServiceError>
 
   isOnChainTxHashRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
+
+  isOnChainSendRecordedForWallet(args: {
+    walletId: WalletId
+    requestId: PayoutRequestId
+  }): Promise<IsOnChainSendRecordedForWalletResult | LedgerServiceError>
 
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 

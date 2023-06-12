@@ -18,8 +18,12 @@ import {
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
 } from "@domain/payments"
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { checkedToOnChainAddress, PayoutSpeed } from "@domain/bitcoin/onchain"
+import { PaymentNotFoundError, PaymentSendStatus } from "@domain/bitcoin/lightning"
+import {
+  checkedToOnChainAddress,
+  PayoutNotFoundError,
+  PayoutSpeed,
+} from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { displayAmountFromNumber } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -59,8 +63,52 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
+  const ledger = LedgerService()
+
+  const isRecordedResult = await ledger.isOnChainSendRecordedForWallet({
+    walletId: senderWalletId,
+    requestId,
+  })
+  if (isRecordedResult instanceof Error) return isRecordedResult
+  const { recorded, ...partialResult } = isRecordedResult
+  if (recorded && "payoutId" in partialResult) {
+    if (partialResult.isIntraLedger) {
+      return {
+        status: partialResult.isPending
+          ? PaymentSendStatus.Pending
+          : PaymentSendStatus.Success,
+        payoutId: partialResult.payoutId,
+      }
+    }
+
+    let payoutId: PayoutId | PaymentNotFoundError | undefined = partialResult.payoutId
+    if (payoutId === undefined) {
+      const id = await NewOnChainService().findPayoutByRequestId(requestId)
+      if (id instanceof Error && !(id instanceof PayoutNotFoundError)) {
+        return id
+      }
+      payoutId = id
+    }
+
+    if (!(payoutId instanceof PaymentNotFoundError)) {
+      const updated = await LedgerService().setOnChainTxPayoutId({
+        journalId: partialResult.journalId,
+        payoutId,
+      })
+      if (updated instanceof Error) return updated
+      return {
+        status: partialResult.isPending
+          ? PaymentSendStatus.Pending
+          : PaymentSendStatus.Success,
+        payoutId,
+      }
+    }
+
+    // Continue only if "payoutId instanceof PaymentNotFoundError"
+  }
+
   const amountToSendRaw = sendAll
-    ? await LedgerService().getWalletBalance(senderWalletId)
+    ? await ledger.getWalletBalance(senderWalletId)
     : amountRaw
   if (amountToSendRaw instanceof Error) return amountToSendRaw
 
