@@ -10828,12 +10828,12 @@ media-typer@0.3.0:
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
   integrity sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==
 
-medici@^6.1.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/medici/-/medici-6.1.0.tgz#fd40f6c4323d4e4bb18534ea8813559afed2cc2b"
-  integrity sha512-mrOGboEHrlhGon6rxoZR7coejGtLZsEeTAn67CG0ZsdLch5AWfYRc0twbnJeeIJghi3JF9dgi0b+tXGPP30E4A==
+medici@^6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/medici/-/medici-6.2.0.tgz#3ca6d58362f0ecbe8c887ce821d4cb951d44e26b"
+  integrity sha512-aQmhSzg0sY8ZUkXvhfAiXg2RXElHdRhFrCse6l3IX9WGkfGtByC9tc9Kms+3RQrtxVeeG/NVyNAWdUI+xXVHiw==
   dependencies:
-    mongoose "5 - 6"
+    mongoose "5 - 7"
 
 memory-pager@^1.0.2:
   version "1.5.0"
@@ -11034,6 +11034,17 @@ mongodb@4.16.0:
     "@aws-sdk/credential-providers" "^3.186.0"
     saslprep "^1.0.3"
 
+mongodb@5.5.0:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-5.5.0.tgz#5d213ef68f6b48610909d98d537059f2d7f374a1"
+  integrity sha512-XgrkUgAAdfnZKQfk5AsYL8j7O99WHd4YXPxYxnh8dZxD+ekYWFRA3JktUsBnfg+455Smf75/+asoU/YLwNGoQQ==
+  dependencies:
+    bson "^5.3.0"
+    mongodb-connection-string-url "^2.6.0"
+    socks "^2.7.1"
+  optionalDependencies:
+    saslprep "^1.0.3"
+
 mongodb@^5.3.0:
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-5.6.0.tgz#caff5278341bfc0f1ef6f394bb403d207de03d1e"
@@ -11045,7 +11056,20 @@ mongodb@^5.3.0:
   optionalDependencies:
     saslprep "^1.0.3"
 
-"mongoose@5 - 6", mongoose@^6.9.2:
+"mongoose@5 - 7":
+  version "7.2.3"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-7.2.3.tgz#d20fa2a8beda9aae54b293d584ddda80d36febdf"
+  integrity sha512-ClHD73HiqMk4hcOhdlZxluldokZfXvkrxjdKuqI7UQWLM71OIoy+n+OS+OHz4qJhS+/UaPzemQDKYtVrl4l0Ig==
+  dependencies:
+    bson "^5.3.0"
+    kareem "2.5.1"
+    mongodb "5.5.0"
+    mpath "0.9.0"
+    mquery "5.0.0"
+    ms "2.1.3"
+    sift "16.0.1"
+
+mongoose@^6.9.2:
   version "6.11.1"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-6.11.1.tgz#4abcfc747ad38b364a90488af781d054a8cbc242"
   integrity sha512-AvQ8C5ZGF6GcsQhoRg/i7pbNZpb96qLGU5ICBllckp7qMOxcfUF1nA6JstZw841BqRcE6myZ/mx9CluEESaw5Q==
@@ -11083,6 +11107,13 @@ mquery@4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/mquery/-/mquery-4.0.3.tgz#4d15f938e6247d773a942c912d9748bd1965f89d"
   integrity sha512-J5heI+P08I6VJ2Ky3+33IpCdAvlYGTSUjwTPxkAr8i8EoduPMBX2OY/wa3IKZIQl7MU4SbFk8ndgSKyB/cl1zA==
+  dependencies:
+    debug "4.x"
+
+mquery@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/mquery/-/mquery-5.0.0.tgz#a95be5dfc610b23862df34a47d3e5d60e110695d"
+  integrity sha512-iQMncpmEK8R8ncT8HJGsGc9Dsp8xcgYMVSbs5jgnm1lFHTZqMJTUWTDx1LBO8+mK3tPNZWFLBghQEIOULSTHZg==
   dependencies:
     debug "4.x"
 
