@@ -28,7 +28,7 @@ const userRef = "L"
 
 describe("Oathkeeper", () => {
   it("return anon if no bearer assets", async () => {
-    const res = await sendOathkeeperRequest(undefined)
+    const res = await sendOathkeeperRequest(undefined, "graphql")
     if (res instanceof Error) throw res
 
     const decoded = decode(res, { complete: true })
@@ -36,7 +36,7 @@ describe("Oathkeeper", () => {
   })
 
   it("error if an invalid token is provided", async () => {
-    const res = await sendOathkeeperRequest("invalid.token" as SessionToken)
+    const res = await sendOathkeeperRequest("invalid.token" as SessionToken, "graphql")
     expect(res).toBeInstanceOf(OathkeeperUnauthorizedServiceError)
   })
 
@@ -55,12 +55,26 @@ describe("Oathkeeper", () => {
 
     const token = result.data.userLogin.authToken
 
-    const res = await sendOathkeeperRequest(token)
+    const res = await sendOathkeeperRequest(token, "graphql")
     if (res instanceof Error) throw res
 
     const decodedNew = decode(res, { complete: true })
     const uidFromJwt = decodedNew?.payload?.sub
 
     expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
+  })
+
+  it("return sub if jwt is provided", async () => {
+    // TODO jwt from helper
+    const token =
+      "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWIzNyJ9.eyJzdWIiOiIxOjcyMjc5Mjk3MzY2OmFuZHJvaWQ6VEVTVEUyRUFDQ09VTlQ1YWE3NWFmNyIsImF1ZCI6WyJwcm9qZWN0cy83MjI3OTI5NzM2NiIsInByb2plY3RzL2dhbG95YXBwIl0sInByb3ZpZGVyIjoiZGVidWciLCJpc3MiOiJodHRwczovL2ZpcmViYXNlYXBwY2hlY2suZ29vZ2xlYXBpcy5jb20vNzIyNzkyOTczNjYiLCJleHAiOjI2MzkwMDAwNjl9.Fh11HcuTal_S_26xFwIUWYivY0NzKGYrpBwNgQ-1QnfLZwUaHlMCX4hj4tcRJiKMX2UU_pnZCWgVnBqM9rbeSLFj35OvyP0z4rnflLOOl-UBrQQs4pVSUCpmh8eLX5lkh27KhdGOifND3jJPkKhPeVI9-hpZKNTYdU9y3M1yFF4BjvHs05nf8Zu3tWfpj0_LNPE-H0eXiiHaEUDv_GPA4HgLSAyxdh8bFoVC36UjpG-vm8Tt7jOUDnGc3s7jQk_lIJ3uCs8JXU4LfhSAQS6Q9UYmpFFUgsrUaZ6T_o2XTZtHgd_9qOUVvTChL-0dDGyDvB1tzofwIzLwxj7TGoEDGQ" as SessionToken
+
+    const res = await sendOathkeeperRequest(token, "oathkeeper-appcheck")
+    if (res instanceof Error) throw res
+
+    const decodedNew = decode(res, { complete: true })
+    const uidFromJwt = decodedNew?.payload?.sub
+
+    expect(uidFromJwt).toBeDefined()
   })
 })

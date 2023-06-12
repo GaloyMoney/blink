@@ -199,4 +199,16 @@ authRouter.get("/clearCookies", async (req, res) => {
   }
 })
 
+authRouter.post("/create/device-account", async (req, res) => {
+  try {
+    //const { deviceId, uuidV4Username, uuidV4Password } = req.body
+
+    return res.status(200).send({
+      result: "",
+    })
+  } catch (e) {
+    return res.status(500).send({ result: "" })
+  }
+})
+
 export default authRouter

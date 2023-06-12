@@ -10,8 +10,9 @@ import axios from "axios"
 
 export const sendOathkeeperRequest = async (
   token: SessionToken | undefined,
+  endpoint: "graphql" | "oathkeeper-appcheck",
 ): Promise<JwtToken | OathkeeperError> => {
-  const requestUrl = `${decisionsApi()}graphql`
+  const requestUrl = `${decisionsApi()}${endpoint}`
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
