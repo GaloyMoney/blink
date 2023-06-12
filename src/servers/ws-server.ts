@@ -70,7 +70,7 @@ const getContext = async (ctx: Context) => {
 
   // make request to oathkeeper
   // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"
-  const jwtToken = await sendOathkeeperRequest(kratosToken)
+  const jwtToken = await sendOathkeeperRequest(kratosToken, "graphql")
   // TODO: see how returning an error affect the websocket connection
   if (jwtToken instanceof Error) return jwtToken
 
