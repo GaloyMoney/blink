@@ -344,7 +344,7 @@ export const isCodeValid = async ({
 }
 
 export const verifyJwt = async (token: string) => {
-  const newToken = await sendOathkeeperRequest(token as SessionToken)
+  const newToken = await sendOathkeeperRequest(token as SessionToken, "graphql")
   if (newToken instanceof Error) return newToken
   const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
   const verifiedToken = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
