@@ -7,9 +7,9 @@ start-deps-integration:
 	docker compose up integration-deps -d && make add-bitcoind-signer-wallet
 
 add-bitcoind-signer-wallet:
-	docker exec galoy-bitcoind-signer-1 bitcoin-cli createwallet "signer" > /dev/null && \
+	docker exec galoy-bitcoind-signer-1 bitcoin-cli createwallet "dev" > /dev/null && \
 	docker exec galoy-bitcoind-signer-1 bitcoin-cli \
-		-rpcwallet=signer \
+		-rpcwallet=dev \
 		importdescriptors "$$(cat dev/bitcoind/bitcoind_signer_descriptors.json)" \
 		> /dev/null
 
@@ -23,7 +23,7 @@ start-main:
 start-main-fast:
 	yarn run watch-main | yarn pino-pretty -c -l
 
-start-trigger: start-deps
+start-trigger:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/trigger.ts | yarn pino-pretty -c -l
 

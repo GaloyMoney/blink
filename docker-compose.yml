@@ -313,6 +313,7 @@ services:
     image: us.gcr.io/galoy-org/bria:latest
     environment:
       - PG_CON=postgres://user:password@postgres-bria:5432/pg
+      - BITCOIND_SIGNER_ENDPOINT=https://bitcoind-signer:18443
     command:
       - bria
       - daemon
