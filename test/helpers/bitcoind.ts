@@ -21,16 +21,7 @@ import {
 } from "bitcoin-cli-ts"
 
 import { btc2sat } from "@domain/bitcoin"
-
-const connection_obj = {
-  network: process.env.NETWORK,
-  username: process.env.BITCOINDRPCUSER || "rpcuser",
-  password: process.env.BITCOINDRPCPASS || "rpcpassword",
-  host: process.env.BITCOINDADDR,
-  port: parseInt(process.env.BITCOINDPORT || "8332", 10),
-  timeout: parseInt(process.env.BITCOINDTIMEOUT || "10000", 10),
-  version: "24.0.0",
-}
+import { getBitcoinCoreRPCConfig } from "@config"
 
 type GetAddressInfoResult = {
   address: string
@@ -66,7 +57,7 @@ type InWalletTransaction = {
 export class BitcoindClient {
   readonly bitcoind
 
-  constructor() {
+  constructor(connection_obj) {
     const { host, username, password, port, timeout } = connection_obj
     this.bitcoind = authenticatedBitcoind({
       protocol: "http",
@@ -134,7 +125,7 @@ export class BitcoindWalletClient {
   readonly bitcoind
 
   constructor(walletName: string) {
-    const { host, username, password, port, timeout } = connection_obj
+    const { host, username, password, port, timeout } = getBitcoinCoreRPCConfig()
     this.bitcoind = authenticatedBitcoind({
       protocol: "http",
       host: host || "",
@@ -216,7 +207,7 @@ export class BitcoindWalletClient {
 }
 
 // The default client should remain without a wallet (not generate or receive bitcoin)
-export const bitcoindDefaultClient = new BitcoindClient()
+export const bitcoindDefaultClient = new BitcoindClient(getBitcoinCoreRPCConfig())
 
 export const getBalancesDetail = async (): Promise<
   { wallet: string; balance: number }[]

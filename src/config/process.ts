@@ -108,15 +108,25 @@ export const Nextcloudurl = process.env.NEXTCLOUD_URL
 export const Nextclouduser = process.env.NEXTCLOUD_USER
 export const Nextcloudpassword = process.env.NEXTCLOUD_PASSWORD
 
+const bitcoinCoreConfigCommon = {
+  network: process.env.NETWORK,
+  username: process.env.BITCOINDRPCUSER || "rpcuser",
+  password: process.env.BITCOINDRPCPASS || "rpcpassword",
+  host: process.env.BITCOINDADDR,
+  timeout: parseInt(process.env.BITCOINDTIMEOUT || "20000", 10),
+  version: "24.0.0",
+}
 export const getBitcoinCoreRPCConfig = () => {
   return {
-    network: process.env.NETWORK,
-    username: process.env.BITCOINDRPCUSER || "rpcuser",
-    password: process.env.BITCOINDRPCPASS || "rpcpassword",
-    host: process.env.BITCOINDADDR,
+    ...bitcoinCoreConfigCommon,
     port: parseInt(process.env.BITCOINDPORT || "8332", 10),
-    timeout: parseInt(process.env.BITCOINDTIMEOUT || "20000", 10),
-    version: "24.0.0",
+  }
+}
+
+export const getBitcoinCoreSignerRPCConfig = () => {
+  return {
+    ...bitcoinCoreConfigCommon,
+    port: parseInt(process.env.BITCOIND_SIGNER_PORT || "8332", 10),
   }
 }
 
