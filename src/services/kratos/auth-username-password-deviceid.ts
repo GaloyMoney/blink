@@ -68,14 +68,13 @@ export const AuthWithUsernamePasswordDeviceIdService =
       phone: PhoneNumber
       userId: UserId
     }): Promise<boolean | KratosError> => {
-      // 1. create kratos account
-      // 2. kratos webhook calls /kratos/registration to update mongo
-      //    account/user collection to ref kratos uuid instead of device id
       const authService = AuthWithPhonePasswordlessService()
       const kratosResult = await authService.updateIdentityFromDeviceAccount({
         phone,
         userId,
       })
+      // TODO: manage UnknownKratosError: Request failed with status code 409
+      // when phone already exist
       if (kratosResult instanceof Error) return kratosResult
       return true
     }
