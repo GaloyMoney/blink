@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump nodejs actions'
-      sha: 5070acbec19e25e274eaa23714012d88c51a2ad1
+      commitTitle: 'feat: test-on-docker accepts extra params'
+      sha: 8f0a58965090a6089790103c06dc2d29d0518de3
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: bump nodejs actions'
-      sha: 5070acbec19e25e274eaa23714012d88c51a2ad1
+      commitTitle: 'feat: test-on-docker accepts extra params'
+      sha: 8f0a58965090a6089790103c06dc2d29d0518de3
     path: .
   path: ./vendor
 kind: LockConfig
