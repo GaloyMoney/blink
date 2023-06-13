@@ -112,13 +112,13 @@ const bitcoinCoreConfigCommon = {
   network: process.env.NETWORK,
   username: process.env.BITCOINDRPCUSER || "rpcuser",
   password: process.env.BITCOINDRPCPASS || "rpcpassword",
-  host: process.env.BITCOINDADDR,
   timeout: parseInt(process.env.BITCOINDTIMEOUT || "20000", 10),
   version: "24.0.0",
 }
 export const getBitcoinCoreRPCConfig = () => {
   return {
     ...bitcoinCoreConfigCommon,
+    host: process.env.BITCOINDADDR,
     port: parseInt(process.env.BITCOINDPORT || "8332", 10),
   }
 }
@@ -126,6 +126,7 @@ export const getBitcoinCoreRPCConfig = () => {
 export const getBitcoinCoreSignerRPCConfig = () => {
   return {
     ...bitcoinCoreConfigCommon,
+    host: process.env.BITCOIND_SIGNER_ADDR,
     port: parseInt(process.env.BITCOIND_SIGNER_PORT || "8332", 10),
   }
 }
