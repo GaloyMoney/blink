@@ -118,7 +118,8 @@ plan:
 on_failure: #@ slack_failure_notification()
 #@ end
 
-#@ def test_on_docker_host(container, params={}):
+#@ def test_on_docker_host(container, additional_params={}):
+#@ params = dict(additional_params)
 #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container
 #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
 #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
