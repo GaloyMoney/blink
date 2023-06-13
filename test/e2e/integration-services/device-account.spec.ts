@@ -2,6 +2,8 @@ import axios from "axios"
 
 import { gql } from "apollo-server-core"
 
+import { sleep } from "@utils"
+
 import {
   MeDocument,
   MeQuery,
@@ -88,6 +90,8 @@ describe("DeviceAccountService", () => {
 
     const meResult = await apolloClient.query<MeQuery>({ query: MeDocument })
 
+    await disposeClient()
+
     const UuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -103,16 +107,19 @@ describe("DeviceAccountService", () => {
       variables: { input: { phone, code } },
     })
 
-    expect(res?.data?.userLoginUpgrade?.success).toBe(true)
-
-    console.dir(res2, { depth: null })
+    if (!res2) throw new Error("res2 is undefined")
+    expect(res2?.data?.userLoginUpgrade?.success).toBe(true)
 
     {
-      const meResult2 = await apolloClient.query<MeQuery>({ query: MeDocument })
-      expect(meResult2?.data?.me?.defaultAccount.level).toBe("ONE")
-      expect(defaultWalletId).toBe(meResult2?.data?.me?.defaultAccount.defaultWalletId)
-    }
+      const { apolloClient, disposeClient } = createApolloClient(
+        defaultTestClientConfig(token),
+      )
 
-    await disposeClient()
+      const meResult2 = await apolloClient.query<MeQuery>({ query: MeDocument })
+      expect(defaultWalletId).toBe(meResult2?.data?.me?.defaultAccount.defaultWalletId)
+      expect(meResult2?.data?.me?.defaultAccount.level).toBe("ONE")
+
+      await disposeClient()
+    }
   })
 })
