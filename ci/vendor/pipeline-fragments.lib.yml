@@ -118,7 +118,13 @@ plan:
 on_failure: #@ slack_failure_notification()
 #@ end
 
-#@ def test_on_docker_host(container):
+#@ def test_on_docker_host(container, params={}):
+#@ params["REPO_PATH"] = data.values.gh_repository + "-" + container
+#@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
+#@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
+#@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
+#@ params["TEST_CONTAINER"] = container
+#@ params["JEST_TIMEOUT"] = 90000
 name: #@ container
 serial: true
 plan:
@@ -140,13 +146,7 @@ plan:
     caches:
     - path: cargo-home
     - path: cargo-target-dir
-    params:
-      REPO_PATH: #@ data.values.gh_repository + "-" + container
-      GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
-      SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
-      SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
-      TEST_CONTAINER: #@ container
-      JEST_TIMEOUT: 90000
+    params: #@ params
     run:
       path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
   ensure:
