@@ -250,11 +250,13 @@ export const loginWithDevice = async ({
   })
   if (res instanceof Error) throw res
 
-  const account = await createAccountForDeviceAccount({
-    userId: res.kratosUserId,
-    deviceId,
-  })
-  if (account instanceof Error) return account
+  if (res.newEntity) {
+    const account = await createAccountForDeviceAccount({
+      userId: res.kratosUserId,
+      deviceId,
+    })
+    if (account instanceof Error) return account
+  }
 
   return res.sessionToken
 }

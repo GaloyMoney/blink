@@ -14,7 +14,8 @@ export const AuthWithUsernamePasswordDeviceIdService =
     }: {
       username: IdentityUsername
       password: IdentityPassword
-    }): Promise<WithSessionResponse | KratosError> => {
+    }): Promise<CreateIdentityWithSessionResult | KratosError> => {
+      let newEntity = true
       const traits = { username }
       const method = "password"
       const identifier = username
@@ -29,9 +30,15 @@ export const AuthWithUsernamePasswordDeviceIdService =
 
         await kratosAdmin.createIdentity({ createIdentityBody })
       } catch (err) {
-        return new UnknownKratosError(
-          `Impossible to create identity: ${err.message || err}`,
-        )
+        // we continue if there is 409/Conflit,
+        // because it means the identity already exists
+        if (err.response.status !== 409) {
+          return new UnknownKratosError(
+            `Impossible to create identity: ${err.message || err}`,
+          )
+        }
+
+        newEntity = false
       }
 
       try {
@@ -49,7 +56,7 @@ export const AuthWithUsernamePasswordDeviceIdService =
         // note: this only works when whoami: required_aal = aal1
         const kratosUserId = result.data.session.identity.id as UserId
 
-        return { sessionToken, kratosUserId }
+        return { sessionToken, kratosUserId, newEntity }
       } catch (err) {
         return new UnknownKratosError(
           `Impossible to get sessionToken: ${err.message || err}`,

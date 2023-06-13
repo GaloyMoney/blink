@@ -30,7 +30,7 @@
   upstream:
     url: "http://e2e-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(create/device-account|login/device-account)>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/create/device-account"
     methods: ["POST"]
   authenticators:
     - handler: jwt
