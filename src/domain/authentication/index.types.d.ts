@@ -81,11 +81,15 @@ interface IAuthWithEmailPasswordlessService {
   }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError>
 }
 
+type CreateIdentityWithSessionResult = WithSessionResponse & {
+  newEntity: boolean
+}
+
 interface IAuthWithUsernamePasswordDeviceIdService {
   createIdentityWithSession(args: {
     username: IdentityUsername
     password: IdentityPassword
-  }): Promise<WithSessionResponse | AuthenticationError>
+  }): Promise<CreateIdentityWithSessionResult | AuthenticationError>
   upgradeToPhoneSchema(args: {
     phone: PhoneNumber
     userId: UserId

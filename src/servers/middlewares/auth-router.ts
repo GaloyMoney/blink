@@ -241,14 +241,4 @@ authRouter.post("/create/device-account", async (req, res) => {
   }
 })
 
-authRouter.post("/login/device-account", async (req, res) => {
-  try {
-    return res.status(200).send({
-      error: "NOT IMPLEMENTED",
-    })
-  } catch (err) {
-    return res.status(500).send({ result: "NOT IMPLEMENTED" })
-  }
-})
-
 export default authRouter
