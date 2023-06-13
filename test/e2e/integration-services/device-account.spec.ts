@@ -2,8 +2,6 @@ import axios from "axios"
 
 import { gql } from "apollo-server-core"
 
-import { sleep } from "@utils"
-
 import {
   MeDocument,
   MeQuery,

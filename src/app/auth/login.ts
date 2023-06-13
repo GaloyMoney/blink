@@ -143,6 +143,11 @@ export const loginWithPhoneCookie = async ({
   return kratosResult
 }
 
+type LoginUpgradeWithPhoneResult = {
+  success: true
+  sessionToken?: SessionToken
+}
+
 export const loginUpgradeWithPhone = async ({
   phone,
   code,
@@ -153,7 +158,7 @@ export const loginUpgradeWithPhone = async ({
   code: PhoneCode
   ip: IpAddress
   account: Account
-}): Promise<boolean | ApplicationError> => {
+}): Promise<LoginUpgradeWithPhoneResult | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -186,9 +191,7 @@ export const loginUpgradeWithPhone = async ({
       phone,
     })
     if (res instanceof Error) return res
-    console.log(res, "res12")
-
-    return success
+    return { success }
   }
 
   if (phoneAccount instanceof Error) return phoneAccount
@@ -212,7 +215,7 @@ export const loginUpgradeWithPhone = async ({
   const authService = AuthWithPhonePasswordlessService()
   const kratosResult = await authService.loginToken({ phone })
   if (kratosResult instanceof Error) return kratosResult
-  return true
+  return { success: true, sessionToken: kratosResult.sessionToken }
 }
 
 export const loginWithDevice = async ({

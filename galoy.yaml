@@ -95,7 +95,7 @@ test_accounts:
   - ref: "N"
     phone: "+198765432115"
     code: "321321"
-  - ref: "O"
+  - ref: O
     phone: "+198765432116"
     code: "321321"
 rateLimits:
