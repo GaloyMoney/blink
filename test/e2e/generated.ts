@@ -1499,12 +1499,12 @@ export type UserUpdateUsernameMutationVariables = Exact<{
 
 export type UserUpdateUsernameMutation = { readonly __typename: 'Mutation', readonly userUpdateUsername: { readonly __typename: 'UserUpdateUsernamePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly user?: { readonly __typename: 'User', readonly id: string, readonly username?: string | null } | null } };
 
-export type UserLoginDeviceMutationVariables = Exact<{
-  input: UserLoginDeviceInput;
+export type UserLoginUpgradeMutationVariables = Exact<{
+  input: UserLoginUpgradeInput;
 }>;
 
 
-export type UserLoginDeviceMutation = { readonly __typename: 'Mutation', readonly userLoginDevice: { readonly __typename: 'JwtPayload', readonly authToken?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
+export type UserLoginUpgradeMutation = { readonly __typename: 'Mutation', readonly userLoginUpgrade: { readonly __typename: 'AuthTokenPayload', readonly authToken?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
 
 export type UserDefaultWalletIdQueryVariables = Exact<{
   username: Scalars['Username']['input'];
@@ -1750,42 +1750,43 @@ export function useUserUpdateUsernameMutation(baseOptions?: Apollo.MutationHookO
 export type UserUpdateUsernameMutationHookResult = ReturnType<typeof useUserUpdateUsernameMutation>;
 export type UserUpdateUsernameMutationResult = Apollo.MutationResult<UserUpdateUsernameMutation>;
 export type UserUpdateUsernameMutationOptions = Apollo.BaseMutationOptions<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>;
-export const UserLoginDeviceDocument = gql`
-    mutation UserLoginDevice($input: UserLoginDeviceInput!) {
-  userLoginDevice(input: $input) {
+export const UserLoginUpgradeDocument = gql`
+    mutation userLoginUpgrade($input: UserLoginUpgradeInput!) {
+  userLoginUpgrade(input: $input) {
     errors {
       message
+      code
     }
     authToken
   }
 }
     `;
-export type UserLoginDeviceMutationFn = Apollo.MutationFunction<UserLoginDeviceMutation, UserLoginDeviceMutationVariables>;
+export type UserLoginUpgradeMutationFn = Apollo.MutationFunction<UserLoginUpgradeMutation, UserLoginUpgradeMutationVariables>;
 
 /**
- * __useUserLoginDeviceMutation__
+ * __useUserLoginUpgradeMutation__
  *
- * To run a mutation, you first call `useUserLoginDeviceMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUserLoginDeviceMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useUserLoginUpgradeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserLoginUpgradeMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [userLoginDeviceMutation, { data, loading, error }] = useUserLoginDeviceMutation({
+ * const [userLoginUpgradeMutation, { data, loading, error }] = useUserLoginUpgradeMutation({
  *   variables: {
  *      input: // value for 'input'
  *   },
  * });
  */
-export function useUserLoginDeviceMutation(baseOptions?: Apollo.MutationHookOptions<UserLoginDeviceMutation, UserLoginDeviceMutationVariables>) {
+export function useUserLoginUpgradeMutation(baseOptions?: Apollo.MutationHookOptions<UserLoginUpgradeMutation, UserLoginUpgradeMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UserLoginDeviceMutation, UserLoginDeviceMutationVariables>(UserLoginDeviceDocument, options);
+        return Apollo.useMutation<UserLoginUpgradeMutation, UserLoginUpgradeMutationVariables>(UserLoginUpgradeDocument, options);
       }
-export type UserLoginDeviceMutationHookResult = ReturnType<typeof useUserLoginDeviceMutation>;
-export type UserLoginDeviceMutationResult = Apollo.MutationResult<UserLoginDeviceMutation>;
-export type UserLoginDeviceMutationOptions = Apollo.BaseMutationOptions<UserLoginDeviceMutation, UserLoginDeviceMutationVariables>;
+export type UserLoginUpgradeMutationHookResult = ReturnType<typeof useUserLoginUpgradeMutation>;
+export type UserLoginUpgradeMutationResult = Apollo.MutationResult<UserLoginUpgradeMutation>;
+export type UserLoginUpgradeMutationOptions = Apollo.BaseMutationOptions<UserLoginUpgradeMutation, UserLoginUpgradeMutationVariables>;
 export const UserDefaultWalletIdDocument = gql`
     query userDefaultWalletId($username: Username!) {
   userDefaultWalletId(username: $username)

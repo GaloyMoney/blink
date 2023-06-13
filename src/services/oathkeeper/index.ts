@@ -10,7 +10,7 @@ import axios from "axios"
 
 export const sendOathkeeperRequest = async (
   token: SessionToken | undefined,
-  endpoint: "graphql" | "oathkeeper-appcheck",
+  endpoint: "graphql" | "auth/create/device-account",
 ): Promise<JwtToken | OathkeeperError> => {
   const requestUrl = `${decisionsApi()}${endpoint}`
 
@@ -19,7 +19,11 @@ export const sendOathkeeperRequest = async (
   }
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`
+    if (endpoint === "auth/create/device-account") {
+      headers["Appcheck"] = token
+    } else {
+      headers["Authorization"] = `Bearer ${token}`
+    }
   }
 
   try {

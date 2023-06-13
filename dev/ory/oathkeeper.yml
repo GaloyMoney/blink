@@ -19,6 +19,9 @@ authenticators:
       jwks_urls:
         - https://firebaseappcheck.googleapis.com/v1beta/jwks
         - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
+      token_from:
+        header: Appcheck
+
   bearer_token:
     enabled: true
     config:
@@ -42,9 +45,6 @@ authenticators:
       extra_from: identity.traits
 
   unauthorized:
-    enabled: true
-
-  noop:
     enabled: true
 
 authorizers:

@@ -173,39 +173,51 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     }
   }
 
-  const createIdentityWithDeviceId = async ({
+  const updateIdentityFromDeviceAccount = async ({
     phone,
-    deviceId,
+    userId,
   }: {
     phone: PhoneNumber
-    deviceId: UserId
-  }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | KratosError> => {
-    // need to use phone and deviceId as the identifier for the kratos webhook callback to work
-    //  in /kratos/registration
-    const traits = { phone }
-    const method = "password"
-    try {
-      const flow = await kratosPublic.createNativeRegistrationFlow()
-      const result = await kratosPublic.updateRegistrationFlow({
-        flow: flow.data.id,
-        updateRegistrationFlowBody: {
-          traits,
-          method,
-          password,
-          transient_payload: {
-            deviceId,
-          },
-        },
-      })
-      const sessionToken = result.data.session_token as SessionToken
-      const kratosUserId = result.data.identity.id as UserId
+    userId: UserId
+  }): Promise<IdentityPhone | KratosError> => {
+    let identity: Identity
 
-      return { sessionToken, kratosUserId }
+    try {
+      ;({ data: identity } = await kratosAdmin.getIdentity({ id: userId }))
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
+        // FIXME: not the right error. we expect the identity to exist
         return new LikelyUserAlreadyExistError(err.message || err)
       }
 
+      return new UnknownKratosError(err.message || err)
+    }
+
+    if (identity.schema_id !== "phone_no_password_v0") {
+      return new IncompatibleSchemaUpgradeError()
+    }
+
+    if (identity.state === undefined)
+      throw new KratosError("state undefined, probably impossible state") // type issue
+
+    identity.traits = { phone }
+
+    const adminIdentity: UpdateIdentityBody = {
+      ...identity,
+      credentials: { password: { config: { password } } },
+      state: identity.state,
+      schema_id: "phone_no_password_v0",
+    }
+
+    try {
+      const { data: newIdentity } = await kratosAdmin.updateIdentity({
+        id: userId,
+        updateIdentityBody: adminIdentity,
+      })
+
+      // FIXME: should be toDomainIdentityPhoneEmail
+      return toDomainIdentityPhone(newIdentity)
+    } catch (err) {
       return new UnknownKratosError(err.message || err)
     }
   }
@@ -376,7 +388,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       logoutToken,
       logoutCookie,
       createIdentityWithSession,
-      createIdentityWithDeviceId,
+      updateIdentityFromDeviceAccount,
       createIdentityWithCookie,
       createIdentityNoSession,
       upgradeToPhoneAndEmailSchema,

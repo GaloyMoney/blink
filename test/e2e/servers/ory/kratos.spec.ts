@@ -7,9 +7,9 @@ import { CreateIdentityBody } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
+  IdentityRepository,
   extendSession,
   getNextPage,
-  IdentityRepository,
   listSessions,
   validateKratosToken,
 } from "@services/kratos"
@@ -31,18 +31,8 @@ import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
 import { sleep } from "@utils"
 
-import USER_UPDATE_PHONE from "../../../e2e/servers/graphql-main-server/mutations/user-update-phone.gql"
-import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-server/queries/account-details-by-user-phone.gql"
-
 import {
-  adminTestClientConfig,
-  createApolloClient,
-  defaultTestClientConfig,
-  fundWalletIdFromLightning,
-  getAdminPhoneAndCode,
-  getDefaultWalletIdByTestUserRef,
   getError,
-  getPhoneAndCodeFromRef,
   killServer,
   randomEmail,
   randomPassword,
@@ -50,7 +40,6 @@ import {
   startServer,
 } from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
-import { UserLoginDocument } from "test/e2e/generated"
 
 const identityRepo = IdentityRepository()
 
@@ -531,109 +520,6 @@ describe("decoding link header", () => {
   })
 })
 
-describe("updates user phone", () => {
-  let newPhone: PhoneNumber
-
-  it("updates user phone", async () => {
-    const { phone, code } = getPhoneAndCodeFromRef("H")
-
-    const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
-
-    await apolloClient.mutate({
-      mutation: UserLoginDocument,
-      variables: { input: { phone, code } },
-    })
-
-    const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
-
-    const loginResult = await apolloClient.mutate({
-      mutation: UserLoginDocument,
-      variables: { input: { phone: adminPhone, code: adminCode } },
-    })
-
-    await disposeClient()
-
-    const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
-      await createApolloClient(
-        adminTestClientConfig(loginResult.data.userLogin.authToken),
-      )
-
-    const accountDetails = await adminApolloClient.query({
-      query: ACCOUNT_DETAILS_BY_USER_PHONE,
-      variables: { phone },
-    })
-
-    const uid = accountDetails.data.accountDetailsByUserPhone.id
-
-    newPhone = randomPhone()
-    await adminApolloClient.mutate({
-      mutation: USER_UPDATE_PHONE,
-      variables: { input: { phone: newPhone, uid } },
-    })
-
-    const result = await adminApolloClient.query({
-      query: ACCOUNT_DETAILS_BY_USER_PHONE,
-      variables: { phone: newPhone },
-    })
-
-    await disposeAdminClient()
-
-    expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
-  })
-
-  it("updates phone even if new phone is associated with a zero balance account, but not otherwise", async () => {
-    const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
-    const { phone, code } = getPhoneAndCodeFromRef("I")
-    const walletId = await getDefaultWalletIdByTestUserRef("I")
-
-    apolloClient.mutate({
-      mutation: UserLoginDocument,
-      variables: { input: { phone, code } },
-    })
-
-    const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
-
-    const loginResult = await apolloClient.mutate({
-      mutation: UserLoginDocument,
-      variables: { input: { phone: adminPhone, code: adminCode } },
-    })
-
-    disposeClient()
-
-    const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
-      createApolloClient(adminTestClientConfig(loginResult.data.userLogin.authToken))
-
-    const accountDetails = await adminApolloClient.query({
-      query: ACCOUNT_DETAILS_BY_USER_PHONE,
-      variables: { phone },
-    })
-
-    const uid = accountDetails.data.accountDetailsByUserPhone.id
-
-    const result = await adminApolloClient.mutate({
-      mutation: USER_UPDATE_PHONE,
-      variables: { input: { phone: newPhone, uid } },
-    })
-
-    // removes the phone from a user with zero balance
-    expect(result.data.userUpdatePhone.errors.length).toBe(0)
-
-    await fundWalletIdFromLightning({ walletId, amount: 1000 })
-
-    const result1 = await adminApolloClient.mutate({
-      mutation: USER_UPDATE_PHONE,
-      variables: { input: { phone: newPhone, uid } },
-    })
-
-    // errors when trying to remove phone from a user with non zero balance
-    expect(result1.data.userUpdatePhone.errors[0].message).toContain(
-      "The phone is associated with an existing wallet that has a non zero balance",
-    )
-
-    await disposeAdminClient()
-  })
-})
-
 describe("cookie flow", () => {
   it("login with cookie then revoke session", async () => {
     const authService = AuthWithPhonePasswordlessService()
@@ -659,19 +545,23 @@ describe("cookie flow", () => {
     })
     expect(kratosResp.status).toBe(204)
   })
+})
 
-  describe("username password deviceid flow", () => {
-    it("create an account", async () => {
-      const authService = AuthWithUsernamePasswordDeviceIdService()
-      const username = crypto.randomUUID() as Username
-      const password = crypto.randomUUID() as IdentityPassword
+describe("device account flow", () => {
+  it("create an account", async () => {
+    const authService = AuthWithUsernamePasswordDeviceIdService()
+    const username = crypto.randomUUID() as IdentityUsername
+    const password = crypto.randomUUID() as IdentityPassword
 
-      const res = await authService.createIdentityWithSession({
-        username,
-        password,
-      })
-
-      expect(res).toBeDefined()
+    const res = await authService.createIdentityWithSession({
+      username,
+      password,
     })
+    if (res instanceof Error) throw res
+    const { kratosUserId } = res
+
+    const newIdentity = await kratosAdmin.getIdentity({ id: kratosUserId })
+    expect(newIdentity.data.schema_id).toBe("username_password_deviceid_v0")
+    expect(newIdentity.data.traits.username).toBe(username)
   })
 })

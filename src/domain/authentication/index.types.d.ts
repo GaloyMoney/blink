@@ -2,6 +2,7 @@ type SessionId = string & { readonly brand: unique symbol }
 
 type AuthenticationError = import("./errors").AuthenticationError
 
+type IdentityUsername = string & { readonly brand: unique symbol }
 type IdentityPassword = string & { readonly brand: unique symbol }
 
 // can be either kratosUserId or deviceId subjects
@@ -47,10 +48,10 @@ interface IAuthWithPhonePasswordlessService {
   createIdentityWithSession(args: {
     phone: PhoneNumber
   }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
-  createIdentityWithDeviceId(args: {
+  updateIdentityFromDeviceAccount(args: {
     phone: PhoneNumber
-    deviceId: UserId
-  }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
+    userId: UserId
+  }): Promise<IdentityPhone | AuthenticationError>
   createIdentityWithCookie(args: {
     phone: PhoneNumber
   }): Promise<
@@ -80,18 +81,15 @@ interface IAuthWithEmailPasswordlessService {
   }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError>
 }
 
-interface IAuthWithDeviceAccountService {
-  upgradeToPhoneSchema(args: {
-    phone: PhoneNumber
-    deviceId: UserId
-  }): Promise<SessionToken | KratosError>
-}
-
 interface IAuthWithUsernamePasswordDeviceIdService {
   createIdentityWithSession(args: {
-    username: Username
+    username: IdentityUsername
     password: IdentityPassword
-  }): Promise<SessionToken | AuthenticationError>
+  }): Promise<WithSessionResponse | AuthenticationError>
+  upgradeToPhoneSchema(args: {
+    phone: PhoneNumber
+    userId: UserId
+  }): Promise<boolean | KratosError>
 }
 
 interface IIdentityRepository {
