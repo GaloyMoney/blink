@@ -88,35 +88,6 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const migrateUserIdSubject = async ({
-    currentUserIdSubject,
-    newUserIdSubject,
-    phone,
-  }: {
-    currentUserIdSubject: UserId
-    newUserIdSubject: UserId
-    phone: PhoneNumber
-  }): Promise<User | RepositoryError> => {
-    const filter = { userId: { $eq: currentUserIdSubject } }
-    const update = {
-      $set: {
-        userId: newUserIdSubject,
-        phone,
-      },
-    }
-    const options = { upsert: true, returnOriginal: false }
-
-    try {
-      const result = await User.findOneAndUpdate(filter, update, options)
-      if (!result) {
-        return new RepositoryError("Couldn't update user")
-      }
-      return translateToUser(result)
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   const adminUnsetPhoneForUserPreservation = async (
     id: UserId,
   ): Promise<User | RepositoryError> => {
@@ -140,6 +111,5 @@ export const UsersRepository = (): IUsersRepository => {
     findByPhone,
     update,
     adminUnsetPhoneForUserPreservation,
-    migrateUserIdSubject,
   }
 }

@@ -201,32 +201,52 @@ authRouter.get("/clearCookies", async (req, res) => {
 })
 
 authRouter.post("/create/device-account", async (req, res) => {
+  // FIXME: try catch is too broad
   try {
-    //const { deviceId, uuidV4Username, uuidV4Password } = req.body
-    const user = basicAuth(req)
-    if (user?.name && user?.pass) {
-      const username = user.name
-      const password = user.pass
-      console.log("username", username)
-      console.log("password", password)
-      // TODO call create device account
-      return res.status(200).send({
-        result: "NOT IMPLEMENTED",
-      })
-    } else {
-      return res.status(401).send({ result: "Unauthorized" })
+    const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
+    const ip = parseIps(ipString)
+
+    if (ip === undefined) {
+      throw new Error("IP is not defined")
     }
-  } catch (e) {
-    return res.status(500).send({ result: "" })
+
+    const { deviceId } = req.body
+    const user = basicAuth(req)
+
+    if (!user?.name || !user?.pass || !deviceId) {
+      return res.status(422).send({ error: "Bad input" })
+    }
+
+    const username = user.name
+    const password = user.pass
+
+    const authToken = await Auth.loginWithDevice({
+      username,
+      password,
+      ip,
+      deviceId,
+    })
+
+    if (authToken instanceof Error) {
+      // TODO open telemetry
+      return res.status(500).send({ error: authToken.message })
+    }
+
+    return res.status(200).send({
+      result: authToken,
+    })
+  } catch (err) {
+    // TODO open telemetry
+    return res.status(500).send({ error: `error: ${err}` })
   }
 })
 
 authRouter.post("/login/device-account", async (req, res) => {
   try {
     return res.status(200).send({
-      result: "NOT IMPLEMENTED",
+      error: "NOT IMPLEMENTED",
     })
-  } catch (e) {
+  } catch (err) {
     return res.status(500).send({ result: "NOT IMPLEMENTED" })
   }
 })

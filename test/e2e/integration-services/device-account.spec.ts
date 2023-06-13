@@ -1,8 +1,8 @@
-import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
+import axios from "axios"
 
 import { gql } from "apollo-server-core"
 
-import { UserLoginDeviceMutation, UserLoginDeviceDocument } from "../generated"
+import { MeDocument, MeQuery } from "../generated"
 
 import {
   clearAccountLocks,
@@ -15,8 +15,7 @@ import {
   startServer,
 } from "test/helpers"
 
-let apolloClient: ApolloClient<NormalizedCacheObject>, serverPid: PID
-let disposeClient: () => void = () => null
+let serverPid: PID
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
@@ -33,10 +32,11 @@ afterAll(async () => {
 })
 
 gql`
-  mutation UserLoginDevice($input: UserLoginDeviceInput!) {
-    userLoginDevice(input: $input) {
+  mutation userLoginUpgrade($input: UserLoginUpgradeInput!) {
+    userLoginUpgrade(input: $input) {
       errors {
         message
+        code
       }
       authToken
     }
@@ -49,17 +49,44 @@ const jwt =
 
 describe("DeviceAccountService", () => {
   it("create a device user", async () => {
-    ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
+    const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
+    const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
-    const result = await apolloClient.mutate<UserLoginDeviceMutation>({
-      mutation: UserLoginDeviceDocument,
-      variables: {
-        input: {
-          jwt,
-        },
+    const url = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/create/device-account`
+
+    const username = crypto.randomUUID()
+    const password = crypto.randomUUID()
+    const deviceId = crypto.randomUUID()
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    }
+    headers["Appcheck"] = jwt
+    const auth = Buffer.from(`${username}:${password}`, "utf8").toString("base64")
+    headers["Authorization"] = `Basic ${auth}`
+
+    const res = await axios({
+      url,
+      method: "POST",
+      headers,
+      data: {
+        deviceId,
       },
     })
-    disposeClient()
-    expect(result.data?.userLoginDevice.authToken).toBeDefined()
+
+    const token = res.data.result
+    expect(token.length).toBe(39)
+
+    const { apolloClient, disposeClient } = createApolloClient(
+      defaultTestClientConfig(token),
+    )
+    const meResult = await apolloClient.query<MeQuery>({ query: MeDocument })
+
+    const UuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+    expect(meResult?.data?.me?.defaultAccount.defaultWalletId).toMatch(UuidRegex)
+
+    await disposeClient()
   })
 })

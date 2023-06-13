@@ -399,6 +399,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LnRouteValidationError":
     case "BadAmountForRouteError":
     case "InvalidUsername":
+    case "InvalidDeviceId":
+    case "InvalidIdentityPassword":
+    case "InvalidIdentityUsername":
     case "InvalidPhoneNumber":
     case "InvalidEmailAddress":
     case "InvalidTargetConfirmations":

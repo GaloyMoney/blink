@@ -15,7 +15,6 @@ import { TwilioClient } from "@services/twilio"
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import {
-  JwtSubjectUndefinedError,
   JwtVerifyTokenError,
   LikelyNoUserWithThisPhoneExistError,
 } from "@domain/authentication/errors"
@@ -27,8 +26,16 @@ import {
 } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { checkedToEmailAddress } from "@domain/users"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import {
+  checkedToDeviceId,
+  checkedToEmailAddress,
+  checkedToIdentityPassword,
+  checkedToIdentityUsername,
+} from "@domain/users"
+import {
+  AuthWithPhonePasswordlessService,
+  AuthWithUsernamePasswordDeviceIdService,
+} from "@services/kratos"
 
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
 import { LedgerService } from "@services/ledger"
@@ -40,7 +47,6 @@ import {
 import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
 import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@services/kratos/errors"
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 import jwksRsa from "jwks-rsa"
@@ -146,7 +152,7 @@ export const loginUpgradeWithPhone = async ({
   code: PhoneCode
   ip: IpAddress
   account: Account
-}): Promise<SessionToken | ApplicationError> => {
+}): Promise<boolean | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -168,12 +174,12 @@ export const loginUpgradeWithPhone = async ({
   if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
     // a. create kratos account
     // b. and c. migrate account/user collection in mongo via kratos/registration webhook
-    const kratosToken = await AuthWithDeviceAccountService().upgradeToPhoneSchema({
+    const success = await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
-      deviceId: account.kratosUserId,
+      userId: account.kratosUserId,
     })
-    if (kratosToken instanceof Error) return kratosToken
-    return kratosToken
+    if (success instanceof Error) return success
+    return success
   }
 
   if (phoneAccount instanceof Error) return phoneAccount
@@ -197,34 +203,48 @@ export const loginUpgradeWithPhone = async ({
   const authService = AuthWithPhonePasswordlessService()
   const kratosResult = await authService.loginToken({ phone })
   if (kratosResult instanceof Error) return kratosResult
-  return kratosResult.sessionToken
+  return true
 }
 
 export const loginWithDevice = async ({
-  jwt,
+  username: usernameRaw,
+  password: passwordRaw,
   ip,
+  deviceId: deviceIdRaw,
 }: {
-  jwt: string
   ip: IpAddress
+  username: string
+  password: string
+  deviceId: string
 }): Promise<SessionToken | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
   }
 
-  const verifiedJwt = await verifyJwt(jwt)
-  if (verifiedJwt instanceof Error) return verifiedJwt
-  const deviceId = verifiedJwt.sub as UserId
-  if (!deviceId) return new JwtSubjectUndefinedError("deviceId sub is undefined")
+  const deviceId = checkedToDeviceId(deviceIdRaw)
+  if (deviceId instanceof Error) return deviceId
 
-  const accountExist = await AccountsRepository().findByUserId(deviceId)
-  if (accountExist instanceof CouldNotFindAccountFromKratosIdError) {
-    const account = await createAccountForDeviceAccount({
-      userId: deviceId,
-    })
-    if (account instanceof Error) return account
-  }
-  return jwt as SessionToken
+  const username = checkedToIdentityUsername(usernameRaw)
+  if (username instanceof Error) return username
+
+  const password = checkedToIdentityPassword(passwordRaw)
+  if (password instanceof Error) return password
+
+  const authService = AuthWithUsernamePasswordDeviceIdService()
+  const res = await authService.createIdentityWithSession({
+    username,
+    password,
+  })
+  if (res instanceof Error) throw res
+
+  const account = await createAccountForDeviceAccount({
+    userId: res.kratosUserId,
+    deviceId,
+  })
+  if (account instanceof Error) return account
+
+  return res.sessionToken
 }
 
 // deprecated

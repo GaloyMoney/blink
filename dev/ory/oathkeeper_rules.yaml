@@ -31,19 +31,6 @@
     url: "http://e2e-tests:4012"
   match:
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(create/device-account|login/device-account)>"
-    methods: ["POST", "OPTIONS"]
-  authenticators:
-    - handler: noop
-  authorizer:
-    handler: allow
-  mutators:
-    - handler: noop
-
-- id: appCheck
-  upstream:
-    url: "http://oathkeeper-appcheck"
-  match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/oathkeeper-appcheck"
     methods: ["POST"]
   authenticators:
     - handler: jwt
@@ -55,12 +42,12 @@
         jwks_urls:
           - https://firebaseappcheck.googleapis.com/v1beta/jwks
           - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
+        token_from:
+          header: Appcheck
   authorizer:
     handler: allow
   mutators:
-    - handler: id_token
-      config:
-        claims: '{"sub": "{{ print .Subject }}"}'
+    - handler: noop
 
 - id: galoy-backend
   upstream:
