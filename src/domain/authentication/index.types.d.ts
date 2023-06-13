@@ -89,7 +89,7 @@ interface IAuthWithUsernamePasswordDeviceIdService {
   upgradeToPhoneSchema(args: {
     phone: PhoneNumber
     userId: UserId
-  }): Promise<boolean | KratosError>
+  }): Promise<true | KratosError>
 }
 
 interface IIdentityRepository {

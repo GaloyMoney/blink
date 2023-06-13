@@ -67,7 +67,7 @@ export const AuthWithUsernamePasswordDeviceIdService =
     }: {
       phone: PhoneNumber
       userId: UserId
-    }): Promise<boolean | KratosError> => {
+    }): Promise<true | KratosError> => {
       const authService = AuthWithPhonePasswordlessService()
       const kratosResult = await authService.updateIdentityFromDeviceAccount({
         phone,

@@ -4,7 +4,7 @@ import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
 import Phone from "@graphql/types/scalar/phone"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import SuccessPayload from "@graphql/types/payload/success-payload"
+import UpgradePayload from "@graphql/types/payload/upgrade-payload"
 
 const UserLoginUpgradeInput = GT.Input({
   name: "UserLoginUpgradeInput",
@@ -31,7 +31,7 @@ const UserLoginUpgradeMutation = GT.Field<
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(SuccessPayload),
+  type: GT.NonNull(UpgradePayload),
   args: {
     input: { type: GT.NonNull(UserLoginUpgradeInput) },
   },
@@ -50,18 +50,18 @@ const UserLoginUpgradeMutation = GT.Field<
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const success = await Auth.loginUpgradeWithPhone({
+    const res = await Auth.loginUpgradeWithPhone({
       phone,
       code,
       ip,
       account: domainAccount,
     })
 
-    if (success instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(success)] }
+    if (res instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(res)] }
     }
 
-    return { errors: [], success }
+    return { errors: [], ...res }
   },
 })
 
