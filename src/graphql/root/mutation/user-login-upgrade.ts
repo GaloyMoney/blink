@@ -2,9 +2,9 @@ import { GT } from "@graphql/index"
 import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
 
 import Phone from "@graphql/types/scalar/phone"
-import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import SuccessPayload from "@graphql/types/payload/success-payload"
 
 const UserLoginUpgradeInput = GT.Input({
   name: "UserLoginUpgradeInput",
@@ -31,7 +31,7 @@ const UserLoginUpgradeMutation = GT.Field<
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(AuthTokenPayload),
+  type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(UserLoginUpgradeInput) },
   },

@@ -331,6 +331,11 @@ export const configSchema = {
           phone: "+198765432115",
           code: "321321",
         },
+        {
+          ref: "O",
+          phone: "+198765432116",
+          code: "321321",
+        },
       ],
       uniqueItems: true,
     },

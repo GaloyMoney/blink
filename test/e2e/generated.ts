@@ -365,12 +365,6 @@ export const InvoicePaymentStatus = {
 } as const;
 
 export type InvoicePaymentStatus = typeof InvoicePaymentStatus[keyof typeof InvoicePaymentStatus];
-export type JwtPayload = {
-  readonly __typename: 'JwtPayload';
-  readonly authToken?: Maybe<Scalars['String']['output']>;
-  readonly errors: ReadonlyArray<Error>;
-};
-
 export type LnInvoice = {
   readonly __typename: 'LnInvoice';
   readonly paymentHash: Scalars['PaymentHash']['output'];
@@ -629,8 +623,7 @@ export type Mutation = {
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
   readonly userLogin: AuthTokenPayload;
-  readonly userLoginDevice: JwtPayload;
-  readonly userLoginUpgrade: AuthTokenPayload;
+  readonly userLoginUpgrade: SuccessPayload;
   readonly userLogout: AuthTokenPayload;
   /** @deprecated Use QuizCompletedMutation instead */
   readonly userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedPayload;
@@ -778,11 +771,6 @@ export type MutationUserContactUpdateAliasArgs = {
 
 export type MutationUserLoginArgs = {
   input: UserLoginInput;
-};
-
-
-export type MutationUserLoginDeviceArgs = {
-  input: UserLoginDeviceInput;
 };
 
 
@@ -1387,10 +1375,6 @@ export type UserContactUpdateAliasPayload = {
   readonly errors: ReadonlyArray<Error>;
 };
 
-export type UserLoginDeviceInput = {
-  readonly jwt?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type UserLoginInput = {
   readonly code: Scalars['OneTimeAuthCode']['input'];
   readonly phone: Scalars['Phone']['input'];
@@ -1504,7 +1488,7 @@ export type UserLoginUpgradeMutationVariables = Exact<{
 }>;
 
 
-export type UserLoginUpgradeMutation = { readonly __typename: 'Mutation', readonly userLoginUpgrade: { readonly __typename: 'AuthTokenPayload', readonly authToken?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
+export type UserLoginUpgradeMutation = { readonly __typename: 'Mutation', readonly userLoginUpgrade: { readonly __typename: 'SuccessPayload', readonly success?: boolean | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
 
 export type UserDefaultWalletIdQueryVariables = Exact<{
   username: Scalars['Username']['input'];
@@ -1595,7 +1579,7 @@ export type MainQueryQuery = { readonly __typename: 'Query', readonly globals?: 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency }> } } | null };
+export type MeQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly level: AccountLevel, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency }> } } | null };
 
 export type TransactionsQueryVariables = Exact<{
   walletIds?: InputMaybe<ReadonlyArray<InputMaybe<Scalars['WalletId']['input']>> | InputMaybe<Scalars['WalletId']['input']>>;
@@ -1757,7 +1741,7 @@ export const UserLoginUpgradeDocument = gql`
       message
       code
     }
-    authToken
+    success
   }
 }
     `;
@@ -2288,6 +2272,7 @@ export const MeDocument = gql`
   me {
     defaultAccount {
       defaultWalletId
+      level
       wallets {
         id
         walletCurrency

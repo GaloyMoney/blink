@@ -2,7 +2,12 @@ import axios from "axios"
 
 import { gql } from "apollo-server-core"
 
-import { MeDocument, MeQuery } from "../generated"
+import {
+  MeDocument,
+  MeQuery,
+  UserLoginUpgradeDocument,
+  UserLoginUpgradeMutation,
+} from "../generated"
 
 import {
   clearAccountLocks,
@@ -38,7 +43,7 @@ gql`
         message
         code
       }
-      authToken
+      success
     }
   }
 `
@@ -80,12 +85,33 @@ describe("DeviceAccountService", () => {
     const { apolloClient, disposeClient } = createApolloClient(
       defaultTestClientConfig(token),
     )
+
     const meResult = await apolloClient.query<MeQuery>({ query: MeDocument })
 
     const UuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-    expect(meResult?.data?.me?.defaultAccount.defaultWalletId).toMatch(UuidRegex)
+    const defaultWalletId = meResult?.data?.me?.defaultAccount.defaultWalletId || ""
+    expect(defaultWalletId).toMatch(UuidRegex)
+    expect(meResult?.data?.me?.defaultAccount.level).toBe("ZERO")
+
+    const phone = "+198765432116"
+    const code = "321321"
+
+    const res2 = await apolloClient.mutate<UserLoginUpgradeMutation>({
+      mutation: UserLoginUpgradeDocument,
+      variables: { input: { phone, code } },
+    })
+
+    expect(res?.data?.userLoginUpgrade?.success).toBe(true)
+
+    console.dir(res2, { depth: null })
+
+    {
+      const meResult2 = await apolloClient.query<MeQuery>({ query: MeDocument })
+      expect(meResult2?.data?.me?.defaultAccount.level).toBe("ONE")
+      expect(defaultWalletId).toBe(meResult2?.data?.me?.defaultAccount.defaultWalletId)
+    }
 
     await disposeClient()
   })

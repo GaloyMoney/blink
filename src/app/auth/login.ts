@@ -51,6 +51,7 @@ import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@services/kratos
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 import jwksRsa from "jwks-rsa"
 import jsonwebtoken from "jsonwebtoken"
+import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -179,6 +180,14 @@ export const loginUpgradeWithPhone = async ({
       userId: account.kratosUserId,
     })
     if (success instanceof Error) return success
+
+    const res = await upgradeAccountFromDeviceToPhone({
+      userId: account.kratosUserId,
+      phone,
+    })
+    if (res instanceof Error) return res
+    console.log(res, "res12")
+
     return success
   }
 
