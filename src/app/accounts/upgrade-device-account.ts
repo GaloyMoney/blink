@@ -15,7 +15,8 @@ export const upgradeAccountFromDeviceToPhone = async ({
   const userUpdated = await UsersRepository().findById(userId)
   if (userUpdated instanceof Error) return userUpdated
   userUpdated.phone = phone
-  // phoneMetadata?
+
+  // TODO phoneMetadata?
   const res = await UsersRepository().update(userUpdated)
   if (res instanceof Error) return res
 

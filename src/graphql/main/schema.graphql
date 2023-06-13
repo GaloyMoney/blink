@@ -774,7 +774,7 @@ type Mutation {
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userLoginUpgrade(input: UserLoginUpgradeInput!): SuccessPayload!
+  userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
@@ -1290,6 +1290,12 @@ enum TxStatus {
   FAILURE
   PENDING
   SUCCESS
+}
+
+type UpgradePayload {
+  authToken: AuthToken
+  errors: [Error!]!
+  success: Boolean!
 }
 
 """
