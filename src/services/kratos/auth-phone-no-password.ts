@@ -185,11 +185,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: userId }))
     } catch (err) {
-      if (err.message === "Request failed with status code 400") {
-        // FIXME: not the right error. we expect the identity to exist
-        return new LikelyUserAlreadyExistError(err.message || err)
-      }
-
       return new UnknownKratosError(err.message || err)
     }
 
@@ -215,7 +210,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         updateIdentityBody: adminIdentity,
       })
 
-      // FIXME: should be toDomainIdentityPhoneEmail
       return toDomainIdentityPhone(newIdentity)
     } catch (err) {
       return new UnknownKratosError(err.message || err)

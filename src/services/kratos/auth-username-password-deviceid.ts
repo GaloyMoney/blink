@@ -11,17 +11,13 @@ export const AuthWithUsernamePasswordDeviceIdService =
     const createIdentityWithSession = async ({
       username,
       password,
-      deviceId,
     }: {
       username: IdentityUsername
       password: IdentityPassword
-      deviceId: DeviceId
     }): Promise<WithSessionResponse | KratosError> => {
       const traits = { username }
       const method = "password"
       const identifier = username
-
-      deviceId // FIXME
 
       try {
         const createIdentityBody: CreateIdentityBody = {
@@ -73,8 +69,6 @@ export const AuthWithUsernamePasswordDeviceIdService =
         phone,
         userId,
       })
-      // TODO: manage UnknownKratosError: Request failed with status code 409
-      // when phone already exist
       if (kratosResult instanceof Error) return kratosResult
       return true
     }

@@ -120,4 +120,6 @@ describe("DeviceAccountService", () => {
       await disposeClient()
     }
   })
+
+  // TODO: tests with upgrade, including the scenario where the device account already have an attached phone account
 })
