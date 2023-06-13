@@ -44,6 +44,7 @@ const OnChainTxFeeQuery = GT.Field({
 
     return {
       amount: normalizePaymentAmount(fee).amount,
+      targetConfirmations: 0,
     }
   },
 })

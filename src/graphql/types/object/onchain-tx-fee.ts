@@ -10,7 +10,6 @@ const OnChainTxFee = GT.Object({
     targetConfirmations: {
       deprecationReason: "Ignored - will be removed",
       type: GT.NonNull(TargetConfirmations),
-      defaultValue: 0,
     },
   }),
 })

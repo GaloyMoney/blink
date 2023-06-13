@@ -27,7 +27,7 @@ const OnChainUsdTxFeeAsBtcDenominatedQuery = GT.Field({
     },
   },
   resolve: async (_, args, { domainAccount }) => {
-    const { walletId, address, amount, targetConfirmations, speed } = args
+    const { walletId, address, amount, speed } = args
 
     for (const input of [walletId, address, amount, speed]) {
       if (input instanceof Error) throw input
@@ -44,7 +44,7 @@ const OnChainUsdTxFeeAsBtcDenominatedQuery = GT.Field({
 
     return {
       amount: normalizePaymentAmount(fee).amount,
-      targetConfirmations,
+      targetConfirmations: 0,
     }
   },
 })
