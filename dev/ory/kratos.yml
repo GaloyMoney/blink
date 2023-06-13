@@ -170,6 +170,8 @@ identity:
       url: file:///home/ory/phone_email_no_password_v0.identity.schema.json
     - id: phone_or_email_password_v0
       url: file:///home/ory/phone_or_email_password_v0.identity.schema.json
+    - id: username_password_deviceid_v0
+      url: file:///home/ory/username_password_deviceid_v0.identity.schema.json
 
 courier:
   smtp:

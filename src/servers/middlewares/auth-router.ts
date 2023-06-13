@@ -16,6 +16,7 @@ import cookieParser from "cookie-parser"
 import { logoutCookie } from "@app/auth"
 import { checkedToPhoneNumber } from "@domain/users"
 import libCookie from "cookie"
+import basicAuth from "basic-auth"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -202,12 +203,31 @@ authRouter.get("/clearCookies", async (req, res) => {
 authRouter.post("/create/device-account", async (req, res) => {
   try {
     //const { deviceId, uuidV4Username, uuidV4Password } = req.body
-
-    return res.status(200).send({
-      result: "",
-    })
+    const user = basicAuth(req)
+    if (user?.name && user?.pass) {
+      const username = user.name
+      const password = user.pass
+      console.log("username", username)
+      console.log("password", password)
+      // TODO call create device account
+      return res.status(200).send({
+        result: "NOT IMPLEMENTED",
+      })
+    } else {
+      return res.status(401).send({ result: "Unauthorized" })
+    }
   } catch (e) {
     return res.status(500).send({ result: "" })
+  }
+})
+
+authRouter.post("/login/device-account", async (req, res) => {
+  try {
+    return res.status(200).send({
+      result: "NOT IMPLEMENTED",
+    })
+  } catch (e) {
+    return res.status(500).send({ result: "NOT IMPLEMENTED" })
   }
 })
 

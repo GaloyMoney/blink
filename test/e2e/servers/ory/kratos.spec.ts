@@ -6,6 +6,7 @@ import {
 import { CreateIdentityBody } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
+  AuthWithUsernamePasswordDeviceIdService,
   extendSession,
   getNextPage,
   IdentityRepository,
@@ -657,5 +658,20 @@ describe("cookie flow", () => {
       id: sessionId,
     })
     expect(kratosResp.status).toBe(204)
+  })
+
+  describe("username password deviceid flow", () => {
+    it("create an account", async () => {
+      const authService = AuthWithUsernamePasswordDeviceIdService()
+      const username = crypto.randomUUID() as Username
+      const password = crypto.randomUUID() as IdentityPassword
+
+      const res = await authService.createIdentityWithSession({
+        username,
+        password,
+      })
+
+      expect(res).toBeDefined()
+    })
   })
 })

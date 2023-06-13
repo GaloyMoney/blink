@@ -26,6 +26,19 @@
       config:
         claims: '{"sub": "{{ print .Subject }}"}'
 
+- id: device-login-routes
+  upstream:
+    url: "http://e2e-tests:4012"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(create/device-account|login/device-account)>"
+    methods: ["POST", "OPTIONS"]
+  authenticators:
+    - handler: noop
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
 - id: appCheck
   upstream:
     url: "http://oathkeeper-appcheck"
