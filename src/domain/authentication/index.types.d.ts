@@ -87,6 +87,13 @@ interface IAuthWithDeviceAccountService {
   }): Promise<SessionToken | KratosError>
 }
 
+interface IAuthWithUsernamePasswordDeviceIdService {
+  createIdentityWithSession(args: {
+    username: Username
+    password: IdentityPassword
+  }): Promise<SessionToken | AuthenticationError>
+}
+
 interface IIdentityRepository {
   getIdentity(id: UserId): Promise<IdentityPhone | KratosError>
   listIdentities(): Promise<IdentityPhone[] | KratosError>
