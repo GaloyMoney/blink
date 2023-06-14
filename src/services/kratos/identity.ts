@@ -2,9 +2,9 @@ import { assert } from "console"
 
 import { Identity } from "@ory/client"
 
-import { isDev } from "@config"
-
 import { PhoneIdentityDoesNotExistError } from "@domain/authentication/errors"
+
+import { isProd } from "@config"
 
 import { KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentityPhone } from "./private"
@@ -25,7 +25,7 @@ export const getNextPage = (link: string): number | undefined => {
 // FIXME: there is a bug where page = 0 and page = 1 return the same result
 // related bug: https://github.com/ory/kratos/issues/2834
 // with 1, only 1 entry will be missing in the result
-const perPage = isDev ? 3 : 50
+const perPage = isProd ? 50 : 3
 
 export const IdentityRepository = (): IIdentityRepository => {
   const getIdentity = async (

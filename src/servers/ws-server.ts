@@ -5,7 +5,7 @@ import { WebSocketServer } from "ws" // yarn add ws
 import { gqlMainSchema } from "@graphql/main"
 import { useServer } from "graphql-ws/lib/use/ws"
 
-import { getJwksArgs, isDev } from "@config"
+import { getJwksArgs, isProd } from "@config"
 import { Context } from "graphql-ws"
 import jsonwebtoken from "jsonwebtoken"
 
@@ -42,9 +42,9 @@ const getContext = async (ctx: Context) => {
   // TODO: check if nginx pass the ip to the header
   // TODO: ip not been used currently for subscription.
   // implement some rate limiting.
-  const ipString = isDev
-    ? connectionParams?.ip
-    : connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
+  const ipString = isProd
+    ? connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
+    : connectionParams?.ip
 
   const ip = parseIps(ipString)
 
