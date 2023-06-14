@@ -57,7 +57,7 @@ describe("DeviceAccountService", () => {
   let token: SessionToken
   let defaultWalletId: string
 
-  it.only("create a device user", async () => {
+  it("create a device user", async () => {
     const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
     const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
