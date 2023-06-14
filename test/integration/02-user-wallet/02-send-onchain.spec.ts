@@ -53,7 +53,9 @@ import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
 import { DealerPriceService } from "@services/dealer-price"
+import * as BriaImpl from "@services/bria"
 import { BriaPayloadType, NewOnChainService } from "@services/bria"
+import { getBankOwnerWalletId } from "@services/ledger/caching"
 
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 import {
@@ -881,6 +883,105 @@ describe("BtcWallet - onChainPay", () => {
       sendAll: false,
     })
     expect(res).not.toBeInstanceOf(Error)
+  })
+
+  it("sends a successful payment, and reconciles fee difference", async () => {
+    const mockedFeeEstimate = { amount: 1000n, currency: WalletCurrency.Btc }
+    const bankOwnerWalletId = await getBankOwnerWalletId()
+
+    const { NewOnChainService: NewOnChainServiceOrig } =
+      jest.requireActual("@services/bria")
+    jest.spyOn(BriaImpl, "NewOnChainService").mockReturnValue({
+      ...NewOnChainServiceOrig(),
+      estimateFeeForPayout: () => mockedFeeEstimate,
+    })
+
+    const { address } = await createChainAddress({
+      lnd: lndOutside1,
+      format: "p2wpkh",
+    })
+
+    const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
+      senderAccount: accountA,
+      senderWalletId: walletIdA,
+      address,
+      amount,
+      speed: PayoutSpeed.Fast,
+      requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
+      memo: null,
+    })
+    if (paid instanceof Error) throw paid
+    const { payoutId } = paid
+    if (payoutId === undefined) throw new Error("'paid.payoutId' undefined")
+
+    // Check txns after submit payment
+    const ledger = LedgerService()
+    const txns = await ledger.getTransactionsByPayoutId(payoutId)
+    if (txns instanceof Error) throw txns
+    expect(txns.length).toEqual(2)
+
+    const bankOwnerTxn = txns.find((txns) => txns.walletId === bankOwnerWalletId)
+    if (bankOwnerTxn === undefined) throw new Error("Expected bankOwner txn not found")
+    expect(bankOwnerTxn.credit).toEqual(2000)
+
+    const walletATxn = txns.find((txn) => txn.walletId === walletIdA)
+    if (walletATxn === undefined) throw new Error("Expected walletA txn not found")
+    const feeRecordedFromEstimate = walletATxn.satsFee
+    expect(feeRecordedFromEstimate).toEqual(
+      Number(mockedFeeEstimate.amount) + getFeesConfig().withdrawDefaultMin,
+    )
+
+    // Register broadcast
+    const broadcastEvent = await onceBriaSubscribe({
+      type: BriaPayloadType.PayoutBroadcast,
+      payoutId,
+    })
+    if (broadcastEvent?.payload.type !== BriaPayloadType.PayoutBroadcast) {
+      throw new Error(`Expected ${BriaPayloadType.PayoutBroadcast} event`)
+    }
+    const { proportionalFee, txId } = broadcastEvent.payload
+    const feeDifference = Number(proportionalFee.amount - mockedFeeEstimate.amount)
+    expect(feeDifference).toBeGreaterThan(0)
+
+    const resultBroadcast = await Wallets.registerBroadcastedPayout({
+      proportionalFee,
+      payoutId,
+      txId,
+    })
+    if (resultBroadcast instanceof Error) {
+      throw resultBroadcast
+    }
+    expect(resultBroadcast).toBe(true)
+
+    // Check txns after register broadcast
+    const txnsAfterBroadcast = await ledger.getTransactionsByPayoutId(payoutId)
+    if (txnsAfterBroadcast instanceof Error) throw txnsAfterBroadcast
+    expect(txnsAfterBroadcast.length).toEqual(3)
+    const bankOwnerTxnAfterBroadcast = txnsAfterBroadcast.find(
+      (txn) => txn.walletId === bankOwnerWalletId && txn.id !== bankOwnerTxn.id,
+    )
+    if (bankOwnerTxnAfterBroadcast === undefined) {
+      throw new Error("Expected bankOwner txn not found")
+    }
+    expect(bankOwnerTxnAfterBroadcast.debit).toEqual(feeDifference)
+
+    // Settle pending txns after checks
+    await mineBlockAndSync({ lnds: [lndonchain] })
+    const settledEvent = await onceBriaSubscribe({
+      type: BriaPayloadType.PayoutSettled,
+      payoutId: paid.payoutId,
+    })
+    if (settledEvent?.payload.type !== BriaPayloadType.PayoutSettled) {
+      throw new Error(`Expected ${BriaPayloadType.PayoutSettled} event`)
+    }
+    const resultSettled = await Wallets.settlePayout(settledEvent.payload.id)
+    if (resultSettled instanceof Error) {
+      throw resultSettled
+    }
+    expect(resultSettled).toBe(true)
+
+    // Restore NewOnChainService implementation
+    jest.spyOn(BriaImpl, "NewOnChainService").mockRestore()
   })
 
   it("sends all in a successful payment", async () => {
