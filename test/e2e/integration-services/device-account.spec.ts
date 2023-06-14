@@ -44,6 +44,7 @@ gql`
         code
       }
       success
+      authToken
     }
   }
 `
@@ -152,4 +153,23 @@ describe("DeviceAccountService", () => {
   })
 
   // TODO: tests with upgrade, including the scenario where the device account already have an attached phone account
+  it("upgrade a device user to existing phone with no txns", async () => {
+    const { apolloClient, disposeClient } = createApolloClient(
+      defaultTestClientConfig(token),
+    )
+
+    // existing phone
+    const phone = "+198765432116"
+    const code = "321321"
+
+    const res3 = await apolloClient.mutate<UserLoginUpgradeMutation>({
+      mutation: UserLoginUpgradeDocument,
+      variables: { input: { phone, code } },
+    })
+
+    if (!res3) throw new Error("res3 is undefined")
+    expect(res3?.data?.userLoginUpgrade?.authToken).toBeDefined()
+
+    await disposeClient()
+  })
 })
