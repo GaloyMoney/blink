@@ -24,7 +24,7 @@ Appcheck: jwt
 BODY {deviceId}
 ```
 4) oathkeeper decision api to verify appcheck jwt via rule
-- kratos will create identity with and uuidv4Username and uuidV4Password
+- kratos will create identity with uuidv4Username and uuidV4Password
   -  In our backend store DeviceId in mongo user collection
 - RETURN kratos session token
   - mobile app needs to backup usernameUUIDV4, passwordUUIDV4, deviceIdUUIDV4 to keychain
