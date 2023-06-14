@@ -47,14 +47,14 @@ import { createPushNotificationContent } from "@services/notifications/create-pu
 import { WalletsRepository } from "@services/mongoose"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
 import { DealerPriceService } from "@services/dealer-price"
 import * as BriaImpl from "@services/bria"
-import { BriaPayloadType, NewOnChainService } from "@services/bria"
+import { BriaPayloadType } from "@services/bria"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
 
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
@@ -161,8 +161,6 @@ const testExternalSend = async ({
 }) => {
   const memo = "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
 
-  const onChainService = NewOnChainService()
-
   const initialWalletBalance = await getBalanceHelper(senderWalletId)
 
   const txResult = await getTransactionsForWalletId(senderWalletId)
@@ -192,7 +190,6 @@ const testExternalSend = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  let amountToSendSats: number = amountToSend
   let priceRatio: WalletPriceRatio | undefined = undefined
   if (
     senderWallet.currency === WalletCurrency.Usd &&
@@ -206,7 +203,6 @@ const testExternalSend = async ({
       usdPaymentAmount,
     )
     if (amountResult instanceof Error) return amountResult
-    amountToSendSats = Number(amountResult.amount)
 
     if (amountToSend > 0) {
       const priceRatioRaw = WalletPriceRatio({ usd: usdPaymentAmount, btc: amountResult })
@@ -214,16 +210,6 @@ const testExternalSend = async ({
       priceRatio = priceRatioRaw
     }
   }
-
-  const minerFee =
-    amountToSend > 0
-      ? await onChainService.estimateFeeForPayout({
-          amount: { amount: BigInt(amountToSendSats), currency: WalletCurrency.Btc },
-          address: address as OnChainAddress,
-          speed: PayoutSpeed.Fast,
-        })
-      : ZERO_SATS
-  if (minerFee instanceof Error) return minerFee
 
   const paid = await payOnChainForPromiseAll({
     senderCurrency: senderWallet.currency,
@@ -286,6 +272,7 @@ const testExternalSend = async ({
   }
 
   let pendingTxHash: OnChainTxHash
+  let minerFee: BtcPaymentAmount
   {
     const txResult = await getTransactionsForWalletId(senderWalletId)
     if (txResult.error instanceof Error || txResult.result === null) {
@@ -302,6 +289,16 @@ const testExternalSend = async ({
       pendingTx.id as LedgerTransactionId,
     )
     if (pendingLedgerTx instanceof Error) throw pendingLedgerTx
+
+    // Legacy hack, this was previously gotten from OnChainService but Bria fee estimates
+    // are now more flaky. Ideally, this should be refactored away.
+    const { satsFee } = pendingLedgerTx
+    if (satsFee === undefined) throw new Error("satsFee undefined")
+    minerFee = {
+      amount: BigInt(satsFee - getFeesConfig().withdrawDefaultMin),
+      currency: WalletCurrency.Btc,
+    }
+
     const { settlementDisplayAmount, settlementDisplayFee } =
       SettlementAmounts().fromTxn(pendingLedgerTx)
     expect(pendingTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
