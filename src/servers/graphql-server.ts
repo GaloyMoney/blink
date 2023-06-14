@@ -54,7 +54,7 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { sendOathkeeperRequest } from "@services/oathkeeper"
+import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 
 import { UsersRepository } from "@services/mongoose"
 
@@ -403,7 +403,7 @@ export const startApolloServer = async ({
     // make request to oathkeeper
     const originalToken = authz?.slice(7) as SessionToken | undefined
 
-    const newToken = await sendOathkeeperRequest(originalToken, "graphql")
+    const newToken = await sendOathkeeperRequestGraphql(originalToken)
     // TODO: see how returning an error affect the websocket connection
     if (newToken instanceof Error) return newToken
 
@@ -461,7 +461,7 @@ export const startApolloServer = async ({
 
     // make request to oathkeeper
     // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"
-    const jwtToken = await sendOathkeeperRequest(kratosToken, "graphql")
+    const jwtToken = await sendOathkeeperRequestGraphql(kratosToken)
     // TODO: see how returning an error affect the websocket connection
     if (jwtToken instanceof Error) return jwtToken
 

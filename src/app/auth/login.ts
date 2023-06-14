@@ -6,7 +6,6 @@ import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
-  getJwksArgs,
   getTestAccounts,
   getTwilioConfig,
 } from "@config"
@@ -14,10 +13,7 @@ import { TwilioClient } from "@services/twilio"
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import {
-  JwtVerifyTokenError,
-  LikelyNoUserWithThisPhoneExistError,
-} from "@domain/authentication/errors"
+import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 
 import {
   CouldNotFindAccountFromKratosIdError,
@@ -48,9 +44,6 @@ import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@services/kratos/errors"
-import { sendOathkeeperRequest } from "@services/oathkeeper"
-import jwksRsa from "jwks-rsa"
-import jsonwebtoken from "jsonwebtoken"
 import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
 
 export const loginWithPhoneToken = async ({
@@ -375,17 +368,4 @@ export const isCodeValid = async ({
   }
 
   return TwilioClient().validateVerify({ to: phone, code })
-}
-
-export const verifyJwt = async (token: string) => {
-  const newToken = await sendOathkeeperRequest(token as SessionToken, "graphql")
-  if (newToken instanceof Error) return newToken
-  const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
-  const verifiedToken = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
-    algorithms: ["RS256"],
-  })
-  if (typeof verifiedToken === "string") {
-    return new JwtVerifyTokenError("tokenPayload should be an object")
-  }
-  return verifiedToken
 }

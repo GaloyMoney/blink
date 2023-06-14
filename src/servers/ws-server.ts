@@ -13,7 +13,7 @@ import { parseIps } from "@domain/accounts-ips"
 
 import jwksRsa from "jwks-rsa"
 
-import { sendOathkeeperRequest } from "@services/oathkeeper"
+import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 
 import { setupMongoConnection } from "@services/mongodb"
 
@@ -70,7 +70,7 @@ const getContext = async (ctx: Context) => {
 
   // make request to oathkeeper
   // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"
-  const jwtToken = await sendOathkeeperRequest(kratosToken, "graphql")
+  const jwtToken = await sendOathkeeperRequestGraphql(kratosToken)
   // TODO: see how returning an error affect the websocket connection
   if (jwtToken instanceof Error) return jwtToken
 
