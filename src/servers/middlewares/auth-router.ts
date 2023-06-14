@@ -2,7 +2,7 @@ import cors from "cors"
 import express from "express"
 
 import { Auth } from "@app"
-import { isDev } from "@config"
+import { isProd } from "@config"
 
 import { mapError } from "@graphql/error-map"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
@@ -27,7 +27,7 @@ authRouter.use(cookieParser())
 
 // deprecated
 authRouter.post("/browser", async (req, res) => {
-  const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
+  const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
   const ip = parseIps(ipString)
 
   if (ip === undefined) {
@@ -59,7 +59,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: express.Request, res: express.Response) => {
-      const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
+      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
       const ip = parseIps(ipString)
       if (ip === undefined) {
         throw new Error("IP is not defined")
@@ -203,7 +203,7 @@ authRouter.get("/clearCookies", async (req, res) => {
 authRouter.post("/create/device-account", async (req, res) => {
   // FIXME: try catch is too broad
   try {
-    const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
+    const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
     const ip = parseIps(ipString)
 
     if (ip === undefined) {
@@ -237,7 +237,7 @@ authRouter.post("/create/device-account", async (req, res) => {
     })
   } catch (err) {
     // TODO open telemetry
-    return res.status(500).send({ error: `error: ${err}` })
+    return res.status(500).send({ error: `${err.message}` })
   }
 })
 
