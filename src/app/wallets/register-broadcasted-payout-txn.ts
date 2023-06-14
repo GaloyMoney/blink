@@ -1,4 +1,7 @@
-import { InvalidLedgerTransactionStateError } from "@domain/errors"
+import {
+  InvalidLedgerTransactionStateError,
+  NoTransactionToUpdateError,
+} from "@domain/errors"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { LedgerService } from "@services/ledger"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
@@ -18,10 +21,29 @@ export const registerBroadcastedPayout = async ({
   txId: OnChainTxHash
   vout?: OnChainTxVout
 }): Promise<true | ApplicationError> => {
-  const setTxId = await LedgerService().setOnChainTxIdByPayoutId({ payoutId, txId, vout })
-  if (setTxId instanceof Error) return setTxId
+  const ledger = LedgerService()
 
-  const ledgerTxns = await LedgerService().getTransactionsByPayoutId(payoutId)
+  const setTxId = await ledger.setOnChainTxIdByPayoutId({ payoutId, txId, vout })
+  if (setTxId instanceof NoTransactionToUpdateError) {
+    const txns = await ledger.getTransactionsByPayoutId(payoutId)
+    if (txns instanceof Error) return txns
+    if (txns === undefined) return new InvalidLedgerTransactionStateError(payoutId)
+
+    const txHashes = txns.map((txn) => txn.txHash)
+    if (new Set(txHashes).size !== 1) {
+      return new InvalidLedgerTransactionStateError(`${txHashes}`)
+    }
+
+    if (txHashes[0] !== txId)
+      return new InvalidLedgerTransactionStateError(
+        `${{ persistedTxHash: txHashes[0], incomingTxId: txId }}`,
+      )
+  }
+  if (setTxId instanceof Error && !(setTxId instanceof NoTransactionToUpdateError)) {
+    return setTxId
+  }
+
+  const ledgerTxns = await ledger.getTransactionsByPayoutId(payoutId)
   if (ledgerTxns instanceof Error) return ledgerTxns
 
   const bankOwnerWalletId = await getBankOwnerWalletId()
