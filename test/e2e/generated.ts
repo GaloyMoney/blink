@@ -1497,6 +1497,11 @@ export type UserLoginUpgradeMutationVariables = Exact<{
 
 export type UserLoginUpgradeMutation = { readonly __typename: 'Mutation', readonly userLoginUpgrade: { readonly __typename: 'UpgradePayload', readonly success: boolean, readonly authToken?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
 
+export type AccountDeleteMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AccountDeleteMutation = { readonly __typename: 'Mutation', readonly accountDelete: { readonly __typename: 'AccountDeletePayload', readonly success: boolean, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
+
 export type UserDefaultWalletIdQueryVariables = Exact<{
   username: Scalars['Username']['input'];
 }>;
@@ -1779,6 +1784,42 @@ export function useUserLoginUpgradeMutation(baseOptions?: Apollo.MutationHookOpt
 export type UserLoginUpgradeMutationHookResult = ReturnType<typeof useUserLoginUpgradeMutation>;
 export type UserLoginUpgradeMutationResult = Apollo.MutationResult<UserLoginUpgradeMutation>;
 export type UserLoginUpgradeMutationOptions = Apollo.BaseMutationOptions<UserLoginUpgradeMutation, UserLoginUpgradeMutationVariables>;
+export const AccountDeleteDocument = gql`
+    mutation accountDelete {
+  accountDelete {
+    errors {
+      message
+      code
+    }
+    success
+  }
+}
+    `;
+export type AccountDeleteMutationFn = Apollo.MutationFunction<AccountDeleteMutation, AccountDeleteMutationVariables>;
+
+/**
+ * __useAccountDeleteMutation__
+ *
+ * To run a mutation, you first call `useAccountDeleteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAccountDeleteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [accountDeleteMutation, { data, loading, error }] = useAccountDeleteMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAccountDeleteMutation(baseOptions?: Apollo.MutationHookOptions<AccountDeleteMutation, AccountDeleteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AccountDeleteMutation, AccountDeleteMutationVariables>(AccountDeleteDocument, options);
+      }
+export type AccountDeleteMutationHookResult = ReturnType<typeof useAccountDeleteMutation>;
+export type AccountDeleteMutationResult = Apollo.MutationResult<AccountDeleteMutation>;
+export type AccountDeleteMutationOptions = Apollo.BaseMutationOptions<AccountDeleteMutation, AccountDeleteMutationVariables>;
 export const UserDefaultWalletIdDocument = gql`
     query userDefaultWalletId($username: Username!) {
   userDefaultWalletId(username: $username)

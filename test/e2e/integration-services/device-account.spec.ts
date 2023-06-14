@@ -3,6 +3,8 @@ import axios from "axios"
 import { gql } from "apollo-server-core"
 
 import {
+  AccountDeleteDocument,
+  AccountDeleteMutation,
   MeDocument,
   MeQuery,
   UserLoginUpgradeDocument,
@@ -49,23 +51,33 @@ gql`
   }
 `
 
+gql`
+  mutation accountDelete {
+    accountDelete {
+      errors {
+        message
+        code
+      }
+      success
+    }
+  }
+`
+
 // dev/ory/gen-test-jwt.ts
 const jwt =
   "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWIzNyJ9.eyJzdWIiOiIxOjcyMjc5Mjk3MzY2OmFuZHJvaWQ6VEVTVEUyRUFDQ09VTlQ1YWE3NWFmNyIsImF1ZCI6WyJwcm9qZWN0cy83MjI3OTI5NzM2NiIsInByb2plY3RzL2dhbG95YXBwIl0sInByb3ZpZGVyIjoiZGVidWciLCJpc3MiOiJodHRwczovL2ZpcmViYXNlYXBwY2hlY2suZ29vZ2xlYXBpcy5jb20vNzIyNzkyOTczNjYifQ.onGs8nlWA1e1vkEwJhjDtNwCk1jLNezQign7HyCNBOuAxtr7kt0Id6eZtbROuDlVlS4KwO7xMrn3xxsQHZYftu_ihO61OKBw8IEIlLn548May3HGSMletWTANxMLnhwJIjph8ACpRTockFida3XIr2cgIHwPqNRigFh0Ib9HTG5cuzRpQUEkpgiXZ2dJ0hJppX5OX6Q2ywN5LD4mqqqbXV3VNqtGd9oCUI-t7Kfry4UpNBhkhkPzMc5pt_NRsIHFqGtyH1SRX7NJd8BZuPnVfS6zmoPHaOxOixEO4zhFgh_DRePg6_yT4ejRF29mx1gBhfKSz81R5_BVtjgD-LMUdg"
+const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
+const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
 describe("DeviceAccountService", () => {
   let token: SessionToken
   let defaultWalletId: string
 
   it("create a device user", async () => {
-    const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
-    const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
-
     const url = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/create/device-account`
 
     const username = crypto.randomUUID()
     const password = crypto.randomUUID()
-    const deviceId = crypto.randomUUID()
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -78,9 +90,6 @@ describe("DeviceAccountService", () => {
       url,
       method: "POST",
       headers,
-      data: {
-        deviceId,
-      },
     })
 
     token = res.data.result
@@ -109,9 +118,6 @@ describe("DeviceAccountService", () => {
         url,
         method: "POST",
         headers,
-        data: {
-          deviceId,
-        },
       })
 
       token = res2.data.result
@@ -171,5 +177,35 @@ describe("DeviceAccountService", () => {
     expect(res3?.data?.userLoginUpgrade?.authToken).toBeDefined()
 
     await disposeClient()
+  })
+
+  it("deletes a device account", async () => {
+    const url = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/create/device-account`
+
+    const username = crypto.randomUUID()
+    const password = crypto.randomUUID()
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    }
+    headers["Appcheck"] = jwt
+    const auth = Buffer.from(`${username}:${password}`, "utf8").toString("base64")
+    headers["Authorization"] = `Basic ${auth}`
+    const res = await axios({
+      url,
+      method: "POST",
+      headers,
+    })
+    token = res.data.result
+    expect(token.length).toBe(39)
+
+    const { apolloClient, disposeClient } = createApolloClient(
+      defaultTestClientConfig(token),
+    )
+    const accountDeleteResult = await apolloClient.mutate<AccountDeleteMutation>({
+      mutation: AccountDeleteDocument,
+    })
+    await disposeClient()
+    expect(accountDeleteResult?.data?.accountDelete.success).toBe(true)
   })
 })
