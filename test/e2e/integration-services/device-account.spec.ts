@@ -152,7 +152,6 @@ describe("DeviceAccountService", () => {
     }
   })
 
-  // TODO: tests with upgrade, including the scenario where the device account already have an attached phone account
   it("upgrade a device user to existing phone with no txns", async () => {
     const { apolloClient, disposeClient } = createApolloClient(
       defaultTestClientConfig(token),
@@ -168,6 +167,7 @@ describe("DeviceAccountService", () => {
     })
 
     if (!res3) throw new Error("res3 is undefined")
+    // existing phone accounts return a authToken
     expect(res3?.data?.userLoginUpgrade?.authToken).toBeDefined()
 
     await disposeClient()
