@@ -822,7 +822,6 @@ type OnChainAddressPayload {
 input OnChainPaymentSendAllInput {
   address: OnChainAddress!
   memo: Memo
-  requestId: PayoutRequestId
   speed: PayoutSpeed = FAST
   targetConfirmations: TargetConfirmations = 0
     @deprecated(reason: "Ignored - will be replaced")
@@ -833,7 +832,6 @@ input OnChainPaymentSendInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  requestId: PayoutRequestId
   speed: PayoutSpeed = FAST
   targetConfirmations: TargetConfirmations = 0
     @deprecated(reason: "Ignored - will be replaced")
@@ -861,7 +859,6 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  requestId: PayoutRequestId
   speed: PayoutSpeed = FAST
   targetConfirmations: TargetConfirmations = 0
     @deprecated(reason: "Ignored - will be replaced")
@@ -872,7 +869,6 @@ input OnChainUsdPaymentSendInput {
   address: OnChainAddress!
   amount: CentAmount!
   memo: Memo
-  requestId: PayoutRequestId
   speed: PayoutSpeed = FAST
   targetConfirmations: TargetConfirmations = 0
     @deprecated(reason: "Ignored - will be replaced")
@@ -945,11 +941,6 @@ enum PaymentSendResult {
   PENDING
   SUCCESS
 }
-
-"""
-Unique request id for a payout
-"""
-scalar PayoutRequestId
 
 enum PayoutSpeed {
   FAST

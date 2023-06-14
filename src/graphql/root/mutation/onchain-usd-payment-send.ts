@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 import { PayoutSpeed as DomainPayoutSpeed } from "@domain/bitcoin/onchain"
 
 import { GT } from "@graphql/index"
@@ -6,7 +8,6 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import CentAmount from "@graphql/types/scalar/cent-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
-import PayoutRequestId from "@graphql/types/scalar/payout-request-id"
 import PayoutSpeed from "@graphql/types/scalar/payout-speed"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 import WalletId from "@graphql/types/scalar/wallet-id"
@@ -19,7 +20,6 @@ const OnChainUsdPaymentSendInput = GT.Input({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(CentAmount) },
-    requestId: { type: PayoutRequestId },
     speed: {
       type: PayoutSpeed,
       defaultValue: DomainPayoutSpeed.Fast,
@@ -41,7 +41,6 @@ const OnChainUsdPaymentSendMutation = GT.Field<
       amount: number
       memo: Memo | InputValidationError | null
       speed: PayoutSpeed | InputValidationError
-      requestId: PayoutRequestId | InputValidationError
     }
   },
   null,
@@ -55,7 +54,7 @@ const OnChainUsdPaymentSendMutation = GT.Field<
     input: { type: GT.NonNull(OnChainUsdPaymentSendInput) },
   },
   resolve: async (_, args, { domainAccount }) => {
-    const { walletId, address, amount, memo, speed, requestId } = args.input
+    const { walletId, address, amount, memo, speed } = args.input
 
     if (walletId instanceof Error) {
       return { errors: [{ message: walletId.message }] }
@@ -73,9 +72,8 @@ const OnChainUsdPaymentSendMutation = GT.Field<
       return { errors: [{ message: speed.message }] }
     }
 
-    if (requestId instanceof Error) {
-      return { errors: [{ message: requestId.message }] }
-    }
+    // This should eventually be passed in via some middleware
+    const requestId = crypto.randomUUID() as PayoutRequestId
 
     const result = await Wallets.payOnChainByWalletIdForUsdWallet({
       senderAccount: domainAccount,
