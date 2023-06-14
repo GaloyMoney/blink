@@ -5,6 +5,8 @@ import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
 import { AccountsRepository } from "@services/mongoose"
 import { getCurrencyMajorExponent, priceAmountFromNumber } from "@domain/fiat"
+import { DepositFeeCalculator } from "@domain/wallets"
+import { AmountCalculator } from "@domain/shared"
 
 export * from "./apollo-client"
 export * from "./bitcoin-core"
@@ -21,6 +23,8 @@ export * from "./redis"
 export * from "./state-setup-e2e"
 export * from "./user"
 export * from "./wallet"
+
+const calc = AmountCalculator()
 
 export const randomEmail = () =>
   (randomBytes(20).toString("hex") + "@galoy.io") as EmailAddress
@@ -43,9 +47,17 @@ export const amountAfterFeeDeduction = ({
   amount,
   depositFeeRatio,
 }: {
-  amount: Satoshis
+  amount: BtcPaymentAmount
   depositFeeRatio: DepositFeeRatio
-}) => Math.round(amount * (1 - depositFeeRatio))
+}) => {
+  const satsFee = DepositFeeCalculator().onChainDepositFee({
+    amount,
+    ratio: depositFeeRatio,
+  })
+  if (satsFee instanceof Error) throw satsFee
+
+  return Number(calc.sub(amount, satsFee).amount)
+}
 
 export const resetDatabase = async (mongoose: typeof import("mongoose")) => {
   const db = mongoose.connection.db
