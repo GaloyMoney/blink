@@ -61,6 +61,9 @@ describe("DeviceAccountService", () => {
     const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
     const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
+    console.log("OATHKEEPER_HOST", OATHKEEPER_HOST, process.env.OATHKEEPER_HOST)
+    console.log("OATHKEEPER_PORT", OATHKEEPER_PORT, process.env.OATHKEEPER_PORT)
+
     const url = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/create/device-account`
 
     const username = crypto.randomUUID()
