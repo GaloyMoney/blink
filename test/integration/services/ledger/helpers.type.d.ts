@@ -39,3 +39,9 @@ type RecordInternalTxTestFn = <S extends WalletCurrency, R extends WalletCurrenc
   senderDisplayAmounts,
   recipientDisplayAmounts,
 }: RecordInternalTxTestArgs<S, R>) => Promise<LedgerJournal | LedgerError>
+
+type RecordOnChainFeeReconciliationArgs = {
+  estimatedFee: BtcPaymentAmount
+  actualFee: BtcPaymentAmount
+  metadata: AddOnChainFeeReconciliationLedgerMetadata
+}

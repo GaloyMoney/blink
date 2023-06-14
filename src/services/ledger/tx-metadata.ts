@@ -857,6 +857,27 @@ export const LnTradeIntraAccountLedgerMetadata = ({
   }
 }
 
+export const OnChainFeeReconciliationLedgerMetadata = ({
+  payoutId,
+  txHash,
+  pending,
+}: {
+  payoutId: PayoutId
+  txHash: OnChainTxHash
+  pending: boolean
+}) => {
+  const metadata: AddOnChainFeeReconciliationLedgerMetadata = {
+    type: LedgerTransactionType.OnchainPayment,
+    pending,
+    payout_id: payoutId,
+    hash: txHash,
+  }
+
+  return {
+    metadata,
+  }
+}
+
 // Non-LedgerFacade constructors from legacy admin service
 
 export const LnChannelOpenOrClosingFee = ({ txId }: { txId: OnChainTxHash }) => {

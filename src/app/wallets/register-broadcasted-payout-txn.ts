@@ -1,9 +1,11 @@
 import { InvalidLedgerTransactionStateError } from "@domain/errors"
-import { LedgerTransactionType } from "@domain/ledger"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { LedgerService } from "@services/ledger"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
-import { recordReceiveOnChainFeeReconciliation } from "@services/ledger/facade"
+import {
+  OnChainFeeReconciliationLedgerMetadata,
+  recordReceiveOnChainFeeReconciliation,
+} from "@services/ledger/facade"
 
 export const registerBroadcastedPayout = async ({
   payoutId,
@@ -37,11 +39,15 @@ export const registerBroadcastedPayout = async ({
   if (estimatedFee instanceof Error) return estimatedFee
   if (estimatedFee.amount === proportionalFee.amount) return true
 
+  const { metadata } = OnChainFeeReconciliationLedgerMetadata({
+    payoutId,
+    txHash: txId,
+    pending: true,
+  })
   const recorded = await recordReceiveOnChainFeeReconciliation({
     estimatedFee,
     actualFee: proportionalFee,
-    hash: txId,
-    metadata: { type: LedgerTransactionType.OnchainPayment },
+    metadata,
   })
   if (recorded instanceof Error) return recorded
 

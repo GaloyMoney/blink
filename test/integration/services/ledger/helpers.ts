@@ -469,6 +469,18 @@ export const recordOnChainTradeIntraAccountTxn: RecordInternalTxTestFn = async <
   })
 }
 
+export const recordReceiveOnChainFeeReconciliation = async ({
+  estimatedFee,
+  actualFee,
+  metadata,
+}: RecordOnChainFeeReconciliationArgs) => {
+  return LedgerFacade.recordReceiveOnChainFeeReconciliation({
+    estimatedFee,
+    actualFee,
+    metadata,
+  })
+}
+
 // Non-LedgerFacade helpers from legacy admin service
 // ======
 

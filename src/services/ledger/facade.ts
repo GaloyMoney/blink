@@ -23,7 +23,7 @@ const calc = AmountCalculator()
 
 const txMetadataRepo = TransactionsMetadataRepository()
 
-const staticAccountIds = async () => {
+export const staticAccountIds = async () => {
   return {
     bankOwnerAccountId: toLedgerAccountId(await caching.getBankOwnerWalletId()),
     dealerBtcAccountId: toLedgerAccountId(await caching.getDealerBtcWalletId()),
@@ -176,13 +176,11 @@ export const recordReceiveOnChain = async ({
 export const recordReceiveOnChainFeeReconciliation = async ({
   estimatedFee,
   actualFee,
-  hash,
   metadata,
 }: {
   estimatedFee: BtcPaymentAmount
   actualFee: BtcPaymentAmount
-  hash: OnChainTxHash
-  metadata: TxMetadata
+  metadata: AddOnChainFeeReconciliationLedgerMetadata
 }) => {
   let entry = MainBook.entry("")
   if (actualFee.amount > estimatedFee.amount) {
@@ -207,7 +205,7 @@ export const recordReceiveOnChainFeeReconciliation = async ({
 
   return persistAndReturnEntry({
     entry,
-    hash,
+    hash: metadata.hash,
   })
 }
 
