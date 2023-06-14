@@ -139,6 +139,7 @@ accounts:
   initialStatus: active
   initialWallets:
     - BTC
+    - USD
 accountLimits:
   withdrawal:
     level:

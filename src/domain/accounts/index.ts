@@ -29,9 +29,6 @@ export const checkedToUserId = (userId: string): UserId | ValidationError => {
   if (userId.match(KratosUserIdRegex)) {
     return userId as UserId
   }
-  if (userId.match(DeviceIdRegex)) {
-    return userId as UserId
-  }
   return new InvalidUserId(userId)
 }
 
