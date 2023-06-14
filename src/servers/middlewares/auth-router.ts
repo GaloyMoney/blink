@@ -210,15 +210,15 @@ authRouter.post("/create/device-account", async (req, res) => {
       throw new Error("IP is not defined")
     }
 
-    const { deviceId } = req.body
     const user = basicAuth(req)
 
-    if (!user?.name || !user?.pass || !deviceId) {
+    if (!user?.name || !user?.pass) {
       return res.status(422).send({ error: "Bad input" })
     }
 
     const username = user.name
     const password = user.pass
+    const deviceId = username
 
     const authToken = await Auth.loginWithDevice({
       username,
