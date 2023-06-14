@@ -5,7 +5,6 @@ type AuthenticationError = import("./errors").AuthenticationError
 type IdentityUsername = string & { readonly brand: unique symbol }
 type IdentityPassword = string & { readonly brand: unique symbol }
 
-// can be either kratosUserId or deviceId subjects
 type UserId = string & { readonly brand: unique symbol }
 type SessionToken = string & { readonly brand: unique symbol }
 type SessionCookie = string & { readonly brand: unique symbol }

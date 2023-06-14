@@ -623,7 +623,7 @@ export type Mutation = {
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
   readonly userLogin: AuthTokenPayload;
-  readonly userLoginUpgrade: SuccessPayload;
+  readonly userLoginUpgrade: UpgradePayload;
   readonly userLogout: AuthTokenPayload;
   /** @deprecated Use QuizCompletedMutation instead */
   readonly userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedPayload;
@@ -1268,6 +1268,13 @@ export const TxStatus = {
 } as const;
 
 export type TxStatus = typeof TxStatus[keyof typeof TxStatus];
+export type UpgradePayload = {
+  readonly __typename: 'UpgradePayload';
+  readonly authToken?: Maybe<Scalars['AuthToken']['output']>;
+  readonly errors: ReadonlyArray<Error>;
+  readonly success: Scalars['Boolean']['output'];
+};
+
 /** A wallet belonging to an account which contains a USD balance and a list of transactions. */
 export type UsdWallet = Wallet & {
   readonly __typename: 'UsdWallet';
@@ -1488,7 +1495,7 @@ export type UserLoginUpgradeMutationVariables = Exact<{
 }>;
 
 
-export type UserLoginUpgradeMutation = { readonly __typename: 'Mutation', readonly userLoginUpgrade: { readonly __typename: 'SuccessPayload', readonly success?: boolean | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
+export type UserLoginUpgradeMutation = { readonly __typename: 'Mutation', readonly userLoginUpgrade: { readonly __typename: 'UpgradePayload', readonly success: boolean, readonly authToken?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
 
 export type UserDefaultWalletIdQueryVariables = Exact<{
   username: Scalars['Username']['input'];
@@ -1742,6 +1749,7 @@ export const UserLoginUpgradeDocument = gql`
       code
     }
     success
+    authToken
   }
 }
     `;

@@ -61,7 +61,7 @@ const UserLoginUpgradeMutation = GT.Field<
       return { errors: [mapAndParseErrorForGqlResponse(res)] }
     }
 
-    return { errors: [], ...res }
+    return { errors: [], success: res.success, authToken: res.sessionToken }
   },
 })
 
