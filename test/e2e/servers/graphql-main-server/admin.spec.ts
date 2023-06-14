@@ -1,17 +1,35 @@
+import { sleep } from "@utils"
+
 import USER_UPDATE_PHONE from "../../../e2e/servers/graphql-main-server/mutations/user-update-phone.gql"
 import ACCOUNT_DETAILS_BY_USER_PHONE from "../../../e2e/servers/graphql-main-server/queries/account-details-by-user-phone.gql"
 
-import { UserLoginDocument } from "test/e2e/generated"
+import { UserLoginDocument, UserLoginMutation } from "test/e2e/generated"
 import {
   adminTestClientConfig,
   createApolloClient,
+  defaultStateConfig,
   defaultTestClientConfig,
   fundWalletIdFromLightning,
   getAdminPhoneAndCode,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
+  initializeTestingState,
+  killServer,
   randomPhone,
+  startServer,
 } from "test/helpers"
+
+let serverPid: PID
+
+beforeAll(async () => {
+  await initializeTestingState(defaultStateConfig())
+  serverPid = await startServer("start-main-ci")
+})
+
+afterAll(async () => {
+  await killServer(serverPid)
+  await sleep(1000)
+})
 
 describe("updates user phone", () => {
   let newPhone: PhoneNumber
@@ -21,7 +39,7 @@ describe("updates user phone", () => {
 
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
 
-    await apolloClient.mutate({
+    await apolloClient.mutate<UserLoginMutation>({
       mutation: UserLoginDocument,
       variables: { input: { phone, code } },
     })
@@ -63,6 +81,7 @@ describe("updates user phone", () => {
     expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
   })
 
+  // test if flacky
   it.skip("updates phone even if new phone is associated with a zero balance account, but not otherwise", async () => {
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
     const { phone, code } = getPhoneAndCodeFromRef("I")
