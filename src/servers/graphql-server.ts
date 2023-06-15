@@ -8,7 +8,7 @@ import {
   getApolloConfig,
   getGeetestConfig,
   getJwksArgs,
-  isDev,
+  isProd,
 } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
@@ -54,7 +54,7 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { sendOathkeeperRequest } from "@services/oathkeeper"
+import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 
 import { UsersRepository } from "@services/mongoose"
 
@@ -106,9 +106,9 @@ const setGqlContext = async (
 
   const body = req.body ?? null
 
-  const ipString = isDev
-    ? req.ip
-    : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
+  const ipString = isProd
+    ? req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
+    : req.ip
 
   const ip = parseIps(ipString)
 
@@ -403,7 +403,7 @@ export const startApolloServer = async ({
     // make request to oathkeeper
     const originalToken = authz?.slice(7) as SessionToken | undefined
 
-    const newToken = await sendOathkeeperRequest(originalToken)
+    const newToken = await sendOathkeeperRequestGraphql(originalToken)
     // TODO: see how returning an error affect the websocket connection
     if (newToken instanceof Error) return newToken
 
@@ -433,9 +433,9 @@ export const startApolloServer = async ({
     // TODO: check if nginx pass the ip to the header
     // TODO: ip not been used currently for subscription.
     // implement some rate limiting.
-    const ipString = isDev
-      ? connectionParams?.ip
-      : connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
+    const ipString = isProd
+      ? connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
+      : connectionParams?.ip
 
     const ip = parseIps(ipString)
 
@@ -461,7 +461,7 @@ export const startApolloServer = async ({
 
     // make request to oathkeeper
     // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"
-    const jwtToken = await sendOathkeeperRequest(kratosToken)
+    const jwtToken = await sendOathkeeperRequestGraphql(kratosToken)
     // TODO: see how returning an error affect the websocket connection
     if (jwtToken instanceof Error) return jwtToken
 
@@ -567,12 +567,12 @@ export const startApolloServer = async ({
         `🚀 "${type}" server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
       )
 
-      if (isDev) {
+      if (!isProd) {
         console.log(
           `in dev mode, ${type} server should be accessed through oathkeeper reverse proxy at ${
             type === "admin"
-              ? "http://localhost::4002/admin/graphql"
-              : "http://localhost::4002/graphql"
+              ? "http://localhost:4002/admin/graphql"
+              : "http://localhost:4002/graphql"
           }`,
         )
       }

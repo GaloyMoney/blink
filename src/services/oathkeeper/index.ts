@@ -8,7 +8,7 @@ import {
 } from "@domain/oathkeeper/errors"
 import axios from "axios"
 
-export const sendOathkeeperRequest = async (
+export const sendOathkeeperRequestGraphql = async (
   token: SessionToken | undefined,
 ): Promise<JwtToken | OathkeeperError> => {
   const requestUrl = `${decisionsApi()}graphql`

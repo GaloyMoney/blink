@@ -24,7 +24,6 @@ import {
   DealerError,
   PhoneAccountAlreadyExistsError,
   PhoneAccountAlreadyExistsNeedToSweepFundsError,
-  JwtVerifyTokenError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -82,10 +81,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "CouldNotFindUserFromPhoneError":
       message = `User does not exist for phone ${error.message}`
-      return new NotFoundError({ message, logger: baseLogger })
-
-    case "CouldNotFindUserFromDeviceIdError":
-      message = `User does not exist for device ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "CouldNotFindUserFromWalletIdError":
@@ -365,9 +360,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "The phone is associated with an existing wallet that has a non zero balance. Sweep the funds and try again."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "JwtVerifyTokenError":
-      message = "JWT Token Validation failed"
-      return new JwtVerifyTokenError({ message, logger: baseLogger })
     // ----------
     // Unhandled below here
     // ----------
@@ -399,6 +391,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LnRouteValidationError":
     case "BadAmountForRouteError":
     case "InvalidUsername":
+    case "InvalidDeviceId":
+    case "InvalidIdentityPassword":
+    case "InvalidIdentityUsername":
     case "InvalidPhoneNumber":
     case "InvalidEmailAddress":
     case "InvalidTargetConfirmations":
@@ -527,7 +522,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LikelyUserAlreadyExistError":
     case "PhoneIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
-    case "JwtSubjectUndefinedError":
     case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
     case "EventAugmentationMissingError":

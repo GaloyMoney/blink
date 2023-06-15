@@ -1,7 +1,7 @@
 import { decode } from "jsonwebtoken"
 
 import { OathkeeperUnauthorizedServiceError } from "@domain/oathkeeper/errors"
-import { sendOathkeeperRequest } from "@services/oathkeeper"
+import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 
 import {
   createApolloClient,
@@ -26,9 +26,9 @@ afterAll(async () => {
 // between account/user on mongoose and kratos
 const userRef = "L"
 
-describe("Oathkeeper", () => {
+describe("Oathkeeper graphql endpoints", () => {
   it("return anon if no bearer assets", async () => {
-    const res = await sendOathkeeperRequest(undefined)
+    const res = await sendOathkeeperRequestGraphql(undefined)
     if (res instanceof Error) throw res
 
     const decoded = decode(res, { complete: true })
@@ -36,7 +36,7 @@ describe("Oathkeeper", () => {
   })
 
   it("error if an invalid token is provided", async () => {
-    const res = await sendOathkeeperRequest("invalid.token" as SessionToken)
+    const res = await sendOathkeeperRequestGraphql("invalid.token" as SessionToken)
     expect(res).toBeInstanceOf(OathkeeperUnauthorizedServiceError)
   })
 
@@ -55,7 +55,7 @@ describe("Oathkeeper", () => {
 
     const token = result.data.userLogin.authToken
 
-    const res = await sendOathkeeperRequest(token)
+    const res = await sendOathkeeperRequestGraphql(token)
     if (res instanceof Error) throw res
 
     const decodedNew = decode(res, { complete: true })

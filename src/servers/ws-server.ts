@@ -5,7 +5,7 @@ import { WebSocketServer } from "ws" // yarn add ws
 import { gqlMainSchema } from "@graphql/main"
 import { useServer } from "graphql-ws/lib/use/ws"
 
-import { getJwksArgs, isDev } from "@config"
+import { getJwksArgs, isProd } from "@config"
 import { Context } from "graphql-ws"
 import jsonwebtoken from "jsonwebtoken"
 
@@ -13,7 +13,7 @@ import { parseIps } from "@domain/accounts-ips"
 
 import jwksRsa from "jwks-rsa"
 
-import { sendOathkeeperRequest } from "@services/oathkeeper"
+import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 
 import { setupMongoConnection } from "@services/mongodb"
 
@@ -42,9 +42,9 @@ const getContext = async (ctx: Context) => {
   // TODO: check if nginx pass the ip to the header
   // TODO: ip not been used currently for subscription.
   // implement some rate limiting.
-  const ipString = isDev
-    ? connectionParams?.ip
-    : connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
+  const ipString = isProd
+    ? connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
+    : connectionParams?.ip
 
   const ip = parseIps(ipString)
 
@@ -70,7 +70,7 @@ const getContext = async (ctx: Context) => {
 
   // make request to oathkeeper
   // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"
-  const jwtToken = await sendOathkeeperRequest(kratosToken)
+  const jwtToken = await sendOathkeeperRequestGraphql(kratosToken)
   // TODO: see how returning an error affect the websocket connection
   if (jwtToken instanceof Error) return jwtToken
 

@@ -95,6 +95,9 @@ test_accounts:
   - ref: "N"
     phone: "+198765432115"
     code: "321321"
+  - ref: O
+    phone: "+198765432116"
+    code: "321321"
 rateLimits:
   requestPhoneCodePerPhone:
     points: 4
@@ -136,6 +139,7 @@ accounts:
   initialStatus: active
   initialWallets:
     - BTC
+    - USD
 accountLimits:
   withdrawal:
     level:

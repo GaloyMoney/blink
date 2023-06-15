@@ -34,7 +34,6 @@ export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 export class CouldNotFindUserError extends CouldNotFindError {}
 export class CouldNotFindUserFromIdError extends CouldNotFindError {}
 export class CouldNotFindUserFromPhoneError extends CouldNotFindError {}
-export class CouldNotFindUserFromDeviceIdError extends CouldNotFindError {}
 export class CouldNotFindUserFromWalletIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromIdError extends CouldNotFindError {}
 export class CouldNotListWalletsFromAccountIdError extends CouldNotFindError {}
@@ -79,6 +78,9 @@ export class InvalidPubKeyError extends ValidationError {}
 export class InvalidScanDepthAmount extends ValidationError {}
 export class SatoshiAmountRequiredError extends ValidationError {}
 export class InvalidUsername extends ValidationError {}
+export class InvalidDeviceId extends ValidationError {}
+export class InvalidIdentityPassword extends ValidationError {}
+export class InvalidIdentityUsername extends ValidationError {}
 export class InvalidContactAlias extends ValidationError {}
 export class InvalidCoordinatesError extends ValidationError {}
 export class InvalidBusinessTitleLengthError extends ValidationError {}

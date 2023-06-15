@@ -4,6 +4,7 @@ import { kratosPublic, listSessionsInternal, toDomainSession } from "./private"
 export * from "./auth-phone-no-password"
 export * from "./cron"
 export * from "./identity"
+export * from "./auth-username-password-deviceid"
 
 export const listSessions = async (userId: UserId): Promise<Session[] | KratosError> => {
   const res = await listSessionsInternal(userId)

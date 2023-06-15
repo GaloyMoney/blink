@@ -408,11 +408,6 @@ enum InvoicePaymentStatus {
   PENDING
 }
 
-type JwtPayload {
-  authToken: String
-  errors: [Error!]!
-}
-
 scalar Language
 
 type LnInvoice {
@@ -779,8 +774,7 @@ type Mutation {
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userLoginDevice(input: UserLoginDeviceInput!): JwtPayload!
-  userLoginUpgrade(input: UserLoginUpgradeInput!): AuthTokenPayload!
+  userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
@@ -1298,6 +1292,12 @@ enum TxStatus {
   SUCCESS
 }
 
+type UpgradePayload {
+  authToken: AuthToken
+  errors: [Error!]!
+  success: Boolean!
+}
+
 """
 A wallet belonging to an account which contains a USD balance and a list of transactions.
 """
@@ -1447,10 +1447,6 @@ input UserContactUpdateAliasInput {
 type UserContactUpdateAliasPayload {
   contact: UserContact
   errors: [Error!]!
-}
-
-input UserLoginDeviceInput {
-  jwt: String
 }
 
 input UserLoginInput {

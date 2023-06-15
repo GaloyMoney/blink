@@ -14,6 +14,7 @@ export const translateToUser = (user: UserRecord): User => {
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone
   const createdAt = user.createdAt
+  const deviceId = user.deviceId
 
   return {
     id: user.userId as UserId,
@@ -22,6 +23,7 @@ export const translateToUser = (user: UserRecord): User => {
     phoneMetadata,
     phone,
     createdAt,
+    ...(deviceId !== undefined && { deviceId }),
   }
 }
 
@@ -88,28 +90,17 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const migrateUserIdSubject = async ({
-    currentUserIdSubject,
-    newUserIdSubject,
-    phone,
-  }: {
-    currentUserIdSubject: UserId
-    newUserIdSubject: UserId
-    phone: PhoneNumber
-  }): Promise<User | RepositoryError> => {
-    const filter = { userId: { $eq: currentUserIdSubject } }
-    const update = {
-      $set: {
-        userId: newUserIdSubject,
-        phone,
-      },
-    }
-    const options = { upsert: true, returnOriginal: false }
-
+  const adminUnsetPhoneForUserPreservation = async (
+    id: UserId,
+  ): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOneAndUpdate(filter, update, options)
+      const result = await User.findOneAndUpdate(
+        { userId: id, phone: { $exists: true } },
+        { $rename: { phone: "deletedPhone" } },
+        { new: true },
+      )
       if (!result) {
-        return new RepositoryError("Couldn't update user")
+        return new CouldNotUnsetPhoneFromUserError()
       }
       return translateToUser(result)
     } catch (err) {
@@ -117,13 +108,13 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const adminUnsetPhoneForUserPreservation = async (
+  const adminUnsetDeviceIdForUserPreservation = async (
     id: UserId,
   ): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
-        { userId: id },
-        { $rename: { phone: "deletedPhone" } },
+        { userId: id, deviceId: { $exists: true } },
+        { $rename: { deviceId: "deletedDeviceId" } },
         { new: true },
       )
       if (!result) {
@@ -140,6 +131,6 @@ export const UsersRepository = (): IUsersRepository => {
     findByPhone,
     update,
     adminUnsetPhoneForUserPreservation,
-    migrateUserIdSubject,
+    adminUnsetDeviceIdForUserPreservation,
   }
 }

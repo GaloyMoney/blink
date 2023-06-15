@@ -2,41 +2,65 @@
 
 ```mermaid
 sequenceDiagram
-    Mobile->>Firebase: (1) Unique device id
+    Mobile->>Firebase: (1) Call App Check API
     Firebase->>Attestation Provider: (2) Check device authenticity
     Attestation Provider-->>Firebase: (3) Device authenticated
     Firebase-->>Mobile: (4) Here's jwt (1 hour validity)
-    Mobile-->>Oathkeeper: (5) Verify jwt against JWKS
-    Oathkeeper-->>Backend: (6) User authenticated, here's deviceId
-    Backend-->Mongo: (7) Check user in Accounts collection
+    Mobile-->>Oathkeeper: (5) Send usernameUUIDV4, passwordUUIDV4, deviceIdUUIDV4, Appcheck
+    Oathkeeper-->>Backend: (6) Device is real, /auth/create/device-acccount
 ```
-## Gen Test JWT
-To simulate logging in with a device account a helper function has been created in `dev/bin/gen-test-jwt`. If you run `make gen-test-jwt` it will generate a test jwt. You can then open the graphql playground and simulate logging in with a device account with this mutation:
 
+## Device Account V3
+
+New User/Password Flow
+-----------------
+1) get app-check jwt add to header `Appcheck`
+2) mobile app generates locally a usernameUUIDV4, passwordUUIDV4, deviceIdUUIDV4 (or from keychain if uninstalled)
+3) REST
 ```
-mutation {
-  userLoginDevice(input:{
-    jwt:"{{INSERT_JWT}}"
-  }) {
-    errors {
-      message
-    }
-    authToken
-  }
-}
+POST `/auth/create/device-account`
+Authorization: basic base64(username:password)
+Appcheck: jwt
+BODY {deviceId}
 ```
+4) oathkeeper decision api to verify appcheck jwt via rule
+- kratos will create identity with uuidv4Username and uuidV4Password
+  -  In our backend store DeviceId in mongo user collection
+- RETURN kratos session token
+  - mobile app needs to backup usernameUUIDV4, passwordUUIDV4, deviceIdUUIDV4 to keychain
+
+Upgrade To Phone Flow
+-----------------
+1) captcha flow in mobile app
+2) grapqhl
+```
+Post /graphql MUTATION UserLoginUpgrade
+Authorization: bearer kratosSessionToken
+BODY: phone + code
+```
+3) backend
+```
+  isValid(code) then upgrade
+    a) kratos add phone trait
+    b) change scheme from "username_password_device_v0" to "phone_no_pasword_v0"
+    c) change password from passwordUUIDV4 to KratosMasterPassword
+```
+RETURN kratos session token
+
+## Gen Test JWT
+To simulate logging in with a device account a helper function has been created in `dev/bin/gen-test-jwt`. If you run `make gen-test-jwt` it will generate a test jwt.
 
 ## Device Upgrade Flow
 
 Here is a detailed explaination of the `loginUpgradeWithPhone` flow from `src/app/auth/login.ts`
 
 ### Scenario 1)
-Phone account already exists (no txn with device acct) - User logs in with device jwt then he
+Phone account already exists (no txn with device acct) - User logs in with device account then he
 wants to upgrade to a phone account that already exists. there are no txns on the device account.
 Tell the user to logout and log back in with the phone account
 
 ### Scenario 1.5)
-Phone account already exists (txns with device acct) - User logs in with device jwt (and does some txns) then he
+Phone account already exists (txns with device acct) - User logs in with device account (and does some txns) then he
 wants to upgrade to a phone account that already exists.
 throw an error stating that a phone account already exists and the user needs to manually sweep funds
 to the new account. Here are the steps the user need to perform:
@@ -54,7 +78,7 @@ to the new account. Here are the steps the user need to perform:
                       mutation nukeDeviceAccountMutation ?
 
 ### Scenario 2)
-Happy Path - User logs in with device jwt, no phone account exists, upgrade device to phone account
+Happy Path - User logs in with device account, no phone account exists, upgrade device to phone account
 a. update kratos => update schema to phone_no_password_v0, remove device trait
 b. mongo (user) => update user collection and remove device field, add phone
 c. mongo (account) => update account to level 1

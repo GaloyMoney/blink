@@ -1,6 +1,9 @@
 import {
+  InvalidDeviceId,
   InvalidDeviceTokenError,
   InvalidEmailAddress,
+  InvalidIdentityPassword,
+  InvalidIdentityUsername,
   InvalidLanguageError,
   InvalidPhoneNumber,
 } from "@domain/errors"
@@ -12,6 +15,9 @@ import { Languages } from "./languages"
 const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
 
 const EmailAddressRegex = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/i
+
+const UuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 export const checkedToPhoneNumber = (
   phoneNumber: string,
@@ -49,6 +55,35 @@ export const checkedToDeviceToken = (token: string): DeviceToken | ValidationErr
   }
 
   return token as DeviceToken
+}
+
+// https://github.com/react-native-device-info/react-native-device-info#getuniqueid
+export const checkedToDeviceId = (
+  deviceId: string | undefined,
+): DeviceId | ValidationError => {
+  if (!deviceId) return new InvalidDeviceId("no input")
+  if (deviceId.length > 38) {
+    return new InvalidDeviceId(deviceId)
+  }
+  return deviceId as DeviceId
+}
+
+export const checkedToIdentityUsername = (
+  username: string,
+): IdentityUsername | ValidationError => {
+  if (!username.match(UuidRegex)) {
+    return new InvalidIdentityUsername(username)
+  }
+  return username as IdentityUsername
+}
+
+export const checkedToIdentityPassword = (
+  password: string,
+): IdentityPassword | ValidationError => {
+  if (!password.match(UuidRegex)) {
+    return new InvalidIdentityPassword(password)
+  }
+  return password as IdentityPassword
 }
 
 export { Languages }

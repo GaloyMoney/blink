@@ -172,6 +172,7 @@ gql`
     me {
       defaultAccount {
         defaultWalletId
+        level
         wallets {
           id
           walletCurrency

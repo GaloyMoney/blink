@@ -232,17 +232,6 @@ export class PhoneCodeError extends CustomApolloError {
   }
 }
 
-export class JwtVerifyTokenError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
-    super({
-      message: "JWT Token Validation failed",
-      forwardToClient: true,
-      code: "JWT_VERIFY_TOKEN_ERROR",
-      ...errData,
-    })
-  }
-}
-
 export class PhoneProviderError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
