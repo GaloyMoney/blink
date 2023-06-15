@@ -71,15 +71,28 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
     return new EventAugmentationMissingError()
   }
   let augmentation: BriaEventAugmentation | undefined = undefined
-  const rawInfo = rawAugmentation.getAddressInfo()
-  if (rawInfo) {
-    const info = rawInfo.toObject()
+  const addressInfo = rawAugmentation.getAddressInfo()
+  if (addressInfo) {
+    const info = addressInfo.toObject()
     augmentation = {
       addressInfo: {
         address: info.address as OnChainAddress,
         externalId: info.externalId,
       },
     }
+  }
+  const payoutInfo = rawAugmentation.getPayoutInfo()
+  if (payoutInfo) {
+    const info = payoutInfo.toObject()
+    augmentation = {
+      payoutInfo: {
+        id: info.id as PayoutId,
+        externalId: info.externalId,
+      },
+    }
+  }
+  if (augmentation === undefined) {
+    return new EventAugmentationMissingError()
   }
 
   let proportionalFee: BtcPaymentAmount | ValidationError

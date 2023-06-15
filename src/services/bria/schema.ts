@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose"
 
 type BriaEventDocument = BriaEvent & Document
 
+// TODO: bring in line with payout augmentation
 const AddressAugmentationSchema = new Schema<AddressAugmentation>(
   {
     address: String,

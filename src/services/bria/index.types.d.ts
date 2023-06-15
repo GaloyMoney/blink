@@ -10,8 +10,14 @@ type AddressAugmentation = {
   externalId: string
 }
 
+type PayoutAugmentation = {
+  id: PayoutId
+  externalId: string
+}
+
 type BriaEventAugmentation = {
   addressInfo?: AddressAugmentation
+  payoutInfo?: PayoutAugmentation
 }
 
 type UtxoDetected = {
@@ -66,7 +72,7 @@ type BriaPayload =
   | PayoutSettled
 type BriaEvent = {
   payload: BriaPayload
-  augmentation: BriaEventAugmentation | undefined
+  augmentation: BriaEventAugmentation
   sequence: number
 }
 
