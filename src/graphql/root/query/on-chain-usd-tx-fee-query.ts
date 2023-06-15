@@ -18,7 +18,7 @@ const OnChainUsdTxFeeQuery = GT.Field({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(CentAmount) },
-    targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
+    targetConfirmations: { type: TargetConfirmations, defaultValue: 3 },
   },
   resolve: async (_, args, { domainAccount }) => {
     const { walletId, address, amount, targetConfirmations } = args

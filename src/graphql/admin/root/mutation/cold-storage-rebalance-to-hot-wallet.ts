@@ -10,7 +10,7 @@ const ColdStorageRebalanceToHotWalletInput = GT.Input({
   fields: () => ({
     walletName: { type: GT.NonNull(GT.String) },
     amount: { type: GT.NonNull(SatAmount) },
-    targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
+    targetConfirmations: { type: TargetConfirmations, defaultValue: 3 },
   }),
 })
 

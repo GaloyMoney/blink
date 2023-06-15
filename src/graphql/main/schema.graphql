@@ -822,7 +822,7 @@ type OnChainAddressPayload {
 input OnChainPaymentSendAllInput {
   address: OnChainAddress!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
+  targetConfirmations: TargetConfirmations = 3
   walletId: WalletId!
 }
 
@@ -830,7 +830,7 @@ input OnChainPaymentSendInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
+  targetConfirmations: TargetConfirmations = 3
   walletId: WalletId!
 }
 
@@ -854,7 +854,7 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
+  targetConfirmations: TargetConfirmations = 3
   walletId: WalletId!
 }
 
@@ -862,7 +862,7 @@ input OnChainUsdPaymentSendInput {
   address: OnChainAddress!
   amount: CentAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 1
+  targetConfirmations: TargetConfirmations = 3
   walletId: WalletId!
 }
 
@@ -1041,19 +1041,19 @@ type Query {
   onChainTxFee(
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 1
+    targetConfirmations: TargetConfirmations = 3
     walletId: WalletId!
   ): OnChainTxFee!
   onChainUsdTxFee(
     address: OnChainAddress!
     amount: CentAmount!
-    targetConfirmations: TargetConfirmations = 1
+    targetConfirmations: TargetConfirmations = 3
     walletId: WalletId!
   ): OnChainUsdTxFee!
   onChainUsdTxFeeAsBtcDenominated(
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 1
+    targetConfirmations: TargetConfirmations = 3
     walletId: WalletId!
   ): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion]
