@@ -1,4 +1,3 @@
-import { NoTransactionToUpdateError } from "@domain/errors"
 import {
   LedgerServiceError,
   NoTransactionToSettleError,
@@ -24,23 +23,6 @@ export const send = {
         { hash: paymentHash },
         { pending: false },
       )
-      const success = result.modifiedCount > 0
-      if (!success) {
-        return new NoTransactionToSettleError()
-      }
-      return true
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  },
-
-  settlePendingOnChainPayment: async (
-    payoutId: PayoutId,
-  ): Promise<true | LedgerServiceError> => {
-    if (!payoutId) return new NoTransactionToSettleError(`payoutId: ${payoutId}`)
-
-    try {
-      const result = await Transaction.updateMany({ payoutId }, { pending: false })
       const success = result.modifiedCount > 0
       if (!success) {
         return new NoTransactionToSettleError()

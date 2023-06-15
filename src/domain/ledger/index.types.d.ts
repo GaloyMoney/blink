@@ -333,8 +333,6 @@ interface ILedgerService {
 
   settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
-  settlePendingOnChainPayment(payoutId: PayoutId): Promise<true | LedgerServiceError>
-
   oldSettlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
 
   revertLightningPayment(

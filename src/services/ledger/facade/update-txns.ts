@@ -6,7 +6,7 @@ import {
 
 import { toObjectId } from "@services/mongoose/utils"
 
-import { getBankOwnerWalletId } from "../caching"
+import { getBankOwnerWalletId, getNonEndUserWalletIds } from "../caching"
 import { Transaction } from "../schema"
 import { NoTransactionToSettleError, UnknownLedgerError } from "../domain/errors"
 import { TransactionsMetadataRepository } from "../services"
@@ -26,6 +26,32 @@ export const settlePendingLnSend = async (
   } catch (err) {
     return new UnknownLedgerError(err)
   }
+}
+
+export const settlePendingOnChainPayment = async (
+  payoutId: PayoutId,
+): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
+  try {
+    const result = await Transaction.updateMany({ payoutId }, { pending: false })
+    const success = result.modifiedCount > 0
+    if (!success) {
+      return new NoTransactionToSettleError()
+    }
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+
+  const txns = await getTransactionsByPayoutId(payoutId)
+  if (txns instanceof Error) return txns
+
+  const nonUserWalletIds = Object.values(await getNonEndUserWalletIds())
+  const userLedgerTxn = txns.find(
+    (txn) => txn.walletId && !nonUserWalletIds.includes(txn.walletId),
+  )
+
+  if (userLedgerTxn === undefined) return new InvalidLedgerTransactionStateError()
+
+  return userLedgerTxn
 }
 
 export const updateMetadataByHash = async (

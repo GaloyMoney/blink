@@ -2,7 +2,6 @@ import { InvalidLedgerTransactionStateError } from "@domain/errors"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { displayAmountFromNumber } from "@domain/fiat"
 
-import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 import {
   AccountsRepository,
@@ -14,26 +13,11 @@ import { NotificationsService } from "@services/notifications"
 export const settlePayout = async (
   payoutId: PayoutId,
 ): Promise<true | ApplicationError> => {
-  const ledger = LedgerService()
+  const ledgerTxn = await LedgerFacade.settlePendingOnChainPayment(payoutId)
+  if (ledgerTxn instanceof Error) return ledgerTxn
+  if (ledgerTxn.walletId === undefined) return new InvalidLedgerTransactionStateError()
 
-  // Settle transaction
-  const settled = await ledger.settlePendingOnChainPayment(payoutId)
-  if (settled instanceof Error) return settled
-
-  // Get transaction info for notification
-  const ledgerTxns = await LedgerFacade.getTransactionsByPayoutId(payoutId)
-  if (ledgerTxns instanceof Error) return ledgerTxns
-  const nonUserWalletIds = Object.values(await getNonEndUserWalletIds())
-  const userLedgerTxns = ledgerTxns.filter(
-    (txn) => txn.walletId && !nonUserWalletIds.includes(txn.walletId),
-  )
-  const ledgerTxn = userLedgerTxns[0]
-  const walletId = ledgerTxn.walletId
-  if (!(walletId && userLedgerTxns.length === 1)) {
-    return new InvalidLedgerTransactionStateError()
-  }
-
-  const wallet = await WalletsRepository().findById(walletId)
+  const wallet = await WalletsRepository().findById(ledgerTxn.walletId)
   if (wallet instanceof Error) return wallet
   const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
@@ -65,7 +49,6 @@ export const settlePayout = async (
   await NotificationsService().onChainTxSent({
     senderAccountId: wallet.accountId,
     senderWalletId: wallet.id,
-    // TODO: tx.tokens represent the total sum, need to segregate amount by address
     paymentAmount,
     displayPaymentAmount,
     txHash,
