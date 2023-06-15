@@ -1,5 +1,3 @@
-import crypto from "crypto"
-
 import { Payments, Wallets } from "@app"
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
@@ -858,7 +856,6 @@ describe("Display properties on transactions", () => {
           address,
           amount: amountSats,
           speed: PayoutSpeed.Fast,
-          requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
           memo,
         })
         if (paid instanceof Error) throw paid
@@ -932,7 +929,6 @@ describe("Display properties on transactions", () => {
           address,
           amount: amountSats,
           speed: PayoutSpeed.Fast,
-          requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
           memo,
         })
         if (paid instanceof Error) throw paid
@@ -1032,7 +1028,6 @@ describe("Display properties on transactions", () => {
           address,
           amount: amountSats,
           speed: PayoutSpeed.Fast,
-          requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
           memo,
         })
         if (paid instanceof Error) throw paid

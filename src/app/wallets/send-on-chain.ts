@@ -18,12 +18,8 @@ import {
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
 } from "@domain/payments"
-import { PaymentNotFoundError, PaymentSendStatus } from "@domain/bitcoin/lightning"
-import {
-  checkedToOnChainAddress,
-  PayoutNotFoundError,
-  PayoutSpeed,
-} from "@domain/bitcoin/onchain"
+import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { displayAmountFromNumber } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -59,53 +55,10 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   amountCurrency: amountCurrencyRaw,
   address,
   speed,
-  requestId,
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const ledger = LedgerService()
-
-  const isRecordedResult = await ledger.isOnChainSendRecordedForWallet({
-    walletId: senderWalletId,
-    requestId,
-  })
-  if (isRecordedResult instanceof Error) return isRecordedResult
-  const { recorded, ...partialResult } = isRecordedResult
-  if (recorded && "payoutId" in partialResult) {
-    if (partialResult.isIntraLedger) {
-      return {
-        status: partialResult.isPending
-          ? PaymentSendStatus.Pending
-          : PaymentSendStatus.Success,
-        payoutId: partialResult.payoutId,
-      }
-    }
-
-    let payoutId: PayoutId | PaymentNotFoundError | undefined = partialResult.payoutId
-    if (payoutId === undefined) {
-      const id = await NewOnChainService().findPayoutByRequestId(requestId)
-      if (id instanceof Error && !(id instanceof PayoutNotFoundError)) {
-        return id
-      }
-      payoutId = id
-    }
-
-    if (!(payoutId instanceof PaymentNotFoundError)) {
-      const updated = await LedgerService().setOnChainTxPayoutId({
-        journalId: partialResult.journalId,
-        payoutId,
-      })
-      if (updated instanceof Error) return updated
-      return {
-        status: partialResult.isPending
-          ? PaymentSendStatus.Pending
-          : PaymentSendStatus.Success,
-        payoutId,
-      }
-    }
-
-    // Continue only if "payoutId instanceof PaymentNotFoundError"
-  }
 
   const amountToSendRaw = sendAll
     ? await ledger.getWalletBalance(senderWalletId)
@@ -220,7 +173,6 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
     builder,
     senderDisplayCurrency: senderAccount.displayCurrency,
     speed,
-    requestId,
     memo,
     sendAll,
     logger: onchainLogger,
@@ -484,7 +436,6 @@ const executePaymentViaOnChain = async <
   builder,
   senderDisplayCurrency,
   speed,
-  requestId,
   memo,
   sendAll,
   logger,
@@ -492,7 +443,6 @@ const executePaymentViaOnChain = async <
   builder: OPFBWithConversion<S, R> | OPFBWithError
   senderDisplayCurrency: DisplayCurrency
   speed: PayoutSpeed
-  requestId: PayoutRequestId
   memo: string | null
   sendAll: boolean
   logger: Logger
@@ -628,13 +578,13 @@ const executePaymentViaOnChain = async <
       address: paymentFlow.address,
       amount: paymentFlow.btcPaymentAmount,
       speed,
-      requestId,
+      journalId: journal.journalId,
     })
     if (payoutId instanceof Error) {
       logger.error(
         {
           err: payoutId,
-          externalId: requestId,
+          externalId: journal.journalId,
           address,
           tokens: Number(paymentFlow.btcPaymentAmount.amount),
           success: false,

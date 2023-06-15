@@ -170,18 +170,18 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
-  const findPayoutByRequestId = async (
-    requestId: PayoutRequestId,
+  const findPayoutByLedgerJournalId = async (
+    journalId: LedgerJournalId,
   ): Promise<PayoutId | OnChainServiceError> => {
     try {
       const request = new FindPayoutByExternalIdRequest()
-      request.setExternalId(requestId)
+      request.setExternalId(journalId)
 
       const response = await findPayoutByExternalId(request, metadata)
       const foundPayout = response.getPayout()
 
       if (foundPayout === undefined) return new PayoutNotFoundError()
-      return foundPayout.getPayoutQueueId() as PayoutId
+      return foundPayout.getId() as PayoutId
     } catch (err) {
       if (err.code == status.NOT_FOUND) {
         return new PayoutNotFoundError()
@@ -196,7 +196,7 @@ export const NewOnChainService = (): INewOnChainService => {
     address,
     amount,
     speed,
-    requestId,
+    journalId,
   }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
     try {
       const request = new SubmitPayoutRequest()
@@ -204,10 +204,8 @@ export const NewOnChainService = (): INewOnChainService => {
       request.setPayoutQueueName(queueNameForSpeed(speed))
       request.setOnchainAddress(address)
       request.setSatoshis(Number(amount.amount))
-      if (requestId) {
-        request.setExternalId(requestId)
-        request.setMetadata(constructMetadata({ galoy: { walletId } }))
-      }
+      request.setExternalId(journalId)
+      request.setMetadata(constructMetadata({ galoy: { walletId } }))
 
       const response = await submitPayout(request, metadata)
 
@@ -260,7 +258,7 @@ export const NewOnChainService = (): INewOnChainService => {
       getBalance,
       createOnChainAddress,
       findAddressByRequestId,
-      findPayoutByRequestId,
+      findPayoutByLedgerJournalId,
       queuePayoutToAddress,
       estimateFeeForPayout,
     },

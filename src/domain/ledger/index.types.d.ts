@@ -331,11 +331,6 @@ interface ILedgerService {
 
   isOnChainTxHashRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
-  isOnChainSendRecordedForWallet(args: {
-    walletId: WalletId
-    requestId: PayoutRequestId
-  }): Promise<IsOnChainSendRecordedForWalletResult | LedgerServiceError>
-
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>

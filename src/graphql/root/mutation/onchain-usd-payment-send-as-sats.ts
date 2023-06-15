@@ -1,5 +1,3 @@
-import crypto from "crypto"
-
 import { PayoutSpeed as DomainPayoutSpeed } from "@domain/bitcoin/onchain"
 
 import { GT } from "@graphql/index"
@@ -72,16 +70,12 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       return { errors: [{ message: speed.message }] }
     }
 
-    // This should eventually be passed in via some middleware
-    const requestId = crypto.randomUUID() as PayoutRequestId
-
     const result = await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount({
       senderAccount: domainAccount,
       senderWalletId: walletId,
       amount,
       address,
       speed,
-      requestId,
       memo,
     })
 

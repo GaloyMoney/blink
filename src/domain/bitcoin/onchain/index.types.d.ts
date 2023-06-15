@@ -10,7 +10,6 @@ type OnChainAddressRequestId = string & { readonly brand: unique symbol }
 type BlockId = string & { readonly brand: unique symbol }
 type OnChainTxHash = string & { readonly brand: unique symbol }
 type PayoutId = string & { readonly brand: unique symbol }
-type PayoutRequestId = string & { readonly brand: unique symbol }
 type OnChainTxVout = number & { readonly brand: unique symbol }
 type ScanDepth = number & { readonly brand: unique symbol }
 type TxOut = {
@@ -85,7 +84,7 @@ type QueuePayoutToAddressArgs = {
   address: OnChainAddress
   amount: BtcPaymentAmount
   speed: PayoutSpeed
-  requestId: PayoutRequestId
+  journalId: LedgerJournalId
 }
 
 type EstimatePayoutFeeArgs = {
@@ -151,8 +150,8 @@ interface INewOnChainService {
   findAddressByRequestId(
     requestId: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError>
-  findPayoutByRequestId(
-    requestId: PayoutRequestId,
+  findPayoutByLedgerJournalId(
+    requestId: LedgerJournalId,
   ): Promise<PayoutId | OnChainServiceError>
   queuePayoutToAddress(
     args: QueuePayoutToAddressArgs,

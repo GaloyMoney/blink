@@ -1,5 +1,3 @@
-import crypto from "crypto"
-
 import { Prices, Wallets } from "@app"
 import {
   getAccountLimits,
@@ -219,7 +217,6 @@ const testExternalSend = async ({
     amount,
     amountCurrency,
     speed: PayoutSpeed.Fast,
-    requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
     memo,
     sendAll,
   })
@@ -637,7 +634,6 @@ const testInternalSend = async ({
     address,
     amount: senderAmount,
     speed: PayoutSpeed.Fast,
-    requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
     memo,
     sendAll,
   }
@@ -904,7 +900,6 @@ describe("BtcWallet - onChainPay", () => {
       address,
       amount,
       speed: PayoutSpeed.Fast,
-      requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
     })
     if (paid instanceof Error) throw paid
@@ -1043,7 +1038,6 @@ describe("BtcWallet - onChainPay", () => {
       address,
       amount: 0,
       speed: PayoutSpeed.Fast,
-      requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
     })
     if (paid instanceof Error) throw paid
@@ -1118,7 +1112,6 @@ describe("BtcWallet - onChainPay", () => {
       address,
       amount: initialBalanceUserG,
       speed: PayoutSpeed.Fast,
-      requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
     })
     //should fail because user does not have balance to pay for on-chain fee
@@ -1135,7 +1128,6 @@ describe("BtcWallet - onChainPay", () => {
       address,
       amount,
       speed: PayoutSpeed.Fast,
-      requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
     })
     expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
@@ -1181,7 +1173,6 @@ describe("BtcWallet - onChainPay", () => {
       address,
       amount,
       speed: PayoutSpeed.Fast,
-      requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
     })
 
@@ -1197,7 +1188,6 @@ describe("BtcWallet - onChainPay", () => {
       address,
       amount: amountBelowDustThreshold,
       speed: PayoutSpeed.Fast,
-      requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
     })
     expect(result).toBeInstanceOf(LessThanDustThresholdError)
@@ -1212,7 +1202,6 @@ describe("BtcWallet - onChainPay", () => {
       address,
       amount: 1,
       speed: PayoutSpeed.Fast,
-      requestId: crypto.randomBytes(32).toString("hex") as PayoutRequestId,
       memo: null,
     })
     expect(result).toBeInstanceOf(LessThanDustThresholdError)

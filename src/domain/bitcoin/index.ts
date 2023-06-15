@@ -1,6 +1,5 @@
 import {
   InvalidCurrencyBaseAmountError,
-  InvalidPayoutRequestId,
   InvalidSatoshiAmountError,
   InvalidTargetConfirmations,
 } from "@domain/errors"
@@ -57,17 +56,6 @@ export const checkedToTargetConfs = (
   if (!(confs && confs > 0 && Number.isInteger(confs)))
     return new InvalidTargetConfirmations()
   return toTargetConfs(confs)
-}
-
-export const PayoutRequestIdRegex = /^[0-9A-Za-z_-]{3,50}$/i
-
-export const checkedToPayoutRequestId = (
-  requestId: string,
-): PayoutRequestId | ValidationError => {
-  if (!requestId.match(PayoutRequestIdRegex)) {
-    return new InvalidPayoutRequestId(requestId)
-  }
-  return requestId as PayoutRequestId
 }
 
 // Check for hexadecimal (case insensitive) 64-char SHA-256 hash

@@ -355,50 +355,6 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const isOnChainSendRecordedForWallet = async ({
-    walletId,
-    requestId,
-  }: {
-    walletId: WalletId
-    requestId: PayoutRequestId
-  }): Promise<IsOnChainSendRecordedForWalletResult | LedgerServiceError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-
-    try {
-      const entry = await Transaction.findOne({
-        accounts: liabilitiesWalletId,
-        request_id: requestId,
-        type: {
-          $in: [
-            LedgerTransactionType.OnchainPayment,
-            LedgerTransactionType.OnchainIntraLedger,
-            LedgerTransactionType.OnChainTradeIntraAccount,
-          ],
-        },
-      })
-
-      if (!entry) {
-        return { recorded: false }
-      }
-
-      const tx = translateToLedgerTx(entry)
-      return {
-        recorded: true,
-        journalId: tx.journalId,
-        payoutId: tx.payoutId,
-        isPending: tx.pendingConfirmation,
-        isIntraLedger:
-          tx.type in
-          [
-            (LedgerTransactionType.OnchainIntraLedger,
-            LedgerTransactionType.OnChainTradeIntraAccount),
-          ],
-      }
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
   const isLnTxRecorded = async (
     paymentHash: PaymentHash,
   ): Promise<boolean | LedgerServiceError> => {
@@ -480,7 +436,6 @@ export const LedgerService = (): ILedgerService => {
       getWalletBalanceAmount,
       isOnChainReceiptTxRecordedForWallet,
       isOnChainTxHashRecorded,
-      isOnChainSendRecordedForWallet,
       isLnTxRecorded,
       getWalletIdByTransactionHash,
       listWalletIdsWithPendingPayments,
