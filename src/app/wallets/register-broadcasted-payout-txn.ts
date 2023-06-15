@@ -5,10 +5,7 @@ import {
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { LedgerService } from "@services/ledger"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
-import {
-  OnChainFeeReconciliationLedgerMetadata,
-  recordReceiveOnChainFeeReconciliation,
-} from "@services/ledger/facade"
+import * as LedgerFacade from "@services/ledger/facade"
 
 export const registerBroadcastedPayout = async ({
   payoutId,
@@ -25,7 +22,7 @@ export const registerBroadcastedPayout = async ({
 
   const setTxId = await ledger.setOnChainTxIdByPayoutId({ payoutId, txId, vout })
   if (setTxId instanceof NoTransactionToUpdateError) {
-    const txns = await ledger.getTransactionsByPayoutId(payoutId)
+    const txns = await LedgerFacade.getTransactionsByPayoutId(payoutId)
     if (txns instanceof Error) return txns
     if (txns === undefined) return new InvalidLedgerTransactionStateError(payoutId)
 
@@ -43,7 +40,7 @@ export const registerBroadcastedPayout = async ({
     return setTxId
   }
 
-  const ledgerTxns = await ledger.getTransactionsByPayoutId(payoutId)
+  const ledgerTxns = await LedgerFacade.getTransactionsByPayoutId(payoutId)
   if (ledgerTxns instanceof Error) return ledgerTxns
 
   const bankOwnerWalletId = await getBankOwnerWalletId()
@@ -61,12 +58,12 @@ export const registerBroadcastedPayout = async ({
   if (estimatedFee instanceof Error) return estimatedFee
   if (estimatedFee.amount === proportionalFee.amount) return true
 
-  const { metadata } = OnChainFeeReconciliationLedgerMetadata({
+  const { metadata } = LedgerFacade.OnChainFeeReconciliationLedgerMetadata({
     payoutId,
     txHash: txId,
     pending: true,
   })
-  const recorded = await recordReceiveOnChainFeeReconciliation({
+  const recorded = await LedgerFacade.recordReceiveOnChainFeeReconciliation({
     estimatedFee,
     actualFee: proportionalFee,
     metadata,

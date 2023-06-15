@@ -434,10 +434,8 @@ describe("Bria Event Handlers", () => {
       })
       const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
 
-      const ledger = LedgerService()
-
       // Run before-broadcast checks
-      const txnsBefore = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsBefore = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsBefore instanceof Error) throw txnsBefore
       expect(txnsBefore.length).toEqual(2)
 
@@ -455,7 +453,7 @@ describe("Bria Event Handlers", () => {
       expect(res).toBe(true)
 
       // Run after-broadcast checks
-      const txnsAfter = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsAfter instanceof Error) throw txnsAfter
       expect(txnsAfter.length).toEqual(2)
 
@@ -480,10 +478,8 @@ describe("Bria Event Handlers", () => {
       })
       const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
 
-      const ledger = LedgerService()
-
       // Run before-broadcast checks
-      const txnsBefore = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsBefore = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsBefore instanceof Error) throw txnsBefore
       expect(txnsBefore.length).toEqual(2)
 
@@ -505,7 +501,7 @@ describe("Bria Event Handlers", () => {
       expect(res).toBe(true)
 
       // Run after-broadcast checks
-      const txnsAfter = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsAfter instanceof Error) throw txnsAfter
       expect(txnsAfter.length).toEqual(3)
 
@@ -537,10 +533,8 @@ describe("Bria Event Handlers", () => {
       })
       const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
 
-      const ledger = LedgerService()
-
       // Run before-broadcast checks
-      const txnsBefore = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsBefore = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsBefore instanceof Error) throw txnsBefore
       expect(txnsBefore.length).toEqual(2)
 
@@ -562,7 +556,7 @@ describe("Bria Event Handlers", () => {
       expect(res).toBe(true)
 
       // Run after-broadcast checks
-      const txnsAfter = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsAfter instanceof Error) throw txnsAfter
       expect(txnsAfter.length).toEqual(3)
 
@@ -594,10 +588,8 @@ describe("Bria Event Handlers", () => {
       })
       const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
 
-      const ledger = LedgerService()
-
       // Run before-broadcast checks
-      const txnsBefore = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsBefore = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsBefore instanceof Error) throw txnsBefore
       expect(txnsBefore.length).toEqual(2)
 
@@ -610,11 +602,9 @@ describe("Bria Event Handlers", () => {
       expect(hashesBeforeSet.size).toEqual(1)
 
       // Register broadcast with failure
-      const { LedgerService: LedgerServiceOrig } = jest.requireActual("@services/ledger")
-      jest.spyOn(LedgerImpl, "LedgerService").mockReturnValue({
-        ...LedgerServiceOrig(),
-        getTransactionsByPayoutId: () => new UnknownLedgerError(),
-      })
+      jest
+        .spyOn(LedgerFacade, "getTransactionsByPayoutId")
+        .mockImplementation(async () => new UnknownLedgerError())
 
       const res = await registerBroadcastedPayout({
         payoutId,
@@ -624,10 +614,10 @@ describe("Bria Event Handlers", () => {
       })
       expect(res).toBeInstanceOf(UnknownLedgerError)
 
-      jest.spyOn(LedgerImpl, "LedgerService").mockRestore()
+      jest.spyOn(LedgerFacade, "getTransactionsByPayoutId").mockRestore()
 
       // Run after-broadcast checks
-      const txnsAfter = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsAfter instanceof Error) throw txnsAfter
       expect(txnsAfter.length).toEqual(2)
 
@@ -649,7 +639,7 @@ describe("Bria Event Handlers", () => {
       })
       expect(resRetry).toBe(true)
 
-      const txnsAfterRetry = await ledger.getTransactionsByPayoutId(payoutId)
+      const txnsAfterRetry = await LedgerFacade.getTransactionsByPayoutId(payoutId)
       if (txnsAfterRetry instanceof Error) throw txnsAfterRetry
       expect(txnsAfterRetry.length).toEqual(3)
 

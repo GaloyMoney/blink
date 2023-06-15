@@ -22,6 +22,7 @@ import {
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
 import { timestampDaysAgo } from "@utils"
 
 import {
@@ -908,8 +909,7 @@ describe("BtcWallet - onChainPay", () => {
     if (payoutId === undefined) throw new Error("'paid.payoutId' undefined")
 
     // Check txns after submit payment
-    const ledger = LedgerService()
-    const txns = await ledger.getTransactionsByPayoutId(payoutId)
+    const txns = await LedgerFacade.getTransactionsByPayoutId(payoutId)
     if (txns instanceof Error) throw txns
     expect(txns.length).toEqual(2)
 
@@ -948,7 +948,7 @@ describe("BtcWallet - onChainPay", () => {
     expect(resultBroadcast).toBe(true)
 
     // Check txns after register broadcast
-    const txnsAfterBroadcast = await ledger.getTransactionsByPayoutId(payoutId)
+    const txnsAfterBroadcast = await LedgerFacade.getTransactionsByPayoutId(payoutId)
     if (txnsAfterBroadcast instanceof Error) throw txnsAfterBroadcast
     expect(txnsAfterBroadcast.length).toEqual(3)
     const bankOwnerTxnAfterBroadcast = txnsAfterBroadcast.find(

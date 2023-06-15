@@ -3,6 +3,7 @@ import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { displayAmountFromNumber } from "@domain/fiat"
 
 import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
 import {
   AccountsRepository,
   UsersRepository,
@@ -20,7 +21,7 @@ export const settlePayout = async (
   if (settled instanceof Error) return settled
 
   // Get transaction info for notification
-  const ledgerTxns = await ledger.getTransactionsByPayoutId(payoutId)
+  const ledgerTxns = await LedgerFacade.getTransactionsByPayoutId(payoutId)
   if (ledgerTxns instanceof Error) return ledgerTxns
   const nonUserWalletIds = Object.values(await getNonEndUserWalletIds())
   const userLedgerTxns = ledgerTxns.filter(

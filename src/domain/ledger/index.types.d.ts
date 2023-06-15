@@ -273,10 +273,6 @@ interface ILedgerService {
     paginationArgs?: PaginationArgs
   }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerServiceError>
 
-  getTransactionsByPayoutId(
-    payoutId: PayoutId,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
-
   listPendingPayments(
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
