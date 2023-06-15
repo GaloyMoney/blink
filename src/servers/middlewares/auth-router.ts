@@ -35,7 +35,7 @@ authRouter.post("/browser", async (req, res) => {
   const ip = parseIps(ipString)
 
   if (!ip) {
-    return res.status(502).send({ error: "IP is not defined" })
+    return res.status(500).send({ error: "IP is not defined" })
   }
 
   try {
@@ -66,7 +66,7 @@ authRouter.post(
       const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
       const ip = parseIps(ipString)
       if (!ip) {
-        return res.status(502).send({ error: "IP is not defined" })
+        return res.status(500).send({ error: "IP is not defined" })
       }
       const code = req.body.authCode
       const phone = checkedToPhoneNumber(req.body.phoneNumber)
@@ -214,7 +214,7 @@ authRouter.post(
       const ip = parseIps(ipString)
 
       if (!ip) {
-        return res.status(502).send({ error: "IP is not defined" })
+        return res.status(500).send({ error: "IP is not defined" })
       }
 
       const user = basicAuth(req)
