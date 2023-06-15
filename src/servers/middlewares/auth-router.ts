@@ -5,7 +5,11 @@ import { Auth } from "@app"
 import { isProd } from "@config"
 
 import { mapError } from "@graphql/error-map"
-import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
 
 import { kratosPublic } from "@services/kratos/private"
 
@@ -234,7 +238,7 @@ authRouter.post(
           recordExceptionInCurrentSpan({ error: authToken })
           return res.status(500).send({ error: authToken.message })
         }
-
+        addAttributesToCurrentSpan({ "login.deviceAccount": deviceId })
         return res.status(200).send({
           result: authToken,
         })
