@@ -19,7 +19,7 @@ export const registerBroadcastedPayout = async ({
   payoutId: PayoutId
   proportionalFee: BtcPaymentAmount
   txId: OnChainTxHash
-  vout?: OnChainTxVout
+  vout: OnChainTxVout
 }): Promise<true | ApplicationError> => {
   const ledger = LedgerService()
 

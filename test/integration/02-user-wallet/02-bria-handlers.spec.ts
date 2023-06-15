@@ -418,6 +418,7 @@ describe("Bria Event Handlers", () => {
         proportionalFee: actualFee,
         satoshis: btcPaymentAmount,
         txId: generateHash() as OnChainTxHash,
+        vout: 0 as OnChainTxVout,
         address: addressForPayout,
       }
     }
@@ -431,7 +432,7 @@ describe("Bria Event Handlers", () => {
         estimatedFee,
         actualFee,
       })
-      const { proportionalFee, id: payoutId, txId } = broadcastPayload
+      const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
 
       const ledger = LedgerService()
 
@@ -449,6 +450,7 @@ describe("Bria Event Handlers", () => {
         payoutId,
         proportionalFee,
         txId,
+        vout,
       })
       expect(res).toBe(true)
 
@@ -476,7 +478,7 @@ describe("Bria Event Handlers", () => {
         estimatedFee,
         actualFee,
       })
-      const { proportionalFee, id: payoutId, txId } = broadcastPayload
+      const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
 
       const ledger = LedgerService()
 
@@ -498,6 +500,7 @@ describe("Bria Event Handlers", () => {
         payoutId,
         proportionalFee,
         txId,
+        vout,
       })
       expect(res).toBe(true)
 
@@ -532,7 +535,7 @@ describe("Bria Event Handlers", () => {
         estimatedFee,
         actualFee,
       })
-      const { proportionalFee, id: payoutId, txId } = broadcastPayload
+      const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
 
       const ledger = LedgerService()
 
@@ -554,6 +557,7 @@ describe("Bria Event Handlers", () => {
         payoutId,
         proportionalFee,
         txId,
+        vout,
       })
       expect(res).toBe(true)
 
@@ -588,7 +592,7 @@ describe("Bria Event Handlers", () => {
         estimatedFee,
         actualFee,
       })
-      const { proportionalFee, id: payoutId, txId } = broadcastPayload
+      const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
 
       const ledger = LedgerService()
 
@@ -616,6 +620,7 @@ describe("Bria Event Handlers", () => {
         payoutId,
         proportionalFee,
         txId,
+        vout,
       })
       expect(res).toBeInstanceOf(UnknownLedgerError)
 
@@ -640,6 +645,7 @@ describe("Bria Event Handlers", () => {
         payoutId,
         proportionalFee,
         txId,
+        vout,
       })
       expect(resRetry).toBe(true)
 

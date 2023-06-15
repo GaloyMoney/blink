@@ -45,6 +45,7 @@ type PayoutBroadcast = {
   proportionalFee: BtcPaymentAmount
   satoshis: BtcPaymentAmount
   txId: OnChainTxHash
+  vout: OnChainTxVout
   address: OnChainAddress
 }
 type PayoutSettled = {
@@ -53,6 +54,7 @@ type PayoutSettled = {
   proportionalFee: BtcPaymentAmount
   satoshis: BtcPaymentAmount
   txId: OnChainTxHash
+  vout: OnChainTxVout
   address: OnChainAddress
 }
 type BriaPayload =

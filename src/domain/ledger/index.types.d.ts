@@ -113,7 +113,7 @@ type SetOnChainTxPayoutIdArgs = {
 type SetOnChainTxIdByPayoutIdArgs = {
   payoutId: PayoutId
   txId: OnChainTxHash
-  vout?: OnChainTxVout
+  vout: OnChainTxVout
 }
 
 type AddColdStorageTxReceiveArgs<T extends DisplayCurrency> = {

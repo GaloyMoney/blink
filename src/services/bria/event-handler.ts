@@ -177,6 +177,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
           currency: WalletCurrency.Btc,
         },
         txId: rawPayload.getTxId() as OnChainTxHash,
+        vout: rawPayload.getVout() as OnChainTxVout,
         address: rawPayload.getOnchainAddress() as OnChainAddress,
       }
       break
@@ -201,6 +202,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
           currency: WalletCurrency.Btc,
         },
         txId: rawPayload.getTxId() as OnChainTxHash,
+        vout: rawPayload.getVout() as OnChainTxVout,
         address: rawPayload.getOnchainAddress() as OnChainAddress,
       }
       break

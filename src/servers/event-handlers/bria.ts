@@ -72,6 +72,7 @@ export const payoutBroadcastEventHandler = async ({
     payoutId: event.id,
     proportionalFee: event.proportionalFee,
     txId: event.txId,
+    vout: event.vout,
   })
   if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
     return true

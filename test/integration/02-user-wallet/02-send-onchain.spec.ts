@@ -234,6 +234,7 @@ const testExternalSend = async ({
     payoutId: broadcastEvent.payload.id,
     proportionalFee: broadcastEvent.payload.proportionalFee,
     txId: broadcastEvent.payload.txId,
+    vout: broadcastEvent.payload.vout,
   })
   if (resultBroadcast instanceof Error) {
     throw resultBroadcast
@@ -931,7 +932,7 @@ describe("BtcWallet - onChainPay", () => {
     if (broadcastEvent?.payload.type !== BriaPayloadType.PayoutBroadcast) {
       throw new Error(`Expected ${BriaPayloadType.PayoutBroadcast} event`)
     }
-    const { proportionalFee, txId } = broadcastEvent.payload
+    const { proportionalFee, txId, vout } = broadcastEvent.payload
     const feeDifference = Number(proportionalFee.amount - mockedFeeEstimate.amount)
     expect(feeDifference).toBeGreaterThan(0)
 
@@ -939,6 +940,7 @@ describe("BtcWallet - onChainPay", () => {
       proportionalFee,
       payoutId,
       txId,
+      vout,
     })
     if (resultBroadcast instanceof Error) {
       throw resultBroadcast
