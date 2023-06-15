@@ -100,7 +100,7 @@
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
     "medici": "^6.1.0",
-    "mongoose": "^6.9.2",
+    "mongoose": "^7.3.0",
     "node-cache": "^5.1.2",
     "otplib": "^12.0.1",
     "pino": "^8.11.0",
