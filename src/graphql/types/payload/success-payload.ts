@@ -9,6 +9,7 @@ const SuccessPayload = GT.Object({
       type: GT.NonNullList(IError),
     },
     success: {
+      // TODO: success should be mandatory
       type: GT.Boolean,
     },
   }),
