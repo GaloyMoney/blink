@@ -14795,14 +14795,14 @@ proto.services.bria.v1.PayoutSubmitted.prototype.hasOnchainAddress = function() 
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.services.bria.v1.PayoutCommitted.oneofGroups_ = [[6]];
+proto.services.bria.v1.PayoutCommitted.oneofGroups_ = [[7]];
 
 /**
  * @enum {number}
  */
 proto.services.bria.v1.PayoutCommitted.DestinationCase = {
   DESTINATION_NOT_SET: 0,
-  ONCHAIN_ADDRESS: 6
+  ONCHAIN_ADDRESS: 7
 };
 
 /**
@@ -14845,11 +14845,12 @@ proto.services.bria.v1.PayoutCommitted.toObject = function(includeInstance, msg)
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    walletId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 7, 0)
+    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    onchainAddress: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -14895,22 +14896,26 @@ proto.services.bria.v1.PayoutCommitted.deserializeBinaryFromReader = function(ms
       msg.setTxId(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setWalletId(value);
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setVout(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
-      msg.setPayoutQueueId(value);
+      msg.setWalletId(value);
       break;
     case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPayoutQueueId(value);
+      break;
+    case 6:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setSatoshis(value);
       break;
-    case 6:
+    case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setOnchainAddress(value);
       break;
-    case 7:
+    case 8:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setProportionalFeeSats(value);
       break;
@@ -14957,38 +14962,45 @@ proto.services.bria.v1.PayoutCommitted.serializeBinaryToWriter = function(messag
       f
     );
   }
-  f = message.getWalletId();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getVout();
+  if (f !== 0) {
+    writer.writeUint32(
       3,
       f
     );
   }
-  f = message.getPayoutQueueId();
+  f = message.getWalletId();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
-  f = message.getSatoshis();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getPayoutQueueId();
+  if (f.length > 0) {
+    writer.writeString(
       5,
       f
     );
   }
-  f = /** @type {string} */ (jspb.Message.getField(message, 6));
+  f = message.getSatoshis();
+  if (f !== 0) {
+    writer.writeUint64(
+      6,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 7));
   if (f != null) {
     writer.writeString(
-      6,
+      7,
       f
     );
   }
   f = message.getProportionalFeeSats();
   if (f !== 0) {
     writer.writeUint64(
-      7,
+      8,
       f
     );
   }
@@ -15032,28 +15044,28 @@ proto.services.bria.v1.PayoutCommitted.prototype.setTxId = function(value) {
 
 
 /**
- * optional string wallet_id = 3;
+ * optional uint32 vout = 3;
+ * @return {number}
+ */
+proto.services.bria.v1.PayoutCommitted.prototype.getVout = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.PayoutCommitted} returns this
+ */
+proto.services.bria.v1.PayoutCommitted.prototype.setVout = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string wallet_id = 4;
  * @return {string}
  */
 proto.services.bria.v1.PayoutCommitted.prototype.getWalletId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.services.bria.v1.PayoutCommitted} returns this
- */
-proto.services.bria.v1.PayoutCommitted.prototype.setWalletId = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional string payout_queue_id = 4;
- * @return {string}
- */
-proto.services.bria.v1.PayoutCommitted.prototype.getPayoutQueueId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -15062,17 +15074,35 @@ proto.services.bria.v1.PayoutCommitted.prototype.getPayoutQueueId = function() {
  * @param {string} value
  * @return {!proto.services.bria.v1.PayoutCommitted} returns this
  */
-proto.services.bria.v1.PayoutCommitted.prototype.setPayoutQueueId = function(value) {
+proto.services.bria.v1.PayoutCommitted.prototype.setWalletId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
 /**
- * optional uint64 satoshis = 5;
+ * optional string payout_queue_id = 5;
+ * @return {string}
+ */
+proto.services.bria.v1.PayoutCommitted.prototype.getPayoutQueueId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.services.bria.v1.PayoutCommitted} returns this
+ */
+proto.services.bria.v1.PayoutCommitted.prototype.setPayoutQueueId = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional uint64 satoshis = 6;
  * @return {number}
  */
 proto.services.bria.v1.PayoutCommitted.prototype.getSatoshis = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
 };
 
 
@@ -15081,16 +15111,16 @@ proto.services.bria.v1.PayoutCommitted.prototype.getSatoshis = function() {
  * @return {!proto.services.bria.v1.PayoutCommitted} returns this
  */
 proto.services.bria.v1.PayoutCommitted.prototype.setSatoshis = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
+  return jspb.Message.setProto3IntField(this, 6, value);
 };
 
 
 /**
- * optional string onchain_address = 6;
+ * optional string onchain_address = 7;
  * @return {string}
  */
 proto.services.bria.v1.PayoutCommitted.prototype.getOnchainAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
 };
 
 
@@ -15099,7 +15129,7 @@ proto.services.bria.v1.PayoutCommitted.prototype.getOnchainAddress = function() 
  * @return {!proto.services.bria.v1.PayoutCommitted} returns this
  */
 proto.services.bria.v1.PayoutCommitted.prototype.setOnchainAddress = function(value) {
-  return jspb.Message.setOneofField(this, 6, proto.services.bria.v1.PayoutCommitted.oneofGroups_[0], value);
+  return jspb.Message.setOneofField(this, 7, proto.services.bria.v1.PayoutCommitted.oneofGroups_[0], value);
 };
 
 
@@ -15108,7 +15138,7 @@ proto.services.bria.v1.PayoutCommitted.prototype.setOnchainAddress = function(va
  * @return {!proto.services.bria.v1.PayoutCommitted} returns this
  */
 proto.services.bria.v1.PayoutCommitted.prototype.clearOnchainAddress = function() {
-  return jspb.Message.setOneofField(this, 6, proto.services.bria.v1.PayoutCommitted.oneofGroups_[0], undefined);
+  return jspb.Message.setOneofField(this, 7, proto.services.bria.v1.PayoutCommitted.oneofGroups_[0], undefined);
 };
 
 
@@ -15117,16 +15147,16 @@ proto.services.bria.v1.PayoutCommitted.prototype.clearOnchainAddress = function(
  * @return {boolean}
  */
 proto.services.bria.v1.PayoutCommitted.prototype.hasOnchainAddress = function() {
-  return jspb.Message.getField(this, 6) != null;
+  return jspb.Message.getField(this, 7) != null;
 };
 
 
 /**
- * optional uint64 proportional_fee_sats = 7;
+ * optional uint64 proportional_fee_sats = 8;
  * @return {number}
  */
 proto.services.bria.v1.PayoutCommitted.prototype.getProportionalFeeSats = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
 };
 
 
@@ -15135,7 +15165,7 @@ proto.services.bria.v1.PayoutCommitted.prototype.getProportionalFeeSats = functi
  * @return {!proto.services.bria.v1.PayoutCommitted} returns this
  */
 proto.services.bria.v1.PayoutCommitted.prototype.setProportionalFeeSats = function(value) {
-  return jspb.Message.setProto3IntField(this, 7, value);
+  return jspb.Message.setProto3IntField(this, 8, value);
 };
 
 
@@ -15148,14 +15178,14 @@ proto.services.bria.v1.PayoutCommitted.prototype.setProportionalFeeSats = functi
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.services.bria.v1.PayoutBroadcast.oneofGroups_ = [[6]];
+proto.services.bria.v1.PayoutBroadcast.oneofGroups_ = [[7]];
 
 /**
  * @enum {number}
  */
 proto.services.bria.v1.PayoutBroadcast.DestinationCase = {
   DESTINATION_NOT_SET: 0,
-  ONCHAIN_ADDRESS: 6
+  ONCHAIN_ADDRESS: 7
 };
 
 /**
@@ -15198,11 +15228,12 @@ proto.services.bria.v1.PayoutBroadcast.toObject = function(includeInstance, msg)
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    walletId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 7, 0)
+    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    onchainAddress: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -15248,22 +15279,26 @@ proto.services.bria.v1.PayoutBroadcast.deserializeBinaryFromReader = function(ms
       msg.setTxId(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setWalletId(value);
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setVout(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
-      msg.setPayoutQueueId(value);
+      msg.setWalletId(value);
       break;
     case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPayoutQueueId(value);
+      break;
+    case 6:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setSatoshis(value);
       break;
-    case 6:
+    case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setOnchainAddress(value);
       break;
-    case 7:
+    case 8:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setProportionalFeeSats(value);
       break;
@@ -15310,38 +15345,45 @@ proto.services.bria.v1.PayoutBroadcast.serializeBinaryToWriter = function(messag
       f
     );
   }
-  f = message.getWalletId();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getVout();
+  if (f !== 0) {
+    writer.writeUint32(
       3,
       f
     );
   }
-  f = message.getPayoutQueueId();
+  f = message.getWalletId();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
-  f = message.getSatoshis();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getPayoutQueueId();
+  if (f.length > 0) {
+    writer.writeString(
       5,
       f
     );
   }
-  f = /** @type {string} */ (jspb.Message.getField(message, 6));
+  f = message.getSatoshis();
+  if (f !== 0) {
+    writer.writeUint64(
+      6,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 7));
   if (f != null) {
     writer.writeString(
-      6,
+      7,
       f
     );
   }
   f = message.getProportionalFeeSats();
   if (f !== 0) {
     writer.writeUint64(
-      7,
+      8,
       f
     );
   }
@@ -15385,28 +15427,28 @@ proto.services.bria.v1.PayoutBroadcast.prototype.setTxId = function(value) {
 
 
 /**
- * optional string wallet_id = 3;
+ * optional uint32 vout = 3;
+ * @return {number}
+ */
+proto.services.bria.v1.PayoutBroadcast.prototype.getVout = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.PayoutBroadcast} returns this
+ */
+proto.services.bria.v1.PayoutBroadcast.prototype.setVout = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string wallet_id = 4;
  * @return {string}
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.getWalletId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.services.bria.v1.PayoutBroadcast} returns this
- */
-proto.services.bria.v1.PayoutBroadcast.prototype.setWalletId = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional string payout_queue_id = 4;
- * @return {string}
- */
-proto.services.bria.v1.PayoutBroadcast.prototype.getPayoutQueueId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -15415,17 +15457,35 @@ proto.services.bria.v1.PayoutBroadcast.prototype.getPayoutQueueId = function() {
  * @param {string} value
  * @return {!proto.services.bria.v1.PayoutBroadcast} returns this
  */
-proto.services.bria.v1.PayoutBroadcast.prototype.setPayoutQueueId = function(value) {
+proto.services.bria.v1.PayoutBroadcast.prototype.setWalletId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
 /**
- * optional uint64 satoshis = 5;
+ * optional string payout_queue_id = 5;
+ * @return {string}
+ */
+proto.services.bria.v1.PayoutBroadcast.prototype.getPayoutQueueId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.services.bria.v1.PayoutBroadcast} returns this
+ */
+proto.services.bria.v1.PayoutBroadcast.prototype.setPayoutQueueId = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional uint64 satoshis = 6;
  * @return {number}
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.getSatoshis = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
 };
 
 
@@ -15434,16 +15494,16 @@ proto.services.bria.v1.PayoutBroadcast.prototype.getSatoshis = function() {
  * @return {!proto.services.bria.v1.PayoutBroadcast} returns this
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.setSatoshis = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
+  return jspb.Message.setProto3IntField(this, 6, value);
 };
 
 
 /**
- * optional string onchain_address = 6;
+ * optional string onchain_address = 7;
  * @return {string}
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.getOnchainAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
 };
 
 
@@ -15452,7 +15512,7 @@ proto.services.bria.v1.PayoutBroadcast.prototype.getOnchainAddress = function() 
  * @return {!proto.services.bria.v1.PayoutBroadcast} returns this
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.setOnchainAddress = function(value) {
-  return jspb.Message.setOneofField(this, 6, proto.services.bria.v1.PayoutBroadcast.oneofGroups_[0], value);
+  return jspb.Message.setOneofField(this, 7, proto.services.bria.v1.PayoutBroadcast.oneofGroups_[0], value);
 };
 
 
@@ -15461,7 +15521,7 @@ proto.services.bria.v1.PayoutBroadcast.prototype.setOnchainAddress = function(va
  * @return {!proto.services.bria.v1.PayoutBroadcast} returns this
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.clearOnchainAddress = function() {
-  return jspb.Message.setOneofField(this, 6, proto.services.bria.v1.PayoutBroadcast.oneofGroups_[0], undefined);
+  return jspb.Message.setOneofField(this, 7, proto.services.bria.v1.PayoutBroadcast.oneofGroups_[0], undefined);
 };
 
 
@@ -15470,16 +15530,16 @@ proto.services.bria.v1.PayoutBroadcast.prototype.clearOnchainAddress = function(
  * @return {boolean}
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.hasOnchainAddress = function() {
-  return jspb.Message.getField(this, 6) != null;
+  return jspb.Message.getField(this, 7) != null;
 };
 
 
 /**
- * optional uint64 proportional_fee_sats = 7;
+ * optional uint64 proportional_fee_sats = 8;
  * @return {number}
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.getProportionalFeeSats = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
 };
 
 
@@ -15488,7 +15548,7 @@ proto.services.bria.v1.PayoutBroadcast.prototype.getProportionalFeeSats = functi
  * @return {!proto.services.bria.v1.PayoutBroadcast} returns this
  */
 proto.services.bria.v1.PayoutBroadcast.prototype.setProportionalFeeSats = function(value) {
-  return jspb.Message.setProto3IntField(this, 7, value);
+  return jspb.Message.setProto3IntField(this, 8, value);
 };
 
 
@@ -15501,14 +15561,14 @@ proto.services.bria.v1.PayoutBroadcast.prototype.setProportionalFeeSats = functi
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.services.bria.v1.PayoutSettled.oneofGroups_ = [[6]];
+proto.services.bria.v1.PayoutSettled.oneofGroups_ = [[7]];
 
 /**
  * @enum {number}
  */
 proto.services.bria.v1.PayoutSettled.DestinationCase = {
   DESTINATION_NOT_SET: 0,
-  ONCHAIN_ADDRESS: 6
+  ONCHAIN_ADDRESS: 7
 };
 
 /**
@@ -15551,11 +15611,12 @@ proto.services.bria.v1.PayoutSettled.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     txId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    walletId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    satoshis: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    onchainAddress: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 7, 0)
+    vout: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    walletId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    payoutQueueId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    satoshis: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    onchainAddress: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    proportionalFeeSats: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -15601,22 +15662,26 @@ proto.services.bria.v1.PayoutSettled.deserializeBinaryFromReader = function(msg,
       msg.setTxId(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setWalletId(value);
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setVout(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
-      msg.setPayoutQueueId(value);
+      msg.setWalletId(value);
       break;
     case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPayoutQueueId(value);
+      break;
+    case 6:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setSatoshis(value);
       break;
-    case 6:
+    case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setOnchainAddress(value);
       break;
-    case 7:
+    case 8:
       var value = /** @type {number} */ (reader.readUint64());
       msg.setProportionalFeeSats(value);
       break;
@@ -15663,38 +15728,45 @@ proto.services.bria.v1.PayoutSettled.serializeBinaryToWriter = function(message,
       f
     );
   }
-  f = message.getWalletId();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getVout();
+  if (f !== 0) {
+    writer.writeUint32(
       3,
       f
     );
   }
-  f = message.getPayoutQueueId();
+  f = message.getWalletId();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
-  f = message.getSatoshis();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getPayoutQueueId();
+  if (f.length > 0) {
+    writer.writeString(
       5,
       f
     );
   }
-  f = /** @type {string} */ (jspb.Message.getField(message, 6));
+  f = message.getSatoshis();
+  if (f !== 0) {
+    writer.writeUint64(
+      6,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 7));
   if (f != null) {
     writer.writeString(
-      6,
+      7,
       f
     );
   }
   f = message.getProportionalFeeSats();
   if (f !== 0) {
     writer.writeUint64(
-      7,
+      8,
       f
     );
   }
@@ -15738,28 +15810,28 @@ proto.services.bria.v1.PayoutSettled.prototype.setTxId = function(value) {
 
 
 /**
- * optional string wallet_id = 3;
+ * optional uint32 vout = 3;
+ * @return {number}
+ */
+proto.services.bria.v1.PayoutSettled.prototype.getVout = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.PayoutSettled} returns this
+ */
+proto.services.bria.v1.PayoutSettled.prototype.setVout = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string wallet_id = 4;
  * @return {string}
  */
 proto.services.bria.v1.PayoutSettled.prototype.getWalletId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.services.bria.v1.PayoutSettled} returns this
- */
-proto.services.bria.v1.PayoutSettled.prototype.setWalletId = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional string payout_queue_id = 4;
- * @return {string}
- */
-proto.services.bria.v1.PayoutSettled.prototype.getPayoutQueueId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -15768,17 +15840,35 @@ proto.services.bria.v1.PayoutSettled.prototype.getPayoutQueueId = function() {
  * @param {string} value
  * @return {!proto.services.bria.v1.PayoutSettled} returns this
  */
-proto.services.bria.v1.PayoutSettled.prototype.setPayoutQueueId = function(value) {
+proto.services.bria.v1.PayoutSettled.prototype.setWalletId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
 /**
- * optional uint64 satoshis = 5;
+ * optional string payout_queue_id = 5;
+ * @return {string}
+ */
+proto.services.bria.v1.PayoutSettled.prototype.getPayoutQueueId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.services.bria.v1.PayoutSettled} returns this
+ */
+proto.services.bria.v1.PayoutSettled.prototype.setPayoutQueueId = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional uint64 satoshis = 6;
  * @return {number}
  */
 proto.services.bria.v1.PayoutSettled.prototype.getSatoshis = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
 };
 
 
@@ -15787,16 +15877,16 @@ proto.services.bria.v1.PayoutSettled.prototype.getSatoshis = function() {
  * @return {!proto.services.bria.v1.PayoutSettled} returns this
  */
 proto.services.bria.v1.PayoutSettled.prototype.setSatoshis = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
+  return jspb.Message.setProto3IntField(this, 6, value);
 };
 
 
 /**
- * optional string onchain_address = 6;
+ * optional string onchain_address = 7;
  * @return {string}
  */
 proto.services.bria.v1.PayoutSettled.prototype.getOnchainAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
 };
 
 
@@ -15805,7 +15895,7 @@ proto.services.bria.v1.PayoutSettled.prototype.getOnchainAddress = function() {
  * @return {!proto.services.bria.v1.PayoutSettled} returns this
  */
 proto.services.bria.v1.PayoutSettled.prototype.setOnchainAddress = function(value) {
-  return jspb.Message.setOneofField(this, 6, proto.services.bria.v1.PayoutSettled.oneofGroups_[0], value);
+  return jspb.Message.setOneofField(this, 7, proto.services.bria.v1.PayoutSettled.oneofGroups_[0], value);
 };
 
 
@@ -15814,7 +15904,7 @@ proto.services.bria.v1.PayoutSettled.prototype.setOnchainAddress = function(valu
  * @return {!proto.services.bria.v1.PayoutSettled} returns this
  */
 proto.services.bria.v1.PayoutSettled.prototype.clearOnchainAddress = function() {
-  return jspb.Message.setOneofField(this, 6, proto.services.bria.v1.PayoutSettled.oneofGroups_[0], undefined);
+  return jspb.Message.setOneofField(this, 7, proto.services.bria.v1.PayoutSettled.oneofGroups_[0], undefined);
 };
 
 
@@ -15823,16 +15913,16 @@ proto.services.bria.v1.PayoutSettled.prototype.clearOnchainAddress = function() 
  * @return {boolean}
  */
 proto.services.bria.v1.PayoutSettled.prototype.hasOnchainAddress = function() {
-  return jspb.Message.getField(this, 6) != null;
+  return jspb.Message.getField(this, 7) != null;
 };
 
 
 /**
- * optional uint64 proportional_fee_sats = 7;
+ * optional uint64 proportional_fee_sats = 8;
  * @return {number}
  */
 proto.services.bria.v1.PayoutSettled.prototype.getProportionalFeeSats = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
 };
 
 
@@ -15841,7 +15931,7 @@ proto.services.bria.v1.PayoutSettled.prototype.getProportionalFeeSats = function
  * @return {!proto.services.bria.v1.PayoutSettled} returns this
  */
 proto.services.bria.v1.PayoutSettled.prototype.setProportionalFeeSats = function(value) {
-  return jspb.Message.setProto3IntField(this, 7, value);
+  return jspb.Message.setProto3IntField(this, 8, value);
 };
 
 

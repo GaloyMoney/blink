@@ -426,35 +426,38 @@ message PayoutSubmitted {
 message PayoutCommitted {
   string id = 1;
   string tx_id = 2;
-  string wallet_id = 3;
-  string payout_queue_id = 4;
-  uint64 satoshis = 5;
+  uint32 vout = 3;
+  string wallet_id = 4;
+  string payout_queue_id = 5;
+  uint64 satoshis = 6;
   oneof destination {
-    string onchain_address = 6;
+    string onchain_address = 7;
   };
-  uint64 proportional_fee_sats = 7;
+  uint64 proportional_fee_sats = 8;
 }
 
 message PayoutBroadcast {
   string id = 1;
   string tx_id = 2;
-  string wallet_id = 3;
-  string payout_queue_id = 4;
-  uint64 satoshis = 5;
+  uint32 vout = 3;
+  string wallet_id = 4;
+  string payout_queue_id = 5;
+  uint64 satoshis = 6;
   oneof destination {
-    string onchain_address = 6;
+    string onchain_address = 7;
   };
-  uint64 proportional_fee_sats = 7;
+  uint64 proportional_fee_sats = 8;
 }
 
 message PayoutSettled {
   string id = 1;
   string tx_id = 2;
-  string wallet_id = 3;
-  string payout_queue_id = 4;
-  uint64 satoshis = 5;
+  uint32 vout = 3;
+  string wallet_id = 4;
+  string payout_queue_id = 5;
+  uint64 satoshis = 6;
   oneof destination {
-    string onchain_address = 6;
+    string onchain_address = 7;
   };
-  uint64 proportional_fee_sats = 7;
+  uint64 proportional_fee_sats = 8;
 }
