@@ -108,29 +108,10 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const adminUnsetDeviceIdForUserPreservation = async (
-    id: UserId,
-  ): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOneAndUpdate(
-        { userId: id, deviceId: { $exists: true } },
-        { $rename: { deviceId: "deletedDeviceId" } },
-        { new: true },
-      )
-      if (!result) {
-        return new CouldNotUnsetPhoneFromUserError()
-      }
-      return translateToUser(result)
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   return {
     findById,
     findByPhone,
     update,
     adminUnsetPhoneForUserPreservation,
-    adminUnsetDeviceIdForUserPreservation,
   }
 }
