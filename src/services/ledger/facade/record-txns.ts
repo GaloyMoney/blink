@@ -1,27 +1,17 @@
-import {
-  ZERO_BANK_FEE,
-  AmountCalculator,
-  ZERO_CENTS,
-  ZERO_SATS,
-  paymentAmountFromNumber,
-} from "@domain/shared"
+import { AmountCalculator, ZERO_BANK_FEE, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
 
-import { MainBook, Transaction } from "./books"
-import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./domain"
-import { FeeOnlyEntryBuilder } from "./domain/fee-only-entry-builder"
-import { persistAndReturnEntry } from "./helpers"
-import * as caching from "./caching"
-import { TransactionsMetadataRepository } from "./services"
+import { MainBook } from "../books"
 
-import { NoTransactionToSettleError, UnknownLedgerError } from "./domain/errors"
+import * as caching from "../caching"
+import { EntryBuilder, toLedgerAccountDescriptor, toLedgerAccountId } from "../domain"
+import { FeeOnlyEntryBuilder } from "../domain/fee-only-entry-builder"
+import { UnknownLedgerError } from "../domain/errors"
+import { persistAndReturnEntry } from "../helpers"
+import { TransactionsMetadataRepository } from "../services"
 
-import { translateToLedgerJournal } from "."
-
-export * from "./tx-metadata"
+import { translateToLedgerJournal } from ".."
 
 const calc = AmountCalculator()
-
-const txMetadataRepo = TransactionsMetadataRepository()
 
 export const staticAccountIds = async () => {
   return {
@@ -209,20 +199,6 @@ export const recordReceiveOnChainFeeReconciliation = async ({
   })
 }
 
-export const getLedgerAccountBalanceForWalletId = async <T extends WalletCurrency>({
-  id: walletId,
-  currency,
-}: WalletDescriptor<T>): Promise<PaymentAmount<T> | LedgerError> => {
-  try {
-    const { balance } = await MainBook.balance({
-      account: toLedgerAccountId(walletId),
-    })
-    return paymentAmountFromNumber({ amount: balance, currency })
-  } catch (err) {
-    return new UnknownLedgerError(err)
-  }
-}
-
 export const recordIntraledger = async ({
   description,
   senderWalletDescriptor,
@@ -259,27 +235,14 @@ export const recordIntraledger = async ({
   })
 }
 
-export const settlePendingLnSend = async (
-  paymentHash: PaymentHash,
-): Promise<true | LedgerServiceError> => {
-  try {
-    const result = await Transaction.updateMany({ hash: paymentHash }, { pending: false })
-    const success = result.modifiedCount > 0
-    if (!success) {
-      return new NoTransactionToSettleError()
-    }
-    return true
-  } catch (err) {
-    return new UnknownLedgerError(err)
-  }
-}
-
 export const recordLnSendRevert = async ({
   journalId,
   paymentHash,
 }: RevertLightningPaymentArgs): Promise<true | LedgerServiceError> => {
   const reason = "Payment canceled"
   try {
+    const txMetadataRepo = TransactionsMetadataRepository()
+
     const savedEntry = await MainBook.void(journalId, reason)
     const journalEntry = translateToLedgerJournal(savedEntry)
 
@@ -293,10 +256,3 @@ export const recordLnSendRevert = async ({
     return new UnknownLedgerError(err)
   }
 }
-
-export const updateMetadataByHash = async (
-  ledgerTxMetadata:
-    | OnChainLedgerTransactionMetadataUpdate
-    | LnLedgerTransactionMetadataUpdate,
-): Promise<true | LedgerServiceError | RepositoryError> =>
-  TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)

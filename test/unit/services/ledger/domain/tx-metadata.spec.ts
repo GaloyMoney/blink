@@ -15,7 +15,7 @@ import {
   LnReceiveLedgerMetadata,
   LnFeeReimbursementReceiveLedgerMetadata,
   LnFailedPaymentReceiveLedgerMetadata,
-} from "@services/ledger/tx-metadata"
+} from "@services/ledger/facade"
 
 describe("Tx metadata", () => {
   const senderUsername = "sender" as Username
