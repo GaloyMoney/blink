@@ -3,6 +3,8 @@ import { MainBook } from "../books"
 import { liabilitiesMainAccount } from "../domain"
 import { UnknownLedgerError } from "../domain/errors"
 
+import { translateToLedgerTx } from ".."
+
 export const getTransactionsByPayoutId = async (
   payoutId: PayoutId,
 ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
