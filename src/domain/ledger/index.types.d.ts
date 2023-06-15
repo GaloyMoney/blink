@@ -331,8 +331,6 @@ interface ILedgerService {
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
-  setOnChainTxPayoutId(args: SetOnChainTxPayoutIdArgs): Promise<true | LedgerServiceError>
-
   settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
   settlePendingOnChainPayment(payoutId: PayoutId): Promise<true | LedgerServiceError>

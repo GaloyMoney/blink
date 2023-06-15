@@ -16,7 +16,6 @@ import { displayAmountFromNumber } from "@domain/fiat"
 
 import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
 import { Transaction } from "@services/ledger/schema"
-import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
 
@@ -405,7 +404,7 @@ describe("Bria Event Handlers", () => {
       })
       if (journal instanceof Error) throw journal
 
-      const updated = await LedgerService().setOnChainTxPayoutId({
+      const updated = await LedgerFacade.setOnChainTxPayoutId({
         journalId: journal.journalId,
         payoutId,
       })

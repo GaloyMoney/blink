@@ -16,25 +16,6 @@ import { translateToLedgerJournal } from "."
 const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
-  setOnChainTxPayoutId: async ({
-    journalId,
-    payoutId,
-  }: SetOnChainTxPayoutIdArgs): Promise<true | LedgerServiceError> => {
-    try {
-      const result = await Transaction.updateMany(
-        { _journal: toObjectId(journalId) },
-        { payout_id: payoutId },
-      )
-      const success = result.modifiedCount > 0
-      if (!success) {
-        return new NoTransactionToUpdateError()
-      }
-      return true
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  },
-
   settlePendingLnPayment: async (
     paymentHash: PaymentHash,
   ): Promise<true | LedgerServiceError> => {

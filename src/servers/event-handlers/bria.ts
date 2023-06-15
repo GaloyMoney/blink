@@ -5,8 +5,10 @@ import {
   LessThanDustThresholdError,
 } from "@domain/errors"
 
+import * as LedgerFacade from "@services/ledger/facade"
 import { baseLogger } from "@services/logger"
 import { BriaPayloadType } from "@services/bria"
+import { EventAugmentationMissingError } from "@services/bria/errors"
 
 export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainError> => {
   baseLogger.info(
@@ -19,6 +21,15 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
 
     case BriaPayloadType.UtxoSettled:
       return utxoSettledEventHandler({ event: event.payload })
+
+    case BriaPayloadType.PayoutSubmitted:
+      if (event.augmentation.payoutInfo === undefined) {
+        return new EventAugmentationMissingError()
+      }
+      return payoutSubmittedEventHandler({
+        event: event.payload,
+        payoutInfo: event.augmentation.payoutInfo,
+      })
 
     case BriaPayloadType.PayoutBroadcast:
       return payoutBroadcastEventHandler({ event: event.payload })
@@ -61,6 +72,19 @@ export const utxoSettledEventHandler = async ({
   }
 
   return res
+}
+
+export const payoutSubmittedEventHandler = async ({
+  event,
+  payoutInfo,
+}: {
+  event: PayoutSubmitted
+  payoutInfo: PayoutAugmentation
+}): Promise<true | ApplicationError> => {
+  return LedgerFacade.setOnChainTxPayoutId({
+    journalId: payoutInfo.externalId as LedgerJournalId,
+    payoutId: event.id,
+  })
 }
 
 export const payoutBroadcastEventHandler = async ({

@@ -598,12 +598,6 @@ const executePaymentViaOnChain = async <
       return payoutId
     }
 
-    const updated = await LedgerService().setOnChainTxPayoutId({
-      journalId: journal.journalId,
-      payoutId,
-    })
-    if (updated instanceof Error) return updated
-
     return { status: PaymentSendStatus.Success, payoutId }
   })
 }

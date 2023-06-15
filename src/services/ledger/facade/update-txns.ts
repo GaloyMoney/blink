@@ -4,6 +4,8 @@ import {
   NoTransactionToUpdateError,
 } from "@domain/errors"
 
+import { toObjectId } from "@services/mongoose/utils"
+
 import { getBankOwnerWalletId } from "../caching"
 import { Transaction } from "../schema"
 import { NoTransactionToSettleError, UnknownLedgerError } from "../domain/errors"
@@ -83,4 +85,23 @@ export const setOnChainTxIdByPayoutId = async ({
   if (estimatedProtocolFee instanceof Error) return estimatedProtocolFee
 
   return { estimatedProtocolFee }
+}
+
+export const setOnChainTxPayoutId = async ({
+  journalId,
+  payoutId,
+}: SetOnChainTxPayoutIdArgs): Promise<true | LedgerServiceError> => {
+  try {
+    const result = await Transaction.updateMany(
+      { _journal: toObjectId(journalId) },
+      { payout_id: payoutId },
+    )
+    const success = result.modifiedCount > 0
+    if (!success) {
+      return new NoTransactionToUpdateError()
+    }
+    return true
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
 }
