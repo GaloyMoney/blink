@@ -12,6 +12,7 @@ import { DisplayCurrency, toCents } from "@domain/fiat"
 
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
+import { staticAccountIds } from "@services/ledger/facade/shared"
 import { Transaction } from "@services/ledger/schema"
 import { onChainLedgerAccountId } from "@services/ledger/domain"
 
@@ -623,7 +624,7 @@ describe("Facade", () => {
       const estimatedFee = higherFee
       const actualFee = lowerFee
 
-      const { bankOwnerAccountId } = await LedgerFacade.staticAccountIds()
+      const { bankOwnerAccountId } = await staticAccountIds()
       const txHash = generateHash() as OnChainTxHash
       const payoutId = crypto.randomUUID() as PayoutId
 
@@ -674,7 +675,7 @@ describe("Facade", () => {
       const estimatedFee = lowerFee
       const actualFee = higherFee
 
-      const { bankOwnerAccountId } = await LedgerFacade.staticAccountIds()
+      const { bankOwnerAccountId } = await staticAccountIds()
       const txHash = generateHash() as OnChainTxHash
       const payoutId = crypto.randomUUID() as PayoutId
 
