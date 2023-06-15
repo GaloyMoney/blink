@@ -333,10 +333,6 @@ interface ILedgerService {
 
   setOnChainTxPayoutId(args: SetOnChainTxPayoutIdArgs): Promise<true | LedgerServiceError>
 
-  setOnChainTxIdByPayoutId(
-    args: SetOnChainTxIdByPayoutIdArgs,
-  ): Promise<true | LedgerServiceError>
-
   settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
   settlePendingOnChainPayment(payoutId: PayoutId): Promise<true | LedgerServiceError>

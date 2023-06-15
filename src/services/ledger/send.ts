@@ -35,26 +35,6 @@ export const send = {
     }
   },
 
-  setOnChainTxIdByPayoutId: async ({
-    payoutId,
-    txId,
-    vout,
-  }: SetOnChainTxIdByPayoutIdArgs): Promise<true | LedgerServiceError> => {
-    try {
-      const result = await Transaction.updateMany(
-        { payout_id: payoutId },
-        { hash: txId, vout },
-      )
-      const success = result.modifiedCount > 0
-      if (!success) {
-        return new NoTransactionToUpdateError()
-      }
-      return true
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  },
-
   settlePendingLnPayment: async (
     paymentHash: PaymentHash,
   ): Promise<true | LedgerServiceError> => {
