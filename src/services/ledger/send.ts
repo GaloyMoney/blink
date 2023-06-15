@@ -15,24 +15,6 @@ import { translateToLedgerJournal } from "."
 const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
-  settlePendingLnPayment: async (
-    paymentHash: PaymentHash,
-  ): Promise<true | LedgerServiceError> => {
-    try {
-      const result = await Transaction.updateMany(
-        { hash: paymentHash },
-        { pending: false },
-      )
-      const success = result.modifiedCount > 0
-      if (!success) {
-        return new NoTransactionToSettleError()
-      }
-      return true
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  },
-
   oldSettlePendingOnChainPayment: async (
     hash: OnChainTxHash,
   ): Promise<true | LedgerServiceError> => {

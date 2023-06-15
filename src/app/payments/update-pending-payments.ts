@@ -12,6 +12,7 @@ import { MissingPropsInTransactionForPaymentFlowError } from "@domain/payments"
 import { setErrorCritical, WalletCurrency } from "@domain/shared"
 
 import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import {
@@ -197,7 +198,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         if (paymentFlow instanceof Error) return paymentFlow
       }
 
-      const settled = await ledgerService.settlePendingLnPayment(paymentHash)
+      const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
       if (settled instanceof Error) {
         paymentLogger.error({ error: settled }, "no transaction to update")
         return settled

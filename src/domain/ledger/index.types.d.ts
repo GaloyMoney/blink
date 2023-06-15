@@ -331,8 +331,6 @@ interface ILedgerService {
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
-  settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
-
   oldSettlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
 
   revertLightningPayment(
