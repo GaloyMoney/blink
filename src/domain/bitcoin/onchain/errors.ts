@@ -8,6 +8,9 @@ export class OnChainServiceError extends OnChainError {}
 export class OnChainAddressAlreadyCreatedForRequestIdError extends OnChainServiceError {}
 export class OnChainAddressNotFoundError extends OnChainServiceError {}
 export class PayoutNotFoundError extends OnChainServiceError {}
+export class PayoutDestinationBlocked extends OnChainServiceError {
+  level = ErrorLevel.Critical
+}
 export class CPFPAncestorLimitReachedError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }

@@ -277,6 +277,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Onchain payments temporarily unavailable because of busy mempool queue. Withdraw via Lightning until queue is cleared."
       return new OnChainPaymentError({ message, logger: baseLogger })
 
+    case "PayoutDestinationBlocked":
+      message = "Cannot send to this destination."
+      return new OnChainPaymentError({ message, logger: baseLogger })
+
     case "PaymentInTransitionError":
       message = "Payment was sent and is still in transition."
       return new LightningPaymentError({ message, logger: baseLogger })

@@ -7,6 +7,7 @@ import {
   OnChainAddressAlreadyCreatedForRequestIdError,
   OnChainAddressNotFoundError,
   PayoutNotFoundError,
+  PayoutDestinationBlocked,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared/primitives"
@@ -210,8 +211,12 @@ export const NewOnChainService = (): INewOnChainService => {
       const response = await submitPayout(request, metadata)
 
       return response.getId() as PayoutId
-    } catch (error) {
-      return new UnknownBriaEventError(error.message || error)
+    } catch (err) {
+      const errMsg = typeof err === "string" ? err : err.message
+      if (err.code == status.PERMISSION_DENIED && errMsg.contains("DestinationBlocked")) {
+        return new PayoutDestinationBlocked()
+      }
+      return new UnknownOnChainServiceError(errMsg)
     }
   }
 
