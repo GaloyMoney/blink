@@ -241,7 +241,7 @@ export const loginWithDevice = async ({
     username,
     password,
   })
-  if (res instanceof Error) throw res
+  if (res instanceof Error) return res
 
   if (res.newEntity) {
     const account = await createAccountForDeviceAccount({

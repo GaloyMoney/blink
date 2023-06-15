@@ -17,6 +17,7 @@ import {
   createApolloClient,
   defaultStateConfig,
   defaultTestClientConfig,
+  fundWalletIdFromLightning,
   initializeTestingState,
   killServer,
   startServer,
@@ -37,6 +38,9 @@ beforeEach(async () => {
 afterAll(async () => {
   await killServer(serverPid)
 })
+
+const UuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 gql`
   mutation userLoginUpgrade($input: UserLoginUpgradeInput!) {
@@ -104,9 +108,6 @@ describe("DeviceAccountService", () => {
 
       await disposeClient()
 
-      const UuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
       defaultWalletId = meResult?.data?.me?.defaultAccount.defaultWalletId || ""
       expect(defaultWalletId).toMatch(UuidRegex)
       expect(meResult?.data?.me?.defaultAccount.level).toBe("ZERO")
@@ -159,9 +160,55 @@ describe("DeviceAccountService", () => {
   })
 
   it("upgrade a device user to existing phone with no txns", async () => {
+    let newToken: SessionToken
+
+    {
+      const { apolloClient, disposeClient } = createApolloClient(
+        defaultTestClientConfig(token),
+      )
+
+      // existing phone
+      const phone = "+198765432116"
+      const code = "321321"
+
+      const res3 = await apolloClient.mutate<UserLoginUpgradeMutation>({
+        mutation: UserLoginUpgradeDocument,
+        variables: { input: { phone, code } },
+      })
+
+      if (!res3) throw new Error("res3 is undefined")
+      // existing phone accounts return a authToken
+
+      const authToken = res3?.data?.userLoginUpgrade?.authToken
+      expect(authToken).toBeDefined()
+      if (!authToken) throw new Error("authToken is undefined")
+      newToken = authToken as SessionToken
+
+      expect(res3?.data?.userLoginUpgrade?.success).toBeTruthy()
+
+      await disposeClient()
+    }
+
+    // preparation for the next test
+    const { apolloClient, disposeClient } = createApolloClient(
+      defaultTestClientConfig(newToken),
+    )
+
+    const meResult = await apolloClient.query<MeQuery>({ query: MeDocument })
+    expect(defaultWalletId).toBe(meResult?.data?.me?.defaultAccount.defaultWalletId)
+
+    await fundWalletIdFromLightning({ walletId: defaultWalletId as WalletId, amount: 10 })
+    await disposeClient()
+  })
+
+  it("can't upgrade if the both account has funds", async () => {
     const { apolloClient, disposeClient } = createApolloClient(
       defaultTestClientConfig(token),
     )
+
+    const meResult = await apolloClient.query<MeQuery>({ query: MeDocument })
+    const newWalletId = meResult?.data?.me?.defaultAccount.defaultWalletId || ""
+    await fundWalletIdFromLightning({ walletId: newWalletId as WalletId, amount: 5 })
 
     // existing phone
     const phone = "+198765432116"
@@ -172,9 +219,12 @@ describe("DeviceAccountService", () => {
       variables: { input: { phone, code } },
     })
 
-    if (!res3) throw new Error("res3 is undefined")
-    // existing phone accounts return a authToken
-    expect(res3?.data?.userLoginUpgrade?.authToken).toBeDefined()
+    expect(res3?.data?.userLoginUpgrade?.authToken).toBeNull()
+    expect(res3?.data?.userLoginUpgrade?.success).toBeDefined()
+    expect(res3?.data?.userLoginUpgrade?.success).toBeFalsy()
+    expect(res3?.data?.userLoginUpgrade?.errors[0].code).toBe(
+      "PHONE_ACCOUNT_ALREADY_EXISTS_NEED_TO_SWEEP_FUNDS_ERROR",
+    )
 
     await disposeClient()
   })
