@@ -14,6 +14,7 @@ export const translateToUser = (user: UserRecord): User => {
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone
   const createdAt = user.createdAt
+  const deviceId = user.deviceId
 
   return {
     id: user.userId as UserId,
@@ -22,6 +23,7 @@ export const translateToUser = (user: UserRecord): User => {
     phoneMetadata,
     phone,
     createdAt,
+    ...(deviceId !== undefined && { deviceId }),
   }
 }
 
@@ -93,8 +95,26 @@ export const UsersRepository = (): IUsersRepository => {
   ): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
-        { userId: id },
+        { userId: id, phone: { $exists: true } },
         { $rename: { phone: "deletedPhone" } },
+        { new: true },
+      )
+      if (!result) {
+        return new CouldNotUnsetPhoneFromUserError()
+      }
+      return translateToUser(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
+  const adminUnsetDeviceIdForUserPreservation = async (
+    id: UserId,
+  ): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOneAndUpdate(
+        { userId: id, deviceId: { $exists: true } },
+        { $rename: { deviceId: "deletedDeviceId" } },
         { new: true },
       )
       if (!result) {
@@ -111,5 +131,6 @@ export const UsersRepository = (): IUsersRepository => {
     findByPhone,
     update,
     adminUnsetPhoneForUserPreservation,
+    adminUnsetDeviceIdForUserPreservation,
   }
 }
