@@ -162,7 +162,7 @@ input CaptchaRequestAuthCodeInput {
 
 input ColdStorageRebalanceToHotWalletInput {
   amount: SatAmount!
-  targetConfirmations: TargetConfirmations = 1
+  targetConfirmations: TargetConfirmations = 3
   walletName: String!
 }
 

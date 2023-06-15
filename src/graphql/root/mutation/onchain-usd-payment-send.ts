@@ -15,7 +15,7 @@ const OnChainUsdPaymentSendInput = GT.Input({
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(CentAmount) },
     memo: { type: Memo },
-    targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
+    targetConfirmations: { type: TargetConfirmations, defaultValue: 3 },
   }),
 })
 

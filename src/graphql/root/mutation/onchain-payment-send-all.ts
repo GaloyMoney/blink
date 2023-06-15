@@ -13,7 +13,7 @@ const OnChainPaymentSendAllInput = GT.Input({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
     memo: { type: Memo },
-    targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
+    targetConfirmations: { type: TargetConfirmations, defaultValue: 3 },
   }),
 })
 
