@@ -5,7 +5,11 @@ import { Auth } from "@app"
 import { isProd } from "@config"
 
 import { mapError } from "@graphql/error-map"
-import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
 
 import { kratosPublic } from "@services/kratos/private"
 
@@ -200,45 +204,50 @@ authRouter.get("/clearCookies", async (req, res) => {
   }
 })
 
-authRouter.post("/create/device-account", async (req, res) => {
-  // FIXME: try catch is too broad
-  try {
-    const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
-    const ip = parseIps(ipString)
+authRouter.post(
+  "/create/device-account",
+  wrapAsyncToRunInSpan({
+    namespace: "servers.middlewares.authRouter",
+    fnName: "createDeviceAccount",
+    fn: async (req: express.Request, res: express.Response) => {
+      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ip = parseIps(ipString)
 
-    if (ip === undefined) {
-      throw new Error("IP is not defined")
-    }
+      if (ip === undefined) {
+        throw new Error("IP is not defined")
+      }
 
-    const user = basicAuth(req)
+      const user = basicAuth(req)
 
-    if (!user?.name || !user?.pass) {
-      return res.status(422).send({ error: "Bad input" })
-    }
+      if (!user?.name || !user?.pass) {
+        return res.status(422).send({ error: "Bad input" })
+      }
 
-    const username = user.name
-    const password = user.pass
-    const deviceId = username
+      const username = user.name
+      const password = user.pass
+      const deviceId = username
 
-    const authToken = await Auth.loginWithDevice({
-      username,
-      password,
-      ip,
-      deviceId,
-    })
-
-    if (authToken instanceof Error) {
-      // TODO open telemetry
-      return res.status(500).send({ error: authToken.message })
-    }
-
-    return res.status(200).send({
-      result: authToken,
-    })
-  } catch (err) {
-    // TODO open telemetry
-    return res.status(500).send({ error: `${err.message}` })
-  }
-})
+      try {
+        const authToken = await Auth.loginWithDevice({
+          username,
+          password,
+          ip,
+          deviceId,
+        })
+        if (authToken instanceof Error) {
+          recordExceptionInCurrentSpan({ error: authToken })
+          return res.status(500).send({ error: authToken.message })
+        }
+        addAttributesToCurrentSpan({ "login.deviceAccount": deviceId })
+        return res.status(200).send({
+          result: authToken,
+        })
+      } catch (err) {
+        recordExceptionInCurrentSpan({ error: err })
+        return res.status(500).send({ error: `${err.message}` })
+      }
+    },
+  }),
+)
 
 export default authRouter
