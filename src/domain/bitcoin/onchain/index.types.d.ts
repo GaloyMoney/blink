@@ -80,7 +80,7 @@ type PayToAddressArgs = {
 }
 
 type QueuePayoutToAddressArgs = {
-  walletId: WalletId
+  walletDescriptor: WalletDescriptor<WalletCurrency>
   address: OnChainAddress
   amount: BtcPaymentAmount
   speed: PayoutSpeed

@@ -574,7 +574,7 @@ const executePaymentViaOnChain = async <
 
     // Execute payment onchain
     const payoutId = await newOnChainService.queuePayoutToAddress({
-      walletId: senderWalletDescriptor.id,
+      walletDescriptor: senderWalletDescriptor,
       address: paymentFlow.address,
       amount: paymentFlow.btcPaymentAmount,
       speed,

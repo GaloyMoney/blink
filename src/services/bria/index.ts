@@ -193,7 +193,7 @@ export const NewOnChainService = (): INewOnChainService => {
   }
 
   const queuePayoutToAddress = async ({
-    walletId,
+    walletDescriptor,
     address,
     amount,
     speed,
@@ -206,7 +206,9 @@ export const NewOnChainService = (): INewOnChainService => {
       request.setOnchainAddress(address)
       request.setSatoshis(Number(amount.amount))
       request.setExternalId(journalId)
-      request.setMetadata(constructMetadata({ galoy: { walletId } }))
+      request.setMetadata(
+        constructMetadata({ galoy: { walletDetails: walletDescriptor } }),
+      )
 
       const response = await submitPayout(request, metadata)
 
