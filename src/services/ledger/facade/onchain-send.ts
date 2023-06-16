@@ -10,7 +10,7 @@ import {
   NoTransactionToUpdateError,
 } from "@domain/errors"
 
-import { toObjectId } from "@services/mongoose/utils"
+import { isValidObjectId, toObjectId } from "@services/mongoose/utils"
 
 import { MainBook, Transaction } from "../books"
 
@@ -82,6 +82,10 @@ export const setOnChainTxPayoutId = async ({
   payoutId,
 }: SetOnChainTxPayoutIdArgs): Promise<true | LedgerServiceError> => {
   try {
+    if (!isValidObjectId(journalId)) {
+      return new NoTransactionToUpdateError()
+    }
+
     const result = await Transaction.updateMany(
       { _journal: toObjectId(journalId) },
       { payout_id: payoutId },
@@ -92,10 +96,7 @@ export const setOnChainTxPayoutId = async ({
     }
     return true
   } catch (err) {
-    if (err.message.includes("BSONTypeError")) {
-      return new NoTransactionToUpdateError()
-    }
-    return new UnknownLedgerError(err)
+    return new UnknownLedgerError(err.message || err)
   }
 }
 
