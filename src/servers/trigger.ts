@@ -33,21 +33,14 @@ import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
 import {
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletInvoiceError,
-  InvalidLedgerTransactionStateError,
 } from "@domain/errors"
 import { CacheKeys } from "@domain/cache"
 import { SwapTriggerError } from "@domain/swap/errors"
-import { CouldNotFindTransactionError } from "@domain/ledger"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToDisplayCurrency } from "@domain/fiat"
 
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletInvoicesRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { WalletInvoicesRepository } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"

@@ -1,8 +1,4 @@
-import {
-  LedgerServiceError,
-  NoTransactionToSettleError,
-  UnknownLedgerError,
-} from "@domain/ledger/errors"
+import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
 
 import { toObjectId } from "@services/mongoose/utils"
 
