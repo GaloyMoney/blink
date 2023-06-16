@@ -3,8 +3,10 @@ import { Wallets } from "@app"
 import {
   CouldNotFindWalletFromOnChainAddressError,
   LessThanDustThresholdError,
+  NoTransactionToUpdateError,
 } from "@domain/errors"
 
+import { NoTransactionToSettleError } from "@services/ledger/domain/errors"
 import * as LedgerFacade from "@services/ledger/facade"
 import { baseLogger } from "@services/logger"
 import { BriaPayloadType } from "@services/bria"
@@ -81,10 +83,15 @@ export const payoutSubmittedEventHandler = async ({
   event: PayoutSubmitted
   payoutInfo: PayoutAugmentation
 }): Promise<true | ApplicationError> => {
-  return LedgerFacade.setOnChainTxPayoutId({
+  const res = LedgerFacade.setOnChainTxPayoutId({
     journalId: payoutInfo.externalId as LedgerJournalId,
     payoutId: event.id,
   })
+  if (res instanceof NoTransactionToUpdateError) {
+    return true
+  }
+
+  return res
 }
 
 export const payoutBroadcastEventHandler = async ({
@@ -98,6 +105,9 @@ export const payoutBroadcastEventHandler = async ({
     txId: event.txId,
     vout: event.vout,
   })
+  if (res instanceof NoTransactionToUpdateError) {
+    return true
+  }
 
   return res
 }
@@ -108,6 +118,9 @@ export const payoutSettledEventHandler = async ({
   event: PayoutSettled
 }): Promise<true | ApplicationError> => {
   const res = await Wallets.settlePayout(event.id)
+  if (res instanceof NoTransactionToSettleError) {
+    return true
+  }
 
   return res
 }
