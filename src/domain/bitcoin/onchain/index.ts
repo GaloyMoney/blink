@@ -70,3 +70,7 @@ export const uniqueAddressesForTxn = (rawTx: OnChainTransaction) =>
     if (o.address && !a.includes(o.address)) a.push(o.address)
     return a
   }, [])
+
+export const PayoutSpeed = {
+  Fast: "fast",
+} as const

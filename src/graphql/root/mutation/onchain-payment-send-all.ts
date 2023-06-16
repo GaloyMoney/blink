@@ -1,10 +1,14 @@
+import { PayoutSpeed as DomainPayoutSpeed } from "@domain/bitcoin/onchain"
+
 import { GT } from "@graphql/index"
 import Memo from "@graphql/types/scalar/memo"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import WalletId from "@graphql/types/scalar/wallet-id"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
+import PayoutSpeed from "@graphql/types/scalar/payout-speed"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
+import WalletId from "@graphql/types/scalar/wallet-id"
+
 import { Wallets } from "@app"
 
 const OnChainPaymentSendAllInput = GT.Input({
@@ -12,8 +16,16 @@ const OnChainPaymentSendAllInput = GT.Input({
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
+    speed: {
+      type: PayoutSpeed,
+      defaultValue: DomainPayoutSpeed.Fast,
+    },
     memo: { type: Memo },
-    targetConfirmations: { type: TargetConfirmations, defaultValue: 3 },
+    targetConfirmations: {
+      deprecationReason: "Ignored - will be replaced",
+      type: TargetConfirmations,
+      defaultValue: 0,
+    },
   }),
 })
 
@@ -23,7 +35,7 @@ const OnChainPaymentSendAllMutation = GT.Field<
       walletId: WalletId | InputValidationError
       address: OnChainAddress | InputValidationError
       memo: Memo | InputValidationError | null
-      targetConfirmations: TargetConfirmations | InputValidationError
+      speed: PayoutSpeed | InputValidationError
     }
   },
   null,
@@ -37,7 +49,7 @@ const OnChainPaymentSendAllMutation = GT.Field<
     input: { type: GT.NonNull(OnChainPaymentSendAllInput) },
   },
   resolve: async (_, args, { domainAccount }) => {
-    const { walletId, address, memo, targetConfirmations } = args.input
+    const { walletId, address, memo, speed } = args.input
 
     if (walletId instanceof Error) {
       return { errors: [{ message: walletId.message }] }
@@ -51,27 +63,26 @@ const OnChainPaymentSendAllMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    if (targetConfirmations instanceof Error) {
-      return { errors: [{ message: targetConfirmations.message }] }
+    if (speed instanceof Error) {
+      return { errors: [{ message: speed.message }] }
     }
 
-    const status = await Wallets.payAllOnChainByWalletId({
+    const result = await Wallets.payAllOnChainByWalletId({
       senderAccount: domainAccount,
       senderWalletId: walletId,
       amount: 0,
       address,
-      targetConfirmations,
+      speed,
       memo,
-      sendAll: true,
     })
 
-    if (status instanceof Error) {
-      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
+    if (result instanceof Error) {
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
     }
 
     return {
       errors: [],
-      status: status.value,
+      status: result.status.value,
     }
   },
 })

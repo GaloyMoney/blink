@@ -104,7 +104,8 @@ type EntryBuilderCreditState<M extends MediciEntry> = {
 }
 
 type EntryBuilderCredit<M extends MediciEntry> = {
-  creditLnd: () => M
+  creditOffChain: () => M
+  creditOnChain: () => M
   creditColdStorage: () => M
   creditAccount: <C extends WalletCurrency>({
     accountDescriptor,
@@ -113,6 +114,25 @@ type EntryBuilderCredit<M extends MediciEntry> = {
     accountDescriptor: LedgerAccountDescriptor<C>
     additionalMetadata: TxMetadata
   }) => M
+}
+
+type FeeOnlyEntryBuilderConfig<M extends MediciEntry> = {
+  entry: M
+  metadata: TxMetadata
+  staticAccountIds: {
+    bankOwnerAccountId: LedgerAccountId
+  }
+  btcFee: BtcPaymentAmount
+}
+
+type FeeOnlyEntryBuilderDebit<M extends MediciEntry> = {
+  debitBankOwner: () => FeeOnlyEntryBuilderCredit<M>
+  debitOnChain: () => FeeOnlyEntryBuilderCredit<M>
+}
+
+type FeeOnlyEntryBuilderCredit<M extends MediciEntry> = {
+  creditBankOwner: () => M
+  creditOnChain: () => M
 }
 
 type BaseLedgerTransactionMetadata = {

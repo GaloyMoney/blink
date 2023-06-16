@@ -65,6 +65,7 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly txHash?: OnChainTxHash
   readonly vout?: OnChainTxVout
   readonly requestId?: OnChainAddressRequestId
+  readonly payoutId?: PayoutId
 
   // for admin, to be removed when we switch those to satsAmount props
   readonly fee: number | undefined // Satoshis
@@ -104,9 +105,15 @@ type AddOnChainTxSendArgs = OnChainTxArgs & {
   totalFeeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
-type SetOnChainTxSendHashArgs = {
+type SetOnChainTxPayoutIdArgs = {
   journalId: LedgerJournalId
-  newTxHash: OnChainTxHash
+  payoutId: PayoutId
+}
+
+type SetOnChainTxIdByPayoutIdArgs = {
+  payoutId: PayoutId
+  txId: OnChainTxHash
+  vout: OnChainTxVout
 }
 
 type AddColdStorageTxReceiveArgs<T extends DisplayCurrency> = {
@@ -311,12 +318,6 @@ interface ILedgerService {
   isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
-
-  setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
-
-  settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
-
-  settlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
 
   revertLightningPayment(
     args: RevertLightningPaymentArgs,

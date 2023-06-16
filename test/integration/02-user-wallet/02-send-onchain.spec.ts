@@ -1,21 +1,17 @@
-import { once } from "events"
-
 import { Prices, Wallets } from "@app"
 import {
-  BTC_NETWORK,
   getAccountLimits,
   getFeesConfig,
   getLocale,
   getOnChainWalletConfig,
   ONE_DAY,
 } from "@config"
-import { toSats, toTargetConfs } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
   LessThanDustThresholdError,
   LimitsExceededError,
-  RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
 import {
@@ -25,9 +21,9 @@ import {
 } from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
-import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
-import { sleep, timestampDaysAgo } from "@utils"
+import * as LedgerFacade from "@services/ledger/facade"
+import { timestampDaysAgo } from "@utils"
 
 import {
   btcFromUsdMidPriceFn,
@@ -49,20 +45,19 @@ import {
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import { WalletsRepository } from "@services/mongoose"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { EventAugmentationMissingError } from "@services/bria/errors"
 
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { payoutSubmittedEventHandler } from "@servers/event-handlers/bria"
 
-import {
-  CPFPAncestorLimitReachedError,
-  InsufficientOnChainFundsError,
-  OnChainServiceUnavailableError,
-  UnknownOnChainServiceError,
-} from "@domain/bitcoin/onchain/errors"
-import { TxDecoder } from "@domain/bitcoin/onchain"
+import { WalletCurrency } from "@domain/shared"
+
+import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
-import * as OnChainServiceImpl from "@services/lnd/onchain-service"
 import { DealerPriceService } from "@services/dealer-price"
+import * as BriaImpl from "@services/bria"
+import { BriaPayloadType } from "@services/bria"
+import { getBankOwnerWalletId } from "@services/ledger/caching"
 
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 import {
@@ -77,11 +72,10 @@ import {
   lndonchain,
   lndOutside1,
   mineBlockAndSync,
-  mineBlockAndSyncAll,
-  subscribeToTransactions,
   getUsdWalletIdByTestUserRef,
   amountByPriceAsMajor,
 } from "test/helpers"
+import { onceBriaSubscribe } from "test/helpers/bria"
 
 let accountA: Account
 let accountB: Account
@@ -139,19 +133,18 @@ afterAll(async () => {
 const amount = toSats(10040)
 const usdAmount = toCents(105)
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
-const targetConfirmations = toTargetConfs(1)
 
 const payOnChainForPromiseAll = async (
   args: { senderCurrency: WalletCurrency } & PayOnChainByWalletIdArgs,
 ) => {
-  const { senderCurrency, ...payArgs } = args
-  const res =
-    senderCurrency === WalletCurrency.Btc
-      ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
-      : args.amountCurrency === WalletCurrency.Usd
-      ? await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
-      : await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount(payArgs)
-  if (res instanceof Error) throw res
+  const { senderCurrency, sendAll, ...payArgs } = args
+  const res = sendAll
+    ? await Wallets.payAllOnChainByWalletId(payArgs)
+    : senderCurrency === WalletCurrency.Btc
+    ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
+    : args.amountCurrency === WalletCurrency.Usd
+    ? await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
+    : await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount(payArgs)
   return res
 }
 
@@ -168,10 +161,17 @@ const testExternalSend = async ({
   amountCurrency: WalletCurrency
   sendAll: boolean
 }) => {
-  const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
-  if (onChainService instanceof Error) return onChainService
+  const memo = "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
 
   const initialWalletBalance = await getBalanceHelper(senderWalletId)
+
+  const txResult = await getTransactionsForWalletId(senderWalletId)
+  if (txResult.error instanceof Error || txResult.result === null) {
+    return txResult.error
+  }
+  const pendingTxsInit = txResult.result.slice.filter(
+    ({ status }) => status === TxStatus.Pending,
+  )
 
   const sendNotification = jest.fn()
   jest
@@ -179,8 +179,9 @@ const testExternalSend = async ({
     .mockImplementation(() => ({ sendNotification }))
   const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
-  const sub = subscribeToTransactions({ lnd: lndonchain })
-  sub.on("chain_transaction", onchainTransactionEventHandler)
+  // TODO: use bria events here instead
+  // const sub = subscribeToTransactions({ lnd: lndonchain })
+  // sub.on("chain_transaction", onchainTransactionEventHandler)
 
   // For notification check at the end
   const amountToSend = sendAll
@@ -191,7 +192,6 @@ const testExternalSend = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  let amountToSendSats: number = amountToSend
   let priceRatio: WalletPriceRatio | undefined = undefined
   if (
     senderWallet.currency === WalletCurrency.Usd &&
@@ -205,7 +205,6 @@ const testExternalSend = async ({
       usdPaymentAmount,
     )
     if (amountResult instanceof Error) return amountResult
-    amountToSendSats = Number(amountResult.amount)
 
     if (amountToSend > 0) {
       const priceRatioRaw = WalletPriceRatio({ usd: usdPaymentAmount, btc: amountResult })
@@ -214,39 +213,53 @@ const testExternalSend = async ({
     }
   }
 
-  const minerFee =
-    amountToSend > 0
-      ? await onChainService.getOnChainFeeEstimate({
-          amount: toSats(amountToSendSats),
-          address: address as OnChainAddress,
-          targetConfirmations,
-        })
-      : 0
-  if (minerFee instanceof Error) return minerFee
+  const paid = await payOnChainForPromiseAll({
+    senderCurrency: senderWallet.currency,
+    senderAccount,
+    senderWalletId,
+    address,
+    amount,
+    amountCurrency,
+    speed: PayoutSpeed.Fast,
+    memo,
+    sendAll,
+  })
+  if (paid instanceof Error) return paid
+  expect(paid.status).toBe(PaymentSendStatus.Success)
 
-  let results
-  try {
-    results = await Promise.all([
-      once(sub, "chain_transaction"),
-      payOnChainForPromiseAll({
-        senderCurrency: senderWallet.currency,
-        senderAccount,
-        senderWalletId,
-        address,
-        amount,
-        amountCurrency,
-        targetConfirmations,
-        memo: null,
-        sendAll,
-      }),
-    ])
-  } catch (err) {
-    sub.removeAllListeners()
-    return err as ApplicationError
+  const submittedEvent = await onceBriaSubscribe({
+    type: BriaPayloadType.PayoutSubmitted,
+  })
+  if (submittedEvent?.payload.type !== BriaPayloadType.PayoutSubmitted) {
+    throw new Error(`Expected ${BriaPayloadType.PayoutSubmitted} event`)
+  }
+  if (submittedEvent.augmentation.payoutInfo === undefined) {
+    throw new EventAugmentationMissingError()
+  }
+  const resultSubmitted = await payoutSubmittedEventHandler({
+    event: submittedEvent.payload,
+    payoutInfo: submittedEvent.augmentation.payoutInfo,
+  })
+  if (resultSubmitted instanceof Error) {
+    throw resultSubmitted
   }
 
-  expect(results[1]).toBe(PaymentSendStatus.Success)
-  await onchainTransactionEventHandler(results[0][0])
+  const broadcastEvent = await onceBriaSubscribe({
+    type: BriaPayloadType.PayoutBroadcast,
+    payoutId: paid.payoutId,
+  })
+  if (broadcastEvent?.payload.type !== BriaPayloadType.PayoutBroadcast) {
+    throw new Error(`Expected ${BriaPayloadType.PayoutBroadcast} event`)
+  }
+  const resultBroadcast = await Wallets.registerBroadcastedPayout({
+    payoutId: broadcastEvent.payload.id,
+    proportionalFee: broadcastEvent.payload.proportionalFee,
+    txId: broadcastEvent.payload.txId,
+    vout: broadcastEvent.payload.vout,
+  })
+  if (resultBroadcast instanceof Error) {
+    throw resultBroadcast
+  }
 
   // we don't send a notification for send transaction for now
   // expect(sendNotification.mock.calls.length).toBe(1)
@@ -278,6 +291,7 @@ const testExternalSend = async ({
   }
 
   let pendingTxHash: OnChainTxHash
+  let minerFee: BtcPaymentAmount
   {
     const txResult = await getTransactionsForWalletId(senderWalletId)
     if (txResult.error instanceof Error || txResult.result === null) {
@@ -286,7 +300,7 @@ const testExternalSend = async ({
     const pendingTxs = txResult.result.slice.filter(
       ({ status }) => status === TxStatus.Pending,
     )
-    expect(pendingTxs.length).toBe(1)
+    expect(pendingTxs.length).toBe(pendingTxsInit.length + 1)
     const pendingTx = pendingTxs[0]
     const interimBalance = await getBalanceHelper(senderWalletId)
 
@@ -294,10 +308,21 @@ const testExternalSend = async ({
       pendingTx.id as LedgerTransactionId,
     )
     if (pendingLedgerTx instanceof Error) throw pendingLedgerTx
+
+    // Legacy hack, this was previously gotten from OnChainService but Bria fee estimates
+    // are now more flaky. Ideally, this should be refactored away.
+    const { satsFee } = pendingLedgerTx
+    if (satsFee === undefined) throw new Error("satsFee undefined")
+    minerFee = {
+      amount: BigInt(satsFee - getFeesConfig().withdrawDefaultMin),
+      currency: WalletCurrency.Btc,
+    }
+
     const { settlementDisplayAmount, settlementDisplayFee } =
       SettlementAmounts().fromTxn(pendingLedgerTx)
     expect(pendingTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
     expect(pendingTx.settlementDisplayFee).toBe(settlementDisplayFee)
+    expect(pendingTx.memo).toBe(memo)
 
     if (sendAll) {
       expect(pendingTx.settlementAmount).toBe(-initialWalletBalance)
@@ -315,14 +340,19 @@ const testExternalSend = async ({
     await checkIsBalanced()
   }
 
-  // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
+  await mineBlockAndSync({ lnds: [lndonchain] })
 
-  await Promise.all([
-    once(sub, "chain_transaction"),
-    mineBlockAndSync({ lnds: [lndonchain] }),
-  ])
-
-  await sleep(1000)
+  const settledEvent = await onceBriaSubscribe({
+    type: BriaPayloadType.PayoutSettled,
+    payoutId: paid.payoutId,
+  })
+  if (settledEvent?.payload.type !== BriaPayloadType.PayoutSettled) {
+    throw new Error(`Expected ${BriaPayloadType.PayoutSettled} event`)
+  }
+  const resultSettled = await Wallets.settlePayout(settledEvent.payload.id)
+  if (resultSettled instanceof Error) {
+    throw resultSettled
+  }
 
   {
     const txResult = await getTransactionsForWalletId(senderWalletId)
@@ -332,7 +362,7 @@ const testExternalSend = async ({
     const pendingTxs = txResult.result.slice.filter(
       ({ status }) => status === TxStatus.Pending,
     )
-    expect(pendingTxs.length).toBe(0)
+    expect(pendingTxs.length).toBe(pendingTxsInit.length)
 
     const settledTxs = txResult.result.slice.filter(
       ({ status, initiationVia, settlementVia }) =>
@@ -345,7 +375,7 @@ const testExternalSend = async ({
     const settledTx = settledTxs[0]
 
     const feeRates = getFeesConfig()
-    const feeSats: number = feeRates.withdrawDefaultMin + minerFee
+    const feeSats: number = feeRates.withdrawDefaultMin + Number(minerFee.amount)
 
     let fee = feeSats
     if (senderWallet.currency === WalletCurrency.Usd) {
@@ -368,6 +398,7 @@ const testExternalSend = async ({
       SettlementAmounts().fromTxn(settledLedgerTx)
     expect(settledTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
     expect(settledTx.settlementDisplayFee).toBe(settlementDisplayFee)
+    expect(settledTx.memo).toBe(memo)
 
     const finalBalance = await getBalanceHelper(senderWalletId)
 
@@ -443,7 +474,7 @@ const testExternalSend = async ({
       satsAmount = Number(btcAmount.amount)
 
       centsFee = fee
-      satsFee = toSats(feeRates.withdrawDefaultMin + minerFee)
+      satsFee = toSats(feeRates.withdrawDefaultMin + Number(minerFee.amount))
 
       debit = centsAmount + centsFee
     }
@@ -518,8 +549,6 @@ const testExternalSend = async ({
     expect(sendNotification.mock.calls[0][0].title).toBe(title)
     expect(sendNotification.mock.calls[0][0].body).toBe(body)
   }
-
-  sub.removeAllListeners()
 }
 
 const testInternalSend = async ({
@@ -626,7 +655,7 @@ const testInternalSend = async ({
     senderWalletId: senderWalletId,
     address,
     amount: senderAmount,
-    targetConfirmations,
+    speed: PayoutSpeed.Fast,
     memo,
     sendAll,
   }
@@ -643,7 +672,7 @@ const testInternalSend = async ({
   const finalSenderBalance = await getBalanceHelper(senderWalletId)
   const finalRecipient = await getBalanceHelper(recipientWalletId)
 
-  expect(paid).toBe(PaymentSendStatus.Success)
+  expect(paid.status).toBe(PaymentSendStatus.Success)
   expect(finalSenderBalance).toBe(initialSenderBalance - senderAmountRecorded)
   expect(finalRecipient).toBe(initialRecipientBalance + recipientAmount)
 
@@ -871,6 +900,122 @@ describe("BtcWallet - onChainPay", () => {
     expect(res).not.toBeInstanceOf(Error)
   })
 
+  it("sends a successful payment, and reconciles fee difference", async () => {
+    const mockedFeeEstimate = { amount: 1000n, currency: WalletCurrency.Btc }
+    const bankOwnerWalletId = await getBankOwnerWalletId()
+
+    const { NewOnChainService: NewOnChainServiceOrig } =
+      jest.requireActual("@services/bria")
+    jest.spyOn(BriaImpl, "NewOnChainService").mockReturnValue({
+      ...NewOnChainServiceOrig(),
+      estimateFeeForPayout: () => mockedFeeEstimate,
+    })
+
+    const { address } = await createChainAddress({
+      lnd: lndOutside1,
+      format: "p2wpkh",
+    })
+
+    const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
+      senderAccount: accountA,
+      senderWalletId: walletIdA,
+      address,
+      amount,
+      speed: PayoutSpeed.Fast,
+      memo: null,
+    })
+    if (paid instanceof Error) throw paid
+    const { payoutId } = paid
+    if (payoutId === undefined) throw new Error("'paid.payoutId' undefined")
+
+    // Add payoutId
+    const submittedEvent = await onceBriaSubscribe({
+      type: BriaPayloadType.PayoutSubmitted,
+    })
+    if (submittedEvent?.payload.type !== BriaPayloadType.PayoutSubmitted) {
+      throw new Error(`Expected ${BriaPayloadType.PayoutSubmitted} event`)
+    }
+    if (submittedEvent.augmentation.payoutInfo === undefined) {
+      throw new EventAugmentationMissingError()
+    }
+    const resultSubmitted = await payoutSubmittedEventHandler({
+      event: submittedEvent.payload,
+      payoutInfo: submittedEvent.augmentation.payoutInfo,
+    })
+    if (resultSubmitted instanceof Error) {
+      throw resultSubmitted
+    }
+
+    // Check txns after submit payment
+    const txns = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+    if (txns instanceof Error) throw txns
+    expect(txns.length).toEqual(2)
+
+    const bankOwnerTxn = txns.find((txns) => txns.walletId === bankOwnerWalletId)
+    if (bankOwnerTxn === undefined) throw new Error("Expected bankOwner txn not found")
+    expect(bankOwnerTxn.credit).toEqual(2000)
+
+    const walletATxn = txns.find((txn) => txn.walletId === walletIdA)
+    if (walletATxn === undefined) throw new Error("Expected walletA txn not found")
+    const feeRecordedFromEstimate = walletATxn.satsFee
+    expect(feeRecordedFromEstimate).toEqual(
+      Number(mockedFeeEstimate.amount) + getFeesConfig().withdrawDefaultMin,
+    )
+
+    // Register broadcast
+    const broadcastEvent = await onceBriaSubscribe({
+      type: BriaPayloadType.PayoutBroadcast,
+      payoutId,
+    })
+    if (broadcastEvent?.payload.type !== BriaPayloadType.PayoutBroadcast) {
+      throw new Error(`Expected ${BriaPayloadType.PayoutBroadcast} event`)
+    }
+    const { proportionalFee, txId, vout } = broadcastEvent.payload
+    const feeDifference = Number(proportionalFee.amount - mockedFeeEstimate.amount)
+    expect(feeDifference).toBeGreaterThan(0)
+
+    const resultBroadcast = await Wallets.registerBroadcastedPayout({
+      proportionalFee,
+      payoutId,
+      txId,
+      vout,
+    })
+    if (resultBroadcast instanceof Error) {
+      throw resultBroadcast
+    }
+    expect(resultBroadcast).toBe(true)
+
+    // Check txns after register broadcast
+    const txnsAfterBroadcast = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+    if (txnsAfterBroadcast instanceof Error) throw txnsAfterBroadcast
+    expect(txnsAfterBroadcast.length).toEqual(3)
+    const bankOwnerTxnAfterBroadcast = txnsAfterBroadcast.find(
+      (txn) => txn.walletId === bankOwnerWalletId && txn.id !== bankOwnerTxn.id,
+    )
+    if (bankOwnerTxnAfterBroadcast === undefined) {
+      throw new Error("Expected bankOwner txn not found")
+    }
+    expect(bankOwnerTxnAfterBroadcast.debit).toEqual(feeDifference)
+
+    // Settle pending txns after checks
+    await mineBlockAndSync({ lnds: [lndonchain] })
+    const settledEvent = await onceBriaSubscribe({
+      type: BriaPayloadType.PayoutSettled,
+      payoutId: paid.payoutId,
+    })
+    if (settledEvent?.payload.type !== BriaPayloadType.PayoutSettled) {
+      throw new Error(`Expected ${BriaPayloadType.PayoutSettled} event`)
+    }
+    const resultSettled = await Wallets.settlePayout(settledEvent.payload.id)
+    if (resultSettled instanceof Error) {
+      throw resultSettled
+    }
+    expect(resultSettled).toBe(true)
+
+    // Restore NewOnChainService implementation
+    jest.spyOn(BriaImpl, "NewOnChainService").mockRestore()
+  })
+
   it("sends all in a successful payment", async () => {
     const res = await testExternalSend({
       senderAccount: accountE,
@@ -890,72 +1035,8 @@ describe("BtcWallet - onChainPay", () => {
       amountCurrency: WalletCurrency.Btc,
       sendAll: true,
     })
-
     expect(res).toBeInstanceOf(InsufficientBalanceError)
     expect(res && res.message).toEqual(`No balance left to send.`)
-  })
-
-  it("sends a successful payment with memo", async () => {
-    const memo = "this is my onchain memo"
-    const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-    const paymentResult = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderAccount: accountA,
-      senderWalletId: walletIdA,
-      address,
-      amount,
-      targetConfirmations,
-      memo,
-      sendAll: false,
-    })
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-    const { result: txs, error } = await getTransactionsForWalletId(walletIdA)
-    if (error instanceof Error || txs === null) {
-      throw error
-    }
-    if (txs.slice.length === 0) {
-      throw Error("No transactions found")
-    }
-
-    const firstTxs = txs.slice[0]
-    expect(firstTxs.memo).toBe(memo)
-    const pendingTxHash = firstTxs.id
-
-    const sub = subscribeToTransactions({ lnd: lndonchain })
-    sub.on("chain_transaction", onchainTransactionEventHandler)
-
-    const results = await Promise.all([
-      once(sub, "chain_transaction"),
-      mineBlockAndSync({ lnds: [lndonchain] }),
-    ])
-
-    await sleep(1000)
-    await onchainTransactionEventHandler(results[0][0])
-
-    {
-      const txResult = await getTransactionsForWalletId(walletIdA)
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.slice.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(0)
-
-      const settledTxs = txResult.result.slice.filter(
-        ({ status, initiationVia, id }) =>
-          status === TxStatus.Success &&
-          initiationVia.type === PaymentInitiationMethod.OnChain &&
-          id === pendingTxHash,
-      )
-      expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction
-
-      expect(settledTx.memo).toBe(memo)
-    }
-
-    // Delay as workaround for occasional core-dump error
-    await new Promise((resolve) => setImmediate(resolve))
-    sub.removeAllListeners()
   })
 
   it("sends an on us transaction", async () => {
@@ -991,20 +1072,20 @@ describe("BtcWallet - onChainPay", () => {
     const initialBalanceUserD = await getBalanceHelper(walletIdD)
     const senderAccount = await getAccountByTestUserRef("F")
 
-    const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const paid = await Wallets.payAllOnChainByWalletId({
       senderAccount,
       senderWalletId: walletIdF,
       address,
       amount: 0,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
       memo: null,
-      sendAll: true,
     })
+    if (paid instanceof Error) throw paid
 
     const finalBalanceUserF = await getBalanceHelper(walletIdF)
     const finalBalanceUserD = await getBalanceHelper(walletIdD)
 
-    expect(paid).toBe(PaymentSendStatus.Success)
+    expect(paid.status).toBe(PaymentSendStatus.Success)
     expect(finalBalanceUserF).toBe(0)
     expect(finalBalanceUserD).toBe(initialBalanceUserD + initialBalanceUserF)
 
@@ -1036,107 +1117,6 @@ describe("BtcWallet - onChainPay", () => {
     }
   })
 
-  const lndVoidErrors = [
-    { name: "insufficient funds", error: InsufficientOnChainFundsError },
-    { name: "CPFP limit", error: CPFPAncestorLimitReachedError },
-  ]
-  test.each(lndVoidErrors)(
-    "void transaction if lnd service returns $name error",
-    async ({ error }) => {
-      const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
-
-      jest.spyOn(OnChainServiceImpl, "OnChainService").mockImplementationOnce(() => ({
-        ...onChainService,
-        payToAddress: () => Promise.resolve(new error()),
-      }))
-
-      const initialBalanceUserA = await getBalanceHelper(walletIdA)
-      const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-
-      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
-        senderAccount: accountA,
-        senderWalletId: walletIdA,
-        address,
-        amount,
-        targetConfirmations,
-        memo: null,
-        sendAll: false,
-      })
-
-      expect(result).toBeInstanceOf(error)
-
-      const finalBalanceUserA = await getBalanceHelper(walletIdA)
-      expect(finalBalanceUserA).toBe(initialBalanceUserA)
-
-      const txResult = await getTransactionsForWalletId(walletIdA)
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.slice.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(0)
-    },
-  )
-
-  const lndKeepPendingErrors = [
-    { name: "service unavailable", error: OnChainServiceUnavailableError },
-    { name: "unknown", error: UnknownOnChainServiceError },
-  ]
-  test.each(lndKeepPendingErrors)(
-    "keep pending transaction if lnd service returns $name error",
-    async ({ error }) => {
-      const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
-      if (onChainService instanceof Error) throw onChainService
-
-      jest.spyOn(OnChainServiceImpl, "OnChainService").mockImplementationOnce(() => ({
-        ...onChainService,
-        payToAddress: () => Promise.resolve(new error()),
-      }))
-
-      const initialBalanceUserA = await getBalanceHelper(walletIdA)
-      const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-
-      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
-        senderAccount: accountA,
-        senderWalletId: walletIdA,
-        address,
-        amount,
-        targetConfirmations,
-        memo: null,
-        sendAll: false,
-      })
-
-      expect(result).toBeInstanceOf(error)
-
-      const txResult = await getTransactionsForWalletId(walletIdA)
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.slice.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(1)
-
-      const pendingTx = pendingTxs[0] as WalletOnChainSettledTransaction
-      const finalBalanceUserA = await getBalanceHelper(walletIdA)
-      expect(finalBalanceUserA).toBe(
-        initialBalanceUserA - amount - pendingTx.settlementFee,
-      )
-
-      // clean pending tx to avoid collisions with other tests
-      await onChainService.payToAddress({
-        address: address as OnChainAddress,
-        amount,
-        targetConfirmations,
-      })
-      await mineBlockAndSyncAll()
-      await LedgerService().settlePendingOnChainPayment(
-        pendingTx.settlementVia.transactionHash,
-      )
-    },
-  )
-
   it("fails if try to send a transaction to self", async () => {
     const res = await testInternalSend({
       senderAccount: accountA,
@@ -1166,67 +1146,31 @@ describe("BtcWallet - onChainPay", () => {
     })
     const initialBalanceUserG = await getBalanceHelper(walletIdG)
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountG,
       senderWalletId: walletIdG,
       address,
       amount: initialBalanceUserG,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
       memo: null,
-      sendAll: false,
     })
     //should fail because user does not have balance to pay for on-chain fee
-    expect(status).toBeInstanceOf(InsufficientBalanceError)
-  })
-
-  it("fails if onchain service has insufficient balance", async () => {
-    const { address } = await createChainAddress({
-      lnd: lndOutside1,
-      format: "p2wpkh",
-    })
-    const initialBalanceUserG = await getBalanceHelper(walletIdG)
-
-    const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
-    if (onChainService instanceof Error) throw onChainService
-    jest.spyOn(OnChainServiceImpl, "OnChainService").mockImplementationOnce(() => ({
-      ...onChainService,
-      getBalanceAmount: () =>
-        Promise.resolve(
-          paymentAmountFromNumber({
-            amount: initialBalanceUserG,
-            currency: WalletCurrency.Btc,
-          }),
-        ),
-    }))
-
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderAccount: accountG,
-      senderWalletId: walletIdG,
-      address,
-      amount: initialBalanceUserG,
-      targetConfirmations,
-      memo: null,
-      sendAll: false,
-    })
-
-    //should fail because onchain does not have balance to pay for on-chain fee
-    expect(status).toBeInstanceOf(RebalanceNeededError)
+    expect(result).toBeInstanceOf(InsufficientBalanceError)
   })
 
   it("fails if has negative amount", async () => {
     const amount = -1000
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
       amount,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
       memo: null,
-      sendAll: false,
     })
-    expect(status).toBeInstanceOf(InvalidBtcPaymentAmountError)
+    expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
   })
 
   it("fails if withdrawal limit hit", async () => {
@@ -1263,47 +1207,44 @@ describe("BtcWallet - onChainPay", () => {
 
     const amount = add(subResult, toSats(100))
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
       amount,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
       memo: null,
-      sendAll: false,
     })
 
-    expect(status).toBeInstanceOf(LimitsExceededError)
+    expect(result).toBeInstanceOf(LimitsExceededError)
   })
 
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
       amount: amountBelowDustThreshold,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
       memo: null,
-      sendAll: false,
     })
-    expect(status).toBeInstanceOf(LessThanDustThresholdError)
+    expect(result).toBeInstanceOf(LessThanDustThresholdError)
   })
 
   it("fails if the amount is less than lnd on-chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
 
-    const status = await Wallets.payOnChainByWalletIdForBtcWallet({
+    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
       amount: 1,
-      targetConfirmations,
+      speed: PayoutSpeed.Fast,
       memo: null,
-      sendAll: false,
     })
-    expect(status).toBeInstanceOf(LessThanDustThresholdError)
+    expect(result).toBeInstanceOf(LessThanDustThresholdError)
   })
 })
 

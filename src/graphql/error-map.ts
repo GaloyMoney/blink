@@ -14,7 +14,6 @@ import {
   InvalidBusinessTitleLengthError,
   PhoneCodeError,
   UsernameError,
-  RebalanceNeededError,
   DealerOfflineError,
   InsufficientLiquidityError,
   LndOfflineError,
@@ -342,9 +341,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidBusinessTitleLengthError":
       return new InvalidBusinessTitleLengthError({ logger: baseLogger })
 
-    case "RebalanceNeededError":
-      return new RebalanceNeededError({ logger: baseLogger })
-
     case "CannotConnectToDbError":
     case "DbConnectionClosedError":
       message =
@@ -429,6 +425,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OnChainServiceError":
     case "OnChainAddressAlreadyCreatedForRequestIdError":
     case "OnChainAddressNotFoundError":
+    case "PayoutNotFoundError":
+    case "PayoutDestinationBlocked":
     case "CouldNotFindOnChainTransactionError":
     case "NotificationsError":
     case "NotificationsServiceError":

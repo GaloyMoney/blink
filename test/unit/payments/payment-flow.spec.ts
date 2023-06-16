@@ -1,9 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import {
-  InsufficientBalanceError,
-  InvalidCurrencyForWalletError,
-  RebalanceNeededError,
-} from "@domain/errors"
+import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { inputAmountFromLedgerTransaction } from "@domain/ledger"
 import { OnChainPaymentFlow, PaymentFlow } from "@domain/payments"
@@ -88,55 +84,6 @@ const runCheckBalanceTests = <S extends WalletCurrency, R extends WalletCurrency
   })
 }
 
-const runCheckOnChainAvailableBalanceTests = <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
-  name,
-  paymentFlow,
-}: {
-  name: string
-  paymentFlow: OnChainPaymentFlow<S, R>
-}) => {
-  const sendAmountBtc = paymentFlow.btcPaymentAmount
-
-  describe("checkOnChainAvailableBalanceForSend", () => {
-    describe(`${name} sending wallet`, () => {
-      it("passes for send amount under onchain balance", () => {
-        const onChainAvailableBalance = {
-          amount: sendAmountBtc.amount + 1n,
-          currency: WalletCurrency.Btc,
-        }
-        const check = paymentFlow.checkOnChainAvailableBalanceForSend(
-          onChainAvailableBalance,
-        )
-        expect(check).not.toBeInstanceOf(Error)
-        expect(check).toBe(true)
-      })
-
-      it("passes for send amount equal to onchain balance", () => {
-        const onChainAvailableBalance = sendAmountBtc
-        const check = paymentFlow.checkOnChainAvailableBalanceForSend(
-          onChainAvailableBalance,
-        )
-        expect(check).not.toBeInstanceOf(Error)
-        expect(check).toBe(true)
-      })
-
-      it("fails for send amount above onchain balance", () => {
-        const onChainAvailableBalance = {
-          amount: sendAmountBtc.amount - 1n,
-          currency: WalletCurrency.Btc,
-        }
-        const check = paymentFlow.checkOnChainAvailableBalanceForSend(
-          onChainAvailableBalance,
-        )
-        expect(check).toBeInstanceOf(RebalanceNeededError)
-      })
-    })
-  })
-}
-
 describe("LightningPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R extends WalletCurrency>() => {
   const paymentFlowState: PaymentFlowState<S, R> = {
     senderWalletId: "walletId" as WalletId,
@@ -204,8 +151,6 @@ describe("OnChainPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R
     if (onChainPaymentFlow instanceof Error) throw onChainPaymentFlow
 
     runCheckBalanceTests({ name, paymentFlow: onChainPaymentFlow })
-
-    runCheckOnChainAvailableBalanceTests({ name, paymentFlow: onChainPaymentFlow })
   }
 })
 

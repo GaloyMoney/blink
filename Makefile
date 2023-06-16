@@ -16,7 +16,7 @@ start-main:
 start-main-fast:
 	yarn run watch-main | yarn pino-pretty -c -l
 
-start-trigger: start-deps
+start-trigger:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/trigger.ts | yarn pino-pretty -c -l
 

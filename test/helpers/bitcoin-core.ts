@@ -7,14 +7,24 @@ import { LedgerService } from "@services/ledger"
 
 import { toSats } from "@domain/bitcoin"
 
-import { bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
+import { BitcoindClient, bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
 
 import { descriptors } from "./multisig-wallet"
+import { descriptors as signerDescriptors } from "./signer-wallet"
 import { checkIsBalanced } from "./check-is-balanced"
 import { waitUntilBlockHeight } from "./lightning"
 
+const getBitcoinCoreSignerRPCConfig = () => {
+  return {
+    ...getBitcoinCoreRPCConfig(),
+    host: process.env.BITCOIND_SIGNER_ADDR,
+    port: parseInt(process.env.BITCOIND_SIGNER_PORT || "8332", 10),
+  }
+}
+
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
+export const bitcoindSignerClient = new BitcoindClient(getBitcoinCoreSignerRPCConfig())
 export const bitcoindOutside = new BitcoindWalletClient("outside")
 
 export async function sendToAddressAndConfirm({
@@ -136,6 +146,25 @@ export const createColdStorageWallet = async (walletName: string) => {
   return wallet
 }
 
+export const createSignerWallet = async (walletName: string) => {
+  const bitcoindSigner = getBitcoindSignerClient()
+  const wallet = await createWallet({
+    bitcoind: bitcoindSigner,
+    wallet_name: walletName,
+    disable_private_keys: false,
+    descriptors: true,
+  })
+
+  const bitcoindSignerWallet = getBitcoindSignerClient(walletName)
+  const result = await importDescriptors({
+    bitcoind: bitcoindSignerWallet,
+    requests: signerDescriptors,
+  })
+  if (result.some((d) => !d.success)) throw new Error("Invalid descriptors")
+
+  return wallet
+}
+
 export const createRandomColdStorageWallet = async (walletName: string) => {
   const bitcoind = getBitcoindClient()
   const wallet = await createWallet({
@@ -149,6 +178,19 @@ export const createRandomColdStorageWallet = async (walletName: string) => {
 
 const getBitcoindClient = (walletName?: string) => {
   const { host, username, password, port, timeout } = getBitcoinCoreRPCConfig()
+  return authenticatedBitcoind({
+    protocol: "http",
+    host: host || "",
+    username,
+    password,
+    timeout,
+    port,
+    walletName,
+  })
+}
+
+const getBitcoindSignerClient = (walletName?: string) => {
+  const { host, username, password, port, timeout } = getBitcoinCoreSignerRPCConfig()
   return authenticatedBitcoind({
     protocol: "http",
     host: host || "",

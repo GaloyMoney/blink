@@ -25,6 +25,9 @@ services:
   bitcoind:
     ports:
       - "18443:18443"
+  bitcoind-signer:
+    ports:
+      - "18543:18443"
   lnd1:
     ports:
       - "10009:10009"

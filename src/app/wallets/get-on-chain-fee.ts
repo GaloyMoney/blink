@@ -2,19 +2,19 @@ import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 
-import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
-import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
+import { checkedToOnChainAddress, PayoutSpeed } from "@domain/bitcoin/onchain"
 import { CouldNotFindError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
 
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
-import { OnChainService } from "@services/lnd/onchain-service"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { NewOnChainService } from "@services/bria"
 
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
@@ -27,16 +27,13 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   amount,
   amountCurrency,
   address,
-  targetConfirmations,
+  speed,
 }: GetOnChainFeeArgs): Promise<PaymentAmount<S> | ApplicationError> => {
   const amountChecked =
     amountCurrency === WalletCurrency.Btc
       ? checkedToBtcPaymentAmount(amount)
       : checkedToUsdPaymentAmount(amount)
   if (amountChecked instanceof Error) return amountChecked
-
-  const targetConfsChecked = checkedToTargetConfs(targetConfirmations)
-  if (targetConfsChecked instanceof Error) return targetConfsChecked
 
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
@@ -135,7 +132,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
 
   const paymentFlow = await getMinerFeeAndPaymentFlow({
     builder,
-    targetConfirmations: targetConfsChecked,
+    speed,
   })
   if (paymentFlow instanceof Error) return paymentFlow
   addAttributesToCurrentSpan({
@@ -154,13 +151,12 @@ export const getMinerFeeAndPaymentFlow = async <
   R extends WalletCurrency,
 >({
   builder,
-  targetConfirmations,
+  speed,
 }: {
   builder: OPFBWithConversion<S, R>
-  targetConfirmations: TargetConfirmations
+  speed: PayoutSpeed
 }): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError> => {
-  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
-  if (onChainService instanceof Error) return onChainService
+  const onChainService = NewOnChainService()
 
   const proposedBtcAmount = await builder.btcProposedAmount()
   if (proposedBtcAmount instanceof Error) return proposedBtcAmount
@@ -168,18 +164,14 @@ export const getMinerFeeAndPaymentFlow = async <
   const address = await builder.addressForFlow()
   if (address instanceof Error) return address
 
-  const minerFee = await onChainService.getOnChainFeeEstimate({
-    amount: toSats(proposedBtcAmount.amount),
+  const minerFee = await onChainService.estimateFeeForPayout({
+    amount: proposedBtcAmount,
     address,
-    targetConfirmations,
+    speed,
   })
   if (minerFee instanceof Error) return minerFee
-  const minerFeeAmount = paymentAmountFromNumber({
-    amount: minerFee,
-    currency: WalletCurrency.Btc,
-  })
-  if (minerFeeAmount instanceof Error) return minerFeeAmount
-  return builder.withMinerFee(minerFeeAmount)
+
+  return builder.withMinerFee(minerFee)
 }
 
 export const getOnChainFeeForBtcWallet = async <S extends WalletCurrency>(

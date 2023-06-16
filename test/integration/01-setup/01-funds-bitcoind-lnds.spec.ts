@@ -4,10 +4,12 @@ import { getFunderWalletId } from "@services/ledger/caching"
 
 import {
   bitcoindClient,
+  bitcoindSignerClient,
   checkIsBalanced,
   createColdStorageWallet,
   createMandatoryUsers,
   createRandomColdStorageWallet,
+  createSignerWallet,
   fundLnd,
   fundWalletIdFromOnchain,
   getChainBalance,
@@ -48,6 +50,15 @@ describe("Bitcoind", () => {
     const wallets = await bitcoindClient.listWallets()
     expect(wallets).toContain(walletName)
     expect(wallets).toContain(wallet2)
+  })
+
+  it("create signer wallet for bria", async () => {
+    const walletName = "dev"
+    const { name } = await createSignerWallet(walletName)
+    expect(name).toBe(walletName)
+
+    const wallets = await bitcoindSignerClient.listWallets()
+    expect(wallets).toContain(walletName)
   })
 
   it("create outside wallet", async () => {

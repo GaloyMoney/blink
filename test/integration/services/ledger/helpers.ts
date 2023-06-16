@@ -113,7 +113,7 @@ export const recordSendLnPayment = async <S extends WalletCurrency>({
       ...displayAmounts,
     })
 
-  return LedgerFacade.recordSend({
+  return LedgerFacade.recordSendOffChain({
     description: "sends bitcoin via ln",
     amountToDebitSender: paymentAmount,
     senderWalletDescriptor: walletDescriptor,
@@ -146,7 +146,7 @@ export const recordSendOnChainPayment = async <S extends WalletCurrency>({
       sendAll: false,
     })
 
-  return LedgerFacade.recordSend({
+  return LedgerFacade.recordSendOnChain({
     description: "sends bitcoin via onchain",
     amountToDebitSender: paymentAmount,
     senderWalletDescriptor: walletDescriptor,
@@ -466,6 +466,18 @@ export const recordOnChainTradeIntraAccountTxn: RecordInternalTxTestFn = async <
     additionalDebitMetadata,
     additionalCreditMetadata,
     additionalInternalMetadata,
+  })
+}
+
+export const recordReceiveOnChainFeeReconciliation = async ({
+  estimatedFee,
+  actualFee,
+  metadata,
+}: RecordOnChainFeeReconciliationArgs) => {
+  return LedgerFacade.recordReceiveOnChainFeeReconciliation({
+    estimatedFee,
+    actualFee,
+    metadata,
   })
 }
 

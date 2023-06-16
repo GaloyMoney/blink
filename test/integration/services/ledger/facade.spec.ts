@@ -1,12 +1,20 @@
 import crypto from "crypto"
 
-import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@domain/shared"
+import {
+  AmountCalculator,
+  BtcWalletDescriptor,
+  UsdWalletDescriptor,
+  WalletCurrency,
+} from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
+import { staticAccountIds } from "@services/ledger/facade/shared"
+import { Transaction } from "@services/ledger/schema"
+import { onChainLedgerAccountId } from "@services/ledger/domain"
 
 import {
   recordLnFailedPayment,
@@ -16,12 +24,17 @@ import {
   recordOnChainIntraLedgerPayment,
   recordOnChainTradeIntraAccountTxn,
   recordReceiveLnPayment,
+  recordReceiveOnChainFeeReconciliation,
   recordReceiveOnChainPayment,
   recordSendLnPayment,
   recordSendOnChainPayment,
   recordWalletIdIntraLedgerPayment,
   recordWalletIdTradeIntraAccountTxn,
 } from "./helpers"
+
+import { generateHash } from "test/helpers"
+
+const calc = AmountCalculator()
 
 describe("Facade", () => {
   const receiveAmount = {
@@ -599,6 +612,114 @@ describe("Facade", () => {
         recordFn: recordOnChainTradeIntraAccountTxn,
         metadata: LedgerTransactionType.OnChainTradeIntraAccount,
       })
+    })
+  })
+
+  describe("recordReceiveOnChainFeeReconciliation", () => {
+    const lowerFee = { amount: 1000n, currency: WalletCurrency.Btc }
+    const higherFee = { amount: 2100n, currency: WalletCurrency.Btc }
+    const feeReconciliationAmount = calc.sub(higherFee, lowerFee)
+
+    it("reimburses (credits) bank owner for overestimate", async () => {
+      const estimatedFee = higherFee
+      const actualFee = lowerFee
+
+      const { bankOwnerAccountId } = await staticAccountIds()
+      const txHash = generateHash() as OnChainTxHash
+      const payoutId = crypto.randomUUID() as PayoutId
+
+      const { metadata } = LedgerFacade.OnChainFeeReconciliationLedgerMetadata({
+        payoutId,
+        txHash,
+        pending: true,
+      })
+      await recordReceiveOnChainFeeReconciliation({
+        estimatedFee,
+        actualFee,
+        metadata,
+      })
+
+      const txns = await Transaction.find({ hash: txHash })
+      expect(txns.length).toEqual(2)
+
+      const debitTxn = txns.find((txn) => txn.debit > 0)
+      if (debitTxn === undefined) throw new Error("debitTxn is undefined")
+      expect(debitTxn.accounts).toBe(onChainLedgerAccountId)
+      expect(debitTxn.debit).toEqual(Number(feeReconciliationAmount.amount))
+      expect(debitTxn).toEqual(
+        expect.objectContaining({
+          type: LedgerTransactionType.OnchainPayment,
+          pending: true,
+          payout_id: payoutId,
+          hash: txHash,
+          currency: WalletCurrency.Btc,
+        }),
+      )
+
+      const creditTxn = txns.find((txn) => txn.credit > 0)
+      if (creditTxn === undefined) throw new Error("creditTxn is undefined")
+      expect(creditTxn.accounts).toBe(bankOwnerAccountId)
+      expect(creditTxn.credit).toEqual(Number(feeReconciliationAmount.amount))
+      expect(creditTxn).toEqual(
+        expect.objectContaining({
+          type: LedgerTransactionType.OnchainPayment,
+          pending: true,
+          payout_id: payoutId,
+          hash: txHash,
+          currency: WalletCurrency.Btc,
+        }),
+      )
+    })
+
+    it("deducts from (debits) bank owner for underestimate", async () => {
+      const estimatedFee = lowerFee
+      const actualFee = higherFee
+
+      const { bankOwnerAccountId } = await staticAccountIds()
+      const txHash = generateHash() as OnChainTxHash
+      const payoutId = crypto.randomUUID() as PayoutId
+
+      const { metadata } = LedgerFacade.OnChainFeeReconciliationLedgerMetadata({
+        payoutId,
+        txHash,
+        pending: true,
+      })
+      await recordReceiveOnChainFeeReconciliation({
+        estimatedFee,
+        actualFee,
+        metadata,
+      })
+
+      const txns = await Transaction.find({ hash: txHash })
+      expect(txns.length).toEqual(2)
+
+      const debitTxn = txns.find((txn) => txn.debit > 0)
+      if (debitTxn === undefined) throw new Error("debitTxn is undefined")
+      expect(debitTxn.accounts).toBe(bankOwnerAccountId)
+      expect(debitTxn.debit).toEqual(Number(feeReconciliationAmount.amount))
+      expect(debitTxn).toEqual(
+        expect.objectContaining({
+          type: LedgerTransactionType.OnchainPayment,
+          pending: true,
+          payout_id: payoutId,
+          hash: txHash,
+          currency: WalletCurrency.Btc,
+        }),
+      )
+
+      const creditTxn = txns.find((txn) => txn.credit > 0)
+      if (creditTxn === undefined) throw new Error("creditTxn is undefined")
+      expect(creditTxn.accounts).toBe(onChainLedgerAccountId)
+      expect(creditTxn.credit).toEqual(Number(feeReconciliationAmount.amount))
+      expect(creditTxn).toEqual(
+        expect.objectContaining({
+          type: LedgerTransactionType.OnchainPayment,
+          pending: true,
+          payout_id: payoutId,
+          hash: txHash,
+          currency: WalletCurrency.Btc,
+        }),
+      )
     })
   })
 })

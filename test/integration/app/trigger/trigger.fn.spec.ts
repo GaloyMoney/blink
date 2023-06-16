@@ -4,6 +4,7 @@ import { Wallets } from "@app"
 
 import { TxStatus } from "@domain/wallets"
 import { sat2btc, toSats } from "@domain/bitcoin"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { onchainBlockEventHandler } from "@servers/trigger"
 
@@ -165,9 +166,15 @@ describe("onchainBlockEventHandler", () => {
       amount: Satoshis
       address: string
     }) => {
+      const btcAmount = paymentAmountFromNumber({
+        amount,
+        currency: WalletCurrency.Btc,
+      })
+      if (btcAmount instanceof Error) throw btcAmount
+
       const { balance, transactions, onchainAddress } = await getWalletState(walletId)
       const depositFeeRatio = userRecord.depositFeeRatio as DepositFeeRatio
-      const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
+      const finalAmount = amountAfterFeeDeduction({ amount: btcAmount, depositFeeRatio })
       const lastTransaction = transactions[0]
 
       expect(transactions.length).toBe(initialState.transactions.length + 1)

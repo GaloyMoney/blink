@@ -1,5 +1,3 @@
-import { once } from "events"
-
 import { Payments, Wallets } from "@app"
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
@@ -7,7 +5,7 @@ import {
   MaxFeeTooLargeForRoutelessPaymentError,
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
-import { sat2btc, toSats, toTargetConfs } from "@domain/bitcoin"
+import { sat2btc, toSats } from "@domain/bitcoin"
 import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
 import * as LnFeesImpl from "@domain/payments/ln-fees"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
@@ -16,10 +14,11 @@ import { DisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
 
 import { updateDisplayCurrency } from "@app/accounts"
 
+import { PayoutSpeed } from "@domain/bitcoin/onchain"
+
 import { translateToLedgerTx } from "@services/ledger"
 import { MainBook } from "@services/ledger/books"
 import { BriaPayloadType } from "@services/bria"
-import { onchainTransactionEventHandler } from "@servers/trigger"
 import { AccountsRepository } from "@services/mongoose"
 import { toObjectId } from "@services/mongoose/utils"
 import { baseLogger } from "@services/logger"
@@ -41,13 +40,11 @@ import {
   getDefaultWalletIdByTestUserRef,
   getTransactionsForWalletId,
   getUsdWalletIdByTestUserRef,
-  lndonchain,
   lndOutside1,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
   safePay,
   sendToAddressAndConfirm,
-  subscribeToTransactions,
 } from "test/helpers"
 
 let accountB: Account
@@ -858,11 +855,11 @@ describe("Display properties on transactions", () => {
           senderWalletId,
           address,
           amount: amountSats,
-          targetConfirmations: toTargetConfs(1),
+          speed: PayoutSpeed.Fast,
           memo,
-          sendAll: false,
         })
-        expect(paid).toBe(PaymentSendStatus.Success)
+        if (paid instanceof Error) throw paid
+        expect(paid.status).toBe(PaymentSendStatus.Success)
 
         // Check entries
         const memoTxns = await getAllTransactionsByMemo(memo)
@@ -931,11 +928,11 @@ describe("Display properties on transactions", () => {
           senderWalletId,
           address,
           amount: amountSats,
-          targetConfirmations: toTargetConfs(1),
+          speed: PayoutSpeed.Fast,
           memo,
-          sendAll: false,
         })
-        expect(paid).toBe(PaymentSendStatus.Success)
+        if (paid instanceof Error) throw paid
+        expect(paid.status).toBe(PaymentSendStatus.Success)
 
         // Check entries
         const memoTxns = await getAllTransactionsByMemo(memo)
@@ -1004,7 +1001,6 @@ describe("Display properties on transactions", () => {
           senderCurrency === WalletCurrency.Btc
             ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
             : await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
-        if (res instanceof Error) throw res
         return res
       }
 
@@ -1025,31 +1021,17 @@ describe("Display properties on transactions", () => {
           lnd: lndOutside1,
         })
 
-        const sub = subscribeToTransactions({ lnd: lndonchain })
-        let paid, chainEvent
-        try {
-          ;[chainEvent, paid] = await Promise.all([
-            once(sub, "chain_transaction"),
-            payOnChainForPromiseAll({
-              senderCurrency: WalletCurrency.Btc,
-              senderAccount,
-              senderWalletId,
-              address,
-              amount: amountSats,
-              targetConfirmations: toTargetConfs(1),
-              memo,
-              sendAll: false,
-            }),
-          ])
-        } catch (err) {
-          sub.removeAllListeners()
-          return err as ApplicationError
-        }
-
-        expect(paid).toBe(PaymentSendStatus.Success)
-        await onchainTransactionEventHandler(chainEvent[0])
-
-        sub.removeAllListeners()
+        const paid = await payOnChainForPromiseAll({
+          senderCurrency: WalletCurrency.Btc,
+          senderAccount,
+          senderWalletId,
+          address,
+          amount: amountSats,
+          speed: PayoutSpeed.Fast,
+          memo,
+        })
+        if (paid instanceof Error) throw paid
+        expect(paid.status).toBe(PaymentSendStatus.Success)
 
         // Check entries
         const txns = await getAllTransactionsByMemo(memo)

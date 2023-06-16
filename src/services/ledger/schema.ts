@@ -53,6 +53,7 @@ const transactionSchema = new Schema<ILedgerTransaction>(
     // for onchain transactions.
     payee_addresses: [String],
     request_id: String,
+    payout_id: String,
 
     memoPayer: String,
 
@@ -136,6 +137,7 @@ transactionSchema.index({ accounts: 1, type: 1, timestamp: -1 })
 transactionSchema.index({ type: 1, pending: 1, account_path: 1 })
 transactionSchema.index({ account_path: 1 })
 transactionSchema.index({ hash: 1 })
+transactionSchema.index({ payout_id: 1 })
 
 setTransactionSchema(transactionSchema, undefined, { defaultIndexes: true })
 

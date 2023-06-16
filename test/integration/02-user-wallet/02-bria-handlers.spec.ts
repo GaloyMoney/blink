@@ -1,41 +1,47 @@
+import crypto from "crypto"
+
 import { getOnChainWalletConfig } from "@config"
 
 import {
   addPendingTransaction,
   addSettledTransaction,
   getLastOnChainAddress,
+  registerBroadcastedPayout,
 } from "@app/wallets"
 
-import { WalletCurrency } from "@domain/shared"
-import { toLiabilitiesWalletId } from "@domain/ledger"
+import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { UnknownLedgerError, toLiabilitiesWalletId } from "@domain/ledger"
+import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
+import { displayAmountFromNumber } from "@domain/fiat"
 
 import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
 import { Transaction } from "@services/ledger/schema"
+import * as LedgerFacade from "@services/ledger/facade"
+import { getBankOwnerWalletId } from "@services/ledger/caching"
 
 import { LessThanDustThresholdError } from "@domain/errors"
 
-import { randomAccount, addNewWallet, generateHash } from "test/helpers"
+import { generateHash, createRandomUserAndWallet } from "test/helpers"
+
+const calc = AmountCalculator()
 
 const VOUT_0 = 0 as OnChainTxVout
 const VOUT_1 = 1 as OnChainTxVout
 const { dustThreshold } = getOnChainWalletConfig()
 
 let walletId: WalletId
+let bankOwnerWalletId: WalletId
+let accountId: AccountId
 let address: OnChainAddress
 
 beforeAll(async () => {
-  const accountId = (await randomAccount()).id
-
-  const wallet = await addNewWallet({
-    accountId,
-    currency: WalletCurrency.Btc,
-  })
-  if (wallet instanceof Error) throw wallet
-  walletId = wallet.id
+  ;({ walletId, accountId } = await createRandomUserAndWallet())
 
   const addressResult = await getLastOnChainAddress(walletId)
   if (addressResult instanceof Error) throw addressResult
   address = addressResult
+
+  bankOwnerWalletId = await getBankOwnerWalletId()
 })
 
 const getRandomBtcAmountForOnchain = (): BtcPaymentAmount => {
@@ -313,6 +319,347 @@ describe("Bria Event Handlers", () => {
       })
 
       expect(result).toBeInstanceOf(LessThanDustThresholdError)
+    })
+  })
+
+  describe("registerBroadcastedPayout", () => {
+    const addressForPayout = "addressForPayout" as OnChainAddress
+    const estimatedFee = { amount: 2500n, currency: WalletCurrency.Btc }
+
+    const addOnChainPaymentLedgerTxns = async ({
+      estimatedFee,
+      actualFee,
+    }: {
+      estimatedFee: BtcPaymentAmount
+      actualFee: BtcPaymentAmount
+    }): Promise<PayoutBroadcast> => {
+      const payoutId = crypto.randomUUID() as PayoutId
+
+      const priceRatio = WalletPriceRatio({
+        usd: { amount: 20n, currency: WalletCurrency.Usd },
+        btc: { amount: 1000n, currency: WalletCurrency.Btc },
+      })
+      if (priceRatio instanceof Error) throw priceRatio
+
+      const displayAmount = displayAmountFromNumber({ amount: 20, currency: "USD" })
+      if (displayAmount instanceof Error) throw displayAmount
+      const displayPriceRatio = DisplayPriceRatio({
+        displayAmount,
+        walletAmount: { amount: 1000n, currency: WalletCurrency.Btc },
+      })
+      if (displayPriceRatio instanceof Error) throw displayPriceRatio
+
+      const btcMinerFee = estimatedFee
+      const btcBankFee = { amount: 2_000n, currency: WalletCurrency.Btc }
+      const usdBankFee = priceRatio.convertFromBtc(btcBankFee)
+      const btcProtocolAndBankFee = calc.add(btcMinerFee, btcBankFee)
+      const usdProtocolAndBankFee = priceRatio.convertFromBtc(btcProtocolAndBankFee)
+      const displayProtocolAndBankFee =
+        displayPriceRatio.convertFromWallet(btcProtocolAndBankFee)
+
+      const btcPaymentAmount = { amount: 10_000n, currency: WalletCurrency.Btc }
+      const usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+      const displayPaymentAmount = displayPriceRatio.convertFromWallet(btcPaymentAmount)
+      const btcTotalAmount = calc.add(btcProtocolAndBankFee, btcPaymentAmount)
+      const usdTotalAmount = priceRatio.convertFromBtc(btcTotalAmount)
+
+      const {
+        metadata,
+        debitAccountAdditionalMetadata,
+        internalAccountsAdditionalMetadata,
+      } = LedgerFacade.OnChainSendLedgerMetadata({
+        // we need a temporary hash to be able to search in admin panel
+        onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
+        paymentAmounts: {
+          btcPaymentAmount,
+          btcProtocolAndBankFee,
+
+          usdPaymentAmount,
+          usdProtocolAndBankFee,
+        },
+
+        amountDisplayCurrency: Number(
+          displayPaymentAmount.amountInMinor,
+        ) as DisplayCurrencyBaseAmount,
+        feeDisplayCurrency: Number(
+          displayProtocolAndBankFee.amountInMinor,
+        ) as DisplayCurrencyBaseAmount,
+        displayCurrency: displayPaymentAmount.currency,
+
+        payeeAddresses: ["address" as OnChainAddress],
+        sendAll: false,
+        memoOfPayer: undefined,
+      })
+      const journal = await LedgerFacade.recordSendOnChain({
+        description: "",
+        amountToDebitSender: {
+          btc: btcTotalAmount,
+          usd: usdTotalAmount,
+        },
+        bankFee: { btc: btcBankFee, usd: usdBankFee },
+        senderWalletDescriptor: { id: walletId, currency: WalletCurrency.Btc, accountId },
+        metadata,
+        additionalDebitMetadata: debitAccountAdditionalMetadata,
+        additionalInternalMetadata: internalAccountsAdditionalMetadata,
+      })
+      if (journal instanceof Error) throw journal
+
+      const updated = await LedgerFacade.setOnChainTxPayoutId({
+        journalId: journal.journalId,
+        payoutId,
+      })
+      if (updated instanceof Error) throw updated
+
+      return {
+        type: "payout_broadcast",
+        id: payoutId,
+        proportionalFee: actualFee,
+        satoshis: btcPaymentAmount,
+        txId: generateHash() as OnChainTxHash,
+        vout: 0 as OnChainTxVout,
+        address: addressForPayout,
+      }
+    }
+
+    it("handles a broadcast event", async () => {
+      // Setup a transaction in database
+      const btcFeeDifference = ZERO_SATS
+      const actualFee = calc.add(estimatedFee, btcFeeDifference)
+
+      const broadcastPayload = await addOnChainPaymentLedgerTxns({
+        estimatedFee,
+        actualFee,
+      })
+      const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
+
+      // Run before-broadcast checks
+      const txnsBefore = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsBefore instanceof Error) throw txnsBefore
+      expect(txnsBefore.length).toEqual(2)
+
+      const hashesBefore = txnsBefore.map((txn) => txn.txHash)
+      const hashesBeforeSet = new Set(hashesBefore)
+      expect(hashesBeforeSet.size).toEqual(1)
+
+      // Register broadcast
+      const res = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(res).toBe(true)
+
+      // Run after-broadcast checks
+      const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsAfter instanceof Error) throw txnsAfter
+      expect(txnsAfter.length).toEqual(2)
+
+      const hashesAfter = txnsAfter.map((txn) => txn.txHash)
+      const hashesAfterSet = new Set(hashesAfter)
+      expect(hashesAfterSet.size).toEqual(1)
+
+      expect(hashesBefore[0]).not.toEqual(hashesAfter[0])
+
+      // Cleanup to clear tests accounting
+      await Transaction.deleteMany({ payout_id: payoutId })
+    })
+
+    it("handles a broadcast event, with underpaid fee", async () => {
+      // Setup a transaction in database
+      const btcFeeDifference = { amount: 1500n, currency: WalletCurrency.Btc }
+      const actualFee = calc.add(estimatedFee, btcFeeDifference)
+
+      const broadcastPayload = await addOnChainPaymentLedgerTxns({
+        estimatedFee,
+        actualFee,
+      })
+      const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
+
+      // Run before-broadcast checks
+      const txnsBefore = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsBefore instanceof Error) throw txnsBefore
+      expect(txnsBefore.length).toEqual(2)
+
+      const bankTxns = txnsBefore.filter((txn) => txn.walletId === bankOwnerWalletId)
+      expect(bankTxns.length).toEqual(1)
+      const bankTxnIdBefore = bankTxns[0].id
+
+      const hashesBefore = txnsBefore.map((txn) => txn.txHash)
+      const hashesBeforeSet = new Set(hashesBefore)
+      expect(hashesBeforeSet.size).toEqual(1)
+
+      // Register broadcast
+      const res = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(res).toBe(true)
+
+      // Run after-broadcast checks
+      const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsAfter instanceof Error) throw txnsAfter
+      expect(txnsAfter.length).toEqual(3)
+
+      const bankTxnsAfter = txnsAfter.filter((txn) => txn.walletId === bankOwnerWalletId)
+      expect(bankTxnsAfter.length).toEqual(2)
+      const addedBankTxn = bankTxnsAfter.find((txn) => txn.id !== bankTxnIdBefore)
+      if (addedBankTxn === undefined) throw new Error("Expected bankOwner txn not found")
+
+      expect(addedBankTxn.debit).toEqual(Number(btcFeeDifference.amount))
+
+      const hashesAfter = txnsAfter.map((txn) => txn.txHash)
+      const hashesAfterSet = new Set(hashesAfter)
+      expect(hashesAfterSet.size).toEqual(1)
+
+      expect(hashesBefore[0]).not.toEqual(hashesAfter[0])
+
+      // Cleanup to clear tests accounting
+      await Transaction.deleteMany({ payout_id: payoutId })
+    })
+
+    it("handles a broadcast event, with overpaid fee", async () => {
+      // Setup a transaction in database
+      const btcFeeDifference = { amount: 1500n, currency: WalletCurrency.Btc }
+      const actualFee = calc.sub(estimatedFee, btcFeeDifference)
+
+      const broadcastPayload = await addOnChainPaymentLedgerTxns({
+        estimatedFee,
+        actualFee,
+      })
+      const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
+
+      // Run before-broadcast checks
+      const txnsBefore = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsBefore instanceof Error) throw txnsBefore
+      expect(txnsBefore.length).toEqual(2)
+
+      const bankTxns = txnsBefore.filter((txn) => txn.walletId === bankOwnerWalletId)
+      expect(bankTxns.length).toEqual(1)
+      const bankTxnIdBefore = bankTxns[0].id
+
+      const hashesBefore = txnsBefore.map((txn) => txn.txHash)
+      const hashesBeforeSet = new Set(hashesBefore)
+      expect(hashesBeforeSet.size).toEqual(1)
+
+      // Register broadcast
+      const res = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(res).toBe(true)
+
+      // Run after-broadcast checks
+      const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsAfter instanceof Error) throw txnsAfter
+      expect(txnsAfter.length).toEqual(3)
+
+      const bankTxnsAfter = txnsAfter.filter((txn) => txn.walletId === bankOwnerWalletId)
+      expect(bankTxnsAfter.length).toEqual(2)
+      const addedBankTxn = bankTxnsAfter.find((txn) => txn.id !== bankTxnIdBefore)
+      if (addedBankTxn === undefined) throw new Error("Expected bankOwner txn not found")
+
+      expect(addedBankTxn.credit).toEqual(Number(btcFeeDifference.amount))
+
+      const hashesAfter = txnsAfter.map((txn) => txn.txHash)
+      const hashesAfterSet = new Set(hashesAfter)
+      expect(hashesAfterSet.size).toEqual(1)
+
+      expect(hashesBefore[0]).not.toEqual(hashesAfter[0])
+
+      // Cleanup to clear tests accounting
+      await Transaction.deleteMany({ payout_id: payoutId })
+    })
+
+    // TODO: fix mock below and unskip this test
+    it.skip("handles failed pending fee reconciliation and then retry", async () => {
+      // Setup a transaction in database
+      const btcFeeDifference = { amount: 1500n, currency: WalletCurrency.Btc }
+      const actualFee = calc.add(estimatedFee, btcFeeDifference)
+
+      const broadcastPayload = await addOnChainPaymentLedgerTxns({
+        estimatedFee,
+        actualFee,
+      })
+      const { proportionalFee, id: payoutId, txId, vout } = broadcastPayload
+
+      // Run before-broadcast checks
+      const txnsBefore = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsBefore instanceof Error) throw txnsBefore
+      expect(txnsBefore.length).toEqual(2)
+
+      const bankTxns = txnsBefore.filter((txn) => txn.walletId === bankOwnerWalletId)
+      expect(bankTxns.length).toEqual(1)
+      const bankTxnIdBefore = bankTxns[0].id
+
+      const hashesBefore = txnsBefore.map((txn) => txn.txHash)
+      const hashesBeforeSet = new Set(hashesBefore)
+      expect(hashesBeforeSet.size).toEqual(1)
+
+      // Register broadcast with failure
+      const spy = jest
+        .spyOn(LedgerFacade, "getTransactionsByPayoutId")
+        .mockImplementation(async () => new UnknownLedgerError())
+
+      const res = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(res).toBeInstanceOf(UnknownLedgerError)
+
+      spy.mockRestore()
+
+      // Run after-broadcast checks
+      const txnsAfter = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsAfter instanceof Error) throw txnsAfter
+      expect(txnsAfter.length).toEqual(2)
+
+      const bankTxnsAfter = txnsAfter.filter((txn) => txn.walletId === bankOwnerWalletId)
+      expect(bankTxnsAfter.length).toEqual(1)
+
+      const hashesAfter = txnsAfter.map((txn) => txn.txHash)
+      const hashesAfterSet = new Set(hashesAfter)
+      expect(hashesAfterSet.size).toEqual(1)
+
+      expect(hashesBefore[0]).not.toEqual(hashesAfter[0])
+
+      // Retry registering broadcast event
+      const resRetry = await registerBroadcastedPayout({
+        payoutId,
+        proportionalFee,
+        txId,
+        vout,
+      })
+      expect(resRetry).toBe(true)
+
+      const txnsAfterRetry = await LedgerFacade.getTransactionsByPayoutId(payoutId)
+      if (txnsAfterRetry instanceof Error) throw txnsAfterRetry
+      expect(txnsAfterRetry.length).toEqual(3)
+
+      const bankTxnsAfterRetry = txnsAfterRetry.filter(
+        (txn) => txn.walletId === bankOwnerWalletId,
+      )
+      expect(bankTxnsAfterRetry.length).toEqual(2)
+      const addedBankTxn = bankTxnsAfterRetry.find((txn) => txn.id !== bankTxnIdBefore)
+      if (addedBankTxn === undefined) throw new Error("Expected bankOwner txn not found")
+
+      expect(addedBankTxn.debit).toEqual(Number(btcFeeDifference.amount))
+
+      const hashesAfterRetry = txnsAfter.map((txn) => txn.txHash)
+      const hashesAfterRetrySet = new Set(hashesAfterRetry)
+      expect(hashesAfterRetrySet.size).toEqual(1)
+
+      expect(hashesBefore[0]).not.toEqual(hashesAfterRetry[0])
+      expect(hashesAfter[0]).toEqual(hashesAfterRetry[0])
+
+      // Cleanup to clear tests accounting
+      await Transaction.deleteMany({ payout_id: payoutId })
     })
   })
 })

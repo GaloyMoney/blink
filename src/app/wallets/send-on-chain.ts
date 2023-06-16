@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
+import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 
 import {
   btcFromUsdMidPriceFn,
@@ -14,18 +14,12 @@ import {
   checkWithdrawalLimits,
 } from "@app/payments/helpers"
 
-import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
 } from "@domain/payments"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import {
-  checkedToOnChainAddress,
-  CPFPAncestorLimitReachedError,
-  InsufficientOnChainFundsError,
-  TxDecoder,
-} from "@domain/bitcoin/onchain"
+import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { displayAmountFromNumber } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -37,7 +31,7 @@ import * as LedgerFacade from "@services/ledger/facade"
 
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
-import { OnChainService } from "@services/lnd/onchain-service"
+import { NewOnChainService } from "@services/bria"
 import { LockService } from "@services/lock"
 import { baseLogger } from "@services/logger"
 import {
@@ -60,12 +54,14 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   amount: amountRaw,
   amountCurrency: amountCurrencyRaw,
   address,
-  targetConfirmations,
+  speed,
   memo,
   sendAll,
-}: PayOnChainByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: PayOnChainByWalletIdArgs): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
+  const ledger = LedgerService()
+
   const amountToSendRaw = sendAll
-    ? await LedgerService().getWalletBalance(senderWalletId)
+    ? await ledger.getWalletBalance(senderWalletId)
     : amountRaw
   if (amountToSendRaw instanceof Error) return amountToSendRaw
 
@@ -99,9 +95,6 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
     value: address,
   })
   if (checkedAddress instanceof Error) return checkedAddress
-
-  const checkedTargetConfirmations = checkedToTargetConfs(targetConfirmations)
-  if (checkedTargetConfirmations instanceof Error) return checkedTargetConfirmations
 
   const recipientWallet = await WalletsRepository().findByAddress(checkedAddress)
   if (
@@ -179,7 +172,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   return executePaymentViaOnChain({
     builder,
     senderDisplayCurrency: senderAccount.displayCurrency,
-    targetConfirmations: checkedTargetConfirmations,
+    speed,
     memo,
     sendAll,
     logger: onchainLogger,
@@ -188,34 +181,46 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
 
 export const payOnChainByWalletIdForBtcWallet = async (
   args: PayOnChainByWalletIdWithoutCurrencyArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const validated = await validateIsBtcWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
-    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Btc })
+    : payOnChainByWalletId({
+        ...args,
+        amountCurrency: WalletCurrency.Btc,
+        sendAll: false,
+      })
 }
 
 export const payOnChainByWalletIdForUsdWallet = async (
   args: PayOnChainByWalletIdWithoutCurrencyArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
-    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Usd })
+    : payOnChainByWalletId({
+        ...args,
+        amountCurrency: WalletCurrency.Usd,
+        sendAll: false,
+      })
 }
 
 export const payOnChainByWalletIdForUsdWalletAndBtcAmount = async (
   args: PayOnChainByWalletIdWithoutCurrencyArgs,
-): Promise<PaymentSendStatus | ApplicationError> => {
+): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const validated = await validateIsUsdWallet(args.senderWalletId)
   return validated instanceof Error
     ? validated
-    : payOnChainByWalletId({ ...args, amountCurrency: WalletCurrency.Btc })
+    : payOnChainByWalletId({
+        ...args,
+        amountCurrency: WalletCurrency.Btc,
+        sendAll: false,
+      })
 }
 
 export const payAllOnChainByWalletId = async (
   args: PayOnChainByWalletIdWithoutCurrencyArgs,
-): Promise<PaymentSendStatus | ApplicationError> =>
+): Promise<PayOnChainByWalletIdResult | ApplicationError> =>
   payOnChainByWalletId({ ...args, amountCurrency: undefined, sendAll: true })
 
 const executePaymentViaIntraledger = async <
@@ -235,7 +240,7 @@ const executePaymentViaIntraledger = async <
   senderDisplayCurrency: DisplayCurrency
   memo: string | null
   sendAll: boolean
-}): Promise<PaymentSendStatus | ApplicationError> => {
+}): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const paymentFlow = await builder.withoutMinerFee()
   if (paymentFlow instanceof Error) return paymentFlow
 
@@ -420,7 +425,7 @@ const executePaymentViaIntraledger = async <
       recipientLanguage: recipientUser.language,
     })
 
-    return PaymentSendStatus.Success
+    return { status: PaymentSendStatus.Success, payoutId: undefined }
   })
 }
 
@@ -430,23 +435,22 @@ const executePaymentViaOnChain = async <
 >({
   builder,
   senderDisplayCurrency,
-  targetConfirmations,
+  speed,
   memo,
   sendAll,
   logger,
 }: {
   builder: OPFBWithConversion<S, R> | OPFBWithError
   senderDisplayCurrency: DisplayCurrency
-  targetConfirmations: TargetConfirmations
+  speed: PayoutSpeed
   memo: string | null
   sendAll: boolean
   logger: Logger
-}): Promise<PaymentSendStatus | ApplicationError> => {
+}): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
   const senderWalletDescriptor = await builder.senderWalletDescriptor()
   if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
 
-  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
-  if (onChainService instanceof Error) return onChainService
+  const newOnChainService = NewOnChainService()
 
   // Limit check
   const proposedAmounts = await builder.proposedAmounts()
@@ -465,23 +469,17 @@ const executePaymentViaOnChain = async <
   const address = await builder.addressForFlow()
 
   // Get estimated miner fee and create 'paymentFlow'
-  const paymentFlow = await getMinerFeeAndPaymentFlow({ builder, targetConfirmations })
+  const paymentFlow = await getMinerFeeAndPaymentFlow({
+    builder,
+    speed,
+  })
   if (paymentFlow instanceof Error) return paymentFlow
-
-  // Check onchain balance
-  const onChainAvailableBalance = await onChainService.getBalanceAmount()
-  if (onChainAvailableBalance instanceof Error) return onChainAvailableBalance
-
-  const onChainAvailableBalanceCheck = paymentFlow.checkOnChainAvailableBalanceForSend(
-    onChainAvailableBalance,
-  )
-  if (onChainAvailableBalanceCheck instanceof Error) return onChainAvailableBalanceCheck
 
   return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) => {
     // Get estimated miner fee and create 'paymentFlow'
     const paymentFlowForBalance = await getMinerFeeAndPaymentFlow({
       builder,
-      targetConfirmations,
+      speed,
     })
     if (paymentFlowForBalance instanceof Error) return paymentFlowForBalance
 
@@ -500,7 +498,7 @@ const executePaymentViaOnChain = async <
     // Add fees to tracing
     const paymentFlow = await getMinerFeeAndPaymentFlow({
       builder,
-      targetConfirmations,
+      speed,
     })
     if (paymentFlow instanceof Error) return paymentFlow
 
@@ -550,7 +548,7 @@ const executePaymentViaOnChain = async <
     })
 
     // Record transaction
-    const journal = await LedgerFacade.recordSend({
+    const journal = await LedgerFacade.recordSendOnChain({
       description: memo || "",
       amountToDebitSender: {
         btc: {
@@ -575,53 +573,31 @@ const executePaymentViaOnChain = async <
     if (journal instanceof Error) return journal
 
     // Execute payment onchain
-    const amountToSend = toSats(paymentFlow.btcPaymentAmount.amount)
-    const txHash = await onChainService.payToAddress({
+    const payoutId = await newOnChainService.queuePayoutToAddress({
+      walletDescriptor: senderWalletDescriptor,
       address: paymentFlow.address,
-      amount: amountToSend,
-      targetConfirmations,
-      description: `journal-${journal.journalId}`,
+      amount: paymentFlow.btcPaymentAmount,
+      speed,
+      journalId: journal.journalId,
     })
-    if (
-      txHash instanceof InsufficientOnChainFundsError ||
-      txHash instanceof CPFPAncestorLimitReachedError
-    ) {
+    if (payoutId instanceof Error) {
+      logger.error(
+        {
+          err: payoutId,
+          externalId: journal.journalId,
+          address,
+          tokens: Number(paymentFlow.btcPaymentAmount.amount),
+          success: false,
+        },
+        `Could not queue payout with id ${payoutId}`,
+      )
       const reverted = await LedgerService().revertOnChainPayment({
         journalId: journal.journalId,
       })
       if (reverted instanceof Error) return reverted
-      return txHash
-    }
-    if (txHash instanceof Error) {
-      logger.error(
-        { err: txHash, address, tokens: amountToSend, success: false },
-        "Impossible to sendToChainAddress",
-      )
-      return txHash
+      return payoutId
     }
 
-    // Reconcile transaction in ledger on successful execution
-    const updated = await LedgerService().setOnChainTxSendHash({
-      journalId: journal.journalId,
-      newTxHash: txHash,
-    })
-    if (updated instanceof Error) return updated
-
-    const finalMinerFee = await onChainService.lookupOnChainFee({
-      txHash,
-      scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
-    })
-    if (finalMinerFee instanceof Error) {
-      logger.error({ err: finalMinerFee }, "impossible to get fee for onchain payment")
-      addAttributesToCurrentSpan({
-        "payOnChainByWalletId.errorGettingMinerFee": true,
-      })
-    }
-
-    addAttributesToCurrentSpan({
-      "payOnChainByWalletId.actualMinerFee": `${finalMinerFee}`,
-    })
-
-    return PaymentSendStatus.Success
+    return { status: PaymentSendStatus.Success, payoutId }
   })
 }

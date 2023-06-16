@@ -1894,6 +1894,8 @@ export class PayoutCommitted extends jspb.Message {
     setId(value: string): PayoutCommitted;
     getTxId(): string;
     setTxId(value: string): PayoutCommitted;
+    getVout(): number;
+    setVout(value: number): PayoutCommitted;
     getWalletId(): string;
     setWalletId(value: string): PayoutCommitted;
     getPayoutQueueId(): string;
@@ -1924,6 +1926,7 @@ export namespace PayoutCommitted {
     export type AsObject = {
         id: string,
         txId: string,
+        vout: number,
         walletId: string,
         payoutQueueId: string,
         satoshis: number,
@@ -1933,7 +1936,7 @@ export namespace PayoutCommitted {
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
-        ONCHAIN_ADDRESS = 6,
+        ONCHAIN_ADDRESS = 7,
     }
 
 }
@@ -1943,6 +1946,8 @@ export class PayoutBroadcast extends jspb.Message {
     setId(value: string): PayoutBroadcast;
     getTxId(): string;
     setTxId(value: string): PayoutBroadcast;
+    getVout(): number;
+    setVout(value: number): PayoutBroadcast;
     getWalletId(): string;
     setWalletId(value: string): PayoutBroadcast;
     getPayoutQueueId(): string;
@@ -1973,6 +1978,7 @@ export namespace PayoutBroadcast {
     export type AsObject = {
         id: string,
         txId: string,
+        vout: number,
         walletId: string,
         payoutQueueId: string,
         satoshis: number,
@@ -1982,7 +1988,7 @@ export namespace PayoutBroadcast {
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
-        ONCHAIN_ADDRESS = 6,
+        ONCHAIN_ADDRESS = 7,
     }
 
 }
@@ -1992,6 +1998,8 @@ export class PayoutSettled extends jspb.Message {
     setId(value: string): PayoutSettled;
     getTxId(): string;
     setTxId(value: string): PayoutSettled;
+    getVout(): number;
+    setVout(value: number): PayoutSettled;
     getWalletId(): string;
     setWalletId(value: string): PayoutSettled;
     getPayoutQueueId(): string;
@@ -2022,6 +2030,7 @@ export namespace PayoutSettled {
     export type AsObject = {
         id: string,
         txId: string,
+        vout: number,
         walletId: string,
         payoutQueueId: string,
         satoshis: number,
@@ -2031,7 +2040,7 @@ export namespace PayoutSettled {
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
-        ONCHAIN_ADDRESS = 6,
+        ONCHAIN_ADDRESS = 7,
     }
 
 }

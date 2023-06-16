@@ -14,6 +14,7 @@ import { lndsConnect } from "@services/lnd/auth"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { LedgerService, translateToLedgerTx } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
 import { LockService } from "@services/lock"
 import { baseLogger } from "@services/logger"
 
@@ -51,13 +52,13 @@ const main = async (): Promise<true | ApplicationError> => {
       await LockService().lockPaymentHash(
         paymentHash,
         async (): Promise<true | LedgerServiceError> => {
-          const ledgerService = LedgerService()
-          const settled = await ledgerService.settlePendingLnPayment(paymentHash)
+          const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
           if (settled instanceof Error) {
             baseLogger.error({ error: settled }, "no transaction to update")
             return settled
           }
 
+          const ledgerService = LedgerService()
           const voided = await ledgerService.revertLightningPayment({
             journalId: payment.journalId,
             paymentHash,

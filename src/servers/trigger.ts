@@ -33,21 +33,14 @@ import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
 import {
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletInvoiceError,
-  InvalidLedgerTransactionStateError,
 } from "@domain/errors"
 import { CacheKeys } from "@domain/cache"
 import { SwapTriggerError } from "@domain/swap/errors"
-import { CouldNotFindTransactionError } from "@domain/ledger"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToDisplayCurrency } from "@domain/fiat"
 
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletInvoicesRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { WalletInvoicesRepository } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"
@@ -113,7 +106,7 @@ const handleLndPendingIncomingOnChainTx = async ({
   }
 }
 
-export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
+export const onchainTransactionEventHandler = async (
   tx: SubscribeToTransactionsChainTransactionEvent,
 ) => {
   logger.info({ tx }, "received new onchain tx event")
@@ -124,102 +117,7 @@ export const onchainTransactionEventHandler = async <T extends DisplayCurrency>(
     intraledger: false,
   })
 
-  const fee = tx.fee || 0
-  const txHash = tx.id as OnChainTxHash
-
-  if (tx.is_outgoing) {
-    if (!tx.is_confirmed) {
-      return
-      // FIXME
-      // we have to return here because we will not know whose user the the txid belong to
-      // this is because of limitation for lnd onchain wallet. we only know the txid after the
-      // transaction has been sent. and this events is trigger before
-    }
-
-    const settled = await LedgerService().settlePendingOnChainPayment(txHash)
-
-    if (settled instanceof Error) {
-      onchainLogger.error(
-        { success: false, settled, transactionType: "payment" },
-        "payment settle fail",
-      )
-      return
-    }
-
-    onchainLogger.info(
-      { success: true, pending: false, transactionType: "payment" },
-      "payment completed",
-    )
-
-    // FIXME a tx.id should return a walletId[] instead, in case
-    // multiple UXTO goes to the wallet within the same tx
-    const walletId = await LedgerService().getWalletIdByTransactionHash(txHash)
-    if (walletId instanceof Error) {
-      logger.info({ tx, walletId }, "impossible to find wallet id")
-      return
-    }
-
-    const senderWallet = await WalletsRepository().findById(walletId)
-    if (senderWallet instanceof Error) return senderWallet
-
-    const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
-    if (senderAccount instanceof Error) return senderAccount
-    const { displayCurrency: senderDisplayCurrency } = senderAccount
-
-    let displayAmount: DisplayAmount<T> | undefined = undefined
-
-    const displayPriceRatio = await PricesWithSpans.getCurrentPriceAsDisplayPriceRatio<T>(
-      {
-        currency: senderDisplayCurrency,
-      },
-    )
-    if (!(displayPriceRatio instanceof Error)) {
-      const satsAmount = paymentAmountFromNumber({
-        amount: tx.tokens - fee,
-        currency: WalletCurrency.Btc,
-      })
-      if (!(satsAmount instanceof Error)) {
-        displayAmount = displayPriceRatio.convertFromWallet(satsAmount)
-      }
-    }
-
-    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
-    if (senderUser instanceof Error) return senderUser
-
-    const ledgerTxns = await LedgerService().getTransactionsByHash(txHash)
-    if (ledgerTxns instanceof Error) return ledgerTxns
-    const ledgerTxnsForWalletId = ledgerTxns.filter(
-      (tx) => tx.walletId === senderWallet.id,
-    )
-    if (ledgerTxnsForWalletId && ledgerTxnsForWalletId.length === 0) {
-      return new CouldNotFindTransactionError()
-    }
-
-    const ledgerTx = ledgerTxnsForWalletId[0]
-    const amountForPaymentAmount =
-      senderWallet.currency === WalletCurrency.Btc
-        ? ledgerTx.satsAmount
-        : ledgerTx.centsAmount
-    if (amountForPaymentAmount === undefined) {
-      return new InvalidLedgerTransactionStateError()
-    }
-    const paymentAmount = paymentAmountFromNumber({
-      amount: amountForPaymentAmount,
-      currency: senderWallet.currency,
-    })
-    if (paymentAmount instanceof Error) return paymentAmount
-
-    await NotificationsService().onChainTxSent({
-      senderAccountId: senderWallet.accountId,
-      senderWalletId: senderWallet.id,
-      // TODO: tx.tokens represent the total sum, need to segregate amount by address
-      paymentAmount,
-      displayPaymentAmount: displayAmount,
-      txHash,
-      senderDeviceTokens: senderUser.deviceTokens,
-      senderLanguage: senderUser.language,
-    })
-  } else {
+  if (!tx.is_outgoing) {
     redisCache.clear({ key: CacheKeys.LastOnChainTransactions })
     if (!tx.is_confirmed) {
       await handleLndPendingIncomingOnChainTx({ tx, logger: onchainLogger })

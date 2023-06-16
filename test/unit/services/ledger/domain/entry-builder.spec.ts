@@ -4,7 +4,11 @@ import { Entry, IJournal } from "medici"
 
 import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@domain/shared"
 
-import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
+import {
+  lndLedgerAccountId,
+  EntryBuilder,
+  onChainLedgerAccountId,
+} from "@services/ledger/domain"
 import { MainBook } from "@services/ledger/books"
 import { DisplayCurrency } from "@domain/fiat"
 
@@ -102,6 +106,7 @@ describe("EntryBuilder", () => {
     dealerBtcAccountId: "dealerBtcAccountId" as LedgerAccountId,
     dealerUsdAccountId: "dealerUsdAccountId" as LedgerAccountId,
     lightningAccountId: "Assets:Reserve:Lightning" as LedgerAccountId,
+    onchainAccountId: "Assets:OnChain" as LedgerAccountId,
   }
   const debitorAccountId = "debitorAccountId" as LedgerAccountId
   const btcDebitorAccountDescriptor = {
@@ -179,74 +184,147 @@ describe("EntryBuilder", () => {
 
   describe("Btc account", () => {
     describe("send", () => {
-      it("without fee", () => {
-        const entry = createEntry()
-        const builder = EntryBuilder({
-          staticAccountIds,
-          entry,
-          metadata,
-          additionalInternalMetadata,
-        })
-        const result = builder
-          .withTotalAmount(amount)
-          .withBankFee(ZERO_BANK_FEE)
-          .debitAccount({
-            accountDescriptor: btcDebitorAccountDescriptor,
-            additionalMetadata: additionalUserUsdMetadata,
+      describe("offchain", () => {
+        it("without fee", () => {
+          const entry = createEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+            additionalInternalMetadata,
           })
-          .creditLnd()
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(ZERO_BANK_FEE)
+            .debitAccount({
+              accountDescriptor: btcDebitorAccountDescriptor,
+              additionalMetadata: additionalUserUsdMetadata,
+            })
+            .creditOffChain()
 
-        const credits = result.transactions.filter((t) => t.credit > 0)
-        const debits = result.transactions.filter((t) => t.debit > 0)
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
 
-        expectJournalToBeBalanced(result)
-        testEntryDisplayAmounts(entry, {
-          walletAmounts: additionalInternalMetadata,
-          senderAmounts: additionalUserUsdMetadata,
-          recipientAmounts: additionalUserEurMetadata,
+          expectJournalToBeBalanced(result)
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+          expectEntryToEqual(findEntry(credits, lndLedgerAccountId), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
+          ).toBeUndefined()
         })
-        expectEntryToEqual(findEntry(credits, lndLedgerAccountId), btcAmount)
-        expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
-        expect(
-          debits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
-        ).toBeUndefined()
+
+        it("with fee", () => {
+          const entry = createEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+            additionalInternalMetadata,
+          })
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(bankFee)
+            .debitAccount({
+              accountDescriptor: btcDebitorAccountDescriptor,
+              additionalMetadata: additionalUserUsdMetadata,
+            })
+            .creditOffChain()
+
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
+
+          expectJournalToBeBalanced(result)
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+          expectEntryToEqual(
+            findEntry(credits, staticAccountIds.bankOwnerAccountId),
+            btcFee,
+          )
+          expectEntryToEqual(
+            findEntry(credits, lndLedgerAccountId),
+            calc.sub(btcAmount, btcFee),
+          )
+          expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+        })
       })
-
-      it("with fee", () => {
-        const entry = createEntry()
-        const builder = EntryBuilder({
-          staticAccountIds,
-          entry,
-          metadata,
-          additionalInternalMetadata,
-        })
-        const result = builder
-          .withTotalAmount(amount)
-          .withBankFee(bankFee)
-          .debitAccount({
-            accountDescriptor: btcDebitorAccountDescriptor,
-            additionalMetadata: additionalUserUsdMetadata,
+      describe("onchain", () => {
+        it("without fee", () => {
+          const entry = createEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+            additionalInternalMetadata,
           })
-          .creditLnd()
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(ZERO_BANK_FEE)
+            .debitAccount({
+              accountDescriptor: btcDebitorAccountDescriptor,
+              additionalMetadata: additionalUserUsdMetadata,
+            })
+            .creditOnChain()
 
-        const credits = result.transactions.filter((t) => t.credit > 0)
-        const debits = result.transactions.filter((t) => t.debit > 0)
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
 
-        expectJournalToBeBalanced(result)
-        testEntryDisplayAmounts(entry, {
-          walletAmounts: additionalInternalMetadata,
-          senderAmounts: additionalUserUsdMetadata,
-          recipientAmounts: additionalUserEurMetadata,
+          expectJournalToBeBalanced(result)
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+          expectEntryToEqual(findEntry(credits, onChainLedgerAccountId), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
+          ).toBeUndefined()
         })
-        expectEntryToEqual(
-          findEntry(credits, staticAccountIds.bankOwnerAccountId),
-          btcFee,
-        )
-        expectEntryToEqual(
-          findEntry(credits, lndLedgerAccountId),
-          calc.sub(btcAmount, btcFee),
-        )
-        expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+
+        it("with fee", () => {
+          const entry = createEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+            additionalInternalMetadata,
+          })
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(bankFee)
+            .debitAccount({
+              accountDescriptor: btcDebitorAccountDescriptor,
+              additionalMetadata: additionalUserUsdMetadata,
+            })
+            .creditOnChain()
+
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
+
+          expectJournalToBeBalanced(result)
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+          expectEntryToEqual(
+            findEntry(credits, staticAccountIds.bankOwnerAccountId),
+            btcFee,
+          )
+          expectEntryToEqual(
+            findEntry(credits, onChainLedgerAccountId),
+            calc.sub(btcAmount, btcFee),
+          )
+          expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+        })
       })
     })
 
@@ -320,105 +398,209 @@ describe("EntryBuilder", () => {
 
   describe("Usd account", () => {
     describe("send", () => {
-      it("without fee", () => {
-        const entry = createEntry()
-        const builder = EntryBuilder({
-          staticAccountIds,
-          entry,
-          metadata,
-          additionalInternalMetadata,
-        })
-        const result = builder
-          .withTotalAmount(amount)
-          .withBankFee(ZERO_BANK_FEE)
-          .debitAccount({
-            accountDescriptor: usdDebitorAccountDescriptor,
-            additionalMetadata: additionalUserUsdMetadata,
+      describe("offchain", () => {
+        it("without fee", () => {
+          const entry = createEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+            additionalInternalMetadata,
           })
-          .creditLnd()
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(ZERO_BANK_FEE)
+            .debitAccount({
+              accountDescriptor: usdDebitorAccountDescriptor,
+              additionalMetadata: additionalUserUsdMetadata,
+            })
+            .creditOffChain()
 
-        const credits = result.transactions.filter((t) => t.credit > 0)
-        const debits = result.transactions.filter((t) => t.debit > 0)
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
 
-        expectJournalToBeBalanced(result)
-        testEntryDisplayAmounts(entry, {
-          walletAmounts: additionalInternalMetadata,
-          senderAmounts: additionalUserUsdMetadata,
-          recipientAmounts: additionalUserEurMetadata,
+          expectJournalToBeBalanced(result)
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+          expectEntryToEqual(findEntry(credits, lndLedgerAccountId), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+          expectEntryToEqual(
+            findEntry(debits, staticAccountIds.dealerBtcAccountId),
+            btcAmount,
+          )
+          expect(
+            credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          ).toBeUndefined()
+          expectEntryToEqual(
+            findEntry(credits, staticAccountIds.dealerUsdAccountId),
+            usdAmount,
+          )
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          ).toBeUndefined()
         })
-        expectEntryToEqual(findEntry(credits, lndLedgerAccountId), btcAmount)
-        expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
-        expectEntryToEqual(
-          findEntry(debits, staticAccountIds.dealerBtcAccountId),
-          btcAmount,
-        )
-        expect(
-          credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
-        ).toBeUndefined()
-        expectEntryToEqual(
-          findEntry(credits, staticAccountIds.dealerUsdAccountId),
-          usdAmount,
-        )
-        expect(
-          debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
-        ).toBeUndefined()
+
+        it("with fee", () => {
+          const entry = createEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+            additionalInternalMetadata,
+          })
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(bankFee)
+            .debitAccount({
+              accountDescriptor: usdDebitorAccountDescriptor,
+              additionalMetadata: additionalUserUsdMetadata,
+            })
+            .creditOffChain()
+
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
+
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+
+          expectJournalToBeBalanced(result)
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+          expectEntryToEqual(
+            findEntry(credits, lndLedgerAccountId),
+            calc.sub(btcAmount, btcFee),
+          )
+          expectEntryToEqual(
+            findEntry(credits, staticAccountIds.bankOwnerAccountId),
+            btcFee,
+          )
+          expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+          expectEntryToEqual(
+            findEntry(debits, staticAccountIds.dealerBtcAccountId),
+            btcAmount,
+          )
+          expect(
+            credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          ).toBeUndefined()
+          expectEntryToEqual(
+            findEntry(credits, staticAccountIds.dealerUsdAccountId),
+            usdAmount,
+          )
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          ).toBeUndefined()
+        })
       })
-
-      it("with fee", () => {
-        const entry = createEntry()
-        const builder = EntryBuilder({
-          staticAccountIds,
-          entry,
-          metadata,
-          additionalInternalMetadata,
-        })
-        const result = builder
-          .withTotalAmount(amount)
-          .withBankFee(bankFee)
-          .debitAccount({
-            accountDescriptor: usdDebitorAccountDescriptor,
-            additionalMetadata: additionalUserUsdMetadata,
+      describe("onchain", () => {
+        it("without fee", () => {
+          const entry = createEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+            additionalInternalMetadata,
           })
-          .creditLnd()
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(ZERO_BANK_FEE)
+            .debitAccount({
+              accountDescriptor: usdDebitorAccountDescriptor,
+              additionalMetadata: additionalUserUsdMetadata,
+            })
+            .creditOnChain()
 
-        const credits = result.transactions.filter((t) => t.credit > 0)
-        const debits = result.transactions.filter((t) => t.debit > 0)
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
 
-        testEntryDisplayAmounts(entry, {
-          walletAmounts: additionalInternalMetadata,
-          senderAmounts: additionalUserUsdMetadata,
-          recipientAmounts: additionalUserEurMetadata,
+          expectJournalToBeBalanced(result)
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+          expectEntryToEqual(findEntry(credits, onChainLedgerAccountId), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+          expectEntryToEqual(
+            findEntry(debits, staticAccountIds.dealerBtcAccountId),
+            btcAmount,
+          )
+          expect(
+            credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          ).toBeUndefined()
+          expectEntryToEqual(
+            findEntry(credits, staticAccountIds.dealerUsdAccountId),
+            usdAmount,
+          )
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          ).toBeUndefined()
         })
 
-        expectJournalToBeBalanced(result)
-        testEntryDisplayAmounts(entry, {
-          walletAmounts: additionalInternalMetadata,
-          senderAmounts: additionalUserUsdMetadata,
-          recipientAmounts: additionalUserEurMetadata,
+        it("with fee", () => {
+          const entry = createEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+            additionalInternalMetadata,
+          })
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(bankFee)
+            .debitAccount({
+              accountDescriptor: usdDebitorAccountDescriptor,
+              additionalMetadata: additionalUserUsdMetadata,
+            })
+            .creditOnChain()
+
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
+
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+
+          expectJournalToBeBalanced(result)
+          testEntryDisplayAmounts(entry, {
+            walletAmounts: additionalInternalMetadata,
+            senderAmounts: additionalUserUsdMetadata,
+            recipientAmounts: additionalUserEurMetadata,
+          })
+          expectEntryToEqual(
+            findEntry(credits, onChainLedgerAccountId),
+            calc.sub(btcAmount, btcFee),
+          )
+          expectEntryToEqual(
+            findEntry(credits, staticAccountIds.bankOwnerAccountId),
+            btcFee,
+          )
+          expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+          expectEntryToEqual(
+            findEntry(debits, staticAccountIds.dealerBtcAccountId),
+            btcAmount,
+          )
+          expect(
+            credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          ).toBeUndefined()
+          expectEntryToEqual(
+            findEntry(credits, staticAccountIds.dealerUsdAccountId),
+            usdAmount,
+          )
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          ).toBeUndefined()
         })
-        expectEntryToEqual(
-          findEntry(credits, lndLedgerAccountId),
-          calc.sub(btcAmount, btcFee),
-        )
-        expectEntryToEqual(
-          findEntry(credits, staticAccountIds.bankOwnerAccountId),
-          btcFee,
-        )
-        expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
-        expectEntryToEqual(
-          findEntry(debits, staticAccountIds.dealerBtcAccountId),
-          btcAmount,
-        )
-        expect(
-          credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
-        ).toBeUndefined()
-        expectEntryToEqual(
-          findEntry(credits, staticAccountIds.dealerUsdAccountId),
-          usdAmount,
-        )
-        expect(
-          debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
-        ).toBeUndefined()
       })
     })
 
@@ -736,44 +918,87 @@ describe("EntryBuilder", () => {
   })
 
   describe("metadata", () => {
-    it("debitor can take additional metadata", () => {
-      const entry = createEntry()
-      const builder = EntryBuilder({
-        staticAccountIds,
-        entry,
-        metadata,
-        additionalInternalMetadata,
-      })
-      const result = builder
-        .withTotalAmount(amount)
-        .withBankFee(ZERO_BANK_FEE)
-        .debitAccount({
-          accountDescriptor: btcDebitorAccountDescriptor,
-          additionalMetadata: {
-            ...additionalUserUsdMetadata,
+    describe("offchain", () => {
+      it("debitor can take additional metadata", () => {
+        const entry = createEntry()
+        const builder = EntryBuilder({
+          staticAccountIds,
+          entry,
+          metadata,
+          additionalInternalMetadata,
+        })
+        const result = builder
+          .withTotalAmount(amount)
+          .withBankFee(ZERO_BANK_FEE)
+          .debitAccount({
+            accountDescriptor: btcDebitorAccountDescriptor,
+            additionalMetadata: {
+              ...additionalUserUsdMetadata,
+              more: "yes",
+              muchMore: "muchMore",
+            },
+          })
+          .creditOffChain()
+
+        const debits = result.transactions.filter((t) => t.debit > 0)
+        expectJournalToBeBalanced(result)
+        testEntryDisplayAmounts(entry, {
+          walletAmounts: additionalInternalMetadata,
+          senderAmounts: additionalUserUsdMetadata,
+          recipientAmounts: additionalUserEurMetadata,
+        })
+
+        const resultEntry = findEntry(debits, debitorAccountId)
+        expect(resultEntry.currency).toEqual(WalletCurrency.Btc)
+        expect(resultEntry.meta).toEqual(
+          expect.objectContaining({
+            some: "some",
             more: "yes",
             muchMore: "muchMore",
-          },
-        })
-        .creditLnd()
-
-      const debits = result.transactions.filter((t) => t.debit > 0)
-      expectJournalToBeBalanced(result)
-      testEntryDisplayAmounts(entry, {
-        walletAmounts: additionalInternalMetadata,
-        senderAmounts: additionalUserUsdMetadata,
-        recipientAmounts: additionalUserEurMetadata,
+          }),
+        )
       })
+    })
+    describe("onchain", () => {
+      it("debitor can take additional metadata", () => {
+        const entry = createEntry()
+        const builder = EntryBuilder({
+          staticAccountIds,
+          entry,
+          metadata,
+          additionalInternalMetadata,
+        })
+        const result = builder
+          .withTotalAmount(amount)
+          .withBankFee(ZERO_BANK_FEE)
+          .debitAccount({
+            accountDescriptor: btcDebitorAccountDescriptor,
+            additionalMetadata: {
+              ...additionalUserUsdMetadata,
+              more: "yes",
+              muchMore: "muchMore",
+            },
+          })
+          .creditOnChain()
 
-      const resultEntry = findEntry(debits, debitorAccountId)
-      expect(resultEntry.currency).toEqual(WalletCurrency.Btc)
-      expect(resultEntry.meta).toEqual(
-        expect.objectContaining({
-          some: "some",
-          more: "yes",
-          muchMore: "muchMore",
-        }),
-      )
+        const debits = result.transactions.filter((t) => t.debit > 0)
+        expectJournalToBeBalanced(result)
+        testEntryDisplayAmounts(entry, {
+          walletAmounts: additionalInternalMetadata,
+          senderAmounts: additionalUserUsdMetadata,
+          recipientAmounts: additionalUserEurMetadata,
+        })
+
+        const resultEntry = findEntry(debits, debitorAccountId)
+        expect(resultEntry.currency).toEqual(WalletCurrency.Btc)
+        expect(resultEntry.meta).toEqual(
+          expect.objectContaining({
+            some: "some",
+            more: "yes",
+            muchMore: "muchMore",
+          }),
+        )
+      })
     })
   })
 })

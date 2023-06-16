@@ -152,6 +152,13 @@ type AddWalletIdTradeIntraAccountLedgerMetadata = Omit<
   "username"
 >
 
+type AddOnChainFeeReconciliationLedgerMetadata = {
+  type: LedgerTransactionType
+  hash: OnChainTxHash
+  payout_id: PayoutId
+  pending: boolean
+}
+
 type ReimbursementLedgerMetadata = SendAmountsMetadata & {
   hash: PaymentHash
   pending: boolean

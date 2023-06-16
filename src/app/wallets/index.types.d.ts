@@ -39,7 +39,7 @@ type GetOnChainFeeWithoutCurrencyArgs = {
   account: Account
   amount: number
   address: OnChainAddress
-  targetConfirmations: number
+  speed: PayoutSpeed
 }
 
 type GetOnChainFeeArgs = GetOnChainFeeWithoutCurrencyArgs & {
@@ -78,11 +78,16 @@ type PayOnChainByWalletIdWithoutCurrencyArgs = {
   senderAccount: Account
   amount: number
   address: string
-  targetConfirmations: number
+  speed: PayoutSpeed
   memo: string | null
-  sendAll: boolean
 }
 
 type PayOnChainByWalletIdArgs = PayOnChainByWalletIdWithoutCurrencyArgs & {
   amountCurrency: WalletCurrency | undefined
+  sendAll: boolean
+}
+
+type PayOnChainByWalletIdResult = {
+  status: PaymentSendStatus
+  payoutId: PayoutId | undefined
 }

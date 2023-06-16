@@ -188,7 +188,7 @@ describe("With Bria", () => {
     expect(balance).toBe(
       initialBalance +
         amountAfterFeeDeduction({
-          amount: toSats(amountSats.amount),
+          amount: amountSats,
           depositFeeRatio,
         }),
     )
@@ -207,7 +207,7 @@ describe("With Bria", () => {
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
     expect(txn.settlementAmount).toBe(
       amountAfterFeeDeduction({
-        amount: toSats(amountSats.amount),
+        amount: amountSats,
         depositFeeRatio: depositFeeRatio,
       }),
     )
@@ -376,11 +376,16 @@ describe("With Bria", () => {
         .sort(),
     ).toStrictEqual(addresses.sort())
 
+    const btcAmount = paymentAmountFromNumber({
+      amount: amountSats,
+      currency: WalletCurrency.Btc,
+    })
+    if (btcAmount instanceof Error) throw btcAmount
     const balanceAfterSettled = await getBalanceHelper(walletId)
     expect(balanceAfterSettled).toBe(
       initialBalance +
         amountAfterFeeDeduction({
-          amount: amountSats,
+          amount: btcAmount,
           depositFeeRatio,
         }) *
           addresses.length,
@@ -722,7 +727,7 @@ describe("With Bria", () => {
       if (pendingBalance instanceof Error) throw pendingBalance
       expect(Number(pendingBalance[newWalletIdA].amount)).toEqual(
         amountAfterFeeDeduction({
-          amount: toSats(300_000_000),
+          amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
           depositFeeRatio: defaultDepositFeeRatio,
         }),
       )
@@ -766,14 +771,14 @@ describe("With Bria", () => {
         expect(balanceUserA).toBe(
           initialBalanceUserA +
             amountAfterFeeDeduction({
-              amount: toSats(300_000_000),
+              amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
               depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
         expect(balanceDealer).toBe(
           initBalanceDealer +
             amountAfterFeeDeduction({
-              amount: toSats(200_000_000),
+              amount: { amount: 200_000_000n, currency: WalletCurrency.Btc },
               depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
@@ -981,7 +986,7 @@ describe("With Lnd", () => {
       expect(balance).toBe(
         initialBalance +
           amountAfterFeeDeduction({
-            amount: toSats(amountSats.amount),
+            amount: amountSats,
             depositFeeRatio,
           }),
       )
@@ -998,7 +1003,7 @@ describe("With Lnd", () => {
       expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
       expect(txn.settlementAmount).toBe(
         amountAfterFeeDeduction({
-          amount: toSats(amountSats.amount),
+          amount: amountSats,
           depositFeeRatio: depositFeeRatio,
         }),
       )
@@ -1107,11 +1112,16 @@ describe("With Lnd", () => {
         throw result
       }
 
+      const btcAmount = paymentAmountFromNumber({
+        amount: amountSats,
+        currency: WalletCurrency.Btc,
+      })
+      if (btcAmount instanceof Error) throw btcAmount
       const balance = await getBalanceHelper(walletId)
       expect(balance).toBe(
         currentBalance +
           amountAfterFeeDeduction({
-            amount: amountSats,
+            amount: btcAmount,
             depositFeeRatio,
           }) *
             addresses.length,
@@ -1131,7 +1141,7 @@ describe("With Lnd", () => {
       expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
       expect(txn.settlementAmount).toBe(
         amountAfterFeeDeduction({
-          amount: amountSats,
+          amount: btcAmount,
           depositFeeRatio: depositFeeRatio,
         }),
       )
@@ -1226,9 +1236,14 @@ describe("With Lnd", () => {
     // Test pending onchain transactions balance use-case
     const pendingBalances = await Wallets.getPendingOnChainBalanceForWallets([wallet])
     if (pendingBalances instanceof Error) throw pendingBalances
+    const btcAmount = paymentAmountFromNumber({
+      amount: amountSats,
+      currency: WalletCurrency.Btc,
+    })
+    if (btcAmount instanceof Error) throw btcAmount
     const expectedPendingBalance =
       amountAfterFeeDeduction({
-        amount: amountSats,
+        amount: btcAmount,
         depositFeeRatio,
       }) * addresses.length
     expect(Number(pendingBalances[walletId].amount)).toEqual(expectedPendingBalance)
@@ -1532,7 +1547,7 @@ describe("With Lnd", () => {
       if (pendingBalance instanceof Error) throw pendingBalance
       expect(Number(pendingBalance[newWalletIdA].amount)).toEqual(
         amountAfterFeeDeduction({
-          amount: toSats(300_000_000),
+          amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
           depositFeeRatio: defaultDepositFeeRatio,
         }),
       )
@@ -1569,14 +1584,14 @@ describe("With Lnd", () => {
         expect(balanceA).toBe(
           initialBalanceUserA +
             amountAfterFeeDeduction({
-              amount: toSats(300_000_000),
+              amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
               depositFeeRatio,
             }),
         )
         expect(balanceFunder).toBe(
           initBalanceDealer +
             amountAfterFeeDeduction({
-              amount: toSats(200_000_000),
+              amount: { amount: 200_000_000n, currency: WalletCurrency.Btc },
               depositFeeRatio,
             }),
         )

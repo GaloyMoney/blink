@@ -10,6 +10,22 @@ const AddressAugmentationSchema = new Schema<AddressAugmentation>(
   { _id: false },
 )
 
+const PayoutAugmentationSchema = new Schema<PayoutAugmentation>(
+  {
+    id: String,
+    externalId: String,
+  },
+  { _id: false },
+)
+
+const AugmentationSchema = new Schema(
+  {
+    addressInfo: AddressAugmentationSchema,
+    payoutInfo: PayoutAugmentationSchema,
+  },
+  { _id: false },
+)
+
 const BriaPayloadSchema = new Schema<BriaPayload>(
   {
     type: String,
@@ -26,7 +42,7 @@ const BriaPayloadSchema = new Schema<BriaPayload>(
 const BriaEventSchema = new Schema<BriaEventDocument>({
   sequence: { type: Number, required: true },
   payload: { type: BriaPayloadSchema, required: true },
-  augmentation: AddressAugmentationSchema,
+  augmentation: AugmentationSchema,
 })
 
 export const BriaEventModel = mongoose.model<BriaEventDocument>(

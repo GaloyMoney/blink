@@ -6,6 +6,8 @@ import { getBriaConfig } from "@config"
 import {
   OnChainAddressAlreadyCreatedForRequestIdError,
   OnChainAddressNotFoundError,
+  PayoutNotFoundError,
+  PayoutDestinationBlocked,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared/primitives"
@@ -16,9 +18,12 @@ import { wrapAsyncToRunInSpan, wrapAsyncFunctionsToRunInSpan } from "@services/t
 import { GrpcStreamClient } from "@utils"
 
 import {
+  estimatePayoutFee,
   findAddressByExternalId,
+  findPayoutByExternalId,
   getWalletBalanceSummary,
   newAddress,
+  submitPayout,
   subscribeAll,
 } from "./grpc-client"
 import {
@@ -27,6 +32,9 @@ import {
   NewAddressRequest,
   GetWalletBalanceSummaryRequest,
   FindAddressByExternalIdRequest,
+  SubmitPayoutRequest,
+  EstimatePayoutFeeRequest,
+  FindPayoutByExternalIdRequest,
 } from "./proto/bria_pb"
 import { UnknownBriaEventError } from "./errors"
 export { BriaPayloadType } from "./event-handler"
@@ -89,6 +97,8 @@ export const BriaSubscriber = () => {
     subscribeToAll,
   }
 }
+
+const queueNameForSpeed = (speed: PayoutSpeed): string => briaConfig.queueNames[speed]
 
 export const NewOnChainService = (): INewOnChainService => {
   const metadata = new Metadata()
@@ -161,20 +171,106 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
+  const findPayoutByLedgerJournalId = async (
+    journalId: LedgerJournalId,
+  ): Promise<PayoutId | OnChainServiceError> => {
+    try {
+      const request = new FindPayoutByExternalIdRequest()
+      request.setExternalId(journalId)
+
+      const response = await findPayoutByExternalId(request, metadata)
+      const foundPayout = response.getPayout()
+
+      if (foundPayout === undefined) return new PayoutNotFoundError()
+      return foundPayout.getId() as PayoutId
+    } catch (err) {
+      if (err.code == status.NOT_FOUND) {
+        return new PayoutNotFoundError()
+      }
+      const errMsg = typeof err === "string" ? err : err.message
+      return new UnknownOnChainServiceError(errMsg)
+    }
+  }
+
+  const queuePayoutToAddress = async ({
+    walletDescriptor,
+    address,
+    amount,
+    speed,
+    journalId,
+  }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
+    try {
+      const request = new SubmitPayoutRequest()
+      request.setWalletName(briaConfig.walletName)
+      request.setPayoutQueueName(queueNameForSpeed(speed))
+      request.setOnchainAddress(address)
+      request.setSatoshis(Number(amount.amount))
+      request.setExternalId(journalId)
+      request.setMetadata(
+        constructMetadata({ galoy: { walletDetails: walletDescriptor } }),
+      )
+
+      const response = await submitPayout(request, metadata)
+
+      return response.getId() as PayoutId
+    } catch (err) {
+      const errMsg = typeof err === "string" ? err : err.message
+      if (err.code == status.PERMISSION_DENIED && errMsg.contains("DestinationBlocked")) {
+        return new PayoutDestinationBlocked()
+      }
+      return new UnknownOnChainServiceError(errMsg)
+    }
+  }
+
+  const estimateFeeForPayout = async ({
+    address,
+    amount,
+    speed,
+  }: EstimatePayoutFeeArgs): Promise<BtcPaymentAmount | OnChainServiceError> => {
+    const estimate = async ({
+      speed,
+      address,
+      amount,
+    }: {
+      speed: PayoutSpeed
+      address: OnChainAddress
+      amount: BtcPaymentAmount
+    }): Promise<BtcPaymentAmount | BriaEventError> => {
+      try {
+        const request = new EstimatePayoutFeeRequest()
+        request.setWalletName(briaConfig.walletName)
+        request.setPayoutQueueName(queueNameForSpeed(speed))
+        request.setOnchainAddress(address)
+        request.setSatoshis(Number(amount.amount))
+
+        const response = await estimatePayoutFee(request, metadata)
+        return paymentAmountFromNumber({
+          amount: response.getSatoshis(),
+          currency: WalletCurrency.Btc,
+        })
+      } catch (error) {
+        return new UnknownOnChainServiceError(error.message || error)
+      }
+    }
+
+    const payoutId = await estimate({ address, amount, speed })
+    if (payoutId instanceof Error) return payoutId
+
+    return payoutId
+  }
+
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.bria.onchain",
     fns: {
       getBalance,
       createOnChainAddress,
       findAddressByRequestId,
+      findPayoutByLedgerJournalId,
+      queuePayoutToAddress,
+      estimateFeeForPayout,
     },
   })
 }
-
-export const KnownBriaErrorDetails = {
-  DuplicateRequestIdAddressCreate:
-    /duplicate key value violates unique constraint.*bria_addresses_account_id_external_id_key/,
-} as const
 
 const constructMetadata = (metadataObj: JSONObject): Struct => {
   const metadata = new Struct()

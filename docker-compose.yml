@@ -13,6 +13,7 @@ services:
       - mongodb
       - postgres-price-history
       - bitcoind
+      - bitcoind-signer
       - lnd1
       - lnd2
       - lnd-outside-1
@@ -28,6 +29,7 @@ services:
       - redis
       - mongodb
       - bitcoind
+      - bitcoind-signer
       - stablesats
       - bria
       - lnd1
@@ -100,6 +102,15 @@ services:
     image: lncm/bitcoind:v24.0.1
     volumes:
       - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+  bitcoind-signer:
+    image: lncm/bitcoind:v24.0.1
+    volumes:
+      - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        bitcoind -connect=bitcoind:18444
   lnd1:
     image: lightninglabs/lnd:v0.16.2-beta
     volumes:
@@ -302,6 +313,7 @@ services:
     image: us.gcr.io/galoy-org/bria:latest
     environment:
       - PG_CON=postgres://user:password@postgres-bria:5432/pg
+      - BITCOIND_SIGNER_ENDPOINT=https://bitcoind-signer:18443
     command:
       - bria
       - daemon

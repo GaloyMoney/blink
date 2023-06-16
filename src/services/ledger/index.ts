@@ -460,6 +460,7 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
         ? (tx.payee_addresses[0] as OnChainAddress)
         : undefined,
     requestId: (tx.request_id as OnChainAddressRequestId) || undefined,
+    payoutId: (tx.payout_id as PayoutId) || undefined,
     txHash: (tx.hash as OnChainTxHash) || undefined,
     vout: (tx.vout as OnChainTxVout) || undefined,
     feeKnownInAdvance: tx.feeKnownInAdvance || false,

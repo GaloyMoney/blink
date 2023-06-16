@@ -822,7 +822,9 @@ type OnChainAddressPayload {
 input OnChainPaymentSendAllInput {
   address: OnChainAddress!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 3
+  speed: PayoutSpeed = FAST
+  targetConfirmations: TargetConfirmations = 0
+    @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -830,13 +832,16 @@ input OnChainPaymentSendInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 3
+  speed: PayoutSpeed = FAST
+  targetConfirmations: TargetConfirmations = 0
+    @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
 type OnChainTxFee {
   amount: SatAmount!
   targetConfirmations: TargetConfirmations!
+    @deprecated(reason: "Ignored - will be removed")
 }
 
 scalar OnChainTxHash
@@ -854,7 +859,9 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput {
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 3
+  speed: PayoutSpeed = FAST
+  targetConfirmations: TargetConfirmations = 0
+    @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -862,13 +869,16 @@ input OnChainUsdPaymentSendInput {
   address: OnChainAddress!
   amount: CentAmount!
   memo: Memo
-  targetConfirmations: TargetConfirmations = 3
+  speed: PayoutSpeed = FAST
+  targetConfirmations: TargetConfirmations = 0
+    @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
 type OnChainUsdTxFee {
   amount: CentAmount!
   targetConfirmations: TargetConfirmations!
+    @deprecated(reason: "Ignored - will be removed")
 }
 
 type OneDayAccountLimit implements AccountLimit {
@@ -930,6 +940,10 @@ enum PaymentSendResult {
   FAILURE
   PENDING
   SUCCESS
+}
+
+enum PayoutSpeed {
+  FAST
 }
 
 """
@@ -1041,19 +1055,25 @@ type Query {
   onChainTxFee(
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 3
+    speed: PayoutSpeed = FAST
+    targetConfirmations: TargetConfirmations = 0
+      @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!
   ): OnChainTxFee!
   onChainUsdTxFee(
     address: OnChainAddress!
     amount: CentAmount!
-    targetConfirmations: TargetConfirmations = 3
+    speed: PayoutSpeed = FAST
+    targetConfirmations: TargetConfirmations = 0
+      @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!
   ): OnChainUsdTxFee!
   onChainUsdTxFeeAsBtcDenominated(
     address: OnChainAddress!
     amount: SatAmount!
-    targetConfirmations: TargetConfirmations = 3
+    speed: PayoutSpeed = FAST
+    targetConfirmations: TargetConfirmations = 0
+      @deprecated(reason: "Ignored - will be replaced")
     walletId: WalletId!
   ): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion]
@@ -1156,7 +1176,7 @@ type SettlementViaLn {
 }
 
 type SettlementViaOnChain {
-  transactionHash: OnChainTxHash!
+  transactionHash: OnChainTxHash
   vout: Int
 }
 
