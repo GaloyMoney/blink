@@ -231,18 +231,6 @@ type IsOnChainReceiptTxRecordedForWalletResult = {
   newAddressRequestId: OnChainAddressRequestId | undefined
 }
 
-type IsOnChainSendRecordedForWalletResult =
-  | {
-      recorded: false
-    }
-  | {
-      recorded: true
-      journalId: LedgerJournalId
-      payoutId: PayoutId | undefined
-      isPending: boolean
-      isIntraLedger: boolean
-    }
-
 interface ILedgerService {
   updateMetadataByHash(
     ledgerTxMetadata:
@@ -331,10 +319,6 @@ interface ILedgerService {
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
-  settlePendingOnChainPayment(payoutId: PayoutId): Promise<true | LedgerServiceError>
-
-  oldSettlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
-
   revertLightningPayment(
     args: RevertLightningPaymentArgs,
   ): Promise<true | LedgerServiceError>
@@ -382,5 +366,3 @@ type ImbalanceCalculator = {
     wallet: WalletDescriptor<T>,
   ) => Promise<PaymentAmount<T> | LedgerServiceError | ValidationError>
 }
-
-

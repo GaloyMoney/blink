@@ -98,9 +98,6 @@ export const payoutBroadcastEventHandler = async ({
     txId: event.txId,
     vout: event.vout,
   })
-  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
-    return true
-  }
 
   return res
 }
@@ -111,9 +108,6 @@ export const payoutSettledEventHandler = async ({
   event: PayoutSettled
 }): Promise<true | ApplicationError> => {
   const res = await Wallets.settlePayout(event.id)
-  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
-    return true
-  }
 
   return res
 }
