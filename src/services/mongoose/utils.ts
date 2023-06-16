@@ -7,6 +7,10 @@ import {
 } from "@domain/errors"
 import { Types } from "mongoose"
 
+export const isValidObjectId = <T extends string>(id: T): boolean => {
+  return Types.ObjectId.isValid(id)
+}
+
 export const toObjectId = <T extends string>(id: T): Types.ObjectId => {
   return new Types.ObjectId(id)
 }

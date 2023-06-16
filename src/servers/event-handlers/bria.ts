@@ -83,7 +83,7 @@ export const payoutSubmittedEventHandler = async ({
   event: PayoutSubmitted
   payoutInfo: PayoutAugmentation
 }): Promise<true | ApplicationError> => {
-  const res = LedgerFacade.setOnChainTxPayoutId({
+  const res = await LedgerFacade.setOnChainTxPayoutId({
     journalId: payoutInfo.externalId as LedgerJournalId,
     payoutId: event.id,
   })
