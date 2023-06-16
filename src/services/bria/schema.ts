@@ -2,11 +2,26 @@ import mongoose, { Schema, Document } from "mongoose"
 
 type BriaEventDocument = BriaEvent & Document
 
-// TODO: bring in line with payout augmentation
 const AddressAugmentationSchema = new Schema<AddressAugmentation>(
   {
     address: String,
     externalId: String,
+  },
+  { _id: false },
+)
+
+const PayoutAugmentationSchema = new Schema<PayoutAugmentation>(
+  {
+    id: String,
+    externalId: String,
+  },
+  { _id: false },
+)
+
+const AugmentationSchema = new Schema(
+  {
+    addressInfo: AddressAugmentationSchema,
+    payoutInfo: PayoutAugmentationSchema,
   },
   { _id: false },
 )
@@ -27,7 +42,7 @@ const BriaPayloadSchema = new Schema<BriaPayload>(
 const BriaEventSchema = new Schema<BriaEventDocument>({
   sequence: { type: Number, required: true },
   payload: { type: BriaPayloadSchema, required: true },
-  augmentation: AddressAugmentationSchema,
+  augmentation: AugmentationSchema,
 })
 
 export const BriaEventModel = mongoose.model<BriaEventDocument>(
