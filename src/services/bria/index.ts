@@ -215,7 +215,7 @@ export const NewOnChainService = (): INewOnChainService => {
       return response.getId() as PayoutId
     } catch (err) {
       const errMsg = typeof err === "string" ? err : err.message
-      if (err.code == status.PERMISSION_DENIED && errMsg.contains("DestinationBlocked")) {
+      if (err.code == status.PERMISSION_DENIED && errMsg.includes("DestinationBlocked")) {
         return new PayoutDestinationBlocked()
       }
       return new UnknownOnChainServiceError(errMsg)
