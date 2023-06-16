@@ -15,21 +15,6 @@ import { translateToLedgerJournal } from "."
 const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
-  oldSettlePendingOnChainPayment: async (
-    hash: OnChainTxHash,
-  ): Promise<true | LedgerServiceError> => {
-    try {
-      const result = await Transaction.updateMany({ hash }, { pending: false })
-      const success = result.modifiedCount > 0
-      if (!success) {
-        return new NoTransactionToSettleError()
-      }
-      return true
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  },
-
   revertLightningPayment: async ({
     journalId,
     paymentHash,
