@@ -92,7 +92,7 @@ export const setOnChainTxPayoutId = async ({
     }
     return true
   } catch (err) {
-    if (err.message.contains("BSONTypeError")) {
+    if (err.message.includes("BSONTypeError")) {
       return new NoTransactionToUpdateError()
     }
     return new UnknownLedgerError(err)
