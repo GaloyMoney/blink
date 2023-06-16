@@ -45,6 +45,9 @@ import {
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import { WalletsRepository } from "@services/mongoose"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { EventAugmentationMissingError } from "@services/bria/errors"
+
+import { payoutSubmittedEventHandler } from "@servers/event-handlers/bria"
 
 import { WalletCurrency } from "@domain/shared"
 
@@ -223,6 +226,23 @@ const testExternalSend = async ({
   })
   if (paid instanceof Error) return paid
   expect(paid.status).toBe(PaymentSendStatus.Success)
+
+  const submittedEvent = await onceBriaSubscribe({
+    type: BriaPayloadType.PayoutSubmitted,
+  })
+  if (submittedEvent?.payload.type !== BriaPayloadType.PayoutSubmitted) {
+    throw new Error(`Expected ${BriaPayloadType.PayoutSubmitted} event`)
+  }
+  if (submittedEvent.augmentation.payoutInfo === undefined) {
+    throw new EventAugmentationMissingError()
+  }
+  const resultSubmitted = await payoutSubmittedEventHandler({
+    event: submittedEvent.payload,
+    payoutInfo: submittedEvent.augmentation.payoutInfo,
+  })
+  if (resultSubmitted instanceof Error) {
+    throw resultSubmitted
+  }
 
   const broadcastEvent = await onceBriaSubscribe({
     type: BriaPayloadType.PayoutBroadcast,
@@ -907,6 +927,24 @@ describe("BtcWallet - onChainPay", () => {
     if (paid instanceof Error) throw paid
     const { payoutId } = paid
     if (payoutId === undefined) throw new Error("'paid.payoutId' undefined")
+
+    // Add payoutId
+    const submittedEvent = await onceBriaSubscribe({
+      type: BriaPayloadType.PayoutSubmitted,
+    })
+    if (submittedEvent?.payload.type !== BriaPayloadType.PayoutSubmitted) {
+      throw new Error(`Expected ${BriaPayloadType.PayoutSubmitted} event`)
+    }
+    if (submittedEvent.augmentation.payoutInfo === undefined) {
+      throw new EventAugmentationMissingError()
+    }
+    const resultSubmitted = await payoutSubmittedEventHandler({
+      event: submittedEvent.payload,
+      payoutInfo: submittedEvent.augmentation.payoutInfo,
+    })
+    if (resultSubmitted instanceof Error) {
+      throw resultSubmitted
+    }
 
     // Check txns after submit payment
     const txns = await LedgerFacade.getTransactionsByPayoutId(payoutId)
