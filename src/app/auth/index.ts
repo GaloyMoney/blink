@@ -1,14 +1,19 @@
 export * from "./login"
 export * from "./logout"
-export * from "./request-phone-code"
+export * from "./request-code"
 export * from "./get-supported-countries"
+export * from "./email"
+export * from "./totp"
+export * from "./phone"
 
 import { ErrorLevel } from "@domain/shared"
-import { extendSession, IdentityRepository } from "@services/kratos"
+import {
+  extendSession,
+  IdentityRepository,
+  ExtendSessionKratosError,
+  listSessions,
+} from "@services/kratos"
 
-// TODO: interface/type should be reworked so that it doesn't have to come from private
-import { listSessionsInternal } from "@services/kratos/private"
-import { ExtendSessionKratosError } from "@services/kratos/errors"
 import {
   recordExceptionInCurrentSpan,
   addAttributesToCurrentSpan,
@@ -38,19 +43,19 @@ export const extendSessions = async (
       logger.info(`Processing user at index: ${i}`)
     }
 
-    const sessions = await listSessionsInternal(user.id)
+    const sessions = await listSessions(user.id)
     if (sessions instanceof Error) {
       recordExceptionInCurrentSpan({
         error: sessions,
         level: ErrorLevel.Info,
-        attributes: { user: user.id, phone: user.phone },
+        attributes: { user: user.id, phone: user.phone, email: user.email },
       })
       continue
     }
 
     for (const session of sessions) {
       countOfTotalSessions++
-      const hasExtended = await extendSession({ session })
+      const hasExtended = await extendSession(session.id)
       if (hasExtended instanceof Error) {
         countOfExtendedSessionErrors++
         recordExceptionInCurrentSpan({

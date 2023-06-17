@@ -344,7 +344,7 @@ describe("graphql", () => {
     })
 
     it("returns error for invalid code", async () => {
-      let message = "Invalid or incorrect phone code entered."
+      let message = "Invalid or incorrect code entered."
       let input = { phone, code: "113566" }
       let result = await apolloClient.mutate<UserLoginMutation>({
         mutation: UserLoginDocument,
@@ -377,7 +377,7 @@ describe("graphql", () => {
     it("rate limits too many invalid login requests by IP, wrong code", async () => {
       const args = {
         input: { phone, code: "000000" as PhoneCode },
-        expectedMessage: "Invalid or incorrect phone code entered.",
+        expectedMessage: "Invalid or incorrect code entered.",
         mutation: UserLoginDocument,
       }
       await testRateLimitLoginByPhone(args)

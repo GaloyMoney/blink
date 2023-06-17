@@ -1,13 +1,13 @@
 import libCookie from "cookie"
 import setCookie from "set-cookie-parser"
-import { CreateIdentityBody, UpdateIdentityBody, Identity } from "@ory/client"
+import { CreateIdentityBody, UpdateIdentityBody } from "@ory/client"
 
 import { getKratosPasswords } from "@config"
 
 import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
-} from "@domain/authentication/errors"
+} from "@domain/auth/errors"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
@@ -18,6 +18,7 @@ import {
   UnknownKratosError,
 } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
+import { SchemaIdType } from "./schema"
 
 // login with phone
 
@@ -44,8 +45,8 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       })
       const sessionToken = result.data.session_token as SessionToken
 
-      // note: this only works when whoami: required_aal = aal1
-      const kratosUserId = result.data.session.identity.id as UserId
+      // FIXME: kratosUserId could be undefined
+      const kratosUserId = result.data.session.identity?.id as UserId
 
       return { sessionToken, kratosUserId }
     } catch (err) {
@@ -180,7 +181,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     phone: PhoneNumber
     userId: UserId
   }): Promise<IdentityPhone | KratosError> => {
-    let identity: Identity
+    let identity: KratosIdentity
 
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: userId }))
@@ -201,7 +202,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       ...identity,
       credentials: { password: { config: { password } } },
       state: identity.state,
-      schema_id: "phone_no_password_v0",
+      schema_id: SchemaIdType.PhoneNoPasswordV0,
     }
 
     try {
@@ -267,7 +268,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     const adminIdentity: CreateIdentityBody = {
       credentials: { password: { config: { password } } },
       state: "active",
-      schema_id: "phone_no_password_v0",
+      schema_id: SchemaIdType.PhoneNoPasswordV0,
       traits: { phone },
     }
 
@@ -292,7 +293,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     kratosUserId: UserId
     phone: PhoneNumber
   }) => {
-    let identity: Identity
+    let identity: KratosIdentity
 
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))

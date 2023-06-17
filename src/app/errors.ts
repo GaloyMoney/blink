@@ -17,7 +17,7 @@ import * as ColdStorageServiceErrors from "@domain/cold-storage/errors"
 import * as DealerPriceErrors from "@domain/dealer-price/errors"
 import * as PubSubErrors from "@domain/pubsub/errors"
 import * as CaptchaErrors from "@domain/captcha/errors"
-import * as AuthenticationErrors from "@domain/authentication/errors"
+import * as AuthenticationErrors from "@domain/auth/errors"
 
 import * as LedgerFacadeErrors from "@services/ledger/domain/errors"
 import * as KratosErrors from "@services/kratos/errors"

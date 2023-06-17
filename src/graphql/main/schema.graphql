@@ -306,6 +306,16 @@ Display currency of an account
 """
 scalar DisplayCurrency
 
+type Email {
+  address: EmailAddress
+  verified: Boolean
+}
+
+"""
+Email address
+"""
+scalar EmailAddress
+
 interface Error {
   code: String
   message: String!
@@ -329,6 +339,11 @@ input FeedbackSubmitInput {
 type FeesInformation {
   deposit: DepositFeesInformation!
 }
+
+"""
+A flow to be passed between request code and logging api when using email
+"""
+scalar Flow
 
 """
 Provides global settings for the application which might have an impact for the user.
@@ -837,14 +852,26 @@ type Mutation {
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
+  userEmailDelete: UserEmailDeletePayload!
+  userEmailSet(input: UserEmailSetInput!): UserEmailSetPayload!
+  userEmailVerify(input: UserEmailVerifyInput!): UserEmailVerifyPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
+  userPhoneDelete: UserPhoneDeletePayload!
+  userPhoneSet(input: UserPhoneSetInput!): SuccessPayload!
+  userPhoneVerify(input: UserPhoneVerifyInput!): UserPhoneVerifyPayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
     @deprecated(reason: "Use QuizCompletedMutation instead")
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userTotpRegistrationInitiate(
+    input: UserTotpRegistrationInitiateInput!
+  ): UserTotpRegistrationInitiatePayload!
+  userTotpRegistrationValidate(
+    input: UserTotpRegistrationValidateInput!
+  ): UserTotpRegistrationValidatePayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload!
     @deprecated(
@@ -1283,6 +1310,16 @@ Timestamp field, serialized as Unix time (the number of seconds since the Unix e
 scalar Timestamp
 
 """
+A time-based one-time password
+"""
+scalar TotpCode
+
+"""
+A secret to generate time-based one-time password
+"""
+scalar TotpSecret
+
+"""
 Give details about an individual transaction.
 Galoy have a smart routing system which is automatically
 settling intraledger when both the payer and payee use the same wallet
@@ -1459,6 +1496,11 @@ type User {
   contacts: [UserContact!]! @deprecated(reason: "will be moved to account")
   createdAt: Timestamp!
   defaultAccount: Account!
+
+  """
+  Email address
+  """
+  email: Email
   id: ID!
 
   """
@@ -1476,6 +1518,11 @@ type User {
   List the quiz questions the user may have completed.
   """
   quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
+
+  """
+  Whether TOTP is enabled for this user.
+  """
+  totpEnabled: Boolean!
 
   """
   Optional immutable user friendly identifier.
@@ -1533,6 +1580,31 @@ type UserContactUpdateAliasPayload {
   errors: [Error!]!
 }
 
+type UserEmailDeletePayload {
+  errors: [Error!]!
+  me: User
+}
+
+input UserEmailSetInput {
+  email: EmailAddress!
+}
+
+type UserEmailSetPayload {
+  errors: [Error!]!
+  flow: Flow
+  me: User
+}
+
+input UserEmailVerifyInput {
+  code: OneTimeAuthCode!
+  flow: Flow!
+}
+
+type UserEmailVerifyPayload {
+  errors: [Error!]!
+  me: User
+}
+
 input UserLoginInput {
   code: OneTimeAuthCode!
   phone: Phone!
@@ -1545,6 +1617,26 @@ input UserLoginUpgradeInput {
 
 input UserLogoutInput {
   authToken: AuthToken!
+}
+
+type UserPhoneDeletePayload {
+  errors: [Error!]!
+  me: User
+}
+
+input UserPhoneSetInput {
+  channel: PhoneCodeChannelType
+  phone: Phone!
+}
+
+input UserPhoneVerifyInput {
+  code: OneTimeAuthCode!
+  phone: Phone!
+}
+
+type UserPhoneVerifyPayload {
+  errors: [Error!]!
+  me: User
 }
 
 type UserQuizQuestion {
@@ -1564,6 +1656,27 @@ type UserQuizQuestionUpdateCompletedPayload {
 input UserRequestAuthCodeInput {
   channel: PhoneCodeChannelType
   phone: Phone!
+}
+
+input UserTotpRegistrationInitiateInput {
+  authToken: AuthToken!
+}
+
+type UserTotpRegistrationInitiatePayload {
+  errors: [Error!]!
+  flow: Flow
+  totpSecret: TotpSecret
+}
+
+input UserTotpRegistrationValidateInput {
+  authToken: AuthToken!
+  flow: Flow!
+  totpCode: TotpCode!
+}
+
+type UserTotpRegistrationValidatePayload {
+  errors: [Error!]!
+  me: User
 }
 
 union UserUpdate = IntraLedgerUpdate | LnUpdate | OnChainUpdate | Price | RealtimePrice

@@ -1,4 +1,4 @@
-import { getSupportedCountries } from "@domain/authentication"
+import { getSupportedCountries } from "@domain/auth"
 
 describe("getSupportedCountries", () => {
   it("returns supported countries", () => {

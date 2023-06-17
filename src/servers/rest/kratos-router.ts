@@ -1,5 +1,3 @@
-import { assert } from "console"
-
 import cors from "cors"
 import express from "express"
 
@@ -8,9 +6,9 @@ import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tr
 import { createAccountWithPhoneIdentifier } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
 import { checkedToUserId } from "@domain/accounts"
-import { UsersRepository } from "@services/mongoose"
 import { ErrorLevel } from "@domain/shared"
 import { baseLogger } from "@services/logger"
+import { SchemaIdType } from "@services/kratos"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
@@ -18,59 +16,6 @@ const { callbackApiKey } = getKratosPasswords()
 
 kratosRouter.use(cors({ origin: true, credentials: true }))
 kratosRouter.use(express.json())
-
-// This flow is currently not used in production
-kratosRouter.post(
-  "/preregistration",
-  wrapAsyncToRunInSpan({
-    namespace: "registration",
-    fn: async (req: express.Request, res: express.Response) => {
-      const key = req.headers.authorization
-
-      if (!key) {
-        baseLogger.error("missing authorization header")
-        res.status(401).send("missing authorization header")
-        return
-      }
-
-      if (key !== callbackApiKey) {
-        baseLogger.error("incorrect authorization header")
-        res.status(401).send("incorrect authorization header")
-        return
-      }
-
-      const body = req.body
-      const { phone: phoneRaw, schema_id } = body
-
-      assert(schema_id === "phone_no_password_v0", "unsupported schema")
-
-      // phone+code flow
-      if (phoneRaw) {
-        const phone = checkedToPhoneNumber(phoneRaw)
-        if (phone instanceof Error) {
-          baseLogger.error({ phoneRaw, phone }, "invalid phone")
-          res.status(400).send("invalid phone")
-          return
-        }
-
-        const user = await UsersRepository().findByPhone(phone)
-
-        // we expect the phone number to not exist
-        if (user instanceof Error) {
-          res.sendStatus(200)
-          return
-        }
-
-        baseLogger.error({ phone }, "phone already exist")
-        res.status(500).send(`phone already exist`)
-        return
-      }
-
-      res.status(500).send(`unsupported flow`)
-      return
-    },
-  }),
-)
 
 kratosRouter.post(
   "/registration",
@@ -95,7 +40,9 @@ kratosRouter.post(
 
       const { identity_id: userId, phone: phoneRaw, schema_id } = body
 
-      assert(schema_id === "phone_no_password_v0", "unsupported schema")
+      if (schema_id !== SchemaIdType.PhoneNoPasswordV0) {
+        return res.status(400).send("unsupported schema_id")
+      }
 
       if (!phoneRaw || !userId) {
         baseLogger.error({ phoneRaw, userId }, "missing inputs")

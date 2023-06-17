@@ -53,7 +53,7 @@ import { NotificationsService } from "@services/notifications"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-import healthzHandler from "./middlewares/healthz"
+import healthzHandler from "./rest/healthz"
 import { SubscriptionInterruptedError } from "./errors"
 import { briaEventHandler } from "./event-handlers/bria"
 

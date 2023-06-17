@@ -18,7 +18,7 @@ function validAuthTokenValue(value: string) {
     return "Invalid value for AuthToken"
   }
 
-  return value
+  return value as SessionToken
 }
 
 export default AuthToken

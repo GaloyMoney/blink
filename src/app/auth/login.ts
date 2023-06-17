@@ -1,14 +1,10 @@
 import { createAccountForDeviceAccount } from "@app/accounts/create-account"
+
 import {
-  getFailedLoginAttemptPerIpLimits,
-  getFailedLoginAttemptPerLoginIdentifierLimits,
-} from "@config"
+  EmailNotVerifiedError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@domain/auth/errors"
 
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
-
-import { CouldNotFindUserFromPhoneError } from "@domain/errors"
-import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import {
   checkedToDeviceId,
   checkedToIdentityPassword,
@@ -17,16 +13,24 @@ import {
 import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
+  AuthWithEmailPasswordlessService,
+  PhoneAccountAlreadyExistsNeedToSweepFundsError,
 } from "@services/kratos"
 
 import { LedgerService } from "@services/ledger"
-import { UsersRepository, WalletsRepository } from "@services/mongoose"
-import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
+import { WalletsRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
-import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@services/kratos/errors"
+import { checkedToEmailCode } from "@domain/auth"
 import { isPhoneCodeValid } from "@services/twilio"
+
+import {
+  checkFailedLoginAttemptPerIpLimits,
+  checkFailedLoginAttemptPerLoginIdentifierLimits,
+  rewardFailedLoginAttemptPerIpLimits,
+  rewardFailedLoginAttemptPerLoginIdentifierLimits,
+} from "./ratelimits"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -118,12 +122,43 @@ export const loginWithPhoneCookie = async ({
   return kratosResult
 }
 
-type LoginUpgradeWithPhoneResult = {
-  success: true
-  sessionToken?: SessionToken
+export const loginWithEmail = async ({
+  flow,
+  code: codeRaw,
+  ip,
+}: {
+  flow: FlowId
+  code: EmailCode
+  ip: IpAddress
+}): Promise<LoginWithEmailResult | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  const code = checkedToEmailCode(codeRaw)
+  if (code instanceof Error) return code
+
+  const authServiceEmail = AuthWithEmailPasswordlessService()
+
+  const validateCodeRes = await authServiceEmail.validateCode({ code, flowId: flow })
+  if (validateCodeRes instanceof Error) return validateCodeRes
+
+  const email = validateCodeRes.email
+  const totpRequired = validateCodeRes.totpRequired
+
+  const isEmailVerified = await authServiceEmail.isEmailVerified({ email })
+  if (isEmailVerified instanceof Error) return isEmailVerified
+  if (isEmailVerified === false) return new EmailNotVerifiedError()
+
+  await rewardFailedLoginAttemptPerIpLimits(ip)
+
+  const res = await authServiceEmail.loginToken({ email })
+  if (res instanceof Error) throw res
+  return { sessionToken: res.sessionToken, totpRequired }
 }
 
-export const loginUpgradeWithPhone = async ({
+export const loginDeviceUpgradeWithPhone = async ({
   phone,
   code,
   ip,
@@ -133,7 +168,7 @@ export const loginUpgradeWithPhone = async ({
   code: PhoneCode
   ip: IpAddress
   account: Account
-}): Promise<LoginUpgradeWithPhoneResult | ApplicationError> => {
+}): Promise<LoginDeviceUpgradeWithPhoneResult | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -149,12 +184,13 @@ export const loginUpgradeWithPhone = async ({
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
-  const phoneAccount = await UsersRepository().findByPhone(phone)
+  const res = await AuthWithPhonePasswordlessService().loginToken({ phone })
 
   // Happy Path - phone account does not exist
-  if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
+  if (res instanceof LikelyNoUserWithThisPhoneExistError) {
     // a. create kratos account
     // b. and c. migrate account/user collection in mongo via kratos/registration webhook
+
     const success = await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
       userId: account.kratosUserId,
@@ -168,8 +204,6 @@ export const loginUpgradeWithPhone = async ({
     if (res instanceof Error) return res
     return { success }
   }
-
-  if (phoneAccount instanceof Error) return phoneAccount
 
   // Complex path - Phone account already exists
   // is there still txns left over on the device account?
@@ -234,41 +268,4 @@ export const loginWithDevice = async ({
   }
 
   return res.sessionToken
-}
-
-const checkFailedLoginAttemptPerIpLimits = async (
-  ip: IpAddress,
-): Promise<true | RateLimiterExceededError> =>
-  consumeLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerIp,
-    keyToConsume: ip,
-  })
-
-const rewardFailedLoginAttemptPerIpLimits = async (
-  ip: IpAddress,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedLoginAttemptPerIp,
-    limitOptions: getFailedLoginAttemptPerIpLimits(),
-  })
-  return limiter.reward(ip)
-}
-
-const checkFailedLoginAttemptPerLoginIdentifierLimits = async (
-  phone: PhoneNumber,
-): Promise<true | RateLimiterExceededError> =>
-  consumeLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerLoginIdentifier,
-    keyToConsume: phone,
-  })
-
-const rewardFailedLoginAttemptPerLoginIdentifierLimits = async (
-  phone: PhoneNumber,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedLoginAttemptPerLoginIdentifier,
-    limitOptions: getFailedLoginAttemptPerLoginIdentifierLimits(),
-  })
-
-  return limiter.reward(phone)
 }

@@ -53,7 +53,7 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   }
 
   // TODO: only reimburse fees is this is above a (configurable) threshold
-  // ie: adding an entry for 1 sat fees may not be the best scalability wise for the db
+  // note: we would still need to log the fee difference to the account owner
   if (feeDifference.btc.amount === 0n) {
     return true
   }

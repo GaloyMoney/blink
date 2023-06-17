@@ -237,8 +237,7 @@ const checkSelfWalletIdRateLimits = async (
     keyToConsume: accountId,
   })
 
-// TODO: remove export once core has been deleted.
-export const checkRecipientWalletIdRateLimits = async (
+const checkRecipientWalletIdRateLimits = async (
   accountId: AccountId,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({

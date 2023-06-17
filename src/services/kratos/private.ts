@@ -4,11 +4,8 @@ import { ErrorLevel } from "@domain/shared"
 import { Configuration, FrontendApi, IdentityApi } from "@ory/client"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
-import {
-  MissingCreatedAtKratosError,
-  MissingExpiredAtKratosError,
-  UnknownKratosError,
-} from "./errors"
+import { MissingCreatedAtKratosError, MissingExpiredAtKratosError } from "./errors"
+import { SchemaIdType } from "./schema"
 
 const { publicApi, adminApi } = getKratosConfig()
 
@@ -22,7 +19,74 @@ export const toDomainSession = (session: KratosSession): Session => {
 
   return {
     id: session.id as SessionId,
-    identity: toDomainIdentityPhone(session.identity),
+    identity: toDomainIdentity(session.identity),
+    expiresAt: new Date(session?.expires_at),
+  }
+}
+
+const toSchema = (schemaId: string): SchemaId => {
+  switch (schemaId) {
+    case "phone_no_password_v0":
+      return SchemaIdType.PhoneNoPasswordV0
+    case "phone_email_no_password_v0":
+      return SchemaIdType.PhoneEmailNoPasswordV0
+    case "email_no_password_v0":
+      return SchemaIdType.EmailNoPasswordV0
+    case "username_password_deviceid_v0":
+      return SchemaIdType.UsernamePasswordDeviceIdV0
+    default:
+      throw new Error(`Invalid schemaId: ${schemaId}`)
+  }
+}
+
+export const toDomainIdentity = (identity: KratosIdentity): AnyIdentity => {
+  let createdAt: Date
+  if (identity.created_at) {
+    createdAt = new Date(identity.created_at)
+  } else {
+    recordExceptionInCurrentSpan({
+      error: new MissingCreatedAtKratosError(
+        "createdAt should always be set? type approximation from kratos",
+      ),
+      level: ErrorLevel.Critical,
+    })
+    createdAt = new Date()
+  }
+
+  return {
+    id: identity.id as UserId,
+    phone: identity.traits.phone as PhoneNumber,
+    email: identity.traits.email as EmailAddress,
+    emailVerified: identity.verifiable_addresses?.[0].verified ?? false,
+    totpEnabled: identity?.credentials?.totp?.type === "totp",
+    schema: toSchema(identity.schema_id),
+    createdAt,
+  }
+}
+
+// unlike toDomainIdentity, return a more precise type
+export const toDomainIdentityEmail = (identity: KratosIdentity): IdentityEmail => {
+  let createdAt: Date
+  if (identity.created_at) {
+    createdAt = new Date(identity.created_at)
+  } else {
+    recordExceptionInCurrentSpan({
+      error: new MissingCreatedAtKratosError(
+        "createdAt should always be set? type approximation from kratos",
+      ),
+      level: ErrorLevel.Critical,
+    })
+    createdAt = new Date()
+  }
+
+  return {
+    id: identity.id as UserId,
+    phone: undefined,
+    email: identity.traits.email as EmailAddress,
+    emailVerified: identity.verifiable_addresses?.[0].verified ?? false,
+    totpEnabled: identity?.credentials?.totp?.type === "totp",
+    schema: toSchema(identity.schema_id),
+    createdAt,
   }
 }
 
@@ -43,18 +107,37 @@ export const toDomainIdentityPhone = (identity: KratosIdentity): IdentityPhone =
   return {
     id: identity.id as UserId,
     phone: identity.traits.phone as PhoneNumber,
+    email: undefined,
+    emailVerified: undefined,
+    totpEnabled: identity?.credentials?.totp?.type === "totp",
+    schema: toSchema(identity.schema_id),
     createdAt,
   }
 }
 
-export const listSessionsInternal = async (
-  userId: UserId,
-): Promise<KratosSession[] | KratosError> => {
-  try {
-    const res = await kratosAdmin.listIdentitySessions({ id: userId })
-    if (res.data === null) return []
-    return res.data
-  } catch (err) {
-    return new UnknownKratosError(err)
+export const toDomainIdentityEmailPhone = (
+  identity: KratosIdentity,
+): IdentityPhoneEmail => {
+  let createdAt: Date
+  if (identity.created_at) {
+    createdAt = new Date(identity.created_at)
+  } else {
+    recordExceptionInCurrentSpan({
+      error: new MissingCreatedAtKratosError(
+        "createdAt should always be set? type approximation from kratos",
+      ),
+      level: ErrorLevel.Critical,
+    })
+    createdAt = new Date()
+  }
+
+  return {
+    id: identity.id as UserId,
+    phone: identity.traits.phone as PhoneNumber,
+    email: identity.traits.email as EmailAddress,
+    emailVerified: identity.verifiable_addresses?.[0].verified ?? false,
+    totpEnabled: identity?.credentials?.totp?.type === "totp",
+    schema: toSchema(identity.schema_id),
+    createdAt,
   }
 }

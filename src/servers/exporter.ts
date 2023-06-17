@@ -30,7 +30,7 @@ import { ledgerAdmin, setupMongoConnection } from "@services/mongodb"
 
 import { timeoutWithCancel } from "@utils"
 
-import healthzHandler from "./middlewares/healthz"
+import healthzHandler from "./rest/healthz"
 
 const TIMEOUT_WALLET_BALANCE = 30000
 

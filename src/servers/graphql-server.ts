@@ -64,10 +64,10 @@ import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/sha
 
 import { playgroundTabs } from "../graphql/playground"
 
-import authRouter from "./middlewares/auth-router"
-import healthzHandler from "./middlewares/healthz"
-import kratosRouter from "./middlewares/kratos-router"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
+import authRouter from "./rest/auth"
+import healthzHandler from "./rest/healthz"
+import kratosRouter from "./rest/kratos-router"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",

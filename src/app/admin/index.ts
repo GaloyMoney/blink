@@ -18,3 +18,11 @@ export const getAccountByUserPhone = async (phone: PhoneNumber) => {
   const accounts = AccountsRepository()
   return accounts.findByUserId(user.id)
 }
+
+export const getAccountByUserEmail = async (email: EmailAddress) => {
+  const user = await UsersRepository().findByEmail(email)
+  if (user instanceof Error) return user
+
+  const accounts = AccountsRepository()
+  return accounts.findByUserId(user.id)
+}

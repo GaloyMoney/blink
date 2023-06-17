@@ -83,7 +83,7 @@ describe("updates user phone", () => {
     expect(result.data.accountDetailsByUserPhone.id).toBe(uid)
   })
 
-  // test if flacky
+  // test is flacky
   it.skip("updates phone even if new phone is associated with a zero balance account, but not otherwise", async () => {
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
     const { phone, code } = getPhoneAndCodeFromRef("I")

@@ -2,6 +2,10 @@ type PhoneNumber = string & { readonly brand: unique symbol }
 type PhoneCode = string & { readonly brand: unique symbol }
 
 type EmailAddress = string & { readonly brand: unique symbol }
+type EmailCode = string & { readonly brand: unique symbol }
+
+type LoginIdentifier = PhoneNumber | EmailAddress
+
 type DeviceId = string & { readonly brand: unique symbol }
 
 type UserLanguage = typeof import("./languages").Languages[number]
@@ -55,17 +59,18 @@ type User = {
   deletedPhones?: PhoneNumber[]
   createdAt: Date
   deviceId?: DeviceId | undefined
+  email?: EmailAddress | undefined
+  deletedEmails?: EmailAddress[] | undefined
 }
 
-type UserUpdateInput = Omit<Partial<User>, "language"> & {
+type UserUpdateInput = Omit<Partial<User>, "language" | "createdAt"> & {
   id: UserId
-} & {
   language?: UserLanguageOrEmpty
 }
 
 interface IUsersRepository {
   findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
+  findByEmail(email: EmailAddress): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
-  adminUnsetPhoneForUserPreservation(id: UserId): Promise<User | RepositoryError>
 }

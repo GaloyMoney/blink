@@ -48,3 +48,8 @@ generates:
         DisplayCurrency: "string"
         SignedDisplayMajorAmount: "string"
         CountryCode: "string"
+        Email: "string"
+        Flow: "string"
+        EmailAddress: "string"
+        TotpSecret: "string"
+        TotpCode: "string"

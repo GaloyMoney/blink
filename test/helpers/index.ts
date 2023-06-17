@@ -30,7 +30,7 @@ export const randomEmail = () =>
 export const randomPassword = () => randomBytes(20).toString("hex") as IdentityPassword
 
 export const randomPhone = () =>
-  `+1415${Math.floor(Math.random() * 900000 + 100000)}` as PhoneNumber
+  `+1415${Math.floor(Math.random() * 9000000 + 1000000)}` as PhoneNumber
 
 export const randomUserId = () => randomUUID() as UserId
 

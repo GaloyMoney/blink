@@ -11,7 +11,7 @@ const FeedbackSubmitInput = GT.Input({
   }),
 })
 
-const FeedbackSubmit = GT.Field<
+const FeedbackSubmitMutation = GT.Field<
   {
     input: {
       feedback: Feedback | InputValidationError
@@ -51,4 +51,4 @@ const FeedbackSubmit = GT.Field<
   },
 })
 
-export default FeedbackSubmit
+export default FeedbackSubmitMutation
