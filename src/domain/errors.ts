@@ -45,7 +45,9 @@ export class CouldNotListWalletsFromWalletCurrencyError extends CouldNotFindErro
 export class CouldNotFindWalletOnChainPendingReceiveError extends CouldNotFindError {}
 export class NoTransactionToUpdateError extends CouldNotFindError {}
 export class CouldNotFindLightningPaymentFlowError extends CouldNotFindError {}
-export class CouldNotUpdateLightningPaymentFlowError extends CouldNotFindError {}
+export class CouldNotUpdateLightningPaymentFlowError extends CouldNotFindError {
+  level = ErrorLevel.Critical
+}
 export class NoExpiredLightningPaymentFlowsError extends CouldNotFindError {}
 export class CouldNotFindBtcWalletForAccountError extends CouldNotFindError {
   level = ErrorLevel.Critical

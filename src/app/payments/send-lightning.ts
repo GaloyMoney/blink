@@ -699,7 +699,10 @@ const executePaymentViaLn = async ({
     }
     if (payResult instanceof LnPaymentPendingError) {
       paymentFlow.paymentSentAndPending = true
-      paymentFlowRepo.updateLightningPaymentFlow(paymentFlow)
+      const updateResult = await paymentFlowRepo.updateLightningPaymentFlow(paymentFlow)
+      if (updateResult instanceof Error) {
+        recordExceptionInCurrentSpan({ error: updateResult })
+      }
       return PaymentSendStatus.Pending
     }
 
