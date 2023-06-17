@@ -468,39 +468,25 @@ const executePaymentViaOnChain = async <
 
   const address = await builder.addressForFlow()
 
-  // Get estimated miner fee and create 'paymentFlow'
-  const paymentFlow = await getMinerFeeAndPaymentFlow({
-    builder,
-    speed,
-  })
-  if (paymentFlow instanceof Error) return paymentFlow
-
   return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) => {
     // Get estimated miner fee and create 'paymentFlow'
-    const paymentFlowForBalance = await getMinerFeeAndPaymentFlow({
+    const paymentFlow = await getMinerFeeAndPaymentFlow({
       builder,
       speed,
     })
-    if (paymentFlowForBalance instanceof Error) return paymentFlowForBalance
+    if (paymentFlow instanceof Error) return paymentFlow
 
     // Check user balance
     const balance = await LedgerService().getWalletBalanceAmount(senderWalletDescriptor)
     if (balance instanceof Error) return balance
 
-    const balanceCheck = paymentFlowForBalance.checkBalanceForSend(balance)
+    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
 
     // Check lock still intact
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
-
-    // Add fees to tracing
-    const paymentFlow = await getMinerFeeAndPaymentFlow({
-      builder,
-      speed,
-    })
-    if (paymentFlow instanceof Error) return paymentFlow
 
     const bankFee = paymentFlow.bankFees()
     if (bankFee instanceof Error) return bankFee
@@ -510,10 +496,11 @@ const executePaymentViaOnChain = async <
     if (btcTotalFee instanceof Error) return btcTotalFee
 
     addAttributesToCurrentSpan({
+      "payOnChainByWalletId.btcAmount": `${paymentFlow.btcPaymentAmount.amount}`,
       "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolAndBankFee.amount}`,
-      "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee}`,
-      "payOnChainByWalletId.totalFee": `${btcTotalFee}`,
-      "payOnChainByWalletId.bankFee": `${btcBankFee}`,
+      "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee?.amount}`,
+      "payOnChainByWalletId.totalFee": `${btcTotalFee.amount}`,
+      "payOnChainByWalletId.bankFee": `${btcBankFee.amount}`,
     })
 
     // Construct metadata
