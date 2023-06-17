@@ -51,7 +51,10 @@ export const adminTestClientConfig = (
 
 export const createApolloClient = (
   testClientConfig: ApolloTestClientConfig,
-): { apolloClient: ApolloClient<NormalizedCacheObject>; disposeClient: () => void } => {
+): {
+  apolloClient: ApolloClient<NormalizedCacheObject>
+  disposeClient: () => Promise<void>
+} => {
   const { authToken, graphqlUrl, graphqlSubscriptionUrl } = testClientConfig
   const cache = new InMemoryCache()
 
@@ -114,7 +117,7 @@ export const createApolloClient = (
     },
   })
 
-  const disposeClient = () => {
+  const disposeClient = async () => {
     apolloClient.clearStore()
     apolloClient.stop()
     subscriptionClient.terminate()

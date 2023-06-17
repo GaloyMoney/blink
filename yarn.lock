@@ -3488,7 +3488,7 @@
 
 "@ory/client@^1.1.33":
   version "1.1.33"
-  resolved "https://registry.yarnpkg.com/@ory/client/-/client-1.1.33.tgz#2a3253897128fac7e3ea62674a3a4322f759eef7"
+  resolved "https://registry.npmjs.org/@ory/client/-/client-1.1.33.tgz#2a3253897128fac7e3ea62674a3a4322f759eef7"
   integrity sha512-IC7SJpF6AqPxLrW/JBAPPaetA8LOfj1NHnRY2LoU8K6snY7jIj9moYvUn9H1fbwsWdnaPupKoM93NRfuP3pcbQ==
   dependencies:
     axios "^0.21.4"

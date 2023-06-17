@@ -125,20 +125,3 @@ export const createAccountWithPhoneIdentifier = async ({
 
   return account
 }
-
-// kratos user already exist, as he has been using self registration
-export const createAccountForEmailIdentifier = async ({
-  kratosUserId,
-  config,
-}: {
-  kratosUserId: UserId
-  config: AccountsConfig
-}): Promise<Account | RepositoryError> => {
-  let account = await AccountsRepository().persistNew(kratosUserId)
-  if (account instanceof Error) return account
-
-  account = await initializeCreatedAccount({ account, config })
-  if (account instanceof Error) return account
-
-  return account
-}

@@ -1,6 +1,6 @@
 import twilio from "twilio"
 
-import { getTwilioConfig } from "@config"
+import { getTestAccounts, getTwilioConfig } from "@config"
 import {
   PhoneCodeInvalidError,
   ExpiredOrNonExistentPhoneNumberError,
@@ -14,6 +14,9 @@ import {
   PhoneProviderUnavailableError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
+
+import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+import { NotImplementedError } from "@domain/errors"
 
 import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
@@ -164,3 +167,32 @@ export const KnownTwilioErrorMessages = {
     /The destination phone number has been temporarily blocked by Twilio due to fraudulent activities/,
   ServiceUnavailable: /Service is unavailable. Please try again/,
 } as const
+
+export const isPhoneCodeValid = async ({
+  code,
+  phone,
+}: {
+  phone: PhoneNumber
+  code: PhoneCode
+}) => {
+  const testAccounts = getTestAccounts()
+  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
+    const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
+      code,
+      phone,
+    })
+    if (!validTestCode) {
+      return new PhoneCodeInvalidError()
+    }
+    return true
+  }
+
+  // we can't mock this function properly because in the e2e test,
+  // the server is been launched as a sub process,
+  // so it's not been mocked by jest
+  if (getTwilioConfig().accountSid === "AC_twilio_id") {
+    return new NotImplementedError("use test account for local dev and tests")
+  }
+
+  return TwilioClient().validateVerify({ to: phone, code })
+}

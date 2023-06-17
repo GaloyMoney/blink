@@ -59,10 +59,6 @@ interface IAuthWithPhonePasswordlessService {
   createIdentityNoSession(args: {
     phone: PhoneNumber
   }): Promise<UserId | AuthenticationError>
-  upgradeToPhoneAndEmailSchema(input: {
-    kratosUserId: UserId
-    email: EmailAddress
-  }): Promise<IdentityPhone | AuthenticationError> // TODO: should be IdentityPhoneWithPassword
   updatePhone(input: {
     kratosUserId: UserId
     phone: PhoneNumber
