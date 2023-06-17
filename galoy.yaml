@@ -115,10 +115,6 @@ rateLimits:
     points: 8
     duration: 1200
     blockDuration: 3600
-  failedLoginAttemptPerEmailAddress:
-    points: 8
-    duration: 1200
-    blockDuration: 3600
   failedLoginAttemptPerIp:
     points: 20
     duration: 21600

@@ -4,7 +4,7 @@ import { kratosAdmin } from "./private"
 // TODO: should be a param in yaml
 const schemaIdsToExtend = [
   "phone_no_password_v0",
-  "phone_or_email_password_v0",
+  "phone_email_no_password_v0",
   "username_password_deviceid_v0",
 ]
 

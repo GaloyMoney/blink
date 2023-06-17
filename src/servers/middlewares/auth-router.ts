@@ -29,34 +29,6 @@ authRouter.use(bodyParser.urlencoded({ extended: true }))
 authRouter.use(bodyParser.json())
 authRouter.use(cookieParser())
 
-// deprecated
-authRouter.post("/browser", async (req, res) => {
-  const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
-  const ip = parseIps(ipString)
-
-  if (!ip) {
-    return res.status(500).send({ error: "IP is not defined" })
-  }
-
-  try {
-    const { data } = await kratosPublic.toSession({ cookie: req.header("Cookie") })
-
-    const kratosLoginResp = await Auth.loginWithEmail({
-      kratosUserId: data.identity.id,
-      emailAddress: data.identity.traits.email,
-      ip,
-    })
-
-    if (kratosLoginResp instanceof Error) {
-      return res.send({ error: mapError(kratosLoginResp).message })
-    }
-
-    res.send({ kratosUserId: data.identity.id, ...kratosLoginResp })
-  } catch (error) {
-    res.send({ error: "Browser auth error" })
-  }
-})
-
 authRouter.post(
   "/login",
   wrapAsyncToRunInSpan({

@@ -182,3 +182,8 @@ e2e-codegen:
 
 gen-test-jwt:
 	yarn gen-test-jwt
+
+reset-sleep-e2e:
+	make reset-deps
+	sleep 10
+	make e2e
