@@ -377,7 +377,7 @@ createGauge({
     const lndService = LndService()
     if (lndService instanceof Error) return NaN
     const totalPendingHtlcCount = await lndService.getTotalPendingHtlcCount()
-    if (totalPendingHtlcCount instanceof Error) throw totalPendingHtlcCount
+    if (totalPendingHtlcCount instanceof Error) throw2 totalPendingHtlcCount
     return totalPendingHtlcCount
   },
 })
@@ -389,7 +389,7 @@ createGauge({
     const lndService = LndService()
     if (lndService instanceof Error) return NaN
     const activeChannels = await lndService.getActiveChannels()
-    if (activeChannels instanceof Error) throw activeChannels
+    if (activeChannels instanceof Error) throw2 activeChannels
     return activeChannels
   },
 })
@@ -401,7 +401,7 @@ createGauge({
     const lndService = LndService()
     if (lndService instanceof Error) return NaN
     const offlineChannels = await lndService.getOfflineChannels()
-    if (offlineChannels instanceof Error) throw offlineChannels
+    if (offlineChannels instanceof Error) throw2 offlineChannels
     return offlineChannels
   },
 })
@@ -413,7 +413,7 @@ createGauge({
     const lndService = LndService()
     if (lndService instanceof Error) return NaN
     const publicChannels = await lndService.getPublicChannels()
-    if (publicChannels instanceof Error) throw publicChannels
+    if (publicChannels instanceof Error) throw2 publicChannels
     return publicChannels
   },
 })
@@ -425,7 +425,7 @@ createGauge({
     const lndService = LndService()
     if (lndService instanceof Error) return NaN
     const privateChannels = await lndService.getPrivateChannels()
-    if (privateChannels instanceof Error) throw privateChannels
+    if (privateChannels instanceof Error) throw2 privateChannels
     return privateChannels
   },
 })

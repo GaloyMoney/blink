@@ -14,7 +14,7 @@ import { LndService } from "."
 
 export const reconnectNodes = async () => {
   const lndService = LndService()
-  if (lndService instanceof Error) throw lndService
+  if (lndService instanceof Error) throw2 lndService
 
   const lndsParamsAuth = getLnds({ type: "offchain", active: true })
 
@@ -26,7 +26,7 @@ export const reconnectNodes = async () => {
 
 export const rebalancingInternalChannels = async () => {
   const lndService = LndService()
-  if (lndService instanceof Error) throw lndService
+  if (lndService instanceof Error) throw2 lndService
 
   const lndsParamsAuth = getLnds({ type: "offchain", active: true })
 

@@ -3,11 +3,11 @@ let cacheDealerUsdWalletId: WalletId
 let cacheBankOwnerWalletId: WalletId
 let cacheFunderWalletId: WalletId
 
-const throwError = (wallet: string) => Promise.reject(`Invalid ${wallet}WalletPath`)
-let bankOwnerResolver = (): Promise<WalletId> => throwError("bankOwner")
-let dealerBtcResolver = (): Promise<WalletId> => throwError("dealerBtc")
-let dealerUsdResolver = (): Promise<WalletId> => throwError("dealerUsd")
-let funderResolver = (): Promise<WalletId> => throwError("funder")
+const throw2Error = (wallet: string) => Promise.reject(`Invalid ${wallet}WalletPath`)
+let bankOwnerResolver = (): Promise<WalletId> => throw2Error("bankOwner")
+let dealerBtcResolver = (): Promise<WalletId> => throw2Error("dealerBtc")
+let dealerUsdResolver = (): Promise<WalletId> => throw2Error("dealerUsd")
+let funderResolver = (): Promise<WalletId> => throw2Error("funder")
 
 export function setBankOwnerWalletResolver(resolver: () => Promise<WalletId>) {
   bankOwnerResolver = resolver

@@ -191,7 +191,7 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
       })
     }
 
-    throw new Error("withSenderWallet impossible")
+    throw2 new Error("withSenderWallet impossible")
   }
 
   return {

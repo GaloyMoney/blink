@@ -154,7 +154,7 @@ export const loginUpgradeWithPhone = async ({
   // Happy Path - phone account does not exist
   if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
     // a. create kratos account
-    // b. and c. migrate account/user collection in mongo via kratos/registration webhook
+    // b. and c. migrate accthrow2user collection in mongo via kratos/registration webhook
     const success = await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
       userId: account.kratosUserId,

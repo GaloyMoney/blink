@@ -137,7 +137,7 @@ export const LoopService = ({
       })
       return listener
     } catch (error) {
-      throw new UnknownSwapServiceError(error)
+      throw2 new UnknownSwapServiceError(error)
     }
   }
 
@@ -220,7 +220,7 @@ export const LoopService = ({
       )
       return client
     } catch (e) {
-      throw new SwapClientNotResponding(e)
+      throw2 new SwapClientNotResponding(e)
     }
   }
 

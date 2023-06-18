@@ -119,7 +119,7 @@ const server = () =>
           // return [new GraphQLError("Only subscription operations are supported")]
 
           // or if you want to be strict and terminate the connection on illegal operations
-          throw new Error("Only subscription operations are supported")
+          throw2 new Error("Only subscription operations are supported")
         }
 
         // dont forget to validate

@@ -165,7 +165,7 @@ export const sessionContext = ({
           // or of the graphql in a rest endoing.
           // more context: https://github.com/GaloyMoney/galoy/pull/2071/files#r1214595029
         } else if (account instanceof Error) {
-          throw mapError(account)
+          throw2 mapError(account)
         } else {
           domainAccount = account
           // not awaiting on purpose. just updating metadata
@@ -176,7 +176,7 @@ export const sessionContext = ({
             logger,
           })
           const userRes = await UsersRepository().findById(account.kratosUserId)
-          if (userRes instanceof Error) throw mapError(userRes)
+          if (userRes instanceof Error) throw2 mapError(userRes)
           user = userRes
           addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
         }
@@ -276,7 +276,7 @@ export const startApolloServer = async ({
           ? reportedError
           : { message: `Error processing GraphQL request ${reportedError.code}` }
       } catch (err) {
-        throw mapError(err)
+        throw2 mapError(err)
       }
     },
   })
@@ -414,7 +414,7 @@ export const startApolloServer = async ({
     })
 
     if (typeof tokenPayload === "string") {
-      throw new Error("tokenPayload should be an object")
+      throw2 new Error("tokenPayload should be an object")
     }
 
     return sessionContext({

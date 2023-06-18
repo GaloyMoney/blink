@@ -219,7 +219,7 @@ export const updateRoutingRevenues = async () => {
   const after = lastDate.toISOString()
 
   const endDate = timestampDaysAgo(ONE_DAY)
-  if (endDate instanceof Error) throw endDate
+  if (endDate instanceof Error) throw2 endDate
 
   // Done to remove effect of timezone
   endDate.setUTCHours(0, 0, 0, 0)
@@ -233,7 +233,7 @@ export const updateRoutingRevenues = async () => {
 
   // get fee collected day wise
   const activeNode = getActiveLnd()
-  if (activeNode instanceof Error) throw activeNode
+  if (activeNode instanceof Error) throw2 activeNode
 
   const lnd = activeNode.lnd
   const forwards = await getRoutingFees({ lnd, before, after })
@@ -267,7 +267,7 @@ export const updateRoutingRevenues = async () => {
 export const updateEscrows = async () => {
   // FIXME: update escrow of all the node
   const activeNode = getActiveLnd()
-  if (activeNode instanceof Error) throw activeNode
+  if (activeNode instanceof Error) throw2 activeNode
 
   const lnd = activeNode.lnd
   const { channels } = await getChannels({ lnd })

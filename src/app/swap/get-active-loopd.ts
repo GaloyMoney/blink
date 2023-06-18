@@ -4,7 +4,7 @@ import { BTC_NETWORK, getSwapConfig, getLoopConfig } from "@config"
 
 export const getActiveLoopd = (): LoopdConfig => {
   const activeOffChainNode = getActiveLnd()
-  if (activeOffChainNode instanceof Error) throw SwapErrorNoActiveLoopdNode
+  if (activeOffChainNode instanceof Error) throw2 SwapErrorNoActiveLoopdNode
   switch (activeOffChainNode.name) {
     case "LND1": {
       return lnd1LoopConfig()
@@ -13,7 +13,7 @@ export const getActiveLoopd = (): LoopdConfig => {
       return lnd2LoopConfig()
     }
     default: {
-      throw SwapErrorNoActiveLoopdNode
+      throw2 SwapErrorNoActiveLoopdNode
     }
   }
 }

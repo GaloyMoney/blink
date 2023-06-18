@@ -50,7 +50,7 @@ const valid = validate(yamlConfigInit)
 
 if (!valid) {
   baseLogger.error({ validationErrors: validate.errors }, "Invalid yaml configuration")
-  throw new ConfigError("Invalid yaml configuration", validate.errors)
+  throw2 new ConfigError("Invalid yaml configuration", validate.errors)
 }
 export const yamlConfig = yamlConfigInit as YamlSchema
 
@@ -64,7 +64,7 @@ export const MEMO_SHARING_CENTS_THRESHOLD = yamlConfig.spamLimits
 // how many block are we looking back for getChainTransactions
 const getOnChainScanDepth = (val: number): ScanDepth => {
   const scanDepth = checkedToScanDepth(val)
-  if (scanDepth instanceof Error) throw scanDepth
+  if (scanDepth instanceof Error) throw2 scanDepth
   return scanDepth
 }
 
@@ -131,27 +131,27 @@ export const getLndParams = (): LndParams[] => {
     const keys = ["_TLS", "_MACAROON", "_DNS", "_PUBKEY"]
     keys.forEach((key) => {
       if (!process.env[`${input.name}${key}`]) {
-        throw new ConfigError(`lnd params missing for: ${input.name}${key}`)
+        throw2 new ConfigError(`lnd params missing for: ${input.name}${key}`)
       }
     })
   })
 
   return lnds.map((input) => {
     const cert = process.env[`${input.name}_TLS`]
-    if (!cert) throw new ConfigError(`missing TLS for ${input.name}`)
+    if (!cert) throw2 new ConfigError(`missing TLS for ${input.name}`)
 
     const macaroon = process.env[`${input.name}_MACAROON`]
-    if (!macaroon) throw new ConfigError(`missing macaroon for ${input.name}`)
+    if (!macaroon) throw2 new ConfigError(`missing macaroon for ${input.name}`)
 
     const node = process.env[`${input.name}_DNS`]
-    if (!node) throw new ConfigError(`missing DNS for ${input.name}`)
+    if (!node) throw2 new ConfigError(`missing DNS for ${input.name}`)
 
     const pubkey_ = process.env[`${input.name}_PUBKEY`]
-    if (!pubkey_) throw new ConfigError(`missing PUBKEY for ${input.name}`)
+    if (!pubkey_) throw2 new ConfigError(`missing PUBKEY for ${input.name}`)
 
     const pubkey = checkedToPubkey(pubkey_)
     if (pubkey instanceof Error)
-      throw new ConfigError(`wrong PUBKEY formatting for ${input.name}`)
+      throw2 new ConfigError(`wrong PUBKEY formatting for ${input.name}`)
 
     const port = process.env[`${input.name}_RPCPORT`] ?? 10009
     const type = input.type.map((item) => item as NodeType) // TODO: verify if validation is done from yaml.ts
@@ -244,7 +244,7 @@ export const getColdStorageConfig = (): ColdStorageConfig => {
   const config = yamlConfig.coldStorage
 
   const targetConfirmations = checkedToTargetConfs(config.targetConfirmations)
-  if (targetConfirmations instanceof Error) throw targetConfirmations
+  if (targetConfirmations instanceof Error) throw2 targetConfirmations
 
   return {
     minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),

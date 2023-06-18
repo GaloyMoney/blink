@@ -333,7 +333,7 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
     } catch (error) {
       recordException(span, error, ErrorLevel.Critical)
       span.end()
-      throw error
+      throw2 error
     }
   })
   return ret
@@ -412,7 +412,7 @@ export const wrapToRunInSpan = <
       } catch (error) {
         recordException(span, error, ErrorLevel.Critical)
         span.end()
-        throw error
+        throw2 error
       }
     })
     return ret
@@ -468,7 +468,7 @@ export const wrapAsyncToRunInSpan = <
       } catch (error) {
         recordException(span, error, ErrorLevel.Critical)
         span.end()
-        throw error
+        throw2 error
       }
     })
     return ret

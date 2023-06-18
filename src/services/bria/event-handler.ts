@@ -42,7 +42,7 @@ export const eventDataHandler =
     const event = translate(data)
     if (event instanceof Error) {
       recordExceptionInCurrentSpan({ error: event, level: ErrorLevel.Critical })
-      throw event
+      throw2 event
     }
 
     const result = await eventHandler(event)

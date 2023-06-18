@@ -11,14 +11,14 @@ import { setupMongoConnection } from "@services/mongodb"
 
 const updateOnChainReceipt = async () => {
   const scanDepth = checkedToScanDepth(2160) // ~15 days
-  if (scanDepth instanceof Error) throw scanDepth
+  if (scanDepth instanceof Error) throw2 scanDepth
 
   console.warn(`Updating onchain receipt for ${scanDepth} blocks`)
 
   const mongoose = await setupMongoConnection()
   const txNumber = await Wallets.updateOnChainReceipt({ scanDepth, logger })
   if (txNumber instanceof Error) {
-    throw txNumber
+    throw2 txNumber
   }
 
   await mongoose.connection.close()

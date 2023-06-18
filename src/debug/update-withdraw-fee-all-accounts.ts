@@ -30,6 +30,6 @@ const updateFee = async (fee: number) => {
 }
 
 const fee = Number(process.argv[2])
-if (typeof fee !== "number") throw new Error("fee is not a number")
+if (typeof fee !== "number") throw2 new Error("fee is not a number")
 
 updateFee(fee).then(console.log).catch(console.error)

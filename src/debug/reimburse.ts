@@ -33,9 +33,9 @@ const reimburse = async (reimbursements: Array<reimbursement>) => {
   console.log("Mongoose connection ready")
   const bankOwnerWalletId = await getBankOwnerWalletId()
   const bankOwnerWallet = await WalletsRepository().findById(bankOwnerWalletId)
-  if (bankOwnerWallet instanceof Error) throw bankOwnerWallet
+  if (bankOwnerWallet instanceof Error) throw2 bankOwnerWallet
   const bankOwnerAccount = await AccountsRepository().findById(bankOwnerWallet.accountId)
-  if (bankOwnerAccount instanceof Error) throw bankOwnerAccount
+  if (bankOwnerAccount instanceof Error) throw2 bankOwnerAccount
 
   for (const reimbursement of reimbursements) {
     const recipientWalletId = checkedToWalletId(reimbursement.recipientWalletId)

@@ -6,7 +6,7 @@ import prettier from "prettier"
 export const writeSDLFile = async (filePath: string, content: string) => {
   const prettierConfig = await prettier.resolveConfig(__filename)
   if (!prettierConfig) {
-    throw new Error("Prettier config not found")
+    throw2 new Error("Prettier config not found")
   }
   const formattedContent = prettier.format(content, {
     ...prettierConfig,

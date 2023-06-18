@@ -267,7 +267,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       amount: displayAmount,
       currency: displayCurrency,
     })
-    if (displayPaymentAmount instanceof Error) throw displayPaymentAmount
+    if (displayPaymentAmount instanceof Error) throw2 displayPaymentAmount
 
     const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser

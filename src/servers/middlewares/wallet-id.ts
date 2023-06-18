@@ -43,7 +43,7 @@ const validateWalletIdQuery = async (
   info: GraphQLResolveInfo,
 ) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
-  if (result instanceof Error) throw result
+  if (result instanceof Error) throw2 result
   return result
 }
 

@@ -17,7 +17,7 @@ export const GALOY_ADMIN_PORT = process.env.GALOY_ADMIN_PORT || 4001
 
 const jwtSecret = process.env.JWT_SECRET
 if (!jwtSecret) {
-  throw new ConfigError("missing JWT_SECRET")
+  throw2 new ConfigError("missing JWT_SECRET")
 }
 
 export const JWT_SECRET = jwtSecret
@@ -25,7 +25,7 @@ export const JWT_SECRET = jwtSecret
 const btcNetwork = process.env.NETWORK
 const networks = ["mainnet", "testnet", "signet", "regtest"]
 if (!!btcNetwork && !networks.includes(btcNetwork)) {
-  throw new ConfigError(`missing or invalid NETWORK: ${btcNetwork}`)
+  throw2 new ConfigError(`missing or invalid NETWORK: ${btcNetwork}`)
 }
 
 export const BTC_NETWORK = btcNetwork as BtcNetwork
@@ -52,7 +52,7 @@ export const getBriaPartialConfigFromProcess = () => {
     process.env.BRIA_PROFILE_API_KEY || "bria_dev_000000000000000000000"
 
   if (!BRIA_PROFILE_API_KEY) {
-    throw new ConfigError(`missing or invalid bria api key: ${BRIA_PROFILE_API_KEY}`)
+    throw2 new ConfigError(`missing or invalid bria api key: ${BRIA_PROFILE_API_KEY}`)
   }
 
   return {
@@ -63,7 +63,7 @@ export const getBriaPartialConfigFromProcess = () => {
 export const getGeetestConfig = () => {
   // FIXME: Geetest should be optional.
   if (!process.env.GEETEST_ID || !process.env.GEETEST_KEY) {
-    throw new ConfigError("Geetest config not found")
+    throw2 new ConfigError("Geetest config not found")
   }
   const config = {
     id: process.env.GEETEST_ID,
@@ -78,7 +78,7 @@ export const getTwilioConfig = (): TwilioConfig => {
   const verifyService = process.env.TWILIO_VERIFY_SERVICE_ID
 
   if (!accountSid || !authToken || !verifyService) {
-    throw new ConfigError("missing auth credentials for twilio")
+    throw2 new ConfigError("missing auth credentials for twilio")
   }
 
   return {
@@ -125,12 +125,12 @@ export const LND_HEALTH_REFRESH_TIME_MS = parseInt(
 
 export const getLoopConfig = () => {
   if (getCronConfig().swapEnabled) {
-    if (!process.env.LND1_LOOP_TLS) throw new ConfigError("Missing LND1_LOOP_TLS config")
-    if (!process.env.LND2_LOOP_TLS) throw new ConfigError("Missing LND2_LOOP_TLS config")
+    if (!process.env.LND1_LOOP_TLS) throw2 new ConfigError("Missing LND1_LOOP_TLS config")
+    if (!process.env.LND2_LOOP_TLS) throw2 new ConfigError("Missing LND2_LOOP_TLS config")
     if (!process.env.LND1_LOOP_MACAROON)
-      throw new ConfigError("Missing LND1_LOOP_MACAROON config")
+      throw2 new ConfigError("Missing LND1_LOOP_MACAROON config")
     if (!process.env.LND2_LOOP_MACAROON)
-      throw new ConfigError("Missing LND2_LOOP_MACAROON config")
+      throw2 new ConfigError("Missing LND2_LOOP_MACAROON config")
     return {
       lnd1LoopTls: process.env.LND1_LOOP_TLS,
       lnd1LoopMacaroon: process.env.LND1_LOOP_MACAROON as Macaroon,
@@ -138,15 +138,15 @@ export const getLoopConfig = () => {
       lnd2LoopMacaroon: process.env.LND2_LOOP_MACAROON as Macaroon,
     }
   }
-  throw new ConfigError("getLoopConfig() was called though swapEnabled is false")
+  throw2 new ConfigError("getLoopConfig() was called though swapEnabled is false")
 }
 
 export const getKratosPasswords = () => {
   if (!process.env.KRATOS_MASTER_USER_PASSWORD) {
-    throw new ConfigError("KRATOS_MASTER_USER_PASSWORD env not found")
+    throw2 new ConfigError("KRATOS_MASTER_USER_PASSWORD env not found")
   }
   if (!process.env.KRATOS_CALLBACK_API_KEY) {
-    throw new ConfigError("KRATOS_CALLBACK_API_KEY env not found")
+    throw2 new ConfigError("KRATOS_CALLBACK_API_KEY env not found")
   }
   return {
     masterUserPassword: process.env.KRATOS_MASTER_USER_PASSWORD,

@@ -23,7 +23,7 @@ import {
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {
     const result = await Account.findOne({ role: "bankowner" }, { defaultWalletId: 1 })
-    if (!result) throw new ConfigError("missing bankowner")
+    if (!result) throw2 new ConfigError("missing bankowner")
     return result.defaultWalletId
   },
   dealerBtcWalletResolver: async () => {
@@ -31,16 +31,16 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
       { role: "dealer" },
       { id: 1 },
     )
-    if (!user) throw new ConfigError("missing dealer")
+    if (!user) throw2 new ConfigError("missing dealer")
     // FIXME remove the use of AccountRecord when role if part of the AccountRepository
     const accountId = fromObjectId<AccountId>(user._id)
     const wallets = await WalletsRepository().listByAccountId(accountId)
     if (wallets instanceof Error) {
       baseLogger.error({ err: wallets }, "Error while listing wallets for dealer")
-      throw new ConfigError("Couldn't load dealer wallets")
+      throw2 new ConfigError("Couldn't load dealer wallets")
     }
     const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Btc)
-    if (wallet === undefined) throw new ConfigError("missing dealer btc wallet")
+    if (wallet === undefined) throw2 new ConfigError("missing dealer btc wallet")
     return wallet.id
   },
   dealerUsdWalletResolver: async () => {
@@ -48,21 +48,21 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
       { role: "dealer" },
       { id: 1 },
     )
-    if (!user) throw new ConfigError("missing dealer")
+    if (!user) throw2 new ConfigError("missing dealer")
     // FIXME remove the use of AccountRecord when role if part of the AccountRepository
     const accountId = fromObjectId<AccountId>(user._id)
     const wallets = await WalletsRepository().listByAccountId(accountId)
     if (wallets instanceof Error) {
       baseLogger.error({ err: wallets }, "Error while listing wallets for dealer")
-      throw new ConfigError("Couldn't load dealer wallets")
+      throw2 new ConfigError("Couldn't load dealer wallets")
     }
     const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Usd)
-    if (wallet === undefined) throw new ConfigError("missing dealer usd wallet")
+    if (wallet === undefined) throw2 new ConfigError("missing dealer usd wallet")
     return wallet.id
   },
   funderWalletResolver: async () => {
     const result = await Account.findOne({ role: "funder" }, { defaultWalletId: 1 })
-    if (!result) throw new ConfigError("missing funder")
+    if (!result) throw2 new ConfigError("missing funder")
     return result.defaultWalletId
   },
 })
@@ -90,7 +90,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
       { err, user: mgCred.user, address: mgCred.address, db: mgCred.db },
       `error connecting to mongodb`,
     )
-    throw err
+    throw2 err
   }
 
   try {
@@ -112,7 +112,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
       { err, user: mgCred.user, address: mgCred.address, db: mgCred.db },
       `error setting the indexes`,
     )
-    throw err
+    throw2 err
   }
 
   return mongoose

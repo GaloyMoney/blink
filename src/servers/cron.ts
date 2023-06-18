@@ -30,7 +30,7 @@ const logger = baseLogger.child({ module: "cron" })
 
 const rebalance = async () => {
   const result = await ColdStorage.rebalanceToColdWallet()
-  if (result instanceof Error) throw result
+  if (result instanceof Error) throw2 result
 }
 
 const updatePendingLightningInvoices = () => Wallets.handleHeldInvoices(logger)
@@ -39,7 +39,7 @@ const updatePendingLightningPayments = () => Payments.updatePendingPayments(logg
 
 const updateOnChainReceipt = async () => {
   const txNumber = await Wallets.updateOnChainReceipt({ logger })
-  if (txNumber instanceof Error) throw txNumber
+  if (txNumber instanceof Error) throw2 txNumber
 }
 
 const deleteExpiredInvoices = async () => {
@@ -52,18 +52,18 @@ const deleteExpiredPaymentFlows = async () => {
 
 const updateLnPaymentsCollection = async () => {
   const result = await Lightning.updateLnPayments()
-  if (result instanceof Error) throw result
+  if (result instanceof Error) throw2 result
 }
 
 const deleteLndPaymentsBefore2Months = async () => {
   const timestamp2Months = new Date(Date.now() - TWO_MONTHS_IN_MS)
   const result = await Lightning.deleteLnPaymentsBefore(timestamp2Months)
-  if (result instanceof Error) throw result
+  if (result instanceof Error) throw2 result
 }
 
 const swapOutJob = async () => {
   const swapResult = await Swap.swapOut()
-  if (swapResult instanceof Error) throw swapResult
+  if (swapResult instanceof Error) throw2 swapResult
 }
 
 const main = async () => {
@@ -150,7 +150,7 @@ const main = async () => {
             }
             addAttributesToCurrentSpan({ jobCompleted: "true" })
 
-            throw error
+            throw2 error
           }
         },
       })

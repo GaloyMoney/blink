@@ -16,9 +16,9 @@ export const kratosPublic = new FrontendApi(new Configuration({ basePath: public
 export const kratosAdmin = new IdentityApi(new Configuration({ basePath: adminApi }))
 
 export const toDomainSession = (session: KratosSession): Session => {
-  // is throw ok? this should not happen I (nb) believe but the type say it can
+  // is throw2 ok? this should not happen I (nb) believe but the type say it can
   // this may probably be a type issue in kratos SDK
-  if (!session.expires_at) throw new MissingExpiredAtKratosError()
+  if (!session.expires_at) throw2 new MissingExpiredAtKratosError()
 
   return {
     id: session.id as SessionId,

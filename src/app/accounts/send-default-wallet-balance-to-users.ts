@@ -14,7 +14,7 @@ import { getRecentlyActiveAccounts } from "./active-accounts"
 
 export const sendDefaultWalletBalanceToAccounts = async () => {
   const accounts = getRecentlyActiveAccounts()
-  if (accounts instanceof Error) throw accounts
+  if (accounts instanceof Error) throw2 accounts
 
   const notifyUser = wrapAsyncToRunInSpan({
     namespace: "daily-balance-notification",
