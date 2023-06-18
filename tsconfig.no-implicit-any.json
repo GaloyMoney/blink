@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.d.json",
-  "include": ["src/"],
+  "include": ["src/**/*"],
   "exclude": [
     "src/debug",
     "src/migrations",
