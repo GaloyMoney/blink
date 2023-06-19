@@ -1,6 +1,8 @@
 import { createServer } from "http"
 
+import { context, propagation } from "@opentelemetry/api"
 import DataLoader from "dataloader"
+import express, { NextFunction, Request, Response } from "express"
 
 import { Accounts, Transactions } from "@app"
 import {
@@ -25,10 +27,10 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
-import express, { NextFunction, Request, Response } from "express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
 import { GraphQLError, GraphQLSchema, execute, subscribe } from "graphql"
 import { rule } from "graphql-shield"
+import { Context, GRAPHQL_TRANSPORT_WS_PROTOCOL } from "graphql-ws"
 import { useServer } from "graphql-ws/lib/use/ws"
 import helmet from "helmet"
 import jsonwebtoken from "jsonwebtoken"
@@ -39,7 +41,6 @@ import {
   SubscribeFunction,
   SubscriptionServer,
 } from "subscriptions-transport-ws"
-import { Context, GRAPHQL_TRANSPORT_WS_PROTOCOL } from "graphql-ws"
 
 import { WebSocketServer } from "ws"
 
@@ -61,8 +62,8 @@ import { UsersRepository } from "@services/mongoose"
 import { validateKratosCookie } from "@services/kratos"
 
 import { checkedToUserId } from "@domain/accounts"
-import { ValidationError } from "@domain/shared"
 import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
+import { ValidationError } from "@domain/shared"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -127,7 +128,15 @@ const setGqlContext = async (
       [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
       [SemanticAttributes.ENDUSER_ID]: gqlContext.domainAccount?.id || tokenPayload?.sub,
     },
-    next,
+    () => {
+      const parentContext = context.active()
+      const ipContext = propagation.setBaggage(
+        parentContext,
+        propagation.createBaggage({ ip: { value: ip || "unknown" } }),
+      )
+
+      context.with(ipContext, next)
+    },
   )
 }
 

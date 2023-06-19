@@ -41,6 +41,14 @@ propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client
 const gqlResponseHook = (span: ExtendedSpan, data: graphqlTypes.ExecutionResult) => {
+  const baggage = propagation.getBaggage(context.active())
+  if (baggage) {
+    const ip = baggage.getEntry("ip")
+    if (ip) {
+      span.setAttribute(SemanticAttributes.HTTP_CLIENT_IP, ip.value)
+    }
+  }
+
   if (data.errors && data.errors.length > 0) {
     recordGqlErrors({ errors: data.errors, span, subPathName: "" })
   }
