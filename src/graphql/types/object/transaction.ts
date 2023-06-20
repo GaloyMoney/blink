@@ -60,8 +60,13 @@ const Transaction = GT.Object<WalletTransaction>({
         try {
           result = await loaders.txnMetadata.load(source.id)
         } catch (err) {
-          if (err instanceof Error) result = err
-          result = new Error("Unknown error")
+          if (err instanceof Error) {
+            result = err
+          } else if (typeof err === "undefined") {
+            result = undefined
+          } else {
+            result = new Error("Unknown error")
+          }
         }
         if (result instanceof Error || result === undefined) return settlementVia
 
