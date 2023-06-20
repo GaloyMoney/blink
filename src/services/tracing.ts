@@ -43,9 +43,13 @@ propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 const gqlResponseHook = (span: ExtendedSpan, data: graphqlTypes.ExecutionResult) => {
   const baggage = propagation.getBaggage(context.active())
   if (baggage) {
-    const ip = baggage.getEntry("ip")
+    const ip = baggage.getEntry(SemanticAttributes.HTTP_CLIENT_IP)
     if (ip) {
       span.setAttribute(SemanticAttributes.HTTP_CLIENT_IP, ip.value)
+    }
+    const userAgent = baggage.getEntry(SemanticAttributes.HTTP_USER_AGENT)
+    if (userAgent) {
+      span.setAttribute(SemanticAttributes.HTTP_USER_AGENT, userAgent.value)
     }
   }
 
