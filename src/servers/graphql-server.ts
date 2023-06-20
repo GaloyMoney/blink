@@ -112,6 +112,7 @@ const setGqlContext = async (
     : req.ip
 
   const ip = parseIps(ipString)
+  const userAgent = req.headers["user-agent"] || "unknown"
 
   const gqlContext = await sessionContext({
     tokenPayload,
@@ -125,6 +126,7 @@ const setGqlContext = async (
   addAttributesToCurrentSpanAndPropagate(
     {
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+      [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
       [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
       [SemanticAttributes.ENDUSER_ID]: gqlContext.domainAccount?.id || tokenPayload?.sub,
     },
@@ -132,7 +134,10 @@ const setGqlContext = async (
       const parentContext = context.active()
       const ipContext = propagation.setBaggage(
         parentContext,
-        propagation.createBaggage({ ip: { value: ip || "unknown" } }),
+        propagation.createBaggage({
+          [SemanticAttributes.HTTP_CLIENT_IP]: { value: ip || "unknown" },
+          [SemanticAttributes.HTTP_USER_AGENT]: { value: userAgent },
+        }),
       )
 
       context.with(ipContext, next)
