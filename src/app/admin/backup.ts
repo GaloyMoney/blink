@@ -65,11 +65,6 @@ export const uploadBackup =
             logger.error({ error }, "Static channel backup to Dropbox failed.")
             if (error instanceof Error)
               recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
-            if (typeof error === "string")
-              recordExceptionInCurrentSpan({
-                error: new Error(error),
-                level: ErrorLevel.Warn,
-              })
           }
         },
       )

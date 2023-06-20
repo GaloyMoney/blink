@@ -57,9 +57,9 @@ authRouter.post(
       try {
         cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
         kratosUserId = loginResp.kratosUserId
-      } catch (err) {
-        if (err instanceof Error) {
-          recordExceptionInCurrentSpan({ error: err })
+      } catch (error) {
+        if (error instanceof Error) {
+          recordExceptionInCurrentSpan({ error })
         } else {
           recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
         }
@@ -108,9 +108,9 @@ authRouter.post(
           httpOnly: csrfCookie.httpOnly,
           path: csrfCookie.path,
         })
-      } catch (err) {
-        if (err instanceof Error) {
-          recordExceptionInCurrentSpan({ error: err })
+      } catch (error) {
+        if (error instanceof Error) {
+          recordExceptionInCurrentSpan({ error })
         } else {
           recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
         }
@@ -160,9 +160,9 @@ authRouter.get(
         return res.status(200).send({
           result: "logout successful",
         })
-      } catch (err) {
-        if (err instanceof Error) {
-          recordExceptionInCurrentSpan({ error: err })
+      } catch (error) {
+        if (error instanceof Error) {
+          recordExceptionInCurrentSpan({ error })
         } else {
           recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
         }
@@ -226,10 +226,10 @@ authRouter.post(
         return res.status(200).send({
           result: authToken,
         })
-      } catch (err) {
-        if (err instanceof Error) {
-          recordExceptionInCurrentSpan({ error: err })
-          return res.status(500).send({ error: `${err.message}` })
+      } catch (error) {
+        if (error instanceof Error) {
+          recordExceptionInCurrentSpan({ error })
+          return res.status(500).send({ error: `${error.message}` })
         } else {
           recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
           return res.status(500).send({ error: "Unknown error" })

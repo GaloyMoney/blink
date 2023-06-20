@@ -10,9 +10,6 @@ export const safeBigInt = (num: number): bigint | BigIntConversionError => {
     if (err instanceof Error) {
       return new UnknownBigIntConversionError(err.message)
     }
-    if (typeof err === "string") {
-      return new UnknownBigIntConversionError(err)
-    }
     return new UnknownBigIntConversionError()
   }
 }

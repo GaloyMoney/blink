@@ -62,8 +62,6 @@ const Transaction = GT.Object<WalletTransaction>({
         } catch (err) {
           if (err instanceof Error) {
             result = err
-          } else if (typeof err === "undefined") {
-            result = undefined
           } else {
             result = new Error("Unknown error")
           }
