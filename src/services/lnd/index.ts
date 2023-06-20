@@ -988,6 +988,11 @@ const handleCommonLightningServiceErrors = (err: Error | unknown) => {
     case match(KnownLndErrorDetails.ConnectionRefused):
       return new OffChainServiceBusyError()
     default:
+      if (err instanceof Error) {
+        return new UnknownLightningServiceError(
+          msgForUnknown({ message: err.message } as Error),
+        )
+      }
       return new UnknownLightningServiceError(
         msgForUnknown({ message: "Unknown error" } as Error),
       )
@@ -1006,6 +1011,11 @@ const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
       return new DestinationMissingDependentFeatureError()
 
     default:
+      if (err instanceof Error) {
+        return new UnknownRouteNotFoundError(
+          msgForUnknown({ message: err.message } as Error),
+        )
+      }
       return new UnknownRouteNotFoundError(
         msgForUnknown({ message: "Unknown error" } as Error),
       )

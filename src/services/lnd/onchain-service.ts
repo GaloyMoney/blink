@@ -293,6 +293,11 @@ const handleCommonOnChainServiceErrors = (err: Error | unknown) => {
     case match(KnownLndErrorDetails.ConnectionRefused):
       return new OnChainServiceBusyError()
     default:
+      if (err instanceof Error) {
+        return new UnknownOnChainServiceError(
+          msgForUnknown({ message: err.message } as Error),
+        )
+      }
       return new UnknownOnChainServiceError(
         msgForUnknown({ message: "Unknown error" } as Error),
       )
