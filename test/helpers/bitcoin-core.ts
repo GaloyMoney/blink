@@ -38,7 +38,11 @@ export async function sendToAddressAndConfirm({
   try {
     txId = (await walletClient.sendToAddress({ address, amount })) as OnChainTxHash
   } catch (err) {
-    txId = new Error(err.message || err)
+    if (err instanceof Error) {
+      txId = new Error(err.message)
+    } else {
+      txId = new Error("Unknown error")
+    }
   }
 
   await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })

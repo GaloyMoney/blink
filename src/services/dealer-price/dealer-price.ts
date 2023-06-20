@@ -274,8 +274,13 @@ export const DealerPriceService = (
   })
 }
 
-const handleDealerErrors = (err: Error | string) => {
-  const errMsg = typeof err === "string" ? err : err.message
+const handleDealerErrors = (err: Error | string | unknown) => {
+  let errMsg = "Unknown error"
+  if (typeof err === "string") {
+    errMsg = err
+  } else if (err instanceof Error) {
+    errMsg = err.message
+  }
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 

@@ -50,7 +50,8 @@ const Geetest = (config: { id: string; key: string }): GeetestType => {
       const geetestRegister: GeetestRegister = { success, gt, challenge, newCaptcha }
       return geetestRegister
     } catch (err) {
-      return new UnknownCaptchaError(err)
+      if (err instanceof Error) return new UnknownCaptchaError(err.message)
+      return new UnknownCaptchaError()
     }
   }
 
@@ -73,7 +74,8 @@ const Geetest = (config: { id: string; key: string }): GeetestType => {
       }
       return true
     } catch (err) {
-      return new UnknownCaptchaError(err)
+      if (err instanceof Error) return new UnknownCaptchaError(err.message)
+      return new UnknownCaptchaError()
     }
   }
 

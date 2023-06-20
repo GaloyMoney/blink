@@ -15,7 +15,8 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
       }
       return lnPaymentFromRaw(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -28,7 +29,8 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
       })
       return result.map(lnPaymentFromRaw)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -45,7 +47,8 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
         ? lnPaymentFromRaw(result)
         : lnPaymentPartialFromRaw(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -61,7 +64,8 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
       if (!result) return new CouldNotFindLnPaymentFromHashError()
       return lnPaymentFromRaw(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 

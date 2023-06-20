@@ -37,15 +37,16 @@ export const LoginWithPhoneAndPasswordSchema = async ({
       },
     })
   } catch (err) {
-    if (err.message === "Request failed with status code 400") {
-      return new LikelyNoUserWithThisPhoneExistError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 400") {
+      return new LikelyNoUserWithThisPhoneExistError(err.message)
     }
 
-    if (err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 401") {
+      return new AuthenticationKratosError(err.message)
     }
 
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 
   const sessionToken = result.data.session_token as SessionToken
@@ -85,7 +86,8 @@ export const addTotp = async (token: SessionToken) => {
 
     return totpSecret
   } catch (err) {
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 }
 
@@ -95,7 +97,8 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
     const res = await kratosAdmin.getIdentity({ id: kratosUserId })
     identity = res.data
   } catch (err) {
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 
   try {
@@ -107,7 +110,8 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
       },
     })
   } catch (err) {
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 }
 
@@ -120,7 +124,8 @@ export const deactivateUser = async (
     const res = await kratosAdmin.getIdentity({ id: kratosUserId })
     identity = res.data
   } catch (err) {
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 
   try {
@@ -135,7 +140,8 @@ export const deactivateUser = async (
     console.log({ res }, "res")
   } catch (err) {
     console.log({ err }, "err1")
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 }
 
@@ -145,7 +151,8 @@ export const revokeSessions = async (
   try {
     await kratosAdmin.deleteIdentitySessions({ id: kratosUserId })
   } catch (err) {
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 }
 
@@ -156,7 +163,8 @@ export const listIdentitySchemas = async (): Promise<
     const res = await kratosAdmin.listIdentitySchemas()
     return res.data
   } catch (err) {
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 }
 
@@ -189,15 +197,16 @@ export const elevatingSessionWithTotp = async ({
       },
     })
   } catch (err) {
-    if (err.message === "Request failed with status code 400") {
-      return new LikelyNoUserWithThisPhoneExistError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 400") {
+      return new LikelyNoUserWithThisPhoneExistError(err.message)
     }
 
-    if (err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 401") {
+      return new AuthenticationKratosError(err.message)
     }
 
-    return new UnknownKratosError(err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 
   const sessionToken = result.data.session_token as SessionToken

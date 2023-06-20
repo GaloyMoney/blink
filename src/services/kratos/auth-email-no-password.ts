@@ -4,6 +4,8 @@ import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
+import { isAxiosError } from "axios"
+
 import { kratosPublic } from "./private"
 import { UnknownKratosError } from "./errors"
 
@@ -24,7 +26,8 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return data.id
     } catch (err) {
-      return new UnknownKratosError(err.message || err)
+      if (err instanceof Error) return new UnknownKratosError(err.message)
+      return new UnknownKratosError()
     }
   }
 
@@ -54,13 +57,14 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return new UnknownKratosError("happy case should error :/")
     } catch (err) {
-      if (err.response.status === 422) {
+      if (isAxiosError(err) && err.response?.status === 422) {
         // FIXME bug in kratos? https://github.com/ory/kratos/discussions/2923
         // console.log("422 response, success?")
         return true
       }
 
-      return new UnknownKratosError(err.message || err)
+      if (err instanceof Error) return new UnknownKratosError(err.message)
+      return new UnknownKratosError()
     }
   }
 
@@ -90,7 +94,8 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return { sessionToken, kratosUserId }
     } catch (err) {
-      return new UnknownKratosError(err.message || err)
+      if (err instanceof Error) return new UnknownKratosError(err.message)
+      return new UnknownKratosError()
     }
   }
 

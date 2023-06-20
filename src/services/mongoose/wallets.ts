@@ -39,7 +39,8 @@ export const WalletsRepository = (): IWalletsRepository => {
       await wallet.save()
       return resultToWallet(wallet)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -51,7 +52,8 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return resultToWallet(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -67,7 +69,8 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return result.map(resultToWallet)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -83,7 +86,8 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return resultToWallet(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -99,7 +103,8 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return result.map(resultToWallet)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
   // TODO: future performance improvement might be needed
@@ -114,7 +119,8 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return result.map(resultToWallet)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 

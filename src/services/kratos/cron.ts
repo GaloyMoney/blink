@@ -25,6 +25,7 @@ export const extendSession = async ({
     })
     return res.data?.active ? true : false
   } catch (err) {
-    return new UnknownKratosError(err.message || err)
+    if (err instanceof Error) return new UnknownKratosError(err.message)
+    return new UnknownKratosError()
   }
 }

@@ -58,7 +58,11 @@ authRouter.post(
         cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
         kratosUserId = loginResp.kratosUserId
       } catch (err) {
-        recordExceptionInCurrentSpan({ error: err })
+        if (err instanceof Error) {
+          recordExceptionInCurrentSpan({ error: err })
+        } else {
+          recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
+        }
         return res.status(500).send({ error: "Error parsing cookies" })
       }
 
@@ -105,7 +109,11 @@ authRouter.post(
           path: csrfCookie.path,
         })
       } catch (err) {
-        recordExceptionInCurrentSpan({ error: err })
+        if (err instanceof Error) {
+          recordExceptionInCurrentSpan({ error: err })
+        } else {
+          recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
+        }
         return res.status(500).send({ result: "Error parsing cookies" })
       }
 
@@ -153,7 +161,11 @@ authRouter.get(
           result: "logout successful",
         })
       } catch (err) {
-        recordExceptionInCurrentSpan({ error: err })
+        if (err instanceof Error) {
+          recordExceptionInCurrentSpan({ error: err })
+        } else {
+          recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
+        }
         return res.status(500).send({ error: "Error logging out" })
       }
     },
@@ -215,8 +227,13 @@ authRouter.post(
           result: authToken,
         })
       } catch (err) {
-        recordExceptionInCurrentSpan({ error: err })
-        return res.status(500).send({ error: `${err.message}` })
+        if (err instanceof Error) {
+          recordExceptionInCurrentSpan({ error: err })
+          return res.status(500).send({ error: `${err.message}` })
+        } else {
+          recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
+          return res.status(500).send({ error: "Unknown error" })
+        }
       }
     },
   }),

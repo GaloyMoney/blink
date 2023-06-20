@@ -102,10 +102,13 @@ export const LoopService = ({
       }
       return swapOutResult
     } catch (error) {
-      if (error.message.includes("channel balance too low")) {
-        return new SwapErrorChannelBalanceTooLow(error)
+      if (error instanceof Error && error.message.includes("channel balance too low")) {
+        return new SwapErrorChannelBalanceTooLow(error.message)
       }
-      return new SwapServiceError(error)
+      if (error instanceof Error) {
+        return new SwapServiceError(error.message)
+      }
+      return new SwapServiceError("Unknown error")
     }
   }
 
@@ -137,7 +140,8 @@ export const LoopService = ({
       })
       return listener
     } catch (error) {
-      throw new UnknownSwapServiceError(error)
+      if (error instanceof Error) throw new UnknownSwapServiceError(error.message)
+      throw new UnknownSwapServiceError()
     }
   }
 
@@ -166,7 +170,8 @@ export const LoopService = ({
         swapPaymentDest: resp.getSwapPaymentDest().toString() as OnChainAddress,
       }
     } catch (error) {
-      return new UnknownSwapServiceError(error)
+      if (error instanceof Error) return new UnknownSwapServiceError(error.message)
+      return new UnknownSwapServiceError()
     }
   }
 
@@ -187,7 +192,8 @@ export const LoopService = ({
         },
       }
     } catch (error) {
-      return new UnknownSwapServiceError(error)
+      if (error instanceof Error) return new UnknownSwapServiceError(error.message)
+      return new UnknownSwapServiceError()
     }
   }
 
@@ -219,8 +225,9 @@ export const LoopService = ({
         grpcOptions,
       )
       return client
-    } catch (e) {
-      throw new SwapClientNotResponding(e)
+    } catch (err) {
+      if (err instanceof Error) throw new SwapClientNotResponding(err.message)
+      throw new SwapClientNotResponding()
     }
   }
 

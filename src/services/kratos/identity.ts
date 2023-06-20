@@ -37,7 +37,8 @@ export const IdentityRepository = (): IIdentityRepository => {
       const res = await kratosAdmin.getIdentity({ id: kratosUserId })
       data = res.data
     } catch (err) {
-      return new UnknownKratosError(err)
+      if (err instanceof Error) return new UnknownKratosError(err.message)
+      return new UnknownKratosError()
     }
 
     return toDomainIdentityPhone(data)
@@ -86,7 +87,8 @@ export const IdentityRepository = (): IIdentityRepository => {
 
       return uniqueIdentities.map(toDomainIdentityPhone)
     } catch (err) {
-      return new UnknownKratosError(err)
+      if (err instanceof Error) return new UnknownKratosError(err.message)
+      return new UnknownKratosError()
     }
   }
 
@@ -101,7 +103,8 @@ export const IdentityRepository = (): IIdentityRepository => {
       const res = await kratosAdmin.listIdentities()
       identities = res.data
     } catch (err) {
-      return new UnknownKratosError(err)
+      if (err instanceof Error) return new UnknownKratosError(err.message)
+      return new UnknownKratosError()
     }
 
     const identity = identities.find((identity) => identity.traits.phone === phone)
@@ -115,7 +118,8 @@ export const IdentityRepository = (): IIdentityRepository => {
     try {
       await kratosAdmin.deleteIdentity({ id })
     } catch (err) {
-      return new UnknownKratosError(err)
+      if (err instanceof Error) return new UnknownKratosError(err.message)
+      return new UnknownKratosError()
     }
   }
 

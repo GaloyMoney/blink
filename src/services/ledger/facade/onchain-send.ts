@@ -39,7 +39,8 @@ export const getTransactionsByPayoutId = async (
     // @ts-ignore-next-line no-implicit-any error
     return results.map((tx) => translateToLedgerTx(tx))
   } catch (err) {
-    return new UnknownLedgerError(err)
+    if (err instanceof Error) return new UnknownLedgerError(err.message)
+    return new UnknownLedgerError()
   }
 }
 
@@ -96,7 +97,8 @@ export const setOnChainTxPayoutId = async ({
     }
     return true
   } catch (err) {
-    return new UnknownLedgerError(err.message || err)
+    if (err instanceof Error) return new UnknownLedgerError(err.message)
+    return new UnknownLedgerError()
   }
 }
 
@@ -115,7 +117,8 @@ export const setOnChainTxIdByPayoutId = async ({
     )
     success = result.modifiedCount > 0
   } catch (err) {
-    return new UnknownLedgerError(err)
+    if (err instanceof Error) return new UnknownLedgerError(err.message)
+    return new UnknownLedgerError()
   }
 
   const txns = await getTransactionsByPayoutId(payoutId)
@@ -165,7 +168,8 @@ export const settlePendingOnChainPayment = async (
       return new NoTransactionToSettleError()
     }
   } catch (err) {
-    return new UnknownLedgerError(err)
+    if (err instanceof Error) return new UnknownLedgerError(err.message)
+    return new UnknownLedgerError()
   }
 
   const txns = await getTransactionsByPayoutId(payoutId)

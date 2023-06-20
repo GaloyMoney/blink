@@ -41,7 +41,8 @@ export const UsersRepository = (): IUsersRepository => {
 
       return translateToUser(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -52,7 +53,8 @@ export const UsersRepository = (): IUsersRepository => {
 
       return translateToUser(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -86,7 +88,8 @@ export const UsersRepository = (): IUsersRepository => {
       }
       return translateToUser(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -104,7 +107,8 @@ export const UsersRepository = (): IUsersRepository => {
       }
       return translateToUser(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 

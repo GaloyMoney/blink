@@ -102,7 +102,8 @@ export const addLndChannelOpeningOrClosingFee = async ({
 
     return true
   } catch (err) {
-    return new UnknownLedgerError(err)
+    if (err instanceof Error) return new UnknownLedgerError(err.message)
+    return new UnknownLedgerError()
   }
 }
 
@@ -130,6 +131,7 @@ export const addLndRoutingRevenue = async ({
 
     return true
   } catch (err) {
-    return new UnknownLedgerError(err)
+    if (err instanceof Error) return new UnknownLedgerError(err.message)
+    return new UnknownLedgerError()
   }
 }

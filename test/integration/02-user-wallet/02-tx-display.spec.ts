@@ -112,7 +112,8 @@ describe("Display properties on transactions", () => {
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
-      return new UnknownLedgerError(err)
+      if (err instanceof Error) return new UnknownLedgerError(err.message)
+      return new UnknownLedgerError()
     }
   }
 
@@ -127,7 +128,8 @@ describe("Display properties on transactions", () => {
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
-      return new UnknownLedgerError(err)
+      if (err instanceof Error) return new UnknownLedgerError(err.message)
+      return new UnknownLedgerError()
     }
   }
 
@@ -142,7 +144,8 @@ describe("Display properties on transactions", () => {
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
-      return new UnknownLedgerError(err)
+      if (err instanceof Error) return new UnknownLedgerError(err.message)
+      return new UnknownLedgerError()
     }
   }
 

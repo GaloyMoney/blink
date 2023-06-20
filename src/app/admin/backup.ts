@@ -63,7 +63,13 @@ export const uploadBackup =
             addEventToCurrentSpan("Static channel backup to Dropbox successful.")
           } catch (error) {
             logger.error({ error }, "Static channel backup to Dropbox failed.")
-            recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            if (error instanceof Error)
+              recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            if (typeof error === "string")
+              recordExceptionInCurrentSpan({
+                error: new Error(error),
+                level: ErrorLevel.Warn,
+              })
           }
         },
       )
@@ -93,7 +99,8 @@ export const uploadBackup =
             addEventToCurrentSpan("Static channel backup to GoogleCloud successful.")
           } catch (error) {
             logger.error({ error }, "Static channel backup to GoogleCloud failed.")
-            recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            if (error instanceof Error)
+              recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
           }
         },
       )
@@ -123,7 +130,8 @@ export const uploadBackup =
             addEventToCurrentSpan("Static channel backup to Nextcloud successful.")
           } catch (error) {
             logger.error({ error }, "Static channel backup to Nextcloud failed.")
-            recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            if (error instanceof Error)
+              recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
           }
         },
       )

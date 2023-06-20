@@ -89,7 +89,8 @@ export const BriaSubscriber = () => {
         .withBackoff(new FibonacciBackoff(30000, 7))
         .build()
     } catch (error) {
-      return new UnknownBriaEventError(error.message || error)
+      if (error instanceof Error) return new UnknownBriaEventError(error.message)
+      return new UnknownBriaEventError()
     }
   }
 
@@ -116,7 +117,8 @@ export const NewOnChainService = (): INewOnChainService => {
         currency: WalletCurrency.Btc,
       })
     } catch (error) {
-      return new UnknownOnChainServiceError(error.message || error)
+      if (error instanceof Error) return new UnknownOnChainServiceError(error.message)
+      return new UnknownOnChainServiceError()
     }
   }
 
@@ -139,7 +141,10 @@ export const NewOnChainService = (): INewOnChainService => {
 
       const response = await newAddress(request, metadata)
       return { address: response.getAddress() as OnChainAddress }
-    } catch (err) {
+      // TODO ??
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      // TODO ??
       if (err.code === status.ALREADY_EXISTS) {
         return new OnChainAddressAlreadyCreatedForRequestIdError()
       }
@@ -162,7 +167,9 @@ export const NewOnChainService = (): INewOnChainService => {
       return {
         address: foundAddress.getAddress() as OnChainAddress,
       }
-    } catch (err) {
+      // TODO ??
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       if (err.code == status.NOT_FOUND) {
         return new OnChainAddressNotFoundError()
       }
@@ -183,7 +190,9 @@ export const NewOnChainService = (): INewOnChainService => {
 
       if (foundPayout === undefined) return new PayoutNotFoundError()
       return foundPayout.getId() as PayoutId
-    } catch (err) {
+      // TODO ??
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       if (err.code == status.NOT_FOUND) {
         return new PayoutNotFoundError()
       }
@@ -213,7 +222,9 @@ export const NewOnChainService = (): INewOnChainService => {
       const response = await submitPayout(request, metadata)
 
       return response.getId() as PayoutId
-    } catch (err) {
+      // TODO ??
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       const errMsg = typeof err === "string" ? err : err.message
       if (err.code == status.PERMISSION_DENIED && errMsg.includes("DestinationBlocked")) {
         return new PayoutDestinationBlocked()
@@ -249,7 +260,8 @@ export const NewOnChainService = (): INewOnChainService => {
           currency: WalletCurrency.Btc,
         })
       } catch (error) {
-        return new UnknownOnChainServiceError(error.message || error)
+        if (error instanceof Error) return new UnknownOnChainServiceError(error.message)
+        return new UnknownOnChainServiceError()
       }
     }
 

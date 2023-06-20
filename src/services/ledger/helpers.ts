@@ -28,7 +28,8 @@ export const persistAndReturnEntry = async ({
 
     return journalEntry
   } catch (err) {
-    return new UnknownLedgerError(err)
+    if (err instanceof Error) return new UnknownLedgerError(err.message)
+    return new UnknownLedgerError()
   }
 }
 

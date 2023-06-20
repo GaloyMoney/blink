@@ -31,7 +31,8 @@ export const admin = {
       })
       return result > 0
     } catch (err) {
-      return new UnknownLedgerError(err)
+      if (err instanceof Error) return new UnknownLedgerError(err.message)
+      return new UnknownLedgerError()
     }
   },
 
@@ -67,7 +68,8 @@ export const admin = {
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
     } catch (err) {
-      return new UnknownLedgerError(err)
+      if (err instanceof Error) return new UnknownLedgerError(err.message)
+      return new UnknownLedgerError()
     }
   },
 
@@ -103,7 +105,8 @@ export const admin = {
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
     } catch (err) {
-      return new UnknownLedgerError(err)
+      if (err instanceof Error) return new UnknownLedgerError(err.message)
+      return new UnknownLedgerError()
     }
   },
 
@@ -158,7 +161,8 @@ export const admin = {
         return new DuplicateError()
       }
     } catch (error) {
-      return new UnknownLedgerError(error)
+      if (error instanceof Error) return new UnknownLedgerError(error.message)
+      return new UnknownLedgerError()
     }
   },
 }

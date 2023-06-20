@@ -26,7 +26,8 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       }
       return true
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -45,7 +46,8 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       )
       return result.map((txRecord) => translateToLedgerTxMetadata(txRecord))
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -57,7 +59,8 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       if (!result) return new CouldNotFindTransactionMetadataError()
       return translateToLedgerTxMetadata(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -69,7 +72,8 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       if (!result) return new CouldNotFindTransactionMetadataError()
       return translateToLedgerTxMetadata(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      if (err instanceof Error) return new UnknownRepositoryError(err.message)
+      return new UnknownRepositoryError("Unknown error")
     }
   }
 
@@ -128,7 +132,8 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
 
       return result.map((txn) => translateToLedgerTxMetadata(txn))
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 

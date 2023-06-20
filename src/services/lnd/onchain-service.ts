@@ -108,7 +108,8 @@ export const OnChainService = (
         after,
       })
     } catch (err) {
-      return handleCommonOnChainServiceErrors(err)
+      if (err instanceof Error) return handleCommonOnChainServiceErrors(err)
+      return handleCommonOnChainServiceErrors({ message: "Unknown error" } as Error)
     }
   }
 
@@ -282,7 +283,7 @@ const getCachedHeight = async (): Promise<number> => {
   return cachedHeight
 }
 
-const handleCommonOnChainServiceErrors = (err: Error) => {
+const handleCommonOnChainServiceErrors = (err: Error | unknown) => {
   const errDetails = parseLndErrorDetails(err)
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
   switch (true) {
@@ -292,7 +293,9 @@ const handleCommonOnChainServiceErrors = (err: Error) => {
     case match(KnownLndErrorDetails.ConnectionRefused):
       return new OnChainServiceBusyError()
     default:
-      return new UnknownOnChainServiceError(msgForUnknown(err))
+      return new UnknownOnChainServiceError(
+        msgForUnknown({ message: "Unknown error" } as Error),
+      )
   }
 }
 

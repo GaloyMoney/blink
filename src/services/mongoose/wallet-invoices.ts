@@ -31,7 +31,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }).save()
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -51,7 +52,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -65,7 +67,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -76,7 +79,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         batchSize: 100,
       })
     } catch (error) {
-      return new UnknownRepositoryError(error)
+      if (error instanceof Error) return new UnknownRepositoryError(error.message)
+      return new UnknownRepositoryError("Unknown error")
     }
 
     for await (const walletInvoice of pending) {
@@ -94,7 +98,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return true
     } catch (error) {
-      return new UnknownRepositoryError(error)
+      if (error instanceof Error) return new UnknownRepositoryError(error.message)
+      return new UnknownRepositoryError("Unknown error")
     }
   }
 
@@ -108,7 +113,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       })
       return result.deletedCount
     } catch (error) {
-      return new UnknownRepositoryError(error)
+      if (error instanceof Error) return new UnknownRepositoryError(error.message)
+      return new UnknownRepositoryError("Unknown error")
     }
   }
 

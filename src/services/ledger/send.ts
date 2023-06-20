@@ -27,7 +27,8 @@ export const send = {
       txMetadataRepo.persistAll(txsMetadataToPersist)
       return true
     } catch (err) {
-      return new UnknownLedgerError(err)
+      if (err instanceof Error) return new UnknownLedgerError(err.message)
+      return new UnknownLedgerError()
     }
   },
 
@@ -46,7 +47,8 @@ export const send = {
       // TODO: persist to metadata
       return true
     } catch (err) {
-      return new UnknownLedgerError(err)
+      if (err instanceof Error) return new UnknownLedgerError(err.message)
+      return new UnknownLedgerError()
     }
   },
 }

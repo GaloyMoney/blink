@@ -30,7 +30,8 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
 
       return onChainAddress
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -53,7 +54,8 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
       }
     } catch (err) {
       baseLogger.warn({ err }, "issue findLastByWalletId")
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -76,7 +78,8 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
 
       return result > 0
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
   return {

@@ -112,7 +112,8 @@ const txVolumeSince = async ({
     })
     return { outgoingBaseAmount, incomingBaseAmount }
   } catch (err) {
-    return new UnknownLedgerError(err)
+    if (err instanceof Error) return new UnknownLedgerError(err.message)
+    return new UnknownLedgerError()
   }
 }
 

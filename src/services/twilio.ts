@@ -37,7 +37,9 @@ export const TwilioClient = (): IPhoneProviderService => {
       await verify.verifications.create({ to, channel })
     } catch (err) {
       baseLogger.error({ err }, "impossible to send text")
-      return handleCommonErrors(err)
+      if (err instanceof Error || typeof err === "string") {
+        return handleCommonErrors(err)
+      }
     }
 
     return true
@@ -57,7 +59,9 @@ export const TwilioClient = (): IPhoneProviderService => {
       }
 
       return true
-    } catch (err) {
+      // TODO ??
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       baseLogger.error({ err }, "impossible to verify phone and code")
 
       switch (true) {
@@ -101,7 +105,13 @@ export const TwilioClient = (): IPhoneProviderService => {
 
       return phoneMetadata
     } catch (err) {
-      return new UnknownPhoneProviderServiceError(err.message || err)
+      if (err instanceof Error) {
+        return new UnknownPhoneProviderServiceError(err.message)
+      }
+      if (typeof err === "string") {
+        return new UnknownPhoneProviderServiceError(err)
+      }
+      return new UnknownPhoneProviderServiceError()
     }
   }
 

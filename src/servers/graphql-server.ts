@@ -290,7 +290,8 @@ export const startApolloServer = async ({
           ? reportedError
           : { message: `Error processing GraphQL request ${reportedError.code}` }
       } catch (err) {
-        throw mapError(err)
+        if (err instanceof Error) throw mapError(err)
+        throw mapError(new Error("Unknown error"))
       }
     },
   })

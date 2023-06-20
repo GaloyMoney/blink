@@ -29,7 +29,8 @@ export const AccountsRepository = (): IAccountsRepository => {
         { lastIPs: 0 },
       )
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
 
     for await (const account of accounts) {
@@ -48,7 +49,8 @@ export const AccountsRepository = (): IAccountsRepository => {
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -65,7 +67,8 @@ export const AccountsRepository = (): IAccountsRepository => {
       }
       return translateToAccount(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -94,7 +97,8 @@ export const AccountsRepository = (): IAccountsRepository => {
         },
       }))
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -147,7 +151,8 @@ export const AccountsRepository = (): IAccountsRepository => {
       }
       return translateToAccount(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -158,7 +163,8 @@ export const AccountsRepository = (): IAccountsRepository => {
       await account.save()
       return translateToAccount(account)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 
@@ -177,7 +183,8 @@ export const AccountsRepository = (): IAccountsRepository => {
 
       return translateToAccount(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      if (err instanceof Error) return parseRepositoryError(err)
+      return parseRepositoryError("Unknown error")
     }
   }
 

@@ -66,7 +66,11 @@ export const getInvoiceAttempt = async ({ lnd, id }) => {
     return result
   } catch (err) {
     const invoiceNotFound = "unable to locate invoice"
-    if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
+    if (
+      Array.isArray(err) &&
+      err.length === 3 &&
+      err[2]?.err?.details === invoiceNotFound
+    ) {
       return null
     }
     // must be wrapped error?
