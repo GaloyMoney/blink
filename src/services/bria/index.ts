@@ -141,15 +141,17 @@ export const NewOnChainService = (): INewOnChainService => {
 
       const response = await newAddress(request, metadata)
       return { address: response.getAddress() as OnChainAddress }
-      // TODO ??
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      // TODO ??
-      if (err.code === status.ALREADY_EXISTS) {
+    } catch (err) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err.code === status.ALREADY_EXISTS
+      ) {
         return new OnChainAddressAlreadyCreatedForRequestIdError()
       }
-      const errMsg = typeof err === "string" ? err : err.message
-      return new UnknownOnChainServiceError(errMsg)
+      if (err instanceof Error) return new UnknownOnChainServiceError(err.message)
+      return new UnknownOnChainServiceError()
     }
   }
 
@@ -167,14 +169,18 @@ export const NewOnChainService = (): INewOnChainService => {
       return {
         address: foundAddress.getAddress() as OnChainAddress,
       }
-      // TODO ??
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      if (err.code == status.NOT_FOUND) {
+    } catch (err) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err.code == status.NOT_FOUND
+      ) {
         return new OnChainAddressNotFoundError()
       }
-      const errMsg = typeof err === "string" ? err : err.message
-      return new UnknownOnChainServiceError(errMsg)
+      if (err instanceof Error) return new UnknownOnChainServiceError(err.message)
+      if (typeof err === "string") return new UnknownOnChainServiceError(err)
+      return new UnknownOnChainServiceError()
     }
   }
 
@@ -190,14 +196,18 @@ export const NewOnChainService = (): INewOnChainService => {
 
       if (foundPayout === undefined) return new PayoutNotFoundError()
       return foundPayout.getId() as PayoutId
-      // TODO ??
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      if (err.code == status.NOT_FOUND) {
+    } catch (err) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err.code == status.NOT_FOUND
+      ) {
         return new PayoutNotFoundError()
       }
-      const errMsg = typeof err === "string" ? err : err.message
-      return new UnknownOnChainServiceError(errMsg)
+      if (err instanceof Error) return new UnknownOnChainServiceError(err.message)
+      if (typeof err === "string") return new UnknownOnChainServiceError(err)
+      return new UnknownOnChainServiceError()
     }
   }
 
@@ -222,11 +232,17 @@ export const NewOnChainService = (): INewOnChainService => {
       const response = await submitPayout(request, metadata)
 
       return response.getId() as PayoutId
-      // TODO ??
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      const errMsg = typeof err === "string" ? err : err.message
-      if (err.code == status.PERMISSION_DENIED && errMsg.includes("DestinationBlocked")) {
+    } catch (err) {
+      let errMsg = "Unknown error"
+      if (typeof err === "string") errMsg = err
+      if (err instanceof Error) errMsg = err.message
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err.code == status.PERMISSION_DENIED &&
+        errMsg.includes("DestinationBlocked")
+      ) {
         return new PayoutDestinationBlocked()
       }
       return new UnknownOnChainServiceError(errMsg)

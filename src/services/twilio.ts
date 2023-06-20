@@ -18,6 +18,8 @@ import { baseLogger } from "@services/logger"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { NotImplementedError } from "@domain/errors"
 
+import { isAxiosError } from "axios"
+
 import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
 export const TwilioClient = (): IPhoneProviderService => {
@@ -59,18 +61,14 @@ export const TwilioClient = (): IPhoneProviderService => {
       }
 
       return true
-      // TODO ??
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err) {
       baseLogger.error({ err }, "impossible to verify phone and code")
-
-      switch (true) {
-        case err.status === 404:
-          return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
-
-        default:
-          return handleCommonErrors(err)
+      if (isAxiosError(err) && err.status === 404) {
+        return new ExpiredOrNonExistentPhoneNumberError(err.message)
       }
+
+      if (err instanceof Error) return handleCommonErrors(err)
+      return handleCommonErrors("Unknown error")
     }
   }
 

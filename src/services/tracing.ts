@@ -356,7 +356,6 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
       if (error instanceof Error) {
         recordException(span, error, ErrorLevel.Critical)
       }
-      // TODO ??
       if (typeof error === "string") {
         recordException(span, { message: error }, ErrorLevel.Critical)
       }
