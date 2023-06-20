@@ -1,4 +1,7 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/servers/*.ts", "src/**/*.d.ts"]
+  "include": ["src/servers/**/*.ts", "src/**/*.d.ts"],
+  "compilerOptions": {
+    "noImplicitAny": true
+  }
 }

@@ -64,7 +64,7 @@ watch-unit:
 	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/jest-unit.config.js
 
 watch-compile:
-	$(BIN_DIR)/tsc --watch  --noEmit --skipLibCheck
+	$(BIN_DIR)/tsc --watch  --noEmit
 
 e2e-in-ci:
 	make create-tmp-env-ci && \

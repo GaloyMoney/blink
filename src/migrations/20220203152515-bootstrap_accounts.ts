@@ -1,6 +1,5 @@
 /* eslint @typescript-eslint/no-var-requires: "off" */
-// @ts-expect-error ts complain about "Cannot redeclare block-scoped variable 'crypto'"
-const crypto = require("crypto")
+const crypto2 = require("crypto")
 
 const adminUsers = [
   {
@@ -43,7 +42,7 @@ module.exports = {
 
       if (!wallet) {
         const currency = "BTC"
-        const id = crypto.randomUUID()
+        const id = crypto2.randomUUID()
 
         const result = await db
           .collection("wallets")
@@ -71,7 +70,7 @@ module.exports = {
         wallet = await db.collection("wallets").findOne({ _accountId, currency })
 
         if (!wallet) {
-          const id = crypto.randomUUID()
+          const id = crypto2.randomUUID()
           const result = await db
             .collection("wallets")
             .insertOne({ _accountId, currency, id, ...defaultWallet })

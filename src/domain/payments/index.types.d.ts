@@ -319,8 +319,8 @@ type LightningPaymentFlowBuilderConfig = {
 }
 
 type OnChainPaymentFlowBuilderConfig = {
-  volumeLightningFn
-  volumeOnChainFn
+  volumeLightningFn: any
+  volumeOnChainFn: any
   isExternalAddress: (state: { address: OnChainAddress }) => Promise<boolean>
   sendAll: boolean
   dustThreshold: number
