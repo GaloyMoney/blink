@@ -1,4 +1,4 @@
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getFeesConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import { Wallets } from "@app"
 
@@ -18,7 +18,6 @@ import {
   bitcoindOutside,
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
-  getAccountRecordByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   lnd1,
   mineBlockAndSyncAll,
@@ -33,9 +32,6 @@ let walletIdA: WalletId
 let walletIdD: WalletId
 let walletIdF: WalletId
 
-let accountRecordA: AccountRecord
-let accountRecordD: AccountRecord
-
 beforeAll(async () => {
   await createMandatoryUsers()
 
@@ -48,9 +44,6 @@ beforeAll(async () => {
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
-
-  accountRecordA = await getAccountRecordByTestUserRef("A")
-  accountRecordD = await getAccountRecordByTestUserRef("D")
 })
 
 beforeEach(() => {
@@ -155,13 +148,11 @@ describe("onchainBlockEventHandler", () => {
 
     const validateWalletState = async ({
       walletId,
-      userRecord,
       initialState,
       amount,
       address,
     }: {
       walletId: WalletId
-      userRecord: AccountRecord
       initialState: WalletState
       amount: Satoshis
       address: string
@@ -173,7 +164,7 @@ describe("onchainBlockEventHandler", () => {
       if (btcAmount instanceof Error) throw btcAmount
 
       const { balance, transactions, onchainAddress } = await getWalletState(walletId)
-      const depositFeeRatio = userRecord.depositFeeRatio as DepositFeeRatio
+      const depositFeeRatio = getFeesConfig().depositRatioAsBasisPoints
       const finalAmount = amountAfterFeeDeduction({ amount: btcAmount, depositFeeRatio })
       const lastTransaction = transactions[0]
 
@@ -192,14 +183,12 @@ describe("onchainBlockEventHandler", () => {
 
     await validateWalletState({
       walletId: walletIdA,
-      userRecord: accountRecordA,
       initialState: initWalletAState,
       amount: amount,
       address: address,
     })
     await validateWalletState({
       walletId: walletIdD,
-      userRecord: accountRecordD,
       initialState: initWalletDState,
       amount: amount2,
       address: address2,

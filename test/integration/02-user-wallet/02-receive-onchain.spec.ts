@@ -86,6 +86,7 @@ let newAccountIdA: AccountId
 let newWalletIdA: WalletId
 
 const accountLimits = getAccountLimits({ level: 1 })
+const feesConfig = getFeesConfig()
 
 const locale = getLocale()
 
@@ -128,11 +129,11 @@ describe("With Bria", () => {
   const sendToWalletTestWrapper = async ({
     amountSats,
     walletId,
-    depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
+    depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
   }: {
     amountSats: BtcPaymentAmount
     walletId: WalletId
-    depositFeeRatio?: DepositFeeRatio
+    depositFeeRatio?: DepositFeeRatioAsBasisPoints
   }): Promise<OnChainTxHash> => {
     const initialBalance = await getBalanceHelper(walletId)
     const { result: initTransactions, error } = await getTransactionsForWalletId(walletId)
@@ -229,7 +230,7 @@ describe("With Bria", () => {
 
     const fee = DepositFeeCalculator().onChainDepositFee({
       amount: amountSats,
-      ratio: account.depositFeeRatio,
+      ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) throw fee
 
@@ -270,12 +271,12 @@ describe("With Bria", () => {
     amountSats,
     walletId,
     addresses,
-    depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
+    depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
   }: {
     amountSats: Satoshis
     walletId: WalletId
     addresses: OnChainAddress[]
-    depositFeeRatio?: DepositFeeRatio
+    depositFeeRatio?: DepositFeeRatioAsBasisPoints
   }) {
     // Step 1: get initial balance and transactions list
     const initialBalance = await getBalanceHelper(walletId)
@@ -482,7 +483,7 @@ describe("With Bria", () => {
 
       const expectedSatsFee = DepositFeeCalculator().onChainDepositFee({
         amount: receivedBtc,
-        ratio: account.depositFeeRatio,
+        ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (expectedSatsFee instanceof Error) throw expectedSatsFee
 
@@ -716,7 +717,7 @@ describe("With Bria", () => {
         }
       }
 
-      const defaultDepositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
+      const defaultDepositFeeRatio = feesConfig.depositRatioAsBasisPoints
 
       // Test 'getPendingOnChainBalanceForWallets' use-case method
       const newWalletA = await WalletsRepository().findById(newWalletIdA)
@@ -823,7 +824,7 @@ describe("With Bria", () => {
       if (account instanceof Error) throw account
       const feeSats = DepositFeeCalculator().onChainDepositFee({
         amount: amountSats,
-        ratio: account.depositFeeRatio,
+        ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (feeSats instanceof Error) throw feeSats
 
@@ -921,24 +922,6 @@ describe("With Bria", () => {
         throw resultSettled
       }
     })
-
-    it("allows fee exemption for specific users", async () => {
-      const amountSats = getRandomBtcAmount()
-
-      const accountRecordC = await getAccountRecordByTestUserRef("C")
-      accountRecordC.depositFeeRatio = 0
-      await accountRecordC.save()
-      const walletC = await getDefaultWalletIdByTestUserRef("C")
-
-      const initBalanceUserC = await getBalanceHelper(walletC)
-      await sendToWalletTestWrapper({
-        walletId: walletC,
-        depositFeeRatio: 0 as DepositFeeRatio,
-        amountSats,
-      })
-      const finalBalanceUserC = await getBalanceHelper(walletC)
-      expect(finalBalanceUserC).toBe(initBalanceUserC + Number(amountSats.amount))
-    })
   })
 })
 
@@ -946,11 +929,11 @@ describe("With Lnd", () => {
   const sendToWalletTestWrapper = async ({
     amountSats,
     walletId,
-    depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
+    depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
   }: {
     amountSats: BtcPaymentAmount
     walletId: WalletId
-    depositFeeRatio?: DepositFeeRatio
+    depositFeeRatio?: DepositFeeRatioAsBasisPoints
   }): Promise<OnChainTxHash> => {
     const lnd = lndonchain
 
@@ -1038,7 +1021,7 @@ describe("With Lnd", () => {
 
     const fee = DepositFeeCalculator().onChainDepositFee({
       amount: amountSats,
-      ratio: account.depositFeeRatio,
+      ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) throw fee
 
@@ -1079,12 +1062,12 @@ describe("With Lnd", () => {
     amountSats,
     walletId,
     addresses,
-    depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
+    depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
   }: {
     amountSats: Satoshis
     walletId: WalletId
     addresses: OnChainAddress[]
-    depositFeeRatio?: DepositFeeRatio
+    depositFeeRatio?: DepositFeeRatioAsBasisPoints
   }) => {
     const lnd = lndonchain
 
@@ -1356,7 +1339,7 @@ describe("With Lnd", () => {
 
       const expectedSatsFee = DepositFeeCalculator().onChainDepositFee({
         amount: amountSats,
-        ratio: account.depositFeeRatio,
+        ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (expectedSatsFee instanceof Error) throw expectedSatsFee
 
@@ -1536,7 +1519,7 @@ describe("With Lnd", () => {
       _
       await sleep(1000)
 
-      const defaultDepositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
+      const defaultDepositFeeRatio = feesConfig.depositRatioAsBasisPoints
 
       // Test 'getPendingOnChainBalanceForWallets' use-case method
       const newWalletA = await WalletsRepository().findById(newWalletIdA)
@@ -1579,7 +1562,7 @@ describe("With Lnd", () => {
         const balanceA = await getBalanceHelper(newWalletIdA)
         const balanceFunder = await getBalanceHelper(funderWalletId)
 
-        const depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
+        const depositFeeRatio = feesConfig.depositRatioAsBasisPoints
 
         expect(balanceA).toBe(
           initialBalanceUserA +
@@ -1618,7 +1601,7 @@ describe("With Lnd", () => {
 
       const feeSats = DepositFeeCalculator().onChainDepositFee({
         amount: amountSats,
-        ratio: account.depositFeeRatio,
+        ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (feeSats instanceof Error) throw feeSats
 
@@ -1699,24 +1682,6 @@ describe("With Lnd", () => {
 
       await sleep(3000)
       sub.removeAllListeners()
-    })
-
-    it("allows fee exemption for specific users", async () => {
-      const amountSats = getRandomBtcAmount()
-
-      const accountRecordC = await getAccountRecordByTestUserRef("C")
-      accountRecordC.depositFeeRatio = 0
-      await accountRecordC.save()
-      const walletC = await getDefaultWalletIdByTestUserRef("C")
-
-      const initBalanceUserC = await getBalanceHelper(walletC)
-      await sendToWalletTestWrapper({
-        walletId: walletC,
-        depositFeeRatio: 0 as DepositFeeRatio,
-        amountSats,
-      })
-      const finalBalanceUserC = await getBalanceHelper(walletC)
-      expect(finalBalanceUserC).toBe(initBalanceUserC + Number(amountSats.amount))
     })
   })
 })

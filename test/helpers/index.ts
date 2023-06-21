@@ -48,7 +48,7 @@ export const amountAfterFeeDeduction = ({
   depositFeeRatio,
 }: {
   amount: BtcPaymentAmount
-  depositFeeRatio: DepositFeeRatio
+  depositFeeRatio: DepositFeeRatioAsBasisPoints
 }) => {
   const satsFee = DepositFeeCalculator().onChainDepositFee({
     amount,

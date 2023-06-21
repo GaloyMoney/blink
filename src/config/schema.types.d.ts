@@ -101,7 +101,11 @@ type YamlSchema = {
     }
   }
   fees: {
-    deposit: number
+    deposit: {
+      defaultMin: number
+      threshold: number
+      ratioAsBasisPoints: number
+    }
     withdraw: {
       method: string
       ratioAsBasisPoints: number

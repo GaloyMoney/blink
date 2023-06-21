@@ -1,11 +1,12 @@
-import { checkedToBtcPaymentAmount } from "@domain/payments"
-import { ZERO_SATS } from "@domain/shared"
+import { AmountCalculator, ZERO_SATS } from "@domain/shared"
+
+const calc = AmountCalculator()
 
 export const DepositFeeCalculator = (): DepositFeeCalculator => {
-  const onChainDepositFee = ({ amount, ratio }: onChainDepositFeeArgs) => {
-    return ratio === 0
-      ? ZERO_SATS
-      : checkedToBtcPaymentAmount(Math.round(Number(amount.amount) * ratio))
+  const onChainDepositFee = ({ amount, ratio }: OnChainDepositFeeArgs) => {
+    if (ratio === 0n) return ZERO_SATS
+
+    return calc.mulBasisPoints(amount, ratio)
   }
 
   return {

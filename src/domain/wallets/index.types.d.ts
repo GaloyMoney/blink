@@ -132,23 +132,6 @@ type WalletTransaction =
   | WalletOnChainTransaction
   | WalletLnTransaction
 
-type WalletDetailsByWalletId = Record<
-  WalletId,
-  {
-    walletCurrency: WalletCurrency
-    // TODO: Add conditional type here to be: S extends "BTC" ? undefined : WalletPriceRatio
-    walletPriceRatio: WalletPriceRatio | undefined
-    depositFeeRatio: DepositFeeRatio
-    displayPriceRatio: DisplayPriceRatio<"BTC", DisplayCurrency>
-  }
->
-
-type AddPendingIncomingArgs = {
-  pendingIncoming: IncomingOnChainTransaction[]
-  addressesByWalletId: { [key: WalletId]: OnChainAddress[] }
-  walletDetailsByWalletId: WalletDetailsByWalletId
-}
-
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
 }
@@ -186,16 +169,16 @@ interface IWalletsRepository {
   ): Promise<Wallet[] | RepositoryError>
 }
 
-type onChainDepositFeeArgs = {
+type OnChainDepositFeeArgs = {
   amount: BtcPaymentAmount
-  ratio: DepositFeeRatio
+  ratio: DepositFeeRatioAsBasisPoints
 }
 
 type DepositFeeCalculator = {
   onChainDepositFee({
     amount,
     ratio,
-  }: onChainDepositFeeArgs): BtcPaymentAmount | ValidationError
+  }: OnChainDepositFeeArgs): BtcPaymentAmount | ValidationError
   lnDepositFee(): BtcPaymentAmount
 }
 

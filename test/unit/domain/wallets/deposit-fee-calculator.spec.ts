@@ -10,13 +10,13 @@ describe("DepositFeeCalculator", () => {
 
   describe("onChainDepositFee", () => {
     it("applies a depositFeeRatio", () => {
-      const ratio = 0.02 as DepositFeeRatio
+      const ratio = 200n as DepositFeeRatioAsBasisPoints
       const fee = calculator.onChainDepositFee({ amount, ratio })
       expect(fee).toEqual({ amount: 2n, currency: WalletCurrency.Btc })
     })
 
     it("applies a depositFeeRatio of 0", () => {
-      const ratio = 0 as DepositFeeRatio
+      const ratio = 0n as DepositFeeRatioAsBasisPoints
       const fee = calculator.onChainDepositFee({ amount, ratio })
       expect(fee).toEqual(ZERO_SATS)
     })

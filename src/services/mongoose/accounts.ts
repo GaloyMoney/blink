@@ -217,7 +217,6 @@ const translateToAccount = (result: AccountRecord): Account => ({
     },
     [],
   ),
-  depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
   withdrawFee: result.withdrawFee as Satoshis,
   isEditor: result.role === "editor",
 

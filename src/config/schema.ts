@@ -495,7 +495,17 @@ export const configSchema = {
     fees: {
       type: "object",
       properties: {
-        deposit: { type: "number" },
+        deposit: {
+          type: "object",
+          properties: {
+            defaultMin: { type: "integer" },
+            threshold: { type: "integer" },
+            ratioAsBasisPoints: { type: "integer" },
+          },
+          required: ["defaultMin", "threshold", "ratioAsBasisPoints"],
+          additionalProperties: false,
+          default: { defaultMin: 3000, threshold: 1000000, ratioAsBasisPoints: 30 },
+        },
         withdraw: {
           type: "object",
           properties: {
@@ -535,7 +545,7 @@ export const configSchema = {
           threshold: 1000000,
           daysLookback: 30,
         },
-        deposit: 0.003,
+        deposit: { defaultMin: 3000, threshold: 1000000, ratioAsBasisPoints: 30 },
       },
     },
     lnds: {
