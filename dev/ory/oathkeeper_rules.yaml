@@ -49,7 +49,7 @@
   mutators:
     - handler: noop
 
-- id: galoy-backend
+- id: galoy-ws
   upstream:
     url: "http://e2e-tests:4000"
   match:
