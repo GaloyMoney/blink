@@ -3,24 +3,27 @@ import { authenticatedBitcoind, createWallet, importDescriptors } from "bitcoin-
 import { Wallets } from "@app"
 import { getBitcoinCoreRPCConfig } from "@config"
 
+import { BriaPayloadType } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 
 import { toSats } from "@domain/bitcoin"
 
-import { BitcoindClient, bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
+import {
+  utxoDetectedEventHandler,
+  utxoSettledEventHandler,
+} from "@servers/event-handlers/bria"
 
+import {
+  BitcoindClient,
+  bitcoindDefaultClient,
+  BitcoindWalletClient,
+  getBitcoinCoreSignerRPCConfig,
+} from "./bitcoind"
 import { descriptors } from "./multisig-wallet"
 import { descriptors as signerDescriptors } from "./signer-wallet"
 import { checkIsBalanced } from "./check-is-balanced"
 import { waitUntilBlockHeight } from "./lightning"
-
-const getBitcoinCoreSignerRPCConfig = () => {
-  return {
-    ...getBitcoinCoreRPCConfig(),
-    host: process.env.BITCOIND_SIGNER_ADDR,
-    port: parseInt(process.env.BITCOIND_SIGNER_PORT || "8332", 10),
-  }
-}
+import { onceBriaSubscribe } from "./bria"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
@@ -125,6 +128,59 @@ export const fundWalletIdFromOnchain = async ({
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) throw balance
   return toSats(balance)
+}
+
+export const fundWalletIdFromOnchainViaBria = async <S extends WalletCurrency>({
+  walletDescriptor,
+  amountInBitcoin,
+}: {
+  walletDescriptor: WalletDescriptor<S>
+  amountInBitcoin: number
+}): Promise<{ walletBalance: BalanceAmount<S> }> => {
+  const address = await Wallets.createOnChainAddressForBtcWallet({
+    walletId: walletDescriptor.id,
+  })
+  if (address instanceof Error) throw address
+
+  const txId = await sendToAddressAndConfirm({
+    walletClient: bitcoindOutside,
+    address,
+    amount: amountInBitcoin,
+  })
+  if (txId instanceof Error) throw txId
+
+  // Receive transaction with bria trigger methods
+  // ===
+  const detectedEvent = await onceBriaSubscribe({
+    type: BriaPayloadType.UtxoDetected,
+    txId,
+  })
+  if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
+    throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
+  }
+
+  const resultPending = await utxoDetectedEventHandler({ event: detectedEvent.payload })
+  if (resultPending instanceof Error) {
+    throw resultPending
+  }
+
+  const settledEvent = await onceBriaSubscribe({
+    type: BriaPayloadType.UtxoSettled,
+    txId,
+  })
+  if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
+    throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
+  }
+  const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
+  if (resultSettled instanceof Error) {
+    throw resultSettled
+  }
+
+  await checkIsBalanced()
+
+  const walletBalance = await LedgerService().getWalletBalanceAmount(walletDescriptor)
+  if (walletBalance instanceof Error) throw walletBalance
+  return { walletBalance }
 }
 
 export const createColdStorageWallet = async (walletName: string) => {

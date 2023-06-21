@@ -54,6 +54,14 @@ type InWalletTransaction = {
   // TODO? all available: https://developer.bitcoin.org/reference/rpc/gettransaction.html#result
 }
 
+export const getBitcoinCoreSignerRPCConfig = () => {
+  return {
+    ...getBitcoinCoreRPCConfig(),
+    host: process.env.BITCOIND_SIGNER_ADDR,
+    port: parseInt(process.env.BITCOIND_SIGNER_PORT || "8332", 10),
+  }
+}
+
 export class BitcoindClient {
   readonly bitcoind
 

@@ -143,7 +143,9 @@ export const createRandomUserAndWallet = async () => {
   const randomEntry: TestEntry = { phone: getRandomPhoneNumber() }
   return createUserAndWallet(randomEntry)
 }
-export const createUserAndWallet = async (entry: TestEntry) => {
+export const createUserAndWallet = async (
+  entry: TestEntry,
+): Promise<WalletDescriptor<"BTC">> => {
   let kratosUserId: UserId
 
   const phone = entry.phone as PhoneNumber
@@ -227,7 +229,17 @@ export const createUserAndWallet = async (entry: TestEntry) => {
     )
   }
 
-  return { accountId: account.id, walletId: account.defaultWalletId }
+  const wallet = await WalletsRepository().findById(account.defaultWalletId)
+  if (wallet instanceof Error) throw wallet
+  if (wallet.currency !== WalletCurrency.Btc) {
+    throw new Error("Expected BTC-currency default wallet")
+  }
+
+  return {
+    accountId: account.id,
+    id: account.defaultWalletId,
+    currency: wallet.currency,
+  }
 }
 
 export const addNewWallet = async ({
