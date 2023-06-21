@@ -17,7 +17,6 @@ import {
 } from "@services/mongoose"
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
 
-// TODO ??
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "../payments/send-intraledger"
 
 export const addEarn = async ({
