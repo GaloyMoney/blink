@@ -9,8 +9,12 @@ export const RankedErrorLevel = [ErrorLevel.Info, ErrorLevel.Warn, ErrorLevel.Cr
 export class DomainError extends Error {
   name: string
   level?: ErrorLevel
-  constructor(message?: string) {
-    super(message)
+  constructor(message?: string | unknown) {
+    if (typeof message === "string" || typeof message === "undefined") {
+      super(message)
+    } else {
+      super()
+    }
     this.name = this.constructor.name
     this.level = ErrorLevel.Info
   }
