@@ -79,6 +79,8 @@ const addSettledTransactionBeforeFinally = async ({
 
     const fee = DepositFeeCalculator().onChainDepositFee({
       amount,
+      minBankFee: feesConfig.depositDefaultMin,
+      minBankFeeThreshold: feesConfig.depositThreshold,
       ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) return fee

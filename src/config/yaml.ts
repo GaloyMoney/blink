@@ -182,8 +182,14 @@ export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
       : BigInt(feesConfig.withdraw.ratioAsBasisPoints)
 
   return {
-    depositDefaultMin: toSats(feesConfig.deposit.defaultMin),
-    depositThreshold: toSats(feesConfig.deposit.threshold),
+    depositDefaultMin: {
+      amount: BigInt(feesConfig.deposit.defaultMin),
+      currency: WalletCurrency.Btc,
+    },
+    depositThreshold: {
+      amount: BigInt(feesConfig.deposit.threshold),
+      currency: WalletCurrency.Btc,
+    },
     depositRatioAsBasisPoints,
     withdrawMethod: method,
     withdrawRatioAsBasisPoints,

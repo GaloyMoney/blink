@@ -60,7 +60,6 @@ import {
   createRandomUserAndWallet,
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
-  getAccountRecordByTestUserRef,
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
   getTransactionsForWalletId,
@@ -129,10 +128,14 @@ describe("With Bria", () => {
   const sendToWalletTestWrapper = async ({
     amountSats,
     walletId,
+    minBankFee = feesConfig.depositDefaultMin,
+    minBankFeeThreshold = feesConfig.depositThreshold,
     depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
   }: {
     amountSats: BtcPaymentAmount
     walletId: WalletId
+    minBankFee?: BtcPaymentAmount
+    minBankFeeThreshold?: BtcPaymentAmount
     depositFeeRatio?: DepositFeeRatioAsBasisPoints
   }): Promise<OnChainTxHash> => {
     const initialBalance = await getBalanceHelper(walletId)
@@ -190,6 +193,8 @@ describe("With Bria", () => {
       initialBalance +
         amountAfterFeeDeduction({
           amount: amountSats,
+          minBankFee,
+          minBankFeeThreshold,
           depositFeeRatio,
         }),
     )
@@ -209,6 +214,8 @@ describe("With Bria", () => {
     expect(txn.settlementAmount).toBe(
       amountAfterFeeDeduction({
         amount: amountSats,
+        minBankFee,
+        minBankFeeThreshold,
         depositFeeRatio: depositFeeRatio,
       }),
     )
@@ -230,6 +237,8 @@ describe("With Bria", () => {
 
     const fee = DepositFeeCalculator().onChainDepositFee({
       amount: amountSats,
+      minBankFee: feesConfig.depositDefaultMin,
+      minBankFeeThreshold: feesConfig.depositThreshold,
       ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) throw fee
@@ -271,11 +280,15 @@ describe("With Bria", () => {
     amountSats,
     walletId,
     addresses,
+    minBankFee = feesConfig.depositDefaultMin,
+    minBankFeeThreshold = feesConfig.depositThreshold,
     depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
   }: {
     amountSats: Satoshis
     walletId: WalletId
     addresses: OnChainAddress[]
+    minBankFee?: BtcPaymentAmount
+    minBankFeeThreshold?: BtcPaymentAmount
     depositFeeRatio?: DepositFeeRatioAsBasisPoints
   }) {
     // Step 1: get initial balance and transactions list
@@ -387,6 +400,8 @@ describe("With Bria", () => {
       initialBalance +
         amountAfterFeeDeduction({
           amount: btcAmount,
+          minBankFee,
+          minBankFeeThreshold,
           depositFeeRatio,
         }) *
           addresses.length,
@@ -483,6 +498,8 @@ describe("With Bria", () => {
 
       const expectedSatsFee = DepositFeeCalculator().onChainDepositFee({
         amount: receivedBtc,
+        minBankFee: feesConfig.depositDefaultMin,
+        minBankFeeThreshold: feesConfig.depositThreshold,
         ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (expectedSatsFee instanceof Error) throw expectedSatsFee
@@ -729,6 +746,8 @@ describe("With Bria", () => {
       expect(Number(pendingBalance[newWalletIdA].amount)).toEqual(
         amountAfterFeeDeduction({
           amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
+          minBankFee: feesConfig.depositDefaultMin,
+          minBankFeeThreshold: feesConfig.depositThreshold,
           depositFeeRatio: defaultDepositFeeRatio,
         }),
       )
@@ -773,6 +792,8 @@ describe("With Bria", () => {
           initialBalanceUserA +
             amountAfterFeeDeduction({
               amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
+              minBankFee: feesConfig.depositDefaultMin,
+              minBankFeeThreshold: feesConfig.depositThreshold,
               depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
@@ -780,6 +801,8 @@ describe("With Bria", () => {
           initBalanceDealer +
             amountAfterFeeDeduction({
               amount: { amount: 200_000_000n, currency: WalletCurrency.Btc },
+              minBankFee: feesConfig.depositDefaultMin,
+              minBankFeeThreshold: feesConfig.depositThreshold,
               depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
@@ -824,6 +847,8 @@ describe("With Bria", () => {
       if (account instanceof Error) throw account
       const feeSats = DepositFeeCalculator().onChainDepositFee({
         amount: amountSats,
+        minBankFee: feesConfig.depositDefaultMin,
+        minBankFeeThreshold: feesConfig.depositThreshold,
         ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (feeSats instanceof Error) throw feeSats
@@ -929,10 +954,14 @@ describe("With Lnd", () => {
   const sendToWalletTestWrapper = async ({
     amountSats,
     walletId,
+    minBankFee = feesConfig.depositDefaultMin,
+    minBankFeeThreshold = feesConfig.depositThreshold,
     depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
   }: {
     amountSats: BtcPaymentAmount
     walletId: WalletId
+    minBankFee?: BtcPaymentAmount
+    minBankFeeThreshold?: BtcPaymentAmount
     depositFeeRatio?: DepositFeeRatioAsBasisPoints
   }): Promise<OnChainTxHash> => {
     const lnd = lndonchain
@@ -970,6 +999,8 @@ describe("With Lnd", () => {
         initialBalance +
           amountAfterFeeDeduction({
             amount: amountSats,
+            minBankFee,
+            minBankFeeThreshold,
             depositFeeRatio,
           }),
       )
@@ -987,6 +1018,8 @@ describe("With Lnd", () => {
       expect(txn.settlementAmount).toBe(
         amountAfterFeeDeduction({
           amount: amountSats,
+          minBankFee,
+          minBankFeeThreshold,
           depositFeeRatio: depositFeeRatio,
         }),
       )
@@ -1021,6 +1054,8 @@ describe("With Lnd", () => {
 
     const fee = DepositFeeCalculator().onChainDepositFee({
       amount: amountSats,
+      minBankFee: feesConfig.depositDefaultMin,
+      minBankFeeThreshold: feesConfig.depositThreshold,
       ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) throw fee
@@ -1062,11 +1097,15 @@ describe("With Lnd", () => {
     amountSats,
     walletId,
     addresses,
+    minBankFee = feesConfig.depositDefaultMin,
+    minBankFeeThreshold = feesConfig.depositThreshold,
     depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
   }: {
     amountSats: Satoshis
     walletId: WalletId
     addresses: OnChainAddress[]
+    minBankFee?: BtcPaymentAmount
+    minBankFeeThreshold?: BtcPaymentAmount
     depositFeeRatio?: DepositFeeRatioAsBasisPoints
   }) => {
     const lnd = lndonchain
@@ -1105,6 +1144,8 @@ describe("With Lnd", () => {
         currentBalance +
           amountAfterFeeDeduction({
             amount: btcAmount,
+            minBankFee,
+            minBankFeeThreshold,
             depositFeeRatio,
           }) *
             addresses.length,
@@ -1125,6 +1166,8 @@ describe("With Lnd", () => {
       expect(txn.settlementAmount).toBe(
         amountAfterFeeDeduction({
           amount: btcAmount,
+          minBankFee,
+          minBankFeeThreshold,
           depositFeeRatio: depositFeeRatio,
         }),
       )
@@ -1227,6 +1270,8 @@ describe("With Lnd", () => {
     const expectedPendingBalance =
       amountAfterFeeDeduction({
         amount: btcAmount,
+        minBankFee,
+        minBankFeeThreshold,
         depositFeeRatio,
       }) * addresses.length
     expect(Number(pendingBalances[walletId].amount)).toEqual(expectedPendingBalance)
@@ -1339,6 +1384,8 @@ describe("With Lnd", () => {
 
       const expectedSatsFee = DepositFeeCalculator().onChainDepositFee({
         amount: amountSats,
+        minBankFee: feesConfig.depositDefaultMin,
+        minBankFeeThreshold: feesConfig.depositThreshold,
         ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (expectedSatsFee instanceof Error) throw expectedSatsFee
@@ -1531,6 +1578,8 @@ describe("With Lnd", () => {
       expect(Number(pendingBalance[newWalletIdA].amount)).toEqual(
         amountAfterFeeDeduction({
           amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
+          minBankFee: feesConfig.depositDefaultMin,
+          minBankFeeThreshold: feesConfig.depositThreshold,
           depositFeeRatio: defaultDepositFeeRatio,
         }),
       )
@@ -1562,12 +1611,16 @@ describe("With Lnd", () => {
         const balanceA = await getBalanceHelper(newWalletIdA)
         const balanceFunder = await getBalanceHelper(funderWalletId)
 
+        const minBankFee = feesConfig.depositDefaultMin
+        const minBankFeeThreshold = feesConfig.depositThreshold
         const depositFeeRatio = feesConfig.depositRatioAsBasisPoints
 
         expect(balanceA).toBe(
           initialBalanceUserA +
             amountAfterFeeDeduction({
               amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
+              minBankFee,
+              minBankFeeThreshold,
               depositFeeRatio,
             }),
         )
@@ -1575,6 +1628,8 @@ describe("With Lnd", () => {
           initBalanceDealer +
             amountAfterFeeDeduction({
               amount: { amount: 200_000_000n, currency: WalletCurrency.Btc },
+              minBankFee,
+              minBankFeeThreshold,
               depositFeeRatio,
             }),
         )
@@ -1601,6 +1656,8 @@ describe("With Lnd", () => {
 
       const feeSats = DepositFeeCalculator().onChainDepositFee({
         amount: amountSats,
+        minBankFee: feesConfig.depositDefaultMin,
+        minBankFeeThreshold: feesConfig.depositThreshold,
         ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (feeSats instanceof Error) throw feeSats

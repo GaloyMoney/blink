@@ -50,6 +50,8 @@ export const addPendingTransaction = async ({
 
   const satsFee = DepositFeeCalculator().onChainDepositFee({
     amount: satoshis,
+    minBankFee: feesConfig.depositDefaultMin,
+    minBankFeeThreshold: feesConfig.depositThreshold,
     ratio: feesConfig.depositRatioAsBasisPoints,
   })
   if (satsFee instanceof Error) return satsFee

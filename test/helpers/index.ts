@@ -45,13 +45,19 @@ export const randomAccount = async () => {
 
 export const amountAfterFeeDeduction = ({
   amount,
+  minBankFee,
+  minBankFeeThreshold,
   depositFeeRatio,
 }: {
   amount: BtcPaymentAmount
+  minBankFee: BtcPaymentAmount
+  minBankFeeThreshold: BtcPaymentAmount
   depositFeeRatio: DepositFeeRatioAsBasisPoints
 }) => {
   const satsFee = DepositFeeCalculator().onChainDepositFee({
     amount,
+    minBankFee,
+    minBankFeeThreshold,
     ratio: depositFeeRatio,
   })
   if (satsFee instanceof Error) throw satsFee

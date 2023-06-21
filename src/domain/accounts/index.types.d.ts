@@ -182,8 +182,8 @@ type TestAccountsChecker = (testAccounts: TestAccount[]) => {
 
 type FeesConfig = {
   depositRatioAsBasisPoints: DepositFeeRatioAsBasisPoints
-  depositThreshold: Satoshis
-  depositDefaultMin: Satoshis
+  depositThreshold: BtcPaymentAmount
+  depositDefaultMin: BtcPaymentAmount
   withdrawMethod: WithdrawalFeePriceMethod
   withdrawRatioAsBasisPoints: bigint
   withdrawThreshold: Satoshis

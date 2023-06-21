@@ -171,14 +171,13 @@ interface IWalletsRepository {
 
 type OnChainDepositFeeArgs = {
   amount: BtcPaymentAmount
+  minBankFee: BtcPaymentAmount
+  minBankFeeThreshold: BtcPaymentAmount
   ratio: DepositFeeRatioAsBasisPoints
 }
 
 type DepositFeeCalculator = {
-  onChainDepositFee({
-    amount,
-    ratio,
-  }: OnChainDepositFeeArgs): BtcPaymentAmount | ValidationError
+  onChainDepositFee(args: OnChainDepositFeeArgs): BtcPaymentAmount | ValidationError
   lnDepositFee(): BtcPaymentAmount
 }
 

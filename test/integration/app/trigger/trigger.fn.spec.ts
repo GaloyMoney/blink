@@ -164,8 +164,16 @@ describe("onchainBlockEventHandler", () => {
       if (btcAmount instanceof Error) throw btcAmount
 
       const { balance, transactions, onchainAddress } = await getWalletState(walletId)
-      const depositFeeRatio = getFeesConfig().depositRatioAsBasisPoints
-      const finalAmount = amountAfterFeeDeduction({ amount: btcAmount, depositFeeRatio })
+      const feeConfig = getFeesConfig()
+      const minBankFee = feeConfig.depositDefaultMin
+      const minBankFeeThreshold = feeConfig.depositThreshold
+      const depositFeeRatio = feeConfig.depositRatioAsBasisPoints
+      const finalAmount = amountAfterFeeDeduction({
+        amount: btcAmount,
+        minBankFee,
+        minBankFeeThreshold,
+        depositFeeRatio,
+      })
       const lastTransaction = transactions[0]
 
       expect(transactions.length).toBe(initialState.transactions.length + 1)
