@@ -4,9 +4,9 @@ import { toObjectId } from "@services/mongoose/utils"
 
 import { MainBook, Transaction } from "./books"
 
-import { TransactionsMetadataRepository } from "./services"
+import { translateToLedgerJournal } from "./services/translate-to-ledger-journal"
 
-import { translateToLedgerJournal } from "."
+import { TransactionsMetadataRepository } from "./services/transactions-metadata"
 
 const txMetadataRepo = TransactionsMetadataRepository()
 

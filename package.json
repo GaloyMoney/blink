@@ -25,7 +25,8 @@
     "start-main": ". ./.envrc && yarn run build && node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js",
     "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'",
     "e2e-codegen": "graphql-codegen --config codegen.yml",
-    "gen-test-jwt": "ts-node ./dev/bin/gen-test-jwt.ts"
+    "gen-test-jwt": "ts-node ./dev/bin/gen-test-jwt.ts",
+    "madge-check": "yarn madge --circular lib/servers/graphql-main-server.js"
   },
   "engines": {
     "node": "20"
@@ -175,6 +176,7 @@
     "knex": "^2.4.2",
     "lodash.difference": "^4.5.0",
     "lodash.find": "^4.6.0",
+    "madge": "^6.1.0",
     "migrate-mongo": "^10.0.0",
     "node-jose": "^2.2.0",
     "nodemon": "^2.0.21",

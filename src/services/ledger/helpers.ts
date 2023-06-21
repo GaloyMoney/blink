@@ -1,6 +1,6 @@
 import { UnknownLedgerError } from "./domain/errors"
 
-import { TransactionsMetadataRepository } from "./services"
+import { TransactionsMetadataRepository, translateToLedgerJournal } from "./services"
 
 const txMetadataRepo = TransactionsMetadataRepository()
 
@@ -31,11 +31,3 @@ export const persistAndReturnEntry = async ({
     return new UnknownLedgerError(err)
   }
 }
-
-// @ts-ignore-next-line no-implicit-any error
-export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
-  journalId: savedEntry._id.toString(),
-  voided: savedEntry.voided,
-  // @ts-ignore-next-line no-implicit-any error
-  transactionIds: savedEntry._transactions.map((id) => id.toString()),
-})

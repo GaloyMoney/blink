@@ -1,7 +1,7 @@
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
 import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
 
-import { redis } from "./index"
+import { redis } from "./connection"
 
 export const RoutesCache = (): IRoutesCache => {
   const store = async ({
