@@ -3408,22 +3408,31 @@
     "@opentelemetry/semantic-conventions" "1.14.0"
     semver "^7.3.5"
 
-"@opentelemetry/instrumentation-ioredis@^0.34.1":
-  version "0.34.2"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.34.2.tgz#3810c34cd30bd39523fcaae6c6250048f92eb5ad"
-  integrity sha512-tlXYJzBUytjN3UbFFVxuCJkZc6y/OmeAuH4VKoCV1fwx8iveQar1I9+mzf6H2Ur8CnzoCv4cq7bEhZAJepLN8g==
+"@opentelemetry/instrumentation-ioredis@^0.34.3":
+  version "0.34.3"
+  resolved "https://registry.npmjs.org/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.34.3.tgz#95fb4b6ff2b5eb29e01ee8d36ec24c69f2996019"
+  integrity sha512-k/4zPfdZSkdRYbx6CEjwgqi/UZlTUKk+8ZsthOzYsvmpCwPb1a1PomOa+1gk+5OvF83HanSy4mO06FhMx/NUgQ==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.39.1"
+    "@opentelemetry/instrumentation" "^0.40.0"
     "@opentelemetry/redis-common" "^0.35.1"
     "@opentelemetry/semantic-conventions" "^1.0.0"
     "@types/ioredis4" "npm:@types/ioredis@^4.28.10"
 
-"@opentelemetry/instrumentation-mongodb@^0.34.1":
-  version "0.34.3"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-mongodb/-/instrumentation-mongodb-0.34.3.tgz#7652b4804470c3c8ae2ccec9ad60d3669cdb28d1"
-  integrity sha512-QCsX5vGjmmUnqLOlT+eThfBQ35JbQ3bdZSOCFvYu24+vqDEzMf+sWmgQVZuSlEGooXJ9lhlyFszPyUrTk2jS3g==
+"@opentelemetry/instrumentation-mongodb@^0.35.0":
+  version "0.35.0"
+  resolved "https://registry.npmjs.org/@opentelemetry/instrumentation-mongodb/-/instrumentation-mongodb-0.35.0.tgz#6ec571ef1c2ad8c88724ace826fdaf060dc8076a"
+  integrity sha512-E+tt/IJiRXYVHs0iUzwBFPqtaHsBVxxwci/0Cu26iOmxwXJQKse6HzVOg469iF6uam8fHsPXTr7u+P/FgjXrPQ==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.39.1"
+    "@opentelemetry/instrumentation" "^0.40.0"
+    "@opentelemetry/sdk-metrics" "^1.9.1"
+    "@opentelemetry/semantic-conventions" "^1.0.0"
+
+"@opentelemetry/instrumentation-net@^0.31.4":
+  version "0.31.4"
+  resolved "https://registry.npmjs.org/@opentelemetry/instrumentation-net/-/instrumentation-net-0.31.4.tgz#b771e1c8ec24c19b86a212271d694e61ad8a14b1"
+  integrity sha512-KbQg0Qwhu98+kgo2jIWw0/WqSxHA/Old6yFj8MoNOo/OF+SWQwaPHK1+oV9dZGV6v3aaikb//YnoaubWucUOiQ==
+  dependencies:
+    "@opentelemetry/instrumentation" "^0.40.0"
     "@opentelemetry/semantic-conventions" "^1.0.0"
 
 "@opentelemetry/instrumentation@0.40.0", "@opentelemetry/instrumentation@^0.40.0":
@@ -3472,6 +3481,15 @@
   dependencies:
     "@opentelemetry/core" "1.14.0"
     "@opentelemetry/semantic-conventions" "1.14.0"
+
+"@opentelemetry/sdk-metrics@^1.9.1":
+  version "1.14.0"
+  resolved "https://registry.npmjs.org/@opentelemetry/sdk-metrics/-/sdk-metrics-1.14.0.tgz#ee51d72eb32a74108e6632681ce2df46cddc0714"
+  integrity sha512-F0JXmLqT4LmsaiaE28fl0qMtc5w0YuMWTHt1hnANTNX8hxW4IKSv9+wrYG7BZd61HEbPm032Re7fXyzzNA6nIw==
+  dependencies:
+    "@opentelemetry/core" "1.14.0"
+    "@opentelemetry/resources" "1.14.0"
+    lodash.merge "4.6.2"
 
 "@opentelemetry/sdk-trace-base@1.14.0", "@opentelemetry/sdk-trace-base@^1.14.0":
   version "1.14.0"
@@ -10874,7 +10892,7 @@ lodash.mapvalues@^4.6.0:
   resolved "https://registry.yarnpkg.com/lodash.mapvalues/-/lodash.mapvalues-4.6.0.tgz#1bafa5005de9dd6f4f26668c30ca37230cc9689c"
   integrity sha512-JPFqXFeZQ7BfS00H58kClY7SPVeHertPE0lNuCyZ26/XlN8TvakYD7b9bGyNmXbT/D3BbtPAAmq90gPWqLkxlQ==
 
-lodash.merge@>=4.6.2, lodash.merge@^4.6.2:
+lodash.merge@4.6.2, lodash.merge@>=4.6.2, lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==

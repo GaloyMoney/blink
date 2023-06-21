@@ -30,6 +30,7 @@ import {
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config"
 import { ErrorLevel, RankedErrorLevel } from "@domain/shared"
+import { NetInstrumentation } from "@opentelemetry/instrumentation-net"
 
 import type * as graphqlTypes from "graphql"
 type ExtendedException = Exclude<Exception, string> & {
@@ -180,6 +181,7 @@ const recordGqlErrors = ({
 
 registerInstrumentations({
   instrumentations: [
+    new NetInstrumentation(),
     new HttpInstrumentation({
       ignoreIncomingPaths: ["/healthz"],
       headersToSpanAttributes: {
