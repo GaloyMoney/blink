@@ -1,3 +1,4 @@
+import { Payments } from "@app"
 import { getRewardsConfig, OnboardingEarn } from "@config"
 import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 import {
@@ -16,8 +17,6 @@ import {
   UsersRepository,
 } from "@services/mongoose"
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
-
-import { intraledgerPaymentSendWalletIdForBtcWallet } from "../payments/send-intraledger"
 
 export const addEarn = async ({
   quizQuestionId: quizQuestionIdString,
@@ -77,7 +76,7 @@ export const addEarn = async ({
   const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
   if (shouldGiveReward instanceof Error) return shouldGiveReward
 
-  const payment = await intraledgerPaymentSendWalletIdForBtcWallet({
+  const payment = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
     senderWalletId: funderWalletId,
     recipientWalletId,
     amount,
