@@ -1,7 +1,6 @@
 import { getOperationAST, GraphQLError, parse, validate } from "graphql"
+
 import { WebSocketServer } from "ws" // yarn add ws
-// import ws from 'ws'; yarn add ws@7
-// const WebSocketServer = ws.Server;
 import { gqlMainSchema } from "@graphql/main"
 import { useServer } from "graphql-ws/lib/use/ws"
 
@@ -97,6 +96,7 @@ const server = () =>
   useServer(
     {
       onSubscribe: (_ctx, msg) => {
+        console.log("onSubscribe", { _ctx, msg })
         baseLogger.debug("Subscribe", { _ctx, msg })
 
         // construct the execution arguments

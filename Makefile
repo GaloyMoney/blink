@@ -28,13 +28,16 @@ start-loopd:
 	./dev/bin/start-loopd.sh
 
 start: start-deps
-	make start-main & make start-trigger
+	make start-main & make start-trigger & make start-ws
 
 start-main-ci:
 	node lib/servers/graphql-main-server.js
 
 start-trigger-ci:
 	node lib/servers/trigger.js
+
+start-ws-ci:
+	node lib/servers/ws-server.js
 
 exporter: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
@@ -173,7 +176,7 @@ lncli-outside-2:
 	docker exec -it "$$container_id" /bin/sh -c 'lncli -n regtest ${command}'
 
 kill-graphql:
-	kill $(lsof -t -i:4001) & kill $(lsof -t -i:4012) & kill $(lsof -t -i:4000)
+	kill $$(lsof -t -i:4001) & kill $$(lsof -t -i:4012) & kill $$(lsof -t -i:4000) & kill $$(lsof -t -i:8888)
 
 redis-cli:
 	docker-compose exec redis redis-cli

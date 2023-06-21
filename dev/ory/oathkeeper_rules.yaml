@@ -51,6 +51,19 @@
 
 - id: galoy-backend
   upstream:
+    url: "http://e2e-tests:4000"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphqlws"
+    methods: ["POST", "GET"]
+  authenticators:
+    - handler: no-op
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: no-op
+
+- id: galoy-backend
+  upstream:
     url: "http://e2e-tests:4012"
   match:
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphql<.*>"

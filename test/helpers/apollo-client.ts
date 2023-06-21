@@ -35,7 +35,7 @@ export const defaultTestClientConfig = (
   return {
     authToken,
     graphqlUrl: `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/graphql`,
-    graphqlSubscriptionUrl: `ws://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/graphql`,
+    graphqlSubscriptionUrl: `ws://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/graphqlws`,
   }
 }
 
@@ -45,7 +45,7 @@ export const adminTestClientConfig = (
   return {
     authToken,
     graphqlUrl: `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/admin/graphql`,
-    graphqlSubscriptionUrl: `ws://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/admin/graphql`,
+    graphqlSubscriptionUrl: "",
   }
 }
 
