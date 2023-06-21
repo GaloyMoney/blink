@@ -1,11 +1,10 @@
+import { usernameAvailable } from "@app/accounts"
 import {
   checkedToUsername,
   UsernameIsImmutableError,
   UsernameNotAvailableError,
 } from "@domain/accounts"
 import { AccountsRepository } from "@services/mongoose"
-
-import { usernameAvailable } from "./username-available"
 
 export const setUsername = async ({
   id,

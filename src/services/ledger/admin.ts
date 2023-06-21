@@ -12,10 +12,11 @@ import { sha256 } from "@domain/bitcoin/lightning"
 import { MainBook, Transaction } from "./books"
 import { getBankOwnerWalletId } from "./caching"
 
-import { coldStorageAccountId, lndLedgerAccountId } from "./domain/accounts"
-import { translateToLedgerJournal } from "./services/translate-to-ledger-journal"
+import { TransactionsMetadataRepository } from "./services"
 
-import { TransactionsMetadataRepository } from "./services/transactions-metadata"
+import { coldStorageAccountId, lndLedgerAccountId } from "./domain/accounts"
+
+import { translateToLedgerJournal } from "."
 
 const txMetadataRepo = TransactionsMetadataRepository()
 

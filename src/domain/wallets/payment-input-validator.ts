@@ -2,8 +2,7 @@ import { AccountStatus } from "@domain/accounts"
 import { InactiveAccountError, InvalidWalletId, SelfPaymentError } from "@domain/errors"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
-
-import { checkedToWalletId } from "./primitives"
+import { checkedToWalletId } from "@domain/wallets"
 
 export const PaymentInputValidator = (
   getWalletFn: PaymentInputValidatorConfig,
