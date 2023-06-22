@@ -505,10 +505,10 @@ jobs:
             path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
 resources:
-  -  #@ repo_resource()
+  -  #@ repo_resource(True)
   -  #@ pipeline_tasks_resource()
 
-  -  #@ nodejs_deps_resource()
+  -  #@ nodejs_deps_resource(True)
   -  #@ deps_version_resource()
   -  #@ bundled_deps_resource()
   -  #@ slack_resource()
