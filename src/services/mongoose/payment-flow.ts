@@ -148,8 +148,7 @@ export const PaymentFlowStateRepository = (
       }
       return true
     } catch (error) {
-      if (error instanceof Error) return new UnknownRepositoryError(error.message)
-      return new UnknownRepositoryError("Unknown error")
+      return new UnknownRepositoryError(error)
     }
   }
 
@@ -169,8 +168,7 @@ export const PaymentFlowStateRepository = (
       }
       return result.deletedCount
     } catch (error) {
-      if (error instanceof Error) return new UnknownRepositoryError(error.message)
-      return new UnknownRepositoryError("Unknown error")
+      return new UnknownRepositoryError(error)
     }
   }
 

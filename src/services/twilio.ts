@@ -39,9 +39,7 @@ export const TwilioClient = (): IPhoneProviderService => {
       await verify.verifications.create({ to, channel })
     } catch (err) {
       baseLogger.error({ err }, "impossible to send text")
-      if (err instanceof Error || typeof err === "string") {
-        return handleCommonErrors(err)
-      }
+      return handleCommonErrors(err)
     }
 
     return true
@@ -67,8 +65,7 @@ export const TwilioClient = (): IPhoneProviderService => {
         return new ExpiredOrNonExistentPhoneNumberError(err.message)
       }
 
-      if (err instanceof Error) return handleCommonErrors(err)
-      return handleCommonErrors("Unknown error")
+      return handleCommonErrors(err)
     }
   }
 
@@ -113,8 +110,9 @@ export const TwilioClient = (): IPhoneProviderService => {
   })
 }
 
-const handleCommonErrors = (err: Error | string) => {
-  const errMsg = typeof err === "string" ? err : err.message
+const handleCommonErrors = (err: Error | string | unknown) => {
+  const errMsg =
+    typeof err === "string" ? err : err instanceof Error ? err.message : "Unknown error"
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 

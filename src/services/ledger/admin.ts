@@ -158,8 +158,7 @@ export const admin = {
         return new DuplicateError()
       }
     } catch (error) {
-      if (error instanceof Error) return new UnknownLedgerError(error.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(error)
     }
   },
 }

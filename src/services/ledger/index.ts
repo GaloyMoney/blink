@@ -396,8 +396,7 @@ export const LedgerService = (): ILedgerService => {
         { $group: { _id: "$accounts" } },
       ]).cursor({ batchSize: 100 })
     } catch (error) {
-      if (error instanceof Error) return new UnknownLedgerError(error.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(error)
     }
 
     for await (const { _id } of transactions) {

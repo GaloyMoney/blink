@@ -105,10 +105,7 @@ export const LoopService = ({
       if (error instanceof Error && error.message.includes("channel balance too low")) {
         return new SwapErrorChannelBalanceTooLow(error.message)
       }
-      if (error instanceof Error) {
-        return new SwapServiceError(error.message)
-      }
-      return new SwapServiceError("Unknown error")
+      return new SwapServiceError(error)
     }
   }
 
@@ -140,8 +137,7 @@ export const LoopService = ({
       })
       return listener
     } catch (error) {
-      if (error instanceof Error) throw new UnknownSwapServiceError(error.message)
-      throw new UnknownSwapServiceError()
+      throw new UnknownSwapServiceError(error)
     }
   }
 
@@ -170,8 +166,7 @@ export const LoopService = ({
         swapPaymentDest: resp.getSwapPaymentDest().toString() as OnChainAddress,
       }
     } catch (error) {
-      if (error instanceof Error) return new UnknownSwapServiceError(error.message)
-      return new UnknownSwapServiceError()
+      return new UnknownSwapServiceError(error)
     }
   }
 
@@ -192,8 +187,7 @@ export const LoopService = ({
         },
       }
     } catch (error) {
-      if (error instanceof Error) return new UnknownSwapServiceError(error.message)
-      return new UnknownSwapServiceError()
+      return new UnknownSwapServiceError(error)
     }
   }
 

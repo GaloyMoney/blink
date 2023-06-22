@@ -117,7 +117,6 @@ export const NewOnChainService = (): INewOnChainService => {
         currency: WalletCurrency.Btc,
       })
     } catch (error) {
-      if (error instanceof Error) return new UnknownOnChainServiceError(error.message)
       return new UnknownOnChainServiceError(error)
     }
   }
@@ -271,7 +270,6 @@ export const NewOnChainService = (): INewOnChainService => {
           currency: WalletCurrency.Btc,
         })
       } catch (error) {
-        if (error instanceof Error) return new UnknownOnChainServiceError(error.message)
         return new UnknownOnChainServiceError(error)
       }
     }

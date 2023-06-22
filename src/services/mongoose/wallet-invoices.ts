@@ -76,8 +76,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         batchSize: 100,
       })
     } catch (error) {
-      if (error instanceof Error) return new UnknownRepositoryError(error.message)
-      return new UnknownRepositoryError("Unknown error")
+      return new UnknownRepositoryError(error)
     }
 
     for await (const walletInvoice of pending) {
@@ -95,8 +94,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return true
     } catch (error) {
-      if (error instanceof Error) return new UnknownRepositoryError(error.message)
-      return new UnknownRepositoryError("Unknown error")
+      return new UnknownRepositoryError(error)
     }
   }
 
@@ -110,8 +108,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       })
       return result.deletedCount
     } catch (error) {
-      if (error instanceof Error) return new UnknownRepositoryError(error.message)
-      return new UnknownRepositoryError("Unknown error")
+      return new UnknownRepositoryError(error)
     }
   }
 

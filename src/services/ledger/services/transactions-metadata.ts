@@ -1,4 +1,4 @@
-import { NoTransactionToUpdateError } from "@domain/errors"
+import { NoTransactionToUpdateError, UnknownRepositoryError } from "@domain/errors"
 import {
   CouldNotFindExpectedTransactionMetadataError,
   CouldNotFindTransactionMetadataError,
@@ -69,7 +69,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       if (!result) return new CouldNotFindTransactionMetadataError()
       return translateToLedgerTxMetadata(result)
     } catch (err) {
-      return parseRepositoryError(err)
+      return new UnknownRepositoryError(err)
     }
   }
 

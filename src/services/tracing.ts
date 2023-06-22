@@ -353,12 +353,13 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
       span.end()
       return ret
     } catch (error) {
-      if (error instanceof Error) {
-        recordException(span, error, ErrorLevel.Critical)
-      }
-      if (typeof error === "string") {
-        recordException(span, { message: error }, ErrorLevel.Critical)
-      }
+      const err =
+        error instanceof Error
+          ? error
+          : typeof error === "string"
+          ? new Error(error)
+          : new Error("Unknown error")
+      recordException(span, err, ErrorLevel.Critical)
       span.end()
       throw error
     }
@@ -437,8 +438,13 @@ export const wrapToRunInSpan = <
         span.end()
         return ret
       } catch (error) {
-        if (error instanceof Error) recordException(span, error, ErrorLevel.Critical)
-        recordException(span, { message: "Unknown error" }, ErrorLevel.Critical)
+        const err =
+          error instanceof Error
+            ? error
+            : typeof error === "string"
+            ? new Error(error)
+            : new Error("Unknown error")
+        recordException(span, err, ErrorLevel.Critical)
         span.end()
         throw error
       }
@@ -494,8 +500,13 @@ export const wrapAsyncToRunInSpan = <
         span.end()
         return ret
       } catch (error) {
-        if (error instanceof Error) recordException(span, error, ErrorLevel.Critical)
-        recordException(span, { message: "Unknown error" }, ErrorLevel.Critical)
+        const err =
+          error instanceof Error
+            ? error
+            : typeof error === "string"
+            ? new Error(error)
+            : new Error("Unknown error")
+        recordException(span, err, ErrorLevel.Critical)
         span.end()
         throw error
       }
