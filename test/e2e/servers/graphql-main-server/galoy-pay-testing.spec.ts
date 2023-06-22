@@ -57,7 +57,7 @@ beforeAll(async () => {
   serverPid = await startServer("start-main-ci")
 
   await loginFromPhoneAndCode({ phone, code })
-  const client = await loginFromPhoneAndCode({
+  const { apolloClient: client } = await loginFromPhoneAndCode({
     phone: phoneRecipient,
     code: codeRecipient,
   })

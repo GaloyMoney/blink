@@ -17,7 +17,10 @@ export const loginFromPhoneAndCode = async ({
 }: {
   phone: PhoneNumber
   code: PhoneCode
-}): Promise<ApolloClient<NormalizedCacheObject>> => {
+}): Promise<{
+  apolloClient: ApolloClient<NormalizedCacheObject>
+  disposeClient: () => void
+}> => {
   let apolloClient: ApolloClient<NormalizedCacheObject>,
     disposeClient: () => void = () => null
 
@@ -44,7 +47,7 @@ export const loginFromPhoneAndCode = async ({
       defaultTestClientConfig(authToken),
     ))
 
-    return apolloClient
+    return { apolloClient, disposeClient }
   }
 }
 

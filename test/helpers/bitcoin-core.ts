@@ -6,6 +6,7 @@ import { getBitcoinCoreRPCConfig } from "@config"
 import { BriaPayloadType } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 
+import { WalletCurrency } from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
 
 import {
@@ -137,7 +138,11 @@ export const fundWalletIdFromOnchainViaBria = async <S extends WalletCurrency>({
   walletDescriptor: WalletDescriptor<S>
   amountInBitcoin: number
 }): Promise<{ walletBalance: BalanceAmount<S> }> => {
-  const address = await Wallets.createOnChainAddressForBtcWallet({
+  const createAddress =
+    walletDescriptor.currency === WalletCurrency.Btc
+      ? Wallets.createOnChainAddressForBtcWallet
+      : Wallets.createOnChainAddressForUsdWallet
+  const address = await createAddress({
     walletId: walletDescriptor.id,
   })
   if (address instanceof Error) throw address
