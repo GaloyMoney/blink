@@ -24,6 +24,10 @@ start-cron: start-deps
 	. ./.envrc && yarn tsnd --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/cron.ts | yarn pino-pretty -c -l
 
+start-ws:
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/ws-server.ts | yarn pino-pretty -c -l
+
 start-loopd:
 	./dev/bin/start-loopd.sh
 

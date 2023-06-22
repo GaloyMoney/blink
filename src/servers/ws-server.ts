@@ -116,10 +116,10 @@ const server = () =>
         // handle mutation and query requests
         if (operationAST.operation !== "subscription") {
           // returning `GraphQLError[]` sends an `ErrorMessage` and stops the subscription
-          // return [new GraphQLError("Only subscription operations are supported")]
+          return [new GraphQLError("Only subscription operations are supported")]
 
           // or if you want to be strict and terminate the connection on illegal operations
-          throw new Error("Only subscription operations are supported")
+          // throw new Error("Only subscription operations are supported")
         }
 
         // dont forget to validate
