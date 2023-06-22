@@ -15,7 +15,7 @@ export class DomainError extends Error {
     } else if (message instanceof Error) {
       super(message.message)
     } else {
-      super()
+      super(typeof message === "object" ? JSON.stringify(message) : "Unknown error")
     }
     this.name = this.constructor.name
     this.level = ErrorLevel.Info
@@ -37,3 +37,4 @@ export class BtcAmountTooLargeError extends ValidationError {}
 export class UsdAmountTooLargeError extends ValidationError {}
 export class InvalidBtcPaymentAmountError extends ValidationError {}
 export class InvalidUsdPaymentAmountError extends ValidationError {}
+export class UnknownError extends DomainError {}

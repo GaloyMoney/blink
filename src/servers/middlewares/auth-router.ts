@@ -58,13 +58,7 @@ authRouter.post(
         cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
         kratosUserId = loginResp.kratosUserId
       } catch (error) {
-        if (error instanceof Error) {
-          recordExceptionInCurrentSpan({ error })
-        } else {
-          recordExceptionInCurrentSpan({
-            error: { message: typeof error === "string" ? error : "Unknown error" },
-          })
-        }
+        recordExceptionInCurrentSpan({ error })
         return res.status(500).send({ error: "Error parsing cookies" })
       }
 

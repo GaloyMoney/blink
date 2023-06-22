@@ -279,10 +279,12 @@ export const recordExceptionInCurrentSpan = ({
   error,
   level,
   attributes,
+  fallbackMsg,
 }: {
-  error: ExtendedException
+  error: ExtendedException | unknown
   level?: ErrorLevel
   attributes?: Attributes
+  fallbackMsg?: string
 }) => {
   const span = trace.getSpan(context.active())
   if (!span || !error) return
@@ -293,7 +295,17 @@ export const recordExceptionInCurrentSpan = ({
     }
   }
 
-  recordException(span, error, level)
+  if (error instanceof Error) {
+    recordException(span, error, level)
+  } else if (fallbackMsg) {
+    recordException(span, { message: fallbackMsg }, level)
+  } else {
+    recordException(
+      span,
+      { message: typeof error === "object" ? JSON.stringify(error) : "Unknown error" },
+      level,
+    )
+  }
 }
 
 const updateErrorForSpan = ({
