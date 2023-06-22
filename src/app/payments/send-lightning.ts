@@ -697,6 +697,11 @@ const executePaymentViaLn = async ({
           revealedPreImage: payResult.revealedPreImage,
         })
     }
+
+    addAttributesToCurrentSpan({
+      "payment.pending": payResult instanceof LnPaymentPendingError,
+    })
+
     if (payResult instanceof LnPaymentPendingError) {
       paymentFlow.paymentSentAndPending = true
       const updateResult = await paymentFlowRepo.updateLightningPaymentFlow(paymentFlow)
@@ -710,6 +715,8 @@ const executePaymentViaLn = async ({
     if (settled instanceof Error) return settled
 
     if (payResult instanceof Error) {
+      recordExceptionInCurrentSpan({ error: payResult })
+
       const voided = await LedgerFacade.recordLnSendRevert({
         journalId,
         paymentHash,
@@ -722,6 +729,10 @@ const executePaymentViaLn = async ({
 
       return payResult
     }
+
+    addAttributesToCurrentSpan({
+      "payment.fee": payResult.roundedUpFee,
+    })
 
     if (!rawRoute) {
       const reimbursed = await Wallets.reimburseFee({

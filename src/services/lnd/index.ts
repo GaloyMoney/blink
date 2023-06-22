@@ -63,7 +63,10 @@ import { LnFees } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { LocalCacheService } from "@services/cache"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  wrapAsyncFunctionsToRunInSpan,
+} from "@services/tracing"
 
 import { timeoutWithCancel } from "@utils"
 
@@ -632,6 +635,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
       ])) as PayViaRoutesResult
       cancelTimeout()
 
+      addAttributesToCurrentSpan({
+        confirmed: paymentResult.is_confirmed,
+        confirmedAt: paymentResult.confirmed_at,
+      })
+
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
         revealedPreImage: paymentResult.secret as RevealedPreImage,
@@ -706,6 +714,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
         timeoutPromise,
       ])) as PayViaPaymentDetailsResult
       cancelTimeout()
+
+      addAttributesToCurrentSpan({
+        confirmed: !!paymentResult.confirmed_at,
+        confirmedAt: paymentResult.confirmed_at,
+      })
 
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
