@@ -1,5 +1,5 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testPhoneCodeAttemptPerPhoneMinInterval", "testPhoneCodeAttemptPerPhone", "testPhoneCodeAttemptPerIp", "testRateLimitLoginByPhone", "testRateLimitLoginByIp"] }] */
-import { BTC_NETWORK } from "@config"
+import { BTC_NETWORK, getFeesConfig } from "@config"
 
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import {
@@ -199,6 +199,18 @@ describe("graphql", () => {
         expect.arrayContaining([expect.any(String)]),
       )
       expect(data?.globals?.network).toEqual(BTC_NETWORK)
+
+      const feesConfig = getFeesConfig()
+      expect(data?.globals?.feesInformation).toEqual(
+        expect.objectContaining({
+          deposit: {
+            __typename: "DepositFeesInformation",
+            minBankFee: `${feesConfig.depositDefaultMin.amount}`,
+            minBankFeeThreshold: `${feesConfig.depositThreshold.amount}`,
+            ratio: `${feesConfig.depositRatioAsBasisPoints}`,
+          },
+        }),
+      )
       expect(data.mobileVersions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({

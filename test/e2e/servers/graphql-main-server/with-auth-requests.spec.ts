@@ -115,6 +115,13 @@ gql`
       ###
 
       network
+      feesInformation {
+        deposit {
+          minBankFee
+          minBankFeeThreshold
+          ratio
+        }
+      }
     }
 
     ### deprecated

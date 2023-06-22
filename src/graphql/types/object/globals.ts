@@ -3,8 +3,9 @@ import { GT } from "@graphql/index"
 
 import Network from "../scalar/network"
 
-import BuildInformation from "./build-information"
 import Country from "./country"
+import FeesInformation from "./fees-information"
+import BuildInformation from "./build-information"
 
 const Globals = GT.Object({
   name: "Globals",
@@ -31,6 +32,9 @@ const Globals = GT.Object({
     },
     lightningAddressDomainAliases: {
       type: GT.NonNullList(GT.String),
+    },
+    feesInformation: {
+      type: GT.NonNull(FeesInformation),
     },
   }),
 })
