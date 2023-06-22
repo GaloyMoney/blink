@@ -65,7 +65,7 @@ export const AuthWithUsernamePasswordDeviceIdService =
             `Impossible to get sessionToken: ${err.message || err}`,
           )
         }
-        return new UnknownKratosError()
+        return new UnknownKratosError(err)
       }
     }
 

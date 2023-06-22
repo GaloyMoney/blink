@@ -85,12 +85,9 @@ const sendToDevice = async (
     return true
   } catch (err) {
     logger.error({ err, tokens, message }, "impossible to send notification")
-    if (err instanceof Error) {
-      const error = handleCommonNotificationErrors(err)
-      recordExceptionInCurrentSpan({ error, level: ErrorLevel.Warn })
-      return error
-    }
-    return new UnknownNotificationsServiceError()
+    const error = handleCommonNotificationErrors(err)
+    recordExceptionInCurrentSpan({ error, level: ErrorLevel.Warn })
+    return error
   }
 }
 
@@ -126,8 +123,9 @@ export const PushNotificationsService = (): IPushNotificationsService => {
   return { sendNotification }
 }
 
-export const handleCommonNotificationErrors = (err: Error | string) => {
-  const errMsg = typeof err === "string" ? err : err.message
+export const handleCommonNotificationErrors = (err: Error | string | unknown) => {
+  const errMsg =
+    typeof err === "string" ? err : err instanceof Error ? err.message : "Unknown error"
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 

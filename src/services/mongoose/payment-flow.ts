@@ -27,8 +27,7 @@ export const PaymentFlowStateRepository = (
       await paymentFlowState.save()
       return paymentFlowFromRaw(paymentFlowState.toObject())
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -68,8 +67,7 @@ export const PaymentFlowStateRepository = (
 
       return paymentFlow
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -99,8 +97,7 @@ export const PaymentFlowStateRepository = (
       }
       return true
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -126,8 +123,7 @@ export const PaymentFlowStateRepository = (
       }
       return paymentFlowFromRaw(result)
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 

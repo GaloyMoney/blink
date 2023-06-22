@@ -226,8 +226,7 @@ export const LoopService = ({
       )
       return client
     } catch (err) {
-      if (err instanceof Error) throw new SwapClientNotResponding(err.message)
-      throw new SwapClientNotResponding()
+      throw new SwapClientNotResponding(err)
     }
   }
 

@@ -55,7 +55,6 @@ export const listSessionsInternal = async (
     if (res.data === null) return []
     return res.data
   } catch (err) {
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 }

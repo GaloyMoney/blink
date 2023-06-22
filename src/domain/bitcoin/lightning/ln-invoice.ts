@@ -72,10 +72,7 @@ const safeDecode = (bolt11EncodedInvoice: EncodedPaymentRequest) => {
   } catch (err) {
     if (err instanceof Error && err.message.includes("Invalid checksum")) {
       return new InvalidChecksumForLnInvoiceError()
-    } else if (typeof err === "string") {
-      return new UnknownLnInvoiceDecodeError(err)
-    } else {
-      return new UnknownLnInvoiceDecodeError()
     }
+    return new UnknownLnInvoiceDecodeError(err)
   }
 }

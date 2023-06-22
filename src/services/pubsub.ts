@@ -11,8 +11,7 @@ export const PubSubService = (): IPubSubService => {
     try {
       return redisPubSub.asyncIterator(trigger)
     } catch (err) {
-      if (err instanceof Error) return new UnknownPubSubError(err && err.message)
-      return new UnknownPubSubError()
+      return new UnknownPubSubError(err)
     }
   }
 
@@ -23,8 +22,7 @@ export const PubSubService = (): IPubSubService => {
     try {
       return await redisPubSub.publish(trigger, payload)
     } catch (err) {
-      if (err instanceof Error) return new UnknownPubSubError(err && err.message)
-      return new UnknownPubSubError()
+      return new UnknownPubSubError(err)
     }
   }
 

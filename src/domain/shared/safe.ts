@@ -7,9 +7,6 @@ export const safeBigInt = (num: number): bigint | BigIntConversionError => {
     if (err instanceof RangeError) {
       return new BigIntFloatConversionError(`${num}`)
     }
-    if (err instanceof Error) {
-      return new UnknownBigIntConversionError(err.message)
-    }
-    return new UnknownBigIntConversionError()
+    return new UnknownBigIntConversionError(err)
   }
 }

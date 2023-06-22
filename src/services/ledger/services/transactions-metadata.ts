@@ -1,4 +1,4 @@
-import { NoTransactionToUpdateError, UnknownRepositoryError } from "@domain/errors"
+import { NoTransactionToUpdateError } from "@domain/errors"
 import {
   CouldNotFindExpectedTransactionMetadataError,
   CouldNotFindTransactionMetadataError,
@@ -26,8 +26,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       }
       return true
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -46,8 +45,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       )
       return result.map((txRecord) => translateToLedgerTxMetadata(txRecord))
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -59,8 +57,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       if (!result) return new CouldNotFindTransactionMetadataError()
       return translateToLedgerTxMetadata(result)
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -72,8 +69,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       if (!result) return new CouldNotFindTransactionMetadataError()
       return translateToLedgerTxMetadata(result)
     } catch (err) {
-      if (err instanceof Error) return new UnknownRepositoryError(err.message)
-      return new UnknownRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -132,8 +128,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
 
       return result.map((txn) => translateToLedgerTxMetadata(txn))
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 

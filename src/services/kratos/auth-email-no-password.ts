@@ -26,8 +26,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return data.id
     } catch (err) {
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -62,9 +61,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         // console.log("422 response, success?")
         return true
       }
-
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -94,8 +91,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return { sessionToken, kratosUserId }
     } catch (err) {
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 

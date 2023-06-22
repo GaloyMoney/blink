@@ -19,9 +19,7 @@ export const LocalCacheService = (): ICacheService => {
       if (res) return Promise.resolve(value)
       return Promise.resolve(new CacheNotAvailableError())
     } catch (err) {
-      if (err instanceof Error)
-        return Promise.resolve(new UnknownCacheServiceError(err.message))
-      return Promise.resolve(new UnknownCacheServiceError())
+      return Promise.resolve(new UnknownCacheServiceError(err))
     }
   }
 
@@ -31,9 +29,7 @@ export const LocalCacheService = (): ICacheService => {
       if (value === undefined) return Promise.resolve(new CacheUndefinedError())
       return Promise.resolve(value)
     } catch (err) {
-      if (err instanceof Error)
-        return Promise.resolve(new UnknownCacheServiceError(err.message))
-      return Promise.resolve(new UnknownCacheServiceError())
+      return Promise.resolve(new UnknownCacheServiceError(err))
     }
   }
 
@@ -60,9 +56,7 @@ export const LocalCacheService = (): ICacheService => {
       localCache.del(key)
       return Promise.resolve(true)
     } catch (err) {
-      if (err instanceof Error)
-        return Promise.resolve(new UnknownCacheServiceError(err.message))
-      return Promise.resolve(new UnknownCacheServiceError())
+      return Promise.resolve(new UnknownCacheServiceError(err))
     }
   }
 

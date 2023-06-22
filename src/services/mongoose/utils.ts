@@ -19,8 +19,9 @@ export const fromObjectId = <T extends string>(id: Types.ObjectId | string): T =
   return String(id) as T
 }
 
-export const parseRepositoryError = (err: Error | string) => {
-  const errMsg = typeof err === "string" ? err : err.message
+export const parseRepositoryError = (err: Error | string | unknown) => {
+  const errMsg =
+    typeof err === "string" ? err : err instanceof Error ? err.message : "Unknown error"
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 

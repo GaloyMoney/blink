@@ -28,10 +28,7 @@ export const RedisRateLimitService = ({
       await limiter.delete(key)
       return true
     } catch (err) {
-      if (err instanceof Error) {
-        return new UnknownRateLimitServiceError(err.message)
-      }
-      return new UnknownRateLimitServiceError()
+      return new UnknownRateLimitServiceError(err)
     }
   }
 
@@ -40,10 +37,7 @@ export const RedisRateLimitService = ({
       await limiter.reward(key)
       return true
     } catch (err) {
-      if (err instanceof Error) {
-        return new UnknownRateLimitServiceError(err.message)
-      }
-      return new UnknownRateLimitServiceError()
+      return new UnknownRateLimitServiceError(err)
     }
   }
 

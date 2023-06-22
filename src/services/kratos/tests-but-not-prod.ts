@@ -45,8 +45,7 @@ export const LoginWithPhoneAndPasswordSchema = async ({
       return new AuthenticationKratosError(err.message)
     }
 
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 
   const sessionToken = result.data.session_token as SessionToken
@@ -86,8 +85,7 @@ export const addTotp = async (token: SessionToken) => {
 
     return totpSecret
   } catch (err) {
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 }
 
@@ -97,8 +95,7 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
     const res = await kratosAdmin.getIdentity({ id: kratosUserId })
     identity = res.data
   } catch (err) {
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 
   try {
@@ -110,8 +107,7 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
       },
     })
   } catch (err) {
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 }
 
@@ -124,8 +120,7 @@ export const deactivateUser = async (
     const res = await kratosAdmin.getIdentity({ id: kratosUserId })
     identity = res.data
   } catch (err) {
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 
   try {
@@ -140,8 +135,7 @@ export const deactivateUser = async (
     console.log({ res }, "res")
   } catch (err) {
     console.log({ err }, "err1")
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 }
 
@@ -151,8 +145,7 @@ export const revokeSessions = async (
   try {
     await kratosAdmin.deleteIdentitySessions({ id: kratosUserId })
   } catch (err) {
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 }
 
@@ -163,8 +156,7 @@ export const listIdentitySchemas = async (): Promise<
     const res = await kratosAdmin.listIdentitySchemas()
     return res.data
   } catch (err) {
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 }
 
@@ -205,8 +197,7 @@ export const elevatingSessionWithTotp = async ({
       return new AuthenticationKratosError(err.message)
     }
 
-    if (err instanceof Error) return new UnknownKratosError(err.message)
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 
   const sessionToken = result.data.session_token as SessionToken

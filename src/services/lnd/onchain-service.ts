@@ -108,8 +108,7 @@ export const OnChainService = (
         after,
       })
     } catch (err) {
-      if (err instanceof Error) return handleCommonOnChainServiceErrors(err)
-      return handleCommonOnChainServiceErrors({ message: "Unknown error" } as Error)
+      return handleCommonOnChainServiceErrors(err)
     }
   }
 
@@ -293,13 +292,15 @@ const handleCommonOnChainServiceErrors = (err: Error | unknown) => {
     case match(KnownLndErrorDetails.ConnectionRefused):
       return new OnChainServiceBusyError()
     default:
-      if (err instanceof Error) {
-        return new UnknownOnChainServiceError(
-          msgForUnknown({ message: err.message } as Error),
-        )
-      }
       return new UnknownOnChainServiceError(
-        msgForUnknown({ message: "Unknown error" } as Error),
+        msgForUnknown({
+          message:
+            err instanceof Error
+              ? err.message
+              : typeof err === "string"
+              ? err
+              : "Unknown error",
+        } as Error),
       )
   }
 }

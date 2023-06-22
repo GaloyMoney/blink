@@ -14,7 +14,6 @@ export const getLedgerAccountBalanceForWalletId = async <T extends WalletCurrenc
     })
     return paymentAmountFromNumber({ amount: balance, currency })
   } catch (err) {
-    if (err instanceof Error) return new UnknownLedgerError(err.message)
-    return new UnknownLedgerError()
+    return new UnknownLedgerError(err)
   }
 }

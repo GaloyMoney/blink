@@ -24,10 +24,7 @@ export const validateKratosToken = async (
     if (err instanceof Error && err.message === "Request failed with status code 401") {
       return new AuthenticationKratosError(err.message)
     }
-    if (err instanceof Error) {
-      return new UnknownKratosError(err.message)
-    }
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 
   // TODO: should return aal level also
@@ -49,10 +46,7 @@ export const validateKratosCookie = async (
     if (err instanceof Error && err.message === "Request failed with status code 401") {
       return new AuthenticationKratosError(err.message)
     }
-    if (err instanceof Error) {
-      return new UnknownKratosError(err.message)
-    }
-    return new UnknownKratosError()
+    return new UnknownKratosError(err)
   }
 
   // TODO: should return aal level also

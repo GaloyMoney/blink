@@ -36,16 +36,12 @@ export const sendOathkeeperRequestGraphql = async (
 
     return jwt.slice(7) as JwtToken
   } catch (err) {
-    if (isAxiosError(err)) {
-      if (err.response?.status === 401) {
-        return new OathkeeperUnauthorizedServiceError(err.message)
-      }
-
-      if (err.response?.status === 403) {
-        return new OathkeeperForbiddenServiceError(err.message)
-      }
+    if (isAxiosError(err) && err.response?.status === 401) {
+      return new OathkeeperUnauthorizedServiceError(err.message)
     }
-    if (err instanceof Error) return new UnknownOathkeeperServiceError(err.message)
-    return new UnknownOathkeeperServiceError()
+    if (isAxiosError(err) && err.response?.status === 403) {
+      return new OathkeeperForbiddenServiceError(err.message)
+    }
+    return new UnknownOathkeeperServiceError(err)
   }
 }

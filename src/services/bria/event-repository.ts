@@ -17,8 +17,7 @@ export const BriaEventRepo = () => {
       await newEvent.save()
       return true
     } catch (err) {
-      if (err instanceof Error) return new UnknownRepositoryError(err.message)
-      return new UnknownRepositoryError()
+      return new UnknownRepositoryError(err)
     }
   }
 
@@ -27,8 +26,7 @@ export const BriaEventRepo = () => {
       const latestEvent = await BriaEventModel.findOne().sort({ sequence: -1 })
       return latestEvent ? latestEvent.sequence : 0
     } catch (err) {
-      if (err instanceof Error) return new UnknownRepositoryError(err.message)
-      return new UnknownRepositoryError()
+      return new UnknownRepositoryError(err)
     }
   }
 

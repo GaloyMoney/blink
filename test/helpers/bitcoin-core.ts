@@ -41,7 +41,7 @@ export async function sendToAddressAndConfirm({
     if (err instanceof Error) {
       txId = new Error(err.message)
     } else {
-      txId = new Error("Unknown error")
+      txId = new Error(typeof err === "string" ? err : "Unknown error")
     }
   }
 

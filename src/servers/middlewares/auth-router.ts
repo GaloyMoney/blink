@@ -61,7 +61,9 @@ authRouter.post(
         if (error instanceof Error) {
           recordExceptionInCurrentSpan({ error })
         } else {
-          recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
+          recordExceptionInCurrentSpan({
+            error: { message: typeof error === "string" ? error : "Unknown error" },
+          })
         }
         return res.status(500).send({ error: "Error parsing cookies" })
       }
@@ -112,7 +114,9 @@ authRouter.post(
         if (error instanceof Error) {
           recordExceptionInCurrentSpan({ error })
         } else {
-          recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
+          recordExceptionInCurrentSpan({
+            error: { message: typeof error === "string" ? error : "Unknown error" },
+          })
         }
         return res.status(500).send({ result: "Error parsing cookies" })
       }
@@ -164,7 +168,9 @@ authRouter.get(
         if (error instanceof Error) {
           recordExceptionInCurrentSpan({ error })
         } else {
-          recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
+          recordExceptionInCurrentSpan({
+            error: { message: typeof error === "string" ? error : "Unknown error" },
+          })
         }
         return res.status(500).send({ error: "Error logging out" })
       }
@@ -231,7 +237,9 @@ authRouter.post(
           recordExceptionInCurrentSpan({ error })
           return res.status(500).send({ error: `${error.message}` })
         } else {
-          recordExceptionInCurrentSpan({ error: { message: "Unknown error" } as Error })
+          recordExceptionInCurrentSpan({
+            error: { message: typeof error === "string" ? error : "Unknown error" },
+          })
           return res.status(500).send({ error: "Unknown error" })
         }
       }

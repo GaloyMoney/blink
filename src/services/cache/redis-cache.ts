@@ -18,8 +18,7 @@ export const RedisCacheService = (): ICacheService => {
 
       return value
     } catch (err) {
-      if (err instanceof Error) return new UnknownCacheServiceError(err.message)
-      return new UnknownCacheServiceError()
+      return new UnknownCacheServiceError(err)
     }
   }
 
@@ -30,8 +29,7 @@ export const RedisCacheService = (): ICacheService => {
 
       return value
     } catch (err) {
-      if (err instanceof Error) return new UnknownCacheServiceError(err.message)
-      return new UnknownCacheServiceError()
+      return new UnknownCacheServiceError(err)
     }
   }
 
@@ -66,8 +64,7 @@ export const RedisCacheService = (): ICacheService => {
       await redisCache.deleteCache(key)
       return true
     } catch (err) {
-      if (err instanceof Error) return new UnknownCacheServiceError(err.message)
-      return new UnknownCacheServiceError()
+      return new UnknownCacheServiceError(err)
     }
   }
 

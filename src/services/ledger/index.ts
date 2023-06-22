@@ -79,8 +79,7 @@ export const LedgerService = (): ILedgerService => {
       }
       return new CouldNotFindTransactionError()
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -96,8 +95,7 @@ export const LedgerService = (): ILedgerService => {
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -112,8 +110,7 @@ export const LedgerService = (): ILedgerService => {
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -142,8 +139,7 @@ export const LedgerService = (): ILedgerService => {
         total,
       }
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -174,8 +170,7 @@ export const LedgerService = (): ILedgerService => {
         total,
       }
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -193,8 +188,7 @@ export const LedgerService = (): ILedgerService => {
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -212,8 +206,7 @@ export const LedgerService = (): ILedgerService => {
         yield _id
       }
     } catch (err) {
-      if (err instanceof Error) yield new UnknownLedgerError(err.message)
-      yield new UnknownLedgerError()
+      yield new UnknownLedgerError(err)
     }
   }
 
@@ -252,8 +245,7 @@ export const LedgerService = (): ILedgerService => {
       }
       return toSats(balance)
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -300,8 +292,7 @@ export const LedgerService = (): ILedgerService => {
 
       return balanceAmount
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -331,8 +322,7 @@ export const LedgerService = (): ILedgerService => {
       const tx = translateToLedgerTx(entry)
       return { recorded: true, newAddressRequestId: tx.requestId }
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -346,8 +336,7 @@ export const LedgerService = (): ILedgerService => {
       })
       return result > 0
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 
@@ -366,8 +355,7 @@ export const LedgerService = (): ILedgerService => {
 
       return totalNotPending > 0 && totalPending === 0
     } catch (err) {
-      if (err instanceof Error) return new UnknownLedgerError(err.message)
-      return new UnknownLedgerError()
+      return new UnknownLedgerError(err)
     }
   }
 

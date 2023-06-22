@@ -27,8 +27,7 @@ export const AccountsIpRepository = (): IAccountsIPsRepository => {
 
       return true
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -46,8 +45,7 @@ export const AccountsIpRepository = (): IAccountsIPsRepository => {
 
       return userIPsFromRaw(result)
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 

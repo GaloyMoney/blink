@@ -567,9 +567,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
       switch (true) {
         case match(KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice):
-          if (err instanceof Error)
-            return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err.message)
-          return new SecretDoesNotMatchAnyExistingHodlInvoiceError("Unknown error")
+          return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
         default:
           return handleCommonLightningServiceErrors(err)
       }
@@ -644,13 +642,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         return new LnPaymentPendingError()
       }
       cancelTimeout()
-      if (err instanceof Error) {
-        return handleSendPaymentLndErrors({ err, paymentHash })
-      }
-      return handleSendPaymentLndErrors({
-        err: { message: "UnknownError" } as Error,
-        paymentHash,
-      })
+      return handleSendPaymentLndErrors({ err, paymentHash })
     }
   }
 
@@ -988,13 +980,15 @@ const handleCommonLightningServiceErrors = (err: Error | unknown) => {
     case match(KnownLndErrorDetails.ConnectionRefused):
       return new OffChainServiceBusyError()
     default:
-      if (err instanceof Error) {
-        return new UnknownLightningServiceError(
-          msgForUnknown({ message: err.message } as Error),
-        )
-      }
       return new UnknownLightningServiceError(
-        msgForUnknown({ message: "Unknown error" } as Error),
+        msgForUnknown({
+          message:
+            err instanceof Error
+              ? err.message
+              : typeof err === "string"
+              ? err
+              : "Unknown error",
+        } as Error),
       )
   }
 }
@@ -1011,13 +1005,15 @@ const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
       return new DestinationMissingDependentFeatureError()
 
     default:
-      if (err instanceof Error) {
-        return new UnknownRouteNotFoundError(
-          msgForUnknown({ message: err.message } as Error),
-        )
-      }
       return new UnknownRouteNotFoundError(
-        msgForUnknown({ message: "Unknown error" } as Error),
+        msgForUnknown({
+          message:
+            err instanceof Error
+              ? err.message
+              : typeof err === "string"
+              ? err
+              : "Unknown error",
+        } as Error),
       )
   }
 }

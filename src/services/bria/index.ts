@@ -90,7 +90,7 @@ export const BriaSubscriber = () => {
         .build()
     } catch (error) {
       if (error instanceof Error) return new UnknownBriaEventError(error.message)
-      return new UnknownBriaEventError()
+      return new UnknownBriaEventError(error)
     }
   }
 
@@ -118,7 +118,7 @@ export const NewOnChainService = (): INewOnChainService => {
       })
     } catch (error) {
       if (error instanceof Error) return new UnknownOnChainServiceError(error.message)
-      return new UnknownOnChainServiceError()
+      return new UnknownOnChainServiceError(error)
     }
   }
 
@@ -150,8 +150,7 @@ export const NewOnChainService = (): INewOnChainService => {
       ) {
         return new OnChainAddressAlreadyCreatedForRequestIdError()
       }
-      if (err instanceof Error) return new UnknownOnChainServiceError(err.message)
-      return new UnknownOnChainServiceError()
+      return new UnknownOnChainServiceError(err)
     }
   }
 
@@ -178,9 +177,7 @@ export const NewOnChainService = (): INewOnChainService => {
       ) {
         return new OnChainAddressNotFoundError()
       }
-      if (err instanceof Error) return new UnknownOnChainServiceError(err.message)
-      if (typeof err === "string") return new UnknownOnChainServiceError(err)
-      return new UnknownOnChainServiceError()
+      return new UnknownOnChainServiceError(err)
     }
   }
 
@@ -205,9 +202,7 @@ export const NewOnChainService = (): INewOnChainService => {
       ) {
         return new PayoutNotFoundError()
       }
-      if (err instanceof Error) return new UnknownOnChainServiceError(err.message)
-      if (typeof err === "string") return new UnknownOnChainServiceError(err)
-      return new UnknownOnChainServiceError()
+      return new UnknownOnChainServiceError(err)
     }
   }
 
@@ -277,7 +272,7 @@ export const NewOnChainService = (): INewOnChainService => {
         })
       } catch (error) {
         if (error instanceof Error) return new UnknownOnChainServiceError(error.message)
-        return new UnknownOnChainServiceError()
+        return new UnknownOnChainServiceError(error)
       }
     }
 

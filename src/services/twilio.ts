@@ -103,13 +103,7 @@ export const TwilioClient = (): IPhoneProviderService => {
 
       return phoneMetadata
     } catch (err) {
-      if (err instanceof Error) {
-        return new UnknownPhoneProviderServiceError(err.message)
-      }
-      if (typeof err === "string") {
-        return new UnknownPhoneProviderServiceError(err)
-      }
-      return new UnknownPhoneProviderServiceError()
+      return new UnknownPhoneProviderServiceError(err)
     }
   }
 

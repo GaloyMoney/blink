@@ -9,12 +9,7 @@ import {
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
 
-import {
-  wrapAsyncFunctionsToRunInSpan,
-  recordExceptionInCurrentSpan,
-} from "@services/tracing"
-
-import { ErrorLevel } from "@domain/shared"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import {
   AuthenticationKratosError,
@@ -62,9 +57,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         return new AuthenticationKratosError(err.message || err)
       }
 
-      if (err instanceof Error) new UnknownKratosError(err.message)
-
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -110,10 +103,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       if (err instanceof Error && err.message === "Request failed with status code 401") {
         return new AuthenticationKratosError(err.message || err)
       }
-      if (err instanceof Error) {
-        return new UnknownKratosError(err.message)
-      }
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -129,8 +119,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         },
       })
     } catch (err) {
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -150,8 +139,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         id: sessionId,
       })
     } catch (err) {
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -181,8 +169,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         return new LikelyUserAlreadyExistError(err.message || err)
       }
 
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -198,8 +185,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: userId }))
     } catch (err) {
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
 
     if (identity.schema_id !== "username_password_deviceid_v0") {
@@ -226,13 +212,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
       return toDomainIdentityPhone(newIdentity)
     } catch (err) {
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      if (typeof err === "string") return new UnknownKratosError(err)
-      recordExceptionInCurrentSpan({
-        error: new UnknownKratosError(),
-        level: ErrorLevel.Critical,
-      })
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -275,8 +255,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err.message || err)
       }
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -302,9 +281,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err.message || err)
       }
-
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 
@@ -320,8 +297,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
     } catch (err) {
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
 
     if (identity.state === undefined) {
@@ -343,8 +319,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       })
       return toDomainIdentityPhone(newIdentity)
     } catch (err) {
-      if (err instanceof Error) return new UnknownKratosError(err.message)
-      return new UnknownKratosError()
+      return new UnknownKratosError(err)
     }
   }
 

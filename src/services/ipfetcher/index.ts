@@ -26,8 +26,7 @@ export const IpFetcher = (): IIpFetcherService => {
 
       return { ...data[ip], isoCode, proxy, status: data.status }
     } catch (err) {
-      if (err instanceof Error) return new UnknownIpFetcherServiceError(err.message)
-      return new UnknownIpFetcherServiceError()
+      return new UnknownIpFetcherServiceError(err)
     }
   }
   return {

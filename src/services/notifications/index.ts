@@ -68,8 +68,7 @@ export const NotificationsService = (): INotificationsService => {
         })
       }
     } catch (err) {
-      if (err instanceof Error) return handleCommonNotificationErrors(err)
-      return handleCommonNotificationErrors("Unknown error")
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -127,8 +126,7 @@ export const NotificationsService = (): INotificationsService => {
         })
       }
     } catch (err) {
-      if (err instanceof Error) return handleCommonNotificationErrors(err)
-      return handleCommonNotificationErrors("Unknown error")
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -192,8 +190,7 @@ export const NotificationsService = (): INotificationsService => {
         })
       }
     } catch (err) {
-      if (err instanceof Error) return handleCommonNotificationErrors(err)
-      return handleCommonNotificationErrors("Unknown error")
+      return handleCommonNotificationErrors(err)
     }
   }
 
@@ -312,8 +309,7 @@ export const NotificationsService = (): INotificationsService => {
         body,
       })
     } catch (err) {
-      if (err instanceof Error) return handleCommonNotificationErrors(err)
-      return handleCommonNotificationErrors("Unknown error")
+      return handleCommonNotificationErrors(err)
     }
   }
 

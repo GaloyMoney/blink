@@ -30,8 +30,7 @@ export const WalletOnChainPendingReceiveRepository =
         }
         return result.map(translateToWalletOnChainTransaction)
       } catch (err) {
-        if (err instanceof Error) return parseRepositoryError(err)
-        return parseRepositoryError("Unknown error")
+        return parseRepositoryError(err)
       }
     }
 
@@ -56,8 +55,7 @@ export const WalletOnChainPendingReceiveRepository =
         }
         return result.map(translateToWalletOnChainTransaction)
       } catch (err) {
-        if (err instanceof Error) return parseRepositoryError(err)
-        return parseRepositoryError("Unknown error")
+        return parseRepositoryError(err)
       }
     }
 
@@ -71,8 +69,7 @@ export const WalletOnChainPendingReceiveRepository =
         await pendingUtxo.save()
         return translateToWalletOnChainTransaction(pendingUtxo)
       } catch (err) {
-        if (err instanceof Error) return parseRepositoryError(err)
-        return parseRepositoryError("Unknown error")
+        return parseRepositoryError(err)
       }
     }
 
@@ -92,8 +89,7 @@ export const WalletOnChainPendingReceiveRepository =
         }
         return true
       } catch (err) {
-        if (err instanceof Error) return parseRepositoryError(err)
-        return parseRepositoryError("Unknown error")
+        return parseRepositoryError(err)
       }
     }
 

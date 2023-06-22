@@ -431,8 +431,7 @@ const listenerSwapMonitor = async () => {
     startSwapMonitor(loopServiceLnd1)
     startSwapMonitor(loopServiceLnd2)
   } catch (err) {
-    if (err instanceof Error) return new SwapTriggerError(err.message)
-    return new SwapTriggerError()
+    return new SwapTriggerError(err)
   }
 }
 

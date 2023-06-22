@@ -31,8 +31,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }).save()
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -52,8 +51,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 
@@ -67,8 +65,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      if (err instanceof Error) return parseRepositoryError(err)
-      return parseRepositoryError("Unknown error")
+      return parseRepositoryError(err)
     }
   }
 

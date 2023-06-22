@@ -64,8 +64,7 @@ export const recordLnSendRevert = async ({
     txMetadataRepo.persistAll(txsMetadataToPersist)
     return true
   } catch (err) {
-    if (err instanceof Error) return new UnknownLedgerError(err.message)
-    return new UnknownLedgerError()
+    return new UnknownLedgerError(err)
   }
 }
 
@@ -87,7 +86,6 @@ export const settlePendingLnSend = async (
     }
     return true
   } catch (err) {
-    if (err instanceof Error) return new UnknownLedgerError(err.message)
-    return new UnknownLedgerError()
+    return new UnknownLedgerError(err)
   }
 }

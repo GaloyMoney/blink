@@ -63,7 +63,7 @@ const Transaction = GT.Object<WalletTransaction>({
           if (err instanceof Error) {
             result = err
           } else {
-            result = new Error("Unknown error")
+            result = new Error(typeof err === "string" ? err : "Unknown error")
           }
         }
         if (result instanceof Error || result === undefined) return settlementVia

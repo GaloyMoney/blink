@@ -94,8 +94,7 @@ export const PriceService = (): IPriceService => {
       }
     } catch (err) {
       baseLogger.error({ err }, "impossible to fetch most recent price")
-      if (err instanceof Error) return new UnknownPriceServiceError(err.message)
-      return new UnknownPriceServiceError()
+      return new UnknownPriceServiceError(err)
     }
   }
 
@@ -109,8 +108,7 @@ export const PriceService = (): IPriceService => {
         price: t.price / SATS_PER_BTC,
       }))
     } catch (err) {
-      if (err instanceof Error) return new UnknownPriceServiceError(err.message)
-      return new UnknownPriceServiceError()
+      return new UnknownPriceServiceError(err)
     }
   }
 
@@ -137,8 +135,7 @@ export const PriceService = (): IPriceService => {
           } as PriceCurrency),
       )
     } catch (err) {
-      if (err instanceof Error) return new UnknownPriceServiceError(err.message)
-      return new UnknownPriceServiceError()
+      return new UnknownPriceServiceError(err)
     }
   }
 

@@ -246,8 +246,7 @@ const getFirstIndex = async (pubkey: Pubkey): Promise<number | ApplicationError>
   try {
     paymentsResults = await getPayments({ lnd, limit: 1 })
   } catch (err) {
-    if (err instanceof Error) return new UnknownLightningServiceError(err.message)
-    return new UnknownLightningServiceError()
+    return new UnknownLightningServiceError(err)
   }
 
   const { next } = paymentsResults

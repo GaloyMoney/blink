@@ -16,8 +16,7 @@ export const RoutesCache = (): IRoutesCache => {
       await redis.set(key, value, "EX", defaultTimeToExpiryInSeconds)
       return routeToCache
     } catch (err) {
-      if (err instanceof Error) return new UnknownRepositoryError(err.message)
-      return new UnknownRepositoryError()
+      return new UnknownRepositoryError(err)
     }
   }
 
@@ -30,8 +29,7 @@ export const RoutesCache = (): IRoutesCache => {
         return new CouldNotFindError("Couldn't find cached route for payment hash")
       return JSON.parse(rawRouteString)
     } catch (err) {
-      if (err instanceof Error) return new UnknownRepositoryError(err.message)
-      return new UnknownRepositoryError()
+      return new UnknownRepositoryError(err)
     }
   }
 

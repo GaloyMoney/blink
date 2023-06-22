@@ -63,8 +63,18 @@ export const uploadBackup =
             addEventToCurrentSpan("Static channel backup to Dropbox successful.")
           } catch (error) {
             logger.error({ error }, "Static channel backup to Dropbox failed.")
-            if (error instanceof Error)
+            if (error instanceof Error) {
               recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            } else {
+              recordExceptionInCurrentSpan({
+                error: new Error(
+                  typeof error === "string"
+                    ? error
+                    : "Static channel backup to Dropbox failed.",
+                ),
+                level: ErrorLevel.Warn,
+              })
+            }
           }
         },
       )
@@ -94,8 +104,18 @@ export const uploadBackup =
             addEventToCurrentSpan("Static channel backup to GoogleCloud successful.")
           } catch (error) {
             logger.error({ error }, "Static channel backup to GoogleCloud failed.")
-            if (error instanceof Error)
+            if (error instanceof Error) {
               recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            } else {
+              recordExceptionInCurrentSpan({
+                error: new Error(
+                  typeof error === "string"
+                    ? error
+                    : "Static channel backup to GoogleCloud failed.",
+                ),
+                level: ErrorLevel.Warn,
+              })
+            }
           }
         },
       )
@@ -125,8 +145,18 @@ export const uploadBackup =
             addEventToCurrentSpan("Static channel backup to Nextcloud successful.")
           } catch (error) {
             logger.error({ error }, "Static channel backup to Nextcloud failed.")
-            if (error instanceof Error)
+            if (error instanceof Error) {
               recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            } else {
+              recordExceptionInCurrentSpan({
+                error: new Error(
+                  typeof error === "string"
+                    ? error
+                    : "Static channel backup to Nextcloud failed.",
+                ),
+                level: ErrorLevel.Warn,
+              })
+            }
           }
         },
       )
