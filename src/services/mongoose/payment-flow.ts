@@ -25,7 +25,7 @@ export const PaymentFlowStateRepository = (
 
       const paymentFlowState = new PaymentFlowState(rawPaymentFlowState)
       await paymentFlowState.save()
-      return paymentFlowFromRaw(paymentFlowState)
+      return paymentFlowFromRaw(paymentFlowState.toObject())
     } catch (err) {
       return parseRepositoryError(err)
     }
@@ -50,7 +50,7 @@ export const PaymentFlowStateRepository = (
     if (hash instanceof Error) return hash
 
     try {
-      const result = await PaymentFlowState.findOne({
+      const result = await PaymentFlowState.findOne<PaymentFlowStateRecord>({
         ...hash,
         senderWalletId: walletId,
         inputAmount: Number(inputAmount),
@@ -111,7 +111,7 @@ export const PaymentFlowStateRepository = (
     if (rawPaymentFlowIndex instanceof Error) return rawPaymentFlowIndex
 
     try {
-      const result = await PaymentFlowState.findOneAndUpdate(
+      const result = await PaymentFlowState.findOneAndUpdate<PaymentFlowStateRecord>(
         rawPaymentFlowIndex,
         { paymentSentAndPending: false },
         {
