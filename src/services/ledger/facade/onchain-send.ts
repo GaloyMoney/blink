@@ -156,7 +156,10 @@ export const settlePendingOnChainPayment = async (
   payoutId: PayoutId,
 ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
   try {
-    const result = await Transaction.updateMany({ payoutId }, { pending: false })
+    const result = await Transaction.updateMany(
+      { payout_id: payoutId },
+      { pending: false },
+    )
     const success = result.modifiedCount > 0
     if (!success) {
       return new NoTransactionToSettleError()

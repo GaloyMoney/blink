@@ -1,24 +1,13 @@
 import mongoose from "mongoose"
-import * as Medici from "medici"
 
 import { ConfigError, mongodbCredentials } from "@config"
 import { WalletCurrency } from "@domain/shared"
-import { LnPayment } from "@services/lnd/schema"
 import { lazyLoadLedgerAdmin } from "@services/ledger"
 import { WalletsRepository } from "@services/mongoose"
 import { fromObjectId } from "@services/mongoose/utils"
-import { TransactionMetadata } from "@services/ledger/schema"
 
 import { baseLogger } from "../logger"
-import {
-  DbMetadata,
-  Wallet,
-  WalletInvoice,
-  PaymentFlowState,
-  Account,
-  User,
-  WalletOnChainPendingReceive,
-} from "../mongoose/schema"
+import { Account } from "../mongoose/schema"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {
@@ -96,16 +85,10 @@ export const setupMongoConnection = async (syncIndexes = false) => {
   try {
     mongoose.set("runValidators", true)
     if (syncIndexes) {
-      await DbMetadata.syncIndexes()
-      await LnPayment.syncIndexes()
-      await Medici.syncIndexes()
-      await PaymentFlowState.syncIndexes()
-      await TransactionMetadata.syncIndexes()
-      await Account.syncIndexes()
-      await Wallet.syncIndexes()
-      await WalletInvoice.syncIndexes()
-      await User.syncIndexes()
-      await WalletOnChainPendingReceive.syncIndexes()
+      for (const model in mongoose.models) {
+        baseLogger.info({ model }, "Syncing indexes")
+        await mongoose.models[model].syncIndexes()
+      }
     }
   } catch (err) {
     baseLogger.fatal(
