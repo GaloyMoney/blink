@@ -89,7 +89,6 @@ export const BriaSubscriber = () => {
         .withBackoff(new FibonacciBackoff(30000, 7))
         .build()
     } catch (error) {
-      if (error instanceof Error) return new UnknownBriaEventError(error.message)
       return new UnknownBriaEventError(error)
     }
   }
