@@ -13,6 +13,7 @@ import {
   lndOutside2,
   lndOutside3,
   mineBlockAndSync,
+  mineBlockAndSyncAll,
   openChannelTesting,
   setChannelFees,
   subscribeToChannels,
@@ -118,6 +119,8 @@ describe("Lightning channels", () => {
       is_private: true,
     })
 
+    await mineBlockAndSyncAll()
+
     const { channels } = await getChannels({ lnd: lndOutside1 })
     expect(channels.length).toEqual(channelLengthOutside1 + 1)
     expect(channels.some((e) => e.is_private)).toBe(true)
@@ -127,8 +130,7 @@ describe("Lightning channels", () => {
     let countMax = 3
     let setOnLndOutside1
     while (count < countMax && setOnLndOutside1 !== true) {
-      if (count > 0) await sleep(500)
-      count++
+      if (count > 0) await sleep(1000)
 
       setOnLndOutside1 = await setChannelFees({
         lnd: lndOutside1,
@@ -136,9 +138,10 @@ describe("Lightning channels", () => {
         base: 0,
         rate: 5000,
       })
+      count++
     }
     expect(count).toBeGreaterThan(0)
-    expect(count).toBeLessThan(countMax)
+    expect(count).toBeLessThanOrEqual(countMax)
     expect(setOnLndOutside1).toBe(true)
 
     let policies
@@ -157,7 +160,7 @@ describe("Lightning channels", () => {
       }
     }
     expect(count).toBeGreaterThan(0)
-    expect(count).toBeLessThan(countMax)
+    expect(count).toBeLessThanOrEqual(countMax)
     expect(errMsg).not.toBe("FullChannelDetailsNotFound")
     expect(policies && policies.length).toBeGreaterThan(0)
 

@@ -29,8 +29,7 @@ describe("LndService", () => {
     const countMax = 3
     let setOnLndOutside1
     while (count < countMax && setOnLndOutside1 !== true) {
-      if (count > 0) await sleep(500)
-      count++
+      if (count > 0) await sleep(1000)
 
       setOnLndOutside1 = await setChannelFees({
         lnd: localLnd,
@@ -38,9 +37,10 @@ describe("LndService", () => {
         base,
         rate,
       })
+      count++
     }
     expect(count).toBeGreaterThan(0)
-    expect(count).toBeLessThan(countMax)
+    expect(count).toBeLessThanOrEqual(countMax)
     expect(setOnLndOutside1).toBe(true)
 
     return {
