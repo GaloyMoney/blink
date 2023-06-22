@@ -1,5 +1,3 @@
-import crypto from "crypto"
-
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 
 import {
@@ -521,8 +519,6 @@ const executePaymentViaOnChain = async <
       debitAccountAdditionalMetadata,
       internalAccountsAdditionalMetadata,
     } = LedgerFacade.OnChainSendLedgerMetadata({
-      // we need a temporary hash to be able to search in admin panel
-      onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
       paymentAmounts: paymentFlow,
 
       amountDisplayCurrency: amountDisplayCurrencyAsNumber,

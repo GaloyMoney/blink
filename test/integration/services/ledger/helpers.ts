@@ -132,7 +132,6 @@ export const recordSendOnChainPayment = async <S extends WalletCurrency>({
 }: RecordExternalTxTestArgs<S>) => {
   const { metadata, debitAccountAdditionalMetadata, internalAccountsAdditionalMetadata } =
     LedgerFacade.OnChainSendLedgerMetadata({
-      onChainTxHash: crypto.randomUUID() as OnChainTxHash,
       paymentAmounts: {
         btcPaymentAmount: paymentAmount.btc,
         usdPaymentAmount: paymentAmount.usd,
