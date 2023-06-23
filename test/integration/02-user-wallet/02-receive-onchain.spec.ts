@@ -216,7 +216,7 @@ describe("With Bria", () => {
     // Check ledger transaction metadata for BTC 'LedgerTransactionType.OnchainReceipt'
     // ===
     const ledgerTxs = await LedgerService().getTransactionsByHash(
-      (txn.settlementVia as SettlementViaOnChain).transactionHash,
+      (txn.settlementVia as SettlementViaOnChainIncoming).transactionHash,
     )
     if (ledgerTxs instanceof Error) throw ledgerTxs
     const ledgerTx = ledgerTxs.find((tx) => tx.walletId === walletId)
@@ -369,7 +369,7 @@ describe("With Bria", () => {
       settledTxns.slice
         .filter((txn) =>
           settledTxIds.includes(
-            (txn.settlementVia as SettlementViaOnChain).transactionHash,
+            (txn.settlementVia as SettlementViaOnChainIncoming).transactionHash,
           ),
         )
         .map((txn) => (txn.initiationVia as InitiationViaOnChain).address)
@@ -1025,7 +1025,7 @@ describe("With Lnd", () => {
     // Check ledger transaction metadata for BTC 'LedgerTransactionType.OnchainReceipt'
     // ===
     const ledgerTxs = await LedgerService().getTransactionsByHash(
-      (txn.settlementVia as SettlementViaOnChain).transactionHash,
+      (txn.settlementVia as SettlementViaOnChainIncoming).transactionHash,
     )
     if (ledgerTxs instanceof Error) throw ledgerTxs
     const ledgerTx = ledgerTxs.find((tx) => tx.walletId === walletId)
