@@ -7,12 +7,6 @@ import { Accounts } from "@app/index"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 
-import { BriaPayloadType } from "@services/bria"
-import { BriaEventRepo } from "@services/bria/event-repository"
-import { BriaEventModel } from "@services/bria/schema"
-import { translateToLedgerTx } from "@services/ledger"
-import { Transaction } from "@services/ledger/schema"
-
 import { sleep, timeoutWithCancel } from "@utils"
 
 import { loginFromPhoneAndCode } from "test/e2e/account-creation-e2e"
@@ -167,9 +161,6 @@ describe("settles onchain", () => {
   const centsAmount = 1_000
 
   it("sends a payment", async () => {
-    const lastSequence = await BriaEventRepo().getLatestSequence()
-    if (lastSequence instanceof Error) throw lastSequence
-
     // SEND PAYMENTS
     // ===============
 
@@ -258,11 +249,13 @@ describe("settles onchain", () => {
     expect(errors4).toHaveLength(0)
     expect(status4).toBe("SUCCESS")
 
-    // Wait for broadcast
-    const nEvents = 4
-    await waitForPaymentBroadcast({
-      afterSequence: lastSequence,
-      nEvents,
+    const nTxns = 4
+
+    // Wait for broadcast, where txId exists in txn
+    const txnsBefore = await waitForTransaction({
+      nTxns,
+      address: onChainPaymentSendAllAddress,
+      isPending: true,
     })
 
     // CHECK PENDING STATUS
@@ -274,17 +267,6 @@ describe("settles onchain", () => {
       onChainUsdPaymentSendAddress,
       onChainPaymentSendAllAddress,
     ]
-    expect(new Set(addresses).size).toEqual(nEvents)
-
-    const { data: dataBefore } = await apolloClient.query<TransactionsQuery>({
-      query: TransactionsDocument,
-      variables: {
-        walletIds,
-        first: nEvents,
-      },
-    })
-    const txnsBefore = dataBefore?.me?.defaultAccount.transactions?.edges
-    expect(txnsBefore).toBeTruthy()
 
     const expectArrayBefore = addresses.map((address) =>
       expect.objectContaining({
@@ -301,17 +283,16 @@ describe("settles onchain", () => {
     // MINE AND CHECK SETTLED STATUS
     // ===============
 
-    await mineAndSettlePayment(lastSequence)
-
-    await apolloClient.resetStore()
-    const { data: dataAfter } = await apolloClient.query<TransactionsQuery>({
-      query: TransactionsDocument,
-      variables: { walletIds, first: nEvents },
+    await bitcoindOutside.generateToAddress({
+      nblocks: 6,
+      address: RANDOM_ADDRESS,
     })
-    const txnsAfter = dataAfter?.me?.defaultAccount.transactions?.edges
-    if (txnsAfter === undefined || txnsAfter === null) {
-      throw new Error("txnsAfter is falsy")
-    }
+
+    const txnsAfter = await waitForTransaction({
+      nTxns,
+      address: onChainPaymentSendAllAddress,
+      isPending: false,
+    })
 
     const expectArrayAfter = addresses.map((address) =>
       expect.objectContaining({
@@ -370,131 +351,53 @@ const safeGetTransaction = async ({
   }
 }
 
-const waitForEvent = async ({
-  afterSequence,
-  eventType,
+type me = Exclude<TransactionsQuery["me"], null | undefined>
+type transactions = Exclude<me["defaultAccount"]["transactions"], null | undefined>
+type edges = Exclude<transactions["edges"], null | undefined>
+
+const waitForTransaction = async ({
+  nTxns,
+  address,
+  isPending,
 }: {
-  afterSequence: number
-  eventType: BriaPayloadType
-}): Promise<BriaEvent> => {
-  return new Promise(async (resolve) => {
+  address: OnChainAddress
+  nTxns: number
+  isPending: boolean
+}): Promise<edges> => {
+  const gqlTxnPromise: Promise<edges> = new Promise(async (resolve) => {
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const result = await BriaEventModel.findOne({
-        "payload.type": eventType,
-        "sequence": { $gt: afterSequence },
+      await apolloClient.resetStore()
+      const response = await apolloClient.query<TransactionsQuery>({
+        query: TransactionsDocument,
+        variables: { walletIds, first: nTxns },
       })
+      const txns = response.data?.me?.defaultAccount.transactions?.edges
+      if (!txns) break
 
-      if (result !== null) {
-        resolve(result)
+      const txn = txns.find((txn) =>
+        txn.node.initiationVia.__typename === "InitiationViaOnChain" &&
+        txn.node.initiationVia.address === address &&
+        isPending
+          ? txn.node.status === "PENDING"
+          : txn.node.status === "SUCCESS",
+      )
+
+      const statusSet = new Set(txns.map((tx) => tx.node.status))
+      if (txn !== undefined && statusSet.size === 1) {
+        resolve(txns)
         break
       }
 
       await sleep(1000)
     }
   })
-}
 
-const waitForPaymentBroadcast = async ({
-  afterSequence,
-  nEvents,
-}: {
-  afterSequence: number
-  nEvents: number
-}): Promise<BriaBroadcastEvent[]> => {
-  const events: BriaBroadcastEvent[] = []
-  while (events.length < nEvents) {
-    const [timeoutPromise, cancelTimeout] = timeoutWithCancel(45_000, "Timeout")
-
-    const eventPromise = await waitForEvent({
-      afterSequence,
-      eventType: BriaPayloadType.PayoutBroadcast,
-    })
-    const event = (await Promise.race([eventPromise, timeoutPromise])) as BriaEvent
-    if (event instanceof Error) throw event
-
-    if (event.payload.type !== BriaPayloadType.PayoutBroadcast) {
-      throw new Error()
-    }
-    if (event.augmentation.payoutInfo === undefined) {
-      throw new Error()
-    }
-
-    const broadcastEvent = {
-      ...event,
-      payload: event.payload,
-      augmentation: {
-        ...event.augmentation,
-        payoutInfo: event.augmentation.payoutInfo,
-      },
-    }
-    events.push(broadcastEvent)
-
-    cancelTimeout()
-  }
-
-  return events
-}
-
-const mineAndSettlePayment = async (afterSequence: number) => {
-  const [timeoutPromise, cancelTimeout] = timeoutWithCancel(45_000, "Timeout")
-
-  await bitcoindOutside.generateToAddress({
-    nblocks: 6,
-    address: RANDOM_ADDRESS,
-  })
-
-  const settledEventPromise = await waitForEvent({
-    afterSequence,
-    eventType: BriaPayloadType.PayoutSettled,
-  })
-  const settledEvent = (await Promise.race([
-    settledEventPromise,
-    timeoutPromise,
-  ])) as BriaEvent
-  if (settledEvent instanceof Error) throw settledEvent
-
-  if (settledEvent.payload.type !== BriaPayloadType.PayoutSettled) {
-    throw new Error()
-  }
-  if (settledEvent.augmentation.payoutInfo === undefined) {
-    throw new Error()
-  }
-  const {
-    augmentation: {
-      payoutInfo: { id: payoutId },
-    },
-  } = settledEvent
-
-  const txnSettledPromise = waitForTransactionProps({
-    payoutId,
-    props: { pending: false },
-  })
-  const txnSettled = await Promise.race([txnSettledPromise, timeoutPromise])
-  if (txnSettled instanceof Error) throw txnSettled
+  const [timeoutPromise, cancelTimeout] = timeoutWithCancel(30_000, "Timeout")
+  const gqlTxn = await Promise.race([gqlTxnPromise, timeoutPromise])
+  if (gqlTxn instanceof Error) throw gqlTxn
+  if (!gqlTxn) throw new Error("Should not be reached because timeout always throws")
   cancelTimeout()
 
-  return { payoutId }
-}
-
-const waitForTransactionProps = async ({
-  payoutId,
-  props,
-}: {
-  payoutId: PayoutId
-  props: { pending?: boolean }
-}): Promise<LedgerTransaction<WalletCurrency>> => {
-  return new Promise(async (resolve) => {
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const result = await Transaction.findOne({ payout_id: payoutId, ...props })
-
-      if (result !== null) {
-        resolve(translateToLedgerTx(result))
-        break
-      }
-
-      await sleep(1000)
-    }
-  })
+  return gqlTxn
 }
