@@ -6,7 +6,7 @@ import { checkedToOnChainAddress, PayoutSpeed } from "@domain/bitcoin/onchain"
 import { CouldNotFindError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
+import { WalletCurrency, AmountCalculator } from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
 
 import { DealerPriceService } from "@services/dealer-price"
@@ -138,6 +138,13 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   addAttributesToCurrentSpan({
     "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee}`,
   })
+
+  // avoids lnd balance sniffing attack
+  const balanceCheck = paymentFlow.checkBalanceForSend({
+    amount: balance.amount * 2n,
+    currency: balance.currency,
+  })
+  if (balanceCheck instanceof Error) return balanceCheck
 
   return paymentFlow.protocolAndBankFeeInSenderWalletCurrency()
 }
