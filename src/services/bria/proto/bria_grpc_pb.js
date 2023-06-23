@@ -192,6 +192,72 @@ function deserialize_services_bria_v1_GetAccountBalanceSummaryResponse(buffer_ar
   return bria_pb.GetAccountBalanceSummaryResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_services_bria_v1_GetAddressRequest(arg) {
+  if (!(arg instanceof bria_pb.GetAddressRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.GetAddressRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_GetAddressRequest(buffer_arg) {
+  return bria_pb.GetAddressRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_GetAddressResponse(arg) {
+  if (!(arg instanceof bria_pb.GetAddressResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.GetAddressResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_GetAddressResponse(buffer_arg) {
+  return bria_pb.GetAddressResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_GetBatchRequest(arg) {
+  if (!(arg instanceof bria_pb.GetBatchRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.GetBatchRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_GetBatchRequest(buffer_arg) {
+  return bria_pb.GetBatchRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_GetBatchResponse(arg) {
+  if (!(arg instanceof bria_pb.GetBatchResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.GetBatchResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_GetBatchResponse(buffer_arg) {
+  return bria_pb.GetBatchResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_GetPayoutRequest(arg) {
+  if (!(arg instanceof bria_pb.GetPayoutRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.GetPayoutRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_GetPayoutRequest(buffer_arg) {
+  return bria_pb.GetPayoutRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_GetPayoutResponse(arg) {
+  if (!(arg instanceof bria_pb.GetPayoutResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.GetPayoutResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_GetPayoutResponse(buffer_arg) {
+  return bria_pb.GetPayoutResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_services_bria_v1_GetWalletBalanceSummaryRequest(arg) {
   if (!(arg instanceof bria_pb.GetWalletBalanceSummaryRequest)) {
     throw new Error('Expected argument of type services.bria.v1.GetWalletBalanceSummaryRequest');
@@ -322,28 +388,6 @@ function serialize_services_bria_v1_ListProfilesResponse(arg) {
 
 function deserialize_services_bria_v1_ListProfilesResponse(buffer_arg) {
   return bria_pb.ListProfilesResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_bria_v1_ListSigningSessionsRequest(arg) {
-  if (!(arg instanceof bria_pb.ListSigningSessionsRequest)) {
-    throw new Error('Expected argument of type services.bria.v1.ListSigningSessionsRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_bria_v1_ListSigningSessionsRequest(buffer_arg) {
-  return bria_pb.ListSigningSessionsRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_services_bria_v1_ListSigningSessionsResponse(arg) {
-  if (!(arg instanceof bria_pb.ListSigningSessionsResponse)) {
-    throw new Error('Expected argument of type services.bria.v1.ListSigningSessionsResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_services_bria_v1_ListSigningSessionsResponse(buffer_arg) {
-  return bria_pb.ListSigningSessionsResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_services_bria_v1_ListUtxosRequest(arg) {
@@ -634,17 +678,6 @@ var BriaServiceService = exports.BriaServiceService = {
     responseSerialize: serialize_services_bria_v1_GetWalletBalanceSummaryResponse,
     responseDeserialize: deserialize_services_bria_v1_GetWalletBalanceSummaryResponse,
   },
-  getAccountBalanceSummary: {
-    path: '/services.bria.v1.BriaService/GetAccountBalanceSummary',
-    requestStream: false,
-    responseStream: false,
-    requestType: bria_pb.GetAccountBalanceSummaryRequest,
-    responseType: bria_pb.GetAccountBalanceSummaryResponse,
-    requestSerialize: serialize_services_bria_v1_GetAccountBalanceSummaryRequest,
-    requestDeserialize: deserialize_services_bria_v1_GetAccountBalanceSummaryRequest,
-    responseSerialize: serialize_services_bria_v1_GetAccountBalanceSummaryResponse,
-    responseDeserialize: deserialize_services_bria_v1_GetAccountBalanceSummaryResponse,
-  },
   newAddress: {
     path: '/services.bria.v1.BriaService/NewAddress',
     requestStream: false,
@@ -688,6 +721,17 @@ var BriaServiceService = exports.BriaServiceService = {
     requestDeserialize: deserialize_services_bria_v1_ListAddressesRequest,
     responseSerialize: serialize_services_bria_v1_ListAddressesResponse,
     responseDeserialize: deserialize_services_bria_v1_ListAddressesResponse,
+  },
+  getAddress: {
+    path: '/services.bria.v1.BriaService/GetAddress',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.GetAddressRequest,
+    responseType: bria_pb.GetAddressResponse,
+    requestSerialize: serialize_services_bria_v1_GetAddressRequest,
+    requestDeserialize: deserialize_services_bria_v1_GetAddressRequest,
+    responseSerialize: serialize_services_bria_v1_GetAddressResponse,
+    responseDeserialize: deserialize_services_bria_v1_GetAddressResponse,
   },
   listUtxos: {
     path: '/services.bria.v1.BriaService/ListUtxos',
@@ -733,17 +777,6 @@ var BriaServiceService = exports.BriaServiceService = {
     responseSerialize: serialize_services_bria_v1_UpdatePayoutQueueResponse,
     responseDeserialize: deserialize_services_bria_v1_UpdatePayoutQueueResponse,
   },
-  submitPayout: {
-    path: '/services.bria.v1.BriaService/SubmitPayout',
-    requestStream: false,
-    responseStream: false,
-    requestType: bria_pb.SubmitPayoutRequest,
-    responseType: bria_pb.SubmitPayoutResponse,
-    requestSerialize: serialize_services_bria_v1_SubmitPayoutRequest,
-    requestDeserialize: deserialize_services_bria_v1_SubmitPayoutRequest,
-    responseSerialize: serialize_services_bria_v1_SubmitPayoutResponse,
-    responseDeserialize: deserialize_services_bria_v1_SubmitPayoutResponse,
-  },
   estimatePayoutFee: {
     path: '/services.bria.v1.BriaService/EstimatePayoutFee',
     requestStream: false,
@@ -754,6 +787,17 @@ var BriaServiceService = exports.BriaServiceService = {
     requestDeserialize: deserialize_services_bria_v1_EstimatePayoutFeeRequest,
     responseSerialize: serialize_services_bria_v1_EstimatePayoutFeeResponse,
     responseDeserialize: deserialize_services_bria_v1_EstimatePayoutFeeResponse,
+  },
+  submitPayout: {
+    path: '/services.bria.v1.BriaService/SubmitPayout',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.SubmitPayoutRequest,
+    responseType: bria_pb.SubmitPayoutResponse,
+    requestSerialize: serialize_services_bria_v1_SubmitPayoutRequest,
+    requestDeserialize: deserialize_services_bria_v1_SubmitPayoutRequest,
+    responseSerialize: serialize_services_bria_v1_SubmitPayoutResponse,
+    responseDeserialize: deserialize_services_bria_v1_SubmitPayoutResponse,
   },
   listPayouts: {
     path: '/services.bria.v1.BriaService/ListPayouts',
@@ -777,16 +821,38 @@ var BriaServiceService = exports.BriaServiceService = {
     responseSerialize: serialize_services_bria_v1_FindPayoutByExternalIdResponse,
     responseDeserialize: deserialize_services_bria_v1_FindPayoutByExternalIdResponse,
   },
-  listSigningSessions: {
-    path: '/services.bria.v1.BriaService/ListSigningSessions',
+  getPayout: {
+    path: '/services.bria.v1.BriaService/GetPayout',
     requestStream: false,
     responseStream: false,
-    requestType: bria_pb.ListSigningSessionsRequest,
-    responseType: bria_pb.ListSigningSessionsResponse,
-    requestSerialize: serialize_services_bria_v1_ListSigningSessionsRequest,
-    requestDeserialize: deserialize_services_bria_v1_ListSigningSessionsRequest,
-    responseSerialize: serialize_services_bria_v1_ListSigningSessionsResponse,
-    responseDeserialize: deserialize_services_bria_v1_ListSigningSessionsResponse,
+    requestType: bria_pb.GetPayoutRequest,
+    responseType: bria_pb.GetPayoutResponse,
+    requestSerialize: serialize_services_bria_v1_GetPayoutRequest,
+    requestDeserialize: deserialize_services_bria_v1_GetPayoutRequest,
+    responseSerialize: serialize_services_bria_v1_GetPayoutResponse,
+    responseDeserialize: deserialize_services_bria_v1_GetPayoutResponse,
+  },
+  getBatch: {
+    path: '/services.bria.v1.BriaService/GetBatch',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.GetBatchRequest,
+    responseType: bria_pb.GetBatchResponse,
+    requestSerialize: serialize_services_bria_v1_GetBatchRequest,
+    requestDeserialize: deserialize_services_bria_v1_GetBatchRequest,
+    responseSerialize: serialize_services_bria_v1_GetBatchResponse,
+    responseDeserialize: deserialize_services_bria_v1_GetBatchResponse,
+  },
+  getAccountBalanceSummary: {
+    path: '/services.bria.v1.BriaService/GetAccountBalanceSummary',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.GetAccountBalanceSummaryRequest,
+    responseType: bria_pb.GetAccountBalanceSummaryResponse,
+    requestSerialize: serialize_services_bria_v1_GetAccountBalanceSummaryRequest,
+    requestDeserialize: deserialize_services_bria_v1_GetAccountBalanceSummaryRequest,
+    responseSerialize: serialize_services_bria_v1_GetAccountBalanceSummaryResponse,
+    responseDeserialize: deserialize_services_bria_v1_GetAccountBalanceSummaryResponse,
   },
   subscribeAll: {
     path: '/services.bria.v1.BriaService/SubscribeAll',
