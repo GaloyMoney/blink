@@ -111,7 +111,7 @@ type DepositFeeCalculator = {
   onChainDepositFee({
     amount,
     ratio,
-  }: onChainDepositFeeArgs): BtcPaymentAmount | ValidationError
+  }: OnChainDepositFeeArgs): BtcPaymentAmount | ValidationError
   lnDepositFee(): BtcPaymentAmount
 }
 

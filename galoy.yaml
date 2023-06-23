@@ -166,7 +166,10 @@ fees:
     ratioAsBasisPoints: 50
     threshold: 1000000
     daysLookback: 30
-  deposit: 0.003
+  deposit:
+    defaultMin: 3000
+    threshold: 1000000
+    ratioAsBasisPoints: 30
 lnds:
   - name: LND1
     type:

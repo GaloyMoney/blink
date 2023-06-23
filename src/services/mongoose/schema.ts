@@ -134,7 +134,7 @@ const AccountSchema = new Schema<AccountRecord>(
   {
     depositFeeRatio: {
       type: Number,
-      default: feesConfig.depositFeeVariable,
+      default: 0,
       min: 0,
       max: 1,
     },

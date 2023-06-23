@@ -13,7 +13,6 @@ describe("PaymentInputValidator", () => {
     createdAt: new Date(),
     username: "username" as Username,
     defaultWalletId: "senderWalletId" as WalletId,
-    depositFeeRatio: 0 as DepositFeeRatio,
     withdrawFee: 0 as Satoshis,
     level: AccountLevel.One,
     status: AccountStatus.Active,

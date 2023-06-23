@@ -13,7 +13,7 @@ type AccountLimitsRange =
 type AccountLimitsType =
   typeof import("./index").AccountLimitsType[keyof typeof import("./index").AccountLimitsType]
 
-type DepositFeeRatio = number & { readonly brand: unique symbol }
+type DepositFeeRatioAsBasisPoints = bigint & { readonly brand: unique symbol }
 
 type ContactAlias = string & { readonly brand: unique symbol }
 
@@ -65,7 +65,6 @@ type Account = {
   readonly createdAt: Date
   username: Username
   defaultWalletId: WalletId
-  readonly depositFeeRatio: DepositFeeRatio
   withdrawFee: Satoshis // TODO: make it optional. only save when not default value from yaml
   level: AccountLevel
   status: AccountStatus
@@ -182,8 +181,9 @@ type TestAccountsChecker = (testAccounts: TestAccount[]) => {
 }
 
 type FeesConfig = {
-  depositFeeVariable: number
-  depositFeeFixed: CurrencyBaseAmount
+  depositRatioAsBasisPoints: DepositFeeRatioAsBasisPoints
+  depositThreshold: BtcPaymentAmount
+  depositDefaultMin: BtcPaymentAmount
   withdrawMethod: WithdrawalFeePriceMethod
   withdrawRatioAsBasisPoints: bigint
   withdrawThreshold: Satoshis

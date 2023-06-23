@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getOnChainWalletConfig } from "@config"
+import { getFeesConfig, getOnChainWalletConfig } from "@config"
 
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
@@ -28,6 +28,7 @@ import { createOnChainAddressByWallet } from "./create-on-chain-address"
 const ledger = LedgerService()
 const dealer = DealerPriceService()
 const { dustThreshold } = getOnChainWalletConfig()
+const feesConfig = getFeesConfig()
 
 const logger = baseLogger
 
@@ -78,7 +79,9 @@ const addSettledTransactionBeforeFinally = async ({
 
     const fee = DepositFeeCalculator().onChainDepositFee({
       amount,
-      ratio: account.depositFeeRatio,
+      minBankFee: feesConfig.depositDefaultMin,
+      minBankFeeThreshold: feesConfig.depositThreshold,
+      ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) return fee
 
