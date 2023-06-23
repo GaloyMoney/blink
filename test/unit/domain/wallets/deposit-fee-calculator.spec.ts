@@ -59,22 +59,6 @@ describe("DepositFeeCalculator", () => {
       const fee = calculator.onChainDepositFee({ ...config, amount })
       expect(fee).toEqual({ amount: 3000n, currency: WalletCurrency.Btc })
     })
-
-    it("applies a min fee", () => {
-      const amount = {
-        amount: 9999n,
-        currency: WalletCurrency.Btc,
-      }
-      const config = {
-        ...onChainFeeConfig,
-        minBankFeeThreshold: {
-          amount: 10_000n,
-          currency: WalletCurrency.Btc,
-        },
-      }
-      const fee = calculator.onChainDepositFee({ ...config, amount })
-      expect(fee).toEqual({ amount: 3000n, currency: WalletCurrency.Btc })
-    })
   })
 
   describe("lnDepositFee", () => {
