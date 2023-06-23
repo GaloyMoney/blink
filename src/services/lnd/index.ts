@@ -60,7 +60,11 @@ import {
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  parseErrorMessageFromUnknown,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@domain/shared"
 
 import { LocalCacheService } from "@services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -982,12 +986,7 @@ const handleCommonLightningServiceErrors = (err: Error | unknown) => {
     default:
       return new UnknownLightningServiceError(
         msgForUnknown({
-          message:
-            err instanceof Error
-              ? err.message
-              : typeof err === "string"
-              ? err
-              : "Unknown error",
+          message: parseErrorMessageFromUnknown(err),
         } as Error),
       )
   }
@@ -1007,12 +1006,7 @@ const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
     default:
       return new UnknownRouteNotFoundError(
         msgForUnknown({
-          message:
-            err instanceof Error
-              ? err.message
-              : typeof err === "string"
-              ? err
-              : "Unknown error",
+          message: parseErrorMessageFromUnknown(err),
         } as Error),
       )
   }

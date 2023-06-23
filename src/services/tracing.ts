@@ -28,7 +28,7 @@ import {
   Context,
   AttributeValue,
 } from "@opentelemetry/api"
-import { ErrorLevel, RankedErrorLevel } from "@domain/shared"
+import { ErrorLevel, RankedErrorLevel, parseErrorFromUnknown } from "@domain/shared"
 import { NetInstrumentation } from "@opentelemetry/instrumentation-net"
 
 import type * as graphqlTypes from "graphql"
@@ -365,12 +365,7 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
       span.end()
       return ret
     } catch (error) {
-      const err =
-        error instanceof Error
-          ? error
-          : typeof error === "string"
-          ? new Error(error)
-          : new Error("Unknown error")
+      const err = parseErrorFromUnknown(error)
       recordException(span, err, ErrorLevel.Critical)
       span.end()
       throw error
@@ -450,12 +445,7 @@ export const wrapToRunInSpan = <
         span.end()
         return ret
       } catch (error) {
-        const err =
-          error instanceof Error
-            ? error
-            : typeof error === "string"
-            ? new Error(error)
-            : new Error("Unknown error")
+        const err = parseErrorFromUnknown(error)
         recordException(span, err, ErrorLevel.Critical)
         span.end()
         throw error
@@ -512,12 +502,7 @@ export const wrapAsyncToRunInSpan = <
         span.end()
         return ret
       } catch (error) {
-        const err =
-          error instanceof Error
-            ? error
-            : typeof error === "string"
-            ? new Error(error)
-            : new Error("Unknown error")
+        const err = parseErrorFromUnknown(error)
         recordException(span, err, ErrorLevel.Critical)
         span.end()
         throw error

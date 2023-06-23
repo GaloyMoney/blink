@@ -17,6 +17,7 @@ import { baseLogger } from "@services/logger"
 
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { NotImplementedError } from "@domain/errors"
+import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 import { isAxiosError } from "axios"
 
@@ -111,8 +112,7 @@ export const TwilioClient = (): IPhoneProviderService => {
 }
 
 const handleCommonErrors = (err: Error | string | unknown) => {
-  const errMsg =
-    typeof err === "string" ? err : err instanceof Error ? err.message : "Unknown error"
+  const errMsg = parseErrorMessageFromUnknown(err)
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 

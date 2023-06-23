@@ -144,7 +144,7 @@ export const NewOnChainService = (): INewOnChainService => {
         err &&
         typeof err === "object" &&
         "code" in err &&
-        err.code === status.ALREADY_EXISTS
+        err?.code === status.ALREADY_EXISTS
       ) {
         return new OnChainAddressAlreadyCreatedForRequestIdError()
       }

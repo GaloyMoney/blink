@@ -13,7 +13,7 @@ import {
   recordExceptionInCurrentSpan,
   wrapAsyncToRunInSpan,
 } from "@services/tracing"
-import { ErrorLevel } from "@domain/shared"
+import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
 
 const logger = baseLogger.child({ module: "notifications" })
 
@@ -124,8 +124,7 @@ export const PushNotificationsService = (): IPushNotificationsService => {
 }
 
 export const handleCommonNotificationErrors = (err: Error | string | unknown) => {
-  const errMsg =
-    typeof err === "string" ? err : err instanceof Error ? err.message : "Unknown error"
+  const errMsg = parseErrorMessageFromUnknown(err)
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 

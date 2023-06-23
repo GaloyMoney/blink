@@ -1,4 +1,8 @@
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  parseErrorMessageFromUnknown,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindOnChainTransactionError,
@@ -294,12 +298,7 @@ const handleCommonOnChainServiceErrors = (err: Error | unknown) => {
     default:
       return new UnknownOnChainServiceError(
         msgForUnknown({
-          message:
-            err instanceof Error
-              ? err.message
-              : typeof err === "string"
-              ? err
-              : "Unknown error",
+          message: parseErrorMessageFromUnknown(err),
         } as Error),
       )
   }

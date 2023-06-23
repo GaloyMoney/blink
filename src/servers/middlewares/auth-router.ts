@@ -105,13 +105,7 @@ authRouter.post(
           path: csrfCookie.path,
         })
       } catch (error) {
-        if (error instanceof Error) {
-          recordExceptionInCurrentSpan({ error })
-        } else {
-          recordExceptionInCurrentSpan({
-            error: { message: typeof error === "string" ? error : "Unknown error" },
-          })
-        }
+        recordExceptionInCurrentSpan({ error })
         return res.status(500).send({ result: "Error parsing cookies" })
       }
 
@@ -159,13 +153,7 @@ authRouter.get(
           result: "logout successful",
         })
       } catch (error) {
-        if (error instanceof Error) {
-          recordExceptionInCurrentSpan({ error })
-        } else {
-          recordExceptionInCurrentSpan({
-            error: { message: typeof error === "string" ? error : "Unknown error" },
-          })
-        }
+        recordExceptionInCurrentSpan({ error })
         return res.status(500).send({ error: "Error logging out" })
       }
     },
@@ -227,15 +215,13 @@ authRouter.post(
           result: authToken,
         })
       } catch (error) {
-        if (error instanceof Error) {
-          recordExceptionInCurrentSpan({ error })
-          return res.status(500).send({ error: `${error.message}` })
-        } else {
-          recordExceptionInCurrentSpan({
-            error: { message: typeof error === "string" ? error : "Unknown error" },
-          })
-          return res.status(500).send({ error: "Unknown error" })
-        }
+        recordExceptionInCurrentSpan({ error })
+        return res.status(500).send({
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unknown error creating device account",
+        })
       }
     },
   }),

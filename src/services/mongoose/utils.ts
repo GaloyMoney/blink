@@ -5,6 +5,8 @@ import {
   InvalidDocumentIdForDbError,
   UnknownRepositoryError,
 } from "@domain/errors"
+import { parseErrorMessageFromUnknown } from "@domain/shared"
+
 import { Types } from "mongoose"
 
 export const isValidObjectId = <T extends string>(id: T): boolean => {
@@ -20,8 +22,7 @@ export const fromObjectId = <T extends string>(id: Types.ObjectId | string): T =
 }
 
 export const parseRepositoryError = (err: Error | string | unknown) => {
-  const errMsg =
-    typeof err === "string" ? err : err instanceof Error ? err.message : "Unknown error"
+  const errMsg = parseErrorMessageFromUnknown(err)
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 
