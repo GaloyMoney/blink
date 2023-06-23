@@ -55,7 +55,6 @@ const { phone, code } = getPhoneAndCodeFromRef(userRef)
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   serverPid = await startServer("start-main-ci")
-  triggerPid = await startServer("start-trigger-ci")
   ;({ apolloClient, disposeClient } = await loginFromPhoneAndCode({ phone, code }))
 
   account = await getAccountByTestUserRef(userRef)
@@ -90,6 +89,8 @@ beforeAll(async () => {
     walletDescriptor: usdWalletDescriptor,
     amountInBitcoin: 0.00_250_000,
   })
+
+  triggerPid = await startServer("start-trigger-ci")
 })
 
 afterAll(async () => {
