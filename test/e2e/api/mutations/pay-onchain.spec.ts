@@ -266,6 +266,25 @@ describe("settles onchain", () => {
     )
     expect(txnsBefore).toEqual(expect.arrayContaining(expectArrayBefore))
 
+    const txIds = txnsBefore
+      .map(
+        (tx) =>
+          tx.node.settlementVia.__typename === "SettlementViaOnChain" &&
+          (tx.node.settlementVia.transactionHash as OnChainTxHash),
+      )
+      .filter((hash): hash is OnChainTxHash => !!hash)
+    const uniqueTxIds = Array.from(new Set(txIds))
+    const txnsFromBitcoind = await Promise.all(
+      uniqueTxIds.map((txId) =>
+        safeGetTransaction({
+          bitcoind: bitcoindOutside,
+          txid: txId,
+          include_watchonly: false,
+        }),
+      ),
+    )
+    expect(txnsFromBitcoind).not.toContain(undefined)
+
     // MINE AND CHECK SETTLED STATUS
     // ===============
 
@@ -291,25 +310,6 @@ describe("settles onchain", () => {
       }),
     )
     expect(txnsAfter).toEqual(expect.arrayContaining(expectArrayAfter))
-
-    const txIds = txnsAfter
-      .map(
-        (tx) =>
-          tx.node.settlementVia.__typename === "SettlementViaOnChain" &&
-          (tx.node.settlementVia.transactionHash as OnChainTxHash),
-      )
-      .filter((hash): hash is OnChainTxHash => !!hash)
-    const uniqueTxIds = Array.from(new Set(txIds))
-    const txnsFromBitcoind = await Promise.all(
-      uniqueTxIds.map((txId) =>
-        safeGetTransaction({
-          bitcoind: bitcoindOutside,
-          txid: txId,
-          include_watchonly: false,
-        }),
-      ),
-    )
-    expect(txnsFromBitcoind).not.toContain(undefined)
   })
 })
 
