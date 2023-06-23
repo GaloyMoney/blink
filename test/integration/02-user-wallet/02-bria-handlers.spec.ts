@@ -368,8 +368,6 @@ describe("Bria Event Handlers", () => {
         debitAccountAdditionalMetadata,
         internalAccountsAdditionalMetadata,
       } = LedgerFacade.OnChainSendLedgerMetadata({
-        // we need a temporary hash to be able to search in admin panel
-        onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
         paymentAmounts: {
           btcPaymentAmount,
           btcProtocolAndBankFee,

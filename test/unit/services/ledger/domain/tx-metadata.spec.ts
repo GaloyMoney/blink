@@ -406,9 +406,13 @@ describe("Tx metadata", () => {
       payeeAddresses,
       newAddressRequestId,
     }
-    const expectedOnChainMetadataArgs = {
-      hash: onchainMetadataArgs.onChainTxHash,
+    const expectedOnChainSendMetadataArgs = {
       payee_addresses: onchainMetadataArgs.payeeAddresses,
+    }
+
+    const expectedOnChainReceiveMetadataArgs = {
+      payee_addresses: onchainMetadataArgs.payeeAddresses,
+      hash: onChainTxHash,
     }
 
     const lnMetadataArgs = {
@@ -461,7 +465,7 @@ describe("Tx metadata", () => {
                 expect.objectContaining({
                   type: LedgerTransactionType.OnchainPayment,
                   ...expectedMetadata,
-                  ...expectedOnChainMetadataArgs,
+                  ...expectedOnChainSendMetadataArgs,
                   sendAll: true,
                 }),
               )
@@ -563,7 +567,7 @@ describe("Tx metadata", () => {
                 expect.objectContaining({
                   type: LedgerTransactionType.OnchainReceipt,
                   ...expectedMetadata,
-                  ...expectedOnChainMetadataArgs,
+                  ...expectedOnChainReceiveMetadataArgs,
                 }),
               )
 

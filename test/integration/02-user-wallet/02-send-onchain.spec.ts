@@ -412,7 +412,9 @@ const testExternalSend = async ({
 
     // Check ledger transaction metadata for USD & BTC 'LedgerTransactionType.OnchainPayment'
     // ===
-    const txHash = (settledTx.settlementVia as SettlementViaOnChain).transactionHash
+    const txHash = (settledTx.settlementVia as SettlementViaOnChainOutgoing)
+      .transactionHash
+    if (txHash === undefined) throw new Error("txHash is undefined")
     const txns = await LedgerService().getTransactionsByHash(txHash)
     if (txns instanceof Error) throw txns
     const txnPayment = txns.find(

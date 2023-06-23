@@ -96,7 +96,7 @@ type AddLnSendLedgerMetadata = LedgerMetadata &
 type AddOnchainSendLedgerMetadata = LedgerMetadata &
   LedgerSendMetadata &
   SendAmountsMetadata & {
-    hash: OnChainTxHash
+    hash: undefined
     payee_addresses: OnChainAddress[]
     sendAll: boolean
   }

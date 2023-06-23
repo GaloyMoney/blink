@@ -41,11 +41,19 @@ type SettlementViaLn = {
   readonly revealedPreImage: undefined // is added by dataloader in resolver
 }
 
-type SettlementViaOnChain = {
+type SettlementViaOnChainIncoming = {
   readonly type: "onchain"
   transactionHash: OnChainTxHash
   vout?: OnChainTxVout
 }
+
+type SettlementViaOnChainOutgoing = {
+  readonly type: "onchain"
+  transactionHash?: OnChainTxHash
+  vout?: OnChainTxVout
+}
+
+type SettlementViaOnChain = SettlementViaOnChainIncoming | SettlementViaOnChainOutgoing
 
 type PartialBaseWalletTransaction = {
   readonly walletId: WalletId | undefined
@@ -91,12 +99,12 @@ type WalletOnChainIntraledgerTransaction = BaseWalletTransaction & {
 
 type WalletOnChainPendingTransaction = PartialBaseWalletTransaction & {
   readonly initiationVia: InitiationViaOnChain
-  readonly settlementVia: SettlementViaOnChain
+  readonly settlementVia: SettlementViaOnChainIncoming
 }
 
 type WalletOnChainSettledTransaction = BaseWalletTransaction & {
   readonly initiationVia: InitiationViaOnChain
-  readonly settlementVia: SettlementViaOnChain
+  readonly settlementVia: SettlementViaOnChainIncoming
 }
 
 type WalletLegacyOnChainIntraledgerTransaction = BaseWalletTransaction & {

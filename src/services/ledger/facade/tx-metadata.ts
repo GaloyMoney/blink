@@ -178,7 +178,6 @@ export const LnSendLedgerMetadata = ({
 }
 
 export const OnChainSendLedgerMetadata = ({
-  onChainTxHash,
   paymentAmounts,
   feeDisplayCurrency: displayFee,
   amountDisplayCurrency: displayAmount,
@@ -187,7 +186,6 @@ export const OnChainSendLedgerMetadata = ({
   sendAll,
   memoOfPayer,
 }: {
-  onChainTxHash: OnChainTxHash
   paymentAmounts: AmountsAndFees
 
   feeDisplayCurrency: DisplayCurrencyBaseAmount
@@ -208,7 +206,7 @@ export const OnChainSendLedgerMetadata = ({
   const metadata: AddOnchainSendLedgerMetadata = {
     type: LedgerTransactionType.OnchainPayment,
     pending: true,
-    hash: onChainTxHash,
+    hash: undefined,
     payee_addresses: payeeAddresses,
     sendAll,
     memoPayer: memoOfPayer,
