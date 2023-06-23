@@ -28,13 +28,20 @@ describe("DepositFeeCalculator", () => {
     })
 
     it("applies a depositFeeRatio of 0", () => {
-      const amount = {
+      let amount = {
         amount: 1_000_001n,
         currency: WalletCurrency.Btc,
       }
       const config = { ...onChainFeeConfig, ratio: 0n as DepositFeeRatioAsBasisPoints }
-      const fee = calculator.onChainDepositFee({ ...config, amount })
+      let fee = calculator.onChainDepositFee({ ...config, amount })
       expect(fee).toEqual(ZERO_SATS)
+
+      amount = {
+        amount: 999_999n,
+        currency: WalletCurrency.Btc,
+      }
+      fee = calculator.onChainDepositFee({ ...config, amount })
+      expect(fee).toEqual({ amount: 3000n, currency: WalletCurrency.Btc })
     })
 
     it("applies a min fee", () => {
