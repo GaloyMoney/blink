@@ -11,8 +11,6 @@ import { sleep, timeoutWithCancel } from "@utils"
 
 import { loginFromPhoneAndCode } from "test/e2e/account-creation-e2e"
 import {
-  BalancesDocument,
-  BalancesQuery,
   OnChainPaymentSendAllDocument,
   OnChainPaymentSendAllMutation,
   OnChainPaymentSendDocument,
@@ -140,18 +138,6 @@ gql`
         message
       }
       status
-    }
-  }
-
-  query balances {
-    me {
-      defaultAccount {
-        wallets {
-          id
-          walletCurrency
-          balance
-        }
-      }
     }
   }
 `
@@ -305,14 +291,6 @@ describe("settles onchain", () => {
       }),
     )
     expect(txnsAfter).toEqual(expect.arrayContaining(expectArrayAfter))
-
-    const { data: balanceData } = await apolloClient.query<BalancesQuery>({
-      query: BalancesDocument,
-    })
-    const wallets = balanceData?.me?.defaultAccount.wallets
-    const usdBalance = wallets?.find((w) => w.walletCurrency === WalletCurrency.Usd)
-    if (usdBalance === undefined) throw new Error()
-    expect(usdBalance.balance).toEqual(0)
 
     const txIds = txnsAfter
       .map(

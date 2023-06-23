@@ -1551,11 +1551,6 @@ export type OnChainPaymentSendAllMutationVariables = Exact<{
 
 export type OnChainPaymentSendAllMutation = { readonly __typename: 'Mutation', readonly onChainPaymentSendAll: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
 
-export type BalancesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type BalancesQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number }> } } | null };
-
 export type UserLoginUpgradeMutationVariables = Exact<{
   input: UserLoginUpgradeInput;
 }>;
@@ -1956,46 +1951,6 @@ export function useOnChainPaymentSendAllMutation(baseOptions?: Apollo.MutationHo
 export type OnChainPaymentSendAllMutationHookResult = ReturnType<typeof useOnChainPaymentSendAllMutation>;
 export type OnChainPaymentSendAllMutationResult = Apollo.MutationResult<OnChainPaymentSendAllMutation>;
 export type OnChainPaymentSendAllMutationOptions = Apollo.BaseMutationOptions<OnChainPaymentSendAllMutation, OnChainPaymentSendAllMutationVariables>;
-export const BalancesDocument = gql`
-    query balances {
-  me {
-    defaultAccount {
-      wallets {
-        id
-        walletCurrency
-        balance
-      }
-    }
-  }
-}
-    `;
-
-/**
- * __useBalancesQuery__
- *
- * To run a query within a React component, call `useBalancesQuery` and pass it any options that fit your needs.
- * When your component renders, `useBalancesQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useBalancesQuery({
- *   variables: {
- *   },
- * });
- */
-export function useBalancesQuery(baseOptions?: Apollo.QueryHookOptions<BalancesQuery, BalancesQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<BalancesQuery, BalancesQueryVariables>(BalancesDocument, options);
-      }
-export function useBalancesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BalancesQuery, BalancesQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<BalancesQuery, BalancesQueryVariables>(BalancesDocument, options);
-        }
-export type BalancesQueryHookResult = ReturnType<typeof useBalancesQuery>;
-export type BalancesLazyQueryHookResult = ReturnType<typeof useBalancesLazyQuery>;
-export type BalancesQueryResult = Apollo.QueryResult<BalancesQuery, BalancesQueryVariables>;
 export const UserLoginUpgradeDocument = gql`
     mutation userLoginUpgrade($input: UserLoginUpgradeInput!) {
   userLoginUpgrade(input: $input) {
