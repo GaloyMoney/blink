@@ -8,6 +8,7 @@ import { normalizeDisplayPrice } from "@graphql/root/mutation"
 
 import { TxStatus as DomainTxStatus } from "@domain/wallets"
 import { checkedToDisplayCurrency } from "@domain/fiat"
+import { parseErrorFromUnknown } from "@domain/shared"
 
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
@@ -60,11 +61,7 @@ const Transaction = GT.Object<WalletTransaction>({
         try {
           result = await loaders.txnMetadata.load(source.id)
         } catch (err) {
-          if (err instanceof Error) {
-            result = err
-          } else {
-            result = new Error(typeof err === "string" ? err : "Unknown error")
-          }
+          result = parseErrorFromUnknown(err)
         }
         if (result instanceof Error || result === undefined) return settlementVia
 

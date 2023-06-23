@@ -21,6 +21,7 @@ import { logoutCookie } from "@app/auth"
 import { checkedToPhoneNumber } from "@domain/users"
 import libCookie from "cookie"
 import basicAuth from "basic-auth"
+import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -216,12 +217,7 @@ authRouter.post(
         })
       } catch (error) {
         recordExceptionInCurrentSpan({ error })
-        return res.status(500).send({
-          error:
-            error instanceof Error
-              ? error.message
-              : "Unknown error creating device account",
-        })
+        return res.status(500).send({ error: parseErrorMessageFromUnknown(error) })
       }
     },
   }),

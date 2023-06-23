@@ -10,7 +10,11 @@ import {
   PayoutDestinationBlocked,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  paymentAmountFromNumber,
+  WalletCurrency,
+  parseErrorMessageFromUnknown,
+} from "@domain/shared"
 
 import { baseLogger } from "@services/logger"
 import { wrapAsyncToRunInSpan, wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -226,9 +230,7 @@ export const NewOnChainService = (): INewOnChainService => {
 
       return response.getId() as PayoutId
     } catch (err) {
-      let errMsg = "Unknown error"
-      if (typeof err === "string") errMsg = err
-      if (err instanceof Error) errMsg = err.message
+      const errMsg = parseErrorMessageFromUnknown(err)
       if (
         err &&
         typeof err === "object" &&
