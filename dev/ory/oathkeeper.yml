@@ -47,7 +47,7 @@ authenticators:
   unauthorized:
     enabled: true
 
-  noop: 
+  noop:
     enabled: true
 
 authorizers:

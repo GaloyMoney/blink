@@ -6,8 +6,8 @@ import WebSocket from "ws"
 // "type": "module",
 
 const client = createClient({
-  // url: "ws://localhost:4002/graphqlws",
-  url: "ws://localhost:4002/graphql",
+  url: "ws://localhost:4002/graphqlws",
+  // url: "ws://localhost:4002/graphql",
   webSocketImpl: WebSocket,
 })
 
@@ -21,6 +21,9 @@ let unsubscribe = () => {
   console.log("unsubscribe")
   /* complete the subscription */
 }
+
+const paymentRequest =
+  "lnbcrt10u1pjf26n4pp5hxs4htpwvgh6gdkymspphcvfdl9ezx345d3qvemd0rs73agg0xfshp5p6zx5m5k4t3kx2fghufjppd0fskldzcz4d20hyeavgdsyl2vazqscqzzsxqyz5vqsp5fxd48lphe5jvncdteac40rycfugq8dtyy9j5wfan42h6eszrlrzq9qyyssqsn6mpv33cn4grr8ntwjxhlg04f70vqj4ugemzw2ajluqche6mj2jdsfum7r4u7ehjp54fxufmn83s7yh9ylamq6ulyxqlgff3khgg7gppzwv0s"
 
 try {
   await new Promise((resolve, reject) => {
@@ -36,8 +39,7 @@ try {
         }`,
         variables: {
           input: {
-            paymentRequest:
-              "lnbcrt10u1pjfgnxspp5ggqdug7c33wntrhzsm5dwk6uw3x6rrs86jpmy8423kqac53d939qhp5p6zx5m5k4t3kx2fghufjppd0fskldzcz4d20hyeavgdsyl2vazqscqzzsxqyz5vqsp57eetrcedpz57pa7jf3l7tt3tky0uvdj34v37hm4mws68pfkuynxq9qyyssqcmxnswz3ztld5q6c8kt7hdh7ez0hx0v6qzzmcmyx5whvnfvvxj7h9z9k8gck564jx3hxgulg4757vnn4phz73s3xfwvxc7nkfennfkgqxqwg7a",
+            paymentRequest,
           },
         },
       },

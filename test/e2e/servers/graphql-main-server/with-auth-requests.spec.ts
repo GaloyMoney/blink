@@ -67,7 +67,8 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   walletId: WalletId,
   usdWalletId: WalletId,
   serverPid: PID,
-  triggerPid: PID
+  triggerPid: PID,
+  serverWsPid: PID
 
 const userRef = "K"
 const { phone, code } = getPhoneAndCodeFromRef(userRef)
@@ -82,6 +83,7 @@ beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   serverPid = await startServer("start-main-ci")
   triggerPid = await startServer("start-trigger-ci")
+  serverWsPid = await startServer("start-ws-ci")
 })
 
 beforeEach(async () => {
@@ -94,6 +96,7 @@ afterAll(async () => {
   disposeClient()
   await killServer(serverPid)
   await killServer(triggerPid)
+  await killServer(serverWsPid)
 
   await sleep(2000)
 })

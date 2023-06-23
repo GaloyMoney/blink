@@ -96,7 +96,6 @@ const server = () =>
   useServer(
     {
       onSubscribe: (_ctx, msg) => {
-        console.log("onSubscribe", { _ctx, msg })
         baseLogger.debug("Subscribe", { _ctx, msg })
 
         // construct the execution arguments
