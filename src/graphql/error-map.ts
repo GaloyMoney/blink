@@ -30,17 +30,7 @@ const assertUnreachable = (x: never): never => {
   throw new Error(`This should never compile with ${x}`)
 }
 
-export const mapError = (err: ApplicationError | unknown): CustomApolloError => {
-  let error: ApplicationError
-  if (err instanceof Error) {
-    error = err
-  } else {
-    error = {
-      name: "UnknownError",
-      message: typeof err === "object" ? JSON.stringify(err) : "Unknown error",
-    }
-  }
-
+export const mapError = (error: ApplicationError): CustomApolloError => {
   const errorName = error.name as ApplicationErrorKey
   let message = ""
   switch (errorName) {

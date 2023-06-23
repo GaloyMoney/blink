@@ -1,3 +1,5 @@
+import { parseErrorMessageFromUnknown } from "./primitives"
+
 export const ErrorLevel = {
   Info: "info",
   Warn: "warn",
@@ -10,13 +12,7 @@ export class DomainError extends Error {
   name: string
   level?: ErrorLevel
   constructor(message?: string | unknown | Error) {
-    if (typeof message === "string" || typeof message === "undefined") {
-      super(message)
-    } else if (message instanceof Error) {
-      super(message.message)
-    } else {
-      super(typeof message === "object" ? JSON.stringify(message) : "Unknown error")
-    }
+    super(parseErrorMessageFromUnknown(message))
     this.name = this.constructor.name
     this.level = ErrorLevel.Info
   }
