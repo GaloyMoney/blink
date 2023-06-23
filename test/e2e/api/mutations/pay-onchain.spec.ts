@@ -247,14 +247,13 @@ describe("settles onchain", () => {
     // CHECK PENDING STATUS
     // ===============
 
-    const addresses = [
+    const uniqueAddressesForEachSend = [
       onChainPaymentSendAddress,
       onChainUsdPaymentSendAsBtcDenominatedAddress,
       onChainUsdPaymentSendAddress,
       onChainPaymentSendAllAddress,
     ]
-
-    const expectArrayBefore = addresses.map((address) =>
+    const expectArrayBefore = uniqueAddressesForEachSend.map((address) =>
       expect.objectContaining({
         node: expect.objectContaining({
           status: "PENDING",
@@ -299,7 +298,7 @@ describe("settles onchain", () => {
       isPending: false,
     })
 
-    const expectArrayAfter = addresses.map((address) =>
+    const expectArrayAfter = uniqueAddressesForEachSend.map((address) =>
       expect.objectContaining({
         node: expect.objectContaining({
           status: "SUCCESS",
