@@ -139,10 +139,6 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
     "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee}`,
   })
 
-  // avoids lnd balance sniffing attack
-  const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-  if (balanceCheck instanceof Error) return balanceCheck
-
   return paymentFlow.protocolAndBankFeeInSenderWalletCurrency()
 }
 
