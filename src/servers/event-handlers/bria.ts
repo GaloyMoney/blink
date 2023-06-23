@@ -1,6 +1,7 @@
 import { Wallets } from "@app"
 
 import {
+  AmountLessThanFeeError,
   CouldNotFindWalletFromOnChainAddressError,
   LessThanDustThresholdError,
   NoTransactionToUpdateError,
@@ -50,6 +51,9 @@ export const utxoDetectedEventHandler = async ({
   event: UtxoDetected
 }): Promise<true | DomainError> => {
   const res = await Wallets.addPendingTransaction(event)
+  if (res instanceof AmountLessThanFeeError) {
+    return true
+  }
   if (res instanceof LessThanDustThresholdError) {
     return true
   }
@@ -66,6 +70,9 @@ export const utxoSettledEventHandler = async ({
   event: UtxoSettled
 }): Promise<true | DomainError> => {
   const res = await Wallets.addSettledTransaction(event)
+  if (res instanceof AmountLessThanFeeError) {
+    return true
+  }
   if (res instanceof LessThanDustThresholdError) {
     return true
   }

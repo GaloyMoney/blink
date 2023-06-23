@@ -314,6 +314,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Captcha validation failed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "AmountLessThanFeeError":
     case "LessThanDustThresholdError":
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })

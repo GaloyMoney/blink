@@ -1,3 +1,4 @@
+import { AmountLessThanFeeError } from "@domain/errors"
 import { WalletPriceRatio } from "@domain/payments"
 import { AmountCalculator, BtcPaymentAmount, WalletCurrency } from "@domain/shared"
 
@@ -41,6 +42,18 @@ describe("WalletAddressReceiver", () => {
       recipientWalletDescriptor: recipientBtcWallet,
     }
 
+    it("fails when receiveBtc is less than fee", async () => {
+      const walletAddressAmounts = await WalletAddressReceiver({
+        walletAddress: btcWalletAddress,
+        receivedBtc,
+        satsFee: BtcPaymentAmount(receivedBtc.amount + 1n),
+        usdFromBtcMidPrice,
+        usdFromBtc,
+      })
+
+      expect(walletAddressAmounts).toBeInstanceOf(AmountLessThanFeeError)
+    })
+
     it("returns correct amounts", async () => {
       const walletAddressAmounts = await WalletAddressReceiver({
         walletAddress: btcWalletAddress,
@@ -75,6 +88,18 @@ describe("WalletAddressReceiver", () => {
       address: "usdAddress" as OnChainAddress,
       recipientWalletDescriptor: recipientUsdWallet,
     }
+
+    it("fails when receiveBtc is less than fee", async () => {
+      const walletAddressAmounts = await WalletAddressReceiver({
+        walletAddress: usdWalletAddress,
+        receivedBtc,
+        satsFee: BtcPaymentAmount(receivedBtc.amount + 1n),
+        usdFromBtcMidPrice,
+        usdFromBtc,
+      })
+
+      expect(walletAddressAmounts).toBeInstanceOf(AmountLessThanFeeError)
+    })
 
     it("returns correct amounts", async () => {
       const walletAddressAmounts = await WalletAddressReceiver({
