@@ -29,17 +29,11 @@ import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
 import { GraphQLError, GraphQLSchema, execute, subscribe } from "graphql"
 import { rule } from "graphql-shield"
-import { Context, GRAPHQL_TRANSPORT_WS_PROTOCOL } from "graphql-ws"
+import { Context } from "graphql-ws"
 import { useServer } from "graphql-ws/lib/use/ws"
 import helmet from "helmet"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
-import {
-  ExecuteFunction,
-  GRAPHQL_WS,
-  SubscribeFunction,
-  SubscriptionServer,
-} from "subscriptions-transport-ws"
 
 import { WebSocketServer } from "ws"
 
@@ -57,8 +51,6 @@ import jwksRsa from "jwks-rsa"
 import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 
 import { UsersRepository } from "@services/mongoose"
-
-import { validateKratosCookie } from "@services/kratos"
 
 import { checkedToUserId } from "@domain/accounts"
 import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
@@ -372,61 +364,6 @@ export const startApolloServer = async ({
     cors: { credentials: true, origin: true },
   })
 
-  // old legacy ws
-  const onConnectLegacy = async (
-    connectionParams: Record<string, unknown>,
-    webSocket: unknown,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    connectionContext: any,
-  ) => {
-    const { request } = connectionContext
-
-    const authz = (connectionParams.authorization || connectionParams.Authorization) as
-      | string
-      | undefined
-
-    // TODO: also manage the case where there is a cookie in the request
-    // https://www.ory.sh/docs/oathkeeper/guides/proxy-websockets#configure-ory-oathkeeper-and-ory-kratos
-    const cookies = request.headers.cookie
-    if (cookies?.includes("ory_kratos_session")) {
-      const kratosCookieRes = await validateKratosCookie(cookies)
-      if (kratosCookieRes instanceof Error) return kratosCookieRes
-      const tokenPayload = {
-        sub: kratosCookieRes.kratosUserId,
-      }
-      return sessionContext({
-        tokenPayload,
-        ip: request?.socket?.remoteAddress,
-        body: null,
-      })
-    }
-
-    // make request to oathkeeper
-    const originalToken = authz?.slice(7) as SessionToken | undefined
-
-    const newToken = await sendOathkeeperRequestGraphql(originalToken)
-    // TODO: see how returning an error affect the websocket connection
-    if (newToken instanceof Error) return newToken
-
-    const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
-
-    const tokenPayload = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
-      algorithms: jwtAlgorithms,
-    })
-
-    if (typeof tokenPayload === "string") {
-      throw new Error("tokenPayload should be an object")
-    }
-
-    return sessionContext({
-      tokenPayload,
-      ip: request?.socket?.remoteAddress,
-
-      // TODO: Resolve what's needed here
-      body: null,
-    })
-  }
-
   // new ws server
   const getContext = async (ctx: Context) => {
     const connectionParams = ctx.connectionParams
@@ -495,7 +432,7 @@ export const startApolloServer = async ({
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
       if (startSubscriptionServer) {
-        const graphqlWs = new WebSocketServer({ noServer: true })
+        const graphqlWs = new WebSocketServer({ server: httpServer, path: "/graphql" })
         const serverCleanup = useServer(
           {
             schema,
@@ -525,43 +462,17 @@ export const startApolloServer = async ({
           graphqlWs,
         )
 
-        const subTransWs = new WebSocketServer({ noServer: true })
-        const apolloSubscriptionServer = SubscriptionServer.create(
-          {
-            execute: execute as unknown as ExecuteFunction,
-            subscribe: subscribe as unknown as SubscribeFunction,
-            schema,
-            onConnect: onConnectLegacy,
-          },
-          subTransWs,
-        )
         ;["SIGINT", "SIGTERM"].forEach((signal) => {
           process.on(signal, () => {
-            apolloSubscriptionServer.close()
             serverCleanup.dispose()
           })
         })
 
-        httpServer.on("upgrade", (req, socket, head) => {
-          // extract websocket subprotocol from header
-          const protocol = req.headers["sec-websocket-protocol"]
-          const protocols = Array.isArray(protocol)
-            ? protocol
-            : protocol?.split(",").map((p) => p.trim())
-
-          // decide which websocket server to use
-          const wss =
-            protocols?.includes(GRAPHQL_WS) && // subscriptions-transport-ws subprotocol
-            !protocols.includes(GRAPHQL_TRANSPORT_WS_PROTOCOL) // graphql-ws subprotocol
-              ? subTransWs
-              : // graphql-ws will welcome its own subprotocol and
-                // gracefully reject invalid ones. if the client supports
-                // both transports, graphql-ws will prevail
-                graphqlWs
-          wss.handleUpgrade(req, socket, head, (ws) => {
-            wss.emit("connection", ws, req)
-          })
-        })
+        // httpServer.on("upgrade", (req, socket, head) => {
+        //   graphqlWs.handleUpgrade(req, socket, head, (ws) => {
+        //     graphqlWs.emit("connection", ws, req)
+        //   })
+        // })
       }
 
       console.log(
