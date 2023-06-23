@@ -63,7 +63,7 @@ import { validateKratosCookie } from "@services/kratos"
 
 import { checkedToUserId } from "@domain/accounts"
 import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
-import { ValidationError, parseErrorFromUnknown } from "@domain/shared"
+import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -290,7 +290,7 @@ export const startApolloServer = async ({
           ? reportedError
           : { message: `Error processing GraphQL request ${reportedError.code}` }
       } catch (err) {
-        throw mapError(parseErrorFromUnknown(err))
+        throw mapError(parseUnknownDomainErrorFromUnknown(err))
       }
     },
   })

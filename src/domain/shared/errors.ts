@@ -1,4 +1,4 @@
-import { parseErrorMessageFromUnknown } from "./primitives"
+import { parseErrorMessageFromUnknown } from "./error-parsers"
 
 export const ErrorLevel = {
   Info: "info",
@@ -19,6 +19,9 @@ export class DomainError extends Error {
 }
 
 export class ValidationError extends DomainError {}
+export class UnknownDomainError extends DomainError {
+  level = ErrorLevel.Critical
+}
 
 export class SafeWrapperError extends DomainError {
   level = ErrorLevel.Critical
@@ -33,4 +36,3 @@ export class BtcAmountTooLargeError extends ValidationError {}
 export class UsdAmountTooLargeError extends ValidationError {}
 export class InvalidBtcPaymentAmountError extends ValidationError {}
 export class InvalidUsdPaymentAmountError extends ValidationError {}
-export class UnknownError extends DomainError {}

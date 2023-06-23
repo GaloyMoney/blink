@@ -34,7 +34,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
   const errorName = error.name as ApplicationErrorKey
   let message = ""
   switch (errorName) {
-    case "UnknownError":
     case "WithdrawalLimitsExceededError":
       message = error.message
       return new TransactionRestrictedError({ message, logger: baseLogger })
@@ -595,6 +594,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownDealerPriceServiceError":
     case "UnknownPubSubError":
     case "UnknownBigIntConversionError":
+    case "UnknownDomainError":
     case "UnknownBriaEventError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
