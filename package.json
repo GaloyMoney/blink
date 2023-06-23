@@ -3,6 +3,7 @@
   "scripts": {
     "tsc-check-noimplicitany": "tsc --noEmit -p tsconfig.no-implicit-any.json",
     "tsc-check": "tsc --noEmit -p tsconfig.d.json && tsc --noEmit",
+    "madge-check": "yarn madge --circular lib/servers/graphql-main-server.js",
     "eslint-check": "eslint \"{src,test}/**/*.ts\"",
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos lib/services/price/ && cp -R src/services/dealer-price/proto lib/services/dealer-price/ && cp -R src/services/loopd/protos lib/services/loopd/ && cp -R src/services/bria/proto lib/services/bria/ && tscpaths --silent -p tsconfig.json -s ./src -o ./lib",
@@ -175,6 +176,7 @@
     "knex": "^2.4.2",
     "lodash.difference": "^4.5.0",
     "lodash.find": "^4.6.0",
+    "madge": "^6.1.0",
     "migrate-mongo": "^10.0.0",
     "node-jose": "^2.2.0",
     "nodemon": "^2.0.21",

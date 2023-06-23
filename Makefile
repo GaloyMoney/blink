@@ -145,6 +145,7 @@ check-code: check-implicit
 	yarn eslint-check
 	yarn build
 	yarn check-yaml
+	# yarn magde-check
 
 create-tmp-env-ci:
 	. ./.envrc && \
