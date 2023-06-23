@@ -4,7 +4,12 @@ import { gql } from "apollo-server-core"
 
 import { createApolloClient, defaultTestClientConfig } from "../helpers/apollo-client"
 
-import { UserLoginDocument, UserUpdateUsernameDocument } from "test/e2e/generated"
+import {
+  UserLoginDocument,
+  UserLoginMutation,
+  UserUpdateUsernameDocument,
+  UserUpdateUsernameMutation,
+} from "test/e2e/generated"
 
 export const loginFromPhoneAndCode = async ({
   phone,
@@ -20,12 +25,14 @@ export const loginFromPhoneAndCode = async ({
   {
     ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
     const input = { phone, code }
-    const result = await apolloClient.mutate({
+    const result = await apolloClient.mutate<UserLoginMutation>({
       mutation: UserLoginDocument,
       variables: { input },
     })
 
-    authToken = result.data.userLogin.authToken
+    const authTokenRaw = result?.data?.userLogin.authToken
+    if (!authTokenRaw) throw authTokenRaw
+    authToken = authTokenRaw as SessionToken
     expect(authToken).not.toBeNull()
     expect(authToken.length).toBe(39)
     disposeClient()
@@ -66,7 +73,7 @@ export const updateUsername = async ({
 }) => {
   const input = { username }
 
-  await apolloClient.mutate({
+  await apolloClient.mutate<UserUpdateUsernameMutation>({
     mutation: UserUpdateUsernameDocument,
     variables: { input },
   })

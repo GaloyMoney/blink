@@ -44,4 +44,4 @@ export const generateRandomPriceData = ({
 }
 
 const rnd = (val = 1) => Number(Math.random() * val)
-const unixTimestamp = (date) => Math.floor(date.getTime() / 1000)
+const unixTimestamp = (date: Date) => Math.floor(date.getTime() / 1000)

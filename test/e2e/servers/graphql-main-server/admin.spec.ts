@@ -46,17 +46,17 @@ describe("updates user phone", () => {
 
     const { phone: adminPhone, code: adminCode } = await getAdminPhoneAndCode()
 
-    const loginResult = await apolloClient.mutate({
+    const loginResult = await apolloClient.mutate<UserLoginMutation>({
       mutation: UserLoginDocument,
       variables: { input: { phone: adminPhone, code: adminCode } },
     })
 
     await disposeClient()
 
+    const token = loginResult?.data?.userLogin?.authToken ?? undefined
+
     const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
-      await createApolloClient(
-        adminTestClientConfig(loginResult.data.userLogin.authToken),
-      )
+      await createApolloClient(adminTestClientConfig(token as SessionToken | undefined))
 
     const accountDetails = await adminApolloClient.query({
       query: ACCOUNT_DETAILS_BY_USER_PHONE,

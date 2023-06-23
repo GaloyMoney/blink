@@ -12,7 +12,7 @@ export const getKratosKnex = () =>
     },
   })
 
-export const getEmailCode = async ({ email }) => {
+export const getEmailCode = async ({ email }: { email: EmailAddress }) => {
   const knex = getKratosKnex()
 
   const table = "courier_messages"
