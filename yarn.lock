@@ -2771,10 +2771,10 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.14.0.tgz#6a729b7f372ce30f77a3f217c09bc216f863fccb"
   integrity sha512-rJfCY8rCWz3cb4KI6pEofnytvMPuj3YLQwoscCCYZ5DkdiPjo15IQ0US7+mjcWy9H3fcZIzf2pbJZ7ck/h4tug==
 
-"@ory/client@^1.1.33":
-  version "1.1.33"
-  resolved "https://registry.npmjs.org/@ory/client/-/client-1.1.33.tgz#2a3253897128fac7e3ea62674a3a4322f759eef7"
-  integrity sha512-IC7SJpF6AqPxLrW/JBAPPaetA8LOfj1NHnRY2LoU8K6snY7jIj9moYvUn9H1fbwsWdnaPupKoM93NRfuP3pcbQ==
+"@ory/client@^1.1.39":
+  version "1.1.39"
+  resolved "https://registry.yarnpkg.com/@ory/client/-/client-1.1.39.tgz#1823a63adf0edc5a7f7ce136f1a897bc984763d7"
+  integrity sha512-7giFPOvVOVe/mouTQNmuTc86GCJCqMw8hU8lQj+t79E6CZ9MiKZXhXqXCdJldSHL54gV+I+xTMho0ObQuDl0+A==
   dependencies:
     axios "^0.21.4"
 
