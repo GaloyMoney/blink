@@ -118,7 +118,7 @@ const RealtimePriceSubscription = {
     })
 
     if (displayCurrency instanceof Error) {
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: { errors: [{ message: displayCurrency.message }] },
       })
@@ -127,7 +127,7 @@ const RealtimePriceSubscription = {
 
     const currencies = await Prices.listCurrencies()
     if (currencies instanceof Error) {
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: { errors: [mapAndParseErrorForGqlResponse(currencies)] },
       })
@@ -138,7 +138,7 @@ const RealtimePriceSubscription = {
     const checkedDisplayCurrency = checkedToDisplayCurrency(priceCurrency?.code)
 
     if (checkedDisplayCurrency instanceof Error) {
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: { errors: [{ message: "Unsupported exchange unit" }] },
       })
@@ -153,7 +153,7 @@ const RealtimePriceSubscription = {
     })
     if (!(pricePerSat instanceof Error) && !(pricePerUsdCent instanceof Error)) {
       const { timestamp } = pricePerSat
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: {
           timestamp,
