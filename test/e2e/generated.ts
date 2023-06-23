@@ -12,7 +12,7 @@ export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' |
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string | number; output: string; }
+  ID: { input: string; output: string; }
   String: { input: string; output: string; }
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
@@ -274,7 +274,7 @@ export type DepositFeesInformation = {
   readonly minBankFee: Scalars['String']['output'];
   /** below this amount minBankFee will be charged */
   readonly minBankFeeThreshold: Scalars['String']['output'];
-  /** ratio as basis points */
+  /** ratio to charge as basis points above minBankFeeThreshold amount */
   readonly ratio: Scalars['String']['output'];
 };
 

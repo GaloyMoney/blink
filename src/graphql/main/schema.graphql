@@ -292,7 +292,7 @@ type DepositFeesInformation {
   minBankFeeThreshold: String!
 
   """
-  ratio to charge as basis points
+  ratio to charge as basis points above minBankFeeThreshold amount
   """
   ratio: String!
 }
