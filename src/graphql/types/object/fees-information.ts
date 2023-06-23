@@ -9,7 +9,7 @@ const DepositFeesInformation = GT.Object({
       type: GT.NonNull(GT.String),
     },
     ratio: {
-      description: "ratio to charge as basis points",
+      description: "ratio to charge as basis points above minBankFeeThreshold amount",
       type: GT.NonNull(GT.String),
     },
   }),
