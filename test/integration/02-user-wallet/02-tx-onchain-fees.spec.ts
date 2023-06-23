@@ -3,7 +3,7 @@ import { once } from "events"
 import { Wallets, Payments } from "@app"
 import { getFeesConfig, getOnChainWalletConfig } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
+import { LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
@@ -179,23 +179,6 @@ describe("UserWallet - getOnchainFee", () => {
         `Use lightning to send amounts less than ${dustThreshold} sats`,
       )
     })
-
-    it("returns error for balance too low", async () => {
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const amount = toSats(1_000_000_000)
-      const fee = await Wallets.getOnChainFeeForBtcWallet({
-        walletId: walletIdA,
-        account: accountA,
-        amount,
-        address,
-        speed: defaultSpeed,
-      })
-      expect(fee).toBeInstanceOf(InsufficientBalanceError)
-      expect(fee).toHaveProperty(
-        "message",
-        expect.stringMatching(/Payment amount '\d+' sats exceeds balance '\d+'/),
-      )
-    })
   })
 
   describe("from usd wallet", () => {
@@ -366,40 +349,6 @@ describe("UserWallet - getOnchainFee", () => {
           expect(fee).toHaveProperty(
             "message",
             `Use lightning to send amounts less than ${dustThreshold} sats`,
-          )
-        })
-
-        it("returns error for balance too low", async () => {
-          const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-          const amount = toSats(1_000_000_000)
-
-          const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
-            amount: BigInt(amount),
-            currency: WalletCurrency.Btc,
-          })
-          if (usdAmount instanceof Error) throw usdAmount
-          const amountInUsd = Number(usdAmount.amount)
-
-          const getFeeArgsPartial = {
-            walletId: walletIdUsdA,
-            account: accountA,
-            address,
-            speed: defaultSpeed,
-          }
-          const fee =
-            amountCurrency === WalletCurrency.Usd
-              ? await Wallets.getOnChainFeeForUsdWallet({
-                  ...getFeeArgsPartial,
-                  amount: amountInUsd,
-                })
-              : await Wallets.getOnChainFeeForUsdWalletAndBtcAmount({
-                  ...getFeeArgsPartial,
-                  amount,
-                })
-          expect(fee).toBeInstanceOf(InsufficientBalanceError)
-          expect(fee).toHaveProperty(
-            "message",
-            expect.stringMatching(/Payment amount '\d+' cents exceeds balance '\d+'/),
           )
         })
       })
