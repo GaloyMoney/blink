@@ -238,9 +238,8 @@ describe("settles onchain", () => {
     const nTxns = 4
 
     // Wait for broadcast, where txId exists in txn
-    const txnsBefore = await waitForTransaction({
+    const txnsBefore = await waitForTransactions({
       nTxns,
-      address: onChainPaymentSendAllAddress,
       isPending: true,
     })
 
@@ -292,9 +291,8 @@ describe("settles onchain", () => {
       address: RANDOM_ADDRESS,
     })
 
-    const txnsAfter = await waitForTransaction({
+    const txnsAfter = await waitForTransactions({
       nTxns,
-      address: onChainPaymentSendAllAddress,
       isPending: false,
     })
 
@@ -332,12 +330,10 @@ type me = Exclude<TransactionsQuery["me"], null | undefined>
 type transactions = Exclude<me["defaultAccount"]["transactions"], null | undefined>
 type edges = Exclude<transactions["edges"], null | undefined>
 
-const waitForTransaction = async ({
+const waitForTransactions = async ({
   nTxns,
-  address,
   isPending,
 }: {
-  address: OnChainAddress
   nTxns: number
   isPending: boolean
 }): Promise<edges> => {
@@ -352,16 +348,18 @@ const waitForTransaction = async ({
       const txns = response.data?.me?.defaultAccount.transactions?.edges
       if (!txns) break
 
-      const txn = txns.find((txn) =>
-        txn.node.initiationVia.__typename === "InitiationViaOnChain" &&
-        txn.node.initiationVia.address === address &&
-        isPending
-          ? txn.node.status === "PENDING"
-          : txn.node.status === "SUCCESS",
+      const statusSet = new Set(txns.map((tx) => tx.node.status))
+      const txIds = txns.map(
+        (tx) =>
+          tx.node.settlementVia.__typename === "SettlementViaOnChain" &&
+          tx.node.settlementVia.transactionHash,
       )
 
-      const statusSet = new Set(txns.map((tx) => tx.node.status))
-      if (txn !== undefined && statusSet.size === 1) {
+      if (
+        statusSet.size === 1 &&
+        statusSet.has(isPending ? "PENDING" : "SUCCESS") &&
+        txIds.every(Boolean)
+      ) {
         resolve(txns)
         break
       }
