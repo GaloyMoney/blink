@@ -96,6 +96,7 @@ export class InvalidDisplayCurrencyError extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}
 export class SelfPaymentError extends ValidationError {}
 export class LessThanDustThresholdError extends ValidationError {}
+export class AmountLessThanFeeError extends ValidationError {}
 export class InsufficientBalanceError extends ValidationError {}
 export class InvalidCurrencyForWalletError extends ValidationError {}
 export class BalanceLessThanZeroError extends ValidationError {}
