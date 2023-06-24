@@ -3,7 +3,7 @@ import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_10_MINS } from "@confi
 import { OnChainError, TxDecoder, uniqueAddressesForTxn } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 
-import { RedisCacheService } from "@services/cache"
+import { RedisCacheService } from "@services/cache/redis"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { baseLogger } from "@services/logger"
 

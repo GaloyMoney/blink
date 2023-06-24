@@ -1,10 +1,8 @@
 import { CacheKeys } from "@domain/cache"
 import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache"
+import { LocalCacheService } from "@services/cache/local"
 import { PriceCurrenciesNotAvailableError } from "@domain/price"
 import { listCurrencies } from "@app/prices"
-
-jest.mock("@services/redis", () => ({}))
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")

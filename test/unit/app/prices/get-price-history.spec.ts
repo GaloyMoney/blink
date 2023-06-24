@@ -6,7 +6,7 @@ import {
 } from "@domain/price"
 import { CacheKeys } from "@domain/cache"
 import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache"
+import { LocalCacheService } from "@services/cache/local"
 
 import { getPriceHistory } from "@app/prices"
 
@@ -19,8 +19,6 @@ beforeEach(async () => {
 })
 
 beforeAll(async () => {
-  jest.mock("@services/redis", () => ({}))
-
   jest.mock("@config", () => {
     const config = jest.requireActual("@config")
     const getLndParams = (): LndParams[] => []

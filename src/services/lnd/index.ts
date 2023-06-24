@@ -62,7 +62,7 @@ import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
-import { LocalCacheService } from "@services/cache"
+import { LocalCacheService } from "@services/cache/local"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { timeoutWithCancel } from "@utils"
