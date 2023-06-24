@@ -17,9 +17,13 @@ jest.mock("@config", () => {
 
 const EUR = "EUR" as DisplayCurrency
 
-beforeEach(() => {
-  LocalCacheService().clear({ key: CacheKeys.CurrentSatPrice })
-  LocalCacheService().clear({ key: CacheKeys.CurrentUsdCentPrice })
+beforeEach(async () => {
+  await LocalCacheService().clear({ key: CacheKeys.CurrentSatPrice })
+  await LocalCacheService().clear({ key: CacheKeys.CurrentUsdCentPrice })
+})
+
+afterEach(() => {
+  jest.resetAllMocks()
 })
 
 describe("Prices", () => {

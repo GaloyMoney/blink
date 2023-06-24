@@ -19,10 +19,14 @@ jest.mock("@config", () => {
   return { ...config, getLndParams }
 })
 
-beforeEach(() => {
-  LocalCacheService().clear({
+beforeEach(async () => {
+  await LocalCacheService().clear({
     key: `${CacheKeys.PriceHistory}:${PriceRange.OneDay}-${PriceInterval.OneHour}`,
   })
+})
+
+afterEach(() => {
+  jest.resetAllMocks()
 })
 
 describe("Prices", () => {
