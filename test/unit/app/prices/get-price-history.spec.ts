@@ -12,21 +12,23 @@ import { getPriceHistory } from "@app/prices"
 
 import { generateSatoshiPriceHistory } from "test/helpers/price"
 
-jest.mock("@services/redis", () => ({}))
-
-jest.mock("@config", () => {
-  const config = jest.requireActual("@config")
-  const getLndParams = (): LndParams[] => []
-  return { ...config, getLndParams }
-})
-
 beforeEach(async () => {
   await LocalCacheService().clear({
     key: `${CacheKeys.PriceHistory}:${PriceRange.OneDay}-${PriceInterval.OneHour}`,
   })
 })
 
-afterEach(() => {
+beforeAll(async () => {
+  jest.mock("@services/redis", () => ({}))
+
+  jest.mock("@config", () => {
+    const config = jest.requireActual("@config")
+    const getLndParams = (): LndParams[] => []
+    return { ...config, getLndParams }
+  })
+})
+
+afterAll(() => {
   jest.resetAllMocks()
 })
 
