@@ -760,6 +760,85 @@ export namespace FindAddressByExternalIdResponse {
     }
 }
 
+export class GetAddressRequest extends jspb.Message { 
+
+    hasAddress(): boolean;
+    clearAddress(): void;
+    getAddress(): string;
+    setAddress(value: string): GetAddressRequest;
+
+    hasExternalId(): boolean;
+    clearExternalId(): void;
+    getExternalId(): string;
+    setExternalId(value: string): GetAddressRequest;
+
+    getIdentifierCase(): GetAddressRequest.IdentifierCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetAddressRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: GetAddressRequest): GetAddressRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetAddressRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetAddressRequest;
+    static deserializeBinaryFromReader(message: GetAddressRequest, reader: jspb.BinaryReader): GetAddressRequest;
+}
+
+export namespace GetAddressRequest {
+    export type AsObject = {
+        address: string,
+        externalId: string,
+    }
+
+    export enum IdentifierCase {
+        IDENTIFIER_NOT_SET = 0,
+        ADDRESS = 1,
+        EXTERNAL_ID = 2,
+    }
+
+}
+
+export class GetAddressResponse extends jspb.Message { 
+
+    hasAddress(): boolean;
+    clearAddress(): void;
+    getAddress(): string | undefined;
+    setAddress(value: string): GetAddressResponse;
+    getWalletId(): string;
+    setWalletId(value: string): GetAddressResponse;
+    getChangeAddress(): boolean;
+    setChangeAddress(value: boolean): GetAddressResponse;
+
+    hasExternalId(): boolean;
+    clearExternalId(): void;
+    getExternalId(): string | undefined;
+    setExternalId(value: string): GetAddressResponse;
+
+    hasMetadata(): boolean;
+    clearMetadata(): void;
+    getMetadata(): google_protobuf_struct_pb.Struct | undefined;
+    setMetadata(value?: google_protobuf_struct_pb.Struct): GetAddressResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetAddressResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: GetAddressResponse): GetAddressResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetAddressResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetAddressResponse;
+    static deserializeBinaryFromReader(message: GetAddressResponse, reader: jspb.BinaryReader): GetAddressResponse;
+}
+
+export namespace GetAddressResponse {
+    export type AsObject = {
+        address?: string,
+        walletId: string,
+        changeAddress: boolean,
+        externalId?: string,
+        metadata?: google_protobuf_struct_pb.Struct.AsObject,
+    }
+}
+
 export class ListUtxosRequest extends jspb.Message { 
     getWalletName(): string;
     setWalletName(value: string): ListUtxosRequest;
@@ -1489,24 +1568,192 @@ export namespace FindPayoutByExternalIdResponse {
     }
 }
 
-export class ListSigningSessionsRequest extends jspb.Message { 
-    getBatchId(): string;
-    setBatchId(value: string): ListSigningSessionsRequest;
+export class GetPayoutRequest extends jspb.Message { 
+
+    hasId(): boolean;
+    clearId(): void;
+    getId(): string;
+    setId(value: string): GetPayoutRequest;
+
+    hasExternalId(): boolean;
+    clearExternalId(): void;
+    getExternalId(): string;
+    setExternalId(value: string): GetPayoutRequest;
+
+    getIdentifierCase(): GetPayoutRequest.IdentifierCase;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ListSigningSessionsRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: ListSigningSessionsRequest): ListSigningSessionsRequest.AsObject;
+    toObject(includeInstance?: boolean): GetPayoutRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: GetPayoutRequest): GetPayoutRequest.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: ListSigningSessionsRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ListSigningSessionsRequest;
-    static deserializeBinaryFromReader(message: ListSigningSessionsRequest, reader: jspb.BinaryReader): ListSigningSessionsRequest;
+    static serializeBinaryToWriter(message: GetPayoutRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetPayoutRequest;
+    static deserializeBinaryFromReader(message: GetPayoutRequest, reader: jspb.BinaryReader): GetPayoutRequest;
 }
 
-export namespace ListSigningSessionsRequest {
+export namespace GetPayoutRequest {
     export type AsObject = {
-        batchId: string,
+        id: string,
+        externalId: string,
     }
+
+    export enum IdentifierCase {
+        IDENTIFIER_NOT_SET = 0,
+        ID = 1,
+        EXTERNAL_ID = 2,
+    }
+
+}
+
+export class GetPayoutResponse extends jspb.Message { 
+
+    hasPayout(): boolean;
+    clearPayout(): void;
+    getPayout(): Payout | undefined;
+    setPayout(value?: Payout): GetPayoutResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetPayoutResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: GetPayoutResponse): GetPayoutResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetPayoutResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetPayoutResponse;
+    static deserializeBinaryFromReader(message: GetPayoutResponse, reader: jspb.BinaryReader): GetPayoutResponse;
+}
+
+export namespace GetPayoutResponse {
+    export type AsObject = {
+        payout?: Payout.AsObject,
+    }
+}
+
+export class GetBatchRequest extends jspb.Message { 
+    getId(): string;
+    setId(value: string): GetBatchRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetBatchRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: GetBatchRequest): GetBatchRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetBatchRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetBatchRequest;
+    static deserializeBinaryFromReader(message: GetBatchRequest, reader: jspb.BinaryReader): GetBatchRequest;
+}
+
+export namespace GetBatchRequest {
+    export type AsObject = {
+        id: string,
+    }
+}
+
+export class GetBatchResponse extends jspb.Message { 
+    getId(): string;
+    setId(value: string): GetBatchResponse;
+    getPayoutQueueId(): string;
+    setPayoutQueueId(value: string): GetBatchResponse;
+    getTxId(): string;
+    setTxId(value: string): GetBatchResponse;
+    getUnsignedPsbt(): string;
+    setUnsignedPsbt(value: string): GetBatchResponse;
+    clearWalletSummariesList(): void;
+    getWalletSummariesList(): Array<BatchWalletSummary>;
+    setWalletSummariesList(value: Array<BatchWalletSummary>): GetBatchResponse;
+    addWalletSummaries(value?: BatchWalletSummary, index?: number): BatchWalletSummary;
+    clearSigningSessionsList(): void;
+    getSigningSessionsList(): Array<SigningSession>;
+    setSigningSessionsList(value: Array<SigningSession>): GetBatchResponse;
+    addSigningSessions(value?: SigningSession, index?: number): SigningSession;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetBatchResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: GetBatchResponse): GetBatchResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetBatchResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetBatchResponse;
+    static deserializeBinaryFromReader(message: GetBatchResponse, reader: jspb.BinaryReader): GetBatchResponse;
+}
+
+export namespace GetBatchResponse {
+    export type AsObject = {
+        id: string,
+        payoutQueueId: string,
+        txId: string,
+        unsignedPsbt: string,
+        walletSummariesList: Array<BatchWalletSummary.AsObject>,
+        signingSessionsList: Array<SigningSession.AsObject>,
+    }
+}
+
+export class BatchWalletSummary extends jspb.Message { 
+    getWalletId(): string;
+    setWalletId(value: string): BatchWalletSummary;
+    getTotalSpentSats(): number;
+    setTotalSpentSats(value: number): BatchWalletSummary;
+    getFeeSats(): number;
+    setFeeSats(value: number): BatchWalletSummary;
+    clearPayoutsList(): void;
+    getPayoutsList(): Array<PayoutSummary>;
+    setPayoutsList(value: Array<PayoutSummary>): BatchWalletSummary;
+    addPayouts(value?: PayoutSummary, index?: number): PayoutSummary;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): BatchWalletSummary.AsObject;
+    static toObject(includeInstance: boolean, msg: BatchWalletSummary): BatchWalletSummary.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: BatchWalletSummary, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): BatchWalletSummary;
+    static deserializeBinaryFromReader(message: BatchWalletSummary, reader: jspb.BinaryReader): BatchWalletSummary;
+}
+
+export namespace BatchWalletSummary {
+    export type AsObject = {
+        walletId: string,
+        totalSpentSats: number,
+        feeSats: number,
+        payoutsList: Array<PayoutSummary.AsObject>,
+    }
+}
+
+export class PayoutSummary extends jspb.Message { 
+    getId(): string;
+    setId(value: string): PayoutSummary;
+    getSatoshis(): number;
+    setSatoshis(value: number): PayoutSummary;
+
+    hasOnchainAddress(): boolean;
+    clearOnchainAddress(): void;
+    getOnchainAddress(): string;
+    setOnchainAddress(value: string): PayoutSummary;
+
+    getDestinationCase(): PayoutSummary.DestinationCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): PayoutSummary.AsObject;
+    static toObject(includeInstance: boolean, msg: PayoutSummary): PayoutSummary.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: PayoutSummary, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): PayoutSummary;
+    static deserializeBinaryFromReader(message: PayoutSummary, reader: jspb.BinaryReader): PayoutSummary;
+}
+
+export namespace PayoutSummary {
+    export type AsObject = {
+        id: string,
+        satoshis: number,
+        onchainAddress: string,
+    }
+
+    export enum DestinationCase {
+        DESTINATION_NOT_SET = 0,
+        ONCHAIN_ADDRESS = 3,
+    }
+
 }
 
 export class SigningSession extends jspb.Message { 
@@ -1541,28 +1788,6 @@ export namespace SigningSession {
         xpubId: string,
         state: string,
         failureReason?: string,
-    }
-}
-
-export class ListSigningSessionsResponse extends jspb.Message { 
-    clearSessionsList(): void;
-    getSessionsList(): Array<SigningSession>;
-    setSessionsList(value: Array<SigningSession>): ListSigningSessionsResponse;
-    addSessions(value?: SigningSession, index?: number): SigningSession;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ListSigningSessionsResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: ListSigningSessionsResponse): ListSigningSessionsResponse.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: ListSigningSessionsResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ListSigningSessionsResponse;
-    static deserializeBinaryFromReader(message: ListSigningSessionsResponse, reader: jspb.BinaryReader): ListSigningSessionsResponse;
-}
-
-export namespace ListSigningSessionsResponse {
-    export type AsObject = {
-        sessionsList: Array<SigningSession.AsObject>,
     }
 }
 
