@@ -101,7 +101,7 @@ const PriceSubscription = {
     })
 
     if (amount instanceof Error) {
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: { errors: [{ message: amount.message }] },
       })
@@ -110,7 +110,7 @@ const PriceSubscription = {
 
     for (const input of [amountCurrencyUnit, priceCurrencyUnit]) {
       if (input instanceof Error) {
-        pubsub.publishImmediate({
+        pubsub.publishDelayed({
           trigger: immediateTrigger,
           payload: { errors: [{ message: input.message }] },
         })
@@ -120,7 +120,7 @@ const PriceSubscription = {
 
     const currencies = await Prices.listCurrencies()
     if (currencies instanceof Error) {
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: { errors: [{ message: currencies.message }] },
       })
@@ -132,20 +132,20 @@ const PriceSubscription = {
 
     if (amountCurrencyUnit !== "BTCSAT" || displayCurrency instanceof Error) {
       // For now, keep the only supported exchange price as SAT -> USD
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: { errors: [{ message: "Unsupported exchange unit" }] },
       })
     } else if (amount >= 1000000) {
       // SafeInt limit, reject for now
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: immediateTrigger,
         payload: { errors: [{ message: "Unsupported exchange amount" }] },
       })
     } else {
       const pricePerSat = await Prices.getCurrentSatPrice({ currency: displayCurrency })
       if (!(pricePerSat instanceof Error)) {
-        pubsub.publishImmediate({
+        pubsub.publishDelayed({
           trigger: immediateTrigger,
           payload: { pricePerSat: pricePerSat.price, displayCurrency },
         })

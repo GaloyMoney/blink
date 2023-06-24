@@ -270,12 +270,12 @@ const MeSubscription = {
         pricePerUsdCent: pricePerUsdCent.price,
       }
       if (displayCurrency === DisplayCurrency.Usd) {
-        pubsub.publishImmediate({
+        pubsub.publishDelayed({
           trigger: accountUpdatedTrigger,
           payload: { price: priceData },
         })
       }
-      pubsub.publishImmediate({
+      pubsub.publishDelayed({
         trigger: accountUpdatedTrigger,
         payload: { realtimePrice: priceData },
       })

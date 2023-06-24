@@ -21,5 +21,8 @@ interface IPubSubService {
     trigger,
   }: AsyncIteratorArgs) => AsyncIterator<T> | PubSubServiceError
   publish: <T>({ trigger, payload }: PublishArgs<T>) => Promise<void | PubSubServiceError>
-  publishImmediate: <T>({ trigger, payload }: PublishArgs<T>) => NodeJS.Immediate
+  publishDelayed: <T>({
+    trigger,
+    payload,
+  }: PublishArgs<T>) => Promise<void | PubSubServiceError>
 }
