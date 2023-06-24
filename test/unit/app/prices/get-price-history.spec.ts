@@ -5,9 +5,10 @@ import {
   UnknownPriceServiceError,
 } from "@domain/price"
 import { CacheKeys } from "@domain/cache"
-import { Prices } from "@app"
 import * as PriceServiceImpl from "@services/price"
 import { LocalCacheService } from "@services/cache"
+
+import { getPriceHistory } from "@app/prices"
 
 import { generateSatoshiPriceHistory } from "test/helpers/price"
 
@@ -50,7 +51,7 @@ describe("Prices", () => {
         listCurrencies: jest.fn(),
       }))
 
-      const prices = await Prices.getPriceHistory({ range, interval })
+      const prices = await getPriceHistory({ range, interval })
       if (prices instanceof Error) throw prices
 
       expect(prices.length).toBe(24)
@@ -64,7 +65,7 @@ describe("Prices", () => {
         ]),
       )
 
-      const cachedPrices = await Prices.getPriceHistory({ range, interval })
+      const cachedPrices = await getPriceHistory({ range, interval })
       expect(cachedPrices).toEqual(prices)
     })
 
@@ -79,7 +80,7 @@ describe("Prices", () => {
         listCurrencies: jest.fn(),
       }))
 
-      const prices = await Prices.getPriceHistory({ range, interval })
+      const prices = await getPriceHistory({ range, interval })
       expect(prices).toBeInstanceOf(UnknownPriceServiceError)
     })
 
@@ -94,7 +95,7 @@ describe("Prices", () => {
         listCurrencies: jest.fn(),
       }))
 
-      const prices = await Prices.getPriceHistory({ range, interval })
+      const prices = await getPriceHistory({ range, interval })
       expect(prices).toBeInstanceOf(PriceHistoryNotAvailableError)
     })
   })

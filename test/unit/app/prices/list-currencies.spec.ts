@@ -1,8 +1,8 @@
 import { CacheKeys } from "@domain/cache"
-import { Prices } from "@app"
 import * as PriceServiceImpl from "@services/price"
 import { LocalCacheService } from "@services/cache"
 import { PriceCurrenciesNotAvailableError } from "@domain/price"
+import { listCurrencies } from "@app/prices"
 
 jest.mock("@services/redis", () => ({}))
 
@@ -47,7 +47,7 @@ describe("Prices", () => {
           listCurrencies: () => Promise.resolve(new PriceCurrenciesNotAvailableError()),
         }))
 
-      const currencies = await Prices.listCurrencies()
+      const currencies = await listCurrencies()
       expect(currencies).not.toBeInstanceOf(Error)
 
       if (currencies instanceof Error) throw currencies
@@ -64,7 +64,7 @@ describe("Prices", () => {
         ]),
       )
 
-      const cachedCurrencies = await Prices.listCurrencies()
+      const cachedCurrencies = await listCurrencies()
       expect(cachedCurrencies).toEqual(currencies)
     })
 
@@ -76,7 +76,7 @@ describe("Prices", () => {
         listCurrencies: () => Promise.resolve(new PriceCurrenciesNotAvailableError()),
       }))
 
-      const currencies = await Prices.listCurrencies()
+      const currencies = await listCurrencies()
       expect(currencies).toBeInstanceOf(PriceCurrenciesNotAvailableError)
     })
   })
