@@ -10,6 +10,10 @@ jest.mock("@config", () => {
   return { ...config, getLndParams }
 })
 
+jest.mock("@services/tracing", () => ({
+  wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
+}))
+
 beforeEach(async () => {
   await LocalCacheService().clear({ key: CacheKeys.PriceCurrencies })
 })

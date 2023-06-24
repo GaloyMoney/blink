@@ -18,13 +18,15 @@ beforeEach(async () => {
   })
 })
 
-beforeAll(async () => {
-  jest.mock("@config", () => {
-    const config = jest.requireActual("@config")
-    const getLndParams = (): LndParams[] => []
-    return { ...config, getLndParams }
-  })
+jest.mock("@config", () => {
+  const config = jest.requireActual("@config")
+  const getLndParams = (): LndParams[] => []
+  return { ...config, getLndParams }
 })
+
+jest.mock("@services/tracing", () => ({
+  wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
+}))
 
 afterAll(() => {
   jest.resetAllMocks()

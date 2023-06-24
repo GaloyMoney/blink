@@ -12,6 +12,10 @@ jest.mock("@config", () => {
   return { ...config, getLndParams }
 })
 
+jest.mock("@services/tracing", () => ({
+  wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
+}))
+
 const EUR = "EUR" as DisplayCurrency
 
 beforeEach(async () => {
