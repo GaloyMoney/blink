@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import IError from "../abstract/error"
-import GraphQLUser from "../object/graphql-user"
+import GraphQLUser from "../object/user"
 
 const UserUpdateUsernamePayload = GT.Object({
   name: "UserUpdateUsernamePayload",

@@ -20,7 +20,7 @@ import Username from "../scalar/username"
 import AccountContact from "./account-contact"
 import UserQuizQuestion from "./user-quiz-question"
 
-const GraphQLUser = GT.Object({
+const GraphQLUser = GT.Object<User, GraphQLContextAuth>({
   name: "User",
   fields: () => ({
     id: {
@@ -36,7 +36,7 @@ const GraphQLUser = GT.Object({
       type: Username,
       description: "Optional immutable user friendly identifier.",
       resolve: async (source, args, { domainAccount }) => {
-        return source.username || domainAccount?.username
+        return domainAccount?.username
       },
       deprecationReason: "will be moved to @Handle in Account and Wallet",
     },
@@ -49,7 +49,7 @@ const GraphQLUser = GT.Object({
         if (source.language || source.language === "") return source.language
 
         // fallback when source is different from user type
-        const userId = source.kratosUserId || domainAccount?.kratosUserId
+        const userId = domainAccount?.kratosUserId
         if (!userId) return ""
 
         const user = await Users.getUser(userId)
