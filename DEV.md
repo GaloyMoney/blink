@@ -6,7 +6,6 @@
   - [Development](#development)
     - [Config](#config)
     - [Using GraphQL Playground](#using-graphql-playground)
-    - [Honeycomb](#honeycomb)
     - [Docker compose](#docker-compose)
   - [Testing](#testing)
     - [Run unit tests](#run-unit-tests)
@@ -103,13 +102,6 @@ You can load the Apollo GraphQL Playground, a web GUI for GraphQL. Start the ser
 
 - http://localhost:4002/admin/graphql (admin API, proxied thru oathkeeper)
 - http://localhost:4002/graphql (end user API, proxied thru oathkeeper)
-
-### Honeycomb
-
-To test the effect of a change on open telemetry locally, `HONEYCOMB_API_KEY` and `HONEYCOMB_DATASET` values needs to be set.
-
-`HONEYCOMB_API_KEY` can be found in Account > Team settings > Environments and API Keys > Manage > copy the dev key
-`HONEYCOMB_DATASET` can be any string, pick something like `myusername-dev`
 
 ### Docker compose
 

@@ -1,10 +1,13 @@
+import { Prices } from "@app"
+
 import { CacheKeys } from "@domain/cache"
 import { DisplayCurrency } from "@domain/fiat"
 import { PriceNotAvailableError } from "@domain/price"
 
 import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache/local"
-import { getCurrentSatPrice, getCurrentUsdCentPrice } from "@app/prices"
+import { LocalCacheService } from "@services/cache"
+
+jest.mock("@services/redis", () => ({}))
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
@@ -12,19 +15,11 @@ jest.mock("@config", () => {
   return { ...config, getLndParams }
 })
 
-jest.mock("@services/tracing", () => ({
-  wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
-}))
-
 const EUR = "EUR" as DisplayCurrency
 
-beforeEach(async () => {
-  await LocalCacheService().clear({ key: CacheKeys.CurrentSatPrice })
-  await LocalCacheService().clear({ key: CacheKeys.CurrentUsdCentPrice })
-})
-
-afterEach(() => {
-  jest.resetAllMocks()
+beforeEach(() => {
+  LocalCacheService().clear({ key: CacheKeys.CurrentSatPrice })
+  LocalCacheService().clear({ key: CacheKeys.CurrentUsdCentPrice })
 })
 
 describe("Prices", () => {
@@ -50,11 +45,11 @@ describe("Prices", () => {
           listCurrencies: jest.fn(),
         }))
 
-      let satPrice = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      let satPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
       if (satPrice instanceof Error) throw satPrice
       expect(satPrice.price).toEqual(0.05)
 
-      satPrice = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      satPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
       if (satPrice instanceof Error) throw satPrice
       expect(satPrice.price).toEqual(0.05)
     })
@@ -67,7 +62,7 @@ describe("Prices", () => {
         listCurrencies: jest.fn(),
       }))
 
-      const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      const price = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
       expect(price).toBeInstanceOf(PriceNotAvailableError)
     })
   })
@@ -94,11 +89,11 @@ describe("Prices", () => {
           listCurrencies: jest.fn(),
         }))
 
-      let satPrice = await getCurrentUsdCentPrice({ currency: EUR })
+      let satPrice = await Prices.getCurrentUsdCentPrice({ currency: EUR })
       if (satPrice instanceof Error) throw satPrice
       expect(satPrice.price).toEqual(0.93)
 
-      satPrice = await getCurrentUsdCentPrice({ currency: EUR })
+      satPrice = await Prices.getCurrentUsdCentPrice({ currency: EUR })
       if (satPrice instanceof Error) throw satPrice
       expect(satPrice.price).toEqual(0.93)
     })
@@ -111,7 +106,7 @@ describe("Prices", () => {
         listCurrencies: jest.fn(),
       }))
 
-      const price = await getCurrentUsdCentPrice({ currency: EUR })
+      const price = await Prices.getCurrentUsdCentPrice({ currency: EUR })
       expect(price).toBeInstanceOf(PriceNotAvailableError)
     })
   })

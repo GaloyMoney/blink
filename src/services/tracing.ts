@@ -1,3 +1,5 @@
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+
 import {
   SemanticAttributes,
   SemanticResourceAttributes,
@@ -11,9 +13,8 @@ import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
 import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
 import { registerInstrumentations } from "@opentelemetry/instrumentation"
 import { SimpleSpanProcessor, Span as SdkSpan } from "@opentelemetry/sdk-trace-base"
+import { JaegerExporter } from "@opentelemetry/exporter-jaeger"
 import { Resource } from "@opentelemetry/resources"
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto"
-
 import {
   trace,
   context,
@@ -142,7 +143,6 @@ const recordGqlErrors = ({
     })
   }
 
-  /* eslint @typescript-eslint/ban-ts-comment: "off" */
   // @ts-ignore-next-line no-implicit-any error
   errors.forEach((err, idx) => {
     setErrorAttribute({
@@ -229,15 +229,11 @@ class SpanProcessorWrapper extends SimpleSpanProcessor {
     super.onStart(span, parentContext)
   }
 }
-
-const otlpHost = process.env.OTLP_HOST || "localhost"
-const otlpPort = parseInt(process.env.OTLP_PORT || "4318", 10)
-const hostname = `http://${otlpHost}:${otlpPort}`
-
 provider.addSpanProcessor(
   new SpanProcessorWrapper(
-    new OTLPTraceExporter({
-      hostname,
+    new JaegerExporter({
+      host: tracingConfig?.jaegerHost,
+      port: tracingConfig?.jaegerPort,
     }),
   ),
 )
