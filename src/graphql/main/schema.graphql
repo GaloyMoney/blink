@@ -283,6 +283,20 @@ type Currency {
   symbol: String!
 }
 
+type DepositFeesInformation {
+  minBankFee: String!
+
+  """
+  below this amount minBankFee will be charged
+  """
+  minBankFeeThreshold: String!
+
+  """
+  ratio to charge as basis points above minBankFeeThreshold amount
+  """
+  ratio: String!
+}
+
 input DeviceNotificationTokenCreateInput {
   deviceToken: String!
 }
@@ -303,11 +317,16 @@ enum ExchangeCurrencyUnit {
   USDCENT
 }
 
+type FeesInformation {
+  deposit: DepositFeesInformation!
+}
+
 """
 Provides global settings for the application which might have an impact for the user.
 """
 type Globals {
   buildInformation: BuildInformation!
+  feesInformation: FeesInformation!
 
   """
   The domain name for lightning addresses accepted by this Galoy instance

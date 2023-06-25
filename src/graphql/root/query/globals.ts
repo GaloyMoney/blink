@@ -1,5 +1,6 @@
 import {
   BTC_NETWORK,
+  getFeesConfig,
   getGaloyBuildInformation,
   getLightningAddressDomain,
   getLightningAddressDomainAliases,
@@ -10,6 +11,8 @@ import { Lightning } from "@app"
 import { GT } from "@graphql/index"
 import Globals from "@graphql/types/object/globals"
 import { getSupportedCountries } from "@app/auth/get-supported-countries"
+
+const feesConfig = getFeesConfig()
 
 const GlobalsQuery = GT.Field({
   type: Globals,
@@ -24,6 +27,13 @@ const GlobalsQuery = GT.Field({
       lightningAddressDomainAliases: getLightningAddressDomainAliases(),
       buildInformation: getGaloyBuildInformation(),
       supportedCountries: getSupportedCountries(),
+      feesInformation: {
+        deposit: {
+          minBankFee: `${feesConfig.depositDefaultMin.amount}`,
+          minBankFeeThreshold: `${feesConfig.depositThreshold.amount}`,
+          ratio: `${feesConfig.depositRatioAsBasisPoints}`,
+        },
+      },
     }
   },
 })

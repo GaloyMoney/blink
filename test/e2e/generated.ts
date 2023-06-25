@@ -12,7 +12,7 @@ export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' |
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string | number; output: string; }
+  ID: { input: string; output: string; }
   String: { input: string; output: string; }
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
@@ -269,6 +269,15 @@ export type Currency = {
   readonly symbol: Scalars['String']['output'];
 };
 
+export type DepositFeesInformation = {
+  readonly __typename: 'DepositFeesInformation';
+  readonly minBankFee: Scalars['String']['output'];
+  /** below this amount minBankFee will be charged */
+  readonly minBankFeeThreshold: Scalars['String']['output'];
+  /** ratio to charge as basis points above minBankFeeThreshold amount */
+  readonly ratio: Scalars['String']['output'];
+};
+
 export type DeviceNotificationTokenCreateInput = {
   readonly deviceToken: Scalars['String']['input'];
 };
@@ -285,10 +294,16 @@ export const ExchangeCurrencyUnit = {
 } as const;
 
 export type ExchangeCurrencyUnit = typeof ExchangeCurrencyUnit[keyof typeof ExchangeCurrencyUnit];
+export type FeesInformation = {
+  readonly __typename: 'FeesInformation';
+  readonly deposit: DepositFeesInformation;
+};
+
 /** Provides global settings for the application which might have an impact for the user. */
 export type Globals = {
   readonly __typename: 'Globals';
   readonly buildInformation: BuildInformation;
+  readonly feesInformation: FeesInformation;
   /** The domain name for lightning addresses accepted by this Galoy instance */
   readonly lightningAddressDomain: Scalars['String']['output'];
   readonly lightningAddressDomainAliases: ReadonlyArray<Scalars['String']['output']>;
@@ -835,6 +850,8 @@ export type OnChainAddressPayload = {
 export type OnChainPaymentSendAllInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  readonly speed?: InputMaybe<PayoutSpeed>;
+  /** @deprecated Ignored - will be replaced */
   readonly targetConfirmations?: InputMaybe<Scalars['TargetConfirmations']['input']>;
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -843,6 +860,8 @@ export type OnChainPaymentSendInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['SatAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  readonly speed?: InputMaybe<PayoutSpeed>;
+  /** @deprecated Ignored - will be replaced */
   readonly targetConfirmations?: InputMaybe<Scalars['TargetConfirmations']['input']>;
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -850,6 +869,7 @@ export type OnChainPaymentSendInput = {
 export type OnChainTxFee = {
   readonly __typename: 'OnChainTxFee';
   readonly amount: Scalars['SatAmount']['output'];
+  /** @deprecated Ignored - will be removed */
   readonly targetConfirmations: Scalars['TargetConfirmations']['output'];
 };
 
@@ -868,6 +888,8 @@ export type OnChainUsdPaymentSendAsBtcDenominatedInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['SatAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  readonly speed?: InputMaybe<PayoutSpeed>;
+  /** @deprecated Ignored - will be replaced */
   readonly targetConfirmations?: InputMaybe<Scalars['TargetConfirmations']['input']>;
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -876,6 +898,8 @@ export type OnChainUsdPaymentSendInput = {
   readonly address: Scalars['OnChainAddress']['input'];
   readonly amount: Scalars['CentAmount']['input'];
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
+  readonly speed?: InputMaybe<PayoutSpeed>;
+  /** @deprecated Ignored - will be replaced */
   readonly targetConfirmations?: InputMaybe<Scalars['TargetConfirmations']['input']>;
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -883,6 +907,7 @@ export type OnChainUsdPaymentSendInput = {
 export type OnChainUsdTxFee = {
   readonly __typename: 'OnChainUsdTxFee';
   readonly amount: Scalars['CentAmount']['output'];
+  /** @deprecated Ignored - will be removed */
   readonly targetConfirmations: Scalars['TargetConfirmations']['output'];
 };
 
@@ -923,6 +948,11 @@ export const PaymentSendResult = {
 } as const;
 
 export type PaymentSendResult = typeof PaymentSendResult[keyof typeof PaymentSendResult];
+export const PayoutSpeed = {
+  Fast: 'FAST'
+} as const;
+
+export type PayoutSpeed = typeof PayoutSpeed[keyof typeof PayoutSpeed];
 export const PhoneCodeChannelType = {
   Sms: 'SMS',
   Whatsapp: 'WHATSAPP'
@@ -1059,6 +1089,7 @@ export type QueryLnInvoicePaymentStatusArgs = {
 export type QueryOnChainTxFeeArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['SatAmount']['input'];
+  speed?: InputMaybe<PayoutSpeed>;
   targetConfirmations?: InputMaybe<Scalars['TargetConfirmations']['input']>;
   walletId: Scalars['WalletId']['input'];
 };
@@ -1067,6 +1098,7 @@ export type QueryOnChainTxFeeArgs = {
 export type QueryOnChainUsdTxFeeArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['CentAmount']['input'];
+  speed?: InputMaybe<PayoutSpeed>;
   targetConfirmations?: InputMaybe<Scalars['TargetConfirmations']['input']>;
   walletId: Scalars['WalletId']['input'];
 };
@@ -1075,6 +1107,7 @@ export type QueryOnChainUsdTxFeeArgs = {
 export type QueryOnChainUsdTxFeeAsBtcDenominatedArgs = {
   address: Scalars['OnChainAddress']['input'];
   amount: Scalars['SatAmount']['input'];
+  speed?: InputMaybe<PayoutSpeed>;
   targetConfirmations?: InputMaybe<Scalars['TargetConfirmations']['input']>;
   walletId: Scalars['WalletId']['input'];
 };
@@ -1163,7 +1196,7 @@ export type SettlementViaLn = {
 
 export type SettlementViaOnChain = {
   readonly __typename: 'SettlementViaOnChain';
-  readonly transactionHash: Scalars['OnChainTxHash']['output'];
+  readonly transactionHash?: Maybe<Scalars['OnChainTxHash']['output']>;
   readonly vout?: Maybe<Scalars['Int']['output']>;
 };
 
@@ -1586,7 +1619,7 @@ export type MainQueryQueryVariables = Exact<{
 }>;
 
 
-export type MainQueryQuery = { readonly __typename: 'Query', readonly globals?: { readonly __typename: 'Globals', readonly nodesIds: ReadonlyArray<string>, readonly network: Network } | null, readonly quizQuestions?: ReadonlyArray<{ readonly __typename: 'QuizQuestion', readonly id: string, readonly earnAmount: number } | null> | null, readonly me?: { readonly __typename: 'User', readonly id: string, readonly language: string, readonly username?: string | null, readonly phone?: string | null, readonly quizQuestions: ReadonlyArray<{ readonly __typename: 'UserQuizQuestion', readonly completed: boolean, readonly question: { readonly __typename: 'QuizQuestion', readonly id: string, readonly earnAmount: number } }>, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly id: string, readonly level: AccountLevel, readonly defaultWalletId: string, readonly quiz: ReadonlyArray<{ readonly __typename: 'Quiz', readonly id: string, readonly amount: number, readonly completed: boolean }>, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly balance: number, readonly walletCurrency: WalletCurrency, readonly transactions?: { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash: string } } }> | null } | null } | { readonly __typename: 'UsdWallet', readonly id: string, readonly balance: number, readonly walletCurrency: WalletCurrency, readonly transactions?: { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash: string } } }> | null } | null }> } } | null, readonly mobileVersions?: ReadonlyArray<{ readonly __typename: 'MobileVersions', readonly platform: string, readonly currentSupported: number, readonly minSupported: number } | null> | null };
+export type MainQueryQuery = { readonly __typename: 'Query', readonly globals?: { readonly __typename: 'Globals', readonly nodesIds: ReadonlyArray<string>, readonly network: Network, readonly feesInformation: { readonly __typename: 'FeesInformation', readonly deposit: { readonly __typename: 'DepositFeesInformation', readonly minBankFee: string, readonly minBankFeeThreshold: string, readonly ratio: string } } } | null, readonly quizQuestions?: ReadonlyArray<{ readonly __typename: 'QuizQuestion', readonly id: string, readonly earnAmount: number } | null> | null, readonly me?: { readonly __typename: 'User', readonly id: string, readonly language: string, readonly username?: string | null, readonly phone?: string | null, readonly quizQuestions: ReadonlyArray<{ readonly __typename: 'UserQuizQuestion', readonly completed: boolean, readonly question: { readonly __typename: 'QuizQuestion', readonly id: string, readonly earnAmount: number } }>, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly id: string, readonly level: AccountLevel, readonly defaultWalletId: string, readonly quiz: ReadonlyArray<{ readonly __typename: 'Quiz', readonly id: string, readonly amount: number, readonly completed: boolean }>, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly balance: number, readonly walletCurrency: WalletCurrency, readonly transactions?: { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null } } }> | null } | null } | { readonly __typename: 'UsdWallet', readonly id: string, readonly balance: number, readonly walletCurrency: WalletCurrency, readonly transactions?: { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null } } }> | null } | null }> } } | null, readonly mobileVersions?: ReadonlyArray<{ readonly __typename: 'MobileVersions', readonly platform: string, readonly currentSupported: number, readonly minSupported: number } | null> | null };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1600,9 +1633,9 @@ export type TransactionsQueryVariables = Exact<{
 }>;
 
 
-export type TransactionsQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly transactions?: { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash: string } } }> | null } | null } } | null };
+export type TransactionsQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly transactions?: { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null } } }> | null } | null } } | null };
 
-export type TransactionListFragment = { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash: string } } }> | null };
+export type TransactionListFragment = { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly paymentSecret?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null } } }> | null };
 
 export type LnNoAmountInvoiceCreateMutationVariables = Exact<{
   input: LnNoAmountInvoiceCreateInput;
@@ -2243,6 +2276,13 @@ export const MainQueryDocument = gql`
   globals {
     nodesIds
     network
+    feesInformation {
+      deposit {
+        minBankFee
+        minBankFeeThreshold
+        ratio
+      }
+    }
   }
   quizQuestions {
     id
