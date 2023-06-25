@@ -16,7 +16,7 @@ import { TransactionsMetadataRepository } from "./services"
 
 import { coldStorageAccountId, lndLedgerAccountId } from "./domain/accounts"
 
-import { translateToLedgerJournal } from "."
+import { translateToLedgerJournal } from "./helpers"
 
 const txMetadataRepo = TransactionsMetadataRepository()
 
