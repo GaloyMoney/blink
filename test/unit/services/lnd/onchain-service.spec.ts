@@ -5,8 +5,6 @@ import {
   extractOutgoingTransactions,
 } from "@services/lnd/onchain-service"
 
-jest.mock("@services/redis", () => ({}))
-
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
   const getLndParams = (): LndParams[] => []

@@ -24,7 +24,7 @@ import {
 
 import { SECS_PER_5_MINS } from "@config"
 import { CacheKeys } from "@domain/cache"
-import { LocalCacheService } from "@services/cache"
+import { LocalCacheService } from "@services/cache/local"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import {

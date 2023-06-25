@@ -2,7 +2,7 @@ import { CacheKeys } from "@domain/cache"
 import { toSeconds } from "@domain/primitives"
 import { PriceService } from "@services/price"
 import { PriceHistoryNotAvailableError } from "@domain/price"
-import { LocalCacheService } from "@services/cache"
+import { LocalCacheService } from "@services/cache/local"
 
 export const getPriceHistory = async ({
   range,
