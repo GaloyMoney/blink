@@ -87,6 +87,20 @@ export const getDefaultWalletIdByTestUserRef = async (ref: string) => {
   return account.defaultWalletId
 }
 
+export const getBtcWalletDescriptorByTestUserRef = async (
+  ref: string,
+): Promise<WalletDescriptor<"BTC">> => {
+  const account = await getAccountByTestUserRef(ref)
+
+  const wallets = await WalletsRepository().listByAccountId(account.id)
+  if (wallets instanceof Error) throw wallets
+
+  const wallet = wallets.find((w) => w.currency === WalletCurrency.Btc)
+  if (wallet === undefined) throw Error("no BTC wallet")
+
+  return { id: wallet.id, currency: WalletCurrency.Btc, accountId: wallet.accountId }
+}
+
 export const getUsdWalletIdByTestUserRef = async (ref: string) => {
   const account = await getAccountByTestUserRef(ref)
 

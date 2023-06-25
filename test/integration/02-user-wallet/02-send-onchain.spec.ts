@@ -29,11 +29,9 @@ import {
 import { LedgerTransactionType } from "@domain/ledger"
 
 import {
-  add,
   DisplayCurrency,
   getCurrencyMajorExponent,
   displayAmountFromNumber,
-  sub,
   toCents,
 } from "@domain/fiat"
 
@@ -44,7 +42,11 @@ import { EventAugmentationMissingError } from "@services/bria/errors"
 
 import { payoutSubmittedEventHandler } from "@servers/event-handlers/bria"
 
-import { WalletCurrency, InvalidBtcPaymentAmountError } from "@domain/shared"
+import {
+  AmountCalculator,
+  WalletCurrency,
+  InvalidBtcPaymentAmountError,
+} from "@domain/shared"
 
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
@@ -67,6 +69,7 @@ import {
   mineBlockAndSync,
   getUsdWalletIdByTestUserRef,
   amountByPriceAsMajor,
+  getBtcWalletDescriptorByTestUserRef,
 } from "test/helpers"
 import { onceBriaSubscribe } from "test/helpers/bria"
 
@@ -76,6 +79,7 @@ let accountE: Account
 let accountG: Account
 
 let walletIdA: WalletId
+let walletDescriptorA: WalletDescriptor<"BTC">
 let walletIdUsdA: WalletId
 let walletIdUsdB: WalletId
 let walletIdD: WalletId
@@ -85,9 +89,13 @@ let walletIdG: WalletId
 let walletIdE: WalletId
 let walletIdF: WalletId
 
+let outsideAddress: OnChainAddress
+
 const locale = getLocale()
 
 const dealerFns = DealerPriceService()
+
+const calc = AmountCalculator()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -98,6 +106,8 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("F")
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  walletDescriptorA = await getBtcWalletDescriptorByTestUserRef("A")
+
   walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
 
@@ -112,6 +122,7 @@ beforeAll(async () => {
   accountG = await getAccountByTestUserRef("G")
 
   await bitcoindClient.loadWallet({ filename: "outside" })
+  outsideAddress = (await bitcoindOutside.getNewAddress()) as OnChainAddress
 })
 
 afterEach(async () => {
@@ -140,6 +151,9 @@ const payOnChainForPromiseAll = async (
     : await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount(payArgs)
   return res
 }
+
+const randomOnChainMemo = () =>
+  "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
 
 const testExternalSend = async ({
   senderAccount,
@@ -907,15 +921,18 @@ describe("BtcWallet - onChainPay", () => {
   })
 
   it("fails to send all from empty wallet", async () => {
-    const res = await testExternalSend({
-      senderAccount: accountE,
+    const res = await Wallets.payAllOnChainByWalletId({
       senderWalletId: walletIdE,
+      senderAccount: accountE,
       amount,
-      amountCurrency: WalletCurrency.Btc,
-      sendAll: true,
+      address: outsideAddress,
+
+      speed: PayoutSpeed.Fast,
+      memo: randomOnChainMemo(),
     })
+
     expect(res).toBeInstanceOf(InsufficientBalanceError)
-    expect(res && res.message).toEqual(`No balance left to send.`)
+    expect(res instanceof Error && res.message).toEqual(`No balance left to send.`)
   })
 
   it("sends an on us transaction", async () => {
@@ -997,81 +1014,85 @@ describe("BtcWallet - onChainPay", () => {
   })
 
   it("fails if try to send a transaction to self", async () => {
-    const res = await testInternalSend({
-      senderAccount: accountA,
+    const walletIdAAddress = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdA,
+    })
+    if (walletIdAAddress instanceof Error) throw walletIdAAddress
+
+    const res = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderWalletId: walletIdA,
-      recipientWalletId: walletIdA,
-      senderAmount: amount,
-      amountCurrency: WalletCurrency.Btc,
+      senderAccount: accountA,
+      amount,
+      address: walletIdAAddress,
+
+      speed: PayoutSpeed.Fast,
+      memo: randomOnChainMemo(),
     })
     expect(res).toBeInstanceOf(SelfPaymentError)
   })
 
   it("fails if an on us payment has insufficient balance", async () => {
-    const res = await testInternalSend({
-      senderAccount: accountE,
-      senderWalletId: walletIdE,
-      recipientWalletId: walletIdD,
-      senderAmount: amount,
-      amountCurrency: WalletCurrency.Btc,
+    const walletIdDAddress = await Wallets.createOnChainAddressForBtcWallet({
+      walletId: walletIdD,
     })
+    if (walletIdDAddress instanceof Error) throw walletIdDAddress
+
+    const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+      senderWalletId: walletIdE,
+      senderAccount: accountE,
+      amount,
+      address: walletIdDAddress,
+
+      speed: PayoutSpeed.Fast,
+      memo: randomOnChainMemo(),
+    })
+
     expect(res).toBeInstanceOf(InsufficientBalanceError)
   })
 
   it("fails if has insufficient balance", async () => {
-    const { address } = await createChainAddress({
-      lnd: lndOutside1,
-      format: "p2wpkh",
-    })
     const initialBalanceUserG = await getBalanceHelper(walletIdG)
 
     const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountG,
       senderWalletId: walletIdG,
-      address,
+      address: outsideAddress,
       amount: initialBalanceUserG,
+
       speed: PayoutSpeed.Fast,
-      memo: null,
+      memo: randomOnChainMemo(),
     })
+
     //should fail because user does not have balance to pay for on-chain fee
     expect(result).toBeInstanceOf(InsufficientBalanceError)
   })
 
   it("fails if has negative amount", async () => {
     const amount = -1000
-    const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
-      address,
+      address: outsideAddress,
       amount,
+
       speed: PayoutSpeed.Fast,
-      memo: null,
+      memo: randomOnChainMemo(),
     })
     expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
   })
 
   it("fails if withdrawal limit hit", async () => {
-    const { address } = await createChainAddress({
-      lnd: lndOutside1,
-      format: "p2wpkh",
-    })
-
-    const ledgerService = LedgerService()
     const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
-    if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
-
-    const walletVolume = await ledgerService.externalPaymentVolumeSince({
-      walletId: walletIdA,
+    if (timestamp1DayAgo instanceof Error) throw timestamp1DayAgo
+    const walletVolume = await LedgerService().externalPaymentVolumeAmountSince({
+      walletDescriptor: walletDescriptorA,
       timestamp: timestamp1DayAgo,
     })
-    if (walletVolume instanceof Error) return walletVolume
-
+    if (walletVolume instanceof Error) throw walletVolume
     const { outgoingBaseAmount } = walletVolume
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
-
     const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
       currency: WalletCurrency.Usd,
     })
@@ -1081,47 +1102,43 @@ describe("BtcWallet - onChainPay", () => {
       currency: WalletCurrency.Usd,
     })
 
-    const subResult = sub(toSats(satsAmount.amount), outgoingBaseAmount)
-    if (subResult instanceof Error) throw subResult
-
-    const amount = add(subResult, toSats(100))
+    const remainingLimit = calc.sub(satsAmount, outgoingBaseAmount)
 
     const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
-      address,
-      amount,
+      address: outsideAddress,
+      amount: Number(remainingLimit.amount) + 100,
+
       speed: PayoutSpeed.Fast,
-      memo: null,
+      memo: randomOnChainMemo(),
     })
 
     expect(result).toBeInstanceOf(LimitsExceededError)
   })
 
   it("fails if the amount is less than on chain dust amount", async () => {
-    const address = await bitcoindOutside.getNewAddress()
-
     const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
-      address,
+      address: outsideAddress,
       amount: amountBelowDustThreshold,
+
       speed: PayoutSpeed.Fast,
-      memo: null,
+      memo: randomOnChainMemo(),
     })
     expect(result).toBeInstanceOf(LessThanDustThresholdError)
   })
 
   it("fails if the amount is less than lnd on-chain dust amount", async () => {
-    const address = await bitcoindOutside.getNewAddress()
-
     const result = await Wallets.payOnChainByWalletIdForBtcWallet({
       senderAccount: accountA,
       senderWalletId: walletIdA,
-      address,
+      address: outsideAddress,
       amount: 1,
+
       speed: PayoutSpeed.Fast,
-      memo: null,
+      memo: randomOnChainMemo(),
     })
     expect(result).toBeInstanceOf(LessThanDustThresholdError)
   })
@@ -1148,21 +1165,27 @@ describe("UsdWallet - onChainPay", () => {
     it("fails to send with less-than-1-cent amount from btc wallet to usd wallet", async () => {
       const btcSendAmount = toSats(10)
 
+      const walletIdUsdBAddress = await Wallets.createOnChainAddressForUsdWallet({
+        walletId: walletIdUsdB,
+      })
+      if (walletIdUsdBAddress instanceof Error) throw walletIdUsdBAddress
+
       const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
         amount: BigInt(btcSendAmount),
         currency: WalletCurrency.Btc,
       })
       if (usdAmount instanceof Error) return usdAmount
       const btcSendAmountInUsd = Number(usdAmount.amount)
-
       expect(btcSendAmountInUsd).toBe(0)
 
-      const res = await testInternalSend({
+      const res = await Wallets.payOnChainByWalletIdForBtcWallet({
         senderAccount: accountA,
         senderWalletId: walletIdA,
-        recipientWalletId: walletIdUsdB,
-        senderAmount: btcSendAmount,
-        amountCurrency: WalletCurrency.Btc,
+        address: walletIdUsdBAddress,
+        amount: btcSendAmount,
+
+        speed: PayoutSpeed.Fast,
+        memo: randomOnChainMemo(),
       })
       expect(res).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
     })
