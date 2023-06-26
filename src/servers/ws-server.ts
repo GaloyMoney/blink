@@ -158,16 +158,21 @@ const server = () =>
 
         return true
       },
-      context: (ctx) => {
+      context: async (ctx) => {
         // TODO: integrate open telemetry
         const cookies = cookie.parse(ctx.extra.request.headers.cookie || "")
         const kratosSessionCookie = cookies.ory_kratos_session
+        // cookie auth
         if (kratosSessionCookie) {
           return authorizedContexts[kratosSessionCookie]
         }
+        // bearer auth
         if (typeof ctx.connectionParams?.Authorization === "string") {
           return authorizedContexts[ctx.connectionParams?.Authorization]
         }
+        // anon context
+        const context = await getContext(ctx)
+        return context
       },
       onNext: (ctx, msg, args, result) => {
         baseLogger.debug("Next", { ctx, msg, args, result })
