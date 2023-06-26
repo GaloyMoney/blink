@@ -17,6 +17,8 @@ src/tool/records.csv
 src/tool/users_balance.csv
 src/tool/record_transactions_*.csv
 
+.nvmrc
+
 .vscode
 *.DS_Store
 
