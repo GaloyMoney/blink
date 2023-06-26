@@ -52,9 +52,9 @@
 - id: galoy-ws
   upstream:
     url: "http://e2e-tests:4000/graphql"
-    strip_path: /graphqlws
+    strip_path: /graphqlws # ONLY FOR DEV, in prod should resolve to /graphql, like ws.blink.sv/graphql
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphqlws"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphqlws" # ONLY FOR DEV, in prod should resolve to /graphql
     methods: ["POST", "GET"]
   authenticators:
     - handler: noop
