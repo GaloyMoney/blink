@@ -36,12 +36,7 @@ const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 const authorizedContexts: Record<string, unknown> = {}
 
 // new ws server
-const getContext = async (
-  ctx: Context<
-    Record<string, unknown> | undefined,
-    Extra & Partial<Record<PropertyKey, never>>
-  >,
-) => {
+const getContext = async (ctx: Context) => {
   const connectionParams = ctx.connectionParams
 
   // TODO: check if nginx pass the ip to the header
@@ -55,7 +50,7 @@ const getContext = async (
 
   const authz = connectionParams?.Authorization as string | undefined
 
-  const cookies = ctx.extra.request.headers.cookie
+  const cookies = ctx.extra ? (ctx.extra as Extra).request.headers.cookie : undefined
   if (cookies?.includes("ory_kratos_session")) {
     const kratosCookieRes = await validateKratosCookie(cookies)
     if (kratosCookieRes instanceof Error) return kratosCookieRes
@@ -64,7 +59,7 @@ const getContext = async (
     }
     return sessionContext({
       tokenPayload,
-      ip: ctx.extra.request?.socket?.remoteAddress as IpAddress,
+      ip,
       body: null,
     })
   }
