@@ -29,10 +29,6 @@ if (!!btcNetwork && !networks.includes(btcNetwork)) {
 
 export const BTC_NETWORK = btcNetwork as BtcNetwork
 
-export const tracingConfig = {
-  tracingServiceName: process.env.TRACING_SERVICE_NAME || "galoy-dev",
-}
-
 export const getGaloyBuildInformation = () => {
   return {
     commitHash: process.env.COMMITHASH,
