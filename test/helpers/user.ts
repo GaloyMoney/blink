@@ -129,10 +129,12 @@ type TestEntry = {
   currency?: string | undefined
 }
 
-export const createUserAndWalletFromUserRef = async (ref: string) => {
+export const createUserAndWalletFromUserRef = async (
+  ref: string,
+): Promise<WalletDescriptor<"BTC">> => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
   if (entry === undefined) throw new Error("no ref matching entry for test")
-  await createUserAndWallet(entry)
+  return createUserAndWallet(entry)
 }
 
 export const createAccount = async ({
