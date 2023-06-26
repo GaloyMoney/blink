@@ -21,9 +21,10 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
-
-import { Wallets } from "@app"
 import { runInParallel } from "@utils"
+
+import { reimburseFee } from "./reimburse-fee"
+import { reimburseFailedUsdPayment } from "./reimburse-failed-usd"
 
 import { PaymentFlowFromLedgerTransaction } from "./translations"
 
@@ -226,7 +227,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           return voided
         }
 
-        const reimbursed = await Wallets.reimburseFailedUsdPayment({
+        const reimbursed = await reimburseFailedUsdPayment({
           walletId,
           pendingPayment,
           paymentFlow,
@@ -261,7 +262,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
         return new MissingExpectedDisplayAmountsForTransactionError()
       }
 
-      return Wallets.reimburseFee({
+      return reimburseFee({
         paymentFlow,
         senderDisplayAmount: displayAmount,
         senderDisplayCurrency: displayCurrency,

@@ -46,11 +46,13 @@ import {
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 
-import { Wallets } from "@app"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
+
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
+
+import { reimburseFee } from "./reimburse-fee"
 
 import {
   constructPaymentFlowBuilder,
@@ -724,7 +726,7 @@ const executePaymentViaLn = async ({
     }
 
     if (!rawRoute) {
-      const reimbursed = await Wallets.reimburseFee({
+      const reimbursed = await reimburseFee({
         paymentFlow,
         senderDisplayAmount: amountDisplayCurrencyAsNumber,
         senderDisplayCurrency,

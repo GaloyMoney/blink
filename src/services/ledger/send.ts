@@ -6,7 +6,7 @@ import { MainBook, Transaction } from "./books"
 
 import { TransactionsMetadataRepository } from "./services"
 
-import { translateToLedgerJournal } from "."
+import { translateToLedgerJournal } from "./helpers"
 
 const txMetadataRepo = TransactionsMetadataRepository()
 

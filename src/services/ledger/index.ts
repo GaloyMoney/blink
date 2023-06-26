@@ -40,6 +40,7 @@ import { send } from "./send"
 import { volume } from "./volume"
 
 export { getNonEndUserWalletIds } from "./caching"
+export { translateToLedgerJournal } from "./helpers"
 
 export const lazyLoadLedgerAdmin = ({
   bankOwnerWalletResolver,
@@ -484,11 +485,3 @@ export const translateToLedgerTx = <S extends WalletCurrency, T extends DisplayC
     feeUsd: tx.feeUsd,
   }
 }
-
-// @ts-ignore-next-line no-implicit-any error
-export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
-  journalId: savedEntry._id.toString(),
-  voided: savedEntry.voided,
-  // @ts-ignore-next-line no-implicit-any error
-  transactionIds: savedEntry._transactions.map((id) => id.toString()),
-})

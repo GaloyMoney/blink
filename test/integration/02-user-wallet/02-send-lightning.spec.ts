@@ -2695,7 +2695,7 @@ describe("Handle pending payments - Lightning Pay", () => {
       if (senderDisplayAmount === undefined || senderDisplayCurrency === undefined) {
         throw new Error("missing display-related values in transaction")
       }
-      const reimbursed = await Wallets.reimburseFee({
+      const reimbursed = await Payments.reimburseFee({
         paymentFlow,
         senderDisplayAmount,
         senderDisplayCurrency,
