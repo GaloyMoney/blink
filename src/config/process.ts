@@ -29,12 +29,6 @@ if (!!btcNetwork && !networks.includes(btcNetwork)) {
 
 export const BTC_NETWORK = btcNetwork as BtcNetwork
 
-export const tracingConfig = {
-  jaegerHost: process.env.JAEGER_HOST || "localhost",
-  jaegerPort: parseInt(process.env.JAEGER_PORT || "6832", 10),
-  tracingServiceName: process.env.TRACING_SERVICE_NAME || "galoy-dev",
-}
-
 export const getGaloyBuildInformation = () => {
   return {
     commitHash: process.env.COMMITHASH,
