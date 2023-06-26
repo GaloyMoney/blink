@@ -1,4 +1,9 @@
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import {
+  ValidationError,
+  WalletCurrency,
+  checkedToUsdPaymentAmount,
+  checkedToBtcPaymentAmount,
+} from "@domain/shared"
 import { SelfPaymentError } from "@domain/errors"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 
@@ -11,8 +16,6 @@ import {
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { ModifiedSet } from "@utils"
-
-import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "./validation"
 
 import {
   InvalidLightningPaymentFlowBuilderStateError,

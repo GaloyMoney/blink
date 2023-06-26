@@ -1,5 +1,11 @@
 import { safeBigInt } from "./safe"
 import { WalletCurrency } from "./primitives"
+import {
+  InvalidUsdPaymentAmountError,
+  InvalidBtcPaymentAmountError,
+  UsdAmountTooLargeError,
+  BtcAmountTooLargeError,
+} from "./errors"
 
 export const ZERO_SATS = {
   currency: WalletCurrency.Btc,
@@ -59,11 +65,47 @@ export const BtcPaymentAmount = (sats: bigint): BtcPaymentAmount => {
   }
 }
 
+export const checkedToBtcPaymentAmount = (
+  amount: number | null,
+): BtcPaymentAmount | ValidationError => {
+  if (amount === null) {
+    return new InvalidBtcPaymentAmountError()
+  }
+
+  if (amount > MAX_SATS.amount) {
+    return new BtcAmountTooLargeError()
+  }
+
+  if (Math.floor(amount) != amount) {
+    return new InvalidBtcPaymentAmountError()
+  }
+  if (!(amount && amount > 0)) return new InvalidBtcPaymentAmountError()
+  return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
+}
+
 export const UsdPaymentAmount = (cents: bigint): UsdPaymentAmount => {
   return {
     currency: WalletCurrency.Usd,
     amount: cents,
   }
+}
+
+export const checkedToUsdPaymentAmount = (
+  amount: number | null,
+): UsdPaymentAmount | ValidationError => {
+  if (amount === null) {
+    return new InvalidUsdPaymentAmountError()
+  }
+
+  if (amount > MAX_CENTS.amount) {
+    return new UsdAmountTooLargeError()
+  }
+
+  if (Math.floor(amount) != amount) {
+    return new InvalidUsdPaymentAmountError()
+  }
+  if (!(amount && amount > 0)) return new InvalidUsdPaymentAmountError()
+  return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
 }
 
 export const paymentAmountFromNumber = <T extends WalletCurrency>({

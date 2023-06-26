@@ -9,8 +9,6 @@ import {
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
 import { displayAmountFromNumber } from "@domain/fiat"
 import {
-  checkedToBtcPaymentAmount,
-  checkedToUsdPaymentAmount,
   InvalidLightningPaymentFlowBuilderStateError,
   LnFees,
   LnPaymentRequestInTransitError,
@@ -18,7 +16,12 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
   WalletPriceRatio,
 } from "@domain/payments"
-import { WalletCurrency, ErrorLevel } from "@domain/shared"
+import {
+  WalletCurrency,
+  ErrorLevel,
+  checkedToBtcPaymentAmount,
+  checkedToUsdPaymentAmount,
+} from "@domain/shared"
 import {
   checkedToWalletId,
   PaymentInitiationMethod,

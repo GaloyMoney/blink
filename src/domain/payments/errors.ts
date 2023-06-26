@@ -1,7 +1,5 @@
 import { ValidationError, ErrorLevel } from "@domain/shared"
 
-export class InvalidBtcPaymentAmountError extends ValidationError {}
-export class InvalidUsdPaymentAmountError extends ValidationError {}
 export class InvalidZeroAmountPriceRatioInputError extends ValidationError {}
 export class ZeroAmountForUsdRecipientError extends ValidationError {}
 export class LnPaymentRequestNonZeroAmountRequiredError extends ValidationError {}

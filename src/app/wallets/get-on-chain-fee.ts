@@ -5,8 +5,11 @@ import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 import { checkedToOnChainAddress, PayoutSpeed } from "@domain/bitcoin/onchain"
 import { CouldNotFindError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
-import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
+import {
+  WalletCurrency,
+  checkedToBtcPaymentAmount,
+  checkedToUsdPaymentAmount,
+} from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
 
 import { DealerPriceService } from "@services/dealer-price"

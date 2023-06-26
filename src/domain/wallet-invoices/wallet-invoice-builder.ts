@@ -2,8 +2,12 @@ import {
   getSecretAndPaymentHash,
   invoiceExpirationForCurrency,
 } from "@domain/bitcoin/lightning"
-import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
+import {
+  WalletCurrency,
+  ZERO_SATS,
+  checkedToBtcPaymentAmount,
+  checkedToUsdPaymentAmount,
+} from "@domain/shared"
 
 import { InvalidWalletInvoiceBuilderStateError } from "./errors"
 

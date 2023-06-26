@@ -4,8 +4,7 @@ import { DisplayCurrency } from "@domain/fiat"
 import { AccountLevel, AccountStatus } from "@domain/accounts"
 import { InvalidAccountStatusError, SelfPaymentError } from "@domain/errors"
 import { PaymentInputValidator, WalletType } from "@domain/wallets"
-import { WalletCurrency } from "@domain/shared"
-import { InvalidBtcPaymentAmountError } from "@domain/payments"
+import { WalletCurrency, InvalidBtcPaymentAmountError } from "@domain/shared"
 
 describe("PaymentInputValidator", () => {
   const dummyAccount: Account = {

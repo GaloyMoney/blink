@@ -1,15 +1,13 @@
 import {
-  checkedToBtcPaymentAmount,
-  checkedToUsdPaymentAmount,
-  InvalidBtcPaymentAmountError,
-  InvalidUsdPaymentAmountError,
-} from "@domain/payments"
-import {
   MAX_CENTS,
   MAX_SATS,
   WalletCurrency,
   BtcAmountTooLargeError,
   UsdAmountTooLargeError,
+  checkedToBtcPaymentAmount,
+  checkedToUsdPaymentAmount,
+  InvalidBtcPaymentAmountError,
+  InvalidUsdPaymentAmountError,
 } from "@domain/shared"
 
 describe("checkedToBtcPaymentAmount", () => {

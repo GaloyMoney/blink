@@ -14,11 +14,7 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
-import {
-  InvalidBtcPaymentAmountError,
-  InvalidZeroAmountPriceRatioInputError,
-  WalletPriceRatio,
-} from "@domain/payments"
+import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
@@ -49,7 +45,7 @@ import { EventAugmentationMissingError } from "@services/bria/errors"
 
 import { payoutSubmittedEventHandler } from "@servers/event-handlers/bria"
 
-import { WalletCurrency } from "@domain/shared"
+import { WalletCurrency, InvalidBtcPaymentAmountError } from "@domain/shared"
 
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
