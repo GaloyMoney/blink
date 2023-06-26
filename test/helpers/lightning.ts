@@ -11,6 +11,8 @@ import {
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
+import { NewOnChainService } from "@services/bria"
+
 import { sleep } from "@utils"
 
 import {
@@ -36,6 +38,8 @@ import { parsePaymentRequest } from "invoices"
 import {
   bitcoindClient,
   bitcoindOutside,
+  bitcoindSignerClient,
+  bitcoindSignerWallet,
   RANDOM_ADDRESS,
   sendToAddressAndConfirm,
 } from "./bitcoin-core"
@@ -221,6 +225,28 @@ export const resetLnds = async () => {
   await mineBlockAndSync({ lnds })
 }
 
+export const resetBria = async () => {
+  const block = await bitcoindClient.getBlockCount()
+  if (!block) return // skip if we are just getting started
+
+  const existingSignerWallets = await bitcoindSignerClient.listWalletDir()
+  if (!existingSignerWallets.map((wallet) => wallet.name).includes("dev")) {
+    return
+  }
+
+  const balance = await bitcoindSignerWallet.getBalance()
+  if (balance === 0) return
+
+  await bitcoindSignerWallet.sendToAddress({
+    address: RANDOM_ADDRESS,
+    amount: balance,
+    subtractfeefromamount: true,
+  })
+  await bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS })
+
+  await waitUntilBriaZeroBalance()
+}
+
 export const closeAllChannels = async ({ lnd }) => {
   let channels
   try {
@@ -327,6 +353,21 @@ export const waitFor = async (f) => {
   let res
   while (!(res = await f())) await sleep(500)
   return res
+}
+
+const waitUntilBriaZeroBalance = async () => {
+  await waitFor(async () => {
+    const balanceAmount = await NewOnChainService().getBalance()
+    if (balanceAmount instanceof Error) throw balanceAmount
+    const balance = Number(balanceAmount.amount)
+
+    if (balance > 0) {
+      baseLogger.warn({ briaBalance: `${balance} sats` }, "bria balance not zero yet")
+      return false
+    }
+
+    return true
+  })
 }
 
 export const waitUntilGraphIsReady = async ({ lnd, numNodes = 4 }) => {

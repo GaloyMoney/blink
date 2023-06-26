@@ -10,6 +10,7 @@ import {
   fundLnd,
   getChainBalance,
   mineBlockAndSyncAll,
+  resetBria,
   waitUntilGraphIsReady,
   waitUntilSyncAll,
 } from "./lightning"
@@ -116,6 +117,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   // Reset state
   if (stateConfig.resetState) {
     await Promise.all([
+      resetBria(),
       resetLnds(),
       resetDatabase(mongoose),
       clearLimiters(),

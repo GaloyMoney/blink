@@ -17,6 +17,7 @@ import {
 import {
   BitcoindClient,
   bitcoindDefaultClient,
+  BitcoindSignerWalletClient,
   BitcoindWalletClient,
   getBitcoinCoreSignerRPCConfig,
 } from "./bitcoind"
@@ -30,6 +31,7 @@ export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
 export const bitcoindSignerClient = new BitcoindClient(getBitcoinCoreSignerRPCConfig())
 export const bitcoindOutside = new BitcoindWalletClient("outside")
+export const bitcoindSignerWallet = new BitcoindSignerWalletClient("dev")
 
 export async function sendToAddressAndConfirm({
   walletClient,
