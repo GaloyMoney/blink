@@ -1,4 +1,15 @@
 import { BriaSubscriber, NewOnChainService } from "@services/bria"
+import { baseLogger } from "@services/logger"
+
+import {
+  RANDOM_ADDRESS,
+  bitcoindClient,
+  bitcoindOutside,
+  bitcoindSignerClient,
+  bitcoindSignerWallet,
+} from "./bitcoin-core"
+
+import { waitFor } from "./shared"
 
 export const getBriaBalance = async (): Promise<Satoshis> => {
   const service = NewOnChainService()
@@ -96,4 +107,41 @@ export const manyBriaSubscribe = async ({
 
   wrapper.cancel()
   return eventsToReturn
+}
+
+export const resetBria = async () => {
+  const block = await bitcoindClient.getBlockCount()
+  if (!block) return // skip if we are just getting started
+
+  const existingSignerWallets = await bitcoindSignerClient.listWalletDir()
+  if (!existingSignerWallets.map((wallet) => wallet.name).includes("dev")) {
+    return
+  }
+
+  const balance = await bitcoindSignerWallet.getBalance()
+  if (balance === 0) return
+
+  await bitcoindSignerWallet.sendToAddress({
+    address: RANDOM_ADDRESS,
+    amount: balance,
+    subtractfeefromamount: true,
+  })
+  await bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS })
+
+  await waitUntilBriaZeroBalance()
+}
+
+const waitUntilBriaZeroBalance = async () => {
+  await waitFor(async () => {
+    const balanceAmount = await NewOnChainService().getBalance()
+    if (balanceAmount instanceof Error) throw balanceAmount
+    const balance = Number(balanceAmount.amount)
+
+    if (balance > 0) {
+      baseLogger.warn({ briaBalance: `${balance} sats` }, "bria balance not zero yet")
+      return false
+    }
+
+    return true
+  })
 }

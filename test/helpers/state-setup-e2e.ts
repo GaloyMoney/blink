@@ -10,7 +10,6 @@ import {
   fundLnd,
   getChainBalance,
   mineBlockAndSyncAll,
-  resetBria,
   waitUntilGraphIsReady,
   waitUntilSyncAll,
 } from "./lightning"
@@ -31,6 +30,7 @@ import {
   lndOutside2,
   mineAndConfirm,
   openChannelTesting,
+  resetBria,
   resetDatabase,
   resetLnds,
 } from "test/helpers"
