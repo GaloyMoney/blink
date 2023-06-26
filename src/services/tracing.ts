@@ -1,18 +1,18 @@
+import { W3CTraceContextPropagator } from "@opentelemetry/core"
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
+import { registerInstrumentations } from "@opentelemetry/instrumentation"
+import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
+import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
+import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
+import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
+import { Resource } from "@opentelemetry/resources"
+import { Span as SdkSpan, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
 import {
   SemanticAttributes,
   SemanticResourceAttributes,
 } from "@opentelemetry/semantic-conventions"
-import { W3CTraceContextPropagator } from "@opentelemetry/core"
-import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
-import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
-import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
-import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
-import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
-import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
-import { registerInstrumentations } from "@opentelemetry/instrumentation"
-import { SimpleSpanProcessor, Span as SdkSpan } from "@opentelemetry/sdk-trace-base"
-import { Resource } from "@opentelemetry/resources"
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto"
 
 import {
   trace,
@@ -27,7 +27,9 @@ import {
   Context,
   AttributeValue,
 } from "@opentelemetry/api"
+import { tracingConfig } from "@config"
 import { ErrorLevel, RankedErrorLevel } from "@domain/shared"
+
 import { NetInstrumentation } from "@opentelemetry/instrumentation-net"
 
 import type * as graphqlTypes from "graphql"
