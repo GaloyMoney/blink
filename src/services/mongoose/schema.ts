@@ -132,12 +132,6 @@ export const Wallet = mongoose.model<WalletRecord>("Wallet", WalletSchema)
 
 const AccountSchema = new Schema<AccountRecord>(
   {
-    depositFeeRatio: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 1,
-    },
     withdrawFee: {
       type: Number,
       default: feesConfig.withdrawDefaultMin,
