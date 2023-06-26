@@ -1,4 +1,4 @@
-import { Accounts } from "@app"
+import { Payments } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
@@ -27,7 +27,7 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field<
   resolve: async (_, args, { domainAccount, ip }) => {
     const { id } = args.input
 
-    const question = await Accounts.addEarn({
+    const question = await Payments.addEarn({
       quizQuestionId: id,
       accountId: domainAccount.id,
       ip,

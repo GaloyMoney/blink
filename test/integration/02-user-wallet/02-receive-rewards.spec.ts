@@ -1,4 +1,4 @@
-import { Accounts, Payments } from "@app"
+import { Payments } from "@app"
 import { MEMO_SHARING_SATS_THRESHOLD, OnboardingEarn } from "@config"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -71,7 +71,7 @@ describe("UserWallet - addEarn", () => {
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
-        Accounts.addEarn({
+        Payments.addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
           accountId: accountIdB,
           ip: "ipaddress" as IpAddress,
