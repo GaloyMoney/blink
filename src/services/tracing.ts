@@ -238,17 +238,7 @@ class SpanProcessorWrapper extends SimpleSpanProcessor {
   }
 }
 
-const otlpHost = process.env.OTLP_HOST || "localhost"
-const otlpPort = parseInt(process.env.OTLP_PORT || "4318", 10)
-const hostname = `http://${otlpHost}:${otlpPort}`
-
-provider.addSpanProcessor(
-  new SpanProcessorWrapper(
-    new OTLPTraceExporter({
-      hostname,
-    }),
-  ),
-)
+provider.addSpanProcessor(new SpanProcessorWrapper(new OTLPTraceExporter()))
 
 provider.register()
 
