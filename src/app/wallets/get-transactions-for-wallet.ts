@@ -1,3 +1,4 @@
+import { memoSharingConfig } from "@config"
 import { PartialResult } from "@app/partial-result"
 
 import { LedgerError } from "@domain/ledger"
@@ -42,6 +43,7 @@ export const getTransactionsForWallets = async ({
   const confirmedHistory = WalletTransactionHistory.fromLedger({
     ledgerTransactions: confirmedLedgerTxns.slice,
     nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+    memoSharingConfig,
   })
 
   const transactions = [...pendingHistory, ...confirmedHistory.transactions]

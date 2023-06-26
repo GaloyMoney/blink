@@ -140,6 +140,12 @@ type WalletTransaction =
   | WalletOnChainTransaction
   | WalletLnTransaction
 
+type MemoSharingConfig = {
+  memoSharingCentsThreshold: UsdCents
+  memoSharingSatsThreshold: Satoshis
+  authorizedMemos: string[]
+}
+
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
 }

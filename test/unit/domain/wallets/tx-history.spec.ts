@@ -8,7 +8,11 @@ import {
   WalletTransactionHistory,
 } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
-import { MEMO_SHARING_CENTS_THRESHOLD, MEMO_SHARING_SATS_THRESHOLD } from "@config"
+import {
+  memoSharingConfig,
+  MEMO_SHARING_CENTS_THRESHOLD,
+  MEMO_SHARING_SATS_THRESHOLD,
+} from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 
@@ -233,6 +237,7 @@ describe("translates ledger txs to wallet txs", () => {
       const result = WalletTransactionHistory.fromLedger({
         ledgerTransactions,
         nonEndUserWalletIds: [],
+        memoSharingConfig,
       })
 
       const expected = expectedWalletTxns(txnsArgs)
@@ -258,6 +263,7 @@ describe("translates ledger txs to wallet txs", () => {
       const result = WalletTransactionHistory.fromLedger({
         ledgerTransactions,
         nonEndUserWalletIds: [],
+        memoSharingConfig,
       })
 
       const expected = expectedWalletTxns(txnsArgs)
@@ -311,6 +317,7 @@ describe("translates ledger txs to wallet txs", () => {
       const result = WalletTransactionHistory.fromLedger({
         ledgerTransactions: ledgerTransactionsModified,
         nonEndUserWalletIds: [],
+        memoSharingConfig,
       })
 
       const expected = expectedWalletTxns(txnsArgs)
@@ -368,6 +375,7 @@ describe("translateDescription", () => {
       walletId: journalIdMemoArgs.nonEndUserWalletIds[0],
       journalId,
       nonEndUserWalletIds: journalIdMemoArgs.nonEndUserWalletIds,
+      memoSharingConfig,
     })
     expect(result).toEqual(`JournalId:${journalId}`)
   })
@@ -377,6 +385,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
       currency: WalletCurrency.Btc,
+      memoSharingConfig,
       ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
@@ -387,6 +396,7 @@ describe("translateDescription", () => {
       lnMemo: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
       currency: WalletCurrency.Btc,
+      memoSharingConfig,
       ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
@@ -397,6 +407,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: 1 as Satoshis,
       currency: WalletCurrency.Btc,
+      memoSharingConfig,
       ...journalIdMemoArgs,
     })
     expect(result).toBeNull()
@@ -407,6 +418,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: 0 as Satoshis,
       currency: WalletCurrency.Btc,
+      memoSharingConfig,
       ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
@@ -417,6 +429,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: MEMO_SHARING_CENTS_THRESHOLD,
       currency: WalletCurrency.Usd,
+      memoSharingConfig,
       ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
@@ -427,6 +440,7 @@ describe("translateDescription", () => {
       lnMemo: "some memo",
       credit: MEMO_SHARING_CENTS_THRESHOLD,
       currency: WalletCurrency.Usd,
+      memoSharingConfig,
       ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")
@@ -437,6 +451,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: 1 as UsdCents,
       currency: WalletCurrency.Usd,
+      memoSharingConfig,
       ...journalIdMemoArgs,
     })
     expect(result).toBeNull()
@@ -447,6 +462,7 @@ describe("translateDescription", () => {
       memoFromPayer: "some memo",
       credit: 0 as UsdCents,
       currency: WalletCurrency.Usd,
+      memoSharingConfig,
       ...journalIdMemoArgs,
     })
     expect(result).toEqual("some memo")

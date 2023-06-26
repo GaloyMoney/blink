@@ -1,7 +1,11 @@
 import { toDays } from "@domain/primitives"
 
 import { getBriaPartialConfigFromProcess } from "./process"
-import { getBriaPartialConfigFromYaml } from "./yaml"
+import {
+  getBriaPartialConfigFromYaml,
+  MEMO_SHARING_CENTS_THRESHOLD,
+  MEMO_SHARING_SATS_THRESHOLD,
+} from "./yaml"
 
 export * from "./error"
 export * from "./process"
@@ -52,6 +56,12 @@ export const OnboardingEarn: Record<QuizQuestionId, Satoshis> = {
   HighlyDivisible: 6 as Satoshis,
   securePartOne: 6 as Satoshis,
   securePartTwo: 6 as Satoshis,
+} as const
+
+export const memoSharingConfig = {
+  memoSharingSatsThreshold: MEMO_SHARING_SATS_THRESHOLD,
+  memoSharingCentsThreshold: MEMO_SHARING_CENTS_THRESHOLD,
+  authorizedMemos: Object.keys(OnboardingEarn),
 } as const
 
 export const getBriaConfig = () => ({
