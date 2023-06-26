@@ -64,7 +64,7 @@ const getContext = async (
     }
     return sessionContext({
       tokenPayload,
-      ip,
+      ip: ctx.extra.request?.socket?.remoteAddress as IpAddress,
       body: null,
     })
   }
