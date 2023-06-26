@@ -559,7 +559,6 @@ type UsdWallet implements Wallet {
 
 type User {
   createdAt: Timestamp!
-  defaultAccount: Account!
   id: ID!
   language: Language!
   phone: Phone!

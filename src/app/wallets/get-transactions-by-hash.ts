@@ -1,3 +1,4 @@
+import { memoSharingConfig } from "@config"
 import { WalletTransactionHistory } from "@domain/wallets"
 
 import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
@@ -11,5 +12,6 @@ export const getTransactionsByHash = async (
   return WalletTransactionHistory.fromLedger({
     ledgerTransactions,
     nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+    memoSharingConfig,
   }).transactions
 }

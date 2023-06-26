@@ -28,7 +28,6 @@ import {
   Context,
   AttributeValue,
 } from "@opentelemetry/api"
-import { tracingConfig } from "@config"
 import { ErrorLevel, RankedErrorLevel } from "@domain/shared"
 import { NetInstrumentation } from "@opentelemetry/instrumentation-net"
 
@@ -38,6 +37,15 @@ type ExtendedException = Exclude<Exception, string> & {
 }
 
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
+
+// Tracing config is included here (instead of in @config) to avoid circular dependencies
+// This is (correctly) the only service imported directly from src/domain modules
+// That is what necessitates the exception
+const tracingConfig = {
+  jaegerHost: process.env.JAEGER_HOST || "localhost",
+  jaegerPort: parseInt(process.env.JAEGER_PORT || "6832", 10),
+  tracingServiceName: process.env.TRACING_SERVICE_NAME || "galoy-dev",
+}
 
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client

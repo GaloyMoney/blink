@@ -1,3 +1,4 @@
+import { memoSharingConfig } from "@config"
 import { LedgerError } from "@domain/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
 
@@ -28,6 +29,7 @@ export const getAccountTransactionsForContact = async ({
   const confirmedHistory = WalletTransactionHistory.fromLedger({
     ledgerTransactions: resp.slice,
     nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+    memoSharingConfig,
   })
 
   return { slice: confirmedHistory.transactions, total: resp.total }

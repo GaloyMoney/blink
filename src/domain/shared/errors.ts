@@ -29,3 +29,5 @@ export class UnknownBigIntConversionError extends BigIntConversionError {
 
 export class BtcAmountTooLargeError extends ValidationError {}
 export class UsdAmountTooLargeError extends ValidationError {}
+export class InvalidBtcPaymentAmountError extends ValidationError {}
+export class InvalidUsdPaymentAmountError extends ValidationError {}

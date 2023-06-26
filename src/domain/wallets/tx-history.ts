@@ -1,9 +1,3 @@
-import {
-  MEMO_SHARING_CENTS_THRESHOLD,
-  MEMO_SHARING_SATS_THRESHOLD,
-  OnboardingEarn,
-} from "@config"
-
 import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
@@ -16,9 +10,11 @@ import { SettlementAmounts } from "./settlement-amounts"
 const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
   txn,
   nonEndUserWalletIds,
+  memoSharingConfig,
 }: {
   txn: LedgerTransaction<S>
   nonEndUserWalletIds: WalletId[]
+  memoSharingConfig: MemoSharingConfig
 }): WalletTransaction => {
   const {
     type,
@@ -70,6 +66,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     walletId,
     nonEndUserWalletIds,
     journalId,
+    memoSharingConfig,
   })
 
   const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
@@ -208,12 +205,14 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
 const fromLedger = ({
   ledgerTransactions,
   nonEndUserWalletIds,
+  memoSharingConfig,
 }: {
   ledgerTransactions: LedgerTransaction<WalletCurrency>[]
   nonEndUserWalletIds: WalletId[]
+  memoSharingConfig: MemoSharingConfig
 }): ConfirmedTransactionHistory => {
   const transactions = ledgerTransactions.map((txn) =>
-    translateLedgerTxnToWalletTxn({ txn, nonEndUserWalletIds }),
+    translateLedgerTxnToWalletTxn({ txn, nonEndUserWalletIds, memoSharingConfig }),
   )
 
   return {
@@ -225,20 +224,21 @@ const shouldDisplayMemo = ({
   memo,
   credit,
   currency,
+  memoSharingConfig,
 }: {
   memo: string | undefined
   credit: CurrencyBaseAmount
   currency: WalletCurrency
+  memoSharingConfig: MemoSharingConfig
 }) => {
-  if (isAuthorizedMemo(memo) || credit === 0) return true
+  if ((!!memo && memoSharingConfig.authorizedMemos.includes(memo)) || credit === 0)
+    return true
 
-  if (currency === WalletCurrency.Btc) return credit >= MEMO_SHARING_SATS_THRESHOLD
+  if (currency === WalletCurrency.Btc)
+    return credit >= memoSharingConfig.memoSharingSatsThreshold
 
-  return credit >= MEMO_SHARING_CENTS_THRESHOLD
+  return credit >= memoSharingConfig.memoSharingCentsThreshold
 }
-
-const isAuthorizedMemo = (memo: string | undefined): boolean =>
-  !!memo && Object.keys(OnboardingEarn).includes(memo)
 
 export const translateMemo = ({
   memoFromPayer,
@@ -248,6 +248,7 @@ export const translateMemo = ({
   walletId,
   nonEndUserWalletIds,
   journalId,
+  memoSharingConfig,
 }: {
   memoFromPayer?: string
   lnMemo?: string
@@ -256,13 +257,14 @@ export const translateMemo = ({
   walletId: WalletId | undefined
   nonEndUserWalletIds: WalletId[]
   journalId: LedgerJournalId
+  memoSharingConfig: MemoSharingConfig
 }): string | null => {
   if (walletId && nonEndUserWalletIds.includes(walletId)) {
     return `JournalId:${journalId}`
   }
 
   const memo = memoFromPayer || lnMemo
-  if (shouldDisplayMemo({ memo, credit, currency })) {
+  if (shouldDisplayMemo({ memo, credit, currency, memoSharingConfig })) {
     return memo || null
   }
 

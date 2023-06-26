@@ -10,7 +10,7 @@ import {
   PayoutDestinationBlocked,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared/primitives"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { baseLogger } from "@services/logger"
 import { wrapAsyncToRunInSpan, wrapAsyncFunctionsToRunInSpan } from "@services/tracing"

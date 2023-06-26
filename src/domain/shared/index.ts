@@ -2,6 +2,7 @@ import { ErrorLevel } from "./errors"
 
 export * from "./primitives"
 export * from "./calculator"
+export * from "./amount"
 export * from "./safe"
 export * from "./errors"
 

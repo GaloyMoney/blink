@@ -1,8 +1,11 @@
 import { AccountStatus } from "@domain/accounts"
 import { InactiveAccountError, InvalidWalletId, SelfPaymentError } from "@domain/errors"
-import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 
-import { WalletCurrency } from "@domain/shared"
+import {
+  WalletCurrency,
+  checkedToBtcPaymentAmount,
+  checkedToUsdPaymentAmount,
+} from "@domain/shared"
 
 import { checkedToWalletId } from "./validation"
 
