@@ -1,16 +1,16 @@
 receivers:
-  otlp:
+  jaeger:
     protocols:
-      http:
+      thrift_compact: # on port 6831
+      thrift_binary: # on port 6832
 
 processors:
-  filter/ottl:
-    error_mode: ignore
-    traces:
-      span:
-        - 'resource.attributes["service.name"] == "stablesats-dev"'
-        - 'resource.attributes["service.name"] == "bria-dev"'
-        - 'name == "grpc.lnrpc.State/GetState"'
+  filter:
+    spans:
+      exclude:
+        match_type: strict
+        span_names:
+          - grpc.lnrpc.State/GetState
   batch:
   attributes:
     actions:
@@ -45,6 +45,6 @@ service:
   extensions: [health_check, pprof, zpages]
   pipelines:
     traces:
-      receivers: [otlp]
-      processors: [filter/ottl, attributes, batch]
+      receivers: [jaeger]
+      processors: [filter, attributes, batch]
       exporters: [otlp, logging]

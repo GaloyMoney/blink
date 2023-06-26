@@ -6,7 +6,7 @@ import { ErrorLevel } from "@domain/shared"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 
 import { LndService } from "@services/lnd"
-import { LocalCacheService } from "@services/cache/local"
+import { LocalCacheService } from "@services/cache"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
