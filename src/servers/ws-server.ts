@@ -45,6 +45,10 @@ const getContext = async (ctx: Context) => {
   const ipString = isProd
     ? connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
     : connectionParams?.ip
+    ? connectionParams?.ip
+    : ctx.extra
+    ? (ctx.extra as Extra).request?.socket?.remoteAddress
+    : undefined
 
   const ip = parseIps(ipString)
 
