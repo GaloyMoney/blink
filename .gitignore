@@ -29,3 +29,5 @@ artifacts
 
 generated.gql
 .swc
+
+.envrc.secrets
