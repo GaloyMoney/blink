@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import GraphQLUser from "@graphql/types/object/graphql-user"
+import GraphQLUser from "@graphql/types/object/user"
 
 const MeQuery = GT.Field({
   type: GraphQLUser,
