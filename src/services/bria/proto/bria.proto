@@ -10,26 +10,36 @@ service BriaService {
   rpc CreateProfile (CreateProfileRequest) returns (CreateProfileResponse) {}
   rpc ListProfiles (ListProfilesRequest) returns (ListProfilesResponse) {}
   rpc CreateProfileApiKey (CreateProfileApiKeyRequest) returns (CreateProfileApiKeyResponse) {}
+
   rpc ImportXpub (ImportXpubRequest) returns (ImportXpubResponse) {}
   rpc ListXpubs (ListXpubsRequest) returns(ListXpubsResponse) {}
   rpc SetSignerConfig (SetSignerConfigRequest) returns (SetSignerConfigResponse) {}
+
   rpc CreateWallet (CreateWalletRequest) returns (CreateWalletResponse) {}
   rpc ListWallets (ListWalletsRequest) returns (ListWalletsResponse) {}
   rpc GetWalletBalanceSummary (GetWalletBalanceSummaryRequest) returns (GetWalletBalanceSummaryResponse) {}
-  rpc GetAccountBalanceSummary (GetAccountBalanceSummaryRequest) returns (GetAccountBalanceSummaryResponse) {}
+
   rpc NewAddress (NewAddressRequest) returns (NewAddressResponse) {}
   rpc FindAddressByExternalId (FindAddressByExternalIdRequest) returns (FindAddressByExternalIdResponse) {}
   rpc UpdateAddress (UpdateAddressRequest) returns (UpdateAddressResponse) {}
   rpc ListAddresses (ListAddressesRequest) returns (ListAddressesResponse) {}
+  rpc GetAddress (GetAddressRequest) returns (GetAddressResponse) {}
+
   rpc ListUtxos (ListUtxosRequest) returns (ListUtxosResponse) {}
+
   rpc CreatePayoutQueue (CreatePayoutQueueRequest) returns (CreatePayoutQueueResponse) {}
   rpc ListPayoutQueues (ListPayoutQueuesRequest) returns (ListPayoutQueuesResponse) {}
   rpc UpdatePayoutQueue (UpdatePayoutQueueRequest) returns (UpdatePayoutQueueResponse) {}
-  rpc SubmitPayout (SubmitPayoutRequest) returns (SubmitPayoutResponse) {}
+
   rpc EstimatePayoutFee (EstimatePayoutFeeRequest) returns (EstimatePayoutFeeResponse) {}
+  rpc SubmitPayout (SubmitPayoutRequest) returns (SubmitPayoutResponse) {}
   rpc ListPayouts (ListPayoutsRequest) returns (ListPayoutsResponse) {}
   rpc FindPayoutByExternalId (FindPayoutByExternalIdRequest) returns (FindPayoutByExternalIdResponse) {}
-  rpc ListSigningSessions (ListSigningSessionsRequest) returns (ListSigningSessionsResponse) {}
+  rpc GetPayout (GetPayoutRequest) returns (GetPayoutResponse) {}
+
+  rpc GetBatch (GetBatchRequest) returns (GetBatchResponse) {}
+
+  rpc GetAccountBalanceSummary (GetAccountBalanceSummaryRequest) returns (GetAccountBalanceSummaryResponse) {}
 
   rpc SubscribeAll (SubscribeAllRequest) returns (stream BriaEvent) {}
 }
@@ -176,6 +186,21 @@ message FindAddressByExternalIdRequest {
 message FindAddressByExternalIdResponse {
   string wallet_id = 1;
   WalletAddress address = 2;
+}
+
+message GetAddressRequest {
+  oneof identifier {
+    string address = 1;
+    string external_id = 2;
+  }
+}
+
+message GetAddressResponse{
+  optional string address = 1;
+  string wallet_id = 2;
+  bool change_address = 3;
+  optional string external_id = 4;
+  optional google.protobuf.Struct metadata = 5;
 }
 
 message ListUtxosRequest {
@@ -341,8 +366,43 @@ message FindPayoutByExternalIdResponse {
   Payout payout = 1;
 }
 
-message ListSigningSessionsRequest {
-  string batch_id = 1;
+message GetPayoutRequest {
+  oneof identifier {
+    string id = 1;
+    string external_id = 2;
+  }
+}
+
+message GetPayoutResponse {
+  Payout payout = 1;
+}
+
+message GetBatchRequest {
+  string id = 1;
+}
+
+message GetBatchResponse {
+  string id = 1;
+  string payout_queue_id = 2;
+  string tx_id = 3;
+  string unsigned_psbt = 4;
+  repeated BatchWalletSummary wallet_summaries = 5;
+  repeated SigningSession signing_sessions = 6;
+}
+
+message BatchWalletSummary {
+  string wallet_id = 1;
+  uint64 total_spent_sats = 2;
+  uint64 fee_sats = 3;
+  repeated PayoutSummary payouts = 4;
+}
+
+message PayoutSummary {
+  string id = 1;
+  uint64 satoshis = 2;
+  oneof destination {
+    string onchain_address = 3;
+  }
 }
 
 message SigningSession {
@@ -352,11 +412,6 @@ message SigningSession {
   string state = 4;
   optional string failure_reason = 5;
 }
-
-message ListSigningSessionsResponse {
-  repeated SigningSession sessions = 1;
-}
-
 message ListXpubsRequest {}
 
 message ListXpubsResponse {
@@ -383,6 +438,7 @@ message BriaEvent {
   oneof payload {
     UtxoDetected utxo_detected = 4;
     UtxoSettled utxo_settled = 5;
+    UtxoDropped utxo_dropped = 10;
     PayoutSubmitted payout_submitted = 6;
     PayoutCommitted payout_committed = 7;
     PayoutBroadcast payout_broadcast = 8;
@@ -411,6 +467,14 @@ message UtxoSettled {
   string address = 5;
   uint32 block_height = 6;
   uint64 block_time = 7;
+}
+
+message UtxoDropped {
+  string wallet_id = 1;
+  string tx_id = 2;
+  uint32 vout = 3;
+  uint64 satoshis = 4;
+  string address = 5;
 }
 
 message PayoutSubmitted {

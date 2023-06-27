@@ -22,6 +22,9 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
     case BriaPayloadType.UtxoDetected:
       return utxoDetectedEventHandler({ event: event.payload })
 
+    case BriaPayloadType.UtxoDropped:
+      return utxoDroppedEventHandler({ event: event.payload })
+
     case BriaPayloadType.UtxoSettled:
       return utxoSettledEventHandler({ event: event.payload })
 
@@ -60,6 +63,16 @@ export const utxoDetectedEventHandler = async ({
   if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
     return true
   }
+
+  return res
+}
+
+export const utxoDroppedEventHandler = async ({
+  event,
+}: {
+  event: UtxoDropped
+}): Promise<true | DomainError> => {
+  const res = await Wallets.removePendingTransaction(event)
 
   return res
 }

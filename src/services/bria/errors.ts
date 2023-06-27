@@ -10,6 +10,7 @@ export class BriaPayloadError extends BriaEventError {
 }
 export class NoPayloadFoundError extends BriaPayloadError {}
 export class ExpectedUtxoDetectedPayloadNotFoundError extends BriaPayloadError {}
+export class ExpectedUtxoDroppedPayloadNotFoundError extends BriaPayloadError {}
 export class ExpectedUtxoSettledPayloadNotFoundError extends BriaPayloadError {}
 export class ExpectedPayoutSubmittedPayloadNotFoundError extends BriaPayloadError {}
 export class ExpectedPayoutCommittedPayloadNotFoundError extends BriaPayloadError {}

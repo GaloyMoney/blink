@@ -14,6 +14,7 @@ import {
   ExpectedPayoutSettledPayloadNotFoundError,
   ExpectedPayoutSubmittedPayloadNotFoundError,
   ExpectedUtxoDetectedPayloadNotFoundError,
+  ExpectedUtxoDroppedPayloadNotFoundError,
   ExpectedUtxoSettledPayloadNotFoundError,
   NoPayloadFoundError,
   UnknownPayloadTypeReceivedError,
@@ -23,6 +24,7 @@ import { BriaEvent as RawBriaEvent, SubscribeAllRequest } from "./proto/bria_pb"
 
 export const BriaPayloadType = {
   UtxoDetected: "utxo_detected",
+  UtxoDropped: "utxo_dropped",
   UtxoSettled: "utxo_settled",
   PayoutSubmitted: "payout_submitted",
   PayoutCommitted: "payout_committed",
@@ -111,6 +113,25 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
       }
       payload = {
         type: BriaPayloadType.UtxoDetected,
+        txId: rawPayload.getTxId() as OnChainTxHash,
+        vout: rawPayload.getVout() as OnChainTxVout,
+        address: rawPayload.getAddress() as OnChainAddress,
+        satoshis: {
+          amount: BigInt(rawPayload.getSatoshis()),
+          currency: WalletCurrency.Btc,
+        },
+      }
+      break
+    case RawBriaEvent.PayloadCase.UTXO_DROPPED:
+      if (augmentation === undefined) {
+        return new ExpectedAddressInfoMissingInEventError()
+      }
+      rawPayload = rawEvent.getUtxoDropped()
+      if (rawPayload === undefined) {
+        return new ExpectedUtxoDroppedPayloadNotFoundError()
+      }
+      payload = {
+        type: BriaPayloadType.UtxoDropped,
         txId: rawPayload.getTxId() as OnChainTxHash,
         vout: rawPayload.getVout() as OnChainTxVout,
         address: rawPayload.getAddress() as OnChainAddress,
