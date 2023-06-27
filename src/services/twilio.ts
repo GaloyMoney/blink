@@ -17,6 +17,9 @@ import { baseLogger } from "@services/logger"
 
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { NotImplementedError } from "@domain/errors"
+import { parseErrorMessageFromUnknown } from "@domain/shared"
+
+import { isAxiosError } from "axios"
 
 import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
@@ -59,14 +62,11 @@ export const TwilioClient = (): IPhoneProviderService => {
       return true
     } catch (err) {
       baseLogger.error({ err }, "impossible to verify phone and code")
-
-      switch (true) {
-        case err.status === 404:
-          return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
-
-        default:
-          return handleCommonErrors(err)
+      if (isAxiosError(err) && err.status === 404) {
+        return new ExpiredOrNonExistentPhoneNumberError(err.message)
       }
+
+      return handleCommonErrors(err)
     }
   }
 
@@ -101,7 +101,7 @@ export const TwilioClient = (): IPhoneProviderService => {
 
       return phoneMetadata
     } catch (err) {
-      return new UnknownPhoneProviderServiceError(err.message || err)
+      return new UnknownPhoneProviderServiceError(err)
     }
   }
 
@@ -111,8 +111,8 @@ export const TwilioClient = (): IPhoneProviderService => {
   })
 }
 
-const handleCommonErrors = (err: Error | string) => {
-  const errMsg = typeof err === "string" ? err : err.message
+const handleCommonErrors = (err: Error | string | unknown) => {
+  const errMsg = parseErrorMessageFromUnknown(err)
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 

@@ -22,9 +22,6 @@ type AccountDetailsQuery = GraphQLResult<{
       id?: string
       phone?: string
       language?: string
-      defaultAccount?: {
-        id?: string
-      }
       createdAt?: string
     }
     coordinates?: {
@@ -71,9 +68,6 @@ describe("GraphQLQueryRoot", () => {
             id
             phone
             language
-            defaultAccount {
-              id
-            }
             createdAt
           }
           coordinates {
@@ -89,7 +83,6 @@ describe("GraphQLQueryRoot", () => {
     expect(errors).toBeUndefined()
     expect(data?.accountDetails.createdAt).toBeDefined()
     expect(data?.accountDetails?.owner?.phone).toBe(phone)
-    expect(data?.accountDetails?.owner?.defaultAccount?.id).toBe(data?.accountDetails.id)
     expect(data?.accountDetails?.wallets).toEqual(
       expect.objectContaining([
         expect.objectContaining({

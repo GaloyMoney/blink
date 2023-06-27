@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import SuccessPayload from "@graphql/types/payload/success-payload"
 
 import { Users } from "@app"
+import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 const DeviceNotificationTokenCreateInput = GT.Input({
   name: "DeviceNotificationTokenCreateInput",
@@ -29,7 +30,7 @@ const DeviceNotificationTokenCreateMutation = GT.Field<
     try {
       await Users.addDeviceToken({ userId: user.id, deviceToken })
     } catch (err) {
-      return { errors: [{ message: err.message }] }
+      return { errors: [{ message: parseErrorMessageFromUnknown(err) }] }
     }
 
     return { errors: [], success: true }

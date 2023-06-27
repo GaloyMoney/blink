@@ -11,6 +11,7 @@ import {
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
+
 import { sleep } from "@utils"
 
 import {
@@ -40,6 +41,8 @@ import {
   sendToAddressAndConfirm,
 } from "./bitcoin-core"
 
+import { waitFor } from "./shared"
+
 export * from "lightning"
 
 export const lnd1 = offchainLnds[0].lnd
@@ -63,7 +66,11 @@ export const getInvoiceAttempt = async ({ lnd, id }) => {
     return result
   } catch (err) {
     const invoiceNotFound = "unable to locate invoice"
-    if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
+    if (
+      Array.isArray(err) &&
+      err.length === 3 &&
+      err[2]?.err?.details === invoiceNotFound
+    ) {
       return null
     }
     // must be wrapped error?
@@ -322,12 +329,6 @@ export const waitUntilChannelBalanceSync = ({ lnd }) =>
     const { unsettled_balance } = await getChannelBalance({ lnd })
     return unsettled_balance === 0
   })
-
-export const waitFor = async (f) => {
-  let res
-  while (!(res = await f())) await sleep(500)
-  return res
-}
 
 export const waitUntilGraphIsReady = async ({ lnd, numNodes = 4 }) => {
   await waitFor(async () => {

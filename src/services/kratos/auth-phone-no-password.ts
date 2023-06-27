@@ -49,15 +49,15 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
       return { sessionToken, kratosUserId }
     } catch (err) {
-      if (err.message === "Request failed with status code 400") {
+      if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyNoUserWithThisPhoneExistError(err.message || err)
       }
 
-      if (err.message === "Request failed with status code 401") {
+      if (err instanceof Error && err.message === "Request failed with status code 401") {
         return new AuthenticationKratosError(err.message || err)
       }
 
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 
@@ -97,13 +97,13 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       const kratosUserId = result.data.session.identity.id as UserId
       return { cookiesToSendBackToClient, kratosUserId }
     } catch (err) {
-      if (err.message === "Request failed with status code 400") {
+      if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyNoUserWithThisPhoneExistError(err.message || err)
       }
-      if (err.message === "Request failed with status code 401") {
+      if (err instanceof Error && err.message === "Request failed with status code 401") {
         return new AuthenticationKratosError(err.message || err)
       }
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 
@@ -119,7 +119,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         },
       })
     } catch (err) {
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 
@@ -139,7 +139,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         id: sessionId,
       })
     } catch (err) {
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 
@@ -165,11 +165,11 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
       return { sessionToken, kratosUserId }
     } catch (err) {
-      if (err.message === "Request failed with status code 400") {
+      if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err.message || err)
       }
 
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 
@@ -185,7 +185,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: userId }))
     } catch (err) {
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
 
     if (identity.schema_id !== "username_password_deviceid_v0") {
@@ -212,7 +212,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
       return toDomainIdentityPhone(newIdentity)
     } catch (err) {
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 
@@ -252,10 +252,10 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       const kratosUserId = result.data.identity.id as UserId
       return { cookiesToSendBackToClient, kratosUserId }
     } catch (err) {
-      if (err.message === "Request failed with status code 400") {
+      if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err.message || err)
       }
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 
@@ -278,11 +278,10 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
       return identity.id as UserId
     } catch (err) {
-      if (err.message === "Request failed with status code 400") {
+      if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err.message || err)
       }
-
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 
@@ -298,7 +297,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
     } catch (err) {
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
 
     if (identity.state === undefined) {
@@ -320,7 +319,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       })
       return toDomainIdentityPhone(newIdentity)
     } catch (err) {
-      return new UnknownKratosError(err.message || err)
+      return new UnknownKratosError(err)
     }
   }
 

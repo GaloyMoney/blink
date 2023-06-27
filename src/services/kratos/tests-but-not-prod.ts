@@ -37,12 +37,12 @@ export const LoginWithPhoneAndPasswordSchema = async ({
       },
     })
   } catch (err) {
-    if (err.message === "Request failed with status code 400") {
-      return new LikelyNoUserWithThisPhoneExistError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 400") {
+      return new LikelyNoUserWithThisPhoneExistError(err.message)
     }
 
-    if (err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 401") {
+      return new AuthenticationKratosError(err.message)
     }
 
     return new UnknownKratosError(err)
@@ -189,12 +189,12 @@ export const elevatingSessionWithTotp = async ({
       },
     })
   } catch (err) {
-    if (err.message === "Request failed with status code 400") {
-      return new LikelyNoUserWithThisPhoneExistError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 400") {
+      return new LikelyNoUserWithThisPhoneExistError(err.message)
     }
 
-    if (err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 401") {
+      return new AuthenticationKratosError(err.message)
     }
 
     return new UnknownKratosError(err)

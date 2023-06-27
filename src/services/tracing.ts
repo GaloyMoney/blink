@@ -26,8 +26,7 @@ import {
   Context,
   AttributeValue,
 } from "@opentelemetry/api"
-import { ErrorLevel, RankedErrorLevel } from "@domain/shared"
-
+import { ErrorLevel, RankedErrorLevel, parseErrorFromUnknown } from "@domain/shared"
 import { NetInstrumentation } from "@opentelemetry/instrumentation-net"
 
 import type * as graphqlTypes from "graphql"
@@ -265,10 +264,12 @@ export const recordExceptionInCurrentSpan = ({
   error,
   level,
   attributes,
+  fallbackMsg,
 }: {
-  error: ExtendedException
+  error: ExtendedException | unknown
   level?: ErrorLevel
   attributes?: Attributes
+  fallbackMsg?: string
 }) => {
   const span = trace.getSpan(context.active())
   if (!span || !error) return
@@ -279,7 +280,17 @@ export const recordExceptionInCurrentSpan = ({
     }
   }
 
-  recordException(span, error, level)
+  if (error instanceof Error) {
+    recordException(span, error, level)
+  } else if (fallbackMsg) {
+    recordException(span, { message: fallbackMsg }, level)
+  } else {
+    recordException(
+      span,
+      { message: typeof error === "object" ? JSON.stringify(error) : "Unknown error" },
+      level,
+    )
+  }
 }
 
 const updateErrorForSpan = ({
@@ -339,7 +350,8 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
       span.end()
       return ret
     } catch (error) {
-      recordException(span, error, ErrorLevel.Critical)
+      const err = parseErrorFromUnknown(error)
+      recordException(span, err, ErrorLevel.Critical)
       span.end()
       throw error
     }
@@ -418,7 +430,8 @@ export const wrapToRunInSpan = <
         span.end()
         return ret
       } catch (error) {
-        recordException(span, error, ErrorLevel.Critical)
+        const err = parseErrorFromUnknown(error)
+        recordException(span, err, ErrorLevel.Critical)
         span.end()
         throw error
       }
@@ -474,7 +487,8 @@ export const wrapAsyncToRunInSpan = <
         span.end()
         return ret
       } catch (error) {
-        recordException(span, error, ErrorLevel.Critical)
+        const err = parseErrorFromUnknown(error)
+        recordException(span, err, ErrorLevel.Critical)
         span.end()
         throw error
       }

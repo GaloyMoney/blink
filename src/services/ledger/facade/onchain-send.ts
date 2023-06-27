@@ -96,7 +96,7 @@ export const setOnChainTxPayoutId = async ({
     }
     return true
   } catch (err) {
-    return new UnknownLedgerError(err.message || err)
+    return new UnknownLedgerError(err)
   }
 }
 

@@ -19,8 +19,10 @@ import { clearAccountLocks, clearLimiters } from "./redis"
 import {
   bitcoindClient,
   bitcoindOutside,
+  bitcoindSignerClient,
   checkIsBalanced,
   createMandatoryUsers,
+  createSignerWallet,
   fundWalletIdFromOnchain,
   lnd1,
   lnd2,
@@ -28,6 +30,7 @@ import {
   lndOutside2,
   mineAndConfirm,
   openChannelTesting,
+  resetBria,
   resetDatabase,
   resetLnds,
 } from "test/helpers"
@@ -101,9 +104,20 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   }
   baseLogger.info("Loaded outside wallet.")
 
+  // Ensure signer wallet exists
+  const existingSignerWallets = await bitcoindSignerClient.listWalletDir()
+  const loadedSignerWallets = await bitcoindSignerClient.listWallets()
+  if (!existingSignerWallets.map((wallet) => wallet.name).includes("dev")) {
+    await createSignerWallet("dev")
+  } else if (!loadedSignerWallets.includes("dev")) {
+    await bitcoindSignerClient.loadWallet({ filename: "dev" })
+  }
+  baseLogger.info("Loaded dev wallet.")
+
   // Reset state
   if (stateConfig.resetState) {
     await Promise.all([
+      resetBria(),
       resetLnds(),
       resetDatabase(mongoose),
       clearLimiters(),

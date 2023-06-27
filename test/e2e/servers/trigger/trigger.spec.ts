@@ -75,11 +75,7 @@ describe("trigger", () => {
           addresses: [bitcoindAddress],
         },
       })
-      const resultNoAddress = await Promise.race([
-        addressNotPresentPromise,
-        timeoutPromise,
-      ])
-      if (resultNoAddress instanceof Error) throw resultNoAddress
+      await Promise.race([addressNotPresentPromise, timeoutPromise])
       cancelTimeout()
 
       const finalBalance = await getBalanceHelper(wallet.id)

@@ -1,4 +1,8 @@
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  parseErrorMessageFromUnknown,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindOnChainTransactionError,
@@ -282,7 +286,7 @@ const getCachedHeight = async (): Promise<number> => {
   return cachedHeight
 }
 
-const handleCommonOnChainServiceErrors = (err: Error) => {
+const handleCommonOnChainServiceErrors = (err: Error | unknown) => {
   const errDetails = parseLndErrorDetails(err)
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
   switch (true) {
@@ -292,7 +296,11 @@ const handleCommonOnChainServiceErrors = (err: Error) => {
     case match(KnownLndErrorDetails.ConnectionRefused):
       return new OnChainServiceBusyError()
     default:
-      return new UnknownOnChainServiceError(msgForUnknown(err))
+      return new UnknownOnChainServiceError(
+        msgForUnknown({
+          message: parseErrorMessageFromUnknown(err),
+        } as Error),
+      )
   }
 }
 

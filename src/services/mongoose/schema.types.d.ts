@@ -78,7 +78,6 @@ interface AccountRecord {
   level?: number // ?: enum [1, 2]
   statusHistory: AccountStatusHistory
 
-  depositFeeRatio?: number
   withdrawFee?: number
   earn: string[]
   contactEnabled: boolean

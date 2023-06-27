@@ -153,7 +153,7 @@ describe("Lightning channels", () => {
         ;({ policies } = await getChannel({ id: channel.id, lnd: lndOutside1 }))
         errMsg = undefined
       } catch (err) {
-        errMsg = err[1]
+        if (Array.isArray(err)) errMsg = err[1]
       }
     }
     expect(count).toBeGreaterThan(0)

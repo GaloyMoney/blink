@@ -21,8 +21,8 @@ export const validateKratosToken = async (
     const { data } = await kratosPublic.toSession({ xSessionToken: sessionToken })
     session = toDomainSession(data)
   } catch (err) {
-    if (err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 401") {
+      return new AuthenticationKratosError(err.message)
     }
     return new UnknownKratosError(err)
   }
@@ -43,8 +43,8 @@ export const validateKratosCookie = async (
     const { data } = await kratosPublic.toSession({ cookie })
     session = toDomainSession(data)
   } catch (err) {
-    if (err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err)
+    if (err instanceof Error && err.message === "Request failed with status code 401") {
+      return new AuthenticationKratosError(err.message)
     }
     return new UnknownKratosError(err)
   }

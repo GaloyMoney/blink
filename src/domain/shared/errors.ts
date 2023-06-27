@@ -1,3 +1,5 @@
+import { parseErrorMessageFromUnknown } from "./error-parsers"
+
 export const ErrorLevel = {
   Info: "info",
   Warn: "warn",
@@ -9,14 +11,17 @@ export const RankedErrorLevel = [ErrorLevel.Info, ErrorLevel.Warn, ErrorLevel.Cr
 export class DomainError extends Error {
   name: string
   level?: ErrorLevel
-  constructor(message?: string) {
-    super(message)
+  constructor(message?: string | unknown | Error) {
+    super(parseErrorMessageFromUnknown(message))
     this.name = this.constructor.name
     this.level = ErrorLevel.Info
   }
 }
 
 export class ValidationError extends DomainError {}
+export class UnknownDomainError extends DomainError {
+  level = ErrorLevel.Critical
+}
 
 export class SafeWrapperError extends DomainError {
   level = ErrorLevel.Critical

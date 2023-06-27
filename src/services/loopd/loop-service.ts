@@ -102,8 +102,8 @@ export const LoopService = ({
       }
       return swapOutResult
     } catch (error) {
-      if (error.message.includes("channel balance too low")) {
-        return new SwapErrorChannelBalanceTooLow(error)
+      if (error instanceof Error && error.message.includes("channel balance too low")) {
+        return new SwapErrorChannelBalanceTooLow(error.message)
       }
       return new SwapServiceError(error)
     }
@@ -219,8 +219,8 @@ export const LoopService = ({
         grpcOptions,
       )
       return client
-    } catch (e) {
-      throw new SwapClientNotResponding(e)
+    } catch (err) {
+      throw new SwapClientNotResponding(err)
     }
   }
 

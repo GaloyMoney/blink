@@ -17,7 +17,8 @@ import { updateDisplayCurrency } from "@app/accounts"
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
 
 import { translateToLedgerTx } from "@services/ledger"
-import { MainBook } from "@services/ledger/books"
+import { MainBook, Transaction } from "@services/ledger/books"
+import * as BriaImpl from "@services/bria"
 import { BriaPayloadType } from "@services/bria"
 import { AccountsRepository } from "@services/mongoose"
 import { toObjectId } from "@services/mongoose/utils"
@@ -991,22 +992,16 @@ describe("Display properties on transactions", () => {
     })
 
     describe("send", () => {
-      const payOnChainForPromiseAll = async (
-        args: {
-          senderCurrency: WalletCurrency
-        } & PayOnChainByWalletIdWithoutCurrencyArgs,
-      ) => {
-        const { senderCurrency, ...payArgs } = args
-        const res =
-          senderCurrency === WalletCurrency.Btc
-            ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
-            : await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
-        return res
-      }
-
       it("(OnChainSendLedgerMetadata) sends an onchain payment", async () => {
         // TxMetadata:
         // - OnChainSendLedgerMetadata
+
+        const { NewOnChainService: NewOnChainServiceOrig } =
+          jest.requireActual("@services/bria")
+        const briaSpy = jest.spyOn(BriaImpl, "NewOnChainService").mockReturnValue({
+          ...NewOnChainServiceOrig(),
+          queuePayoutToAddress: async () => "payoutId" as PayoutId,
+        })
 
         const amountSats = toSats(20_000)
 
@@ -1021,8 +1016,7 @@ describe("Display properties on transactions", () => {
           lnd: lndOutside1,
         })
 
-        const paid = await payOnChainForPromiseAll({
-          senderCurrency: WalletCurrency.Btc,
+        const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
           senderAccount,
           senderWalletId,
           address,
@@ -1067,6 +1061,10 @@ describe("Display properties on transactions", () => {
             }),
           )
         }
+
+        // Clean up after test
+        await Transaction.deleteMany({ memo })
+        briaSpy.mockRestore()
       })
     })
   })
