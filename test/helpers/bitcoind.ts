@@ -54,6 +54,14 @@ type InWalletTransaction = {
   // TODO? all available: https://developer.bitcoin.org/reference/rpc/gettransaction.html#result
 }
 
+export const getBitcoinCoreSignerRPCConfig = () => {
+  return {
+    ...getBitcoinCoreRPCConfig(),
+    host: process.env.BITCOIND_SIGNER_ADDR,
+    port: parseInt(process.env.BITCOIND_SIGNER_PORT || "8332", 10),
+  }
+}
+
 export class BitcoindClient {
   readonly bitcoind
 
@@ -121,11 +129,25 @@ export class BitcoindClient {
   }
 }
 
-export class BitcoindWalletClient {
+class BaseBitcoindWalletClient {
   readonly bitcoind
 
-  constructor(walletName: string) {
-    const { host, username, password, port, timeout } = getBitcoinCoreRPCConfig()
+  constructor({
+    walletName,
+    config,
+  }: {
+    walletName: string
+    config: {
+      network: string | undefined
+      username: string
+      password: string
+      timeout: number
+      version: string
+      host: string | undefined
+      port: number
+    }
+  }) {
+    const { host, username, password, port, timeout } = config
     this.bitcoind = authenticatedBitcoind({
       protocol: "http",
       host: host || "",
@@ -148,11 +170,18 @@ export class BitcoindWalletClient {
   async sendToAddress({
     address,
     amount,
+    subtractfeefromamount,
   }: {
     address: string
     amount: number
+    subtractfeefromamount?: boolean
   }): Promise<string> {
-    return sendToAddress({ bitcoind: this.bitcoind, address, amount })
+    return sendToAddress({
+      bitcoind: this.bitcoind,
+      address,
+      amount,
+      subtractfeefromamount,
+    })
   }
 
   async getTransaction({
@@ -203,6 +232,18 @@ export class BitcoindWalletClient {
 
   async sendRawTransaction({ hexstring }: { hexstring: string }): Promise<string> {
     return sendRawTransaction({ bitcoind: this.bitcoind, hexstring })
+  }
+}
+
+export class BitcoindWalletClient extends BaseBitcoindWalletClient {
+  constructor(walletName: string) {
+    super({ walletName, config: getBitcoinCoreRPCConfig() })
+  }
+}
+
+export class BitcoindSignerWalletClient extends BaseBitcoindWalletClient {
+  constructor(walletName: string) {
+    super({ walletName, config: getBitcoinCoreSignerRPCConfig() })
   }
 }
 

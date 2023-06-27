@@ -1,4 +1,3 @@
-import { Accounts } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 
@@ -19,8 +18,6 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
 } from "@app/prices"
 import { WalletCurrency } from "@domain/shared"
-
-import { getAccountByTestUserRef, getUsdWalletIdByTestUserRef } from "test/helpers"
 
 let spy
 let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>
@@ -47,14 +44,6 @@ const crcDisplayPaymentAmount = {
 }
 
 beforeAll(async () => {
-  const walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
-  const accountB = await getAccountByTestUserRef("B")
-  const updated = await Accounts.updateDefaultWalletId({
-    accountId: accountB.id,
-    walletId: walletIdUsdB,
-  })
-  if (updated instanceof Error) throw updated
-
   const usdDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
     currency: DisplayCurrency.Usd,
   })
@@ -87,7 +76,7 @@ beforeAll(async () => {
   }))
 })
 
-afterAll(() => {
+afterAll(async () => {
   spy.mockClear()
   // jest.restoreAllMocks()
 })

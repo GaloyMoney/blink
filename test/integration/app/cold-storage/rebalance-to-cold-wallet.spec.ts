@@ -6,8 +6,15 @@ import { btc2sat, toSats } from "@domain/bitcoin"
 import { RebalanceChecker } from "@domain/cold-storage"
 
 import { lndsBalances } from "@services/lnd/utils"
+import { getFunderWalletId } from "@services/ledger/caching"
 
-import { checkIsBalanced, mineBlockAndSyncAll } from "test/helpers"
+import {
+  bitcoindClient,
+  checkIsBalanced,
+  fundWalletIdFromOnchain,
+  lnd1,
+  mineBlockAndSyncAll,
+} from "test/helpers"
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
@@ -31,10 +38,22 @@ beforeAll(async () => {
   // Note: Needed to clean up any pending txns since test adds pending txns to balance
   //       while onChainService does not.
   await mineBlockAndSyncAll()
+
+  await bitcoindClient.loadWallet({ filename: "outside" })
+  const funderWalletId = await getFunderWalletId()
+  await fundWalletIdFromOnchain({
+    walletId: funderWalletId,
+    amountInBitcoin: 1.0,
+    lnd: lnd1,
+  })
 })
 
 afterEach(async () => {
   await checkIsBalanced()
+})
+
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 describe("ColdStorage - rebalanceToColdWallet", () => {

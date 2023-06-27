@@ -10,7 +10,7 @@ export async function sleep(ms: MilliSeconds | number) {
 export function timeoutWithCancel(
   delay: MilliSeconds | number,
   msg: string,
-): [Promise<unknown>, () => void] {
+): [Promise<undefined>, () => void] {
   let timeoutId: NodeJS.Timeout | null = null
   let isCanceled = false
 
@@ -22,7 +22,7 @@ export function timeoutWithCancel(
     }
   }
 
-  const timeoutPromise = new Promise((resolve, reject) => {
+  const timeoutPromise: Promise<undefined> = new Promise((resolve, reject) => {
     timeoutId = setTimeout(() => {
       if (!isCanceled) {
         reject(new Error(msg))

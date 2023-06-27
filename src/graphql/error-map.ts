@@ -357,6 +357,19 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "The phone is associated with an existing wallet that has a non zero balance. Sweep the funds and try again."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "PhoneAccountAlreadyExistsError":
+      message =
+        "Phone Account already exists. Please logout and log back in with your phone account."
+      return new PhoneAccountAlreadyExistsError({ message, logger: baseLogger })
+
+    case "PhoneAccountAlreadyExistsNeedToSweepFundsError":
+      message =
+        "Error phone account already exists. You need to manually sweep funds to your phone account."
+      return new PhoneAccountAlreadyExistsNeedToSweepFundsError({
+        message,
+        logger: baseLogger,
+      })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -533,6 +546,16 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "ExpectedPayoutSettledPayloadNotFoundError":
     case "UnknownPayloadTypeReceivedError":
     case "ExpectedAddressInfoMissingInEventError":
+    case "MissingCreatedAtKratosError":
+    case "MissingExpiredAtKratosError":
+    case "MissingTotpKratosError":
+    case "IncompatibleSchemaUpgradeError":
+    case "UnknownKratosError":
+    case "BriaEventError":
+    case "BriaPayloadError":
+    case "KratosError":
+    case "AuthenticationKratosError":
+    case "ExtendSessionKratosError":
     case "MultipleCurrenciesForSingleCurrencyOperationError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
@@ -571,27 +594,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownDealerPriceServiceError":
     case "UnknownPubSubError":
     case "UnknownBigIntConversionError":
-    case "KratosError":
-    case "AuthenticationKratosError":
-    case "ExtendSessionKratosError":
-    case "PhoneAccountAlreadyExistsError":
-      message =
-        "Phone Account already exists. Please logout and log back in with your phone account."
-      return new PhoneAccountAlreadyExistsError({ message, logger: baseLogger })
-    case "PhoneAccountAlreadyExistsNeedToSweepFundsError":
-      message =
-        "Error phone account already exists. You need to manually sweep funds to your phone account."
-      return new PhoneAccountAlreadyExistsNeedToSweepFundsError({
-        message,
-        logger: baseLogger,
-      })
-    case "MissingCreatedAtKratosError":
-    case "MissingExpiredAtKratosError":
-    case "MissingTotpKratosError":
-    case "IncompatibleSchemaUpgradeError":
-    case "UnknownKratosError":
-    case "BriaEventError":
-    case "BriaPayloadError":
     case "UnknownBriaEventError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })

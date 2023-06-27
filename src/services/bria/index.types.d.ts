@@ -70,9 +70,16 @@ type BriaPayload =
   | PayoutCommitted
   | PayoutBroadcast
   | PayoutSettled
+
 type BriaEvent = {
   payload: BriaPayload
   augmentation: BriaEventAugmentation
+  sequence: number
+}
+
+type BriaBroadcastEvent = {
+  payload: PayoutBroadcast
+  augmentation: { payoutInfo: PayoutAugmentation }
   sequence: number
 }
 

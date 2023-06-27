@@ -101,8 +101,7 @@ beforeAll(async () => {
   accountIdA = await getAccountIdByTestUserRef("A")
 
   await createUserAndWalletFromUserRef("C")
-  ;({ accountId: newAccountIdA, walletId: newWalletIdA } =
-    await createRandomUserAndWallet())
+  ;({ accountId: newAccountIdA, id: newWalletIdA } = await createRandomUserAndWallet())
 })
 
 beforeEach(async () => {

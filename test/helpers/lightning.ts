@@ -11,6 +11,7 @@ import {
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
+
 import { sleep } from "@utils"
 
 import {
@@ -39,6 +40,8 @@ import {
   RANDOM_ADDRESS,
   sendToAddressAndConfirm,
 } from "./bitcoin-core"
+
+import { waitFor } from "./shared"
 
 export * from "lightning"
 
@@ -322,12 +325,6 @@ export const waitUntilChannelBalanceSync = ({ lnd }) =>
     const { unsettled_balance } = await getChannelBalance({ lnd })
     return unsettled_balance === 0
   })
-
-export const waitFor = async (f) => {
-  let res
-  while (!(res = await f())) await sleep(500)
-  return res
-}
 
 export const waitUntilGraphIsReady = async ({ lnd, numNodes = 4 }) => {
   await waitFor(async () => {

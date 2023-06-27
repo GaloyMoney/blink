@@ -35,7 +35,7 @@ let accountId: AccountId
 let address: OnChainAddress
 
 beforeAll(async () => {
-  ;({ walletId, accountId } = await createRandomUserAndWallet())
+  ;({ id: walletId, accountId } = await createRandomUserAndWallet())
 
   const addressResult = await getLastOnChainAddress(walletId)
   if (addressResult instanceof Error) throw addressResult

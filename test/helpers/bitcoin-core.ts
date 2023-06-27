@@ -7,25 +7,23 @@ import { LedgerService } from "@services/ledger"
 
 import { toSats } from "@domain/bitcoin"
 
-import { BitcoindClient, bitcoindDefaultClient, BitcoindWalletClient } from "./bitcoind"
-
+import {
+  BitcoindClient,
+  bitcoindDefaultClient,
+  BitcoindSignerWalletClient,
+  BitcoindWalletClient,
+  getBitcoinCoreSignerRPCConfig,
+} from "./bitcoind"
 import { descriptors } from "./multisig-wallet"
 import { descriptors as signerDescriptors } from "./signer-wallet"
 import { checkIsBalanced } from "./check-is-balanced"
 import { waitUntilBlockHeight } from "./lightning"
 
-const getBitcoinCoreSignerRPCConfig = () => {
-  return {
-    ...getBitcoinCoreRPCConfig(),
-    host: process.env.BITCOIND_SIGNER_ADDR,
-    port: parseInt(process.env.BITCOIND_SIGNER_PORT || "8332", 10),
-  }
-}
-
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
 export const bitcoindSignerClient = new BitcoindClient(getBitcoinCoreSignerRPCConfig())
 export const bitcoindOutside = new BitcoindWalletClient("outside")
+export const bitcoindSignerWallet = new BitcoindSignerWalletClient("dev")
 
 export async function sendToAddressAndConfirm({
   walletClient,

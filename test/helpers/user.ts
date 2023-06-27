@@ -4,7 +4,11 @@ import { getDefaultAccountsConfig, yamlConfig } from "@config"
 
 import { adminUsers } from "@domain/admin-users"
 
-import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@domain/errors"
+import {
+  CouldNotFindAccountFromKratosIdError,
+  CouldNotFindError,
+  CouldNotFindUserFromPhoneError,
+} from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 
@@ -16,6 +20,7 @@ import {
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
 import { Account } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
 import { baseLogger } from "@services/logger"
 
@@ -43,8 +48,25 @@ const getUserByTestUserRef = async (ref: string) => {
   return user
 }
 
-export const getAccountByTestUserRef = async (ref: string) => {
-  const user = await getUserByTestUserRef(ref)
+export const getAccountByTestUserRef = async (ref: string): Promise<Account> => {
+  const { phone } = getPhoneAndCodeFromRef(ref)
+  const user = await UsersRepository().findByPhone(phone)
+  if (user instanceof CouldNotFindUserFromPhoneError) {
+    const kratosResult = await AuthWithPhonePasswordlessService().loginToken({
+      phone,
+    })
+    if (kratosResult instanceof Error) throw kratosResult
+    const { kratosUserId } = kratosResult
+
+    const recoveredAccount = await Accounts.createAccountWithPhoneIdentifier({
+      newAccountInfo: { phone, kratosUserId },
+      config: getDefaultAccountsConfig(),
+    })
+    if (recoveredAccount instanceof Error) throw recoveredAccount
+    return recoveredAccount
+  }
+  if (user instanceof Error) throw user
+
   const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) throw account
   return account
@@ -107,10 +129,12 @@ type TestEntry = {
   currency?: string | undefined
 }
 
-export const createUserAndWalletFromUserRef = async (ref: string) => {
+export const createUserAndWalletFromUserRef = async (
+  ref: string,
+): Promise<WalletDescriptor<"BTC">> => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
   if (entry === undefined) throw new Error("no ref matching entry for test")
-  await createUserAndWallet(entry)
+  return createUserAndWallet(entry)
 }
 
 export const createAccount = async ({
@@ -143,7 +167,9 @@ export const createRandomUserAndWallet = async () => {
   const randomEntry: TestEntry = { phone: getRandomPhoneNumber() }
   return createUserAndWallet(randomEntry)
 }
-export const createUserAndWallet = async (entry: TestEntry) => {
+export const createUserAndWallet = async (
+  entry: TestEntry,
+): Promise<WalletDescriptor<"BTC">> => {
   let kratosUserId: UserId
 
   const phone = entry.phone as PhoneNumber
@@ -227,7 +253,17 @@ export const createUserAndWallet = async (entry: TestEntry) => {
     )
   }
 
-  return { accountId: account.id, walletId: account.defaultWalletId }
+  const wallet = await WalletsRepository().findById(account.defaultWalletId)
+  if (wallet instanceof Error) throw wallet
+  if (wallet.currency !== WalletCurrency.Btc) {
+    throw new Error("Expected BTC-currency default wallet")
+  }
+
+  return {
+    accountId: account.id,
+    id: account.defaultWalletId,
+    currency: wallet.currency,
+  }
 }
 
 export const addNewWallet = async ({
