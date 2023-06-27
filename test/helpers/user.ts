@@ -101,6 +101,20 @@ export const getBtcWalletDescriptorByTestUserRef = async (
   return { id: wallet.id, currency: WalletCurrency.Btc, accountId: wallet.accountId }
 }
 
+export const getUsdWalletDescriptorByTestUserRef = async (
+  ref: string,
+): Promise<WalletDescriptor<"USD">> => {
+  const account = await getAccountByTestUserRef(ref)
+
+  const wallets = await WalletsRepository().listByAccountId(account.id)
+  if (wallets instanceof Error) throw wallets
+
+  const wallet = wallets.find((w) => w.currency === WalletCurrency.Usd)
+  if (wallet === undefined) throw Error("no USD wallet")
+
+  return { id: wallet.id, currency: WalletCurrency.Usd, accountId: wallet.accountId }
+}
+
 export const getUsdWalletIdByTestUserRef = async (ref: string) => {
   const account = await getAccountByTestUserRef(ref)
 
