@@ -6,7 +6,7 @@ import {
 } from "@domain/price"
 import { CacheKeys } from "@domain/cache"
 import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache/local"
+import { LocalCacheService } from "@services/cache/local-cache"
 
 import { getPriceHistory } from "@app/prices"
 

@@ -1,6 +1,6 @@
 import { CacheKeys } from "@domain/cache"
 import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache/local"
+import { LocalCacheService } from "@services/cache/local-cache"
 import { PriceCurrenciesNotAvailableError } from "@domain/price"
 import { listCurrencies } from "@app/prices"
 

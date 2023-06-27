@@ -3,7 +3,7 @@ import { DisplayCurrency } from "@domain/fiat"
 import { PriceNotAvailableError } from "@domain/price"
 
 import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache/local"
+import { LocalCacheService } from "@services/cache/local-cache"
 import { getCurrentSatPrice, getCurrentUsdCentPrice } from "@app/prices"
 
 jest.mock("@config", () => {

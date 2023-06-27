@@ -19,7 +19,7 @@ import { DisplayCurrency } from "@domain/fiat"
 
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
-import { RedisCacheService } from "@services/cache/redis"
+import { RedisCacheService } from "@services/cache"
 import { WalletsRepository } from "@services/mongoose"
 import { ColdStorageService } from "@services/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"

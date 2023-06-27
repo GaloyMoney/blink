@@ -7,7 +7,7 @@ import { checkedToDisplayCurrency, getCurrencyMajorExponent } from "@domain/fiat
 import { toDisplayPriceRatio, toWalletPriceRatio } from "@domain/payments"
 
 import { PriceService } from "@services/price"
-import { LocalCacheService } from "@services/cache/local"
+import { LocalCacheService } from "@services/cache"
 
 export const getCurrentSatPrice = ({
   currency,
