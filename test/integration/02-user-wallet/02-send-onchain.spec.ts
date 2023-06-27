@@ -1,11 +1,5 @@
 import { Prices, Wallets } from "@app"
-import {
-  getAccountLimits,
-  getFeesConfig,
-  getLocale,
-  getOnChainWalletConfig,
-  ONE_DAY,
-} from "@config"
+import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
@@ -15,7 +9,6 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
-import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 
 import { LedgerService } from "@services/ledger"
@@ -34,20 +27,10 @@ import {
 
 import { LedgerTransactionType } from "@domain/ledger"
 
-import {
-  DisplayCurrency,
-  getCurrencyMajorExponent,
-  displayAmountFromNumber,
-  toCents,
-} from "@domain/fiat"
+import { DisplayCurrency, getCurrencyMajorExponent, toCents } from "@domain/fiat"
 
-import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import { WalletsRepository } from "@services/mongoose"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { EventAugmentationMissingError } from "@services/bria/errors"
 import { Transaction } from "@services/ledger/schema"
-
-import { payoutSubmittedEventHandler } from "@servers/event-handlers/bria"
 
 import {
   AmountCalculator,
@@ -59,26 +42,20 @@ import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
 import { DealerPriceService } from "@services/dealer-price"
-import { BriaPayloadType } from "@services/bria"
 
 import {
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
-  createChainAddress,
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  lndonchain,
-  lndOutside1,
-  mineBlockAndSync,
   getUsdWalletIdByTestUserRef,
   amountByPriceAsMajor,
   getBtcWalletDescriptorByTestUserRef,
   getUsdWalletDescriptorByTestUserRef,
 } from "test/helpers"
-import { onceBriaSubscribe } from "test/helpers/bria"
 import { recordReceiveLnPayment } from "test/helpers/ledger"
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 
@@ -100,8 +77,6 @@ let walletIdE: WalletId
 let walletIdF: WalletId
 
 let outsideAddress: OnChainAddress
-
-const locale = getLocale()
 
 const dealerFns = DealerPriceService()
 
@@ -176,429 +151,10 @@ const receiveDisplayAmounts = {
 
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 
-const payOnChainForPromiseAll = async (
-  args: { senderCurrency: WalletCurrency } & PayOnChainByWalletIdArgs,
-) => {
-  const { senderCurrency, sendAll, ...payArgs } = args
-  const res = sendAll
-    ? await Wallets.payAllOnChainByWalletId(payArgs)
-    : senderCurrency === WalletCurrency.Btc
-    ? await Wallets.payOnChainByWalletIdForBtcWallet(payArgs)
-    : args.amountCurrency === WalletCurrency.Usd
-    ? await Wallets.payOnChainByWalletIdForUsdWallet(payArgs)
-    : await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount(payArgs)
-  return res
-}
-
 const randomOnChainMemo = () =>
   "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
 
 const randomPayoutId = () => crypto.randomUUID() as PayoutId
-
-const testExternalSend = async ({
-  senderAccount,
-  senderWalletId,
-  amount,
-  amountCurrency,
-  sendAll,
-}: {
-  senderAccount: Account
-  senderWalletId: WalletId
-  amount: Satoshis | UsdCents
-  amountCurrency: WalletCurrency
-  sendAll: boolean
-}) => {
-  const memo = "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
-
-  const initialWalletBalance = await getBalanceHelper(senderWalletId)
-
-  const txResult = await getTransactionsForWalletId(senderWalletId)
-  if (txResult.error instanceof Error || txResult.result === null) {
-    return txResult.error
-  }
-  const pendingTxsInit = txResult.result.slice.filter(
-    ({ status }) => status === TxStatus.Pending,
-  )
-
-  const sendNotification = jest.fn()
-  jest
-    .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-    .mockImplementation(() => ({ sendNotification }))
-  const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-
-  // TODO: use bria events here instead
-  // const sub = subscribeToTransactions({ lnd: lndonchain })
-  // sub.on("chain_transaction", onchainTransactionEventHandler)
-
-  // For notification check at the end
-  const amountToSend = sendAll
-    ? await LedgerService().getWalletBalance(senderWalletId)
-    : amount
-  if (amountToSend instanceof Error) return amountToSend
-
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-
-  let priceRatio: WalletPriceRatio | undefined = undefined
-  if (
-    senderWallet.currency === WalletCurrency.Usd &&
-    senderWallet.currency === amountCurrency
-  ) {
-    const usdPaymentAmount = {
-      amount: BigInt(amountToSend),
-      currency: WalletCurrency.Usd,
-    }
-    const amountResult = await dealerFns.getSatsFromCentsForImmediateSell(
-      usdPaymentAmount,
-    )
-    if (amountResult instanceof Error) return amountResult
-
-    if (amountToSend > 0) {
-      const priceRatioRaw = WalletPriceRatio({ usd: usdPaymentAmount, btc: amountResult })
-      if (priceRatioRaw instanceof Error) throw priceRatioRaw
-      priceRatio = priceRatioRaw
-    }
-  }
-
-  const paid = await payOnChainForPromiseAll({
-    senderCurrency: senderWallet.currency,
-    senderAccount,
-    senderWalletId,
-    address,
-    amount,
-    amountCurrency,
-    speed: PayoutSpeed.Fast,
-    memo,
-    sendAll,
-  })
-  if (paid instanceof Error) return paid
-  expect(paid.status).toBe(PaymentSendStatus.Success)
-
-  const submittedEvent = await onceBriaSubscribe({
-    type: BriaPayloadType.PayoutSubmitted,
-  })
-  if (submittedEvent?.payload.type !== BriaPayloadType.PayoutSubmitted) {
-    throw new Error(`Expected ${BriaPayloadType.PayoutSubmitted} event`)
-  }
-  if (submittedEvent.augmentation.payoutInfo === undefined) {
-    throw new EventAugmentationMissingError()
-  }
-  const resultSubmitted = await payoutSubmittedEventHandler({
-    event: submittedEvent.payload,
-    payoutInfo: submittedEvent.augmentation.payoutInfo,
-  })
-  if (resultSubmitted instanceof Error) {
-    throw resultSubmitted
-  }
-
-  const broadcastEvent = await onceBriaSubscribe({
-    type: BriaPayloadType.PayoutBroadcast,
-    payoutId: paid.payoutId,
-  })
-  if (broadcastEvent?.payload.type !== BriaPayloadType.PayoutBroadcast) {
-    throw new Error(`Expected ${BriaPayloadType.PayoutBroadcast} event`)
-  }
-  const resultBroadcast = await Wallets.registerBroadcastedPayout({
-    payoutId: broadcastEvent.payload.id,
-    proportionalFee: broadcastEvent.payload.proportionalFee,
-    txId: broadcastEvent.payload.txId,
-    vout: broadcastEvent.payload.vout,
-  })
-  if (resultBroadcast instanceof Error) {
-    throw resultBroadcast
-  }
-
-  // we don't send a notification for send transaction for now
-  // expect(sendNotification.mock.calls.length).toBe(1)
-  // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
-  // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
-
-  let txnAmount = amount
-  if (
-    senderWallet.currency === WalletCurrency.Usd &&
-    senderWallet.currency !== amountCurrency
-  ) {
-    const btcPaymentAmount = {
-      amount: BigInt(amount),
-      currency: WalletCurrency.Btc,
-    }
-    const usdPaymentAmount = await dealerFns.getCentsFromSatsForImmediateSell(
-      btcPaymentAmount,
-    )
-    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
-    txnAmount = toCents(usdPaymentAmount.amount)
-
-    const priceRatioRaw = WalletPriceRatio({
-      usd: usdPaymentAmount,
-      btc: btcPaymentAmount,
-    })
-    if (priceRatioRaw instanceof Error) throw priceRatioRaw
-
-    priceRatio = priceRatioRaw
-  }
-
-  let pendingTxHash: OnChainTxHash
-  let minerFee: BtcPaymentAmount
-  {
-    const txResult = await getTransactionsForWalletId(senderWalletId)
-    if (txResult.error instanceof Error || txResult.result === null) {
-      return txResult.error
-    }
-    const pendingTxs = txResult.result.slice.filter(
-      ({ status }) => status === TxStatus.Pending,
-    )
-    expect(pendingTxs.length).toBe(pendingTxsInit.length + 1)
-    const pendingTx = pendingTxs[0]
-    const interimBalance = await getBalanceHelper(senderWalletId)
-
-    const pendingLedgerTx = await LedgerService().getTransactionById(
-      pendingTx.id as LedgerTransactionId,
-    )
-    if (pendingLedgerTx instanceof Error) throw pendingLedgerTx
-
-    // Legacy hack, this was previously gotten from OnChainService but Bria fee estimates
-    // are now more flaky. Ideally, this should be refactored away.
-    const { satsFee } = pendingLedgerTx
-    if (satsFee === undefined) throw new Error("satsFee undefined")
-    minerFee = {
-      amount: BigInt(satsFee - getFeesConfig().withdrawDefaultMin),
-      currency: WalletCurrency.Btc,
-    }
-
-    const { settlementDisplayAmount, settlementDisplayFee } =
-      SettlementAmounts().fromTxn(pendingLedgerTx)
-    expect(pendingTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
-    expect(pendingTx.settlementDisplayFee).toBe(settlementDisplayFee)
-    expect(pendingTx.memo).toBe(memo)
-
-    if (sendAll) {
-      expect(pendingTx.settlementAmount).toBe(-initialWalletBalance)
-      expect(interimBalance).toBe(0)
-    } else {
-      expect(pendingTx.settlementAmount).toBe(-txnAmount - pendingTx.settlementFee)
-      expect(interimBalance).toBe(
-        initialWalletBalance - txnAmount - pendingTx.settlementFee,
-      )
-    }
-
-    pendingTxHash = (pendingTx as WalletOnChainSettledTransaction).settlementVia
-      .transactionHash
-
-    await checkIsBalanced()
-  }
-
-  await mineBlockAndSync({ lnds: [lndonchain] })
-
-  const settledEvent = await onceBriaSubscribe({
-    type: BriaPayloadType.PayoutSettled,
-    payoutId: paid.payoutId,
-  })
-  if (settledEvent?.payload.type !== BriaPayloadType.PayoutSettled) {
-    throw new Error(`Expected ${BriaPayloadType.PayoutSettled} event`)
-  }
-  const resultSettled = await Wallets.settlePayout(settledEvent.payload.id)
-  if (resultSettled instanceof Error) {
-    throw resultSettled
-  }
-
-  {
-    const txResult = await getTransactionsForWalletId(senderWalletId)
-    if (txResult.error instanceof Error || txResult.result === null) {
-      return txResult.error
-    }
-    const pendingTxs = txResult.result.slice.filter(
-      ({ status }) => status === TxStatus.Pending,
-    )
-    expect(pendingTxs.length).toBe(pendingTxsInit.length)
-
-    const settledTxs = txResult.result.slice.filter(
-      ({ status, initiationVia, settlementVia }) =>
-        status === TxStatus.Success &&
-        initiationVia.type === PaymentInitiationMethod.OnChain &&
-        "transactionHash" in settlementVia &&
-        settlementVia.transactionHash === pendingTxHash,
-    )
-    expect(settledTxs.length).toBe(1)
-    const settledTx = settledTxs[0]
-
-    const feeRates = getFeesConfig()
-    const feeSats: number = feeRates.withdrawDefaultMin + Number(minerFee.amount)
-
-    let fee = feeSats
-    if (senderWallet.currency === WalletCurrency.Usd) {
-      if (priceRatio === undefined) throw new Error("Unexpected undefined priceRatio")
-      const feeResult = await priceRatio.convertFromBtcToCeil({
-        amount: BigInt(fee),
-        currency: WalletCurrency.Btc,
-      })
-      fee = Number(feeResult.amount)
-    }
-
-    expect(settledTx.settlementFee).toBe(fee)
-    expect(settledTx.settlementDisplayPrice.base).toBeGreaterThan(0n)
-
-    const settledLedgerTx = await LedgerService().getTransactionById(
-      settledTx.id as LedgerTransactionId,
-    )
-    if (settledLedgerTx instanceof Error) throw settledLedgerTx
-    const { settlementDisplayAmount, settlementDisplayFee } =
-      SettlementAmounts().fromTxn(settledLedgerTx)
-    expect(settledTx.settlementDisplayAmount).toBe(settlementDisplayAmount)
-    expect(settledTx.settlementDisplayFee).toBe(settlementDisplayFee)
-    expect(settledTx.memo).toBe(memo)
-
-    const finalBalance = await getBalanceHelper(senderWalletId)
-
-    if (sendAll) {
-      expect(settledTx.settlementAmount).toBe(-initialWalletBalance)
-      expect(finalBalance).toBe(0)
-    } else {
-      expect(settledTx.settlementAmount).toBe(-txnAmount - fee)
-      expect(finalBalance).toBe(initialWalletBalance - txnAmount - fee)
-    }
-
-    // Check ledger transaction metadata for USD & BTC 'LedgerTransactionType.OnchainPayment'
-    // ===
-    const txHash = (settledTx.settlementVia as SettlementViaOnChainOutgoing)
-      .transactionHash
-    if (txHash === undefined) throw new Error("txHash is undefined")
-    const txns = await LedgerService().getTransactionsByHash(txHash)
-    if (txns instanceof Error) throw txns
-    const txnPayment = txns.find(
-      (tx) =>
-        tx.walletId === senderWalletId &&
-        tx.type === LedgerTransactionType.OnchainPayment &&
-        tx.debit,
-    )
-    expect(txnPayment).not.toBeUndefined()
-
-    let debit, satsAmount, centsAmount, satsFee, centsFee
-    if (amountCurrency === WalletCurrency.Btc) {
-      satsAmount = sendAll ? amountToSend - fee : amountToSend
-      const btcPaymentAmount = {
-        amount: BigInt(satsAmount),
-        currency: WalletCurrency.Btc,
-      }
-      if (senderWallet.currency === WalletCurrency.Btc) {
-        const centsPaymentAmount = await usdFromBtcMidPriceFn(btcPaymentAmount)
-        if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
-        centsAmount = toCents(centsPaymentAmount.amount)
-
-        satsFee = fee
-
-        const priceRatio = WalletPriceRatio({
-          usd: { amount: BigInt(centsAmount), currency: WalletCurrency.Usd },
-          btc: { amount: BigInt(satsAmount), currency: WalletCurrency.Btc },
-        })
-        if (priceRatio instanceof Error) throw priceRatio
-        const centsFeeAmount = priceRatio.convertFromBtcToCeil({
-          amount: BigInt(satsFee),
-          currency: WalletCurrency.Btc,
-        })
-        centsFee = toCents(centsFeeAmount.amount)
-
-        debit = satsAmount + satsFee
-      } else {
-        const centsPaymentAmount = await dealerFns.getCentsFromSatsForImmediateSell(
-          btcPaymentAmount,
-        )
-        if (centsPaymentAmount instanceof Error) throw centsPaymentAmount
-        centsAmount = toCents(centsPaymentAmount.amount)
-
-        centsFee = fee
-        satsFee = feeSats
-
-        debit = centsAmount + centsFee
-      }
-    }
-
-    if (amountCurrency === WalletCurrency.Usd) {
-      centsAmount = sendAll ? amountToSend - fee : amountToSend
-
-      const btcAmount = await dealerFns.getSatsFromCentsForImmediateSell({
-        amount: BigInt(centsAmount),
-        currency: WalletCurrency.Usd,
-      })
-      if (btcAmount instanceof Error) throw btcAmount
-      satsAmount = Number(btcAmount.amount)
-
-      centsFee = fee
-      satsFee = toSats(feeRates.withdrawDefaultMin + Number(minerFee.amount))
-
-      debit = centsAmount + centsFee
-    }
-
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: senderAccount.displayCurrency,
-    })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-    const displayAmount = Number(
-      displayPriceRatio.convertFromWallet({
-        amount: BigInt(satsAmount),
-        currency: WalletCurrency.Btc,
-      }).amountInMinor,
-    )
-    const displayFee = Number(
-      displayPriceRatio.convertFromWallet({
-        amount: BigInt(satsFee),
-        currency: WalletCurrency.Btc,
-      }).amountInMinor,
-    )
-
-    expect(txnPayment).toEqual(
-      expect.objectContaining({
-        type: LedgerTransactionType.OnchainPayment,
-
-        debit,
-        credit: 0,
-
-        // satsAmount,  <- this field often has a rounding error so exclude for now to reduce flakiness
-        satsFee,
-        centsAmount,
-        centsFee,
-        displayAmount:
-          senderAccount.displayCurrency === DisplayCurrency.Usd
-            ? centsAmount
-            : displayAmount,
-        displayFee:
-          senderAccount.displayCurrency === DisplayCurrency.Usd ? centsFee : displayFee,
-
-        displayCurrency: senderAccount.displayCurrency,
-      }),
-    )
-
-    // Check notification sent
-    // ===
-    const amountForNotification =
-      senderWallet.currency === WalletCurrency.Btc ? satsAmount : centsAmount
-
-    const paymentAmount = {
-      amount: BigInt(amountForNotification),
-      currency: senderWallet.currency,
-    }
-    const paymentAsDisplayAmount = displayAmountFromNumber({
-      amount: amountForNotification,
-      currency: senderWallet.currency,
-    })
-    if (paymentAsDisplayAmount instanceof Error) throw paymentAsDisplayAmount
-
-    const displayPaymentAmount =
-      paymentAmount.currency === WalletCurrency.Btc
-        ? displayPriceRatio.convertFromWallet(paymentAmount as BtcPaymentAmount)
-        : paymentAsDisplayAmount
-
-    const { title, body } = createPushNotificationContent({
-      type: NotificationType.OnchainPayment,
-      userLanguage: locale as UserLanguage,
-      amount: paymentAmount,
-      displayAmount: displayPaymentAmount,
-    })
-
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].title).toBe(title)
-    expect(sendNotification.mock.calls[0][0].body).toBe(body)
-  }
-}
 
 const testInternalSend = async ({
   senderAccount,
