@@ -17,7 +17,12 @@ import {
 import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
+
 import { LedgerService } from "@services/ledger"
+import * as BriaImpl from "@services/bria"
+import * as LedgerFacadeOnChainSendImpl from "@services/ledger/facade/onchain-send"
+import * as LedgerFacadeTxMetadataImpl from "@services/ledger/facade/tx-metadata"
+
 import { timestampDaysAgo } from "@utils"
 
 import {
@@ -39,6 +44,7 @@ import { createPushNotificationContent } from "@services/notifications/create-pu
 import { WalletsRepository } from "@services/mongoose"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { EventAugmentationMissingError } from "@services/bria/errors"
+import { Transaction } from "@services/ledger/schema"
 
 import { payoutSubmittedEventHandler } from "@servers/event-handlers/bria"
 
@@ -54,7 +60,6 @@ import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 import { DealerPriceService } from "@services/dealer-price"
 import { BriaPayloadType } from "@services/bria"
 
-import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 import {
   bitcoindClient,
   bitcoindOutside,
@@ -72,6 +77,8 @@ import {
   getBtcWalletDescriptorByTestUserRef,
 } from "test/helpers"
 import { onceBriaSubscribe } from "test/helpers/bria"
+import { recordReceiveLnPayment } from "test/helpers/ledger"
+import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 
 let accountA: Account
 let accountB: Account
@@ -135,7 +142,30 @@ afterAll(async () => {
 })
 
 const amount = toSats(10040)
+const btcPaymentAmount: BtcPaymentAmount = {
+  amount: BigInt(amount),
+  currency: WalletCurrency.Btc,
+}
+
 const usdAmount = toCents(105)
+const usdPaymentAmount: UsdPaymentAmount = {
+  amount: BigInt(usdAmount),
+  currency: WalletCurrency.Usd,
+}
+
+const receiveAmounts = { btc: calc.mul(btcPaymentAmount, 3n), usd: usdPaymentAmount }
+
+const receiveBankFee = {
+  btc: { amount: 100n, currency: WalletCurrency.Btc },
+  usd: { amount: 1n, currency: WalletCurrency.Usd },
+}
+
+const receiveDisplayAmounts = {
+  amountDisplayCurrency: Number(receiveAmounts.usd.amount) as DisplayCurrencyBaseAmount,
+  feeDisplayCurrency: Number(receiveBankFee.usd.amount) as DisplayCurrencyBaseAmount,
+  displayCurrency: DisplayCurrency.Usd,
+}
+
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 
 const payOnChainForPromiseAll = async (
@@ -154,6 +184,8 @@ const payOnChainForPromiseAll = async (
 
 const randomOnChainMemo = () =>
   "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
+
+const randomPayoutId = () => crypto.randomUUID() as PayoutId
 
 const testExternalSend = async ({
   senderAccount,
@@ -899,14 +931,66 @@ const testInternalSend = async ({
 
 describe("BtcWallet - onChainPay", () => {
   it("sends a successful payment", async () => {
-    const res = await testExternalSend({
-      senderAccount: accountA,
-      senderWalletId: walletIdA,
-      amount,
-      amountCurrency: WalletCurrency.Btc,
-      sendAll: false,
+    const payoutId = randomPayoutId()
+    const memo = randomOnChainMemo()
+
+    // Fund balance for send
+    const receive = await recordReceiveLnPayment({
+      walletDescriptor: walletDescriptorA,
+      paymentAmount: receiveAmounts,
+      bankFee: receiveBankFee,
+      displayAmounts: receiveDisplayAmounts,
+      memo,
     })
-    expect(res).not.toBeInstanceOf(Error)
+    if (receive instanceof Error) throw receive
+
+    // Setup spies and mocks
+    const { NewOnChainService: NewOnChainServiceOrig } =
+      jest.requireActual("@services/bria")
+    const briaSpy = jest.spyOn(BriaImpl, "NewOnChainService").mockReturnValue({
+      ...NewOnChainServiceOrig(),
+      queuePayoutToAddress: async () => payoutId,
+    })
+
+    const onChainSendLedgerMetadataSpy = jest.spyOn(
+      LedgerFacadeTxMetadataImpl,
+      "OnChainSendLedgerMetadata",
+    )
+
+    const recordSendOnChainSpy = jest.spyOn(
+      LedgerFacadeOnChainSendImpl,
+      "recordSendOnChain",
+    )
+
+    // Execute use-case
+    const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+      senderWalletId: walletIdA,
+      senderAccount: accountA,
+      amount,
+      address: outsideAddress,
+
+      speed: PayoutSpeed.Fast,
+      memo,
+    })
+    if (res instanceof Error) throw res
+    expect(res.payoutId).toBe(payoutId)
+
+    // Inspect spies
+    expect(onChainSendLedgerMetadataSpy).toHaveBeenCalledTimes(1)
+    expect(onChainSendLedgerMetadataSpy.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        paymentAmounts: expect.objectContaining({
+          btcPaymentAmount: { amount: BigInt(amount), currency: WalletCurrency.Btc },
+        }),
+        payeeAddresses: expect.arrayContaining([outsideAddress]),
+      }),
+    )
+
+    expect(recordSendOnChainSpy).toHaveBeenCalledTimes(1)
+
+    // Cleanup test
+    await Transaction.deleteMany({ memo })
+    briaSpy.mockRestore()
   })
 
   it("sends all in a successful payment", async () => {
