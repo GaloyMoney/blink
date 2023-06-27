@@ -13,7 +13,6 @@ import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wal
 
 import { LedgerService } from "@services/ledger"
 import * as BriaImpl from "@services/bria"
-import * as LedgerImpl from "@services/ledger"
 import * as LedgerFacadeOnChainSendImpl from "@services/ledger/facade/onchain-send"
 import * as LedgerFacadeTxMetadataImpl from "@services/ledger/facade/tx-metadata"
 
@@ -29,7 +28,7 @@ import { LedgerTransactionType } from "@domain/ledger"
 
 import { DisplayCurrency, getCurrencyMajorExponent, toCents } from "@domain/fiat"
 
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { Transaction } from "@services/ledger/schema"
 
 import {
@@ -55,6 +54,8 @@ import {
   amountByPriceAsMajor,
   getBtcWalletDescriptorByTestUserRef,
   getUsdWalletDescriptorByTestUserRef,
+  createRandomUserAndWallet,
+  createRandomUserAndUsdWallet,
 } from "test/helpers"
 import { recordReceiveLnPayment } from "test/helpers/ledger"
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
@@ -498,7 +499,7 @@ describe("BtcWallet - onChainPay", () => {
     const payoutId = randomPayoutId()
     const memo = randomOnChainMemo()
 
-    // Fund balance for send
+    // Setup system state
     const receive = await recordReceiveLnPayment({
       walletDescriptor: walletDescriptorA,
       paymentAmount: receiveAmounts,
@@ -562,7 +563,7 @@ describe("BtcWallet - onChainPay", () => {
       }),
     )
 
-    // Cleanup test
+    // Restore system state
     await Transaction.deleteMany({ memo })
     briaSpy.mockRestore()
     onChainSendLedgerMetadataSpy.mockClear()
@@ -570,14 +571,16 @@ describe("BtcWallet - onChainPay", () => {
   })
 
   it("sends all in a successful payment", async () => {
+    const newWalletDescriptor = await createRandomUserAndWallet()
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
+    if (newAccount instanceof Error) throw newAccount
+
     const payoutId = randomPayoutId()
     const memo = randomOnChainMemo()
 
-    const sendAllAmount = calc.divCeil(receiveAmounts.btc, 2n)
-
-    // Fund balance for send
+    // Setup system state
     const receive = await recordReceiveLnPayment({
-      walletDescriptor: walletDescriptorA,
+      walletDescriptor: newWalletDescriptor,
       paymentAmount: receiveAmounts,
       bankFee: receiveBankFee,
       displayAmounts: receiveDisplayAmounts,
@@ -585,18 +588,18 @@ describe("BtcWallet - onChainPay", () => {
     })
     if (receive instanceof Error) throw receive
 
+    // Read required system state
+    const sendAllAmount = await LedgerService().getWalletBalanceAmount(
+      newWalletDescriptor,
+    )
+    if (sendAllAmount instanceof Error) throw sendAllAmount
+
     // Setup spies and mocks
     const { NewOnChainService: NewOnChainServiceOrig } =
       jest.requireActual("@services/bria")
     const briaSpy = jest.spyOn(BriaImpl, "NewOnChainService").mockReturnValue({
       ...NewOnChainServiceOrig(),
       queuePayoutToAddress: async () => payoutId,
-    })
-
-    const { LedgerService: LedgerServiceOrig } = jest.requireActual("@services/ledger")
-    const ledgerServiceSpy = jest.spyOn(LedgerImpl, "LedgerService").mockReturnValue({
-      ...LedgerServiceOrig(),
-      getWalletBalance: async () => toSats(sendAllAmount.amount),
     })
 
     const onChainSendLedgerMetadataSpy = jest.spyOn(
@@ -611,8 +614,8 @@ describe("BtcWallet - onChainPay", () => {
 
     // Execute use-case
     const res = await Wallets.payAllOnChainByWalletId({
-      senderWalletId: walletIdA,
-      senderAccount: accountA,
+      senderWalletId: newWalletDescriptor.id,
+      senderAccount: newAccount,
       address: outsideAddress,
       amount: 0,
 
@@ -629,7 +632,7 @@ describe("BtcWallet - onChainPay", () => {
     const {
       paymentAmounts: { btcPaymentAmount, btcProtocolAndBankFee },
     } = metadataCallParams
-    expect(sendAllAmount).toEqual(calc.add(btcPaymentAmount, btcProtocolAndBankFee))
+    expect(sendAllAmount).toStrictEqual(calc.add(btcPaymentAmount, btcProtocolAndBankFee))
 
     const recordCallParams = recordSendOnChainSpy.mock.calls[0][0]
     expect(recordCallParams).toEqual(
@@ -640,37 +643,35 @@ describe("BtcWallet - onChainPay", () => {
       }),
     )
 
-    // Cleanup test
+    // Restore system state
     await Transaction.deleteMany({ memo })
     briaSpy.mockRestore()
-    ledgerServiceSpy.mockRestore()
     onChainSendLedgerMetadataSpy.mockClear()
     recordSendOnChainSpy.mockClear()
   })
 
   it("fails to send all from empty wallet", async () => {
-    // Setup spies and mocks
-    const { LedgerService: LedgerServiceOrig } = jest.requireActual("@services/ledger")
-    const ledgerServiceSpy = jest.spyOn(LedgerImpl, "LedgerService").mockReturnValue({
-      ...LedgerServiceOrig(),
-      getWalletBalance: async () => toSats(0),
-    })
+    const newWalletDescriptor = await createRandomUserAndWallet()
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
+    if (newAccount instanceof Error) throw newAccount
+
+    const memo = randomOnChainMemo()
 
     // Execute use-case
     const res = await Wallets.payAllOnChainByWalletId({
-      senderWalletId: walletIdA,
-      senderAccount: accountA,
+      senderWalletId: newWalletDescriptor.id,
+      senderAccount: newAccount,
       address: outsideAddress,
       amount: 0,
 
       speed: PayoutSpeed.Fast,
-      memo: "",
+      memo,
     })
     expect(res).toBeInstanceOf(InsufficientBalanceError)
     expect(res instanceof Error && res.message).toEqual(`No balance left to send.`)
 
-    // Cleanup test
-    ledgerServiceSpy.mockRestore()
+    // Restore system state
+    Transaction.deleteMany({ memo })
   })
 
   it("sends an on us transaction", async () => {
@@ -970,7 +971,7 @@ describe("UsdWallet - onChainPay", () => {
       const payoutId = randomPayoutId()
       const memo = randomOnChainMemo()
 
-      // Fund balance for send
+      // Setup system state
       const receive = await recordReceiveLnPayment({
         walletDescriptor: walletUsdDescriptorA,
         paymentAmount: receiveAmounts,
@@ -1033,7 +1034,7 @@ describe("UsdWallet - onChainPay", () => {
         }),
       )
 
-      // Cleanup test
+      // Restore system state
       await Transaction.deleteMany({ memo })
       briaSpy.mockRestore()
       onChainSendLedgerMetadataSpy.mockClear()
@@ -1044,7 +1045,7 @@ describe("UsdWallet - onChainPay", () => {
       const payoutId = randomPayoutId()
       const memo = randomOnChainMemo()
 
-      // Fund balance for send
+      // Setup system state
       const receive = await recordReceiveLnPayment({
         walletDescriptor: walletUsdDescriptorA,
         paymentAmount: receiveAmounts,
@@ -1107,7 +1108,7 @@ describe("UsdWallet - onChainPay", () => {
         }),
       )
 
-      // Cleanup test
+      // Restore system state
       await Transaction.deleteMany({ memo })
       briaSpy.mockRestore()
       onChainSendLedgerMetadataSpy.mockClear()
@@ -1115,14 +1116,18 @@ describe("UsdWallet - onChainPay", () => {
     })
 
     it("send all from usd wallet", async () => {
+      const newWalletDescriptor = await createRandomUserAndUsdWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
       const payoutId = randomPayoutId()
       const memo = randomOnChainMemo()
 
-      const sendAllAmount = calc.divCeil(receiveAmounts.usd, 2n)
-
-      // Fund balance for send
+      // Setup system state
       const receive = await recordReceiveLnPayment({
-        walletDescriptor: walletUsdDescriptorA,
+        walletDescriptor: newWalletDescriptor,
         paymentAmount: receiveAmounts,
         bankFee: receiveBankFee,
         displayAmounts: receiveDisplayAmounts,
@@ -1130,18 +1135,18 @@ describe("UsdWallet - onChainPay", () => {
       })
       if (receive instanceof Error) throw receive
 
+      // Read required system state
+      const sendAllAmount = await LedgerService().getWalletBalanceAmount(
+        newWalletDescriptor,
+      )
+      if (sendAllAmount instanceof Error) throw sendAllAmount
+
       // Setup spies and mocks
       const { NewOnChainService: NewOnChainServiceOrig } =
         jest.requireActual("@services/bria")
       const briaSpy = jest.spyOn(BriaImpl, "NewOnChainService").mockReturnValue({
         ...NewOnChainServiceOrig(),
         queuePayoutToAddress: async () => payoutId,
-      })
-
-      const { LedgerService: LedgerServiceOrig } = jest.requireActual("@services/ledger")
-      const ledgerServiceSpy = jest.spyOn(LedgerImpl, "LedgerService").mockReturnValue({
-        ...LedgerServiceOrig(),
-        getWalletBalance: async () => toSats(sendAllAmount.amount),
       })
 
       const onChainSendLedgerMetadataSpy = jest.spyOn(
@@ -1156,8 +1161,8 @@ describe("UsdWallet - onChainPay", () => {
 
       // Execute use-case
       const res = await Wallets.payAllOnChainByWalletId({
-        senderWalletId: walletIdUsdA,
-        senderAccount: accountA,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
         address: outsideAddress,
         amount: 0,
 
@@ -1173,7 +1178,9 @@ describe("UsdWallet - onChainPay", () => {
       const {
         paymentAmounts: { usdPaymentAmount, usdProtocolAndBankFee },
       } = metadataCallParams
-      expect(sendAllAmount).toEqual(calc.add(usdPaymentAmount, usdProtocolAndBankFee))
+      expect(sendAllAmount).toStrictEqual(
+        calc.add(usdPaymentAmount, usdProtocolAndBankFee),
+      )
 
       const recordCallParams = recordSendOnChainSpy.mock.calls[0][0]
       expect(recordCallParams).toEqual(
@@ -1184,37 +1191,36 @@ describe("UsdWallet - onChainPay", () => {
         }),
       )
 
-      // Cleanup test
+      // Restore system state
       await Transaction.deleteMany({ memo })
       briaSpy.mockRestore()
-      ledgerServiceSpy.mockRestore()
       onChainSendLedgerMetadataSpy.mockClear()
       recordSendOnChainSpy.mockClear()
     })
 
     it("fails to send all from empty usd wallet", async () => {
-      // Setup spies and mocks
-      const { LedgerService: LedgerServiceOrig } = jest.requireActual("@services/ledger")
-      const ledgerServiceSpy = jest.spyOn(LedgerImpl, "LedgerService").mockReturnValue({
-        ...LedgerServiceOrig(),
-        getWalletBalance: async () => toCents(0),
-      })
+      const newWalletDescriptor = await createRandomUserAndUsdWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+      const memo = randomOnChainMemo()
 
       // Execute use-case
       const res = await Wallets.payAllOnChainByWalletId({
-        senderWalletId: walletIdUsdA,
-        senderAccount: accountA,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
         address: outsideAddress,
         amount: 0,
 
         speed: PayoutSpeed.Fast,
-        memo: "",
+        memo,
       })
       expect(res).toBeInstanceOf(InsufficientBalanceError)
       expect(res instanceof Error && res.message).toEqual(`No balance left to send.`)
 
-      // Cleanup test
-      ledgerServiceSpy.mockRestore()
+      // Restore system state
+      Transaction.deleteMany({ memo })
     })
   })
 })
