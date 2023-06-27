@@ -1,6 +1,5 @@
 import { createServer } from "http"
 
-import { context, propagation } from "@opentelemetry/api"
 import DataLoader from "dataloader"
 import express, { NextFunction, Request, Response } from "express"
 
@@ -112,7 +111,6 @@ const setGqlContext = async (
     : req.ip
 
   const ip = parseIps(ipString)
-  const userAgent = req.headers["user-agent"] || "unknown"
 
   const gqlContext = await sessionContext({
     tokenPayload,
@@ -130,18 +128,7 @@ const setGqlContext = async (
       [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
       [SemanticAttributes.ENDUSER_ID]: gqlContext.domainAccount?.id || tokenPayload?.sub,
     },
-    () => {
-      const parentContext = context.active()
-      const ipContext = propagation.setBaggage(
-        parentContext,
-        propagation.createBaggage({
-          [SemanticAttributes.HTTP_CLIENT_IP]: { value: ip || "unknown" },
-          [SemanticAttributes.HTTP_USER_AGENT]: { value: userAgent },
-        }),
-      )
-
-      context.with(ipContext, next)
-    },
+    next,
   )
 }
 

@@ -62,10 +62,15 @@ export const extendSessions = async (
       hasExtended ? countOfExtendedSessions++ : countOfInactiveSessions++
     }
   }
-  logger.info(`Total sessions: ${countOfTotalSessions}`)
-  logger.info(`Extended sessions: ${countOfExtendedSessions}`)
-  logger.info(`Extended-error sessions: ${countOfExtendedSessionErrors}`)
-  logger.info(`Inactive sessions: ${countOfInactiveSessions}`)
+  logger.info(
+    {
+      countOfTotalSessions,
+      countOfExtendedSessions,
+      countOfExtendedSessionErrors,
+      countOfInactiveSessions,
+    },
+    `sessions info`,
+  )
 
   addAttributesToCurrentSpan({
     countOfTotalUsers: countOfTotalUsers === 0 ? "none" : countOfTotalUsers, // *0 does not log in honeycomb properly sometimes, so set to none
