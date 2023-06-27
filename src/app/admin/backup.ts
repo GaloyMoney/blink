@@ -62,8 +62,13 @@ export const uploadBackup =
             logger.info({ backup }, "Static channel backup to Dropbox successful.")
             addEventToCurrentSpan("Static channel backup to Dropbox successful.")
           } catch (error) {
-            logger.error({ error }, "Static channel backup to Dropbox failed.")
-            recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            const fallbackMsg = "Static channel backup to Dropbox failed."
+            logger.error({ error }, fallbackMsg)
+            recordExceptionInCurrentSpan({
+              error: error,
+              level: ErrorLevel.Warn,
+              fallbackMsg,
+            })
           }
         },
       )
@@ -92,8 +97,13 @@ export const uploadBackup =
             logger.info({ backup }, "Static channel backup to GoogleCloud successful.")
             addEventToCurrentSpan("Static channel backup to GoogleCloud successful.")
           } catch (error) {
-            logger.error({ error }, "Static channel backup to GoogleCloud failed.")
-            recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            const fallbackMsg = "Static channel backup to GoogleCloud failed."
+            logger.error({ error }, fallbackMsg)
+            recordExceptionInCurrentSpan({
+              error: error,
+              level: ErrorLevel.Warn,
+              fallbackMsg,
+            })
           }
         },
       )
@@ -122,8 +132,13 @@ export const uploadBackup =
             logger.info({ backup }, "Static channel backup to Nextcloud successful.")
             addEventToCurrentSpan("Static channel backup to Nextcloud successful.")
           } catch (error) {
-            logger.error({ error }, "Static channel backup to Nextcloud failed.")
-            recordExceptionInCurrentSpan({ error: error, level: ErrorLevel.Warn })
+            const fallbackMsg = "Static channel backup to Nextcloud failed."
+            logger.error({ error }, fallbackMsg)
+            recordExceptionInCurrentSpan({
+              error: error,
+              level: ErrorLevel.Warn,
+              fallbackMsg,
+            })
           }
         },
       )

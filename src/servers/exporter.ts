@@ -276,7 +276,7 @@ const createWalletGauge = ({
       } catch (err) {
         logger.error({ err }, `Could not load wallet id for ${walletName}.`)
 
-        if (err.message === "Timeout") {
+        if (err instanceof Error && err.message === "Timeout") {
           logger.info(`Getting ${walletName} wallet balance from cache.`)
         }
         cancelTimeout()

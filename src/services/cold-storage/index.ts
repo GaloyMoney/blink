@@ -38,7 +38,7 @@ export const ColdStorageService = async (): Promise<
       const wallets: string[] = await listWalletsRpc({ bitcoind })
       return wallets.filter((item: string) => item.includes(walletPattern))
     } catch (err) {
-      return new UnknownColdStorageServiceError(err.message || err)
+      return new UnknownColdStorageServiceError(err)
     }
   }
 
@@ -60,7 +60,7 @@ export const ColdStorageService = async (): Promise<
 
       return balances
     } catch (err) {
-      return new UnknownColdStorageServiceError(err.message || err)
+      return new UnknownColdStorageServiceError(err)
     }
   }
 
@@ -74,7 +74,7 @@ export const ColdStorageService = async (): Promise<
       const amount = btc2sat(await getBalanceRpc({ bitcoind }))
       return { walletName, amount }
     } catch (err) {
-      return new UnknownColdStorageServiceError(err.message || err)
+      return new UnknownColdStorageServiceError(err)
     }
   }
 
@@ -103,10 +103,10 @@ export const ColdStorageService = async (): Promise<
         fee: btc2sat(fundedPsbt.fee),
       }
     } catch (err) {
-      if (err && err.message && err.message.includes("Insufficient funds")) {
-        return new InsufficientBalanceForRebalanceError(err)
+      if (err instanceof Error && err.message.includes("Insufficient funds")) {
+        return new InsufficientBalanceForRebalanceError(err.message)
       }
-      return new UnknownColdStorageServiceError(err.message || err)
+      return new UnknownColdStorageServiceError(err)
     }
   }
 
@@ -121,7 +121,7 @@ export const ColdStorageService = async (): Promise<
         }),
       })
     } catch (err) {
-      return new UnknownColdStorageServiceError(err.message || err)
+      return new UnknownColdStorageServiceError(err)
     }
   }
 
@@ -135,7 +135,7 @@ export const ColdStorageService = async (): Promise<
       })
       return !!isMine
     } catch (err) {
-      return new UnknownColdStorageServiceError(err.message || err)
+      return new UnknownColdStorageServiceError(err)
     }
   }
 
@@ -149,9 +149,9 @@ export const ColdStorageService = async (): Promise<
       })
       return Number(amount || 0) < 0
     } catch (err) {
-      if (err?.message === "Invalid or non-wallet transaction id")
-        return new InvalidOrNonWalletTransactionError(err)
-      return new UnknownColdStorageServiceError(err.message || err)
+      if (err instanceof Error && err.message === "Invalid or non-wallet transaction id")
+        return new InvalidOrNonWalletTransactionError(err.message)
+      return new UnknownColdStorageServiceError(err)
     }
   }
 
@@ -165,7 +165,7 @@ export const ColdStorageService = async (): Promise<
       })
       return btc2sat(Math.abs(fee || 0))
     } catch (err) {
-      return new UnknownColdStorageServiceError(err.message || err)
+      return new UnknownColdStorageServiceError(err)
     }
   }
 
@@ -197,7 +197,7 @@ const getBitcoindClient = (wallet?: string): Bitcoind | ColdStorageServiceError 
       walletName: wallet,
     })
   } catch (err) {
-    return new UnknownColdStorageServiceError(err.message || err)
+    return new UnknownColdStorageServiceError(err)
   }
 }
 
@@ -216,6 +216,6 @@ const getBitcoindCurrentWalletClient = async (): Promise<
 
     return new InvalidCurrentColdStorageWalletServiceError()
   } catch (err) {
-    return new UnknownColdStorageServiceError(err.message || err)
+    return new UnknownColdStorageServiceError(err)
   }
 }

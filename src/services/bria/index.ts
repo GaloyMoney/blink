@@ -10,7 +10,11 @@ import {
   PayoutDestinationBlocked,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  paymentAmountFromNumber,
+  WalletCurrency,
+  parseErrorMessageFromUnknown,
+} from "@domain/shared"
 
 import { baseLogger } from "@services/logger"
 import { wrapAsyncToRunInSpan, wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -89,7 +93,7 @@ export const BriaSubscriber = () => {
         .withBackoff(new FibonacciBackoff(30000, 7))
         .build()
     } catch (error) {
-      return new UnknownBriaEventError(error.message || error)
+      return new UnknownBriaEventError(error)
     }
   }
 
@@ -116,7 +120,7 @@ export const NewOnChainService = (): INewOnChainService => {
         currency: WalletCurrency.Btc,
       })
     } catch (error) {
-      return new UnknownOnChainServiceError(error.message || error)
+      return new UnknownOnChainServiceError(error)
     }
   }
 
@@ -140,11 +144,15 @@ export const NewOnChainService = (): INewOnChainService => {
       const response = await newAddress(request, metadata)
       return { address: response.getAddress() as OnChainAddress }
     } catch (err) {
-      if (err.code === status.ALREADY_EXISTS) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err?.code === status.ALREADY_EXISTS
+      ) {
         return new OnChainAddressAlreadyCreatedForRequestIdError()
       }
-      const errMsg = typeof err === "string" ? err : err.message
-      return new UnknownOnChainServiceError(errMsg)
+      return new UnknownOnChainServiceError(err)
     }
   }
 
@@ -163,11 +171,15 @@ export const NewOnChainService = (): INewOnChainService => {
         address: foundAddress.getAddress() as OnChainAddress,
       }
     } catch (err) {
-      if (err.code == status.NOT_FOUND) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err.code == status.NOT_FOUND
+      ) {
         return new OnChainAddressNotFoundError()
       }
-      const errMsg = typeof err === "string" ? err : err.message
-      return new UnknownOnChainServiceError(errMsg)
+      return new UnknownOnChainServiceError(err)
     }
   }
 
@@ -184,11 +196,15 @@ export const NewOnChainService = (): INewOnChainService => {
       if (foundPayout === undefined) return new PayoutNotFoundError()
       return foundPayout.getId() as PayoutId
     } catch (err) {
-      if (err.code == status.NOT_FOUND) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err.code == status.NOT_FOUND
+      ) {
         return new PayoutNotFoundError()
       }
-      const errMsg = typeof err === "string" ? err : err.message
-      return new UnknownOnChainServiceError(errMsg)
+      return new UnknownOnChainServiceError(err)
     }
   }
 
@@ -214,8 +230,14 @@ export const NewOnChainService = (): INewOnChainService => {
 
       return response.getId() as PayoutId
     } catch (err) {
-      const errMsg = typeof err === "string" ? err : err.message
-      if (err.code == status.PERMISSION_DENIED && errMsg.includes("DestinationBlocked")) {
+      const errMsg = parseErrorMessageFromUnknown(err)
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err.code == status.PERMISSION_DENIED &&
+        errMsg.includes("DestinationBlocked")
+      ) {
         return new PayoutDestinationBlocked()
       }
       return new UnknownOnChainServiceError(errMsg)
@@ -249,7 +271,7 @@ export const NewOnChainService = (): INewOnChainService => {
           currency: WalletCurrency.Btc,
         })
       } catch (error) {
-        return new UnknownOnChainServiceError(error.message || error)
+        return new UnknownOnChainServiceError(error)
       }
     }
 

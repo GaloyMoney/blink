@@ -21,6 +21,7 @@ import { logoutCookie } from "@app/auth"
 import { checkedToPhoneNumber } from "@domain/users"
 import libCookie from "cookie"
 import basicAuth from "basic-auth"
+import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 const authRouter = express.Router({ caseSensitive: true })
 
@@ -57,8 +58,8 @@ authRouter.post(
       try {
         cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
         kratosUserId = loginResp.kratosUserId
-      } catch (err) {
-        recordExceptionInCurrentSpan({ error: err })
+      } catch (error) {
+        recordExceptionInCurrentSpan({ error })
         return res.status(500).send({ error: "Error parsing cookies" })
       }
 
@@ -104,8 +105,8 @@ authRouter.post(
           httpOnly: csrfCookie.httpOnly,
           path: csrfCookie.path,
         })
-      } catch (err) {
-        recordExceptionInCurrentSpan({ error: err })
+      } catch (error) {
+        recordExceptionInCurrentSpan({ error })
         return res.status(500).send({ result: "Error parsing cookies" })
       }
 
@@ -152,8 +153,8 @@ authRouter.get(
         return res.status(200).send({
           result: "logout successful",
         })
-      } catch (err) {
-        recordExceptionInCurrentSpan({ error: err })
+      } catch (error) {
+        recordExceptionInCurrentSpan({ error })
         return res.status(500).send({ error: "Error logging out" })
       }
     },
@@ -214,9 +215,9 @@ authRouter.post(
         return res.status(200).send({
           result: authToken,
         })
-      } catch (err) {
-        recordExceptionInCurrentSpan({ error: err })
-        return res.status(500).send({ error: `${err.message}` })
+      } catch (error) {
+        recordExceptionInCurrentSpan({ error })
+        return res.status(500).send({ error: parseErrorMessageFromUnknown(error) })
       }
     },
   }),

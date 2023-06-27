@@ -6,6 +6,7 @@ import { getBitcoinCoreRPCConfig } from "@config"
 import { LedgerService } from "@services/ledger"
 
 import { toSats } from "@domain/bitcoin"
+import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 import {
   BitcoindClient,
@@ -38,7 +39,8 @@ export async function sendToAddressAndConfirm({
   try {
     txId = (await walletClient.sendToAddress({ address, amount })) as OnChainTxHash
   } catch (err) {
-    txId = new Error(err.message || err)
+    const errMsg = parseErrorMessageFromUnknown(err)
+    txId = new Error(errMsg)
   }
 
   await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })

@@ -60,7 +60,11 @@ import {
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  parseErrorMessageFromUnknown,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@domain/shared"
 
 import { LocalCacheService } from "@services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -335,7 +339,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       if (!route) return new RouteNotFoundError()
       return route
     } catch (err) {
-      if (err.message === "Timeout") {
+      if (err instanceof Error && err.message === "Timeout") {
         return new ProbeForRouteTimedOutFromApplicationError()
       }
       cancelTimeout()
@@ -638,11 +642,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
         sentFromPubkey: pubkey,
       }
     } catch (err) {
-      if (err.message === "Timeout") {
+      if (err instanceof Error && err.message === "Timeout") {
         return new LnPaymentPendingError()
       }
       cancelTimeout()
-
       return handleSendPaymentLndErrors({ err, paymentHash })
     }
   }
@@ -713,7 +716,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         sentFromPubkey: defaultPubkey,
       }
     } catch (err) {
-      if (err.message === "Timeout") {
+      if (err instanceof Error && err.message === "Timeout") {
         return new LnPaymentPendingError()
       }
       cancelTimeout()
@@ -827,7 +830,7 @@ const lookupPaymentByPubkeyAndHash = async ({
 
     return new BadPaymentDataError(JSON.stringify(result))
   } catch (err) {
-    if (err.message === "Timeout") {
+    if (err instanceof Error && err.message === "Timeout") {
       return new LookupPaymentTimedOutError()
     }
     cancelTimeout()
@@ -940,7 +943,7 @@ const handleSendPaymentLndErrors = ({
   err,
   paymentHash,
 }: {
-  err: Error
+  err: Error | unknown
   paymentHash: PaymentHash
 }) => {
   const errDetails = parseLndErrorDetails(err)
@@ -971,7 +974,7 @@ const handleSendPaymentLndErrors = ({
   }
 }
 
-const handleCommonLightningServiceErrors = (err: Error) => {
+const handleCommonLightningServiceErrors = (err: Error | unknown) => {
   const errDetails = parseLndErrorDetails(err)
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
   switch (true) {
@@ -981,11 +984,15 @@ const handleCommonLightningServiceErrors = (err: Error) => {
     case match(KnownLndErrorDetails.ConnectionRefused):
       return new OffChainServiceBusyError()
     default:
-      return new UnknownLightningServiceError(msgForUnknown(err))
+      return new UnknownLightningServiceError(
+        msgForUnknown({
+          message: parseErrorMessageFromUnknown(err),
+        } as Error),
+      )
   }
 }
 
-const handleCommonRouteNotFoundErrors = (err: Error) => {
+const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
   const errDetails = parseLndErrorDetails(err)
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
   switch (true) {
@@ -997,7 +1004,11 @@ const handleCommonRouteNotFoundErrors = (err: Error) => {
       return new DestinationMissingDependentFeatureError()
 
     default:
-      return new UnknownRouteNotFoundError(msgForUnknown(err))
+      return new UnknownRouteNotFoundError(
+        msgForUnknown({
+          message: parseErrorMessageFromUnknown(err),
+        } as Error),
+      )
   }
 }
 

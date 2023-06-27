@@ -2,6 +2,8 @@ import { CreateIdentityBody } from "@ory/client"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
+import { isAxiosError } from "axios"
+
 import { KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, kratosPublic } from "./private"
 import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
@@ -32,7 +34,7 @@ export const AuthWithUsernamePasswordDeviceIdService =
       } catch (err) {
         // we continue if there is 409/Conflit,
         // because it means the identity already exists
-        if (err.response.status !== 409) {
+        if (isAxiosError(err) && err.response?.status !== 409) {
           return new UnknownKratosError(
             `Impossible to create identity: ${err.message || err}`,
           )
@@ -58,9 +60,12 @@ export const AuthWithUsernamePasswordDeviceIdService =
 
         return { sessionToken, kratosUserId, newEntity }
       } catch (err) {
-        return new UnknownKratosError(
-          `Impossible to get sessionToken: ${err.message || err}`,
-        )
+        if (err instanceof Error) {
+          return new UnknownKratosError(
+            `Impossible to get sessionToken: ${err.message || err}`,
+          )
+        }
+        return new UnknownKratosError(err)
       }
     }
 

@@ -6,7 +6,7 @@ import {
   UnknownOathkeeperServiceError,
   OathkeeperMissingAuthorizationHeaderError,
 } from "@domain/oathkeeper/errors"
-import axios from "axios"
+import axios, { isAxiosError } from "axios"
 
 export const sendOathkeeperRequestGraphql = async (
   token: SessionToken | undefined,
@@ -36,14 +36,12 @@ export const sendOathkeeperRequestGraphql = async (
 
     return jwt.slice(7) as JwtToken
   } catch (err) {
-    if (err.response?.status === 401) {
-      return new OathkeeperUnauthorizedServiceError(err.message || err)
+    if (isAxiosError(err) && err.response?.status === 401) {
+      return new OathkeeperUnauthorizedServiceError(err.message)
     }
-
-    if (err.response?.status === 403) {
-      return new OathkeeperForbiddenServiceError(err.message || err)
+    if (isAxiosError(err) && err.response?.status === 403) {
+      return new OathkeeperForbiddenServiceError(err.message)
     }
-
-    return new UnknownOathkeeperServiceError(err.message || err)
+    return new UnknownOathkeeperServiceError(err)
   }
 }

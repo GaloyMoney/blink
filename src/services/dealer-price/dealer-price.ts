@@ -4,7 +4,11 @@ import { getDealerPriceConfig } from "@config"
 
 import { credentials } from "@grpc/grpc-js"
 
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  parseErrorMessageFromUnknown,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@domain/shared"
 
 import {
   DealerStalePriceError,
@@ -274,8 +278,8 @@ export const DealerPriceService = (
   })
 }
 
-const handleDealerErrors = (err: Error | string) => {
-  const errMsg = typeof err === "string" ? err : err.message
+const handleDealerErrors = (err: Error | string | unknown) => {
+  const errMsg = parseErrorMessageFromUnknown(err)
 
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errMsg)
 
