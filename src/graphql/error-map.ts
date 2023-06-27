@@ -539,6 +539,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "EventAugmentationMissingError":
     case "NoPayloadFoundError":
     case "ExpectedUtxoDetectedPayloadNotFoundError":
+    case "ExpectedUtxoDroppedPayloadNotFoundError":
     case "ExpectedUtxoSettledPayloadNotFoundError":
     case "ExpectedPayoutSubmittedPayloadNotFoundError":
     case "ExpectedPayoutCommittedPayloadNotFoundError":

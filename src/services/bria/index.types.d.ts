@@ -27,6 +27,13 @@ type UtxoDetected = {
   satoshis: BtcPaymentAmount
   address: OnChainAddress
 }
+type UtxoDropped = {
+  type: "utxo_dropped"
+  txId: OnChainTxHash
+  vout: OnChainTxVout
+  satoshis: BtcPaymentAmount
+  address: OnChainAddress
+}
 type UtxoSettled = {
   type: "utxo_settled"
   txId: OnChainTxHash
@@ -65,6 +72,7 @@ type PayoutSettled = {
 }
 type BriaPayload =
   | UtxoDetected
+  | UtxoDropped
   | UtxoSettled
   | PayoutSubmitted
   | PayoutCommitted

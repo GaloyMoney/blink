@@ -4,6 +4,7 @@ import { getOnChainWalletConfig } from "@config"
 
 import {
   addPendingTransaction,
+  removePendingTransaction,
   addSettledTransaction,
   getLastOnChainAddress,
   registerBroadcastedPayout,
@@ -150,6 +151,53 @@ describe("Bria Event Handlers", () => {
       })
 
       expect(result).toBeInstanceOf(LessThanDustThresholdError)
+    })
+  })
+
+  describe("removePendingTransaction", () => {
+    it("removes an already existing transaction", async () => {
+      const txId = generateHash() as OnChainTxHash
+      const vout = VOUT_0
+      const satoshis = getRandomBtcAmountForOnchain()
+
+      const pendingRes = await addPendingTransaction({
+        txId,
+        vout,
+        satoshis,
+        address,
+      })
+      expect(pendingRes).toBe(true)
+
+      const pendingTxnsBefore = await WalletOnChainPendingReceive.countDocuments({
+        transactionHash: txId,
+        vout,
+      })
+      expect(pendingTxnsBefore).toEqual(1)
+
+      const settledRes = await removePendingTransaction({
+        txId,
+        vout,
+        address,
+      })
+      expect(settledRes).toBe(true)
+
+      const pendingTxnsAfter = await WalletOnChainPendingReceive.countDocuments({
+        transactionHash: txId,
+        vout,
+      })
+      expect(pendingTxnsAfter).toEqual(0)
+    })
+
+    it("ignores transactions that were not recorded", async () => {
+      const txId = generateHash() as OnChainTxHash
+      const vout = VOUT_0
+
+      const pendingRes = await removePendingTransaction({
+        txId,
+        vout,
+        address,
+      })
+      expect(pendingRes).toBe(true)
     })
   })
 

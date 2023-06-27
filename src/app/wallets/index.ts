@@ -1,5 +1,6 @@
 export * from "./add-invoice-for-wallet"
 export * from "./add-pending-on-chain-transaction"
+export * from "./remove-pending-on-chain-transaction"
 export * from "./add-settled-on-chain-transaction"
 export * from "./create-on-chain-address"
 export * from "./get-balance-for-wallet"
