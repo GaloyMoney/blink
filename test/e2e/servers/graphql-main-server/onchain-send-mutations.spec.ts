@@ -146,11 +146,11 @@ gql`
   }
 `
 
-describe("settles onchain", () => {
+describe("sends a payment", () => {
   const satsAmount = 25_000
   const centsAmount = 1_000
 
-  it("sends a payment", async () => {
+  it("settles onchain", async () => {
     // SEND PAYMENTS
     // ===============
 
@@ -311,6 +311,16 @@ describe("settles onchain", () => {
       }),
     )
     expect(txnsAfter).toEqual(expect.arrayContaining(expectArrayAfter))
+  })
+
+  it("settles intraledger", async () => {
+    // TODO: implement
+    expect(true).toBeTruthy()
+  })
+
+  it("settles trade intraccount", async () => {
+    // TODO: implement
+    expect(true).toBeTruthy()
   })
 })
 
