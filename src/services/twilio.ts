@@ -72,7 +72,9 @@ export const TwilioClient = (): IPhoneProviderService => {
 
   const getCarrier = async (phone: PhoneNumber) => {
     try {
-      const result = await client.lookups.phoneNumbers(phone).fetch({ type: ["carrier"] })
+      const result = await client.lookups.v1
+        .phoneNumbers(phone)
+        .fetch({ type: ["carrier"] })
       baseLogger.info({ result }, "result carrier info")
 
       // TODO: migration to save the converted value to mongoose instead
