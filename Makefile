@@ -117,11 +117,15 @@ execute-e2e-from-within-container:
 execute-e2e-from-within-container-cached:
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
-integration:
+legacy-integration:
 	yarn build && \
 	yarn test:integration
 
-reset-integration: reset-deps-integration integration
+use-cases:
+	yarn build && \
+	yarn test:use-cases
+
+reset-integration: reset-deps-integration legacy-integration
 
 e2e:
 	yarn build && \
