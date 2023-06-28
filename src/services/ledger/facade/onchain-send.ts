@@ -154,7 +154,7 @@ export const setOnChainTxIdByPayoutId = async ({
 
 export const settlePendingOnChainPayment = async (
   payoutId: PayoutId,
-): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
+): Promise<LedgerTransaction<WalletCurrency> | undefined | LedgerServiceError> => {
   try {
     const result = await Transaction.updateMany(
       { payout_id: payoutId },
@@ -176,7 +176,9 @@ export const settlePendingOnChainPayment = async (
     (txn) => txn.walletId && !nonUserWalletIds.includes(txn.walletId),
   )
 
-  if (userLedgerTxn === undefined) return new InvalidLedgerTransactionStateError()
+  if (userLedgerTxn === undefined && txns.length === 0) {
+    return new InvalidLedgerTransactionStateError()
+  }
 
   return userLedgerTxn
 }
