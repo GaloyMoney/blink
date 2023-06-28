@@ -57,9 +57,7 @@ import jwksRsa from "jwks-rsa"
 import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 
 import { UsersRepository } from "@services/mongoose"
-
 import { validateKratosCookie } from "@services/kratos"
-
 import { checkedToUserId } from "@domain/accounts"
 import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
 import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/shared"
@@ -496,6 +494,7 @@ export const startApolloServer = async ({
     httpServer.listen({ port }, () => {
       if (startSubscriptionServer) {
         const graphqlWs = new WebSocketServer({ noServer: true })
+        // const graphqlWs = new WebSocketServer({ server: httpServer, path: "/graphql" })
         const serverCleanup = useServer(
           {
             schema,
@@ -562,6 +561,11 @@ export const startApolloServer = async ({
             wss.emit("connection", ws, req)
           })
         })
+        // httpServer.on("upgrade", (req, socket, head) => {
+        //   graphqlWs.handleUpgrade(req, socket, head, (ws) => {
+        //     graphqlWs.emit("connection", ws, req)
+        //   })
+        // })
       }
 
       console.log(

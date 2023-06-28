@@ -43,7 +43,8 @@ import {
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   receivingWalletId: WalletId,
-  serverPid: PID
+  serverMainPid: PID,
+  serverWsPid: PID
 const receivingUsername = "user15" as Username
 const receivingUserRef = "G"
 const sendingUserRef = "D"
@@ -54,7 +55,8 @@ const { phone: phoneRecipient, code: codeRecipient } =
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
-  serverPid = await startServer("start-main-ci")
+  serverMainPid = await startServer("start-main-ci")
+  serverWsPid = await startServer("start-ws-ci")
 
   await loginFromPhoneAndCode({ phone, code })
   const { apolloClient: client } = await loginFromPhoneAndCode({
@@ -90,7 +92,8 @@ beforeEach(async () => {
 
 afterAll(async () => {
   disposeClient()
-  await killServer(serverPid)
+  await killServer(serverMainPid)
+  await killServer(serverWsPid)
 })
 
 describe("galoy-pay", () => {

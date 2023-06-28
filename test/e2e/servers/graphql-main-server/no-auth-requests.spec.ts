@@ -46,13 +46,16 @@ import {
 let correctCode: PhoneCode,
   apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
-  serverPid: PID
+  serverPid: PID,
+  serverWsPid: PID
 
 const { phone, code } = getPhoneAndCodeFromRef("G")
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   serverPid = await startServer("start-main-ci")
+  serverWsPid = await startServer("start-ws-ci")
+
   await loginFromPhoneAndCode({ phone, code })
 
   correctCode = `${code}` as PhoneCode
@@ -67,6 +70,7 @@ beforeEach(async () => {
 afterAll(async () => {
   disposeClient()
   await killServer(serverPid)
+  await killServer(serverWsPid)
 })
 
 describe("graphql", () => {
