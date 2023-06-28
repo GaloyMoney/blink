@@ -3,6 +3,9 @@ const { setupMongoConnection } = require("@services/mongodb")
 
 let mongoose
 
+// Mock prices
+jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+
 beforeAll(async () => {
   mongoose = await setupMongoConnection(true)
 })
