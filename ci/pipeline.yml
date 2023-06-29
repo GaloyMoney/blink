@@ -235,6 +235,10 @@ jobs:
             passed: [build-migrate-edge-image]
             params:
               format: oci
+          - get: websocket-edge-image
+            passed: [build-websocket-edge-image]
+            params:
+              format: oci
           - get: version
       - task: prep-release
         config:
