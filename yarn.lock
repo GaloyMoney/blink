@@ -2139,6 +2139,14 @@
     "@grpc/proto-loader" "^0.7.0"
     "@types/node" ">=12.12.47"
 
+"@grpc/grpc-js@1.8.16":
+  version "1.8.16"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.8.16.tgz#9a1b93703c065fde20b90d854126aadb89f4f0bd"
+  integrity sha512-Nvlq4V7XQmdRVDGgecR8ZPPCeY+uH1LhzbC+QxklwAahpQlq8YLsiOQgfkub9FiakRiohaDy361xqlTLkq9EHw==
+  dependencies:
+    "@grpc/proto-loader" "^0.7.0"
+    "@types/node" ">=12.12.47"
+
 "@grpc/grpc-js@1.8.4":
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.8.4.tgz#316674e8905e2dd310d8aa60331e05b32584e6ad"
@@ -3502,6 +3510,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.2.5.tgz#26d295f3570323b2837d322180dfbf1ba156fefb"
   integrity sha512-JJulVEQXmiY9Px5axXHeYGLSjhkZEnD+MDPDGbCbIAbMslkKwmygtZFy1X6s/075Yo94sf8GuSlFfPzysQrWZQ==
 
+"@types/node@20.3.1":
+  version "20.3.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.3.1.tgz#e8a83f1aa8b649377bb1fb5d7bac5cb90e784dfe"
+  integrity sha512-EhcH/wvidPy1WeML3TtYFGR83UzjxeWRen9V402T8aUGYsCHOmfoisV3ZSg03gAFIbLq8TnWOJ0f4cALtnSEUg==
+
 "@types/node@^10.0.3", "@types/node@^10.1.0":
   version "10.17.60"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.60.tgz#35f3d6213daed95da7f0f73e75bcc6980e90597b"
@@ -3646,6 +3659,13 @@
   version "8.5.4"
   resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.5.4.tgz#bb10e36116d6e570dd943735f86c933c1587b8a5"
   integrity sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==
+  dependencies:
+    "@types/node" "*"
+
+"@types/ws@8.5.5":
+  version "8.5.5"
+  resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.5.5.tgz#af587964aa06682702ee6dcbc7be41a80e4b28eb"
+  integrity sha512-lwhs8hktwxSjf9UaZ9tG5M03PGogvFaH8gUgLNbN9HKIg0dvv6q+gkSuJ8HN4/VbyxkuLzCjlN7GquQ0gUJfIg==
   dependencies:
     "@types/node" "*"
 
@@ -4686,7 +4706,7 @@ bitcoinjs-lib@6.1.2:
     typeforce "^1.11.3"
     varuint-bitcoin "^1.1.2"
 
-bitcoinjs-lib@^6.1.3:
+bitcoinjs-lib@6.1.3, bitcoinjs-lib@^6.1.3:
   version "6.1.3"
   resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-6.1.3.tgz#88aed5a8d052e9faa04c6402d3f0865441f928d7"
   integrity sha512-TYXs/Qf+GNk2nnsB9HrXWqzFuEgCg0Gx+v3UW3B8VuceFHXVvhT+7hRnTSvwkX0i8rz2rtujeU6gFaDcFqYFDw==
@@ -9743,20 +9763,20 @@ lightning@9.5.0:
     tiny-secp256k1 "2.2.2"
     type-fest "3.11.1"
 
-lightning@9.5.1, lightning@^9.5.1:
-  version "9.5.1"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.5.1.tgz#0588f754c2fe5d20f66cc9eb5480f00059c880ac"
-  integrity sha512-6RPWawk44WDZACixd1gJiPG6dOnLBiyjuUKg8Gt49++2Q51s3Uxbz7B8jJ3x/HJ7+ZzoMYCmscvF2eqZMr1Bvw==
+lightning@9.7.1, lightning@^9.5.1:
+  version "9.7.1"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.7.1.tgz#3a270017e7c51f5e376e92be0c6b304952f0d1bf"
+  integrity sha512-/3bey499RqR1m1oOop6reoOcpm6939yI5BQR9XMuFFVC0+WuTRE/okugwgFdQ0hJJ6V3ijg/finOVVHtfMCpng==
   dependencies:
-    "@grpc/grpc-js" "1.8.15"
+    "@grpc/grpc-js" "1.8.16"
     "@grpc/proto-loader" "0.7.7"
     "@types/express" "4.17.17"
-    "@types/node" "20.2.5"
+    "@types/node" "20.3.1"
     "@types/request" "2.48.8"
-    "@types/ws" "8.5.4"
+    "@types/ws" "8.5.5"
     async "3.2.4"
     asyncjs-util "1.2.11"
-    bitcoinjs-lib "6.1.2"
+    bitcoinjs-lib "6.1.3"
     bn.js "5.2.1"
     body-parser "1.20.2"
     bolt07 "1.8.3"
@@ -9767,7 +9787,7 @@ lightning@9.5.1, lightning@^9.5.1:
     invoices "2.2.3"
     psbt "2.7.2"
     tiny-secp256k1 "2.2.2"
-    type-fest "3.11.1"
+    type-fest "3.12.0"
 
 limiter@^1.1.5:
   version "1.1.5"
@@ -9901,16 +9921,16 @@ ln-service@56.5.0:
     morgan "1.10.0"
     ws "8.13.0"
 
-ln-service@^56.5.1:
-  version "56.5.1"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-56.5.1.tgz#1c31dab5811573a4f6468d2564b98d87aeb66ccf"
-  integrity sha512-R5CTDTW9A01h+7ekFv6nRtBEbMZSwUGiNx73DoyDVeYpp16AvSxZMmSpEhK9SxmUOVzD+ciwMblSrx9/KcPkRQ==
+ln-service@^56.7.1:
+  version "56.7.1"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-56.7.1.tgz#2267665d3c4be307050ebdab1afb2939ba29b4b2"
+  integrity sha512-FXRt7TrbbOKmCtniR0IL4WNhHUAyMBpLNZdubJwHHhTpQ53ahdfei/nso2RjtdjSNJAXLqAvjytR8wNa85O3Qw==
   dependencies:
     bolt07 "1.8.3"
     cors "2.8.5"
     express "4.18.2"
     invoices "2.2.3"
-    lightning "9.5.1"
+    lightning "9.7.1"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "8.13.0"
@@ -13666,6 +13686,11 @@ type-fest@3.11.1:
   version "3.11.1"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.11.1.tgz#d8e62c7f42e14537d5b8796de5450d541f3a33a7"
   integrity sha512-aCuRNRERRVh33lgQaJRlUxZqzfhzwTrsE98Mc3o3VXqmiaQdHacgUtJ0esp+7MvZ92qhtzKPeusaX6vIEcoreA==
+
+type-fest@3.12.0:
+  version "3.12.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.12.0.tgz#4ce26edc1ccc59fc171e495887ef391fe1f5280e"
+  integrity sha512-qj9wWsnFvVEMUDbESiilKeXeHL7FwwiFcogfhfyjmvT968RXSvnl23f1JOClTHYItsi7o501C/7qVllscUP3oA==
 
 type-fest@3.5.1:
   version "3.5.1"
