@@ -2131,7 +2131,7 @@
     "@grpc/proto-loader" "^0.7.0"
     "@types/node" ">=12.12.47"
 
-"@grpc/grpc-js@1.8.15", "@grpc/grpc-js@^1.8.15", "@grpc/grpc-js@~1.8.0":
+"@grpc/grpc-js@1.8.15":
   version "1.8.15"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.8.15.tgz#17829cbc9f2bc8b3b0e22a4da59d72db2a34df5c"
   integrity sha512-H2Bu/w6+oQ58DsRbQol66ERBk3V5ZIak/z/MDx0T4EgDnJWps807I6BvTjq0v6UvZtOcLO+ur+Q9wvniqu3OJA==
@@ -2143,6 +2143,14 @@
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.8.4.tgz#316674e8905e2dd310d8aa60331e05b32584e6ad"
   integrity sha512-oaETBotls7FTBpySg5dhyUCyXSxSeCMmkBBXHXG1iw57MiNoB6D7VRhkrXYbwyHM3Q3Afjp4KlsBX0Zb+ELZXw==
+  dependencies:
+    "@grpc/proto-loader" "^0.7.0"
+    "@types/node" ">=12.12.47"
+
+"@grpc/grpc-js@^1.8.17", "@grpc/grpc-js@~1.8.0":
+  version "1.8.17"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.8.17.tgz#a3a2f826fc033eae7d2f5ee41e0ab39cee948838"
+  integrity sha512-DGuSbtMFbaRsyffMf+VEkVu8HkSXEUfO3UyGJNtqxW9ABdtTIA+2UXAJpwbJS+xfQxuwqLUeELmL6FuZkOqPxw==
   dependencies:
     "@grpc/proto-loader" "^0.7.0"
     "@types/node" ">=12.12.47"
