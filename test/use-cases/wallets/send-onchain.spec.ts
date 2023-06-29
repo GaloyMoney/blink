@@ -77,259 +77,243 @@ const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 const randomOnChainMemo = () =>
   "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
 
-describe("BtcWallet - onChainPay", () => {
-  it("fails to send all from empty wallet", async () => {
-    const newWalletDescriptor = await createRandomUserAndWallet()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
+describe("onChainPay", () => {
+  describe("common", () => {
+    it("fails to send all from empty wallet", async () => {
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
 
-    const memo = randomOnChainMemo()
+      const memo = randomOnChainMemo()
 
-    // Execute use-case
-    const res = await Wallets.payAllOnChainByWalletId({
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-      address: outsideAddress,
-      amount: 0,
+      // Execute use-case
+      const res = await Wallets.payAllOnChainByWalletId({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        address: outsideAddress,
+        amount: 0,
 
-      speed: PayoutSpeed.Fast,
-      memo,
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      expect(res).toBeInstanceOf(InsufficientBalanceError)
+      expect(res instanceof Error && res.message).toEqual(`No balance left to send.`)
+
+      // Restore system state
+      Transaction.deleteMany({ memo })
     })
-    expect(res).toBeInstanceOf(InsufficientBalanceError)
-    expect(res instanceof Error && res.message).toEqual(`No balance left to send.`)
 
-    // Restore system state
-    Transaction.deleteMany({ memo })
+    it("fails if 'validatePaymentInput' fails", async () => {
+      const amount = -1000
+
+      const memo = randomOnChainMemo()
+
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        address: outsideAddress,
+        amount,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
+
+      // Restore system state
+      Transaction.deleteMany({ memo })
+    })
   })
 
-  it("fails if try to send a transaction to self", async () => {
-    const memo = randomOnChainMemo()
+  describe("settles onchain", () => {
+    it("fails if builder 'withConversion' step fails", async () => {
+      const memo = randomOnChainMemo()
 
-    const newWalletDescriptor = await createRandomUserAndWallet()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
 
-    // Fund balance for send
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: newWalletDescriptor,
-      paymentAmount: receiveAmounts,
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        address: outsideAddress,
+        amount: amountBelowDustThreshold,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      expect(result).toBeInstanceOf(LessThanDustThresholdError)
+
+      // Restore system state
+      Transaction.deleteMany({ memo })
     })
-    if (receive instanceof Error) throw receive
 
-    const newWalletIdAddress = await Wallets.createOnChainAddressForBtcWallet({
-      walletId: newWalletDescriptor.id,
+    it("fails if withdrawal limit hit", async () => {
+      const memo = randomOnChainMemo()
+
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Get remaining limit
+      const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+      if (timestamp1DayAgo instanceof Error) throw timestamp1DayAgo
+
+      const withdrawalLimit = getAccountLimits({
+        level: newAccount.level,
+      }).withdrawalLimit
+      const withdrawalLimitUsdAmount = {
+        amount: BigInt(withdrawalLimit),
+        currency: WalletCurrency.Usd,
+      }
+      const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
+        currency: WalletCurrency.Usd,
+      })
+      if (walletPriceRatio instanceof Error) throw walletPriceRatio
+      const withdrawalLimitBtcAmount = walletPriceRatio.convertFromUsd(
+        withdrawalLimitUsdAmount,
+      )
+
+      // Fund wallet past remaining limit
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: {
+          usd: calc.mul(withdrawalLimitUsdAmount, 2n),
+          btc: calc.mul(withdrawalLimitBtcAmount, 2n),
+        },
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        address: outsideAddress,
+        amount: Number(withdrawalLimitBtcAmount.amount) + 10_000,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+
+      expect(result).toBeInstanceOf(LimitsExceededError)
+
+      // Restore system state
+      Transaction.deleteMany({ memo })
     })
-    if (newWalletIdAddress instanceof Error) throw newWalletIdAddress
 
-    const res = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-      amount,
-      address: newWalletIdAddress,
+    it("fails if has insufficient balance for fee", async () => {
+      const memo = randomOnChainMemo()
 
-      speed: PayoutSpeed.Fast,
-      memo,
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const balance = await getBalanceHelper(newWalletDescriptor.id)
+
+      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        address: outsideAddress,
+        amount: balance,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+
+      //should fail because user does not have balance to pay for on-chain fee
+      expect(result).toBeInstanceOf(InsufficientBalanceError)
+
+      // Restore system state
+      Transaction.deleteMany({ memo })
     })
-    expect(res).toBeInstanceOf(SelfPaymentError)
-
-    // Restore system state
-    Transaction.deleteMany({ memo })
   })
 
-  it("fails if has insufficient balance for fee", async () => {
-    const memo = randomOnChainMemo()
+  describe("settles intraledger", () => {
+    it("fails if builder 'withRecipient' step fails", async () => {
+      const memo = randomOnChainMemo()
 
-    const newWalletDescriptor = await createRandomUserAndWallet()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
 
-    // Fund balance for send
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: newWalletDescriptor,
-      paymentAmount: receiveAmounts,
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
-    })
-    if (receive instanceof Error) throw receive
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
 
-    const balance = await getBalanceHelper(newWalletDescriptor.id)
+      const newWalletIdAddress = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: newWalletDescriptor.id,
+      })
+      if (newWalletIdAddress instanceof Error) throw newWalletIdAddress
 
-    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-      address: outsideAddress,
-      amount: balance,
+      const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+        address: newWalletIdAddress,
 
-      speed: PayoutSpeed.Fast,
-      memo,
-    })
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      expect(res).toBeInstanceOf(SelfPaymentError)
 
-    //should fail because user does not have balance to pay for on-chain fee
-    expect(result).toBeInstanceOf(InsufficientBalanceError)
-
-    // Restore system state
-    Transaction.deleteMany({ memo })
-  })
-
-  it("fails if has negative amount", async () => {
-    const amount = -1000
-
-    const memo = randomOnChainMemo()
-
-    const newWalletDescriptor = await createRandomUserAndWallet()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
-
-    // Fund balance for send
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: newWalletDescriptor,
-      paymentAmount: receiveAmounts,
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
-    })
-    if (receive instanceof Error) throw receive
-
-    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-      address: outsideAddress,
-      amount,
-
-      speed: PayoutSpeed.Fast,
-      memo,
-    })
-    expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
-
-    // Restore system state
-    Transaction.deleteMany({ memo })
-  })
-
-  it("fails if withdrawal limit hit", async () => {
-    const memo = randomOnChainMemo()
-
-    const newWalletDescriptor = await createRandomUserAndWallet()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
-
-    // Get remaining limit
-    const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
-    if (timestamp1DayAgo instanceof Error) throw timestamp1DayAgo
-
-    const withdrawalLimit = getAccountLimits({ level: newAccount.level }).withdrawalLimit
-    const withdrawalLimitUsdAmount = {
-      amount: BigInt(withdrawalLimit),
-      currency: WalletCurrency.Usd,
-    }
-    const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-      currency: WalletCurrency.Usd,
-    })
-    if (walletPriceRatio instanceof Error) throw walletPriceRatio
-    const withdrawalLimitBtcAmount = walletPriceRatio.convertFromUsd(
-      withdrawalLimitUsdAmount,
-    )
-
-    // Fund wallet past remaining limit
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: newWalletDescriptor,
-      paymentAmount: {
-        usd: calc.mul(withdrawalLimitUsdAmount, 2n),
-        btc: calc.mul(withdrawalLimitBtcAmount, 2n),
-      },
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
-    })
-    if (receive instanceof Error) throw receive
-
-    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-      address: outsideAddress,
-      amount: Number(withdrawalLimitBtcAmount.amount) + 10_000,
-
-      speed: PayoutSpeed.Fast,
-      memo,
+      // Restore system state
+      Transaction.deleteMany({ memo })
     })
 
-    expect(result).toBeInstanceOf(LimitsExceededError)
-
-    // Restore system state
-    Transaction.deleteMany({ memo })
-  })
-
-  it("fails if the amount is less than on chain dust amount", async () => {
-    const memo = randomOnChainMemo()
-
-    const newWalletDescriptor = await createRandomUserAndWallet()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
-
-    // Fund balance for send
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: newWalletDescriptor,
-      paymentAmount: receiveAmounts,
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
-    })
-    if (receive instanceof Error) throw receive
-
-    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-      address: outsideAddress,
-      amount: amountBelowDustThreshold,
-
-      speed: PayoutSpeed.Fast,
-      memo,
-    })
-    expect(result).toBeInstanceOf(LessThanDustThresholdError)
-
-    // Restore system state
-    Transaction.deleteMany({ memo })
-  })
-
-  it("fails if the amount is less than lnd on-chain dust amount", async () => {
-    const memo = randomOnChainMemo()
-
-    const newWalletDescriptor = await createRandomUserAndWallet()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
-
-    // Fund balance for send
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: newWalletDescriptor,
-      paymentAmount: receiveAmounts,
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
-    })
-    if (receive instanceof Error) throw receive
-
-    const result = await Wallets.payOnChainByWalletIdForBtcWallet({
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-      address: outsideAddress,
-      amount: 1,
-
-      speed: PayoutSpeed.Fast,
-      memo: randomOnChainMemo(),
-    })
-    expect(result).toBeInstanceOf(LessThanDustThresholdError)
-
-    // Restore system state
-    Transaction.deleteMany({ memo })
-  })
-})
-
-describe("UsdWallet - onChainPay", () => {
-  describe("to an internal address", () => {
-    it("fails to send with less-than-1-cent amount from btc wallet to usd wallet", async () => {
+    it("fails if builder 'withConversion' step fails", async () => {
       const memo = randomOnChainMemo()
 
       const newWalletDescriptor = await createRandomUserAndWallet()
