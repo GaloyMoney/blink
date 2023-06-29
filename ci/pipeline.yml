@@ -280,6 +280,9 @@ jobs:
           - get: migrate-edge-image
             passed: [release]
             params: { skip_download: true }
+          - get: websocket-edge-image
+            passed: [release]
+            params: { skip_download: true }
           - get: repo
             trigger: true
             passed:
@@ -297,6 +300,7 @@ jobs:
             - name: repo
             - name: edge-image
             - name: migrate-edge-image
+            - name: websocket-edge-image
             - name: pipeline-tasks
             - name: charts-repo
             - name: version
@@ -318,6 +322,7 @@ jobs:
             - name: pipeline-tasks
             - name: edge-image
             - name: migrate-edge-image
+            - name: websocket-edge-image
             - name: charts-repo
           params:
             GH_TOKEN: #@ data.values.github_token
