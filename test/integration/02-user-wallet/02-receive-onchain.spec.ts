@@ -24,10 +24,18 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { WalletPriceRatio } from "@domain/payments"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  AmountCalculator,
+  paymentAmountFromNumber,
+  WalletCurrency,
+  ZERO_SATS,
+} from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
-import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
+import {
+  CouldNotFindWalletOnChainPendingReceiveError,
+  MultipleCurrenciesForSingleCurrencyOperationError,
+} from "@domain/errors"
 
 import { BriaPayloadType } from "@services/bria"
 import { LedgerService } from "@services/ledger"
@@ -63,6 +71,7 @@ import {
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
   getTransactionsForWalletId,
+  getUsdWalletIdByTestUserRef,
   lndonchain,
   manyBriaSubscribe,
   mineBlockAndSyncAll,
@@ -78,6 +87,7 @@ import {
 } from "test/helpers"
 
 let walletIdA: WalletId
+let walletIdUsdA: WalletId
 let walletIdB: WalletId
 let accountIdA: AccountId
 
@@ -97,6 +107,7 @@ beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
   accountIdA = await getAccountIdByTestUserRef("A")
 
@@ -1738,6 +1749,38 @@ describe("With Lnd", () => {
 
       await sleep(3000)
       sub.removeAllListeners()
+    })
+  })
+})
+
+describe("Use cases", () => {
+  describe("getPendingOnChainBalanceForWallets", () => {
+    describe("with no pending incoming txns", () => {
+      it("returns zero balance", async () => {
+        const walletA = await WalletsRepository().findById(walletIdA)
+        if (walletA instanceof Error) throw walletA
+
+        const res = await Wallets.getPendingOnChainBalanceForWallets([walletA])
+        expect(res).toStrictEqual({ [walletIdA]: ZERO_SATS })
+      })
+
+      it("returns error for mixed wallet currencies", async () => {
+        const walletA = await WalletsRepository().findById(walletIdA)
+        if (walletA instanceof Error) throw walletA
+        const walletUsdA = await WalletsRepository().findById(walletIdUsdA)
+        if (walletUsdA instanceof Error) throw walletUsdA
+
+        const res = await Wallets.getPendingOnChainBalanceForWallets([
+          walletA,
+          walletUsdA,
+        ])
+        expect(res).toBeInstanceOf(MultipleCurrenciesForSingleCurrencyOperationError)
+      })
+
+      it("returns error for no wallets passed", async () => {
+        const res = await Wallets.getPendingOnChainBalanceForWallets([])
+        expect(res).toBeInstanceOf(MultipleCurrenciesForSingleCurrencyOperationError)
+      })
     })
   })
 })
