@@ -13,10 +13,13 @@ import { NotificationsService } from "@services/notifications"
 export const settlePayout = async (
   payoutId: PayoutId,
 ): Promise<true | ApplicationError> => {
+  // Settle transaction in ledger
   const ledgerTxn = await LedgerFacade.settlePendingOnChainPayment(payoutId)
   if (ledgerTxn instanceof Error) return ledgerTxn
-  if (ledgerTxn.walletId === undefined) return new InvalidLedgerTransactionStateError()
+  if (ledgerTxn === undefined) return true
 
+  // Send notification to end user
+  if (ledgerTxn.walletId === undefined) return new InvalidLedgerTransactionStateError()
   const wallet = await WalletsRepository().findById(ledgerTxn.walletId)
   if (wallet instanceof Error) return wallet
   const account = await AccountsRepository().findById(wallet.accountId)
