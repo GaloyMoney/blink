@@ -12,6 +12,7 @@ import {
   PhoneProviderRateLimitExceededError,
   RestrictedRecipientPhoneNumberError,
   PhoneProviderUnavailableError,
+  InvalidOrApprovedVerificationError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 
@@ -148,6 +149,9 @@ const handleCommonErrors = (err: Error | string | unknown) => {
     case match(KnownTwilioErrorMessages.FraudulentActivityBlock):
       return new RestrictedRecipientPhoneNumberError(errMsg)
 
+    case match(KnownTwilioErrorMessages.InvalidOrApprovedVerification):
+      return new InvalidOrApprovedVerificationError(errMsg)
+
     default:
       return new UnknownPhoneProviderServiceError(errMsg)
   }
@@ -168,6 +172,8 @@ export const KnownTwilioErrorMessages = {
   FraudulentActivityBlock:
     /The destination phone number has been temporarily blocked by Twilio due to fraudulent activities/,
   ServiceUnavailable: /Service is unavailable. Please try again/,
+  InvalidOrApprovedVerification:
+    /The requested resource \/Services\/(.*?)\/VerificationCheck was not found/,
 } as const
 
 export const isPhoneCodeValid = async ({
