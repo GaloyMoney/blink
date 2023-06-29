@@ -167,3 +167,5 @@ export const mongodbCredentials = () => {
 export const feedback = {
   mattermostWebhookUrl: process.env.MATTERMOST_WEBHOOK_URL,
 }
+
+export const IP_FETCHER_KEY = process.env.IP_FETCHER_KEY

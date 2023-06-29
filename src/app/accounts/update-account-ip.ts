@@ -1,4 +1,4 @@
-import { getIpConfig } from "@config"
+import { IP_FETCHER_KEY, getIpConfig } from "@config"
 import { isPrivateIp } from "@domain/accounts-ips"
 import { RepositoryError } from "@domain/errors"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
@@ -71,7 +71,7 @@ export const updateAccountIPsInfo = async ({
     ipConfig.proxyCheckingEnabled &&
     (!ipInfo.isoCode || ipInfo.proxy === undefined || !ipInfo.asn)
   ) {
-    const ipFetcher = IpFetcher()
+    const ipFetcher = IpFetcher(IP_FETCHER_KEY)
     const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip)
 
     if (ipFetcherInfo instanceof IpFetcherServiceError) {

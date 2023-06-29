@@ -1,8 +1,7 @@
 import axios from "axios"
 import { UnknownIpFetcherServiceError } from "@domain/ipfetcher"
-import { PROXY_CHECK_APIKEY } from "@config"
 
-export const IpFetcher = (): IIpFetcherService => {
+export const IpFetcher = (apiKey?: string): IIpFetcherService => {
   const fetchIPInfo = async (ip: string): Promise<IPInfo | IpFetcherServiceError> => {
     try {
       const params: { [id: string]: string } = {
@@ -12,8 +11,8 @@ export const IpFetcher = (): IIpFetcherService => {
         risk: "1",
       }
 
-      if (PROXY_CHECK_APIKEY) {
-        params["key"] = PROXY_CHECK_APIKEY
+      if (apiKey) {
+        params["key"] = apiKey
       }
 
       const { data } = await axios.request({
