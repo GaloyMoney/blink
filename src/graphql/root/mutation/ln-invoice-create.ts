@@ -1,11 +1,14 @@
+import dedent from "dedent"
+
+import { Wallets } from "@app"
+
 import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
+import Minutes from "@graphql/types/scalar/minutes"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
-import { Wallets } from "@app"
-import dedent from "dedent"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const LnInvoiceCreateInput = GT.Input({
   name: "LnInvoiceCreateInput",
@@ -16,6 +19,10 @@ const LnInvoiceCreateInput = GT.Input({
     },
     amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
     memo: { type: Memo, description: "Optional memo for the lightning invoice." },
+    expiresIn: {
+      type: Minutes,
+      description: "Optional invoice expiration time in minutes.",
+    },
   }),
 })
 
@@ -26,14 +33,14 @@ const LnInvoiceCreateMutation = GT.Field({
   type: GT.NonNull(LnInvoicePayload),
   description: dedent`Returns a lightning invoice for an associated wallet.
   When invoice is paid the value will be credited to a BTC wallet.
-  Expires after 24 hours.`,
+  Expires after 'expiresIn' or 24 hours.`,
   args: {
     input: { type: GT.NonNull(LnInvoiceCreateInput) },
   },
   resolve: async (_, args) => {
-    const { walletId, memo, amount } = args.input
+    const { walletId, amount, memo, expiresIn } = args.input
 
-    for (const input of [walletId, memo, amount]) {
+    for (const input of [walletId, amount, memo, expiresIn]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -43,6 +50,7 @@ const LnInvoiceCreateMutation = GT.Field({
       walletId,
       amount,
       memo,
+      expiresIn,
     })
 
     if (lnInvoice instanceof Error) {

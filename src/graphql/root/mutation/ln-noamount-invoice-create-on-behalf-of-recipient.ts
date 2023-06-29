@@ -1,10 +1,13 @@
-import { Wallets } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
-import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice"
-import Memo from "@graphql/types/scalar/memo"
-import WalletId from "@graphql/types/scalar/wallet-id"
 import dedent from "dedent"
+
+import { Wallets } from "@app"
+
+import { GT } from "@graphql/index"
+import Memo from "@graphql/types/scalar/memo"
+import Minutes from "@graphql/types/scalar/minutes"
+import WalletId from "@graphql/types/scalar/wallet-id"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice"
 
 const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
   name: "LnNoAmountInvoiceCreateOnBehalfOfRecipientInput",
@@ -15,6 +18,10 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
         "ID for either a USD or BTC wallet which belongs to the account of any user.",
     },
     memo: { type: Memo, description: "Optional memo for the lightning invoice." },
+    expiresIn: {
+      type: Minutes,
+      description: "Optional invoice expiration time in minutes.",
+    },
   }),
 })
 
@@ -25,14 +32,14 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
   type: GT.NonNull(LnNoAmountInvoicePayload),
   description: dedent`Returns a lightning invoice for an associated wallet.
   Can be used to receive any supported currency value (currently USD or BTC).
-  Expires after 24 hours.`,
+  Expires after 'expiresIn' or 24 hours for BTC invoices or 5 minutes for USD invoices.`,
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipientWalletId, memo } = args.input
+    const { recipientWalletId, memo, expiresIn } = args.input
 
-    for (const input of [recipientWalletId, memo]) {
+    for (const input of [recipientWalletId, memo, expiresIn]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -41,6 +48,7 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     const result = await Wallets.addInvoiceNoAmountForRecipient({
       recipientWalletId,
       memo,
+      expiresIn,
     })
 
     if (result instanceof Error) {

@@ -5,6 +5,7 @@ type Pubkey = string & { readonly brand: unique symbol }
 type WalletId = string & { readonly brand: unique symbol }
 type AccountId = string & { readonly brand: unique symbol }
 type Seconds = number & { readonly brand: unique symbol }
+type Minutes = number & { readonly brand: unique symbol }
 type MilliSeconds = number & { readonly brand: unique symbol }
 type Days = number & { readonly brand: unique symbol }
 type JwtToken = string & { readonly brand: unique symbol } // short lived asymmetric token from oathkeeper

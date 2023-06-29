@@ -1,24 +1,47 @@
 type AddInvoiceForSelfArgs = {
+  walletId: WalletId
+  amount: number
+  memo?: string
+  expiresIn: Minutes
+}
+
+type AddInvoiceForSelfForBtcWalletArgs = {
   walletId: string
   amount: number
   memo?: string
+  expiresIn?: number
 }
+
+type AddInvoiceForSelfForUsdWalletArgs = AddInvoiceForSelfForBtcWalletArgs
 
 type AddInvoiceNoAmountForSelfArgs = {
   walletId: string
   memo?: string
+  expiresIn?: number
 }
 
 type AddInvoiceForRecipientArgs = {
+  recipientWalletId: WalletId
+  amount: number
+  memo?: string
+  descriptionHash?: string
+  expiresIn: Minutes
+}
+
+type AddInvoiceForRecipientForBtcWalletArgs = {
   recipientWalletId: string
   amount: number
   memo?: string
   descriptionHash?: string
+  expiresIn?: number
 }
+
+type AddInvoiceForRecipientForUsdWalletArgs = AddInvoiceForRecipientForBtcWalletArgs
 
 type AddInvoiceNoAmountForRecipientArgs = {
   recipientWalletId: string
   memo?: string
+  expiresIn?: number
 }
 
 type BuildWIBWithAmountFnArgs = {
@@ -27,7 +50,7 @@ type BuildWIBWithAmountFnArgs = {
 }
 
 type AddInvoiceArgs = {
-  walletId: string
+  walletId: WalletId
   limitCheckFn: (accountId: AccountId) => Promise<true | RateLimitServiceError>
   buildWIBWithAmountFn: (
     buildWIBWithAmountFnArgs: BuildWIBWithAmountFnArgs,

@@ -8,6 +8,7 @@ import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
 } from "@domain/shared"
+import { toSeconds } from "@domain/primitives"
 
 import { InvalidWalletInvoiceBuilderStateError } from "./errors"
 
@@ -57,6 +58,20 @@ export const WIBWithOrigin = (state: WIBWithOriginState): WIBWithOrigin => {
 }
 
 export const WIBWithRecipient = (state: WIBWithRecipientState): WIBWithRecipient => {
+  const withExpiration = (minutes: Minutes): WIBWithExpiration => {
+    const { currency } = state.recipientWalletDescriptor
+    const invoiceExpiration = invoiceExpirationForCurrency(
+      currency,
+      new Date(),
+      toSeconds(minutes * 60),
+    )
+    return WIBWithExpiration({ ...state, invoiceExpiration })
+  }
+
+  return { withExpiration }
+}
+
+export const WIBWithExpiration = (state: WIBWithExpirationState): WIBWithExpiration => {
   const withAmount = async (uncheckedAmount: number) => {
     if (state.recipientWalletDescriptor.currency === WalletCurrency.Usd) {
       const usdAmount = checkedToUsdPaymentAmount(uncheckedAmount)
@@ -64,35 +79,26 @@ export const WIBWithRecipient = (state: WIBWithRecipientState): WIBWithRecipient
       const btcAmount = await state.dealerBtcFromUsd(usdAmount)
       if (btcAmount instanceof Error) return btcAmount
 
-      const invoiceExpiration = invoiceExpirationForCurrency(
-        WalletCurrency.Usd,
-        new Date(),
-      )
       return WIBWithAmount({
         ...state,
         hasAmount: true,
         btcAmount,
         usdAmount,
-        invoiceExpiration,
       })
     }
-    const invoiceExpiration = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
     const btcAmount = checkedToBtcPaymentAmount(uncheckedAmount)
 
     if (btcAmount instanceof Error) return btcAmount
 
-    return WIBWithAmount({ ...state, hasAmount: true, btcAmount, invoiceExpiration })
+    return WIBWithAmount({ ...state, hasAmount: true, btcAmount })
   }
 
-  const withoutAmount = async () => {
-    const invoiceExpiration = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
-    return WIBWithAmount({
+  const withoutAmount = async () =>
+    WIBWithAmount({
       ...state,
       hasAmount: false,
       btcAmount: ZERO_SATS,
-      invoiceExpiration,
     })
-  }
 
   return {
     withAmount,

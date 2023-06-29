@@ -44,15 +44,22 @@ type WIBWithRecipientState = WIBWithOriginState & {
 }
 
 type WIBWithRecipient = {
+  withExpiration: (minutes: Minutes) => WIBWithExpiration
+}
+
+type WIBWithExpirationState = WIBWithRecipientState & {
+  invoiceExpiration: InvoiceExpiration
+}
+
+type WIBWithExpiration = {
   withAmount: (
     uncheckedAmount: number,
   ) => Promise<WIBWithAmount | ValidationError | DealerPriceServiceError>
   withoutAmount: () => Promise<WIBWithAmount>
 }
 
-type WIBWithAmountState = WIBWithRecipientState & {
+type WIBWithAmountState = WIBWithExpirationState & {
   hasAmount: boolean
-  invoiceExpiration: InvoiceExpiration
   btcAmount: BtcPaymentAmount
   usdAmount?: UsdPaymentAmount
 }
