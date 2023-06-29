@@ -1,10 +1,8 @@
 import { CacheKeys } from "@domain/cache"
-import { Prices } from "@app"
 import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache"
+import { LocalCacheService } from "@services/cache/local-cache"
 import { PriceCurrenciesNotAvailableError } from "@domain/price"
-
-jest.mock("@services/redis", () => ({}))
+import { listCurrencies } from "@app/prices"
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
@@ -12,8 +10,16 @@ jest.mock("@config", () => {
   return { ...config, getLndParams }
 })
 
-beforeEach(() => {
-  LocalCacheService().clear({ key: CacheKeys.PriceCurrencies })
+jest.mock("@services/tracing", () => ({
+  wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
+}))
+
+beforeEach(async () => {
+  await LocalCacheService().clear({ key: CacheKeys.PriceCurrencies })
+})
+
+afterEach(() => {
+  jest.resetAllMocks()
 })
 
 describe("Prices", () => {
@@ -43,7 +49,7 @@ describe("Prices", () => {
           listCurrencies: () => Promise.resolve(new PriceCurrenciesNotAvailableError()),
         }))
 
-      const currencies = await Prices.listCurrencies()
+      const currencies = await listCurrencies()
       expect(currencies).not.toBeInstanceOf(Error)
 
       if (currencies instanceof Error) throw currencies
@@ -60,7 +66,7 @@ describe("Prices", () => {
         ]),
       )
 
-      const cachedCurrencies = await Prices.listCurrencies()
+      const cachedCurrencies = await listCurrencies()
       expect(cachedCurrencies).toEqual(currencies)
     })
 
@@ -72,7 +78,7 @@ describe("Prices", () => {
         listCurrencies: () => Promise.resolve(new PriceCurrenciesNotAvailableError()),
       }))
 
-      const currencies = await Prices.listCurrencies()
+      const currencies = await listCurrencies()
       expect(currencies).toBeInstanceOf(PriceCurrenciesNotAvailableError)
     })
   })

@@ -1,20 +1,18 @@
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-
+import { W3CTraceContextPropagator } from "@opentelemetry/core"
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
+import { registerInstrumentations } from "@opentelemetry/instrumentation"
+import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
+import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
+import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
+import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
+import { Span as SdkSpan, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base"
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
 import {
   SemanticAttributes,
   SemanticResourceAttributes,
 } from "@opentelemetry/semantic-conventions"
-import { W3CTraceContextPropagator } from "@opentelemetry/core"
-import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
-import { HttpInstrumentation } from "@opentelemetry/instrumentation-http"
-import { GraphQLInstrumentation } from "@opentelemetry/instrumentation-graphql"
-import { MongoDBInstrumentation } from "@opentelemetry/instrumentation-mongodb"
-import { IORedisInstrumentation } from "@opentelemetry/instrumentation-ioredis"
-import { GrpcInstrumentation } from "@opentelemetry/instrumentation-grpc"
-import { registerInstrumentations } from "@opentelemetry/instrumentation"
-import { SimpleSpanProcessor, Span as SdkSpan } from "@opentelemetry/sdk-trace-base"
-import { JaegerExporter } from "@opentelemetry/exporter-jaeger"
-import { Resource } from "@opentelemetry/resources"
+
 import {
   trace,
   context,
@@ -32,20 +30,12 @@ import { ErrorLevel, RankedErrorLevel, parseErrorFromUnknown } from "@domain/sha
 import { NetInstrumentation } from "@opentelemetry/instrumentation-net"
 
 import type * as graphqlTypes from "graphql"
+import { Resource } from "@opentelemetry/resources"
 type ExtendedException = Exclude<Exception, string> & {
   level?: ErrorLevel
 }
 
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
-
-// Tracing config is included here (instead of in @config) to avoid circular dependencies
-// This is (correctly) the only service imported directly from src/domain modules
-// That is what necessitates the exception
-const tracingConfig = {
-  jaegerHost: process.env.JAEGER_HOST || "localhost",
-  jaegerPort: parseInt(process.env.JAEGER_PORT || "6832", 10),
-  tracingServiceName: process.env.TRACING_SERVICE_NAME || "galoy-dev",
-}
 
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client
@@ -151,6 +141,7 @@ const recordGqlErrors = ({
     })
   }
 
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
   // @ts-ignore-next-line no-implicit-any error
   errors.forEach((err, idx) => {
     setErrorAttribute({
@@ -215,14 +206,16 @@ registerInstrumentations({
   ],
 })
 
+// FIXME we should be using OTEL_SERVICE_NAME and not have to set it manually
+// but it doesn't seem to work
 const provider = new NodeTracerProvider({
   resource: Resource.default().merge(
     new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: tracingConfig?.tracingServiceName,
+      [SemanticResourceAttributes.SERVICE_NAME]:
+        process.env.TRACING_SERVICE_NAME || "galoy-dev",
     }),
   ),
 })
-
 class SpanProcessorWrapper extends SimpleSpanProcessor {
   onStart(span: SdkSpan, parentContext: Context) {
     const ctx = context.active()
@@ -237,21 +230,13 @@ class SpanProcessorWrapper extends SimpleSpanProcessor {
     super.onStart(span, parentContext)
   }
 }
-provider.addSpanProcessor(
-  new SpanProcessorWrapper(
-    new JaegerExporter({
-      host: tracingConfig?.jaegerHost,
-      port: tracingConfig?.jaegerPort,
-    }),
-  ),
-)
+
+provider.addSpanProcessor(new SpanProcessorWrapper(new OTLPTraceExporter()))
 
 provider.register()
 
-export const tracer = trace.getTracer(
-  tracingConfig?.tracingServiceName,
-  process.env.COMMITHASH || "dev",
-)
+export const tracer = trace.getTracer(process.env.COMMITHASH || "dev")
+
 export const addAttributesToCurrentSpan = (attributes: Attributes) => {
   const span = trace.getSpan(context.active())
   if (span) {

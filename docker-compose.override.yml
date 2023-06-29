@@ -2,8 +2,7 @@ version: "2"
 services:
   otel-agent:
     ports:
-      - "6831:6831/udp" # Jaeger receiver
-      - "6832:6832/udp" # Jaeger receiver
+      - "4318:4318" # http receiver
   price:
     ports:
       - "50051:50051"
