@@ -26,6 +26,7 @@ export const sendOathkeeperRequestGraphql = async (
       url: requestUrl,
       method: "POST",
       headers,
+      timeout: 1000,
     })
 
     const jwt = res.headers.authorization
