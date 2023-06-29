@@ -34,7 +34,7 @@ const FeedbackSubmit = GT.Field<
       return { errors: [{ message: feedback.message }] }
     }
 
-    const success = await Comm.feedbackSubmit({
+    const success = await Comm.submitFeedback({
       feedback,
       accountId: domainAccount.id,
       username: domainAccount.username,

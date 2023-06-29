@@ -1,1 +1,1 @@
-export * from "./feedback-submit"
+export * from "./submit-feedback"

@@ -4,7 +4,7 @@ import { ErrorLevel } from "@domain/shared"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 import axios from "axios"
 
-export const feedbackSubmit = async ({
+export const submitFeedback = async ({
   feedback,
   accountId,
   username,
