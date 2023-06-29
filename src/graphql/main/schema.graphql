@@ -317,6 +317,15 @@ enum ExchangeCurrencyUnit {
   USDCENT
 }
 
+"""
+Feedback shared with our user
+"""
+scalar Feedback
+
+input FeedbackSubmitInput {
+  feedback: Feedback!
+}
+
 type FeesInformation {
   deposit: DepositFeesInformation!
 }
@@ -687,6 +696,7 @@ type Mutation {
   deviceNotificationTokenCreate(
     input: DeviceNotificationTokenCreateInput!
   ): SuccessPayload!
+  feedbackSubmit(input: FeedbackSubmitInput!): SuccessPayload!
 
   """
   Actions a payment which is internal to the ledger e.g. it does

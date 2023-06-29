@@ -25,6 +25,7 @@ export const SECS_PER_DAY = (24 * 60 * 60) as Seconds
 export const ONE_DAY = toDays(1)
 
 export const MAX_BYTES_FOR_MEMO = 639 // BOLT
+export const MAX_LENGTH_FOR_FEEDBACK = 1024
 
 export const MIN_SATS_FOR_PRICE_RATIO_PRECISION = 5000n
 
