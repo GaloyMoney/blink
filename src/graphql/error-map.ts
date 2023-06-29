@@ -160,6 +160,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Issue detected with phone number. Please try again later or contact support."
       return new PhoneProviderError({ message, logger: baseLogger })
 
+    case "InvalidOrApprovedVerificationError":
+      message =
+        "Issue detected with verification. Please try again later or contact support."
+      return new PhoneProviderError({ message, logger: baseLogger })
+
     case "UnsubscribedRecipientPhoneProviderError":
       message = "Phone number has opted out of receiving messages"
       return new ValidationInternalError({ message, logger: baseLogger })
