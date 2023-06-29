@@ -4,6 +4,7 @@ set -eu
 
 export digest=$(cat ./edge-image/digest)
 export migrate_digest=$(cat ./migrate-edge-image/digest)
+export websocket_digest=$(cat ./websocket-edge-image/digest)
 
 pushd charts-repo
 
@@ -22,6 +23,11 @@ ${digest}
 The mongodbMigrate image will be bumped to digest:
 \`\`\`
 ${migrate_digest}
+\`\`\`
+
+The websocket image will be bumped to digest:
+\`\`\`
+${websocket_digest}
 \`\`\`
 
 Code diff contained in this image:
