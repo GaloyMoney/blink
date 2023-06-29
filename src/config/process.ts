@@ -163,3 +163,7 @@ export const mongodbCredentials = () => {
 
   return { user, password, address, db }
 }
+
+export const feedback = {
+  mattermostWebhookUrl: process.env.MATTERMOST_WEBHOOK_URL,
+}
