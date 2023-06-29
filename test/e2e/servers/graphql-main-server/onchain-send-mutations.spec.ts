@@ -28,6 +28,7 @@ import {
   bitcoindClient,
   bitcoindOutside,
   bitcoindSignerClient,
+  checkIsBalanced,
   defaultStateConfig,
   fundWalletIdFromOnchainViaBria,
   getAccountByTestUserRef,
@@ -93,14 +94,16 @@ beforeAll(async () => {
   triggerPid = await startServer("start-trigger-ci")
 })
 
+afterEach(async () => {
+  await checkIsBalanced()
+})
+
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
   await bitcoindSignerClient.unloadWallet({ walletName: "dev" })
   disposeClient()
   await killServer(serverPid)
   await killServer(triggerPid)
-
-  await sleep(2000)
 })
 
 gql`
