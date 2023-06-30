@@ -4,7 +4,7 @@ import { CouldNotFindAccountIpError, PersistError, RepositoryError } from "@doma
 
 import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
 
-interface UpdateQuery {
+type UpdateQuery = {
   $set: {
     lastConnection: Date
     metadata?: IPType
@@ -49,7 +49,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
   const findByAccountIdAndIp = async ({
     accountId,
     ip,
-  }: FindByAccountIdAndIpInput): Promise<AccountIP | RepositoryError> => {
+  }: FindByAccountIdAndIpArgs): Promise<AccountIP | RepositoryError> => {
     try {
       const result = await AccountIps.findOne({
         _accountId: toObjectId<AccountId>(accountId),

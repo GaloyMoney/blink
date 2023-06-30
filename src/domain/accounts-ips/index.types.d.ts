@@ -21,7 +21,7 @@ type IPMetadataValidator = {
   validateForReward(ipMetadata?: IPType): true | ValidationError
 }
 
-type FindByAccountIdAndIpInput = {
+type FindByAccountIdAndIpArgs = {
   accountId: AccountId
   ip: IpAddress
 }
@@ -29,7 +29,7 @@ type FindByAccountIdAndIpInput = {
 interface IAccountsIPsRepository {
   update(accountIp: AccountIP | AccountIPNew): Promise<true | RepositoryError>
   findByAccountIdAndIp(
-    input: FindByAccountIdAndIpInput,
+    input: FindByAccountIdAndIpArgs,
   ): Promise<AccountIP | RepositoryError>
   findLastByAccountId(accountId: AccountId): Promise<AccountIP | RepositoryError>
 }

@@ -54,14 +54,12 @@ export const addEarn = async ({
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
 
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
-  console.log({ accountIP }, "accountIP")
   if (accountIP instanceof Error) return accountIP
 
   const validatedIPMetadata = IPMetadataValidator(rewardsConfig).validateForReward(
     accountIP.metadata,
   )
   if (validatedIPMetadata instanceof Error) {
-    console.log("validatedIPMetadata", validatedIPMetadata)
     return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
   }
 
