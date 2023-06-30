@@ -67,8 +67,8 @@ unit:
 	yarn test:unit
 
 watch-unit:
-	$(BIN_DIR)/jest --config ./test/jest-unit.config.js --clearCache
-	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/jest-unit.config.js
+	$(BIN_DIR)/jest --config ./test/unit/jest.config.js --clearCache
+	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/unit/jest.config.js
 
 watch-compile:
 	$(BIN_DIR)/tsc --watch  --noEmit
@@ -112,10 +112,10 @@ del-containers:
 execute-e2e-from-within-container:
 	yarn install && \
 	yarn build && \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/e2e/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/e2e/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 legacy-integration:
 	yarn build && \
@@ -147,7 +147,7 @@ execute-integration-from-within-container:
 
 unit-in-ci:
 	. ./.envrc && \
-		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/jest-unit.config.js --ci --bail --maxWorkers=50%
+		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/unit/jest.config.js --ci --bail --maxWorkers=50%
 
 check-implicit:
 	yarn tsc-check-noimplicitany
