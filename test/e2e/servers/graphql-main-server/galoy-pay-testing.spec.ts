@@ -18,6 +18,7 @@ import {
   clearAccountLocks,
   clearLimiters,
   fundWalletIdFromLightning,
+  getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
 } from "test/helpers"
@@ -78,7 +79,12 @@ beforeAll(async () => {
   serverMainPid = await startServer("start-main-ci")
   serverWsPid = await startServer("start-ws-ci")
 
+  // Ensure accounts are created and still exist
   await loginFromPhoneAndCode({ phone, code })
+  await getAccountByTestUserRef(receivingUserRef)
+  await getAccountByTestUserRef(sendingUserRef)
+
+  // Update username
   const { apolloClient: client } = await loginFromPhoneAndCode({
     phone: phoneRecipient,
     code: codeRecipient,
