@@ -36,7 +36,7 @@ module.exports = {
           }
 
           // Insert the new document into the AccountIps collection
-          await db.collection("account_ips").insertOne(accountIp)
+          await db.collection("accountips").insertOne(accountIp)
         }
       }
 
@@ -45,6 +45,11 @@ module.exports = {
         .collection("accounts")
         .updateOne({ _id: accountId }, { $unset: { lastIPs: 1, lastConnection: 1 } })
     }
+
+    // another pass in case lastIPs and lastConnection has been added during the migration
+    await db
+      .collection("accounts")
+      .updateMany({}, { $unset: { lastIPs: 1, lastConnection: 1 } })
 
     console.log("Completed AccountSchema to AccountIpsSchema migration")
   },

@@ -1,11 +1,6 @@
 import { AccountIps } from "@services/mongoose/schema"
 
-import {
-  CouldNotFindError,
-  CouldNotFindUserFromIdError,
-  PersistError,
-  RepositoryError,
-} from "@domain/errors"
+import { CouldNotFindAccountIpError, PersistError, RepositoryError } from "@domain/errors"
 
 import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
 
@@ -34,10 +29,11 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
       const result = await AccountIps.updateOne(
         { _accountId: toObjectId<AccountId>(accountIp.accountId), ip: accountIp.ip },
         updateQuery,
+        { upsert: true },
       )
 
       if (result.matchedCount === 0) {
-        return new CouldNotFindError("Couldn't find accountIp")
+        return new CouldNotFindAccountIpError("Couldn't find accountIp")
       }
 
       if (result.modifiedCount !== 1) {
@@ -60,7 +56,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
         ip,
       })
       if (!result) {
-        return new CouldNotFindUserFromIdError(accountId)
+        return new CouldNotFindAccountIpError(accountId)
       }
 
       return accountIPFromRaw(result)
@@ -69,7 +65,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
     }
   }
 
-  const lastByAccountId = async (
+  const findLastByAccountId = async (
     accountId: AccountId,
   ): Promise<AccountIP | RepositoryError> => {
     try {
@@ -78,7 +74,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
       }).sort({ lastConnection: -1 })
 
       if (!result) {
-        return new CouldNotFindUserFromIdError(accountId)
+        return new CouldNotFindAccountIpError(accountId)
       }
 
       return accountIPFromRaw(result)
@@ -89,7 +85,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
 
   return {
     update,
-    lastByAccountId,
+    findLastByAccountId,
     findByAccountIdAndIp,
   }
 }

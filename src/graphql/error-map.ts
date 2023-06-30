@@ -565,6 +565,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "ExtendSessionKratosError":
     case "MultipleCurrenciesForSingleCurrencyOperationError":
     case "MattermostError":
+    case "CouldNotFindAccountIpError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

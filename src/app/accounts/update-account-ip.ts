@@ -1,6 +1,6 @@
 import { getIpConfig } from "@config"
 import { isPrivateIp } from "@domain/accounts-ips"
-import { CouldNotFindError, RepositoryError } from "@domain/errors"
+import { CouldNotFindAccountIpError, RepositoryError } from "@domain/errors"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { ErrorLevel } from "@domain/shared"
 import { IpFetcher } from "@services/ipfetcher"
@@ -39,7 +39,7 @@ export const updateAccountIPsInfo = async ({
   let newAccountIP: AccountIPNew | undefined
 
   const existingAccountIP = await accountsIps.findByAccountIdAndIp({ accountId, ip })
-  if (existingAccountIP instanceof CouldNotFindError) {
+  if (existingAccountIP instanceof CouldNotFindAccountIpError) {
     newAccountIP = {
       accountId,
       ip,
