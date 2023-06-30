@@ -60,6 +60,7 @@ export const addEarn = async ({
     accountIP.metadata,
   )
   if (validatedIPMetadata instanceof Error) {
+    console.log("validatedIPMetadata", validatedIPMetadata)
     return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
   }
 
