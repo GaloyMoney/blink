@@ -21,7 +21,7 @@ import {
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
 } from "test/helpers"
-import { loginFromPhoneAndCode, updateUsername } from "test/e2e/helpers/account-creation"
+import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
 import {
   LnInvoiceCreateOnBehalfOfRecipientDocument,
   LnInvoiceCreateOnBehalfOfRecipientMutation,
@@ -40,6 +40,8 @@ import {
   LnInvoicePaymentStatusQueryDocument,
   LnInvoicePaymentStatusSubscriptionDocument,
   LnInvoicePaymentStatusSubscriptionSubscription,
+  UserUpdateUsernameMutation,
+  UserUpdateUsernameDocument,
 } from "test/e2e/generated"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -56,6 +58,22 @@ const { phone: phoneRecipient, code: codeRecipient } =
   getPhoneAndCodeFromRef(receivingUserRef)
 
 beforeAll(async () => {
+  gql`
+    mutation userUpdateUsername($input: UserUpdateUsernameInput!) {
+      userUpdateUsername(input: $input) {
+        errors {
+          __typename
+          message
+        }
+        user {
+          __typename
+          id
+          username
+        }
+      }
+    }
+  `
+
   await initializeTestingState(defaultStateConfig())
   serverMainPid = await startServer("start-main-ci")
   serverWsPid = await startServer("start-ws-ci")
@@ -65,7 +83,10 @@ beforeAll(async () => {
     phone: phoneRecipient,
     code: codeRecipient,
   })
-  await updateUsername({ apolloClient: client, username: receivingUsername })
+  await client.mutate<UserUpdateUsernameMutation>({
+    mutation: UserUpdateUsernameDocument,
+    variables: { input: { username: receivingUsername } },
+  })
 
   const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserRef)
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
