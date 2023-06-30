@@ -12,9 +12,9 @@ import {
   mineBlockAndSyncAll,
   waitUntilGraphIsReady,
   waitUntilSyncAll,
-} from "./lightning"
+} from "test/helpers/lightning"
 
-import { clearAccountLocks, clearLimiters } from "./redis"
+import { clearAccountLocks, clearLimiters } from "test/helpers/redis"
 
 import {
   bitcoindClient,

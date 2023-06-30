@@ -3,13 +3,13 @@ import { decode } from "jsonwebtoken"
 import { OathkeeperUnauthorizedServiceError } from "@domain/oathkeeper/errors"
 import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 
+import { getPhoneAndCodeFromRef } from "test/helpers"
 import {
   createApolloClient,
   defaultTestClientConfig,
-  getPhoneAndCodeFromRef,
   killServer,
   startServer,
-} from "test/helpers"
+} from "test/e2e/helpers"
 import { UserLoginDocument } from "test/e2e/generated"
 let serverPid: PID
 

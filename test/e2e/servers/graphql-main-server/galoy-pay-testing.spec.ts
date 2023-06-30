@@ -6,20 +6,22 @@ import { toSats } from "@domain/bitcoin"
 import { gql } from "apollo-server-core"
 
 import {
-  clearAccountLocks,
-  clearLimiters,
   createApolloClient,
   defaultStateConfig,
   defaultTestClientConfig,
+  initializeTestingState,
+  promisifiedSubscription,
+  killServer,
+  startServer,
+} from "test/e2e/helpers"
+import {
+  clearAccountLocks,
+  clearLimiters,
   fundWalletIdFromLightning,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
-  promisifiedSubscription,
-  initializeTestingState,
-  killServer,
-  startServer,
 } from "test/helpers"
-import { loginFromPhoneAndCode, updateUsername } from "test/e2e/account-creation-e2e"
+import { loginFromPhoneAndCode, updateUsername } from "test/e2e/helpers/account-creation"
 import {
   LnInvoiceCreateOnBehalfOfRecipientDocument,
   LnInvoiceCreateOnBehalfOfRecipientMutation,

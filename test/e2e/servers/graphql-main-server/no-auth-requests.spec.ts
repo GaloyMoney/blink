@@ -17,19 +17,21 @@ import { publishCurrentPrices } from "@servers/trigger"
 import { gql } from "apollo-server-core"
 
 import {
-  clearAccountLocks,
-  clearLimiters,
-  clearLimitersWithExclusions,
   createApolloClient,
   defaultStateConfig,
   defaultTestClientConfig,
-  getPhoneAndCodeFromRef,
   initializeTestingState,
-  killServer,
   promisifiedSubscription,
+  killServer,
   startServer,
+} from "test/e2e/helpers"
+import {
+  clearAccountLocks,
+  clearLimiters,
+  clearLimitersWithExclusions,
+  getPhoneAndCodeFromRef,
 } from "test/helpers"
-import { loginFromPhoneAndCode } from "test/e2e/account-creation-e2e"
+import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
 import {
   MainQueryDocument,
   MainQueryQuery,

@@ -12,15 +12,17 @@ import {
 } from "../generated"
 
 import {
-  clearAccountLocks,
-  clearLimiters,
   createApolloClient,
   defaultStateConfig,
   defaultTestClientConfig,
-  fundWalletIdFromLightning,
   initializeTestingState,
   killServer,
   startServer,
+} from "test/e2e/helpers"
+import {
+  clearAccountLocks,
+  clearLimiters,
+  fundWalletIdFromLightning,
 } from "test/helpers"
 
 let serverPid: PID

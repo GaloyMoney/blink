@@ -2,7 +2,7 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
 import { gql } from "apollo-server-core"
 
-import { createApolloClient, defaultTestClientConfig } from "../helpers/apollo-client"
+import { createApolloClient, defaultTestClientConfig } from "./apollo-client"
 
 import {
   UserLoginDocument,

@@ -9,7 +9,7 @@ import { WalletType } from "@domain/wallets"
 
 import { sleep, timeoutWithCancel } from "@utils"
 
-import { loginFromPhoneAndCode } from "test/e2e/account-creation-e2e"
+import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
 import {
   OnChainAddressCreateDocument,
   OnChainAddressCreateMutation,
@@ -26,20 +26,22 @@ import {
 } from "test/e2e/generated"
 
 import {
+  defaultStateConfig,
+  initializeTestingState,
+  startServer,
+  killServer,
+} from "test/e2e/helpers"
+import {
   RANDOM_ADDRESS,
   bitcoindClient,
   bitcoindOutside,
   bitcoindSignerClient,
   checkIsBalanced,
-  defaultStateConfig,
   fundWalletIdFromOnchainViaBria,
   getAccountByTestUserRef,
   getBtcWalletDescriptorByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
-  initializeTestingState,
-  killServer,
-  startServer,
 } from "test/helpers"
 import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
