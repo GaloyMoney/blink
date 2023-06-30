@@ -1,8 +1,8 @@
-const swcConfig = require("./swc-config.json")
+const swcConfig = require("../swc-config.json")
 
 module.exports = {
   moduleFileExtensions: ["js", "json", "ts", "gql", "cjs", "mjs"],
-  rootDir: "../",
+  rootDir: "../../",
   roots: ["<rootDir>/test/e2e"],
   transform: {
     "^.+\\.(t|j)sx?$": ["@swc/jest", swcConfig],
