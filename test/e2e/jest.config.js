@@ -9,7 +9,6 @@ module.exports = {
     "^.+\\.(gql)$": "@graphql-tools/jest-transform",
   },
   testRegex: ".*\\.spec\\.ts$",
-  testSequencer: "<rootDir>/test/jest-test-sequencer.js",
   setupFilesAfterEnv: ["<rootDir>/test/e2e/jest.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
