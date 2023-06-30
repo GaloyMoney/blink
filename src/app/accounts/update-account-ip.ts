@@ -1,16 +1,16 @@
 import { getIpConfig } from "@config"
 import { isPrivateIp } from "@domain/accounts-ips"
-import { RepositoryError } from "@domain/errors"
+import { CouldNotFindAccountIpError, RepositoryError } from "@domain/errors"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { ErrorLevel } from "@domain/shared"
 import { IpFetcher } from "@services/ipfetcher"
-import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
+import { AccountsIpsRepository } from "@services/mongoose/accounts-ips"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 
-const accountsIp = AccountsIpRepository()
+const accountsIps = AccountsIpsRepository()
 
 export const updateAccountIPsInfo = async ({
   accountId,
@@ -32,46 +32,24 @@ export const updateAccountIPsInfo = async ({
     return
   }
 
-  const lastConnection = new Date()
-
-  const accountIPs = await accountsIp.findById(accountId)
-  if (accountIPs instanceof RepositoryError) return accountIPs
-
   if (!ipConfig.ipRecordingEnabled) {
-    // just updating last connection
-    const result = await accountsIp.update({ id: accountIPs.id })
-
-    if (result instanceof Error) {
-      logger.error(
-        { result, accountId, ip },
-        "impossible to update account last connection",
-      )
-
-      return result
-    }
-
     return
   }
 
-  let ipInfo: IPType
+  let newAccountIP: AccountIPNew | undefined
 
-  const ipFromDb = accountIPs.lastIPs.find((ipObject) => ipObject.ip === ip)
-
-  if (ipFromDb) {
-    ipInfo = ipFromDb
-    ipInfo.lastConnection = lastConnection
-  } else {
-    ipInfo = {
+  const existingAccountIP = await accountsIps.findByAccountIdAndIp({ accountId, ip })
+  if (existingAccountIP instanceof CouldNotFindAccountIpError) {
+    newAccountIP = {
+      accountId,
       ip,
-      firstConnection: lastConnection,
-      lastConnection: lastConnection,
+      metadata: undefined,
     }
-  }
+  } else if (existingAccountIP instanceof RepositoryError) return existingAccountIP
 
-  if (
-    ipConfig.proxyCheckingEnabled &&
-    (!ipInfo.isoCode || ipInfo.proxy === undefined || !ipInfo.asn)
-  ) {
+  const accountIP = (newAccountIP || existingAccountIP) as AccountIP | AccountIPNew
+
+  if (ipConfig.proxyCheckingEnabled && accountIP.metadata === undefined) {
     const ipFetcher = IpFetcher()
     const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip)
 
@@ -114,17 +92,10 @@ export const updateAccountIPsInfo = async ({
         },
       })
     } else {
-      // using Object.assign instead of ... because of conflict with mongoose hidden properties
-      ipInfo = Object.assign(ipInfo, ipFetcherInfo)
-
-      // removing current ip from lastIPs - if it exists
-      accountIPs.lastIPs = accountIPs.lastIPs.filter((ipDb) => ipDb.ip !== ip)
-
-      // adding it back with the correct info
-      accountIPs.lastIPs.push(ipInfo)
+      accountIP.metadata = ipFetcherInfo
     }
   }
-  const result = await accountsIp.update(accountIPs)
+  const result = await accountsIps.update(accountIP)
 
   if (result instanceof Error) {
     logger.error({ result, accountId, ip }, "impossible to update ip")

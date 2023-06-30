@@ -15,18 +15,16 @@ import {
   WalletsRepository,
   UsersRepository,
 } from "@services/mongoose"
-import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
+import { AccountsIpsRepository } from "@services/mongoose/accounts-ips"
 
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "./send-intraledger"
 
 export const addEarn = async ({
   quizQuestionId: quizQuestionIdString,
   accountId,
-  ip,
 }: {
   quizQuestionId: string
   accountId: AccountId /* AccountId: aid validation */
-  ip: IpAddress
 }): Promise<QuizQuestion | ApplicationError> => {
   const rewardsConfig = getRewardsConfig()
 
@@ -55,12 +53,12 @@ export const addEarn = async ({
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
 
-  const accountIP = await AccountsIpRepository().findById(recipientAccount.id)
+  const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
   if (accountIP instanceof Error) return accountIP
 
-  const ipFromDb = accountIP.lastIPs.find((ipObject) => ipObject.ip === ip)
-  const validatedIPMetadata =
-    IPMetadataValidator(rewardsConfig).validateForReward(ipFromDb)
+  const validatedIPMetadata = IPMetadataValidator(rewardsConfig).validateForReward(
+    accountIP.metadata,
+  )
   if (validatedIPMetadata instanceof Error) {
     return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
   }

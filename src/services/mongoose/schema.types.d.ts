@@ -1,7 +1,6 @@
 type ObjectId = import("mongoose").Types.ObjectId
 
 type IPType = {
-  ip: IpAddress | undefined
   provider?: string
   country?: string
   isoCode?: string
@@ -10,8 +9,6 @@ type IPType = {
   Type?: string
   asn?: string
   proxy?: boolean
-  firstConnection: Date
-  lastConnection: Date
 }
 
 type OnChainObjectForUser = {
@@ -83,24 +80,9 @@ interface AccountRecord {
   contactEnabled: boolean
   contacts: ContactObjectForUser[]
   created_at: Date
-  lastConnection: Date
   onchain: OnChainObjectForUser[]
   defaultWalletId: WalletId
   displayCurrency?: string
-
-  lastIPs: {
-    ip: string
-    provider: string
-    country: string
-    region: string
-    city: string
-    //using Type instead of type due to its special status in mongoose
-    Type: string
-    asn?: string
-    proxy?: boolean
-    firstConnection: Date
-    lastConnection: Date
-  }[]
 
   // business:
   title?: string
@@ -108,6 +90,23 @@ interface AccountRecord {
 
   // mongoose in-built functions
   save: () => Promise<AccountRecord>
+}
+
+interface AccountIpsRecord {
+  ip: string
+  metadata: {
+    provider: string
+    country: string
+    isoCode: string
+    region: string
+    city: string
+    Type: string
+    asn: string
+    proxy: boolean
+  }
+  firstConnection: Date
+  lastConnection: Date
+  _accountId: string
 }
 
 interface UserRecord {

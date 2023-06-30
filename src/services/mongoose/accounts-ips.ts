@@ -1,37 +1,43 @@
-import { Account } from "@services/mongoose/schema"
+import { AccountIps } from "@services/mongoose/schema"
 
-import {
-  CouldNotFindError,
-  CouldNotFindUserFromIdError,
-  PersistError,
-  RepositoryError,
-} from "@domain/errors"
+import { CouldNotFindAccountIpError, PersistError, RepositoryError } from "@domain/errors"
 
 import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
 
-export const AccountsIpRepository = (): IAccountsIPsRepository => {
-  const update = async (accountIps: AccountOptIps): Promise<true | RepositoryError> => {
-    try {
-      const set = accountIps.lastIPs
-        ? {
-            lastConnection: new Date(),
-            lastIPs: accountIps.lastIPs,
-          }
-        : {
-            lastConnection: new Date(),
-          }
+type UpdateQuery = {
+  $set: {
+    lastConnection: Date
+    metadata?: IPType
+  }
+}
 
-      const result = await Account.updateOne(
-        { _id: toObjectId<AccountId>(accountIps.id) },
-        { $set: set },
+export const AccountsIpsRepository = (): IAccountsIPsRepository => {
+  const update = async (
+    accountIp: AccountIP | AccountIPNew,
+  ): Promise<true | RepositoryError> => {
+    const updateQuery: UpdateQuery = {
+      $set: {
+        lastConnection: new Date(),
+      },
+    }
+
+    if (accountIp.metadata) {
+      updateQuery.$set.metadata = accountIp.metadata
+    }
+
+    try {
+      const result = await AccountIps.updateOne(
+        { _accountId: toObjectId<AccountId>(accountIp.accountId), ip: accountIp.ip },
+        updateQuery,
+        { upsert: true },
       )
 
       if (result.matchedCount === 0) {
-        return new CouldNotFindError("Couldn't find user")
+        return new CouldNotFindAccountIpError("Couldn't find accountIp")
       }
 
       if (result.modifiedCount !== 1) {
-        return new PersistError("Couldn't update ip for user")
+        return new PersistError("Couldn't update ip for accountIp")
       }
 
       return true
@@ -40,33 +46,54 @@ export const AccountsIpRepository = (): IAccountsIPsRepository => {
     }
   }
 
-  const findById = async (
-    accountId: AccountId,
-  ): Promise<AccountIPs | RepositoryError> => {
+  const findByAccountIdAndIp = async ({
+    accountId,
+    ip,
+  }: FindByAccountIdAndIpArgs): Promise<AccountIP | RepositoryError> => {
     try {
-      const result = await Account.findOne(
-        { _id: toObjectId<AccountId>(accountId) },
-        { lastIPs: 1 },
-      )
+      const result = await AccountIps.findOne({
+        _accountId: toObjectId<AccountId>(accountId),
+        ip,
+      })
       if (!result) {
-        return new CouldNotFindUserFromIdError(accountId)
+        return new CouldNotFindAccountIpError(accountId)
       }
 
-      return userIPsFromRaw(result)
+      return accountIPFromRaw(result)
     } catch (err) {
       return parseRepositoryError(err)
     }
   }
 
+  const findLastByAccountId = async (
+    accountId: AccountId,
+  ): Promise<AccountIP | RepositoryError> => {
+    try {
+      const result = await AccountIps.findOne({
+        _accountId: toObjectId<AccountId>(accountId),
+      }).sort({ lastConnection: -1 })
+
+      if (!result) {
+        return new CouldNotFindAccountIpError(accountId)
+      }
+
+      return accountIPFromRaw(result)
+    } catch (error) {
+      return parseRepositoryError(error)
+    }
+  }
+
   return {
     update,
-    findById,
+    findLastByAccountId,
+    findByAccountIdAndIp,
   }
 }
 
-const userIPsFromRaw = (result: AccountRecord): AccountIPs => {
+const accountIPFromRaw = (result: AccountIpsRecord): AccountIP => {
   return {
-    id: fromObjectId<AccountId>(result._id),
-    lastIPs: (result.lastIPs || []) as IPType[],
+    accountId: fromObjectId<AccountId>(result._accountId),
+    ip: result.ip as IpAddress,
+    metadata: result.metadata as IPType,
   }
 }

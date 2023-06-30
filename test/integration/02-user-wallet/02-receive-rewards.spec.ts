@@ -74,7 +74,6 @@ describe("UserWallet - addEarn", () => {
         Payments.addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
           accountId: accountIdB,
-          ip: "ipaddress" as IpAddress,
         }),
       )
       await Promise.all(promises)

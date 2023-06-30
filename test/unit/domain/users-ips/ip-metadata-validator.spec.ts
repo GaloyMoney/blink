@@ -14,9 +14,6 @@ const defaultConfig = {
 }
 
 const defaultIpInfo: IPType = {
-  ip: "89.187.173.251" as IpAddress,
-  firstConnection: new Date(),
-  lastConnection: new Date(),
   asn: "AS60068",
   provider: "ISP",
   country: "United States",
