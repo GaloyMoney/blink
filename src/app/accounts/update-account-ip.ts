@@ -34,11 +34,12 @@ export const updateAccountIPsInfo = async ({
 
   const lastConnection = new Date()
 
-  const accountIP = await accountsIp.findById(accountId)
-  if (accountIP instanceof RepositoryError) return accountIP
+  const accountIPs = await accountsIp.findById(accountId)
+  if (accountIPs instanceof RepositoryError) return accountIPs
 
   if (!ipConfig.ipRecordingEnabled) {
-    const result = await accountsIp.update(accountIP)
+    // just updating last connection
+    const result = await accountsIp.update({ id: accountIPs.id })
 
     if (result instanceof Error) {
       logger.error(
@@ -54,7 +55,7 @@ export const updateAccountIPsInfo = async ({
 
   let ipInfo: IPType
 
-  const ipFromDb = accountIP.lastIPs.find((ipObject) => ipObject.ip === ip)
+  const ipFromDb = accountIPs.lastIPs.find((ipObject) => ipObject.ip === ip)
 
   if (ipFromDb) {
     ipInfo = ipFromDb
@@ -117,13 +118,13 @@ export const updateAccountIPsInfo = async ({
       ipInfo = Object.assign(ipInfo, ipFetcherInfo)
 
       // removing current ip from lastIPs - if it exists
-      accountIP.lastIPs = accountIP.lastIPs.filter((ipDb) => ipDb.ip !== ip)
+      accountIPs.lastIPs = accountIPs.lastIPs.filter((ipDb) => ipDb.ip !== ip)
 
       // adding it back with the correct info
-      accountIP.lastIPs.push(ipInfo)
+      accountIPs.lastIPs.push(ipInfo)
     }
   }
-  const result = await accountsIp.update(accountIP)
+  const result = await accountsIp.update(accountIPs)
 
   if (result instanceof Error) {
     logger.error({ result, accountId, ip }, "impossible to update ip")
