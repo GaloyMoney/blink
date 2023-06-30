@@ -10,11 +10,20 @@ import {
 import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
 
 export const AccountsIpRepository = (): IAccountsIPsRepository => {
-  const update = async (accountIp: AccountIPs): Promise<true | RepositoryError> => {
+  const update = async (accountIps: AccountOptIps): Promise<true | RepositoryError> => {
     try {
+      const set = accountIps.lastIPs
+        ? {
+            lastConnection: new Date(),
+            lastIPs: accountIps.lastIPs,
+          }
+        : {
+            lastConnection: new Date(),
+          }
+
       const result = await Account.updateOne(
-        { _id: toObjectId<AccountId>(accountIp.id) },
-        { $set: { lastConnection: new Date(), lastIPs: accountIp.lastIPs } },
+        { _id: toObjectId<AccountId>(accountIps.id) },
+        { $set: set },
       )
 
       if (result.matchedCount === 0) {

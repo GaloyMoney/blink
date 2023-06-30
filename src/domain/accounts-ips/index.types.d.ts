@@ -3,6 +3,11 @@ type AccountIPs = {
   lastIPs: IPType[]
 }
 
+type AccountOptIps = {
+  readonly id: AccountId
+  lastIPs?: IPType[]
+}
+
 type IPMetadataValidatorArgs = {
   denyIPCountries: string[]
   allowIPCountries: string[]
@@ -15,6 +20,6 @@ type IPMetadataValidator = {
 }
 
 interface IAccountsIPsRepository {
-  update(accountIp: AccountIPs): Promise<true | RepositoryError>
+  update(accountIp: AccountOptIps): Promise<true | RepositoryError>
   findById(accountId: AccountId): Promise<AccountIPs | RepositoryError>
 }
