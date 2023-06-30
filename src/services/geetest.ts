@@ -7,19 +7,24 @@ import { CaptchaUserFailToPassError, UnknownCaptchaError } from "@domain/captcha
 import axios from "axios"
 import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
 
-async function sendRequest(params: { gt: string }) {
+import { addEventToCurrentSpan, recordExceptionInCurrentSpan } from "./tracing"
+
+const sendRequest = async (params: { gt: string }) => {
   const requestUrl = "https://bypass.geetest.com/v1/bypass_status.php"
-  let bypassRes
+  let bypassRes: string
   try {
     const res = await axios({
       url: requestUrl,
       method: "GET",
-      timeout: 5000,
+      timeout: 1000,
       params,
     })
     const resBody = res.status === 200 ? res.data : ""
     bypassRes = resBody["status"]
-  } catch (e) {
+
+    addEventToCurrentSpan("bypassStatusSuccess")
+  } catch (error) {
+    recordExceptionInCurrentSpan({ error, fallbackMsg: "bypassStatusError" })
     bypassRes = ""
   }
   return bypassRes
@@ -48,9 +53,11 @@ const Geetest = (config: { id: string; key: string }): GeetestType => {
 
       const { success, gt, challenge, new_captcha: newCaptcha } = JSON.parse(result.data)
       const geetestRegister: GeetestRegister = { success, gt, challenge, newCaptcha }
+      addEventToCurrentSpan("geetestRegisterSuccess")
       return geetestRegister
-    } catch (err) {
-      return new UnknownCaptchaError(err)
+    } catch (error) {
+      recordExceptionInCurrentSpan({ error, fallbackMsg: "geetestRegisterError" })
+      return new UnknownCaptchaError(error)
     }
   }
 
