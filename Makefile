@@ -122,7 +122,6 @@ legacy-integration:
 	yarn test:integration
 
 use-cases:
-	yarn build && \
 	yarn test:use-cases
 
 reset-legacy-integration: reset-deps-integration legacy-integration
