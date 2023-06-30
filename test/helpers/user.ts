@@ -17,7 +17,7 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
+import { AccountsIpsRepository } from "@services/mongoose/accounts-ips"
 import { Account } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
@@ -243,11 +243,7 @@ export const createUserAndWallet = async (
     })
     if (account instanceof Error) throw account
 
-    const lastConnection = new Date()
-    const ipInfo: IPType = {
-      ip: "89.187.173.251" as IpAddress,
-      firstConnection: lastConnection,
-      lastConnection: lastConnection,
+    const metadata: IPType = {
       asn: "AS60068",
       provider: "ISP",
       country: "United States",
@@ -257,12 +253,15 @@ export const createUserAndWallet = async (
       proxy: false,
     }
 
-    const accountIP = await AccountsIpRepository().findById(account.id)
-    if (accountIP instanceof Error) throw accountIP
+    const accountIp: AccountIP = {
+      accountId: account.id,
+      metadata,
+      ip: "89.187.173.251" as IpAddress,
+    }
 
-    accountIP.lastIPs.push(ipInfo)
-    const result = await AccountsIpRepository().update(accountIP)
-    if (result instanceof Error) throw result
+    const accountIP = await AccountsIpsRepository().update(accountIp)
+    if (!(accountIP instanceof CouldNotFindError) && accountIP instanceof Error)
+      throw accountIP
 
     if (entry.needUsdWallet) {
       await addWalletIfNonexistent({

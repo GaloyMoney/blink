@@ -137,29 +137,6 @@ const AccountSchema = new Schema<AccountRecord>(
       default: feesConfig.withdrawDefaultMin,
       min: 0,
     },
-    lastConnection: Date,
-    lastIPs: {
-      type: [
-        {
-          ip: String,
-          provider: String,
-          country: String,
-          isoCode: String,
-          region: String,
-          city: String,
-          //using Type instead of type due to its special status in mongoose
-          Type: String,
-          asn: String,
-          proxy: Boolean,
-          firstConnection: {
-            type: Date,
-            default: Date.now,
-          },
-          lastConnection: Date,
-        },
-      ],
-      default: [],
-    },
     created_at: {
       type: Date,
       default: Date.now,
@@ -290,6 +267,36 @@ AccountSchema.index({
 })
 
 export const Account = mongoose.model<AccountRecord>("Account", AccountSchema)
+
+const AccountIpsSchema = new Schema<AccountIpsRecord>({
+  ip: String,
+  metadata: {
+    type: {
+      provider: String,
+      country: String,
+      isoCode: String,
+      region: String,
+      city: String,
+      //using Type instead of type due to its special status in mongoose
+      Type: String,
+      asn: String,
+      proxy: Boolean,
+    },
+  },
+  firstConnection: {
+    type: Date,
+    default: Date.now,
+  },
+  lastConnection: Date,
+  _accountId: String,
+})
+
+export const AccountIps = mongoose.model<AccountIpsRecord>("AccountIp", AccountIpsSchema)
+
+AccountIpsSchema.index({
+  _accountId: 1,
+  ip: 1,
+})
 
 const UserSchema = new Schema(
   {
