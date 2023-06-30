@@ -4,6 +4,7 @@ import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@domain/
 import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import {
   InvalidOnChainPaymentFlowBuilderStateError,
+  InvalidZeroAmountPriceRatioInputError,
   WalletPriceRatio,
 } from "@domain/payments"
 import {
@@ -945,6 +946,32 @@ describe("OnChainPaymentFlowBuilder", () => {
 
         const proposedAmounts = await builder.proposedAmounts()
         expect(proposedAmounts).toBeInstanceOf(LessThanDustThresholdError)
+      })
+
+      describe("btcProposedAmount less-than-1-cent from btc wallet to usd wallet", () => {
+        it("returns InvalidZeroAmountPriceRatioInputError", async () => {
+          const builder = await OnChainPaymentFlowBuilder({
+            volumeLightningFn,
+            volumeOnChainFn,
+            isExternalAddress: async () => Promise.resolve(true),
+            sendAll: false,
+            dustThreshold,
+          })
+            .withAddress("address" as OnChainAddress)
+            .withSenderWalletAndAccount({
+              wallet: senderBtcWallet,
+              account: senderAccount,
+            })
+            .withRecipientWallet(recipientUsdWallet)
+            .withAmount({ amount: BigInt(1), currency: amountCurrency })
+            .withConversion(withConversionArgs)
+
+          const proposedBtcAmount = await builder.btcProposedAmount()
+          expect(proposedBtcAmount).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+
+          const proposedAmounts = await builder.proposedAmounts()
+          expect(proposedAmounts).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+        })
       })
     })
   })

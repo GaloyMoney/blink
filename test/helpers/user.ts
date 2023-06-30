@@ -87,6 +87,34 @@ export const getDefaultWalletIdByTestUserRef = async (ref: string) => {
   return account.defaultWalletId
 }
 
+export const getBtcWalletDescriptorByTestUserRef = async (
+  ref: string,
+): Promise<WalletDescriptor<"BTC">> => {
+  const account = await getAccountByTestUserRef(ref)
+
+  const wallets = await WalletsRepository().listByAccountId(account.id)
+  if (wallets instanceof Error) throw wallets
+
+  const wallet = wallets.find((w) => w.currency === WalletCurrency.Btc)
+  if (wallet === undefined) throw Error("no BTC wallet")
+
+  return { id: wallet.id, currency: WalletCurrency.Btc, accountId: wallet.accountId }
+}
+
+export const getUsdWalletDescriptorByTestUserRef = async (
+  ref: string,
+): Promise<WalletDescriptor<"USD">> => {
+  const account = await getAccountByTestUserRef(ref)
+
+  const wallets = await WalletsRepository().listByAccountId(account.id)
+  if (wallets instanceof Error) throw wallets
+
+  const wallet = wallets.find((w) => w.currency === WalletCurrency.Usd)
+  if (wallet === undefined) throw Error("no USD wallet")
+
+  return { id: wallet.id, currency: WalletCurrency.Usd, accountId: wallet.accountId }
+}
+
 export const getUsdWalletIdByTestUserRef = async (ref: string) => {
   const account = await getAccountByTestUserRef(ref)
 
@@ -167,6 +195,22 @@ export const createRandomUserAndWallet = async () => {
   const randomEntry: TestEntry = { phone: getRandomPhoneNumber() }
   return createUserAndWallet(randomEntry)
 }
+
+export const createRandomUserAndUsdWallet = async (): Promise<
+  WalletDescriptor<"USD">
+> => {
+  const randomEntry: TestEntry = { phone: getRandomPhoneNumber() }
+  const { accountId } = await createUserAndWallet(randomEntry)
+  const wallet = await addWalletIfNonexistent({
+    currency: WalletCurrency.Usd,
+    accountId: accountId,
+    type: WalletType.Checking,
+  })
+  if (wallet instanceof Error) throw wallet
+
+  return { id: wallet.id, currency: WalletCurrency.Usd, accountId }
+}
+
 export const createUserAndWallet = async (
   entry: TestEntry,
 ): Promise<WalletDescriptor<"BTC">> => {

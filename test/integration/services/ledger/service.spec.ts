@@ -34,7 +34,7 @@ import {
   recordWalletIdTradeIntraAccountTxn,
   recordOnChainTradeIntraAccountTxn,
   recordLnTradeIntraAccountTxn,
-} from "./helpers"
+} from "test/helpers/ledger"
 
 const ledgerService = LedgerService()
 const calc = AmountCalculator()

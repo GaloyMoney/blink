@@ -11,6 +11,8 @@ import { sleep, timeoutWithCancel } from "@utils"
 
 import { loginFromPhoneAndCode } from "test/e2e/account-creation-e2e"
 import {
+  OnChainAddressCreateDocument,
+  OnChainAddressCreateMutation,
   OnChainPaymentSendAllDocument,
   OnChainPaymentSendAllMutation,
   OnChainPaymentSendDocument,
@@ -32,6 +34,7 @@ import {
   defaultStateConfig,
   fundWalletIdFromOnchainViaBria,
   getAccountByTestUserRef,
+  getBtcWalletDescriptorByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
   initializeTestingState,
@@ -46,16 +49,63 @@ let btcWalletDescriptor: WalletDescriptor<"BTC">
 let usdWalletDescriptor: WalletDescriptor<"USD">
 let walletIds: WalletId[]
 let account: Account
+let recipientBtcWalletDescriptor: WalletDescriptor<"BTC">
+let recipientWalletIds: WalletId[]
 
 let apolloClient: ApolloClient<NormalizedCacheObject>
 let disposeClient: () => void = () => null
 
+let recipientApolloClient: ApolloClient<NormalizedCacheObject>
+let recipientDisposeClient: () => void = () => null
+
 const userRef = "K"
 const { phone, code } = getPhoneAndCodeFromRef(userRef)
+
+const recipientUserRef = "L"
+const { phone: recipientPhone, code: recipientCode } =
+  getPhoneAndCodeFromRef(recipientUserRef)
+
+const getNewRecipientAddress = async () => {
+  const addressResponse =
+    await recipientApolloClient.mutate<OnChainAddressCreateMutation>({
+      mutation: OnChainAddressCreateDocument,
+      variables: { input: { walletId: recipientBtcWalletDescriptor.id } },
+    })
+  const address = addressResponse?.data?.onChainAddressCreate.address
+  if (!address) {
+    throw new Error("'address' is falsy")
+  }
+  return address as OnChainAddress
+}
+
+const getNewSenderBtcWalletAddress = async () => {
+  const addressResponse = await apolloClient.mutate<OnChainAddressCreateMutation>({
+    mutation: OnChainAddressCreateDocument,
+    variables: { input: { walletId: btcWalletDescriptor.id } },
+  })
+  const address = addressResponse?.data?.onChainAddressCreate.address
+  if (!address) {
+    throw new Error("'address' is falsy")
+  }
+  return address as OnChainAddress
+}
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   serverPid = await startServer("start-main-ci")
+
+  // Setup recipient
+  ;({ apolloClient: recipientApolloClient, disposeClient: recipientDisposeClient } =
+    await loginFromPhoneAndCode({
+      phone: recipientPhone,
+      code: recipientCode,
+    }))
+  recipientBtcWalletDescriptor = await getBtcWalletDescriptorByTestUserRef(
+    recipientUserRef,
+  )
+  recipientWalletIds = [recipientBtcWalletDescriptor.id]
+
+  // Setup sender
   ;({ apolloClient, disposeClient } = await loginFromPhoneAndCode({ phone, code }))
 
   account = await getAccountByTestUserRef(userRef)
@@ -102,11 +152,21 @@ afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
   await bitcoindSignerClient.unloadWallet({ walletName: "dev" })
   disposeClient()
+  recipientDisposeClient()
   await killServer(serverPid)
   await killServer(triggerPid)
 })
 
 gql`
+  mutation onChainAddressCreate($input: OnChainAddressCreateInput!) {
+    onChainAddressCreate(input: $input) {
+      address
+      errors {
+        message
+      }
+    }
+  }
+
   mutation onChainPaymentSend($input: OnChainPaymentSendInput!) {
     onChainPaymentSend(input: $input) {
       errors {
@@ -146,11 +206,209 @@ gql`
   }
 `
 
-describe("settles onchain", () => {
+describe("sends a payment", () => {
   const satsAmount = 25_000
   const centsAmount = 1_000
 
-  it("sends a payment", async () => {
+  it("settles trade intraccount", async () => {
+    // SEND PAYMENTS
+    // ===============
+    const uniqueAddressesForEachSend: OnChainAddress[] = []
+
+    // OnChainUsdPaymentSendAsBtcDenominated
+    const onChainUsdPaymentSendAsBtcDenominatedAddress =
+      await getNewSenderBtcWalletAddress()
+    uniqueAddressesForEachSend.push(onChainUsdPaymentSendAsBtcDenominatedAddress)
+
+    const input1 = {
+      walletId: usdWalletDescriptor.id,
+      address: onChainUsdPaymentSendAsBtcDenominatedAddress,
+      amount: satsAmount,
+    }
+    const result1 =
+      await apolloClient.mutate<OnChainUsdPaymentSendAsBtcDenominatedMutation>({
+        mutation: OnChainUsdPaymentSendAsBtcDenominatedDocument,
+        variables: { input: input1 },
+      })
+    const onChainUsdPaymentSendAsBtcDenominated =
+      result1?.data?.onChainUsdPaymentSendAsBtcDenominated
+    if (onChainUsdPaymentSendAsBtcDenominated === undefined) {
+      throw new Error("onChainUsdPaymentSendAsBtcDenominated is undefined")
+    }
+    const { status: status1, errors: errors1 } = onChainUsdPaymentSendAsBtcDenominated
+    expect(errors1).toHaveLength(0)
+    expect(status1).toBe("SUCCESS")
+
+    // OnChainUsdPaymentSend
+    const onChainUsdPaymentSendAddress = await getNewSenderBtcWalletAddress()
+    uniqueAddressesForEachSend.push(onChainUsdPaymentSendAddress)
+
+    const input2 = {
+      walletId: usdWalletDescriptor.id,
+      address: onChainUsdPaymentSendAddress,
+      amount: centsAmount,
+    }
+    const result2 = await apolloClient.mutate<OnChainUsdPaymentSendMutation>({
+      mutation: OnChainUsdPaymentSendDocument,
+      variables: { input: input2 },
+    })
+    const onChainUsdPaymentSend = result2?.data?.onChainUsdPaymentSend
+    if (onChainUsdPaymentSend === undefined) {
+      throw new Error("onChainUsdPaymentSend is undefined")
+    }
+    const { status: status2, errors: errors2 } = onChainUsdPaymentSend
+    expect(errors2).toHaveLength(0)
+    expect(status2).toBe("SUCCESS")
+
+    const nTxns = 2
+    expect(new Set(uniqueAddressesForEachSend).size).toEqual(nTxns)
+
+    // CHECK TXNS
+    // ===============
+
+    await apolloClient.resetStore()
+    const response = await apolloClient.query<TransactionsQuery>({
+      query: TransactionsDocument,
+      variables: { walletIds, first: nTxns * 2 },
+    })
+    const txns = response.data?.me?.defaultAccount.transactions?.edges
+    if (!txns) throw new Error("'txns' is falsy")
+
+    const expectSendArray = uniqueAddressesForEachSend.map((address) =>
+      expect.objectContaining({
+        node: expect.objectContaining({
+          status: "SUCCESS",
+          direction: "SEND",
+          initiationVia: expect.objectContaining({
+            address,
+          }),
+        }),
+      }),
+    )
+    expect(txns).toEqual(expect.arrayContaining(expectSendArray))
+
+    const expectReceiveArray = uniqueAddressesForEachSend.map((address) =>
+      expect.objectContaining({
+        node: expect.objectContaining({
+          status: "SUCCESS",
+          direction: "RECEIVE",
+          initiationVia: expect.objectContaining({
+            address,
+          }),
+        }),
+      }),
+    )
+    expect(txns).toEqual(expect.arrayContaining(expectReceiveArray))
+  })
+
+  it("settles intraledger", async () => {
+    // SEND PAYMENTS
+    // ===============
+    const uniqueAddressesForEachSend: OnChainAddress[] = []
+
+    // OnChainPaymentSend
+    const onChainPaymentSendAddress = await getNewRecipientAddress()
+    uniqueAddressesForEachSend.push(onChainPaymentSendAddress)
+
+    const input1 = {
+      walletId: btcWalletDescriptor.id,
+      address: onChainPaymentSendAddress,
+      amount: satsAmount,
+    }
+    const result1 = await apolloClient.mutate<OnChainPaymentSendMutation>({
+      mutation: OnChainPaymentSendDocument,
+      variables: { input: input1 },
+    })
+    const onChainPaymentSend = result1?.data?.onChainPaymentSend
+    if (onChainPaymentSend === undefined) {
+      throw new Error("onChainPaymentSend is undefined")
+    }
+    const { status: status1, errors: errors1 } = onChainPaymentSend
+    expect(errors1).toHaveLength(0)
+    expect(status1).toBe("SUCCESS")
+
+    // OnChainUsdPaymentSendAsBtcDenominated
+    const onChainUsdPaymentSendAsBtcDenominatedAddress = await getNewRecipientAddress()
+    uniqueAddressesForEachSend.push(onChainUsdPaymentSendAsBtcDenominatedAddress)
+
+    const input2 = {
+      walletId: usdWalletDescriptor.id,
+      address: onChainUsdPaymentSendAsBtcDenominatedAddress,
+      amount: satsAmount,
+    }
+    const result2 =
+      await apolloClient.mutate<OnChainUsdPaymentSendAsBtcDenominatedMutation>({
+        mutation: OnChainUsdPaymentSendAsBtcDenominatedDocument,
+        variables: { input: input2 },
+      })
+    const onChainUsdPaymentSendAsBtcDenominated =
+      result2?.data?.onChainUsdPaymentSendAsBtcDenominated
+    if (onChainUsdPaymentSendAsBtcDenominated === undefined) {
+      throw new Error("onChainUsdPaymentSendAsBtcDenominated is undefined")
+    }
+    const { status: status2, errors: errors2 } = onChainUsdPaymentSendAsBtcDenominated
+    expect(errors2).toHaveLength(0)
+    expect(status2).toBe("SUCCESS")
+
+    // OnChainUsdPaymentSend
+    const onChainUsdPaymentSendAddress = await getNewRecipientAddress()
+    uniqueAddressesForEachSend.push(onChainUsdPaymentSendAddress)
+
+    const input3 = {
+      walletId: usdWalletDescriptor.id,
+      address: onChainUsdPaymentSendAddress,
+      amount: centsAmount,
+    }
+    const result3 = await apolloClient.mutate<OnChainUsdPaymentSendMutation>({
+      mutation: OnChainUsdPaymentSendDocument,
+      variables: { input: input3 },
+    })
+    const onChainUsdPaymentSend = result3?.data?.onChainUsdPaymentSend
+    if (onChainUsdPaymentSend === undefined) {
+      throw new Error("onChainUsdPaymentSend is undefined")
+    }
+    const { status: status3, errors: errors3 } = onChainUsdPaymentSend
+    expect(errors3).toHaveLength(0)
+    expect(status3).toBe("SUCCESS")
+
+    const nTxns = 3
+    expect(new Set(uniqueAddressesForEachSend).size).toEqual(nTxns)
+
+    // CHECK TXNS
+    // ===============
+    const expectArray = uniqueAddressesForEachSend.map((address) =>
+      expect.objectContaining({
+        node: expect.objectContaining({
+          status: "SUCCESS",
+          initiationVia: expect.objectContaining({
+            address,
+          }),
+        }),
+      }),
+    )
+
+    // Check sender txns
+    await apolloClient.resetStore()
+    const response = await apolloClient.query<TransactionsQuery>({
+      query: TransactionsDocument,
+      variables: { walletIds, first: nTxns },
+    })
+    const txns = response.data?.me?.defaultAccount.transactions?.edges
+    if (!txns) throw new Error("'txns' is falsy")
+    expect(txns).toEqual(expect.arrayContaining(expectArray))
+
+    // Check recipient txns
+    await recipientApolloClient.resetStore()
+    const responseRecipient = await recipientApolloClient.query<TransactionsQuery>({
+      query: TransactionsDocument,
+      variables: { walletIds: recipientWalletIds, first: nTxns },
+    })
+    const recipientTxns = responseRecipient.data?.me?.defaultAccount.transactions?.edges
+    if (!recipientTxns) throw new Error("'recipientTxns' is falsy")
+    expect(txns).toEqual(expect.arrayContaining(expectArray))
+  })
+
+  it("settles onchain", async () => {
     // SEND PAYMENTS
     // ===============
 
@@ -254,7 +512,7 @@ describe("settles onchain", () => {
       onChainPaymentSendAddress,
       onChainUsdPaymentSendAsBtcDenominatedAddress,
       onChainUsdPaymentSendAddress,
-      onChainPaymentSendAllAddress,
+      // onChainPaymentSendAllAddress,
     ]
     const expectArrayBefore = uniqueAddressesForEachSend.map((address) =>
       expect.objectContaining({

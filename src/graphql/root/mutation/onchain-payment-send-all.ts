@@ -70,7 +70,6 @@ const OnChainPaymentSendAllMutation = GT.Field<
     const result = await Wallets.payAllOnChainByWalletId({
       senderAccount: domainAccount,
       senderWalletId: walletId,
-      amount: 0,
       address,
       speed,
       memo,

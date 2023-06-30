@@ -16,6 +16,7 @@ import { staticAccountIds } from "@services/ledger/facade/shared"
 import { Transaction } from "@services/ledger/schema"
 import { onChainLedgerAccountId } from "@services/ledger/domain"
 
+import { generateHash } from "test/helpers"
 import {
   recordLnFailedPayment,
   recordLnFeeReimbursement,
@@ -30,9 +31,7 @@ import {
   recordSendOnChainPayment,
   recordWalletIdIntraLedgerPayment,
   recordWalletIdTradeIntraAccountTxn,
-} from "./helpers"
-
-import { generateHash } from "test/helpers"
+} from "test/helpers/ledger"
 
 const calc = AmountCalculator()
 

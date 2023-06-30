@@ -18,6 +18,7 @@
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
     "test:unit": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-unit.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
     "test:integration": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-integration.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l",
+    "test:use-cases": ". ./.envrc && LOGLEVEL=warn jest --config ./test/new-jest-integration.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l",
     "test:e2e": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-e2e.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l",
     "build-docs": "npx spectaql spectaql-config.yml -1",
     "fix-yaml": "prettier --write '**/*.(yaml|yml)'",
