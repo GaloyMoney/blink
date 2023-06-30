@@ -10,7 +10,7 @@ module.exports = {
   },
   testRegex: ".*\\.spec\\.ts$",
   testSequencer: "<rootDir>/test/jest-test-sequencer.js",
-  setupFilesAfterEnv: ["<rootDir>/test/jest-e2e.setup.js"],
+  setupFilesAfterEnv: ["<rootDir>/test/e2e/jest.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
     "^@config$": ["<rootDir>src/config/index"],
