@@ -3,6 +3,11 @@ type AddDeviceTokenArgs = {
   deviceToken: string
 }
 
+type RemoveDeviceTokensArgs = {
+  userId: UserId
+  deviceTokens: DeviceToken[]
+}
+
 type UpdateLanguageArgs = {
   userId: UserId
   language: string

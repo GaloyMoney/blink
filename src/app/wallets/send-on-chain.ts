@@ -11,19 +11,21 @@ import {
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
 } from "@app/payments/helpers"
+import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
 } from "@domain/payments"
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
-import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { displayAmountFromNumber } from "@domain/fiat"
-import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
+import { displayAmountFromNumber } from "@domain/fiat"
+import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { ResourceExpiredLockServiceError } from "@domain/lock"
+import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
+import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
 import * as LedgerFacade from "@services/ledger/facade"
 
@@ -413,8 +415,7 @@ const executePaymentViaIntraledger = async <
     if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
 
     // Send 'received'-side intraledger notification
-    const notificationsService = NotificationsService()
-    notificationsService.intraLedgerTxReceived({
+    const result = await NotificationsService().intraLedgerTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
       paymentAmount: { amount, currency: recipientWalletCurrency },
@@ -422,6 +423,10 @@ const executePaymentViaIntraledger = async <
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
     })
+
+    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+    }
 
     return { status: PaymentSendStatus.Success, payoutId: undefined }
   })

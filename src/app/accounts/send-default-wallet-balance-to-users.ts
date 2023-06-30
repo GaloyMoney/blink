@@ -1,14 +1,17 @@
-import { DisplayCurrency } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
-
 import {
   getCurrentPriceAsDisplayPriceRatio,
   getCurrentPriceAsWalletPriceRatio,
 } from "@app/prices"
+import { removeDeviceTokens } from "@app/users/remove-device-tokens"
+
+import { DisplayCurrency } from "@domain/fiat"
+import { WalletCurrency } from "@domain/shared"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+
 import { LedgerService } from "@services/ledger"
-import { WalletsRepository, UsersRepository } from "@services/mongoose"
-import { NotificationsService } from "@services/notifications"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { NotificationsService } from "@services/notifications"
+import { WalletsRepository, UsersRepository } from "@services/mongoose"
 
 import { getRecentlyActiveAccounts } from "./active-accounts"
 
@@ -18,10 +21,10 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
 
   const notifyUser = wrapAsyncToRunInSpan({
     namespace: "daily-balance-notification",
-    fn: async (account: Account): Promise<void | ApplicationError> => {
+    fn: async (account: Account): Promise<true | ApplicationError> => {
       const user = await UsersRepository().findById(account.kratosUserId)
       if (user instanceof Error) return user
-      if (user.deviceTokens.length === 0) return
+      if (user.deviceTokens.length === 0) return true
 
       const wallet = await WalletsRepository().findById(account.defaultWalletId)
       if (wallet instanceof Error) return wallet
@@ -56,12 +59,18 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         }
       }
 
-      return NotificationsService().sendBalance({
+      const result = await NotificationsService().sendBalance({
         balanceAmount,
         deviceTokens: user.deviceTokens,
         displayBalanceAmount: displayAmount,
         recipientLanguage: user.language,
       })
+
+      if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+        await removeDeviceTokens({ userId: user.id, deviceTokens: result.tokens })
+      }
+
+      return true
     },
   })
 

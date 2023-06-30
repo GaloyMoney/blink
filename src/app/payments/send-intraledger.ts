@@ -1,40 +1,41 @@
 import { getValuesToSkipProbe } from "@config"
 
-import { AccountValidator } from "@domain/accounts"
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { displayAmountFromNumber } from "@domain/fiat"
+import {
+  btcFromUsdMidPriceFn,
+  getCurrentPriceAsDisplayPriceRatio,
+  usdFromBtcMidPriceFn,
+} from "@app/prices"
+import { removeDeviceTokens } from "@app/users/remove-device-tokens"
+import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
+
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
+import { AccountValidator } from "@domain/accounts"
+import { displayAmountFromNumber } from "@domain/fiat"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
-import { DealerPriceService } from "@services/dealer-price"
+import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
-import { LockService } from "@services/lock"
+import { DealerPriceService } from "@services/dealer-price"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 import {
   AccountsRepository,
   WalletsRepository,
   UsersRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-} from "@services/tracing"
-
-import { ResourceExpiredLockServiceError } from "@domain/lock"
-
-import {
-  btcFromUsdMidPriceFn,
-  getCurrentPriceAsDisplayPriceRatio,
-  usdFromBtcMidPriceFn,
-} from "@app/prices"
-import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import {
   getPriceRatioForLimits,
@@ -362,8 +363,7 @@ const executePaymentViaIntraledger = async <
     })
     if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
 
-    const notificationsService = NotificationsService()
-    notificationsService.intraLedgerTxReceived({
+    const result = await NotificationsService().intraLedgerTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
       recipientDeviceTokens: recipientUser.deviceTokens,
@@ -371,6 +371,10 @@ const executePaymentViaIntraledger = async <
       paymentAmount: { amount, currency: recipientWallet.currency },
       displayPaymentAmount: recipientDisplayAmount,
     })
+
+    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+    }
 
     return PaymentSendStatus.Success
   })

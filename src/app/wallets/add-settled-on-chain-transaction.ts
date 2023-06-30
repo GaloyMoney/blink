@@ -2,12 +2,14 @@ import crypto from "crypto"
 
 import { getFeesConfig, getOnChainWalletConfig } from "@config"
 
+import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
-import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { displayAmountFromNumber } from "@domain/fiat"
+import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
 import {
   AccountsRepository,
@@ -172,8 +174,7 @@ const addSettledTransactionBeforeFinally = async ({
     })
     if (displayAmount instanceof Error) return displayAmount
 
-    const notifications = NotificationsService()
-    await notifications.onChainTxReceived({
+    const notificationResult = await NotificationsService().onChainTxReceived({
       recipientAccountId: wallet.accountId,
       recipientWalletId: wallet.id,
       paymentAmount: amount,
@@ -182,6 +183,15 @@ const addSettledTransactionBeforeFinally = async ({
       recipientDeviceTokens: user.deviceTokens,
       recipientLanguage: user.language,
     })
+
+    if (
+      notificationResult instanceof DeviceTokensNotRegisteredNotificationsServiceError
+    ) {
+      await removeDeviceTokens({
+        userId: user.id,
+        deviceTokens: notificationResult.tokens,
+      })
+    }
 
     return {
       walletDescriptor: wallet,
