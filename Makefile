@@ -56,7 +56,7 @@ clean-deps:
 reset-deps: clean-deps start-deps
 reset-deps-integration: clean-deps start-deps-integration
 
-test: unit integration use-cases
+test: unit legacy-integration integration
 
 test-migrate:
 	docker compose down -v -t 3
@@ -67,8 +67,8 @@ unit:
 	yarn test:unit
 
 watch-unit:
-	$(BIN_DIR)/jest --config ./test/jest-unit.config.js --clearCache
-	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/jest-unit.config.js
+	$(BIN_DIR)/jest --config ./test/unit/jest.config.js --clearCache
+	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/unit/jest.config.js
 
 watch-compile:
 	$(BIN_DIR)/tsc --watch  --noEmit
@@ -112,19 +112,21 @@ del-containers:
 execute-e2e-from-within-container:
 	yarn install && \
 	yarn build && \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/e2e/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/e2e/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 legacy-integration:
 	yarn build && \
-	yarn test:integration
-
-use-cases:
-	yarn test:use-cases
+	yarn test:legacy-integration
 
 reset-legacy-integration: reset-deps-integration legacy-integration
+
+integration:
+	yarn test:integration
+
+reset-integration: reset-deps-integration integration
 
 e2e:
 	yarn build && \
@@ -141,13 +143,13 @@ integration-in-ci:
 execute-integration-from-within-container:
 	yarn install && \
 	NODE_OPTIONS="--max-old-space-size=6144" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/legacy-integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
 	NODE_OPTIONS="--max-old-space-size=6144" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/new-jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 unit-in-ci:
 	. ./.envrc && \
-		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/jest-unit.config.js --ci --bail --maxWorkers=50%
+		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/unit/jest.config.js --ci --bail --maxWorkers=50%
 
 check-implicit:
 	yarn tsc-check-noimplicitany

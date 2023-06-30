@@ -9,14 +9,16 @@ import {
   createApolloClient,
   defaultStateConfig,
   defaultTestClientConfig,
+  initializeTestingState,
+  killServer,
+  startServer,
+} from "test/e2e/helpers"
+import {
   fundWalletIdFromLightning,
   getAdminPhoneAndCode,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
-  initializeTestingState,
-  killServer,
   randomPhone,
-  startServer,
 } from "test/helpers"
 
 let serverPid: PID

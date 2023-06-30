@@ -1,15 +1,15 @@
-const swcConfig = require("./swc-config.json")
+const swcConfig = require("../swc-config.json")
 
 module.exports = {
-  moduleFileExtensions: ["js", "json", "ts", "cjs", "mjs"],
-  rootDir: "../",
-  roots: ["<rootDir>/test/integration"],
+  moduleFileExtensions: ["js", "json", "ts", "gql", "cjs", "mjs"],
+  rootDir: "../../",
+  roots: ["<rootDir>/test/e2e"],
   transform: {
     "^.+\\.(t|j)sx?$": ["@swc/jest", swcConfig],
+    "^.+\\.(gql)$": "@graphql-tools/jest-transform",
   },
   testRegex: ".*\\.spec\\.ts$",
-  testSequencer: "<rootDir>/test/jest-test-sequencer.js",
-  setupFilesAfterEnv: ["<rootDir>/test/jest-integration.setup.js"],
+  setupFilesAfterEnv: ["<rootDir>/test/e2e/jest.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
     "^@config$": ["<rootDir>src/config/index"],

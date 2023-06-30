@@ -29,6 +29,7 @@ const AccountsAddUsdWalletMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(AccountsAddUsdWalletInput) },
   },
+  deprecationReason: "All accounts have USD wallets by default",
   resolve: async (_, args) => {
     const { accountIds } = args.input
     if (accountIds instanceof Error) {

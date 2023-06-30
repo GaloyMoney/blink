@@ -16,25 +16,27 @@ import { sleep } from "@utils"
 import { gql } from "apollo-server-core"
 
 import {
+  createApolloClient,
+  defaultStateConfig,
+  defaultTestClientConfig,
+  initializeTestingState,
+  killServer,
+  startServer,
+} from "test/e2e/helpers"
+import {
   bitcoindClient,
   clearAccountLocks,
   clearLimiters,
-  createApolloClient,
   createInvoice,
-  defaultStateConfig,
-  defaultTestClientConfig,
   fundWalletIdFromLightning,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
-  initializeTestingState,
-  killServer,
   lndOutside1,
   lndOutside2,
   pay,
-  startServer,
 } from "test/helpers"
-import { loginFromPhoneAndCode } from "test/e2e/account-creation-e2e"
+import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
 import {
   LnInvoiceCreateDocument,
   LnInvoiceCreateMutation,

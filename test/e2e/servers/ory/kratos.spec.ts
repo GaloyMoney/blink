@@ -31,14 +31,8 @@ import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
 import { sleep } from "@utils"
 
-import {
-  getError,
-  killServer,
-  randomEmail,
-  randomPassword,
-  randomPhone,
-  startServer,
-} from "test/helpers"
+import { getError, randomEmail, randomPassword, randomPhone } from "test/helpers"
+import { killServer, startServer } from "test/e2e/helpers"
 import { getEmailCode } from "test/helpers/kratos"
 
 const identityRepo = IdentityRepository()

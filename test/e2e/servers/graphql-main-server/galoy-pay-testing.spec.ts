@@ -6,20 +6,23 @@ import { toSats } from "@domain/bitcoin"
 import { gql } from "apollo-server-core"
 
 import {
-  clearAccountLocks,
-  clearLimiters,
   createApolloClient,
   defaultStateConfig,
   defaultTestClientConfig,
-  fundWalletIdFromLightning,
-  getDefaultWalletIdByTestUserRef,
-  getPhoneAndCodeFromRef,
-  promisifiedSubscription,
   initializeTestingState,
+  promisifiedSubscription,
   killServer,
   startServer,
+} from "test/e2e/helpers"
+import {
+  clearAccountLocks,
+  clearLimiters,
+  fundWalletIdFromLightning,
+  getAccountByTestUserRef,
+  getDefaultWalletIdByTestUserRef,
+  getPhoneAndCodeFromRef,
 } from "test/helpers"
-import { loginFromPhoneAndCode, updateUsername } from "test/e2e/account-creation-e2e"
+import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
 import {
   LnInvoiceCreateOnBehalfOfRecipientDocument,
   LnInvoiceCreateOnBehalfOfRecipientMutation,
@@ -38,6 +41,8 @@ import {
   LnInvoicePaymentStatusQueryDocument,
   LnInvoicePaymentStatusSubscriptionDocument,
   LnInvoicePaymentStatusSubscriptionSubscription,
+  UserUpdateUsernameMutation,
+  UserUpdateUsernameDocument,
 } from "test/e2e/generated"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -54,16 +59,40 @@ const { phone: phoneRecipient, code: codeRecipient } =
   getPhoneAndCodeFromRef(receivingUserRef)
 
 beforeAll(async () => {
+  gql`
+    mutation userUpdateUsername($input: UserUpdateUsernameInput!) {
+      userUpdateUsername(input: $input) {
+        errors {
+          __typename
+          message
+        }
+        user {
+          __typename
+          id
+          username
+        }
+      }
+    }
+  `
+
   await initializeTestingState(defaultStateConfig())
   serverMainPid = await startServer("start-main-ci")
   serverWsPid = await startServer("start-ws-ci")
 
+  // Ensure accounts are created and still exist
   await loginFromPhoneAndCode({ phone, code })
+  await getAccountByTestUserRef(receivingUserRef)
+  await getAccountByTestUserRef(sendingUserRef)
+
+  // Update username
   const { apolloClient: client } = await loginFromPhoneAndCode({
     phone: phoneRecipient,
     code: codeRecipient,
   })
-  await updateUsername({ apolloClient: client, username: receivingUsername })
+  await client.mutate<UserUpdateUsernameMutation>({
+    mutation: UserUpdateUsernameDocument,
+    variables: { input: { username: receivingUsername } },
+  })
 
   const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserRef)
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })

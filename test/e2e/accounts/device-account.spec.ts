@@ -12,16 +12,14 @@ import {
 } from "../generated"
 
 import {
-  clearAccountLocks,
-  clearLimiters,
   createApolloClient,
   defaultStateConfig,
   defaultTestClientConfig,
-  fundWalletIdFromLightning,
   initializeTestingState,
   killServer,
   startServer,
-} from "test/helpers"
+} from "test/e2e/helpers"
+import { clearAccountLocks, clearLimiters, fundWalletIdFromLightning } from "test/helpers"
 
 let serverPid: PID
 
@@ -73,7 +71,7 @@ const jwt =
 const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
 const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
-describe("DeviceAccountService", () => {
+describe("device-account", () => {
   let token: SessionToken
   let defaultWalletId: string
 

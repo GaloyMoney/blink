@@ -7,13 +7,15 @@ import {
   RANDOM_ADDRESS,
   addNewWallet,
   bitcoindOutside,
-  defaultStateConfig,
   getBalanceHelper,
-  initializeTestingState,
-  killServer,
   randomAccount,
-  startServer,
 } from "test/helpers"
+import {
+  startServer,
+  killServer,
+  defaultStateConfig,
+  initializeTestingState,
+} from "test/e2e/helpers"
 
 let serverPid: PID
 

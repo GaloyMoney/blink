@@ -1,15 +1,8 @@
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-import { gql } from "apollo-server-core"
+import { createApolloClient, defaultTestClientConfig } from "./apollo-client"
 
-import { createApolloClient, defaultTestClientConfig } from "../helpers/apollo-client"
-
-import {
-  UserLoginDocument,
-  UserLoginMutation,
-  UserUpdateUsernameDocument,
-  UserUpdateUsernameMutation,
-} from "test/e2e/generated"
+import { UserLoginDocument, UserLoginMutation } from "test/e2e/generated"
 
 export const loginFromPhoneAndCode = async ({
   phone,
@@ -49,35 +42,4 @@ export const loginFromPhoneAndCode = async ({
 
     return { apolloClient, disposeClient }
   }
-}
-
-gql`
-  mutation userUpdateUsername($input: UserUpdateUsernameInput!) {
-    userUpdateUsername(input: $input) {
-      errors {
-        __typename
-        message
-      }
-      user {
-        __typename
-        id
-        username
-      }
-    }
-  }
-`
-
-export const updateUsername = async ({
-  username,
-  apolloClient,
-}: {
-  apolloClient: ApolloClient<NormalizedCacheObject>
-  username: Username
-}) => {
-  const input = { username }
-
-  await apolloClient.mutate<UserUpdateUsernameMutation>({
-    mutation: UserUpdateUsernameDocument,
-    variables: { input },
-  })
 }

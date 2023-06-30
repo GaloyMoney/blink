@@ -1,12 +1,8 @@
 import { getActiveLnd } from "@services/lnd/utils"
 import { rebalancingInternalChannels } from "@services/lnd/utils-bos"
 
-import {
-  defaultStateConfig,
-  getChannels,
-  initializeTestingState,
-  waitUntilChannelBalanceSync,
-} from "test/helpers"
+import { defaultStateConfig, initializeTestingState } from "test/e2e/helpers"
+import { getChannels, waitUntilChannelBalanceSync } from "test/helpers"
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())

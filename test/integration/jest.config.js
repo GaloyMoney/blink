@@ -1,13 +1,14 @@
-const swcConfig = require("./swc-config.json")
+const swcConfig = require("../swc-config.json")
 
 module.exports = {
   moduleFileExtensions: ["js", "json", "ts", "cjs", "mjs"],
-  rootDir: "../",
-  roots: ["<rootDir>/test/unit", "<rootDir>/src"],
+  rootDir: "../../",
+  roots: ["<rootDir>/test/integration"],
   transform: {
     "^.+\\.(t|j)sx?$": ["@swc/jest", swcConfig],
   },
   testRegex: ".*\\.spec\\.ts$",
+  setupFilesAfterEnv: ["<rootDir>/test/integration/jest.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
     "^@config$": ["<rootDir>src/config/index"],
