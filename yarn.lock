@@ -4796,10 +4796,22 @@ bolt07@1.8.3:
   dependencies:
     bn.js "5.2.1"
 
+bolt07@1.8.4:
+  version "1.8.4"
+  resolved "https://registry.yarnpkg.com/bolt07/-/bolt07-1.8.4.tgz#1c8be355c5620bce66e9ef435f26edd58b9bf59a"
+  integrity sha512-UyZRSYmVE8K++Jg1BiJrUkxQak03aS/s7ESKDsBdBPzaTlk2E09Y0JYa9HhWN7MRn48Y2K1doOzkb1Hn6XixZw==
+  dependencies:
+    bn.js "5.2.1"
+
 bolt09@0.2.5:
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/bolt09/-/bolt09-0.2.5.tgz#924de4a95aad5ca507d25b38e1b20e3bb9bc680b"
   integrity sha512-LH8wb3KbVP62SUpnwqUWqoyTUhda3JFQh4TSe6urt2mEAC0w53PSwqB4wqnHdG7QpE209Q2WQl/QH1XtVIsD3g==
+
+bolt09@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/bolt09/-/bolt09-1.0.0.tgz#5587866b7ac541ac395cea76582a85c4ae75adfe"
+  integrity sha512-J8wh6mRTNnYJuC43iSJRvM2Te0RtO4+Cn0JCgF6q2xWXKWjZjdPV5AGamD8R8C39/Ei6L0I780aFvIZu+bATWw==
 
 boolbase@^1.0.0:
   version "1.0.0"
@@ -8440,7 +8452,7 @@ invariant@^2.2.4:
   dependencies:
     loose-envify "^1.0.0"
 
-invoices@2.2.3, invoices@^2.2.3:
+invoices@2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.2.3.tgz#055ada5fd81889d4b3823c4adc51349ecaada64a"
   integrity sha512-tYOmXKPsz8/jxtPDmy7HS7Z4VqQ9VK2Y3J37hhHEhU337AoL1CUlEqccTEb4nZQ36HHnFhlcKLoDz7C8W5lNdg==
@@ -8451,6 +8463,18 @@ invoices@2.2.3, invoices@^2.2.3:
     bolt07 "1.8.3"
     bolt09 "0.2.5"
     tiny-secp256k1 "2.2.1"
+
+invoices@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/invoices/-/invoices-3.0.0.tgz#70e3478aa084fb7fca9f54093ca9afa507fb80ba"
+  integrity sha512-/WDTkfU2RMelQpQ54BwZssqGXYNWbPnWkZ/9QV57vAvD3RLdCDbhDuucOGti8CK3sgk8nmhRV6V0WfMrxojMmA==
+  dependencies:
+    bech32 "2.0.0"
+    bitcoinjs-lib "6.1.3"
+    bn.js "5.2.1"
+    bolt07 "1.8.4"
+    bolt09 "1.0.0"
+    tiny-secp256k1 "2.2.2"
 
 ioredis-cache@^2.0.0:
   version "2.0.0"
