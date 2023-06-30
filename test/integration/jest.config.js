@@ -8,7 +8,7 @@ module.exports = {
     "^.+\\.(t|j)sx?$": ["@swc/jest", swcConfig],
   },
   testRegex: ".*\\.spec\\.ts$",
-  setupFilesAfterEnv: ["<rootDir>/test/new-jest-integration.setup.js"],
+  setupFilesAfterEnv: ["<rootDir>/test/integration/jest.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
     "^@config$": ["<rootDir>src/config/index"],

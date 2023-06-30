@@ -56,7 +56,7 @@ clean-deps:
 reset-deps: clean-deps start-deps
 reset-deps-integration: clean-deps start-deps-integration
 
-test: unit integration use-cases
+test: unit legacy-integration integration
 
 test-migrate:
 	docker compose down -v -t 3
@@ -119,10 +119,10 @@ execute-e2e-from-within-container-cached:
 
 legacy-integration:
 	yarn build && \
-	yarn test:integration
+	yarn test:legacy-integration
 
-use-cases:
-	yarn test:use-cases
+integration:
+	yarn test:integration
 
 reset-legacy-integration: reset-deps-integration legacy-integration
 
@@ -141,9 +141,9 @@ integration-in-ci:
 execute-integration-from-within-container:
 	yarn install && \
 	NODE_OPTIONS="--max-old-space-size=6144" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/legacy-integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
 	NODE_OPTIONS="--max-old-space-size=6144" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/new-jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 unit-in-ci:
 	. ./.envrc && \
