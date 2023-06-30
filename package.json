@@ -187,7 +187,7 @@
     "prettier": "^2.8.7",
     "protoc-gen-js": "^3.21.2",
     "react": "^18.2.0",
-    "spectaql": "^2.0.5",
+    "spectaql": "^2.1.1",
     "tiny-secp256k1": "^2.2.2",
     "tree-kill": "^1.2.2",
     "ts-node": "^10.9.1",
