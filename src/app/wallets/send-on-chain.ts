@@ -217,9 +217,9 @@ export const payOnChainByWalletIdForUsdWalletAndBtcAmount = async (
 }
 
 export const payAllOnChainByWalletId = async (
-  args: PayOnChainByWalletIdWithoutCurrencyArgs,
+  args: PayAllOnChainByWalletIdArgs,
 ): Promise<PayOnChainByWalletIdResult | ApplicationError> =>
-  payOnChainByWalletId({ ...args, amountCurrency: undefined, sendAll: true })
+  payOnChainByWalletId({ ...args, amount: 0, amountCurrency: undefined, sendAll: true })
 
 const executePaymentViaIntraledger = async <
   S extends WalletCurrency,

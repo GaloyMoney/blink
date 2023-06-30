@@ -93,8 +93,6 @@ describe("onChainPay", () => {
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address: outsideAddress,
-        amount: 0,
-
         speed: PayoutSpeed.Fast,
         memo,
       })
