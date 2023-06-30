@@ -121,10 +121,12 @@ legacy-integration:
 	yarn build && \
 	yarn test:legacy-integration
 
+reset-legacy-integration: reset-deps-integration legacy-integration
+
 integration:
 	yarn test:integration
 
-reset-legacy-integration: reset-deps-integration legacy-integration
+reset-integration: reset-deps-integration integration
 
 e2e:
 	yarn build && \
