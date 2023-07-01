@@ -98,20 +98,23 @@ test_accounts:
   - ref: O
     phone: "+198765432116"
     code: "321321"
+  - ref: P
+    phone: "+198765432117"
+    code: "321321"
 rateLimits:
-  requestPhoneCodePerPhone:
+  requestCodePerLoginIdentifier:
     points: 4
     duration: 3600
     blockDuration: 10800
-  requestPhoneCodePerPhoneMinInterval:
+  requestCodePerLoginIdentifierMinInterval:
     points: 1
     duration: 15
     blockDuration: 15
-  requestPhoneCodePerIp:
+  requestCodePerIp:
     points: 8
     duration: 3600
     blockDuration: 86400
-  failedLoginAttemptPerPhone:
+  failedLoginAttemptPerLoginIdentifier:
     points: 8
     duration: 1200
     blockDuration: 3600

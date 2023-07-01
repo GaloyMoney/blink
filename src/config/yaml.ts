@@ -222,17 +222,17 @@ const getRateLimits = (config: RateLimitInput): RateLimitOptions => {
   }
 }
 
-export const getRequestPhoneCodePerPhoneLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.requestPhoneCodePerPhone)
+export const getRequestCodePerLoginIdentifierLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.requestCodePerLoginIdentifier)
 
-export const getRequestPhoneCodePerPhoneMinIntervalLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.requestPhoneCodePerPhoneMinInterval)
+export const getRequestCodePerLoginIdentifierMinIntervalLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.requestCodePerLoginIdentifierMinInterval)
 
-export const getRequestPhoneCodePerIpLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.requestPhoneCodePerIp)
+export const getRequestCodePerIpLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.requestCodePerIp)
 
-export const getFailedLoginAttemptPerPhoneLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
+export const getFailedLoginAttemptPerLoginIdentifierLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerLoginIdentifier)
 
 export const getFailedLoginAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerIp)
