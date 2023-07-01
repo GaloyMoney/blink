@@ -72,10 +72,10 @@ type YamlSchema = {
     currency?: string
   }[]
   rateLimits: {
-    requestPhoneCodePerPhone: RateLimitInput
-    requestPhoneCodePerPhoneMinInterval: RateLimitInput
-    requestPhoneCodePerIp: RateLimitInput
-    failedLoginAttemptPerPhone: RateLimitInput
+    requestCodePerLoginIdentifier: RateLimitInput
+    requestCodePerLoginIdentifierMinInterval: RateLimitInput
+    requestCodePerIp: RateLimitInput
+    failedLoginAttemptPerLoginIdentifier: RateLimitInput
     failedLoginAttemptPerIp: RateLimitInput
     invoiceCreateAttempt: RateLimitInput
     invoiceCreateForRecipientAttempt: RateLimitInput

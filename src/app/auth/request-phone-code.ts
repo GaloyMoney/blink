@@ -86,7 +86,7 @@ const checkPhoneCodeAttemptPerIpLimits = async (
   ip: IpAddress,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
-    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerIp,
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerIp,
     keyToConsume: ip,
   })
 
@@ -94,7 +94,7 @@ const checkPhoneCodeAttemptPerPhoneLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
-    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhone,
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifier,
     keyToConsume: phone,
   })
 
@@ -102,6 +102,6 @@ const checkPhoneCodeAttemptPerPhoneMinIntervalLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
-    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhoneMinInterval,
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifierMinInterval,
     keyToConsume: phone,
   })

@@ -1,7 +1,7 @@
 import { createAccountForDeviceAccount } from "@app/accounts/create-account"
 import {
   getFailedLoginAttemptPerIpLimits,
-  getFailedLoginAttemptPerPhoneLimits,
+  getFailedLoginAttemptPerLoginIdentifierLimits,
 } from "@config"
 
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
@@ -43,7 +43,7 @@ export const loginWithPhoneToken = async ({
   }
 
   {
-    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
+    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -55,7 +55,7 @@ export const loginWithPhoneToken = async ({
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerPhoneLimits(phone)
+  await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
   const authService = AuthWithPhonePasswordlessService()
 
@@ -88,7 +88,7 @@ export const loginWithPhoneCookie = async ({
   }
 
   {
-    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
+    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -101,7 +101,7 @@ export const loginWithPhoneCookie = async ({
 
   await Promise.all([
     rewardFailedLoginAttemptPerIpLimits(ip),
-    rewardFailedLoginAttemptPerPhoneLimits(phone),
+    rewardFailedLoginAttemptPerLoginIdentifierLimits(phone),
   ])
 
   const authService = AuthWithPhonePasswordlessService()
@@ -139,7 +139,7 @@ export const loginUpgradeWithPhone = async ({
     if (limitOk instanceof Error) return limitOk
   }
   {
-    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
+    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -147,7 +147,7 @@ export const loginUpgradeWithPhone = async ({
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerPhoneLimits(phone)
+  await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
   const phoneAccount = await UsersRepository().findByPhone(phone)
 
@@ -254,20 +254,20 @@ const rewardFailedLoginAttemptPerIpLimits = async (
   return limiter.reward(ip)
 }
 
-const checkFailedLoginAttemptPerPhoneLimits = async (
+const checkFailedLoginAttemptPerLoginIdentifierLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerPhone,
+    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerLoginIdentifier,
     keyToConsume: phone,
   })
 
-const rewardFailedLoginAttemptPerPhoneLimits = async (
+const rewardFailedLoginAttemptPerLoginIdentifierLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimiterExceededError> => {
   const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedLoginAttemptPerPhone,
-    limitOptions: getFailedLoginAttemptPerPhoneLimits(),
+    keyPrefix: RateLimitPrefix.failedLoginAttemptPerLoginIdentifier,
+    limitOptions: getFailedLoginAttemptPerLoginIdentifierLimits(),
   })
 
   return limiter.reward(phone)

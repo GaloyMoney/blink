@@ -29,7 +29,7 @@ export const resetUserPhoneCodeAttemptPhoneMinIntervalLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimitServiceError> =>
   resetLimiter({
-    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhoneMinInterval,
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifierMinInterval,
     keyToConsume: phone,
   })
 
@@ -37,7 +37,7 @@ export const resetUserPhoneCodeAttemptPhone = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimitServiceError> =>
   resetLimiter({
-    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhone,
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifier,
     keyToConsume: phone,
   })
 
@@ -45,7 +45,7 @@ export const resetUserPhoneCodeAttemptIp = async (
   ip: IpAddress,
 ): Promise<true | RateLimitServiceError> =>
   resetLimiter({
-    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerIp,
+    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerIp,
     keyToConsume: ip,
   })
 
@@ -53,7 +53,7 @@ export const resetUserLoginPhoneRateLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimitServiceError> =>
   resetLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerPhone,
+    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerLoginIdentifier,
     keyToConsume: phone,
   })
 

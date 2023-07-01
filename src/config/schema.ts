@@ -336,26 +336,31 @@ export const configSchema = {
           phone: "+198765432116",
           code: "321321",
         },
+        {
+          ref: "P",
+          phone: "+198765432117",
+          code: "321321",
+        },
       ],
       uniqueItems: true,
     },
     rateLimits: {
       type: "object",
       properties: {
-        requestPhoneCodePerPhone: rateLimitConfigSchema,
-        requestPhoneCodePerPhoneMinInterval: rateLimitConfigSchema,
-        requestPhoneCodePerIp: rateLimitConfigSchema,
-        failedLoginAttemptPerPhone: rateLimitConfigSchema,
+        requestCodePerLoginIdentifier: rateLimitConfigSchema,
+        requestCodePerLoginIdentifierMinInterval: rateLimitConfigSchema,
+        requestCodePerIp: rateLimitConfigSchema,
+        failedLoginAttemptPerLoginIdentifier: rateLimitConfigSchema,
         failedLoginAttemptPerIp: rateLimitConfigSchema,
         invoiceCreateAttempt: rateLimitConfigSchema,
         invoiceCreateForRecipientAttempt: rateLimitConfigSchema,
         onChainAddressCreateAttempt: rateLimitConfigSchema,
       },
       required: [
-        "requestPhoneCodePerPhone",
-        "requestPhoneCodePerPhoneMinInterval",
-        "requestPhoneCodePerIp",
-        "failedLoginAttemptPerPhone",
+        "requestCodePerLoginIdentifier",
+        "requestCodePerLoginIdentifierMinInterval",
+        "requestCodePerIp",
+        "failedLoginAttemptPerLoginIdentifier",
         "failedLoginAttemptPerIp",
         "invoiceCreateAttempt",
         "invoiceCreateForRecipientAttempt",
@@ -363,22 +368,22 @@ export const configSchema = {
       ],
       additionalProperties: false,
       default: {
-        requestPhoneCodePerPhone: {
+        requestCodePerLoginIdentifier: {
           points: 4,
           duration: 3600,
           blockDuration: 10800,
         },
-        requestPhoneCodePerPhoneMinInterval: {
+        requestCodePerLoginIdentifierMinInterval: {
           points: 1,
           duration: 15,
           blockDuration: 15,
         },
-        requestPhoneCodePerIp: {
+        requestCodePerIp: {
           points: 8,
           duration: 3600,
           blockDuration: 86400,
         },
-        failedLoginAttemptPerPhone: {
+        failedLoginAttemptPerLoginIdentifier: {
           points: 8,
           duration: 1200,
           blockDuration: 3600,
