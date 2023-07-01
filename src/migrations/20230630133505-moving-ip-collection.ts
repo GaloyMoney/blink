@@ -11,8 +11,15 @@ module.exports = {
   async up(db) {
     console.log("Begin AccountSchema to AccountIpsSchema migration")
 
+    let count = 0
+
     for await (const account of getAccounts(db)) {
       const accountId = account._id // assuming this is the ID of the account
+
+      count += 1
+      if (count % 1000 === 0) {
+        console.log(`Migrated ${count} accounts`)
+      }
 
       // Check if lastIPs exist and if it is an array
       if (Array.isArray(account.lastIPs)) {

@@ -32,11 +32,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
         { upsert: true },
       )
 
-      if (result.matchedCount === 0) {
-        return new CouldNotFindAccountIpError("Couldn't find accountIp")
-      }
-
-      if (result.modifiedCount !== 1) {
+      if (result.upsertedCount !== 1 && result.modifiedCount !== 1) {
         return new PersistError("Couldn't update ip for accountIp")
       }
 
