@@ -1,3 +1,5 @@
+import { gql } from "apollo-server-core"
+
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client"
 
 import { Accounts } from "@app"
@@ -16,6 +18,10 @@ import {
 import {
   LnInvoicePaymentSendDocument,
   LnInvoicePaymentSendMutation,
+  LnNoAmountInvoicePaymentSendDocument,
+  LnNoAmountInvoicePaymentSendMutation,
+  LnNoAmountUsdInvoicePaymentSendDocument,
+  LnNoAmountUsdInvoicePaymentSendMutation,
   TransactionsDocument,
   TransactionsQuery,
 } from "test/e2e/generated"
@@ -123,6 +129,17 @@ afterAll(async () => {
   await killServer(triggerPid)
 })
 
+gql`
+  mutation LnNoAmountUsdInvoicePaymentSend($input: LnNoAmountUsdInvoicePaymentInput!) {
+    lnNoAmountUsdInvoicePaymentSend(input: $input) {
+      errors {
+        message
+      }
+      status
+    }
+  }
+`
+
 describe("sends a payment", () => {
   const satsAmount = 25_000
   const centsAmount = 1_00
@@ -130,39 +147,142 @@ describe("sends a payment", () => {
   it("settles over lightning", async () => {
     // SEND PAYMENTS
     // ===============
-    const uniqueHashesForEachSend: PaymentHash[] = []
+    const uniqueHashesForEachSend: {
+      paymentHash: PaymentHash
+      currency: WalletCurrency
+    }[] = []
 
-    // OnChainPaymentSend
+    {
+      // LnInvoicePaymentSend from BTC
+      const { currency, id: walletId } = btcWalletDescriptor
 
-    const { request, id } = await createInvoice({
-      lnd: lndOutside1,
-      tokens: satsAmount,
-    })
-    const paymentRequest = request as EncodedPaymentRequest
-    uniqueHashesForEachSend.push(id as PaymentHash)
+      const { request, id } = await createInvoice({
+        lnd: lndOutside1,
+        tokens: satsAmount,
+      })
+      const paymentRequest = request as EncodedPaymentRequest
+      uniqueHashesForEachSend.push({
+        paymentHash: id as PaymentHash,
+        currency,
+      })
 
-    const input1 = {
-      walletId: btcWalletDescriptor.id,
-      paymentRequest,
+      const input = {
+        walletId,
+        paymentRequest,
+      }
+      const result = await apolloClient.mutate<LnInvoicePaymentSendMutation>({
+        mutation: LnInvoicePaymentSendDocument,
+        variables: { input },
+      })
+      const lnInvoicePaymentSend = result?.data?.lnInvoicePaymentSend
+      if (lnInvoicePaymentSend === undefined) {
+        throw new Error("lnInvoicePaymentSend is undefined")
+      }
+      const { status, errors } = lnInvoicePaymentSend
+      expect(errors).toHaveLength(0)
+      expect(status).toBe("SUCCESS")
     }
-    const result1 = await apolloClient.mutate<LnInvoicePaymentSendMutation>({
-      mutation: LnInvoicePaymentSendDocument,
-      variables: { input: input1 },
-    })
-    const lnInvoicePaymentSend = result1?.data?.lnInvoicePaymentSend
-    if (lnInvoicePaymentSend === undefined) {
-      throw new Error("lnInvoicePaymentSend is undefined")
-    }
-    const { status: status1, errors: errors1 } = lnInvoicePaymentSend
-    expect(errors1).toHaveLength(0)
-    expect(status1).toBe("SUCCESS")
 
-    const nTxns = 1
+    {
+      // LnInvoicePaymentSend from USD
+      const { currency, id: walletId } = usdWalletDescriptor
+
+      const { request, id } = await createInvoice({
+        lnd: lndOutside1,
+        tokens: satsAmount,
+      })
+      const paymentRequest = request as EncodedPaymentRequest
+      uniqueHashesForEachSend.push({
+        paymentHash: id as PaymentHash,
+        currency,
+      })
+
+      const input = {
+        walletId,
+        paymentRequest,
+      }
+      const result = await apolloClient.mutate<LnInvoicePaymentSendMutation>({
+        mutation: LnInvoicePaymentSendDocument,
+        variables: { input },
+      })
+      const lnInvoicePaymentSend = result?.data?.lnInvoicePaymentSend
+      if (lnInvoicePaymentSend === undefined) {
+        throw new Error("lnInvoicePaymentSend is undefined")
+      }
+      const { status, errors } = lnInvoicePaymentSend
+      expect(errors).toHaveLength(0)
+      expect(status).toBe("SUCCESS")
+    }
+
+    {
+      // LnNoAmountInvoicePaymentSend
+      const { currency, id: walletId } = btcWalletDescriptor
+
+      const { request, id } = await createInvoice({
+        lnd: lndOutside1,
+      })
+      const paymentRequest = request as EncodedPaymentRequest
+      uniqueHashesForEachSend.push({
+        paymentHash: id as PaymentHash,
+        currency,
+      })
+
+      const input = {
+        walletId,
+        paymentRequest,
+        amount: satsAmount,
+      }
+      const result = await apolloClient.mutate<LnNoAmountInvoicePaymentSendMutation>({
+        mutation: LnNoAmountInvoicePaymentSendDocument,
+        variables: { input },
+      })
+      const lnNoAmountInvoicePaymentSend = result?.data?.lnNoAmountInvoicePaymentSend
+      if (lnNoAmountInvoicePaymentSend === undefined) {
+        throw new Error("lnNoAmountInvoicePaymentSend is undefined")
+      }
+      const { status, errors } = lnNoAmountInvoicePaymentSend
+      expect(errors).toHaveLength(0)
+      expect(status).toBe("SUCCESS")
+    }
+
+    {
+      // LnNoAmountUsdInvoicePaymentSend
+      const { currency, id: walletId } = usdWalletDescriptor
+
+      const { request, id } = await createInvoice({
+        lnd: lndOutside1,
+      })
+      const paymentRequest = request as EncodedPaymentRequest
+      uniqueHashesForEachSend.push({
+        paymentHash: id as PaymentHash,
+        currency,
+      })
+
+      const input = {
+        walletId,
+        paymentRequest,
+        amount: centsAmount,
+      }
+      const result = await apolloClient.mutate<LnNoAmountUsdInvoicePaymentSendMutation>({
+        mutation: LnNoAmountUsdInvoicePaymentSendDocument,
+        variables: { input },
+      })
+      const lnNoAmountUsdInvoicePaymentSend =
+        result?.data?.lnNoAmountUsdInvoicePaymentSend
+      if (lnNoAmountUsdInvoicePaymentSend === undefined) {
+        throw new Error("lnNoAmountUsdInvoicePaymentSend is undefined")
+      }
+      const { status, errors } = lnNoAmountUsdInvoicePaymentSend
+      expect(errors).toHaveLength(0)
+      expect(status).toBe("SUCCESS")
+    }
+
+    const nTxns = 4
     expect(new Set(uniqueHashesForEachSend).size).toEqual(nTxns)
 
     // CHECK SETTLED STATUS
     // ===============
-    for (const paymentHash of uniqueHashesForEachSend) {
+    for (const { paymentHash } of uniqueHashesForEachSend) {
       const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id: paymentHash })
       if (invoice === null) throw new Error("invoice is null")
       expect(invoice.is_confirmed).toBe(true)
@@ -176,21 +296,23 @@ describe("sends a payment", () => {
     const txns = response.data?.me?.defaultAccount.transactions?.edges
     if (!txns) throw new Error("'txns' is falsy")
 
-    const expectArraySends = uniqueHashesForEachSend.map((paymentHash) =>
+    const expectArraySends = uniqueHashesForEachSend.map(({ paymentHash, currency }) =>
       expect.objectContaining({
         node: expect.objectContaining({
           status: "SUCCESS",
           direction: "SEND",
+          settlementCurrency: currency,
           initiationVia: expect.objectContaining({
             paymentHash,
           }),
         }),
       }),
     )
-    const expectArrayReimbursements = uniqueHashesForEachSend.map(() =>
+    const expectArrayReimbursements = uniqueHashesForEachSend.map(({ currency }) =>
       expect.objectContaining({
         node: expect.objectContaining({
           direction: "RECEIVE",
+          settlementCurrency: currency,
           initiationVia: expect.objectContaining({
             __typename: "InitiationViaIntraLedger",
           }),
