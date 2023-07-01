@@ -69,27 +69,6 @@ const sendToDevice = async (
       canonicalRegistrationTokenCount: response.canonicalRegistrationTokenCount,
     })
 
-    // TODO token clean up
-    // ie, when the message below is received
-
-    //   "response": {
-    //   "results": [
-    //     {
-    //       "error": {
-    //         "code": "messaging/registration-token-not-registered",
-    //         "message": "The provided registration token is not registered. A previously valid registration token can be unregistered for a variety of reasons. See the error documentation for more details. Remove this registration token and stop using it to send messages."
-    //       }
-    //     },
-    //     {
-    //       "messageId": "0:1671300966132147%7c88793f7c88793f"
-    //     }
-    //   ],
-    //   "canonicalRegistrationTokenCount": 0,
-    //   "failureCount": 1,
-    //   "successCount": 1,
-    //   "multicastId": 2601374049640558600
-    // },
-
     if (invalidTokens.length > 0) {
       return new DeviceTokensNotRegisteredNotificationsServiceError(invalidTokens)
     }
