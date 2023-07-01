@@ -1,6 +1,9 @@
+import { removeDeviceTokens } from "@app/users/remove-device-tokens"
+
+import { displayAmountFromNumber } from "@domain/fiat"
 import { InvalidLedgerTransactionStateError } from "@domain/errors"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
-import { displayAmountFromNumber } from "@domain/fiat"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
 import * as LedgerFacade from "@services/ledger/facade"
 import {
@@ -49,7 +52,7 @@ export const settlePayout = async (
   const { txHash } = ledgerTxn
   if (txHash === undefined) return new InvalidLedgerTransactionStateError()
 
-  await NotificationsService().onChainTxSent({
+  const result = await NotificationsService().onChainTxSent({
     senderAccountId: wallet.accountId,
     senderWalletId: wallet.id,
     paymentAmount,
@@ -58,6 +61,10 @@ export const settlePayout = async (
     senderDeviceTokens: user.deviceTokens,
     senderLanguage: user.language,
   })
+
+  if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+    await removeDeviceTokens({ userId: user.id, deviceTokens: result.tokens })
+  }
 
   return true
 }

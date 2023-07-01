@@ -1,34 +1,36 @@
+import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
-import { checkedToSats } from "@domain/bitcoin"
-import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import {
   CouldNotFindError,
   CouldNotFindWalletInvoiceError,
   InvalidNonHodlInvoiceError,
 } from "@domain/errors"
-import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
+import { checkedToSats } from "@domain/bitcoin"
+import { displayAmountFromNumber } from "@domain/fiat"
+import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
-import { LockService } from "@services/lock"
-import { DealerPriceService } from "@services/dealer-price"
-import { LndService } from "@services/lnd"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
 import {
   AccountsRepository,
   WalletInvoicesRepository,
   WalletsRepository,
   UsersRepository,
 } from "@services/mongoose"
-import { NotificationsService } from "@services/notifications"
+import { LndService } from "@services/lnd"
+import { LockService } from "@services/lock"
 import * as LedgerFacade from "@services/ledger/facade"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-  wrapAsyncToRunInSpan,
-} from "@services/tracing"
+import { DealerPriceService } from "@services/dealer-price"
+import { NotificationsService } from "@services/notifications"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
-import { displayAmountFromNumber } from "@domain/fiat"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -272,8 +274,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
-    const notificationsService = NotificationsService()
-    notificationsService.lightningTxReceived({
+    const notificationResult = await NotificationsService().lightningTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
       paymentAmount: walletInvoiceReceiver.receivedAmount(),
@@ -282,6 +283,15 @@ const updatePendingInvoiceBeforeFinally = async ({
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
     })
+
+    if (
+      notificationResult instanceof DeviceTokensNotRegisteredNotificationsServiceError
+    ) {
+      await removeDeviceTokens({
+        userId: recipientUser.id,
+        deviceTokens: notificationResult.tokens,
+      })
+    }
 
     return true
   })

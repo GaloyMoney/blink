@@ -53,20 +53,20 @@ type PriceUpdateArgs<C extends DisplayCurrency> = {
 interface INotificationsService {
   lightningTxReceived: (
     args: LightningTxReceivedArgs,
-  ) => Promise<void | NotificationsServiceError>
+  ) => Promise<true | NotificationsServiceError>
 
   intraLedgerTxReceived: (
     args: IntraLedgerTxReceivedArgs,
-  ) => Promise<void | NotificationsServiceError>
+  ) => Promise<true | NotificationsServiceError>
 
   onChainTxReceived(
     args: OnChainTxReceivedArgs,
-  ): Promise<void | NotificationsServiceError>
+  ): Promise<true | NotificationsServiceError>
   onChainTxReceivedPending(
     args: OnChainTxReceivedPendingArgs,
-  ): Promise<void | NotificationsServiceError>
-  onChainTxSent(args: OnChainTxSentArgs): Promise<void | NotificationsServiceError>
+  ): Promise<true | NotificationsServiceError>
+  onChainTxSent(args: OnChainTxSentArgs): Promise<true | NotificationsServiceError>
 
   priceUpdate: <C extends DisplayCurrency>(args: PriceUpdateArgs<C>) => void
-  sendBalance(args: SendBalanceArgs): Promise<void | NotificationsServiceError>
+  sendBalance(args: SendBalanceArgs): Promise<true | NotificationsServiceError>
 }

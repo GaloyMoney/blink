@@ -49,11 +49,12 @@ import {
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 
+import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
+import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
-import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
-
 import { ResourceExpiredLockServiceError } from "@domain/lock"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
 import { reimburseFee } from "./reimburse-fee"
 
@@ -524,8 +525,7 @@ const executePaymentViaIntraledger = async <
     })
     if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
 
-    const notificationsService = NotificationsService()
-    notificationsService.lightningTxReceived({
+    const result = await NotificationsService().lightningTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId,
       paymentAmount: { amount, currency: recipientWalletCurrency },
@@ -534,6 +534,10 @@ const executePaymentViaIntraledger = async <
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
     })
+
+    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+    }
 
     if (senderAccount.id !== recipientAccount.id) {
       const addContactResult = await addContactsAfterSend({

@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin"
 
 import {
+  DeviceTokensNotRegisteredNotificationsServiceError,
   InvalidDeviceNotificationsServiceError,
   NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
@@ -46,7 +47,14 @@ const sendToDevice = async (
     const response = await messaging.sendToDevice(tokens, message)
     logger.info({ response, tokens, message }, "notification was sent successfully")
 
-    response.results.forEach((item) => {
+    const invalidTokens: DeviceToken[] = []
+    response.results.forEach((item, index: number) => {
+      if (
+        response.results.length === tokens.length &&
+        item?.error?.code === "messaging/registration-token-not-registered"
+      ) {
+        invalidTokens.push(tokens[index])
+      }
       if (item?.error?.message) {
         recordExceptionInCurrentSpan({
           error: new InvalidDeviceNotificationsServiceError(item.error.message),
@@ -81,6 +89,10 @@ const sendToDevice = async (
     //   "successCount": 1,
     //   "multicastId": 2601374049640558600
     // },
+
+    if (invalidTokens.length > 0) {
+      return new DeviceTokensNotRegisteredNotificationsServiceError(invalidTokens)
+    }
 
     return true
   } catch (err) {

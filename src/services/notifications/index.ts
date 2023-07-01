@@ -25,7 +25,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentHash,
     recipientDeviceTokens,
     recipientLanguage,
-  }: LightningTxReceivedArgs): Promise<void | NotificationsServiceError> => {
+  }: LightningTxReceivedArgs): Promise<true | NotificationsServiceError> => {
     try {
       // Notify public subscribers (via GraphQL subscription if any)
       const lnPaymentStatusTrigger = customPubSubTrigger({
@@ -61,12 +61,14 @@ export const NotificationsService = (): INotificationsService => {
           displayAmount: displayPaymentAmount,
         })
 
-        await pushNotification.sendNotification({
+        return pushNotification.sendNotification({
           deviceTokens: recipientDeviceTokens,
           title,
           body,
         })
       }
+
+      return true
     } catch (err) {
       return handleCommonNotificationErrors(err)
     }
@@ -79,7 +81,7 @@ export const NotificationsService = (): INotificationsService => {
     displayPaymentAmount,
     recipientDeviceTokens,
     recipientLanguage,
-  }: IntraLedgerTxReceivedArgs): Promise<void | NotificationsServiceError> => {
+  }: IntraLedgerTxReceivedArgs): Promise<true | NotificationsServiceError> => {
     try {
       // Notify the recipient (via GraphQL subscription if any)
       const accountUpdatedTrigger = customPubSubTrigger({
@@ -119,12 +121,14 @@ export const NotificationsService = (): INotificationsService => {
           displayAmount: displayPaymentAmount,
         })
 
-        await pushNotification.sendNotification({
+        return pushNotification.sendNotification({
           deviceTokens: recipientDeviceTokens,
           title,
           body,
         })
       }
+
+      return true
     } catch (err) {
       return handleCommonNotificationErrors(err)
     }
@@ -148,7 +152,7 @@ export const NotificationsService = (): INotificationsService => {
     deviceTokens: DeviceToken[]
     language: UserLanguageOrEmpty
     txHash: OnChainTxHash
-  }): Promise<void | NotificationsServiceError> => {
+  }): Promise<true | NotificationsServiceError> => {
     try {
       // Notify the recipient (via GraphQL subscription if any)
       const accountUpdatedTrigger = customPubSubTrigger({
@@ -183,12 +187,14 @@ export const NotificationsService = (): INotificationsService => {
           displayAmount: displayPaymentAmount,
         })
 
-        await pushNotification.sendNotification({
+        return pushNotification.sendNotification({
           deviceTokens,
           title,
           body,
         })
       }
+
+      return true
     } catch (err) {
       return handleCommonNotificationErrors(err)
     }
@@ -291,9 +297,9 @@ export const NotificationsService = (): INotificationsService => {
     deviceTokens,
     displayBalanceAmount,
     recipientLanguage,
-  }: SendBalanceArgs): Promise<void | NotificationsServiceError> => {
+  }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
-    if (!hasDeviceTokens) return
+    if (!hasDeviceTokens) return true
 
     try {
       const { title, body } = createPushNotificationContent({
@@ -303,7 +309,7 @@ export const NotificationsService = (): INotificationsService => {
         displayAmount: displayBalanceAmount,
       })
 
-      await pushNotification.sendNotification({
+      return pushNotification.sendNotification({
         deviceTokens,
         title,
         body,

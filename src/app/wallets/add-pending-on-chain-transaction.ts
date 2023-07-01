@@ -1,5 +1,6 @@
 import { getFeesConfig, getOnChainWalletConfig } from "@config"
 
+import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import {
@@ -7,9 +8,10 @@ import {
   PaymentInitiationMethod,
   SettlementMethod,
 } from "@domain/wallets"
-import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@domain/errors"
 import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
+import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@domain/errors"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
 import {
   AccountsRepository,
@@ -134,7 +136,7 @@ export const addPendingTransaction = async ({
     const recipientUser = await UsersRepository().findById(account.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
-    NotificationsService().onChainTxReceivedPending({
+    const result = await NotificationsService().onChainTxReceivedPending({
       recipientAccountId: wallet.accountId,
       recipientWalletId: wallet.id,
       paymentAmount: settlementAmount,
@@ -143,6 +145,10 @@ export const addPendingTransaction = async ({
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
     })
+
+    if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
+      await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+    }
 
     return true
   })
