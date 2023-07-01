@@ -106,7 +106,7 @@ interface AccountIpsRecord {
   }
   firstConnection: Date
   lastConnection: Date
-  _accountId: string
+  _accountId: ObjectId
 }
 
 interface UserRecord {

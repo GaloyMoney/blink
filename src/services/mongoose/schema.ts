@@ -269,7 +269,10 @@ AccountSchema.index({
 export const Account = mongoose.model<AccountRecord>("Account", AccountSchema)
 
 const AccountIpsSchema = new Schema<AccountIpsRecord>({
-  ip: String,
+  ip: {
+    type: String,
+    required: true,
+  },
   metadata: {
     type: {
       provider: String,
@@ -288,7 +291,12 @@ const AccountIpsSchema = new Schema<AccountIpsRecord>({
     default: Date.now,
   },
   lastConnection: Date,
-  _accountId: String,
+  _accountId: {
+    type: Schema.Types.ObjectId,
+    ref: "Account",
+    index: true,
+    required: true,
+  },
 })
 
 export const AccountIps = mongoose.model<AccountIpsRecord>("AccountIp", AccountIpsSchema)
