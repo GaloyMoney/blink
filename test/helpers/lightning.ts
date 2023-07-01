@@ -362,19 +362,23 @@ export const fundWalletIdFromLightning = async ({
       : await Wallets.addInvoiceForSelfForUsdWallet({ walletId, amount })
   if (invoice instanceof Error) return invoice
 
-  safePay({ lnd: lndOutside1, request: invoice.paymentRequest })
-
-  // TODO: we could use an event instead of a sleep
-  await sleep(500)
-
-  const hash = getHash(invoice.paymentRequest)
-
-  expect(
-    await Wallets.updatePendingInvoiceByPaymentHash({
-      paymentHash: hash as PaymentHash,
-      logger: baseLogger,
-    }),
-  ).not.toBeInstanceOf(Error)
+  const { paymentRequest, paymentHash } = invoice
+  const promises = Promise.all([
+    safePay({ lnd: lndOutside1, request: paymentRequest }),
+    (async () => {
+      // TODO: we could use event instead of a sleep to lower test latency
+      await sleep(500)
+      return Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash,
+        logger: baseLogger,
+      })
+    })(),
+  ])
+  {
+    // first arg is the outsideLndpayResult
+    const [, result] = await promises
+    expect(result).not.toBeInstanceOf(Error)
+  }
 
   const balance = await Wallets.getBalanceForWallet({ walletId })
   if (balance instanceof Error) throw balance
