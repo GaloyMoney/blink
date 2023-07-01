@@ -43,6 +43,8 @@ generates:
         Username: "string"
         WalletId: "string"
         Seconds: "number"
+        Minutes: "number"
         DisplayCurrency: "string"
         SignedDisplayMajorAmount: "string"
         CountryCode: "string"
+        Feedback: "string"
