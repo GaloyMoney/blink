@@ -1,0 +1,12 @@
+query me {
+  me {
+    defaultAccount {
+      wallets {
+        ... on BTCWallet {
+          id
+          walletCurrency
+        }
+      }
+    }
+  }
+}

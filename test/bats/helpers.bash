@@ -34,9 +34,9 @@ exec_graphql() {
   echo  "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
 
   if [[ ${token_name} == "anon" ]]; then
-       auth=""
+       AUTH_HEADER=""
   else
-       auth="-H \"authorization: Bearer $(read_value ${token_name})\""
+       AUTH_HEADER="Authorization: Bearer $(read_value ${token_name})"
   fi
 
   if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
@@ -47,8 +47,8 @@ exec_graphql() {
 
   ${run_cmd} curl -s \
        -X POST \
+       ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
        -H "Content-Type: application/json" \
-       ${auth} \
        -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
        ${GALOY_ENDPOINT}/graphql
 
