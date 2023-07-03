@@ -144,3 +144,5 @@ export class InvalidNonHodlInvoiceError extends ValidationError {
 export class MultipleCurrenciesForSingleCurrencyOperationError extends ValidationError {
   level = ErrorLevel.Critical
 }
+
+export class InvalidIdempotencyKeyError extends ValidationError {}

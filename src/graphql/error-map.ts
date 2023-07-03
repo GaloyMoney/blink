@@ -375,6 +375,14 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         logger: baseLogger,
       })
 
+    case "InvalidIdempotencyKeyError":
+      message =
+        "Invalid format for the provided ImpotencyKey. You must use a UUID-v4 format"
+      return new ValidationInternalError({
+        message,
+        logger: baseLogger,
+      })
+
     // ----------
     // Unhandled below here
     // ----------

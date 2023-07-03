@@ -67,6 +67,7 @@ import { playgroundTabs } from "../graphql/playground"
 import authRouter from "./middlewares/auth-router"
 import healthzHandler from "./middlewares/healthz"
 import kratosRouter from "./middlewares/kratos-router"
+import { idempotencyMiddleware } from "./middlewares/idempotency"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -348,6 +349,8 @@ export const startApolloServer = async ({
   )
 
   const secret = jwksRsa.expressJwtSecret(getJwksArgs()) as GetVerificationKey // https://github.com/auth0/express-jwt/issues/288#issuecomment-1122524366
+
+  app.use(idempotencyMiddleware)
 
   app.use(
     "/graphql",

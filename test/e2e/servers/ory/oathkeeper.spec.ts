@@ -10,7 +10,12 @@ import {
   killServer,
   startServer,
 } from "test/e2e/helpers"
-import { UserLoginDocument } from "test/e2e/generated"
+import {
+  NodeIdsDocument,
+  NodeIdsQuery,
+  UserLoginDocument,
+  UserLoginMutation,
+} from "test/e2e/generated"
 let serverPid: PID
 
 beforeAll(async () => {
@@ -47,13 +52,14 @@ describe("Oathkeeper graphql endpoints", () => {
 
     const input = { phone, code }
 
-    const result = await apolloClient.mutate({
+    const result = await apolloClient.mutate<UserLoginMutation>({
       mutation: UserLoginDocument,
       variables: { input },
     })
     disposeClient()
 
-    const token = result.data.userLogin.authToken
+    const token = result?.data?.userLogin.authToken as SessionToken
+    if (!token) throw new Error("token is undefined")
 
     const res = await sendOathkeeperRequestGraphql(token)
     if (res instanceof Error) throw res
@@ -62,5 +68,103 @@ describe("Oathkeeper graphql endpoints", () => {
     const uidFromJwt = decodedNew?.payload?.sub
 
     expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
+  })
+})
+
+describe("idempotencyMiddleware", () => {
+  it("ok if proper uuid is provided", async () => {
+    const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
+
+    const promise = apolloClient.query<NodeIdsQuery>({
+      query: NodeIdsDocument,
+      context: {
+        headers: {
+          "X-Idempotency-Key": crypto.randomUUID(),
+        },
+      },
+    })
+
+    await expect(promise).resolves.toMatchObject({
+      data: {
+        globals: {
+          __typename: "Globals",
+          nodesIds: expect.arrayContaining([expect.any(String)]),
+          network: "regtest",
+        },
+      },
+    })
+
+    disposeClient()
+  })
+
+  it("should return 400 if idempotency key is not a uuid", async () => {
+    const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
+
+    const promise = apolloClient.query<NodeIdsQuery>({
+      query: NodeIdsDocument,
+      context: {
+        headers: {
+          "X-Idempotency-Key": "not-a-uuid",
+        },
+      },
+    })
+
+    await expect(promise).rejects.toThrow(
+      "Response not successful: Received status code 400",
+    )
+
+    disposeClient()
+  })
+
+  it("second request with same idempotency key will fail", async () => {
+    const key = crypto.randomUUID()
+
+    {
+      const { apolloClient, disposeClient } = createApolloClient(
+        defaultTestClientConfig(),
+      )
+
+      const promise = apolloClient.query<NodeIdsQuery>({
+        query: NodeIdsDocument,
+        context: {
+          headers: {
+            "X-Idempotency-Key": key,
+          },
+        },
+      })
+
+      await expect(promise).resolves.toMatchObject({
+        data: {
+          globals: {
+            __typename: "Globals",
+            nodesIds: expect.arrayContaining([expect.any(String)]),
+            network: "regtest",
+          },
+        },
+      })
+
+      disposeClient()
+    }
+
+    {
+      const { apolloClient, disposeClient } = createApolloClient(
+        defaultTestClientConfig(),
+      )
+
+      const promise = apolloClient.query<NodeIdsQuery>({
+        query: NodeIdsDocument,
+        context: {
+          headers: {
+            "X-Idempotency-Key": key,
+          },
+        },
+      })
+
+      await expect(promise).rejects.toThrow(
+        "Response not successful: Received status code 409",
+      )
+
+      disposeClient()
+    }
   })
 })
