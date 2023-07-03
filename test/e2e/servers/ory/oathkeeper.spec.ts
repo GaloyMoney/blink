@@ -71,7 +71,7 @@ describe("Oathkeeper graphql endpoints", () => {
   })
 })
 
-describe.only("idempotencyMiddleware", () => {
+describe("idempotencyMiddleware", () => {
   it("ok if proper uuid is provided", async () => {
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
 

@@ -2,7 +2,10 @@ import { NextFunction, Request, Response } from "express"
 import { LockService } from "@services/lock"
 import { InvalidIdempotencyKeyError } from "@domain/errors"
 import { ExecutionError } from "redlock"
-import { addAttributesToCurrentSpan, addEventToCurrentSpan, recordExceptionInCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 import { ErrorLevel } from "@domain/shared"
 
 // Create lock service instance
