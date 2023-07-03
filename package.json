@@ -163,7 +163,7 @@
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "@xascode/tscpaths": "0.1.4",
-    "axios-mock-adapter": "^1.21.2",
+    "axios-mock-adapter": "^1.21.5",
     "eslint": "^8.43.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.27.5",
