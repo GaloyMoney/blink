@@ -1,3 +1,5 @@
+type ExecutionError = import("redlock").ExecutionError
+
 type RedlockAbortSignal = import("redlock").RedlockAbortSignal
 
 type LockServiceError = import("./errors").LockServiceError
@@ -5,6 +7,7 @@ type LockServiceError = import("./errors").LockServiceError
 type WalletIdAbortSignal = RedlockAbortSignal & { readonly brand: unique symbol }
 type PaymentHashAbortSignal = RedlockAbortSignal & { readonly brand: unique symbol }
 type OnChainTxAbortSignal = RedlockAbortSignal & { readonly brand: unique symbol }
+type IdempotencyKeyAbortSignal = RedlockAbortSignal & { readonly brand: unique symbol }
 
 interface ILockService {
   lockWalletId<Res>(
@@ -23,6 +26,7 @@ interface ILockService {
     { txHash, vout }: { txHash: OnChainTxHash; vout: OnChainTxVout },
     f: (signal: OnChainTxAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError>
+  lockIdempotencyKey(idempotencyKey: IdempotencyKey): Promise<void | ExecutionError>
 }
 
 type RedlockArgs<Signal, Ret> = {

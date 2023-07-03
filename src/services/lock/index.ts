@@ -10,6 +10,8 @@ import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 import { redis } from "@services/redis"
 import { BTC_NETWORK } from "@config"
 
+const durationLockIdempotencyKey = (1000 * 60 * 60) as MilliSeconds // 1 hour
+
 // the maximum amount of time you want the resource to initially be locked,
 // note: with redlock 5, the lock is automatically extended
 const ttl = BTC_NETWORK !== "regtest" ? 180000 : 10000
@@ -52,7 +54,10 @@ const getOnChainTxHashAndVoutLockResource = ({
   txHash: OnChainTxHash
   vout: OnChainTxVout
 }) => `locks:onchaintxhash:${txHash}:${vout}`
+const getIdempotencyKeyLockResource = (path: IdempotencyKey) =>
+  `locks:idempotencykey:${path}`
 
+// unlock after asyncFn is done
 export const redlock = async <Signal extends RedlockAbortSignal, Ret>({
   path,
   signal,
@@ -76,6 +81,20 @@ export const redlock = async <Signal extends RedlockAbortSignal, Ret>({
 
     return new UnknownLockServiceError()
   }
+}
+
+// for use case when:
+// - we want to abort if the lock is not acquired
+// - we only want the lock to be released after the TTL expires
+export const timelock = async ({
+  resource,
+  duration,
+}: {
+  resource: string
+  duration: MilliSeconds
+}) => {
+  // TODO: we do not need to retry if the lock is already acquired in this scenario
+  return redlockClient.acquire([resource], duration)
 }
 
 export const LockService = (): ILockService => {
@@ -115,6 +134,14 @@ export const LockService = (): ILockService => {
     return redlock({ path, asyncFn })
   }
 
+  const lockIdempotencyKey = async (
+    idempotencyKey: IdempotencyKey,
+  ): Promise<void | ExecutionError> => {
+    const path = getIdempotencyKeyLockResource(idempotencyKey)
+
+    await timelock({ resource: path, duration: durationLockIdempotencyKey })
+  }
+
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.lock",
     fns: {
@@ -122,6 +149,7 @@ export const LockService = (): ILockService => {
       lockPaymentHash,
       lockOnChainTxHash,
       lockOnChainTxHashAndVout,
+      lockIdempotencyKey,
     },
   })
 }
