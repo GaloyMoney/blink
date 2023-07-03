@@ -2,13 +2,16 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${REPO_ROOT##*/}}"
 
 GALOY_ENDPOINT=localhost:4002
+SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
 
 function start_server() {
-	node lib/servers/graphql-main-server.js
+  pid="$(background node lib/servers/graphql-main-server.js)"
+  echo $pid > $SERVER_PID_FILE
+  sleep 5
 }
 
 function stop_server() {
-  echo "start server"
+  [ -f $SERVER_PID_FILE ] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
 }
 
 gql_query() {
@@ -35,7 +38,6 @@ exec_graphql() {
   fi
 
   ${run_cmd} curl -s \
-    -vvv \
        -X POST \
        -H "Content-Type: application/json" \
        ${auth} \
@@ -43,6 +45,10 @@ exec_graphql() {
        ${GALOY_ENDPOINT}/graphql
 
   echo "GQL output: '$output'"
+}
+
+graphql_output() {
+  echo $output | jq -r "$@"
 }
 
 # Run the given command in the background. Useful for starting a
@@ -55,7 +61,7 @@ exec_graphql() {
 # https://github.com/sstephenson/bats/issues/80#issuecomment-174101686
 # for details.
 background() {
-  "$@" 3>- &
+  "$@" > /dev/null 2>&1 &
   echo $!
 }
 

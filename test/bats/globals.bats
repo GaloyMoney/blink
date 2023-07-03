@@ -11,5 +11,7 @@ teardown_file() {
 }
 
 @test "ping: can query globals" {
-  echo hello
+  exec_graphql 'anon' 'globals'
+  network="$(graphql_output '.data.globals.network')"
+  [ "${network}" = "regtest" ]
 }

@@ -33,3 +33,7 @@ generated.gql
 .swc
 
 .envrc.secrets
+
+# bats e2e tests
+-
+.galoy_server_pid
