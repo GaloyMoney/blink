@@ -1,0 +1,10 @@
+mutation onChainUsdPaymentSendAsBtcDenominated(
+  $input: OnChainUsdPaymentSendAsBtcDenominatedInput!
+) {
+  onChainUsdPaymentSendAsBtcDenominated(input: $input) {
+    errors {
+      message
+    }
+    status
+  }
+}
