@@ -14,6 +14,14 @@ function stop_server() {
   [ -f $SERVER_PID_FILE ] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
 }
 
+cache_value() {
+  echo $2 > ${BATS_TMPDIR}/$1
+}
+
+read_value() {
+  cat ${BATS_TMPDIR}/$1
+}
+
 gql_query() {
   cat "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql" | tr '\n' ' ' | sed 's/"/\\"/g'
 }

@@ -11,5 +11,8 @@ teardown_file() {
 }
 
 @test "onchain payments" {
-  echo hello
+  exec_graphql 'anon' 'user-login' '{"input": {"phone":"+16505554328","code":"321321"}}'
+  auth_token="$(graphql_output '.data.userLogin.authToken')"
+  [ "${auth_token}" != "null" ]
+  cache_value 'alice' "$auth_token"
 }
