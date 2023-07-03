@@ -7,6 +7,7 @@ import {
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import { ErrorLevel } from "@domain/shared"
+import { json } from "body-parser"
 
 // Create lock service instance
 const lockService = LockService()
@@ -46,25 +47,49 @@ export const idempotencyMiddleware = async (
       return res.status(400).json({ error: "X-Idempotency-Key header must be a UUID-v4" })
     }
 
-    try {
-      await lockService.lockIdempotencyKey(idempotencyKey)
-      addAttributesToCurrentSpan({ idempotencyKey })
+    // Parse JSON body
+    // we only parse if we have a idempotency key
+    json()(req, res, async (err) => {
+      if (err) {
+        next(err)
+        return
+      }
 
-      next()
-    } catch (error) {
-      recordExceptionInCurrentSpan({
-        error,
-        fallbackMsg: "Error locking idempotency key",
-        level: ErrorLevel.Critical,
-      })
-      if (error instanceof ExecutionError) {
-        return res.status(409).json({ error: error.message })
+      // Check if the request is a persisted query that also include the full query
+      //
+      // because the mobile flow has persisted Query enabled, there is a scenario in which
+      // the mobile client sends a hash request without the query,
+      // the server would then return an error because the hash is not found
+      // the mobile would then retry with both the hash and the full query
+      //
+      // to properly handle this scenario, we treat those 2 queries as separate by adding a suffix
+      // to the idempotency key on redis, such that the second request would not be blocked
+      const isPersistedQueryWithExtension =
+        req?.body?.extensions?.persistedQuery?.sha256Hash && req?.body?.query
+
+      const idempotencyKeyMaybeSuffix = (idempotencyKey +
+        (isPersistedQueryWithExtension ? "-persisted" : "")) as IdempotencyKey
+
+      try {
+        await lockService.lockIdempotencyKey(idempotencyKeyMaybeSuffix)
+        addAttributesToCurrentSpan({ idempotencyKey })
+
+        next()
+      } catch (error) {
+        recordExceptionInCurrentSpan({
+          error,
+          fallbackMsg: "Error locking idempotency key",
+          level: ErrorLevel.Critical,
+        })
+        if (error instanceof ExecutionError) {
+          return res.status(409).json({ error: "the idempotency key already exist" })
+        }
+        if (error instanceof Error) {
+          return res.status(500).json({ error: error.message })
+        }
+        return res.status(500).json({ error: "Unknown error in idempotency middleware" })
       }
-      if (error instanceof Error) {
-        return res.status(500).json({ error: error.message })
-      }
-      return res.status(500).json({ error: "Unknown error" })
-    }
+    })
   } else {
     next()
   }
