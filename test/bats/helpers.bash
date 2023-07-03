@@ -3,15 +3,43 @@ COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${REPO_ROOT##*/}}"
 
 GALOY_ENDPOINT=localhost:4002
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
+TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
 
-function start_server() {
+bitcoind_init() {
+  bitcoin_cli createwallet "outside" || true
+  bitcoin_cli -generate 200
+
+  bitcoin_signer_cli createwallet "dev" || true
+  bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ${REPO_ROOT}/test/bats/bitcoind_signer_descriptors.json)"
+}
+
+bitcoin_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
+}
+
+bitcoin_signer_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-signer-1" bitcoin-cli $@
+}
+
+start_server() {
   pid="$(background node lib/servers/graphql-main-server.js)"
   echo $pid > $SERVER_PID_FILE
   sleep 5
 }
 
-function stop_server() {
+start_trigger() {
+  pid="$(background node lib/servers/trigger.js)"
+  echo $pid > $TRIGGER_PID_FILE
+  sleep 5
+}
+
+
+stop_server() {
   [ -f $SERVER_PID_FILE ] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
+}
+
+stop_trigger() {
+  [ -f $TRIGGER_PID_FILE ] && kill -9 $(cat $TRIGGER_PID_FILE) > /dev/null || true
 }
 
 cache_value() {

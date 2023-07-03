@@ -3,11 +3,14 @@
 load "helpers"
 
 setup_file() {
+  bitcoind_init
   start_server
+  start_trigger
 }
 
 teardown_file() {
   stop_server
+  stop_trigger
 }
 
 @test "onchain payments" {
@@ -23,4 +26,17 @@ teardown_file() {
   if [ $alice_btc_wallet_id = "null" ]; then alice_btc_wallet_id="$wallet1"; fi
   [ "${alice_btc_wallet_id}" != "null" ]
   cache_value 'alice_btc_wallet_id' "$alice_btc_wallet_id"
+
+  exec_graphql 'alice' 'on-chain-address-create' "{\"input\":{\"walletId\":\"$alice_btc_wallet_id\"}}"
+  address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [ "${address}" != "null" ]
+  bitcoin_cli sendtoaddress "$address" 0.01
+  bitcoin_cli -generate 2
+  sleep 5
+
+  # TODO: Get pending in coming to settle before sending
+
+  outside_address=$(bitcoin_cli getnewaddress)
+  [ "${outside_address}" != "null" ]
+  exec_graphql 'alice' 'on-chain-payment-send' "{\"input\":{\"walletId\":\"$alice_btc_wallet_id\",\"address\":\"$outside_address\",\"amount\":10000}}"
 }

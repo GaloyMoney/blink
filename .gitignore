@@ -36,4 +36,4 @@ generated.gql
 
 # bats e2e tests
 -
-.galoy_server_pid
+.*_pid
