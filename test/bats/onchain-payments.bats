@@ -46,7 +46,7 @@ teardown_file() {
   exec_graphql 'alice' 'on-chain-payment-send' "{\"input\":{\"walletId\":\"$(read_value 'alice_btc_wallet_id')\",\"address\":\"$outside_address\",\"amount\":12345}}"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [ "${send_status}" = "SUCCESS" ]
-  sleep 5 # wait for broadcast
+  sleep 10 # wait for broadcast
 
   exec_graphql 'alice' 'transactions' "{\"first\":1}" > /dev/null 2>&1
   txid="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.settlementVia.transactionHash')"
