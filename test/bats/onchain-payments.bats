@@ -4,13 +4,13 @@ load "helpers"
 
 setup_file() {
   bitcoind_init
-  start_server
   start_trigger
+  start_server
 }
 
 teardown_file() {
-  stop_server
   stop_trigger
+  stop_server
 }
 
 @test "onchain payments: setup user" {
@@ -48,13 +48,13 @@ teardown_file() {
   [ "${send_status}" = "SUCCESS" ]
   sleep 10 # wait for broadcast
 
-  exec_graphql 'alice' 'transactions' "{\"first\":1}" > /dev/null 2>&1
+  exec_graphql 'alice' 'transactions' "{\"first\":1}"
   txid="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.settlementVia.transactionHash')"
   [ "${txid}" != "null" ]
   bitcoin_cli -generate 2
   sleep 5 # wait for settle
 
-  exec_graphql 'alice' 'transactions' "{\"first\":1}" > /dev/null 2>&1
+  exec_graphql 'alice' 'transactions' "{\"first\":1}"
   settled_status="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.status')"
   [ "${settled_status}" = "SUCCESS" ]
 
