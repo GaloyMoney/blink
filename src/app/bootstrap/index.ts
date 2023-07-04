@@ -20,7 +20,6 @@ export const randomUserId = () => randomUUID() as UserId
 
 export const bootstrap = async () => {
   for (const entry of adminUsers) {
-    console.log("HERE 0:", { entry })
     const { phone } = entry
     const user = await UsersRepository().findByPhone(phone)
     let kratosUserId: UserId

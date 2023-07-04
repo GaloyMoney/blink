@@ -22,7 +22,6 @@ export const recordReceiveOnChain = async ({
 }: RecordReceiveArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
   const accountIds = await staticAccountIds()
-  console.log("HERE 0:", { accountIds })
   if (accountIds instanceof Error) return accountIds
 
   let entry = MainBook.entry(description)

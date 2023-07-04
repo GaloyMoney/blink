@@ -313,13 +313,13 @@ export const configSchema = {
           ref: "K",
           phone: "+16505554328",
           code: "321321",
-          username: "tester3",
+          username: "alice",
         },
         {
           ref: "L",
           phone: "+198765432113",
           code: "321321",
-          username: "tester4",
+          username: "bob",
         },
         {
           ref: "M",

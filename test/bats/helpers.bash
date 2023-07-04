@@ -5,6 +5,12 @@ GALOY_ENDPOINT=localhost:4002
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
 TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
 
+ALICE_PHONE="+16505554328"
+ALICE_CODE="321321"
+
+BOB_PHONE="+198765432113"
+BOB_CODE="321321"
+
 bitcoind_init() {
   bitcoin_cli createwallet "outside" || true
   bitcoin_cli -generate 200
