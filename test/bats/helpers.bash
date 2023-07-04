@@ -28,14 +28,14 @@ bitcoin_signer_cli() {
 }
 
 start_server() {
-  pid="$(background node lib/servers/graphql-main-server.js)"
-  echo $pid > $SERVER_PID_FILE
+  background node lib/servers/graphql-main-server.js > .e2e-server.log
+  echo $! > $SERVER_PID_FILE
   sleep 5
 }
 
 start_trigger() {
-  pid="$(background node lib/servers/trigger.js)"
-  echo $pid > $TRIGGER_PID_FILE
+  background node lib/servers/trigger.js > .e2e-trigger.log
+  echo $! > $TRIGGER_PID_FILE
   sleep 5
 }
 
@@ -103,7 +103,7 @@ graphql_output() {
 # https://github.com/sstephenson/bats/issues/80#issuecomment-174101686
 # for details.
 background() {
-  "$@" > /dev/null 2>&1 &
+  "$@" 3>- &
   echo $!
 }
 

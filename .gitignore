@@ -36,4 +36,5 @@ generated.gql
 
 # bats e2e tests
 -
+.e2e-*.log
 .*_pid
