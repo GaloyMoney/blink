@@ -43,6 +43,21 @@ const redlockClient = new Redlock(
   },
 )
 
+const timelockClient = new Redlock(
+  // you should have one client for each independent redis node
+  // or cluster
+  [redis],
+  {
+    // the expected clock drift; for more details
+    // see http://redis.io/topics/distlock
+    driftFactor: 0.01, // time in ms
+
+    // the max number of times Redlock will attempt
+    // to lock a resource before erroring
+    retryCount: 1,
+  },
+)
+
 const getWalletLockResource = (path: WalletId) => `locks:wallet:${path}`
 const getPaymentHashLockResource = (path: PaymentHash) => `locks:paymenthash:${path}`
 const getOnChainTxHashLockResource = (path: OnChainTxHash) =>
@@ -93,8 +108,7 @@ export const timelock = async ({
   resource: string
   duration: MilliSeconds
 }) => {
-  // TODO: we do not need to retry if the lock is already acquired in this scenario
-  return redlockClient.acquire([resource], duration)
+  return timelockClient.acquire([resource], duration)
 }
 
 export const LockService = (): ILockService => {
