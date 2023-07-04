@@ -4,7 +4,6 @@ load "helpers"
 
 setup_file() {
   bitcoind_init
-  # TODO: bootstrap admin accounts (see createMandatoryUsers function)
   start_server
   start_trigger
 }
@@ -30,19 +29,35 @@ teardown_file() {
 }
 
 @test "onchain payments: receive" {
-  exec_graphql 'alice' 'on-chain-address-create' "{\"input\":{\"walletId\":\"$alice_btc_wallet_id\"}}"
+  exec_graphql 'alice' 'on-chain-address-create' "{\"input\":{\"walletId\":\"$(read_value 'alice_btc_wallet_id')\"}}"
   address="$(graphql_output '.data.onChainAddressCreate.address')"
   [ "${address}" != "null" ]
+
   bitcoin_cli sendtoaddress "$address" 0.01
   bitcoin_cli -generate 2
   sleep 5
- 
-  # TODO: Get pending in coming to settle before sending
 }
+
 
 @test "onchain payments: send" {
   outside_address=$(bitcoin_cli getnewaddress)
   [ "${outside_address}" != "null" ]
-  exec_graphql 'alice' 'on-chain-payment-send' "{\"input\":{\"walletId\":\"$alice_btc_wallet_id\",\"address\":\"$outside_address\",\"amount\":10000}}"
-  echo $output > output.txt
+
+  exec_graphql 'alice' 'on-chain-payment-send' "{\"input\":{\"walletId\":\"$(read_value 'alice_btc_wallet_id')\",\"address\":\"$outside_address\",\"amount\":12345}}"
+  send_status="$(graphql_output '.data.onChainPaymentSend.status')"
+  [ "${send_status}" = "SUCCESS" ]
+  sleep 5 # wait for broadcast
+
+  exec_graphql 'alice' 'transactions' "{\"first\":1}" > /dev/null 2>&1
+  txid="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.settlementVia.transactionHash')"
+  [ "${txid}" != "null" ]
+  bitcoin_cli -generate 2
+  sleep 5 # wait for settle
+
+  exec_graphql 'alice' 'transactions' "{\"first\":1}" > /dev/null 2>&1
+  settled_status="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.status')"
+  [ "${settled_status}" = "SUCCESS" ]
+
+  confs="$(bitcoin_cli gettransaction "$txid" | jq -r '.confirmations')"
+  [ "${confs}" = 2 ]
 }
