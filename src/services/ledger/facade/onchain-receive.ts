@@ -21,10 +21,12 @@ export const recordReceiveOnChain = async ({
   additionalInternalMetadata,
 }: RecordReceiveArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
+  const accountIds = await staticAccountIds()
+  if (accountIds instanceof Error) return accountIds
 
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
-    staticAccountIds: await staticAccountIds(),
+    staticAccountIds: accountIds,
     entry,
     metadata,
     additionalInternalMetadata,
@@ -56,11 +58,14 @@ export const recordReceiveOnChainFeeReconciliation = async ({
   actualFee: BtcPaymentAmount
   metadata: AddOnChainFeeReconciliationLedgerMetadata
 }) => {
+  const accountIds = await staticAccountIds()
+  if (accountIds instanceof Error) return accountIds
+
   let entry = MainBook.entry("")
   if (actualFee.amount > estimatedFee.amount) {
     const btcFeeDifference = calc.sub(actualFee, estimatedFee)
     const builder = FeeOnlyEntryBuilder({
-      staticAccountIds: await staticAccountIds(),
+      staticAccountIds: accountIds,
       entry,
       metadata,
       btcFee: btcFeeDifference,
@@ -69,7 +74,7 @@ export const recordReceiveOnChainFeeReconciliation = async ({
   } else {
     const btcFeeDifference = calc.sub(estimatedFee, actualFee)
     const builder = FeeOnlyEntryBuilder({
-      staticAccountIds: await staticAccountIds(),
+      staticAccountIds: accountIds,
       entry,
       metadata,
       btcFee: btcFeeDifference,

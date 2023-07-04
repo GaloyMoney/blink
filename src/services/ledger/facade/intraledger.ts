@@ -17,9 +17,12 @@ export const recordIntraledger = async ({
   additionalCreditMetadata,
   additionalInternalMetadata,
 }: RecordIntraledgerArgs) => {
+  const accountIds = await staticAccountIds()
+  if (accountIds instanceof Error) return accountIds
+
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
-    staticAccountIds: await staticAccountIds(),
+    staticAccountIds: accountIds,
     entry,
     metadata,
     additionalInternalMetadata,

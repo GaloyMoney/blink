@@ -4,6 +4,7 @@ load "helpers"
 
 setup_file() {
   bitcoind_init
+  # TODO: bootstrap admin accounts (see createMandatoryUsers function)
   start_server
   start_trigger
 }

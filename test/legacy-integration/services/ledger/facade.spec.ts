@@ -623,7 +623,9 @@ describe("Facade", () => {
       const estimatedFee = higherFee
       const actualFee = lowerFee
 
-      const { bankOwnerAccountId } = await staticAccountIds()
+      const accountIds = await staticAccountIds()
+      if (accountIds instanceof Error) throw accountIds
+      const { bankOwnerAccountId } = accountIds
       const txHash = generateHash() as OnChainTxHash
       const payoutId = crypto.randomUUID() as PayoutId
 
@@ -674,7 +676,9 @@ describe("Facade", () => {
       const estimatedFee = lowerFee
       const actualFee = higherFee
 
-      const { bankOwnerAccountId } = await staticAccountIds()
+      const accountIds = await staticAccountIds()
+      if (accountIds instanceof Error) throw accountIds
+      const { bankOwnerAccountId } = accountIds
       const txHash = generateHash() as OnChainTxHash
       const payoutId = crypto.randomUUID() as PayoutId
 
