@@ -10,7 +10,7 @@ teardown_file() {
   stop_server
 }
 
-@test "ping: can query globals" {
+@test "globals: can query globals" {
   exec_graphql 'anon' 'globals'
   network="$(graphql_output '.data.globals.network')"
   [ "${network}" = "regtest" ]
