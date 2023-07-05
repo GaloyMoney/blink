@@ -107,13 +107,11 @@ get_metric() {
 
 get_from_transaction_by_address() {
   property_query=$2
+
+  jq_query='.data.me.defaultAccount.transactions.edges[] | select(.node.initiationVia.address == $address) .node'
   echo $output \
-    | jq -r \
-      --arg address "$1" \
-      '.data.me.defaultAccount.transactions.edges[] | select(.initiationVia.address) = "$address"' \
-    | jq -r '.node' \
-    | jq -r \
-      "$property_query"
+    | jq -r --arg address "$1" "$jq_query" \
+    | jq -r "$property_query"
 }
 
 check_for_broadcast() {
