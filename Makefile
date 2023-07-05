@@ -144,6 +144,12 @@ bats:
 
 reset-bats: reset-deps-bats bats
 
+execute-bats-from-within-container:
+	git config --global --add safe.directory /repo # otherwise bats complains
+	yarn install && \
+	yarn build && \
+	bats -t test/bats
+
 integration-in-ci:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests

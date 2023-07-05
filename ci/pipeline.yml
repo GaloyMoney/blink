@@ -51,6 +51,7 @@ groups:
     jobs:
       - integration-tests
       - e2e-tests
+      - bats-tests
       - test-unit
       - check-code
       - audit
@@ -75,6 +76,7 @@ jobs:
 
   - #@ test_on_docker_host("integration-tests")
   - #@ test_on_docker_host("e2e-tests")
+  - #@ test_on_docker_host("bats-tests")
 
   - name: test-unit
     serial: true
