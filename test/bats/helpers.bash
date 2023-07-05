@@ -4,6 +4,9 @@ COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${REPO_ROOT##*/}}"
 GALOY_ENDPOINT=localhost:4002
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
 TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
+EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
+
+METRICS_ENDPOINT="localhost:3000/metrics"
 
 ALICE_PHONE="+16505554328"
 ALICE_CODE="321321"
@@ -38,6 +41,10 @@ start_trigger() {
   echo $! > $TRIGGER_PID_FILE
 }
 
+start_exporter() {
+  background node lib/servers/exporter.js > .e2e-exporter.log
+  echo $! > $EXPORTER_PID_FILE
+}
 
 stop_server() {
   [ -f $SERVER_PID_FILE ] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
@@ -45,6 +52,10 @@ stop_server() {
 
 stop_trigger() {
   [ -f $TRIGGER_PID_FILE ] && kill -9 $(cat $TRIGGER_PID_FILE) > /dev/null || true
+}
+
+stop_exporter() {
+  [ -f $EXPORTER_PID_FILE ] && kill -9 $(cat $EXPORTER_PID_FILE) > /dev/null || true
 }
 
 cache_value() {
@@ -86,6 +97,14 @@ exec_graphql() {
        ${GALOY_ENDPOINT}/graphql
 
   echo "GQL output: '$output'"
+}
+
+check_is_balanced() {
+  galoy_lndBalanceSync=$(curl -s "$METRICS_ENDPOINT" | awk '/^galoy_lndBalanceSync/ { print $2 }')
+  [ "${galoy_lndBalanceSync}" = 0 ]
+
+  galoy_assetsEqLiabilities=$(curl -s "$METRICS_ENDPOINT" | awk '/^galoy_assetsEqLiabilities/ { print $2 }')
+  [ "${galoy_assetsEqLiabilities}" = 0 ]
 }
 
 graphql_output() {

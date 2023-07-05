@@ -6,11 +6,13 @@ setup_file() {
   bitcoind_init
   start_trigger
   start_server
+  start_exporter
 }
 
 teardown_file() {
   stop_trigger
   stop_server
+  stop_exporter
 }
 
 @test "onchain payments: setup user" {
@@ -60,4 +62,6 @@ teardown_file() {
 
   confs="$(bitcoin_cli gettransaction "$txid" | jq -r '.confirmations')"
   [ "${confs}" = 2 ]
+
+  check_is_balanced
 }
