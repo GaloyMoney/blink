@@ -52,7 +52,13 @@ teardown() {
 
   bitcoin_cli sendtoaddress "$address" 0.01
   bitcoin_cli -generate 2
-  sleep 5
+
+  check_for_settled() {
+    exec_graphql 'alice' 'transactions' '{"first":1}'
+    settled_status="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.status')"
+    [ "${settled_status}" = "SUCCESS" ]
+  }
+  retry 15 1 check_for_settled
 }
 
 @test "onchain payments: send" {
@@ -69,18 +75,25 @@ teardown() {
   exec_graphql 'alice' 'on-chain-payment-send' "$input"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [ "${send_status}" = "SUCCESS" ]
-  sleep 10 # wait for broadcast
+
+  check_for_broadcast() {
+    exec_graphql 'alice' 'transactions' '{"first":1}'
+    txid="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.settlementVia.transactionHash')"
+    [ "${txid}" != "null" ]
+  }
+  retry 15 1 check_for_broadcast
+
+  bitcoin_cli -generate 2
+
+  check_for_settled() {
+    exec_graphql 'alice' 'transactions' '{"first":1}'
+    settled_status="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.status')"
+    [ "${settled_status}" = "SUCCESS" ]
+  }
+  retry 15 1 check_for_settled
 
   exec_graphql 'alice' 'transactions' '{"first":1}'
   txid="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.settlementVia.transactionHash')"
-  [ "${txid}" != "null" ]
-  bitcoin_cli -generate 2
-  sleep 5 # wait for settle
-
-  exec_graphql 'alice' 'transactions' '{"first":1}'
-  settled_status="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.status')"
-  [ "${settled_status}" = "SUCCESS" ]
-
   confs="$(bitcoin_cli gettransaction "$txid" | jq -r '.confirmations')"
   [ "${confs}" = 2 ]
 }
