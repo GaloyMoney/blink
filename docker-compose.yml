@@ -1,5 +1,17 @@
 version: "3"
 services:
+  bats-deps:
+    image: busybox
+    depends_on:
+      - redis
+      - mongodb
+      - oathkeeper
+      - kratos
+      - price
+      - bria
+      - bitcoind
+      - bitcoind-signer
+    # restart: on-failure:10
   e2e-deps:
     image: busybox
     depends_on:

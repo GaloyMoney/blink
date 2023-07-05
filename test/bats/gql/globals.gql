@@ -1,0 +1,6 @@
+query Globals {
+  globals {
+    network
+    nodesIds
+  }
+}

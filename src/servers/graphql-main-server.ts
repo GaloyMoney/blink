@@ -3,6 +3,8 @@ import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
 import { Rule } from "graphql-shield/typings/rules"
 
+import { bootstrap } from "@app/bootstrap"
+
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
@@ -57,6 +59,7 @@ if (require.main === module) {
   setupMongoConnection(true)
     .then(async () => {
       activateLndHealthCheck()
+      await bootstrap()
       await Promise.race([
         startApolloServerForCoreSchema(),
         startApolloServerForAdminSchema(),

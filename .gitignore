@@ -33,3 +33,8 @@ generated.gql
 .swc
 
 .envrc.secrets
+
+# bats e2e tests
+-
+.e2e-*.log
+.*_pid

@@ -6,6 +6,9 @@ start-deps:
 start-deps-integration:
 	docker compose up integration-deps -d
 
+start-deps-bats:
+	docker compose up bats-deps -d
+
 update-price-history:
 	docker compose run price-history node servers/history/cron.js
 
@@ -55,6 +58,7 @@ clean-deps:
 
 reset-deps: clean-deps start-deps
 reset-deps-integration: clean-deps start-deps-integration
+reset-deps-bats: clean-deps start-deps-bats
 
 test: unit legacy-integration integration
 
@@ -133,6 +137,12 @@ e2e:
 	yarn test:e2e
 
 reset-e2e: reset-deps e2e
+
+bats:
+	yarn build && \
+	bats -t test/bats
+
+reset-bats: reset-deps-bats bats
 
 integration-in-ci:
 	make create-tmp-env-ci && \

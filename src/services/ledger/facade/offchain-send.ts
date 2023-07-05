@@ -22,10 +22,12 @@ export const recordSendOffChain = async ({
   additionalInternalMetadata,
 }: RecordSendArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
+  const accountIds = await staticAccountIds()
+  if (accountIds instanceof Error) return accountIds
 
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
-    staticAccountIds: await staticAccountIds(),
+    staticAccountIds: accountIds,
     entry,
     metadata,
     additionalInternalMetadata,
