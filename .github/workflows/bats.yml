@@ -22,4 +22,5 @@ jobs:
       - run: yarn install --frozen-lockfile
       - name: Run bats tests
         run: |
-          make reset-bats
+          . ./.envrc && make reset-bats
+          cat .e2e-server.log

@@ -33,7 +33,7 @@ bitcoin_signer_cli() {
 start_server() {
   background node lib/servers/graphql-main-server.js > .e2e-server.log
   echo $! > $SERVER_PID_FILE
-  sleep 8
+  sleep 20
 }
 
 start_trigger() {
