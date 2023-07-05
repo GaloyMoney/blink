@@ -4,7 +4,7 @@ services:
     ports:
       - "4004:4004"
     extra_hosts:
-      - "e2e-tests:host-gateway"
+      - "bats-tests:host-gateway"
   otel-agent:
     ports:
       - "4318:4318" # http receiver
@@ -70,16 +70,21 @@ services:
       - "11011:11010"
   oathkeeper:
     extra_hosts:
-      - "e2e-tests:host-gateway"
+      - "bats-tests:host-gateway"
     ports:
       - "4002:4455"
       - "4456:4456"
   kratos:
     extra_hosts:
-      - "e2e-tests:host-gateway"
+      - "bats-tests:host-gateway"
     ports:
       - "4433:4433" # public
       - "4434:4434" # admin
+  bats-tests:
+    ports:
+      - "4012:4012"
+      - "4001:4001"
+      - "4000:4000"
   e2e-tests:
     ports:
       - "4012:4012"

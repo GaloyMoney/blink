@@ -1,6 +1,6 @@
 - id: anonymous-rest-auth
   upstream:
-    url: "http://e2e-tests:4012"
+    url: "http://bats-tests:4012"
   match:
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(clearCookies|login|logout|email/code|email/login|totp/validate)>"
     methods: ["GET", "POST", "OPTIONS"]
@@ -13,7 +13,7 @@
 
 - id: device-login
   upstream:
-    url: "http://e2e-tests:4012"
+    url: "http://bats-tests:4012"
   match:
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/create/device-account"
     methods: ["POST"]
@@ -36,7 +36,7 @@
 
 - id: galoy-ws
   upstream:
-    url: "http://e2e-tests:4000/graphql"
+    url: "http://bats-tests:4000/graphql"
     strip_path: /graphqlws # ONLY FOR DEV, in prod should resolve to /graphql, like ws.blink.sv/graphql
   match:
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphqlws" # ONLY FOR DEV, in prod should resolve to /graphql
@@ -79,7 +79,7 @@
 
 - id: admin-backend
   upstream:
-    url: "http://e2e-tests:4001"
+    url: "http://bats-tests:4001"
     strip_path: /admin
   match:
     url: "<(http|https)>://<.*><[0-9]+>/admin<.*>"

@@ -485,7 +485,7 @@ enum InvoicePaymentStatus
 scalar join__FieldSet
 
 enum join__Graph {
-  PUBLIC @join__graph(name: "public", url: "http://e2e-tests:4012/graphql")
+  PUBLIC @join__graph(name: "public", url: "http://bats-tests:4012/graphql")
 }
 
 scalar Language

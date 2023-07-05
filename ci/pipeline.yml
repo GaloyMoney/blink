@@ -50,7 +50,7 @@ groups:
   - name: galoy
     jobs:
       - integration-tests
-      - e2e-tests
+      - bats-tests
       - test-unit
       - check-code
       - audit
@@ -74,7 +74,7 @@ jobs:
   - #@ nodejs_audit()
 
   - #@ test_on_docker_host("integration-tests")
-  - #@ test_on_docker_host("e2e-tests")
+  - #@ test_on_docker_host("bats-tests")
 
   - name: test-unit
     serial: true
@@ -221,7 +221,7 @@ jobs:
               - audit
               - test-unit
               - integration-tests
-              - e2e-tests
+              - bats-tests
               - build-debug-edge-image
               - build-migrate-edge-image
               - build-edge-image
