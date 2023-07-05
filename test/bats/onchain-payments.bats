@@ -38,6 +38,8 @@ teardown() {
   if [ $alice_btc_wallet_id = "null" ]; then alice_btc_wallet_id="$wallet1"; fi
   [ "${alice_btc_wallet_id}" != "null" ]
   cache_value 'alice_btc_wallet_id' "$alice_btc_wallet_id"
+
+  retry 10 1 balance_for_check
 }
 
 @test "onchain payments: receive" {
