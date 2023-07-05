@@ -116,6 +116,22 @@ get_from_transaction_by_address() {
       "$property_query"
 }
 
+check_for_broadcast() {
+  token_name=$1
+  address=$2
+  exec_graphql "$token_name" 'transactions' '{"first":1}'
+  txid="$(get_from_transaction_by_address "$address" '.settlementVia.transactionHash')"
+  [ "${txid}" != "null" ]
+}
+
+check_for_settled() {
+  token_name=$1
+  address=$2
+  exec_graphql "$token_name" 'transactions' '{"first":1}'
+  settled_status="$(get_from_transaction_by_address $address '.status')"
+  [ "${settled_status}" = "SUCCESS" ]
+}
+
 balance_for_check() {
   lnd_balance_sync=$(get_metric "galoy_lndBalanceSync")
   assets_eq_liabilities=$(get_metric "galoy_assetsEqLiabilities")

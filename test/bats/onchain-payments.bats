@@ -54,13 +54,7 @@ teardown() {
 
   bitcoin_cli sendtoaddress "$address" 0.01
   bitcoin_cli -generate 2
-
-  check_for_settled() {
-    exec_graphql 'alice' 'transactions' '{"first":1}'
-    settled_status="$(get_from_transaction_by_address $address '.status')"
-    [ "${settled_status}" = "SUCCESS" ]
-  }
-  retry 15 1 check_for_settled
+  retry 15 1 check_for_settled "alice" "$address"
 }
 
 @test "onchain payments: send" {
@@ -77,20 +71,8 @@ teardown() {
   exec_graphql 'alice' 'on-chain-payment-send' "$input"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [ "${send_status}" = "SUCCESS" ]
-
-  check_for_broadcast() {
-    exec_graphql 'alice' 'transactions' '{"first":1}'
-    txid="$(get_from_transaction_by_address $outside_address '.settlementVia.transactionHash')"
-    [ "${txid}" != "null" ]
-  }
-  retry 15 1 check_for_broadcast
+  retry 15 1 check_for_broadcast "alice" "$outside_address"
 
   bitcoin_cli -generate 2
-
-  check_for_settled() {
-    exec_graphql 'alice' 'transactions' '{"first":1}'
-    settled_status="$(get_from_transaction_by_address $outside_address '.status')"
-    [ "${settled_status}" = "SUCCESS" ]
-  }
-  retry 15 1 check_for_settled
+  retry 15 1 check_for_settled "alice" "$outside_address"
 }
