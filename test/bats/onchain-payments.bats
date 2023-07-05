@@ -55,7 +55,7 @@ teardown() {
 
   check_for_settled() {
     exec_graphql 'alice' 'transactions' '{"first":1}'
-    settled_status="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.status')"
+    settled_status="$(get_from_transaction_by_address $address '.status')"
     [ "${settled_status}" = "SUCCESS" ]
   }
   retry 15 1 check_for_settled
@@ -78,7 +78,7 @@ teardown() {
 
   check_for_broadcast() {
     exec_graphql 'alice' 'transactions' '{"first":1}'
-    txid="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.settlementVia.transactionHash')"
+    txid="$(get_from_transaction_by_address $outside_address '.settlementVia.transactionHash')"
     [ "${txid}" != "null" ]
   }
   retry 15 1 check_for_broadcast
@@ -87,7 +87,7 @@ teardown() {
 
   check_for_settled() {
     exec_graphql 'alice' 'transactions' '{"first":1}'
-    settled_status="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.status')"
+    settled_status="$(get_from_transaction_by_address $outside_address '.status')"
     [ "${settled_status}" = "SUCCESS" ]
   }
   retry 15 1 check_for_settled

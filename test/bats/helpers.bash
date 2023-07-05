@@ -105,6 +105,17 @@ get_metric() {
     | awk "/^$metric_name/ { print \$2 }"
 }
 
+get_from_transaction_by_address() {
+  property_query=$2
+  echo $output \
+    | jq -r \
+      --arg address "$1" \
+      '.data.me.defaultAccount.transactions.edges[] | select(.initiationVia.address) = "$address"' \
+    | jq -r '.node' \
+    | jq -r \
+      "$property_query"
+}
+
 balance_for_check() {
   lnd_balance_sync=$(get_metric "galoy_lndBalanceSync")
   assets_eq_liabilities=$(get_metric "galoy_assetsEqLiabilities")
