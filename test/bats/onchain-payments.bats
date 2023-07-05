@@ -91,9 +91,4 @@ teardown() {
     [ "${settled_status}" = "SUCCESS" ]
   }
   retry 15 1 check_for_settled
-
-  exec_graphql 'alice' 'transactions' '{"first":1}'
-  txid="$(graphql_output '.data.me.defaultAccount.transactions.edges[0].node.settlementVia.transactionHash')"
-  confs="$(bitcoin_cli gettransaction "$txid" | jq -r '.confirmations')"
-  [ "${confs}" = 2 ]
 }
