@@ -20,13 +20,13 @@ teardown() {
 }
 
 @test "onchain payments: setup user" {
-  input=$(
+  variables=$(
     jq -n \
     --arg phone "$ALICE_PHONE" \
     --arg code "$ALICE_CODE" \
     '{input: {phone: $phone, code: $code}}'
   )
-  exec_graphql 'anon' 'user-login' "$input"
+  exec_graphql 'anon' 'user-login' "$variables"
   auth_token="$(graphql_output '.data.userLogin.authToken')"
   [ "${auth_token}" != "null" ]
   cache_value 'alice' "$auth_token"
@@ -40,12 +40,12 @@ teardown() {
 }
 
 @test "onchain payments: receive" {
-  input=$(
+  variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql 'alice' 'on-chain-address-create' "$input"
+  exec_graphql 'alice' 'on-chain-address-create' "$variables"
   address="$(graphql_output '.data.onChainAddressCreate.address')"
   [ "${address}" != "null" ]
 
@@ -58,14 +58,14 @@ teardown() {
   outside_address=$(bitcoin_cli getnewaddress)
   [ "${outside_address}" != "null" ]
 
-  input=$(
+  variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
     --arg address "$outside_address" \
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
-  exec_graphql 'alice' 'on-chain-payment-send' "$input"
+  exec_graphql 'alice' 'on-chain-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [ "${send_status}" = "SUCCESS" ]
   retry 15 1 check_for_broadcast "alice" "$outside_address"
