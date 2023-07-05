@@ -47,15 +47,15 @@ start_exporter() {
 }
 
 stop_server() {
-  [ -f $SERVER_PID_FILE ] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
+  [[ -f "$SERVER_PID_FILE" ]] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
 }
 
 stop_trigger() {
-  [ -f $TRIGGER_PID_FILE ] && kill -9 $(cat $TRIGGER_PID_FILE) > /dev/null || true
+  [[ -f "$TRIGGER_PID_FILE" ]] && kill -9 $(cat $TRIGGER_PID_FILE) > /dev/null || true
 }
 
 stop_exporter() {
-  [ -f $EXPORTER_PID_FILE ] && kill -9 $(cat $EXPORTER_PID_FILE) > /dev/null || true
+  [[ -f "$EXPORTER_PID_FILE" ]] && kill -9 $(cat $EXPORTER_PID_FILE) > /dev/null || true
 }
 
 cache_value() {
@@ -119,7 +119,7 @@ check_for_broadcast() {
   address=$2
   exec_graphql "$token_name" 'transactions' '{"first":1}'
   txid="$(get_from_transaction_by_address "$address" '.settlementVia.transactionHash')"
-  [ "${txid}" != "null" ]
+  [[ "${txid}" != "null" ]] || exit 1
 }
 
 check_for_settled() {
@@ -127,7 +127,7 @@ check_for_settled() {
   address=$2
   exec_graphql "$token_name" 'transactions' '{"first":1}'
   settled_status="$(get_from_transaction_by_address $address '.status')"
-  [ "${settled_status}" = "SUCCESS" ]
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
 balance_for_check() {

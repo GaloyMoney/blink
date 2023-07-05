@@ -16,7 +16,7 @@ teardown_file() {
 }
 
 teardown() {
-  [ "$(balance_for_check)" = 0 ]
+  [[ "$(balance_for_check)" = 0 ]] || exit 1
 }
 
 @test "onchain payments: setup user" {
@@ -28,12 +28,12 @@ teardown() {
   )
   exec_graphql 'anon' 'user-login' "$variables"
   auth_token="$(graphql_output '.data.userLogin.authToken')"
-  [ "${auth_token}" != "null" ]
+  [[ "${auth_token}" != "null" ]] || exit 1
   cache_value 'alice' "$auth_token"
 
   exec_graphql 'alice' 'btc-wallet-id'
   alice_btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
-  [ "${alice_btc_wallet_id}" != "null" ]
+  [[ "${alice_btc_wallet_id}" != "null" ]] || exit 1
   cache_value 'alice_btc_wallet_id' "$alice_btc_wallet_id"
 
   retry 10 1 balance_for_check
@@ -47,7 +47,7 @@ teardown() {
   )
   exec_graphql 'alice' 'on-chain-address-create' "$variables"
   address="$(graphql_output '.data.onChainAddressCreate.address')"
-  [ "${address}" != "null" ]
+  [[ "${address}" != "null" ]] || exit 1
 
   bitcoin_cli sendtoaddress "$address" 0.01
   bitcoin_cli -generate 2
@@ -56,7 +56,7 @@ teardown() {
 
 @test "onchain payments: send" {
   outside_address=$(bitcoin_cli getnewaddress)
-  [ "${outside_address}" != "null" ]
+  [[ "${outside_address}" != "null" ]] || exit 1
 
   variables=$(
     jq -n \
@@ -67,7 +67,7 @@ teardown() {
   )
   exec_graphql 'alice' 'on-chain-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
-  [ "${send_status}" = "SUCCESS" ]
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
   retry 15 1 check_for_broadcast "alice" "$outside_address"
 
   bitcoin_cli -generate 2
