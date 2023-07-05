@@ -15,6 +15,10 @@ teardown_file() {
   stop_exporter
 }
 
+teardown() {
+  [ "$(balance_for_check)" = 0 ]
+}
+
 @test "onchain payments: setup user" {
   input=$(
     jq -n \
@@ -51,7 +55,6 @@ teardown_file() {
   sleep 5
 }
 
-
 @test "onchain payments: send" {
   outside_address=$(bitcoin_cli getnewaddress)
   [ "${outside_address}" != "null" ]
@@ -80,6 +83,4 @@ teardown_file() {
 
   confs="$(bitcoin_cli gettransaction "$txid" | jq -r '.confirmations')"
   [ "${confs}" = 2 ]
-
-  check_is_balanced
 }

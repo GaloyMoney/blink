@@ -99,12 +99,16 @@ exec_graphql() {
   echo "GQL output: '$output'"
 }
 
-check_is_balanced() {
-  galoy_lndBalanceSync=$(curl -s "$METRICS_ENDPOINT" | awk '/^galoy_lndBalanceSync/ { print $2 }')
-  [ "${galoy_lndBalanceSync}" = 0 ]
+get_metric() {
+  metric_name=$1
+  curl -s "$METRICS_ENDPOINT" \
+    | awk "/^$metric_name/ { print \$2 }"
+}
 
-  galoy_assetsEqLiabilities=$(curl -s "$METRICS_ENDPOINT" | awk '/^galoy_assetsEqLiabilities/ { print $2 }')
-  [ "${galoy_assetsEqLiabilities}" = 0 ]
+balance_for_check() {
+  lnd_balance_sync=$(get_metric "galoy_lndBalanceSync")
+  assets_eq_liabilities=$(get_metric "galoy_assetsEqLiabilities")
+  echo $(( $lnd_balance_sync + $assets_eq_liabilities ))
 }
 
 graphql_output() {
