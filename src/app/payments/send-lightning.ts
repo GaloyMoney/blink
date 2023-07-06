@@ -83,7 +83,6 @@ export const payInvoiceByWalletId = async ({
   const validatedPaymentInputs = await validateInvoicePaymentInputs({
     uncheckedPaymentRequest,
     uncheckedSenderWalletId,
-    senderAccount,
   })
   if (validatedPaymentInputs instanceof AlreadyPaidError) {
     return PaymentSendStatus.AlreadyPaid
@@ -175,11 +174,9 @@ export const payNoAmountInvoiceByWalletIdForUsdWallet = async (
 const validateInvoicePaymentInputs = async ({
   uncheckedPaymentRequest,
   uncheckedSenderWalletId,
-  senderAccount,
 }: {
   uncheckedPaymentRequest: string
   uncheckedSenderWalletId: string
-  senderAccount: Account
 }): Promise<
   | {
       senderWallet: Wallet
@@ -209,6 +206,9 @@ const validateInvoicePaymentInputs = async ({
 
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
+
+  const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
+  if (senderAccount instanceof Error) return senderAccount
 
   const accountValidator = AccountValidator(senderAccount)
   if (accountValidator instanceof Error) return accountValidator
@@ -378,6 +378,9 @@ const executePaymentViaIntraledger = async <
 
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
+
+  const accountValidator = AccountValidator(recipientAccount)
+  if (accountValidator instanceof Error) return accountValidator
 
   const checkLimits =
     senderWallet.accountId === recipientWallet.accountId
