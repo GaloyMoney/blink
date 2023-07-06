@@ -145,7 +145,7 @@ const server = () =>
               return [new GraphQLError("Unable to identify operation")]
             }
 
-            // handle mutation and query requests
+            // decline mutation and query requests
             if (operationAST.operation !== "subscription") {
               // returning `GraphQLError[]` sends an `ErrorMessage` and stops the subscription
               recordExceptionInCurrentSpan({
