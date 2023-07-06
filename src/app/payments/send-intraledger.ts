@@ -56,7 +56,6 @@ const intraledgerPaymentSendWalletId = async ({
   const validatedPaymentInputs = await validateIntraledgerPaymentInputs({
     uncheckedSenderWalletId,
     uncheckedRecipientWalletId,
-    senderAccount,
   })
   if (validatedPaymentInputs instanceof Error) return validatedPaymentInputs
 
@@ -159,11 +158,9 @@ export const intraledgerPaymentSendWalletIdForUsdWallet = async (
 const validateIntraledgerPaymentInputs = async ({
   uncheckedSenderWalletId,
   uncheckedRecipientWalletId,
-  senderAccount,
 }: {
   uncheckedSenderWalletId: string
   uncheckedRecipientWalletId: string
-  senderAccount: Account
 }): Promise<
   | { senderWallet: Wallet; recipientWallet: Wallet; recipientAccount: Account }
   | ApplicationError
@@ -174,20 +171,23 @@ const validateIntraledgerPaymentInputs = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  const accountValidator = AccountValidator(senderAccount)
-  if (accountValidator instanceof Error) return accountValidator
-  const validateWallet = accountValidator.validateWalletForAccount(senderWallet)
-  if (validateWallet instanceof Error) return validateWallet
+  const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
+  if (senderAccount instanceof Error) return senderAccount
+
+  const senderAccountValidator = AccountValidator(senderAccount)
+  if (senderAccountValidator instanceof Error) return senderAccountValidator
 
   const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)
   if (recipientWalletId instanceof Error) return recipientWalletId
 
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
-  const { accountId: recipientAccountId } = recipientWallet
 
-  const recipientAccount = await AccountsRepository().findById(recipientAccountId)
+  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
+
+  const recipientAccountValidator = AccountValidator(recipientAccount)
+  if (recipientAccountValidator instanceof Error) return recipientAccountValidator
 
   addAttributesToCurrentSpan({
     "payment.intraLedger.senderWalletId": senderWalletId,
