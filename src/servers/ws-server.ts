@@ -21,6 +21,7 @@ import {
   wrapAsyncToRunInSpan,
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
+  addEventToCurrentSpan,
 } from "@services/tracing"
 
 import cookie from "cookie"
@@ -126,6 +127,8 @@ const server = () =>
         {
           onSubscribe: (_ctx, msg) => {
             baseLogger.debug("Subscribe", { _ctx, msg })
+            addEventToCurrentSpan("Websocket subscribed")
+            addAttributesToCurrentSpan({ "ws.subscribed": "true" })
 
             // construct the execution arguments
             const args = {
@@ -174,6 +177,8 @@ const server = () =>
           },
           onConnect: async (ctx) => {
             baseLogger.debug("Connect", ctx)
+            addEventToCurrentSpan("Websocket connected")
+            addAttributesToCurrentSpan({ "ws.connected": "true" })
 
             const cookies = cookie.parse(ctx.extra.request.headers.cookie || "")
             const hasCookies = typeof cookies !== "string" ? true : false
@@ -222,6 +227,8 @@ const server = () =>
           },
           onNext: (ctx, msg, args, result) => {
             baseLogger.debug("Next", { ctx, msg, args, result })
+            addEventToCurrentSpan("Websocket next")
+            addAttributesToCurrentSpan({ "ws.next": "true" })
           },
           onError: (ctx, msg, errors) => {
             recordExceptionInCurrentSpan({
@@ -229,9 +236,13 @@ const server = () =>
               level: ErrorLevel.Warn,
             })
             baseLogger.debug("Error", { ctx, msg, errors })
+            addEventToCurrentSpan("Websocket error")
+            addAttributesToCurrentSpan({ "ws.error": "true" })
           },
           onComplete: (ctx, msg) => {
             baseLogger.debug("Complete", { ctx, msg })
+            addEventToCurrentSpan("Websocket completed")
+            addAttributesToCurrentSpan({ "ws.completed": "true" })
           },
         },
         wsServer,
