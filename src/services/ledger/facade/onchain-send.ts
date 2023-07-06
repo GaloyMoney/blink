@@ -128,12 +128,12 @@ export const setOnChainTxIdByPayoutId = async ({
 
     const txHashes = txns.map((txn) => txn.txHash)
     if (new Set(txHashes).size !== 1) {
-      return new InvalidLedgerTransactionStateError(`${txHashes}`)
+      return new InvalidLedgerTransactionStateError(JSON.stringify({ txHashes }))
     }
 
     if (txHashes[0] !== txId)
       return new InvalidLedgerTransactionStateError(
-        `${{ persistedTxHash: txHashes[0], incomingTxId: txId }}`,
+        JSON.stringify({ persistedTxHash: txHashes[0], incomingTxId: txId }),
       )
   }
 
