@@ -66,6 +66,23 @@ read_value() {
   cat ${BATS_TMPDIR}/$1
 }
 
+is_number() {
+  if ! [[ $1 =~ ^-?[0-9]+$ ]]; then
+    echo "Error: Input is not a number"
+    exit 1
+  fi
+}
+
+abs() {
+    is_number $1 || exit 1
+
+    if [[ $1 -lt 0 ]]; then
+        echo "$((-$1))"
+    else
+        echo "$1"
+    fi
+}
+
 gql_query() {
   cat "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql" | tr '\n' ' ' | sed 's/"/\\"/g'
 }
@@ -132,8 +149,14 @@ check_for_settled() {
 
 balance_for_check() {
   lnd_balance_sync=$(get_metric "galoy_lndBalanceSync")
+  is_number "$lnd_balance_sync" || exit 1
+  abs_lnd_balance_sync=$(abs $lnd_balance_sync)
+
   assets_eq_liabilities=$(get_metric "galoy_assetsEqLiabilities")
-  echo $(( $lnd_balance_sync + $assets_eq_liabilities ))
+  is_number "$assets_eq_liabilities" || exit 1
+  abs_assets_eq_liabilities=$(abs $assets_eq_liabilities)
+
+  echo $(( $abs_lnd_balance_sync + $abs_assets_eq_liabilities ))
 }
 
 graphql_output() {
