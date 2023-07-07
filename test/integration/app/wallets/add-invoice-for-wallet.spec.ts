@@ -1,0 +1,37 @@
+import { Accounts, Wallets } from "@app"
+
+import { AccountStatus } from "@domain/accounts"
+import { InactiveAccountError } from "@domain/errors"
+
+import { AccountsRepository } from "@services/mongoose"
+
+import { createRandomUserAndWallet } from "test/helpers"
+
+describe("addInvoice", () => {
+  it("fails for self if account is locked", async () => {
+    const newWalletDescriptor = await createRandomUserAndWallet()
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
+    if (newAccount instanceof Error) throw newAccount
+
+    // Lock account
+    const updatedAccount = await Accounts.updateAccountStatus({
+      id: newAccount.id,
+      status: AccountStatus.Locked,
+      updatedByUserId: newAccount.kratosUserId,
+    })
+    if (updatedAccount instanceof Error) throw updatedAccount
+    expect(updatedAccount.status).toEqual(AccountStatus.Locked)
+
+    // Add invoice for self attempt
+    const selfRes = await Wallets.addInvoiceNoAmountForSelf({
+      walletId: newWalletDescriptor.id,
+    })
+    expect(selfRes).toBeInstanceOf(InactiveAccountError)
+
+    // Create invoice for recipient attempt
+    const recipientRes = await Wallets.addInvoiceNoAmountForRecipient({
+      recipientWalletId: newWalletDescriptor.id,
+    })
+    expect(recipientRes).toBeInstanceOf(InactiveAccountError)
+  })
+})
