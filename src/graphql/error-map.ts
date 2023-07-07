@@ -614,13 +614,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownBigIntConversionError":
     case "UnknownDomainError":
     case "UnknownBriaEventError":
-      message = `Unknown error occurred (code: ${error.name})`
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "UnknownCaptchaError":
-      message = `Unknown error occurred (code: ${error.name}${
-        error.message ? ": " + error.message : ""
-      })`
+      message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:
