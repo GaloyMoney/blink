@@ -73,21 +73,83 @@ teardown() {
 }
 
 @test "onchain payments: send" {
-  outside_address=$(bitcoin_cli getnewaddress)
-  [[ "${outside_address}" != "null" ]] || exit 1
+  # EXECUTE GQL SENDS
+  # ----------
+
+  # mutation: onChainPaymentSend
+  outside_address_1=$(bitcoin_cli getnewaddress)
+  [[ "${outside_address_1}" != "null" ]] || exit 1
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
-    --arg address "$outside_address" \
+    --arg address "$outside_address_1" \
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
   exec_graphql 'alice' 'on-chain-payment-send' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
-  retry 15 1 check_for_broadcast "alice" "$outside_address"
 
+  # mutation: onChainUsdPaymentSend
+  outside_address_2=$(bitcoin_cli getnewaddress)
+  [[ "${outside_address_2}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg address "$outside_address_2" \
+    --arg amount 200 \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql 'alice' 'on-chain-usd-payment-send' "$variables"
+  send_status="$(graphql_output '.data.onChainUsdPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # mutation: onChainUsdPaymentSendAsBtcDenominated
+  outside_address_3=$(bitcoin_cli getnewaddress)
+  [[ "${outside_address_3}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg address "$outside_address_3" \
+    --arg amount 12345 \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql 'alice' 'on-chain-usd-payment-send-as-btc-denominated' "$variables"
+  send_status="$(graphql_output '.data.onChainUsdPaymentSendAsBtcDenominated.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # mutation: onChainPaymentSendAll
+  outside_address_4=$(bitcoin_cli getnewaddress)
+  [[ "${outside_address_4}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg address "$outside_address_4" \
+    '{input: {walletId: $wallet_id, address: $address}}'
+  )
+  exec_graphql 'alice' 'on-chain-payment-send-all' "$variables"
+  send_status="$(graphql_output '.data.onChainPaymentSendAll.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # CHECK FOR TRANSACTIONS IN DATABASE
+  # ----------
+
+  # Check for broadcast of last send
+  retry 15 1 check_for_broadcast "alice" "$outside_address_4" 4
+  retry 3 1 check_for_broadcast "alice" "$outside_address_3" 4
+  retry 3 1 check_for_broadcast "alice" "$outside_address_2" 4
+  retry 3 1 check_for_broadcast "alice" "$outside_address_1" 4
+
+  # Mine all
   bitcoin_cli -generate 2
-  retry 15 1 check_for_settled "alice" "$outside_address"
+
+  # Check for settled
+  retry 15 1 check_for_settled "alice" "$outside_address_4" 4
+  retry 3 1 check_for_settled "alice" "$outside_address_3" 4
+  retry 3 1 check_for_settled "alice" "$outside_address_2" 4
+  retry 3 1 check_for_settled "alice" "$outside_address_1" 4
 }

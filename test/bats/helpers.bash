@@ -134,7 +134,15 @@ get_from_transaction_by_address() {
 check_for_broadcast() {
   token_name=$1
   address=$2
-  exec_graphql "$token_name" 'transactions' '{"first":1}'
+  first=${3:-"1"}
+
+  variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$variables"
+
   txid="$(get_from_transaction_by_address "$address" '.settlementVia.transactionHash')"
   [[ "${txid}" != "null" ]] || exit 1
 }
@@ -142,7 +150,16 @@ check_for_broadcast() {
 check_for_settled() {
   token_name=$1
   address=$2
-  exec_graphql "$token_name" 'transactions' '{"first":1}'
+  first=${3:-"1"}
+
+  echo "first: $first"
+  variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$variables"
+
   settled_status="$(get_from_transaction_by_address $address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
