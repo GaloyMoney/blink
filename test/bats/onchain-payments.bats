@@ -31,15 +31,21 @@ teardown() {
   [[ "${auth_token}" != "null" ]] || exit 1
   cache_value 'alice' "$auth_token"
 
-  exec_graphql 'alice' 'btc-wallet-id'
+  exec_graphql 'alice' 'wallet-ids-for-account'
+
   alice_btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
   [[ "${alice_btc_wallet_id}" != "null" ]] || exit 1
   cache_value 'alice_btc_wallet_id' "$alice_btc_wallet_id"
+
+  alice_usd_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .id')"
+  [[ "${alice_usd_wallet_id}" != "null" ]] || exit 1
+  cache_value 'alice_usd_wallet_id' "$alice_usd_wallet_id"
 
   retry 10 1 balance_for_check
 }
 
 @test "onchain payments: receive" {
+  # Fund BTC wallet
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
@@ -52,6 +58,18 @@ teardown() {
   bitcoin_cli sendtoaddress "$address" 0.01
   bitcoin_cli -generate 2
   retry 15 1 check_for_settled "alice" "$address"
+
+  # Fund USD wallet from BTC wallet
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
+    --arg recipient_wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg amount "50000" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'alice' 'intraledger-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
 }
 
 @test "onchain payments: send" {
