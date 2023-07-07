@@ -145,6 +145,8 @@ check_for_broadcast() {
 
   txid="$(get_from_transaction_by_address "$address" '.settlementVia.transactionHash')"
   [[ "${txid}" != "null" ]] || exit 1
+
+  bitcoin_cli gettransaction "$txid" || exit 1
 }
 
 check_for_settled() {
