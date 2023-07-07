@@ -47,15 +47,15 @@ start_exporter() {
 }
 
 stop_server() {
-  [ -f $SERVER_PID_FILE ] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
+  [[ -f "$SERVER_PID_FILE" ]] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
 }
 
 stop_trigger() {
-  [ -f $TRIGGER_PID_FILE ] && kill -9 $(cat $TRIGGER_PID_FILE) > /dev/null || true
+  [[ -f "$TRIGGER_PID_FILE" ]] && kill -9 $(cat $TRIGGER_PID_FILE) > /dev/null || true
 }
 
 stop_exporter() {
-  [ -f $EXPORTER_PID_FILE ] && kill -9 $(cat $EXPORTER_PID_FILE) > /dev/null || true
+  [[ -f "$EXPORTER_PID_FILE" ]] && kill -9 $(cat $EXPORTER_PID_FILE) > /dev/null || true
 }
 
 cache_value() {
@@ -64,6 +64,23 @@ cache_value() {
 
 read_value() {
   cat ${BATS_TMPDIR}/$1
+}
+
+is_number() {
+  if ! [[ $1 =~ ^-?[0-9]+$ ]]; then
+    echo "Error: Input is not a number"
+    exit 1
+  fi
+}
+
+abs() {
+    is_number $1 || exit 1
+
+    if [[ $1 -lt 0 ]]; then
+        echo "$((-$1))"
+    else
+        echo "$1"
+    fi
 }
 
 gql_query() {
@@ -99,12 +116,47 @@ exec_graphql() {
   echo "GQL output: '$output'"
 }
 
-check_is_balanced() {
-  galoy_lndBalanceSync=$(curl -s "$METRICS_ENDPOINT" | awk '/^galoy_lndBalanceSync/ { print $2 }')
-  [ "${galoy_lndBalanceSync}" = 0 ]
+get_metric() {
+  metric_name=$1
+  curl -s "$METRICS_ENDPOINT" \
+    | awk "/^$metric_name/ { print \$2 }"
+}
 
-  galoy_assetsEqLiabilities=$(curl -s "$METRICS_ENDPOINT" | awk '/^galoy_assetsEqLiabilities/ { print $2 }')
-  [ "${galoy_assetsEqLiabilities}" = 0 ]
+get_from_transaction_by_address() {
+  property_query=$2
+
+  jq_query='.data.me.defaultAccount.transactions.edges[] | select(.node.initiationVia.address == $address) .node'
+  echo $output \
+    | jq -r --arg address "$1" "$jq_query" \
+    | jq -r "$property_query"
+}
+
+check_for_broadcast() {
+  token_name=$1
+  address=$2
+  exec_graphql "$token_name" 'transactions' '{"first":1}'
+  txid="$(get_from_transaction_by_address "$address" '.settlementVia.transactionHash')"
+  [[ "${txid}" != "null" ]] || exit 1
+}
+
+check_for_settled() {
+  token_name=$1
+  address=$2
+  exec_graphql "$token_name" 'transactions' '{"first":1}'
+  settled_status="$(get_from_transaction_by_address $address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+}
+
+balance_for_check() {
+  lnd_balance_sync=$(get_metric "galoy_lndBalanceSync")
+  is_number "$lnd_balance_sync" || exit 1
+  abs_lnd_balance_sync=$(abs $lnd_balance_sync)
+
+  assets_eq_liabilities=$(get_metric "galoy_assetsEqLiabilities")
+  is_number "$assets_eq_liabilities" || exit 1
+  abs_assets_eq_liabilities=$(abs $assets_eq_liabilities)
+
+  echo $(( $abs_lnd_balance_sync + $abs_assets_eq_liabilities ))
 }
 
 graphql_output() {

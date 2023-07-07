@@ -13,5 +13,5 @@ teardown_file() {
 @test "globals: can query globals" {
   exec_graphql 'anon' 'globals'
   network="$(graphql_output '.data.globals.network')"
-  [ "${network}" = "regtest" ]
+  [[ "${network}" = "regtest" ]] || exit 1
 }
