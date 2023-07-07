@@ -72,7 +72,36 @@ teardown() {
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 }
 
-@test "onchain payments: send" {
+@test "onchain payments: settle trade intraccount" {
+  # Fund BTC wallet
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql 'alice' 'on-chain-address-create' "$variables"
+  btc_wallet_address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${btc_wallet_address}" != "null" ]] || exit 1
+
+  # Send payment from BTC to USD wallet
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg address "$btc_wallet_address" \
+    --arg amount 100 \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql 'alice' 'on-chain-usd-payment-send' "$variables"
+  send_status="$(graphql_output '.data.onChainUsdPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check transaction
+  exec_graphql 'alice' 'transactions' '{"first": 1}'
+  settled_status="$(get_from_transaction_by_address $btc_wallet_address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+}
+
+@test "onchain payments: settle onchain" {
   # EXECUTE GQL SENDS
   # ----------
 
