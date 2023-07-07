@@ -13,6 +13,7 @@ import {
 } from "@app/payments/helpers"
 import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 
+import { AccountValidator } from "@domain/accounts"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
@@ -58,6 +59,11 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
+  const latestAccountState = await AccountsRepository().findById(senderAccount.id)
+  if (latestAccountState instanceof Error) return latestAccountState
+  const accountValidator = AccountValidator(latestAccountState)
+  if (accountValidator instanceof Error) return accountValidator
+
   const ledger = LedgerService()
 
   const amountToSendRaw = sendAll
@@ -266,6 +272,9 @@ const executePaymentViaIntraledger = async <
 
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
+
+  const accountValidator = AccountValidator(recipientAccount)
+  if (accountValidator instanceof Error) return accountValidator
 
   // Limit check
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())

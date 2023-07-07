@@ -1,3 +1,4 @@
+import { AccountValidator } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { checkedToWalletId } from "@domain/wallets"
 import { RateLimitConfig } from "@domain/rate-limit"
@@ -9,7 +10,11 @@ import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-bui
 import { LndService } from "@services/lnd"
 import { consumeLimiter } from "@services/rate-limit"
 import { DealerPriceService } from "@services/dealer-price"
-import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletInvoicesRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
@@ -188,6 +193,12 @@ const addInvoice = async ({
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) throw account
+
+  const accountValidator = AccountValidator(account)
+  if (accountValidator instanceof Error) return accountValidator
+
   const limitOk = await limitCheckFn(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 

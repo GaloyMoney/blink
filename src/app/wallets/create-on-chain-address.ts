@@ -1,12 +1,17 @@
 import { BTC_NETWORK } from "@config"
 
+import { AccountValidator } from "@domain/accounts"
 import { OnChainAddressNotFoundError, TxDecoder } from "@domain/bitcoin/onchain"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletCurrency } from "@domain/shared"
 
 import { NewOnChainService } from "@services/bria"
-import { WalletOnChainAddressesRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletOnChainAddressesRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { consumeLimiter } from "@services/rate-limit"
 
@@ -17,6 +22,11 @@ export const lndCreateOnChainAddress = async (
 ): Promise<OnChainAddress | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
+
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) return account
+  const accountValidator = AccountValidator(account)
+  if (accountValidator instanceof Error) return accountValidator
 
   const limitOk = await checkOnChainAddressAccountIdLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
@@ -44,10 +54,15 @@ const createOnChainAddress = async ({
   walletId: WalletId
   requestId?: OnChainAddressRequestId
 }) => {
-  const onChain = NewOnChainService()
-
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) return account
+
+  const accountValidator = AccountValidator(account)
+  if (accountValidator instanceof Error) return accountValidator
+
+  const onChain = NewOnChainService()
 
   let onChainAddress: OnChainAddressIdentifier | undefined = undefined
   if (requestId) {

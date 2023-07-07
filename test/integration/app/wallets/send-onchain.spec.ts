@@ -1,10 +1,12 @@
-import { Prices, Wallets } from "@app"
+import { Accounts, Prices, Wallets } from "@app"
 
 import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@config"
 
+import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import {
+  InactiveAccountError,
   InsufficientBalanceError,
   LessThanDustThresholdError,
   LimitsExceededError,
@@ -269,6 +271,50 @@ describe("onChainPay", () => {
       // Restore system state
       Transaction.deleteMany({ memo })
     })
+
+    it("fails if sender account is locked", async () => {
+      const memo = randomOnChainMemo()
+
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Lock sender account
+      const updatedAccount = await Accounts.updateAccountStatus({
+        id: newAccount.id,
+        status: AccountStatus.Locked,
+        updatedByUserId: newAccount.kratosUserId,
+      })
+      if (updatedAccount instanceof Error) throw updatedAccount
+      expect(updatedAccount.status).toEqual(AccountStatus.Locked)
+
+      // Attempt send payment
+      const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+        address: outsideAddress,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      expect(res).toBeInstanceOf(InactiveAccountError)
+
+      // Restore system state
+      Transaction.deleteMany({ memo })
+    })
   })
 
   describe("settles intraledger", () => {
@@ -321,6 +367,10 @@ describe("onChainPay", () => {
       if (newAccount instanceof Error) throw newAccount
 
       const recipientUsdWalletDescriptor = await createRandomUserAndUsdWallet()
+      const recipientAccount = await AccountsRepository().findById(
+        recipientUsdWalletDescriptor.accountId,
+      )
+      if (recipientAccount instanceof Error) throw recipientAccount
 
       // Fund balance for send
       const receive = await recordReceiveLnPayment({
@@ -358,6 +408,61 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+
+      // Restore system state
+      Transaction.deleteMany({ memo })
+    })
+
+    it("fails if recipient account is locked", async () => {
+      const memo = randomOnChainMemo()
+
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      const recipientWalletDescriptor = await createRandomUserAndWallet()
+      const recipientAccount = await AccountsRepository().findById(
+        recipientWalletDescriptor.accountId,
+      )
+      if (recipientAccount instanceof Error) throw recipientAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const recipientWalletIdAddress = await Wallets.createOnChainAddressForBtcWallet({
+        walletId: recipientWalletDescriptor.id,
+      })
+      if (recipientWalletIdAddress instanceof Error) throw recipientWalletIdAddress
+
+      // Lock recipient account
+      const updatedAccount = await Accounts.updateAccountStatus({
+        id: recipientAccount.id,
+        status: AccountStatus.Locked,
+        updatedByUserId: recipientAccount.kratosUserId,
+      })
+      if (updatedAccount instanceof Error) throw updatedAccount
+      expect(updatedAccount.status).toEqual(AccountStatus.Locked)
+
+      // Attempt payment
+      const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+        address: recipientWalletIdAddress,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
       Transaction.deleteMany({ memo })
