@@ -3,6 +3,8 @@
 load "helpers"
 
 setup_file() {
+  clear_cache
+
   bitcoind_init
   start_trigger
   start_server

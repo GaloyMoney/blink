@@ -1,6 +1,9 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${REPO_ROOT##*/}}"
 
+CACHE_DIR=${BATS_TMPDIR}/galoy-bats-cache
+mkdir -p $CACHE_DIR
+
 GALOY_ENDPOINT=localhost:4002
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
 TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
@@ -58,12 +61,17 @@ stop_exporter() {
   [[ -f "$EXPORTER_PID_FILE" ]] && kill -9 $(cat $EXPORTER_PID_FILE) > /dev/null || true
 }
 
+clear_cache() {
+  rm -r ${CACHE_DIR}
+  mkdir -p ${CACHE_DIR}
+}
+
 cache_value() {
-  echo $2 > ${BATS_TMPDIR}/$1
+  echo $2 > ${CACHE_DIR}/$1
 }
 
 read_value() {
-  cat ${BATS_TMPDIR}/$1
+  cat ${CACHE_DIR}/$1
 }
 
 is_number() {
