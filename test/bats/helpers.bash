@@ -122,6 +122,46 @@ get_metric() {
     | awk "/^$metric_name/ { print \$2 }"
 }
 
+check_user_creds_cached() {
+  local token_name=$1
+
+  auth_token=$(read_value "$token_name")
+  [[ -n "${auth_token}" ]] || return 1
+
+  btc_wallet_id=$(read_value "$token_name.btc_wallet_id")
+  [[ -n "${btc_wallet_id}" ]] || return 1
+
+  usd_wallet_id=$(read_value "$token_name.usd_wallet_id")
+  [[ -n "${usd_wallet_id}" ]] || return 1
+}
+
+login_user() {
+  local token_name=$1
+  local phone=$2
+  local code=$3
+
+  local variables=$(
+    jq -n \
+    --arg phone "$phone" \
+    --arg code "$code" \
+    '{input: {phone: $phone, code: $code}}'
+  )
+  exec_graphql 'anon' 'user-login' "$variables"
+  auth_token="$(graphql_output '.data.userLogin.authToken')"
+  [[ "${auth_token}" != "null" ]] || return 1
+  cache_value "$token_name" "$auth_token"
+
+  exec_graphql "$token_name" 'wallet-ids-for-account'
+
+  btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
+  [[ "${btc_wallet_id}" != "null" ]] || return 1
+  cache_value "$token_name.btc_wallet_id" "$btc_wallet_id"
+
+  usd_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .id')"
+  [[ "${usd_wallet_id}" != "null" ]] || return 1
+  cache_value "$token_name.usd_wallet_id" "$usd_wallet_id"
+}
+
 get_from_transaction_by_address() {
   property_query=$2
 

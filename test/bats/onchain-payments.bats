@@ -15,40 +15,22 @@ teardown_file() {
   stop_exporter
 }
 
-teardown() {
-  [[ "$(balance_for_check)" = 0 ]] || exit 1
+setup() {
+  token_name="alice"
+  check_user_creds_cached "$token_name" \
+    || login_user "$token_name" "$ALICE_PHONE" "$ALICE_CODE" \
+    || exit 1
 }
 
-@test "onchain payments: setup user" {
-  variables=$(
-    jq -n \
-    --arg phone "$ALICE_PHONE" \
-    --arg code "$ALICE_CODE" \
-    '{input: {phone: $phone, code: $code}}'
-  )
-  exec_graphql 'anon' 'user-login' "$variables"
-  auth_token="$(graphql_output '.data.userLogin.authToken')"
-  [[ "${auth_token}" != "null" ]] || exit 1
-  cache_value 'alice' "$auth_token"
-
-  exec_graphql 'alice' 'wallet-ids-for-account'
-
-  alice_btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
-  [[ "${alice_btc_wallet_id}" != "null" ]] || exit 1
-  cache_value 'alice_btc_wallet_id' "$alice_btc_wallet_id"
-
-  alice_usd_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .id')"
-  [[ "${alice_usd_wallet_id}" != "null" ]] || exit 1
-  cache_value 'alice_usd_wallet_id' "$alice_usd_wallet_id"
-
-  retry 10 1 balance_for_check
+teardown() {
+  [[ "$(balance_for_check)" = 0 ]] || exit 1
 }
 
 @test "onchain payments: receive" {
   # Fund BTC wallet
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
+    --arg wallet_id "$(read_value 'alice.btc_wallet_id')" \
     '{input: {walletId: $wallet_id}}'
   )
   exec_graphql 'alice' 'on-chain-address-create' "$variables"
@@ -62,8 +44,8 @@ teardown() {
   # Fund USD wallet from BTC wallet
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
-    --arg recipient_wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg wallet_id "$(read_value 'alice.btc_wallet_id')" \
+    --arg recipient_wallet_id "$(read_value 'alice.usd_wallet_id')" \
     --arg amount "50000" \
     '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
   )
@@ -76,7 +58,7 @@ teardown() {
   # Fund BTC wallet
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
+    --arg wallet_id "$(read_value 'alice.btc_wallet_id')" \
     '{input: {walletId: $wallet_id}}'
   )
   exec_graphql 'alice' 'on-chain-address-create' "$variables"
@@ -86,7 +68,7 @@ teardown() {
   # Send payment from BTC to USD wallet
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg wallet_id "$(read_value 'alice.usd_wallet_id')" \
     --arg address "$btc_wallet_address" \
     --arg amount 100 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
@@ -111,7 +93,7 @@ teardown() {
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value 'alice_btc_wallet_id')" \
+    --arg wallet_id "$(read_value 'alice.btc_wallet_id')" \
     --arg address "$outside_address_1" \
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
@@ -126,7 +108,7 @@ teardown() {
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg wallet_id "$(read_value 'alice.usd_wallet_id')" \
     --arg address "$outside_address_2" \
     --arg amount 200 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
@@ -141,7 +123,7 @@ teardown() {
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg wallet_id "$(read_value 'alice.usd_wallet_id')" \
     --arg address "$outside_address_3" \
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
@@ -156,7 +138,7 @@ teardown() {
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value 'alice_usd_wallet_id')" \
+    --arg wallet_id "$(read_value 'alice.usd_wallet_id')" \
     --arg address "$outside_address_4" \
     '{input: {walletId: $wallet_id, address: $address}}'
   )
