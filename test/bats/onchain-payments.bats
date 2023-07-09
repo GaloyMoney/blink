@@ -18,46 +18,36 @@ teardown_file() {
 }
 
 setup() {
-  token_name="alice"
-  check_user_creds_cached "$token_name" \
-    || login_user "$token_name" "$ALICE_PHONE" "$ALICE_CODE" \
+  # Setup funding source
+  check_user_creds_cached "$FUNDING_TOKEN_NAME" \
+    || login_user "$FUNDING_TOKEN_NAME" "$FUNDING_SOURCE_PHONE" "$FUNDING_SOURCE_CODE" \
     || exit 1
+
+  exec_graphql "$FUNDING_TOKEN_NAME" 'balances'
+  btc_balance="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .balance')"
+  [[ "$btc_balance" != "0" ]] \
+    || fund_funding_source_wallet
+
+  # Setup alice
+  check_user_creds_cached "$ALICE_TOKEN_NAME" \
+    || login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE" \
+    || exit 1
+
+  fund_wallet \
+    "$ALICE_TOKEN_NAME.btc_wallet_id" \
+    1000000
+
+  fund_wallet \
+    "$ALICE_TOKEN_NAME.usd_wallet_id" \
+    50000
 }
 
 teardown() {
   [[ "$(balance_for_check)" = 0 ]] || exit 1
 }
 
-@test "onchain payments: receive" {
-  # Fund BTC wallet
-  variables=$(
-    jq -n \
-    --arg wallet_id "$(read_value 'alice.btc_wallet_id')" \
-    '{input: {walletId: $wallet_id}}'
-  )
-  exec_graphql 'alice' 'on-chain-address-create' "$variables"
-  address="$(graphql_output '.data.onChainAddressCreate.address')"
-  [[ "${address}" != "null" ]] || exit 1
-
-  bitcoin_cli sendtoaddress "$address" 0.01
-  bitcoin_cli -generate 2
-  retry 15 1 check_for_settled "alice" "$address"
-
-  # Fund USD wallet from BTC wallet
-  variables=$(
-    jq -n \
-    --arg wallet_id "$(read_value 'alice.btc_wallet_id')" \
-    --arg recipient_wallet_id "$(read_value 'alice.usd_wallet_id')" \
-    --arg amount "50000" \
-    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
-  )
-  exec_graphql 'alice' 'intraledger-payment-send' "$variables"
-  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
-  [[ "${send_status}" = "SUCCESS" ]] || exit 1
-}
-
 @test "onchain payments: settle trade intraccount" {
-  # Fund BTC wallet
+  # Fetch address
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice.btc_wallet_id')" \
@@ -79,7 +69,7 @@ teardown() {
   send_status="$(graphql_output '.data.onChainUsdPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  # Check transaction
+  # Check for settled
   exec_graphql 'alice' 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $btc_wallet_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1

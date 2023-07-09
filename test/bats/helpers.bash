@@ -11,6 +11,11 @@ EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
 
 METRICS_ENDPOINT="localhost:3000/metrics"
 
+FUNDING_TOKEN_NAME="funding_source"
+FUNDING_SOURCE_PHONE="+198765432114"
+FUNDING_SOURCE_CODE="321321"
+
+ALICE_TOKEN_NAME="alice"
 ALICE_PHONE="+16505554328"
 ALICE_CODE="321321"
 
@@ -170,6 +175,40 @@ login_user() {
   cache_value "$token_name.usd_wallet_id" "$usd_wallet_id"
 }
 
+fund_funding_source_wallet() {
+  token_name="$FUNDING_TOKEN_NAME"
+  wallet_id_name="$token_name.btc_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $wallet_id_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${address}" != "null" ]] || exit 1
+
+  bitcoin_cli sendtoaddress "$address" 1
+  bitcoin_cli -generate 2
+  retry 15 1 check_for_settled "$token_name" "$address"
+}
+
+fund_wallet() {
+  local wallet_name=$1
+  local amount=$2
+  funding_source_btc_name="$FUNDING_TOKEN_NAME.btc_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $funding_source_btc_name)" \
+    --arg recipient_wallet_id "$(read_value $wallet_name)" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$FUNDING_TOKEN_NAME" 'intraledger-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+}
 get_from_transaction_by_address() {
   property_query=$2
 
