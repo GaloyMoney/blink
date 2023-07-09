@@ -14,6 +14,19 @@ module.exports = {
               $unset: { deletedPhone: 1 },
             },
           )
+
+          await db.collection("accounts").updateOne(
+            { kratosUserId: user._id },
+            {
+              $push: {
+                statusHistory: {
+                  status: "closed",
+                  updatedAt: new Date(),
+                  comment: `Account closed via migration`,
+                },
+              },
+            },
+          )
         }
       } else {
         // If deletedPhones does not exist, initialize it as an empty array

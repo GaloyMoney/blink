@@ -10,7 +10,10 @@ const AccountDeleteMutation = GT.Field({
   },
   type: GT.NonNull(AccountDeletePayload),
   resolve: async (_, _args, { domainAccount }: { domainAccount: Account }) => {
-    const result = await Accounts.markAccountForDeletion({ accountId: domainAccount.id })
+    const result = await Accounts.markAccountForDeletion({
+      accountId: domainAccount.id,
+      updatedByUserId: domainAccount.kratosUserId,
+    })
 
     if (result instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(result)], success: false }

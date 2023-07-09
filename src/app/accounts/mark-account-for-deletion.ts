@@ -1,4 +1,5 @@
 import { getBalanceForWallet, listWalletsByAccountId } from "@app/wallets"
+import { AccountStatus } from "@domain/accounts"
 import { AccountHasPositiveBalanceError } from "@domain/authentication/errors"
 import { IdentityRepository } from "@services/kratos"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
@@ -7,9 +8,11 @@ import { addEventToCurrentSpan } from "@services/tracing"
 export const markAccountForDeletion = async ({
   accountId,
   cancelIfPositiveBalance = false,
+  updatedByUserId,
 }: {
   accountId: AccountId
   cancelIfPositiveBalance?: boolean
+  updatedByUserId: UserId
 }): Promise<true | ApplicationError> => {
   const accountsRepo = AccountsRepository()
   const account = await accountsRepo.findById(accountId)
@@ -50,6 +53,11 @@ export const markAccountForDeletion = async ({
     const result = await usersRepo.update(newUser)
     if (result instanceof Error) return result
   }
+
+  account.statusHistory = (account.statusHistory ?? []).concat({
+    status: AccountStatus.Closed,
+    updatedByUserId,
+  })
 
   const identityRepo = IdentityRepository()
   const deletionResult = await identityRepo.deleteIdentity(kratosUserId)

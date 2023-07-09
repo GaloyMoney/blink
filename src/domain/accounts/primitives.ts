@@ -9,6 +9,7 @@ export const AccountStatus = {
   Pending: "pending",
   Active: "active",
   Locked: "locked",
+  Closed: "closed",
 } as const
 
 export const AccountLimitsRange = {
