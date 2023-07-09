@@ -196,6 +196,9 @@
     "typescript": "^5.1.6",
     "zen-observable-ts": "^1.1.0"
   },
-  "resolutions": {},
+  "resolutions": {
+    "protobufjs": "7.2.4",
+    "http-cache-semantics": "4.1.1"
+  },
   "private": true
 }
