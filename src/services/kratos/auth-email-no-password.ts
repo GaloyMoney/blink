@@ -9,7 +9,7 @@ import {
   EmailNotVerifiedError,
   EmailValidationSubmittedTooOftenError,
   LikelyUserAlreadyExistError,
-} from "@domain/auth/errors"
+} from "@domain/authentication/errors"
 
 import { UpdateIdentityBody } from "@ory/client"
 

@@ -154,3 +154,5 @@ type Country = {
   id: CountryCode
   supportedAuthChannels: ChannelType[]
 }
+
+type FlowId = string & { readonly brand: unique symbol }

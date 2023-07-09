@@ -2,7 +2,7 @@ import {
   getSmsAuthUnsupportedCountries,
   getWhatsAppAuthUnsupportedCountries,
 } from "@config"
-import { getSupportedCountries as getSupportedCountriesDomain } from "@domain/auth"
+import { getSupportedCountries as getSupportedCountriesDomain } from "@domain/authentication"
 import { getCountries } from "libphonenumber-js"
 
 export const getSupportedCountries = (): Country[] => {

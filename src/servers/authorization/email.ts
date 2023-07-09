@@ -7,11 +7,11 @@ import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tr
 import { parseIps } from "@domain/accounts-ips"
 
 import { checkedToEmailAddress } from "@domain/users"
-import { loginWithEmail, requestEmailCode } from "@app/auth"
+import { loginWithEmail, requestEmailCode } from "@app/authentication"
 
 import { parseErrorMessageFromUnknown } from "@domain/shared"
 
-import { checkedToEmailCode } from "@domain/auth"
+import { checkedToEmailCode } from "@domain/authentication"
 import { checkedToFlowId } from "@services/kratos"
 
 import { baseLogger } from "@services/logger"
@@ -19,7 +19,7 @@ import { baseLogger } from "@services/logger"
 import {
   EmailCodeInvalidError,
   EmailValidationSubmittedTooOftenError,
-} from "@domain/auth/errors"
+} from "@domain/authentication/errors"
 
 import { UserLoginIpRateLimiterExceededError } from "@domain/rate-limit/errors"
 

@@ -11,3 +11,5 @@ export class PhoneAlreadyExistsError extends AuthenticationError {}
 export class EmailCodeInvalidError extends AuthenticationError {}
 export class EmailNotVerifiedError extends AuthenticationError {}
 export class EmailAlreadyExistsError extends AuthenticationError {}
+
+export class EmailValidationSubmittedTooOftenError extends AuthenticationError {}

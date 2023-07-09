@@ -3,7 +3,7 @@ import {
   EmailCodeInvalidError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
-} from "@domain/auth/errors"
+} from "@domain/authentication/errors"
 import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,

@@ -1,5 +1,5 @@
 import { ApolloClient, NormalizedCacheObject, gql } from "@apollo/client/core"
-import { elevatingSessionWithTotp } from "@app/auth"
+import { elevatingSessionWithTotp } from "@app/authentication"
 import { UuidRegex } from "@services/kratos"
 
 import { sleep } from "@utils"

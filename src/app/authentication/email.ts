@@ -1,4 +1,4 @@
-import { EmailAlreadyExistsError } from "@domain/auth/errors"
+import { EmailAlreadyExistsError } from "@domain/authentication/errors"
 import { AuthWithEmailPasswordlessService } from "@services/kratos"
 import { baseLogger } from "@services/logger"
 import { UsersRepository } from "@services/mongoose"

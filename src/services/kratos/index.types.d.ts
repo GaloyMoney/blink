@@ -26,7 +26,5 @@ type KratosAdminMetadata = {
   phoneMetadata: PhoneMetadata | undefined
 }
 
-type FlowId = string & { readonly brand: unique symbol }
-
 type SchemaIdType = typeof import("./schema").SchemaIdType
 type SchemaId = ValueOf<SchemaIdType>

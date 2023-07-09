@@ -7,7 +7,7 @@ import { getKratosPasswords } from "@config"
 import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
-} from "@domain/auth/errors"
+} from "@domain/authentication/errors"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 

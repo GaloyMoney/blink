@@ -1,7 +1,7 @@
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import * as AccountsMod from "./accounts"
-import * as AuthMod from "./auth"
+import * as AuthMod from "./authentication"
 import * as AdminMod from "./admin"
 import * as ColdStorageMod from "./cold-storage"
 import * as CommMod from "./comm"

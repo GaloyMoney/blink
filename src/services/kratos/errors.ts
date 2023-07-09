@@ -1,4 +1,4 @@
-import { AuthenticationError } from "@domain/auth/errors"
+import { AuthenticationError } from "@domain/authentication/errors"
 import { ErrorLevel } from "@domain/shared"
 
 export class KratosError extends AuthenticationError {}

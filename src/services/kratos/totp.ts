@@ -1,5 +1,5 @@
 import { UiNodeTextAttributes } from "@ory/client"
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/auth/errors"
+import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 
 import { kratosPublic } from "./private"
 import {

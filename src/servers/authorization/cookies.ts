@@ -7,7 +7,7 @@ import { isProd } from "@config"
 import { mapError } from "@graphql/error-map"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-import { logoutCookie } from "@app/auth"
+import { logoutCookie } from "@app/authentication"
 import { parseIps } from "@domain/accounts-ips"
 import { checkedToPhoneNumber } from "@domain/users"
 import bodyParser from "body-parser"

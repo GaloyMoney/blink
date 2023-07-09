@@ -10,7 +10,7 @@ import { Lightning } from "@app"
 
 import { GT } from "@graphql/index"
 import Globals from "@graphql/types/object/globals"
-import { getSupportedCountries } from "@app/auth/get-supported-countries"
+import { getSupportedCountries } from "@app/authentication/get-supported-countries"
 
 const feesConfig = getFeesConfig()
 

@@ -1,5 +1,5 @@
 import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
-import { extendSessions } from "@app/auth"
+import { extendSessions } from "@app/authentication"
 
 import { getCronConfig, TWO_MONTHS_IN_MS, BTC_NETWORK } from "@config"
 

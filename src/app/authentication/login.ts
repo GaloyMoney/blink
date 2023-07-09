@@ -3,7 +3,7 @@ import { createAccountForDeviceAccount } from "@app/accounts/create-account"
 import {
   EmailNotVerifiedError,
   LikelyNoUserWithThisPhoneExistError,
-} from "@domain/auth/errors"
+} from "@domain/authentication/errors"
 
 import {
   checkedToDeviceId,
@@ -22,7 +22,7 @@ import { WalletsRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
-import { checkedToEmailCode } from "@domain/auth"
+import { checkedToEmailCode } from "@domain/authentication"
 import { isPhoneCodeValid } from "@services/twilio"
 
 import {
