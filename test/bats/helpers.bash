@@ -96,9 +96,9 @@ gql_query() {
 }
 
 exec_graphql() {
-  token_name=$1
-  query_name=$2
-  variables=${3:-"{}"}
+  local token_name=$1
+  local query_name=$2
+  local variables=${3:-"{}"}
   echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
   echo  "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
 
