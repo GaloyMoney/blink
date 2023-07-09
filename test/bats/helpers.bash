@@ -139,6 +139,8 @@ exec_graphql() {
 
 get_metric() {
   metric_name=$1
+
+  retry 10 1 curl -s "$METRICS_ENDPOINT"
   curl -s "$METRICS_ENDPOINT" \
     | awk "/^$metric_name/ { print \$2 }"
 }
