@@ -52,6 +52,7 @@ type User = {
   deviceTokens: DeviceToken[]
   phoneMetadata: PhoneMetadata | undefined
   phone?: PhoneNumber | undefined
+  deletedPhones?: PhoneNumber[]
   createdAt: Date
   deviceId?: DeviceId | undefined
 }

@@ -357,7 +357,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid pagination arguments"
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "UserWithPhoneAlreadyExistsError":
+    case "AccountHasPositiveBalanceError":
       message =
         "The phone is associated with an existing wallet that has a non zero balance. Sweep the funds and try again."
       return new ValidationInternalError({ message, logger: baseLogger })

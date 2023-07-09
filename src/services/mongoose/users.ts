@@ -12,9 +12,10 @@ export const translateToUser = (user: UserRecord): User => {
   const language = (user?.language ?? "") as UserLanguageOrEmpty
   const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
-  const phone = user.phone
+  const phone = user.phone as PhoneNumber | undefined
+  const deletedPhones = user.deletedPhones as PhoneNumber[] | undefined
   const createdAt = user.createdAt
-  const deviceId = user.deviceId
+  const deviceId = user.deviceId as DeviceId | undefined
 
   return {
     id: user.userId as UserId,
@@ -22,8 +23,9 @@ export const translateToUser = (user: UserRecord): User => {
     deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
     phone,
+    deletedPhones,
     createdAt,
-    ...(deviceId !== undefined && { deviceId }),
+    deviceId,
   }
 }
 
@@ -93,19 +95,10 @@ export const UsersRepository = (): IUsersRepository => {
   const adminUnsetPhoneForUserPreservation = async (
     id: UserId,
   ): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOneAndUpdate(
-        { userId: id, phone: { $exists: true } },
-        { $rename: { phone: "deletedPhone" } },
-        { new: true },
-      )
-      if (!result) {
-        return new CouldNotUnsetPhoneFromUserError()
-      }
-      return translateToUser(result)
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
+    id
+
+    return new CouldNotUnsetPhoneFromUserError()
+    // stop using. is been deleted in email PR
   }
 
   return {
