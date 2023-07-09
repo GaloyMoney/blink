@@ -18,6 +18,9 @@ teardown_file() {
 }
 
 setup() {
+  # Clear locks and limiters
+  reset_redis
+
   # Setup funding source
   check_user_creds_cached "$FUNDING_TOKEN_NAME" \
     || login_user "$FUNDING_TOKEN_NAME" "$FUNDING_SOURCE_PHONE" "$FUNDING_SOURCE_CODE" \

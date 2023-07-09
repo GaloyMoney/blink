@@ -38,6 +38,14 @@ bitcoin_signer_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-signer-1" bitcoin-cli $@
 }
 
+redis_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-redis-1" redis-cli $@
+}
+
+reset_redis() {
+  redis_cli FLUSHALL
+}
+
 start_server() {
   background node lib/servers/graphql-main-server.js > .e2e-server.log
   echo $! > $SERVER_PID_FILE
