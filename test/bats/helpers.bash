@@ -211,7 +211,7 @@ initialize_user() {
   local phone="$2"
   local code="$3"
   local btc_amount_in_btc=${4:-"0.001"}
-  local usd_amount_in_sats=${5:-"50000"}
+  local usd_amount_in_sats=${5:-"75000"}
 
   check_user_creds_cached "$token_name" \
     || login_user "$token_name" "$phone" "$code" \

@@ -30,7 +30,7 @@ teardown() {
 }
 
 @test "onchain payments: settle trade intraccount" {
-  token_name="$ALICE_TOKEN_NAME"
+  token_name="$BOB_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -48,7 +48,7 @@ teardown() {
     jq -n \
     --arg wallet_id "$(read_value $usd_wallet_name)" \
     --arg address "$on_chain_usd_payment_send_address" \
-    --arg amount 100 \
+    --arg amount 200 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
   exec_graphql "$token_name" 'on-chain-usd-payment-send' "$variables"
@@ -109,8 +109,116 @@ teardown() {
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
+@test "onchain payments: settle intraledger" {
+  alice_token_name="$ALICE_TOKEN_NAME"
+  alice_btc_wallet_name="$alice_token_name.btc_wallet_id"
+  alice_usd_wallet_name="$alice_token_name.usd_wallet_id"
+
+  bob_token_name="$BOB_TOKEN_NAME"
+  bob_btc_wallet_name="$bob_token_name.btc_wallet_id"
+
+  # mutation: onChainPaymentSend, alice btc -> bob btc
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$bob_token_name" 'on-chain-address-create' "$variables"
+  on_chain_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${on_chain_payment_send_address}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $alice_btc_wallet_name)" \
+    --arg address "$on_chain_payment_send_address" \
+    --arg amount 12345 \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql "$alice_token_name" 'on-chain-payment-send' "$variables"
+  send_status="$(graphql_output '.data.onChainPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  exec_graphql "$alice_token_name" 'transactions' '{"first": 1}'
+  settled_status="$(get_from_transaction_by_address $on_chain_payment_send_address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+
+  # mutation: onChainUsdPaymentSend, alice usd -> bob btc
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$bob_token_name" 'on-chain-address-create' "$variables"
+  on_chain_usd_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${on_chain_usd_payment_send_address}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $alice_usd_wallet_name)" \
+    --arg address "$on_chain_usd_payment_send_address" \
+    --arg amount 200 \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql "$alice_token_name" 'on-chain-usd-payment-send' "$variables"
+  send_status="$(graphql_output '.data.onChainUsdPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  exec_graphql "$alice_token_name" 'transactions' '{"first": 1}'
+  settled_status="$(get_from_transaction_by_address $on_chain_usd_payment_send_address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+
+  # mutation: onChainUsdPaymentSendAsBtcDenominated, alice usd -> bob btc
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$bob_token_name" 'on-chain-address-create' "$variables"
+  on_chain_usd_payment_send_as_btc_denominated_address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${on_chain_usd_payment_send_as_btc_denominated_address}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $alice_usd_wallet_name)" \
+    --arg address "$on_chain_usd_payment_send_as_btc_denominated_address" \
+    --arg amount 12345 \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql "$alice_token_name" 'on-chain-usd-payment-send-as-btc-denominated' "$variables"
+  send_status="$(graphql_output '.data.onChainUsdPaymentSendAsBtcDenominated.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  exec_graphql "$alice_token_name" 'transactions' '{"first": 1}'
+  settled_status="$(get_from_transaction_by_address $on_chain_usd_payment_send_as_btc_denominated_address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+
+  # mutation: onChainPaymentSendAll, bob btc -> alice btc
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $alice_btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$alice_token_name" 'on-chain-address-create' "$variables"
+  on_chain_payment_send_all_address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${on_chain_payment_send_all_address}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    --arg address "$on_chain_payment_send_all_address" \
+    '{input: {walletId: $wallet_id, address: $address}}'
+  )
+  exec_graphql "$bob_token_name" 'on-chain-payment-send-all' "$variables"
+  send_status="$(graphql_output '.data.onChainPaymentSendAll.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  exec_graphql "$bob_token_name" 'transactions' '{"first": 1}'
+  settled_status="$(get_from_transaction_by_address $on_chain_payment_send_all_address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+}
+
 @test "onchain payments: settle onchain" {
-  token_name="$BOB_TOKEN_NAME"
+  token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
 
