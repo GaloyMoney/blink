@@ -30,7 +30,7 @@ import { SchemaIdType } from "./schema"
 const getKratosKnex = () =>
   knex({
     client: "pg", // specify the database client
-    connection: process.env.KRATOS_POSTGRES_DNS,
+    connection: process.env.KRATOS_PG_CON,
   })
 
 const getIdentityIdFromFlowId = async (flowId: string) => {
