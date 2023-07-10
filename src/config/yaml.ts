@@ -293,6 +293,12 @@ export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apo
 
 export const LND_SCB_BACKUP_BUCKET_NAME = yamlConfig.lndScbBackupBucketName
 
+export const getAdminAccounts = (config = yamlConfig): AdminAccount[] =>
+  config.admin_accounts.map((account) => ({
+    role: account.role as AdminRole,
+    phone: account.phone as PhoneNumber,
+  }))
+
 export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   config.test_accounts.map((account) => ({
     phone: account.phone as PhoneNumber,

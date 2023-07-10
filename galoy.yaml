@@ -39,6 +39,13 @@ bria:
   queueNames:
     fast: dev
 lndScbBackupBucketName: lnd-static-channel-backups
+admin_accounts:
+  - role: dealer
+    phone: "+16505554327"
+  - role: funder
+    phone: "+16505554325"
+  - role: bankowner
+    phone: "+16505554334"
 test_accounts:
   - ref: A
     phone: "+16505554321"

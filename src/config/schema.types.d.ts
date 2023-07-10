@@ -60,6 +60,10 @@ type YamlSchema = {
     }
   }
   lndScbBackupBucketName: string
+  admin_accounts: {
+    role: string
+    phone: string
+  }[]
   test_accounts: {
     ref: string
     phone: string

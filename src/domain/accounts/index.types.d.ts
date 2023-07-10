@@ -162,6 +162,12 @@ interface IAccountsRepository {
   update(account: Account): Promise<Account | RepositoryError>
 }
 
+type AdminRole = "dealer" | "funder" | "bankowner"
+type AdminAccount = {
+  role: AdminRole
+  phone: PhoneNumber
+}
+
 type TestAccount = {
   phone: PhoneNumber
   code: PhoneCode
