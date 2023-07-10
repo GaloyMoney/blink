@@ -2,8 +2,6 @@ import { addWallet, createAccountWithPhoneIdentifier } from "@app/accounts"
 import { addWalletIfNonexistent } from "@app/accounts/add-wallet"
 import { getDefaultAccountsConfig, yamlConfig } from "@config"
 
-import { adminUsers } from "@domain/admin-users"
-
 import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindError,
@@ -35,6 +33,16 @@ import { lndOutside1, safePay } from "./lightning"
 import { randomPhone, randomUserId } from "."
 
 const accounts = AccountsRepository()
+
+const adminUsers = [
+  {
+    phone: "+16505554327" as PhoneNumber,
+    role: "dealer",
+    needUsdWallet: true,
+  },
+  { phone: "+16505554325" as PhoneNumber, role: "funder" },
+  { phone: "+16505554334" as PhoneNumber, role: "bankowner" },
+]
 
 export const getPhoneAndCodeFromRef = (ref: string) => {
   const result = yamlConfig.test_accounts.find((item) => item.ref === ref)
