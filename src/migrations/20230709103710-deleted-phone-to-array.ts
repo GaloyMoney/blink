@@ -5,34 +5,28 @@ module.exports = {
     const users = await db.collection("users").find({}).toArray()
     for (const user of users) {
       if (user.deletedPhone) {
-        // If deletedPhones exists and it's not an array, convert it to an array
-        if (!Array.isArray(user.deletedPhone)) {
-          await db.collection("users").updateOne(
-            { _id: user._id },
-            {
-              $set: { deletedPhones: [user.deletedPhone] },
-              $unset: { deletedPhone: 1 },
-            },
-          )
+        // If deletedPhone exists, convert it to an array
+        await db.collection("users").updateOne(
+          { _id: user._id },
+          {
+            $set: { deletedPhones: [user.deletedPhone] },
+            $unset: { deletedPhone: 1 },
+          },
+        )
 
-          await db.collection("accounts").updateOne(
-            { kratosUserId: user._id },
-            {
-              $push: {
-                statusHistory: {
-                  status: "closed",
-                  updatedAt: new Date(),
-                  comment: `Account closed via migration`,
-                },
+        // Add a closed entry to the account
+        await db.collection("accounts").updateOne(
+          { kratosUserId: user.userId },
+          {
+            $push: {
+              statusHistory: {
+                status: "closed",
+                updatedAt: new Date(),
+                comment: `Account closed via migration`,
               },
             },
-          )
-        }
-      } else {
-        // If deletedPhones does not exist, initialize it as an empty array
-        await db
-          .collection("users")
-          .updateOne({ _id: user._id }, { $set: { deletedPhones: [] } })
+          },
+        )
       }
     }
 
