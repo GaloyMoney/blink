@@ -1,52 +1,24 @@
-import { UserWithPhoneAlreadyExistsError } from "@domain/authentication/errors"
-import { AuthWithPhonePasswordlessService } from "@services/kratos/auth-phone-no-password"
-import { IdentityRepository } from "@services/kratos/identity"
+import { markAccountForDeletion } from "@app/accounts"
+import { checkedToAccountId } from "@domain/accounts"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { getBalanceForWallet, listWalletsByAccountId } from "../wallets"
-
-const deleteUserIfNew = async ({
-  kratosUserId,
-}: {
-  kratosUserId: UserId
-}): Promise<void | Error> => {
-  const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findByUserId(kratosUserId)
-  if (account instanceof Error) return account
-
-  const wallets = await listWalletsByAccountId(account.id)
-  if (wallets instanceof Error) return wallets
-
-  for (const wallet of wallets) {
-    const balance = await getBalanceForWallet({ walletId: wallet.id })
-    if (balance instanceof Error) return balance
-    if (balance > 0) {
-      return new UserWithPhoneAlreadyExistsError(
-        "The new phone is associated with an account with a non empty wallet",
-      )
-    }
-  }
-
-  const identityRepo = IdentityRepository()
-  const deletionResult = await identityRepo.deleteIdentity(kratosUserId)
-  if (deletionResult instanceof Error) return deletionResult
-
-  const usersRepo = UsersRepository()
-  const result = await usersRepo.adminUnsetPhoneForUserPreservation(kratosUserId)
-  if (result instanceof Error) return result
-}
-
 export const updateUserPhone = async ({
   id,
   phone,
+  updatedByUserId,
 }: {
   id: string
   phone: PhoneNumber
+  updatedByUserId: UserId
 }): Promise<Account | ApplicationError> => {
+  const accountId = checkedToAccountId(id)
+  if (accountId instanceof Error) return accountId
+
   const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findById(id as AccountId)
+  const account = await accountsRepo.findById(accountId)
   if (account instanceof Error) return account
   const kratosUserId = account.kratosUserId
 
@@ -55,7 +27,11 @@ export const updateUserPhone = async ({
   const existingUser = await usersRepo.findByPhone(phone)
   if (!(existingUser instanceof Error)) {
     addAttributesToCurrentSpan({ existingUser: true })
-    const result = await deleteUserIfNew({ kratosUserId: existingUser.id })
+    const result = await markAccountForDeletion({
+      accountId,
+      cancelIfPositiveBalance: true,
+      updatedByUserId,
+    })
     if (result instanceof Error) return result
   }
 

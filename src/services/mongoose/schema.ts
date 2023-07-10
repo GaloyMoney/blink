@@ -348,7 +348,9 @@ const UserSchema = new Schema(
       unique: true,
       sparse: true,
     },
-    deletedPhone: { type: String },
+    deletedPhones: {
+      type: [String],
+    },
     deviceId: {
       type: String,
     },

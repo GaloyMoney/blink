@@ -114,8 +114,8 @@ interface UserRecord {
   language?: string
   deviceTokens: string[]
   phoneMetadata?: TwilioObjectForUser
-  phone?: PhoneNumber
-  deletedPhone?: PhoneNumber
+  phone?: string
+  deletedPhones?: string[]
   createdAt: Date
   deviceId?: DeviceId
   deletedDeviceId?: DeviceId
