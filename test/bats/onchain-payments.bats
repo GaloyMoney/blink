@@ -63,13 +63,13 @@ teardown() {
   # ----------
 
   # mutation: onChainPaymentSend
-  outside_address_1=$(bitcoin_cli getnewaddress)
-  [[ "${outside_address_1}" != "null" ]] || exit 1
+  on_chain_payment_send_address=$(bitcoin_cli getnewaddress)
+  [[ "${on_chain_payment_send_address}" != "null" ]] || exit 1
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice.btc_wallet_id')" \
-    --arg address "$outside_address_1" \
+    --arg address "$on_chain_payment_send_address" \
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
@@ -78,13 +78,13 @@ teardown() {
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
   # mutation: onChainUsdPaymentSend
-  outside_address_2=$(bitcoin_cli getnewaddress)
-  [[ "${outside_address_2}" != "null" ]] || exit 1
+  on_chain_usd_payment_send_address=$(bitcoin_cli getnewaddress)
+  [[ "${on_chain_usd_payment_send_address}" != "null" ]] || exit 1
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice.usd_wallet_id')" \
-    --arg address "$outside_address_2" \
+    --arg address "$on_chain_usd_payment_send_address" \
     --arg amount 200 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
@@ -93,13 +93,13 @@ teardown() {
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
   # mutation: onChainUsdPaymentSendAsBtcDenominated
-  outside_address_3=$(bitcoin_cli getnewaddress)
-  [[ "${outside_address_3}" != "null" ]] || exit 1
+  on_chain_usd_payment_send_as_btc_denominated_address=$(bitcoin_cli getnewaddress)
+  [[ "${on_chain_usd_payment_send_as_btc_denominated_address}" != "null" ]] || exit 1
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice.usd_wallet_id')" \
-    --arg address "$outside_address_3" \
+    --arg address "$on_chain_usd_payment_send_as_btc_denominated_address" \
     --arg amount 12345 \
     '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
   )
@@ -108,13 +108,13 @@ teardown() {
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
   # mutation: onChainPaymentSendAll
-  outside_address_4=$(bitcoin_cli getnewaddress)
-  [[ "${outside_address_4}" != "null" ]] || exit 1
+  on_chain_payment_send_all_address=$(bitcoin_cli getnewaddress)
+  [[ "${on_chain_payment_send_all_address}" != "null" ]] || exit 1
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value 'alice.usd_wallet_id')" \
-    --arg address "$outside_address_4" \
+    --arg address "$on_chain_payment_send_all_address" \
     '{input: {walletId: $wallet_id, address: $address}}'
   )
   exec_graphql 'alice' 'on-chain-payment-send-all' "$variables"
@@ -125,17 +125,17 @@ teardown() {
   # ----------
 
   # Check for broadcast of last send
-  retry 15 1 check_for_broadcast "alice" "$outside_address_4" 4
-  retry 3 1 check_for_broadcast "alice" "$outside_address_3" 4
-  retry 3 1 check_for_broadcast "alice" "$outside_address_2" 4
-  retry 3 1 check_for_broadcast "alice" "$outside_address_1" 4
+  retry 15 1 check_for_broadcast "alice" "$on_chain_payment_send_all_address" 4
+  retry 3 1 check_for_broadcast "alice" "$on_chain_usd_payment_send_as_btc_denominated_address" 4
+  retry 3 1 check_for_broadcast "alice" "$on_chain_usd_payment_send_address" 4
+  retry 3 1 check_for_broadcast "alice" "$on_chain_payment_send_address" 4
 
   # Mine all
   bitcoin_cli -generate 2
 
   # Check for settled
-  retry 15 1 check_for_settled "alice" "$outside_address_4" 4
-  retry 3 1 check_for_settled "alice" "$outside_address_3" 4
-  retry 3 1 check_for_settled "alice" "$outside_address_2" 4
-  retry 3 1 check_for_settled "alice" "$outside_address_1" 4
+  retry 15 1 check_for_settled "alice" "$on_chain_payment_send_all_address" 4
+  retry 3 1 check_for_settled "alice" "$on_chain_usd_payment_send_as_btc_denominated_address" 4
+  retry 3 1 check_for_settled "alice" "$on_chain_usd_payment_send_address" 4
+  retry 3 1 check_for_settled "alice" "$on_chain_payment_send_address" 4
 }
