@@ -9,6 +9,9 @@ setup_file() {
   start_trigger
   start_server
   start_exporter
+
+  initialize_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
+  initialize_user "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
 }
 
 teardown_file() {
@@ -18,31 +21,8 @@ teardown_file() {
 }
 
 setup() {
-  # Clear locks and limiters
+  # Clear locks & limiters
   reset_redis
-
-  # Setup funding source
-  check_user_creds_cached "$FUNDING_TOKEN_NAME" \
-    || login_user "$FUNDING_TOKEN_NAME" "$FUNDING_SOURCE_PHONE" "$FUNDING_SOURCE_CODE" \
-    || exit 1
-
-  exec_graphql "$FUNDING_TOKEN_NAME" 'balances'
-  btc_balance="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .balance')"
-  [[ "$btc_balance" != "0" ]] \
-    || fund_funding_source_wallet
-
-  # Setup alice
-  check_user_creds_cached "$ALICE_TOKEN_NAME" \
-    || login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE" \
-    || exit 1
-
-  fund_wallet \
-    "$ALICE_TOKEN_NAME.btc_wallet_id" \
-    1000000
-
-  fund_wallet \
-    "$ALICE_TOKEN_NAME.usd_wallet_id" \
-    50000
 }
 
 teardown() {

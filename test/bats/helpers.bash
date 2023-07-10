@@ -11,14 +11,11 @@ EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
 
 METRICS_ENDPOINT="localhost:3000/metrics"
 
-FUNDING_TOKEN_NAME="funding_source"
-FUNDING_SOURCE_PHONE="+198765432114"
-FUNDING_SOURCE_CODE="321321"
-
 ALICE_TOKEN_NAME="alice"
 ALICE_PHONE="+16505554328"
 ALICE_CODE="321321"
 
+BOB_TOKEN_NAME="bob"
 BOB_PHONE="+198765432113"
 BOB_CODE="321321"
 
@@ -145,19 +142,6 @@ get_metric() {
     | awk "/^$metric_name/ { print \$2 }"
 }
 
-check_user_creds_cached() {
-  local token_name=$1
-
-  auth_token=$(read_value "$token_name")
-  [[ -n "${auth_token}" ]] || return 1
-
-  btc_wallet_id=$(read_value "$token_name.btc_wallet_id")
-  [[ -n "${btc_wallet_id}" ]] || return 1
-
-  usd_wallet_id=$(read_value "$token_name.usd_wallet_id")
-  [[ -n "${usd_wallet_id}" ]] || return 1
-}
-
 login_user() {
   local token_name=$1
   local phone=$2
@@ -171,23 +155,24 @@ login_user() {
   )
   exec_graphql 'anon' 'user-login' "$variables"
   auth_token="$(graphql_output '.data.userLogin.authToken')"
-  [[ "${auth_token}" != "null" ]] || return 1
+  [[ "${auth_token}" != "null" ]] || exit 1
   cache_value "$token_name" "$auth_token"
 
   exec_graphql "$token_name" 'wallet-ids-for-account'
 
   btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
-  [[ "${btc_wallet_id}" != "null" ]] || return 1
+  [[ "${btc_wallet_id}" != "null" ]] || exit 1
   cache_value "$token_name.btc_wallet_id" "$btc_wallet_id"
 
   usd_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .id')"
-  [[ "${usd_wallet_id}" != "null" ]] || return 1
+  [[ "${usd_wallet_id}" != "null" ]] || exit 1
   cache_value "$token_name.usd_wallet_id" "$usd_wallet_id"
 }
 
-fund_funding_source_wallet() {
-  token_name="$FUNDING_TOKEN_NAME"
-  wallet_id_name="$token_name.btc_wallet_id"
+fund_wallet_from_onchain() {
+  local token_name=$1
+  local wallet_id_name="$2"
+  local amount=$3
 
   variables=$(
     jq -n \
@@ -198,27 +183,52 @@ fund_funding_source_wallet() {
   address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${address}" != "null" ]] || exit 1
 
-  bitcoin_cli sendtoaddress "$address" 1
+  bitcoin_cli sendtoaddress "$address" "$amount"
   bitcoin_cli -generate 2
   retry 15 1 check_for_settled "$token_name" "$address"
 }
 
-fund_wallet() {
-  local wallet_name=$1
-  local amount=$2
-  funding_source_btc_name="$FUNDING_TOKEN_NAME.btc_wallet_id"
+fund_wallet_intraledger() {
+  local from_token_name=$1
+  local from_wallet_name=$2
+  local wallet_name=$3
+  local amount=$4
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $funding_source_btc_name)" \
+    --arg wallet_id "$(read_value $from_wallet_name)" \
     --arg recipient_wallet_id "$(read_value $wallet_name)" \
     --arg amount "$amount" \
     '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
   )
-  exec_graphql "$FUNDING_TOKEN_NAME" 'intraledger-payment-send' "$variables"
+  exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
   send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 }
+
+initialize_user() {
+  local token_name="$1"
+  local phone="$2"
+  local code="$3"
+  local btc_amount_in_btc=${4:-"0.01"}
+  local usd_amount_in_sats=${5:-"50000"}
+
+  check_user_creds_cached "$token_name" \
+    || login_user "$token_name" "$phone" "$code" \
+    || exit 1
+
+  fund_wallet_from_onchain \
+    "$token_name" \
+    "$token_name.btc_wallet_id" \
+    "$btc_amount_in_btc"
+
+  fund_wallet_intraledger \
+    "$token_name" \
+    "$token_name.btc_wallet_id" \
+    "$token_name.usd_wallet_id" \
+    "$usd_amount_in_sats"
+}
+
 get_from_transaction_by_address() {
   property_query=$2
 

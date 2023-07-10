@@ -325,7 +325,6 @@ export const configSchema = {
           ref: "M",
           phone: "+198765432114",
           code: "321321",
-          username: "funding_source",
         },
         {
           ref: "N",
