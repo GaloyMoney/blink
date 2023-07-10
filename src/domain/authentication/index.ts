@@ -36,7 +36,6 @@ export const getSupportedCountries = ({
 }
 
 export const checkedToEmailCode = (code: string): EmailCode | ApplicationError => {
-  if (code.length !== 6) return new EmailCodeInvalidError()
   if (!/^[0-9]{6}$/.test(code)) return new EmailCodeInvalidError()
   return code as EmailCode
 }

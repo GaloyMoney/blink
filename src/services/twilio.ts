@@ -24,6 +24,8 @@ import { isAxiosError } from "axios"
 
 import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
+export const TWILIO_ACCOUNT_TEST = "AC_twilio_id"
+
 export const TwilioClient = (): IPhoneProviderService => {
   const { accountSid, authToken, verifyService } = getTwilioConfig()
 
@@ -198,7 +200,7 @@ export const isPhoneCodeValid = async ({
   // we can't mock this function properly because in the e2e test,
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
-  if (getTwilioConfig().accountSid === "AC_twilio_id") {
+  if (getTwilioConfig().accountSid === TWILIO_ACCOUNT_TEST) {
     return new NotImplementedError("use test account for local dev and tests")
   }
 

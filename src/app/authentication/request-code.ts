@@ -7,7 +7,7 @@ import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { AuthWithEmailPasswordlessService } from "@services/kratos"
 import { baseLogger } from "@services/logger"
 import { consumeLimiter } from "@services/rate-limit"
-import { TwilioClient } from "@services/twilio"
+import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@services/twilio"
 
 export const requestPhoneCodeWithCaptcha = async ({
   phone,
@@ -69,7 +69,7 @@ export const requestPhoneCodeForNewUser = async ({
     return true
   }
 
-  if (getTwilioConfig().accountSid === "AC_twilio_id") {
+  if (getTwilioConfig().accountSid === TWILIO_ACCOUNT_TEST) {
     return new NotImplementedError("use test account for local dev and tests")
   }
 
@@ -111,7 +111,7 @@ export const requestPhoneCodeForExistingUser = async ({
     return true
   }
 
-  if (getTwilioConfig().accountSid === "AC_twilio_id") {
+  if (getTwilioConfig().accountSid === TWILIO_ACCOUNT_TEST) {
     return new NotImplementedError("use test account for local dev and tests")
   }
 
