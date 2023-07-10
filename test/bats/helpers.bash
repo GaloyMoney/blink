@@ -210,7 +210,7 @@ initialize_user() {
   local token_name="$1"
   local phone="$2"
   local code="$3"
-  local btc_amount_in_btc=${4:-"0.01"}
+  local btc_amount_in_btc=${4:-"0.001"}
   local usd_amount_in_sats=${5:-"50000"}
 
   check_user_creds_cached "$token_name" \
@@ -239,9 +239,9 @@ get_from_transaction_by_address() {
 }
 
 check_for_broadcast() {
-  token_name=$1
-  address=$2
-  first=${3:-"1"}
+  local token_name=$1
+  local address=$2
+  local first=${3:-"1"}
 
   variables=$(
   jq -n \
@@ -257,9 +257,9 @@ check_for_broadcast() {
 }
 
 check_for_settled() {
-  token_name=$1
-  address=$2
-  first=${3:-"1"}
+  local token_name=$1
+  local address=$2
+  local first=${3:-"1"}
 
   echo "first: $first"
   variables=$(
