@@ -64,25 +64,31 @@ export const UsersRepository = (): IUsersRepository => {
     deviceTokens,
     phoneMetadata,
     phone,
-    createdAt,
+    deletedPhones,
     deviceId,
   }: UserUpdateInput): Promise<User | RepositoryError> => {
+    const updateObject: Partial<UserUpdateInput> & {
+      $unset?: { phone?: number; email?: number }
+    } = {
+      language,
+      deviceTokens,
+      phoneMetadata,
+      deletedPhones,
+      deviceId,
+    }
+
+    // If the new phone is undefined, unset it from the document
+    if (phone === undefined) {
+      updateObject.$unset = { phone: 1 }
+    } else {
+      updateObject.phone = phone
+    }
+
     try {
-      const result = await User.findOneAndUpdate(
-        { userId: id },
-        {
-          deviceTokens,
-          phoneMetadata,
-          language,
-          phone,
-          deviceId,
-          createdAt, // TODO: remove post migration
-        },
-        {
-          new: true,
-          upsert: true,
-        },
-      )
+      const result = await User.findOneAndUpdate({ userId: id }, updateObject, {
+        new: true,
+        upsert: true,
+      })
       if (!result) {
         return new RepositoryError("Couldn't update user")
       }
