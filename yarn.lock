@@ -7715,10 +7715,10 @@ graphql-config@^5.0.2:
     string-env-interpolation "^1.0.1"
     tslib "^2.4.0"
 
-graphql-middleware@^6.1.33:
-  version "6.1.34"
-  resolved "https://registry.yarnpkg.com/graphql-middleware/-/graphql-middleware-6.1.34.tgz#3aec5a294d54b57663ad1d8a14253498fa35d3ab"
-  integrity sha512-cnX6vEQVmfJRUZcek6BaVLA2cD8826WyMskZRiLKNZFxCMPJpwi5MCH86BnmFXtWYeYHO4MwnCcfmKdRKOh0ow==
+graphql-middleware@^6.1.35:
+  version "6.1.35"
+  resolved "https://registry.yarnpkg.com/graphql-middleware/-/graphql-middleware-6.1.35.tgz#7297d41ceb35742b80640cca5cd85d1e47e8ab24"
+  integrity sha512-azawK7ApUYtcuPGRGBR9vDZu795pRuaFhO5fgomdJppdfKRt7jwncuh0b7+D3i574/4B+16CNWgVpnGVlg3ZCg==
   dependencies:
     "@graphql-tools/delegate" "^8.8.1"
     "@graphql-tools/schema" "^8.5.1"
