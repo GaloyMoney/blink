@@ -194,7 +194,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     }
 
     if (identity.state === undefined)
-      throw new KratosError("state undefined, probably impossible state") // type issue
+      throw new UnknownKratosError("state undefined, probably impossible state") // type issue
 
     identity.traits = { phone }
 

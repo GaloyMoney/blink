@@ -33,7 +33,7 @@ const getKratosKnex = () =>
     connection: process.env.KRATOS_POSTGRES_DNS,
   })
 
-export const getIdentityIdFromFlowId = async (flowId: string) => {
+const getIdentityIdFromFlowId = async (flowId: string) => {
   const knex = getKratosKnex()
 
   const table = "selfservice_recovery_flows"
@@ -273,7 +273,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
 
     if (identity.state === undefined)
-      throw new KratosError("state undefined, probably impossible state") // type issue
+      throw new UnknownKratosError("state undefined, probably impossible state") // type issue
 
     identity.traits = { ...identity.traits, email }
 
@@ -316,7 +316,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
 
     if (identity.state === undefined)
-      throw new KratosError("state undefined, probably impossible state") // type issue
+      throw new UnknownKratosError("state undefined, probably impossible state") // type issue
 
     delete identity.traits.email
 
@@ -361,7 +361,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
 
     if (identity.state === undefined)
-      throw new KratosError("state undefined, probably impossible state") // type issue
+      throw new UnknownKratosError("state undefined, probably impossible state") // type issue
 
     if (identity.verifiable_addresses?.[0].verified !== true) {
       return new EmailNotVerifiedError()
@@ -414,7 +414,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
 
     if (identity.state === undefined)
-      throw new KratosError("state undefined, probably impossible state") // type issue
+      throw new UnknownKratosError("state undefined, probably impossible state") // type issue
 
     identity.traits.phone = phone
 
