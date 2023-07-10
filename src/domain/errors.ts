@@ -94,6 +94,7 @@ export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
 export class InvalidFlowId extends ValidationError {}
 export class InvalidTotpCode extends ValidationError {}
+export class InvalidLedgerAccountId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
 export class InvalidLedgerTransactionStateError extends ValidationError {}
 export class InvalidDisplayCurrencyError extends ValidationError {}
