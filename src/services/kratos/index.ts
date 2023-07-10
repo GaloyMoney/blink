@@ -15,11 +15,27 @@ export * from "./schema"
 export const UuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-export const checkedToFlowId = (flow: string): FlowId | ValidationError => {
+export const checkedToEmailRegistrationId = (
+  flow: string,
+): EmailRegistrationId | ValidationError => {
   if (!flow.match(UuidRegex)) {
     return new InvalidFlowId(flow)
   }
-  return flow as FlowId
+  return flow as EmailRegistrationId
+}
+export const checkedToTotpRegistrationId = (
+  flow: string,
+): TotpRegistrationId | ValidationError => {
+  if (!flow.match(UuidRegex)) {
+    return new InvalidFlowId(flow)
+  }
+  return flow as TotpRegistrationId
+}
+export const checkedToEmailLoginId = (flow: string): EmailLoginId | ValidationError => {
+  if (!flow.match(UuidRegex)) {
+    return new InvalidFlowId(flow)
+  }
+  return flow as EmailLoginId
 }
 
 export const checkedToTotpCode = (totpCode: string): TotpCode | ValidationError => {

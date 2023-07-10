@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import IError from "../abstract/error"
-import Flow from "../scalar/flow"
+import EmailRegistrationId from "../scalar/email-verify-id"
 import GraphQLUser from "../object/user"
 
 const UserEmailSetPayload = GT.Object({
@@ -10,8 +10,8 @@ const UserEmailSetPayload = GT.Object({
     errors: {
       type: GT.NonNullList(IError),
     },
-    flow: {
-      type: Flow,
+    emailRegistrationId: {
+      type: EmailRegistrationId,
     },
     me: {
       type: GraphQLUser,

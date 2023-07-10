@@ -316,6 +316,11 @@ Email address
 """
 scalar EmailAddress
 
+"""
+An id to be passed between set and verify for confirming email
+"""
+scalar EmailRegistrationId
+
 interface Error {
   code: String
   message: String!
@@ -339,11 +344,6 @@ input FeedbackSubmitInput {
 type FeesInformation {
   deposit: DepositFeesInformation!
 }
-
-"""
-A flow to be passed between request code and logging api when using email
-"""
-scalar Flow
 
 """
 Provides global settings for the application which might have an impact for the user.
@@ -1315,6 +1315,11 @@ A time-based one-time password
 scalar TotpCode
 
 """
+An id to be passed between set and verify for confirming totp
+"""
+scalar TotpRegistrationId
+
+"""
 A secret to generate time-based one-time password
 """
 scalar TotpSecret
@@ -1590,14 +1595,14 @@ input UserEmailSetInput {
 }
 
 type UserEmailSetPayload {
+  emailRegistrationId: EmailRegistrationId
   errors: [Error!]!
-  flow: Flow
   me: User
 }
 
 input UserEmailVerifyInput {
   code: OneTimeAuthCode!
-  flow: Flow!
+  emailRegistrationId: EmailRegistrationId!
 }
 
 type UserEmailVerifyPayload {
@@ -1664,14 +1669,14 @@ input UserTotpRegistrationInitiateInput {
 
 type UserTotpRegistrationInitiatePayload {
   errors: [Error!]!
-  flow: Flow
+  totpRegistrationId: TotpRegistrationId
   totpSecret: TotpSecret
 }
 
 input UserTotpRegistrationValidateInput {
   authToken: AuthToken!
-  flow: Flow!
   totpCode: TotpCode!
+  totpRegistrationId: TotpRegistrationId!
 }
 
 type UserTotpRegistrationValidatePayload {

@@ -4,7 +4,7 @@ import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import AuthToken from "@graphql/types/scalar/auth-token"
 import TotpCode from "@graphql/types/scalar/totp-code"
-import Flow from "@graphql/types/scalar/flow"
+import TotpRegistrationId from "@graphql/types/scalar/totp-verify-id"
 import UserTotpRegistrationValidatePayload from "@graphql/types/payload/user-totp-registration-validate"
 
 const UserTotpRegistrationValidateInput = GT.Input({
@@ -16,8 +16,8 @@ const UserTotpRegistrationValidateInput = GT.Input({
     totpCode: {
       type: GT.NonNull(TotpCode),
     },
-    flow: {
-      type: GT.NonNull(Flow),
+    totpRegistrationId: {
+      type: GT.NonNull(TotpRegistrationId),
     },
   }),
 })
@@ -27,7 +27,7 @@ const UserTotpRegistrationValidateMutation = GT.Field<
     input: {
       authToken: SessionToken | InputValidationError
       totpCode: TotpCode | InputValidationError
-      flow: FlowId | InputValidationError
+      totpRegistrationId: TotpRegistrationId | InputValidationError
     }
   },
   null,
@@ -41,7 +41,7 @@ const UserTotpRegistrationValidateMutation = GT.Field<
     input: { type: GT.NonNull(UserTotpRegistrationValidateInput) },
   },
   resolve: async (_, args, { user }) => {
-    const { authToken, totpCode, flow } = args.input
+    const { authToken, totpCode, totpRegistrationId } = args.input
 
     if (authToken instanceof Error) {
       return { errors: [{ message: authToken.message }] }
@@ -49,8 +49,8 @@ const UserTotpRegistrationValidateMutation = GT.Field<
     if (totpCode instanceof Error) {
       return { errors: [{ message: totpCode.message }] }
     }
-    if (flow instanceof Error) {
-      return { errors: [{ message: flow.message }] }
+    if (totpRegistrationId instanceof Error) {
+      return { errors: [{ message: totpRegistrationId.message }] }
     }
 
     user
@@ -59,7 +59,7 @@ const UserTotpRegistrationValidateMutation = GT.Field<
     const me = await Auth.validateTotpRegistration({
       authToken,
       totpCode,
-      flow,
+      totpRegistrationId,
     })
 
     if (me instanceof Error) {

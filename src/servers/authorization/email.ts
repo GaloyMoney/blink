@@ -12,7 +12,7 @@ import { loginWithEmail, requestEmailCode } from "@app/authentication"
 import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 import { checkedToEmailCode } from "@domain/authentication"
-import { checkedToFlowId } from "@services/kratos"
+import { checkedToEmailLoginId } from "@services/kratos"
 
 import { baseLogger } from "@services/logger"
 
@@ -27,12 +27,12 @@ import { authRouter } from "./router"
 
 // TODO: should code request behind captcha or device token?
 authRouter.post(
-  "/email/code-request",
+  "/email/code",
   wrapAsyncToRunInSpan({
     namespace: "servers.middlewares.authRouter",
     fnName: "emailCodeRequest",
     fn: async (req: express.Request, res: express.Response) => {
-      baseLogger.info("/email/code-request")
+      baseLogger.info("/email/code")
 
       const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
       const ip = parseIps(ipString)
@@ -52,13 +52,13 @@ authRouter.post(
       }
 
       try {
-        const flowId = await requestEmailCode({ email, ip })
-        if (flowId instanceof Error) {
-          recordExceptionInCurrentSpan({ error: flowId })
-          return res.status(500).send({ error: flowId.message })
+        const emailLoginId = await requestEmailCode({ email, ip })
+        if (emailLoginId instanceof Error) {
+          recordExceptionInCurrentSpan({ error: emailLoginId })
+          return res.status(500).send({ error: emailLoginId.message })
         }
         return res.status(200).send({
-          result: flowId,
+          result: emailLoginId,
         })
       } catch (err) {
         recordExceptionInCurrentSpan({ error: err })
@@ -83,14 +83,14 @@ authRouter.post(
         return res.status(500).send({ error: "IP is not defined" })
       }
 
-      const flowRaw = req.body.flow
-      if (!flowRaw) {
+      const emailLoginIdRaw = req.body.emailLoginId
+      if (!emailLoginIdRaw) {
         return res.status(422).send({ error: "Missing input" })
       }
 
-      const flow = checkedToFlowId(flowRaw)
-      if (flow instanceof Error) {
-        return res.status(422).send({ error: flow.message })
+      const emailLoginId = checkedToEmailLoginId(emailLoginIdRaw)
+      if (emailLoginId instanceof Error) {
+        return res.status(422).send({ error: emailLoginId.message })
       }
 
       const codeRaw = req.body.code
@@ -104,7 +104,7 @@ authRouter.post(
       }
 
       try {
-        const result = await loginWithEmail({ ip, flow, code })
+        const result = await loginWithEmail({ ip, emailFlowId: emailLoginId, code })
         if (result instanceof EmailCodeInvalidError) {
           recordExceptionInCurrentSpan({ error: result })
           return res.status(401).send({ error: "invalid code" })

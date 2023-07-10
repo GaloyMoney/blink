@@ -8,13 +8,13 @@ type LoginDeviceUpgradeWithPhoneResult = {
   sessionToken?: SessionToken
 }
 
-type initiateTotpRegistrationResult = {
-  flow: FlowId
+type InitiateTotpRegistrationResult = {
+  totpRegistrationId: TotpRegistrationId
   totpSecret: TotpSecret
 }
 
 type AddEmailToIdentityResult = {
-  flow: FlowId
+  emailRegistrationId: EmailFlowId
   me: User
 }
 

@@ -114,12 +114,12 @@ interface IAuthWithEmailPasswordlessService {
     kratosUserId: UserId
     email: EmailAddress
   }): Promise<IdentityPhoneEmail | AuthenticationError>
-  sendEmailWithCode(args: { email: EmailAddress }): Promise<FlowId | KratosError>
+  sendEmailWithCode(args: { email: EmailAddress }): Promise<EmailFlowId | KratosError>
   hasEmail(args: { kratosUserId: UserId }): Promise<boolean | KratosError>
   isEmailVerified(args: { email: EmailAddress }): Promise<boolean | KratosError>
   validateCode(args: {
     code: EmailCode
-    flowId: FlowId
+    emailFlowId: EmailFlowId
   }): Promise<ValidateCodeResult | KratosError>
   loginToken(args: {
     email: EmailAddress
@@ -155,4 +155,8 @@ type Country = {
   supportedAuthChannels: ChannelType[]
 }
 
-type FlowId = string & { readonly brand: unique symbol }
+type EmailRegistrationId = string & { readonly brand: unique symbol }
+type TotpRegistrationId = string & { readonly brand: unique symbol }
+type EmailLoginId = string & { readonly brand: unique symbol }
+
+type EmailFlowId = EmailRegistrationId | EmailLoginId

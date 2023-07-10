@@ -124,7 +124,7 @@ export const requestEmailCode = async ({
 }: {
   email: EmailAddress
   ip: IpAddress
-}): Promise<FlowId | KratosError> => {
+}): Promise<EmailLoginId | EmailRegistrationId | KratosError> => {
   baseLogger.info({ email, ip }, "RequestEmailCode called")
 
   {

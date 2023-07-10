@@ -74,18 +74,24 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         },
       })
 
-      return data.id as FlowId
+      return data.id as EmailFlowId | EmailLoginId
     } catch (err) {
       return new UnknownKratosError(err)
     }
   }
 
-  const validateCode = async ({ code, flowId }: { code: EmailCode; flowId: FlowId }) => {
+  const validateCode = async ({
+    code,
+    emailFlowId: flow,
+  }: {
+    code: EmailCode
+    emailFlowId: EmailFlowId | EmailLoginId
+  }) => {
     const method = "code"
 
     try {
       const res = await kratosPublic.updateRecoveryFlow({
-        flow: flowId,
+        flow,
         updateRecoveryFlowBody: {
           method,
           code,
@@ -165,7 +171,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
             // https://github.com/ory/kratos/issues/3163
             //
 
-            const userIdRaw = await getIdentityIdFromFlowId(flowId)
+            const userIdRaw = await getIdentityIdFromFlowId(flow)
             if (userIdRaw instanceof Error) return userIdRaw
 
             kratosUserId = userIdRaw

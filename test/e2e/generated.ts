@@ -29,10 +29,10 @@ export type Scalars = {
   DisplayCurrency: { input: string; output: string; }
   /** Email address */
   EmailAddress: { input: string; output: string; }
+  /** An id to be passed between set and verify for confirming email */
+  EmailRegistrationId: { input: string; output: string; }
   /** Feedback shared with our user */
   Feedback: { input: string; output: string; }
-  /** A flow to be passed between request code and logging api when using email */
-  Flow: { input: string; output: string; }
   /** Hex-encoded string of 32 bytes */
   Hex32Bytes: { input: string; output: string; }
   Language: { input: string; output: string; }
@@ -68,6 +68,8 @@ export type Scalars = {
   Timestamp: { input: number; output: number; }
   /** A time-based one-time password */
   TotpCode: { input: string; output: string; }
+  /** An id to be passed between set and verify for confirming totp */
+  TotpRegistrationId: { input: string; output: string; }
   /** A secret to generate time-based one-time password */
   TotpSecret: { input: string; output: string; }
   /** Unique identifier of a user */
@@ -1509,14 +1511,14 @@ export type UserEmailSetInput = {
 
 export type UserEmailSetPayload = {
   readonly __typename: 'UserEmailSetPayload';
+  readonly emailRegistrationId?: Maybe<Scalars['EmailRegistrationId']['output']>;
   readonly errors: ReadonlyArray<Error>;
-  readonly flow?: Maybe<Scalars['Flow']['output']>;
   readonly me?: Maybe<User>;
 };
 
 export type UserEmailVerifyInput = {
   readonly code: Scalars['OneTimeAuthCode']['input'];
-  readonly flow: Scalars['Flow']['input'];
+  readonly emailRegistrationId: Scalars['EmailRegistrationId']['input'];
 };
 
 export type UserEmailVerifyPayload = {
@@ -1589,14 +1591,14 @@ export type UserTotpRegistrationInitiateInput = {
 export type UserTotpRegistrationInitiatePayload = {
   readonly __typename: 'UserTotpRegistrationInitiatePayload';
   readonly errors: ReadonlyArray<Error>;
-  readonly flow?: Maybe<Scalars['Flow']['output']>;
+  readonly totpRegistrationId?: Maybe<Scalars['TotpRegistrationId']['output']>;
   readonly totpSecret?: Maybe<Scalars['TotpSecret']['output']>;
 };
 
 export type UserTotpRegistrationValidateInput = {
   readonly authToken: Scalars['AuthToken']['input'];
-  readonly flow: Scalars['Flow']['input'];
   readonly totpCode: Scalars['TotpCode']['input'];
+  readonly totpRegistrationId: Scalars['TotpRegistrationId']['input'];
 };
 
 export type UserTotpRegistrationValidatePayload = {
@@ -1844,7 +1846,7 @@ export type UserEmailSetMutationVariables = Exact<{
 }>;
 
 
-export type UserEmailSetMutation = { readonly __typename: 'Mutation', readonly userEmailSet: { readonly __typename: 'UserEmailSetPayload', readonly flow?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null } };
+export type UserEmailSetMutation = { readonly __typename: 'Mutation', readonly userEmailSet: { readonly __typename: 'UserEmailSetPayload', readonly emailRegistrationId?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null } };
 
 export type UserEmailVerifyMutationVariables = Exact<{
   input: UserEmailVerifyInput;
@@ -1868,7 +1870,7 @@ export type UserTotpRegistrationInitiateMutationVariables = Exact<{
 }>;
 
 
-export type UserTotpRegistrationInitiateMutation = { readonly __typename: 'Mutation', readonly userTotpRegistrationInitiate: { readonly __typename: 'UserTotpRegistrationInitiatePayload', readonly flow?: string | null, readonly totpSecret?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
+export type UserTotpRegistrationInitiateMutation = { readonly __typename: 'Mutation', readonly userTotpRegistrationInitiate: { readonly __typename: 'UserTotpRegistrationInitiatePayload', readonly totpRegistrationId?: string | null, readonly totpSecret?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
 
 export type UserTotpRegistrationValidateMutationVariables = Exact<{
   input: UserTotpRegistrationValidateInput;
@@ -2966,7 +2968,7 @@ export const UserEmailSetDocument = gql`
     errors {
       message
     }
-    flow
+    emailRegistrationId
     me {
       id
       email {
@@ -3130,7 +3132,7 @@ export const UserTotpRegistrationInitiateDocument = gql`
     errors {
       message
     }
-    flow
+    totpRegistrationId
     totpSecret
   }
 }

@@ -48,9 +48,9 @@ const UserTotpRegistrationInitiateMutation = GT.Field<
       return { errors: [mapAndParseErrorForGqlResponse(res)], success: false }
     }
 
-    const { totpSecret, flow } = res
+    const { totpSecret, totpRegistrationId } = res
 
-    return { errors: [], flow, totpSecret }
+    return { errors: [], totpRegistrationId, totpSecret }
   },
 })
 

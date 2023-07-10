@@ -22,8 +22,8 @@ export const addEmailToIdentity = async ({
   })
   if (res instanceof Error) return res
 
-  const flow = await authServiceEmail.sendEmailWithCode({ email })
-  if (flow instanceof Error) return flow
+  const emailRegistrationId = await authServiceEmail.sendEmailWithCode({ email })
+  if (emailRegistrationId instanceof Error) return emailRegistrationId
 
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
@@ -31,20 +31,23 @@ export const addEmailToIdentity = async ({
   const updatedUser = await UsersRepository().update({ ...user, email })
   if (updatedUser instanceof Error) return updatedUser
 
-  return { flow, me: updatedUser }
+  return { emailRegistrationId, me: updatedUser }
 }
 
 export const verifyEmail = async ({
-  flowId,
+  emailRegistrationId,
   code,
 }: {
-  flowId: FlowId
+  emailRegistrationId: EmailRegistrationId
   code: EmailCode
 }): Promise<User | KratosError | RepositoryError> => {
-  baseLogger.info({ flowId }, "RequestVerifyEmail called")
+  baseLogger.info({ emailRegistrationId }, "RequestVerifyEmail called")
 
   const authServiceEmail = AuthWithEmailPasswordlessService()
-  const res = await authServiceEmail.validateCode({ code, flowId })
+  const res = await authServiceEmail.validateCode({
+    code,
+    emailFlowId: emailRegistrationId,
+  })
   if (res instanceof Error) return res
 
   const user = await UsersRepository().findById(res.kratosUserId)

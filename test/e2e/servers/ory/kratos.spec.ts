@@ -103,11 +103,11 @@ describe("phoneNoPassword", () => {
         const res1 = await kratosInitiateTotp(authToken)
         if (res1 instanceof Error) throw res1
 
-        const { totpSecret: totpSecret_, flow } = res1
+        const { totpSecret: totpSecret_, totpRegistrationId } = res1
         totpSecret = totpSecret_
         const totpCode = authenticator.generate(totpSecret)
 
-        const res = kratosValidateTotp({ flow, totpCode, authToken })
+        const res = kratosValidateTotp({ totpRegistrationId, totpCode, authToken })
         if (res instanceof Error) throw res
 
         const res2 = await validateKratosToken(authToken)
@@ -407,15 +407,15 @@ describe("phone+email schema", () => {
   })
 
   it("email verification", async () => {
-    const flowId = await authServiceEmail.sendEmailWithCode({ email })
-    if (flowId instanceof Error) throw flowId
+    const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
+    if (emailFlowId instanceof Error) throw emailFlowId
 
     {
       // TODO: look if there are rate limit on the side of kratos
       const wrongCode = "000000" as EmailCode
       const res = await authServiceEmail.validateCode({
         code: wrongCode,
-        flowId,
+        emailFlowId,
       })
       expect(res).toBeInstanceOf(EmailCodeInvalidError)
 
@@ -425,7 +425,10 @@ describe("phone+email schema", () => {
     {
       const code = await getEmailCode({ email })
 
-      const res = await authServiceEmail.validateCode({ code, flowId })
+      const res = await authServiceEmail.validateCode({
+        code,
+        emailFlowId,
+      })
       if (res instanceof Error) throw res
       expect(res.email).toBe(email)
 
@@ -434,8 +437,8 @@ describe("phone+email schema", () => {
   })
 
   it("login back to an email account", async () => {
-    const flowId = await authServiceEmail.sendEmailWithCode({ email })
-    if (flowId instanceof Error) throw flowId
+    const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
+    if (emailFlowId instanceof Error) throw emailFlowId
 
     const code = await getEmailCode({ email })
 
@@ -443,13 +446,16 @@ describe("phone+email schema", () => {
       const wrongCode = "000000" as EmailCode
       const res = await authServiceEmail.validateCode({
         code: wrongCode,
-        flowId,
+        emailFlowId: emailFlowId,
       })
       expect(res).toBeInstanceOf(EmailCodeInvalidError)
     }
 
     {
-      const res = await authServiceEmail.validateCode({ code, flowId })
+      const res = await authServiceEmail.validateCode({
+        code,
+        emailFlowId: emailFlowId,
+      })
       if (res instanceof Error) throw res
       expect(res.email).toBe(email)
     }
@@ -492,12 +498,12 @@ describe("phone+email schema", () => {
       email,
     })
 
-    const flowId = await authServiceEmail.sendEmailWithCode({ email })
-    if (flowId instanceof Error) throw flowId
+    const emailRegistrationId = await authServiceEmail.sendEmailWithCode({ email })
+    if (emailRegistrationId instanceof Error) throw emailRegistrationId
 
     {
       const code = await getEmailCode({ email })
-      await authServiceEmail.validateCode({ code, flowId })
+      await authServiceEmail.validateCode({ code, emailFlowId: emailRegistrationId })
     }
 
     await authServiceEmail.removePhoneFromIdentity({ kratosUserId })

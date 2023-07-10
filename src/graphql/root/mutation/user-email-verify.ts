@@ -2,15 +2,15 @@ import { GT } from "@graphql/index"
 
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import Flow from "@graphql/types/scalar/flow"
+import EmailRegistrationId from "@graphql/types/scalar/email-verify-id"
 import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
 import UserEmailVerifyPayload from "@graphql/types/payload/user-email-verify"
 
 const UserEmailVerifyInput = GT.Input({
   name: "UserEmailVerifyInput",
   fields: () => ({
-    flow: {
-      type: GT.NonNull(Flow),
+    emailRegistrationId: {
+      type: GT.NonNull(EmailRegistrationId),
     },
     code: {
       type: GT.NonNull(OneTimeAuthCode),
@@ -21,7 +21,7 @@ const UserEmailVerifyInput = GT.Input({
 const UserEmailVerifyMutation = GT.Field<
   {
     input: {
-      flow: FlowId | InputValidationError
+      emailRegistrationId: EmailRegistrationId | InputValidationError
       code: EmailCode | InputValidationError
     }
   },
@@ -36,10 +36,10 @@ const UserEmailVerifyMutation = GT.Field<
     input: { type: GT.NonNull(UserEmailVerifyInput) },
   },
   resolve: async (_, args) => {
-    const { flow, code } = args.input
+    const { emailRegistrationId, code } = args.input
 
-    if (flow instanceof Error) {
-      return { errors: [{ message: flow.message }] }
+    if (emailRegistrationId instanceof Error) {
+      return { errors: [{ message: emailRegistrationId.message }] }
     }
 
     if (code instanceof Error) {
@@ -50,7 +50,7 @@ const UserEmailVerifyMutation = GT.Field<
     // not sure what attack vector it could limit, but I guess
     // this is probably a safe assumption we should add it nonetheless
     const me = await Auth.verifyEmail({
-      flowId: flow,
+      emailRegistrationId,
       code,
     })
 

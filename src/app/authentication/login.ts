@@ -123,11 +123,11 @@ export const loginWithPhoneCookie = async ({
 }
 
 export const loginWithEmail = async ({
-  flow,
+  emailFlowId,
   code: codeRaw,
   ip,
 }: {
-  flow: FlowId
+  emailFlowId: EmailFlowId
   code: EmailCode
   ip: IpAddress
 }): Promise<LoginWithEmailResult | ApplicationError> => {
@@ -141,7 +141,10 @@ export const loginWithEmail = async ({
 
   const authServiceEmail = AuthWithEmailPasswordlessService()
 
-  const validateCodeRes = await authServiceEmail.validateCode({ code, flowId: flow })
+  const validateCodeRes = await authServiceEmail.validateCode({
+    code,
+    emailFlowId,
+  })
   if (validateCodeRes instanceof Error) return validateCodeRes
 
   const email = validateCodeRes.email

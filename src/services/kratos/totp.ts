@@ -20,7 +20,7 @@ export const kratosInitiateTotp = async (token: SessionToken) => {
 
     const totpSecret = (totpAttributes.attributes as UiNodeTextAttributes).text
       .text as TotpSecret
-    return { totpSecret, flow: res.data.id as FlowId }
+    return { totpSecret, totpRegistrationId: res.data.id as TotpRegistrationId }
   } catch (err) {
     return new UnknownKratosError(err)
   }
@@ -29,11 +29,11 @@ export const kratosInitiateTotp = async (token: SessionToken) => {
 export const kratosValidateTotp = async ({
   authToken,
   totpCode,
-  flow,
+  totpRegistrationId: flow,
 }: {
   authToken: SessionToken
   totpCode: string
-  flow: string
+  totpRegistrationId: string
 }) => {
   try {
     await kratosPublic.updateSettingsFlow({

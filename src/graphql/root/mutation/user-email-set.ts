@@ -46,9 +46,9 @@ const UserEmailSetMutation = GT.Field<
       return { errors: [mapAndParseErrorForGqlResponse(res)], success: false }
     }
 
-    const { flow, me } = res
+    const { emailRegistrationId, me } = res
 
-    return { errors: [], flow, me }
+    return { errors: [], emailRegistrationId, me }
   },
 })
 

@@ -12,20 +12,20 @@ export const initiateTotpRegistration = async ({
   authToken,
 }: {
   authToken: SessionToken
-}): Promise<initiateTotpRegistrationResult | KratosError> => {
+}): Promise<InitiateTotpRegistrationResult | KratosError> => {
   return kratosInitiateTotp(authToken)
 }
 
 export const validateTotpRegistration = async ({
   authToken,
   totpCode,
-  flow,
+  totpRegistrationId,
 }: {
   authToken: SessionToken
   totpCode: TotpCode
-  flow: FlowId
+  totpRegistrationId: TotpRegistrationId
 }): Promise<User | ApplicationError> => {
-  const validation = await kratosValidateTotp({ authToken, totpCode, flow })
+  const validation = await kratosValidateTotp({ authToken, totpCode, totpRegistrationId })
   if (validation instanceof Error) return validation
 
   const res = await validateKratosToken(authToken)

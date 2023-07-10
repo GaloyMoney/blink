@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import IError from "../abstract/error"
-import Flow from "../scalar/flow"
+import TotpRegistrationId from "../scalar/totp-verify-id"
 import TotpSecret from "../scalar/totp-secret"
 
 const UserTotpRegistrationInitiatePayload = GT.Object({
@@ -10,8 +10,8 @@ const UserTotpRegistrationInitiatePayload = GT.Object({
     errors: {
       type: GT.NonNullList(IError),
     },
-    flow: {
-      type: Flow,
+    totpRegistrationId: {
+      type: TotpRegistrationId,
     },
     totpSecret: {
       type: TotpSecret,

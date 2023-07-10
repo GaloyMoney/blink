@@ -78,7 +78,7 @@ gql`
       errors {
         message
       }
-      flow
+      emailRegistrationId
       me {
         id
         email {
@@ -136,7 +136,7 @@ gql`
       errors {
         message
       }
-      flow
+      totpRegistrationId
       totpSecret
     }
   }
@@ -187,7 +187,7 @@ gql`
   }
 `
 
-const urlEmailCodeRequest = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code-request`
+const urlEmailCodeRequest = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code`
 const urlEmailLogin = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/login`
 
 let totpSecret: string
@@ -219,8 +219,8 @@ describe("auth", () => {
       variables: { input: { email } },
     })
 
-    const flow = emailSetRes.data?.userEmailSet.flow
-    expect(flow).toMatch(UuidRegex)
+    const emailRegistrationId = emailSetRes.data?.userEmailSet.emailRegistrationId
+    expect(emailRegistrationId).toMatch(UuidRegex)
 
     const code = await getEmailCode({ email })
     expect(code).not.toBeNull()
@@ -256,7 +256,7 @@ describe("auth", () => {
 
     const emailVerifyRes = await apolloClient.mutate<UserEmailVerifyMutation>({
       mutation: UserEmailVerifyDocument,
-      variables: { input: { code, flow } },
+      variables: { input: { code, emailRegistrationId } },
     })
 
     expect(emailVerifyRes.data?.userEmailVerify.me?.email?.address).toBe(email)
@@ -273,8 +273,8 @@ describe("auth", () => {
       },
     })
 
-    const flow = res.data.result
-    expect(flow).not.toBeNull()
+    const emailLoginId = res.data.result
+    expect(emailLoginId).not.toBeNull()
 
     const code = await getEmailCode({ email })
     expect(code).not.toBeNull()
@@ -285,7 +285,7 @@ describe("auth", () => {
       method: "POST",
       data: {
         code,
-        flow,
+        emailLoginId,
       },
     })
     expect(res2).not.toBeNull()
@@ -306,7 +306,7 @@ describe("auth", () => {
     expect(emailDeleteRes.data?.userEmailDelete.me?.email?.verified).toBe(false)
 
     // code request should still work
-    const url = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code-request`
+    const url = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code`
 
     const res2 = await axios({
       url,
@@ -341,12 +341,12 @@ describe("auth", () => {
       variables: { input: { email } },
     })
 
-    const flow = emailSetRes.data?.userEmailSet.flow
+    const emailRegistrationId = emailSetRes.data?.userEmailSet.emailRegistrationId
     const code = await getEmailCode({ email })
 
     await apolloClient.mutate<UserEmailVerifyMutation>({
       mutation: UserEmailVerifyDocument,
-      variables: { input: { code, flow } },
+      variables: { input: { code, emailRegistrationId } },
     })
 
     {
@@ -376,7 +376,7 @@ describe("auth", () => {
       variables: { input: { authToken } },
     })
 
-    expect(res.data?.userTotpRegistrationInitiate.flow).toMatch(UuidRegex)
+    expect(res.data?.userTotpRegistrationInitiate.totpRegistrationId).toMatch(UuidRegex)
     expect(res.data?.userTotpRegistrationInitiate.totpSecret).not.toBeNull()
 
     totpSecret = res.data?.userTotpRegistrationInitiate?.totpSecret || ""
@@ -386,7 +386,7 @@ describe("auth", () => {
       variables: {
         input: {
           totpCode: authenticator.generate(totpSecret),
-          flow: res.data?.userTotpRegistrationInitiate.flow,
+          totpRegistrationId: res.data?.userTotpRegistrationInitiate.totpRegistrationId,
           authToken,
         },
       },
@@ -418,8 +418,8 @@ describe("auth", () => {
       },
     })
 
-    const flow = res.data.result
-    expect(flow).not.toBeNull()
+    const emailLoginId = res.data.result
+    expect(emailLoginId).not.toBeNull()
 
     const code = await getEmailCode({ email })
     expect(code).not.toBeNull()
@@ -430,7 +430,7 @@ describe("auth", () => {
       method: "POST",
       data: {
         code,
-        flow,
+        emailLoginId,
       },
     })
 
