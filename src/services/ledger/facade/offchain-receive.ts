@@ -5,7 +5,7 @@ import { MainBook } from "../books"
 import { EntryBuilder, toLedgerAccountDescriptor } from "../domain"
 import { persistAndReturnEntry } from "../helpers"
 
-import { staticAccountIds } from "./shared"
+import { staticAccountIds } from "./static-account-ids"
 
 const calc = AmountCalculator()
 
