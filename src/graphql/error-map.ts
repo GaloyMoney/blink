@@ -323,10 +323,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid walletId for account."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidLedgerAccountId":
-      message = "Invalid ledgerAccountId for account."
-      return new ValidationInternalError({ message, logger: baseLogger })
-
     case "InvalidDisplayCurrencyError":
       message = "Invalid currency."
       return new ValidationInternalError({ message, logger: baseLogger })
