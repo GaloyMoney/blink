@@ -105,7 +105,7 @@ interface IAuthWithEmailPasswordlessService {
   }) => Promise<EmailAddress | AuthenticationError>
   removePhoneFromIdentity: (args: {
     kratosUserId: UserId
-  }) => Promise<IdentityEmail | AuthenticationError>
+  }) => Promise<PhoneNumber | AuthenticationError>
   addPhoneToIdentity: (args: {
     userId: UserId
     phone: PhoneNumber

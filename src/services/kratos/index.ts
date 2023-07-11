@@ -25,6 +25,7 @@ export const checkedToEmailRegistrationId = (
   }
   return flow as EmailRegistrationId
 }
+
 export const checkedToTotpRegistrationId = (
   flow: string,
 ): TotpRegistrationId | ValidationError => {
@@ -33,6 +34,7 @@ export const checkedToTotpRegistrationId = (
   }
   return flow as TotpRegistrationId
 }
+
 export const checkedToEmailLoginId = (flow: string): EmailLoginId | ValidationError => {
   if (!flow.match(UuidRegex)) {
     return new InvalidFlowId(flow)
@@ -103,11 +105,16 @@ export const listSessions = async (userId: UserId): Promise<Session[] | KratosEr
 }
 
 export const getUserIdFromIdentifier = async (identifier: PhoneNumber | EmailAddress) => {
-  const identity = await kratosAdmin.listIdentities({ credentialsIdentifier: identifier })
-  if (identity.data.length === 0) return new IdentifierNotFoundError()
+  try {
+    const identity = await kratosAdmin.listIdentities({
+      credentialsIdentifier: identifier,
+    })
+    if (identity.data.length === 0) return new IdentifierNotFoundError()
 
-  const userId = identity.data[0].id as UserId
-  if (!userId) return new IdentifierNotFoundError()
-
-  return userId
+    const userId = identity.data[0].id as UserId
+    if (!userId) return new IdentifierNotFoundError()
+    return userId
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
 }

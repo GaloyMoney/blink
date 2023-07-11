@@ -18,12 +18,7 @@ import { checkedToEmailAddress } from "@domain/users"
 import knex from "knex"
 
 import { IncompatibleSchemaUpgradeError, KratosError, UnknownKratosError } from "./errors"
-import {
-  kratosAdmin,
-  kratosPublic,
-  toDomainIdentityEmail,
-  toDomainIdentityEmailPhone,
-} from "./private"
+import { kratosAdmin, kratosPublic, toDomainIdentityEmailPhone } from "./private"
 import { SchemaIdType } from "./schema"
 
 const getKratosKnex = () =>
@@ -348,6 +343,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       return new EmailNotVerifiedError()
     }
 
+    const phone = identity.traits.phone as PhoneNumber
     delete identity.traits.phone
 
     const adminIdentity: UpdateIdentityBody = {
@@ -358,12 +354,12 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
 
     try {
-      const { data: newIdentity } = await kratosAdmin.updateIdentity({
+      await kratosAdmin.updateIdentity({
         id: kratosUserId,
         updateIdentityBody: adminIdentity,
       })
 
-      return toDomainIdentityEmail(newIdentity)
+      return phone
     } catch (err) {
       return new UnknownKratosError(err)
     }

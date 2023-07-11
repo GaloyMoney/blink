@@ -2,7 +2,7 @@ import { createAccountForDeviceAccount } from "@app/accounts/create-account"
 
 import {
   EmailNotVerifiedError,
-  LikelyNoUserWithThisPhoneExistError,
+  IdentifierNotFoundError,
 } from "@domain/authentication/errors"
 
 import {
@@ -15,6 +15,7 @@ import {
   AuthWithUsernamePasswordDeviceIdService,
   AuthWithEmailPasswordlessService,
   PhoneAccountAlreadyExistsNeedToSweepFundsError,
+  getUserIdFromIdentifier,
 } from "@services/kratos"
 
 import { LedgerService } from "@services/ledger"
@@ -63,17 +64,22 @@ export const loginWithPhoneToken = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.loginToken({ phone })
-  // FIXME: this is a fuzzy error.
-  // it exists because we currently make no difference between a registration and login
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+  const userId = await getUserIdFromIdentifier(phone)
+  if (userId instanceof IdentifierNotFoundError) {
     // user is a new user
-    kratosResult = await authService.createIdentityWithSession({ phone })
-    if (kratosResult instanceof Error) return kratosResult
+    // this branch exists because we currently make no difference between a registration and login
     addAttributesToCurrentSpan({ "login.newAccount": true })
-  } else if (kratosResult instanceof Error) {
-    return kratosResult
+
+    const kratosResult = await authService.createIdentityWithSession({ phone })
+    if (kratosResult instanceof Error) return kratosResult
+
+    return kratosResult.sessionToken
   }
+
+  if (userId instanceof Error) return userId
+
+  const kratosResult = await authService.loginToken({ phone })
+  if (kratosResult instanceof Error) return kratosResult
   return kratosResult.sessionToken
 }
 
@@ -110,15 +116,22 @@ export const loginWithPhoneCookie = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.loginCookie({ phone })
-  // FIXME: this is a fuzzy error.
-  // it exists because we currently make no difference between a registration and login
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+  const userId = await getUserIdFromIdentifier(phone)
+  if (userId instanceof IdentifierNotFoundError) {
     // user is a new user
-    kratosResult = await authService.createIdentityWithCookie({ phone })
+    // this branch exists because we currently make no difference between a registration and login
+    addAttributesToCurrentSpan({ "login.newAccount": true })
+
+    const kratosResult = await authService.createIdentityWithCookie({ phone })
     if (kratosResult instanceof Error) return kratosResult
-    addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
+
+    return kratosResult
   }
+
+  if (userId instanceof Error) return userId
+
+  const kratosResult = await authService.loginCookie({ phone })
+  if (kratosResult instanceof Error) return kratosResult
   return kratosResult
 }
 
@@ -187,10 +200,10 @@ export const loginDeviceUpgradeWithPhone = async ({
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
-  const res = await AuthWithPhonePasswordlessService().loginToken({ phone })
+  const userId = await getUserIdFromIdentifier(phone)
 
   // Happy Path - phone account does not exist
-  if (res instanceof LikelyNoUserWithThisPhoneExistError) {
+  if (userId instanceof IdentifierNotFoundError) {
     // a. create kratos account
     // b. and c. migrate account/user collection in mongo via kratos/registration webhook
 

@@ -67,25 +67,22 @@ export const removePhoneFromIdentity = async ({
   userId: UserId
 }): Promise<User | KratosError> => {
   const authServiceEmail = AuthWithEmailPasswordlessService()
-  const res = await authServiceEmail.removePhoneFromIdentity({ kratosUserId: userId })
-  if (res instanceof Error) return res
+  const phone = await authServiceEmail.removePhoneFromIdentity({ kratosUserId: userId })
+  if (phone instanceof Error) return phone
 
   const usersRepo = UsersRepository()
 
   let user = await usersRepo.findById(userId)
   if (user instanceof Error) return user
 
-  if (user.phone) {
-    const newUser = {
-      ...user,
-      deletedPhones: user.deletedPhones
-        ? [...user.deletedPhones, user.phone]
-        : [user.phone],
-      phone: undefined,
-    }
-    user = await usersRepo.update(newUser)
-    if (user instanceof Error) return user
+  const newUser = {
+    ...user,
+    deletedPhones: user.deletedPhones ? [...user.deletedPhones, phone] : [phone],
+    phone: undefined,
   }
+
+  user = await usersRepo.update(newUser)
+  if (user instanceof Error) return user
 
   return user
 }
