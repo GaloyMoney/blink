@@ -15,6 +15,8 @@ service BriaService {
   rpc ListXpubs (ListXpubsRequest) returns(ListXpubsResponse) {}
   rpc SetSignerConfig (SetSignerConfigRequest) returns (SetSignerConfigResponse) {}
 
+  rpc SubmitSignedPsbt (SubmitSignedPsbtRequest) returns (SubmitSignedPsbtResponse) {}
+
   rpc CreateWallet (CreateWalletRequest) returns (CreateWalletResponse) {}
   rpc ListWallets (ListWalletsRequest) returns (ListWalletsResponse) {}
   rpc GetWalletBalanceSummary (GetWalletBalanceSummaryRequest) returns (GetWalletBalanceSummaryResponse) {}
@@ -30,6 +32,7 @@ service BriaService {
   rpc CreatePayoutQueue (CreatePayoutQueueRequest) returns (CreatePayoutQueueResponse) {}
   rpc ListPayoutQueues (ListPayoutQueuesRequest) returns (ListPayoutQueuesResponse) {}
   rpc UpdatePayoutQueue (UpdatePayoutQueueRequest) returns (UpdatePayoutQueueResponse) {}
+  rpc TriggerPayoutQueue (TriggerPayoutQueueRequest) returns (TriggerPayoutQueueResponse) {}
 
   rpc EstimatePayoutFee (EstimatePayoutFeeRequest) returns (EstimatePayoutFeeResponse) {}
   rpc SubmitPayout (SubmitPayoutRequest) returns (SubmitPayoutResponse) {}
@@ -104,6 +107,14 @@ message BitcoindSignerConfig {
 
 message SetSignerConfigResponse {}
 
+message SubmitSignedPsbtRequest {
+  string batch_id = 1;
+  string xpub_ref = 2; 
+  string signed_psbt = 3;
+}
+
+message SubmitSignedPsbtResponse {}
+
 message KeychainConfig {
     message Wpkh {
         string xpub = 1;
@@ -113,9 +124,14 @@ message KeychainConfig {
         string external = 1;
         string internal = 2;
     }
+    message SortedMultisig {
+        repeated string xpubs = 1;
+        uint32 threshold = 2;
+    }
     oneof config {
         Wpkh wpkh = 1;
         Descriptors descriptors = 2;
+        SortedMultisig sorted_multisig = 3;
     }
 }
 
@@ -274,6 +290,7 @@ message PayoutQueueConfig {
   TxPriority tx_priority = 1;
   bool consolidate_deprecated_keychains = 2;
   oneof trigger {
+    bool manual = 4;
     uint32 interval_secs = 5;
   }
 }
@@ -287,6 +304,12 @@ enum TxPriority {
 message CreatePayoutQueueResponse {
   string id = 1;
 }
+
+message TriggerPayoutQueueRequest {
+  string name = 1;
+}
+
+message TriggerPayoutQueueResponse {}
 
 message PayoutQueue {
   string id = 1;

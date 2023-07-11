@@ -308,6 +308,49 @@ export namespace SetSignerConfigResponse {
     }
 }
 
+export class SubmitSignedPsbtRequest extends jspb.Message { 
+    getBatchId(): string;
+    setBatchId(value: string): SubmitSignedPsbtRequest;
+    getXpubRef(): string;
+    setXpubRef(value: string): SubmitSignedPsbtRequest;
+    getSignedPsbt(): string;
+    setSignedPsbt(value: string): SubmitSignedPsbtRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SubmitSignedPsbtRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: SubmitSignedPsbtRequest): SubmitSignedPsbtRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: SubmitSignedPsbtRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SubmitSignedPsbtRequest;
+    static deserializeBinaryFromReader(message: SubmitSignedPsbtRequest, reader: jspb.BinaryReader): SubmitSignedPsbtRequest;
+}
+
+export namespace SubmitSignedPsbtRequest {
+    export type AsObject = {
+        batchId: string,
+        xpubRef: string,
+        signedPsbt: string,
+    }
+}
+
+export class SubmitSignedPsbtResponse extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SubmitSignedPsbtResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: SubmitSignedPsbtResponse): SubmitSignedPsbtResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: SubmitSignedPsbtResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SubmitSignedPsbtResponse;
+    static deserializeBinaryFromReader(message: SubmitSignedPsbtResponse, reader: jspb.BinaryReader): SubmitSignedPsbtResponse;
+}
+
+export namespace SubmitSignedPsbtResponse {
+    export type AsObject = {
+    }
+}
+
 export class KeychainConfig extends jspb.Message { 
 
     hasWpkh(): boolean;
@@ -319,6 +362,11 @@ export class KeychainConfig extends jspb.Message {
     clearDescriptors(): void;
     getDescriptors(): KeychainConfig.Descriptors | undefined;
     setDescriptors(value?: KeychainConfig.Descriptors): KeychainConfig;
+
+    hasSortedMultisig(): boolean;
+    clearSortedMultisig(): void;
+    getSortedMultisig(): KeychainConfig.SortedMultisig | undefined;
+    setSortedMultisig(value?: KeychainConfig.SortedMultisig): KeychainConfig;
 
     getConfigCase(): KeychainConfig.ConfigCase;
 
@@ -336,6 +384,7 @@ export namespace KeychainConfig {
     export type AsObject = {
         wpkh?: KeychainConfig.Wpkh.AsObject,
         descriptors?: KeychainConfig.Descriptors.AsObject,
+        sortedMultisig?: KeychainConfig.SortedMultisig.AsObject,
     }
 
 
@@ -388,11 +437,37 @@ export namespace KeychainConfig {
         }
     }
 
+    export class SortedMultisig extends jspb.Message { 
+        clearXpubsList(): void;
+        getXpubsList(): Array<string>;
+        setXpubsList(value: Array<string>): SortedMultisig;
+        addXpubs(value: string, index?: number): string;
+        getThreshold(): number;
+        setThreshold(value: number): SortedMultisig;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): SortedMultisig.AsObject;
+        static toObject(includeInstance: boolean, msg: SortedMultisig): SortedMultisig.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: SortedMultisig, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): SortedMultisig;
+        static deserializeBinaryFromReader(message: SortedMultisig, reader: jspb.BinaryReader): SortedMultisig;
+    }
+
+    export namespace SortedMultisig {
+        export type AsObject = {
+            xpubsList: Array<string>,
+            threshold: number,
+        }
+    }
+
 
     export enum ConfigCase {
         CONFIG_NOT_SET = 0,
         WPKH = 1,
         DESCRIPTORS = 2,
+        SORTED_MULTISIG = 3,
     }
 
 }
@@ -1119,6 +1194,11 @@ export class PayoutQueueConfig extends jspb.Message {
     getConsolidateDeprecatedKeychains(): boolean;
     setConsolidateDeprecatedKeychains(value: boolean): PayoutQueueConfig;
 
+    hasManual(): boolean;
+    clearManual(): void;
+    getManual(): boolean;
+    setManual(value: boolean): PayoutQueueConfig;
+
     hasIntervalSecs(): boolean;
     clearIntervalSecs(): void;
     getIntervalSecs(): number;
@@ -1140,11 +1220,13 @@ export namespace PayoutQueueConfig {
     export type AsObject = {
         txPriority: TxPriority,
         consolidateDeprecatedKeychains: boolean,
+        manual: boolean,
         intervalSecs: number,
     }
 
     export enum TriggerCase {
         TRIGGER_NOT_SET = 0,
+        MANUAL = 4,
         INTERVAL_SECS = 5,
     }
 
@@ -1167,6 +1249,43 @@ export class CreatePayoutQueueResponse extends jspb.Message {
 export namespace CreatePayoutQueueResponse {
     export type AsObject = {
         id: string,
+    }
+}
+
+export class TriggerPayoutQueueRequest extends jspb.Message { 
+    getName(): string;
+    setName(value: string): TriggerPayoutQueueRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): TriggerPayoutQueueRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: TriggerPayoutQueueRequest): TriggerPayoutQueueRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: TriggerPayoutQueueRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TriggerPayoutQueueRequest;
+    static deserializeBinaryFromReader(message: TriggerPayoutQueueRequest, reader: jspb.BinaryReader): TriggerPayoutQueueRequest;
+}
+
+export namespace TriggerPayoutQueueRequest {
+    export type AsObject = {
+        name: string,
+    }
+}
+
+export class TriggerPayoutQueueResponse extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): TriggerPayoutQueueResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: TriggerPayoutQueueResponse): TriggerPayoutQueueResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: TriggerPayoutQueueResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TriggerPayoutQueueResponse;
+    static deserializeBinaryFromReader(message: TriggerPayoutQueueResponse, reader: jspb.BinaryReader): TriggerPayoutQueueResponse;
+}
+
+export namespace TriggerPayoutQueueResponse {
+    export type AsObject = {
     }
 }
 
