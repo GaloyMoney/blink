@@ -1,6 +1,9 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${REPO_ROOT##*/}}"
 
+CACHE_DIR=${BATS_TMPDIR}/galoy-bats-cache
+mkdir -p $CACHE_DIR
+
 GALOY_ENDPOINT=localhost:4002
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
 TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
@@ -8,9 +11,11 @@ EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
 
 METRICS_ENDPOINT="localhost:3000/metrics"
 
+ALICE_TOKEN_NAME="alice"
 ALICE_PHONE="+16505554328"
 ALICE_CODE="321321"
 
+BOB_TOKEN_NAME="bob"
 BOB_PHONE="+198765432113"
 BOB_CODE="321321"
 
@@ -28,6 +33,14 @@ bitcoin_cli() {
 
 bitcoin_signer_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-signer-1" bitcoin-cli $@
+}
+
+redis_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-redis-1" redis-cli $@
+}
+
+reset_redis() {
+  redis_cli FLUSHALL
 }
 
 start_server() {
@@ -58,12 +71,17 @@ stop_exporter() {
   [[ -f "$EXPORTER_PID_FILE" ]] && kill -9 $(cat $EXPORTER_PID_FILE) > /dev/null || true
 }
 
+clear_cache() {
+  rm -r ${CACHE_DIR}
+  mkdir -p ${CACHE_DIR}
+}
+
 cache_value() {
-  echo $2 > ${BATS_TMPDIR}/$1
+  echo $2 > ${CACHE_DIR}/$1
 }
 
 read_value() {
-  cat ${BATS_TMPDIR}/$1
+  cat ${CACHE_DIR}/$1
 }
 
 is_number() {
@@ -88,9 +106,9 @@ gql_query() {
 }
 
 exec_graphql() {
-  token_name=$1
-  query_name=$2
-  variables=${3:-"{}"}
+  local token_name=$1
+  local query_name=$2
+  local variables=${3:-"{}"}
   echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
   echo  "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
 
@@ -118,8 +136,97 @@ exec_graphql() {
 
 get_metric() {
   metric_name=$1
+
+  retry 10 1 curl -s "$METRICS_ENDPOINT"
   curl -s "$METRICS_ENDPOINT" \
     | awk "/^$metric_name/ { print \$2 }"
+}
+
+login_user() {
+  local token_name=$1
+  local phone=$2
+  local code=$3
+
+  local variables=$(
+    jq -n \
+    --arg phone "$phone" \
+    --arg code "$code" \
+    '{input: {phone: $phone, code: $code}}'
+  )
+  exec_graphql 'anon' 'user-login' "$variables"
+  auth_token="$(graphql_output '.data.userLogin.authToken')"
+  [[ "${auth_token}" != "null" ]] || exit 1
+  cache_value "$token_name" "$auth_token"
+
+  exec_graphql "$token_name" 'wallet-ids-for-account'
+
+  btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
+  [[ "${btc_wallet_id}" != "null" ]] || exit 1
+  cache_value "$token_name.btc_wallet_id" "$btc_wallet_id"
+
+  usd_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .id')"
+  [[ "${usd_wallet_id}" != "null" ]] || exit 1
+  cache_value "$token_name.usd_wallet_id" "$usd_wallet_id"
+}
+
+fund_wallet_from_onchain() {
+  local token_name=$1
+  local wallet_id_name="$2"
+  local amount=$3
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $wallet_id_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${address}" != "null" ]] || exit 1
+
+  bitcoin_cli sendtoaddress "$address" "$amount"
+  bitcoin_cli -generate 2
+  retry 15 1 check_for_settled "$token_name" "$address"
+}
+
+fund_wallet_intraledger() {
+  local from_token_name=$1
+  local from_wallet_name=$2
+  local wallet_name=$3
+  local amount=$4
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $from_wallet_name)" \
+    --arg recipient_wallet_id "$(read_value $wallet_name)" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+}
+
+initialize_user() {
+  local token_name="$1"
+  local phone="$2"
+  local code="$3"
+  local btc_amount_in_btc=${4:-"0.001"}
+  local usd_amount_in_sats=${5:-"75000"}
+
+  check_user_creds_cached "$token_name" \
+    || login_user "$token_name" "$phone" "$code" \
+    || exit 1
+
+  fund_wallet_from_onchain \
+    "$token_name" \
+    "$token_name.btc_wallet_id" \
+    "$btc_amount_in_btc"
+
+  fund_wallet_intraledger \
+    "$token_name" \
+    "$token_name.btc_wallet_id" \
+    "$token_name.usd_wallet_id" \
+    "$usd_amount_in_sats"
 }
 
 get_from_transaction_by_address() {
@@ -132,17 +239,36 @@ get_from_transaction_by_address() {
 }
 
 check_for_broadcast() {
-  token_name=$1
-  address=$2
-  exec_graphql "$token_name" 'transactions' '{"first":1}'
+  local token_name=$1
+  local address=$2
+  local first=${3:-"1"}
+
+  variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$variables"
+
   txid="$(get_from_transaction_by_address "$address" '.settlementVia.transactionHash')"
   [[ "${txid}" != "null" ]] || exit 1
+
+  bitcoin_cli gettransaction "$txid" || exit 1
 }
 
 check_for_settled() {
-  token_name=$1
-  address=$2
-  exec_graphql "$token_name" 'transactions' '{"first":1}'
+  local token_name=$1
+  local address=$2
+  local first=${3:-"1"}
+
+  echo "first: $first"
+  variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$variables"
+
   settled_status="$(get_from_transaction_by_address $address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }

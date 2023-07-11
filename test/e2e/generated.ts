@@ -27,6 +27,8 @@ export type Scalars = {
   CountryCode: { input: string; output: string; }
   /** Display currency of an account */
   DisplayCurrency: { input: string; output: string; }
+  /** Feedback shared with our user */
+  Feedback: { input: string; output: string; }
   /** Hex-encoded string of 32 bytes */
   Hex32Bytes: { input: string; output: string; }
   Language: { input: string; output: string; }
@@ -36,6 +38,8 @@ export type Scalars = {
   LnPaymentSecret: { input: string; output: string; }
   /** Text field in a lightning payment transaction */
   Memo: { input: string; output: string; }
+  /** (Positive) amount of minutes */
+  Minutes: { input: number; output: number; }
   /** An address for an on-chain bitcoin destination */
   OnChainAddress: { input: string; output: string; }
   OnChainTxHash: { input: string; output: string; }
@@ -294,6 +298,10 @@ export const ExchangeCurrencyUnit = {
 } as const;
 
 export type ExchangeCurrencyUnit = typeof ExchangeCurrencyUnit[keyof typeof ExchangeCurrencyUnit];
+export type FeedbackSubmitInput = {
+  readonly feedback: Scalars['Feedback']['input'];
+};
+
 export type FeesInformation = {
   readonly __typename: 'FeesInformation';
   readonly deposit: DepositFeesInformation;
@@ -391,6 +399,8 @@ export type LnInvoice = {
 export type LnInvoiceCreateInput = {
   /** Amount in satoshis. */
   readonly amount: Scalars['SatAmount']['input'];
+  /** Optional invoice expiration time in minutes. */
+  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet belonging to the current account. */
@@ -401,6 +411,8 @@ export type LnInvoiceCreateOnBehalfOfRecipientInput = {
   /** Amount in satoshis. */
   readonly amount: Scalars['SatAmount']['input'];
   readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
+  /** Optional invoice expiration time in minutes. */
+  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a BTC wallet which belongs to any account. */
@@ -445,6 +457,8 @@ export type LnNoAmountInvoice = {
 };
 
 export type LnNoAmountInvoiceCreateInput = {
+  /** Optional invoice expiration time in minutes. */
+  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet belonging to the account of the current user. */
@@ -452,6 +466,8 @@ export type LnNoAmountInvoiceCreateInput = {
 };
 
 export type LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = {
+  /** Optional invoice expiration time in minutes. */
+  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** ID for either a USD or BTC wallet which belongs to the account of any user. */
@@ -508,6 +524,8 @@ export type LnUpdate = {
 export type LnUsdInvoiceCreateInput = {
   /** Amount in USD cents. */
   readonly amount: Scalars['CentAmount']['input'];
+  /** Optional invoice expiration time in minutes. */
+  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet belonging to the current user. */
@@ -518,6 +536,8 @@ export type LnUsdInvoiceCreateOnBehalfOfRecipientInput = {
   /** Amount in USD cents. */
   readonly amount: Scalars['CentAmount']['input'];
   readonly descriptionHash?: InputMaybe<Scalars['Hex32Bytes']['input']>;
+  /** Optional invoice expiration time in minutes. */
+  readonly expiresIn?: InputMaybe<Scalars['Minutes']['input']>;
   /** Optional memo for the lightning invoice. Acts as a note to the recipient. */
   readonly memo?: InputMaybe<Scalars['Memo']['input']>;
   /** Wallet ID for a USD wallet which belongs to the account of any user. */
@@ -556,6 +576,7 @@ export type Mutation = {
   readonly captchaCreateChallenge: CaptchaCreateChallengePayload;
   readonly captchaRequestAuthCode: SuccessPayload;
   readonly deviceNotificationTokenCreate: SuccessPayload;
+  readonly feedbackSubmit: SuccessPayload;
   /**
    * Actions a payment which is internal to the ledger e.g. it does
    * not use onchain/lightning. Returns payment status (success,
@@ -571,13 +592,13 @@ export type Mutation = {
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
-   * Expires after 24 hours.
+   * Expires after 'expiresIn' or 24 hours.
    */
   readonly lnInvoiceCreate: LnInvoicePayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * When invoice is paid the value will be credited to a BTC wallet.
-   * Expires after 24 hours.
+   * Expires after 'expiresIn' or 24 hours.
    */
   readonly lnInvoiceCreateOnBehalfOfRecipient: LnInvoicePayload;
   readonly lnInvoiceFeeProbe: SatAmountPayload;
@@ -590,13 +611,13 @@ export type Mutation = {
   /**
    * Returns a lightning invoice for an associated wallet.
    * Can be used to receive any supported currency value (currently USD or BTC).
-   * Expires after 24 hours.
+   * Expires after 'expiresIn' or 24 hours for BTC invoices or 5 minutes for USD invoices.
    */
   readonly lnNoAmountInvoiceCreate: LnNoAmountInvoicePayload;
   /**
    * Returns a lightning invoice for an associated wallet.
    * Can be used to receive any supported currency value (currently USD or BTC).
-   * Expires after 24 hours.
+   * Expires after 'expiresIn' or 24 hours for BTC invoices or 5 minutes for USD invoices.
    */
   readonly lnNoAmountInvoiceCreateOnBehalfOfRecipient: LnNoAmountInvoicePayload;
   readonly lnNoAmountInvoiceFeeProbe: SatAmountPayload;
@@ -616,14 +637,14 @@ export type Mutation = {
   /**
    * Returns a lightning invoice denominated in satoshis for an associated wallet.
    * When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
-   * Expires after 5 minutes (short expiry time because there is a USD/BTC exchange rate
+   * Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
    * associated with the amount).
    */
   readonly lnUsdInvoiceCreate: LnInvoicePayload;
   /**
    * Returns a lightning invoice denominated in satoshis for an associated wallet.
    * When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
-   * Expires after 5 minutes (short expiry time because there is a USD/BTC exchange rate
+   * Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
    *   associated with the amount).
    */
   readonly lnUsdInvoiceCreateOnBehalfOfRecipient: LnInvoicePayload;
@@ -666,6 +687,11 @@ export type MutationCaptchaRequestAuthCodeArgs = {
 
 export type MutationDeviceNotificationTokenCreateArgs = {
   input: DeviceNotificationTokenCreateInput;
+};
+
+
+export type MutationFeedbackSubmitArgs = {
+  input: FeedbackSubmitInput;
 };
 
 
@@ -1516,13 +1542,6 @@ export const WalletCurrency = {
 } as const;
 
 export type WalletCurrency = typeof WalletCurrency[keyof typeof WalletCurrency];
-export type UserUpdateUsernameMutationVariables = Exact<{
-  input: UserUpdateUsernameInput;
-}>;
-
-
-export type UserUpdateUsernameMutation = { readonly __typename: 'Mutation', readonly userUpdateUsername: { readonly __typename: 'UserUpdateUsernamePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly user?: { readonly __typename: 'User', readonly id: string, readonly username?: string | null } | null } };
-
 export type UserLoginUpgradeMutationVariables = Exact<{
   input: UserLoginUpgradeInput;
 }>;
@@ -1534,6 +1553,13 @@ export type AccountDeleteMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type AccountDeleteMutation = { readonly __typename: 'Mutation', readonly accountDelete: { readonly __typename: 'AccountDeletePayload', readonly success: boolean, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string, readonly code?: string | null }> } };
+
+export type UserUpdateUsernameMutationVariables = Exact<{
+  input: UserUpdateUsernameInput;
+}>;
+
+
+export type UserUpdateUsernameMutation = { readonly __typename: 'Mutation', readonly userUpdateUsername: { readonly __typename: 'UserUpdateUsernamePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly user?: { readonly __typename: 'User', readonly id: string, readonly username?: string | null } | null } };
 
 export type UserDefaultWalletIdQueryVariables = Exact<{
   username: Scalars['Username']['input'];
@@ -1606,41 +1632,6 @@ export type UserRequestAuthCodeMutationVariables = Exact<{
 
 
 export type UserRequestAuthCodeMutation = { readonly __typename: 'Mutation', readonly userRequestAuthCode: { readonly __typename: 'SuccessPayload', readonly success?: boolean | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
-
-export type OnChainAddressCreateMutationVariables = Exact<{
-  input: OnChainAddressCreateInput;
-}>;
-
-
-export type OnChainAddressCreateMutation = { readonly __typename: 'Mutation', readonly onChainAddressCreate: { readonly __typename: 'OnChainAddressPayload', readonly address?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
-
-export type OnChainPaymentSendMutationVariables = Exact<{
-  input: OnChainPaymentSendInput;
-}>;
-
-
-export type OnChainPaymentSendMutation = { readonly __typename: 'Mutation', readonly onChainPaymentSend: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
-
-export type OnChainUsdPaymentSendAsBtcDenominatedMutationVariables = Exact<{
-  input: OnChainUsdPaymentSendAsBtcDenominatedInput;
-}>;
-
-
-export type OnChainUsdPaymentSendAsBtcDenominatedMutation = { readonly __typename: 'Mutation', readonly onChainUsdPaymentSendAsBtcDenominated: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
-
-export type OnChainUsdPaymentSendMutationVariables = Exact<{
-  input: OnChainUsdPaymentSendInput;
-}>;
-
-
-export type OnChainUsdPaymentSendMutation = { readonly __typename: 'Mutation', readonly onChainUsdPaymentSend: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
-
-export type OnChainPaymentSendAllMutationVariables = Exact<{
-  input: OnChainPaymentSendAllInput;
-}>;
-
-
-export type OnChainPaymentSendAllMutation = { readonly __typename: 'Mutation', readonly onChainPaymentSendAll: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
 
 export type UserLoginMutationVariables = Exact<{
   input: UserLoginInput;
@@ -1773,47 +1764,6 @@ export const TransactionListFragmentDoc = gql`
   }
 }
     `;
-export const UserUpdateUsernameDocument = gql`
-    mutation userUpdateUsername($input: UserUpdateUsernameInput!) {
-  userUpdateUsername(input: $input) {
-    errors {
-      __typename
-      message
-    }
-    user {
-      __typename
-      id
-      username
-    }
-  }
-}
-    `;
-export type UserUpdateUsernameMutationFn = Apollo.MutationFunction<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>;
-
-/**
- * __useUserUpdateUsernameMutation__
- *
- * To run a mutation, you first call `useUserUpdateUsernameMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUserUpdateUsernameMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [userUpdateUsernameMutation, { data, loading, error }] = useUserUpdateUsernameMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useUserUpdateUsernameMutation(baseOptions?: Apollo.MutationHookOptions<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>(UserUpdateUsernameDocument, options);
-      }
-export type UserUpdateUsernameMutationHookResult = ReturnType<typeof useUserUpdateUsernameMutation>;
-export type UserUpdateUsernameMutationResult = Apollo.MutationResult<UserUpdateUsernameMutation>;
-export type UserUpdateUsernameMutationOptions = Apollo.BaseMutationOptions<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>;
 export const UserLoginUpgradeDocument = gql`
     mutation userLoginUpgrade($input: UserLoginUpgradeInput!) {
   userLoginUpgrade(input: $input) {
@@ -1888,6 +1838,47 @@ export function useAccountDeleteMutation(baseOptions?: Apollo.MutationHookOption
 export type AccountDeleteMutationHookResult = ReturnType<typeof useAccountDeleteMutation>;
 export type AccountDeleteMutationResult = Apollo.MutationResult<AccountDeleteMutation>;
 export type AccountDeleteMutationOptions = Apollo.BaseMutationOptions<AccountDeleteMutation, AccountDeleteMutationVariables>;
+export const UserUpdateUsernameDocument = gql`
+    mutation userUpdateUsername($input: UserUpdateUsernameInput!) {
+  userUpdateUsername(input: $input) {
+    errors {
+      __typename
+      message
+    }
+    user {
+      __typename
+      id
+      username
+    }
+  }
+}
+    `;
+export type UserUpdateUsernameMutationFn = Apollo.MutationFunction<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>;
+
+/**
+ * __useUserUpdateUsernameMutation__
+ *
+ * To run a mutation, you first call `useUserUpdateUsernameMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserUpdateUsernameMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userUpdateUsernameMutation, { data, loading, error }] = useUserUpdateUsernameMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUserUpdateUsernameMutation(baseOptions?: Apollo.MutationHookOptions<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>(UserUpdateUsernameDocument, options);
+      }
+export type UserUpdateUsernameMutationHookResult = ReturnType<typeof useUserUpdateUsernameMutation>;
+export type UserUpdateUsernameMutationResult = Apollo.MutationResult<UserUpdateUsernameMutation>;
+export type UserUpdateUsernameMutationOptions = Apollo.BaseMutationOptions<UserUpdateUsernameMutation, UserUpdateUsernameMutationVariables>;
 export const UserDefaultWalletIdDocument = gql`
     query userDefaultWalletId($username: Username!) {
   userDefaultWalletId(username: $username)
@@ -2270,186 +2261,6 @@ export function useUserRequestAuthCodeMutation(baseOptions?: Apollo.MutationHook
 export type UserRequestAuthCodeMutationHookResult = ReturnType<typeof useUserRequestAuthCodeMutation>;
 export type UserRequestAuthCodeMutationResult = Apollo.MutationResult<UserRequestAuthCodeMutation>;
 export type UserRequestAuthCodeMutationOptions = Apollo.BaseMutationOptions<UserRequestAuthCodeMutation, UserRequestAuthCodeMutationVariables>;
-export const OnChainAddressCreateDocument = gql`
-    mutation onChainAddressCreate($input: OnChainAddressCreateInput!) {
-  onChainAddressCreate(input: $input) {
-    address
-    errors {
-      message
-    }
-  }
-}
-    `;
-export type OnChainAddressCreateMutationFn = Apollo.MutationFunction<OnChainAddressCreateMutation, OnChainAddressCreateMutationVariables>;
-
-/**
- * __useOnChainAddressCreateMutation__
- *
- * To run a mutation, you first call `useOnChainAddressCreateMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useOnChainAddressCreateMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [onChainAddressCreateMutation, { data, loading, error }] = useOnChainAddressCreateMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useOnChainAddressCreateMutation(baseOptions?: Apollo.MutationHookOptions<OnChainAddressCreateMutation, OnChainAddressCreateMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<OnChainAddressCreateMutation, OnChainAddressCreateMutationVariables>(OnChainAddressCreateDocument, options);
-      }
-export type OnChainAddressCreateMutationHookResult = ReturnType<typeof useOnChainAddressCreateMutation>;
-export type OnChainAddressCreateMutationResult = Apollo.MutationResult<OnChainAddressCreateMutation>;
-export type OnChainAddressCreateMutationOptions = Apollo.BaseMutationOptions<OnChainAddressCreateMutation, OnChainAddressCreateMutationVariables>;
-export const OnChainPaymentSendDocument = gql`
-    mutation onChainPaymentSend($input: OnChainPaymentSendInput!) {
-  onChainPaymentSend(input: $input) {
-    errors {
-      message
-    }
-    status
-  }
-}
-    `;
-export type OnChainPaymentSendMutationFn = Apollo.MutationFunction<OnChainPaymentSendMutation, OnChainPaymentSendMutationVariables>;
-
-/**
- * __useOnChainPaymentSendMutation__
- *
- * To run a mutation, you first call `useOnChainPaymentSendMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useOnChainPaymentSendMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [onChainPaymentSendMutation, { data, loading, error }] = useOnChainPaymentSendMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useOnChainPaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<OnChainPaymentSendMutation, OnChainPaymentSendMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<OnChainPaymentSendMutation, OnChainPaymentSendMutationVariables>(OnChainPaymentSendDocument, options);
-      }
-export type OnChainPaymentSendMutationHookResult = ReturnType<typeof useOnChainPaymentSendMutation>;
-export type OnChainPaymentSendMutationResult = Apollo.MutationResult<OnChainPaymentSendMutation>;
-export type OnChainPaymentSendMutationOptions = Apollo.BaseMutationOptions<OnChainPaymentSendMutation, OnChainPaymentSendMutationVariables>;
-export const OnChainUsdPaymentSendAsBtcDenominatedDocument = gql`
-    mutation onChainUsdPaymentSendAsBtcDenominated($input: OnChainUsdPaymentSendAsBtcDenominatedInput!) {
-  onChainUsdPaymentSendAsBtcDenominated(input: $input) {
-    errors {
-      message
-    }
-    status
-  }
-}
-    `;
-export type OnChainUsdPaymentSendAsBtcDenominatedMutationFn = Apollo.MutationFunction<OnChainUsdPaymentSendAsBtcDenominatedMutation, OnChainUsdPaymentSendAsBtcDenominatedMutationVariables>;
-
-/**
- * __useOnChainUsdPaymentSendAsBtcDenominatedMutation__
- *
- * To run a mutation, you first call `useOnChainUsdPaymentSendAsBtcDenominatedMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useOnChainUsdPaymentSendAsBtcDenominatedMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [onChainUsdPaymentSendAsBtcDenominatedMutation, { data, loading, error }] = useOnChainUsdPaymentSendAsBtcDenominatedMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useOnChainUsdPaymentSendAsBtcDenominatedMutation(baseOptions?: Apollo.MutationHookOptions<OnChainUsdPaymentSendAsBtcDenominatedMutation, OnChainUsdPaymentSendAsBtcDenominatedMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<OnChainUsdPaymentSendAsBtcDenominatedMutation, OnChainUsdPaymentSendAsBtcDenominatedMutationVariables>(OnChainUsdPaymentSendAsBtcDenominatedDocument, options);
-      }
-export type OnChainUsdPaymentSendAsBtcDenominatedMutationHookResult = ReturnType<typeof useOnChainUsdPaymentSendAsBtcDenominatedMutation>;
-export type OnChainUsdPaymentSendAsBtcDenominatedMutationResult = Apollo.MutationResult<OnChainUsdPaymentSendAsBtcDenominatedMutation>;
-export type OnChainUsdPaymentSendAsBtcDenominatedMutationOptions = Apollo.BaseMutationOptions<OnChainUsdPaymentSendAsBtcDenominatedMutation, OnChainUsdPaymentSendAsBtcDenominatedMutationVariables>;
-export const OnChainUsdPaymentSendDocument = gql`
-    mutation onChainUsdPaymentSend($input: OnChainUsdPaymentSendInput!) {
-  onChainUsdPaymentSend(input: $input) {
-    errors {
-      message
-    }
-    status
-  }
-}
-    `;
-export type OnChainUsdPaymentSendMutationFn = Apollo.MutationFunction<OnChainUsdPaymentSendMutation, OnChainUsdPaymentSendMutationVariables>;
-
-/**
- * __useOnChainUsdPaymentSendMutation__
- *
- * To run a mutation, you first call `useOnChainUsdPaymentSendMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useOnChainUsdPaymentSendMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [onChainUsdPaymentSendMutation, { data, loading, error }] = useOnChainUsdPaymentSendMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useOnChainUsdPaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<OnChainUsdPaymentSendMutation, OnChainUsdPaymentSendMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<OnChainUsdPaymentSendMutation, OnChainUsdPaymentSendMutationVariables>(OnChainUsdPaymentSendDocument, options);
-      }
-export type OnChainUsdPaymentSendMutationHookResult = ReturnType<typeof useOnChainUsdPaymentSendMutation>;
-export type OnChainUsdPaymentSendMutationResult = Apollo.MutationResult<OnChainUsdPaymentSendMutation>;
-export type OnChainUsdPaymentSendMutationOptions = Apollo.BaseMutationOptions<OnChainUsdPaymentSendMutation, OnChainUsdPaymentSendMutationVariables>;
-export const OnChainPaymentSendAllDocument = gql`
-    mutation onChainPaymentSendAll($input: OnChainPaymentSendAllInput!) {
-  onChainPaymentSendAll(input: $input) {
-    errors {
-      message
-    }
-    status
-  }
-}
-    `;
-export type OnChainPaymentSendAllMutationFn = Apollo.MutationFunction<OnChainPaymentSendAllMutation, OnChainPaymentSendAllMutationVariables>;
-
-/**
- * __useOnChainPaymentSendAllMutation__
- *
- * To run a mutation, you first call `useOnChainPaymentSendAllMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useOnChainPaymentSendAllMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [onChainPaymentSendAllMutation, { data, loading, error }] = useOnChainPaymentSendAllMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useOnChainPaymentSendAllMutation(baseOptions?: Apollo.MutationHookOptions<OnChainPaymentSendAllMutation, OnChainPaymentSendAllMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<OnChainPaymentSendAllMutation, OnChainPaymentSendAllMutationVariables>(OnChainPaymentSendAllDocument, options);
-      }
-export type OnChainPaymentSendAllMutationHookResult = ReturnType<typeof useOnChainPaymentSendAllMutation>;
-export type OnChainPaymentSendAllMutationResult = Apollo.MutationResult<OnChainPaymentSendAllMutation>;
-export type OnChainPaymentSendAllMutationOptions = Apollo.BaseMutationOptions<OnChainPaymentSendAllMutation, OnChainPaymentSendAllMutationVariables>;
 export const UserLoginDocument = gql`
     mutation UserLogin($input: UserLoginInput!) {
   userLogin(input: $input) {
