@@ -1,5 +1,7 @@
 import { InvalidFlowId, InvalidTotpCode } from "@domain/errors"
 
+import { IdentifierNotFoundError } from "@domain/authentication/errors"
+
 import { AuthenticationKratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainSession } from "./private"
 
@@ -98,4 +100,14 @@ export const listSessions = async (userId: UserId): Promise<Session[] | KratosEr
   } catch (err) {
     return new UnknownKratosError(err)
   }
+}
+
+export const getUserIdFromIdentifier = async (identifier: PhoneNumber | EmailAddress) => {
+  const identity = await kratosAdmin.listIdentities({ credentialsIdentifier: identifier })
+  if (identity.data.length === 0) return new IdentifierNotFoundError()
+
+  const userId = identity.data[0].id as UserId
+  if (!userId) return new IdentifierNotFoundError()
+
+  return userId
 }

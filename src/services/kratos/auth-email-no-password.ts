@@ -23,7 +23,6 @@ import {
   kratosPublic,
   toDomainIdentityEmail,
   toDomainIdentityEmailPhone,
-  toDomainIdentityPhone,
 } from "./private"
 import { SchemaIdType } from "./schema"
 
@@ -197,9 +196,8 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     try {
       const identity = await kratosAdmin.listIdentities({ credentialsIdentifier: email })
 
-      // TODO: correctly loop across all array values instead of [0]
-      // TODO: throw error if no identity found?
-      return identity.data[0].verifiable_addresses?.[0].verified ?? false
+      // we are assuming that email are unique, therefore only one entry can be returned
+      return identity.data[0]?.verifiable_addresses?.[0].verified ?? false
     } catch (err) {
       return new UnknownKratosError(err)
     }
@@ -306,6 +304,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     if (identity.state === undefined)
       throw new UnknownKratosError("state undefined, probably impossible state") // type issue
 
+    const email = identity.traits.email
     delete identity.traits.email
 
     const adminIdentity: UpdateIdentityBody = {
@@ -316,12 +315,12 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
 
     try {
-      const { data: newIdentity } = await kratosAdmin.updateIdentity({
+      await kratosAdmin.updateIdentity({
         id: kratosUserId,
         updateIdentityBody: adminIdentity,
       })
 
-      return toDomainIdentityPhone(newIdentity)
+      return email
     } catch (err) {
       return new UnknownKratosError(err)
     }

@@ -118,7 +118,6 @@ interface UserRecord {
   deletedPhones?: string[]
   createdAt: Date
   deviceId?: DeviceId
-  email?: string
   deletedEmails?: string[] | undefined
 }
 

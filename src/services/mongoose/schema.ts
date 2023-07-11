@@ -354,12 +354,6 @@ const UserSchema = new Schema(
     deviceId: {
       type: String,
     },
-    email: {
-      type: String,
-      index: true,
-      unique: true,
-      sparse: true,
-    },
     deletedEmail: {
       type: [String],
     },

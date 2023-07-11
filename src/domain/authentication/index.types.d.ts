@@ -102,7 +102,7 @@ type ValidateCodeResult = {
 interface IAuthWithEmailPasswordlessService {
   removeEmailFromIdentity: (args: {
     kratosUserId: UserId
-  }) => Promise<IdentityPhone | AuthenticationError>
+  }) => Promise<EmailAddress | AuthenticationError>
   removePhoneFromIdentity: (args: {
     kratosUserId: UserId
   }) => Promise<IdentityEmail | AuthenticationError>

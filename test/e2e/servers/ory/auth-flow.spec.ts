@@ -223,10 +223,10 @@ describe("auth", () => {
       emailSetRes.data?.userEmailRegistrationInitiate.emailRegistrationId
     expect(emailRegistrationId).toMatch(UuidRegex)
 
-    const code = await getEmailCode({ email })
+    const code = await getEmailCode(email)
     expect(code).not.toBeNull()
 
-    const count = await getEmailCount({ email })
+    const count = await getEmailCount(email)
     expect(count).toBe(1)
 
     {
@@ -283,7 +283,7 @@ describe("auth", () => {
     const emailLoginId = res.data.result
     expect(emailLoginId).not.toBeNull()
 
-    const code = await getEmailCode({ email })
+    const code = await getEmailCode(email)
     expect(code).not.toBeNull()
 
     // validate code
@@ -302,7 +302,7 @@ describe("auth", () => {
   })
 
   it("remove email", async () => {
-    const countInit = await getEmailCount({ email })
+    const countInit = await getEmailCount(email)
     expect(countInit).toBe(2)
 
     const emailDeleteRes = await apolloClient.mutate<UserEmailDeleteMutation>({
@@ -335,7 +335,7 @@ describe("auth", () => {
     expect(emailQueryRes?.data?.me?.totpEnabled).toBe(false)
 
     // no email should be sent
-    const count = await getEmailCount({ email })
+    const count = await getEmailCount(email)
     expect(count).toBe(countInit)
 
     // TODO: email to the sender highlighting the email was removed
@@ -350,7 +350,7 @@ describe("auth", () => {
 
     const emailRegistrationId =
       emailSetRes.data?.userEmailRegistrationInitiate.emailRegistrationId
-    const code = await getEmailCode({ email })
+    const code = await getEmailCode(email)
 
     await apolloClient.mutate<UserEmailRegistrationValidateMutation>({
       mutation: UserEmailRegistrationValidateDocument,
@@ -429,7 +429,7 @@ describe("auth", () => {
     const emailLoginId = res.data.result
     expect(emailLoginId).not.toBeNull()
 
-    const code = await getEmailCode({ email })
+    const code = await getEmailCode(email)
     expect(code).not.toBeNull()
 
     // validating email with code

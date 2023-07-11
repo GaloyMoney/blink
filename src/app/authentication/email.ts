@@ -28,10 +28,7 @@ export const addEmailToIdentity = async ({
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
 
-  const updatedUser = await UsersRepository().update({ ...user, email })
-  if (updatedUser instanceof Error) return updatedUser
-
-  return { emailRegistrationId, me: updatedUser }
+  return { emailRegistrationId, me: user }
 }
 
 export const verifyEmail = async ({
@@ -62,18 +59,17 @@ export const removeEmail = async ({
   userId: UserId
 }): Promise<User | KratosError> => {
   const authServiceEmail = AuthWithEmailPasswordlessService()
-  const res = await authServiceEmail.removeEmailFromIdentity({ kratosUserId: userId })
-  if (res instanceof Error) return res
+  const email = await authServiceEmail.removeEmailFromIdentity({ kratosUserId: userId })
+  if (email instanceof Error) return email
 
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
 
   const deletedEmails = [...(user.deletedEmails ?? [])]
-  user.email && deletedEmails.push(user.email)
+  deletedEmails.push(email)
 
   const updatedUser = await UsersRepository().update({
     ...user,
-    email: undefined,
     deletedEmails,
   })
   if (updatedUser instanceof Error) return updatedUser

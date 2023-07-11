@@ -423,7 +423,7 @@ describe("phone+email schema", () => {
     }
 
     {
-      const code = await getEmailCode({ email })
+      const code = await getEmailCode(email)
 
       const res = await authServiceEmail.validateCode({
         code,
@@ -440,7 +440,7 @@ describe("phone+email schema", () => {
     const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
     if (emailFlowId instanceof Error) throw emailFlowId
 
-    const code = await getEmailCode({ email })
+    const code = await getEmailCode(email)
 
     {
       const wrongCode = "000000" as EmailCode
@@ -502,7 +502,7 @@ describe("phone+email schema", () => {
     if (emailRegistrationId instanceof Error) throw emailRegistrationId
 
     {
-      const code = await getEmailCode({ email })
+      const code = await getEmailCode(email)
       await authServiceEmail.validateCode({ code, emailFlowId: emailRegistrationId })
     }
 
@@ -519,7 +519,7 @@ describe("phone+email schema", () => {
     if (flow instanceof Error) throw flow
 
     // there is no email
-    await expect(async () => getEmailCode({ email })).rejects.toThrow()
+    await expect(async () => getEmailCode(email)).rejects.toThrow()
   })
 })
 

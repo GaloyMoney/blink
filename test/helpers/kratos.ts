@@ -6,7 +6,7 @@ const getKratosKnex = () =>
     connection: process.env.KRATOS_PG_CON,
   })
 
-export const getEmailCode = async ({ email }: { email: EmailAddress }) => {
+export const getEmailCode = async (email: EmailAddress) => {
   const knex = getKratosKnex()
 
   const table = "courier_messages"
@@ -29,7 +29,7 @@ export const getEmailCode = async ({ email }: { email: EmailAddress }) => {
   return code
 }
 
-export const getEmailCount = async ({ email }) => {
+export const getEmailCount = async (email: EmailAddress) => {
   const knex = getKratosKnex()
 
   const table = "courier_messages"

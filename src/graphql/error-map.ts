@@ -97,6 +97,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `Contact does not exist for account ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "IdentifierNotFoundError":
+      message = `Identifier does not exist ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "SelfPaymentError":
       message = "User tried to pay themselves"
       return new SelfPaymentError({ message, logger: baseLogger })
