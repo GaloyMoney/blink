@@ -12,6 +12,8 @@ services:
       - bria
       - bitcoind
       - bitcoind-signer
+      - lnd1
+      - lnd-outside-1
     # restart: on-failure:10
   e2e-deps:
     image: busybox

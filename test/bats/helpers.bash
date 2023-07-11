@@ -27,12 +27,65 @@ bitcoind_init() {
   bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ${REPO_ROOT}/test/bats/bitcoind_signer_descriptors.json)"
 }
 
+lnds_init() {
+  # Clean up any existing channels
+  lnd_cli closeallchannels || true
+
+  # Mine onchain balance
+  local amount="1"
+  local address="$(lnd_cli newaddress p2wkh | jq -r '.address')"
+  local local_amount="10000000"
+  local push_amount="5000000"
+  bitcoin_cli sendtoaddress "$address" "$amount"
+  bitcoin_cli -generate 3
+
+  # Open balanced channel from lnd1 to lndoutside1
+  lnd_partner_pubkey="$(lnd_outside_cli getinfo | jq -r '.identity_pubkey')"
+  lnd_cli connect "${lnd_partner_pubkey}@${COMPOSE_PROJECT_NAME}-lnd-outside-1-1:9735" || true
+  lnd_cli openchannel \
+    --node_key "$lnd_partner_pubkey" \
+    --local_amt "$local_amount" \
+    --push_amt "$push_amount"
+
+  mempool_not_empty() {
+    local txid= [[ "$(bitcoin_cli getrawmempool | jq -r ".[0]")" != "null" ]]
+    [[ "$txid" != "null" ]] || exit 1
+  }
+
+  no_pending_channels() {
+    pending_channel="$(lnd_cli pendingchannels | jq -r '.pending_open_channels[0]')"
+    if [[ "$pending_channel" != "null" ]]; then
+      bitcoin_cli -generate 3
+      exit 1
+    fi
+  }
+
+  retry 10 1 mempool_not_empty
+  retry 10 1 no_pending_channels
+}
+
 bitcoin_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
 }
 
 bitcoin_signer_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-signer-1" bitcoin-cli $@
+}
+
+lnd_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd1-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
+}
+
+lnd_outside_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-1-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
 }
 
 redis_cli() {
