@@ -1,6 +1,5 @@
 import { AuthTokenUserIdMismatchError } from "@domain/authentication/errors"
 import {
-  IdentityRepository,
   validateKratosToken,
   kratosValidateTotp,
   kratosInitiateTotp,
@@ -36,10 +35,7 @@ export const validateTotpRegistration = async ({
 
   if (res.kratosUserId !== userId) return new AuthTokenUserIdMismatchError()
 
-  const identity = await IdentityRepository().getIdentity(res.kratosUserId)
-  if (identity instanceof Error) return identity
-
-  const me = await UsersRepository().findById(identity.id)
+  const me = await UsersRepository().findById(res.kratosUserId)
   if (me instanceof Error) return me
 
   return me
