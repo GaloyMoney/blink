@@ -572,7 +572,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "AuthenticationError":
     case "LikelyNoUserWithThisPhoneExistError":
     case "LikelyUserAlreadyExistError":
-    case "PhoneIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
     case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
@@ -605,6 +604,13 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         error.name
       }${error.message ? ": " + error.message : ""})`
       return new UnexpectedClientError({ message, logger: baseLogger })
+
+    case "AuthTokenUserIdMismatchError":
+      return new UnexpectedClientError({
+        message,
+        logger: baseLogger,
+        forwardToClient: false,
+      })
 
     // ----------
     // Unknown below here

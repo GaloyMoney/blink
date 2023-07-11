@@ -59,12 +59,7 @@ export const verifyPhone = async ({
   // add phone to identity
   const authService = AuthWithEmailPasswordlessService()
   const res = await authService.addPhoneToIdentity({ phone, userId })
-
-  if (res instanceof Error) {
-    // TODO: critical error, we should rollback
-    // TODO: how to ensure the error is critical for pager duty?
-    return res
-  }
+  if (res instanceof Error) return res
 
   return user
 }
