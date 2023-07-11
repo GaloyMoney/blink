@@ -4,6 +4,7 @@ load "helpers"
 
 setup_file() {
   clear_cache
+  reset_redis
 
   bitcoind_init
   start_trigger
@@ -18,11 +19,6 @@ teardown_file() {
   stop_trigger
   stop_server
   stop_exporter
-}
-
-setup() {
-  # Clear locks & limiters
-  reset_redis
 }
 
 teardown() {
