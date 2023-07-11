@@ -1,7 +1,7 @@
 export * from "./update-user-phone"
 
 import { checkedToUsername } from "@domain/accounts"
-import { getUserIdFromIdentifier } from "@services/kratos"
+import { IdentityRepository } from "@services/kratos"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 
 export const getAccountByUsername = async (username: string) => {
@@ -23,7 +23,8 @@ export const getAccountByUserPhone = async (phone: PhoneNumber) => {
 }
 
 export const getAccountByUserEmail = async (email: EmailAddress) => {
-  const userId = await getUserIdFromIdentifier(email)
+  const identities = IdentityRepository()
+  const userId = await identities.getUserIdFromIdentifier(email)
   if (userId instanceof Error) return userId
 
   const accounts = AccountsRepository()

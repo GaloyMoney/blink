@@ -15,7 +15,7 @@ import {
   AuthWithUsernamePasswordDeviceIdService,
   AuthWithEmailPasswordlessService,
   PhoneAccountAlreadyExistsNeedToSweepFundsError,
-  getUserIdFromIdentifier,
+  IdentityRepository,
 } from "@services/kratos"
 
 import { LedgerService } from "@services/ledger"
@@ -64,7 +64,9 @@ export const loginWithPhoneToken = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  const userId = await getUserIdFromIdentifier(phone)
+  const identities = IdentityRepository()
+  const userId = await identities.getUserIdFromIdentifier(phone)
+
   if (userId instanceof IdentifierNotFoundError) {
     // user is a new user
     // this branch exists because we currently make no difference between a registration and login
@@ -116,7 +118,9 @@ export const loginWithPhoneCookie = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  const userId = await getUserIdFromIdentifier(phone)
+  const identities = IdentityRepository()
+  const userId = await identities.getUserIdFromIdentifier(phone)
+
   if (userId instanceof IdentifierNotFoundError) {
     // user is a new user
     // this branch exists because we currently make no difference between a registration and login
@@ -200,7 +204,8 @@ export const loginDeviceUpgradeWithPhone = async ({
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
-  const userId = await getUserIdFromIdentifier(phone)
+  const identities = IdentityRepository()
+  const userId = await identities.getUserIdFromIdentifier(phone)
 
   // Happy Path - phone account does not exist
   if (userId instanceof IdentifierNotFoundError) {

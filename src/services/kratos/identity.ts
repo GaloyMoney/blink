@@ -4,6 +4,8 @@ import { Identity as KratosIdentity } from "@ory/client"
 
 import { isProd } from "@config"
 
+import { IdentifierNotFoundError } from "@domain/authentication/errors"
+
 import { KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentity } from "./private"
 
@@ -39,6 +41,21 @@ export const IdentityRepository = (): IIdentityRepository => {
     }
 
     return toDomainIdentity(data)
+  }
+
+  const getUserIdFromIdentifier = async (identifier: PhoneNumber | EmailAddress) => {
+    try {
+      const identity = await kratosAdmin.listIdentities({
+        credentialsIdentifier: identifier,
+      })
+      if (identity.data.length === 0) return new IdentifierNotFoundError()
+
+      const userId = identity.data[0].id as UserId
+      if (!userId) return new IdentifierNotFoundError()
+      return userId
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
   }
 
   const listIdentities = async (): Promise<AnyIdentity[] | KratosError> => {
@@ -98,6 +115,7 @@ export const IdentityRepository = (): IIdentityRepository => {
 
   return {
     getIdentity,
+    getUserIdFromIdentifier,
     listIdentities,
     deleteIdentity,
   }

@@ -145,6 +145,7 @@ interface IIdentityRepository {
   getIdentity(id: UserId): Promise<AnyIdentity | KratosError>
   listIdentities(): Promise<AnyIdentity[] | KratosError>
   deleteIdentity(id: UserId): Promise<void | KratosError>
+  getUserIdFromIdentifier(identifier: string): Promise<UserId | KratosError>
 }
 
 // CCA2 country code such as "US" or "FR"

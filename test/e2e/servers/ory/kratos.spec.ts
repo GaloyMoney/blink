@@ -20,7 +20,6 @@ import {
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   SchemaIdType,
-  getUserIdFromIdentifier,
 } from "@services/kratos"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import {
@@ -81,7 +80,9 @@ describe("phoneNoPassword", () => {
     })
 
     it("get user id through getUserIdFromIdentifier(phone)", async () => {
-      const userId = await getUserIdFromIdentifier(phone)
+      const identities = IdentityRepository()
+      const userId = await identities.getUserIdFromIdentifier(phone)
+
       if (userId instanceof Error) throw userId
 
       expect(userId).toBe(kratosUserId)
@@ -401,9 +402,10 @@ describe("phone+email schema", () => {
   })
 
   it("get user id through getUserIdFromIdentifier(email)", async () => {
-    const userId = await getUserIdFromIdentifier(email)
-    if (userId instanceof Error) throw userId
+    const identities = IdentityRepository()
+    const userId = await identities.getUserIdFromIdentifier(email)
 
+    if (userId instanceof Error) throw userId
     expect(userId).toBe(kratosUserId)
   })
 
