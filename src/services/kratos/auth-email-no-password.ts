@@ -57,11 +57,8 @@ const getIdentityIdFromFlowId = async (flowId: string) => {
 export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessService => {
   const password = getKratosPasswords().masterUserPassword
 
-  // TODO:
   // sendEmailWithCode return a flowId even if the user doesn't exist
-  // but doesn't send an email. look at the implication.
-  //
-  // maybe verify if the email exist before?
+  // this is to avoid account enumeration attacks
   const sendEmailWithCode = async ({ email }: { email: EmailAddress }) => {
     const method = "code"
     try {

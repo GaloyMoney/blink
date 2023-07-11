@@ -5,7 +5,7 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import Phone from "@graphql/types/scalar/phone"
 
 import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
-import UserPhoneRegistrationValidatePayload from "@graphql/types/payload/user-phone-verify"
+import UserPhoneRegistrationValidatePayload from "@graphql/types/payload/user-phone-registration-validate"
 
 const UserPhoneRegistrationValidateInput = GT.Input({
   name: "UserPhoneRegistrationValidateInput",

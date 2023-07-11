@@ -4,7 +4,7 @@ import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import EmailRegistrationId from "@graphql/types/scalar/email-verify-id"
 import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
-import UserEmailRegistrationValidatePayload from "@graphql/types/payload/user-email-verify"
+import UserEmailRegistrationValidatePayload from "@graphql/types/payload/user-email-registration-validate"
 
 const UserEmailRegistrationValidateInput = GT.Input({
   name: "UserEmailRegistrationValidateInput",

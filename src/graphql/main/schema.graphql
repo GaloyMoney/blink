@@ -317,7 +317,7 @@ Email address
 scalar EmailAddress
 
 """
-An id to be passed between set and verify for confirming email
+An id to be passed between registrationInitiate and registrationValidate for confirming email
 """
 scalar EmailRegistrationId
 

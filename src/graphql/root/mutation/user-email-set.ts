@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import EmailAddress from "@graphql/types/scalar/email-address"
-import UserEmailRegistrationInitiatePayload from "@graphql/types/payload/user-email-set"
+import UserEmailRegistrationInitiatePayload from "@graphql/types/payload/user-email-registration-initiate"
 
 const UserEmailRegistrationInitiateInput = GT.Input({
   name: "UserEmailRegistrationInitiateInput",
