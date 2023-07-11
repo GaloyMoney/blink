@@ -1,7 +1,4 @@
-import {
-  LikelyNoUserWithThisPhoneExistError,
-  PhoneAlreadyExistsError,
-} from "@domain/authentication/errors"
+import { PhoneAlreadyExistsError } from "@domain/authentication/errors"
 
 import { isPhoneCodeValid } from "@services/twilio"
 
@@ -47,7 +44,7 @@ export const verifyPhone = async ({
 
   // add phone to User collection
   const user = await users.findById(userId)
-  if (user instanceof Error) return new LikelyNoUserWithThisPhoneExistError()
+  if (user instanceof Error) return user
 
   if (user.phone) {
     return new PhoneAlreadyExistsError()
