@@ -53,13 +53,11 @@ const UserTotpRegistrationValidateMutation = GT.Field<
       return { errors: [{ message: totpRegistrationId.message }] }
     }
 
-    user
-    // FIXME: should we verify that user.id === user behind authToken?
-
     const me = await Auth.validateTotpRegistration({
       authToken,
       totpCode,
       totpRegistrationId,
+      userId: user.id,
     })
 
     if (me instanceof Error) {

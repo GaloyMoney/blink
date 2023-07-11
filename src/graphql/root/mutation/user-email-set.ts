@@ -3,10 +3,10 @@ import { GT } from "@graphql/index"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import EmailAddress from "@graphql/types/scalar/email-address"
-import UserEmailSetPayload from "@graphql/types/payload/user-email-set"
+import UserEmailRegistrationInitiatePayload from "@graphql/types/payload/user-email-set"
 
-const UserEmailSetInput = GT.Input({
-  name: "UserEmailSetInput",
+const UserEmailRegistrationInitiateInput = GT.Input({
+  name: "UserEmailRegistrationInitiateInput",
   fields: () => ({
     email: {
       type: GT.NonNull(EmailAddress),
@@ -14,7 +14,7 @@ const UserEmailSetInput = GT.Input({
   }),
 })
 
-const UserEmailSetMutation = GT.Field<
+const UserEmailRegistrationInitiateMutation = GT.Field<
   {
     input: {
       email: EmailAddress | InputValidationError
@@ -26,9 +26,9 @@ const UserEmailSetMutation = GT.Field<
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(UserEmailSetPayload),
+  type: GT.NonNull(UserEmailRegistrationInitiatePayload),
   args: {
-    input: { type: GT.NonNull(UserEmailSetInput) },
+    input: { type: GT.NonNull(UserEmailRegistrationInitiateInput) },
   },
   resolve: async (_, args, { user }) => {
     const { email } = args.input
@@ -52,4 +52,4 @@ const UserEmailSetMutation = GT.Field<
   },
 })
 
-export default UserEmailSetMutation
+export default UserEmailRegistrationInitiateMutation

@@ -853,14 +853,22 @@ type Mutation {
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload!
-  userEmailSet(input: UserEmailSetInput!): UserEmailSetPayload!
-  userEmailVerify(input: UserEmailVerifyInput!): UserEmailVerifyPayload!
+  userEmailRegistrationInitiate(
+    input: UserEmailRegistrationInitiateInput!
+  ): UserEmailRegistrationInitiatePayload!
+  userEmailRegistrationValidate(
+    input: UserEmailRegistrationValidateInput!
+  ): UserEmailRegistrationValidatePayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userPhoneDelete: UserPhoneDeletePayload!
-  userPhoneSet(input: UserPhoneSetInput!): SuccessPayload!
-  userPhoneVerify(input: UserPhoneVerifyInput!): UserPhoneVerifyPayload!
+  userPhoneRegistrationInitiate(
+    input: UserPhoneRegistrationInitiateInput!
+  ): SuccessPayload!
+  userPhoneRegistrationValidate(
+    input: UserPhoneRegistrationValidateInput!
+  ): UserPhoneRegistrationValidatePayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
@@ -1590,22 +1598,22 @@ type UserEmailDeletePayload {
   me: User
 }
 
-input UserEmailSetInput {
+input UserEmailRegistrationInitiateInput {
   email: EmailAddress!
 }
 
-type UserEmailSetPayload {
+type UserEmailRegistrationInitiatePayload {
   emailRegistrationId: EmailRegistrationId
   errors: [Error!]!
   me: User
 }
 
-input UserEmailVerifyInput {
+input UserEmailRegistrationValidateInput {
   code: OneTimeAuthCode!
   emailRegistrationId: EmailRegistrationId!
 }
 
-type UserEmailVerifyPayload {
+type UserEmailRegistrationValidatePayload {
   errors: [Error!]!
   me: User
 }
@@ -1629,17 +1637,17 @@ type UserPhoneDeletePayload {
   me: User
 }
 
-input UserPhoneSetInput {
+input UserPhoneRegistrationInitiateInput {
   channel: PhoneCodeChannelType
   phone: Phone!
 }
 
-input UserPhoneVerifyInput {
+input UserPhoneRegistrationValidateInput {
   code: OneTimeAuthCode!
   phone: Phone!
 }
 
-type UserPhoneVerifyPayload {
+type UserPhoneRegistrationValidatePayload {
   errors: [Error!]!
   me: User
 }

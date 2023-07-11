@@ -3,8 +3,8 @@ import { GT } from "@graphql/index"
 import GraphQLUser from "../object/user"
 import IError from "../abstract/error"
 
-const UserPhoneVerifyPayload = GT.Object({
-  name: "UserPhoneVerifyPayload",
+const UserPhoneRegistrationValidatePayload = GT.Object({
+  name: "UserPhoneRegistrationValidatePayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
@@ -15,4 +15,4 @@ const UserPhoneVerifyPayload = GT.Object({
   }),
 })
 
-export default UserPhoneVerifyPayload
+export default UserPhoneRegistrationValidatePayload

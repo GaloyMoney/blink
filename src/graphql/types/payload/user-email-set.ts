@@ -4,8 +4,8 @@ import IError from "../abstract/error"
 import EmailRegistrationId from "../scalar/email-verify-id"
 import GraphQLUser from "../object/user"
 
-const UserEmailSetPayload = GT.Object({
-  name: "UserEmailSetPayload",
+const UserEmailRegistrationInitiatePayload = GT.Object({
+  name: "UserEmailRegistrationInitiatePayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
@@ -19,4 +19,4 @@ const UserEmailSetPayload = GT.Object({
   }),
 })
 
-export default UserEmailSetPayload
+export default UserEmailRegistrationInitiatePayload

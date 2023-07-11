@@ -30,15 +30,12 @@ const UserTotpRegistrationInitiateMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(UserTotpRegistrationInitiateInput) },
   },
-  resolve: async (_, args, { user }) => {
+  resolve: async (_, args) => {
     const { authToken } = args.input
 
     if (authToken instanceof Error) {
       return { errors: [{ message: authToken.message }] }
     }
-
-    user
-    // FIXME: should we verify that user.id === user behind authToken?
 
     const res = await Auth.initiateTotpRegistration({
       authToken,

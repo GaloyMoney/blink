@@ -4,10 +4,10 @@ import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import EmailRegistrationId from "@graphql/types/scalar/email-verify-id"
 import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
-import UserEmailVerifyPayload from "@graphql/types/payload/user-email-verify"
+import UserEmailRegistrationValidatePayload from "@graphql/types/payload/user-email-verify"
 
-const UserEmailVerifyInput = GT.Input({
-  name: "UserEmailVerifyInput",
+const UserEmailRegistrationValidateInput = GT.Input({
+  name: "UserEmailRegistrationValidateInput",
   fields: () => ({
     emailRegistrationId: {
       type: GT.NonNull(EmailRegistrationId),
@@ -18,7 +18,7 @@ const UserEmailVerifyInput = GT.Input({
   }),
 })
 
-const UserEmailVerifyMutation = GT.Field<
+const UserEmailRegistrationValidateMutation = GT.Field<
   {
     input: {
       emailRegistrationId: EmailRegistrationId | InputValidationError
@@ -31,9 +31,9 @@ const UserEmailVerifyMutation = GT.Field<
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(UserEmailVerifyPayload),
+  type: GT.NonNull(UserEmailRegistrationValidatePayload),
   args: {
-    input: { type: GT.NonNull(UserEmailVerifyInput) },
+    input: { type: GT.NonNull(UserEmailRegistrationValidateInput) },
   },
   resolve: async (_, args) => {
     const { emailRegistrationId, code } = args.input
@@ -62,4 +62,4 @@ const UserEmailVerifyMutation = GT.Field<
   },
 })
 
-export default UserEmailVerifyMutation
+export default UserEmailRegistrationValidateMutation

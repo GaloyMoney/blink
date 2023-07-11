@@ -11,16 +11,16 @@ import {
   EmailQuery,
   UserEmailDeleteDocument,
   UserEmailDeleteMutation,
-  UserEmailSetDocument,
-  UserEmailSetMutation,
-  UserEmailVerifyDocument,
-  UserEmailVerifyMutation,
+  UserEmailRegistrationInitiateDocument,
+  UserEmailRegistrationInitiateMutation,
+  UserEmailRegistrationValidateDocument,
+  UserEmailRegistrationValidateMutation,
   UserPhoneDeleteDocument,
   UserPhoneDeleteMutation,
-  UserPhoneSetDocument,
-  UserPhoneSetMutation,
-  UserPhoneVerifyDocument,
-  UserPhoneVerifyMutation,
+  UserPhoneRegistrationInitiateDocument,
+  UserPhoneRegistrationInitiateMutation,
+  UserPhoneRegistrationValidateDocument,
+  UserPhoneRegistrationValidateMutation,
   UserTotpRegistrationInitiateDocument,
   UserTotpRegistrationInitiateMutation,
   UserTotpRegistrationValidateDocument,
@@ -73,8 +73,8 @@ afterAll(async () => {
 })
 
 gql`
-  mutation userEmailSet($input: UserEmailSetInput!) {
-    userEmailSet(input: $input) {
+  mutation userEmailRegistrationInitiate($input: UserEmailRegistrationInitiateInput!) {
+    userEmailRegistrationInitiate(input: $input) {
       errors {
         message
       }
@@ -89,8 +89,8 @@ gql`
     }
   }
 
-  mutation userEmailVerify($input: UserEmailVerifyInput!) {
-    userEmailVerify(input: $input) {
+  mutation userEmailRegistrationValidate($input: UserEmailRegistrationValidateInput!) {
+    userEmailRegistrationValidate(input: $input) {
       errors {
         message
       }
@@ -156,8 +156,8 @@ gql`
     }
   }
 
-  mutation userPhoneSet($input: UserPhoneSetInput!) {
-    userPhoneSet(input: $input) {
+  mutation userPhoneRegistrationInitiate($input: UserPhoneRegistrationInitiateInput!) {
+    userPhoneRegistrationInitiate(input: $input) {
       errors {
         message
       }
@@ -165,8 +165,8 @@ gql`
     }
   }
 
-  mutation userPhoneVerify($input: UserPhoneVerifyInput!) {
-    userPhoneVerify(input: $input) {
+  mutation userPhoneRegistrationValidate($input: UserPhoneRegistrationValidateInput!) {
+    userPhoneRegistrationValidate(input: $input) {
       errors {
         message
       }
@@ -214,12 +214,13 @@ describe("auth", () => {
   it("add email", async () => {
     email = randomEmail()
 
-    const emailSetRes = await apolloClient.mutate<UserEmailSetMutation>({
-      mutation: UserEmailSetDocument,
+    const emailSetRes = await apolloClient.mutate<UserEmailRegistrationInitiateMutation>({
+      mutation: UserEmailRegistrationInitiateDocument,
       variables: { input: { email } },
     })
 
-    const emailRegistrationId = emailSetRes.data?.userEmailSet.emailRegistrationId
+    const emailRegistrationId =
+      emailSetRes.data?.userEmailRegistrationInitiate.emailRegistrationId
     expect(emailRegistrationId).toMatch(UuidRegex)
 
     const code = await getEmailCode({ email })
@@ -240,12 +241,13 @@ describe("auth", () => {
     }
 
     {
-      const emailSetRes = await apolloClient.mutate<UserEmailSetMutation>({
-        mutation: UserEmailSetDocument,
-        variables: { input: { email } },
-      })
+      const emailSetRes =
+        await apolloClient.mutate<UserEmailRegistrationInitiateMutation>({
+          mutation: UserEmailRegistrationInitiateDocument,
+          variables: { input: { email } },
+        })
 
-      expect(emailSetRes.data?.userEmailSet.errors).toEqual([
+      expect(emailSetRes.data?.userEmailRegistrationInitiate.errors).toEqual([
         {
           message:
             "An email is already attached to this account. It's only possible to attach one email per account",
@@ -254,13 +256,18 @@ describe("auth", () => {
       ])
     }
 
-    const emailVerifyRes = await apolloClient.mutate<UserEmailVerifyMutation>({
-      mutation: UserEmailVerifyDocument,
-      variables: { input: { code, emailRegistrationId } },
-    })
+    const emailVerifyRes =
+      await apolloClient.mutate<UserEmailRegistrationValidateMutation>({
+        mutation: UserEmailRegistrationValidateDocument,
+        variables: { input: { code, emailRegistrationId } },
+      })
 
-    expect(emailVerifyRes.data?.userEmailVerify.me?.email?.address).toBe(email)
-    expect(emailVerifyRes.data?.userEmailVerify.me?.email?.verified).toBe(true)
+    expect(emailVerifyRes.data?.userEmailRegistrationValidate.me?.email?.address).toBe(
+      email,
+    )
+    expect(emailVerifyRes.data?.userEmailRegistrationValidate.me?.email?.verified).toBe(
+      true,
+    )
   })
 
   it("log in with email", async () => {
@@ -336,16 +343,17 @@ describe("auth", () => {
 
   it("remove phone login", async () => {
     // add back the email
-    const emailSetRes = await apolloClient.mutate<UserEmailSetMutation>({
-      mutation: UserEmailSetDocument,
+    const emailSetRes = await apolloClient.mutate<UserEmailRegistrationInitiateMutation>({
+      mutation: UserEmailRegistrationInitiateDocument,
       variables: { input: { email } },
     })
 
-    const emailRegistrationId = emailSetRes.data?.userEmailSet.emailRegistrationId
+    const emailRegistrationId =
+      emailSetRes.data?.userEmailRegistrationInitiate.emailRegistrationId
     const code = await getEmailCode({ email })
 
-    await apolloClient.mutate<UserEmailVerifyMutation>({
-      mutation: UserEmailVerifyDocument,
+    await apolloClient.mutate<UserEmailRegistrationValidateMutation>({
+      mutation: UserEmailRegistrationValidateDocument,
       variables: { input: { code, emailRegistrationId } },
     })
 
@@ -491,8 +499,8 @@ describe("auth", () => {
     const userRef = "N"
     const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
-    const res2 = await apolloClient.mutate<UserPhoneSetMutation>({
-      mutation: UserPhoneSetDocument,
+    const res2 = await apolloClient.mutate<UserPhoneRegistrationInitiateMutation>({
+      mutation: UserPhoneRegistrationInitiateDocument,
       variables: {
         input: {
           phone,
@@ -500,10 +508,10 @@ describe("auth", () => {
       },
     })
 
-    expect(res2.data?.userPhoneSet.success).toBe(true)
+    expect(res2.data?.userPhoneRegistrationInitiate.success).toBe(true)
 
-    const res3 = await apolloClient.mutate<UserPhoneVerifyMutation>({
-      mutation: UserPhoneVerifyDocument,
+    const res3 = await apolloClient.mutate<UserPhoneRegistrationValidateMutation>({
+      mutation: UserPhoneRegistrationValidateDocument,
       variables: {
         input: {
           phone,
@@ -512,6 +520,6 @@ describe("auth", () => {
       },
     })
 
-    expect(res3.data?.userPhoneVerify.errors).toStrictEqual([])
+    expect(res3.data?.userPhoneRegistrationValidate.errors).toStrictEqual([])
   })
 })

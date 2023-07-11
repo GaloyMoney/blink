@@ -5,17 +5,17 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import Phone from "@graphql/types/scalar/phone"
 
 import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
-import UserPhoneVerifyPayload from "@graphql/types/payload/user-phone-verify"
+import UserPhoneRegistrationValidatePayload from "@graphql/types/payload/user-phone-verify"
 
-const UserPhoneVerifyInput = GT.Input({
-  name: "UserPhoneVerifyInput",
+const UserPhoneRegistrationValidateInput = GT.Input({
+  name: "UserPhoneRegistrationValidateInput",
   fields: () => ({
     phone: { type: GT.NonNull(Phone) },
     code: { type: GT.NonNull(OneTimeAuthCode) },
   }),
 })
 
-const UserPhoneVerifyMutation = GT.Field<
+const UserPhoneRegistrationValidateMutation = GT.Field<
   {
     input: {
       phone: PhoneNumber | InputValidationError
@@ -28,9 +28,9 @@ const UserPhoneVerifyMutation = GT.Field<
   extensions: {
     complexity: 120,
   },
-  type: GT.NonNull(UserPhoneVerifyPayload),
+  type: GT.NonNull(UserPhoneRegistrationValidatePayload),
   args: {
-    input: { type: GT.NonNull(UserPhoneVerifyInput) },
+    input: { type: GT.NonNull(UserPhoneRegistrationValidateInput) },
   },
   resolve: async (_, args, { ip, user }) => {
     const { phone, code } = args.input
@@ -62,4 +62,4 @@ const UserPhoneVerifyMutation = GT.Field<
   },
 })
 
-export default UserPhoneVerifyMutation
+export default UserPhoneRegistrationValidateMutation

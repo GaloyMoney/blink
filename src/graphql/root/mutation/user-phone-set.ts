@@ -8,15 +8,15 @@ import { ChannelType } from "@domain/phone-provider"
 
 import PhoneCodeChannelType from "@graphql/types/scalar/phone-code-channel-type"
 
-const UserPhoneSetInput = GT.Input({
-  name: "UserPhoneSetInput",
+const UserPhoneRegistrationInitiateInput = GT.Input({
+  name: "UserPhoneRegistrationInitiateInput",
   fields: () => ({
     phone: { type: GT.NonNull(Phone) },
     channel: { type: PhoneCodeChannelType },
   }),
 })
 
-const UserPhoneSetMutation = GT.Field<
+const UserPhoneRegistrationInitiateMutation = GT.Field<
   {
     input: {
       phone: PhoneNumber | InputValidationError
@@ -31,7 +31,7 @@ const UserPhoneSetMutation = GT.Field<
   },
   type: GT.NonNull(SuccessPayload),
   args: {
-    input: { type: GT.NonNull(UserPhoneSetInput) },
+    input: { type: GT.NonNull(UserPhoneRegistrationInitiateInput) },
   },
   resolve: async (_, args, { ip, user }) => {
     const { phone, channel: channelInput } = args.input
@@ -62,4 +62,4 @@ const UserPhoneSetMutation = GT.Field<
   },
 })
 
-export default UserPhoneSetMutation
+export default UserPhoneRegistrationInitiateMutation

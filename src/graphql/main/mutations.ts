@@ -37,15 +37,15 @@ import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-creat
 import QuizCompletedMutation from "@graphql/root/mutation/quiz-completed"
 import AccountDeleteMutation from "@graphql/root/mutation/account-delete"
 import UserLoginUpgradeMutation from "@graphql/root/mutation/user-login-upgrade"
-import UserEmailSetMutation from "@graphql/root/mutation/user-email-set"
-import UserEmailVerifyMutation from "@graphql/root/mutation/user-email-verify"
+import UserEmailRegistrationInitiateMutation from "@graphql/root/mutation/user-email-set"
+import UserEmailRegistrationValidateMutation from "@graphql/root/mutation/user-email-verify"
 import FeedbackSubmitMutation from "@graphql/root/mutation/feedback-submit"
 import UserEmailDeleteMutation from "@graphql/root/mutation/user-email-delete"
 import UserPhoneDeleteMutation from "@graphql/root/mutation/user-phone-delete"
 import UserTotpRegistrationInitiateMutation from "@graphql/root/mutation/user-totp-registration-initiate"
 import UserTotpRegistrationValidateMutation from "@graphql/root/mutation/user-totp-registration-validate"
-import UserPhoneSetMutation from "@graphql/root/mutation/user-phone-set"
-import UserPhoneVerifyMutation from "@graphql/root/mutation/user-phone-verify"
+import UserPhoneRegistrationInitiateMutation from "@graphql/root/mutation/user-phone-set"
+import UserPhoneRegistrationValidateMutation from "@graphql/root/mutation/user-phone-verify"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 export const mutationFields = {
@@ -66,11 +66,11 @@ export const mutationFields = {
   authed: {
     atAccountLevel: {
       userLoginUpgrade: UserLoginUpgradeMutation,
-      userEmailSet: UserEmailSetMutation,
-      userEmailVerify: UserEmailVerifyMutation,
+      userEmailRegistrationInitiate: UserEmailRegistrationInitiateMutation,
+      userEmailRegistrationValidate: UserEmailRegistrationValidateMutation,
       userEmailDelete: UserEmailDeleteMutation,
-      userPhoneSet: UserPhoneSetMutation,
-      userPhoneVerify: UserPhoneVerifyMutation,
+      userPhoneRegistrationInitiate: UserPhoneRegistrationInitiateMutation,
+      userPhoneRegistrationValidate: UserPhoneRegistrationValidateMutation,
       userPhoneDelete: UserPhoneDeleteMutation,
       userTotpRegistrationInitiate: UserTotpRegistrationInitiateMutation,
       userTotpRegistrationValidate: UserTotpRegistrationValidateMutation,
