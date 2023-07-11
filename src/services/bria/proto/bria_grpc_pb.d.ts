@@ -15,6 +15,7 @@ interface IBriaServiceService extends grpc.ServiceDefinition<grpc.UntypedService
     importXpub: IBriaServiceService_IImportXpub;
     listXpubs: IBriaServiceService_IListXpubs;
     setSignerConfig: IBriaServiceService_ISetSignerConfig;
+    submitSignedPsbt: IBriaServiceService_ISubmitSignedPsbt;
     createWallet: IBriaServiceService_ICreateWallet;
     listWallets: IBriaServiceService_IListWallets;
     getWalletBalanceSummary: IBriaServiceService_IGetWalletBalanceSummary;
@@ -27,6 +28,7 @@ interface IBriaServiceService extends grpc.ServiceDefinition<grpc.UntypedService
     createPayoutQueue: IBriaServiceService_ICreatePayoutQueue;
     listPayoutQueues: IBriaServiceService_IListPayoutQueues;
     updatePayoutQueue: IBriaServiceService_IUpdatePayoutQueue;
+    triggerPayoutQueue: IBriaServiceService_ITriggerPayoutQueue;
     estimatePayoutFee: IBriaServiceService_IEstimatePayoutFee;
     submitPayout: IBriaServiceService_ISubmitPayout;
     listPayouts: IBriaServiceService_IListPayouts;
@@ -90,6 +92,15 @@ interface IBriaServiceService_ISetSignerConfig extends grpc.MethodDefinition<bri
     requestDeserialize: grpc.deserialize<bria_pb.SetSignerConfigRequest>;
     responseSerialize: grpc.serialize<bria_pb.SetSignerConfigResponse>;
     responseDeserialize: grpc.deserialize<bria_pb.SetSignerConfigResponse>;
+}
+interface IBriaServiceService_ISubmitSignedPsbt extends grpc.MethodDefinition<bria_pb.SubmitSignedPsbtRequest, bria_pb.SubmitSignedPsbtResponse> {
+    path: "/services.bria.v1.BriaService/SubmitSignedPsbt";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<bria_pb.SubmitSignedPsbtRequest>;
+    requestDeserialize: grpc.deserialize<bria_pb.SubmitSignedPsbtRequest>;
+    responseSerialize: grpc.serialize<bria_pb.SubmitSignedPsbtResponse>;
+    responseDeserialize: grpc.deserialize<bria_pb.SubmitSignedPsbtResponse>;
 }
 interface IBriaServiceService_ICreateWallet extends grpc.MethodDefinition<bria_pb.CreateWalletRequest, bria_pb.CreateWalletResponse> {
     path: "/services.bria.v1.BriaService/CreateWallet";
@@ -199,6 +210,15 @@ interface IBriaServiceService_IUpdatePayoutQueue extends grpc.MethodDefinition<b
     responseSerialize: grpc.serialize<bria_pb.UpdatePayoutQueueResponse>;
     responseDeserialize: grpc.deserialize<bria_pb.UpdatePayoutQueueResponse>;
 }
+interface IBriaServiceService_ITriggerPayoutQueue extends grpc.MethodDefinition<bria_pb.TriggerPayoutQueueRequest, bria_pb.TriggerPayoutQueueResponse> {
+    path: "/services.bria.v1.BriaService/TriggerPayoutQueue";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<bria_pb.TriggerPayoutQueueRequest>;
+    requestDeserialize: grpc.deserialize<bria_pb.TriggerPayoutQueueRequest>;
+    responseSerialize: grpc.serialize<bria_pb.TriggerPayoutQueueResponse>;
+    responseDeserialize: grpc.deserialize<bria_pb.TriggerPayoutQueueResponse>;
+}
 interface IBriaServiceService_IEstimatePayoutFee extends grpc.MethodDefinition<bria_pb.EstimatePayoutFeeRequest, bria_pb.EstimatePayoutFeeResponse> {
     path: "/services.bria.v1.BriaService/EstimatePayoutFee";
     requestStream: false;
@@ -281,6 +301,7 @@ export interface IBriaServiceServer extends grpc.UntypedServiceImplementation {
     importXpub: grpc.handleUnaryCall<bria_pb.ImportXpubRequest, bria_pb.ImportXpubResponse>;
     listXpubs: grpc.handleUnaryCall<bria_pb.ListXpubsRequest, bria_pb.ListXpubsResponse>;
     setSignerConfig: grpc.handleUnaryCall<bria_pb.SetSignerConfigRequest, bria_pb.SetSignerConfigResponse>;
+    submitSignedPsbt: grpc.handleUnaryCall<bria_pb.SubmitSignedPsbtRequest, bria_pb.SubmitSignedPsbtResponse>;
     createWallet: grpc.handleUnaryCall<bria_pb.CreateWalletRequest, bria_pb.CreateWalletResponse>;
     listWallets: grpc.handleUnaryCall<bria_pb.ListWalletsRequest, bria_pb.ListWalletsResponse>;
     getWalletBalanceSummary: grpc.handleUnaryCall<bria_pb.GetWalletBalanceSummaryRequest, bria_pb.GetWalletBalanceSummaryResponse>;
@@ -293,6 +314,7 @@ export interface IBriaServiceServer extends grpc.UntypedServiceImplementation {
     createPayoutQueue: grpc.handleUnaryCall<bria_pb.CreatePayoutQueueRequest, bria_pb.CreatePayoutQueueResponse>;
     listPayoutQueues: grpc.handleUnaryCall<bria_pb.ListPayoutQueuesRequest, bria_pb.ListPayoutQueuesResponse>;
     updatePayoutQueue: grpc.handleUnaryCall<bria_pb.UpdatePayoutQueueRequest, bria_pb.UpdatePayoutQueueResponse>;
+    triggerPayoutQueue: grpc.handleUnaryCall<bria_pb.TriggerPayoutQueueRequest, bria_pb.TriggerPayoutQueueResponse>;
     estimatePayoutFee: grpc.handleUnaryCall<bria_pb.EstimatePayoutFeeRequest, bria_pb.EstimatePayoutFeeResponse>;
     submitPayout: grpc.handleUnaryCall<bria_pb.SubmitPayoutRequest, bria_pb.SubmitPayoutResponse>;
     listPayouts: grpc.handleUnaryCall<bria_pb.ListPayoutsRequest, bria_pb.ListPayoutsResponse>;
@@ -322,6 +344,9 @@ export interface IBriaServiceClient {
     setSignerConfig(request: bria_pb.SetSignerConfigRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.SetSignerConfigResponse) => void): grpc.ClientUnaryCall;
     setSignerConfig(request: bria_pb.SetSignerConfigRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.SetSignerConfigResponse) => void): grpc.ClientUnaryCall;
     setSignerConfig(request: bria_pb.SetSignerConfigRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.SetSignerConfigResponse) => void): grpc.ClientUnaryCall;
+    submitSignedPsbt(request: bria_pb.SubmitSignedPsbtRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.SubmitSignedPsbtResponse) => void): grpc.ClientUnaryCall;
+    submitSignedPsbt(request: bria_pb.SubmitSignedPsbtRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.SubmitSignedPsbtResponse) => void): grpc.ClientUnaryCall;
+    submitSignedPsbt(request: bria_pb.SubmitSignedPsbtRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.SubmitSignedPsbtResponse) => void): grpc.ClientUnaryCall;
     createWallet(request: bria_pb.CreateWalletRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateWalletResponse) => void): grpc.ClientUnaryCall;
     createWallet(request: bria_pb.CreateWalletRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateWalletResponse) => void): grpc.ClientUnaryCall;
     createWallet(request: bria_pb.CreateWalletRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateWalletResponse) => void): grpc.ClientUnaryCall;
@@ -358,6 +383,9 @@ export interface IBriaServiceClient {
     updatePayoutQueue(request: bria_pb.UpdatePayoutQueueRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdatePayoutQueueResponse) => void): grpc.ClientUnaryCall;
     updatePayoutQueue(request: bria_pb.UpdatePayoutQueueRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdatePayoutQueueResponse) => void): grpc.ClientUnaryCall;
     updatePayoutQueue(request: bria_pb.UpdatePayoutQueueRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdatePayoutQueueResponse) => void): grpc.ClientUnaryCall;
+    triggerPayoutQueue(request: bria_pb.TriggerPayoutQueueRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.TriggerPayoutQueueResponse) => void): grpc.ClientUnaryCall;
+    triggerPayoutQueue(request: bria_pb.TriggerPayoutQueueRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.TriggerPayoutQueueResponse) => void): grpc.ClientUnaryCall;
+    triggerPayoutQueue(request: bria_pb.TriggerPayoutQueueRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.TriggerPayoutQueueResponse) => void): grpc.ClientUnaryCall;
     estimatePayoutFee(request: bria_pb.EstimatePayoutFeeRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.EstimatePayoutFeeResponse) => void): grpc.ClientUnaryCall;
     estimatePayoutFee(request: bria_pb.EstimatePayoutFeeRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.EstimatePayoutFeeResponse) => void): grpc.ClientUnaryCall;
     estimatePayoutFee(request: bria_pb.EstimatePayoutFeeRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.EstimatePayoutFeeResponse) => void): grpc.ClientUnaryCall;
@@ -403,6 +431,9 @@ export class BriaServiceClient extends grpc.Client implements IBriaServiceClient
     public setSignerConfig(request: bria_pb.SetSignerConfigRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.SetSignerConfigResponse) => void): grpc.ClientUnaryCall;
     public setSignerConfig(request: bria_pb.SetSignerConfigRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.SetSignerConfigResponse) => void): grpc.ClientUnaryCall;
     public setSignerConfig(request: bria_pb.SetSignerConfigRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.SetSignerConfigResponse) => void): grpc.ClientUnaryCall;
+    public submitSignedPsbt(request: bria_pb.SubmitSignedPsbtRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.SubmitSignedPsbtResponse) => void): grpc.ClientUnaryCall;
+    public submitSignedPsbt(request: bria_pb.SubmitSignedPsbtRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.SubmitSignedPsbtResponse) => void): grpc.ClientUnaryCall;
+    public submitSignedPsbt(request: bria_pb.SubmitSignedPsbtRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.SubmitSignedPsbtResponse) => void): grpc.ClientUnaryCall;
     public createWallet(request: bria_pb.CreateWalletRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateWalletResponse) => void): grpc.ClientUnaryCall;
     public createWallet(request: bria_pb.CreateWalletRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateWalletResponse) => void): grpc.ClientUnaryCall;
     public createWallet(request: bria_pb.CreateWalletRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.CreateWalletResponse) => void): grpc.ClientUnaryCall;
@@ -439,6 +470,9 @@ export class BriaServiceClient extends grpc.Client implements IBriaServiceClient
     public updatePayoutQueue(request: bria_pb.UpdatePayoutQueueRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdatePayoutQueueResponse) => void): grpc.ClientUnaryCall;
     public updatePayoutQueue(request: bria_pb.UpdatePayoutQueueRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdatePayoutQueueResponse) => void): grpc.ClientUnaryCall;
     public updatePayoutQueue(request: bria_pb.UpdatePayoutQueueRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.UpdatePayoutQueueResponse) => void): grpc.ClientUnaryCall;
+    public triggerPayoutQueue(request: bria_pb.TriggerPayoutQueueRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.TriggerPayoutQueueResponse) => void): grpc.ClientUnaryCall;
+    public triggerPayoutQueue(request: bria_pb.TriggerPayoutQueueRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.TriggerPayoutQueueResponse) => void): grpc.ClientUnaryCall;
+    public triggerPayoutQueue(request: bria_pb.TriggerPayoutQueueRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.TriggerPayoutQueueResponse) => void): grpc.ClientUnaryCall;
     public estimatePayoutFee(request: bria_pb.EstimatePayoutFeeRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.EstimatePayoutFeeResponse) => void): grpc.ClientUnaryCall;
     public estimatePayoutFee(request: bria_pb.EstimatePayoutFeeRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.EstimatePayoutFeeResponse) => void): grpc.ClientUnaryCall;
     public estimatePayoutFee(request: bria_pb.EstimatePayoutFeeRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.EstimatePayoutFeeResponse) => void): grpc.ClientUnaryCall;

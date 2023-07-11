@@ -522,6 +522,28 @@ function deserialize_services_bria_v1_SubmitPayoutResponse(buffer_arg) {
   return bria_pb.SubmitPayoutResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_services_bria_v1_SubmitSignedPsbtRequest(arg) {
+  if (!(arg instanceof bria_pb.SubmitSignedPsbtRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.SubmitSignedPsbtRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_SubmitSignedPsbtRequest(buffer_arg) {
+  return bria_pb.SubmitSignedPsbtRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_SubmitSignedPsbtResponse(arg) {
+  if (!(arg instanceof bria_pb.SubmitSignedPsbtResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.SubmitSignedPsbtResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_SubmitSignedPsbtResponse(buffer_arg) {
+  return bria_pb.SubmitSignedPsbtResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_services_bria_v1_SubscribeAllRequest(arg) {
   if (!(arg instanceof bria_pb.SubscribeAllRequest)) {
     throw new Error('Expected argument of type services.bria.v1.SubscribeAllRequest');
@@ -531,6 +553,28 @@ function serialize_services_bria_v1_SubscribeAllRequest(arg) {
 
 function deserialize_services_bria_v1_SubscribeAllRequest(buffer_arg) {
   return bria_pb.SubscribeAllRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_TriggerPayoutQueueRequest(arg) {
+  if (!(arg instanceof bria_pb.TriggerPayoutQueueRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.TriggerPayoutQueueRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_TriggerPayoutQueueRequest(buffer_arg) {
+  return bria_pb.TriggerPayoutQueueRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_TriggerPayoutQueueResponse(arg) {
+  if (!(arg instanceof bria_pb.TriggerPayoutQueueResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.TriggerPayoutQueueResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_TriggerPayoutQueueResponse(buffer_arg) {
+  return bria_pb.TriggerPayoutQueueResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_services_bria_v1_UpdateAddressRequest(arg) {
@@ -644,6 +688,17 @@ var BriaServiceService = exports.BriaServiceService = {
     requestDeserialize: deserialize_services_bria_v1_SetSignerConfigRequest,
     responseSerialize: serialize_services_bria_v1_SetSignerConfigResponse,
     responseDeserialize: deserialize_services_bria_v1_SetSignerConfigResponse,
+  },
+  submitSignedPsbt: {
+    path: '/services.bria.v1.BriaService/SubmitSignedPsbt',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.SubmitSignedPsbtRequest,
+    responseType: bria_pb.SubmitSignedPsbtResponse,
+    requestSerialize: serialize_services_bria_v1_SubmitSignedPsbtRequest,
+    requestDeserialize: deserialize_services_bria_v1_SubmitSignedPsbtRequest,
+    responseSerialize: serialize_services_bria_v1_SubmitSignedPsbtResponse,
+    responseDeserialize: deserialize_services_bria_v1_SubmitSignedPsbtResponse,
   },
   createWallet: {
     path: '/services.bria.v1.BriaService/CreateWallet',
@@ -776,6 +831,17 @@ var BriaServiceService = exports.BriaServiceService = {
     requestDeserialize: deserialize_services_bria_v1_UpdatePayoutQueueRequest,
     responseSerialize: serialize_services_bria_v1_UpdatePayoutQueueResponse,
     responseDeserialize: deserialize_services_bria_v1_UpdatePayoutQueueResponse,
+  },
+  triggerPayoutQueue: {
+    path: '/services.bria.v1.BriaService/TriggerPayoutQueue',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.TriggerPayoutQueueRequest,
+    responseType: bria_pb.TriggerPayoutQueueResponse,
+    requestSerialize: serialize_services_bria_v1_TriggerPayoutQueueRequest,
+    requestDeserialize: deserialize_services_bria_v1_TriggerPayoutQueueRequest,
+    responseSerialize: serialize_services_bria_v1_TriggerPayoutQueueResponse,
+    responseDeserialize: deserialize_services_bria_v1_TriggerPayoutQueueResponse,
   },
   estimatePayoutFee: {
     path: '/services.bria.v1.BriaService/EstimatePayoutFee',
