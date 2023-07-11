@@ -282,6 +282,15 @@ initialize_user() {
     "$usd_amount_in_sats"
 }
 
+get_from_transaction_by_ln_hash() {
+  property_query=$2
+
+  jq_query='.data.me.defaultAccount.transactions.edges[] | select(.node.initiationVia.paymentHash == $payment_hash) .node'
+  echo $output \
+    | jq -r --arg payment_hash "$1" "$jq_query" \
+    | jq -r "$property_query"
+}
+
 get_from_transaction_by_address() {
   property_query=$2
 
@@ -323,6 +332,23 @@ check_for_settled() {
   exec_graphql "$token_name" 'transactions' "$variables"
 
   settled_status="$(get_from_transaction_by_address $address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+}
+
+check_for_ln_initiated_settled() {
+  local token_name=$1
+  local payment_hash=$2
+  local first=${3:-"2"}
+
+  echo "first: $first"
+  variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$variables"
+
+  settled_status="$(get_from_transaction_by_ln_hash $payment_hash '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
