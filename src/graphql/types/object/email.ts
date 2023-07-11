@@ -7,16 +7,10 @@ const GraphQLEmail = GT.Object<AnyIdentity, GraphQLContextAuth>({
   fields: () => ({
     address: {
       type: EmailAddress,
-      resolve: async (source) => {
-        return source.email
-      },
     },
 
     verified: {
       type: GT.Boolean,
-      resolve: async (source) => {
-        return source.emailVerified
-      },
     },
   }),
 })

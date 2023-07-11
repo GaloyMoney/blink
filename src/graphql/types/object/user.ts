@@ -39,6 +39,14 @@ const GraphQLUser = GT.Object<User, GraphQLContextAuth>({
     email: {
       type: GraphQLEmail,
       description: "Email address",
+      resolve: async (source, _args, { domainAccount }) => {
+        // FIXME: avoid fetching identity twice
+        const identity = await IdentityRepository().getIdentity(
+          domainAccount.kratosUserId,
+        )
+        if (identity instanceof Error) throw mapError(identity)
+        return { address: identity.email, verified: identity.emailVerified }
+      },
     },
 
     totpEnabled: {

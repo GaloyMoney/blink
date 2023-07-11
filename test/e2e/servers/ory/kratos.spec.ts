@@ -20,6 +20,7 @@ import {
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   SchemaIdType,
+  getUserIdFromIdentifier,
 } from "@services/kratos"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import {
@@ -77,6 +78,13 @@ describe("phoneNoPassword", () => {
       if (res instanceof Error) throw res
 
       expect(res.kratosUserId).toBe(kratosUserId)
+    })
+
+    it("get user id through getUserIdFromIdentifier(phone)", async () => {
+      const userId = await getUserIdFromIdentifier(phone)
+      if (userId instanceof Error) throw userId
+
+      expect(userId).toBe(kratosUserId)
     })
 
     it("new sessions are added when LoginWithPhoneNoPasswordSchema is used", async () => {
@@ -390,6 +398,13 @@ describe("phone+email schema", () => {
 
     expect(await authServiceEmail.hasEmail({ kratosUserId })).toBe(true)
     expect(await authServiceEmail.isEmailVerified({ email })).toBe(false)
+  })
+
+  it("get user id through getUserIdFromIdentifier(email)", async () => {
+    const userId = await getUserIdFromIdentifier(email)
+    if (userId instanceof Error) throw userId
+
+    expect(userId).toBe(kratosUserId)
   })
 
   it("can't add same email to multiple identities", async () => {
