@@ -74,7 +74,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         },
       })
 
-      return data.id as EmailFlowId | EmailLoginId
+      return data.id as EmailFlowId
     } catch (err) {
       return new UnknownKratosError(err)
     }
@@ -85,7 +85,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     emailFlowId: flow,
   }: {
     code: EmailCode
-    emailFlowId: EmailFlowId | EmailLoginId
+    emailFlowId: EmailFlowId
   }) => {
     const method = "code"
 
