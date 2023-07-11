@@ -29,6 +29,7 @@ enum AccountLevel {
 
 enum AccountStatus {
   ACTIVE
+  CLOSED
   LOCKED
   NEW
   PENDING
