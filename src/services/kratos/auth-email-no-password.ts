@@ -204,10 +204,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       // TODO: throw error if no identity found?
       return identity.data[0].verifiable_addresses?.[0].verified ?? false
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
   }
 
@@ -292,10 +289,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return toDomainIdentityEmailPhone(newIdentity)
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
   }
 
@@ -305,10 +299,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
 
     if (identity.schema_id !== SchemaIdType.PhoneEmailNoPasswordV0) {
@@ -335,10 +326,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return toDomainIdentityPhone(newIdentity)
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
   }
 
@@ -348,10 +336,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
 
     if (identity.schema_id !== "phone_email_no_password_v0") {
@@ -384,10 +369,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return toDomainIdentityEmail(newIdentity)
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
   }
 
@@ -403,10 +385,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: userId }))
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
 
     if (identity.schema_id !== "email_no_password_v0") {
@@ -433,10 +412,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return toDomainIdentityEmailPhone(newIdentity)
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
   }
 
@@ -446,10 +422,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     try {
       ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
     } catch (err) {
-      return (
-        (isAxiosError(err) && new UnknownKratosError(err.message)) ||
-        new UnknownKratosError(err)
-      )
+      return new UnknownKratosError(err)
     }
 
     return !!identity.traits.email
