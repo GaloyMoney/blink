@@ -39,20 +39,12 @@ const GraphQLUser = GT.Object<User, GraphQLContextAuth>({
     email: {
       type: GraphQLEmail,
       description: "Email address",
-      resolve: async (source, _args, { domainAccount }) => {
-        const identity = await IdentityRepository().getIdentity(
-          domainAccount.kratosUserId,
-        )
-        if (identity instanceof Error) throw mapError(identity)
-        return identity
-      },
     },
 
     totpEnabled: {
       type: GT.NonNull(GT.Boolean),
       description: "Whether TOTP is enabled for this user.",
       resolve: async (source, _args, { domainAccount }) => {
-        // FIXME we should not fetch identity twice if email and totp are both requested
         const identity = await IdentityRepository().getIdentity(
           domainAccount.kratosUserId,
         )
