@@ -14,6 +14,8 @@ git_price_realtime_proto_bot_branch: bot-bump-price-realtime-proto
 git_bria_api_proto_bot_branch: bot-bump-bria-api-proto
 github_private_key: ((github.private_key))
 github_token: ((github.api_token))
+github_app_id: ((github.github_app_id))
+github_app_private_key: ((github.github_app_private_key))
 docker_registry: us.gcr.io/galoy-org
 docker_registry_user: ((docker-creds.username))
 docker_registry_password: ((docker-creds.password))

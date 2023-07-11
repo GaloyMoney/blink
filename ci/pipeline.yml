@@ -329,7 +329,8 @@ jobs:
             - name: websocket-edge-image
             - name: charts-repo
           params:
-            GH_TOKEN: #@ data.values.github_token
+            GH_APP_ID: #@ data.values.github_app_id
+            GH_APP_PRIVATE_KEY: #@ data.values.github_app_private_key
             BRANCH: #@ data.values.git_charts_branch
             BOT_BRANCH: #@ data.values.git_charts_bot_branch
           run:
