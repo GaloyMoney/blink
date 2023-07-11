@@ -2,7 +2,7 @@ export * from "./update-user-phone"
 
 import { checkedToUsername } from "@domain/accounts"
 import { getUserIdFromIdentifier } from "@services/kratos"
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 
 export const getAccountByUsername = async (username: string) => {
   const usernameValid = checkedToUsername(username)
@@ -13,11 +13,13 @@ export const getAccountByUsername = async (username: string) => {
 }
 
 export const getAccountByUserPhone = async (phone: PhoneNumber) => {
-  const userId = await getUserIdFromIdentifier(phone)
-  if (userId instanceof Error) return userId
+  // TODO: replace by getAccountByUserPhone
+  // but need to change the integration admin query test first
+  const user = await UsersRepository().findByPhone(phone)
+  if (user instanceof Error) return user
 
   const accounts = AccountsRepository()
-  return accounts.findByUserId(userId)
+  return accounts.findByUserId(user.id)
 }
 
 export const getAccountByUserEmail = async (email: EmailAddress) => {
