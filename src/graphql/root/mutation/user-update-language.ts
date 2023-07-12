@@ -38,6 +38,7 @@ const UserUpdateLanguageMutation = GT.Field({
 
     return {
       errors: [],
+      // shouldn't this be me instead of user?
       user: result,
     }
   },

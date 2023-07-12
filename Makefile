@@ -204,5 +204,5 @@ gen-test-jwt:
 
 reset-sleep-e2e:
 	make reset-deps
-	sleep 10
+	sleep 8
 	make e2e

@@ -1,5 +1,7 @@
 import { ChannelType } from "@domain/phone-provider"
 
+import { EmailCodeInvalidError } from "./errors"
+
 export const getSupportedCountries = ({
   allCountries,
   unsupportedSmsCountries,
@@ -31,4 +33,9 @@ export const getSupportedCountries = ({
   }
 
   return countries
+}
+
+export const checkedToEmailCode = (code: string): EmailCode | ApplicationError => {
+  if (!/^[0-9]{6}$/.test(code)) return new EmailCodeInvalidError()
+  return code as EmailCode
 }

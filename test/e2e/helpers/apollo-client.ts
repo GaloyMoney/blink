@@ -18,6 +18,8 @@ import { createClient } from "graphql-ws"
 import WebSocket from "ws"
 import { Subscription } from "zen-observable-ts"
 
+import { OATHKEEPER_HOST, OATHKEEPER_PORT } from "test/helpers/env"
+
 export const localIpAddress = "127.0.0.1" as IpAddress
 
 export type ApolloTestClientConfig = {
@@ -25,9 +27,6 @@ export type ApolloTestClientConfig = {
   graphqlUrl: string
   graphqlSubscriptionUrl: string
 }
-
-const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
-const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
 export const defaultTestClientConfig = (
   authToken?: SessionToken,

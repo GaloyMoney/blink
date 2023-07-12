@@ -9,6 +9,9 @@ import { UnknownClientError } from "@graphql/error"
 
 import { baseLogger } from "@services/logger"
 
+// FIXME should not use service
+import { IdentityRepository } from "@services/kratos"
+
 import Account from "../abstract/account"
 
 import Language from "../scalar/language"
@@ -19,6 +22,7 @@ import Username from "../scalar/username"
 
 import AccountContact from "./account-contact"
 import UserQuizQuestion from "./user-quiz-question"
+import GraphQLEmail from "./email"
 
 const GraphQLUser = GT.Object<User, GraphQLContextAuth>({
   name: "User",
@@ -30,6 +34,31 @@ const GraphQLUser = GT.Object<User, GraphQLContextAuth>({
     phone: {
       type: Phone,
       description: "Phone number with international calling code.",
+    },
+
+    email: {
+      type: GraphQLEmail,
+      description: "Email address",
+      resolve: async (source, _args, { domainAccount }) => {
+        // FIXME: avoid fetching identity twice
+        const identity = await IdentityRepository().getIdentity(
+          domainAccount.kratosUserId,
+        )
+        if (identity instanceof Error) throw mapError(identity)
+        return { address: identity.email, verified: identity.emailVerified }
+      },
+    },
+
+    totpEnabled: {
+      type: GT.NonNull(GT.Boolean),
+      description: "Whether TOTP is enabled for this user.",
+      resolve: async (source, _args, { domainAccount }) => {
+        const identity = await IdentityRepository().getIdentity(
+          domainAccount.kratosUserId,
+        )
+        if (identity instanceof Error) throw mapError(identity)
+        return identity.totpEnabled
+      },
     },
 
     username: {

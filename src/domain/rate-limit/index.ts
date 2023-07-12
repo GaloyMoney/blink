@@ -21,11 +21,10 @@ import {
 } from "./errors"
 
 export const RateLimitPrefix = {
-  requestCodeAttemptPerLoginIdentifier: "phone_code_attempt_phone_code",
-  requestCodeAttemptPerLoginIdentifierMinInterval:
-    "phone_code_attempt_phone_code_min_interval",
-  requestCodeAttemptPerIp: "phone_code_attempt_ip",
-  failedLoginAttemptPerLoginIdentifier: "login_attempt_phone",
+  requestCodeAttemptPerLoginIdentifier: "request_code_attempt_id",
+  requestCodeAttemptPerLoginIdentifierMinInterval: "request_code_attempt_id_min_interval",
+  requestCodeAttemptPerIp: "request_code_attempt_ip",
+  failedLoginAttemptPerLoginIdentifier: "login_attempt_id",
   failedLoginAttemptPerIp: "login_attempt_ip",
   invoiceCreate: "invoice_create",
   invoiceCreateForRecipient: "invoice_create_for_recipient",

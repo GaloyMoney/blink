@@ -5,25 +5,22 @@ import { Auth } from "@app"
 import { isProd } from "@config"
 
 import { mapError } from "@graphql/error-map"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-  wrapAsyncToRunInSpan,
-} from "@services/tracing"
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-import { kratosPublic } from "@services/kratos/private"
-
+import { logoutCookie } from "@app/authentication"
 import { parseIps } from "@domain/accounts-ips"
-import bodyParser from "body-parser"
-import setCookie from "set-cookie-parser"
-import cookieParser from "cookie-parser"
-import { logoutCookie } from "@app/auth"
 import { checkedToPhoneNumber } from "@domain/users"
+import bodyParser from "body-parser"
 import libCookie from "cookie"
-import basicAuth from "basic-auth"
-import { parseErrorMessageFromUnknown } from "@domain/shared"
 
-const authRouter = express.Router({ caseSensitive: true })
+import cookieParser from "cookie-parser"
+import setCookie from "set-cookie-parser"
+
+import { validateKratosCookie } from "@services/kratos"
+
+import { authRouter } from "./router"
+
+// FIXME: those directive should only apply if you select a cookie-related route
 
 authRouter.use(cors({ origin: true, credentials: true }))
 authRouter.use(bodyParser.urlencoded({ extended: true }))
@@ -53,8 +50,8 @@ authRouter.post(
         return res.status(500).send({ error: mapError(loginResp).message })
       }
 
-      let cookies
-      let kratosUserId
+      let cookies: setCookie.Cookie[]
+      let kratosUserId: UserId
       try {
         cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
         kratosUserId = loginResp.kratosUserId
@@ -85,10 +82,13 @@ authRouter.post(
             path: kratosSessionCookie.path,
           },
         )
-        const session = await kratosPublic.toSession({ cookie: kratosCookieStr })
+        const result = await validateKratosCookie(kratosCookieStr)
+        if (result instanceof Error) {
+          return res.status(500).send({ error: result.message })
+        }
         const thirtyDaysFromNow = new Date(new Date().setDate(new Date().getDate() + 30))
-        const expiresAt = session.data.expires_at
-          ? new Date(session.data.expires_at)
+        const expiresAt = result.session.expiresAt
+          ? result.session.expiresAt
           : thirtyDaysFromNow
         const maxAge = expiresAt.getTime() - new Date().getTime()
         res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
@@ -177,50 +177,4 @@ authRouter.get("/clearCookies", async (req, res) => {
   }
 })
 
-authRouter.post(
-  "/create/device-account",
-  wrapAsyncToRunInSpan({
-    namespace: "servers.middlewares.authRouter",
-    fnName: "createDeviceAccount",
-    fn: async (req: express.Request, res: express.Response) => {
-      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
-      const ip = parseIps(ipString)
-
-      if (!ip) {
-        return res.status(500).send({ error: "IP is not defined" })
-      }
-
-      const user = basicAuth(req)
-
-      if (!user?.name || !user?.pass) {
-        return res.status(422).send({ error: "Bad input" })
-      }
-
-      const username = user.name
-      const password = user.pass
-      const deviceId = username
-
-      try {
-        const authToken = await Auth.loginWithDevice({
-          username,
-          password,
-          ip,
-          deviceId,
-        })
-        if (authToken instanceof Error) {
-          recordExceptionInCurrentSpan({ error: authToken })
-          return res.status(500).send({ error: authToken.message })
-        }
-        addAttributesToCurrentSpan({ "login.deviceAccount": deviceId })
-        return res.status(200).send({
-          result: authToken,
-        })
-      } catch (error) {
-        recordExceptionInCurrentSpan({ error })
-        return res.status(500).send({ error: parseErrorMessageFromUnknown(error) })
-      }
-    },
-  }),
-)
-
-export default authRouter
+export default {}

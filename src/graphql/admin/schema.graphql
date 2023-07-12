@@ -177,6 +177,16 @@ Display currency of an account
 """
 scalar DisplayCurrency
 
+type Email {
+  address: EmailAddress
+  verified: Boolean
+}
+
+"""
+Email address
+"""
+scalar EmailAddress
+
 interface Error {
   code: String
   message: String!
@@ -343,6 +353,7 @@ type PsbtDetailPayload {
 }
 
 type Query {
+  accountDetailsByEmail(email: EmailAddress!): Account!
   accountDetailsByUserPhone(phone: Phone!): Account!
   accountDetailsByUsername(username: Username!): Account!
   allLevels: [AccountLevel!]!
@@ -561,6 +572,11 @@ type UsdWallet implements Wallet {
 
 type User {
   createdAt: Timestamp!
+
+  """
+  Email address
+  """
+  email: Email
   id: ID!
   language: Language!
   phone: Phone!

@@ -1,14 +1,10 @@
 import { createAccountForDeviceAccount } from "@app/accounts/create-account"
+
 import {
-  getFailedLoginAttemptPerIpLimits,
-  getFailedLoginAttemptPerLoginIdentifierLimits,
-} from "@config"
+  EmailNotVerifiedError,
+  IdentifierNotFoundError,
+} from "@domain/authentication/errors"
 
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
-
-import { CouldNotFindUserFromPhoneError } from "@domain/errors"
-import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import {
   checkedToDeviceId,
   checkedToIdentityPassword,
@@ -17,16 +13,25 @@ import {
 import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
+  AuthWithEmailPasswordlessService,
+  PhoneAccountAlreadyExistsNeedToSweepFundsError,
+  IdentityRepository,
 } from "@services/kratos"
 
 import { LedgerService } from "@services/ledger"
-import { UsersRepository, WalletsRepository } from "@services/mongoose"
-import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
+import { WalletsRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
-import { PhoneAccountAlreadyExistsNeedToSweepFundsError } from "@services/kratos/errors"
+import { checkedToEmailCode } from "@domain/authentication"
 import { isPhoneCodeValid } from "@services/twilio"
+
+import {
+  checkFailedLoginAttemptPerIpLimits,
+  checkFailedLoginAttemptPerLoginIdentifierLimits,
+  rewardFailedLoginAttemptPerIpLimits,
+  rewardFailedLoginAttemptPerLoginIdentifierLimits,
+} from "./ratelimits"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -59,17 +64,24 @@ export const loginWithPhoneToken = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.loginToken({ phone })
-  // FIXME: this is a fuzzy error.
-  // it exists because we currently make no difference between a registration and login
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+  const identities = IdentityRepository()
+  const userId = await identities.getUserIdFromIdentifier(phone)
+
+  if (userId instanceof IdentifierNotFoundError) {
     // user is a new user
-    kratosResult = await authService.createIdentityWithSession({ phone })
-    if (kratosResult instanceof Error) return kratosResult
+    // this branch exists because we currently make no difference between a registration and login
     addAttributesToCurrentSpan({ "login.newAccount": true })
-  } else if (kratosResult instanceof Error) {
-    return kratosResult
+
+    const kratosResult = await authService.createIdentityWithSession({ phone })
+    if (kratosResult instanceof Error) return kratosResult
+
+    return kratosResult.sessionToken
   }
+
+  if (userId instanceof Error) return userId
+
+  const kratosResult = await authService.loginToken({ phone })
+  if (kratosResult instanceof Error) return kratosResult
   return kratosResult.sessionToken
 }
 
@@ -106,24 +118,67 @@ export const loginWithPhoneCookie = async ({
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.loginCookie({ phone })
-  // FIXME: this is a fuzzy error.
-  // it exists because we currently make no difference between a registration and login
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+  const identities = IdentityRepository()
+  const userId = await identities.getUserIdFromIdentifier(phone)
+
+  if (userId instanceof IdentifierNotFoundError) {
     // user is a new user
-    kratosResult = await authService.createIdentityWithCookie({ phone })
+    // this branch exists because we currently make no difference between a registration and login
+    addAttributesToCurrentSpan({ "login.newAccount": true })
+
+    const kratosResult = await authService.createIdentityWithCookie({ phone })
     if (kratosResult instanceof Error) return kratosResult
-    addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
+
+    return kratosResult
   }
+
+  if (userId instanceof Error) return userId
+
+  const kratosResult = await authService.loginCookie({ phone })
+  if (kratosResult instanceof Error) return kratosResult
   return kratosResult
 }
 
-type LoginUpgradeWithPhoneResult = {
-  success: true
-  sessionToken?: SessionToken
+export const loginWithEmail = async ({
+  emailFlowId,
+  code: codeRaw,
+  ip,
+}: {
+  emailFlowId: EmailFlowId
+  code: EmailCode
+  ip: IpAddress
+}): Promise<LoginWithEmailResult | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  const code = checkedToEmailCode(codeRaw)
+  if (code instanceof Error) return code
+
+  const authServiceEmail = AuthWithEmailPasswordlessService()
+
+  const validateCodeRes = await authServiceEmail.validateCode({
+    code,
+    emailFlowId,
+  })
+  if (validateCodeRes instanceof Error) return validateCodeRes
+
+  const email = validateCodeRes.email
+  const totpRequired = validateCodeRes.totpRequired
+
+  const isEmailVerified = await authServiceEmail.isEmailVerified({ email })
+  if (isEmailVerified instanceof Error) return isEmailVerified
+  if (isEmailVerified === false) return new EmailNotVerifiedError()
+
+  await rewardFailedLoginAttemptPerIpLimits(ip)
+
+  const res = await authServiceEmail.loginToken({ email })
+  if (res instanceof Error) throw res
+  return { sessionToken: res.sessionToken, totpRequired }
 }
 
-export const loginUpgradeWithPhone = async ({
+export const loginDeviceUpgradeWithPhone = async ({
   phone,
   code,
   ip,
@@ -133,7 +188,7 @@ export const loginUpgradeWithPhone = async ({
   code: PhoneCode
   ip: IpAddress
   account: Account
-}): Promise<LoginUpgradeWithPhoneResult | ApplicationError> => {
+}): Promise<LoginDeviceUpgradeWithPhoneResult | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -149,12 +204,14 @@ export const loginUpgradeWithPhone = async ({
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerLoginIdentifierLimits(phone)
 
-  const phoneAccount = await UsersRepository().findByPhone(phone)
+  const identities = IdentityRepository()
+  const userId = await identities.getUserIdFromIdentifier(phone)
 
   // Happy Path - phone account does not exist
-  if (phoneAccount instanceof CouldNotFindUserFromPhoneError) {
+  if (userId instanceof IdentifierNotFoundError) {
     // a. create kratos account
     // b. and c. migrate account/user collection in mongo via kratos/registration webhook
+
     const success = await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
       userId: account.kratosUserId,
@@ -168,8 +225,6 @@ export const loginUpgradeWithPhone = async ({
     if (res instanceof Error) return res
     return { success }
   }
-
-  if (phoneAccount instanceof Error) return phoneAccount
 
   // Complex path - Phone account already exists
   // is there still txns left over on the device account?
@@ -234,41 +289,4 @@ export const loginWithDevice = async ({
   }
 
   return res.sessionToken
-}
-
-const checkFailedLoginAttemptPerIpLimits = async (
-  ip: IpAddress,
-): Promise<true | RateLimiterExceededError> =>
-  consumeLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerIp,
-    keyToConsume: ip,
-  })
-
-const rewardFailedLoginAttemptPerIpLimits = async (
-  ip: IpAddress,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedLoginAttemptPerIp,
-    limitOptions: getFailedLoginAttemptPerIpLimits(),
-  })
-  return limiter.reward(ip)
-}
-
-const checkFailedLoginAttemptPerLoginIdentifierLimits = async (
-  phone: PhoneNumber,
-): Promise<true | RateLimiterExceededError> =>
-  consumeLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerLoginIdentifier,
-    keyToConsume: phone,
-  })
-
-const rewardFailedLoginAttemptPerLoginIdentifierLimits = async (
-  phone: PhoneNumber,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedLoginAttemptPerLoginIdentifier,
-    limitOptions: getFailedLoginAttemptPerLoginIdentifierLimits(),
-  })
-
-  return limiter.reward(phone)
 }

@@ -9,6 +9,7 @@ const UserUpdateLanguagePayload = GT.Object({
     errors: {
       type: GT.NonNullList(IError),
     },
+    // FIXME: should be me {} instead of user {}
     user: {
       type: GraphQLUser,
     },

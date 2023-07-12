@@ -118,7 +118,7 @@ interface UserRecord {
   deletedPhones?: string[]
   createdAt: Date
   deviceId?: DeviceId
-  deletedDeviceId?: DeviceId
+  deletedEmails?: string[] | undefined
 }
 
 type PaymentFlowStateRecord = {

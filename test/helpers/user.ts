@@ -57,6 +57,7 @@ export const getAccountByTestUserRef = async (ref: string): Promise<Account> => 
     })
     if (kratosResult instanceof Error) throw kratosResult
     const { kratosUserId } = kratosResult
+    if (!kratosUserId) throw Error("no kratosUserId")
 
     const recoveredAccount = await Accounts.createAccountWithPhoneIdentifier({
       newAccountInfo: { phone, kratosUserId },

@@ -25,3 +25,6 @@ type KratosPublicMetadata = {
 type KratosAdminMetadata = {
   phoneMetadata: PhoneMetadata | undefined
 }
+
+type SchemaIdType = typeof import("./schema").SchemaIdType
+type SchemaId = ValueOf<SchemaIdType>

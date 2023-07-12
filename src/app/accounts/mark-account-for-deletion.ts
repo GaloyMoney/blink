@@ -62,8 +62,8 @@ export const markAccountForDeletion = async ({
   const newAccount = await accountsRepo.update(account)
   if (newAccount instanceof Error) return newAccount
 
-  const identityRepo = IdentityRepository()
-  const deletionResult = await identityRepo.deleteIdentity(kratosUserId)
+  const identities = IdentityRepository()
+  const deletionResult = await identities.deleteIdentity(kratosUserId)
   if (deletionResult instanceof Error) return deletionResult
 
   return true

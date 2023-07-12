@@ -1,13 +1,13 @@
 import { assert } from "console"
 
-import { Identity } from "@ory/client"
-
-import { PhoneIdentityDoesNotExistError } from "@domain/authentication/errors"
+import { Identity as KratosIdentity } from "@ory/client"
 
 import { isProd } from "@config"
 
+import { IdentifierNotFoundError } from "@domain/authentication/errors"
+
 import { KratosError, UnknownKratosError } from "./errors"
-import { kratosAdmin, toDomainIdentityPhone } from "./private"
+import { kratosAdmin, toDomainIdentity } from "./private"
 
 export const getNextPage = (link: string): number | undefined => {
   const links = link.split(",")
@@ -30,8 +30,8 @@ const perPage = isProd ? 50 : 3
 export const IdentityRepository = (): IIdentityRepository => {
   const getIdentity = async (
     kratosUserId: UserId,
-  ): Promise<IdentityPhone | KratosError> => {
-    let data: Identity
+  ): Promise<AnyIdentity | KratosError> => {
+    let data: KratosIdentity
 
     try {
       const res = await kratosAdmin.getIdentity({ id: kratosUserId })
@@ -40,12 +40,27 @@ export const IdentityRepository = (): IIdentityRepository => {
       return new UnknownKratosError(err)
     }
 
-    return toDomainIdentityPhone(data)
+    return toDomainIdentity(data)
   }
 
-  const listIdentities = async (): Promise<IdentityPhone[] | KratosError> => {
+  const getUserIdFromIdentifier = async (identifier: PhoneNumber | EmailAddress) => {
     try {
-      const identities: Identity[] = []
+      const identity = await kratosAdmin.listIdentities({
+        credentialsIdentifier: identifier,
+      })
+      if (identity.data.length === 0) return new IdentifierNotFoundError()
+
+      const userId = identity.data[0].id as UserId
+      if (!userId) return new IdentifierNotFoundError()
+      return userId
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+  }
+
+  const listIdentities = async (): Promise<AnyIdentity[] | KratosError> => {
+    try {
+      const identities: KratosIdentity[] = []
       let totalCount = 0
 
       let hasNext = true
@@ -84,31 +99,10 @@ export const IdentityRepository = (): IIdentityRepository => {
         `totalCount ${totalCount} doesn't match uniqueIdentities.length ${uniqueIdentities.length}`,
       )
 
-      return uniqueIdentities.map(toDomainIdentityPhone)
+      return uniqueIdentities.map(toDomainIdentity)
     } catch (err) {
       return new UnknownKratosError(err)
     }
-  }
-
-  // only use for non public endpoint for now
-  // because there is no index/go through all records
-  const slowFindByPhone = async (
-    phone: PhoneNumber,
-  ): Promise<IdentityPhone | KratosError> => {
-    let identities: Identity[]
-
-    try {
-      const res = await kratosAdmin.listIdentities()
-      identities = res.data
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-
-    const identity = identities.find((identity) => identity.traits.phone === phone)
-
-    if (!identity) return new PhoneIdentityDoesNotExistError(phone)
-
-    return toDomainIdentityPhone(identity)
   }
 
   const deleteIdentity = async (id: UserId): Promise<void | KratosError> => {
@@ -121,8 +115,8 @@ export const IdentityRepository = (): IIdentityRepository => {
 
   return {
     getIdentity,
+    getUserIdFromIdentifier,
     listIdentities,
-    slowFindByPhone,
     deleteIdentity,
   }
 }

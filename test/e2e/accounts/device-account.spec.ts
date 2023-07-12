@@ -19,9 +19,18 @@ import {
   killServer,
   startServer,
 } from "test/e2e/helpers"
-import { clearAccountLocks, clearLimiters, fundWalletIdFromLightning } from "test/helpers"
+import {
+  clearAccountLocks,
+  clearLimiters,
+  fundWalletIdFromLightning,
+  getPhoneAndCodeFromRef,
+} from "test/helpers"
+import { OATHKEEPER_HOST, OATHKEEPER_PORT } from "test/helpers/env"
 
 let serverPid: PID
+
+const UuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
@@ -36,9 +45,6 @@ beforeEach(async () => {
 afterAll(async () => {
   await killServer(serverPid)
 })
-
-const UuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 gql`
   mutation userLoginUpgrade($input: UserLoginUpgradeInput!) {
@@ -65,11 +71,12 @@ gql`
   }
 `
 
+const userRef = "O"
+const { phone, code } = getPhoneAndCodeFromRef(userRef)
+
 // dev/ory/gen-test-jwt.ts
 const jwt =
   "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWIzNyJ9.eyJzdWIiOiIxOjcyMjc5Mjk3MzY2OmFuZHJvaWQ6VEVTVEUyRUFDQ09VTlQ1YWE3NWFmNyIsImF1ZCI6WyJwcm9qZWN0cy83MjI3OTI5NzM2NiIsInByb2plY3RzL2dhbG95YXBwIl0sInByb3ZpZGVyIjoiZGVidWciLCJpc3MiOiJodHRwczovL2ZpcmViYXNlYXBwY2hlY2suZ29vZ2xlYXBpcy5jb20vNzIyNzkyOTczNjYifQ.onGs8nlWA1e1vkEwJhjDtNwCk1jLNezQign7HyCNBOuAxtr7kt0Id6eZtbROuDlVlS4KwO7xMrn3xxsQHZYftu_ihO61OKBw8IEIlLn548May3HGSMletWTANxMLnhwJIjph8ACpRTockFida3XIr2cgIHwPqNRigFh0Ib9HTG5cuzRpQUEkpgiXZ2dJ0hJppX5OX6Q2ywN5LD4mqqqbXV3VNqtGd9oCUI-t7Kfry4UpNBhkhkPzMc5pt_NRsIHFqGtyH1SRX7NJd8BZuPnVfS6zmoPHaOxOixEO4zhFgh_DRePg6_yT4ejRF29mx1gBhfKSz81R5_BVtjgD-LMUdg"
-const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
-const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
 describe("device-account", () => {
   let token: SessionToken
@@ -137,9 +144,6 @@ describe("device-account", () => {
       defaultTestClientConfig(token),
     )
 
-    const phone = "+198765432116"
-    const code = "321321"
-
     const res2 = await apolloClient.mutate<UserLoginUpgradeMutation>({
       mutation: UserLoginUpgradeDocument,
       variables: { input: { phone, code } },
@@ -164,10 +168,6 @@ describe("device-account", () => {
       const { apolloClient, disposeClient } = createApolloClient(
         defaultTestClientConfig(token),
       )
-
-      // existing phone
-      const phone = "+198765432116"
-      const code = "321321"
 
       const res3 = await apolloClient.mutate<UserLoginUpgradeMutation>({
         mutation: UserLoginUpgradeDocument,
@@ -207,10 +207,6 @@ describe("device-account", () => {
     const meResult = await apolloClient.query<MeQuery>({ query: MeDocument })
     const newWalletId = meResult?.data?.me?.defaultAccount.defaultWalletId || ""
     await fundWalletIdFromLightning({ walletId: newWalletId as WalletId, amount: 5 })
-
-    // existing phone
-    const phone = "+198765432116"
-    const code = "321321"
 
     const res3 = await apolloClient.mutate<UserLoginUpgradeMutation>({
       mutation: UserLoginUpgradeDocument,

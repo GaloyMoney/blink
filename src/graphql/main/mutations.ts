@@ -37,7 +37,15 @@ import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-creat
 import QuizCompletedMutation from "@graphql/root/mutation/quiz-completed"
 import AccountDeleteMutation from "@graphql/root/mutation/account-delete"
 import UserLoginUpgradeMutation from "@graphql/root/mutation/user-login-upgrade"
-import FeedbackSubmit from "@graphql/root/mutation/feedback-submit"
+import UserEmailRegistrationInitiateMutation from "@graphql/root/mutation/user-email-registration-initiate"
+import UserEmailRegistrationValidateMutation from "@graphql/root/mutation/user-email-registration-validate"
+import FeedbackSubmitMutation from "@graphql/root/mutation/feedback-submit"
+import UserEmailDeleteMutation from "@graphql/root/mutation/user-email-delete"
+import UserPhoneDeleteMutation from "@graphql/root/mutation/user-phone-delete"
+import UserTotpRegistrationInitiateMutation from "@graphql/root/mutation/user-totp-registration-initiate"
+import UserTotpRegistrationValidateMutation from "@graphql/root/mutation/user-totp-registration-validate"
+import UserPhoneRegistrationInitiateMutation from "@graphql/root/mutation/user-phone-registration-initiate"
+import UserPhoneRegistrationValidateMutation from "@graphql/root/mutation/user-phone-registration-validate"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 export const mutationFields = {
@@ -58,6 +66,14 @@ export const mutationFields = {
   authed: {
     atAccountLevel: {
       userLoginUpgrade: UserLoginUpgradeMutation,
+      userEmailRegistrationInitiate: UserEmailRegistrationInitiateMutation,
+      userEmailRegistrationValidate: UserEmailRegistrationValidateMutation,
+      userEmailDelete: UserEmailDeleteMutation,
+      userPhoneRegistrationInitiate: UserPhoneRegistrationInitiateMutation,
+      userPhoneRegistrationValidate: UserPhoneRegistrationValidateMutation,
+      userPhoneDelete: UserPhoneDeleteMutation,
+      userTotpRegistrationInitiate: UserTotpRegistrationInitiateMutation,
+      userTotpRegistrationValidate: UserTotpRegistrationValidateMutation,
 
       userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
       quizCompleted: QuizCompletedMutation,
@@ -69,7 +85,7 @@ export const mutationFields = {
       accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
       accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
       accountDelete: AccountDeleteMutation,
-      feedbackSubmit: FeedbackSubmit,
+      feedbackSubmit: FeedbackSubmitMutation,
     },
 
     atWalletLevel: {

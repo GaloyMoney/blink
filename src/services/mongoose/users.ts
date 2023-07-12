@@ -1,8 +1,4 @@
-import {
-  CouldNotUnsetPhoneFromUserError,
-  CouldNotFindUserFromPhoneError,
-  RepositoryError,
-} from "@domain/errors"
+import { CouldNotFindUserFromPhoneError, RepositoryError } from "@domain/errors"
 
 import { User } from "./schema"
 
@@ -16,6 +12,7 @@ export const translateToUser = (user: UserRecord): User => {
   const deletedPhones = user.deletedPhones as PhoneNumber[] | undefined
   const createdAt = user.createdAt
   const deviceId = user.deviceId as DeviceId | undefined
+  const deletedEmails = user.deletedEmails as EmailAddress[] | undefined
 
   return {
     id: user.userId as UserId,
@@ -26,6 +23,7 @@ export const translateToUser = (user: UserRecord): User => {
     deletedPhones,
     createdAt,
     deviceId,
+    deletedEmails,
   }
 }
 
@@ -47,6 +45,7 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  // TODO: should be replaced with listIdentities({ credentialsIdentifiers: phone })
   const findByPhone = async (phone: PhoneNumber): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ phone })
@@ -66,14 +65,16 @@ export const UsersRepository = (): IUsersRepository => {
     phone,
     deletedPhones,
     deviceId,
+    deletedEmails,
   }: UserUpdateInput): Promise<User | RepositoryError> => {
     const updateObject: Partial<UserUpdateInput> & {
       $unset?: { phone?: number; email?: number }
     } = {
-      language,
       deviceTokens,
       phoneMetadata,
+      language,
       deletedPhones,
+      deletedEmails,
       deviceId,
     }
 
@@ -98,19 +99,9 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const adminUnsetPhoneForUserPreservation = async (
-    id: UserId,
-  ): Promise<User | RepositoryError> => {
-    id
-
-    return new CouldNotUnsetPhoneFromUserError()
-    // stop using. is been deleted in email PR
-  }
-
   return {
     findById,
     findByPhone,
     update,
-    adminUnsetPhoneForUserPreservation,
   }
 }

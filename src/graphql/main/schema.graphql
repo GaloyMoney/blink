@@ -306,6 +306,21 @@ Display currency of an account
 """
 scalar DisplayCurrency
 
+type Email {
+  address: EmailAddress
+  verified: Boolean
+}
+
+"""
+Email address
+"""
+scalar EmailAddress
+
+"""
+An id to be passed between registrationInitiate and registrationValidate for confirming email
+"""
+scalar EmailRegistrationId
+
 interface Error {
   code: String
   message: String!
@@ -837,14 +852,34 @@ type Mutation {
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
+  userEmailDelete: UserEmailDeletePayload!
+  userEmailRegistrationInitiate(
+    input: UserEmailRegistrationInitiateInput!
+  ): UserEmailRegistrationInitiatePayload!
+  userEmailRegistrationValidate(
+    input: UserEmailRegistrationValidateInput!
+  ): UserEmailRegistrationValidatePayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
+  userPhoneDelete: UserPhoneDeletePayload!
+  userPhoneRegistrationInitiate(
+    input: UserPhoneRegistrationInitiateInput!
+  ): SuccessPayload!
+  userPhoneRegistrationValidate(
+    input: UserPhoneRegistrationValidateInput!
+  ): UserPhoneRegistrationValidatePayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
     @deprecated(reason: "Use QuizCompletedMutation instead")
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userTotpRegistrationInitiate(
+    input: UserTotpRegistrationInitiateInput!
+  ): UserTotpRegistrationInitiatePayload!
+  userTotpRegistrationValidate(
+    input: UserTotpRegistrationValidateInput!
+  ): UserTotpRegistrationValidatePayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload!
     @deprecated(
@@ -1283,6 +1318,21 @@ Timestamp field, serialized as Unix time (the number of seconds since the Unix e
 scalar Timestamp
 
 """
+A time-based one-time password
+"""
+scalar TotpCode
+
+"""
+An id to be passed between set and verify for confirming totp
+"""
+scalar TotpRegistrationId
+
+"""
+A secret to generate time-based one-time password
+"""
+scalar TotpSecret
+
+"""
 Give details about an individual transaction.
 Galoy have a smart routing system which is automatically
 settling intraledger when both the payer and payee use the same wallet
@@ -1459,6 +1509,11 @@ type User {
   contacts: [UserContact!]! @deprecated(reason: "will be moved to account")
   createdAt: Timestamp!
   defaultAccount: Account!
+
+  """
+  Email address
+  """
+  email: Email
   id: ID!
 
   """
@@ -1476,6 +1531,11 @@ type User {
   List the quiz questions the user may have completed.
   """
   quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
+
+  """
+  Whether TOTP is enabled for this user.
+  """
+  totpEnabled: Boolean!
 
   """
   Optional immutable user friendly identifier.
@@ -1533,6 +1593,31 @@ type UserContactUpdateAliasPayload {
   errors: [Error!]!
 }
 
+type UserEmailDeletePayload {
+  errors: [Error!]!
+  me: User
+}
+
+input UserEmailRegistrationInitiateInput {
+  email: EmailAddress!
+}
+
+type UserEmailRegistrationInitiatePayload {
+  emailRegistrationId: EmailRegistrationId
+  errors: [Error!]!
+  me: User
+}
+
+input UserEmailRegistrationValidateInput {
+  code: OneTimeAuthCode!
+  emailRegistrationId: EmailRegistrationId!
+}
+
+type UserEmailRegistrationValidatePayload {
+  errors: [Error!]!
+  me: User
+}
+
 input UserLoginInput {
   code: OneTimeAuthCode!
   phone: Phone!
@@ -1545,6 +1630,26 @@ input UserLoginUpgradeInput {
 
 input UserLogoutInput {
   authToken: AuthToken!
+}
+
+type UserPhoneDeletePayload {
+  errors: [Error!]!
+  me: User
+}
+
+input UserPhoneRegistrationInitiateInput {
+  channel: PhoneCodeChannelType
+  phone: Phone!
+}
+
+input UserPhoneRegistrationValidateInput {
+  code: OneTimeAuthCode!
+  phone: Phone!
+}
+
+type UserPhoneRegistrationValidatePayload {
+  errors: [Error!]!
+  me: User
 }
 
 type UserQuizQuestion {
@@ -1564,6 +1669,27 @@ type UserQuizQuestionUpdateCompletedPayload {
 input UserRequestAuthCodeInput {
   channel: PhoneCodeChannelType
   phone: Phone!
+}
+
+input UserTotpRegistrationInitiateInput {
+  authToken: AuthToken!
+}
+
+type UserTotpRegistrationInitiatePayload {
+  errors: [Error!]!
+  totpRegistrationId: TotpRegistrationId
+  totpSecret: TotpSecret
+}
+
+input UserTotpRegistrationValidateInput {
+  authToken: AuthToken!
+  totpCode: TotpCode!
+  totpRegistrationId: TotpRegistrationId!
+}
+
+type UserTotpRegistrationValidatePayload {
+  errors: [Error!]!
+  me: User
 }
 
 union UserUpdate = IntraLedgerUpdate | LnUpdate | OnChainUpdate | Price | RealtimePrice

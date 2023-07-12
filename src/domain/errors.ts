@@ -35,6 +35,7 @@ export class CouldNotFindUserError extends CouldNotFindError {}
 export class CouldNotFindUserFromIdError extends CouldNotFindError {}
 export class CouldNotFindAccountIpError extends CouldNotFindError {}
 export class CouldNotFindUserFromPhoneError extends CouldNotFindError {}
+export class CouldNotFindUserFromEmailError extends CouldNotFindError {}
 export class CouldNotFindUserFromWalletIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromIdError extends CouldNotFindError {}
 export class CouldNotListWalletsFromAccountIdError extends CouldNotFindError {}
@@ -91,6 +92,8 @@ export class InvalidPhoneNumber extends ValidationError {}
 export class InvalidUserId extends ValidationError {}
 export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
+export class InvalidFlowId extends ValidationError {}
+export class InvalidTotpCode extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
 export class InvalidLedgerTransactionStateError extends ValidationError {}
 export class InvalidDisplayCurrencyError extends ValidationError {}

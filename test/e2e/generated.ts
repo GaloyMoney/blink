@@ -27,6 +27,10 @@ export type Scalars = {
   CountryCode: { input: string; output: string; }
   /** Display currency of an account */
   DisplayCurrency: { input: string; output: string; }
+  /** Email address */
+  EmailAddress: { input: string; output: string; }
+  /** An id to be passed between set and verify for confirming email */
+  EmailRegistrationId: { input: string; output: string; }
   /** Feedback shared with our user */
   Feedback: { input: string; output: string; }
   /** Hex-encoded string of 32 bytes */
@@ -62,6 +66,12 @@ export type Scalars = {
   TargetConfirmations: { input: number; output: number; }
   /** Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch) */
   Timestamp: { input: number; output: number; }
+  /** A time-based one-time password */
+  TotpCode: { input: string; output: string; }
+  /** An id to be passed between set and verify for confirming totp */
+  TotpRegistrationId: { input: string; output: string; }
+  /** A secret to generate time-based one-time password */
+  TotpSecret: { input: string; output: string; }
   /** Unique identifier of a user */
   Username: { input: string; output: string; }
   /** Unique identifier of a wallet */
@@ -284,6 +294,12 @@ export type DepositFeesInformation = {
 
 export type DeviceNotificationTokenCreateInput = {
   readonly deviceToken: Scalars['String']['input'];
+};
+
+export type Email = {
+  readonly __typename: 'Email';
+  readonly address?: Maybe<Scalars['EmailAddress']['output']>;
+  readonly verified?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type Error = {
@@ -658,12 +674,20 @@ export type Mutation = {
   readonly quizCompleted: QuizCompletedPayload;
   /** @deprecated will be moved to AccountContact */
   readonly userContactUpdateAlias: UserContactUpdateAliasPayload;
+  readonly userEmailDelete: UserEmailDeletePayload;
+  readonly userEmailRegistrationInitiate: UserEmailRegistrationInitiatePayload;
+  readonly userEmailRegistrationValidate: UserEmailRegistrationValidatePayload;
   readonly userLogin: AuthTokenPayload;
   readonly userLoginUpgrade: UpgradePayload;
   readonly userLogout: AuthTokenPayload;
+  readonly userPhoneDelete: UserPhoneDeletePayload;
+  readonly userPhoneRegistrationInitiate: SuccessPayload;
+  readonly userPhoneRegistrationValidate: UserPhoneRegistrationValidatePayload;
   /** @deprecated Use QuizCompletedMutation instead */
   readonly userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedPayload;
   readonly userRequestAuthCode: SuccessPayload;
+  readonly userTotpRegistrationInitiate: UserTotpRegistrationInitiatePayload;
+  readonly userTotpRegistrationValidate: UserTotpRegistrationValidatePayload;
   readonly userUpdateLanguage: UserUpdateLanguagePayload;
   /** @deprecated Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles */
   readonly userUpdateUsername: UserUpdateUsernamePayload;
@@ -810,6 +834,16 @@ export type MutationUserContactUpdateAliasArgs = {
 };
 
 
+export type MutationUserEmailRegistrationInitiateArgs = {
+  input: UserEmailRegistrationInitiateInput;
+};
+
+
+export type MutationUserEmailRegistrationValidateArgs = {
+  input: UserEmailRegistrationValidateInput;
+};
+
+
 export type MutationUserLoginArgs = {
   input: UserLoginInput;
 };
@@ -825,6 +859,16 @@ export type MutationUserLogoutArgs = {
 };
 
 
+export type MutationUserPhoneRegistrationInitiateArgs = {
+  input: UserPhoneRegistrationInitiateInput;
+};
+
+
+export type MutationUserPhoneRegistrationValidateArgs = {
+  input: UserPhoneRegistrationValidateInput;
+};
+
+
 export type MutationUserQuizQuestionUpdateCompletedArgs = {
   input: UserQuizQuestionUpdateCompletedInput;
 };
@@ -832,6 +876,16 @@ export type MutationUserQuizQuestionUpdateCompletedArgs = {
 
 export type MutationUserRequestAuthCodeArgs = {
   input: UserRequestAuthCodeInput;
+};
+
+
+export type MutationUserTotpRegistrationInitiateArgs = {
+  input: UserTotpRegistrationInitiateInput;
+};
+
+
+export type MutationUserTotpRegistrationValidateArgs = {
+  input: UserTotpRegistrationValidateInput;
 };
 
 
@@ -1382,6 +1436,8 @@ export type User = {
   readonly contacts: ReadonlyArray<UserContact>;
   readonly createdAt: Scalars['Timestamp']['output'];
   readonly defaultAccount: Account;
+  /** Email address */
+  readonly email?: Maybe<Email>;
   readonly id: Scalars['ID']['output'];
   /**
    * Preferred language for user.
@@ -1395,6 +1451,8 @@ export type User = {
    * @deprecated use Quiz from Account instead
    */
   readonly quizQuestions: ReadonlyArray<UserQuizQuestion>;
+  /** Whether TOTP is enabled for this user. */
+  readonly totpEnabled: Scalars['Boolean']['output'];
   /**
    * Optional immutable user friendly identifier.
    * @deprecated will be moved to @Handle in Account and Wallet
@@ -1441,6 +1499,34 @@ export type UserContactUpdateAliasPayload = {
   readonly errors: ReadonlyArray<Error>;
 };
 
+export type UserEmailDeletePayload = {
+  readonly __typename: 'UserEmailDeletePayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly me?: Maybe<User>;
+};
+
+export type UserEmailRegistrationInitiateInput = {
+  readonly email: Scalars['EmailAddress']['input'];
+};
+
+export type UserEmailRegistrationInitiatePayload = {
+  readonly __typename: 'UserEmailRegistrationInitiatePayload';
+  readonly emailRegistrationId?: Maybe<Scalars['EmailRegistrationId']['output']>;
+  readonly errors: ReadonlyArray<Error>;
+  readonly me?: Maybe<User>;
+};
+
+export type UserEmailRegistrationValidateInput = {
+  readonly code: Scalars['OneTimeAuthCode']['input'];
+  readonly emailRegistrationId: Scalars['EmailRegistrationId']['input'];
+};
+
+export type UserEmailRegistrationValidatePayload = {
+  readonly __typename: 'UserEmailRegistrationValidatePayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly me?: Maybe<User>;
+};
+
 export type UserLoginInput = {
   readonly code: Scalars['OneTimeAuthCode']['input'];
   readonly phone: Scalars['Phone']['input'];
@@ -1453,6 +1539,28 @@ export type UserLoginUpgradeInput = {
 
 export type UserLogoutInput = {
   readonly authToken: Scalars['AuthToken']['input'];
+};
+
+export type UserPhoneDeletePayload = {
+  readonly __typename: 'UserPhoneDeletePayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly me?: Maybe<User>;
+};
+
+export type UserPhoneRegistrationInitiateInput = {
+  readonly channel?: InputMaybe<PhoneCodeChannelType>;
+  readonly phone: Scalars['Phone']['input'];
+};
+
+export type UserPhoneRegistrationValidateInput = {
+  readonly code: Scalars['OneTimeAuthCode']['input'];
+  readonly phone: Scalars['Phone']['input'];
+};
+
+export type UserPhoneRegistrationValidatePayload = {
+  readonly __typename: 'UserPhoneRegistrationValidatePayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly me?: Maybe<User>;
 };
 
 export type UserQuizQuestion = {
@@ -1474,6 +1582,29 @@ export type UserQuizQuestionUpdateCompletedPayload = {
 export type UserRequestAuthCodeInput = {
   readonly channel?: InputMaybe<PhoneCodeChannelType>;
   readonly phone: Scalars['Phone']['input'];
+};
+
+export type UserTotpRegistrationInitiateInput = {
+  readonly authToken: Scalars['AuthToken']['input'];
+};
+
+export type UserTotpRegistrationInitiatePayload = {
+  readonly __typename: 'UserTotpRegistrationInitiatePayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly totpRegistrationId?: Maybe<Scalars['TotpRegistrationId']['output']>;
+  readonly totpSecret?: Maybe<Scalars['TotpSecret']['output']>;
+};
+
+export type UserTotpRegistrationValidateInput = {
+  readonly authToken: Scalars['AuthToken']['input'];
+  readonly totpCode: Scalars['TotpCode']['input'];
+  readonly totpRegistrationId: Scalars['TotpRegistrationId']['input'];
+};
+
+export type UserTotpRegistrationValidatePayload = {
+  readonly __typename: 'UserTotpRegistrationValidatePayload';
+  readonly errors: ReadonlyArray<Error>;
+  readonly me?: Maybe<User>;
 };
 
 export type UserUpdate = IntraLedgerUpdate | LnUpdate | OnChainUpdate | Price | RealtimePrice;
@@ -1709,6 +1840,63 @@ export type MyUpdatesSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
 export type MyUpdatesSubscription = { readonly __typename: 'Subscription', readonly myUpdates: { readonly __typename: 'MyUpdatesPayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly id: string, readonly wallets: ReadonlyArray<{ readonly __typename: 'BTCWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number } | { readonly __typename: 'UsdWallet', readonly id: string, readonly walletCurrency: WalletCurrency, readonly balance: number }> } } | null, readonly update?: { readonly __typename: 'IntraLedgerUpdate', readonly txNotificationType: TxNotificationType, readonly amount: number, readonly usdPerSat: number, readonly type: 'IntraLedgerUpdate' } | { readonly __typename: 'LnUpdate', readonly paymentHash: string, readonly status: InvoicePaymentStatus, readonly type: 'LnUpdate' } | { readonly __typename: 'OnChainUpdate', readonly txNotificationType: TxNotificationType, readonly txHash: string, readonly amount: number, readonly usdPerSat: number, readonly type: 'OnChainUpdate' } | { readonly __typename: 'Price', readonly base: number, readonly offset: number, readonly currencyUnit: string, readonly formattedAmount: string, readonly type: 'Price' } | { readonly __typename: 'RealtimePrice', readonly id: string, readonly timestamp: number, readonly denominatorCurrency: string, readonly type: 'RealtimePrice', readonly btcSatPrice: { readonly __typename: 'PriceOfOneSatInMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string }, readonly usdCentPrice: { readonly __typename: 'PriceOfOneUsdCentInMinorUnit', readonly base: number, readonly offset: number, readonly currencyUnit: string } } | null } };
+
+export type UserEmailRegistrationInitiateMutationVariables = Exact<{
+  input: UserEmailRegistrationInitiateInput;
+}>;
+
+
+export type UserEmailRegistrationInitiateMutation = { readonly __typename: 'Mutation', readonly userEmailRegistrationInitiate: { readonly __typename: 'UserEmailRegistrationInitiatePayload', readonly emailRegistrationId?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null } };
+
+export type UserEmailRegistrationValidateMutationVariables = Exact<{
+  input: UserEmailRegistrationValidateInput;
+}>;
+
+
+export type UserEmailRegistrationValidateMutation = { readonly __typename: 'Mutation', readonly userEmailRegistrationValidate: { readonly __typename: 'UserEmailRegistrationValidatePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null } };
+
+export type UserEmailDeleteMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UserEmailDeleteMutation = { readonly __typename: 'Mutation', readonly userEmailDelete: { readonly __typename: 'UserEmailDeletePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null } };
+
+export type UserPhoneDeleteMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UserPhoneDeleteMutation = { readonly __typename: 'Mutation', readonly userPhoneDelete: { readonly __typename: 'UserPhoneDeletePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string, readonly phone?: string | null } | null } };
+
+export type UserTotpRegistrationInitiateMutationVariables = Exact<{
+  input: UserTotpRegistrationInitiateInput;
+}>;
+
+
+export type UserTotpRegistrationInitiateMutation = { readonly __typename: 'Mutation', readonly userTotpRegistrationInitiate: { readonly __typename: 'UserTotpRegistrationInitiatePayload', readonly totpRegistrationId?: string | null, readonly totpSecret?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
+
+export type UserTotpRegistrationValidateMutationVariables = Exact<{
+  input: UserTotpRegistrationValidateInput;
+}>;
+
+
+export type UserTotpRegistrationValidateMutation = { readonly __typename: 'Mutation', readonly userTotpRegistrationValidate: { readonly __typename: 'UserTotpRegistrationValidatePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly totpEnabled: boolean, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null } };
+
+export type UserPhoneRegistrationInitiateMutationVariables = Exact<{
+  input: UserPhoneRegistrationInitiateInput;
+}>;
+
+
+export type UserPhoneRegistrationInitiateMutation = { readonly __typename: 'Mutation', readonly userPhoneRegistrationInitiate: { readonly __typename: 'SuccessPayload', readonly success?: boolean | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
+
+export type UserPhoneRegistrationValidateMutationVariables = Exact<{
+  input: UserPhoneRegistrationValidateInput;
+}>;
+
+
+export type UserPhoneRegistrationValidateMutation = { readonly __typename: 'Mutation', readonly userPhoneRegistrationValidate: { readonly __typename: 'UserPhoneRegistrationValidatePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly me?: { readonly __typename: 'User', readonly id: string } | null } };
+
+export type EmailQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EmailQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly totpEnabled: boolean, readonly email?: { readonly __typename: 'Email', readonly address?: string | null, readonly verified?: boolean | null } | null } | null };
 
 export const TransactionListFragmentDoc = gql`
     fragment TransactionList on TransactionConnection {
@@ -2774,3 +2962,358 @@ export function useMyUpdatesSubscription(baseOptions?: Apollo.SubscriptionHookOp
       }
 export type MyUpdatesSubscriptionHookResult = ReturnType<typeof useMyUpdatesSubscription>;
 export type MyUpdatesSubscriptionResult = Apollo.SubscriptionResult<MyUpdatesSubscription>;
+export const UserEmailRegistrationInitiateDocument = gql`
+    mutation userEmailRegistrationInitiate($input: UserEmailRegistrationInitiateInput!) {
+  userEmailRegistrationInitiate(input: $input) {
+    errors {
+      message
+    }
+    emailRegistrationId
+    me {
+      id
+      email {
+        address
+        verified
+      }
+    }
+  }
+}
+    `;
+export type UserEmailRegistrationInitiateMutationFn = Apollo.MutationFunction<UserEmailRegistrationInitiateMutation, UserEmailRegistrationInitiateMutationVariables>;
+
+/**
+ * __useUserEmailRegistrationInitiateMutation__
+ *
+ * To run a mutation, you first call `useUserEmailRegistrationInitiateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserEmailRegistrationInitiateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userEmailRegistrationInitiateMutation, { data, loading, error }] = useUserEmailRegistrationInitiateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUserEmailRegistrationInitiateMutation(baseOptions?: Apollo.MutationHookOptions<UserEmailRegistrationInitiateMutation, UserEmailRegistrationInitiateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserEmailRegistrationInitiateMutation, UserEmailRegistrationInitiateMutationVariables>(UserEmailRegistrationInitiateDocument, options);
+      }
+export type UserEmailRegistrationInitiateMutationHookResult = ReturnType<typeof useUserEmailRegistrationInitiateMutation>;
+export type UserEmailRegistrationInitiateMutationResult = Apollo.MutationResult<UserEmailRegistrationInitiateMutation>;
+export type UserEmailRegistrationInitiateMutationOptions = Apollo.BaseMutationOptions<UserEmailRegistrationInitiateMutation, UserEmailRegistrationInitiateMutationVariables>;
+export const UserEmailRegistrationValidateDocument = gql`
+    mutation userEmailRegistrationValidate($input: UserEmailRegistrationValidateInput!) {
+  userEmailRegistrationValidate(input: $input) {
+    errors {
+      message
+    }
+    me {
+      id
+      email {
+        address
+        verified
+      }
+    }
+  }
+}
+    `;
+export type UserEmailRegistrationValidateMutationFn = Apollo.MutationFunction<UserEmailRegistrationValidateMutation, UserEmailRegistrationValidateMutationVariables>;
+
+/**
+ * __useUserEmailRegistrationValidateMutation__
+ *
+ * To run a mutation, you first call `useUserEmailRegistrationValidateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserEmailRegistrationValidateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userEmailRegistrationValidateMutation, { data, loading, error }] = useUserEmailRegistrationValidateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUserEmailRegistrationValidateMutation(baseOptions?: Apollo.MutationHookOptions<UserEmailRegistrationValidateMutation, UserEmailRegistrationValidateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserEmailRegistrationValidateMutation, UserEmailRegistrationValidateMutationVariables>(UserEmailRegistrationValidateDocument, options);
+      }
+export type UserEmailRegistrationValidateMutationHookResult = ReturnType<typeof useUserEmailRegistrationValidateMutation>;
+export type UserEmailRegistrationValidateMutationResult = Apollo.MutationResult<UserEmailRegistrationValidateMutation>;
+export type UserEmailRegistrationValidateMutationOptions = Apollo.BaseMutationOptions<UserEmailRegistrationValidateMutation, UserEmailRegistrationValidateMutationVariables>;
+export const UserEmailDeleteDocument = gql`
+    mutation userEmailDelete {
+  userEmailDelete {
+    errors {
+      message
+    }
+    me {
+      id
+      email {
+        address
+        verified
+      }
+    }
+  }
+}
+    `;
+export type UserEmailDeleteMutationFn = Apollo.MutationFunction<UserEmailDeleteMutation, UserEmailDeleteMutationVariables>;
+
+/**
+ * __useUserEmailDeleteMutation__
+ *
+ * To run a mutation, you first call `useUserEmailDeleteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserEmailDeleteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userEmailDeleteMutation, { data, loading, error }] = useUserEmailDeleteMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useUserEmailDeleteMutation(baseOptions?: Apollo.MutationHookOptions<UserEmailDeleteMutation, UserEmailDeleteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserEmailDeleteMutation, UserEmailDeleteMutationVariables>(UserEmailDeleteDocument, options);
+      }
+export type UserEmailDeleteMutationHookResult = ReturnType<typeof useUserEmailDeleteMutation>;
+export type UserEmailDeleteMutationResult = Apollo.MutationResult<UserEmailDeleteMutation>;
+export type UserEmailDeleteMutationOptions = Apollo.BaseMutationOptions<UserEmailDeleteMutation, UserEmailDeleteMutationVariables>;
+export const UserPhoneDeleteDocument = gql`
+    mutation userPhoneDelete {
+  userPhoneDelete {
+    errors {
+      message
+    }
+    me {
+      id
+      phone
+    }
+  }
+}
+    `;
+export type UserPhoneDeleteMutationFn = Apollo.MutationFunction<UserPhoneDeleteMutation, UserPhoneDeleteMutationVariables>;
+
+/**
+ * __useUserPhoneDeleteMutation__
+ *
+ * To run a mutation, you first call `useUserPhoneDeleteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserPhoneDeleteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userPhoneDeleteMutation, { data, loading, error }] = useUserPhoneDeleteMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useUserPhoneDeleteMutation(baseOptions?: Apollo.MutationHookOptions<UserPhoneDeleteMutation, UserPhoneDeleteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserPhoneDeleteMutation, UserPhoneDeleteMutationVariables>(UserPhoneDeleteDocument, options);
+      }
+export type UserPhoneDeleteMutationHookResult = ReturnType<typeof useUserPhoneDeleteMutation>;
+export type UserPhoneDeleteMutationResult = Apollo.MutationResult<UserPhoneDeleteMutation>;
+export type UserPhoneDeleteMutationOptions = Apollo.BaseMutationOptions<UserPhoneDeleteMutation, UserPhoneDeleteMutationVariables>;
+export const UserTotpRegistrationInitiateDocument = gql`
+    mutation userTotpRegistrationInitiate($input: UserTotpRegistrationInitiateInput!) {
+  userTotpRegistrationInitiate(input: $input) {
+    errors {
+      message
+    }
+    totpRegistrationId
+    totpSecret
+  }
+}
+    `;
+export type UserTotpRegistrationInitiateMutationFn = Apollo.MutationFunction<UserTotpRegistrationInitiateMutation, UserTotpRegistrationInitiateMutationVariables>;
+
+/**
+ * __useUserTotpRegistrationInitiateMutation__
+ *
+ * To run a mutation, you first call `useUserTotpRegistrationInitiateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserTotpRegistrationInitiateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userTotpRegistrationInitiateMutation, { data, loading, error }] = useUserTotpRegistrationInitiateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUserTotpRegistrationInitiateMutation(baseOptions?: Apollo.MutationHookOptions<UserTotpRegistrationInitiateMutation, UserTotpRegistrationInitiateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserTotpRegistrationInitiateMutation, UserTotpRegistrationInitiateMutationVariables>(UserTotpRegistrationInitiateDocument, options);
+      }
+export type UserTotpRegistrationInitiateMutationHookResult = ReturnType<typeof useUserTotpRegistrationInitiateMutation>;
+export type UserTotpRegistrationInitiateMutationResult = Apollo.MutationResult<UserTotpRegistrationInitiateMutation>;
+export type UserTotpRegistrationInitiateMutationOptions = Apollo.BaseMutationOptions<UserTotpRegistrationInitiateMutation, UserTotpRegistrationInitiateMutationVariables>;
+export const UserTotpRegistrationValidateDocument = gql`
+    mutation userTotpRegistrationValidate($input: UserTotpRegistrationValidateInput!) {
+  userTotpRegistrationValidate(input: $input) {
+    errors {
+      message
+    }
+    me {
+      totpEnabled
+      email {
+        address
+        verified
+      }
+    }
+  }
+}
+    `;
+export type UserTotpRegistrationValidateMutationFn = Apollo.MutationFunction<UserTotpRegistrationValidateMutation, UserTotpRegistrationValidateMutationVariables>;
+
+/**
+ * __useUserTotpRegistrationValidateMutation__
+ *
+ * To run a mutation, you first call `useUserTotpRegistrationValidateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserTotpRegistrationValidateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userTotpRegistrationValidateMutation, { data, loading, error }] = useUserTotpRegistrationValidateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUserTotpRegistrationValidateMutation(baseOptions?: Apollo.MutationHookOptions<UserTotpRegistrationValidateMutation, UserTotpRegistrationValidateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserTotpRegistrationValidateMutation, UserTotpRegistrationValidateMutationVariables>(UserTotpRegistrationValidateDocument, options);
+      }
+export type UserTotpRegistrationValidateMutationHookResult = ReturnType<typeof useUserTotpRegistrationValidateMutation>;
+export type UserTotpRegistrationValidateMutationResult = Apollo.MutationResult<UserTotpRegistrationValidateMutation>;
+export type UserTotpRegistrationValidateMutationOptions = Apollo.BaseMutationOptions<UserTotpRegistrationValidateMutation, UserTotpRegistrationValidateMutationVariables>;
+export const UserPhoneRegistrationInitiateDocument = gql`
+    mutation userPhoneRegistrationInitiate($input: UserPhoneRegistrationInitiateInput!) {
+  userPhoneRegistrationInitiate(input: $input) {
+    errors {
+      message
+    }
+    success
+  }
+}
+    `;
+export type UserPhoneRegistrationInitiateMutationFn = Apollo.MutationFunction<UserPhoneRegistrationInitiateMutation, UserPhoneRegistrationInitiateMutationVariables>;
+
+/**
+ * __useUserPhoneRegistrationInitiateMutation__
+ *
+ * To run a mutation, you first call `useUserPhoneRegistrationInitiateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserPhoneRegistrationInitiateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userPhoneRegistrationInitiateMutation, { data, loading, error }] = useUserPhoneRegistrationInitiateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUserPhoneRegistrationInitiateMutation(baseOptions?: Apollo.MutationHookOptions<UserPhoneRegistrationInitiateMutation, UserPhoneRegistrationInitiateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserPhoneRegistrationInitiateMutation, UserPhoneRegistrationInitiateMutationVariables>(UserPhoneRegistrationInitiateDocument, options);
+      }
+export type UserPhoneRegistrationInitiateMutationHookResult = ReturnType<typeof useUserPhoneRegistrationInitiateMutation>;
+export type UserPhoneRegistrationInitiateMutationResult = Apollo.MutationResult<UserPhoneRegistrationInitiateMutation>;
+export type UserPhoneRegistrationInitiateMutationOptions = Apollo.BaseMutationOptions<UserPhoneRegistrationInitiateMutation, UserPhoneRegistrationInitiateMutationVariables>;
+export const UserPhoneRegistrationValidateDocument = gql`
+    mutation userPhoneRegistrationValidate($input: UserPhoneRegistrationValidateInput!) {
+  userPhoneRegistrationValidate(input: $input) {
+    errors {
+      message
+    }
+    me {
+      id
+    }
+  }
+}
+    `;
+export type UserPhoneRegistrationValidateMutationFn = Apollo.MutationFunction<UserPhoneRegistrationValidateMutation, UserPhoneRegistrationValidateMutationVariables>;
+
+/**
+ * __useUserPhoneRegistrationValidateMutation__
+ *
+ * To run a mutation, you first call `useUserPhoneRegistrationValidateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUserPhoneRegistrationValidateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [userPhoneRegistrationValidateMutation, { data, loading, error }] = useUserPhoneRegistrationValidateMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUserPhoneRegistrationValidateMutation(baseOptions?: Apollo.MutationHookOptions<UserPhoneRegistrationValidateMutation, UserPhoneRegistrationValidateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UserPhoneRegistrationValidateMutation, UserPhoneRegistrationValidateMutationVariables>(UserPhoneRegistrationValidateDocument, options);
+      }
+export type UserPhoneRegistrationValidateMutationHookResult = ReturnType<typeof useUserPhoneRegistrationValidateMutation>;
+export type UserPhoneRegistrationValidateMutationResult = Apollo.MutationResult<UserPhoneRegistrationValidateMutation>;
+export type UserPhoneRegistrationValidateMutationOptions = Apollo.BaseMutationOptions<UserPhoneRegistrationValidateMutation, UserPhoneRegistrationValidateMutationVariables>;
+export const EmailDocument = gql`
+    query email {
+  me {
+    email {
+      address
+      verified
+    }
+    totpEnabled
+  }
+}
+    `;
+
+/**
+ * __useEmailQuery__
+ *
+ * To run a query within a React component, call `useEmailQuery` and pass it any options that fit your needs.
+ * When your component renders, `useEmailQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useEmailQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useEmailQuery(baseOptions?: Apollo.QueryHookOptions<EmailQuery, EmailQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<EmailQuery, EmailQueryVariables>(EmailDocument, options);
+      }
+export function useEmailLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<EmailQuery, EmailQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<EmailQuery, EmailQueryVariables>(EmailDocument, options);
+        }
+export type EmailQueryHookResult = ReturnType<typeof useEmailQuery>;
+export type EmailLazyQueryHookResult = ReturnType<typeof useEmailLazyQuery>;
+export type EmailQueryResult = Apollo.QueryResult<EmailQuery, EmailQueryVariables>;

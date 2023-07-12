@@ -12,7 +12,7 @@ import {
   RouteFindingError,
   InvalidCoordinatesError,
   InvalidBusinessTitleLengthError,
-  PhoneCodeError,
+  VerificationCodeError,
   UsernameError,
   DealerOfflineError,
   InsufficientLiquidityError,
@@ -23,6 +23,9 @@ import {
   DealerError,
   PhoneAccountAlreadyExistsError,
   PhoneAccountAlreadyExistsNeedToSweepFundsError,
+  EmailNotVerifiedError,
+  EmailAlreadyExistsError,
+  PhoneAlreadyExistsError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -86,8 +89,16 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for wallet-id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindUserFromEmailError":
+      message = `User does not exist for email`
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "ContactNotExistentError":
       message = `Contact does not exist for account ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
+    case "IdentifierNotFoundError":
+      message = `Identifier does not exist ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "SelfPaymentError":
@@ -198,19 +209,27 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new TooManyRequestError({ message, logger: baseLogger })
 
     case "PhoneCodeInvalidError":
-      message = "Invalid or incorrect phone code entered."
-      return new PhoneCodeError({ message, logger: baseLogger })
+      message = "Invalid or incorrect code entered."
+      return new VerificationCodeError({ message, logger: baseLogger })
+
+    case "EmailCodeInvalidError":
+      message = "Invalid or incorrect code entered."
+      return new VerificationCodeError({ message, logger: baseLogger })
 
     case "ExpiredOrNonExistentPhoneNumberError":
-      message = "Invalid or incorrect phone code entered."
-      return new PhoneCodeError({ message, logger: baseLogger })
+      message = "Invalid or incorrect phone entered."
+      return new VerificationCodeError({ message, logger: baseLogger })
 
     case "CouldNotFindAccountFromPhoneError":
       message = "Invalid or incorrect phone entered."
-      return new PhoneCodeError({ message, logger: baseLogger })
+      return new VerificationCodeError({ message, logger: baseLogger })
 
     case "UserLoginPhoneRateLimiterExceededError":
       message = "Too many login attempts, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
+    case "EmailValidationSubmittedTooOftenError":
+      message = "Too many attempts, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
     case "UserLoginIpRateLimiterExceededError":
@@ -383,6 +402,15 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         logger: baseLogger,
       })
 
+    case "EmailNotVerifiedError":
+      return new EmailNotVerifiedError({ logger: baseLogger })
+
+    case "EmailAlreadyExistsError":
+      return new EmailAlreadyExistsError({ logger: baseLogger })
+
+    case "PhoneAlreadyExistsError":
+      return new PhoneAlreadyExistsError({ logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -418,6 +446,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidIdentityPassword":
     case "InvalidIdentityUsername":
     case "InvalidPhoneNumber":
+    case "InvalidTotpCode":
     case "InvalidEmailAddress":
     case "InvalidTargetConfirmations":
     case "NoContactForUsernameError":
@@ -547,7 +576,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "AuthenticationError":
     case "LikelyNoUserWithThisPhoneExistError":
     case "LikelyUserAlreadyExistError":
-    case "PhoneIdentityDoesNotExistError":
     case "CouldNotUnsetPhoneFromUserError":
     case "NotificationsServiceUnreachableServerError":
     case "InvalidDeviceTokenError":
@@ -575,10 +603,18 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MultipleCurrenciesForSingleCurrencyOperationError":
     case "MattermostError":
     case "CouldNotFindAccountIpError":
+    case "InvalidFlowId":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`
       return new UnexpectedClientError({ message, logger: baseLogger })
+
+    case "AuthTokenUserIdMismatchError":
+      return new UnexpectedClientError({
+        message,
+        logger: baseLogger,
+        forwardToClient: false,
+      })
 
     // ----------
     // Unknown below here

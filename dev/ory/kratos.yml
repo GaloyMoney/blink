@@ -85,8 +85,10 @@ selfservice:
       ui_url: http://127.0.0.1:4002/recovery
 
     verification:
-      use: code # Defines which method is used, one of 'code' or 'link'.
+      use: code
       enabled: true
+      lifespan: 15m
+      # notify_unknown_recipients: false
 
     logout:
       after:
@@ -168,14 +170,27 @@ identity:
       url: file:///home/ory/phone_no_password_v0.identity.schema.json
     - id: phone_email_no_password_v0
       url: file:///home/ory/phone_email_no_password_v0.identity.schema.json
-    - id: phone_or_email_password_v0
-      url: file:///home/ory/phone_or_email_password_v0.identity.schema.json
+    - id: email_no_password_v0
+      url: file:///home/ory/email_no_password_v0.identity.schema.json
     - id: username_password_deviceid_v0
       url: file:///home/ory/username_password_deviceid_v0.identity.schema.json
 
 courier:
   smtp:
     connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
+  templates:
+    recovery_code:
+      valid:
+        email:
+          subject: base64://eW91ciBjb2RlCg==
+          body:
+            # courier/template/courier/builtin/templates/recovery_code/valid/email.body.plaintext.gotmpl
+            # Hi,
+            # You can confirm access to your blink account by entering the following code:
+            # {{ .RecoveryCode }}
+            # Don't share this code with anyone. Our employee will never ask for this code
+            plaintext: base64://SGksCgpZb3UgY2FuIGNvbmZpcm0gYWNjZXNzIHRvIHlvdXIgYmxpbmsgYWNjb3VudCBieSBlbnRlcmluZyB0aGUgZm9sbG93aW5nIGNvZGU6Cgp7eyAuUmVjb3ZlcnlDb2RlIH19CgpEb24ndCBzaGFyZSB0aGlzIGNvZGUgd2l0aCBhbnlvbmUuIE91ciBlbXBsb3llZSB3aWxsIG5ldmVyIGFzayBmb3IgdGhpcyBjb2RlCg==
+            html: base64://SGksCgpZb3UgY2FuIGNvbmZpcm0gYWNjZXNzIHRvIHlvdXIgYmxpbmsgYWNjb3VudCBieSBlbnRlcmluZyB0aGUgZm9sbG93aW5nIGNvZGU6Cgp7eyAuUmVjb3ZlcnlDb2RlIH19CgpEb24ndCBzaGFyZSB0aGlzIGNvZGUgd2l0aCBhbnlvbmUuIE91ciBlbXBsb3llZSB3aWxsIG5ldmVyIGFzayBmb3IgdGhpcyBjb2RlCg==
 
 session:
   # TODO: check lifespan per schema
@@ -184,4 +199,4 @@ session:
   earliest_possible_extend: "720h" # needed for test. should be shorter in prod
 
   whoami:
-    required_aal: aal1
+    required_aal: highest_available

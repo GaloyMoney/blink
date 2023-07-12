@@ -20,7 +20,7 @@ const OneTimeAuthCode = GT.Scalar({
   },
 })
 
-function validOneTimeAuthCodeValue(value: string) {
+const validOneTimeAuthCodeValue = (value: string) => {
   if (value.match(/^[0-9]{6}/i)) {
     return value.toLowerCase() as PhoneCode
   }

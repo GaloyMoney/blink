@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import AuthToken from "@graphql/types/scalar/auth-token"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
-import { logoutToken } from "@app/auth"
+import { logoutToken } from "@app/authentication"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const UserLogoutInput = GT.Input({

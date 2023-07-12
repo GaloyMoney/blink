@@ -24,7 +24,7 @@ const UserRequestAuthCodeMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserRequestAuthCodeInput) },
   },
-  resolve: async (_, args, { logger, ip }) => {
+  resolve: async (_, args, { ip }) => {
     const isCaptchaMandatory = getCaptcha().mandatory
     if (isCaptchaMandatory) {
       return { errors: [{ message: "use captcha endpoint to request auth code" }] }
@@ -44,20 +44,20 @@ const UserRequestAuthCodeMutation = GT.Field({
     }
 
     let channel: ChannelType = ChannelType.Sms
-    if (channelInput === "WHATSAPP") channel = ChannelType.Whatsapp
+    if (channelInput?.toLowerCase() === ChannelType.Whatsapp)
+      channel = ChannelType.Whatsapp
 
-    const status = await Auth.requestPhoneCode({
+    const success = await Auth.requestPhoneCodeForNewUser({
       phone,
-      logger,
       ip,
       channel,
     })
 
-    if (status instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(status)] }
+    if (success instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(success)] }
     }
 
-    return { errors: [], success: status }
+    return { errors: [], success }
   },
 })
 

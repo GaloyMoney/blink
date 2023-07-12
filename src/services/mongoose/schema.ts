@@ -354,7 +354,9 @@ const UserSchema = new Schema(
     deviceId: {
       type: String,
     },
-    deletedDeviceId: { type: String },
+    deletedEmail: {
+      type: [String],
+    },
   },
   { id: false },
 )
