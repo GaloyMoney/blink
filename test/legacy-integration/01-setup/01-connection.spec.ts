@@ -1,3 +1,4 @@
+import { NewOnChainService } from "@services/bria"
 import { redis } from "@services/redis"
 import { Account } from "@services/mongoose/schema"
 
@@ -12,6 +13,7 @@ import {
   resetLnds,
   getChannels,
   getChainBalance,
+  waitForWithCount,
 } from "test/helpers"
 
 it("connects to bitcoind", async () => {
@@ -63,4 +65,13 @@ it("connects to redis", async () => {
   await redis.set("key", value)
   const result = await redis.get("key")
   expect(result).toBe(value)
+})
+
+it("connects to bria", async () => {
+  let res
+  await waitForWithCount(async () => {
+    const res = await NewOnChainService().getBalance()
+    return !(res instanceof Error)
+  }, 20)
+  expect(res).not.toBeInstanceOf(Error)
 })
