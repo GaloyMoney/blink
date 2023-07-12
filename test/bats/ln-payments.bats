@@ -7,11 +7,11 @@ setup_file() {
   reset_redis
 
   bitcoind_init
-  lnds_init
   start_trigger
   start_server
   start_exporter
 
+  lnds_init
   initialize_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
   initialize_user "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
 }

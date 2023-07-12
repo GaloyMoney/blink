@@ -99,6 +99,7 @@ test_accounts:
   - ref: M
     phone: "+16505554351"
     code: "321321"
+    username: lnd_funding
   - ref: "N"
     phone: "+16505554352"
     code: "321321"
