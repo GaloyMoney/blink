@@ -4,6 +4,8 @@ import { getFunderWalletId } from "@services/ledger/caching"
 
 import { baseLogger } from "@services/logger"
 
+import { NewOnChainService } from "@services/bria"
+
 import { getActiveLnd } from "@services/lnd/utils"
 
 import {
@@ -33,6 +35,7 @@ import {
   resetBria,
   resetDatabase,
   resetLnds,
+  waitForNoErrorWithCount,
 } from "test/helpers"
 
 export type TestingStateConfig = {
@@ -191,4 +194,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   if (activeLnd instanceof Error) throw activeLnd
 
   await waitUntilGraphIsReady({ lnd: activeLnd.lnd })
+
+  const balance = await waitForNoErrorWithCount(NewOnChainService().getBalance, 40)
+  if (balance instanceof Error) throw balance
 }
