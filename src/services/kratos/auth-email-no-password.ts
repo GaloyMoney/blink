@@ -6,7 +6,7 @@ import { isAxiosError } from "axios"
 
 import {
   EmailCodeInvalidError,
-  EmailNotVerifiedError,
+  EmailUnverifiedError,
   EmailValidationSubmittedTooOftenError,
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
@@ -17,7 +17,12 @@ import { checkedToEmailAddress } from "@domain/users"
 
 import knex from "knex"
 
-import { IncompatibleSchemaUpgradeError, KratosError, UnknownKratosError } from "./errors"
+import {
+  EmailAlreadyExistsError,
+  IncompatibleSchemaUpgradeError,
+  KratosError,
+  UnknownKratosError,
+} from "./errors"
 import { kratosAdmin, kratosPublic, toDomainIdentityEmailPhone } from "./private"
 import { SchemaIdType } from "./schema"
 
@@ -279,6 +284,15 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
       return toDomainIdentityEmailPhone(newIdentity)
     } catch (err) {
+      if (isAxiosError(err)) {
+        if (err.message === "Request failed with status code 409") {
+          // FIXME account enumeration attack
+          // instead, should be sending an email to the user to inform him
+          // that there is already an account attached to his account
+          return new EmailAlreadyExistsError()
+        }
+      }
+
       return new UnknownKratosError(err)
     }
   }
@@ -340,7 +354,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       throw new UnknownKratosError("state undefined, probably impossible state") // type issue
 
     if (identity.verifiable_addresses?.[0].verified !== true) {
-      return new EmailNotVerifiedError()
+      return new EmailUnverifiedError()
     }
 
     const phone = identity.traits.phone as PhoneNumber

@@ -23,9 +23,10 @@ import {
   DealerError,
   PhoneAccountAlreadyExistsError,
   PhoneAccountAlreadyExistsNeedToSweepFundsError,
-  EmailNotVerifiedError,
-  EmailAlreadyExistsError,
+  EmailUnverifiedError,
+  AccountAlreadyHasEmailError,
   PhoneAlreadyExistsError,
+  EmailAlreadyExistsError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -402,14 +403,17 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         logger: baseLogger,
       })
 
-    case "EmailNotVerifiedError":
-      return new EmailNotVerifiedError({ logger: baseLogger })
+    case "EmailUnverifiedError":
+      return new EmailUnverifiedError({ logger: baseLogger })
 
-    case "EmailAlreadyExistsError":
-      return new EmailAlreadyExistsError({ logger: baseLogger })
+    case "AccountAlreadyHasEmailError":
+      return new AccountAlreadyHasEmailError({ logger: baseLogger })
 
     case "PhoneAlreadyExistsError":
       return new PhoneAlreadyExistsError({ logger: baseLogger })
+
+    case "EmailAlreadyExistsError":
+      return new EmailAlreadyExistsError({ logger: baseLogger })
 
     // ----------
     // Unhandled below here

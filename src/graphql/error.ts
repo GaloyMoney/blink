@@ -309,6 +309,18 @@ export class PhoneAccountAlreadyExistsError extends CustomApolloError {
   }
 }
 
+export class EmailAlreadyExistsError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message:
+        "Email account already exists. Please logout and log back in with your email account",
+      forwardToClient: true,
+      code: "EMAIL_ACCOUNT_ALREADY_EXISTS_ERROR",
+      ...errData,
+    })
+  }
+}
+
 export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
@@ -321,7 +333,7 @@ export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomApollo
   }
 }
 
-export class EmailNotVerifiedError extends CustomApolloError {
+export class EmailUnverifiedError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       message: "Email is not verified. Please verify your email and try again",
@@ -332,7 +344,7 @@ export class EmailNotVerifiedError extends CustomApolloError {
   }
 }
 
-export class EmailAlreadyExistsError extends CustomApolloError {
+export class AccountAlreadyHasEmailError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       message:

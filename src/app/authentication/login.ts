@@ -1,7 +1,7 @@
 import { createAccountForDeviceAccount } from "@app/accounts/create-account"
 
 import {
-  EmailNotVerifiedError,
+  EmailUnverifiedError,
   IdentifierNotFoundError,
 } from "@domain/authentication/errors"
 
@@ -169,7 +169,7 @@ export const loginWithEmail = async ({
 
   const isEmailVerified = await authServiceEmail.isEmailVerified({ email })
   if (isEmailVerified instanceof Error) return isEmailVerified
-  if (isEmailVerified === false) return new EmailNotVerifiedError()
+  if (isEmailVerified === false) return new EmailUnverifiedError()
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
 
