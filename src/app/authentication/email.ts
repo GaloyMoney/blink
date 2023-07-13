@@ -1,4 +1,4 @@
-import { EmailAlreadyExistsError } from "@domain/authentication/errors"
+import { AccountAlreadyHasEmailError } from "@domain/authentication/errors"
 import { AuthWithEmailPasswordlessService } from "@services/kratos"
 import { baseLogger } from "@services/logger"
 import { UsersRepository } from "@services/mongoose"
@@ -14,7 +14,7 @@ export const addEmailToIdentity = async ({
 
   const hasEmail = await authServiceEmail.hasEmail({ kratosUserId: userId })
   if (hasEmail instanceof Error) return hasEmail
-  if (hasEmail) return new EmailAlreadyExistsError()
+  if (hasEmail) return new AccountAlreadyHasEmailError()
 
   const res = await authServiceEmail.addUnverifiedEmailToIdentity({
     email,

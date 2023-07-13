@@ -420,7 +420,7 @@ describe("phone+email schema", () => {
       email,
     })
     if (!(res instanceof AuthenticationError)) throw new Error("wrong type")
-    expect(res.message).toBe("Request failed with status code 409")
+    expect(res.name).toBe("EmailAlreadyExistsError")
   })
 
   it("email verification", async () => {

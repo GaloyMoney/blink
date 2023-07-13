@@ -14,13 +14,14 @@ const User = GT.Object<User>({
   fields: () => ({
     id: { type: GT.NonNullID },
     phone: { type: GT.NonNull(Phone) },
+
     email: {
       type: GraphQLEmail,
       description: "Email address",
       resolve: async (source) => {
         const identity = await IdentityRepository().getIdentity(source.id)
         if (identity instanceof Error) throw mapError(identity)
-        return identity
+        return { address: identity.email, verified: identity.emailVerified }
       },
     },
     language: { type: GT.NonNull(Language) },
