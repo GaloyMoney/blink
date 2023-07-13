@@ -4,7 +4,6 @@ load "helpers"
 
 setup_file() {
   clear_cache
-  reset_redis
 
   bitcoind_init
   start_trigger
@@ -22,8 +21,12 @@ teardown_file() {
   stop_exporter
 }
 
+setup() {
+  reset_redis
+}
+
 teardown() {
-  [[ "$(balance_for_check)" = 0 ]] || exit 1
+  [[ "$(balance_for_check)" == 0 ]] || exit 1
 }
 
 btc_amount=1000
