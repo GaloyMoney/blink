@@ -6,11 +6,11 @@ import { ErrorLevel } from "@domain/shared"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 
 import { LndService } from "@services/lnd"
-import { LocalCacheService } from "@services/cache"
+import { RedisCacheService } from "@services/cache"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
-const cache = LocalCacheService()
+const cache = RedisCacheService()
 
 export const getTotalBalance = async (): Promise<Satoshis | ApplicationError> => {
   const balances = await Promise.all([
