@@ -6,7 +6,7 @@ import { EntryBuilder, toLedgerAccountDescriptor } from "../domain"
 import { FeeOnlyEntryBuilder } from "../domain/fee-only-entry-builder"
 import { persistAndReturnEntry } from "../helpers"
 
-import { staticAccountIds } from "./shared"
+import { staticAccountIds } from "./static-account-ids"
 
 const calc = AmountCalculator()
 

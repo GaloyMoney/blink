@@ -229,6 +229,33 @@ export const configSchema = {
       },
     },
     lndScbBackupBucketName: { type: "string", default: "lnd-static-channel-backups" },
+    admin_accounts: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          role: { type: "string" },
+          phone: { type: "string" },
+        },
+        required: ["role", "phone"],
+        additionalProperties: false,
+      },
+      default: [
+        {
+          role: "dealer",
+          phone: "+16505554327",
+        },
+        {
+          role: "funder",
+          phone: "+16505554325",
+        },
+        {
+          role: "bankowner",
+          phone: "+16505554334",
+        },
+      ],
+      uniqueItems: true,
+    },
     test_accounts: {
       type: "array",
       items: {

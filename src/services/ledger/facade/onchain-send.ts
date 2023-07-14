@@ -25,7 +25,7 @@ import { persistAndReturnEntry } from "../helpers"
 
 import { translateToLedgerTx } from ".."
 
-import { staticAccountIds } from "./shared"
+import { staticAccountIds } from "./static-account-ids"
 
 export const getTransactionsByPayoutId = async (
   payoutId: PayoutId,

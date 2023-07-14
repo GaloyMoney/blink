@@ -10,7 +10,7 @@ import { persistAndReturnEntry } from "../helpers"
 
 import { translateToLedgerJournal } from ".."
 
-import { staticAccountIds } from "./shared"
+import { staticAccountIds } from "./static-account-ids"
 
 export const recordSendOffChain = async ({
   description,

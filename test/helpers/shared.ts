@@ -6,10 +6,11 @@ export const waitFor = async (f) => {
   return res
 }
 
-export const waitForWithCount = async (f, max) => {
+export const waitForNoErrorWithCount = async (f, max) => {
   let count = 0
-  let res
-  while (!(res = await f()) && count < max) {
+  let res = new Error()
+  while (res instanceof Error && count < max) {
+    res = await f()
     await sleep(500)
     count++
   }

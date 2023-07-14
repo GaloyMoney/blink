@@ -13,7 +13,7 @@ import {
   resetLnds,
   getChannels,
   getChainBalance,
-  waitForWithCount,
+  waitForNoErrorWithCount,
 } from "test/helpers"
 
 it("connects to bitcoind", async () => {
@@ -68,10 +68,6 @@ it("connects to redis", async () => {
 })
 
 it("connects to bria", async () => {
-  let res
-  await waitForWithCount(async () => {
-    const res = await NewOnChainService().getBalance()
-    return !(res instanceof Error)
-  }, 20)
+  const res = await waitForNoErrorWithCount(NewOnChainService().getBalance, 40)
   expect(res).not.toBeInstanceOf(Error)
 })

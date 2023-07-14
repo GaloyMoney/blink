@@ -12,7 +12,7 @@ import { DisplayCurrency, toCents } from "@domain/fiat"
 
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
-import { staticAccountIds } from "@services/ledger/facade/shared"
+import { staticAccountIds } from "@services/ledger/facade"
 import { Transaction } from "@services/ledger/schema"
 import { onChainLedgerAccountId } from "@services/ledger/domain"
 
