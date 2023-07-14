@@ -13486,14 +13486,14 @@ tiny-secp256k1@2.2.1:
   dependencies:
     uint8array-tools "0.0.7"
 
-tiny-secp256k1@2.2.2, tiny-secp256k1@^2.2.2:
+tiny-secp256k1@2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/tiny-secp256k1/-/tiny-secp256k1-2.2.2.tgz#3600e24844cb6390876ef11174116c0386d129bf"
   integrity sha512-KP3eqslmiUH9jxhyQuLY+GqI4wt1EiHWNHHqKVUxCZV41+MT+esucaK4mb6Ji0vKWVKBffJ6tlxU83Pq5TIUwg==
   dependencies:
     uint8array-tools "0.0.7"
 
-tiny-secp256k1@2.2.3:
+tiny-secp256k1@2.2.3, tiny-secp256k1@^2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/tiny-secp256k1/-/tiny-secp256k1-2.2.3.tgz#fe1dde11a64fcee2091157d4b78bcb300feb9b65"
   integrity sha512-SGcL07SxcPN2nGKHTCvRMkQLYPSoeFcvArUSCYtjVARiFAWU44cCIqYS0mYAU6nY7XfvwURuTIGo2Omt3ZQr0Q==
