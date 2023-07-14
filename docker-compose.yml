@@ -356,7 +356,7 @@ services:
       timeout: 5s
       retries: 5
   oathkeeper:
-    image: oryd/oathkeeper:v0.40.2
+    image: oryd/oathkeeper:v0.40.4-distroless
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
       - type: bind
