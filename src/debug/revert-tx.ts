@@ -7,9 +7,6 @@
  *		src/debug/revert-tx.ts <txId>
  */
 
-import { isUp } from "@services/lnd/health"
-import { lndsConnect } from "@services/lnd/auth"
-
 import { setupMongoConnection } from "@services/mongodb"
 import { baseLogger } from "@services/logger"
 
@@ -31,7 +28,6 @@ const main = async (): Promise<true | ApplicationError> => {
 
 setupMongoConnection(false)
   .then(async (mongoose) => {
-    await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     if (mongoose) await mongoose.connection.close()
   })
