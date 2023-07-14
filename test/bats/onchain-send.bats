@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
-load "helpers"
+load "helpers/setup-and-teardown"
+load "helpers/onchain-send"
 
 setup_file() {
   clear_cache
@@ -11,8 +12,8 @@ setup_file() {
   start_server
   start_exporter
 
-  initialize_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
-  initialize_user "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
+  initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
 }
 
 teardown_file() {
@@ -293,8 +294,8 @@ teardown() {
   bitcoin_cli -generate 2
 
   # Check for settled
-  retry 15 1 check_for_settled "$token_name" "$on_chain_payment_send_all_address" 4
-  retry 3 1 check_for_settled "$token_name" "$on_chain_usd_payment_send_as_btc_denominated_address" 4
-  retry 3 1 check_for_settled "$token_name" "$on_chain_usd_payment_send_address" 4
-  retry 3 1 check_for_settled "$token_name" "$on_chain_payment_send_address" 4
+  retry 15 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_payment_send_all_address" 4
+  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_usd_payment_send_as_btc_denominated_address" 4
+  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_usd_payment_send_address" 4
+  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_payment_send_address" 4
 }

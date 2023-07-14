@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load "helpers"
+load "helpers/setup-and-teardown"
 
 setup_file() {
   start_server

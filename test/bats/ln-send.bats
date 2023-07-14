@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
-load "helpers"
+load "helpers/setup-and-teardown"
+load "helpers/ln-send"
 
 setup_file() {
   clear_cache
@@ -11,8 +12,8 @@ setup_file() {
   start_exporter
 
   lnds_init
-  initialize_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
-  initialize_user "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
+  initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
 }
 
 teardown_file() {
