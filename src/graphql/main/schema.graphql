@@ -29,6 +29,7 @@ interface Account {
     walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
+  referral: ReferralInfo!
 }
 
 type AccountDeletePayload {
@@ -741,6 +742,9 @@ type Mutation {
   accountUpdateDisplayCurrency(
     input: AccountUpdateDisplayCurrencyInput!
   ): AccountUpdateDisplayCurrencyPayload!
+  setUsernameIsReferralRankName(
+    input: SetUsernameIsReferralRankNameInput!
+  ): SetUsernameIsReferralRankNamePayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   deviceNotificationTokenCreate(
@@ -898,6 +902,15 @@ enum Network {
   regtest
   signet
   testnet
+}
+
+input SetUsernameIsReferralRankNameInput {
+  usernameIsReferralRankName: Boolean!
+}
+
+type SetUsernameIsReferralRankNamePayload {
+  errors: [Error!]!
+  referralRanking: ReferralRanking!
 }
 
 """
@@ -1187,7 +1200,21 @@ type Query {
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
+  referralRankings(
+    range: ReferralRange!
+  ): ReferralRankingConnection
 }
+
+type ReferralRanking {
+  referralRankName: ReferralRankName!
+  referralCount: Int!
+  referralRank: Int!
+  indirectReferralCount: Int!
+  indirectRank: Int!
+  range: ReferralRange!
+}
+
+scalar ReferralRankName
 
 type Quiz {
   """
@@ -1542,6 +1569,19 @@ type User {
   """
   username: Username @deprecated(reason: "will be moved to @Handle in Account and Wallet")
 }
+
+type ReferralInfo {
+  referralStats(range: ReferralRange!): ReferralRank!
+  referralLink: ReferralLink!
+  usernameIsReferralRankName: Boolean!
+}
+
+enum ReferralRange {
+  THIS_MONTH
+  ALL_TIME
+}
+
+scalar ReferralLink
 
 type UserContact {
   """
