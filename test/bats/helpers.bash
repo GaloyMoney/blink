@@ -1,13 +1,15 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${REPO_ROOT##*/}}"
 
-CACHE_DIR=${BATS_TMPDIR}/galoy-bats-cache
+CACHE_DIR=${BATS_TMPDIR:-tmp/bats}/galoy-bats-cache
 mkdir -p $CACHE_DIR
 
 GALOY_ENDPOINT=localhost:4002
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
+WS_SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_ws_server_pid
 TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
 EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
+SUBSCRIBER_PID_FILE=$REPO_ROOT/test/bats/.gql_subscriber_pid
 
 METRICS_ENDPOINT="localhost:3000/metrics"
 
@@ -49,6 +51,12 @@ start_server() {
   sleep 8
 }
 
+start_ws_server() {
+  background node lib/servers/ws-server.js > .e2e-ws-server.log
+  echo $! > $WS_SERVER_PID_FILE
+  sleep 8
+}
+
 start_trigger() {
   background node lib/servers/trigger.js > .e2e-trigger.log
   echo $! > $TRIGGER_PID_FILE
@@ -59,8 +67,17 @@ start_exporter() {
   echo $! > $EXPORTER_PID_FILE
 }
 
+subscribe_to() {
+  background ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/src/debug/gqlsubscribe.ts" "ws://${GALOY_ENDPOINT}/graphqlws" "$(gql_file $1)" > .e2e-subscriber.log
+  echo $! > $SUBSCRIBER_PID_FILE
+}
+
 stop_server() {
   [[ -f "$SERVER_PID_FILE" ]] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
+}
+
+stop_ws_server() {
+  [[ -f "$WS_SERVER_PID_FILE" ]] && kill -9 $(cat $WS_SERVER_PID_FILE) > /dev/null || true
 }
 
 stop_trigger() {
@@ -69,6 +86,10 @@ stop_trigger() {
 
 stop_exporter() {
   [[ -f "$EXPORTER_PID_FILE" ]] && kill -9 $(cat $EXPORTER_PID_FILE) > /dev/null || true
+}
+
+stop_subscriber() {
+  [[ -f "$SUBSCRIBER_PID_FILE" ]] && kill -9 $(cat $SUBSCRIBER_PID_FILE) > /dev/null || true
 }
 
 clear_cache() {
@@ -102,13 +123,23 @@ abs() {
 }
 
 gql_query() {
-  cat "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql" | tr '\n' ' ' | sed 's/"/\\"/g'
+  cat "$(gql_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
+}
+
+gql_file() {
+  echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql"
+}
+
+
+read_value() {
+  cat ${CACHE_DIR}/$1
 }
 
 exec_graphql() {
   local token_name=$1
   local query_name=$2
   local variables=${3:-"{}"}
+
   echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
   echo  "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
 
@@ -118,18 +149,12 @@ exec_graphql() {
        AUTH_HEADER="Authorization: Bearer $(read_value ${token_name})"
   fi
 
-  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
-    run_cmd="run"
-  else
-    run_cmd=""
-  fi
-
-  ${run_cmd} curl -s \
+  output=$(curl -s \
        -X POST \
-       ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
+       ${AUTH_HEADER:+-H} "${AUTH_HEADER}" \
        -H "Content-Type: application/json" \
        -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
-       ${GALOY_ENDPOINT}/graphql
+       ${GALOY_ENDPOINT}/graphql)
 
   echo "GQL output: '$output'"
 }
@@ -203,7 +228,11 @@ fund_wallet_intraledger() {
   )
   exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
   send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
-  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+  [[ "${send_status}" = "SUCCESS" ]]
+}
+
+initialize_alice() {
+  initialize_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
 }
 
 initialize_user() {
@@ -213,8 +242,7 @@ initialize_user() {
   local btc_amount_in_btc=${4:-"0.001"}
   local usd_amount_in_sats=${5:-"75000"}
 
-  check_user_creds_cached "$token_name" \
-    || login_user "$token_name" "$phone" "$code" \
+  login_user "$token_name" "$phone" "$code" \
     || exit 1
 
   fund_wallet_from_onchain \
@@ -270,7 +298,7 @@ check_for_settled() {
   exec_graphql "$token_name" 'transactions' "$variables"
 
   settled_status="$(get_from_transaction_by_address $address '.status')"
-  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+  [[ "${settled_status}" = "SUCCESS" ]]
 }
 
 balance_for_check() {
@@ -313,7 +341,11 @@ retry() {
   local i
 
   for ((i=0; i < attempts; i++)); do
-    run "$@"
+    if [[ "${BATS_TEST_DIRNAME}" = "" ]]; then
+      "$@"
+    else
+      run "$@"
+    fi
     if [[ "$status" -eq 0 ]] ; then
       return 0
     fi
