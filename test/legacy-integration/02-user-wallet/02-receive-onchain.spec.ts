@@ -156,7 +156,7 @@ describe("With Bria", () => {
 
     // Get address and send txn
     // ===
-    const address = await Wallets.createOnChainAddressForBtcWallet({ walletId })
+    const address = await Wallets.createOnChainAddress({ walletId })
     if (address instanceof Error) throw address
 
     expect(address.substring(0, 4)).toBe("bcrt")
@@ -433,7 +433,7 @@ describe("With Bria", () => {
       const requestId = ("requestId #" +
         (Math.random() * 1_000_000).toFixed()) as OnChainAddressRequestId
 
-      const address = await Wallets.createOnChainAddressForBtcWallet({
+      const address = await Wallets.createOnChainAddress({
         walletId: newWalletIdA,
         requestId,
       })
@@ -443,7 +443,7 @@ describe("With Bria", () => {
       expect(lastAddress).not.toBeInstanceOf(Error)
       expect(lastAddress).toBe(address)
 
-      const addressAgain = await Wallets.createOnChainAddressForBtcWallet({
+      const addressAgain = await Wallets.createOnChainAddress({
         walletId: newWalletIdA,
         requestId,
       })
@@ -460,7 +460,7 @@ describe("With Bria", () => {
       const limitsNum = getOnChainAddressCreateAttemptLimits().points
       const promises: Promise<OnChainAddress | ApplicationError>[] = []
       for (let i = 0; i < limitsNum; i++) {
-        const onChainAddressPromise = Wallets.createOnChainAddressForBtcWallet({
+        const onChainAddressPromise = Wallets.createOnChainAddress({
           walletId: newWalletIdA,
         })
         promises.push(onChainAddressPromise)
@@ -470,7 +470,7 @@ describe("With Bria", () => {
       expect(onChainAddresses.every(isNotError)).toBe(true)
 
       // Test that first address past the limit fails
-      const onChainAddress = await Wallets.createOnChainAddressForBtcWallet({
+      const onChainAddress = await Wallets.createOnChainAddress({
         walletId: newWalletIdA,
       })
       expect(onChainAddress).toBeInstanceOf(OnChainAddressCreateRateLimiterExceededError)
@@ -576,7 +576,7 @@ describe("With Bria", () => {
     })
 
     it("retrieves on-chain transactions by address", async () => {
-      const address1 = await Wallets.createOnChainAddressForBtcWallet({
+      const address1 = await Wallets.createOnChainAddress({
         walletId: newWalletIdA,
       })
       if (address1 instanceof Error) throw address1
@@ -587,7 +587,7 @@ describe("With Bria", () => {
         amountSats: getRandomAmountOfSats(),
       })
 
-      const address2 = await Wallets.createOnChainAddressForBtcWallet({
+      const address2 = await Wallets.createOnChainAddress({
         walletId: newWalletIdA,
       })
       if (address2 instanceof Error) throw address2
@@ -679,18 +679,18 @@ describe("With Bria", () => {
     })
 
     it("receives batch on-chain transaction", async () => {
-      const address1UserA = await Wallets.createOnChainAddressForBtcWallet({
+      const address1UserA = await Wallets.createOnChainAddress({
         walletId: newWalletIdA,
       })
       if (address1UserA instanceof Error) throw address1UserA
 
-      const address2UserA = await Wallets.createOnChainAddressForBtcWallet({
+      const address2UserA = await Wallets.createOnChainAddress({
         walletId: newWalletIdA,
       })
       if (address2UserA instanceof Error) throw address2UserA
 
       const funderWalletId = await getFunderWalletId()
-      const addressDealer = await Wallets.createOnChainAddressForBtcWallet({
+      const addressDealer = await Wallets.createOnChainAddress({
         walletId: funderWalletId,
       })
       if (addressDealer instanceof Error) throw addressDealer
@@ -829,7 +829,7 @@ describe("With Bria", () => {
 
       const amountSats = getRandomBtcAmount()
 
-      const address = await Wallets.createOnChainAddressForBtcWallet({
+      const address = await Wallets.createOnChainAddress({
         walletId: newWalletIdA,
       })
       if (address instanceof Error) throw address

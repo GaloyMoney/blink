@@ -23,7 +23,7 @@ describe("onChainAddress", () => {
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)
 
     // Create address attempt
-    const res = await Wallets.createOnChainAddressForBtcWallet({
+    const res = await Wallets.createOnChainAddress({
       walletId: newWalletDescriptor.id,
     })
     expect(res).toBeInstanceOf(InactiveAccountError)

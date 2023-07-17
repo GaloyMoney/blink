@@ -114,7 +114,7 @@ describe("onchainBlockEventHandler", () => {
     const output1 = {}
     output1[address2] = sat2btc(amount2)
 
-    const addressBria = await Wallets.createOnChainAddressForBtcWallet({
+    const addressBria = await Wallets.createOnChainAddress({
       walletId: walletIdF,
     })
     if (addressBria instanceof Error) throw addressBria

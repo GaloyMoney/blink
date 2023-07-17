@@ -1,4 +1,4 @@
-import { createOnChainAddressForBtcWallet } from "@app/wallets"
+import { createOnChainAddress } from "@app/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { WalletOnChainPendingReceiveRepository } from "@services/mongoose"
 import { sleep, timeoutWithCancel } from "@utils"
@@ -41,7 +41,7 @@ describe("trigger", () => {
         currency: WalletCurrency.Btc,
       })
       if (wallet instanceof Error) throw wallet
-      const bitcoindAddress = await createOnChainAddressForBtcWallet({
+      const bitcoindAddress = await createOnChainAddress({
         walletId: wallet.id,
       })
       if (bitcoindAddress instanceof Error) throw bitcoindAddress

@@ -15,8 +15,6 @@ import {
 import { OnChainService } from "@services/lnd/onchain-service"
 import { consumeLimiter } from "@services/rate-limit"
 
-import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
-
 export const lndCreateOnChainAddress = async (
   walletId: WalletId,
 ): Promise<OnChainAddress | ApplicationError> => {
@@ -47,7 +45,7 @@ export const lndCreateOnChainAddress = async (
   return savedOnChainAddress.address
 }
 
-const createOnChainAddress = async ({
+export const createOnChainAddress = async ({
   walletId,
   requestId,
 }: {
@@ -120,39 +118,8 @@ export const createOnChainAddressByWallet = async ({
 }: {
   wallet: WalletDescriptor<WalletCurrency>
   requestId?: OnChainAddressRequestId
-}): Promise<OnChainAddress | ApplicationError> => {
-  if (wallet.currency === WalletCurrency.Btc) {
-    return createOnChainAddressForBtcWallet({ walletId: wallet.id, requestId })
-  }
-
-  return createOnChainAddressForUsdWallet({ walletId: wallet.id, requestId })
-}
-
-export const createOnChainAddressForBtcWallet = async ({
-  walletId,
-  requestId,
-}: {
-  walletId: WalletId
-  requestId?: OnChainAddressRequestId
-}): Promise<OnChainAddress | ApplicationError> => {
-  const validated = await validateIsBtcWallet(walletId)
-  return validated instanceof Error
-    ? validated
-    : createOnChainAddress({ walletId, requestId })
-}
-
-export const createOnChainAddressForUsdWallet = async ({
-  walletId,
-  requestId,
-}: {
-  walletId: WalletId
-  requestId?: OnChainAddressRequestId
-}): Promise<OnChainAddress | ApplicationError> => {
-  const validated = await validateIsUsdWallet(walletId)
-  return validated instanceof Error
-    ? validated
-    : createOnChainAddress({ walletId, requestId })
-}
+}): Promise<OnChainAddress | ApplicationError> =>
+  createOnChainAddress({ walletId: wallet.id, requestId })
 
 const checkOnChainAddressAccountIdLimits = async (
   accountId: AccountId,
