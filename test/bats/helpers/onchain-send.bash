@@ -3,7 +3,7 @@ source $(dirname "$BASH_SOURCE")/_common.bash
 
 bitcoind_init() {
   bitcoin_cli createwallet "outside" || true
-  bitcoin_cli -generate 200
+  bitcoin_cli -generate 200 > /dev/null 2>&1
 
   bitcoin_signer_cli createwallet "dev" || true
   bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ${REPO_ROOT}/test/bats/bitcoind_signer_descriptors.json)"
