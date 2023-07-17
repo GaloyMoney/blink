@@ -120,11 +120,6 @@ exec_graphql() {
   echo "GQL output: '$output'"
 }
 
-subscribe_to() {
-  background ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/src/debug/gqlsubscribe.ts" "ws://${GALOY_ENDPOINT}/graphqlws" "$(gql_file $1)" > .e2e-subscriber.log
-  echo $! > $SUBSCRIBER_PID_FILE
-}
-
 graphql_output() {
   echo $output | jq -r "$@"
 }

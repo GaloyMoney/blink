@@ -1,7 +1,7 @@
 source $(dirname "$BASH_SOURCE")/onchain-send.bash
 
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
-S_SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_ws_server_pid
+WS_SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_ws_server_pid
 TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
 EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
 SUBSCRIBER_PID_FILE=$REPO_ROOT/test/bats/.gql_subscriber_pid
@@ -19,6 +19,12 @@ reset_redis() {
 start_server() {
   background node lib/servers/graphql-main-server.js > .e2e-server.log
   echo $! > $SERVER_PID_FILE
+  sleep 8
+}
+
+subscribe_to() {
+  background ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/src/debug/gqlsubscribe.ts" "ws://${GALOY_ENDPOINT}/graphqlws" "$(gql_file $1)" > .e2e-subscriber.log
+  echo $! > $SUBSCRIBER_PID_FILE
 }
 
 start_ws_server() {
