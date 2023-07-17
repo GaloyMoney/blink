@@ -19,7 +19,14 @@ reset_redis() {
 start_server() {
   background node lib/servers/graphql-main-server.js > .e2e-server.log
   echo $! > $SERVER_PID_FILE
-  sleep 8
+
+  server_is_up() {
+    exec_graphql 'anon' 'globals'
+    network="$(graphql_output '.data.globals.network')"
+    [[ "${network}" = "regtest" ]] || exit 1
+  }
+
+  retry 10 1 server_is_up
 }
 
 subscribe_to() {
