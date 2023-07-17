@@ -27,7 +27,7 @@ start_server() {
     [[ "${network}" = "regtest" ]] || exit 1
   }
 
-  retry 10 1 server_is_up
+  retry 30 1 server_is_up
 }
 
 subscribe_to() {
