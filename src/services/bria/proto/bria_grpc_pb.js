@@ -16,6 +16,28 @@ function deserialize_services_bria_v1_BriaEvent(buffer_arg) {
   return bria_pb.BriaEvent.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_services_bria_v1_CancelPayoutRequest(arg) {
+  if (!(arg instanceof bria_pb.CancelPayoutRequest)) {
+    throw new Error('Expected argument of type services.bria.v1.CancelPayoutRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_CancelPayoutRequest(buffer_arg) {
+  return bria_pb.CancelPayoutRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_services_bria_v1_CancelPayoutResponse(arg) {
+  if (!(arg instanceof bria_pb.CancelPayoutResponse)) {
+    throw new Error('Expected argument of type services.bria.v1.CancelPayoutResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_services_bria_v1_CancelPayoutResponse(buffer_arg) {
+  return bria_pb.CancelPayoutResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_services_bria_v1_CreatePayoutQueueRequest(arg) {
   if (!(arg instanceof bria_pb.CreatePayoutQueueRequest)) {
     throw new Error('Expected argument of type services.bria.v1.CreatePayoutQueueRequest');
@@ -897,6 +919,17 @@ var BriaServiceService = exports.BriaServiceService = {
     requestDeserialize: deserialize_services_bria_v1_GetPayoutRequest,
     responseSerialize: serialize_services_bria_v1_GetPayoutResponse,
     responseDeserialize: deserialize_services_bria_v1_GetPayoutResponse,
+  },
+  cancelPayout: {
+    path: '/services.bria.v1.BriaService/CancelPayout',
+    requestStream: false,
+    responseStream: false,
+    requestType: bria_pb.CancelPayoutRequest,
+    responseType: bria_pb.CancelPayoutResponse,
+    requestSerialize: serialize_services_bria_v1_CancelPayoutRequest,
+    requestDeserialize: deserialize_services_bria_v1_CancelPayoutRequest,
+    responseSerialize: serialize_services_bria_v1_CancelPayoutResponse,
+    responseDeserialize: deserialize_services_bria_v1_CancelPayoutResponse,
   },
   getBatch: {
     path: '/services.bria.v1.BriaService/GetBatch',
