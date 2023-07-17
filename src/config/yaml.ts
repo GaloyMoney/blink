@@ -280,6 +280,30 @@ export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig =>
   initialLevel: AccountLevel.One,
 })
 
+export const getAccountCountries = (config = yamlConfig) => {
+  const enablePhoneCheck = config.accounts.enablePhoneCheck
+  const enableIpCheck = config.accounts.enableIpCheck
+
+  const denyPhoneCountries = config.accounts.denyPhoneCountries || []
+  const allowPhoneCountries = config.accounts.allowPhoneCountries || []
+  const denyIPCountries = config.accounts.denyIPCountries || []
+  const allowIPCountries = config.accounts.allowIPCountries || []
+  const denyASNs = yamlConfig.rewards.denyASNs || []
+  const allowASNs = yamlConfig.rewards.allowASNs || []
+
+  return {
+    enablePhoneCheck,
+    enableIpCheck,
+
+    denyPhoneCountries: denyPhoneCountries.map((c) => c.toUpperCase()),
+    allowPhoneCountries: allowPhoneCountries.map((c) => c.toUpperCase()),
+    denyIPCountries: denyIPCountries.map((c) => c.toUpperCase()),
+    allowIPCountries: allowIPCountries.map((c) => c.toUpperCase()),
+    denyASNs: denyASNs.map((c) => c.toUpperCase()),
+    allowASNs: allowASNs.map((c) => c.toUpperCase()),
+  }
+}
+
 export const getSwapConfig = (): SwapConfig => {
   const config = yamlConfig.swap
   return {

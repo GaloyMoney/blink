@@ -20,11 +20,24 @@ import {
 
 import { LedgerService } from "@services/ledger"
 import { WalletsRepository } from "@services/mongoose"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 
 import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
 import { checkedToEmailCode } from "@domain/authentication"
 import { isPhoneCodeValid } from "@services/twilio"
+
+import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
+
+import { getAccountCountries } from "@config"
+
+import { InvalidIPMetadataForOnboardingError } from "@domain/errors"
+import { IpFetcher } from "@services/ipfetcher"
+
+import { IpFetcherServiceError } from "@domain/ipfetcher"
+import { ErrorLevel } from "@domain/shared"
 
 import {
   checkFailedLoginAttemptPerIpLimits,
@@ -71,6 +84,32 @@ export const loginWithPhoneToken = async ({
     // user is a new user
     // this branch exists because we currently make no difference between a registration and login
     addAttributesToCurrentSpan({ "login.newAccount": true })
+
+    const accountConfig = getAccountCountries()
+
+    if (accountConfig.enableIpCheck) {
+      const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
+
+      if (ipFetcherInfo instanceof IpFetcherServiceError) {
+        recordExceptionInCurrentSpan({
+          error: ipFetcherInfo,
+          level: ErrorLevel.Critical,
+          attributes: { ip },
+        })
+        return ipFetcherInfo
+      }
+
+      const validatedIPMetadata =
+        IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
+
+      if (validatedIPMetadata instanceof Error) {
+        return new InvalidIPMetadataForOnboardingError(validatedIPMetadata.name)
+      }
+    }
+
+    if (accountConfig.enablePhoneCheck) {
+      phone
+    }
 
     const kratosResult = await authService.createIdentityWithSession({ phone })
     if (kratosResult instanceof Error) return kratosResult

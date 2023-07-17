@@ -343,6 +343,17 @@ export class SessionRefreshRequiredError extends CustomApolloError {
   }
 }
 
+export class InvalidIPMetadataForOnboardingError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "This IP address is not allowed to onboard.",
+      forwardToClient: true,
+      code: "IP_NOT_ALLOWED_TO_ONBOARD_ERROR",
+      ...errData,
+    })
+  }
+}
+
 export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({

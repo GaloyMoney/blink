@@ -81,6 +81,14 @@ accounts:
   initialWallets:
     - BTC
     - USD
+  enablePhoneCheck: false
+  enableIpCheck: false
+  allowPhoneCountries: []
+  denyPhoneCountries: []
+  allowIPCountries: []
+  denyIPCountries: []
+  allowASNs: []
+  denyASNs: []
 accountLimits:
   withdrawal:
     level:
