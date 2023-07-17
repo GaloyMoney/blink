@@ -1,7 +1,7 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${REPO_ROOT##*/}}"
 
-CACHE_DIR=${BATS_TMPDIR}/galoy-bats-cache
+CACHE_DIR=${BATS_TMPDIR:-tmp/bats}/galoy-bats-cache
 mkdir -p $CACHE_DIR
 
 GALOY_ENDPOINT=localhost:4002
@@ -67,7 +67,12 @@ retry() {
   local i
 
   for ((i=0; i < attempts; i++)); do
-    run "$@"
+    if [[ "${BATS_TEST_DIRNAME}" = "" ]]; then
+      "$@"
+    else
+      run "$@"
+    fi
+
     if [[ "$status" -eq 0 ]] ; then
       return 0
     fi
@@ -79,7 +84,11 @@ retry() {
 }
 
 gql_query() {
-  cat "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql" | tr '\n' ' ' | sed 's/"/\\"/g'
+  cat "$(gql_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
+}
+
+gql_file() {
+  echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql"
 }
 
 exec_graphql() {
@@ -109,6 +118,11 @@ exec_graphql() {
        ${GALOY_ENDPOINT}/graphql
 
   echo "GQL output: '$output'"
+}
+
+subscribe_to() {
+  background ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/src/debug/gqlsubscribe.ts" "ws://${GALOY_ENDPOINT}/graphqlws" "$(gql_file $1)" > .e2e-subscriber.log
+  echo $! > $SUBSCRIBER_PID_FILE
 }
 
 graphql_output() {

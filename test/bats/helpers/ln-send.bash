@@ -81,9 +81,9 @@ fund_wallet_from_lightning() {
   invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
-  [[ "${payment_request}" != "null" ]] || exit 1
+  [[ "${payment_request}" != "null" ]]
   payment_hash="$(echo $invoice | jq -r '.paymentHash')"
-  [[ "${payment_hash}" != "null" ]] || exit 1
+  [[ "${payment_hash}" != "null" ]]
 
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
@@ -106,7 +106,7 @@ check_for_ln_initiated_settled() {
   exec_graphql "$token_name" 'transactions' "$variables"
 
   settled_status="$(get_from_transaction_by_ln_hash $payment_hash '.status')"
-  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+  [[ "${settled_status}" = "SUCCESS" ]]
 }
 
 get_from_transaction_by_ln_hash() {

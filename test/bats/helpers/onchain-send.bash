@@ -34,7 +34,7 @@ check_for_broadcast() {
   exec_graphql "$token_name" 'transactions' "$variables"
 
   txid="$(get_from_transaction_by_address "$address" '.settlementVia.transactionHash')"
-  [[ "${txid}" != "null" ]] || exit 1
+  [[ "${txid}" != "null" ]]
 
   bitcoin_cli gettransaction "$txid" || exit 1
 }
