@@ -34,6 +34,7 @@ interface IBriaServiceService extends grpc.ServiceDefinition<grpc.UntypedService
     listPayouts: IBriaServiceService_IListPayouts;
     findPayoutByExternalId: IBriaServiceService_IFindPayoutByExternalId;
     getPayout: IBriaServiceService_IGetPayout;
+    cancelPayout: IBriaServiceService_ICancelPayout;
     getBatch: IBriaServiceService_IGetBatch;
     getAccountBalanceSummary: IBriaServiceService_IGetAccountBalanceSummary;
     subscribeAll: IBriaServiceService_ISubscribeAll;
@@ -264,6 +265,15 @@ interface IBriaServiceService_IGetPayout extends grpc.MethodDefinition<bria_pb.G
     responseSerialize: grpc.serialize<bria_pb.GetPayoutResponse>;
     responseDeserialize: grpc.deserialize<bria_pb.GetPayoutResponse>;
 }
+interface IBriaServiceService_ICancelPayout extends grpc.MethodDefinition<bria_pb.CancelPayoutRequest, bria_pb.CancelPayoutResponse> {
+    path: "/services.bria.v1.BriaService/CancelPayout";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<bria_pb.CancelPayoutRequest>;
+    requestDeserialize: grpc.deserialize<bria_pb.CancelPayoutRequest>;
+    responseSerialize: grpc.serialize<bria_pb.CancelPayoutResponse>;
+    responseDeserialize: grpc.deserialize<bria_pb.CancelPayoutResponse>;
+}
 interface IBriaServiceService_IGetBatch extends grpc.MethodDefinition<bria_pb.GetBatchRequest, bria_pb.GetBatchResponse> {
     path: "/services.bria.v1.BriaService/GetBatch";
     requestStream: false;
@@ -320,6 +330,7 @@ export interface IBriaServiceServer extends grpc.UntypedServiceImplementation {
     listPayouts: grpc.handleUnaryCall<bria_pb.ListPayoutsRequest, bria_pb.ListPayoutsResponse>;
     findPayoutByExternalId: grpc.handleUnaryCall<bria_pb.FindPayoutByExternalIdRequest, bria_pb.FindPayoutByExternalIdResponse>;
     getPayout: grpc.handleUnaryCall<bria_pb.GetPayoutRequest, bria_pb.GetPayoutResponse>;
+    cancelPayout: grpc.handleUnaryCall<bria_pb.CancelPayoutRequest, bria_pb.CancelPayoutResponse>;
     getBatch: grpc.handleUnaryCall<bria_pb.GetBatchRequest, bria_pb.GetBatchResponse>;
     getAccountBalanceSummary: grpc.handleUnaryCall<bria_pb.GetAccountBalanceSummaryRequest, bria_pb.GetAccountBalanceSummaryResponse>;
     subscribeAll: grpc.handleServerStreamingCall<bria_pb.SubscribeAllRequest, bria_pb.BriaEvent>;
@@ -401,6 +412,9 @@ export interface IBriaServiceClient {
     getPayout(request: bria_pb.GetPayoutRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.GetPayoutResponse) => void): grpc.ClientUnaryCall;
     getPayout(request: bria_pb.GetPayoutRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.GetPayoutResponse) => void): grpc.ClientUnaryCall;
     getPayout(request: bria_pb.GetPayoutRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.GetPayoutResponse) => void): grpc.ClientUnaryCall;
+    cancelPayout(request: bria_pb.CancelPayoutRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.CancelPayoutResponse) => void): grpc.ClientUnaryCall;
+    cancelPayout(request: bria_pb.CancelPayoutRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.CancelPayoutResponse) => void): grpc.ClientUnaryCall;
+    cancelPayout(request: bria_pb.CancelPayoutRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.CancelPayoutResponse) => void): grpc.ClientUnaryCall;
     getBatch(request: bria_pb.GetBatchRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.GetBatchResponse) => void): grpc.ClientUnaryCall;
     getBatch(request: bria_pb.GetBatchRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.GetBatchResponse) => void): grpc.ClientUnaryCall;
     getBatch(request: bria_pb.GetBatchRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.GetBatchResponse) => void): grpc.ClientUnaryCall;
@@ -488,6 +502,9 @@ export class BriaServiceClient extends grpc.Client implements IBriaServiceClient
     public getPayout(request: bria_pb.GetPayoutRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.GetPayoutResponse) => void): grpc.ClientUnaryCall;
     public getPayout(request: bria_pb.GetPayoutRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.GetPayoutResponse) => void): grpc.ClientUnaryCall;
     public getPayout(request: bria_pb.GetPayoutRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.GetPayoutResponse) => void): grpc.ClientUnaryCall;
+    public cancelPayout(request: bria_pb.CancelPayoutRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.CancelPayoutResponse) => void): grpc.ClientUnaryCall;
+    public cancelPayout(request: bria_pb.CancelPayoutRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.CancelPayoutResponse) => void): grpc.ClientUnaryCall;
+    public cancelPayout(request: bria_pb.CancelPayoutRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.CancelPayoutResponse) => void): grpc.ClientUnaryCall;
     public getBatch(request: bria_pb.GetBatchRequest, callback: (error: grpc.ServiceError | null, response: bria_pb.GetBatchResponse) => void): grpc.ClientUnaryCall;
     public getBatch(request: bria_pb.GetBatchRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: bria_pb.GetBatchResponse) => void): grpc.ClientUnaryCall;
     public getBatch(request: bria_pb.GetBatchRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: bria_pb.GetBatchResponse) => void): grpc.ClientUnaryCall;
