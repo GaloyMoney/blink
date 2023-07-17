@@ -33,7 +33,7 @@ teardown() {
 btc_amount=1000
 usd_amount=50
 
-@test "ln-settled lightning payments: lnInvoicePaymentSend from btc" {
+@test "ln-send: lightning settled - lnInvoicePaymentSend from btc" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -61,7 +61,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-settled lightning payments: lnInvoicePaymentSend from usd" {
+@test "ln-send: lightning settled - lnInvoicePaymentSend from usd" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -89,7 +89,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-settled lightning payments: lnNoAmountInvoicePaymentSend" {
+@test "ln-send: lightning settled - lnNoAmountInvoicePaymentSend" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -118,7 +118,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-settled lightning payments: lnNoAmountUsdInvoicePaymentSend" {
+@test "ln-send: lightning settled - lnNoAmountUsdInvoicePaymentSend" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -147,7 +147,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "intraledger-settled lightning payments: lnInvoicePaymentSend from btc" {
+@test "ln-send: intraledger settled - lnInvoicePaymentSend from btc" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -183,7 +183,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "intraledger-settled lightning payments: lnInvoicePaymentSend from usd" {
+@test "ln-send: intraledger settled: lnInvoicePaymentSend from usd" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -223,7 +223,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "intraledger-settled lightning payments: lnNoAmountInvoicePaymentSend" {
+@test "ln-send: intraledger settled - lnNoAmountInvoicePaymentSend" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -259,7 +259,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "intraledger-settled lightning payments: lnNoAmountUsdInvoicePaymentSend" {
+@test "ln-send: intraledger settled - lnNoAmountUsdInvoicePaymentSend" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 

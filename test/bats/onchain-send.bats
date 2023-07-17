@@ -26,7 +26,7 @@ teardown() {
   [[ "$(balance_for_check)" = 0 ]] || exit 1
 }
 
-@test "onchain payments: settle trade intraccount" {
+@test "onchain-send: settle trade intraccount" {
   token_name="$BOB_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
@@ -106,7 +106,7 @@ teardown() {
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
-@test "onchain payments: settle intraledger" {
+@test "onchain-send: settle intraledger" {
   alice_token_name="$ALICE_TOKEN_NAME"
   alice_btc_wallet_name="$alice_token_name.btc_wallet_id"
   alice_usd_wallet_name="$alice_token_name.usd_wallet_id"
@@ -214,7 +214,7 @@ teardown() {
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
-@test "onchain payments: settle onchain" {
+@test "onchain-send: settle onchain" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
