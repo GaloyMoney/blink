@@ -11,7 +11,7 @@ export const IPMetadataValidator = ({
   denyASNs,
   allowASNs,
 }: IPMetadataValidatorArgs): IPMetadataValidator => {
-  const validateForReward = (ipMetadata?: IPType): true | ValidationError => {
+  const validate = (ipMetadata?: IPType): true | ValidationError => {
     if (!ipMetadata || !ipMetadata.isoCode || !ipMetadata.asn)
       return new MissingIPMetadataError()
 
@@ -32,6 +32,7 @@ export const IPMetadataValidator = ({
   }
 
   return {
-    validateForReward,
+    validateForReward: validate,
+    validateForOnboarding: validate,
   }
 }

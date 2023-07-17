@@ -67,7 +67,7 @@ export const updateAccountIPsInfo = async ({
       return ipFetcherInfo
     }
 
-    // deep copy
+    // deep copy for opentelemetry
     const ipFetcherInfoForOtel = JSON.parse(JSON.stringify(ipFetcherInfo))
 
     for (const key in ipFetcherInfoForOtel) {

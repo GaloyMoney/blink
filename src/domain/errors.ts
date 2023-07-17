@@ -119,6 +119,7 @@ export class InvalidIPMetadataProxyError extends ValidationError {}
 export class InvalidIPMetadataCountryError extends ValidationError {}
 export class InvalidIPMetadataASNError extends ValidationError {}
 export class InvalidIPMetadataForRewardError extends ValidationError {}
+export class InvalidIPMetadataForOnboardingError extends ValidationError {}
 
 export class InvalidDeviceTokenError extends ValidationError {}
 

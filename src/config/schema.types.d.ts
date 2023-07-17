@@ -80,6 +80,12 @@ type YamlSchema = {
   accounts: {
     initialStatus: string
     initialWallets: WalletCurrency[]
+    enablePhoneCheck: boolean
+    enableIpCheck: boolean
+    denyPhoneCountries: string[]
+    allowPhoneCountries: string[]
+    denyIPCountries: string[]
+    allowIPCountries: string[]
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig
