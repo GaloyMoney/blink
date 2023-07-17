@@ -5,7 +5,6 @@ import { WalletType } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
-import { LnFees } from "@domain/payments"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
@@ -27,29 +26,19 @@ import {
   bitcoindClient,
   clearAccountLocks,
   clearLimiters,
-  createInvoice,
   fundWalletIdFromLightning,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
   lndOutside1,
-  lndOutside2,
   pay,
 } from "test/helpers"
 import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
 import {
   LnInvoiceCreateDocument,
   LnInvoiceCreateMutation,
-  LnInvoiceFeeProbeDocument,
-  LnInvoiceFeeProbeMutation,
-  LnInvoicePaymentSendDocument,
-  LnInvoicePaymentSendMutation,
   LnNoAmountInvoiceCreateDocument,
   LnNoAmountInvoiceCreateMutation,
-  LnNoAmountInvoiceFeeProbeDocument,
-  LnNoAmountInvoiceFeeProbeMutation,
-  LnNoAmountInvoicePaymentSendDocument,
-  LnNoAmountInvoicePaymentSendMutation,
   LnUsdInvoiceCreateDocument,
   LnUsdInvoiceCreateMutation,
   MainQueryDocument,
@@ -725,298 +714,6 @@ describe("graphql", () => {
       expect(invoice?.paymentRequest.startsWith("lnbcrt")).toBeTruthy()
       expect(invoice).toHaveProperty("paymentHash")
       expect(invoice).toHaveProperty("paymentSecret")
-    })
-  })
-
-  describe("lnInvoiceFeeProbe", () => {
-    gql`
-      mutation LnInvoiceFeeProbe($input: LnInvoiceFeeProbeInput!) {
-        lnInvoiceFeeProbe(input: $input) {
-          errors {
-            message
-          }
-          amount
-        }
-      }
-    `
-
-    it("returns a valid fee", async () => {
-      const { request: paymentRequest } = await createInvoice({
-        lnd: lndOutside2,
-        tokens: 1_001,
-      })
-
-      const input = { walletId, paymentRequest }
-      const result = await apolloClient.mutate<LnInvoiceFeeProbeMutation>({
-        mutation: LnInvoiceFeeProbeDocument,
-        variables: { input },
-      })
-      const lnInvoiceFeeProbe = result?.data?.lnInvoiceFeeProbe
-      if (!lnInvoiceFeeProbe) throw new Error("lnInvoiceFeeProbe is null")
-      const { amount, errors } = lnInvoiceFeeProbe
-      expect(errors).toHaveLength(0)
-      expect(amount).toBe(0)
-    })
-
-    it("returns an error & 1 sat fee if it is unable to find a route for 1 sat payment", async () => {
-      const messageRegex = /^Unable to find a route for payment.$/
-      const unreachable1SatPaymentRequest =
-        "lnbcrt10n1p39jatkpp5djwv295kunhe5e0e4whj3dcjzwy7cmcxk8cl2a4dquyrp3dqydesdqqcqzpuxqr23ssp56u5m680x7resnvcelmsngc64ljm7g5q9r26zw0qyq5fenuqlcfzq9qyyssqxv4kvltas2qshhmqnjctnqkjpdfzu89e428ga6yk9jsp8rf382f3t03ex4e6x3a4sxkl7ruj6lsfpkuu9u9ee5kgr5zdyj7x2nwdljgq74025p"
-
-      const input = { walletId, paymentRequest: unreachable1SatPaymentRequest }
-      const result = await apolloClient.mutate<LnInvoiceFeeProbeMutation>({
-        mutation: LnInvoiceFeeProbeDocument,
-        variables: { input },
-      })
-      const lnInvoiceFeeProbe = result?.data?.lnInvoiceFeeProbe
-      if (!lnInvoiceFeeProbe) throw new Error("lnInvoiceFeeProbe is null")
-      const { amount, errors } = lnInvoiceFeeProbe
-      expect(errors).toHaveLength(1)
-      expect(amount).toBe(1)
-      expect(errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
-        ]),
-      )
-    })
-
-    it("returns an error & expected sat fee if it is unable to find a route for 10k sat payment", async () => {
-      const messageRegex = /^Unable to find a route for payment.$/
-      const unreachable10kSatPaymentRequest =
-        "lnbc100u1p3fj2qlpp5gnp23luuectecrlqddwkh7n7flj6zrnna8eqm8h9ws4ecweucqzsdqqcqzpgxqyz5vqsp5gue9tr3djq08kw6286tzk948ys69pphyd6xmwyut0xyn6fqt2zfs9qyyssq043fsndfudcjt05m7pyeusgpdlegm8kcstc5xywc2zws35tmlpsxdyed8jg8vk4erdxpwwap8akc9vm769qw2zqq86u63mqpa22fu6cpqjuudj"
-      const expectedFeeAmount = LnFees().maxProtocolAndBankFee({
-        amount: 10_000n,
-        currency: WalletCurrency.Btc,
-      })
-
-      const input = { walletId, paymentRequest: unreachable10kSatPaymentRequest }
-      const result = await apolloClient.mutate<LnInvoiceFeeProbeMutation>({
-        mutation: LnInvoiceFeeProbeDocument,
-        variables: { input },
-      })
-      const lnInvoiceFeeProbe = result?.data?.lnInvoiceFeeProbe
-      if (!lnInvoiceFeeProbe) throw new Error("lnInvoiceFeeProbe is null")
-      const { amount, errors } = lnInvoiceFeeProbe
-      expect(errors).toHaveLength(1)
-      expect(amount).toBe(Number(expectedFeeAmount.amount))
-      expect(errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
-        ]),
-      )
-    })
-  })
-
-  describe("lnNoAmountInvoiceFeeProbe", () => {
-    gql`
-      mutation LnNoAmountInvoiceFeeProbe($input: LnNoAmountInvoiceFeeProbeInput!) {
-        lnNoAmountInvoiceFeeProbe(input: $input) {
-          errors {
-            message
-          }
-          amount
-        }
-      }
-    `
-
-    it("returns a valid fee", async () => {
-      const { request: paymentRequest } = await createInvoice({
-        lnd: lndOutside2,
-      })
-
-      const input = { walletId, amount: 1_013, paymentRequest }
-      const result = await apolloClient.mutate<LnNoAmountInvoiceFeeProbeMutation>({
-        mutation: LnNoAmountInvoiceFeeProbeDocument,
-        variables: { input },
-      })
-      const lnNoAmountInvoiceFeeProbe = result?.data?.lnNoAmountInvoiceFeeProbe
-      if (!lnNoAmountInvoiceFeeProbe) throw new Error("lnNoAmountInvoiceFeeProbe is null")
-      const { amount, errors } = lnNoAmountInvoiceFeeProbe
-      expect(errors).toHaveLength(0)
-      expect(amount).toBe(0)
-    })
-
-    it("returns an error & 1 sat fee if it is unable to find a route for 1 sat payment", async () => {
-      const messageRegex = /^Unable to find a route for payment.$/
-      const unreachablePaymentRequest =
-        "lnbcrt1p39jaempp58sazckz8cce377ry7cle7k6rwafsjzkuqg022cp2vhxvccyss3csdqqcqzpuxqr23ssp509fhyjxf4utxetalmjett6xvwrm3g7datl6sted2w2m3qdnlq7ps9qyyssqg49tguulzccdtfdl07ltep8294d60tcryxl0tcau0uzwpre6mmxq7mc6737ffctl59fxv32a9g0ul63gx304862fuuwslnr2cd3ghuqq2rsxaz"
-
-      const input = { walletId, amount: 1, paymentRequest: unreachablePaymentRequest }
-      const result = await apolloClient.mutate<LnNoAmountInvoiceFeeProbeMutation>({
-        mutation: LnNoAmountInvoiceFeeProbeDocument,
-        variables: { input },
-      })
-      const lnNoAmountInvoiceFeeProbe = result?.data?.lnNoAmountInvoiceFeeProbe
-      if (!lnNoAmountInvoiceFeeProbe) throw new Error("lnNoAmountInvoiceFeeProbe is null")
-      const { amount, errors } = lnNoAmountInvoiceFeeProbe
-      expect(errors).toHaveLength(1)
-      expect(amount).toBe(1)
-      expect(errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
-        ]),
-      )
-    })
-
-    it("returns an error & expected fee if it is unable to find a route for 10k sat payment", async () => {
-      const messageRegex = /^Unable to find a route for payment.$/
-      const unreachablePaymentRequest =
-        "lnbcrt1p39jaempp58sazckz8cce377ry7cle7k6rwafsjzkuqg022cp2vhxvccyss3csdqqcqzpuxqr23ssp509fhyjxf4utxetalmjett6xvwrm3g7datl6sted2w2m3qdnlq7ps9qyyssqg49tguulzccdtfdl07ltep8294d60tcryxl0tcau0uzwpre6mmxq7mc6737ffctl59fxv32a9g0ul63gx304862fuuwslnr2cd3ghuqq2rsxaz"
-
-      const paymentAmount = 10_000
-      const expectedFeeAmount = LnFees().maxProtocolAndBankFee({
-        amount: BigInt(paymentAmount),
-        currency: WalletCurrency.Btc,
-      })
-
-      const input = {
-        walletId,
-        amount: paymentAmount,
-        paymentRequest: unreachablePaymentRequest,
-      }
-      const result = await apolloClient.mutate<LnNoAmountInvoiceFeeProbeMutation>({
-        mutation: LnNoAmountInvoiceFeeProbeDocument,
-        variables: { input },
-      })
-      const lnNoAmountInvoiceFeeProbe = result?.data?.lnNoAmountInvoiceFeeProbe
-      if (!lnNoAmountInvoiceFeeProbe) throw new Error("lnNoAmountInvoiceFeeProbe is null")
-      const { amount, errors } = lnNoAmountInvoiceFeeProbe
-      expect(errors).toHaveLength(1)
-      expect(amount).toEqual(Number(expectedFeeAmount.amount))
-      expect(errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
-        ]),
-      )
-    })
-  })
-
-  describe("lnInvoicePaymentSend", () => {
-    beforeAll(async () => {
-      const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-      // required to avoid withdrawal limits validation
-      jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-    })
-
-    afterAll(async () => {
-      jest.restoreAllMocks()
-    })
-
-    it("sends a payment", async () => {
-      const { request: paymentRequest } = await createInvoice({
-        lnd: lndOutside2,
-        tokens: 1,
-      })
-
-      const input = { walletId, paymentRequest }
-      const result = await apolloClient.mutate<LnInvoicePaymentSendMutation>({
-        mutation: LnInvoicePaymentSendDocument,
-        variables: { input },
-      })
-      const lnInvoicePaymentSend = result?.data?.lnInvoicePaymentSend
-      if (!lnInvoicePaymentSend) throw new Error("lnInvoicePaymentSend is undefined")
-      const { status, errors } = lnInvoicePaymentSend
-      expect(errors).toHaveLength(0)
-      expect(status).toBe("SUCCESS")
-    })
-
-    it("returns error when sends a payment to self", async () => {
-      const message = "User tried to pay themselves"
-      const input = { walletId, amount: 1, memo: "This is a lightning invoice" }
-      const res = await apolloClient.mutate<LnInvoiceCreateMutation>({
-        mutation: LnInvoiceCreateDocument,
-        variables: { input },
-      })
-
-      const lnInvoiceCreate = res?.data?.lnInvoiceCreate
-      if (!lnInvoiceCreate) {
-        throw new Error("lnInvoiceCreate is undefined")
-      }
-
-      const paymentRequest = lnInvoiceCreate.invoice?.paymentRequest
-
-      const input2 = { walletId, paymentRequest }
-      const result = await apolloClient.mutate<LnInvoicePaymentSendMutation>({
-        mutation: LnInvoicePaymentSendDocument,
-        variables: { input: input2 },
-      })
-      const lnInvoicePaymentSend = result?.data?.lnInvoicePaymentSend
-      if (!lnInvoicePaymentSend) throw new Error("lnInvoicePaymentSend is undefined")
-      const { status, errors } = lnInvoicePaymentSend
-      expect(errors).toHaveLength(1)
-      expect(status).toBe("FAILURE")
-      expect(errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message })]),
-      )
-    })
-  })
-
-  describe("lnNoAmountInvoicePaymentSend", () => {
-    gql`
-      mutation LnNoAmountInvoicePaymentSend($input: LnNoAmountInvoicePaymentInput!) {
-        lnNoAmountInvoicePaymentSend(input: $input) {
-          errors {
-            message
-          }
-          status
-        }
-      }
-    `
-
-    beforeAll(async () => {
-      const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-      // required to avoid withdrawal limits validation
-      jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-    })
-
-    afterAll(async () => {
-      jest.restoreAllMocks()
-    })
-
-    it("sends a payment", async () => {
-      const { request: paymentRequest } = await createInvoice({
-        lnd: lndOutside2,
-        tokens: 0,
-      })
-
-      const input = { walletId, paymentRequest, amount: 1 }
-      const result = await apolloClient.mutate<LnNoAmountInvoicePaymentSendMutation>({
-        mutation: LnNoAmountInvoicePaymentSendDocument,
-        variables: { input },
-      })
-      const lnNoAmountInvoicePaymentSend = result?.data?.lnNoAmountInvoicePaymentSend
-      if (!lnNoAmountInvoicePaymentSend)
-        throw new Error("lnNoAmountInvoicePaymentSend is null")
-      const { status, errors } = lnNoAmountInvoicePaymentSend
-      expect(errors).toHaveLength(0)
-      expect(status).toBe("SUCCESS")
-    })
-
-    it("returns error when sends a payment to self", async () => {
-      const message = "User tried to pay themselves"
-      const input = { walletId, memo: "This is a lightning invoice" }
-      const res = await apolloClient.mutate<LnNoAmountInvoiceCreateMutation>({
-        mutation: LnNoAmountInvoiceCreateDocument,
-        variables: { input },
-      })
-      const lnNoAmountInvoiceCreate = res?.data?.lnNoAmountInvoiceCreate
-      if (!lnNoAmountInvoiceCreate) throw new Error("lnNoAmountInvoiceCreate is null")
-      const paymentRequest = lnNoAmountInvoiceCreate.invoice?.paymentRequest
-
-      const paymentSendVariables = { input: { walletId, paymentRequest, amount: 1 } }
-      const result = await apolloClient.mutate<LnNoAmountInvoicePaymentSendMutation>({
-        mutation: LnNoAmountInvoicePaymentSendDocument,
-        variables: paymentSendVariables,
-      })
-      const lnNoAmountInvoicePaymentSend = result?.data?.lnNoAmountInvoicePaymentSend
-      if (!lnNoAmountInvoicePaymentSend)
-        throw new Error("lnNoAmountInvoicePaymentSend is null")
-      const { status, errors } = lnNoAmountInvoicePaymentSend
-      expect(errors).toHaveLength(1)
-      expect(status).toBe("FAILURE")
-      expect(errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message })]),
-      )
     })
   })
 

@@ -21,7 +21,7 @@ import {
   sendToAddressAndConfirm,
 } from "./bitcoin-core"
 
-import { waitFor } from "./shared"
+import { waitFor, waitForNoErrorWithCount } from "./shared"
 import { checkIsBalanced } from "./check-is-balanced"
 
 export const getBriaBalance = async (): Promise<Satoshis> => {
@@ -214,4 +214,9 @@ const waitUntilBriaZeroBalance = async () => {
 
     return true
   })
+}
+
+export const waitUntilBriaConnected = async () => {
+  const balance = await waitForNoErrorWithCount(NewOnChainService().getBalance, 60)
+  if (balance instanceof Error) throw balance
 }

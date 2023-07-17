@@ -13,7 +13,7 @@ import {
   resetLnds,
   getChannels,
   getChainBalance,
-  waitForNoErrorWithCount,
+  waitUntilBriaConnected,
 } from "test/helpers"
 
 it("connects to bitcoind", async () => {
@@ -67,7 +67,13 @@ it("connects to redis", async () => {
   expect(result).toBe(value)
 })
 
-it("connects to bria", async () => {
-  const res = await waitForNoErrorWithCount(NewOnChainService().getBalance, 40)
-  expect(res).not.toBeInstanceOf(Error)
+describe("connects to bria", () => {
+  beforeAll(async () => {
+    await waitUntilBriaConnected()
+  })
+
+  it("receives a bria balance", async () => {
+    const res = await NewOnChainService().getBalance()
+    expect(res).not.toBeInstanceOf(Error)
+  })
 })

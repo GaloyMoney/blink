@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
-load "helpers"
+load "helpers/setup-and-teardown"
+load "helpers/onchain-send"
 
 setup_file() {
   clear_cache
@@ -8,11 +9,11 @@ setup_file() {
 
   bitcoind_init
   start_trigger
-  start_server
   start_exporter
+  start_server
 
-  initialize_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
-  initialize_user "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
+  initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
 }
 
 teardown_file() {
@@ -25,7 +26,7 @@ teardown() {
   [[ "$(balance_for_check)" = 0 ]] || exit 1
 }
 
-@test "onchain payments: settle trade intraccount" {
+@test "onchain-send: settle trade intraccount" {
   token_name="$BOB_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
@@ -105,7 +106,7 @@ teardown() {
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
-@test "onchain payments: settle intraledger" {
+@test "onchain-send: settle intraledger" {
   alice_token_name="$ALICE_TOKEN_NAME"
   alice_btc_wallet_name="$alice_token_name.btc_wallet_id"
   alice_usd_wallet_name="$alice_token_name.usd_wallet_id"
@@ -213,7 +214,7 @@ teardown() {
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
-@test "onchain payments: settle onchain" {
+@test "onchain-send: settle onchain" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
@@ -293,8 +294,8 @@ teardown() {
   bitcoin_cli -generate 2
 
   # Check for settled
-  retry 15 1 check_for_settled "$token_name" "$on_chain_payment_send_all_address" 4
-  retry 3 1 check_for_settled "$token_name" "$on_chain_usd_payment_send_as_btc_denominated_address" 4
-  retry 3 1 check_for_settled "$token_name" "$on_chain_usd_payment_send_address" 4
-  retry 3 1 check_for_settled "$token_name" "$on_chain_payment_send_address" 4
+  retry 15 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_payment_send_all_address" 4
+  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_usd_payment_send_as_btc_denominated_address" 4
+  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_usd_payment_send_address" 4
+  retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_payment_send_address" 4
 }
