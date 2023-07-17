@@ -183,7 +183,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-send: intraledger settled: lnInvoicePaymentSend from usd" {
+@test "ln-send: intraledger settled - lnInvoicePaymentSend from usd" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
