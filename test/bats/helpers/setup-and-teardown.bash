@@ -1,3 +1,4 @@
+BASH_SOURCE=${BASH_SOURCE:-test/bats/helpers/.}
 source $(dirname "$BASH_SOURCE")/onchain-send.bash
 
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
