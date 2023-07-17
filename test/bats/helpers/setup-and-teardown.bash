@@ -158,8 +158,7 @@ initialize_user_from_onchain() {
   local btc_amount_in_btc=${4:-"0.001"}
   local usd_amount_in_sats=${5:-"75000"}
 
-  check_user_creds_cached "$token_name" \
-    || login_user "$token_name" "$phone" "$code"
+  login_user "$token_name" "$phone" "$code"
 
   fund_wallet_from_onchain \
     "$token_name" \

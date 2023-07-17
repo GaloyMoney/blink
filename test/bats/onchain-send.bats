@@ -9,8 +9,8 @@ setup_file() {
 
   bitcoind_init
   start_trigger
-  start_server
   start_exporter
+  start_server
 
   initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
   initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
