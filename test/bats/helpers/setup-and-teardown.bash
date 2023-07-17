@@ -100,7 +100,7 @@ login_user() {
   )
   exec_graphql 'anon' 'user-login' "$variables"
   auth_token="$(graphql_output '.data.userLogin.authToken')"
-  [[ "${auth_token}" != "null" ]]
+  [[ -n "${auth_token}" && "${auth_token}" != "null" ]]
   cache_value "$token_name" "$auth_token"
 
   exec_graphql "$token_name" 'wallet-ids-for-account'
