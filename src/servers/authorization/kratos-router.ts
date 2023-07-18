@@ -38,7 +38,7 @@ kratosRouter.post(
 
       const body = req.body
 
-      const { identity_id: userId, phone: phoneRaw, schema_id } = body
+      const { identity_id: userId, phone: phoneRaw, schema_id, transient_payload } = body
 
       if (schema_id !== SchemaIdType.PhoneNoPasswordV0) {
         return res.status(400).send("unsupported schema_id")
@@ -82,9 +82,12 @@ kratosRouter.post(
           res.status(400).send("invalid phone")
           return
         }
+        console.log({ transient_payload }, "transient_payload callback kratos router")
+
         account = await createAccountWithPhoneIdentifier({
           newAccountInfo: { phone, kratosUserId: userIdChecked },
           config: getDefaultAccountsConfig(),
+          phoneMetadata: transient_payload?.phoneMetadata,
         })
       } else {
         res.status(500).send("Invalid or unsupported login flow")

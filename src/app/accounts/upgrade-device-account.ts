@@ -4,9 +4,11 @@ import { AccountsRepository, UsersRepository } from "@services/mongoose"
 export const upgradeAccountFromDeviceToPhone = async ({
   userId,
   phone,
+  phoneMetadata,
 }: {
   userId: UserId
   phone: PhoneNumber
+  phoneMetadata?: PhoneMetadata
 }): Promise<Account | RepositoryError> => {
   // TODO: ideally both 1. and 2. should be done in a transaction,
   // so that if one fails, the other is rolled back
@@ -16,8 +18,7 @@ export const upgradeAccountFromDeviceToPhone = async ({
   if (userUpdated instanceof Error) return userUpdated
   userUpdated.phone = phone
 
-  // TODO phoneMetadata?
-  const res = await UsersRepository().update(userUpdated)
+  const res = await UsersRepository().update({ ...userUpdated, phoneMetadata })
   if (res instanceof Error) return res
 
   // Update account

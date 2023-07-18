@@ -77,6 +77,7 @@ interface IAuthWithPhonePasswordlessService {
   logoutCookie(args: { cookie: SessionCookie }): Promise<void | AuthenticationError>
   createIdentityWithSession(args: {
     phone: PhoneNumber
+    phoneMetadata?: PhoneMetadata
   }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
   updateIdentityFromDeviceAccount(args: {
     phone: PhoneNumber

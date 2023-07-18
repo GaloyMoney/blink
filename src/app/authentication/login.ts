@@ -11,11 +11,11 @@ import {
   checkedToIdentityUsername,
 } from "@domain/users"
 import {
+  AuthWithEmailPasswordlessService,
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
-  AuthWithEmailPasswordlessService,
-  PhoneAccountAlreadyExistsNeedToSweepFundsError,
   IdentityRepository,
+  PhoneAccountAlreadyExistsNeedToSweepFundsError,
 } from "@services/kratos"
 
 import { LedgerService } from "@services/ledger"
@@ -27,17 +27,23 @@ import {
 
 import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
 import { checkedToEmailCode } from "@domain/authentication"
-import { isPhoneCodeValid } from "@services/twilio"
+import { isPhoneCodeValid, TwilioClient } from "@services/twilio"
 
 import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 
 import { getAccountCountries } from "@config"
 
-import { InvalidIPMetadataForOnboardingError } from "@domain/errors"
+import {
+  InvalidIPForOnboardingError,
+  InvalidPhoneForOnboardingError,
+  InvalidPhoneMetadataForOnboardingError,
+} from "@domain/errors"
 import { IpFetcher } from "@services/ipfetcher"
 
 import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { ErrorLevel } from "@domain/shared"
+
+import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 
 import {
   checkFailedLoginAttemptPerIpLimits,
@@ -103,15 +109,33 @@ export const loginWithPhoneToken = async ({
         IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
 
       if (validatedIPMetadata instanceof Error) {
-        return new InvalidIPMetadataForOnboardingError(validatedIPMetadata.name)
+        return new InvalidIPForOnboardingError(validatedIPMetadata.name)
       }
     }
 
+    let phoneMetadata: PhoneMetadata | undefined
+
     if (accountConfig.enablePhoneCheck) {
-      phone
+      const newPhoneMetadata = await TwilioClient().getCarrier(phone)
+
+      if (newPhoneMetadata instanceof Error) {
+        return new InvalidPhoneMetadataForOnboardingError()
+      }
+
+      const validatedPhoneMetadata =
+        PhoneMetadataValidator(accountConfig).validateForReward(phoneMetadata)
+
+      if (validatedPhoneMetadata instanceof Error) {
+        return new InvalidPhoneForOnboardingError()
+      }
+
+      phoneMetadata = newPhoneMetadata
     }
 
-    const kratosResult = await authService.createIdentityWithSession({ phone })
+    const kratosResult = await authService.createIdentityWithSession({
+      phone,
+      phoneMetadata,
+    })
     if (kratosResult instanceof Error) return kratosResult
 
     return { authToken: kratosResult.authToken, totpRequired: false }
@@ -294,6 +318,48 @@ export const loginDeviceUpgradeWithPhone = async ({
     // a. create kratos account
     // b. and c. migrate account/user collection in mongo via kratos/registration webhook
 
+    // check if account is upgradeable
+    const accountConfig = getAccountCountries()
+
+    if (accountConfig.enableIpCheck) {
+      const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
+
+      if (ipFetcherInfo instanceof IpFetcherServiceError) {
+        recordExceptionInCurrentSpan({
+          error: ipFetcherInfo,
+          level: ErrorLevel.Critical,
+          attributes: { ip },
+        })
+        return ipFetcherInfo
+      }
+
+      const validatedIPMetadata =
+        IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
+
+      if (validatedIPMetadata instanceof Error) {
+        return new InvalidIPForOnboardingError(validatedIPMetadata.name)
+      }
+    }
+
+    let phoneMetadata: PhoneMetadata | undefined
+
+    if (accountConfig.enablePhoneCheck) {
+      const newPhoneMetadata = await TwilioClient().getCarrier(phone)
+
+      if (newPhoneMetadata instanceof Error) {
+        return new InvalidPhoneMetadataForOnboardingError()
+      }
+
+      const validatedPhoneMetadata =
+        PhoneMetadataValidator(accountConfig).validateForReward(phoneMetadata)
+
+      if (validatedPhoneMetadata instanceof Error) {
+        return new InvalidPhoneForOnboardingError()
+      }
+
+      phoneMetadata = newPhoneMetadata
+    }
+
     const success = await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
       userId: account.kratosUserId,
@@ -303,6 +369,7 @@ export const loginDeviceUpgradeWithPhone = async ({
     const res = await upgradeAccountFromDeviceToPhone({
       userId: account.kratosUserId,
       phone,
+      phoneMetadata,
     })
     if (res instanceof Error) return res
     return { success }
