@@ -261,7 +261,9 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
 
     if (identity.schema_id !== SchemaIdType.PhoneNoPasswordV0) {
-      return new IncompatibleSchemaUpgradeError()
+      return new IncompatibleSchemaUpgradeError(
+        `current schema_id: ${identity.schema_id}, expected: ${SchemaIdType.PhoneNoPasswordV0}`,
+      )
     }
 
     if (identity.state === undefined)
@@ -273,7 +275,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       ...identity,
       credentials: { password: { config: { password } } },
       state: identity.state,
-      schema_id: "phone_email_no_password_v0",
+      schema_id: SchemaIdType.PhoneEmailNoPasswordV0,
     }
 
     try {
@@ -307,7 +309,9 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
 
     if (identity.schema_id !== SchemaIdType.PhoneEmailNoPasswordV0) {
-      return new IncompatibleSchemaUpgradeError()
+      return new IncompatibleSchemaUpgradeError(
+        `current schema_id: ${identity.schema_id}, expected: ${SchemaIdType.PhoneEmailNoPasswordV0}`,
+      )
     }
 
     if (identity.state === undefined)
@@ -346,7 +350,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
     if (identity.schema_id !== "phone_email_no_password_v0") {
       return new IncompatibleSchemaUpgradeError(
-        "identity does not have phone_email_no_password_v0 schema",
+        `current schema_id: ${identity.schema_id}, expected: ${SchemaIdType.PhoneEmailNoPasswordV0}`,
       )
     }
 
@@ -364,7 +368,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       ...identity,
       credentials: { password: { config: { password } } },
       state: identity.state,
-      schema_id: "email_no_password_v0",
+      schema_id: SchemaIdType.EmailNoPasswordV0,
     }
 
     try {
@@ -394,8 +398,10 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       return new UnknownKratosError(err)
     }
 
-    if (identity.schema_id !== "email_no_password_v0") {
-      return new IncompatibleSchemaUpgradeError()
+    if (identity.schema_id !== SchemaIdType.EmailNoPasswordV0) {
+      return new IncompatibleSchemaUpgradeError(
+        `current schema_id: ${identity.schema_id}, expected: ${SchemaIdType.EmailNoPasswordV0}`,
+      )
     }
 
     if (identity.state === undefined)
@@ -407,7 +413,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       ...identity,
       credentials: { password: { config: { password } } },
       state: identity.state,
-      schema_id: "phone_email_no_password_v0",
+      schema_id: SchemaIdType.PhoneEmailNoPasswordV0,
     }
 
     try {
