@@ -4,7 +4,6 @@ import { AccountValidator } from "@domain/accounts"
 import { OnChainAddressNotFoundError, TxDecoder } from "@domain/bitcoin/onchain"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { WalletCurrency } from "@domain/shared"
 
 import { NewOnChainService } from "@services/bria"
 import {
@@ -111,15 +110,6 @@ export const createOnChainAddress = async ({
 
   return onChainAddress.address
 }
-
-export const createOnChainAddressByWallet = async ({
-  wallet,
-  requestId,
-}: {
-  wallet: WalletDescriptor<WalletCurrency>
-  requestId?: OnChainAddressRequestId
-}): Promise<OnChainAddress | ApplicationError> =>
-  createOnChainAddress({ walletId: wallet.id, requestId })
 
 const checkOnChainAddressAccountIdLimits = async (
   accountId: AccountId,
