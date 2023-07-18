@@ -93,7 +93,6 @@ export const configSchema = {
   type: "object",
   properties: {
     PROXY_CHECK_APIKEY: { type: "string" }, // TODO: move out of yaml and to env
-    name: { type: "string", default: "Galoy Banking" },
     lightningAddressDomain: { type: "string", default: "pay.domain.com" },
     lightningAddressDomainAliases: {
       type: "array",
@@ -773,7 +772,6 @@ export const configSchema = {
     },
   },
   required: [
-    "name",
     "buildVersion",
     "coldStorage",
     "lndScbBackupBucketName",

@@ -1,4 +1,3 @@
-name: Galoy Banking
 lightningAddressDomain: pay.domain.com
 lightningAddressDomainAliases:
   - pay1.domain.com

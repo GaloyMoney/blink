@@ -89,7 +89,6 @@ export const getBriaPartialConfigFromYaml = () => ({
   queueNames: yamlConfig.bria.queueNames,
 })
 
-export const getGaloyInstanceName = (): string => yamlConfig.name
 export const getLightningAddressDomain = (): string => yamlConfig.lightningAddressDomain
 export const getLightningAddressDomainAliases = (): string[] =>
   yamlConfig.lightningAddressDomainAliases
