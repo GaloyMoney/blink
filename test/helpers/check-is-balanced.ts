@@ -5,7 +5,10 @@ import { baseLogger } from "@services/logger"
 import { ledgerAdmin } from "@services/mongodb"
 import { lndsBalances } from "@services/lnd/utils"
 
-import { waitUntilChannelBalanceSyncAll } from "./lightning"
+import {
+  waitUntilChannelBalanceSyncE2e,
+  waitUntilChannelBalanceSyncIntegration,
+} from "./lightning"
 import { getBalance as getBitcoindBalance } from "./bitcoind"
 import { getBriaBalance } from "./bria"
 

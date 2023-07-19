@@ -324,13 +324,18 @@ export const waitUntilSync = async ({ lnds }: { lnds: Array<AuthenticatedLnd> })
   await Promise.all(promiseArray)
 }
 
-export const waitUntilChannelBalanceSyncAll = async () => {
+const waitUntilChannelBalanceSyncAll = async (lnds) => {
   const promiseArray: Array<Promise<void>> = []
   for (const lnd of lnds) {
     promiseArray.push(waitUntilChannelBalanceSync({ lnd }))
   }
   await Promise.all(promiseArray)
 }
+export const waitUntilChannelBalanceSyncIntegration = () =>
+  waitUntilChannelBalanceSyncAll(lndsIntegration)
+
+export const waitUntilChannelBalanceSyncE2e = () =>
+  waitUntilChannelBalanceSyncAll(lndsE2e)
 
 export const waitUntilChannelBalanceSync = ({ lnd }) =>
   waitFor(async () => {

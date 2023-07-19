@@ -99,7 +99,7 @@ import {
   settleHodlInvoice,
   subscribeToPayments,
   waitFor,
-  waitUntilChannelBalanceSyncAll,
+  waitUntilChannelBalanceSyncIntegration,
 } from "test/helpers"
 
 const dealerFns = DealerPriceService()
@@ -1338,7 +1338,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd
-        await waitUntilChannelBalanceSyncAll()
+        await waitUntilChannelBalanceSyncIntegration()
 
         expect(result).toBe(PaymentSendStatus.Success)
         const finalBalance = await getBalanceHelper(walletIdB)
@@ -1469,7 +1469,7 @@ describe("UserWallet - Lightning Pay", () => {
           return is_confirmed && count === 0
         })
 
-        await waitUntilChannelBalanceSyncAll()
+        await waitUntilChannelBalanceSyncIntegration()
 
         // Run lnPayments update task
         const lnPaymentUpdateOnSettled = await Lightning.updateLnPayments()
@@ -1606,7 +1606,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd
-        await waitUntilChannelBalanceSyncAll()
+        await waitUntilChannelBalanceSyncIntegration()
 
         const finalBalance = await getBalanceHelper(walletIdB)
         expect(finalBalance).toBe(initBalanceB)
@@ -1703,7 +1703,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd
-        await waitUntilChannelBalanceSyncAll()
+        await waitUntilChannelBalanceSyncIntegration()
 
         // Check BTC wallet balance
         const btcAmountInvoiceWithFee = calc.add(btcInvoiceAmount, btcProtocolAndBankFee)
