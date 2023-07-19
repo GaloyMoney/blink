@@ -33,7 +33,6 @@ services:
       - lnd2
       - lnd-outside-1
       - lnd-outside-2
-      - lnd-outside-3
       - otel-agent
       - oathkeeper
       - mailslurper

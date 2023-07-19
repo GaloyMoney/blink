@@ -97,7 +97,8 @@ export const lndOutside3 = authenticatedLndGrpc({
   socket: `${process.env.LNDOUTSIDE3ADDR}:${process.env.LNDOUTSIDE3RPCPORT ?? 10009}`,
 }).lnd
 
-export const lnds = [lnd1, lnd2, lndOutside1, lndOutside2, lndOutside3]
+export const lndsIntegration = [lnd1, lnd2, lndOutside1, lndOutside2, lndOutside3]
+export const lndsE2e = [lnd1, lnd2, lndOutside1, lndOutside2]
 
 export const waitUntilBlockHeight = async ({ lnd, blockHeight = 0 }) => {
   let block = blockHeight
