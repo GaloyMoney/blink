@@ -20,7 +20,7 @@ import {
   bitcoindClient,
   bitcoindOutside,
   bitcoindSignerClient,
-  checkIsBalanced,
+  checkIsBalancedE2e,
   createMandatoryUsers,
   createSignerWallet,
   fundWalletIdFromOnchain,
@@ -189,7 +189,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
     baseLogger.info("Channels have been opened.")
   }
 
-  await checkIsBalanced()
+  await checkIsBalancedE2e()
 
   const activeLnd = getActiveLnd()
   if (activeLnd instanceof Error) throw activeLnd

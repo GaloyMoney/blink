@@ -1,15 +1,4 @@
-import { WalletCurrency } from "@domain/shared"
-
-import { Wallets } from "@app/index"
-
-import {
-  utxoDetectedEventHandler,
-  utxoSettledEventHandler,
-} from "@servers/event-handlers/bria"
-
-import { LedgerService } from "@services/ledger"
-
-import { BriaPayloadType, BriaSubscriber, NewOnChainService } from "@services/bria"
+import { BriaSubscriber, NewOnChainService } from "@services/bria"
 import { baseLogger } from "@services/logger"
 
 import {
@@ -18,11 +7,9 @@ import {
   bitcoindOutside,
   bitcoindSignerClient,
   bitcoindSignerWallet,
-  sendToAddressAndConfirm,
 } from "./bitcoin-core"
 
 import { waitFor, waitForNoErrorWithCount } from "./shared"
-import { checkIsBalanced } from "./check-is-balanced"
 
 export const getBriaBalance = async (): Promise<Satoshis> => {
   const service = NewOnChainService()
@@ -120,63 +107,6 @@ export const manyBriaSubscribe = async ({
 
   wrapper.cancel()
   return eventsToReturn
-}
-
-export const fundWalletIdFromOnchainViaBria = async <S extends WalletCurrency>({
-  walletDescriptor,
-  amountInBitcoin,
-}: {
-  walletDescriptor: WalletDescriptor<S>
-  amountInBitcoin: number
-}): Promise<{ walletBalance: BalanceAmount<S> }> => {
-  const createAddress =
-    walletDescriptor.currency === WalletCurrency.Btc
-      ? Wallets.createOnChainAddressForBtcWallet
-      : Wallets.createOnChainAddressForUsdWallet
-  const address = await createAddress({
-    walletId: walletDescriptor.id,
-  })
-  if (address instanceof Error) throw address
-
-  const txId = await sendToAddressAndConfirm({
-    walletClient: bitcoindOutside,
-    address,
-    amount: amountInBitcoin,
-  })
-  if (txId instanceof Error) throw txId
-
-  // Receive transaction with bria trigger methods
-  // ===
-  const detectedEvent = await onceBriaSubscribe({
-    type: BriaPayloadType.UtxoDetected,
-    txId,
-  })
-  if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
-    throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
-  }
-
-  const resultPending = await utxoDetectedEventHandler({ event: detectedEvent.payload })
-  if (resultPending instanceof Error) {
-    throw resultPending
-  }
-
-  const settledEvent = await onceBriaSubscribe({
-    type: BriaPayloadType.UtxoSettled,
-    txId,
-  })
-  if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
-    throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
-  }
-  const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
-  if (resultSettled instanceof Error) {
-    throw resultSettled
-  }
-
-  await checkIsBalanced()
-
-  const walletBalance = await LedgerService().getWalletBalanceAmount(walletDescriptor)
-  if (walletBalance instanceof Error) throw walletBalance
-  return { walletBalance }
 }
 
 export const resetBria = async () => {
