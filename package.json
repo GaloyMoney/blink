@@ -104,7 +104,7 @@
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
     "medici": "^6.2.0",
-    "mongoose": "^7.3.4",
+    "mongoose": "~7.3.4",
     "node-cache": "^5.1.2",
     "otplib": "^12.0.1",
     "pino": "^8.11.0",
@@ -130,7 +130,7 @@
     "@graphql-codegen/typescript-react-apollo": "^3.3.7",
     "@graphql-tools/jest-transform": "^2.0.0",
     "@jest/test-sequencer": "^29.5.0",
-    "@swc/core": "^1.3.62",
+    "@swc/core": "1.3.62",
     "@swc/jest": "^0.2.26",
     "@types/babel__core": "^7.20.1",
     "@types/babel__preset-env": "^7.9.2",
@@ -199,7 +199,7 @@
   "resolutions": {
     "protobufjs": "7.2.4",
     "http-cache-semantics": "4.1.1",
-    "mongoose": "7.3.4"
+    "**/**/mongoose": "~7.3.4"
   },
   "private": true
 }
