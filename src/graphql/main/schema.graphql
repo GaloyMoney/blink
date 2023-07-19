@@ -7,24 +7,16 @@ interface Account {
   limits: AccountLimits!
   realtimePrice: RealtimePrice!
   transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
   ): TransactionConnection
@@ -43,9 +35,7 @@ enum AccountLevel {
 }
 
 interface AccountLimit {
-  """
-  The rolling time interval in seconds that the limits would apply for.
-  """
+  """The rolling time interval in seconds that the limits would apply for."""
   interval: Seconds
 
   """
@@ -53,9 +43,7 @@ interface AccountLimit {
   """
   remainingLimit: CentAmount
 
-  """
-  The current maximum limit for a given 24 hour period.
-  """
+  """The current maximum limit for a given 24 hour period."""
   totalLimit: CentAmount!
 }
 
@@ -65,14 +53,10 @@ type AccountLimits {
   """
   convert: [AccountLimit!]!
 
-  """
-  Limits for sending to other internal accounts.
-  """
+  """Limits for sending to other internal accounts."""
   internalSend: [AccountLimit!]!
 
-  """
-  Limits for withdrawing to external onchain or lightning destinations.
-  """
+  """Limits for withdrawing to external onchain or lightning destinations."""
   withdrawal: [AccountLimit!]!
 }
 
@@ -94,9 +78,7 @@ type AccountUpdateDisplayCurrencyPayload {
   errors: [Error!]!
 }
 
-"""
-An Opaque Bearer token
-"""
+"""An Opaque Bearer token"""
 scalar AuthToken
 
 type AuthTokenPayload {
@@ -110,65 +92,41 @@ A wallet belonging to an account which contains a BTC balance and a list of tran
 type BTCWallet implements Wallet {
   accountId: ID!
 
-  """
-  A balance stored in BTC.
-  """
+  """A balance stored in BTC."""
   balance: SignedAmount!
   id: ID!
 
-  """
-  An unconfirmed incoming onchain balance.
-  """
+  """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
 
-  """
-  A list of BTC transactions associated with this wallet.
-  """
+  """A list of BTC transactions associated with this wallet."""
   transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
   transactionsByAddress(
-    """
-    Returns the items that include this address.
-    """
+    """Returns the items that include this address."""
     address: OnChainAddress!
 
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
   walletCurrency: WalletCurrency!
@@ -200,9 +158,7 @@ input CaptchaRequestAuthCodeInput {
   validationCode: String!
 }
 
-"""
-(Positive) Cent amount (1/100 of a dollar)
-"""
+"""(Positive) Cent amount (1/100 of a dollar)"""
 scalar CentAmount
 
 type CentAmountPayload {
@@ -221,9 +177,7 @@ type ConsumerAccount implements Account {
   level: AccountLevel!
   limits: AccountLimits!
 
-  """
-  List the quiz questions of the consumer account
-  """
+  """List the quiz questions of the consumer account"""
   quiz: [Quiz!]!
   realtimePrice: RealtimePrice!
 
@@ -231,24 +185,16 @@ type ConsumerAccount implements Account {
   A list of all transactions associated with walletIds optionally passed.
   """
   transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
   ): TransactionConnection
@@ -270,9 +216,7 @@ type Country {
   supportedAuthChannels: [PhoneCodeChannelType!]!
 }
 
-"""
-A CCA2 country code (ex US, FR, etc)
-"""
+"""A CCA2 country code (ex US, FR, etc)"""
 scalar CountryCode
 
 type Currency {
@@ -286,14 +230,10 @@ type Currency {
 type DepositFeesInformation {
   minBankFee: String!
 
-  """
-  below this amount minBankFee will be charged
-  """
+  """below this amount minBankFee will be charged"""
   minBankFeeThreshold: String!
 
-  """
-  ratio to charge as basis points above minBankFeeThreshold amount
-  """
+  """ratio to charge as basis points above minBankFeeThreshold amount"""
   ratio: String!
 }
 
@@ -301,9 +241,7 @@ input DeviceNotificationTokenCreateInput {
   deviceToken: String!
 }
 
-"""
-Display currency of an account
-"""
+"""Display currency of an account"""
 scalar DisplayCurrency
 
 type Email {
@@ -311,9 +249,7 @@ type Email {
   verified: Boolean
 }
 
-"""
-Email address
-"""
+"""Email address"""
 scalar EmailAddress
 
 """
@@ -332,9 +268,7 @@ enum ExchangeCurrencyUnit {
   USDCENT
 }
 
-"""
-Feedback shared with our user
-"""
+"""Feedback shared with our user"""
 scalar Feedback
 
 input FeedbackSubmitInput {
@@ -369,9 +303,7 @@ type Globals {
   """
   nodesIds: [String!]!
 
-  """
-  A list of countries and their supported auth channels
-  """
+  """A list of countries and their supported auth channels"""
   supportedCountries: [Country!]!
 }
 
@@ -381,9 +313,7 @@ type GraphQLApplicationError implements Error {
   path: [String]
 }
 
-"""
-Hex-encoded string of 32 bytes
-"""
+"""Hex-encoded string of 32 bytes"""
 scalar Hex32Bytes
 
 union InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain
@@ -402,20 +332,14 @@ type InitiationViaOnChain {
 }
 
 input IntraLedgerPaymentSendInput {
-  """
-  Amount in satoshis.
-  """
+  """Amount in satoshis."""
   amount: SatAmount!
 
-  """
-  Optional memo to be attached to the payment.
-  """
+  """Optional memo to be attached to the payment."""
   memo: Memo
   recipientWalletId: WalletId!
 
-  """
-  The wallet ID of the sender.
-  """
+  """The wallet ID of the sender."""
   walletId: WalletId!
 }
 
@@ -428,20 +352,14 @@ type IntraLedgerUpdate {
 }
 
 input IntraLedgerUsdPaymentSendInput {
-  """
-  Amount in cents.
-  """
+  """Amount in cents."""
   amount: CentAmount!
 
-  """
-  Optional memo to be attached to the payment.
-  """
+  """Optional memo to be attached to the payment."""
   memo: Memo
   recipientWalletId: WalletId!
 
-  """
-  The wallet ID of the sender.
-  """
+  """The wallet ID of the sender."""
   walletId: WalletId!
 }
 
@@ -461,47 +379,31 @@ type LnInvoice {
 }
 
 input LnInvoiceCreateInput {
-  """
-  Amount in satoshis.
-  """
+  """Amount in satoshis."""
   amount: SatAmount!
 
-  """
-  Optional invoice expiration time in minutes.
-  """
+  """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
 
-  """
-  Optional memo for the lightning invoice.
-  """
+  """Optional memo for the lightning invoice."""
   memo: Memo
 
-  """
-  Wallet ID for a BTC wallet belonging to the current account.
-  """
+  """Wallet ID for a BTC wallet belonging to the current account."""
   walletId: WalletId!
 }
 
 input LnInvoiceCreateOnBehalfOfRecipientInput {
-  """
-  Amount in satoshis.
-  """
+  """Amount in satoshis."""
   amount: SatAmount!
   descriptionHash: Hex32Bytes
 
-  """
-  Optional invoice expiration time in minutes.
-  """
+  """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
 
-  """
-  Optional memo for the lightning invoice.
-  """
+  """Optional memo for the lightning invoice."""
   memo: Memo
 
-  """
-  Wallet ID for a BTC wallet which belongs to any account.
-  """
+  """Wallet ID for a BTC wallet which belongs to any account."""
   recipientWalletId: WalletId!
 }
 
@@ -516,14 +418,10 @@ type LnInvoicePayload {
 }
 
 input LnInvoicePaymentInput {
-  """
-  Optional memo to associate with the lightning invoice.
-  """
+  """Optional memo to associate with the lightning invoice."""
   memo: Memo
 
-  """
-  Payment request representing the invoice which is being paid.
-  """
+  """Payment request representing the invoice which is being paid."""
   paymentRequest: LnPaymentRequest!
 
   """
@@ -548,14 +446,10 @@ type LnNoAmountInvoice {
 }
 
 input LnNoAmountInvoiceCreateInput {
-  """
-  Optional invoice expiration time in minutes.
-  """
+  """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
 
-  """
-  Optional memo for the lightning invoice.
-  """
+  """Optional memo for the lightning invoice."""
   memo: Memo
 
   """
@@ -565,14 +459,10 @@ input LnNoAmountInvoiceCreateInput {
 }
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
-  """
-  Optional invoice expiration time in minutes.
-  """
+  """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
 
-  """
-  Optional memo for the lightning invoice.
-  """
+  """Optional memo for the lightning invoice."""
   memo: Memo
 
   """
@@ -593,19 +483,13 @@ type LnNoAmountInvoicePayload {
 }
 
 input LnNoAmountInvoicePaymentInput {
-  """
-  Amount to pay in satoshis.
-  """
+  """Amount to pay in satoshis."""
   amount: SatAmount!
 
-  """
-  Optional memo to associate with the lightning invoice.
-  """
+  """Optional memo to associate with the lightning invoice."""
   memo: Memo
 
-  """
-  Payment request representing the invoice which is being paid.
-  """
+  """Payment request representing the invoice which is being paid."""
   paymentRequest: LnPaymentRequest!
 
   """
@@ -621,19 +505,13 @@ input LnNoAmountUsdInvoiceFeeProbeInput {
 }
 
 input LnNoAmountUsdInvoicePaymentInput {
-  """
-  Amount to pay in USD cents.
-  """
+  """Amount to pay in USD cents."""
   amount: CentAmount!
 
-  """
-  Optional memo to associate with the lightning invoice.
-  """
+  """Optional memo to associate with the lightning invoice."""
   memo: Memo
 
-  """
-  Payment request representing the invoice which is being paid.
-  """
+  """Payment request representing the invoice which is being paid."""
   paymentRequest: LnPaymentRequest!
 
   """
@@ -644,9 +522,7 @@ input LnNoAmountUsdInvoicePaymentInput {
 
 scalar LnPaymentPreImage
 
-"""
-BOLT11 lightning invoice payment request with the amount included
-"""
+"""BOLT11 lightning invoice payment request with the amount included"""
 scalar LnPaymentRequest
 
 scalar LnPaymentSecret
@@ -658,37 +534,25 @@ type LnUpdate {
 }
 
 input LnUsdInvoiceCreateInput {
-  """
-  Amount in USD cents.
-  """
+  """Amount in USD cents."""
   amount: CentAmount!
 
-  """
-  Optional invoice expiration time in minutes.
-  """
+  """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
 
-  """
-  Optional memo for the lightning invoice.
-  """
+  """Optional memo for the lightning invoice."""
   memo: Memo
 
-  """
-  Wallet ID for a USD wallet belonging to the current user.
-  """
+  """Wallet ID for a USD wallet belonging to the current user."""
   walletId: WalletId!
 }
 
 input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
-  """
-  Amount in USD cents.
-  """
+  """Amount in USD cents."""
   amount: CentAmount!
   descriptionHash: Hex32Bytes
 
-  """
-  Optional invoice expiration time in minutes.
-  """
+  """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
 
   """
@@ -696,9 +560,7 @@ input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
   """
   memo: Memo
 
-  """
-  Wallet ID for a USD wallet which belongs to the account of any user.
-  """
+  """Wallet ID for a USD wallet which belongs to the account of any user."""
   recipientWalletId: WalletId!
 }
 
@@ -717,14 +579,10 @@ type MapMarker {
   username: Username
 }
 
-"""
-Text field in a lightning payment transaction
-"""
+"""Text field in a lightning payment transaction"""
 scalar Memo
 
-"""
-(Positive) amount of minutes
-"""
+"""(Positive) amount of minutes"""
 scalar Minutes
 
 type MobileVersions {
@@ -735,17 +593,11 @@ type MobileVersions {
 
 type Mutation {
   accountDelete: AccountDeletePayload!
-  accountUpdateDefaultWalletId(
-    input: AccountUpdateDefaultWalletIdInput!
-  ): AccountUpdateDefaultWalletIdPayload!
-  accountUpdateDisplayCurrency(
-    input: AccountUpdateDisplayCurrencyInput!
-  ): AccountUpdateDisplayCurrencyPayload!
+  accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload!
+  accountUpdateDisplayCurrency(input: AccountUpdateDisplayCurrencyInput!): AccountUpdateDisplayCurrencyPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
-  deviceNotificationTokenCreate(
-    input: DeviceNotificationTokenCreateInput!
-  ): SuccessPayload!
+  deviceNotificationTokenCreate(input: DeviceNotificationTokenCreateInput!): SuccessPayload!
   feedbackSubmit(input: FeedbackSubmitInput!): SuccessPayload!
 
   """
@@ -774,9 +626,7 @@ type Mutation {
   When invoice is paid the value will be credited to a BTC wallet.
   Expires after 'expiresIn' or 24 hours.
   """
-  lnInvoiceCreateOnBehalfOfRecipient(
-    input: LnInvoiceCreateOnBehalfOfRecipientInput!
-  ): LnInvoicePayload!
+  lnInvoiceCreateOnBehalfOfRecipient(input: LnInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload!
   lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
 
   """
@@ -798,9 +648,7 @@ type Mutation {
   Can be used to receive any supported currency value (currently USD or BTC).
   Expires after 'expiresIn' or 24 hours for BTC invoices or 5 minutes for USD invoices.
   """
-  lnNoAmountInvoiceCreateOnBehalfOfRecipient(
-    input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
-  ): LnNoAmountInvoicePayload!
+  lnNoAmountInvoiceCreateOnBehalfOfRecipient(input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!): LnNoAmountInvoicePayload!
   lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
 
   """
@@ -809,18 +657,14 @@ type Mutation {
   Returns payment status (success, failed, pending, already_paid).
   """
   lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): PaymentSendPayload!
-  lnNoAmountUsdInvoiceFeeProbe(
-    input: LnNoAmountUsdInvoiceFeeProbeInput!
-  ): CentAmountPayload!
+  lnNoAmountUsdInvoiceFeeProbe(input: LnNoAmountUsdInvoiceFeeProbeInput!): CentAmountPayload!
 
   """
   Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
   Provided wallet must be USD and have sufficient balance to cover amount specified in mutation request.
   Returns payment status (success, failed, pending, already_paid).
   """
-  lnNoAmountUsdInvoicePaymentSend(
-    input: LnNoAmountUsdInvoicePaymentInput!
-  ): PaymentSendPayload!
+  lnNoAmountUsdInvoicePaymentSend(input: LnNoAmountUsdInvoicePaymentInput!): PaymentSendPayload!
 
   """
   Returns a lightning invoice denominated in satoshis for an associated wallet.
@@ -836,55 +680,31 @@ type Mutation {
   Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
     associated with the amount).
   """
-  lnUsdInvoiceCreateOnBehalfOfRecipient(
-    input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!
-  ): LnInvoicePayload!
+  lnUsdInvoiceCreateOnBehalfOfRecipient(input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!): LnInvoicePayload!
   lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
   onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
-  onChainUsdPaymentSendAsBtcDenominated(
-    input: OnChainUsdPaymentSendAsBtcDenominatedInput!
-  ): PaymentSendPayload!
+  onChainUsdPaymentSendAsBtcDenominated(input: OnChainUsdPaymentSendAsBtcDenominatedInput!): PaymentSendPayload!
   quizCompleted(input: QuizCompletedInput!): QuizCompletedPayload!
-  userContactUpdateAlias(
-    input: UserContactUpdateAliasInput!
-  ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
+  userContactUpdateAlias(input: UserContactUpdateAliasInput!): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userEmailDelete: UserEmailDeletePayload!
-  userEmailRegistrationInitiate(
-    input: UserEmailRegistrationInitiateInput!
-  ): UserEmailRegistrationInitiatePayload!
-  userEmailRegistrationValidate(
-    input: UserEmailRegistrationValidateInput!
-  ): UserEmailRegistrationValidatePayload!
+  userEmailRegistrationInitiate(input: UserEmailRegistrationInitiateInput!): UserEmailRegistrationInitiatePayload!
+  userEmailRegistrationValidate(input: UserEmailRegistrationValidateInput!): UserEmailRegistrationValidatePayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userPhoneDelete: UserPhoneDeletePayload!
-  userPhoneRegistrationInitiate(
-    input: UserPhoneRegistrationInitiateInput!
-  ): SuccessPayload!
-  userPhoneRegistrationValidate(
-    input: UserPhoneRegistrationValidateInput!
-  ): UserPhoneRegistrationValidatePayload!
-  userQuizQuestionUpdateCompleted(
-    input: UserQuizQuestionUpdateCompletedInput!
-  ): UserQuizQuestionUpdateCompletedPayload!
-    @deprecated(reason: "Use QuizCompletedMutation instead")
+  userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload!
+  userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
+  userQuizQuestionUpdateCompleted(input: UserQuizQuestionUpdateCompletedInput!): UserQuizQuestionUpdateCompletedPayload! @deprecated(reason: "Use QuizCompletedMutation instead")
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
-  userTotpRegistrationInitiate(
-    input: UserTotpRegistrationInitiateInput!
-  ): UserTotpRegistrationInitiatePayload!
-  userTotpRegistrationValidate(
-    input: UserTotpRegistrationValidateInput!
-  ): UserTotpRegistrationValidatePayload!
+  userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload!
+  userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
-  userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload!
-    @deprecated(
-      reason: "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles"
-    )
+  userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload! @deprecated(reason: "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles")
 }
 
 type MyUpdatesPayload {
@@ -900,9 +720,7 @@ enum Network {
   testnet
 }
 
-"""
-An address for an on-chain bitcoin destination
-"""
+"""An address for an on-chain bitcoin destination"""
 scalar OnChainAddress
 
 input OnChainAddressCreateInput {
@@ -922,8 +740,7 @@ input OnChainPaymentSendAllInput {
   address: OnChainAddress!
   memo: Memo
   speed: PayoutSpeed = FAST
-  targetConfirmations: TargetConfirmations = 0
-    @deprecated(reason: "Ignored - will be replaced")
+  targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -932,15 +749,13 @@ input OnChainPaymentSendInput {
   amount: SatAmount!
   memo: Memo
   speed: PayoutSpeed = FAST
-  targetConfirmations: TargetConfirmations = 0
-    @deprecated(reason: "Ignored - will be replaced")
+  targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
 type OnChainTxFee {
   amount: SatAmount!
-  targetConfirmations: TargetConfirmations!
-    @deprecated(reason: "Ignored - will be removed")
+  targetConfirmations: TargetConfirmations! @deprecated(reason: "Ignored - will be removed")
 }
 
 scalar OnChainTxHash
@@ -959,8 +774,7 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput {
   amount: SatAmount!
   memo: Memo
   speed: PayoutSpeed = FAST
-  targetConfirmations: TargetConfirmations = 0
-    @deprecated(reason: "Ignored - will be replaced")
+  targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -969,15 +783,13 @@ input OnChainUsdPaymentSendInput {
   amount: CentAmount!
   memo: Memo
   speed: PayoutSpeed = FAST
-  targetConfirmations: TargetConfirmations = 0
-    @deprecated(reason: "Ignored - will be replaced")
+  targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
 type OnChainUsdTxFee {
   amount: CentAmount!
-  targetConfirmations: TargetConfirmations!
-    @deprecated(reason: "Ignored - will be removed")
+  targetConfirmations: TargetConfirmations! @deprecated(reason: "Ignored - will be removed")
 }
 
 type OneDayAccountLimit implements AccountLimit {
@@ -991,39 +803,25 @@ type OneDayAccountLimit implements AccountLimit {
   """
   remainingLimit: CentAmount
 
-  """
-  The current maximum limit for a given 24 hour period.
-  """
+  """The current maximum limit for a given 24 hour period."""
   totalLimit: CentAmount!
 }
 
-"""
-An authentication code valid for a single use
-"""
+"""An authentication code valid for a single use"""
 scalar OneTimeAuthCode
 
-"""
-Information about pagination in a connection.
-"""
+"""Information about pagination in a connection."""
 type PageInfo {
-  """
-  When paginating forwards, the cursor to continue.
-  """
+  """When paginating forwards, the cursor to continue."""
   endCursor: String
 
-  """
-  When paginating forwards, are there more items?
-  """
+  """When paginating forwards, are there more items?"""
   hasNextPage: Boolean!
 
-  """
-  When paginating backwards, are there more items?
-  """
+  """When paginating backwards, are there more items?"""
   hasPreviousPage: Boolean!
 
-  """
-  When paginating backwards, the cursor to continue.
-  """
+  """When paginating backwards, the cursor to continue."""
   startCursor: String
 }
 
@@ -1045,9 +843,7 @@ enum PayoutSpeed {
   FAST
 }
 
-"""
-Phone number which includes country code
-"""
+"""Phone number which includes country code"""
 scalar Phone
 
 enum PhoneCodeChannelType {
@@ -1065,9 +861,7 @@ type Price {
   offset: Int!
 }
 
-"""
-The range for the X axis in the BTC price graph
-"""
+"""The range for the X axis in the BTC price graph"""
 enum PriceGraphRange {
   FIVE_YEARS
   ONE_DAY
@@ -1088,9 +882,7 @@ interface PriceInterface {
   offset: Int!
 }
 
-"""
-Price of 1 sat in base/offset. To calculate, use: `base / 10^offset`
-"""
+"""Price of 1 sat in base/offset. To calculate, use: `base / 10^offset`"""
 type PriceOfOneSatInMinorUnit implements PriceInterface {
   base: SafeInt!
   currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
@@ -1140,59 +932,27 @@ type PublicWallet {
 
 type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
-  btcPrice(currency: DisplayCurrency! = "USD"): Price
-    @deprecated(reason: "Deprecated in favor of realtimePrice")
+  btcPrice(currency: DisplayCurrency! = "USD"): Price @deprecated(reason: "Deprecated in favor of realtimePrice")
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
   currencyList: [Currency!]!
   globals: Globals
-  lnInvoicePaymentStatus(
-    input: LnInvoicePaymentStatusInput!
-  ): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
   me: User
   mobileVersions: [MobileVersions]
-  onChainTxFee(
-    address: OnChainAddress!
-    amount: SatAmount!
-    speed: PayoutSpeed = FAST
-    targetConfirmations: TargetConfirmations = 0
-      @deprecated(reason: "Ignored - will be replaced")
-    walletId: WalletId!
-  ): OnChainTxFee!
-  onChainUsdTxFee(
-    address: OnChainAddress!
-    amount: CentAmount!
-    speed: PayoutSpeed = FAST
-    targetConfirmations: TargetConfirmations = 0
-      @deprecated(reason: "Ignored - will be replaced")
-    walletId: WalletId!
-  ): OnChainUsdTxFee!
-  onChainUsdTxFeeAsBtcDenominated(
-    address: OnChainAddress!
-    amount: SatAmount!
-    speed: PayoutSpeed = FAST
-    targetConfirmations: TargetConfirmations = 0
-      @deprecated(reason: "Ignored - will be replaced")
-    walletId: WalletId!
-  ): OnChainUsdTxFee!
-  quizQuestions: [QuizQuestion]
-    @deprecated(
-      reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated"
-    )
+  onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainTxFee!
+  onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainUsdTxFee!
+  onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainUsdTxFee!
+  quizQuestions: [QuizQuestion] @deprecated(reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated")
 
-  """
-  Returns 1 Sat and 1 Usd Cent price for the given currency
-  """
+  """Returns 1 Sat and 1 Usd Cent price for the given currency"""
   realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice!
-  userDefaultWalletId(username: Username!): WalletId!
-    @deprecated(reason: "will be migrated to AccountDefaultWalletId")
+  userDefaultWalletId(username: Username!): WalletId! @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
 }
 
 type Quiz {
-  """
-  The reward in Satoshis for the quiz question
-  """
+  """The reward in Satoshis for the quiz question"""
   amount: SatAmount!
   completed: Boolean!
   id: ID!
@@ -1208,9 +968,7 @@ type QuizCompletedPayload {
 }
 
 type QuizQuestion {
-  """
-  The earn reward in Satoshis for the quiz question
-  """
+  """The earn reward in Satoshis for the quiz question"""
   earnAmount: SatAmount!
   id: ID!
 }
@@ -1241,9 +999,7 @@ Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 """
 scalar SafeInt
 
-"""
-(Positive) Satoshi amount
-"""
+"""(Positive) Satoshi amount"""
 scalar SatAmount
 
 type SatAmountPayload {
@@ -1251,9 +1007,7 @@ type SatAmountPayload {
   errors: [Error!]!
 }
 
-"""
-(Positive) amount of seconds
-"""
+"""(Positive) amount of seconds"""
 scalar Seconds
 
 union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
@@ -1267,10 +1021,7 @@ type SettlementViaIntraLedger {
 }
 
 type SettlementViaLn {
-  paymentSecret: LnPaymentSecret
-    @deprecated(
-      reason: "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type"
-    )
+  paymentSecret: LnPaymentSecret @deprecated(reason: "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type")
   preImage: LnPaymentPreImage
 }
 
@@ -1279,9 +1030,7 @@ type SettlementViaOnChain {
   vout: Int
 }
 
-"""
-An amount (of a currency) that can be negative (e.g. in a transaction)
-"""
+"""An amount (of a currency) that can be negative (e.g. in a transaction)"""
 scalar SignedAmount
 
 """
@@ -1290,15 +1039,11 @@ A string amount (of a currency) that can be negative (e.g. in a transaction)
 scalar SignedDisplayMajorAmount
 
 type Subscription {
-  lnInvoicePaymentStatus(
-    input: LnInvoicePaymentStatusInput!
-  ): LnInvoicePaymentStatusPayload!
+  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!
   price(input: PriceInput!): PricePayload!
 
-  """
-  Returns the price of 1 satoshi
-  """
+  """Returns the price of 1 satoshi"""
   realtimePrice(input: RealtimePriceInput!): RealtimePricePayload!
 }
 
@@ -1317,19 +1062,13 @@ Timestamp field, serialized as Unix time (the number of seconds since the Unix e
 """
 scalar Timestamp
 
-"""
-A time-based one-time password
-"""
+"""A time-based one-time password"""
 scalar TotpCode
 
-"""
-An id to be passed between set and verify for confirming totp
-"""
+"""An id to be passed between set and verify for confirming totp"""
 scalar TotpRegistrationId
 
-"""
-A secret to generate time-based one-time password
-"""
+"""A secret to generate time-based one-time password"""
 scalar TotpSecret
 
 """
@@ -1344,65 +1083,43 @@ type Transaction {
   direction: TxDirection!
   id: ID!
 
-  """
-  From which protocol the payment has been initiated.
-  """
+  """From which protocol the payment has been initiated."""
   initiationVia: InitiationVia!
   memo: Memo
 
-  """
-  Amount of the settlement currency sent or received.
-  """
+  """Amount of the settlement currency sent or received."""
   settlementAmount: SignedAmount!
 
-  """
-  Wallet currency for transaction.
-  """
+  """Wallet currency for transaction."""
   settlementCurrency: WalletCurrency!
   settlementDisplayAmount: SignedDisplayMajorAmount!
   settlementDisplayCurrency: DisplayCurrency!
   settlementDisplayFee: SignedDisplayMajorAmount!
   settlementFee: SignedAmount!
 
-  """
-  Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement.
-  """
+  """Price in WALLETCURRENCY/SETTLEMENTUNIT at time of settlement."""
   settlementPrice: PriceOfOneSettlementMinorUnitInDisplayMinorUnit!
 
-  """
-  To which protocol the payment has settled on.
-  """
+  """To which protocol the payment has settled on."""
   settlementVia: SettlementVia!
   status: TxStatus!
 }
 
-"""
-A connection to a list of items.
-"""
+"""A connection to a list of items."""
 type TransactionConnection {
-  """
-  A list of edges.
-  """
+  """A list of edges."""
   edges: [TransactionEdge!]
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 }
 
-"""
-An edge in a connection.
-"""
+"""An edge in a connection."""
 type TransactionEdge {
-  """
-  A cursor for use in pagination
-  """
+  """A cursor for use in pagination"""
   cursor: String!
 
-  """
-  The item at the end of the edge
-  """
+  """The item at the end of the edge"""
   node: Transaction!
 }
 
@@ -1440,55 +1157,35 @@ type UsdWallet implements Wallet {
   balance: SignedAmount!
   id: ID!
 
-  """
-  An unconfirmed incoming onchain balance.
-  """
+  """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
   transactionsByAddress(
-    """
-    Returns the items that include this address.
-    """
+    """Returns the items that include this address."""
     address: OnChainAddress!
 
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
   walletCurrency: WalletCurrency!
@@ -1499,8 +1196,7 @@ type User {
   Get single contact details.
   Can include the transactions associated with the contact.
   """
-  contactByUsername(username: Username!): UserContact!
-    @deprecated(reason: "will be moved to Accounts")
+  contactByUsername(username: Username!): UserContact! @deprecated(reason: "will be moved to Accounts")
 
   """
   Get full list of contacts.
@@ -1510,9 +1206,7 @@ type User {
   createdAt: Timestamp!
   defaultAccount: Account!
 
-  """
-  Email address
-  """
+  """Email address"""
   email: Email
   id: ID!
 
@@ -1522,24 +1216,16 @@ type User {
   """
   language: Language!
 
-  """
-  Phone number with international calling code.
-  """
+  """Phone number with international calling code."""
   phone: Phone
 
-  """
-  List the quiz questions the user may have completed.
-  """
+  """List the quiz questions the user may have completed."""
   quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
 
-  """
-  Whether TOTP is enabled for this user.
-  """
+  """Whether TOTP is enabled for this user."""
   totpEnabled: Boolean!
 
-  """
-  Optional immutable user friendly identifier.
-  """
+  """Optional immutable user friendly identifier."""
   username: Username @deprecated(reason: "will be moved to @Handle in Account and Wallet")
 }
 
@@ -1551,35 +1237,23 @@ type UserContact {
   alias: ContactAlias
   id: Username!
 
-  """
-  Paginated list of transactions sent to/from this contact.
-  """
+  """Paginated list of transactions sent to/from this contact."""
   transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
   transactionsCount: Int!
 
-  """
-  Actual identifier of the contact.
-  """
+  """Actual identifier of the contact."""
   username: Username!
 }
 
@@ -1712,9 +1386,7 @@ type UserUpdateUsernamePayload {
   user: User
 }
 
-"""
-Unique identifier of a user
-"""
+"""Unique identifier of a user"""
 scalar Username
 
 """
@@ -1731,24 +1403,16 @@ interface Wallet {
   ie: the newest transaction will be first
   """
   transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
 
@@ -1757,29 +1421,19 @@ interface Wallet {
   ie: the newest transaction will be first
   """
   transactionsByAddress(
-    """
-    Returns the items that include this address.
-    """
+    """Returns the items that include this address."""
     address: OnChainAddress!
 
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
+    """Returns the items in the list that come after the specified cursor."""
     after: String
 
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
+    """Returns the items in the list that come before the specified cursor."""
     before: String
 
-    """
-    Returns the first n items from the list.
-    """
+    """Returns the first n items from the list."""
     first: Int
 
-    """
-    Returns the last n items from the list.
-    """
+    """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
   walletCurrency: WalletCurrency!
@@ -1790,7 +1444,5 @@ enum WalletCurrency {
   USD
 }
 
-"""
-Unique identifier of a wallet
-"""
+"""Unique identifier of a wallet"""
 scalar WalletId

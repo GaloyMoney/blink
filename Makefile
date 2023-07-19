@@ -168,6 +168,7 @@ check-code: check-implicit
 	yarn tsc-check
 	yarn eslint-check
 	yarn build
+	yarn check:sdl
 	yarn check-yaml
 	yarn madge-check
 
@@ -196,8 +197,9 @@ kill-graphql:
 redis-cli:
 	docker-compose exec redis redis-cli
 
-e2e-codegen:
+codegen:
 	yarn e2e-codegen
+	yarn write-sdl
 
 gen-test-jwt:
 	yarn gen-test-jwt
