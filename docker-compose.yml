@@ -340,6 +340,7 @@ services:
       - -d
       - m/84h/0h/0h
     depends_on:
+      - bitcoind-signer
       - otel-agent
       - fulcrum
       - postgres-bria
