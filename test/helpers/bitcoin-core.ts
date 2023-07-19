@@ -17,7 +17,6 @@ import {
 } from "./bitcoind"
 import { descriptors } from "./multisig-wallet"
 import { descriptors as signerDescriptors } from "./signer-wallet"
-import { checkIsBalanced } from "./check-is-balanced"
 import { waitUntilBlockHeight } from "./lightning"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
@@ -120,7 +119,6 @@ export const fundWalletIdFromOnchain = async ({
   })
 
   await waitUntilBlockHeight({ lnd })
-  await checkIsBalanced()
 
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) throw balance

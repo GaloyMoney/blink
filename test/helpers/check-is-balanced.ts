@@ -5,7 +5,10 @@ import { baseLogger } from "@services/logger"
 import { ledgerAdmin } from "@services/mongodb"
 import { lndsBalances } from "@services/lnd/utils"
 
-import { waitUntilChannelBalanceSyncAll } from "./lightning"
+import {
+  waitUntilChannelBalanceSyncE2e,
+  waitUntilChannelBalanceSyncIntegration,
+} from "./lightning"
 import { getBalance as getBitcoindBalance } from "./bitcoind"
 import { getBriaBalance } from "./bria"
 
@@ -19,7 +22,25 @@ export const checkIsBalanced = async () => {
   ])
   // wait for balance updates because invoice event
   // arrives before wallet balances updates in lnd
-  await waitUntilChannelBalanceSyncAll()
+  await waitUntilChannelBalanceSyncIntegration()
+
+  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
+    await balanceSheetIsBalanced()
+  expect(assetsLiabilitiesDifference).toBe(0)
+
+  // TODO: need to go from sats to msats to properly account for every msats spent
+  expect(Math.abs(bookingVersusRealWorldAssets)).toBe(0)
+}
+
+export const checkIsBalancedE2e = async () => {
+  await Promise.all([
+    handleHeldInvoices(logger),
+    updatePendingPayments(logger),
+    updateOnChainReceipt({ logger }),
+  ])
+  // wait for balance updates because invoice event
+  // arrives before wallet balances updates in lnd
+  await waitUntilChannelBalanceSyncE2e()
 
   const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
     await balanceSheetIsBalanced()

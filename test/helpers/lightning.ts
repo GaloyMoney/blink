@@ -97,7 +97,8 @@ export const lndOutside3 = authenticatedLndGrpc({
   socket: `${process.env.LNDOUTSIDE3ADDR}:${process.env.LNDOUTSIDE3RPCPORT ?? 10009}`,
 }).lnd
 
-export const lnds = [lnd1, lnd2, lndOutside1, lndOutside2, lndOutside3]
+export const lndsIntegration = [lnd1, lnd2, lndOutside1, lndOutside2, lndOutside3]
+export const lndsE2e = [lnd1, lnd2, lndOutside1, lndOutside2]
 
 export const waitUntilBlockHeight = async ({ lnd, blockHeight = 0 }) => {
   let block = blockHeight
@@ -198,7 +199,7 @@ export const fundLnd = async (lnd, amount = 1) => {
   await waitUntilBlockHeight({ lnd })
 }
 
-export const resetLnds = async () => {
+const resetLnds = async (lnds) => {
   const block = await bitcoindClient.getBlockCount()
   if (!block) return // skip if we are just getting started
 
@@ -227,6 +228,9 @@ export const resetLnds = async () => {
 
   await mineBlockAndSync({ lnds })
 }
+
+export const resetIntegrationLnds = () => resetLnds(lndsIntegration)
+export const resetE2eLnds = () => resetLnds(lndsE2e)
 
 export const closeAllChannels = async ({ lnd }) => {
   let channels
@@ -304,9 +308,13 @@ export const mineBlockAndSync = async ({
   await Promise.all(promiseArray)
 }
 
-export const mineBlockAndSyncAll = (newBlock = 6) => mineBlockAndSync({ lnds, newBlock })
+export const mineBlockAndSyncAll = (newBlock = 6) =>
+  mineBlockAndSync({ lnds: lndsIntegration, newBlock })
+export const mineBlockAndSyncAllE2e = (newBlock = 6) =>
+  mineBlockAndSync({ lnds: lndsE2e, newBlock })
 
-export const waitUntilSyncAll = () => waitUntilSync({ lnds })
+export const waitUntilSyncAll = () => waitUntilSync({ lnds: lndsIntegration })
+export const waitUntilSyncAllE2e = () => waitUntilSync({ lnds: lndsE2e })
 
 export const waitUntilSync = async ({ lnds }: { lnds: Array<AuthenticatedLnd> }) => {
   const promiseArray: Array<Promise<void>> = []
@@ -316,13 +324,18 @@ export const waitUntilSync = async ({ lnds }: { lnds: Array<AuthenticatedLnd> })
   await Promise.all(promiseArray)
 }
 
-export const waitUntilChannelBalanceSyncAll = async () => {
+const waitUntilChannelBalanceSyncAll = async (lnds) => {
   const promiseArray: Array<Promise<void>> = []
   for (const lnd of lnds) {
     promiseArray.push(waitUntilChannelBalanceSync({ lnd }))
   }
   await Promise.all(promiseArray)
 }
+export const waitUntilChannelBalanceSyncIntegration = () =>
+  waitUntilChannelBalanceSyncAll(lndsIntegration)
+
+export const waitUntilChannelBalanceSyncE2e = () =>
+  waitUntilChannelBalanceSyncAll(lndsE2e)
 
 export const waitUntilChannelBalanceSync = ({ lnd }) =>
   waitFor(async () => {
