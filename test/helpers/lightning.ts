@@ -308,9 +308,13 @@ export const mineBlockAndSync = async ({
   await Promise.all(promiseArray)
 }
 
-export const mineBlockAndSyncAll = (newBlock = 6) => mineBlockAndSync({ lnds, newBlock })
+export const mineBlockAndSyncAll = (newBlock = 6) =>
+  mineBlockAndSync({ lnds: lndsIntegration, newBlock })
+export const mineBlockAndSyncAllE2e = (newBlock = 6) =>
+  mineBlockAndSync({ lnds: lndsE2e, newBlock })
 
-export const waitUntilSyncAll = () => waitUntilSync({ lnds })
+export const waitUntilSyncAll = () => waitUntilSync({ lnds: lndsIntegration })
+export const waitUntilSyncAllE2e = () => waitUntilSync({ lnds: lndsE2e })
 
 export const waitUntilSync = async ({ lnds }: { lnds: Array<AuthenticatedLnd> }) => {
   const promiseArray: Array<Promise<void>> = []

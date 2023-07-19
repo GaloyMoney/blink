@@ -9,9 +9,9 @@ import { getActiveLnd } from "@services/lnd/utils"
 import {
   fundLnd,
   getChainBalance,
-  mineBlockAndSyncAll,
+  mineBlockAndSyncAllE2e,
   waitUntilGraphIsReady,
-  waitUntilSyncAll,
+  waitUntilSyncAllE2e,
 } from "test/helpers/lightning"
 
 import { clearAccountLocks, clearLimiters } from "test/helpers/redis"
@@ -172,20 +172,20 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   // Fund external lnd
   if (stateConfig.lndFunding.length > 0) {
     for (const lndInstance of stateConfig.lndFunding) {
-      await waitUntilSyncAll()
+      await waitUntilSyncAllE2e()
       await fundLnd(lndInstance)
     }
-    await mineBlockAndSyncAll()
+    await mineBlockAndSyncAllE2e()
     baseLogger.info("LND's have been funded.")
   }
 
   // Open ln channels
   if (stateConfig.channelOpens.length > 0) {
     for (const channel of stateConfig.channelOpens) {
-      await waitUntilSyncAll()
+      await waitUntilSyncAllE2e()
       await openChannelTesting(channel)
     }
-    await mineBlockAndSyncAll()
+    await mineBlockAndSyncAllE2e()
     baseLogger.info("Channels have been opened.")
   }
 
