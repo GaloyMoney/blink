@@ -339,9 +339,14 @@ services:
       - -d
       - m/84h/0h/0h
     depends_on:
-      - otel-agent
-      - fulcrum
-      - postgres-bria
+      bitcoind-signer:
+        condition: service_started
+      otel-agent:
+        condition: service_started
+      fulcrum:
+        condition: service_started
+      postgres-bria:
+        condition: service_healthy
     restart: on-failure:10
     volumes:
       - ./:/repo
@@ -354,7 +359,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 5s
-      timeout: 5s
+      timeout: 30s
       retries: 5
   oathkeeper:
     image: oryd/oathkeeper:v0.40.4-distroless
