@@ -6,7 +6,7 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 
-import { createOnChainAddressForBtcWallet } from "./create-on-chain-address"
+import { createOnChainAddress } from "./create-on-chain-address"
 
 export const getLastOnChainAddress = async (
   walletId: WalletId,
@@ -23,7 +23,7 @@ export const getLastOnChainAddress = async (
 
   if (lastOnChainAddress instanceof CouldNotFindError) {
     const requestId = walletId as unknown as OnChainAddressRequestId
-    return createOnChainAddressForBtcWallet({
+    return createOnChainAddress({
       walletId,
       requestId,
     })

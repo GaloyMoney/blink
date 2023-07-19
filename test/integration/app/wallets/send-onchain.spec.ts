@@ -337,7 +337,7 @@ describe("onChainPay", () => {
       })
       if (receive instanceof Error) throw receive
 
-      const newWalletIdAddress = await Wallets.createOnChainAddressForBtcWallet({
+      const newWalletIdAddress = await Wallets.createOnChainAddress({
         walletId: newWalletDescriptor.id,
       })
       if (newWalletIdAddress instanceof Error) throw newWalletIdAddress
@@ -385,7 +385,7 @@ describe("onChainPay", () => {
       // Execute
       const btcSendAmount = toSats(10)
 
-      const recipientUsdWalletIdAddress = await Wallets.createOnChainAddressForUsdWallet({
+      const recipientUsdWalletIdAddress = await Wallets.createOnChainAddress({
         walletId: recipientUsdWalletDescriptor.id,
       })
       if (recipientUsdWalletIdAddress instanceof Error) throw recipientUsdWalletIdAddress
@@ -438,7 +438,7 @@ describe("onChainPay", () => {
       })
       if (receive instanceof Error) throw receive
 
-      const recipientWalletIdAddress = await Wallets.createOnChainAddressForBtcWallet({
+      const recipientWalletIdAddress = await Wallets.createOnChainAddress({
         walletId: recipientWalletDescriptor.id,
       })
       if (recipientWalletIdAddress instanceof Error) throw recipientWalletIdAddress

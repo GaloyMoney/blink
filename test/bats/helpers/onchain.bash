@@ -34,8 +34,12 @@ check_for_broadcast() {
   )
   exec_graphql "$token_name" 'transactions' "$variables"
 
-  txid="$(get_from_transaction_by_address "$address" '.settlementVia.transactionHash')"
-  [[ "${txid}" != "null" ]]
+  tx="$(get_from_transaction_by_address "$address" '.')"
+  [[ -n "${tx}" && "${tx}" != "null" ]] || exit 1
+  txid="$(echo $tx | jq -r '.settlementVia.transactionHash')"
+  [[ "${txid}" != "null" ]] || exit 1
+  status="$(echo $tx | jq -r '.status')"
+  [[ "${status}" == "PENDING" ]] || exit 1
 
   bitcoin_cli gettransaction "$txid" || exit 1
 }

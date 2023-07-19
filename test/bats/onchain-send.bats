@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 load "helpers/setup-and-teardown"
-load "helpers/onchain-send"
+load "helpers/onchain"
 
 setup_file() {
   clear_cache
@@ -30,6 +30,32 @@ teardown() {
   token_name="$BOB_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
+
+  # mutation: onChainPaymentSend, from BTC to USD wallet
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  on_chain_btc_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${on_chain_btc_payment_send_address}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg address "$on_chain_btc_payment_send_address" \
+    --arg amount 200 \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql "$token_name" 'on-chain-payment-send' "$variables"
+  send_status="$(graphql_output '.data.onChainPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  exec_graphql "$token_name" 'transactions' '{"first": 1}'
+  settled_status="$(get_from_transaction_by_address $on_chain_btc_payment_send_address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+
 
   # mutation: onChainUsdPaymentSend, from USD to BTC wallet
   variables=$(

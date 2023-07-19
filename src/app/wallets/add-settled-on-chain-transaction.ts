@@ -25,7 +25,7 @@ import { DealerPriceService } from "@services/dealer-price"
 import { NotificationsService } from "@services/notifications"
 
 import { getLastOnChainAddress } from "./get-last-on-chain-address"
-import { createOnChainAddressByWallet } from "./create-on-chain-address"
+import { createOnChainAddress } from "./create-on-chain-address"
 
 const ledger = LedgerService()
 const dealer = DealerPriceService()
@@ -221,8 +221,8 @@ export const addSettledTransaction = async (args: {
   }
 
   if (newAddressRequestId) {
-    const newAddress = await createOnChainAddressByWallet({
-      wallet: walletDescriptor,
+    const newAddress = await createOnChainAddress({
+      walletId: walletDescriptor.id,
       requestId: newAddressRequestId,
     })
     if (newAddress instanceof Error) return newAddress
