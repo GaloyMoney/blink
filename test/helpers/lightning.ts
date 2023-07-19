@@ -199,7 +199,7 @@ export const fundLnd = async (lnd, amount = 1) => {
   await waitUntilBlockHeight({ lnd })
 }
 
-export const resetLnds = async () => {
+const resetLnds = async (lnds) => {
   const block = await bitcoindClient.getBlockCount()
   if (!block) return // skip if we are just getting started
 
@@ -228,6 +228,9 @@ export const resetLnds = async () => {
 
   await mineBlockAndSync({ lnds })
 }
+
+export const resetIntegrationLnds = () => resetLnds(lndsIntegration)
+export const resetE2eLnds = () => resetLnds(lndsE2e)
 
 export const closeAllChannels = async ({ lnd }) => {
   let channels

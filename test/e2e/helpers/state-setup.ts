@@ -32,7 +32,7 @@ import {
   openChannelTesting,
   resetBria,
   resetDatabase,
-  resetLnds,
+  resetE2eLnds,
   waitUntilBriaConnected,
 } from "test/helpers"
 
@@ -122,7 +122,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   if (stateConfig.resetState) {
     await Promise.all([
       resetBria(),
-      resetLnds(),
+      resetE2eLnds(),
       resetDatabase(mongoose),
       clearLimiters(),
       clearAccountLocks(),
