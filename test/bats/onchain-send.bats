@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 load "helpers/setup-and-teardown"
-load "helpers/onchain-send"
+load "helpers/onchain"
 
 setup_file() {
   clear_cache
