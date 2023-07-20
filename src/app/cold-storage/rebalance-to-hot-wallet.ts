@@ -1,4 +1,4 @@
-import { BTC_NETWORK } from "@config"
+import { BitcoinNetwork } from "@config"
 import { checkedToSats, checkedToTargetConfs } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { ColdStorageService } from "@services/cold-storage"
@@ -18,7 +18,7 @@ export const rebalanceToHotWallet = async ({
   const coldStorageService = await ColdStorageService()
   if (coldStorageService instanceof Error) return coldStorageService
 
-  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+  const onChainService = OnChainService(TxDecoder(BitcoinNetwork()))
   if (onChainService instanceof Error) return onChainService
 
   const onChainAddress = await onChainService.createOnChainAddress()

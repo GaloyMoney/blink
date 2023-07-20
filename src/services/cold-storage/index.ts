@@ -9,7 +9,7 @@ import {
   walletCreateFundedPsbt,
 } from "bitcoin-cli-ts"
 
-import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config"
+import { BitcoinNetwork, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config"
 
 import {
   InsufficientBalanceForRebalanceError,
@@ -115,7 +115,7 @@ export const ColdStorageService = async (): Promise<
   > => {
     try {
       return checkedToOnChainAddress({
-        network: BTC_NETWORK,
+        network: BitcoinNetwork(),
         value: await getNewAddress({
           bitcoind: bitcoindCurrentWallet,
         }),

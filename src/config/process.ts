@@ -14,13 +14,15 @@ export const GALOY_API_KEEPALIVE_TIMEOUT_MS = process.env.GALOY_API_KEEPALIVE_TI
 export const GALOY_API_PORT = process.env.GALOY_API_PORT || 4012
 export const GALOY_ADMIN_PORT = process.env.GALOY_ADMIN_PORT || 4001
 
-const btcNetwork = process.env.NETWORK
-const networks = ["mainnet", "testnet", "signet", "regtest"]
-if (!!btcNetwork && !networks.includes(btcNetwork)) {
-  throw new ConfigError(`missing or invalid NETWORK: ${btcNetwork}`)
-}
+export const BitcoinNetwork = () => {
+  const btcNetwork = process.env.NETWORK
+  const networks = ["mainnet", "testnet", "signet", "regtest"]
+  if (!!btcNetwork && !networks.includes(btcNetwork)) {
+    throw new ConfigError(`missing or invalid NETWORK: ${btcNetwork}`)
+  }
 
-export const BTC_NETWORK = btcNetwork as BtcNetwork
+  return btcNetwork as BtcNetwork
+}
 
 export const getGaloyBuildInformation = () => {
   return {

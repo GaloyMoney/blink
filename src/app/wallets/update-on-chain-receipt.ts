@@ -1,5 +1,5 @@
 import {
-  BTC_NETWORK,
+  BitcoinNetwork,
   ONCHAIN_MIN_CONFIRMATIONS,
   ONCHAIN_SCAN_DEPTH,
   SECS_PER_10_MINS,
@@ -36,7 +36,7 @@ export const updateOnChainReceipt = async ({
   scanDepth?: ScanDepth
   logger: Logger
 }): Promise<number | ApplicationError> => {
-  const onChain = OnChainService(TxDecoder(BTC_NETWORK))
+  const onChain = OnChainService(TxDecoder(BitcoinNetwork()))
   if (onChain instanceof OnChainError) {
     return onChain
   }

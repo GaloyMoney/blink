@@ -2,7 +2,7 @@ import BIP32Factory from "bip32"
 import * as ecc from "tiny-secp256k1"
 import { networks, Psbt } from "bitcoinjs-lib"
 
-import { BTC_NETWORK, getColdStorageConfig } from "@config"
+import { BitcoinNetwork, getColdStorageConfig } from "@config"
 
 import { ColdStorage, Wallets } from "@app"
 
@@ -50,7 +50,7 @@ describe("ColdStorage - rebalanceToHotWallet", () => {
   })
 
   it("successfully handle hot wallet deposit", async () => {
-    const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+    const onChainService = OnChainService(TxDecoder(BitcoinNetwork()))
     if (onChainService instanceof Error) throw onChainService
 
     const rebalanceAmount = 10000

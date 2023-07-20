@@ -1,5 +1,5 @@
 import { OnChainService } from "@services/lnd/onchain-service"
-import { BTC_NETWORK } from "@config"
+import { BitcoinNetwork } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 
 // logic to choose the correct onChain address for the swap out destination
@@ -7,7 +7,7 @@ import { TxDecoder } from "@domain/bitcoin/onchain"
 export const getSwapDestAddress = async (): Promise<
   OnChainAddress | OnChainServiceError
 > => {
-  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+  const onChainService = OnChainService(TxDecoder(BitcoinNetwork()))
   if (onChainService instanceof Error) return onChainService
   const onChainAddress = await onChainService.createOnChainAddress()
   if (onChainAddress instanceof Error) return onChainAddress

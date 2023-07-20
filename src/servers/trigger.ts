@@ -18,7 +18,7 @@ import {
 import express from "express"
 import debounce from "lodash.debounce"
 
-import { BTC_NETWORK, getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { BitcoinNetwork, getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import {
   Payments,
@@ -79,7 +79,7 @@ const handleLndPendingIncomingOnChainTx = async ({
     return
   }
 
-  const outs = TxDecoder(BTC_NETWORK).decode(tx.transaction).outs
+  const outs = TxDecoder(BitcoinNetwork()).decode(tx.transaction).outs
   for (const { vout, sats, address } of outs) {
     const satoshis = paymentAmountFromNumber({
       amount: sats,
