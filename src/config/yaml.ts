@@ -26,8 +26,12 @@ import { merge } from "./utils"
 
 let customContent: string, customConfig
 
+const DEFAULT_CONFIG_PATH = "/var/yaml/custom.yaml"
+const providedPath = process.argv[2]
+const configPath = providedPath ? path.resolve(providedPath) : DEFAULT_CONFIG_PATH
+
 try {
-  customContent = fs.readFileSync("/var/yaml/custom.yaml", "utf8")
+  customContent = fs.readFileSync(configPath, "utf8")
   customConfig = yaml.load(customContent)
   baseLogger.info("loading custom.yaml")
 } catch (err) {
