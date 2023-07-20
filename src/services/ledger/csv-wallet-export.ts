@@ -24,6 +24,9 @@ const headers_field = [
   "feeKnownInAdvance",
   "address",
   "txHash",
+  "displayAmount",
+  "displayFee",
+  "displayCurrency",
 ]
 
 const header = headers_field.map((item) => ({ id: item, title: item }))
