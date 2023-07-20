@@ -1,14 +1,14 @@
-import { NewInitiationCacheState } from "@domain/initiation"
+import { NewWelcomeCacheState } from "@domain/welcomes"
 
-const InitiationCache = () => {
+const WelcomeCache = () => {
   const load = () => {
-    return NewInitiationCacheState()
+    return NewWelcomeCacheState()
   }
   return { load }
 }
 
-export const updateInitiations = (): true => {
-  const state = InitiationCache().load()
+export const updateWelcomes = (): true => {
+  const state = WelcomeCache().load()
   //
   // to determin the state of all referals in our system
   // we can execute a fold over our transaction database
@@ -33,7 +33,7 @@ export const updateInitiations = (): true => {
   // NEEDED QUERIES
   //
   // state.initiationProfiles()
-  // InitiationProfileRepository.update(state.initiationProfiles())
+  // WelcomeProfileRepository.update(state.initiationProfiles())
   // getTopReferers
   // getUserRefererRank
   // getUserRefererCount
