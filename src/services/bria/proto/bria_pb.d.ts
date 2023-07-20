@@ -1583,6 +1583,8 @@ export class Payout extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): Payout;
+    getCancelled(): boolean;
+    setCancelled(value: boolean): Payout;
     getExternalId(): string;
     setExternalId(value: string): Payout;
 
@@ -1611,6 +1613,7 @@ export namespace Payout {
         batchId?: string,
         satoshis: number,
         onchainAddress: string,
+        cancelled: boolean,
         externalId: string,
         metadata?: google_protobuf_struct_pb.Struct.AsObject,
     }
@@ -1745,6 +1748,43 @@ export class GetPayoutResponse extends jspb.Message {
 export namespace GetPayoutResponse {
     export type AsObject = {
         payout?: Payout.AsObject,
+    }
+}
+
+export class CancelPayoutRequest extends jspb.Message { 
+    getId(): string;
+    setId(value: string): CancelPayoutRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): CancelPayoutRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: CancelPayoutRequest): CancelPayoutRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: CancelPayoutRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): CancelPayoutRequest;
+    static deserializeBinaryFromReader(message: CancelPayoutRequest, reader: jspb.BinaryReader): CancelPayoutRequest;
+}
+
+export namespace CancelPayoutRequest {
+    export type AsObject = {
+        id: string,
+    }
+}
+
+export class CancelPayoutResponse extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): CancelPayoutResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: CancelPayoutResponse): CancelPayoutResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: CancelPayoutResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): CancelPayoutResponse;
+    static deserializeBinaryFromReader(message: CancelPayoutResponse, reader: jspb.BinaryReader): CancelPayoutResponse;
+}
+
+export namespace CancelPayoutResponse {
+    export type AsObject = {
     }
 }
 
@@ -2044,6 +2084,11 @@ export class BriaEvent extends jspb.Message {
     getPayoutSubmitted(): PayoutSubmitted | undefined;
     setPayoutSubmitted(value?: PayoutSubmitted): BriaEvent;
 
+    hasPayoutCancelled(): boolean;
+    clearPayoutCancelled(): void;
+    getPayoutCancelled(): PayoutCancelled | undefined;
+    setPayoutCancelled(value?: PayoutCancelled): BriaEvent;
+
     hasPayoutCommitted(): boolean;
     clearPayoutCommitted(): void;
     getPayoutCommitted(): PayoutCommitted | undefined;
@@ -2080,6 +2125,7 @@ export namespace BriaEvent {
         utxoSettled?: UtxoSettled.AsObject,
         utxoDropped?: UtxoDropped.AsObject,
         payoutSubmitted?: PayoutSubmitted.AsObject,
+        payoutCancelled?: PayoutCancelled.AsObject,
         payoutCommitted?: PayoutCommitted.AsObject,
         payoutBroadcast?: PayoutBroadcast.AsObject,
         payoutSettled?: PayoutSettled.AsObject,
@@ -2091,6 +2137,7 @@ export namespace BriaEvent {
         UTXO_SETTLED = 5,
         UTXO_DROPPED = 10,
         PAYOUT_SUBMITTED = 6,
+        PAYOUT_CANCELLED = 11,
         PAYOUT_COMMITTED = 7,
         PAYOUT_BROADCAST = 8,
         PAYOUT_SETTLED = 9,
@@ -2257,6 +2304,49 @@ export class PayoutSubmitted extends jspb.Message {
 }
 
 export namespace PayoutSubmitted {
+    export type AsObject = {
+        id: string,
+        walletId: string,
+        payoutQueueId: string,
+        satoshis: number,
+        onchainAddress: string,
+    }
+
+    export enum DestinationCase {
+        DESTINATION_NOT_SET = 0,
+        ONCHAIN_ADDRESS = 5,
+    }
+
+}
+
+export class PayoutCancelled extends jspb.Message { 
+    getId(): string;
+    setId(value: string): PayoutCancelled;
+    getWalletId(): string;
+    setWalletId(value: string): PayoutCancelled;
+    getPayoutQueueId(): string;
+    setPayoutQueueId(value: string): PayoutCancelled;
+    getSatoshis(): number;
+    setSatoshis(value: number): PayoutCancelled;
+
+    hasOnchainAddress(): boolean;
+    clearOnchainAddress(): void;
+    getOnchainAddress(): string;
+    setOnchainAddress(value: string): PayoutCancelled;
+
+    getDestinationCase(): PayoutCancelled.DestinationCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): PayoutCancelled.AsObject;
+    static toObject(includeInstance: boolean, msg: PayoutCancelled): PayoutCancelled.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: PayoutCancelled, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): PayoutCancelled;
+    static deserializeBinaryFromReader(message: PayoutCancelled, reader: jspb.BinaryReader): PayoutCancelled;
+}
+
+export namespace PayoutCancelled {
     export type AsObject = {
         id: string,
         walletId: string,
