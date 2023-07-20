@@ -91,46 +91,8 @@ export const loginWithPhoneToken = async ({
     // this branch exists because we currently make no difference between a registration and login
     addAttributesToCurrentSpan({ "login.newAccount": true })
 
-    const accountConfig = getAccountCountries()
-
-    if (accountConfig.enableIpCheck) {
-      const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
-
-      if (ipFetcherInfo instanceof IpFetcherServiceError) {
-        recordExceptionInCurrentSpan({
-          error: ipFetcherInfo,
-          level: ErrorLevel.Critical,
-          attributes: { ip },
-        })
-        return ipFetcherInfo
-      }
-
-      const validatedIPMetadata =
-        IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
-
-      if (validatedIPMetadata instanceof Error) {
-        return new InvalidIPForOnboardingError(validatedIPMetadata.name)
-      }
-    }
-
-    let phoneMetadata: PhoneMetadata | undefined
-
-    if (accountConfig.enablePhoneCheck) {
-      const newPhoneMetadata = await TwilioClient().getCarrier(phone)
-
-      if (newPhoneMetadata instanceof Error) {
-        return new InvalidPhoneMetadataForOnboardingError()
-      }
-
-      const validatedPhoneMetadata =
-        PhoneMetadataValidator(accountConfig).validateForOnboarding(phoneMetadata)
-
-      if (validatedPhoneMetadata instanceof Error) {
-        return new InvalidPhoneForOnboardingError()
-      }
-
-      phoneMetadata = newPhoneMetadata
-    }
+    const phoneMetadata = await isAllowedToOnboard({ ip, phone })
+    if (phoneMetadata instanceof Error) return phoneMetadata
 
     const kratosResult = await authService.createIdentityWithSession({
       phone,
@@ -319,46 +281,8 @@ export const loginDeviceUpgradeWithPhone = async ({
     // b. and c. migrate account/user collection in mongo via kratos/registration webhook
 
     // check if account is upgradeable
-    const accountConfig = getAccountCountries()
-
-    if (accountConfig.enableIpCheck) {
-      const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
-
-      if (ipFetcherInfo instanceof IpFetcherServiceError) {
-        recordExceptionInCurrentSpan({
-          error: ipFetcherInfo,
-          level: ErrorLevel.Critical,
-          attributes: { ip },
-        })
-        return ipFetcherInfo
-      }
-
-      const validatedIPMetadata =
-        IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
-
-      if (validatedIPMetadata instanceof Error) {
-        return new InvalidIPForOnboardingError(validatedIPMetadata.name)
-      }
-    }
-
-    let phoneMetadata: PhoneMetadata | undefined
-
-    if (accountConfig.enablePhoneCheck) {
-      const newPhoneMetadata = await TwilioClient().getCarrier(phone)
-
-      if (newPhoneMetadata instanceof Error) {
-        return new InvalidPhoneMetadataForOnboardingError()
-      }
-
-      const validatedPhoneMetadata =
-        PhoneMetadataValidator(accountConfig).validateForReward(phoneMetadata)
-
-      if (validatedPhoneMetadata instanceof Error) {
-        return new InvalidPhoneForOnboardingError()
-      }
-
-      phoneMetadata = newPhoneMetadata
-    }
+    const phoneMetadata = await isAllowedToOnboard({ ip, phone })
+    if (phoneMetadata instanceof Error) return phoneMetadata
 
     const success = await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
@@ -440,4 +364,52 @@ export const loginWithDevice = async ({
   }
 
   return res.authToken
+}
+
+const isAllowedToOnboard = async ({
+  ip,
+  phone,
+}: {
+  ip: IpAddress
+  phone: PhoneNumber
+}): Promise<PhoneMetadata | DomainError> => {
+  const accountConfig = getAccountCountries()
+
+  if (accountConfig.enableIpCheck) {
+    const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
+
+    if (ipFetcherInfo instanceof IpFetcherServiceError) {
+      recordExceptionInCurrentSpan({
+        error: ipFetcherInfo,
+        level: ErrorLevel.Critical,
+        attributes: { ip },
+      })
+      return ipFetcherInfo
+    }
+
+    const validatedIPMetadata =
+      IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
+
+    if (validatedIPMetadata instanceof Error) {
+      return new InvalidIPForOnboardingError(validatedIPMetadata.name)
+    }
+  }
+
+  const newPhoneMetadata = await TwilioClient().getCarrier(phone)
+  if (newPhoneMetadata instanceof Error) {
+    return new InvalidPhoneMetadataForOnboardingError()
+  }
+
+  const phoneMetadata = newPhoneMetadata
+
+  if (accountConfig.enablePhoneCheck) {
+    const validatedPhoneMetadata =
+      PhoneMetadataValidator(accountConfig).validateForOnboarding(phoneMetadata)
+
+    if (validatedPhoneMetadata instanceof Error) {
+      return new InvalidPhoneForOnboardingError()
+    }
+  }
+
+  return phoneMetadata
 }
