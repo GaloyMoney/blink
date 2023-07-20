@@ -316,6 +316,11 @@ type GraphQLApplicationError implements Error {
 """Hex-encoded string of 32 bytes"""
 scalar Hex32Bytes
 
+"""Initiation leaders"""
+type InitiationLeaders {
+  leaders: [String!]!
+}
+
 union InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain
 
 type InitiationViaIntraLedger {
@@ -937,6 +942,7 @@ type Query {
   businessMapMarkers: [MapMarker]
   currencyList: [Currency!]!
   globals: Globals
+  initiationLeaders: InitiationLeaders
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
   me: User
   mobileVersions: [MobileVersions]

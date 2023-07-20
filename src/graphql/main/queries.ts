@@ -16,6 +16,7 @@ import BusinessMapMarkersQuery from "@graphql/root/query/business-map-markers"
 import AccountDefaultWalletQuery from "@graphql/root/query/account-default-wallet"
 import AccountDefaultWalletIdQuery from "@graphql/root/query/account-default-wallet-id"
 import LnInvoicePaymentStatusQuery from "@graphql/root/query/ln-invoice-payment-status"
+import InitiationLeaders from "@graphql/root/query/initiation-leaders"
 
 export const queryFields = {
   unauthed: {
@@ -31,6 +32,7 @@ export const queryFields = {
     realtimePrice: RealtimePriceQuery,
     btcPriceList: BtcPriceListQuery,
     lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
+    initiationLeaders: InitiationLeaders
   },
   authed: {
     atAccountLevel: {
