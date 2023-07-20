@@ -394,7 +394,7 @@ const isAllowedToOnboard = async ({
 }: {
   ip: IpAddress
   phone: PhoneNumber
-}): Promise<PhoneMetadata | DomainError> => {
+}): Promise<PhoneMetadata | undefined | DomainError> => {
   const accountConfig = getAccountCountries()
 
   if (accountConfig.enableIpCheck) {
@@ -419,6 +419,10 @@ const isAllowedToOnboard = async ({
 
   const newPhoneMetadata = await TwilioClient().getCarrier(phone)
   if (newPhoneMetadata instanceof Error) {
+    if (!accountConfig.enablePhoneCheck) {
+      return undefined
+    }
+
     return new InvalidPhoneMetadataForOnboardingError()
   }
 

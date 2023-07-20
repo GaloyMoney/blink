@@ -413,9 +413,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "SessionRefreshRequiredError":
       return new SessionRefreshRequiredError({ logger: baseLogger })
 
-    case "InvalidIPMetadataForOnboardingError":
-      return new EmailAlreadyExistsError({ logger: baseLogger })
-
     case "InvalidIPForOnboardingError":
       return new InvalidIPForOnboardingError({ logger: baseLogger })
 
