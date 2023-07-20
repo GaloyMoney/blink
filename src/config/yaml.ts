@@ -44,9 +44,6 @@ const validate = ajv.compile<YamlSchema>(configSchema)
 // validate is mutating defaultConfig - even thought it's a const -> it's changing its properties
 validate(defaultConfig)
 
-console.log({ defaultConfig })
-console.dir(defaultConfig, { depth: null })
-
 export const yamlConfigInit = merge(defaultConfig, customConfig)
 
 const valid = validate(yamlConfigInit)
