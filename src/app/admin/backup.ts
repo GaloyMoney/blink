@@ -1,5 +1,5 @@
 import {
-  BTC_NETWORK,
+  BitcoinNetwork,
   DropboxAccessToken,
   GcsApplicationCredentials,
   LND_SCB_BACKUP_BUCKET_NAME,
@@ -22,7 +22,7 @@ export const uploadBackup =
   (logger: Logger) =>
   async ({ backup, pubkey }: { backup: string; pubkey: Pubkey }) => {
     logger.debug({ backup }, "updating scb on dbx")
-    const filename = `${BTC_NETWORK}_lnd_scb_${pubkey}_${Date.now()}`
+    const filename = `${BitcoinNetwork()}_lnd_scb_${pubkey}_${Date.now()}`
 
     if (
       !(

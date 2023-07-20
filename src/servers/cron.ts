@@ -1,7 +1,7 @@
 import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
 import { extendSessions } from "@app/authentication"
 
-import { getCronConfig, TWO_MONTHS_IN_MS, BTC_NETWORK } from "@config"
+import { getCronConfig, TWO_MONTHS_IN_MS, BitcoinNetwork } from "@config"
 
 import { BtcNetwork } from "@domain/bitcoin"
 import { ErrorLevel } from "@domain/shared"
@@ -77,7 +77,7 @@ const main = async () => {
   const tasks = [
     // bitcoin related tasks
     reconnectNodes,
-    ...(BTC_NETWORK != BtcNetwork.signet ? [rebalancingInternalChannels] : []),
+    ...(BitcoinNetwork() !== BtcNetwork.signet ? [rebalancingInternalChannels] : []),
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,

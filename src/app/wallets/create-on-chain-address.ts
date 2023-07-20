@@ -1,4 +1,4 @@
-import { BTC_NETWORK } from "@config"
+import { BitcoinNetwork } from "@config"
 
 import { AccountValidator } from "@domain/accounts"
 import { OnChainAddressNotFoundError, TxDecoder } from "@domain/bitcoin/onchain"
@@ -28,7 +28,7 @@ export const lndCreateOnChainAddress = async (
   const limitOk = await checkOnChainAddressAccountIdLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
-  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+  const onChainService = OnChainService(TxDecoder(BitcoinNetwork()))
   if (onChainService instanceof Error) return onChainService
 
   const onChainAddress = await onChainService.createOnChainAddress()

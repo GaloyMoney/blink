@@ -10884,7 +10884,7 @@ mongodb@^5.3.0:
 
 "mongoose@5 - 7", mongoose@~7.3.4:
   version "7.3.4"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-7.3.4.tgz#d26934d62575cc01c8cbb70252c14dc8cc30ef49"
+  resolved "https://registry.npmjs.org/mongoose/-/mongoose-7.3.4.tgz#d26934d62575cc01c8cbb70252c14dc8cc30ef49"
   integrity sha512-luvv4PKFiFYaHNn5wGIRrMML3Vvoa8lkdhcLE1S/6gY9s9CUOdEu9olbDrkhvnwRQ20j1SrQFO5JEApW0xwL3w==
   dependencies:
     bson "^5.3.0"

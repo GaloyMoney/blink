@@ -765,9 +765,9 @@ export const configSchema = {
       required: ["audience", "issuer", "jwksUri"],
       additionalProperties: false,
       default: {
-        audience: process.env.APPCHECK_AUDIENCE,
-        issuer: process.env.APPCHECK_ISSUER,
-        jwksUri: process.env.APPCHECK_JWKSURI,
+        audience: process.env.APPCHECK_AUDIENCE || "unknown", // FIXME there should be no process.env in schema.ts
+        issuer: process.env.APPCHECK_ISSUER || "unknown", // FIXME there should be no process.env in schema.ts
+        jwksUri: process.env.APPCHECK_JWKSURI || "unknown", // FIXME there should be no process.env in schema.ts
       },
     },
   },

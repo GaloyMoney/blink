@@ -1,4 +1,4 @@
-import { BTC_NETWORK } from "@config"
+import { BitcoinNetwork } from "@config"
 import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
@@ -21,7 +21,7 @@ const OnChainAddress = GT.Scalar({
 })
 
 function validOnChainAddressValue(value: string): OnChainAddress | InputValidationError {
-  const address = checkedToOnChainAddress({ network: BTC_NETWORK, value })
+  const address = checkedToOnChainAddress({ network: BitcoinNetwork(), value })
   if (address instanceof Error)
     return new InputValidationError({ message: "Invalid value for OnChainAddress" })
   return address

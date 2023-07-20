@@ -1,6 +1,6 @@
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
 
-import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
+import { BitcoinNetwork, getOnChainWalletConfig } from "@config"
 
 import { checkedToOnChainAddress, PayoutSpeed } from "@domain/bitcoin/onchain"
 import { CouldNotFindError } from "@domain/errors"
@@ -46,7 +46,7 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   if (senderWallet instanceof Error) return senderWallet
 
   const checkedAddress = checkedToOnChainAddress({
-    network: BTC_NETWORK,
+    network: BitcoinNetwork(),
     value: address,
   })
   if (checkedAddress instanceof Error) return checkedAddress

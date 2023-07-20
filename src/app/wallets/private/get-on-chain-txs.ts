@@ -1,4 +1,4 @@
-import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_10_MINS } from "@config"
+import { BitcoinNetwork, ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_10_MINS } from "@config"
 
 import { OnChainError, TxDecoder, uniqueAddressesForTxn } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
@@ -16,7 +16,7 @@ export const getOnChainTxs = async (): Promise<
     key: CacheKeys.LastOnChainTransactions,
     ttlSecs: SECS_PER_10_MINS,
     getForCaching: async () => {
-      const onChain = OnChainService(TxDecoder(BTC_NETWORK))
+      const onChain = OnChainService(TxDecoder(BitcoinNetwork()))
       if (onChain instanceof OnChainError) {
         baseLogger.warn({ onChain }, "impossible to create OnChainService")
         return onChain

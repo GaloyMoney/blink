@@ -1,4 +1,4 @@
-import { BTC_NETWORK, SECS_PER_MIN } from "@config"
+import { BitcoinNetwork, SECS_PER_MIN } from "@config"
 
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
@@ -118,7 +118,7 @@ export const getOnChainBalance = async (): Promise<Satoshis | ApplicationError> 
     key: CacheKeys.OnChainBalance,
     ttlSecs: SECS_PER_MIN,
     getForCaching: async () => {
-      const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+      const onChainService = OnChainService(TxDecoder(BitcoinNetwork()))
       if (onChainService instanceof Error) return onChainService
 
       const onChainBalances = await Promise.all(

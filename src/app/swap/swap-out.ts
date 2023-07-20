@@ -1,4 +1,4 @@
-import { BTC_NETWORK, getSwapConfig } from "@config"
+import { BitcoinNetwork, getSwapConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { NoOutboundLiquidityForSwapError, SwapServiceError } from "@domain/swap/errors"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -24,7 +24,7 @@ export const swapOut = async (): Promise<
   const activeLoopdConfig = getActiveLoopd()
   const swapService = LoopService(activeLoopdConfig)
   if (!swapService.healthCheck()) return new SwapServiceError("Failed health check")
-  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+  const onChainService = OnChainService(TxDecoder(BitcoinNetwork()))
   if (onChainService instanceof Error) return onChainService
   const onChainBalance = await onChainService.getBalance()
   if (onChainBalance instanceof Error) return onChainBalance

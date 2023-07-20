@@ -1,8 +1,6 @@
-import { GraphQLSchema, lexicographicSortSchema, printSchema } from "graphql"
+import { GraphQLSchema } from "graphql"
 
 import { ALL_INTERFACE_TYPES } from "@graphql/types"
-
-import { isProd, isRunningJest } from "@config"
 
 import { QueryType } from "./queries"
 import { MutationType } from "./mutations"
@@ -10,15 +8,6 @@ import { SubscriptionType } from "./subscriptions"
 
 export { queryFields } from "./queries"
 export { mutationFields } from "./mutations"
-
-if (!isProd && !isRunningJest) {
-  import("@services/fs").then(({ writeSDLFile }) => {
-    writeSDLFile(
-      __dirname + "/schema.graphql",
-      printSchema(lexicographicSortSchema(gqlMainSchema)),
-    )
-  })
-}
 
 export const gqlMainSchema = new GraphQLSchema({
   query: QueryType,

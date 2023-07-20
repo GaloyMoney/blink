@@ -1,4 +1,8 @@
-import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
+import {
+  BitcoinNetwork,
+  getColdStorageConfig,
+  ONCHAIN_SCAN_DEPTH_OUTGOING,
+} from "@config"
 
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
@@ -23,7 +27,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const coldStorageService = await ColdStorageService()
   if (coldStorageService instanceof Error) return coldStorageService
 
-  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+  const onChainService = OnChainService(TxDecoder(BitcoinNetwork()))
   if (onChainService instanceof Error) return onChainService
 
   const offChainService = LndService()

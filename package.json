@@ -8,6 +8,8 @@
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos lib/services/price/ && cp -R src/services/dealer-price/proto lib/services/dealer-price/ && cp -R src/services/loopd/protos lib/services/loopd/ && cp -R src/services/bria/proto lib/services/bria/ && tscpaths --silent -p tsconfig.json -s ./src -o ./lib",
     "trigger": "yarn build && node lib/servers/trigger.js | pino-pretty -c -l",
+    "check:sdl": "yarn write-sdl && if git diff --name-only | grep -q 'src/graphql/admin/schema.graphql'; then echo 'Error: src/graphql/admin/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi && if git diff --name-only | grep -q 'src/graphql/main/schema.graphql'; then echo 'Error: src/graphql/main/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi",
+    "write-sdl": "node lib/servers/write-sdl.js write-sdl.yaml",
     "ws": "yarn build && node lib/servers/ws-server.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
