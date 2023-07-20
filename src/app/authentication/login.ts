@@ -123,7 +123,7 @@ export const loginWithPhoneToken = async ({
       }
 
       const validatedPhoneMetadata =
-        PhoneMetadataValidator(accountConfig).validateForReward(phoneMetadata)
+        PhoneMetadataValidator(accountConfig).validateForOnboarding(phoneMetadata)
 
       if (validatedPhoneMetadata instanceof Error) {
         return new InvalidPhoneForOnboardingError()
