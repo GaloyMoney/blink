@@ -39,6 +39,7 @@ service BriaService {
   rpc ListPayouts (ListPayoutsRequest) returns (ListPayoutsResponse) {}
   rpc FindPayoutByExternalId (FindPayoutByExternalIdRequest) returns (FindPayoutByExternalIdResponse) {}
   rpc GetPayout (GetPayoutRequest) returns (GetPayoutResponse) {}
+  rpc CancelPayout(CancelPayoutRequest) returns (CancelPayoutResponse) {}
 
   rpc GetBatch (GetBatchRequest) returns (GetBatchResponse) {}
 
@@ -373,6 +374,7 @@ message Payout {
   oneof destination {
     string onchain_address = 6;
   }
+  bool cancelled = 9;
   string external_id = 7;
   optional google.protobuf.Struct metadata = 8;
 }
@@ -399,6 +401,12 @@ message GetPayoutRequest {
 message GetPayoutResponse {
   Payout payout = 1;
 }
+
+message CancelPayoutRequest {
+  string id = 1;
+}
+
+message CancelPayoutResponse {}
 
 message GetBatchRequest {
   string id = 1;
@@ -463,6 +471,7 @@ message BriaEvent {
     UtxoSettled utxo_settled = 5;
     UtxoDropped utxo_dropped = 10;
     PayoutSubmitted payout_submitted = 6;
+    PayoutCancelled payout_cancelled = 11;
     PayoutCommitted payout_committed = 7;
     PayoutBroadcast payout_broadcast = 8;
     PayoutSettled payout_settled = 9;
@@ -501,6 +510,16 @@ message UtxoDropped {
 }
 
 message PayoutSubmitted {
+  string id = 1;
+  string wallet_id = 2;
+  string payout_queue_id = 3;
+  uint64 satoshis = 4;
+  oneof destination {
+    string onchain_address = 5;
+  };
+}
+
+message PayoutCancelled {
   string id = 1;
   string wallet_id = 2;
   string payout_queue_id = 3;
