@@ -130,14 +130,13 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     cookie: SessionCookie
   }): Promise<void | KratosError> => {
     try {
-      const session = await kratosPublic.toSession({ cookie })
-      const sessionId = session.data.id
-      // * revoke token via admin api
-      //   there is no way to do it via cookies and the public api via the backend
-      //   I tried the kratosPublic.createBrowserLogoutFlow but it did not work
-      //   properly with cookies
-      await kratosAdmin.disableSession({
-        id: sessionId,
+      const flow = await kratosPublic.createBrowserLogoutFlow({
+        cookie,
+      })
+      const logoutToken = flow.data.logout_token
+      await kratosPublic.updateLogoutFlow({
+        token: logoutToken,
+        cookie,
       })
     } catch (err) {
       return new UnknownKratosError(err)
