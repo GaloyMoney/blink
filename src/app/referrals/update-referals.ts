@@ -3,7 +3,6 @@
 export const updateReferals = (): true => {
   // to determin the state of all referals in our system
   // we can execute a fold over our transaction database
-  //
   // latestReferalState = getLatestReferalState()
   // candidates = ledgerFacade.getAllTransactionsSettledViaIntraLedger(state.lastUpdate)
   // state: ReferalState = initialState

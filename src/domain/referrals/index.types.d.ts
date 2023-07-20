@@ -1,69 +1,50 @@
-type ReferralLink = string & { readonly brand: unique symbol }
-
-type ReferralRange =
-  typeof import("./index").ReferralRange[keyof typeof import("./index").ReferralRange]
-
-type ReferralRank = number & { readonly brand: unique symbol }
-
-type ReferralId = string & { readonly brand: unique symbol }
-
-type UserReferralStats = {
-    userId: UserId
-    range: ReferralRange
-    referralCount: BigInt
-    indirectReferralCount: BigInt
-    referralRanking: ReferralRank
-}
-
 type Referral = {
-    id: ReferralId
-    referringUserId: UserId
-    referredUserId: UserId
-    date: Date
-    referringTxId: LedgerTransactionId
+  referringReferringAccount: AccountId | undefined
+  referringAccount: AccountId
+  referredAccount: AccountId
+  referringTxId: LedgerTransactionId
+  timestamp: Date
 }
 
-type ReferralRanking = {
-    userId: UserId
-    referralCount: BigInt
-    rank: BigInt
+// Should this be more functional?
+type ReferralState = {
+  mostRecentTransactionTime: Date | undefined
+  accountHasBeenReferred: (accountId: AccountId) => boolean
+  orderedReferrals: Referral[]
+  addReferral: (referral: Referral) => void
+  referralForAccount: Map<AccountId, Referral>
 }
 
+type GetAccountIdForWalletIdFn = (walletId: WalletId) => AccountId
 
-type IReferralInfoService = {
-    getUserReferralStats: ({
-        userId,
-        referralRange,
-    } : {
-        userId: UserId
-        referralRange: ReferralRange
-    }) => Promise<UserReferralStats>
-
-    getUserReferral: ({
-        userId,
-    }: {
-        userId: UserId
-    }) => Promise<Referral | null>
-
-    markReferral: ({
-        referringUserId,
-        referredUserId,
-        referringTxId,
-    } : {
-        referringUserId: UserId
-        referredUserId: UserId
-        // This couples a referral to the way in which a referral is marked
-        referringTxId: LedgerTransactionId
-    }) => Promise<void>
-
-    getReferralRankings: ({
-        referralRange,
-        start,
-        limit,
-    }: {
-        referralRange: ReferralRange
-        start: ReferralRank
-        limit: BigInt
-    }) => Promise<ReferralRanking[]>
+type IsTransactionAReferralProps = {
+  referralState: ReferralState
+  transaction: LedgerTransaction<WalletCurrency>
+  getAccountIdForWalletId: GetAccountIdForWalletIdFn
 }
 
+type ReferralProfile = {
+  accountId: AccountId
+  thisMonthReferralCount: number
+  thisMonthOuterReferralCount: number
+  totalReferralCount: number
+  totalOuterReferralCount: number
+}
+
+// TODO name change in parallel with ReferralState
+type ReferralProfileState = {
+  timeOfSnapshot: Date | undefined // This could technically be a private member
+  updateTime: (currentTime: Date) => void
+  consumeReferral: (referral: Referral) => void
+  getReferralProfileForAccount: (accountId: AccountId) => ReferralProfile
+}
+
+type CreateReferralProfileProps = {
+  accountId: AccountId
+}
+
+type CreateReferralProps = {
+  referringTransaction: LedgerTransaction<WalletCurrency>
+  referralState: ReferralState
+  getAccountForWalletIdFn: GetAccountIdForWalletIdFn
+}
