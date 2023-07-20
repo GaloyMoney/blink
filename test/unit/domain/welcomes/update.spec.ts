@@ -8,7 +8,11 @@ describe("initiation", () => {
 
       welcomeCache.updateFromNewTransactions(transactionList)
 
-      expect(welcomeCache.welcomeProfiles()).toEqual([])
+      expect(
+        welcomeCache.generateWelcomeProfiles({
+          outCircleDepth: 2,
+        }),
+      ).toEqual([])
     })
   })
 })

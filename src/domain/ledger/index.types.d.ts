@@ -242,6 +242,8 @@ interface ILedgerService {
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError>
 
+  getAllTransactions(): AsyncGenerator<LedgerTransaction<WalletCurrency> | LedgerError>
+
   getTransactionsByHash(
     paymentHash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>

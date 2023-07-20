@@ -99,6 +99,19 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  async function* getAllTransactions(): AsyncGenerator<
+    LedgerTransaction<WalletCurrency> | LedgerError
+  > {
+    try {
+      const agg = Transaction.find().sort({ _id: 1 }).cursor({ batchSize: 100 })
+      for await (const tx of agg) {
+        yield translateToLedgerTx(tx)
+      }
+    } catch (err) {
+      yield new UnknownLedgerError(err)
+    }
+  }
+
   const getTransactionsByWalletId = async (
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
@@ -408,6 +421,7 @@ export const LedgerService = (): ILedgerService => {
     namespace: "services.ledger",
     fns: {
       updateMetadataByHash,
+      getAllTransactions,
       getTransactionById,
       getTransactionsByHash,
       getTransactionsByWalletId,

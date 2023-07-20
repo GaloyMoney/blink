@@ -25,6 +25,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 
 import { elapsedSinceTimestamp, sleep } from "@utils"
+import { updateWelcomes } from "@app/welcomes"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -81,6 +82,7 @@ const main = async () => {
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,
+    updateWelcomes,
     updateLnPaymentsCollection,
     updateRoutingRevenues,
     updateOnChainReceipt,
