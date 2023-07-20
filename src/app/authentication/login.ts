@@ -348,6 +348,28 @@ export const loginWithDevice = async ({
   const password = checkedToIdentityPassword(passwordRaw)
   if (password instanceof Error) return password
 
+  const accountConfig = getAccountCountries()
+
+  if (accountConfig.enableIpCheck) {
+    const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
+
+    if (ipFetcherInfo instanceof IpFetcherServiceError) {
+      recordExceptionInCurrentSpan({
+        error: ipFetcherInfo,
+        level: ErrorLevel.Critical,
+        attributes: { ip },
+      })
+      return ipFetcherInfo
+    }
+
+    const validatedIPMetadata =
+      IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
+
+    if (validatedIPMetadata instanceof Error) {
+      return new InvalidIPForOnboardingError(validatedIPMetadata.name)
+    }
+  }
+
   const authService = AuthWithUsernamePasswordDeviceIdService()
   const res = await authService.createIdentityWithSession({
     username,
