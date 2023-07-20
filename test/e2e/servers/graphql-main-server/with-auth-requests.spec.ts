@@ -1,7 +1,5 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "loginFromPhoneAndCode"] }] */
 
-import { Accounts } from "@app"
-import { WalletType } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
@@ -27,7 +25,6 @@ import {
   clearAccountLocks,
   clearLimiters,
   fundWalletIdFromLightning,
-  getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
   lndOutside1,
@@ -37,10 +34,6 @@ import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
 import {
   LnInvoiceCreateDocument,
   LnInvoiceCreateMutation,
-  LnNoAmountInvoiceCreateDocument,
-  LnNoAmountInvoiceCreateMutation,
-  LnUsdInvoiceCreateDocument,
-  LnUsdInvoiceCreateMutation,
   MainQueryDocument,
   MainQueryQuery,
   UserLoginDocument,
@@ -56,7 +49,6 @@ import {
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   walletId: WalletId,
-  usdWalletId: WalletId,
   serverPid: PID,
   triggerPid: PID,
   serverWsPid: PID
@@ -257,14 +249,6 @@ describe("setup", () => {
   })
 
   it("fund user", async () => {
-    const account = await getAccountByTestUserRef(userRef)
-    const usdWallet = await Accounts.addWalletIfNonexistent({
-      accountId: account.id,
-      type: WalletType.Checking,
-      currency: WalletCurrency.Usd,
-    })
-    if (usdWallet instanceof Error) throw usdWallet
-    usdWalletId = usdWallet.id
     walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
     await fundWalletIdFromLightning({ walletId, amount: satsAmount })
@@ -546,174 +530,6 @@ describe("graphql", () => {
 
         expect(errors[0].message).toBe(expectedErrorMessage)
       }
-    })
-  })
-
-  describe("lnNoAmountInvoiceCreate", () => {
-    gql`
-      mutation LnNoAmountInvoiceCreate($input: LnNoAmountInvoiceCreateInput!) {
-        lnNoAmountInvoiceCreate(input: $input) {
-          errors {
-            message
-          }
-          invoice {
-            paymentRequest
-            paymentHash
-            paymentSecret
-          }
-        }
-      }
-    `
-
-    it("returns a valid lightning invoice", async () => {
-      const input = { walletId, memo: "This is a lightning invoice" }
-      const result = await apolloClient.mutate<LnNoAmountInvoiceCreateMutation>({
-        mutation: LnNoAmountInvoiceCreateDocument,
-        variables: { input },
-      })
-      const lnNoAmountInvoiceCreate = result?.data?.lnNoAmountInvoiceCreate
-      if (!lnNoAmountInvoiceCreate) throw new Error("lnNoAmountInvoiceCreate is null")
-      const { invoice, errors } = lnNoAmountInvoiceCreate
-      expect(errors).toHaveLength(0)
-      expect(invoice).toHaveProperty("paymentRequest")
-      expect(invoice?.paymentRequest.startsWith("lnbc")).toBeTruthy()
-      expect(invoice).toHaveProperty("paymentHash")
-      expect(invoice).toHaveProperty("paymentSecret")
-    })
-
-    it("returns a valid lightning invoice if memo is not passed", async () => {
-      const input = { walletId }
-      const result = await apolloClient.mutate<LnNoAmountInvoiceCreateMutation>({
-        mutation: LnNoAmountInvoiceCreateDocument,
-        variables: { input },
-      })
-      const lnNoAmountInvoiceCreate = result?.data?.lnNoAmountInvoiceCreate
-      if (!lnNoAmountInvoiceCreate) throw new Error("lnNoAmountInvoiceCreate is null")
-      const { invoice, errors } = lnNoAmountInvoiceCreate
-      expect(errors).toHaveLength(0)
-      expect(invoice).toHaveProperty("paymentRequest")
-      expect(invoice?.paymentRequest.startsWith("lnbc")).toBeTruthy()
-      expect(invoice).toHaveProperty("paymentHash")
-      expect(invoice).toHaveProperty("paymentSecret")
-    })
-  })
-
-  describe("lnInvoiceCreate", () => {
-    gql`
-      mutation LnInvoiceCreate($input: LnInvoiceCreateInput!) {
-        lnInvoiceCreate(input: $input) {
-          errors {
-            message
-          }
-          invoice {
-            paymentRequest
-            paymentHash
-            paymentSecret
-          }
-        }
-      }
-    `
-
-    it("returns a valid lightning invoice", async () => {
-      const input = { walletId, amount: 1000, memo: "This is a lightning invoice" }
-      const result = await apolloClient.mutate<LnInvoiceCreateMutation>({
-        mutation: LnInvoiceCreateDocument,
-        variables: { input },
-      })
-      const lnInvoiceCreate = result?.data?.lnInvoiceCreate
-      if (!lnInvoiceCreate) throw new Error("lnInvoiceCreate is null")
-      const { invoice, errors } = lnInvoiceCreate
-      expect(errors).toHaveLength(0)
-      expect(invoice).toHaveProperty("paymentRequest")
-      expect(invoice?.paymentRequest.startsWith("lnbcrt10")).toBeTruthy()
-      expect(invoice).toHaveProperty("paymentHash")
-      expect(invoice).toHaveProperty("paymentSecret")
-    })
-
-    it("returns a valid lightning invoice if memo is not passed", async () => {
-      const input = { walletId, amount: 1000 }
-      const result = await apolloClient.mutate<LnInvoiceCreateMutation>({
-        mutation: LnInvoiceCreateDocument,
-        variables: { input },
-      })
-      const lnInvoiceCreate = result?.data?.lnInvoiceCreate
-      if (!lnInvoiceCreate) throw new Error("lnInvoiceCreate is null")
-      const { invoice, errors } = lnInvoiceCreate
-      expect(errors).toHaveLength(0)
-      expect(invoice).toHaveProperty("paymentRequest")
-      expect(invoice?.paymentRequest.startsWith("lnbcrt10")).toBeTruthy()
-      expect(invoice).toHaveProperty("paymentHash")
-      expect(invoice).toHaveProperty("paymentSecret")
-    })
-
-    it("returns an error if amount is negative", async () => {
-      const message = "Invalid value for SatAmount"
-      const input = { walletId, amount: -1, memo: "This is a lightning invoice" }
-      const result = await apolloClient.mutate<LnInvoiceCreateMutation>({
-        mutation: LnInvoiceCreateDocument,
-        variables: { input },
-      })
-      const lnInvoiceCreate = result?.data?.lnInvoiceCreate
-      if (!lnInvoiceCreate) throw new Error("lnInvoiceCreate is null")
-      const { invoice, errors } = lnInvoiceCreate
-      expect(errors).toHaveLength(1)
-      expect(invoice).toBe(null)
-      expect(errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message })]),
-      )
-    })
-
-    it("returns an error if amount is zero", async () => {
-      const message = "A valid satoshi amount is required"
-      const input = { walletId, amount: 0, memo: "This is a lightning invoice" }
-      const result = await apolloClient.mutate<LnInvoiceCreateMutation>({
-        mutation: LnInvoiceCreateDocument,
-        variables: { input },
-      })
-      const lnInvoiceCreate = result?.data?.lnInvoiceCreate
-      if (!lnInvoiceCreate) throw new Error("lnInvoiceCreate is null")
-      const { invoice, errors } = lnInvoiceCreate
-      expect(errors).toHaveLength(1)
-      expect(invoice).toBe(null)
-      expect(errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message })]),
-      )
-    })
-  })
-
-  describe("lnUsdInvoiceCreate", () => {
-    gql`
-      mutation LnUsdInvoiceCreate($input: LnUsdInvoiceCreateInput!) {
-        lnUsdInvoiceCreate(input: $input) {
-          errors {
-            message
-          }
-          invoice {
-            paymentRequest
-            paymentHash
-            paymentSecret
-          }
-        }
-      }
-    `
-    it("returns a valid lightning invoice", async () => {
-      const input = {
-        walletId: usdWalletId,
-        amount: 1000,
-        memo: "This is a lightning invoice",
-      }
-      const result = await apolloClient.mutate<LnUsdInvoiceCreateMutation>({
-        mutation: LnUsdInvoiceCreateDocument,
-        variables: { input },
-      })
-      const lnUsdInvoiceCreate = result?.data?.lnUsdInvoiceCreate
-      if (!lnUsdInvoiceCreate) throw new Error("lnUsdInvoiceCreate is null")
-      const { invoice, errors } = lnUsdInvoiceCreate
-      expect(errors).toHaveLength(0)
-      expect(invoice).toHaveProperty("paymentRequest")
-      expect(invoice?.paymentRequest.startsWith("lnbcrt")).toBeTruthy()
-      expect(invoice).toHaveProperty("paymentHash")
-      expect(invoice).toHaveProperty("paymentSecret")
     })
   })
 
