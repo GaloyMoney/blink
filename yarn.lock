@@ -2903,7 +2903,7 @@
   dependencies:
     tslib "^2.3.1"
 
-"@ory/client@^1.1.39":
+"@ory/client@^1.1.41":
   version "1.1.41"
   resolved "https://registry.yarnpkg.com/@ory/client/-/client-1.1.41.tgz#504fd7b08c6f2bcf8351158fa8c5becff4827dae"
   integrity sha512-eSmyUgsA4npt6KsvmPxXpSVOE9jl4KQOytR/ppCBdiBuXnpGxPfRg0hMv5jPt/BcDpWpF9crsvdjepSL6I0NCw==

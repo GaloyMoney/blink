@@ -52,7 +52,7 @@
     "@opentelemetry/sdk-trace-base": "^1.14.0",
     "@opentelemetry/sdk-trace-node": "^1.14.0",
     "@opentelemetry/semantic-conventions": "^1.14.0",
-    "@ory/client": "^1.1.39",
+    "@ory/client": "^1.1.41",
     "ajv": "^8.12.0",
     "apollo-server-core": "^3.12.0",
     "apollo-server-errors": "^3.3.1",
