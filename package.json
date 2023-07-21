@@ -133,7 +133,7 @@
     "@graphql-tools/jest-transform": "^2.0.0",
     "@jest/test-sequencer": "^29.5.0",
     "@swc/core": "1.3.62",
-    "@swc/jest": "^0.2.26",
+    "@swc/jest": "^0.2.27",
     "@types/babel__core": "^7.20.1",
     "@types/babel__preset-env": "^7.9.2",
     "@types/basic-auth": "^1.1.3",
