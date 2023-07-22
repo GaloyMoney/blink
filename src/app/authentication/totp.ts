@@ -4,6 +4,7 @@ import {
   kratosValidateTotp,
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
+  kratosRemoveTotp,
 } from "@services/kratos"
 
 import { UsersRepository } from "@services/mongoose"
@@ -49,4 +50,25 @@ export const elevatingSessionWithTotp = async ({
   totpCode: TotpCode
 }): Promise<boolean | KratosError> => {
   return kratosElevatingSessionWithTotp({ sessionToken, totpCode })
+}
+
+export const removeTotp = async ({
+  authToken,
+  userId,
+}: {
+  authToken: SessionToken
+  userId: UserId
+}): Promise<User | ApplicationError> => {
+  const res = await validateKratosToken(authToken)
+  if (res instanceof Error) return res
+
+  if (res.kratosUserId !== userId) return new AuthTokenUserIdMismatchError()
+
+  const res2 = await kratosRemoveTotp(authToken)
+  if (res2 instanceof Error) return res2
+
+  const me = await UsersRepository().findById(userId)
+  if (me instanceof Error) return me
+
+  return me
 }

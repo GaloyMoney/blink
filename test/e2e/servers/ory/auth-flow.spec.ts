@@ -21,6 +21,8 @@ import {
   UserPhoneRegistrationInitiateMutation,
   UserPhoneRegistrationValidateDocument,
   UserPhoneRegistrationValidateMutation,
+  UserTotpDeleteDocument,
+  UserTotpDeleteMutation,
   UserTotpRegistrationInitiateDocument,
   UserTotpRegistrationInitiateMutation,
   UserTotpRegistrationValidateDocument,
@@ -143,6 +145,21 @@ gql`
 
   mutation userTotpRegistrationValidate($input: UserTotpRegistrationValidateInput!) {
     userTotpRegistrationValidate(input: $input) {
+      errors {
+        message
+      }
+      me {
+        totpEnabled
+        email {
+          address
+          verified
+        }
+      }
+    }
+  }
+
+  mutation userTotpDelete($input: UserTotpDeleteInput!) {
+    userTotpDelete(input: $input) {
       errors {
         message
       }
@@ -412,10 +429,6 @@ describe("auth", () => {
     })
   })
 
-  it("removing totp", async () => {
-    expect(true).toBe(true) // TODO
-  })
-
   it("log in with email with totp activated", async () => {
     // code request
     const res = await axios({
@@ -493,6 +506,19 @@ describe("auth", () => {
       })
       disposeClient()
     }
+  })
+
+  it("removing totp", async () => {
+    const res = await apolloClient.mutate<UserTotpDeleteMutation>({
+      mutation: UserTotpDeleteDocument,
+      variables: {
+        input: {
+          authToken,
+        },
+      },
+    })
+
+    expect(res.data?.userTotpDelete.me?.totpEnabled).toBe(false)
   })
 
   it("add new phone mutation", async () => {

@@ -701,6 +701,7 @@ type Mutation {
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
   userQuizQuestionUpdateCompleted(input: UserQuizQuestionUpdateCompletedInput!): UserQuizQuestionUpdateCompletedPayload! @deprecated(reason: "Use QuizCompletedMutation instead")
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload!
   userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload!
   userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
@@ -1343,6 +1344,15 @@ type UserQuizQuestionUpdateCompletedPayload {
 input UserRequestAuthCodeInput {
   channel: PhoneCodeChannelType
   phone: Phone!
+}
+
+input UserTotpDeleteInput {
+  authToken: AuthToken!
+}
+
+type UserTotpDeletePayload {
+  errors: [Error!]!
+  me: User
 }
 
 input UserTotpRegistrationInitiateInput {

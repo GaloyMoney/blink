@@ -20,6 +20,7 @@ import {
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   SchemaIdType,
+  kratosRemoveTotp,
 } from "@services/kratos"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import {
@@ -101,13 +102,15 @@ describe("phoneNoPassword", () => {
 
     it("add totp", async () => {
       const phone = randomPhone()
+      let authToken: SessionToken
+      let userId: UserId
 
       let totpSecret: string
       {
         const res0 = await authService.createIdentityWithSession({ phone })
         if (res0 instanceof Error) throw res0
 
-        const authToken = res0.sessionToken
+        authToken = res0.sessionToken
 
         const res1 = await kratosInitiateTotp(authToken)
         if (res1 instanceof Error) throw res1
@@ -134,6 +137,8 @@ describe("phoneNoPassword", () => {
         const identity = await IdentityRepository().getIdentity(res2.kratosUserId)
         if (identity instanceof Error) throw identity
         expect(identity.totpEnabled).toBe(true)
+
+        userId = res2.kratosUserId
       }
 
       {
@@ -155,6 +160,15 @@ describe("phoneNoPassword", () => {
         if (res2 instanceof Error) throw res2
         expect(res2).toBe(true)
       }
+
+      await kratosRemoveTotp(authToken)
+
+      // wait for the identity to be updated?
+      // some cache or asynchronous method need to run on the kratos side?
+      await sleep(100)
+      const identity = await IdentityRepository().getIdentity(userId)
+      if (identity instanceof Error) throw identity
+      expect(identity.totpEnabled).toBe(false)
     })
 
     it("login fails is user doesn't exist", async () => {

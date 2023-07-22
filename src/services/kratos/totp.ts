@@ -87,3 +87,27 @@ export const kratosElevatingSessionWithTotp = async ({
 
   return true
 }
+
+export const kratosRemoveTotp = async (token: SessionToken) => {
+  let flow: string
+
+  try {
+    const res = await kratosPublic.createNativeSettingsFlow({ xSessionToken: token })
+    flow = res.data.id
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+
+  try {
+    await kratosPublic.updateSettingsFlow({
+      flow,
+      updateSettingsFlowBody: {
+        method: "totp",
+        totp_unlink: true,
+      },
+      xSessionToken: token,
+    })
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+}
