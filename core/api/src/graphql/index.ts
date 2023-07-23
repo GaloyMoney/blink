@@ -35,10 +35,10 @@ type GTType = {
   Boolean: GraphQLScalarType
   Float: GraphQLScalarType
 
-  Interface<TSource = any, TContext = GraphQLPublicContext>(
+  Interface<TSource = any, TContext = any>(
     config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>,
   ): GraphQLInterfaceType
-  Union<TSource = any, TContext = GraphQLPublicContext>(
+  Union<TSource = any, TContext = any>(
     config: Readonly<GraphQLUnionTypeConfig<TSource, TContext>>,
   ): GraphQLUnionType
 
@@ -47,7 +47,7 @@ type GTType = {
   ): GraphQLScalarType<TInternal, TExternal>
   Enum(config: Readonly<GraphQLEnumTypeConfig>): GraphQLEnumType
 
-  Object<TSource = any, TContext = GraphQLPublicContext>(
+  Object<TSource = any, TContext = any>(
     arg: GraphQLObjectTypeConfig<TSource, TContext>,
   ): GraphQLObjectType<TSource, TContext>
   Input(arg: Readonly<GraphQLInputObjectTypeConfig>): GraphQLInputObjectType
