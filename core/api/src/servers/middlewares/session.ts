@@ -24,10 +24,13 @@ export const sessionPublicContext = async ({
 
   const sessionId = tokenPayload?.session_id
   const expiresAt = tokenPayload?.expires_at
+  const scope = tokenPayload?.scope.split(" ")
+  const sub = tokenPayload?.sub
+  const appId = tokenPayload?.client_id
 
   // note: value should match (ie: "anon") if not an accountId
   // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-  const maybeUserId = checkedToUserId(tokenPayload?.sub ?? "")
+  const maybeUserId = checkedToUserId(sub ?? "")
 
   if (!(maybeUserId instanceof ValidationError)) {
     const userId = maybeUserId
@@ -79,5 +82,7 @@ export const sessionPublicContext = async ({
     domainAccount,
     ip,
     sessionId,
+    scope,
+    appId,
   }
 }

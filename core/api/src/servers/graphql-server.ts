@@ -22,8 +22,8 @@ import jwksRsa from "jwks-rsa"
 
 import { parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 
-import authRouter from "./authorization"
 import kratosCallback from "./event-handlers/kratos"
+import authRouter from "./authentication"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
 
@@ -38,7 +38,7 @@ export const isAuthenticated = rule({ cache: "contextual" })((
 ) => {
   return (
     // TODO: remove !== "anon" when auth endpoints have been removed from admin graphql
-    !!("auditorId" in ctx && ctx.auditorId !== ("anon" as UserId)) || // admin API
+    ("auditorId" in ctx && ctx.auditorId !== ("anon" as UserId)) || // admin API
     ("domainAccount" in ctx && !!ctx.domainAccount)
   )
 })
