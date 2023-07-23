@@ -1,5 +1,4 @@
 import { ApolloClient, NormalizedCacheObject, gql } from "@apollo/client/core"
-import { elevatingSessionWithTotp } from "@app/authentication"
 import { UuidRegex } from "@services/kratos"
 
 import { sleep } from "@utils"
@@ -206,6 +205,7 @@ gql`
 
 const urlEmailCodeRequest = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code`
 const urlEmailLogin = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/login`
+const urlTotpValidation = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/totp/validate`
 
 let totpSecret: string
 
@@ -480,7 +480,18 @@ describe("auth", () => {
     }
 
     const totpCode = authenticator.generate(totpSecret) as TotpCode
-    await elevatingSessionWithTotp({ sessionToken, totpCode })
+
+    // validating email with code
+    const responseTotpValidation = await axios({
+      url: urlTotpValidation,
+      method: "POST",
+      data: {
+        totpCode,
+        sessionToken,
+      },
+    })
+
+    expect(responseTotpValidation.status).toBe(200)
 
     // call should now succeed
     {

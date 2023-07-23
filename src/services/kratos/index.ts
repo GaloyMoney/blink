@@ -47,6 +47,16 @@ export const checkedToTotpCode = (totpCode: string): TotpCode | ValidationError 
   return totpCode as TotpCode
 }
 
+export const checkedToSessionToken = (value: string) => {
+  // 32 is the length of a session token in kratos v11
+  // 39 is the length of a session token in kratos v13
+  if (value.length !== 32 && value.length !== 39) {
+    return "Invalid value for AuthToken"
+  }
+
+  return value as SessionToken
+}
+
 export const validateKratosToken = async (
   sessionToken: SessionToken,
 ): Promise<ValidateKratosTokenResult | KratosError> => {

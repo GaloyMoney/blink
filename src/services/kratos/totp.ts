@@ -98,7 +98,12 @@ const refreshToken = async (authToken: SessionToken): Promise<void | KratosError
   const password = getKratosPasswords().masterUserPassword
 
   const session = await kratosPublic.toSession({ xSessionToken: authToken })
-  const identifier = session.data.identity?.traits.phone
+  const identifier =
+    session.data.identity?.traits?.phone || session.data.identity?.traits?.email
+
+  if (!identifier) {
+    return new UnknownKratosError("No identifier found")
+  }
 
   try {
     const flow = await kratosPublic.createNativeLoginFlow({
