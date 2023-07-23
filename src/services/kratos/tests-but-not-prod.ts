@@ -40,7 +40,6 @@ export const deactivateUser = async (
   }
 
   try {
-    baseLogger.warn({ identity }, "identity")
     const res = await kratosAdmin.updateIdentity({
       id: kratosUserId,
       updateIdentityBody: {

@@ -321,6 +321,17 @@ export class EmailAlreadyExistsError extends CustomApolloError {
   }
 }
 
+export class SessionRefreshRequiredError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Session refresh required.",
+      forwardToClient: true,
+      code: "SESSION_REFRESH_REQUIRED_ERROR",
+      ...errData,
+    })
+  }
+}
+
 export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({

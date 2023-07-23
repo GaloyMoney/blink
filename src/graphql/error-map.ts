@@ -27,6 +27,7 @@ import {
   AccountAlreadyHasEmailError,
   PhoneAlreadyExistsError,
   EmailAlreadyExistsError,
+  SessionRefreshRequiredError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -414,6 +415,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "EmailAlreadyExistsError":
       return new EmailAlreadyExistsError({ logger: baseLogger })
+
+    case "SessionRefreshRequiredError":
+      return new SessionRefreshRequiredError({ logger: baseLogger })
 
     // ----------
     // Unhandled below here
