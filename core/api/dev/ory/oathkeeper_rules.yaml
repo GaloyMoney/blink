@@ -2,7 +2,7 @@
   upstream:
     url: "http://bats-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(clearCookies|login|logout|email/code|email/login|totp/validate|email/login/cookie|phone/captcha|phone/code|phone/login)>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(clearCookies|login|logout|email/code|email/login|totp/validate|email/login/cookie|create/device-account|phone/captcha|phone/code|phone/login)>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
     - handler: anonymous
@@ -62,6 +62,13 @@
         preserve_query: true
         subject_from: identity.id
         extra_from: "@this"
+
+    - handler: oauth2_introspection
+      config:
+        introspection_url: http://hydra:4445/admin/oauth2/introspect
+        token_from:
+          header: Oauth2-Token
+
     - handler: bearer_token
       config:
         check_session_url: http://kratos:4433/sessions/whoami
@@ -72,10 +79,11 @@
     - handler: anonymous
   authorizer:
     handler: allow
+
   mutators:
     - handler: id_token
-      config:
-        claims: '{"sub": "{{ print .Subject }}", "session_id": "{{ print .Extra.id }}", "expires_at": "{{ print .Extra.expires_at }}" }'
+      config: #! TODO: add aud: {"aud": ["https://api/graphql"] }
+        claims: '{"sub": "{{ print .Subject }}", "session_id": "{{ print .Extra.id }}", "expires_at": "{{ print .Extra.expires_at }}", "scope": "{{ print .Extra.scope }}", "client_id": "{{ print .Extra.client_id }}" }'
 
 - id: admin-backend
   upstream:
@@ -85,7 +93,7 @@
     url: "<(http|https)>://<.*><[0-9]+>/admin<.*>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
-    - handler: cookie_session
+    - handler: oauth2_introspection
       config:
         check_session_url: http://host.docker.internal:3002/api/auth/session
         preserve_path: true
@@ -102,5 +110,5 @@
     handler: allow
   mutators:
     - handler: id_token
-      config:
+      config: #! TODO: add aud: {"aud": ["https://api/admin/graphql"] }
         claims: '{"sub": "{{ print .Subject }}", "scope": "{{ print .Extra.scope }}" }'

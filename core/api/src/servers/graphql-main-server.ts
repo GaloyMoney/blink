@@ -33,6 +33,8 @@ import {
 
 import { parseIps } from "@/domain/accounts-ips"
 
+import { scopeMiddleware } from "./middlewares/scope"
+
 export const isAuthenticated = rule({ cache: "contextual" })((
   parent,
   args,
@@ -77,6 +79,8 @@ const setGqlContext = async (
       "token.iss": tokenPayload?.iss,
       "token.session_id": tokenPayload?.session_id,
       "token.expires_at": tokenPayload?.expires_at,
+      "token.scope": tokenPayload?.scope,
+      "token.appId": tokenPayload?.appId,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
       [ACCOUNT_USERNAME]: username,
@@ -114,7 +118,13 @@ export async function startApolloServerForCoreSchema() {
     },
   )
 
-  const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
+  const schema = applyMiddleware(
+    gqlMainSchema,
+    permissions,
+    walletIdMiddleware,
+    scopeMiddleware,
+  )
+
   return startApolloServer({
     schema,
     port: GALOY_API_PORT,

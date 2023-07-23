@@ -15,7 +15,6 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import authRouter from "./authorization"
 import kratosCallback from "./event-handlers/kratos"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
@@ -24,9 +23,22 @@ import { parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
 import { mapError } from "@/graphql/error-map"
 import { baseLogger } from "@/services/logger"
 import { getJwksArgs } from "@/config"
+import { rule } from "graphql-shield"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
+})
+
+export const isAuthenticated = rule({ cache: "contextual" })((
+  parent,
+  args,
+  ctx: GraphQLPublicContext & GraphQLAdminContext,
+) => {
+  return (
+    // TODO: remove !== "anon" when auth endpoints have been removed from admin graphql
+    ("auditorId" in ctx && ctx.auditorId !== ("anon" as UserId)) || // admin API
+    ("domainAccount" in ctx && !!ctx.domainAccount)
+  )
 })
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]

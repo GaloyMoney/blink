@@ -11,11 +11,16 @@ type GraphQLPublicContext = {
   loaders: Loaders
   ip: IpAddress | undefined
   sessionId: SessionId | undefined
+  scope: ScopesOauth2[] | undefined // should only be undefined
+  user: undefined | User // should only be undefined
+  domainAccount: undefined | Account // should only be undefined
+  appId: string | undefined
 }
 
 type GraphQLPublicContextAuth = GraphQLPublicContext & {
   user: User
   domainAccount: Account
+  scope: ScopesOauth2[] | undefined
 }
 
 type GraphQLAdminContext = {
@@ -30,6 +35,6 @@ type Logger = import("pino").Logger
 declare namespace Express {
   interface Request {
     token: import("jsonwebtoken").JwtPayload
-    gqlContext: GraphQLPublicContext | GraphQLAdminContext
+    gqlContext: GraphQLPublicContext | GraphQLPublicContextAuth | GraphQLAdminContext
   }
 }
