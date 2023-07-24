@@ -160,6 +160,7 @@ export type AuthTokenPayload = {
   readonly __typename: 'AuthTokenPayload';
   readonly authToken?: Maybe<Scalars['AuthToken']['output']>;
   readonly errors: ReadonlyArray<Error>;
+  readonly totpRequired?: Maybe<Scalars['Boolean']['output']>;
 };
 
 /** A wallet belonging to an account which contains a BTC balance and a list of transactions. */
@@ -679,7 +680,7 @@ export type Mutation = {
   readonly userEmailRegistrationValidate: UserEmailRegistrationValidatePayload;
   readonly userLogin: AuthTokenPayload;
   readonly userLoginUpgrade: UpgradePayload;
-  readonly userLogout: AuthTokenPayload;
+  readonly userLogout: SuccessPayload;
   readonly userPhoneDelete: UserPhoneDeletePayload;
   readonly userPhoneRegistrationInitiate: SuccessPayload;
   readonly userPhoneRegistrationValidate: UserPhoneRegistrationValidatePayload;

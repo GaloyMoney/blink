@@ -12,6 +12,9 @@ const AuthTokenPayload = GT.Object({
     authToken: {
       type: AuthToken,
     },
+    totpRequired: {
+      type: GT.Boolean,
+    },
   }),
 })
 
