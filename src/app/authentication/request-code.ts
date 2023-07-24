@@ -1,9 +1,10 @@
-import { getTestAccounts, getTwilioConfig } from "@config"
+import { getGeetestConfig, getTestAccounts, getTwilioConfig } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { PhoneAlreadyExistsError } from "@domain/authentication/errors"
 import { NotImplementedError } from "@domain/errors"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import Geetest from "@services/geetest"
 import { AuthWithEmailPasswordlessService } from "@services/kratos"
 import { baseLogger } from "@services/logger"
 import { consumeLimiter } from "@services/rate-limit"
@@ -11,7 +12,6 @@ import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@services/twilio"
 
 export const requestPhoneCodeWithCaptcha = async ({
   phone,
-  geetest,
   geetestChallenge,
   geetestValidate,
   geetestSeccode,
@@ -19,13 +19,15 @@ export const requestPhoneCodeWithCaptcha = async ({
   channel,
 }: {
   phone: PhoneNumber
-  geetest: GeetestType
   geetestChallenge: string
   geetestValidate: string
   geetestSeccode: string
   ip: IpAddress
   channel: ChannelType
 }): Promise<true | ApplicationError> => {
+  const geeTestConfig = getGeetestConfig()
+  const geetest = Geetest(geeTestConfig)
+
   const verifySuccess = await geetest.validate(
     geetestChallenge,
     geetestValidate,
@@ -33,14 +35,14 @@ export const requestPhoneCodeWithCaptcha = async ({
   )
   if (verifySuccess instanceof Error) return verifySuccess
 
-  return requestPhoneCodeForNewUser({
+  return requestPhoneCodeForUnauthedUser({
     phone,
     ip,
     channel,
   })
 }
 
-export const requestPhoneCodeForNewUser = async ({
+export const requestPhoneCodeForUnauthedUser = async ({
   phone,
   ip,
   channel,
@@ -76,7 +78,7 @@ export const requestPhoneCodeForNewUser = async ({
   return TwilioClient().initiateVerify({ to: phone, channel })
 }
 
-export const requestPhoneCodeForExistingUser = async ({
+export const requestPhoneCodeForAuthedUser = async ({
   phone,
   ip,
   channel,

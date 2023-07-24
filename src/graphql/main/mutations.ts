@@ -50,12 +50,11 @@ import UserPhoneRegistrationValidateMutation from "@graphql/root/mutation/user-p
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 export const mutationFields = {
   unauthed: {
+    captchaCreateChallenge: CaptchaCreateChallengeMutation,
+    captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
     userLogout: UserLogoutMutation,
-
-    captchaCreateChallenge: CaptchaCreateChallengeMutation,
-    captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
 
     lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
     lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
