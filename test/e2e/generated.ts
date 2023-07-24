@@ -29,7 +29,7 @@ export type Scalars = {
   DisplayCurrency: { input: string; output: string; }
   /** Email address */
   EmailAddress: { input: string; output: string; }
-  /** An id to be passed between set and verify for confirming email */
+  /** An id to be passed between registrationInitiate and registrationValidate for confirming email */
   EmailRegistrationId: { input: string; output: string; }
   /** Feedback shared with our user */
   Feedback: { input: string; output: string; }
@@ -1815,27 +1815,6 @@ export type LnUsdInvoiceCreateMutationVariables = Exact<{
 
 export type LnUsdInvoiceCreateMutation = { readonly __typename: 'Mutation', readonly lnUsdInvoiceCreate: { readonly __typename: 'LnInvoicePayload', readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }>, readonly invoice?: { readonly __typename: 'LnInvoice', readonly paymentRequest: string, readonly paymentHash: string, readonly paymentSecret: string } | null } };
 
-export type LnInvoiceFeeProbeMutationVariables = Exact<{
-  input: LnInvoiceFeeProbeInput;
-}>;
-
-
-export type LnInvoiceFeeProbeMutation = { readonly __typename: 'Mutation', readonly lnInvoiceFeeProbe: { readonly __typename: 'SatAmountPayload', readonly amount?: number | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
-
-export type LnNoAmountInvoiceFeeProbeMutationVariables = Exact<{
-  input: LnNoAmountInvoiceFeeProbeInput;
-}>;
-
-
-export type LnNoAmountInvoiceFeeProbeMutation = { readonly __typename: 'Mutation', readonly lnNoAmountInvoiceFeeProbe: { readonly __typename: 'SatAmountPayload', readonly amount?: number | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
-
-export type LnNoAmountInvoicePaymentSendMutationVariables = Exact<{
-  input: LnNoAmountInvoicePaymentInput;
-}>;
-
-
-export type LnNoAmountInvoicePaymentSendMutation = { readonly __typename: 'Mutation', readonly lnNoAmountInvoicePaymentSend: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
-
 export type MyUpdatesSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2773,114 +2752,6 @@ export function useLnUsdInvoiceCreateMutation(baseOptions?: Apollo.MutationHookO
 export type LnUsdInvoiceCreateMutationHookResult = ReturnType<typeof useLnUsdInvoiceCreateMutation>;
 export type LnUsdInvoiceCreateMutationResult = Apollo.MutationResult<LnUsdInvoiceCreateMutation>;
 export type LnUsdInvoiceCreateMutationOptions = Apollo.BaseMutationOptions<LnUsdInvoiceCreateMutation, LnUsdInvoiceCreateMutationVariables>;
-export const LnInvoiceFeeProbeDocument = gql`
-    mutation LnInvoiceFeeProbe($input: LnInvoiceFeeProbeInput!) {
-  lnInvoiceFeeProbe(input: $input) {
-    errors {
-      message
-    }
-    amount
-  }
-}
-    `;
-export type LnInvoiceFeeProbeMutationFn = Apollo.MutationFunction<LnInvoiceFeeProbeMutation, LnInvoiceFeeProbeMutationVariables>;
-
-/**
- * __useLnInvoiceFeeProbeMutation__
- *
- * To run a mutation, you first call `useLnInvoiceFeeProbeMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useLnInvoiceFeeProbeMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [lnInvoiceFeeProbeMutation, { data, loading, error }] = useLnInvoiceFeeProbeMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useLnInvoiceFeeProbeMutation(baseOptions?: Apollo.MutationHookOptions<LnInvoiceFeeProbeMutation, LnInvoiceFeeProbeMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LnInvoiceFeeProbeMutation, LnInvoiceFeeProbeMutationVariables>(LnInvoiceFeeProbeDocument, options);
-      }
-export type LnInvoiceFeeProbeMutationHookResult = ReturnType<typeof useLnInvoiceFeeProbeMutation>;
-export type LnInvoiceFeeProbeMutationResult = Apollo.MutationResult<LnInvoiceFeeProbeMutation>;
-export type LnInvoiceFeeProbeMutationOptions = Apollo.BaseMutationOptions<LnInvoiceFeeProbeMutation, LnInvoiceFeeProbeMutationVariables>;
-export const LnNoAmountInvoiceFeeProbeDocument = gql`
-    mutation LnNoAmountInvoiceFeeProbe($input: LnNoAmountInvoiceFeeProbeInput!) {
-  lnNoAmountInvoiceFeeProbe(input: $input) {
-    errors {
-      message
-    }
-    amount
-  }
-}
-    `;
-export type LnNoAmountInvoiceFeeProbeMutationFn = Apollo.MutationFunction<LnNoAmountInvoiceFeeProbeMutation, LnNoAmountInvoiceFeeProbeMutationVariables>;
-
-/**
- * __useLnNoAmountInvoiceFeeProbeMutation__
- *
- * To run a mutation, you first call `useLnNoAmountInvoiceFeeProbeMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useLnNoAmountInvoiceFeeProbeMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [lnNoAmountInvoiceFeeProbeMutation, { data, loading, error }] = useLnNoAmountInvoiceFeeProbeMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useLnNoAmountInvoiceFeeProbeMutation(baseOptions?: Apollo.MutationHookOptions<LnNoAmountInvoiceFeeProbeMutation, LnNoAmountInvoiceFeeProbeMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LnNoAmountInvoiceFeeProbeMutation, LnNoAmountInvoiceFeeProbeMutationVariables>(LnNoAmountInvoiceFeeProbeDocument, options);
-      }
-export type LnNoAmountInvoiceFeeProbeMutationHookResult = ReturnType<typeof useLnNoAmountInvoiceFeeProbeMutation>;
-export type LnNoAmountInvoiceFeeProbeMutationResult = Apollo.MutationResult<LnNoAmountInvoiceFeeProbeMutation>;
-export type LnNoAmountInvoiceFeeProbeMutationOptions = Apollo.BaseMutationOptions<LnNoAmountInvoiceFeeProbeMutation, LnNoAmountInvoiceFeeProbeMutationVariables>;
-export const LnNoAmountInvoicePaymentSendDocument = gql`
-    mutation LnNoAmountInvoicePaymentSend($input: LnNoAmountInvoicePaymentInput!) {
-  lnNoAmountInvoicePaymentSend(input: $input) {
-    errors {
-      message
-    }
-    status
-  }
-}
-    `;
-export type LnNoAmountInvoicePaymentSendMutationFn = Apollo.MutationFunction<LnNoAmountInvoicePaymentSendMutation, LnNoAmountInvoicePaymentSendMutationVariables>;
-
-/**
- * __useLnNoAmountInvoicePaymentSendMutation__
- *
- * To run a mutation, you first call `useLnNoAmountInvoicePaymentSendMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useLnNoAmountInvoicePaymentSendMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [lnNoAmountInvoicePaymentSendMutation, { data, loading, error }] = useLnNoAmountInvoicePaymentSendMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useLnNoAmountInvoicePaymentSendMutation(baseOptions?: Apollo.MutationHookOptions<LnNoAmountInvoicePaymentSendMutation, LnNoAmountInvoicePaymentSendMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LnNoAmountInvoicePaymentSendMutation, LnNoAmountInvoicePaymentSendMutationVariables>(LnNoAmountInvoicePaymentSendDocument, options);
-      }
-export type LnNoAmountInvoicePaymentSendMutationHookResult = ReturnType<typeof useLnNoAmountInvoicePaymentSendMutation>;
-export type LnNoAmountInvoicePaymentSendMutationResult = Apollo.MutationResult<LnNoAmountInvoicePaymentSendMutation>;
-export type LnNoAmountInvoicePaymentSendMutationOptions = Apollo.BaseMutationOptions<LnNoAmountInvoicePaymentSendMutation, LnNoAmountInvoicePaymentSendMutationVariables>;
 export const MyUpdatesDocument = gql`
     subscription myUpdates {
   myUpdates {
