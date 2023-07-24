@@ -20,7 +20,7 @@ export const checkedToDisplayCurrency = (
   return currency.toUpperCase() as DisplayCurrency
 }
 
-export const checkedtoCents = (amount: number): UsdCents | ValidationError => {
+export const checkedToCents = (amount: number): UsdCents | ValidationError => {
   if (!(amount && amount > 0)) return new InvalidUsdCents()
   if (!Number.isInteger(amount))
     return new NonIntegerError(`${amount} type ${typeof amount} is not an integer`)

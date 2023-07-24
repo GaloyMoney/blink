@@ -198,8 +198,8 @@ redis-cli:
 	docker-compose exec redis redis-cli
 
 codegen:
-	yarn e2e-codegen
 	yarn write-sdl
+	yarn e2e-codegen
 
 gen-test-jwt:
 	yarn gen-test-jwt

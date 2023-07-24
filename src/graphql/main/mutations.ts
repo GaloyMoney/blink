@@ -46,6 +46,7 @@ import UserTotpRegistrationInitiateMutation from "@graphql/root/mutation/user-to
 import UserTotpRegistrationValidateMutation from "@graphql/root/mutation/user-totp-registration-validate"
 import UserPhoneRegistrationInitiateMutation from "@graphql/root/mutation/user-phone-registration-initiate"
 import UserPhoneRegistrationValidateMutation from "@graphql/root/mutation/user-phone-registration-validate"
+import UserTotpDeleteMutation from "@graphql/root/mutation/user-totp-delete"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 export const mutationFields = {
@@ -73,6 +74,7 @@ export const mutationFields = {
       userPhoneDelete: UserPhoneDeleteMutation,
       userTotpRegistrationInitiate: UserTotpRegistrationInitiateMutation,
       userTotpRegistrationValidate: UserTotpRegistrationValidateMutation,
+      userTotpDelete: UserTotpDeleteMutation,
 
       userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
       quizCompleted: QuizCompletedMutation,

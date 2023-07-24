@@ -7,12 +7,20 @@ import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tr
 import { parseIps } from "@domain/accounts-ips"
 
 import { checkedToEmailAddress } from "@domain/users"
-import { loginWithEmail, requestEmailCode } from "@app/authentication"
+import {
+  elevatingSessionWithTotp,
+  loginWithEmail,
+  requestEmailCode,
+} from "@app/authentication"
 
 import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 import { checkedToEmailCode } from "@domain/authentication"
-import { checkedToEmailLoginId } from "@services/kratos"
+import {
+  checkedToEmailLoginId,
+  checkedToSessionToken,
+  checkedToTotpCode,
+} from "@services/kratos"
 
 import { baseLogger } from "@services/logger"
 
@@ -124,6 +132,72 @@ authRouter.post(
         return res.status(200).send({
           result: { sessionToken, totpRequired },
         })
+      } catch (err) {
+        recordExceptionInCurrentSpan({ error: err })
+        return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
+      }
+    },
+  }),
+)
+
+authRouter.post(
+  "/totp/validate",
+  wrapAsyncToRunInSpan({
+    namespace: "servers.middlewares.authRouter",
+    fnName: "totpValidate",
+    fn: async (req: express.Request, res: express.Response) => {
+      baseLogger.info("/totp/validate")
+
+      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ip = parseIps(ipString)
+
+      if (!ip) {
+        return res.status(500).send({ error: "IP is not defined" })
+      }
+
+      const totpCodeRaw = req.body.totpCode
+      if (!totpCodeRaw) {
+        return res.status(422).send({ error: "Missing input" })
+      }
+
+      const totpCode = checkedToTotpCode(totpCodeRaw)
+      if (totpCode instanceof Error) {
+        return res.status(422).send({ error: totpCode.message })
+      }
+
+      const sessionTokenRaw = req.body.sessionToken
+      if (!sessionTokenRaw) {
+        return res.status(422).send({ error: "Missing input" })
+      }
+
+      const sessionToken = checkedToSessionToken(sessionTokenRaw)
+
+      // FIXME return string currently when there is an error
+      if (sessionToken === "Invalid value for AuthToken") {
+        return res.status(422).send({ error: "Invalid value for AuthToken" })
+      }
+
+      try {
+        const result = await elevatingSessionWithTotp({
+          totpCode,
+          sessionToken,
+        })
+        if (result instanceof EmailCodeInvalidError) {
+          recordExceptionInCurrentSpan({ error: result })
+          return res.status(401).send({ error: "invalid code" })
+        }
+        if (
+          result instanceof EmailValidationSubmittedTooOftenError ||
+          result instanceof UserLoginIpRateLimiterExceededError
+        ) {
+          recordExceptionInCurrentSpan({ error: result })
+          return res.status(429).send({ error: "too many requests" })
+        }
+        if (result instanceof Error) {
+          recordExceptionInCurrentSpan({ error: result })
+          return res.status(500).send({ error: result.message })
+        }
+        return res.status(200).send()
       } catch (err) {
         recordExceptionInCurrentSpan({ error: err })
         return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })

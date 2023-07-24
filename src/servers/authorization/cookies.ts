@@ -172,7 +172,7 @@ authRouter.get("/clearCookies", async (req, res) => {
         result: "Cookies cleared successfully",
       })
     }
-  } catch (e) {
+  } catch (err) {
     return res.status(500).send({ result: "Error clearing cookies" })
   }
 })

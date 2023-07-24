@@ -1,5 +1,4 @@
 import { ApolloClient, NormalizedCacheObject, gql } from "@apollo/client/core"
-import { elevatingSessionWithTotp } from "@app/authentication"
 import { UuidRegex } from "@services/kratos"
 
 import { sleep } from "@utils"
@@ -21,6 +20,8 @@ import {
   UserPhoneRegistrationInitiateMutation,
   UserPhoneRegistrationValidateDocument,
   UserPhoneRegistrationValidateMutation,
+  UserTotpDeleteDocument,
+  UserTotpDeleteMutation,
   UserTotpRegistrationInitiateDocument,
   UserTotpRegistrationInitiateMutation,
   UserTotpRegistrationValidateDocument,
@@ -156,6 +157,21 @@ gql`
     }
   }
 
+  mutation userTotpDelete($input: UserTotpDeleteInput!) {
+    userTotpDelete(input: $input) {
+      errors {
+        message
+      }
+      me {
+        totpEnabled
+        email {
+          address
+          verified
+        }
+      }
+    }
+  }
+
   mutation userPhoneRegistrationInitiate($input: UserPhoneRegistrationInitiateInput!) {
     userPhoneRegistrationInitiate(input: $input) {
       errors {
@@ -189,6 +205,7 @@ gql`
 
 const urlEmailCodeRequest = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code`
 const urlEmailLogin = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/login`
+const urlTotpValidation = `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/totp/validate`
 
 let totpSecret: string
 
@@ -412,10 +429,6 @@ describe("auth", () => {
     })
   })
 
-  it("removing totp", async () => {
-    expect(true).toBe(true) // TODO
-  })
-
   it("log in with email with totp activated", async () => {
     // code request
     const res = await axios({
@@ -467,7 +480,18 @@ describe("auth", () => {
     }
 
     const totpCode = authenticator.generate(totpSecret) as TotpCode
-    await elevatingSessionWithTotp({ sessionToken, totpCode })
+
+    // validating email with code
+    const responseTotpValidation = await axios({
+      url: urlTotpValidation,
+      method: "POST",
+      data: {
+        totpCode,
+        sessionToken,
+      },
+    })
+
+    expect(responseTotpValidation.status).toBe(200)
 
     // call should now succeed
     {
@@ -493,6 +517,19 @@ describe("auth", () => {
       })
       disposeClient()
     }
+  })
+
+  it("removing totp", async () => {
+    const res = await apolloClient.mutate<UserTotpDeleteMutation>({
+      mutation: UserTotpDeleteDocument,
+      variables: {
+        input: {
+          authToken,
+        },
+      },
+    })
+
+    expect(res.data?.userTotpDelete.me?.totpEnabled).toBe(false)
   })
 
   it("add new phone mutation", async () => {

@@ -1,10 +1,15 @@
 import { UiNodeTextAttributes } from "@ory/client"
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 
+import { isAxiosError } from "axios"
+
+import { getKratosPasswords } from "@config"
+
 import { kratosPublic } from "./private"
 import {
   AuthenticationKratosError,
   MissingTotpKratosError,
+  SessionRefreshRequiredError,
   UnknownKratosError,
 } from "./errors"
 
@@ -86,4 +91,67 @@ export const kratosElevatingSessionWithTotp = async ({
   }
 
   return true
+}
+
+const refreshToken = async (authToken: SessionToken): Promise<void | KratosError> => {
+  const method = "password"
+  const password = getKratosPasswords().masterUserPassword
+
+  const session = await kratosPublic.toSession({ xSessionToken: authToken })
+  const identifier =
+    session.data.identity?.traits?.phone || session.data.identity?.traits?.email
+
+  if (!identifier) {
+    return new UnknownKratosError("No identifier found")
+  }
+
+  try {
+    const flow = await kratosPublic.createNativeLoginFlow({
+      refresh: true,
+      xSessionToken: authToken,
+    })
+    await kratosPublic.updateLoginFlow({
+      flow: flow.data.id,
+      updateLoginFlowBody: {
+        identifier,
+        method,
+        password,
+      },
+      xSessionToken: authToken,
+    })
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+}
+
+export const kratosRemoveTotp = async (token: SessionToken) => {
+  let flow: string
+
+  const res = await refreshToken(token)
+  if (res instanceof Error) return res
+
+  try {
+    const res = await kratosPublic.createNativeSettingsFlow({ xSessionToken: token })
+    flow = res.data.id
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+
+  try {
+    await kratosPublic.updateSettingsFlow({
+      flow,
+      updateSettingsFlowBody: {
+        method: "totp",
+        totp_unlink: true,
+      },
+      xSessionToken: token,
+    })
+  } catch (err) {
+    if (isAxiosError(err)) {
+      if (err.response?.data?.error?.id === "session_refresh_required") {
+        return new SessionRefreshRequiredError()
+      }
+    }
+    return new UnknownKratosError(err)
+  }
 }
