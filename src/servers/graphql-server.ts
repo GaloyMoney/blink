@@ -7,11 +7,9 @@ import { Accounts, Transactions } from "@app"
 import {
   GALOY_API_KEEPALIVE_TIMEOUT_MS,
   getApolloConfig,
-  getGeetestConfig,
   getJwksArgs,
   isProd,
 } from "@config"
-import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import {
   ACCOUNT_USERNAME,
@@ -90,9 +88,6 @@ export const isEditor = rule({ cache: "contextual" })(
 )
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
-
-const geeTestConfig = getGeetestConfig()
-const geetest = Geetest(geeTestConfig)
 
 type RequestWithGqlContext = Request & { gqlContext: GraphQLContext | undefined }
 
@@ -206,7 +201,6 @@ export const sessionContext = ({
         // FIXME: we should not return this for the admin graphql endpoint
         user,
         domainAccount,
-        geetest,
         ip,
       }
     },

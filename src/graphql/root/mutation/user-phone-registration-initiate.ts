@@ -47,7 +47,7 @@ const UserPhoneRegistrationInitiateMutation = GT.Field<
     if (channelInput?.toLowerCase() === ChannelType.Whatsapp)
       channel = ChannelType.Whatsapp
 
-    const success = await Auth.requestPhoneCodeForExistingUser({
+    const success = await Auth.requestPhoneCodeForAuthedUser({
       phone,
       ip,
       channel,

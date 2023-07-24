@@ -11,7 +11,6 @@ type GraphQLContext = {
   loaders: Loaders
   user: User | undefined
   domainAccount: Account | undefined
-  geetest: GeetestType
   ip: IpAddress | undefined
 }
 
@@ -20,7 +19,6 @@ type GraphQLContextAuth = {
   loaders: Loaders
   user: User
   domainAccount: Account
-  geetest: GeetestType
   ip: IpAddress
   sub: string
 }
