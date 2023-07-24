@@ -186,7 +186,7 @@
     "otplib": "^12.0.1",
     "pg": "^8.10.0",
     "pino-pretty": "^10.0.0",
-    "prettier": "^2.8.7",
+    "prettier": "^3.0.0",
     "protoc-gen-js": "^3.21.2",
     "react": "^18.2.0",
     "spectaql": "^2.1.1",
