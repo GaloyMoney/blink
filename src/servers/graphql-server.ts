@@ -397,7 +397,7 @@ export const startApolloServer = async ({
     }
 
     // make request to oathkeeper
-    const originalToken = authz?.slice(7) as SessionToken | undefined
+    const originalToken = authz?.slice(7) as AuthToken | undefined
 
     const newToken = await sendOathkeeperRequestGraphql(originalToken)
     // TODO: see how returning an error affect the websocket connection
@@ -453,7 +453,7 @@ export const startApolloServer = async ({
     //   })
     // }
 
-    const kratosToken = authz?.slice(7) as SessionToken
+    const kratosToken = authz?.slice(7) as AuthToken
 
     // make request to oathkeeper
     // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"

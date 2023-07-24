@@ -23,13 +23,13 @@ import { OATHKEEPER_HOST, OATHKEEPER_PORT } from "test/helpers/env"
 export const localIpAddress = "127.0.0.1" as IpAddress
 
 export type ApolloTestClientConfig = {
-  authToken?: SessionToken
+  authToken?: AuthToken
   graphqlUrl: string
   graphqlSubscriptionUrl: string
 }
 
 export const defaultTestClientConfig = (
-  authToken?: SessionToken,
+  authToken?: AuthToken,
 ): ApolloTestClientConfig => {
   return {
     authToken,
@@ -38,9 +38,7 @@ export const defaultTestClientConfig = (
   }
 }
 
-export const adminTestClientConfig = (
-  authToken?: SessionToken,
-): ApolloTestClientConfig => {
+export const adminTestClientConfig = (authToken?: AuthToken): ApolloTestClientConfig => {
   return {
     authToken,
     graphqlUrl: `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/admin/graphql`,

@@ -277,7 +277,7 @@ describe("setup", () => {
 
     // Create a new authenticated client
     disposeClient()
-    const authToken = (result?.data?.userLogin.authToken as SessionToken) ?? undefined
+    const authToken = (result?.data?.userLogin.authToken as AuthToken) ?? undefined
 
     ;({ apolloClient, disposeClient } = createApolloClient(
       defaultTestClientConfig(authToken),

@@ -79,7 +79,7 @@ const jwt =
   "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWIzNyJ9.eyJzdWIiOiIxOjcyMjc5Mjk3MzY2OmFuZHJvaWQ6VEVTVEUyRUFDQ09VTlQ1YWE3NWFmNyIsImF1ZCI6WyJwcm9qZWN0cy83MjI3OTI5NzM2NiIsInByb2plY3RzL2dhbG95YXBwIl0sInByb3ZpZGVyIjoiZGVidWciLCJpc3MiOiJodHRwczovL2ZpcmViYXNlYXBwY2hlY2suZ29vZ2xlYXBpcy5jb20vNzIyNzkyOTczNjYifQ.onGs8nlWA1e1vkEwJhjDtNwCk1jLNezQign7HyCNBOuAxtr7kt0Id6eZtbROuDlVlS4KwO7xMrn3xxsQHZYftu_ihO61OKBw8IEIlLn548May3HGSMletWTANxMLnhwJIjph8ACpRTockFida3XIr2cgIHwPqNRigFh0Ib9HTG5cuzRpQUEkpgiXZ2dJ0hJppX5OX6Q2ywN5LD4mqqqbXV3VNqtGd9oCUI-t7Kfry4UpNBhkhkPzMc5pt_NRsIHFqGtyH1SRX7NJd8BZuPnVfS6zmoPHaOxOixEO4zhFgh_DRePg6_yT4ejRF29mx1gBhfKSz81R5_BVtjgD-LMUdg"
 
 describe("device-account", () => {
-  let token: SessionToken
+  let token: AuthToken
   let defaultWalletId: string
 
   it("create a device user", async () => {
@@ -162,7 +162,7 @@ describe("device-account", () => {
   })
 
   it("upgrade a device user to existing phone with no txns", async () => {
-    let newToken: SessionToken
+    let newToken: AuthToken
 
     {
       const { apolloClient, disposeClient } = createApolloClient(
@@ -180,7 +180,7 @@ describe("device-account", () => {
       const authToken = res3?.data?.userLoginUpgrade?.authToken
       expect(authToken).toBeDefined()
       if (!authToken) throw new Error("authToken is undefined")
-      newToken = authToken as SessionToken
+      newToken = authToken as AuthToken
 
       expect(res3?.data?.userLoginUpgrade?.success).toBeTruthy()
 

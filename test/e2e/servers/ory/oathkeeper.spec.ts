@@ -41,7 +41,7 @@ describe("Oathkeeper graphql endpoints", () => {
   })
 
   it("error if an invalid token is provided", async () => {
-    const res = await sendOathkeeperRequestGraphql("invalid.token" as SessionToken)
+    const res = await sendOathkeeperRequestGraphql("invalid.token" as AuthToken)
     expect(res).toBeInstanceOf(OathkeeperUnauthorizedServiceError)
   })
 
@@ -58,7 +58,7 @@ describe("Oathkeeper graphql endpoints", () => {
     })
     disposeClient()
 
-    const token = result?.data?.userLogin.authToken as SessionToken
+    const token = result?.data?.userLogin.authToken as AuthToken
     if (!token) throw new Error("token is undefined")
 
     const res = await sendOathkeeperRequestGraphql(token)

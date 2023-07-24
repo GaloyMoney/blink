@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { checkedToSessionToken } from "@services/kratos"
+import { checkedToAuthToken } from "@services/kratos"
 
 const AuthToken = GT.Scalar({
   name: "AuthToken",
@@ -8,7 +8,7 @@ const AuthToken = GT.Scalar({
     if (typeof value !== "string") {
       return "Invalid value for AuthToken"
     }
-    return checkedToSessionToken(value)
+    return checkedToAuthToken(value)
   },
 })
 

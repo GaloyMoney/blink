@@ -105,7 +105,7 @@ beforeAll(async () => {
   })
   // Create a new authenticated client
   disposeClient()
-  const authToken = result?.data?.userLogin?.authToken as SessionToken
+  const authToken = result?.data?.userLogin?.authToken as AuthToken
   if (!authToken) {
     throw new Error("No auth token returned")
   }

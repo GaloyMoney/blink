@@ -149,7 +149,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
             // different strategies has been tried:
             //
             // hack around the fact we get a sessionCookie but really we're looking to
-            // get the sessionToken. we don't have access to the email in this branch,
+            // get the authToken. we don't have access to the email in this branch,
             // which prevent us to login with our own logic.
             //
             // we could have some internal data structure to get it from the initial request
@@ -220,12 +220,12 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
           password,
         },
       })
-      const sessionToken = result.data.session_token as SessionToken
+      const authToken = result.data.session_token as AuthToken
 
       // identity is only defined when identity has not enabled totp
       const kratosUserId = result.data.session.identity?.id as UserId
 
-      return { sessionToken, kratosUserId }
+      return { authToken, kratosUserId }
     } catch (err) {
       return new UnknownKratosError(err)
     }

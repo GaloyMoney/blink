@@ -13,7 +13,7 @@ import {
   UnknownKratosError,
 } from "./errors"
 
-export const kratosInitiateTotp = async (token: SessionToken) => {
+export const kratosInitiateTotp = async (token: AuthToken) => {
   try {
     const res = await kratosPublic.createNativeSettingsFlow({ xSessionToken: token })
     const totpAttributes = res.data.ui.nodes.find(
@@ -36,7 +36,7 @@ export const kratosValidateTotp = async ({
   totpCode,
   totpRegistrationId: flow,
 }: {
-  authToken: SessionToken
+  authToken: AuthToken
   totpCode: string
   totpRegistrationId: string
 }) => {
@@ -55,16 +55,16 @@ export const kratosValidateTotp = async ({
 }
 
 export const kratosElevatingSessionWithTotp = async ({
-  sessionToken,
+  authToken,
   totpCode,
 }: {
-  sessionToken: SessionToken
+  authToken: AuthToken
   totpCode: TotpCode
 }): Promise<true | KratosError> => {
   const flow = await kratosPublic.createNativeLoginFlow({
     refresh: false,
     aal: "aal2",
-    xSessionToken: sessionToken,
+    xSessionToken: authToken,
   })
 
   const method = "totp"
@@ -76,7 +76,7 @@ export const kratosElevatingSessionWithTotp = async ({
         method,
         totp_code: totpCode,
       },
-      xSessionToken: sessionToken,
+      xSessionToken: authToken,
     })
   } catch (err) {
     if (err instanceof Error && err.message === "Request failed with status code 400") {
@@ -93,7 +93,7 @@ export const kratosElevatingSessionWithTotp = async ({
   return true
 }
 
-const refreshToken = async (authToken: SessionToken): Promise<void | KratosError> => {
+const refreshToken = async (authToken: AuthToken): Promise<void | KratosError> => {
   const method = "password"
   const password = getKratosPasswords().masterUserPassword
 
@@ -124,7 +124,7 @@ const refreshToken = async (authToken: SessionToken): Promise<void | KratosError
   }
 }
 
-export const kratosRemoveTotp = async (token: SessionToken) => {
+export const kratosRemoveTotp = async (token: AuthToken) => {
   let flow: string
 
   const res = await refreshToken(token)

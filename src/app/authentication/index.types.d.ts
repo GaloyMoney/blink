@@ -5,7 +5,7 @@ type NewAccountWithPhoneIdentifier = {
 
 type LoginDeviceUpgradeWithPhoneResult = {
   success: true
-  sessionToken?: SessionToken
+  authToken?: AuthToken
 }
 
 type InitiateTotpRegistrationResult = {
@@ -19,6 +19,6 @@ type AddEmailToIdentityResult = {
 }
 
 type LoginWithEmailResult = {
-  sessionToken: SessionToken
+  authToken: AuthToken
   totpRequired: boolean
 }

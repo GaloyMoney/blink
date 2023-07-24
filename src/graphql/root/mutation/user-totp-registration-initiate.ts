@@ -17,7 +17,7 @@ const UserTotpRegistrationInitiateInput = GT.Input({
 const UserTotpRegistrationInitiateMutation = GT.Field<
   {
     input: {
-      authToken: SessionToken | InputValidationError
+      authToken: AuthToken | InputValidationError
     }
   },
   null,

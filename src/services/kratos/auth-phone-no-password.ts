@@ -43,12 +43,12 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
           password,
         },
       })
-      const sessionToken = result.data.session_token as SessionToken
+      const authToken = result.data.session_token as AuthToken
 
       // FIXME: kratosUserId could be undefined
       const kratosUserId = result.data.session.identity?.id as UserId
 
-      return { sessionToken, kratosUserId }
+      return { authToken, kratosUserId }
     } catch (err) {
       if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyNoUserWithThisPhoneExistError(err.message || err)
@@ -111,7 +111,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
   const logoutToken = async ({
     token,
   }: {
-    token: SessionToken
+    token: AuthToken
   }): Promise<void | KratosError> => {
     try {
       await kratosPublic.performNativeLogout({
@@ -160,10 +160,10 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
           password,
         },
       })
-      const sessionToken = result.data.session_token as SessionToken
+      const authToken = result.data.session_token as AuthToken
       const kratosUserId = result.data.identity.id as UserId
 
-      return { sessionToken, kratosUserId }
+      return { authToken, kratosUserId }
     } catch (err) {
       if (err instanceof Error && err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err.message || err)

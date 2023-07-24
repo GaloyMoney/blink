@@ -102,7 +102,7 @@ describe("phoneNoPassword", () => {
 
     it("add totp", async () => {
       const phone = randomPhone()
-      let authToken: SessionToken
+      let authToken: AuthToken
       let userId: UserId
 
       let totpSecret: string
@@ -110,7 +110,7 @@ describe("phoneNoPassword", () => {
         const res0 = await authService.createIdentityWithSession({ phone })
         if (res0 instanceof Error) throw res0
 
-        authToken = res0.sessionToken
+        authToken = res0.authToken
 
         const res1 = await kratosInitiateTotp(authToken)
         if (res1 instanceof Error) throw res1
@@ -147,14 +147,14 @@ describe("phoneNoPassword", () => {
         expect(res).toEqual(
           expect.objectContaining({
             kratosUserId: undefined,
-            sessionToken: expect.any(String),
+            authToken: expect.any(String),
           }),
         )
 
         const totpCode = authenticator.generate(totpSecret) as TotpCode
 
         const res2 = await kratosElevatingSessionWithTotp({
-          sessionToken: res.sessionToken,
+          authToken: res.authToken,
           totpCode,
         })
         if (res2 instanceof Error) throw res2
@@ -183,12 +183,12 @@ describe("phoneNoPassword", () => {
       const res = await authService.createIdentityWithSession({ phone })
       if (res instanceof Error) throw res
 
-      const res1 = await validateKratosToken(res.sessionToken)
+      const res1 = await validateKratosToken(res.authToken)
       if (res1 instanceof Error) throw res1
       expect(res1.session.identity.phone).toStrictEqual(phone)
 
       const res2 = await kratosPublic.createNativeSettingsFlow({
-        xSessionToken: res.sessionToken,
+        xSessionToken: res.authToken,
       })
 
       const newPhone = randomPhone()
@@ -202,7 +202,7 @@ describe("phoneNoPassword", () => {
               phone: newPhone,
             },
           },
-          xSessionToken: res.sessionToken,
+          xSessionToken: res.authToken,
         }),
       )
 
@@ -238,14 +238,14 @@ describe("token validation", () => {
     const res = await authService.createIdentityWithSession({ phone })
     if (res instanceof Error) throw res
 
-    const token = res.sessionToken
+    const token = res.authToken
     const res2 = await validateKratosToken(token)
     if (res2 instanceof Error) throw res2
     expect(res2.kratosUserId).toBe(res.kratosUserId)
   })
 
   it("return error on invalid token", async () => {
-    const res = await validateKratosToken("invalid_token" as SessionToken)
+    const res = await validateKratosToken("invalid_token" as AuthToken)
     expect(res).toBeInstanceOf(AuthenticationKratosError)
   })
 })
@@ -273,13 +273,13 @@ describe("session revokation", () => {
   })
 
   it("return error on revoked session", async () => {
-    let token: SessionToken
+    let token: AuthToken
     {
       const res = await authService.loginToken({ phone })
       if (res instanceof Error) throw res
       if (res.kratosUserId === undefined) throw new Error("kratosUserId is undefined")
 
-      token = res.sessionToken
+      token = res.authToken
       await revokeSessions(res.kratosUserId)
     }
     {
@@ -292,12 +292,12 @@ describe("session revokation", () => {
     // Session 1
     const session1 = await authService.loginToken({ phone })
     if (session1 instanceof Error) throw session1
-    const session1Token = session1.sessionToken
+    const session1Token = session1.authToken
 
     // Session 2
     const session2 = await authService.loginToken({ phone })
     if (session2 instanceof Error) throw session2
-    const session2Token = session2.sessionToken
+    const session2Token = session2.authToken
 
     // Session Details
     //  *caveat, you need to have at least 2 active sessions
@@ -364,7 +364,7 @@ it("extend session", async () => {
   if (res instanceof Error) throw res
 
   expect(res).toHaveProperty("kratosUserId")
-  const res2 = await kratosPublic.toSession({ xSessionToken: res.sessionToken })
+  const res2 = await kratosPublic.toSession({ xSessionToken: res.authToken })
   const sessionKratos = res2.data
   if (!sessionKratos.expires_at) throw Error("should have expired_at")
   const initialExpiresAt = new Date(sessionKratos.expires_at)
@@ -373,7 +373,7 @@ it("extend session", async () => {
 
   await extendSession(sessionId)
   await sleep(200)
-  const res3 = await kratosPublic.toSession({ xSessionToken: res.sessionToken })
+  const res3 = await kratosPublic.toSession({ xSessionToken: res.authToken })
   const newSession = res3.data
   if (!newSession.expires_at) throw Error("should have expired_at")
   const newExpiresAt = new Date(newSession.expires_at)

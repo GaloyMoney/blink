@@ -58,7 +58,7 @@ describe("updates user phone", () => {
     const token = loginResult?.data?.userLogin?.authToken ?? undefined
 
     const { apolloClient: adminApolloClient, disposeClient: disposeAdminClient } =
-      await createApolloClient(adminTestClientConfig(token as SessionToken | undefined))
+      await createApolloClient(adminTestClientConfig(token as AuthToken | undefined))
 
     const accountDetails = await adminApolloClient.query({
       query: ACCOUNT_DETAILS_BY_USER_PHONE,

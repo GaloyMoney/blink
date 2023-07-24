@@ -18,7 +18,7 @@ import { parseErrorMessageFromUnknown } from "@domain/shared"
 import { checkedToEmailCode } from "@domain/authentication"
 import {
   checkedToEmailLoginId,
-  checkedToSessionToken,
+  checkedToAuthToken,
   checkedToTotpCode,
 } from "@services/kratos"
 
@@ -128,9 +128,9 @@ authRouter.post(
           recordExceptionInCurrentSpan({ error: result })
           return res.status(500).send({ error: result.message })
         }
-        const { sessionToken, totpRequired } = result
+        const { authToken, totpRequired } = result
         return res.status(200).send({
-          result: { sessionToken, totpRequired },
+          result: { authToken, totpRequired },
         })
       } catch (err) {
         recordExceptionInCurrentSpan({ error: err })
@@ -165,22 +165,22 @@ authRouter.post(
         return res.status(422).send({ error: totpCode.message })
       }
 
-      const sessionTokenRaw = req.body.sessionToken
-      if (!sessionTokenRaw) {
+      const authTokenRaw = req.body.authToken
+      if (!authTokenRaw) {
         return res.status(422).send({ error: "Missing input" })
       }
 
-      const sessionToken = checkedToSessionToken(sessionTokenRaw)
+      const authToken = checkedToAuthToken(authTokenRaw)
 
       // FIXME return string currently when there is an error
-      if (sessionToken === "Invalid value for AuthToken") {
+      if (authToken === "Invalid value for AuthToken") {
         return res.status(422).send({ error: "Invalid value for AuthToken" })
       }
 
       try {
         const result = await elevatingSessionWithTotp({
           totpCode,
-          sessionToken,
+          authToken,
         })
         if (result instanceof EmailCodeInvalidError) {
           recordExceptionInCurrentSpan({ error: result })

@@ -17,7 +17,7 @@ const UserTotpDeleteInput = GT.Input({
 const UserTotpDeleteMutation = GT.Field<
   {
     input: {
-      authToken: SessionToken | InputValidationError
+      authToken: AuthToken | InputValidationError
     }
   },
   null,

@@ -1,7 +1,7 @@
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
 export const logoutToken = async (
-  token: SessionToken,
+  token: AuthToken,
 ): Promise<boolean | ApplicationError> => {
   const authService = AuthWithPhonePasswordlessService()
   const kratosResult = await authService.logoutToken({ token })

@@ -7,7 +7,7 @@ import { UserLoginDocument, UserLoginMutation } from "test/e2e/generated"
 type ApolloClientAndDispose = {
   apolloClient: ApolloClient<NormalizedCacheObject>
   disposeClient: () => Promise<void>
-  authToken: SessionToken
+  authToken: AuthToken
 }
 
 export const loginFromPhoneAndCode = async ({
@@ -20,7 +20,7 @@ export const loginFromPhoneAndCode = async ({
   let apolloClient: ApolloClient<NormalizedCacheObject>,
     disposeClient: () => Promise<void>
 
-  let authToken: SessionToken
+  let authToken: AuthToken
   {
     ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
     const input = { phone, code }
@@ -31,7 +31,7 @@ export const loginFromPhoneAndCode = async ({
 
     const authTokenRaw = result?.data?.userLogin.authToken
     if (!authTokenRaw) throw new Error("No authTokenRaw")
-    authToken = authTokenRaw as SessionToken
+    authToken = authTokenRaw as AuthToken
     expect(authToken).not.toBeNull()
     expect(authToken.length).toBe(39)
     disposeClient()

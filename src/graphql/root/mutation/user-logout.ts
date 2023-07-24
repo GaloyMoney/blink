@@ -16,7 +16,7 @@ const UserLogoutInput = GT.Input({
 
 const UserLogoutMutation = GT.Field<{
   input: {
-    authToken: SessionToken | InputValidationError
+    authToken: AuthToken | InputValidationError
   }
 }>({
   extensions: {

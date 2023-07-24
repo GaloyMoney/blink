@@ -89,7 +89,7 @@ const getContext = async (
         })
       }
 
-      const kratosToken = authz?.slice(7) as SessionToken
+      const kratosToken = authz?.slice(7) as AuthToken
 
       // make request to oathkeeper
       // if the kratosToken is undefined, then oathkeeper will create a subject with "anon"

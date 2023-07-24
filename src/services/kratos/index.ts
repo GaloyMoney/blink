@@ -47,23 +47,23 @@ export const checkedToTotpCode = (totpCode: string): TotpCode | ValidationError 
   return totpCode as TotpCode
 }
 
-export const checkedToSessionToken = (value: string) => {
+export const checkedToAuthToken = (value: string) => {
   // 32 is the length of a session token in kratos v11
   // 39 is the length of a session token in kratos v13
   if (value.length !== 32 && value.length !== 39) {
     return "Invalid value for AuthToken"
   }
 
-  return value as SessionToken
+  return value as AuthToken
 }
 
 export const validateKratosToken = async (
-  sessionToken: SessionToken,
+  authToken: AuthToken,
 ): Promise<ValidateKratosTokenResult | KratosError> => {
   let session: Session
 
   try {
-    const { data } = await kratosPublic.toSession({ xSessionToken: sessionToken })
+    const { data } = await kratosPublic.toSession({ xSessionToken: authToken })
     session = toDomainSession(data)
   } catch (err) {
     if (err instanceof Error && err.message === "Request failed with status code 401") {

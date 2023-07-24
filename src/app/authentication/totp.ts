@@ -12,7 +12,7 @@ import { UsersRepository } from "@services/mongoose"
 export const initiateTotpRegistration = async ({
   authToken,
 }: {
-  authToken: SessionToken
+  authToken: AuthToken
 }): Promise<InitiateTotpRegistrationResult | KratosError> => {
   return kratosInitiateTotp(authToken)
 }
@@ -23,7 +23,7 @@ export const validateTotpRegistration = async ({
   totpRegistrationId,
   userId,
 }: {
-  authToken: SessionToken
+  authToken: AuthToken
   totpCode: TotpCode
   totpRegistrationId: TotpRegistrationId
   userId: UserId
@@ -43,20 +43,20 @@ export const validateTotpRegistration = async ({
 }
 
 export const elevatingSessionWithTotp = async ({
-  sessionToken,
+  authToken,
   totpCode,
 }: {
-  sessionToken: SessionToken
+  authToken: AuthToken
   totpCode: TotpCode
 }): Promise<boolean | KratosError> => {
-  return kratosElevatingSessionWithTotp({ sessionToken, totpCode })
+  return kratosElevatingSessionWithTotp({ authToken, totpCode })
 }
 
 export const removeTotp = async ({
   authToken,
   userId,
 }: {
-  authToken: SessionToken
+  authToken: AuthToken
   userId: UserId
 }): Promise<User | ApplicationError> => {
   const res = await validateKratosToken(authToken)

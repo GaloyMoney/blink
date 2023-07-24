@@ -211,7 +211,7 @@ let totpSecret: string
 
 describe("auth", () => {
   let email: EmailAddress
-  let authToken: SessionToken
+  let authToken: AuthToken
 
   it("create user", async () => {
     ;({ apolloClient, disposeClient, authToken } = await loginFromPhoneAndCode({
@@ -313,7 +313,7 @@ describe("auth", () => {
       },
     })
     expect(res2).not.toBeNull()
-    expect(res2.data.result.sessionToken.length).toBe(39)
+    expect(res2.data.result.authToken.length).toBe(39)
 
     // TODO: check the response when the login request has expired
   })
@@ -457,16 +457,16 @@ describe("auth", () => {
 
     expect(response.data).toMatchObject({
       result: {
-        sessionToken: expect.any(String),
+        authToken: expect.any(String),
         totpRequired: true,
       },
     })
 
-    const sessionToken = response.data.result.sessionToken
+    const authToken = response.data.result.authToken
 
     {
       const { apolloClient, disposeClient } = createApolloClient(
-        defaultTestClientConfig(sessionToken),
+        defaultTestClientConfig(authToken),
       )
 
       // call with this session token should fail until totp is provided
@@ -487,7 +487,7 @@ describe("auth", () => {
       method: "POST",
       data: {
         totpCode,
-        sessionToken,
+        authToken,
       },
     })
 
@@ -496,7 +496,7 @@ describe("auth", () => {
     // call should now succeed
     {
       const { apolloClient, disposeClient } = createApolloClient(
-        defaultTestClientConfig(sessionToken),
+        defaultTestClientConfig(authToken),
       )
 
       const emailQueryPromise = apolloClient.query<EmailQuery>({

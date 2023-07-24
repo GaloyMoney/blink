@@ -53,16 +53,16 @@ export const AuthWithUsernamePasswordDeviceIdService =
             password,
           },
         })
-        const sessionToken = result.data.session_token as SessionToken
+        const authToken = result.data.session_token as AuthToken
 
         // note: this only works when whoami: required_aal = aal1
         const kratosUserId = result.data.session.identity.id as UserId
 
-        return { sessionToken, kratosUserId, newEntity }
+        return { authToken, kratosUserId, newEntity }
       } catch (err) {
         if (err instanceof Error) {
           return new UnknownKratosError(
-            `Impossible to get sessionToken: ${err.message || err}`,
+            `Impossible to get authToken: ${err.message || err}`,
           )
         }
         return new UnknownKratosError(err)

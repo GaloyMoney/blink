@@ -41,7 +41,7 @@ export const loginWithPhoneToken = async ({
   phone: PhoneNumber
   code: PhoneCode
   ip: IpAddress
-}): Promise<SessionToken | ApplicationError> => {
+}): Promise<AuthToken | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -75,14 +75,14 @@ export const loginWithPhoneToken = async ({
     const kratosResult = await authService.createIdentityWithSession({ phone })
     if (kratosResult instanceof Error) return kratosResult
 
-    return kratosResult.sessionToken
+    return kratosResult.authToken
   }
 
   if (userId instanceof Error) return userId
 
   const kratosResult = await authService.loginToken({ phone })
   if (kratosResult instanceof Error) return kratosResult
-  return kratosResult.sessionToken
+  return kratosResult.authToken
 }
 
 export const loginWithPhoneCookie = async ({
@@ -175,7 +175,7 @@ export const loginWithEmail = async ({
 
   const res = await authServiceEmail.loginToken({ email })
   if (res instanceof Error) throw res
-  return { sessionToken: res.sessionToken, totpRequired }
+  return { authToken: res.authToken, totpRequired }
 }
 
 export const loginDeviceUpgradeWithPhone = async ({
@@ -245,7 +245,7 @@ export const loginDeviceUpgradeWithPhone = async ({
   const authService = AuthWithPhonePasswordlessService()
   const kratosResult = await authService.loginToken({ phone })
   if (kratosResult instanceof Error) return kratosResult
-  return { success: true, sessionToken: kratosResult.sessionToken }
+  return { success: true, authToken: kratosResult.authToken }
 }
 
 export const loginWithDevice = async ({
@@ -258,7 +258,7 @@ export const loginWithDevice = async ({
   username: string
   password: string
   deviceId: string
-}): Promise<SessionToken | ApplicationError> => {
+}): Promise<AuthToken | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -288,5 +288,5 @@ export const loginWithDevice = async ({
     if (account instanceof Error) return account
   }
 
-  return res.sessionToken
+  return res.authToken
 }

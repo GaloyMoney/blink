@@ -6,7 +6,7 @@ type IdentityUsername = string & { readonly brand: unique symbol }
 type IdentityPassword = string & { readonly brand: unique symbol }
 
 type UserId = string & { readonly brand: unique symbol }
-type SessionToken = string & { readonly brand: unique symbol }
+type AuthToken = string & { readonly brand: unique symbol }
 type SessionCookie = string & { readonly brand: unique symbol }
 
 type TotpSecret = string & { readonly brand: unique symbol }
@@ -46,7 +46,7 @@ type Session = {
 }
 
 type WithSessionResponse = {
-  sessionToken: SessionToken
+  authToken: AuthToken
   kratosUserId: UserId
 }
 
@@ -56,7 +56,7 @@ type WithCookieResponse = {
 }
 
 type LoginWithPhoneNoPasswordSchemaResponse = {
-  sessionToken: SessionToken
+  authToken: AuthToken
   kratosUserId?: UserId
 }
 type LoginWithPhoneCookieSchemaResponse = WithCookieResponse
@@ -70,7 +70,7 @@ interface IAuthWithPhonePasswordlessService {
   loginCookie(args: {
     phone: PhoneNumber
   }): Promise<LoginWithPhoneCookieSchemaResponse | AuthenticationError>
-  logoutToken(args: { token: SessionToken }): Promise<void | AuthenticationError>
+  logoutToken(args: { token: AuthToken }): Promise<void | AuthenticationError>
   logoutCookie(args: { cookie: SessionCookie }): Promise<void | AuthenticationError>
   createIdentityWithSession(args: {
     phone: PhoneNumber
