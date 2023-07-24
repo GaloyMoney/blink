@@ -50,7 +50,7 @@
 
 - id: galoy-backend
   upstream:
-    url: "http://e2e-tests:4012"
+    url: "http://apollo-router:4004"
   match:
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphql"
     methods: ["POST", "GET", "OPTIONS"]
