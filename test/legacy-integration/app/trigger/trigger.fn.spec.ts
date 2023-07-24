@@ -1,4 +1,4 @@
-import { getFeesConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getFeesConfig, getOnChainWalletConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import { Wallets } from "@app"
 
@@ -31,6 +31,8 @@ import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/walle
 let walletIdA: WalletId
 let walletIdD: WalletId
 let walletIdF: WalletId
+
+const { dustThreshold } = getOnChainWalletConfig()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -172,6 +174,7 @@ describe("onchainBlockEventHandler", () => {
         amount: btcAmount,
         minBankFee,
         minBankFeeThreshold,
+        dustThreshold,
         depositFeeRatio,
       })
       const lastTransaction = transactions[0]

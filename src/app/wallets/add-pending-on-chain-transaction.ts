@@ -10,7 +10,7 @@ import {
 } from "@domain/wallets"
 import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
-import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@domain/errors"
+import { DuplicateKeyForPersistError } from "@domain/errors"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
 import {
@@ -40,10 +40,6 @@ export const addPendingTransaction = async ({
   satoshis: BtcPaymentAmount
   address: OnChainAddress
 }): Promise<true | ApplicationError> => {
-  if (satoshis.amount < dustThreshold) {
-    return new LessThanDustThresholdError(`${dustThreshold}`)
-  }
-
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 
@@ -54,6 +50,7 @@ export const addPendingTransaction = async ({
     amount: satoshis,
     minBankFee: feesConfig.depositDefaultMin,
     minBankFeeThreshold: feesConfig.depositThreshold,
+    dustThreshold,
     ratio: feesConfig.depositRatioAsBasisPoints,
   })
   if (satsFee instanceof Error) return satsFee

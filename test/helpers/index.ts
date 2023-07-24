@@ -45,17 +45,20 @@ export const amountAfterFeeDeduction = ({
   amount,
   minBankFee,
   minBankFeeThreshold,
+  dustThreshold,
   depositFeeRatio,
 }: {
   amount: BtcPaymentAmount
   minBankFee: BtcPaymentAmount
   minBankFeeThreshold: BtcPaymentAmount
+  dustThreshold: BtcPaymentAmount
   depositFeeRatio: DepositFeeRatioAsBasisPoints
 }) => {
   const satsFee = DepositFeeCalculator().onChainDepositFee({
     amount,
     minBankFee,
     minBankFeeThreshold,
+    dustThreshold,
     ratio: depositFeeRatio,
   })
   if (satsFee instanceof Error) throw satsFee

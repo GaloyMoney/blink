@@ -14,6 +14,10 @@ describe("DepositFeeCalculator", () => {
       amount: 1_000_000n,
       currency: WalletCurrency.Btc,
     },
+    dustThreshold: {
+      amount: 546n,
+      currency: WalletCurrency.Btc,
+    },
   }
 
   describe("onChainDepositFee", () => {

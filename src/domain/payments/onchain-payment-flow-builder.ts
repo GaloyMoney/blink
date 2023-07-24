@@ -317,7 +317,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }): BtcPaymentAmount | ValidationError => {
     if (
       !(state.settlementMethod === SettlementMethod.IntraLedger) &&
-      btcPaymentAmount.amount < state.dustThreshold
+      btcPaymentAmount.amount < state.dustThreshold.amount
     ) {
       return new LessThanDustThresholdError(
         `Use lightning to send amounts less than ${state.dustThreshold} sats`,

@@ -247,7 +247,10 @@ export const getOnChainAddressCreateAttemptLimits = () =>
   getRateLimits(yamlConfig.rateLimits.onChainAddressCreateAttempt)
 
 export const getOnChainWalletConfig = () => ({
-  dustThreshold: yamlConfig.onChainWallet.dustThreshold,
+  dustThreshold: {
+    amount: BigInt(yamlConfig.onChainWallet.dustThreshold),
+    currency: WalletCurrency.Btc,
+  },
 })
 
 export const getColdStorageConfig = (): ColdStorageConfig => {

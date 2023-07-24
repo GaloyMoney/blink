@@ -187,6 +187,7 @@ type OnChainDepositFeeArgs = {
   amount: BtcPaymentAmount
   minBankFee: BtcPaymentAmount
   minBankFeeThreshold: BtcPaymentAmount
+  dustThreshold: BtcPaymentAmount
   ratio: DepositFeeRatioAsBasisPoints
 }
 

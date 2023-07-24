@@ -11,6 +11,7 @@ import {
   getFeesConfig,
   getLocale,
   getOnChainAddressCreateAttemptLimits,
+  getOnChainWalletConfig,
 } from "@config"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
@@ -96,6 +97,7 @@ let newWalletIdA: WalletId
 
 const accountLimits = getAccountLimits({ level: 1 })
 const feesConfig = getFeesConfig()
+const { dustThreshold } = getOnChainWalletConfig()
 
 const locale = getLocale()
 
@@ -205,6 +207,7 @@ describe("With Bria", () => {
           amount: amountSats,
           minBankFee,
           minBankFeeThreshold,
+          dustThreshold,
           depositFeeRatio,
         }),
     )
@@ -226,6 +229,7 @@ describe("With Bria", () => {
         amount: amountSats,
         minBankFee,
         minBankFeeThreshold,
+        dustThreshold,
         depositFeeRatio: depositFeeRatio,
       }),
     )
@@ -249,6 +253,7 @@ describe("With Bria", () => {
       amount: amountSats,
       minBankFee: feesConfig.depositDefaultMin,
       minBankFeeThreshold: feesConfig.depositThreshold,
+      dustThreshold,
       ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) throw fee
@@ -412,6 +417,7 @@ describe("With Bria", () => {
           amount: btcAmount,
           minBankFee,
           minBankFeeThreshold,
+          dustThreshold,
           depositFeeRatio,
         }) *
           addresses.length,
@@ -510,6 +516,7 @@ describe("With Bria", () => {
         amount: receivedBtc,
         minBankFee: feesConfig.depositDefaultMin,
         minBankFeeThreshold: feesConfig.depositThreshold,
+        dustThreshold,
         ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (expectedSatsFee instanceof Error) throw expectedSatsFee
@@ -758,6 +765,7 @@ describe("With Bria", () => {
           amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
           minBankFee: feesConfig.depositDefaultMin,
           minBankFeeThreshold: feesConfig.depositThreshold,
+          dustThreshold,
           depositFeeRatio: defaultDepositFeeRatio,
         }),
       )
@@ -804,6 +812,7 @@ describe("With Bria", () => {
               amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
               minBankFee: feesConfig.depositDefaultMin,
               minBankFeeThreshold: feesConfig.depositThreshold,
+              dustThreshold,
               depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
@@ -813,6 +822,7 @@ describe("With Bria", () => {
               amount: { amount: 200_000_000n, currency: WalletCurrency.Btc },
               minBankFee: feesConfig.depositDefaultMin,
               minBankFeeThreshold: feesConfig.depositThreshold,
+              dustThreshold,
               depositFeeRatio: defaultDepositFeeRatio,
             }),
         )
@@ -859,6 +869,7 @@ describe("With Bria", () => {
         amount: amountSats,
         minBankFee: feesConfig.depositDefaultMin,
         minBankFeeThreshold: feesConfig.depositThreshold,
+        dustThreshold,
         ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (feeSats instanceof Error) throw feeSats
@@ -1011,6 +1022,7 @@ describe("With Lnd", () => {
             amount: amountSats,
             minBankFee,
             minBankFeeThreshold,
+            dustThreshold,
             depositFeeRatio,
           }),
       )
@@ -1030,6 +1042,7 @@ describe("With Lnd", () => {
           amount: amountSats,
           minBankFee,
           minBankFeeThreshold,
+          dustThreshold,
           depositFeeRatio: depositFeeRatio,
         }),
       )
@@ -1066,6 +1079,7 @@ describe("With Lnd", () => {
       amount: amountSats,
       minBankFee: feesConfig.depositDefaultMin,
       minBankFeeThreshold: feesConfig.depositThreshold,
+      dustThreshold,
       ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) throw fee
@@ -1156,6 +1170,7 @@ describe("With Lnd", () => {
             amount: btcAmount,
             minBankFee,
             minBankFeeThreshold,
+            dustThreshold,
             depositFeeRatio,
           }) *
             addresses.length,
@@ -1178,6 +1193,7 @@ describe("With Lnd", () => {
           amount: btcAmount,
           minBankFee,
           minBankFeeThreshold,
+          dustThreshold,
           depositFeeRatio: depositFeeRatio,
         }),
       )
@@ -1282,6 +1298,7 @@ describe("With Lnd", () => {
         amount: btcAmount,
         minBankFee,
         minBankFeeThreshold,
+        dustThreshold,
         depositFeeRatio,
       }) * addresses.length
     expect(Number(pendingBalances[walletId].amount)).toEqual(expectedPendingBalance)
@@ -1396,6 +1413,7 @@ describe("With Lnd", () => {
         amount: amountSats,
         minBankFee: feesConfig.depositDefaultMin,
         minBankFeeThreshold: feesConfig.depositThreshold,
+        dustThreshold,
         ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (expectedSatsFee instanceof Error) throw expectedSatsFee
@@ -1590,6 +1608,7 @@ describe("With Lnd", () => {
           amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
           minBankFee: feesConfig.depositDefaultMin,
           minBankFeeThreshold: feesConfig.depositThreshold,
+          dustThreshold,
           depositFeeRatio: defaultDepositFeeRatio,
         }),
       )
@@ -1631,6 +1650,7 @@ describe("With Lnd", () => {
               amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
               minBankFee,
               minBankFeeThreshold,
+              dustThreshold,
               depositFeeRatio,
             }),
         )
@@ -1640,6 +1660,7 @@ describe("With Lnd", () => {
               amount: { amount: 200_000_000n, currency: WalletCurrency.Btc },
               minBankFee,
               minBankFeeThreshold,
+              dustThreshold,
               depositFeeRatio,
             }),
         )
@@ -1668,6 +1689,7 @@ describe("With Lnd", () => {
         amount: amountSats,
         minBankFee: feesConfig.depositDefaultMin,
         minBankFeeThreshold: feesConfig.depositThreshold,
+        dustThreshold,
         ratio: feesConfig.depositRatioAsBasisPoints,
       })
       if (feeSats instanceof Error) throw feeSats

@@ -23,7 +23,7 @@ const { dustThreshold } = getOnChainWalletConfig()
 describe("OnChainPaymentFlowBuilder", () => {
   const address = "address" as OnChainAddress
   const uncheckedAmount = 10000
-  const dustAmount = dustThreshold - 1
+  const dustAmount = Number(dustThreshold.amount) - 1
 
   const senderBtcWallet = {
     id: "senderWalletId" as WalletId,

@@ -7,7 +7,7 @@ import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/p
 
 import { DepositFeeCalculator } from "@domain/wallets"
 import { displayAmountFromNumber } from "@domain/fiat"
-import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
+import { CouldNotFindError } from "@domain/errors"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
@@ -51,10 +51,6 @@ const addSettledTransactionBeforeFinally = async ({
     }
   | ApplicationError
 > => {
-  if (amount.amount < dustThreshold) {
-    return new LessThanDustThresholdError(`${dustThreshold}`)
-  }
-
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 
@@ -83,6 +79,7 @@ const addSettledTransactionBeforeFinally = async ({
       amount,
       minBankFee: feesConfig.depositDefaultMin,
       minBankFeeThreshold: feesConfig.depositThreshold,
+      dustThreshold,
       ratio: feesConfig.depositRatioAsBasisPoints,
     })
     if (fee instanceof Error) return fee

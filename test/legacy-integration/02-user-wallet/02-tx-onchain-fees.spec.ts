@@ -148,7 +148,7 @@ describe("UserWallet - getOnchainFee", () => {
 
     it("returns error for dust amount", async () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const amount = toSats(dustThreshold - 1)
+      const amount = toSats(Number(dustThreshold.amount) - 1)
       const fee = await Wallets.getOnChainFeeForBtcWallet({
         walletId: walletIdA,
         account: accountA,
@@ -294,7 +294,7 @@ describe("UserWallet - getOnchainFee", () => {
 
         it("returns error for dust amount", async () => {
           const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-          const amount = toSats(dustThreshold - 1)
+          const amount = toSats(Number(dustThreshold.amount) - 1)
 
           const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
             amount: BigInt(amount),

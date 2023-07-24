@@ -32,7 +32,7 @@ export const WalletAddressReceiver = async <S extends WalletCurrency>({
   const btcToCreditReceiver = calc.sub(receivedBtc, satsFee)
   const usdToCreditReceiver = calc.sub(receivedUsd, bankFee.usdBankFee)
 
-  if (btcToCreditReceiver.amount <= 0 || usdToCreditReceiver.amount <= 0) {
+  if (btcToCreditReceiver.amount < 0 || usdToCreditReceiver.amount < 0) {
     return new AmountLessThanFeeError(`${receivedBtc.amount}`)
   }
 

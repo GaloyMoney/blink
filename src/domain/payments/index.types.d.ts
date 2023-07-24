@@ -323,7 +323,7 @@ type OnChainPaymentFlowBuilderConfig = {
   volumeOnChainFn: GetVolumeSinceFn
   isExternalAddress: (state: { address: OnChainAddress }) => Promise<boolean>
   sendAll: boolean
-  dustThreshold: number
+  dustThreshold: BtcPaymentAmount
 }
 
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &

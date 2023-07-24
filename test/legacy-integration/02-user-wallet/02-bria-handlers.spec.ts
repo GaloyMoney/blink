@@ -52,7 +52,7 @@ const getRandomBtcAmountForOnchain = (): BtcPaymentAmount => {
 }
 
 const dustAmount: BtcPaymentAmount = {
-  amount: BigInt(dustThreshold - 1),
+  amount: dustThreshold.amount - 1n,
   currency: WalletCurrency.Btc,
 }
 

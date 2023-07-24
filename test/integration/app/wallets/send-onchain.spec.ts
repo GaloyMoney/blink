@@ -74,7 +74,9 @@ const receiveDisplayAmounts = {
   displayCurrency: DisplayCurrency.Usd,
 }
 
-const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
+const amountBelowDustThreshold = Number(
+  getOnChainWalletConfig().dustThreshold.amount - 1n,
+)
 
 const randomOnChainMemo = () =>
   "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
