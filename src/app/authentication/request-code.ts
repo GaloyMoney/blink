@@ -61,11 +61,6 @@ export const requestPhoneCodeForUnauthedUser = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  {
-    const limitOk = await checkCodeAttemptPerLoginIdentifierMinIntervalLimits(phone)
-    if (limitOk instanceof Error) return limitOk
-  }
-
   const testAccounts = getTestAccounts()
   if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
     return true
@@ -96,11 +91,6 @@ export const requestPhoneCodeForAuthedUser = async ({
 
   {
     const limitOk = await checkRequestCodeAttemptPerLoginIdentifierLimits(phone)
-    if (limitOk instanceof Error) return limitOk
-  }
-
-  {
-    const limitOk = await checkCodeAttemptPerLoginIdentifierMinIntervalLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -139,11 +129,6 @@ export const requestEmailCode = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  {
-    const limitOk = await checkCodeAttemptPerLoginIdentifierMinIntervalLimits(email)
-    if (limitOk instanceof Error) return limitOk
-  }
-
   const authServiceEmail = AuthWithEmailPasswordlessService()
   const flow = await authServiceEmail.sendEmailWithCode({ email })
   if (flow instanceof Error) return flow
@@ -164,13 +149,5 @@ const checkRequestCodeAttemptPerLoginIdentifierLimits = async (
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
     rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifier,
-    keyToConsume: loginIdentifier,
-  })
-
-const checkCodeAttemptPerLoginIdentifierMinIntervalLimits = async (
-  loginIdentifier: LoginIdentifier,
-): Promise<true | RateLimiterExceededError> =>
-  consumeLimiter({
-    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifierMinInterval,
     keyToConsume: loginIdentifier,
   })

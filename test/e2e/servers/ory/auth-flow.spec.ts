@@ -194,6 +194,7 @@ gql`
 
   query email {
     me {
+      phone
       email {
         address
         verified

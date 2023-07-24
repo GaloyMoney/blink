@@ -4,10 +4,9 @@ import { BitcoinNetwork, getFeesConfig } from "@config"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import {
   UserLoginIpRateLimiterExceededError,
-  UserLoginPhoneRateLimiterExceededError,
+  UserLoginIdentifierRateLimiterExceededError,
   UserCodeAttemptIpRateLimiterExceededError,
-  UserCodeAttemptPhoneMinIntervalRateLimiterExceededError,
-  UserCodeAttemptPhoneRateLimiterExceededError,
+  UserCodeAttemptIdentifierRateLimiterExceededError,
 } from "@domain/rate-limit/errors"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
@@ -292,7 +291,6 @@ describe("graphql", () => {
     })
 
     it("rate limits too many phone requests", async () => {
-      await testPhoneCodeAttemptPerLoginIdentifierMinInterval(UserRequestAuthCodeDocument)
       await testPhoneCodeAttemptPerLoginIdentifier(UserRequestAuthCodeDocument)
       await testPhoneCodeAttemptPerIp(UserRequestAuthCodeDocument)
     })
@@ -416,44 +414,6 @@ describe("graphql", () => {
   })
 })
 
-const testPhoneCodeAttemptPerLoginIdentifierMinInterval = async (mutation) => {
-  // Fetch limiter config
-  const {
-    limits: { points },
-    error,
-  } = RateLimitConfig.requestCodeAttemptPerLoginIdentifierMinInterval
-
-  // Reset limiter
-  await clearLimiters()
-
-  // Exhaust limiter
-  const input = { phone }
-  for (let i = 0; i < points; i++) {
-    await clearLimitersWithExclusions([
-      RateLimitPrefix.requestCodeAttemptPerLoginIdentifierMinInterval,
-    ])
-
-    const {
-      data: {
-        userRequestAuthCode: { success },
-      },
-    } = await apolloClient.mutate({ mutation, variables: { input } })
-    expect(success).toBeTruthy()
-  }
-
-  // Check limiter is exhausted
-  const {
-    data: {
-      userRequestAuthCode: { errors },
-    },
-  } = await apolloClient.mutate({ mutation, variables: { input } })
-
-  expect(new error()).toBeInstanceOf(
-    UserCodeAttemptPhoneMinIntervalRateLimiterExceededError,
-  )
-  expect(errors && errors[0].message).toMatch(new RegExp(`.*${error.name}.*`))
-}
-
 const testPhoneCodeAttemptPerLoginIdentifier = async (mutation) => {
   // Fetch limiter config
   const {
@@ -487,7 +447,7 @@ const testPhoneCodeAttemptPerLoginIdentifier = async (mutation) => {
       userRequestAuthCode: { errors },
     },
   } = await apolloClient.mutate({ mutation, variables: { input } })
-  expect(new error()).toBeInstanceOf(UserCodeAttemptPhoneRateLimiterExceededError)
+  expect(new error()).toBeInstanceOf(UserCodeAttemptIdentifierRateLimiterExceededError)
   expect(errors && errors[0].message).toBe(expectedErrorMessage)
 }
 
@@ -562,7 +522,7 @@ const testRateLimitLoginByPhone = async ({
   const expectedErrorMessage =
     "Too many login attempts, please wait for a while and try again."
   const result = await apolloClient.mutate({ mutation, variables: { input } })
-  expect(new error()).toBeInstanceOf(UserLoginPhoneRateLimiterExceededError)
+  expect(new error()).toBeInstanceOf(UserLoginIdentifierRateLimiterExceededError)
   expect(result.data.userLogin.errors).toEqual(
     expect.arrayContaining([expect.objectContaining({ message: expectedErrorMessage })]),
   )

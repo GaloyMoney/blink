@@ -64,8 +64,8 @@ import { playgroundTabs } from "../graphql/playground"
 
 import { idempotencyMiddleware } from "./middlewares/idempotency"
 import healthzHandler from "./middlewares/healthz"
-import kratosRouter from "./authorization/kratos-router"
-import authRouter from "./authorization"
+import kratosRouter from "./authentication/kratos-router"
+import authRouter from "./authentication"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",

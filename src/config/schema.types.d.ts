@@ -77,7 +77,6 @@ type YamlSchema = {
   }[]
   rateLimits: {
     requestCodePerLoginIdentifier: RateLimitInput
-    requestCodePerLoginIdentifierMinInterval: RateLimitInput
     requestCodePerIp: RateLimitInput
     failedLoginAttemptPerLoginIdentifier: RateLimitInput
     failedLoginAttemptPerIp: RateLimitInput
