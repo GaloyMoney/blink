@@ -84,6 +84,7 @@ scalar AuthToken
 type AuthTokenPayload {
   authToken: AuthToken
   errors: [Error!]!
+  totpRequired: Boolean
 }
 
 """

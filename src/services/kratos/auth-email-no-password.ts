@@ -223,7 +223,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       const authToken = result.data.session_token as AuthToken
 
       // identity is only defined when identity has not enabled totp
-      const kratosUserId = result.data.session.identity?.id as UserId
+      const kratosUserId = result.data.session.identity?.id as UserId | undefined
 
       return { authToken, kratosUserId }
     } catch (err) {

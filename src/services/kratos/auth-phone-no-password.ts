@@ -45,8 +45,8 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       })
       const authToken = result.data.session_token as AuthToken
 
-      // FIXME: kratosUserId could be undefined
-      const kratosUserId = result.data.session.identity?.id as UserId
+      // identity is only defined when identity has not enabled totp
+      const kratosUserId = result.data.session.identity?.id as UserId | undefined
 
       return { authToken, kratosUserId }
     } catch (err) {

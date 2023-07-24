@@ -22,3 +22,8 @@ type LoginWithEmailResult = {
   authToken: AuthToken
   totpRequired: boolean
 }
+
+type LoginWithPhoneResult = {
+  authToken: AuthToken
+  totpRequired: boolean
+}
