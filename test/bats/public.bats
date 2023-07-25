@@ -19,7 +19,7 @@ teardown_file() {
 }
 
 @test "public: can subscribe to price" {
-  subscribe_to price-sub
+  subscribe_to 'anon' price-sub
   retry 10 1 grep 'Data:' .e2e-subscriber.log
   stop_subscriber
 }

@@ -11,8 +11,10 @@ if (process.argv.length <= 3) {
 
 const url = process.argv[2]
 const filePath = process.argv[3]
+const authToken = process.argv[4]
 const client = createClient({
   url,
+  connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
   webSocketImpl: WebSocket,
 })
 
@@ -26,9 +28,9 @@ const startSubscription = async () => {
         // May need to add variables
       },
       {
-        next: (data) => console.log(`Data: ${JSON.stringify(data)}\n`),
-        error: (err) => console.log(`Error: ${JSON.stringify(err)}\n`),
-        complete: () => console.log("Completed\n"),
+        next: (data) => console.log(`Data: ${JSON.stringify(data)}`),
+        error: (err) => console.log(err, `Error: ${JSON.stringify(err)}`),
+        complete: () => console.log("Completed"),
       },
     )
   } catch (err) {
