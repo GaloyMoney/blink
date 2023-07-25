@@ -22,7 +22,7 @@ directive @join__unionMember(graph: join__Graph!, member: String!) repeatable on
 directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
 
 interface Account
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
@@ -49,22 +49,22 @@ interface Account
 }
 
 type AccountDeletePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   success: Boolean!
 }
 
 enum AccountLevel
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  ONE @join__enumValue(graph: MAIN)
-  TWO @join__enumValue(graph: MAIN)
-  ZERO @join__enumValue(graph: MAIN)
+  ONE @join__enumValue(graph: PUBLIC)
+  TWO @join__enumValue(graph: PUBLIC)
+  ZERO @join__enumValue(graph: PUBLIC)
 }
 
 interface AccountLimit
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """The rolling time interval in seconds that the limits would apply for."""
   interval: Seconds
@@ -79,7 +79,7 @@ interface AccountLimit
 }
 
 type AccountLimits
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """
   Limits for converting between currencies among a account's own wallets.
@@ -94,26 +94,26 @@ type AccountLimits
 }
 
 input AccountUpdateDefaultWalletIdInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   walletId: WalletId!
 }
 
 type AccountUpdateDefaultWalletIdPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   account: ConsumerAccount
   errors: [Error!]!
 }
 
 input AccountUpdateDisplayCurrencyInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   currency: DisplayCurrency!
 }
 
 type AccountUpdateDisplayCurrencyPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   account: ConsumerAccount
   errors: [Error!]!
@@ -121,21 +121,22 @@ type AccountUpdateDisplayCurrencyPayload
 
 """An Opaque Bearer token"""
 scalar AuthToken
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type AuthTokenPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   authToken: AuthToken
   errors: [Error!]!
+  totpRequired: Boolean
 }
 
 """
 A wallet belonging to an account which contains a BTC balance and a list of transactions.
 """
 type BTCWallet implements Wallet
-  @join__implements(graph: MAIN, interface: "Wallet")
-  @join__type(graph: MAIN)
+  @join__implements(graph: PUBLIC, interface: "Wallet")
+  @join__type(graph: PUBLIC)
 {
   accountId: ID!
 
@@ -180,7 +181,7 @@ type BTCWallet implements Wallet
 }
 
 type BuildInformation
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   buildTime: Timestamp
   commitHash: String
@@ -188,14 +189,14 @@ type BuildInformation
 }
 
 type CaptchaCreateChallengePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   result: CaptchaCreateChallengeResult
 }
 
 type CaptchaCreateChallengeResult
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   challengeCode: String!
   failbackMode: Boolean!
@@ -204,7 +205,7 @@ type CaptchaCreateChallengeResult
 }
 
 input CaptchaRequestAuthCodeInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   challengeCode: String!
   channel: PhoneCodeChannelType
@@ -215,18 +216,18 @@ input CaptchaRequestAuthCodeInput
 
 """(Positive) Cent amount (1/100 of a dollar)"""
 scalar CentAmount
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type CentAmountPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: CentAmount
   errors: [Error!]!
 }
 
 type ConsumerAccount implements Account
-  @join__implements(graph: MAIN, interface: "Account")
-  @join__type(graph: MAIN)
+  @join__implements(graph: PUBLIC, interface: "Account")
+  @join__type(graph: PUBLIC)
 {
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
@@ -266,17 +267,17 @@ type ConsumerAccount implements Account
 An alias name that a user can set for a wallet (with which they have transactions)
 """
 scalar ContactAlias
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type Coordinates
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   latitude: Float!
   longitude: Float!
 }
 
 type Country
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   id: CountryCode!
   supportedAuthChannels: [PhoneCodeChannelType!]!
@@ -284,10 +285,10 @@ type Country
 
 """A CCA2 country code (ex US, FR, etc)"""
 scalar CountryCode
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type Currency
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   flag: String!
   fractionDigits: Int!
@@ -297,7 +298,7 @@ type Currency
 }
 
 type DepositFeesInformation
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   minBankFee: String!
 
@@ -309,17 +310,17 @@ type DepositFeesInformation
 }
 
 input DeviceNotificationTokenCreateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   deviceToken: String!
 }
 
 """Display currency of an account"""
 scalar DisplayCurrency
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type Email
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   address: EmailAddress
   verified: Boolean
@@ -327,16 +328,16 @@ type Email
 
 """Email address"""
 scalar EmailAddress
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """
 An id to be passed between registrationInitiate and registrationValidate for confirming email
 """
 scalar EmailRegistrationId
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 interface Error
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   code: String
   message: String!
@@ -344,24 +345,24 @@ interface Error
 }
 
 enum ExchangeCurrencyUnit
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  BTCSAT @join__enumValue(graph: MAIN)
-  USDCENT @join__enumValue(graph: MAIN)
+  BTCSAT @join__enumValue(graph: PUBLIC)
+  USDCENT @join__enumValue(graph: PUBLIC)
 }
 
 """Feedback shared with our user"""
 scalar Feedback
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 input FeedbackSubmitInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   feedback: Feedback!
 }
 
 type FeesInformation
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   deposit: DepositFeesInformation!
 }
@@ -370,7 +371,7 @@ type FeesInformation
 Provides global settings for the application which might have an impact for the user.
 """
 type Globals
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   buildInformation: BuildInformation!
   feesInformation: FeesInformation!
@@ -397,8 +398,8 @@ type Globals
 }
 
 type GraphQLApplicationError implements Error
-  @join__implements(graph: MAIN, interface: "Error")
-  @join__type(graph: MAIN)
+  @join__implements(graph: PUBLIC, interface: "Error")
+  @join__type(graph: PUBLIC)
 {
   code: String
   message: String!
@@ -407,36 +408,36 @@ type GraphQLApplicationError implements Error
 
 """Hex-encoded string of 32 bytes"""
 scalar Hex32Bytes
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 union InitiationVia
-  @join__type(graph: MAIN)
-  @join__unionMember(graph: MAIN, member: "InitiationViaIntraLedger")
-  @join__unionMember(graph: MAIN, member: "InitiationViaLn")
-  @join__unionMember(graph: MAIN, member: "InitiationViaOnChain")
+  @join__type(graph: PUBLIC)
+  @join__unionMember(graph: PUBLIC, member: "InitiationViaIntraLedger")
+  @join__unionMember(graph: PUBLIC, member: "InitiationViaLn")
+  @join__unionMember(graph: PUBLIC, member: "InitiationViaOnChain")
  = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain
 
 type InitiationViaIntraLedger
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   counterPartyUsername: Username
   counterPartyWalletId: WalletId
 }
 
 type InitiationViaLn
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   paymentHash: PaymentHash!
 }
 
 type InitiationViaOnChain
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   address: OnChainAddress!
 }
 
 input IntraLedgerPaymentSendInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Amount in satoshis."""
   amount: SatAmount!
@@ -450,7 +451,7 @@ input IntraLedgerPaymentSendInput
 }
 
 type IntraLedgerUpdate
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: SatAmount!
   displayCurrencyPerSat: Float!
@@ -460,7 +461,7 @@ type IntraLedgerUpdate
 }
 
 input IntraLedgerUsdPaymentSendInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Amount in cents."""
   amount: CentAmount!
@@ -474,21 +475,21 @@ input IntraLedgerUsdPaymentSendInput
 }
 
 enum InvoicePaymentStatus
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  EXPIRED @join__enumValue(graph: MAIN)
-  PAID @join__enumValue(graph: MAIN)
-  PENDING @join__enumValue(graph: MAIN)
+  EXPIRED @join__enumValue(graph: PUBLIC)
+  PAID @join__enumValue(graph: PUBLIC)
+  PENDING @join__enumValue(graph: PUBLIC)
 }
 
 scalar join__FieldSet
 
 enum join__Graph {
-  MAIN @join__graph(name: "main", url: "http://e2e-tests:4012/graphql")
+  PUBLIC @join__graph(name: "public", url: "http://e2e-tests:4012/graphql")
 }
 
 scalar Language
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 scalar link__Import
 
@@ -505,7 +506,7 @@ enum link__Purpose {
 }
 
 type LnInvoice
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
@@ -514,7 +515,7 @@ type LnInvoice
 }
 
 input LnInvoiceCreateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Amount in satoshis."""
   amount: SatAmount!
@@ -530,7 +531,7 @@ input LnInvoiceCreateInput
 }
 
 input LnInvoiceCreateOnBehalfOfRecipientInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Amount in satoshis."""
   amount: SatAmount!
@@ -547,21 +548,21 @@ input LnInvoiceCreateOnBehalfOfRecipientInput
 }
 
 input LnInvoiceFeeProbeInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   paymentRequest: LnPaymentRequest!
   walletId: WalletId!
 }
 
 type LnInvoicePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   invoice: LnInvoice
 }
 
 input LnInvoicePaymentInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Optional memo to associate with the lightning invoice."""
   memo: Memo
@@ -576,20 +577,20 @@ input LnInvoicePaymentInput
 }
 
 input LnInvoicePaymentStatusInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   paymentRequest: LnPaymentRequest!
 }
 
 type LnInvoicePaymentStatusPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   status: InvoicePaymentStatus
 }
 
 type LnNoAmountInvoice
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
@@ -597,7 +598,7 @@ type LnNoAmountInvoice
 }
 
 input LnNoAmountInvoiceCreateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
@@ -612,7 +613,7 @@ input LnNoAmountInvoiceCreateInput
 }
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Optional invoice expiration time in minutes."""
   expiresIn: Minutes
@@ -627,7 +628,7 @@ input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput
 }
 
 input LnNoAmountInvoiceFeeProbeInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: SatAmount!
   paymentRequest: LnPaymentRequest!
@@ -635,14 +636,14 @@ input LnNoAmountInvoiceFeeProbeInput
 }
 
 type LnNoAmountInvoicePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   invoice: LnNoAmountInvoice
 }
 
 input LnNoAmountInvoicePaymentInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Amount to pay in satoshis."""
   amount: SatAmount!
@@ -660,7 +661,7 @@ input LnNoAmountInvoicePaymentInput
 }
 
 input LnNoAmountUsdInvoiceFeeProbeInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: CentAmount!
   paymentRequest: LnPaymentRequest!
@@ -668,7 +669,7 @@ input LnNoAmountUsdInvoiceFeeProbeInput
 }
 
 input LnNoAmountUsdInvoicePaymentInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Amount to pay in USD cents."""
   amount: CentAmount!
@@ -686,17 +687,17 @@ input LnNoAmountUsdInvoicePaymentInput
 }
 
 scalar LnPaymentPreImage
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """BOLT11 lightning invoice payment request with the amount included"""
 scalar LnPaymentRequest
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 scalar LnPaymentSecret
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type LnUpdate
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   paymentHash: PaymentHash!
   status: InvoicePaymentStatus!
@@ -704,7 +705,7 @@ type LnUpdate
 }
 
 input LnUsdInvoiceCreateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Amount in USD cents."""
   amount: CentAmount!
@@ -720,7 +721,7 @@ input LnUsdInvoiceCreateInput
 }
 
 input LnUsdInvoiceCreateOnBehalfOfRecipientInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """Amount in USD cents."""
   amount: CentAmount!
@@ -739,21 +740,21 @@ input LnUsdInvoiceCreateOnBehalfOfRecipientInput
 }
 
 input LnUsdInvoiceFeeProbeInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   paymentRequest: LnPaymentRequest!
   walletId: WalletId!
 }
 
 type MapInfo
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   coordinates: Coordinates!
   title: String!
 }
 
 type MapMarker
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   mapInfo: MapInfo!
   username: Username
@@ -761,14 +762,14 @@ type MapMarker
 
 """Text field in a lightning payment transaction"""
 scalar Memo
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """(Positive) amount of minutes"""
 scalar Minutes
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type MobileVersions
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   currentSupported: Int!
   minSupported: Int!
@@ -776,7 +777,7 @@ type MobileVersions
 }
 
 type Mutation
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   accountDelete: AccountDeletePayload!
   accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload!
@@ -881,12 +882,13 @@ type Mutation
   userEmailRegistrationValidate(input: UserEmailRegistrationValidateInput!): UserEmailRegistrationValidatePayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
-  userLogout(input: UserLogoutInput!): AuthTokenPayload!
+  userLogout(input: UserLogoutInput!): SuccessPayload!
   userPhoneDelete: UserPhoneDeletePayload!
   userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload!
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
   userQuizQuestionUpdateCompleted(input: UserQuizQuestionUpdateCompletedInput!): UserQuizQuestionUpdateCompletedPayload! @deprecated(reason: "Use QuizCompletedMutation instead")
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload!
   userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload!
   userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload!
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
@@ -894,7 +896,7 @@ type Mutation
 }
 
 type MyUpdatesPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   me: User
@@ -902,39 +904,39 @@ type MyUpdatesPayload
 }
 
 enum Network
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  mainnet @join__enumValue(graph: MAIN)
-  regtest @join__enumValue(graph: MAIN)
-  signet @join__enumValue(graph: MAIN)
-  testnet @join__enumValue(graph: MAIN)
+  mainnet @join__enumValue(graph: PUBLIC)
+  regtest @join__enumValue(graph: PUBLIC)
+  signet @join__enumValue(graph: PUBLIC)
+  testnet @join__enumValue(graph: PUBLIC)
 }
 
 """An address for an on-chain bitcoin destination"""
 scalar OnChainAddress
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 input OnChainAddressCreateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   walletId: WalletId!
 }
 
 input OnChainAddressCurrentInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   walletId: WalletId!
 }
 
 type OnChainAddressPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   address: OnChainAddress
   errors: [Error!]!
 }
 
 input OnChainPaymentSendAllInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   address: OnChainAddress!
   memo: Memo
@@ -944,7 +946,7 @@ input OnChainPaymentSendAllInput
 }
 
 input OnChainPaymentSendInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   address: OnChainAddress!
   amount: SatAmount!
@@ -955,17 +957,17 @@ input OnChainPaymentSendInput
 }
 
 type OnChainTxFee
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: SatAmount!
   targetConfirmations: TargetConfirmations! @deprecated(reason: "Ignored - will be removed")
 }
 
 scalar OnChainTxHash
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type OnChainUpdate
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: SatAmount!
   displayCurrencyPerSat: Float!
@@ -976,7 +978,7 @@ type OnChainUpdate
 }
 
 input OnChainUsdPaymentSendAsBtcDenominatedInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   address: OnChainAddress!
   amount: SatAmount!
@@ -987,7 +989,7 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput
 }
 
 input OnChainUsdPaymentSendInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   address: OnChainAddress!
   amount: CentAmount!
@@ -998,15 +1000,15 @@ input OnChainUsdPaymentSendInput
 }
 
 type OnChainUsdTxFee
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: CentAmount!
   targetConfirmations: TargetConfirmations! @deprecated(reason: "Ignored - will be removed")
 }
 
 type OneDayAccountLimit implements AccountLimit
-  @join__implements(graph: MAIN, interface: "AccountLimit")
-  @join__type(graph: MAIN)
+  @join__implements(graph: PUBLIC, interface: "AccountLimit")
+  @join__type(graph: PUBLIC)
 {
   """
   The rolling time interval value in seconds for the current 24 hour period.
@@ -1024,11 +1026,11 @@ type OneDayAccountLimit implements AccountLimit
 
 """An authentication code valid for a single use"""
 scalar OneTimeAuthCode
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """Information about pagination in a connection."""
 type PageInfo
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """When paginating forwards, the cursor to continue."""
   endCursor: String
@@ -1044,46 +1046,46 @@ type PageInfo
 }
 
 scalar PaymentHash
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type PaymentSendPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   status: PaymentSendResult
 }
 
 enum PaymentSendResult
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  ALREADY_PAID @join__enumValue(graph: MAIN)
-  FAILURE @join__enumValue(graph: MAIN)
-  PENDING @join__enumValue(graph: MAIN)
-  SUCCESS @join__enumValue(graph: MAIN)
+  ALREADY_PAID @join__enumValue(graph: PUBLIC)
+  FAILURE @join__enumValue(graph: PUBLIC)
+  PENDING @join__enumValue(graph: PUBLIC)
+  SUCCESS @join__enumValue(graph: PUBLIC)
 }
 
 enum PayoutSpeed
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  FAST @join__enumValue(graph: MAIN)
+  FAST @join__enumValue(graph: PUBLIC)
 }
 
 """Phone number which includes country code"""
 scalar Phone
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 enum PhoneCodeChannelType
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  SMS @join__enumValue(graph: MAIN)
-  WHATSAPP @join__enumValue(graph: MAIN)
+  SMS @join__enumValue(graph: PUBLIC)
+  WHATSAPP @join__enumValue(graph: PUBLIC)
 }
 
 """
 Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
 """
 type Price
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   base: SafeInt!
   currencyUnit: String!
@@ -1093,17 +1095,17 @@ type Price
 
 """The range for the X axis in the BTC price graph"""
 enum PriceGraphRange
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  FIVE_YEARS @join__enumValue(graph: MAIN)
-  ONE_DAY @join__enumValue(graph: MAIN)
-  ONE_MONTH @join__enumValue(graph: MAIN)
-  ONE_WEEK @join__enumValue(graph: MAIN)
-  ONE_YEAR @join__enumValue(graph: MAIN)
+  FIVE_YEARS @join__enumValue(graph: PUBLIC)
+  ONE_DAY @join__enumValue(graph: PUBLIC)
+  ONE_MONTH @join__enumValue(graph: PUBLIC)
+  ONE_WEEK @join__enumValue(graph: PUBLIC)
+  ONE_YEAR @join__enumValue(graph: PUBLIC)
 }
 
 input PriceInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: SatAmount!
   amountCurrencyUnit: ExchangeCurrencyUnit!
@@ -1111,7 +1113,7 @@ input PriceInput
 }
 
 interface PriceInterface
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   base: SafeInt!
   currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
@@ -1120,8 +1122,8 @@ interface PriceInterface
 
 """Price of 1 sat in base/offset. To calculate, use: `base / 10^offset`"""
 type PriceOfOneSatInMinorUnit implements PriceInterface
-  @join__implements(graph: MAIN, interface: "PriceInterface")
-  @join__type(graph: MAIN)
+  @join__implements(graph: PUBLIC, interface: "PriceInterface")
+  @join__type(graph: PUBLIC)
 {
   base: SafeInt!
   currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
@@ -1132,8 +1134,8 @@ type PriceOfOneSatInMinorUnit implements PriceInterface
 Price of 1 sat or 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
 """
 type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface
-  @join__implements(graph: MAIN, interface: "PriceInterface")
-  @join__type(graph: MAIN)
+  @join__implements(graph: PUBLIC, interface: "PriceInterface")
+  @join__type(graph: PUBLIC)
 {
   base: SafeInt!
   currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
@@ -1145,8 +1147,8 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface
 Price of 1 usd cent in base/offset. To calculate, use: `base / 10^offset`
 """
 type PriceOfOneUsdCentInMinorUnit implements PriceInterface
-  @join__implements(graph: MAIN, interface: "PriceInterface")
-  @join__type(graph: MAIN)
+  @join__implements(graph: PUBLIC, interface: "PriceInterface")
+  @join__type(graph: PUBLIC)
 {
   base: SafeInt!
   currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
@@ -1154,14 +1156,14 @@ type PriceOfOneUsdCentInMinorUnit implements PriceInterface
 }
 
 type PricePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   price: Price
 }
 
 type PricePoint
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   price: Price!
 
@@ -1175,14 +1177,14 @@ type PricePoint
 A public view of a generic wallet which stores value in one of our supported currencies.
 """
 type PublicWallet
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   id: ID!
   walletCurrency: WalletCurrency!
 }
 
 type Query
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
   btcPrice(currency: DisplayCurrency! = "USD"): Price @deprecated(reason: "Deprecated in favor of realtimePrice")
@@ -1205,7 +1207,7 @@ type Query
 }
 
 type Quiz
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """The reward in Satoshis for the quiz question"""
   amount: SatAmount!
@@ -1214,20 +1216,20 @@ type Quiz
 }
 
 input QuizCompletedInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   id: ID!
 }
 
 type QuizCompletedPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   quiz: Quiz
 }
 
 type QuizQuestion
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """The earn reward in Satoshis for the quiz question"""
   earnAmount: SatAmount!
@@ -1235,7 +1237,7 @@ type QuizQuestion
 }
 
 type RealtimePrice
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   btcSatPrice: PriceOfOneSatInMinorUnit!
   denominatorCurrency: DisplayCurrency!
@@ -1249,13 +1251,13 @@ type RealtimePrice
 }
 
 input RealtimePriceInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   currency: DisplayCurrency = "USD"
 }
 
 type RealtimePricePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   realtimePrice: RealtimePrice
@@ -1265,14 +1267,14 @@ type RealtimePricePayload
 Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 """
 scalar SafeInt
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """(Positive) Satoshi amount"""
 scalar SatAmount
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type SatAmountPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   amount: SatAmount
   errors: [Error!]!
@@ -1280,17 +1282,17 @@ type SatAmountPayload
 
 """(Positive) amount of seconds"""
 scalar Seconds
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 union SettlementVia
-  @join__type(graph: MAIN)
-  @join__unionMember(graph: MAIN, member: "SettlementViaIntraLedger")
-  @join__unionMember(graph: MAIN, member: "SettlementViaLn")
-  @join__unionMember(graph: MAIN, member: "SettlementViaOnChain")
+  @join__type(graph: PUBLIC)
+  @join__unionMember(graph: PUBLIC, member: "SettlementViaIntraLedger")
+  @join__unionMember(graph: PUBLIC, member: "SettlementViaLn")
+  @join__unionMember(graph: PUBLIC, member: "SettlementViaOnChain")
  = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
 
 type SettlementViaIntraLedger
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """
   Settlement destination: Could be null if the payee does not have a username
@@ -1300,14 +1302,14 @@ type SettlementViaIntraLedger
 }
 
 type SettlementViaLn
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   paymentSecret: LnPaymentSecret @deprecated(reason: "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type")
   preImage: LnPaymentPreImage
 }
 
 type SettlementViaOnChain
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   transactionHash: OnChainTxHash
   vout: Int
@@ -1315,16 +1317,16 @@ type SettlementViaOnChain
 
 """An amount (of a currency) that can be negative (e.g. in a transaction)"""
 scalar SignedAmount
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """
 A string amount (of a currency) that can be negative (e.g. in a transaction)
 """
 scalar SignedDisplayMajorAmount
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type Subscription
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
   myUpdates: MyUpdatesPayload!
@@ -1335,7 +1337,7 @@ type Subscription
 }
 
 type SuccessPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   success: Boolean
@@ -1345,25 +1347,25 @@ type SuccessPayload
 (Positive) Number of blocks in which the transaction is expected to be confirmed
 """
 scalar TargetConfirmations
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
 """
 scalar Timestamp
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """A time-based one-time password"""
 scalar TotpCode
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """An id to be passed between set and verify for confirming totp"""
 scalar TotpRegistrationId
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """A secret to generate time-based one-time password"""
 scalar TotpSecret
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 """
 Give details about an individual transaction.
@@ -1373,7 +1375,7 @@ therefore it's possible the transactions is being initiated onchain
 or with lightning but settled intraledger.
 """
 type Transaction
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   createdAt: Timestamp!
   direction: TxDirection!
@@ -1403,7 +1405,7 @@ type Transaction
 
 """A connection to a list of items."""
 type TransactionConnection
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """A list of edges."""
   edges: [TransactionEdge!]
@@ -1414,7 +1416,7 @@ type TransactionConnection
 
 """An edge in a connection."""
 type TransactionEdge
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """A cursor for use in pagination"""
   cursor: String!
@@ -1424,33 +1426,33 @@ type TransactionEdge
 }
 
 enum TxDirection
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  RECEIVE @join__enumValue(graph: MAIN)
-  SEND @join__enumValue(graph: MAIN)
+  RECEIVE @join__enumValue(graph: PUBLIC)
+  SEND @join__enumValue(graph: PUBLIC)
 }
 
 enum TxNotificationType
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  IntraLedgerPayment @join__enumValue(graph: MAIN)
-  IntraLedgerReceipt @join__enumValue(graph: MAIN)
-  LnInvoicePaid @join__enumValue(graph: MAIN)
-  OnchainPayment @join__enumValue(graph: MAIN)
-  OnchainReceipt @join__enumValue(graph: MAIN)
-  OnchainReceiptPending @join__enumValue(graph: MAIN)
+  IntraLedgerPayment @join__enumValue(graph: PUBLIC)
+  IntraLedgerReceipt @join__enumValue(graph: PUBLIC)
+  LnInvoicePaid @join__enumValue(graph: PUBLIC)
+  OnchainPayment @join__enumValue(graph: PUBLIC)
+  OnchainReceipt @join__enumValue(graph: PUBLIC)
+  OnchainReceiptPending @join__enumValue(graph: PUBLIC)
 }
 
 enum TxStatus
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  FAILURE @join__enumValue(graph: MAIN)
-  PENDING @join__enumValue(graph: MAIN)
-  SUCCESS @join__enumValue(graph: MAIN)
+  FAILURE @join__enumValue(graph: PUBLIC)
+  PENDING @join__enumValue(graph: PUBLIC)
+  SUCCESS @join__enumValue(graph: PUBLIC)
 }
 
 type UpgradePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   authToken: AuthToken
   errors: [Error!]!
@@ -1461,8 +1463,8 @@ type UpgradePayload
 A wallet belonging to an account which contains a USD balance and a list of transactions.
 """
 type UsdWallet implements Wallet
-  @join__implements(graph: MAIN, interface: "Wallet")
-  @join__type(graph: MAIN)
+  @join__implements(graph: PUBLIC, interface: "Wallet")
+  @join__type(graph: PUBLIC)
 {
   accountId: ID!
   balance: SignedAmount!
@@ -1503,7 +1505,7 @@ type UsdWallet implements Wallet
 }
 
 type User
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """
   Get single contact details.
@@ -1543,7 +1545,7 @@ type User
 }
 
 type UserContact
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   """
   Alias the user can set for this contact.
@@ -1573,34 +1575,34 @@ type UserContact
 }
 
 input UserContactUpdateAliasInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   alias: ContactAlias!
   username: Username!
 }
 
 type UserContactUpdateAliasPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   contact: UserContact
   errors: [Error!]!
 }
 
 type UserEmailDeletePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   me: User
 }
 
 input UserEmailRegistrationInitiateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   email: EmailAddress!
 }
 
 type UserEmailRegistrationInitiatePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   emailRegistrationId: EmailRegistrationId
   errors: [Error!]!
@@ -1608,106 +1610,119 @@ type UserEmailRegistrationInitiatePayload
 }
 
 input UserEmailRegistrationValidateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   code: OneTimeAuthCode!
   emailRegistrationId: EmailRegistrationId!
 }
 
 type UserEmailRegistrationValidatePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   me: User
 }
 
 input UserLoginInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   code: OneTimeAuthCode!
   phone: Phone!
 }
 
 input UserLoginUpgradeInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   code: OneTimeAuthCode!
   phone: Phone!
 }
 
 input UserLogoutInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   authToken: AuthToken!
 }
 
 """Unique identifier of a user"""
 scalar Username
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 
 type UserPhoneDeletePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   me: User
 }
 
 input UserPhoneRegistrationInitiateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   channel: PhoneCodeChannelType
   phone: Phone!
 }
 
 input UserPhoneRegistrationValidateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   code: OneTimeAuthCode!
   phone: Phone!
 }
 
 type UserPhoneRegistrationValidatePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   me: User
 }
 
 type UserQuizQuestion
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   completed: Boolean!
   question: QuizQuestion!
 }
 
 input UserQuizQuestionUpdateCompletedInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   id: ID!
 }
 
 type UserQuizQuestionUpdateCompletedPayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   userQuizQuestion: UserQuizQuestion
 }
 
 input UserRequestAuthCodeInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   channel: PhoneCodeChannelType
   phone: Phone!
 }
 
+input UserTotpDeleteInput
+  @join__type(graph: PUBLIC)
+{
+  authToken: AuthToken!
+}
+
+type UserTotpDeletePayload
+  @join__type(graph: PUBLIC)
+{
+  errors: [Error!]!
+  me: User
+}
+
 input UserTotpRegistrationInitiateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   authToken: AuthToken!
 }
 
 type UserTotpRegistrationInitiatePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   totpRegistrationId: TotpRegistrationId
@@ -1715,7 +1730,7 @@ type UserTotpRegistrationInitiatePayload
 }
 
 input UserTotpRegistrationValidateInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   authToken: AuthToken!
   totpCode: TotpCode!
@@ -1723,42 +1738,42 @@ input UserTotpRegistrationValidateInput
 }
 
 type UserTotpRegistrationValidatePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   me: User
 }
 
 union UserUpdate
-  @join__type(graph: MAIN)
-  @join__unionMember(graph: MAIN, member: "IntraLedgerUpdate")
-  @join__unionMember(graph: MAIN, member: "LnUpdate")
-  @join__unionMember(graph: MAIN, member: "OnChainUpdate")
-  @join__unionMember(graph: MAIN, member: "Price")
-  @join__unionMember(graph: MAIN, member: "RealtimePrice")
+  @join__type(graph: PUBLIC)
+  @join__unionMember(graph: PUBLIC, member: "IntraLedgerUpdate")
+  @join__unionMember(graph: PUBLIC, member: "LnUpdate")
+  @join__unionMember(graph: PUBLIC, member: "OnChainUpdate")
+  @join__unionMember(graph: PUBLIC, member: "Price")
+  @join__unionMember(graph: PUBLIC, member: "RealtimePrice")
  = IntraLedgerUpdate | LnUpdate | OnChainUpdate | Price | RealtimePrice
 
 input UserUpdateLanguageInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   language: Language!
 }
 
 type UserUpdateLanguagePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   user: User
 }
 
 input UserUpdateUsernameInput
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   username: Username!
 }
 
 type UserUpdateUsernamePayload
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   errors: [Error!]!
   user: User
@@ -1768,7 +1783,7 @@ type UserUpdateUsernamePayload
 A generic wallet which stores value in one of our supported currencies.
 """
 interface Wallet
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
   accountId: ID!
   balance: SignedAmount!
@@ -1817,12 +1832,12 @@ interface Wallet
 }
 
 enum WalletCurrency
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
 {
-  BTC @join__enumValue(graph: MAIN)
-  USD @join__enumValue(graph: MAIN)
+  BTC @join__enumValue(graph: PUBLIC)
+  USD @join__enumValue(graph: PUBLIC)
 }
 
 """Unique identifier of a wallet"""
 scalar WalletId
-  @join__type(graph: MAIN)
+  @join__type(graph: PUBLIC)
