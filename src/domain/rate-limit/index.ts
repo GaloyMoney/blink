@@ -6,7 +6,6 @@ import {
   getOnChainAddressCreateAttemptLimits,
   getRequestCodePerIpLimits,
   getRequestCodePerLoginIdentifierLimits,
-  getRequestCodePerLoginIdentifierMinIntervalLimits,
 } from "@config"
 
 import {
@@ -14,15 +13,13 @@ import {
   InvoiceCreateRateLimiterExceededError,
   OnChainAddressCreateRateLimiterExceededError,
   UserLoginIpRateLimiterExceededError,
-  UserLoginPhoneRateLimiterExceededError,
+  UserLoginIdentifierRateLimiterExceededError,
   UserCodeAttemptIpRateLimiterExceededError,
-  UserCodeAttemptPhoneMinIntervalRateLimiterExceededError,
-  UserCodeAttemptPhoneRateLimiterExceededError,
+  UserCodeAttemptIdentifierRateLimiterExceededError,
 } from "./errors"
 
 export const RateLimitPrefix = {
   requestCodeAttemptPerLoginIdentifier: "request_code_attempt_id",
-  requestCodeAttemptPerLoginIdentifierMinInterval: "request_code_attempt_id_min_interval",
   requestCodeAttemptPerIp: "request_code_attempt_ip",
   failedLoginAttemptPerLoginIdentifier: "login_attempt_id",
   failedLoginAttemptPerIp: "login_attempt_ip",
@@ -35,12 +32,7 @@ export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
   requestCodeAttemptPerLoginIdentifier: {
     key: RateLimitPrefix.requestCodeAttemptPerLoginIdentifier,
     limits: getRequestCodePerLoginIdentifierLimits(),
-    error: UserCodeAttemptPhoneRateLimiterExceededError,
-  },
-  requestCodeAttemptPerLoginIdentifierMinInterval: {
-    key: RateLimitPrefix.requestCodeAttemptPerLoginIdentifierMinInterval,
-    limits: getRequestCodePerLoginIdentifierMinIntervalLimits(),
-    error: UserCodeAttemptPhoneMinIntervalRateLimiterExceededError,
+    error: UserCodeAttemptIdentifierRateLimiterExceededError,
   },
   requestCodeAttemptPerIp: {
     key: RateLimitPrefix.requestCodeAttemptPerIp,
@@ -50,7 +42,7 @@ export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
   failedLoginAttemptPerLoginIdentifier: {
     key: RateLimitPrefix.failedLoginAttemptPerLoginIdentifier,
     limits: getFailedLoginAttemptPerLoginIdentifierLimits(),
-    error: UserLoginPhoneRateLimiterExceededError,
+    error: UserLoginIdentifierRateLimiterExceededError,
   },
   failedLoginAttemptPerIp: {
     key: RateLimitPrefix.failedLoginAttemptPerIp,

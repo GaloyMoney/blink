@@ -46,23 +46,26 @@ authRouter.post(
       const ip = parseIps(ipString)
 
       if (!ip) {
+        recordExceptionInCurrentSpan({ error: "IP is not defined" })
         return res.status(500).send({ error: "IP is not defined" })
       }
 
       const emailRaw = req.body.email
       if (!emailRaw) {
+        recordExceptionInCurrentSpan({ error: "Missing input" })
         return res.status(422).send({ error: "Missing input" })
       }
 
       const email = checkedToEmailAddress(emailRaw)
       if (email instanceof Error) {
+        recordExceptionInCurrentSpan({ error: email.message })
         return res.status(422).send({ error: email.message })
       }
 
       try {
         const emailLoginId = await requestEmailCode({ email, ip })
         if (emailLoginId instanceof Error) {
-          recordExceptionInCurrentSpan({ error: emailLoginId })
+          recordExceptionInCurrentSpan({ error: emailLoginId.message })
           return res.status(500).send({ error: emailLoginId.message })
         }
         return res.status(200).send({
@@ -70,7 +73,7 @@ authRouter.post(
         })
       } catch (err) {
         recordExceptionInCurrentSpan({ error: err })
-        return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
+        return res.status(500).send({ error: err })
       }
     },
   }),

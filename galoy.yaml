@@ -113,10 +113,6 @@ rateLimits:
     points: 4
     duration: 3600
     blockDuration: 10800
-  requestCodePerLoginIdentifierMinInterval:
-    points: 1
-    duration: 15
-    blockDuration: 15
   requestCodePerIp:
     points: 8
     duration: 3600

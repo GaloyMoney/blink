@@ -196,8 +196,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Too many onchain addresses creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
-    case "UserCodeAttemptPhoneRateLimiterExceededError":
-      message = "Too many phone code attempts, please wait for a while and try again."
+    case "UserCodeAttemptIdentifierRateLimiterExceededError":
+      message = "Too many request code attempts, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
     case "UserCodeAttemptIpRateLimiterExceededError":
@@ -226,7 +226,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid or incorrect phone entered."
       return new VerificationCodeError({ message, logger: baseLogger })
 
-    case "UserLoginPhoneRateLimiterExceededError":
+    case "UserLoginIdentifierRateLimiterExceededError":
       message = "Too many login attempts, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
@@ -512,7 +512,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CacheNotAvailableError":
     case "CacheServiceError":
     case "CacheUndefinedError":
-    case "UserCodeAttemptPhoneMinIntervalRateLimiterExceededError":
     case "PhoneProviderServiceError":
     case "MissingPhoneMetadataError":
     case "InvalidPhoneMetadataTypeError":

@@ -25,14 +25,6 @@ export const resetOnChainAddressAccountIdLimits = async (
     keyToConsume: accountId,
   })
 
-export const resetUserPhoneCodeAttemptPhoneMinIntervalLimits = async (
-  phone: PhoneNumber,
-): Promise<true | RateLimitServiceError> =>
-  resetLimiter({
-    rateLimitConfig: RateLimitConfig.requestCodeAttemptPerLoginIdentifierMinInterval,
-    keyToConsume: phone,
-  })
-
 export const resetUserPhoneCodeAttemptPhone = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimitServiceError> =>

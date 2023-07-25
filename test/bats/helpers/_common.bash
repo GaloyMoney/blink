@@ -19,7 +19,7 @@ bitcoin_cli() {
 }
 
 cache_value() {
-  echo $2 > ${CACHE_DIR}/$1
+  echo $2 >${CACHE_DIR}/$1
 }
 
 read_value() {
@@ -34,13 +34,13 @@ is_number() {
 }
 
 abs() {
-    is_number $1 || exit 1
+  is_number $1 || exit 1
 
-    if [[ $1 -lt 0 ]]; then
-        echo "$((-$1))"
-    else
-        echo "$1"
-    fi
+  if [[ $1 -lt 0 ]]; then
+    echo "$((-$1))"
+  else
+    echo "$1"
+  fi
 }
 
 # Run the given command in the background. Useful for starting a
@@ -66,14 +66,14 @@ retry() {
   shift
   local i
 
-  for ((i=0; i < attempts; i++)); do
+  for ((i = 0; i < attempts; i++)); do
     if [[ "${BATS_TEST_DIRNAME}" = "" ]]; then
       "$@"
     else
       run "$@"
     fi
 
-    if [[ "$status" -eq 0 ]] ; then
+    if [[ "$status" -eq 0 ]]; then
       return 0
     fi
     sleep "$delay"
@@ -96,12 +96,12 @@ exec_graphql() {
   local query_name=$2
   local variables=${3:-"{}"}
   echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
-  echo  "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
+  echo "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
 
   if [[ ${token_name} == "anon" ]]; then
-       AUTH_HEADER=""
+    AUTH_HEADER=""
   else
-       AUTH_HEADER="Authorization: Bearer $(read_value ${token_name})"
+    AUTH_HEADER="Authorization: Bearer $(read_value ${token_name})"
   fi
 
   if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
@@ -111,15 +111,40 @@ exec_graphql() {
   fi
 
   ${run_cmd} curl -s \
-       -X POST \
-       ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
-       -H "Content-Type: application/json" \
-       -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
-       ${GALOY_ENDPOINT}/graphql
+    -X POST \
+    ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
+    ${GALOY_ENDPOINT}/graphql
 
   echo "GQL output: '$output'"
 }
 
 graphql_output() {
+  echo $output | jq -r "$@"
+}
+
+curl_request() {
+  local url=$1
+  local data=${2:-""}
+
+  echo "Curl request -  url: ${url} -  data: ${data}"
+
+  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
+    run_cmd="run"
+  else
+    run_cmd=""
+  fi
+
+  ${run_cmd} curl -s \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d "${data}" \
+    "${url}"
+
+  echo "Curl output: '$output'"
+}
+
+curl_output() {
   echo $output | jq -r "$@"
 }

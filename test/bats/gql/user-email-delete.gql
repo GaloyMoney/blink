@@ -1,0 +1,14 @@
+mutation userEmailDelete {
+  userEmailDelete {
+    errors {
+      message
+    }
+    me {
+      id
+      email {
+        address
+        verified
+      }
+    }
+  }
+}
