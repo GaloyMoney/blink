@@ -1,3 +1,4 @@
+import cors from "cors"
 import express from "express"
 
 import { isProd } from "@config"
@@ -11,6 +12,7 @@ import {
   elevatingSessionWithTotp,
   loginWithEmail,
   requestEmailCode,
+  loginWithEmailCookie,
 } from "@app/authentication"
 
 import { parseErrorMessageFromUnknown } from "@domain/shared"
@@ -30,8 +32,18 @@ import {
 } from "@domain/authentication/errors"
 
 import { UserLoginIpRateLimiterExceededError } from "@domain/rate-limit/errors"
+import { parseKratosCookies } from "@services/kratos/cookie"
+
+import bodyParser from "body-parser"
+
+import cookieParser from "cookie-parser"
 
 import { authRouter } from "./router"
+
+authRouter.use(cors({ origin: true, credentials: true }))
+authRouter.use(bodyParser.urlencoded({ extended: true }))
+authRouter.use(bodyParser.json())
+authRouter.use(cookieParser())
 
 // TODO: should code request behind captcha or device token?
 authRouter.post(
@@ -202,6 +214,99 @@ authRouter.post(
         recordExceptionInCurrentSpan({ error: err })
         return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
       }
+    },
+  }),
+)
+
+authRouter.post(
+  "/email/login/cookie",
+  wrapAsyncToRunInSpan({
+    namespace: "servers.middlewares.authRouter",
+    fnName: "emailLoginCookie",
+    fn: async (req: express.Request, res: express.Response) => {
+      baseLogger.info("/email/login/cookie")
+
+      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ip = parseIps(ipString)
+
+      if (!ip) {
+        return res.status(500).send({ error: "IP is not defined" })
+      }
+
+      const emailLoginIdRaw = req.body.emailLoginId
+      if (!emailLoginIdRaw) {
+        return res.status(422).send({ error: "Missing input" })
+      }
+
+      const emailLoginId = checkedToEmailLoginId(emailLoginIdRaw)
+      if (emailLoginId instanceof Error) {
+        return res.status(422).send({ error: emailLoginId.message })
+      }
+
+      const codeRaw = req.body.code
+      if (!codeRaw) {
+        return res.status(422).send({ error: "Missing input" })
+      }
+
+      const code = checkedToEmailCode(codeRaw)
+      if (code instanceof Error) {
+        return res.status(422).send({ error: code.message })
+      }
+
+      let loginResult
+      try {
+        loginResult = await loginWithEmailCookie({ ip, emailFlowId: emailLoginId, code })
+        if (loginResult instanceof EmailCodeInvalidError) {
+          recordExceptionInCurrentSpan({ error: loginResult })
+          return res.status(401).send({ error: "invalid code" })
+        }
+        if (
+          loginResult instanceof EmailValidationSubmittedTooOftenError ||
+          loginResult instanceof UserLoginIpRateLimiterExceededError
+        ) {
+          recordExceptionInCurrentSpan({ error: loginResult })
+          return res.status(429).send({ error: "too many requests" })
+        }
+        if (loginResult instanceof Error) {
+          recordExceptionInCurrentSpan({ error: loginResult })
+          return res.status(500).send({ error: loginResult.message })
+        }
+      } catch (err) {
+        recordExceptionInCurrentSpan({ error: err })
+        return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
+      }
+
+      const { cookiesToSendBackToClient, kratosUserId, totpRequired } = loginResult
+      try {
+        const kratosCookies = parseKratosCookies(cookiesToSendBackToClient)
+        const csrfCookie = kratosCookies.csrf()
+        const kratosSessionCookie = kratosCookies.kratosSession()
+        if (!csrfCookie || !kratosSessionCookie) {
+          return res
+            .status(500)
+            .send({ error: "Missing csrf or ory_kratos_session cookie" })
+        }
+        res.cookie(
+          kratosSessionCookie.name,
+          kratosSessionCookie.value,
+          kratosCookies.formatCookieOptions(kratosSessionCookie),
+        )
+        res.cookie(
+          csrfCookie.name,
+          csrfCookie.value,
+          kratosCookies.formatCookieOptions(csrfCookie),
+        )
+      } catch (error) {
+        recordExceptionInCurrentSpan({ error })
+        return res.status(500).send({ result: "Error parsing cookies" })
+      }
+
+      return res.status(200).send({
+        identity: {
+          kratosUserId,
+          totpRequired,
+        },
+      })
     },
   }),
 )
