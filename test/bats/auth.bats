@@ -96,7 +96,7 @@ generateTotpCode() {
   email=$(read_value "email")
 
   # code request
-  curl_request "http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code" "{ \"email\": \"$email\" }"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/code" "{ \"email\": \"$email\" }"
   emailLoginId=$(curl_output '.result')
   [ -n "$emailLoginId" ] || exit 1
 
@@ -104,7 +104,7 @@ generateTotpCode() {
   [ -n "$code" ] || exit 1
 
   # validate code
-  curl_request "http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/login" "{ \"code\": \"$code\", \"emailLoginId\": \"$emailLoginId\" }"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/login" "{ \"code\": \"$code\", \"emailLoginId\": \"$emailLoginId\" }"
   authToken=$(curl_output '.result.authToken')
   [ -n "$authToken" ] || exit 1
 
@@ -124,7 +124,7 @@ generateTotpCode() {
   [[ "$(graphql_output '.data.userEmailDelete.me.email.address')" == "null" ]] || exit 1
   [[ "$(graphql_output '.data.userEmailDelete.me.email.verified')" == "false" ]] || exit 1
 
-  curl_request "http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code" "{ \"email\": \"${email}\" }"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/code" "{ \"email\": \"${email}\" }"
   flowId=$(curl_output '.result')
   [[ "$flowId" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || exit 1
 
@@ -186,7 +186,7 @@ generateTotpCode() {
 
   # code request
   variables="{\"email\": \"$email\"}"
-  curl_request "http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/code" "$variables"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/code" "$variables"
   emailLoginId="$(curl_output '.result')"
   [ "$emailLoginId" != "null" ]
 
@@ -195,7 +195,7 @@ generateTotpCode() {
 
   # validating email with code
   variables="{\"code\": \"$code\", \"emailLoginId\": \"$emailLoginId\"}"
-  curl_request "http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/email/login" "$variables"
+  curl_request "http://${GALOY_ENDPOINT}/auth/email/login" "$variables"
   authToken="$(curl_output '.result.authToken')"
   totpRequired="$(curl_output '.result.totpRequired')"
   [ "$authToken" != "" ]
@@ -203,7 +203,7 @@ generateTotpCode() {
 
   totpCode=$(generateTotpCode "$totpSecret")
   variables="{\"totpCode\": \"$totpCode\", \"authToken\": \"$authToken\"}"
-  curl_request "http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/totp/validate" "$variables"
+  curl_request "http://${GALOY_ENDPOINT}/auth/totp/validate" "$variables"
 
   exec_graphql 'charlie' 'identity'
   [[ "$(graphql_output '.data.me.totpEnabled')" = "true" ]] || exit 1
