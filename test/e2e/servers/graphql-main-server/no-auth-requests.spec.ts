@@ -441,7 +441,7 @@ const testPhoneCodeAttemptPerLoginIdentifier = async (mutation) => {
 
   // Check limiter is exhausted
   const expectedErrorMessage =
-    "Too many phone code attempts, please wait for a while and try again."
+    "Too many request code attempts, please wait for a while and try again."
   const {
     data: {
       userRequestAuthCode: { errors },
