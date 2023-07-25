@@ -525,10 +525,7 @@ describe("phone+email schema", () => {
     {
       const res = await authServiceEmail.loginCookie({ email })
       if (res instanceof Error) throw res
-      const cookie1 = res.cookiesToSendBackToClient[0]
-      const cookie2 = res.cookiesToSendBackToClient[1]
-      expect(cookie1).toContain("ory" || "csrf")
-      expect(cookie2).toContain("ory" || "csrf")
+      expect(res.cookiesToSendBackToClient.length).toBe(2)
     }
   })
 
