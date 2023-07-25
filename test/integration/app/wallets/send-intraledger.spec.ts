@@ -97,7 +97,7 @@ describe("intraLedgerPay", () => {
     expect(res).toBeInstanceOf(InactiveAccountError)
 
     // Restore system state
-    Transaction.deleteMany({ memo })
+    await Transaction.deleteMany({ memo })
   })
 
   it("fails if recipient account is locked", async () => {
@@ -145,6 +145,6 @@ describe("intraLedgerPay", () => {
     expect(res).toBeInstanceOf(InactiveAccountError)
 
     // Restore system state
-    Transaction.deleteMany({ memo })
+    await Transaction.deleteMany({ memo })
   })
 })

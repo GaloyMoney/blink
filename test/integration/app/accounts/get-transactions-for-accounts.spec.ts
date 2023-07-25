@@ -79,6 +79,6 @@ describe("getTransactionsForAccountByWalletIds", () => {
     expect(txns.error).toBeInstanceOf(InvalidWalletId)
 
     // Restore system state
-    Transaction.deleteMany({ memo })
+    await Transaction.deleteMany({ memo })
   })
 })

@@ -102,7 +102,7 @@ describe("onChainPay", () => {
       expect(res instanceof Error && res.message).toEqual(`No balance left to send.`)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
 
     it("fails if 'validatePaymentInput' fails", async () => {
@@ -138,7 +138,7 @@ describe("onChainPay", () => {
       expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
   })
 
@@ -174,7 +174,7 @@ describe("onChainPay", () => {
       expect(result).toBeInstanceOf(LessThanDustThresholdError)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
 
     it("fails if withdrawal limit hit", async () => {
@@ -231,7 +231,7 @@ describe("onChainPay", () => {
       expect(result).toBeInstanceOf(LimitsExceededError)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
 
     it("fails if has insufficient balance for fee", async () => {
@@ -269,7 +269,7 @@ describe("onChainPay", () => {
       expect(result).toBeInstanceOf(InsufficientBalanceError)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
 
     it("fails if sender account is locked", async () => {
@@ -313,7 +313,7 @@ describe("onChainPay", () => {
       expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
   })
 
@@ -354,7 +354,7 @@ describe("onChainPay", () => {
       expect(res).toBeInstanceOf(SelfPaymentError)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
 
     it("fails if builder 'withConversion' step fails", async () => {
@@ -410,7 +410,7 @@ describe("onChainPay", () => {
       expect(res).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
 
     it("fails if recipient account is locked", async () => {
@@ -465,7 +465,7 @@ describe("onChainPay", () => {
       expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
-      Transaction.deleteMany({ memo })
+      await Transaction.deleteMany({ memo })
     })
   })
 })
