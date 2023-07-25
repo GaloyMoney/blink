@@ -58,7 +58,7 @@ export const verifyPhone = async ({
   const res = await authService.addPhoneToIdentity({ phone, userId })
   if (res instanceof Error) return res
 
-  return user
+  return update
 }
 
 export const removePhoneFromIdentity = async ({
