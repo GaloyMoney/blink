@@ -36,8 +36,15 @@ subscribe_to() {
      token="$(read_value $token_name)"
   fi
   gql_filename=$2
+  variables=$3
 
-  background ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/src/debug/gqlsubscribe.ts" "ws://${GALOY_ENDPOINT}/graphqlws" "$(gql_file $gql_filename)" "$token" > .e2e-subscriber.log
+  background \
+    ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/src/debug/gqlsubscribe.ts" \
+    "ws://${GALOY_ENDPOINT}/graphqlws" \
+    "$(gql_file $gql_filename)" \
+    "$token" \
+    "$variables" \
+    > .e2e-subscriber.log
   echo $! > $SUBSCRIBER_PID_FILE
 }
 
