@@ -253,8 +253,8 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         },
       })
       const cookiesToSendBackToClient: Array<SessionCookie> = result.headers["set-cookie"]
-      // note: this only works when whoami: required_aal = aal1
-      const kratosUserId = result.data.session.identity.id as UserId
+      // identity is only defined when identity has not enabled totp
+      const kratosUserId = result.data.session.identity.id as UserId | undefined
       return { cookiesToSendBackToClient, kratosUserId }
     } catch (err) {
       return new UnknownKratosError(err)

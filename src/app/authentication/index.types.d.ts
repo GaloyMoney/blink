@@ -30,6 +30,6 @@ type LoginWithPhoneResult = {
 
 type LoginWithEmailCookieResult = {
   cookiesToSendBackToClient: Array<SessionCookie>
-  kratosUserId: UserId
+  kratosUserId?: UserId
   totpRequired: boolean
 }

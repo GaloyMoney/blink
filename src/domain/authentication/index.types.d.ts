@@ -59,7 +59,10 @@ type LoginWithPhoneNoPasswordSchemaResponse = {
   authToken: AuthToken
   kratosUserId?: UserId
 }
-type LoginWithPhoneCookieSchemaResponse = WithCookieResponse
+type LoginWithPhoneCookieSchemaResponse = {
+  cookiesToSendBackToClient: Array<SessionCookie>
+  kratosUserId?: UserId
+}
 type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
 type CreateKratosUserForPhoneNoPasswordSchemaCookieResponse = WithCookieResponse
 

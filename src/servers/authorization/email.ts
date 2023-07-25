@@ -58,6 +58,7 @@ authRouter.post(
       const ip = parseIps(ipString)
 
       if (!ip) {
+        recordExceptionInCurrentSpan({ error: "IP is not defined" })
         return res.status(500).send({ error: "IP is not defined" })
       }
 
@@ -100,6 +101,7 @@ authRouter.post(
       const ip = parseIps(ipString)
 
       if (!ip) {
+        recordExceptionInCurrentSpan({ error: "IP is not defined" })
         return res.status(500).send({ error: "IP is not defined" })
       }
 
@@ -164,6 +166,7 @@ authRouter.post(
       const ip = parseIps(ipString)
 
       if (!ip) {
+        recordExceptionInCurrentSpan({ error: "IP is not defined" })
         return res.status(500).send({ error: "IP is not defined" })
       }
 
@@ -230,6 +233,7 @@ authRouter.post(
       const ip = parseIps(ipString)
 
       if (!ip) {
+        recordExceptionInCurrentSpan({ error: "IP is not defined" })
         return res.status(500).send({ error: "IP is not defined" })
       }
 
@@ -277,30 +281,30 @@ authRouter.post(
       }
 
       const { cookiesToSendBackToClient, kratosUserId, totpRequired } = loginResult
+      let kratosCookies
       try {
-        const kratosCookies = parseKratosCookies(cookiesToSendBackToClient)
-        const csrfCookie = kratosCookies.csrf()
-        const kratosSessionCookie = kratosCookies.kratosSession()
-        if (!csrfCookie || !kratosSessionCookie) {
-          return res
-            .status(500)
-            .send({ error: "Missing csrf or ory_kratos_session cookie" })
-        }
-        res.cookie(
-          kratosSessionCookie.name,
-          kratosSessionCookie.value,
-          kratosCookies.formatCookieOptions(kratosSessionCookie),
-        )
-        res.cookie(
-          csrfCookie.name,
-          csrfCookie.value,
-          kratosCookies.formatCookieOptions(csrfCookie),
-        )
+        kratosCookies = parseKratosCookies(cookiesToSendBackToClient)
       } catch (error) {
         recordExceptionInCurrentSpan({ error })
         return res.status(500).send({ result: "Error parsing cookies" })
       }
-
+      const csrfCookie = kratosCookies.csrf()
+      const kratosSessionCookie = kratosCookies.kratosSession()
+      if (!csrfCookie || !kratosSessionCookie) {
+        return res
+          .status(500)
+          .send({ error: "Missing csrf or ory_kratos_session cookie" })
+      }
+      res.cookie(
+        kratosSessionCookie.name,
+        kratosSessionCookie.value,
+        kratosCookies.formatCookieOptions(kratosSessionCookie),
+      )
+      res.cookie(
+        csrfCookie.name,
+        csrfCookie.value,
+        kratosCookies.formatCookieOptions(csrfCookie),
+      )
       return res.status(200).send({
         identity: {
           kratosUserId,

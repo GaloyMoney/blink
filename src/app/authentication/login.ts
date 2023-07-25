@@ -97,7 +97,7 @@ export const loginWithPhoneCookie = async ({
   phone: PhoneNumber
   code: PhoneCode
   ip: IpAddress
-}): Promise<WithCookieResponse | ApplicationError> => {
+}): Promise<LoginWithPhoneCookieSchemaResponse | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk

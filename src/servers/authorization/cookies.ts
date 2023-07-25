@@ -36,6 +36,7 @@ authRouter.post(
       const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
       const ip = parseIps(ipString)
       if (!ip) {
+        recordExceptionInCurrentSpan({ error: "IP is not defined" })
         return res.status(500).send({ error: "IP is not defined" })
       }
       const code = req.body.authCode
@@ -52,7 +53,7 @@ authRouter.post(
 
       try {
         const kratosCookies = parseKratosCookies(loginResp.cookiesToSendBackToClient)
-        const kratosUserId: UserId = loginResp.kratosUserId
+        const kratosUserId: UserId | undefined = loginResp.kratosUserId
         const csrfCookie = kratosCookies.csrf()
         const kratosSessionCookie = kratosCookies.kratosSession()
         if (!csrfCookie || !kratosSessionCookie) {

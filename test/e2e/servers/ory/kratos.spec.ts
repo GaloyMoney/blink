@@ -498,6 +498,40 @@ describe("phone+email schema", () => {
     }
   })
 
+  it("login back to an email account using cookies", async () => {
+    const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
+    if (emailFlowId instanceof Error) throw emailFlowId
+
+    const code = await getEmailCode(email)
+
+    {
+      const wrongCode = "000000" as EmailCode
+      const res = await authServiceEmail.validateCode({
+        code: wrongCode,
+        emailFlowId: emailFlowId,
+      })
+      expect(res).toBeInstanceOf(EmailCodeInvalidError)
+    }
+
+    {
+      const res = await authServiceEmail.validateCode({
+        code,
+        emailFlowId: emailFlowId,
+      })
+      if (res instanceof Error) throw res
+      expect(res.email).toBe(email)
+    }
+
+    {
+      const res = await authServiceEmail.loginCookie({ email })
+      if (res instanceof Error) throw res
+      const cookie1 = res.cookiesToSendBackToClient[0]
+      const cookie2 = res.cookiesToSendBackToClient[1]
+      expect(cookie1).toContain("ory" || "csrf")
+      expect(cookie2).toContain("ory" || "csrf")
+    }
+  })
+
   // TODO: verification code expired
 
   it("login back to an phone+email account by phone", async () => {
