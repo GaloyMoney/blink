@@ -12,6 +12,20 @@ teardown_file() {
   stop_server
 }
 
+@test "user-login: request auth code" {
+  local phone="$ALICE_PHONE"
+
+  local variables=$(
+    jq -n \
+    --arg phone "$phone" \
+    '{input: {phone: $phone}}'
+  )
+
+  exec_graphql 'anon' 'user-request-auth-code' "$variables"
+  success_status="$(graphql_output '.data.userRequestAuthCode.success')"
+  [[ -n "${success_status}" && "${success_status}" == "true" ]]
+}
+
 @test "user-login: login user" {
   local token_name="$ALICE_TOKEN_NAME"
   local phone="$ALICE_PHONE"
