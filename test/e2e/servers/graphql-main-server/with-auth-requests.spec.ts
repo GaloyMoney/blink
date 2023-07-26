@@ -2,7 +2,6 @@
 
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
