@@ -126,7 +126,10 @@ graphql_output() {
 
 curl_request() {
   local url=$1
-  local data=${2:-""}
+  shift
+  local data=${1:-""}
+  shift
+  local headers=("$@")
 
   echo "Curl request -  url: ${url} -  data: ${data}"
 
@@ -136,11 +139,19 @@ curl_request() {
     run_cmd=""
   fi
 
-  ${run_cmd} curl -s \
-    -X POST \
-    -H "Content-Type: application/json" \
-    -d "${data}" \
-    "${url}"
+  cmd=(${run_cmd} curl -s -X POST -H "Content-Type: application/json")
+
+  for header in "${headers[@]}"; do
+    cmd+=(-H "$header")
+  done
+
+  if [[ -n "$data" ]]; then
+    cmd+=(-d "${data}")
+  fi
+
+  cmd+=("${url}")
+
+  "${cmd[@]}"
 
   echo "Curl output: '$output'"
 }
