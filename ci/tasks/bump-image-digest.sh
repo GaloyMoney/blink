@@ -8,6 +8,9 @@ export websocket_digest=$(cat ./websocket-edge-image/digest)
 export ref=$(cat ./repo/.git/short_ref)
 export app_version=$(cat version/version)
 
+mkdir -p charts-repo/charts/galoy/apollo-router
+cp ./repo/dev/apollo-federation/supergraph.graphql ./charts-repo/charts/galoy/apollo-router/supergraph.graphql
+
 pushd charts-repo
 
 yq -i e '.galoy.images.app.digest = strenv(digest)' ./charts/galoy/values.yaml
