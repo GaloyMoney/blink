@@ -157,11 +157,6 @@ export const loginWithEmail = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  {
-    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(emailFlowId)
-    if (limitOk instanceof Error) return limitOk
-  }
-
   const code = checkedToEmailCode(codeRaw)
   if (code instanceof Error) return code
 
@@ -181,7 +176,6 @@ export const loginWithEmail = async ({
   if (isEmailVerified === false) return new EmailUnverifiedError()
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerLoginIdentifierLimits(emailFlowId)
 
   const res = await authServiceEmail.loginToken({ email })
   if (res instanceof Error) throw res
@@ -202,11 +196,6 @@ export const loginWithEmailCookie = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  {
-    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(emailFlowId)
-    if (limitOk instanceof Error) return limitOk
-  }
-
   const code = checkedToEmailCode(codeRaw)
   if (code instanceof Error) return code
 
@@ -226,7 +215,6 @@ export const loginWithEmailCookie = async ({
   if (isEmailVerified === false) return new EmailUnverifiedError()
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
-  await rewardFailedLoginAttemptPerLoginIdentifierLimits(emailFlowId)
 
   const kratosResult = await authServiceEmail.loginCookie({ email })
   if (kratosResult instanceof Error) return kratosResult
