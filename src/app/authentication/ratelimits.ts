@@ -27,20 +27,20 @@ export const rewardFailedLoginAttemptPerIpLimits = async (
 }
 
 export const checkFailedLoginAttemptPerLoginIdentifierLimits = async (
-  phone: PhoneNumber,
+  loginIdentifier: LoginIdentifier,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
     rateLimitConfig: RateLimitConfig.failedLoginAttemptPerLoginIdentifier,
-    keyToConsume: phone,
+    keyToConsume: loginIdentifier,
   })
 
 export const rewardFailedLoginAttemptPerLoginIdentifierLimits = async (
-  phone: PhoneNumber,
+  loginIdentifier: LoginIdentifier,
 ): Promise<true | RateLimiterExceededError> => {
   const limiter = RedisRateLimitService({
     keyPrefix: RateLimitPrefix.failedLoginAttemptPerLoginIdentifier,
     limitOptions: getFailedLoginAttemptPerLoginIdentifierLimits(),
   })
 
-  return limiter.reward(phone)
+  return limiter.reward(loginIdentifier)
 }
