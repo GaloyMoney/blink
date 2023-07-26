@@ -51,7 +51,7 @@
     "@opentelemetry/instrumentation-net": "^0.31.4",
     "@opentelemetry/resources": "^1.14.0",
     "@opentelemetry/sdk-trace-base": "^1.14.0",
-    "@opentelemetry/sdk-trace-node": "^1.14.0",
+    "@opentelemetry/sdk-trace-node": "^1.15.1",
     "@opentelemetry/semantic-conventions": "^1.14.0",
     "@ory/client": "^1.1.41",
     "ajv": "^8.12.0",
