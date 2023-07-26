@@ -498,7 +498,7 @@ describe("phone+email schema", () => {
     }
   })
 
-  it("login back to an email account using cookies", async () => {
+  it("login back to an email account using cookies auth", async () => {
     const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
     if (emailFlowId instanceof Error) throw emailFlowId
 
