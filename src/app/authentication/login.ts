@@ -157,42 +157,8 @@ export const loginWithEmail = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  const code = checkedToEmailCode(codeRaw)
-  if (code instanceof Error) return code
-
-  const authServiceEmail = AuthWithEmailPasswordlessService()
-
-  const validateCodeRes = await authServiceEmail.validateCode({
-    code,
-    emailFlowId,
-  })
-  if (validateCodeRes instanceof Error) return validateCodeRes
-
-  const email = validateCodeRes.email
-  const totpRequired = validateCodeRes.totpRequired
-
-  const isEmailVerified = await authServiceEmail.isEmailVerified({ email })
-  if (isEmailVerified instanceof Error) return isEmailVerified
-  if (isEmailVerified === false) return new EmailUnverifiedError()
-
-  await rewardFailedLoginAttemptPerIpLimits(ip)
-
-  const res = await authServiceEmail.loginToken({ email })
-  if (res instanceof Error) throw res
-  return { authToken: res.authToken, totpRequired }
-}
-
-export const loginWithEmailCookie = async ({
-  emailFlowId,
-  code: codeRaw,
-  ip,
-}: {
-  emailFlowId: EmailFlowId
-  code: EmailCode
-  ip: IpAddress
-}): Promise<LoginWithEmailCookieResult | ApplicationError> => {
   {
-    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(emailFlowId)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -215,6 +181,52 @@ export const loginWithEmailCookie = async ({
   if (isEmailVerified === false) return new EmailUnverifiedError()
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
+  await rewardFailedLoginAttemptPerLoginIdentifierLimits(emailFlowId)
+
+  const res = await authServiceEmail.loginToken({ email })
+  if (res instanceof Error) throw res
+  return { authToken: res.authToken, totpRequired }
+}
+
+export const loginWithEmailCookie = async ({
+  emailFlowId,
+  code: codeRaw,
+  ip,
+}: {
+  emailFlowId: EmailFlowId
+  code: EmailCode
+  ip: IpAddress
+}): Promise<LoginWithEmailCookieResult | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(emailFlowId)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  const code = checkedToEmailCode(codeRaw)
+  if (code instanceof Error) return code
+
+  const authServiceEmail = AuthWithEmailPasswordlessService()
+
+  const validateCodeRes = await authServiceEmail.validateCode({
+    code,
+    emailFlowId,
+  })
+  if (validateCodeRes instanceof Error) return validateCodeRes
+
+  const email = validateCodeRes.email
+  const totpRequired = validateCodeRes.totpRequired
+
+  const isEmailVerified = await authServiceEmail.isEmailVerified({ email })
+  if (isEmailVerified instanceof Error) return isEmailVerified
+  if (isEmailVerified === false) return new EmailUnverifiedError()
+
+  await rewardFailedLoginAttemptPerIpLimits(ip)
+  await rewardFailedLoginAttemptPerLoginIdentifierLimits(emailFlowId)
 
   const kratosResult = await authServiceEmail.loginCookie({ email })
   if (kratosResult instanceof Error) return kratosResult
