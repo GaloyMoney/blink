@@ -1,0 +1,13 @@
+mutation lnInvoiceCreateOnBehalfOfRecipient(
+  $input: LnInvoiceCreateOnBehalfOfRecipientInput!
+) {
+  lnInvoiceCreateOnBehalfOfRecipient(input: $input) {
+    invoice {
+      paymentRequest
+      paymentHash
+    }
+    errors {
+      message
+    }
+  }
+}

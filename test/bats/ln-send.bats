@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 load "helpers/setup-and-teardown"
-load "helpers/ln-send"
+load "helpers/ln"
 
 setup_file() {
   clear_cache
