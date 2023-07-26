@@ -29,9 +29,7 @@ export class MissingTotpKratosError extends KratosError {
   level = ErrorLevel.Critical
 }
 
-export class IncompatibleSchemaUpgradeError extends KratosError {
-  level = ErrorLevel.Critical
-}
+export class IncompatibleSchemaUpgradeError extends KratosError {}
 
 export class UnknownKratosError extends KratosError {
   level = ErrorLevel.Critical
