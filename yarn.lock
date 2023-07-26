@@ -2759,13 +2759,14 @@
     "@opentelemetry/sdk-metrics" "^1.9.1"
     "@opentelemetry/semantic-conventions" "^1.0.0"
 
-"@opentelemetry/instrumentation-net@^0.31.4":
-  version "0.31.4"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-net/-/instrumentation-net-0.31.4.tgz#b771e1c8ec24c19b86a212271d694e61ad8a14b1"
-  integrity sha512-KbQg0Qwhu98+kgo2jIWw0/WqSxHA/Old6yFj8MoNOo/OF+SWQwaPHK1+oV9dZGV6v3aaikb//YnoaubWucUOiQ==
+"@opentelemetry/instrumentation-net@^0.32.0":
+  version "0.32.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-net/-/instrumentation-net-0.32.0.tgz#8f19cf8c869ece15f61399a4f2d79e4ae0ee6133"
+  integrity sha512-fIgmkTpkdDXlRKUC4X2SdpJJof+KCA7feiBlLXHJ6xcaqBWG/6mt25A1FTyaJiXRWPhk+faGhtMxT0WX2AD3kQ==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.40.0"
+    "@opentelemetry/instrumentation" "^0.41.0"
     "@opentelemetry/semantic-conventions" "^1.0.0"
+    tslib "^2.3.1"
 
 "@opentelemetry/instrumentation@0.40.0", "@opentelemetry/instrumentation@^0.40.0":
   version "0.40.0"
@@ -2915,14 +2916,14 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.14.0.tgz#6a729b7f372ce30f77a3f217c09bc216f863fccb"
   integrity sha512-rJfCY8rCWz3cb4KI6pEofnytvMPuj3YLQwoscCCYZ5DkdiPjo15IQ0US7+mjcWy9H3fcZIzf2pbJZ7ck/h4tug==
 
-"@opentelemetry/semantic-conventions@1.15.0", "@opentelemetry/semantic-conventions@^1.0.0", "@opentelemetry/semantic-conventions@^1.14.0":
+"@opentelemetry/semantic-conventions@1.15.0":
   version "1.15.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.15.0.tgz#e6173daa5fd61f353b02c858001388bf26e9d059"
   integrity sha512-f3wwFrFyCpGrFBrFs7lCUJSCSCGyeKG52c+EKeobs3Dd29M75yO6GYkt6PkYPfDawxSlV5p+4yJPPk8tPObzTQ==
   dependencies:
     tslib "^2.3.1"
 
-"@opentelemetry/semantic-conventions@1.15.1":
+"@opentelemetry/semantic-conventions@1.15.1", "@opentelemetry/semantic-conventions@^1.0.0", "@opentelemetry/semantic-conventions@^1.14.0":
   version "1.15.1"
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.15.1.tgz#3d745996b2bd11095b515515fd3d68d46092a02d"
   integrity sha512-n8Kur1/CZlYG32YCEj30CoUqA8R7UyDVZzoEU6SDP+13+kXDT2kFVu6MpcnEUTyGP3i058ID6Qjp5h6IJxdPPQ==
