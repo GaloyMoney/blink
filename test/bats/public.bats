@@ -34,8 +34,14 @@ usd_amount=50
 }
 
 @test "public: can subscribe to price" {
-  subscribe_to price-sub
-  retry 10 1 grep 'Data:' .e2e-subscriber.log
+  subscribe_to 'anon' price-sub
+  retry 10 1 grep 'Data.*\bprice\b' .e2e-subscriber.log
+  stop_subscriber
+}
+
+@test "public: can subscribe to realtime price" {
+  subscribe_to 'anon' real-time-price-sub '{"currency": "EUR"}'
+  retry 10 1 grep 'Data.*\brealtimePrice\b.*EUR' .e2e-subscriber.log
   stop_subscriber
 }
 

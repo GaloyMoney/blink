@@ -11,8 +11,11 @@ if (process.argv.length <= 3) {
 
 const url = process.argv[2]
 const filePath = process.argv[3]
+const authToken = process.argv[4]
+const variablesString = process.argv[5] || "{}"
 const client = createClient({
   url,
+  connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
   webSocketImpl: WebSocket,
 })
 
@@ -20,15 +23,22 @@ const startSubscription = async () => {
   try {
     const data = await fsPromises.readFile(filePath, "utf8")
 
+    let variables = undefined
+    try {
+      variables = JSON.parse(variablesString)
+    } catch (err) {
+      console.log(err)
+    }
+
     await client.subscribe(
       {
         query: data,
-        // May need to add variables
+        variables,
       },
       {
-        next: (data) => console.log(`Data: ${JSON.stringify(data)}\n`),
-        error: (err) => console.log(`Error: ${JSON.stringify(err)}\n`),
-        complete: () => console.log("Completed\n"),
+        next: (data) => console.log(`Data: ${JSON.stringify(data)}`),
+        error: (err) => console.log(err, `Error: ${JSON.stringify(err)}`),
+        complete: () => console.log("Completed"),
       },
     )
   } catch (err) {
