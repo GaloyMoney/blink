@@ -1,0 +1,14 @@
+headers:
+  all:
+    request:
+      - propagate:
+          matching: .*
+supergraph:
+  listen: 0.0.0.0:4004
+  introspection: true
+  path: /graphql
+telemetry:
+  tracing:
+    otlp:
+      endpoint: http://otel-agent:4318
+      protocol: http

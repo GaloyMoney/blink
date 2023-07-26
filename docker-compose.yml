@@ -3,6 +3,7 @@ services:
   bats-deps:
     image: busybox
     depends_on:
+      - apollo-router
       - redis
       - mongodb
       - oathkeeper
@@ -18,6 +19,7 @@ services:
   e2e-deps:
     image: busybox
     depends_on:
+      - apollo-router
       - kratos
       - price
       - price-history
@@ -53,6 +55,13 @@ services:
       - lnd-outside-3
       - otel-agent
     restart: on-failure:10
+  apollo-router:
+    image: ghcr.io/apollographql/router:v1.25.0
+    environment:
+      - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/apollo-federation/supergraph.graphql
+      - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/apollo-federation/router.yaml
+    volumes:
+      - ./:/repo
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.79.0
     command: ["--config=/etc/otel-agent-config.yaml"]

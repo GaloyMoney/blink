@@ -1,5 +1,10 @@
 version: "2"
 services:
+  apollo-router:
+    ports:
+      - "4004:4004"
+    extra_hosts:
+      - "e2e-tests:host-gateway"
   otel-agent:
     ports:
       - "4318:4318" # http receiver

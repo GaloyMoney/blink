@@ -9,7 +9,8 @@
     "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos lib/services/price/ && cp -R src/services/dealer-price/proto lib/services/dealer-price/ && cp -R src/services/loopd/protos lib/services/loopd/ && cp -R src/services/bria/proto lib/services/bria/ && tscpaths --silent -p tsconfig.json -s ./src -o ./lib",
     "trigger": "yarn build && node lib/servers/trigger.js | pino-pretty -c -l",
     "check:sdl": "yarn write-sdl && if git diff --name-only | grep -q 'src/graphql/admin/schema.graphql'; then echo 'Error: src/graphql/admin/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi && if git diff --name-only | grep -q 'src/graphql/main/schema.graphql'; then echo 'Error: src/graphql/main/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi",
-    "write-sdl": "yarn build && node lib/servers/write-sdl.js write-sdl.yaml",
+    "write-sdl": "yarn build && node lib/servers/write-sdl.js write-sdl.yaml && rover supergraph compose --config dev/apollo-federation/supergraph-config.yaml --elv2-license accept > dev/apollo-federation/supergraph.graphql",
+
     "ws": "yarn build && node lib/servers/ws-server.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
@@ -121,6 +122,7 @@
   },
   "devDependencies": {
     "@apollo/client": "3.7.16",
+    "@apollo/rover": "^0.17.2",
     "@babel/core": "^7.22.1",
     "@babel/preset-env": "^7.22.4",
     "@graphql-codegen/add": "^5.0.0",
