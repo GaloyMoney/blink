@@ -1,8 +1,7 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "loginFromPhoneAndCode"] }] */
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, toCents } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
+import { DisplayCurrency } from "@domain/fiat"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
@@ -42,8 +41,6 @@ import {
   MeQuery,
   MyUpdatesDocument,
   MyUpdatesSubscription,
-  TransactionsQuery,
-  TransactionsDocument,
 } from "test/e2e/generated"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -60,7 +57,6 @@ const otherRef = "A"
 const { phone: phoneOther, code: codeOther } = getPhoneAndCodeFromRef(otherRef)
 
 const satsAmount = toSats(50_000)
-const centsAmount = toCents(4_000)
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
@@ -169,17 +165,6 @@ gql`
         wallets {
           id
           walletCurrency
-        }
-      }
-    }
-  }
-
-  query transactions($walletIds: [WalletId], $first: Int, $after: String) {
-    me {
-      defaultAccount {
-        defaultWalletId
-        transactions(walletIds: $walletIds, first: $first, after: $after) {
-          ...TransactionList
         }
       }
     }
@@ -357,179 +342,6 @@ describe("graphql", () => {
           }),
         ]),
       )
-    })
-  })
-
-  describe("transactionsByWalletId selection in 'me' query", () => {
-    it("returns valid data for walletIds passed", async () => {
-      const { errors, data: meData } = await apolloClient.query<MeQuery>({
-        query: MeDocument,
-      })
-      expect(errors).toBeUndefined()
-
-      const wallets = meData?.me?.defaultAccount?.wallets ?? []
-      expect(wallets).toBeTruthy()
-      for (const wallet of wallets) {
-        if (wallet.walletCurrency === WalletCurrency.Usd) {
-          await fundWalletIdFromLightning({
-            walletId: wallet.id as WalletId,
-            amount: centsAmount,
-          })
-        }
-      }
-
-      const { data } = await apolloClient.query<TransactionsQuery>({
-        query: TransactionsDocument,
-        variables: { walletIds: wallets.map((wallet) => wallet.id), first: 5 },
-      })
-
-      const txns = data?.me?.defaultAccount.transactions?.edges
-      expect(txns).toBeTruthy()
-      expect(txns).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            node: expect.objectContaining({
-              settlementAmount: 4_000,
-              settlementCurrency: WalletCurrency.Usd,
-              settlementDisplayAmount: "40.00",
-              settlementDisplayFee: "0.00",
-              settlementDisplayCurrency: DisplayCurrency.Usd,
-            }),
-          }),
-          expect.objectContaining({
-            node: expect.objectContaining({
-              settlementAmount: 50_000,
-              settlementCurrency: WalletCurrency.Btc,
-              settlementDisplayAmount: expect.any(String),
-              settlementDisplayFee: expect.any(String),
-              settlementDisplayCurrency: DisplayCurrency.Usd,
-            }),
-          }),
-        ]),
-      )
-    })
-
-    it("returns valid data for no walletIds passed", async () => {
-      const { errors, data: meData } = await apolloClient.query<MeQuery>({
-        query: MeDocument,
-      })
-      expect(errors).toBeUndefined()
-
-      const wallets = meData?.me?.defaultAccount.wallets ?? []
-      expect(wallets).toBeTruthy()
-      for (const wallet of wallets) {
-        if (wallet.walletCurrency === WalletCurrency.Usd) {
-          await fundWalletIdFromLightning({
-            walletId: wallet.id as WalletId,
-            amount: centsAmount,
-          })
-        }
-      }
-
-      const { data } = await apolloClient.query<TransactionsQuery>({
-        query: TransactionsDocument,
-        variables: { first: 100 },
-      })
-
-      const txns = data?.me?.defaultAccount.transactions?.edges
-      expect(txns).toBeTruthy()
-      expect(txns).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            node: expect.objectContaining({
-              settlementAmount: 4_000,
-              settlementCurrency: WalletCurrency.Usd,
-            }),
-          }),
-          expect.objectContaining({
-            node: expect.objectContaining({
-              settlementAmount: 50_000,
-              settlementCurrency: WalletCurrency.Btc,
-            }),
-          }),
-        ]),
-      )
-    })
-
-    it("returns valid data using after cursor", async () => {
-      const { errors, data: meData } = await apolloClient.query<MeQuery>({
-        query: MeDocument,
-      })
-      expect(errors).toBeUndefined()
-
-      const wallets = meData?.me?.defaultAccount.wallets ?? []
-      expect(wallets).toBeTruthy()
-      for (const wallet of wallets) {
-        if (wallet.walletCurrency === WalletCurrency.Usd) {
-          await fundWalletIdFromLightning({
-            walletId: wallet.id as WalletId,
-            amount: centsAmount,
-          })
-        }
-      }
-
-      const { data } = await apolloClient.query<TransactionsQuery>({
-        query: TransactionsDocument,
-        variables: { first: 100 },
-      })
-
-      const txns = data?.me?.defaultAccount.transactions?.edges
-      expect(txns).toBeTruthy()
-      if (!txns) throw new Error("invalid data")
-
-      const firstTxCursor = txns[0].cursor
-      {
-        const { data, errors } = await apolloClient.query<TransactionsQuery>({
-          query: TransactionsDocument,
-          variables: { after: firstTxCursor },
-        })
-
-        expect(data?.me?.defaultAccount.transactions).toBeTruthy()
-        expect(errors).toBeUndefined()
-      }
-    })
-
-    it("returns error for invalid after cursor", async () => {
-      const { data, errors } = await apolloClient.query<TransactionsQuery>({
-        query: TransactionsDocument,
-        variables: {
-          after: "86fe6c5ee72b41a934c84b127c8c4bf5fd75c077b4c9ab0cd53b1b93e7becedf",
-        },
-      })
-
-      expect(data?.me?.defaultAccount.transactions).toBeNull()
-      expect(errors).not.toBeUndefined()
-      expect(errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            code: "INVALID_INPUT",
-            message: `Argument "after" must be a valid cursor`,
-          }),
-        ]),
-      )
-    })
-
-    it("returns an error if non-owned walletId is included", async () => {
-      const expectedErrorMessage = "Invalid walletId for account."
-      const otherWalletId = await getDefaultWalletIdByTestUserRef(otherRef)
-
-      const walletIdsCases = [
-        [otherWalletId, walletId],
-        [otherWalletId],
-        [walletId, otherWalletId],
-      ]
-
-      for (const walletIds of walletIdsCases) {
-        const { data, errors } = await apolloClient.query<TransactionsQuery>({
-          query: TransactionsDocument,
-          variables: { walletIds, first: 100 },
-        })
-        expect(data?.me?.defaultAccount.transactions).toBeNull()
-        expect(errors).not.toBeUndefined()
-        if (errors == undefined) throw new Error("'errors' property missing")
-
-        expect(errors[0].message).toBe(expectedErrorMessage)
-      }
     })
   })
 
