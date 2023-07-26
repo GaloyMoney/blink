@@ -7,8 +7,20 @@ supergraph:
   listen: 0.0.0.0:4004
   introspection: true
   path: /graphql
+cors:
+  match_origins:
+    - "^http://([a-z0-9]+[.])*" # http
+    - "^https://([a-z0-9]+[.])*" # https
+  allow_credentials: true # for cookie auth
 telemetry:
   tracing:
     otlp:
       endpoint: http://otel-agent:4318
       protocol: http
+  experimental_logging: # just for local dev env
+    format: json
+    display_filename: true
+    display_line_number: false
+rhai:
+  scripts: "/repo/dev/apollo-federation"
+  main: "main.rhai" # for cookie auth https://www.apollographql.com/docs/router/configuration/header-propagation/#response-header-propagation
