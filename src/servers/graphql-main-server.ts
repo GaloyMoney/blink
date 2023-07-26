@@ -50,7 +50,6 @@ export async function startApolloServerForCoreSchema() {
   return startApolloServer({
     schema,
     port: GALOY_API_PORT,
-    startSubscriptionServer: true,
     type: "main",
   })
 }
