@@ -98,7 +98,6 @@ check_for_ln_initiated_settled() {
   local payment_hash=$2
   local first=${3:-"2"}
 
-  echo "first: $first"
   variables=$(
   jq -n \
   --argjson first "$first" \
@@ -110,6 +109,19 @@ check_for_ln_initiated_settled() {
   [[ "${settled_status}" = "SUCCESS" ]]
 }
 
+check_ln_payment_settled() {
+  local payment_request=$1
+
+  variables=$(
+  jq -n \
+  --arg payment_request "$payment_request" \
+  '{"input": {"paymentRequest": $payment_request}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-payment-status' "$variables"
+  payment_status="$(graphql_output '.data.lnInvoicePaymentStatus.status')"
+  [[ "${payment_status}" = "PAID" ]]
+}
+
 get_from_transaction_by_ln_hash() {
   property_query=$2
 
@@ -117,15 +129,4 @@ get_from_transaction_by_ln_hash() {
   echo $output \
     | jq -r --arg payment_hash "$1" "$jq_query" \
     | jq -r "$property_query"
-}
-
-validate_invoice_for_lnd() {
-  pay_req=$1
-
-  node_pubkey="$(lnd_cli getinfo | jq -r '.identity_pubkey')"
-  [[ -n "$node_pubkey" && "$node_pubkey" != "null" ]] || exit 1
-  invoice_destination="$(lnd_cli decodepayreq $pay_req | jq -r '.destination')"
-  [[ -n "$invoice_destination" && "$invoice_destination" != "null" ]] || exit 1
-
-  [[ "$node_pubkey" == "$invoice_destination" ]] || exit 1
 }

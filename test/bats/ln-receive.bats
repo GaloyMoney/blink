@@ -156,7 +156,13 @@ usd_amount=50
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
-  validate_invoice_for_lnd "$payment_request" || exit 1
+
+  # Receive payment
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+
+  # Check for settled
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
 @test "ln-receive: public - can create usd invoice" {
@@ -174,7 +180,13 @@ usd_amount=50
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
-  validate_invoice_for_lnd "$payment_request" || exit 1
+
+  # Receive payment
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+
+  # Check for settled
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
 @test "ln-receive: public - can create btc amountless invoice" {
@@ -191,7 +203,14 @@ usd_amount=50
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
-  validate_invoice_for_lnd "$payment_request" || exit 1
+
+  # Receive payment
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+    --amt "$btc_amount"
+
+  # Check for settled
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
 @test "ln-receive: public - can create usd amountless invoice" {
@@ -208,5 +227,12 @@ usd_amount=50
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
-  validate_invoice_for_lnd "$payment_request" || exit 1
+
+  # Receive payment
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+    --amt "$btc_amount"
+
+  # Check for settled
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }
