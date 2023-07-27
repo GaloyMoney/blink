@@ -476,7 +476,7 @@ type User {
   email: Email
   id: ID!
   language: Language!
-  phone: Phone!
+  phone: Phone
 }
 
 input UserLoginInput {

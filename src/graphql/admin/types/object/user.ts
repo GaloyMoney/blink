@@ -13,7 +13,7 @@ const User = GT.Object<User>({
 
   fields: () => ({
     id: { type: GT.NonNullID },
-    phone: { type: GT.NonNull(Phone) },
+    phone: { type: Phone },
 
     email: {
       type: GraphQLEmail,
