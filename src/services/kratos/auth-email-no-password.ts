@@ -25,6 +25,7 @@ import {
 } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainIdentityEmailPhone } from "./private"
 import { SchemaIdType } from "./schema"
+import { createCookieLoginFlow } from "./cookie"
 
 const getKratosKnex = () =>
   knex({
@@ -226,6 +227,35 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       const kratosUserId = result.data.session.identity?.id as UserId | undefined
 
       return { authToken, kratosUserId }
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+  }
+
+  const loginCookie = async ({
+    email,
+  }: {
+    email: EmailAddress
+  }): Promise<LoginWithPhoneCookieSchemaResponse | KratosError> => {
+    const identifier = email
+    const method = "password"
+    try {
+      const cookieFlow = await createCookieLoginFlow()
+      if (cookieFlow instanceof Error) return cookieFlow
+      const result = await kratosPublic.updateLoginFlow({
+        flow: cookieFlow.flowId,
+        cookie: cookieFlow.cookie,
+        updateLoginFlowBody: {
+          identifier,
+          method,
+          password,
+          csrf_token: cookieFlow.csrf,
+        },
+      })
+      const cookiesToSendBackToClient: Array<SessionCookie> = result.headers["set-cookie"]
+      // identity is only defined when identity has not enabled totp
+      const kratosUserId = result.data.session.identity.id as UserId | undefined
+      return { cookiesToSendBackToClient, kratosUserId }
     } catch (err) {
       return new UnknownKratosError(err)
     }
@@ -452,6 +482,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       hasEmail,
       isEmailVerified,
       loginToken,
+      loginCookie,
     },
   })
 }

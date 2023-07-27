@@ -2,7 +2,7 @@
   upstream:
     url: "http://bats-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(clearCookies|login|logout|email/code|email/login|totp/validate)>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(clearCookies|login|logout|email/code|email/login|totp/validate|email/login/cookie)>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
     - handler: anonymous

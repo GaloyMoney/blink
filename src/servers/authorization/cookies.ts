@@ -11,12 +11,12 @@ import { logoutCookie } from "@app/authentication"
 import { parseIps } from "@domain/accounts-ips"
 import { checkedToPhoneNumber } from "@domain/users"
 import bodyParser from "body-parser"
-import libCookie from "cookie"
 
 import cookieParser from "cookie-parser"
-import setCookie from "set-cookie-parser"
 
 import { validateKratosCookie } from "@services/kratos"
+
+import { parseKratosCookies } from "@services/kratos/cookie"
 
 import { authRouter } from "./router"
 
@@ -36,6 +36,7 @@ authRouter.post(
       const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
       const ip = parseIps(ipString)
       if (!ip) {
+        recordExceptionInCurrentSpan({ error: "IP is not defined" })
         return res.status(500).send({ error: "IP is not defined" })
       }
       const code = req.body.authCode
@@ -50,73 +51,42 @@ authRouter.post(
         return res.status(500).send({ error: mapError(loginResp).message })
       }
 
-      let cookies: setCookie.Cookie[]
-      let kratosUserId: UserId
       try {
-        cookies = setCookie.parse(loginResp.cookiesToSendBackToClient)
-        kratosUserId = loginResp.kratosUserId
-      } catch (error) {
-        recordExceptionInCurrentSpan({ error })
-        return res.status(500).send({ error: "Error parsing cookies" })
-      }
-
-      try {
-        const csrfCookie = cookies?.find((c) => c.name.includes("csrf"))
-        const kratosSessionCookie = cookies?.find((c) =>
-          c.name.includes("ory_kratos_session"),
-        )
+        const kratosCookies = parseKratosCookies(loginResp.cookiesToSendBackToClient)
+        const kratosUserId: UserId | undefined = loginResp.kratosUserId
+        const csrfCookie = kratosCookies.csrf()
+        const kratosSessionCookie = kratosCookies.kratosSession()
         if (!csrfCookie || !kratosSessionCookie) {
           return res
             .status(500)
             .send({ error: "Missing csrf or ory_kratos_session cookie" })
         }
-        const kratosCookieStr = libCookie.serialize(
-          kratosSessionCookie.name,
-          kratosSessionCookie.value,
-          {
-            expires: kratosSessionCookie.expires,
-            maxAge: kratosSessionCookie.maxAge,
-            sameSite: "none",
-            secure: kratosSessionCookie.secure,
-            httpOnly: kratosSessionCookie.httpOnly,
-            path: kratosSessionCookie.path,
-          },
-        )
+        const kratosCookieStr = kratosCookies.kratosSessionAsString()
         const result = await validateKratosCookie(kratosCookieStr)
         if (result instanceof Error) {
           return res.status(500).send({ error: result.message })
         }
-        const thirtyDaysFromNow = new Date(new Date().setDate(new Date().getDate() + 30))
-        const expiresAt = result.session.expiresAt
-          ? result.session.expiresAt
-          : thirtyDaysFromNow
-        const maxAge = expiresAt.getTime() - new Date().getTime()
-        res.cookie(kratosSessionCookie.name, kratosSessionCookie.value, {
-          maxAge,
-          sameSite: "none",
-          secure: kratosSessionCookie.secure,
-          httpOnly: kratosSessionCookie.httpOnly,
-          path: kratosSessionCookie.path,
-        })
-        res.cookie(csrfCookie.name, csrfCookie.value, {
-          maxAge,
-          sameSite: "none",
-          secure: csrfCookie.secure,
-          httpOnly: csrfCookie.httpOnly,
-          path: csrfCookie.path,
+        res.cookie(
+          kratosSessionCookie.name,
+          kratosSessionCookie.value,
+          kratosCookies.formatCookieOptions(kratosSessionCookie),
+        )
+        res.cookie(
+          csrfCookie.name,
+          csrfCookie.value,
+          kratosCookies.formatCookieOptions(csrfCookie),
+        )
+        return res.send({
+          identity: {
+            id: kratosUserId,
+            uid: kratosUserId,
+            phoneNumber: phone,
+          },
         })
       } catch (error) {
         recordExceptionInCurrentSpan({ error })
         return res.status(500).send({ result: "Error parsing cookies" })
       }
-
-      res.send({
-        identity: {
-          id: kratosUserId,
-          uid: kratosUserId,
-          phoneNumber: phone,
-        },
-      })
     },
   }),
 )
