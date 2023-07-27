@@ -2714,12 +2714,13 @@
     "@opentelemetry/resources" "1.14.0"
     "@opentelemetry/sdk-trace-base" "1.14.0"
 
-"@opentelemetry/instrumentation-graphql@^0.34.3":
-  version "0.34.3"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-graphql/-/instrumentation-graphql-0.34.3.tgz#f55cb9223f616a27c8fa4303ee8c8b8f64059ddd"
-  integrity sha512-5NTOZWpIr0/E6FbftUHpoR6MxdySjcnNbHA3XAVqqAgLg5w5cmsaJepeKPxrbbNI91CShXqwcrNcaHueUGGCBw==
+"@opentelemetry/instrumentation-graphql@^0.35.0":
+  version "0.35.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-graphql/-/instrumentation-graphql-0.35.0.tgz#45d2df2be320c7289aff49cabfbbfa8791670b19"
+  integrity sha512-hKuOXTzB8UBaxVteKU2nMRGnUPt6bD9SSBBLYaDOGGPF1Gs4XsiuMMRuyXomMIudelM7flPpbuqiP9YoSJuXQQ==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.40.0"
+    "@opentelemetry/instrumentation" "^0.41.0"
+    tslib "^2.3.1"
 
 "@opentelemetry/instrumentation-grpc@^0.40.0":
   version "0.40.0"
