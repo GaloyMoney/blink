@@ -7,6 +7,7 @@ import {
   MissingFunderAccountConfigError,
   MissingUsdDealerWalletConfigError,
   UnknownConfigError,
+  isProd,
   mongodbCredentials,
 } from "@config"
 import { WalletCurrency } from "@domain/shared"
@@ -74,7 +75,7 @@ if (mgCred.user && mgCred.password) {
   path = `mongodb://${mgCred.user}:${mgCred.password}@${mgCred.address}/${mgCred.db}`
 } else {
   path = `mongodb://${mgCred.address}/${mgCred.db}`
-  if (process.env.NODE_ENV !== "development") {
+  if (!isProd) {
     baseLogger.warn({ path }, "Connecting to MongoDB without a username and password")
   }
 }

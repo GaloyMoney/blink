@@ -272,13 +272,11 @@ export const createUserAndWallet = async (
     if (!(accountIP instanceof CouldNotFindError) && accountIP instanceof Error)
       throw accountIP
 
-    if (entry.needUsdWallet) {
-      await addWalletIfNonexistent({
-        currency: WalletCurrency.Usd,
-        accountId: account.id,
-        type: WalletType.Checking,
-      })
-    }
+    await addWalletIfNonexistent({
+      currency: WalletCurrency.Usd,
+      accountId: account.id,
+      type: WalletType.Checking,
+    })
   }
 
   if (account instanceof Error) throw account

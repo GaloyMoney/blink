@@ -111,13 +111,11 @@ balance_for_check() {
 login_user() {
   local token_name=$1
   local phone=$2
-  local code=$3
 
   local variables=$(
     jq -n \
     --arg phone "$phone" \
-    --arg code "$code" \
-    '{input: {phone: $phone, code: $code}}'
+    '{input: {phone: $phone, code: "000000"}}'
   )
   exec_graphql 'anon' 'user-login' "$variables"
   auth_token="$(graphql_output '.data.userLogin.authToken')"
