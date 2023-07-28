@@ -13,7 +13,6 @@ setup_file() {
 
   lnds_init
   initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
-  initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
 }
 
 teardown_file() {
@@ -33,8 +32,7 @@ teardown() {
 btc_amount=1000
 usd_amount=50
 
-@test "ln-receive: settle via ln for BTC wallet" {
-  # Generate invoice
+@test "public-ln-receive: can receive on btc invoice" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -42,26 +40,23 @@ usd_amount=50
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     --arg amount "$btc_amount" \
-    '{input: {walletId: $wallet_id, amount: $amount}}'
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
-  invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
+  exec_graphql 'anon' 'ln-invoice-create-on-behalf-of-recipient' "$variables"
+  invoice="$(graphql_output '.data.lnInvoiceCreateOnBehalfOfRecipient.invoice')"
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
-  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
-  [[ "${payment_hash}" != "null" ]] || exit 1
 
   # Receive payment
   lnd_outside_cli payinvoice -f \
-    --pay_req "$payment_request"
+    --pay_req "$payment_request" \
 
   # Check for settled
-  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
-@test "ln-receive: settle via ln for USD wallet" {
-  # Generate invoice
+@test "public-ln-receive: can receive on usd invoice" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -69,41 +64,36 @@ usd_amount=50
     jq -n \
     --arg wallet_id "$(read_value $usd_wallet_name)" \
     --arg amount "$usd_amount" \
-    '{input: {walletId: $wallet_id, amount: $amount}}'
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
   )
-  exec_graphql "$token_name" 'ln-usd-invoice-create' "$variables"
-  invoice="$(graphql_output '.data.lnUsdInvoiceCreate.invoice')"
+  exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
+  invoice="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.invoice')"
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
-  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
-  [[ "${payment_hash}" != "null" ]] || exit 1
 
   # Receive payment
   lnd_outside_cli payinvoice -f \
-    --pay_req "$payment_request"
+    --pay_req "$payment_request" \
 
   # Check for settled
-  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
-@test "ln-receive: settle via ln for BTC wallet, amountless invoice" {
-  # Generate invoice
+@test "public-ln-receive: can receive on btc amountless invoice" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
-    '{input: {walletId: $wallet_id}}'
+    '{input: {recipientWalletId: $wallet_id}}'
   )
-  exec_graphql "$token_name" 'ln-no-amount-invoice-create' "$variables"
-  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+  exec_graphql 'anon' 'ln-no-amount-invoice-create-on-behalf-of-recipient' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreateOnBehalfOfRecipient.invoice')"
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
-  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
-  [[ "${payment_hash}" != "null" ]] || exit 1
 
   # Receive payment
   lnd_outside_cli payinvoice -f \
@@ -111,26 +101,23 @@ usd_amount=50
     --amt "$btc_amount"
 
   # Check for settled
-  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
-@test "ln-receive: settle via ln for USD wallet, amountless invoice" {
-  # Generate invoice
+@test "public-ln-receive: can receive on usd amountless invoice" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $usd_wallet_name)" \
-    '{input: {walletId: $wallet_id}}'
+    '{input: {recipientWalletId: $wallet_id}}'
   )
-  exec_graphql "$token_name" 'ln-no-amount-invoice-create' "$variables"
-  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+  exec_graphql 'anon' 'ln-no-amount-invoice-create-on-behalf-of-recipient' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreateOnBehalfOfRecipient.invoice')"
 
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
-  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
-  [[ "${payment_hash}" != "null" ]] || exit 1
 
   # Receive payment
   lnd_outside_cli payinvoice -f \
@@ -138,5 +125,5 @@ usd_amount=50
     --amt "$btc_amount"
 
   # Check for settled
-  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  retry 15 1 check_ln_payment_settled "$payment_request"
 }

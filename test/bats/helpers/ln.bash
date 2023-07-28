@@ -98,7 +98,6 @@ check_for_ln_initiated_settled() {
   local payment_hash=$2
   local first=${3:-"2"}
 
-  echo "first: $first"
   variables=$(
   jq -n \
   --argjson first "$first" \
@@ -108,6 +107,19 @@ check_for_ln_initiated_settled() {
 
   settled_status="$(get_from_transaction_by_ln_hash $payment_hash '.status')"
   [[ "${settled_status}" = "SUCCESS" ]]
+}
+
+check_ln_payment_settled() {
+  local payment_request=$1
+
+  variables=$(
+  jq -n \
+  --arg payment_request "$payment_request" \
+  '{"input": {"paymentRequest": $payment_request}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-payment-status' "$variables"
+  payment_status="$(graphql_output '.data.lnInvoicePaymentStatus.status')"
+  [[ "${payment_status}" = "PAID" ]]
 }
 
 get_from_transaction_by_ln_hash() {
