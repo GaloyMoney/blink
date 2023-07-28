@@ -492,7 +492,7 @@ enum InvoicePaymentStatus
 scalar join__FieldSet
 
 enum join__Graph {
-  CIRCLES @join__graph(name: "circles", url: "http://localhost:4000")
+  CIRCLES @join__graph(name: "circles", url: "http://bats-tests:4010")
   PUBLIC @join__graph(name: "public", url: "http://bats-tests:4012/graphql")
 }
 
@@ -1881,9 +1881,8 @@ input WelcomeLeaderboardInput
 }
 
 type WelcomeProfile
-  @join__type(graph: CIRCLES, key: "id")
+  @join__type(graph: CIRCLES)
 {
-  id: ID!
   leaderboardName: LeaderboardName
   innerCircleThisMonthCount: Int!
   innerCircleThisMonthRank: Int!

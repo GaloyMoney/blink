@@ -5,6 +5,6 @@ subgraphs:
     schema:
       file: ../../src/graphql/main/schema.graphql
   circles:
-    routing_url: http://localhost:4000
+    routing_url: http://bats-tests:4010
     schema:
       file: ../../../blink-circles/src/graphql/schema.graphql # relative path to https://github.com/GaloyMoney/blink-circles

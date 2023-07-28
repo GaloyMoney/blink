@@ -25,6 +25,6 @@ rover dev --url http://localhost:4004/graphql -p 5000 -n public
 # Run the Supergraph Explorer
 ```
 cd ./dev/apollo-federation
-rover dev --supergraph-config supergraph-config.yaml -p 5000
+rover dev --supergraph-config supergraph-config.yaml --router-config router.yaml -p 5002 --log info --elv2-license accept
 ```
 
