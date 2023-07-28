@@ -11,7 +11,7 @@ import {
 } from "@app/prices"
 
 import { AccountLimitsChecker } from "@domain/accounts"
-import { toSats } from "@domain/bitcoin"
+import { sat2btc, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
@@ -78,6 +78,7 @@ import {
   createInvoice,
   createUserAndWalletFromPhone,
   decodePaymentRequest,
+  fundWalletIdFromOnchain,
   getAccountByPhone,
   getAccountRecordByPhone,
   getBalanceHelper,
@@ -172,10 +173,10 @@ let accountH: Account
 
 let walletIdA: WalletId
 let walletIdB: WalletId
+let walletIdC: WalletId
 let walletIdH: WalletId
 let walletIdUsdB: WalletId
 let walletIdUsdA: WalletId
-let walletIdC: WalletId
 
 let walletDescriptorB: WalletDescriptor<WalletCurrency>
 
@@ -202,6 +203,12 @@ beforeAll(async () => {
   walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
   walletIdC = await getDefaultWalletIdByPhone(phoneC)
   walletIdH = await getDefaultWalletIdByPhone(phoneH)
+
+  await fundWalletIdFromOnchain({
+    walletId: walletIdB,
+    amountInBitcoin: sat2btc(1),
+    lnd: lnd1,
+  })
 
   walletDescriptorB = {
     id: walletIdB,
