@@ -115,6 +115,16 @@ usd_amount=50
   [[ "$receiver_wallet_id" == "$(read_value $btc_wallet_name)" ]] || exit 1
 }
 
+@test "public-ln-receive: return error for invalid username" {
+  exec_graphql 'anon' 'account-default-wallet' '{"username": "incorrectly-formatted"}'
+  error_msg="$(graphql_output '.errors[0].message')"
+  [[ "$error_msg" == "Invalid value for Username" ]] || exit 1
+
+  exec_graphql 'anon' 'account-default-wallet' '{"username": "idontexist"}'
+  error_msg="$(graphql_output '.errors[0].message')"
+  [[ "$error_msg" == "Account does not exist for username idontexist" ]] || exit 1
+}
+
 @test "public-ln-receive: can receive on btc invoice, with subscription" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
