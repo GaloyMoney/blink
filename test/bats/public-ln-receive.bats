@@ -43,7 +43,7 @@ teardown() {
 btc_amount=1000
 usd_amount=50
 
-@test "public-ln-receive: can fetch with btc default wallet-id from username" {
+@test "public-ln-receive: account details - can fetch with btc default wallet-id from username" {
   token_name=$ALICE_TOKEN_NAME
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
@@ -79,7 +79,7 @@ usd_amount=50
   [[ "$receiver_wallet_id" == "$(read_value $usd_wallet_name)" ]] || exit 1
 }
 
-@test "public-ln-receive: can fetch with usd default wallet-id from username" {
+@test "public-ln-receive: account details - can fetch with usd default wallet-id from username" {
   token_name=$ALICE_TOKEN_NAME
   btc_wallet_name="$token_name.btc_wallet_id"
   usd_wallet_name="$token_name.usd_wallet_id"
@@ -115,7 +115,7 @@ usd_amount=50
   [[ "$receiver_wallet_id" == "$(read_value $btc_wallet_name)" ]] || exit 1
 }
 
-@test "public-ln-receive: return error for invalid username" {
+@test "public-ln-receive: account details - return error for invalid username" {
   exec_graphql 'anon' 'account-default-wallet' '{"username": "incorrectly-formatted"}'
   error_msg="$(graphql_output '.errors[0].message')"
   [[ "$error_msg" == "Invalid value for Username" ]] || exit 1
@@ -125,7 +125,7 @@ usd_amount=50
   [[ "$error_msg" == "Account does not exist for username idontexist" ]] || exit 1
 }
 
-@test "public-ln-receive: can receive on btc invoice, with subscription" {
+@test "public-ln-receive: receive via invoice - can receive on btc invoice, with subscription" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -162,7 +162,7 @@ usd_amount=50
   stop_subscriber
 }
 
-@test "public-ln-receive: can receive on usd invoice" {
+@test "public-ln-receive: receive via invoice - can receive on usd invoice" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -186,7 +186,7 @@ usd_amount=50
   retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
-@test "public-ln-receive: can receive on btc amountless invoice" {
+@test "public-ln-receive: receive via invoice - can receive on btc amountless invoice" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -210,7 +210,7 @@ usd_amount=50
   retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
-@test "public-ln-receive: can receive on usd amountless invoice" {
+@test "public-ln-receive: receive via invoice - can receive on usd amountless invoice" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -232,4 +232,78 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_ln_payment_settled "$payment_request"
+}
+
+@test "public-ln-receive: fail to create invoice - nonexistent wallet-id" {
+  variables=$(
+    jq -n \
+    --arg amount "$btc_amount" \
+    '{input: {recipientWalletId: "does-not-exist", amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "Invalid value for WalletId" ]] || exit 1
+  exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "Invalid value for WalletId" ]] || exit 1
+
+  exec_graphql \
+    'anon' \
+    'ln-no-amount-invoice-create-on-behalf-of-recipient' \
+    '{"input": {"recipientWalletId": "does-not-exist"}}'
+  error_msg="$(graphql_output '.data.lnNoAmountInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "Invalid value for WalletId" ]] || exit 1
+}
+
+@test "public-ln-receive: fail to create invoice - negative amount" {
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg amount "-1000" \
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "Invalid value for SatAmount" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg amount "-1000" \
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "Invalid value for CentAmount" ]] || exit 1
+}
+
+@test "public-ln-receive: fail to create invoice - zero amount" {
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg amount "0" \
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "A valid satoshi amount is required" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg amount "0" \
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "A valid usd amount is required" ]] || exit 1
+
 }
