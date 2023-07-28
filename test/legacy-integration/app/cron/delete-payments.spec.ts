@@ -12,11 +12,14 @@ import {
 import { LndService } from "@services/lnd"
 
 import {
+  bitcoindClient,
   checkIsBalanced,
   createInvoice,
   createUserAndWalletFromPhone,
+  fundWalletIdFromOnchain,
   getAccountByPhone,
   getDefaultWalletIdByPhone,
+  lnd1,
   lndOutside1,
   randomPhone,
 } from "test/helpers"
@@ -27,13 +30,28 @@ let walletIdB: WalletId
 const phone = randomPhone()
 
 beforeAll(async () => {
+  await bitcoindClient.loadWallet({ filename: "outside" })
+
   await createUserAndWalletFromPhone(phone)
   accountB = await getAccountByPhone(phone)
   walletIdB = await getDefaultWalletIdByPhone(phone)
+
+  await fundWalletIdFromOnchain({
+    walletId: walletIdB,
+    amountInBitcoin: 0.02,
+    lnd: lnd1,
+  })
+
+  // needed to update the balance for some reasons
+  await checkIsBalanced()
 })
 
 afterEach(async () => {
   await checkIsBalanced()
+})
+
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 describe("Delete payments from Lnd - Lightning Pay", () => {
