@@ -9,6 +9,7 @@ setup_file() {
   bitcoind_init
   start_trigger
   start_server
+  start_ws_server
   start_exporter
 
   lnds_init
@@ -18,6 +19,7 @@ setup_file() {
 teardown_file() {
   stop_trigger
   stop_server
+  stop_ws_server
   stop_exporter
 }
 
@@ -32,7 +34,7 @@ teardown() {
 btc_amount=1000
 usd_amount=50
 
-@test "public-ln-receive: can receive on btc invoice" {
+@test "public-ln-receive: can receive on btc invoice, with subscription" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -48,12 +50,25 @@ usd_amount=50
   payment_request="$(echo $invoice | jq -r '.paymentRequest')"
   [[ "${payment_request}" != "null" ]] || exit 1
 
+  # Setup subscription
+  variables=$(
+  jq -n \
+  --arg payment_request "$payment_request" \
+  '{"input": {"paymentRequest": $payment_request}}'
+  )
+  subscribe_to 'anon' 'ln-invoice-payment-status-sub' "$variables"
+  sleep 3
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PENDING" .e2e-subscriber.log
+
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
 
   # Check for settled
   retry 15 1 check_ln_payment_settled "$payment_request"
+
+  retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PAID" .e2e-subscriber.log
+  stop_subscriber
 }
 
 @test "public-ln-receive: can receive on usd invoice" {
