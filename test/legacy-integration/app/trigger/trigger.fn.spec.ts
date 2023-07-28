@@ -19,6 +19,7 @@ import {
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
   getDefaultWalletIdByTestUserRef,
+  lndCreateOnChainAddress,
   lnd1,
   mineBlockAndSyncAll,
   RANDOM_ADDRESS,
@@ -105,13 +106,13 @@ describe("onchainBlockEventHandler", () => {
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
 
-    const address = await Wallets.lndCreateOnChainAddress(walletIdA)
+    const address = await lndCreateOnChainAddress(walletIdA)
     if (address instanceof Error) throw address
 
     const output0 = {}
     output0[address] = sat2btc(amount)
 
-    const address2 = await Wallets.lndCreateOnChainAddress(walletIdD)
+    const address2 = await lndCreateOnChainAddress(walletIdD)
     if (address2 instanceof Error) throw address2
 
     const output1 = {}
