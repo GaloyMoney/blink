@@ -58,6 +58,8 @@ export const markAccountForDeletion = async ({
     status: AccountStatus.Closed,
     updatedByUserId,
   })
+  account.title = null
+  account.coordinates = null
 
   const newAccount = await accountsRepo.update(account)
   if (newAccount instanceof Error) return newAccount
