@@ -14,6 +14,15 @@ setup_file() {
 
   lnds_init
   initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+
+  variables=$(
+    jq -n \
+    --arg username "$ALICE_TOKEN_NAME" \
+    '{input: {username: $username}}'
+  )
+  exec_graphql "$ALICE_TOKEN_NAME" 'user-update-username' "$variables"
+  username="$(graphql_output '.data.userUpdateUsername.user.username')"
+  [[ "$ALICE_TOKEN_NAME" == "$username" ]]
 }
 
 teardown_file() {
@@ -33,6 +42,78 @@ teardown() {
 
 btc_amount=1000
 usd_amount=50
+
+@test "public-ln-receive: can fetch with btc default wallet-id from username" {
+  token_name=$ALICE_TOKEN_NAME
+  btc_wallet_name="$token_name.btc_wallet_id"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  # Change default wallet to btc
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'account-update-default-wallet-id' "$variables"
+  updated_wallet_id="$(graphql_output '.data.accountUpdateDefaultWalletId.account.defaultWalletId')"
+  [[ "$updated_wallet_id" == "$(read_value $btc_wallet_name)" ]] || exit 1
+
+  # Fetch btc-wallet-id from username
+  variables=$(
+    jq -n \
+    --arg username "$token_name" \
+    '{username: $username}'
+  )
+  exec_graphql 'anon' 'account-default-wallet' "$variables"
+  receiver_wallet_id="$(graphql_output '.data.accountDefaultWallet.id')"
+  [[ "$receiver_wallet_id" == "$(read_value $btc_wallet_name)" ]] || exit 1
+
+  # Fetch usd-wallet-id from username
+  variables=$(
+    jq -n \
+    --arg username "$token_name" \
+    '{username: $username, walletCurrency: "USD"}'
+  )
+  exec_graphql 'anon' 'account-default-wallet' "$variables"
+  receiver_wallet_id="$(graphql_output '.data.accountDefaultWallet.id')"
+  [[ "$receiver_wallet_id" == "$(read_value $usd_wallet_name)" ]] || exit 1
+}
+
+@test "public-ln-receive: can fetch with usd default wallet-id from username" {
+  token_name=$ALICE_TOKEN_NAME
+  btc_wallet_name="$token_name.btc_wallet_id"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  # Change default wallet to usd
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'account-update-default-wallet-id' "$variables"
+  updated_wallet_id="$(graphql_output '.data.accountUpdateDefaultWalletId.account.defaultWalletId')"
+  [[ "$updated_wallet_id" == "$(read_value $usd_wallet_name)" ]] || exit 1
+
+  # Fetch usd-wallet-id from username
+  variables=$(
+    jq -n \
+    --arg username "$token_name" \
+    '{username: $username}'
+  )
+  exec_graphql 'anon' 'account-default-wallet' "$variables"
+  receiver_wallet_id="$(graphql_output '.data.accountDefaultWallet.id')"
+  [[ "$receiver_wallet_id" == "$(read_value $usd_wallet_name)" ]] || exit 1
+
+  # Fetch btc-wallet-id from username
+  variables=$(
+    jq -n \
+    --arg username "$token_name" \
+    '{username: $username, walletCurrency: "BTC"}'
+  )
+  exec_graphql 'anon' 'account-default-wallet' "$variables"
+  receiver_wallet_id="$(graphql_output '.data.accountDefaultWallet.id')"
+  [[ "$receiver_wallet_id" == "$(read_value $btc_wallet_name)" ]] || exit 1
+}
 
 @test "public-ln-receive: can receive on btc invoice, with subscription" {
   token_name="$ALICE_TOKEN_NAME"
