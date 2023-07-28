@@ -14,6 +14,14 @@ BOB_TOKEN_NAME="bob"
 BOB_PHONE="+16505554350"
 BOB_CODE="321321"
 
+ADMIN_TOKEN_NAME="editor"
+ADMIN_PHONE="+16505554336"
+ADMIN_CODE="321321"
+
+TESTER_TOKEN_NAME="tester"
+TESTER_PHONE="+19876543210"
+TESTER_CODE="321321"
+
 bitcoin_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
 }
@@ -95,6 +103,7 @@ exec_graphql() {
   local token_name=$1
   local query_name=$2
   local variables=${3:-"{}"}
+  local admin=$4
   echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
   echo "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
 
@@ -110,12 +119,19 @@ exec_graphql() {
     run_cmd=""
   fi
 
+  if [[ "${admin}" == "admin" ]]; then
+    gql_route="admin/graphql"
+  else
+    gql_route="graphql"
+  fi
+
+
   ${run_cmd} curl -s \
     -X POST \
     ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
     -H "Content-Type: application/json" \
     -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
-    ${GALOY_ENDPOINT}/graphql
+    "${GALOY_ENDPOINT}/${gql_route}"
 
   echo "GQL output: '$output'"
 }
