@@ -147,6 +147,7 @@ interface INewOnChainService {
     walletDescriptor: WalletDescriptor<WalletCurrency>
     requestId?: OnChainAddressRequestId
   }): Promise<OnChainAddressIdentifier | OnChainServiceError>
+  getAddressForSwap(): Promise<OnChainAddress | OnChainServiceError>
   findAddressByRequestId(
     requestId: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError>
