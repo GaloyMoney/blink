@@ -10,7 +10,6 @@ import {
   defaultStateConfig,
   defaultTestClientConfig,
   initializeTestingState,
-  promisifiedSubscription,
   killServer,
   startServer,
 } from "test/e2e/helpers"
@@ -26,21 +25,10 @@ import { loginFromPhone } from "test/e2e/helpers/account-creation"
 import {
   LnInvoiceCreateOnBehalfOfRecipientDocument,
   LnInvoiceCreateOnBehalfOfRecipientMutation,
-  LnInvoicePaymentSendDocument,
-  LnInvoicePaymentSendMutation,
   LnNoAmountInvoiceCreateOnBehalfOfRecipientDocument,
   LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
-  MeDocument,
-  MeQuery,
-  NodeIdsDocument,
-  NodeIdsQuery,
-  UserDefaultWalletIdDocument,
-  UserDefaultWalletIdQuery,
   UserLoginDocument,
   UserLoginMutation,
-  LnInvoicePaymentStatusQueryDocument,
-  LnInvoicePaymentStatusSubscriptionDocument,
-  LnInvoicePaymentStatusSubscriptionSubscription,
   UserUpdateUsernameMutation,
   UserUpdateUsernameDocument,
 } from "test/e2e/generated"
@@ -125,73 +113,6 @@ afterAll(async () => {
 })
 
 describe("galoy-pay", () => {
-  describe("getDefaultWalletId", () => {
-    gql`
-      query userDefaultWalletId($username: Username!) {
-        userDefaultWalletId(username: $username)
-      }
-    `
-
-    it("returns a value for an existing username", async () => {
-      const input = { username: receivingUsername }
-
-      const result = await apolloClient.query<UserDefaultWalletIdQuery>({
-        query: UserDefaultWalletIdDocument,
-        variables: input,
-      })
-      const walletId = result.data.userDefaultWalletId
-
-      expect(walletId).toBeTruthy()
-    })
-
-    it("returns an error for invalid username syntax", async () => {
-      const input = { username: "username-incorrectly-formatted" }
-      const message = "Invalid value for Username"
-      const result = await apolloClient.query<UserDefaultWalletIdQuery>({
-        query: UserDefaultWalletIdDocument,
-        variables: input,
-      })
-
-      expect(result.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ message: expect.stringContaining(message) }),
-        ]),
-      )
-    })
-
-    it("returns an error for an inexistent username", async () => {
-      const input = { username: "user1234" }
-      const message = "Account does not exist for username"
-
-      const result = await apolloClient.query<UserDefaultWalletIdQuery>({
-        query: UserDefaultWalletIdDocument,
-        variables: input,
-      })
-
-      expect(result.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ message: expect.stringContaining(message) }),
-        ]),
-      )
-    })
-  })
-
-  describe("nodeIds", () => {
-    gql`
-      query nodeIds {
-        globals {
-          nodesIds
-          network
-        }
-      }
-    `
-
-    it("returns a nonempty list of nodes", async () => {
-      const result = await apolloClient.query<NodeIdsQuery>({ query: NodeIdsDocument })
-      expect(result?.data?.globals?.nodesIds.length).toBeGreaterThan(0)
-    })
-  })
-
   describe("lnInvoiceCreateOnBehalfOfRecipient", () => {
     gql`
       mutation lnInvoiceCreateOnBehalfOfRecipient(
@@ -320,7 +241,7 @@ describe("galoy-pay", () => {
     })
   })
 
-  describe("lnInvoicePaymentStatus", () => {
+  describe("lnNoAmountInvoiceCreateOnBehalfOfRecipient", () => {
     gql`
       mutation lnNoAmountInvoiceCreateOnBehalfOfRecipient($walletId: WalletId!) {
         mutationData: lnNoAmountInvoiceCreateOnBehalfOfRecipient(
@@ -334,103 +255,7 @@ describe("galoy-pay", () => {
           }
         }
       }
-
-      mutation LnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
-        lnInvoicePaymentSend(input: $input) {
-          errors {
-            message
-          }
-          status
-        }
-      }
-
-      subscription lnInvoicePaymentStatusSubscription(
-        $input: LnInvoicePaymentStatusInput!
-      ) {
-        lnInvoicePaymentStatus(input: $input) {
-          errors {
-            message
-          }
-          status
-        }
-      }
-
-      query LnInvoicePaymentStatusQuery($input: LnInvoicePaymentStatusInput!) {
-        lnInvoicePaymentStatus(input: $input) {
-          status
-        }
-      }
     `
-
-    it("returns payment status when paid", async () => {
-      // Create an invoice on behalf of userA
-      const metadata = JSON.stringify([["text/plain", `Payment to ${receivingUsername}`]])
-      const descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
-      const createPaymentRequestInput = {
-        walletId: receivingWalletId,
-        amount: 1000,
-        descriptionHash,
-      }
-
-      const createInvoice =
-        await apolloClient.mutate<LnInvoiceCreateOnBehalfOfRecipientMutation>({
-          mutation: LnInvoiceCreateOnBehalfOfRecipientDocument,
-          variables: createPaymentRequestInput,
-        })
-
-      const paymentRequest = createInvoice?.data?.mutationData?.invoice?.paymentRequest
-
-      // Subscribe to the invoice
-      const subscribeToPaymentInput = { paymentRequest }
-      const subscription =
-        apolloClient.subscribe<LnInvoicePaymentStatusSubscriptionSubscription>({
-          query: LnInvoicePaymentStatusSubscriptionDocument,
-          variables: { input: subscribeToPaymentInput },
-        })
-      const { promise, unsubscribe } = promisifiedSubscription(subscription)
-      const resultPending = (await promise) as { data }
-      unsubscribe()
-      expect(resultPending.data.lnInvoicePaymentStatus.status).toEqual("PENDING")
-
-      const statusQuery = async () => {
-        await apolloClient.resetStore()
-        return apolloClient.query({
-          query: LnInvoicePaymentStatusQueryDocument,
-          variables: { input: subscribeToPaymentInput },
-        })
-      }
-      const pendingStatusResult = await statusQuery()
-      expect(pendingStatusResult.data.lnInvoicePaymentStatus.status).toEqual("PENDING")
-
-      // Pay the invoice
-      const res = await apolloClient.query<MeQuery>({ query: MeDocument })
-      const fundingWalletId = res?.data?.me?.defaultAccount.defaultWalletId
-      if (!fundingWalletId) throw new Error("no funding wallet id found")
-
-      const makePaymentInput = { walletId: fundingWalletId, paymentRequest }
-      const makePayment = await apolloClient.mutate<LnInvoicePaymentSendMutation>({
-        mutation: LnInvoicePaymentSendDocument,
-        variables: { input: makePaymentInput },
-      })
-      expect(makePayment?.data?.lnInvoicePaymentSend?.status).toEqual("SUCCESS")
-
-      const statusQueryResult = await statusQuery()
-      expect(statusQueryResult.data.lnInvoicePaymentStatus.status).toEqual("PAID")
-
-      const subscriptionPaid =
-        apolloClient.subscribe<LnInvoicePaymentStatusSubscriptionSubscription>({
-          query: LnInvoicePaymentStatusSubscriptionDocument,
-          variables: { input: subscribeToPaymentInput },
-        })
-      const { promise: statusPromise, unsubscribe: statusUnsubscribe } =
-        promisifiedSubscription(subscriptionPaid)
-      const result = (await statusPromise) as { data }
-      statusUnsubscribe()
-      expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")
-    })
-  })
-
-  describe("lnNoAmountInvoiceCreateOnBehalfOfRecipient", () => {
     it("returns a valid lightning invoice", async () => {
       const input = { walletId: receivingWalletId }
 
