@@ -3,6 +3,12 @@ headers:
     request:
       - propagate:
           matching: .*
+include_subgraph_errors:
+  all: true
+sandbox:
+  enabled: true
+homepage:
+  enabled: false
 supergraph:
   listen: 0.0.0.0:4004
   introspection: true
