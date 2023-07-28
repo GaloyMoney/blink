@@ -5,8 +5,6 @@ import { DisplayCurrency } from "@domain/fiat"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-import { Subscription } from "zen-observable-ts"
-
 import { sleep } from "@utils"
 
 import { gql } from "apollo-server-core"
@@ -26,21 +24,15 @@ import {
   fundWalletIdFromLightning,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
-  lndOutside1,
-  pay,
 } from "test/helpers"
 import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
 import {
-  LnInvoiceCreateDocument,
-  LnInvoiceCreateMutation,
   MainQueryDocument,
   MainQueryQuery,
   UserLoginDocument,
   UserLoginMutation,
   MeDocument,
   MeQuery,
-  MyUpdatesDocument,
-  MyUpdatesSubscription,
 } from "test/e2e/generated"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -342,125 +334,6 @@ describe("graphql", () => {
           }),
         ]),
       )
-    })
-  })
-
-  describe("Trigger + receiving payment", () => {
-    afterAll(async () => {
-      jest.restoreAllMocks()
-    })
-
-    it("receive a payment and subscription update", async () => {
-      gql`
-        subscription myUpdates {
-          myUpdates {
-            errors {
-              message
-            }
-            me {
-              id
-              defaultAccount {
-                id
-                wallets {
-                  id
-                  walletCurrency
-                  balance
-                }
-              }
-            }
-            update {
-              type: __typename
-              ... on Price {
-                base
-                offset
-                currencyUnit
-                formattedAmount
-              }
-              ... on RealtimePrice {
-                id
-                timestamp
-                denominatorCurrency
-                btcSatPrice {
-                  base
-                  offset
-                  currencyUnit
-                }
-                usdCentPrice {
-                  base
-                  offset
-                  currencyUnit
-                }
-              }
-              ... on LnUpdate {
-                paymentHash
-                status
-              }
-              ... on OnChainUpdate {
-                txNotificationType
-                txHash
-                amount
-                usdPerSat
-              }
-              ... on IntraLedgerUpdate {
-                txNotificationType
-                amount
-                usdPerSat
-              }
-            }
-          }
-        }
-      `
-
-      const input = { walletId, amount: 1000, memo: "This is a lightning invoice" }
-      const result = await apolloClient.mutate<LnInvoiceCreateMutation>({
-        mutation: LnInvoiceCreateDocument,
-        variables: { input },
-      })
-      const { invoice } = result?.data?.lnInvoiceCreate ?? {}
-
-      const observable = apolloClient.subscribe<MyUpdatesSubscription>({
-        query: MyUpdatesDocument,
-      })
-
-      let status = ""
-      let hash = ""
-
-      const promisePay = pay({
-        lnd: lndOutside1,
-        request: invoice?.paymentRequest,
-      })
-
-      await new Promise((resolve, reject) => {
-        const res: Subscription = observable.subscribe(
-          async (data) => {
-            // onNext()
-            let i: number
-            for (i = 0; i < 200; i++) {
-              if (data?.data?.myUpdates?.update?.type !== "LnUpdate") {
-                await sleep(10)
-              } else {
-                status = data.data.myUpdates.update.status
-                hash = data.data.myUpdates.update.paymentHash
-                break
-              }
-            }
-            resolve(res) // test will fail if we didn't received the update
-            res.unsubscribe()
-          },
-          () => {
-            res.unsubscribe()
-            reject(res)
-          },
-          () => {
-            res.unsubscribe()
-            reject(res)
-          },
-        )
-      })
-
-      expect(status).toBe("PAID")
-      const result2 = await promisePay
-      expect(hash).toBe(result2.id)
     })
   })
 })

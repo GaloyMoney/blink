@@ -8,18 +8,23 @@ setup_file() {
 
   bitcoind_init
   start_trigger
+  start_ws_server
   start_server
   start_exporter
 
   lnds_init
   initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
-  initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$BOB_CODE"
+
+  subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
+  sleep 3
 }
 
 teardown_file() {
   stop_trigger
   stop_server
+  stop_ws_server
   stop_exporter
+  stop_subscriber
 }
 
 setup() {
@@ -58,6 +63,9 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for subscriber event
+  check_for_ln_update "$payment_hash" || exit 1
 }
 
 @test "ln-receive: settle via ln for USD wallet" {
@@ -85,6 +93,9 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for subscriber event
+  check_for_ln_update "$payment_hash" || exit 1
 }
 
 @test "ln-receive: settle via ln for BTC wallet, amountless invoice" {
@@ -112,6 +123,9 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for subscriber event
+  check_for_ln_update "$payment_hash" || exit 1
 }
 
 @test "ln-receive: settle via ln for USD wallet, amountless invoice" {
@@ -139,4 +153,7 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for subscriber event
+  check_for_ln_update "$payment_hash" || exit 1
 }

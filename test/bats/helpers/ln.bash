@@ -130,3 +130,20 @@ get_from_transaction_by_ln_hash() {
     | jq -r --arg payment_hash "$1" "$jq_query" \
     | jq -r "$property_query"
 }
+
+check_for_ln_update() {
+  payment_hash=$1
+
+  retry 10 1 \
+    grep "Data.*LnUpdate.*$payment_hash" .e2e-subscriber.log \
+    | awk '{print $2}' \
+    | jq -r --arg hash "$payment_hash" 'select(.data.myUpdates.update.paymentHash == $hash)'
+
+  paid_status=$( \
+    grep 'Data.*LnUpdate' .e2e-subscriber.log \
+    | awk '{print $2}' \
+    | jq -r --arg hash "$payment_hash" 'select(.data.myUpdates.update.paymentHash == $hash) .data.myUpdates.update.status'
+  )
+
+  [[ "$paid_status" == "PAID" ]] || exit 1
+}
