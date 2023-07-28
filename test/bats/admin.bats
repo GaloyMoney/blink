@@ -24,6 +24,14 @@ random_phone() {
   printf "+1%010d\n" $(( ($RANDOM * 1000000) + ($RANDOM % 1000000) ))
 }
 
+ADMIN_TOKEN_NAME="editor"
+ADMIN_PHONE="+16505554336"
+ADMIN_CODE="321321"
+
+TESTER_TOKEN_NAME="tester"
+TESTER_PHONE="+19876543210"
+TESTER_CODE="321321"
+
 @test "admin: update user phone" {
   token_name="$ADMIN_TOKEN_NAME"
   phone="$TESTER_PHONE"
