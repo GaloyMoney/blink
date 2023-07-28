@@ -1,4 +1,5 @@
 import fs from "fs/promises"
+import { readFileSync } from "fs"
 import path from "path"
 
 import { GraphQLSchema, lexicographicSortSchema, printSchema } from "graphql"
@@ -38,10 +39,16 @@ export const gqlPublicSchema = new GraphQLSchema({
       "../../src/graphql/main/schema.graphql",
     )
     console.log(`Writing to path: ${schemaPublicPath}`)
+    const federationLinksSchemaPath = path.resolve(
+      __dirname,
+      "../../src/graphql/federation/federated-links.graphql",
+    )
+    const federationLinksSchema = readFileSync(federationLinksSchemaPath).toString(
+      "utf-8",
+    )
 
     let sortedPublicSchema = printSchema(lexicographicSortSchema(gqlPublicSchema))
-    const linkString = `extend schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@interfaceObject" ])\n `
-    sortedPublicSchema = linkString + sortedPublicSchema
+    sortedPublicSchema = federationLinksSchema + sortedPublicSchema
     const fileHandleMain = await fs.open(path.resolve(schemaPublicPath), "w")
     await fileHandleMain.writeFile(sortedPublicSchema)
     await fileHandleMain.close()

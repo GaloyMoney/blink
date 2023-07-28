@@ -53,11 +53,15 @@ export async function startApolloServerForCoreSchema() {
   const federationExtendTypes = readFileSync(
     `${__dirname}/../graphql/federation/federated-entities.graphql`,
   ).toString("utf-8")
+  const federationLinks = readFileSync(
+    `${__dirname}/../graphql/federation/federated-links.graphql`,
+  ).toString("utf-8")
   const schema = buildFederatedSchema(
     gqlMainSchema,
     permissions,
     walletIdMiddleware,
     federationExtendTypes,
+    federationLinks,
   )
 
   return startApolloServer({

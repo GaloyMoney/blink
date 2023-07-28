@@ -33,13 +33,15 @@ import { IMiddlewareGenerator, applyMiddleware } from "graphql-middleware"
  */
 export function buildFederatedSchema(
   schemaInput: GraphQLSchema,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   permissions: IMiddlewareGenerator<any, any, any>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   walletIdMiddleware: any,
   federationExtendTypes: string,
+  federationLinks: string,
 ) {
   let schemaString = printSchema(lexicographicSortSchema(schemaInput))
-  const linkString = `extend schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@interfaceObject" ])\n `
-  schemaString = linkString + schemaString
+  schemaString = federationLinks + schemaString
   const parsedSDL = parse(schemaString)
   const resolvers = getResolversFromSchema(schemaInput)
   const subgraphSchema = buildSubgraphSchema(parsedSDL)
