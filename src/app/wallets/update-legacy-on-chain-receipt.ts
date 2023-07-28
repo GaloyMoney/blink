@@ -8,7 +8,7 @@ import {
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
-import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
+import { TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import {
@@ -22,26 +22,29 @@ import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { WalletsRepository } from "@services/mongoose"
 import { ColdStorageService } from "@services/cold-storage"
-import { OnChainService } from "@services/lnd/onchain-service"
+import { LndService } from "@services/lnd"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import { addSettledTransaction } from "./add-settled-on-chain-transaction"
 
 const redisCache = RedisCacheService()
 
-export const updateOnChainReceipt = async ({
+export const updateLegacyOnChainReceipt = async ({
   scanDepth = ONCHAIN_SCAN_DEPTH,
   logger,
 }: {
   scanDepth?: ScanDepth
   logger: Logger
 }): Promise<number | ApplicationError> => {
-  const onChain = OnChainService(TxDecoder(BitcoinNetwork()))
-  if (onChain instanceof OnChainError) {
-    return onChain
+  const offChain = LndService()
+  if (offChain instanceof Error) {
+    return offChain
   }
 
-  const onChainTxs = await onChain.listIncomingTransactions(scanDepth)
+  const onChainTxs = await offChain.listIncomingOnChainTransactions({
+    decoder: TxDecoder(BitcoinNetwork()),
+    scanDepth,
+  })
   if (onChainTxs instanceof Error) return onChainTxs
 
   redisCache.set({
@@ -60,7 +63,7 @@ export const updateOnChainReceipt = async ({
   }) => {
     logger.error(
       { txHash, error },
-      "Could not updateOnChainReceipt from updateOnChainReceiptForWallet",
+      "Could not updateLegacyOnChainReceipt from updateOnChainReceiptForWallet",
     )
   }
 
@@ -76,7 +79,7 @@ export const updateOnChainReceipt = async ({
       if (result instanceof Error) {
         logger.error(
           { txHash, error: result },
-          "Could not updateOnChainReceipt for rebalance tx",
+          "Could not updateLegacyOnChainReceipt for rebalance tx",
         )
       }
       continue

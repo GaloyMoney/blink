@@ -172,6 +172,13 @@ interface ILightningService {
 
   getOnChainBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
   getPendingOnChainBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
+  listIncomingOnChainTransactions({
+    decoder,
+    scanDepth,
+  }: {
+    decoder: TxDecoder
+    scanDepth: ScanDepth
+  }): Promise<IncomingOnChainTransaction[] | LightningServiceError>
 
   getInboundOutboundBalance(
     pubkey?: Pubkey,

@@ -87,7 +87,10 @@ describe("onchainBlockEventHandler", () => {
     const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
 
     await mineBlockAndSyncAll()
-    const result = await Wallets.updateOnChainReceipt({ scanDepth, logger: baseLogger })
+    const result = await Wallets.updateLegacyOnChainReceipt({
+      scanDepth,
+      logger: baseLogger,
+    })
     if (result instanceof Error) throw result
 
     const initialBlock = await bitcoindClient.getBlockCount()

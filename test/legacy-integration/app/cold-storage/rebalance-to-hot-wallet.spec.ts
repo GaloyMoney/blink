@@ -92,7 +92,7 @@ describe("ColdStorage - rebalanceToHotWallet", () => {
     await mineBlockAndSyncAll()
 
     // this is done by trigger and/or cron in prod
-    const updateResult = await Wallets.updateOnChainReceipt({ logger: baseLogger })
+    const updateResult = await Wallets.updateLegacyOnChainReceipt({ logger: baseLogger })
     if (updateResult instanceof Error) throw updateResult
 
     const finalColdWalletBalance = await ColdStorage.getBalance(walletName)
