@@ -14,7 +14,7 @@ export * from "./get-transactions-for-wallet"
 export * from "./send-on-chain"
 export * from "./register-broadcasted-payout-txn"
 export * from "./settle-payout-txn"
-export * from "./update-on-chain-receipt"
+export * from "./update-legacy-on-chain-receipt"
 export * from "./update-pending-invoices"
 export * from "./validate"
 

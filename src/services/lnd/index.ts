@@ -1,5 +1,6 @@
 import {
   cancelHodlInvoice,
+  getWalletInfo,
   getChainBalance,
   getPendingChainBalance,
   createHodlInvoice,
@@ -8,11 +9,12 @@ import {
   getFailedPayments,
   getInvoice,
   GetInvoiceResult,
+  GetChainTransactionsResult,
+  getChainTransactions,
   getPayment,
   GetPaymentResult,
   getPayments,
   getPendingPayments,
-  getWalletInfo,
   payViaPaymentDetails,
   PayViaPaymentDetailsArgs,
   PayViaPaymentDetailsResult,
@@ -30,6 +32,7 @@ import lnService from "ln-service"
 import { SECS_PER_5_MINS } from "@config"
 
 import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
+import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import {
   BadPaymentDataError,
   CorruptLndDbError,
@@ -132,6 +135,45 @@ export const LndService = (): ILightningService | LightningServiceError => {
 
       const { pending_chain_balance } = await getPendingChainBalance({ lnd: lndInstance })
       return toSats(pending_chain_balance)
+    } catch (err) {
+      return handleCommonLightningServiceErrors(err)
+    }
+  }
+
+  const listIncomingOnChainTransactions = async ({
+    decoder,
+    scanDepth,
+  }: {
+    decoder: TxDecoder
+    scanDepth: ScanDepth
+  }): Promise<IncomingOnChainTransaction[] | LightningServiceError> => {
+    try {
+      let blockHeight = await LocalCacheService().get<number>({
+        key: CacheKeys.BlockHeight,
+      })
+      if (blockHeight instanceof Error) {
+        blockHeight = 0
+      }
+      if (!blockHeight) {
+        ;({ current_block_height: blockHeight } = await getWalletInfo({
+          lnd: defaultLnd,
+        }))
+        await LocalCacheService().set<number>({
+          key: CacheKeys.BlockHeight,
+          value: blockHeight,
+          ttlSecs: SECS_PER_5_MINS,
+        })
+      }
+
+      // this is necessary for tests, otherwise `after` may be negative
+      const after = Math.max(0, blockHeight - scanDepth)
+
+      const txs = await getChainTransactions({
+        lnd: defaultLnd,
+        after,
+      })
+
+      return extractIncomingOnChainTransactions({ decoder, txs })
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }
@@ -764,6 +806,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       getBalance,
       getOnChainBalance,
       getPendingOnChainBalance,
+      listIncomingOnChainTransactions,
       getInboundOutboundBalance,
       getOpeningChannelsBalance,
       getClosingChannelsBalance,
@@ -969,6 +1012,26 @@ const resolvePaymentStatus = async ({
   }
 
   return PaymentStatus.Pending
+}
+
+const extractIncomingOnChainTransactions = ({
+  decoder,
+  txs,
+}: {
+  decoder: TxDecoder
+  txs: GetChainTransactionsResult
+}): IncomingOnChainTransaction[] => {
+  return txs.transactions
+    .filter((tx) => !tx.is_outgoing && !!tx.transaction)
+    .map(
+      (tx): IncomingOnChainTransaction =>
+        IncomingOnChainTransaction({
+          confirmations: tx.confirmation_count || 0,
+          rawTx: decoder.decode(tx.transaction as string),
+          fee: toSats(tx.fee || 0),
+          createdAt: new Date(tx.created_at),
+        }),
+    )
 }
 
 const handleSendPaymentLndErrors = ({

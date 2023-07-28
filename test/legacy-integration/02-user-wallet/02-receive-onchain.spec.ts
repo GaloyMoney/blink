@@ -998,7 +998,7 @@ describe("With Lnd", () => {
 
       await waitUntilBlockHeight({ lnd })
       // this is done by trigger and/or cron in prod
-      const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
+      const result = await Wallets.updateLegacyOnChainReceipt({ logger: baseLogger })
       if (result instanceof Error) {
         throw result
       }
@@ -1139,7 +1139,7 @@ describe("With Lnd", () => {
 
       await waitUntilSyncAll()
       // this is done by trigger and/or cron in prod
-      const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
+      const result = await Wallets.updateLegacyOnChainReceipt({ logger: baseLogger })
       if (result instanceof Error) {
         throw result
       }
@@ -1612,7 +1612,7 @@ describe("With Lnd", () => {
       await waitUntilBlockHeight({ lnd: lndonchain })
 
       // this is done by trigger and/or cron in prod
-      const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
+      const result = await Wallets.updateLegacyOnChainReceipt({ logger: baseLogger })
       if (result instanceof Error) {
         throw result
       }

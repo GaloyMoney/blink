@@ -98,7 +98,7 @@ const sendToLndWalletTestWrapper = async ({
 
   await waitUntilBlockHeight({ lnd: lndonchain })
 
-  const updated = await Wallets.updateOnChainReceipt({ logger: baseLogger })
+  const updated = await Wallets.updateLegacyOnChainReceipt({ logger: baseLogger })
   if (updated instanceof Error) throw updated
 
   return txId as OnChainTxHash

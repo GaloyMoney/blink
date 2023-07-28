@@ -1,5 +1,5 @@
 import { updatePendingPayments } from "@app/payments"
-import { handleHeldInvoices, updateOnChainReceipt } from "@app/wallets"
+import { handleHeldInvoices, updateLegacyOnChainReceipt } from "@app/wallets"
 import { baseLogger } from "@services/logger"
 
 import { ledgerAdmin } from "@services/mongodb"
@@ -18,7 +18,7 @@ export const checkIsBalanced = async () => {
   await Promise.all([
     handleHeldInvoices(logger),
     updatePendingPayments(logger),
-    updateOnChainReceipt({ logger }),
+    updateLegacyOnChainReceipt({ logger }),
   ])
   // wait for balance updates because invoice event
   // arrives before wallet balances updates in lnd
@@ -36,7 +36,7 @@ export const checkIsBalancedE2e = async () => {
   await Promise.all([
     handleHeldInvoices(logger),
     updatePendingPayments(logger),
-    updateOnChainReceipt({ logger }),
+    updateLegacyOnChainReceipt({ logger }),
   ])
   // wait for balance updates because invoice event
   // arrives before wallet balances updates in lnd

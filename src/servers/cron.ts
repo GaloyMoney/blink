@@ -37,8 +37,8 @@ const updatePendingLightningInvoices = () => Wallets.handleHeldInvoices(logger)
 
 const updatePendingLightningPayments = () => Payments.updatePendingPayments(logger)
 
-const updateOnChainReceipt = async () => {
-  const txNumber = await Wallets.updateOnChainReceipt({ logger })
+const updateLegacyOnChainReceipt = async () => {
+  const txNumber = await Wallets.updateLegacyOnChainReceipt({ logger })
   if (txNumber instanceof Error) throw txNumber
 }
 
@@ -83,7 +83,7 @@ const main = async () => {
     updatePendingLightningPayments,
     updateLnPaymentsCollection,
     updateRoutingRevenues,
-    updateOnChainReceipt,
+    updateLegacyOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
     ...(cronConfig.swapEnabled ? [swapOutJob] : []),
     deleteExpiredPaymentFlows,
