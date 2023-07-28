@@ -10,7 +10,6 @@
     "trigger": "yarn build && node lib/servers/trigger.js | pino-pretty -c -l",
     "check:sdl": "yarn write-sdl && if git diff --name-only | grep -q 'src/graphql/admin/schema.graphql'; then echo 'Error: src/graphql/admin/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi && if git diff --name-only | grep -q 'src/graphql/main/schema.graphql'; then echo 'Error: src/graphql/main/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi",
     "write-sdl": "yarn build && node lib/servers/write-sdl.js write-sdl.yaml && rover supergraph compose --config dev/apollo-federation/supergraph-config.yaml --elv2-license accept > dev/apollo-federation/supergraph.graphql",
-
     "ws": "yarn build && node lib/servers/ws-server.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
@@ -36,7 +35,10 @@
     "node": "20"
   },
   "dependencies": {
+    "@apollo/subgraph": "^2.5.1",
     "@google-cloud/storage": "^6.11.0",
+    "@graphql-tools/schema": "^10.0.0",
+    "@graphql-tools/utils": "^10.0.4",
     "@grpc/grpc-js": "^1.8.17",
     "@grpc/proto-loader": "^0.7.2",
     "@opentelemetry/api": "^1.4.1",

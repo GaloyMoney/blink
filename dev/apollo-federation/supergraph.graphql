@@ -225,6 +225,13 @@ type CentAmountPayload
   errors: [Error!]!
 }
 
+enum Circle
+  @join__type(graph: CIRCLES)
+{
+  Inner @join__enumValue(graph: CIRCLES)
+  Outer @join__enumValue(graph: CIRCLES)
+}
+
 type ConsumerAccount implements Account
   @join__implements(graph: PUBLIC, interface: "Account")
   @join__type(graph: PUBLIC)
@@ -485,11 +492,30 @@ enum InvoicePaymentStatus
 scalar join__FieldSet
 
 enum join__Graph {
+  CIRCLES @join__graph(name: "circles", url: "http://localhost:4000")
   PUBLIC @join__graph(name: "public", url: "http://bats-tests:4012/graphql")
 }
 
 scalar Language
   @join__type(graph: PUBLIC)
+
+type Leader
+  @join__type(graph: CIRCLES)
+{
+  rank: Int!
+  name: LeaderboardName
+}
+
+type Leaderboard
+  @join__type(graph: CIRCLES)
+{
+  circle: Circle!
+  range: WelcomeRange!
+  leaders: [Leader!]!
+}
+
+scalar LeaderboardName
+  @join__type(graph: CIRCLES)
 
 scalar link__Import
 
@@ -1184,26 +1210,28 @@ type PublicWallet
 }
 
 type Query
+  @join__type(graph: CIRCLES)
   @join__type(graph: PUBLIC)
 {
-  accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
-  btcPrice(currency: DisplayCurrency! = "USD"): Price @deprecated(reason: "Deprecated in favor of realtimePrice")
-  btcPriceList(range: PriceGraphRange!): [PricePoint]
-  businessMapMarkers: [MapMarker]
-  currencyList: [Currency!]!
-  globals: Globals
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
-  me: User
-  mobileVersions: [MobileVersions]
-  onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainTxFee!
-  onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainUsdTxFee!
-  onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainUsdTxFee!
-  quizQuestions: [QuizQuestion] @deprecated(reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated")
+  welcomeLeaderboard(input: WelcomeLeaderboardInput!): Leaderboard! @join__field(graph: CIRCLES)
+  accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet! @join__field(graph: PUBLIC)
+  btcPrice(currency: DisplayCurrency! = "USD"): Price @join__field(graph: PUBLIC) @deprecated(reason: "Deprecated in favor of realtimePrice")
+  btcPriceList(range: PriceGraphRange!): [PricePoint] @join__field(graph: PUBLIC)
+  businessMapMarkers: [MapMarker] @join__field(graph: PUBLIC)
+  currencyList: [Currency!]! @join__field(graph: PUBLIC)
+  globals: Globals @join__field(graph: PUBLIC)
+  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload! @join__field(graph: PUBLIC)
+  me: User @join__field(graph: PUBLIC)
+  mobileVersions: [MobileVersions] @join__field(graph: PUBLIC)
+  onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainTxFee! @join__field(graph: PUBLIC)
+  onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainUsdTxFee! @join__field(graph: PUBLIC)
+  onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainUsdTxFee! @join__field(graph: PUBLIC)
+  quizQuestions: [QuizQuestion] @join__field(graph: PUBLIC) @deprecated(reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated")
 
   """Returns 1 Sat and 1 Usd Cent price for the given currency"""
-  realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice!
-  userDefaultWalletId(username: Username!): WalletId! @deprecated(reason: "will be migrated to AccountDefaultWalletId")
-  usernameAvailable(username: Username!): Boolean
+  realtimePrice(currency: DisplayCurrency = "USD"): RealtimePrice! @join__field(graph: PUBLIC)
+  userDefaultWalletId(username: Username!): WalletId! @join__field(graph: PUBLIC) @deprecated(reason: "will be migrated to AccountDefaultWalletId")
+  usernameAvailable(username: Username!): Boolean @join__field(graph: PUBLIC)
 }
 
 type Quiz
@@ -1505,43 +1533,46 @@ type UsdWallet implements Wallet
 }
 
 type User
+  @join__type(graph: CIRCLES, key: "id")
   @join__type(graph: PUBLIC)
 {
+  id: ID! @join__field(graph: CIRCLES, external: true) @join__field(graph: PUBLIC)
+  welcomeProfile: WelcomeProfile! @join__field(graph: CIRCLES)
+
   """
   Get single contact details.
   Can include the transactions associated with the contact.
   """
-  contactByUsername(username: Username!): UserContact! @deprecated(reason: "will be moved to Accounts")
+  contactByUsername(username: Username!): UserContact! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to Accounts")
 
   """
   Get full list of contacts.
   Can include the transactions associated with each contact.
   """
-  contacts: [UserContact!]! @deprecated(reason: "will be moved to account")
-  createdAt: Timestamp!
-  defaultAccount: Account!
+  contacts: [UserContact!]! @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to account")
+  createdAt: Timestamp! @join__field(graph: PUBLIC)
+  defaultAccount: Account! @join__field(graph: PUBLIC)
 
   """Email address"""
-  email: Email
-  id: ID!
+  email: Email @join__field(graph: PUBLIC)
 
   """
   Preferred language for user.
   When value is 'default' the intent is to use preferred language from OS settings.
   """
-  language: Language!
+  language: Language! @join__field(graph: PUBLIC)
 
   """Phone number with international calling code."""
-  phone: Phone
+  phone: Phone @join__field(graph: PUBLIC)
 
   """List the quiz questions the user may have completed."""
-  quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "use Quiz from Account instead")
+  quizQuestions: [UserQuizQuestion!]! @join__field(graph: PUBLIC) @deprecated(reason: "use Quiz from Account instead")
 
   """Whether TOTP is enabled for this user."""
-  totpEnabled: Boolean!
+  totpEnabled: Boolean! @join__field(graph: PUBLIC)
 
   """Optional immutable user friendly identifier."""
-  username: Username @deprecated(reason: "will be moved to @Handle in Account and Wallet")
+  username: Username @join__field(graph: PUBLIC) @deprecated(reason: "will be moved to @Handle in Account and Wallet")
 }
 
 type UserContact
@@ -1841,3 +1872,32 @@ enum WalletCurrency
 """Unique identifier of a wallet"""
 scalar WalletId
   @join__type(graph: PUBLIC)
+
+input WelcomeLeaderboardInput
+  @join__type(graph: CIRCLES)
+{
+  circle: Circle!
+  range: WelcomeRange!
+}
+
+type WelcomeProfile
+  @join__type(graph: CIRCLES, key: "id")
+{
+  id: ID!
+  leaderboardName: LeaderboardName
+  innerCircleThisMonthCount: Int!
+  innerCircleThisMonthRank: Int!
+  innerCircleAllTimeCount: Int!
+  innerCircleAllTimeRank: Int!
+  outerCircleThisMonthCount: Int!
+  outerCircleThisMonthRank: Int!
+  outerCircleAllTimeCount: Int!
+  outerCircleAllTimeRank: Int!
+}
+
+enum WelcomeRange
+  @join__type(graph: CIRCLES)
+{
+  ThisMonth @join__enumValue(graph: CIRCLES)
+  AllTime @join__enumValue(graph: CIRCLES)
+}

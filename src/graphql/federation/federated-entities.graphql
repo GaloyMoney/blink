@@ -1,0 +1,1 @@
+extend type User @key(fields: "id")

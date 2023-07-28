@@ -1,5 +1,7 @@
+import { readFileSync } from "fs"
+
 import dotenv from "dotenv"
-import { applyMiddleware } from "graphql-middleware"
+// import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
 import { Rule } from "graphql-shield/typings/rules"
 
@@ -10,6 +12,7 @@ import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 
 import { GALOY_API_PORT } from "@config"
+import { buildFederatedSchema } from "@graphql/federation/build-federated-schema"
 
 import { gqlMainSchema, mutationFields, queryFields } from "@graphql/main"
 
@@ -46,7 +49,17 @@ export async function startApolloServerForCoreSchema() {
     { allowExternalErrors: true },
   )
 
-  const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
+  // const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
+  const federationExtendTypes = readFileSync(
+    `${__dirname}/../graphql/federation/federated-entities.graphql`,
+  ).toString("utf-8")
+  const schema = buildFederatedSchema(
+    gqlMainSchema,
+    permissions,
+    walletIdMiddleware,
+    federationExtendTypes,
+  )
+
   return startApolloServer({
     schema,
     port: GALOY_API_PORT,
