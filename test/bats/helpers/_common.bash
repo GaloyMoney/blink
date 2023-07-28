@@ -95,6 +95,7 @@ exec_graphql() {
   local token_name=$1
   local query_name=$2
   local variables=${3:-"{}"}
+  local admin=$4
   echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
   echo "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
 
@@ -110,12 +111,19 @@ exec_graphql() {
     run_cmd=""
   fi
 
+  if [[ "${admin}" == "admin" ]]; then
+    gql_route="admin/graphql"
+  else
+    gql_route="graphql"
+  fi
+
+
   ${run_cmd} curl -s \
     -X POST \
     ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
     -H "Content-Type: application/json" \
     -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
-    ${GALOY_ENDPOINT}/graphql
+    "${GALOY_ENDPOINT}/${gql_route}"
 
   echo "GQL output: '$output'"
 }
