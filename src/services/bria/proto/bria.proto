@@ -22,7 +22,6 @@ service BriaService {
   rpc GetWalletBalanceSummary (GetWalletBalanceSummaryRequest) returns (GetWalletBalanceSummaryResponse) {}
 
   rpc NewAddress (NewAddressRequest) returns (NewAddressResponse) {}
-  rpc FindAddressByExternalId (FindAddressByExternalIdRequest) returns (FindAddressByExternalIdResponse) {}
   rpc UpdateAddress (UpdateAddressRequest) returns (UpdateAddressResponse) {}
   rpc ListAddresses (ListAddressesRequest) returns (ListAddressesResponse) {}
   rpc GetAddress (GetAddressRequest) returns (GetAddressResponse) {}
@@ -37,7 +36,6 @@ service BriaService {
   rpc EstimatePayoutFee (EstimatePayoutFeeRequest) returns (EstimatePayoutFeeResponse) {}
   rpc SubmitPayout (SubmitPayoutRequest) returns (SubmitPayoutResponse) {}
   rpc ListPayouts (ListPayoutsRequest) returns (ListPayoutsResponse) {}
-  rpc FindPayoutByExternalId (FindPayoutByExternalIdRequest) returns (FindPayoutByExternalIdResponse) {}
   rpc GetPayout (GetPayoutRequest) returns (GetPayoutResponse) {}
   rpc CancelPayout(CancelPayoutRequest) returns (CancelPayoutResponse) {}
 
@@ -194,15 +192,6 @@ message WalletAddress {
   string address = 1;
   string external_id = 2;
   optional google.protobuf.Struct metadata = 3;
-}
-
-message FindAddressByExternalIdRequest {
-  string external_id = 1;
-}
-
-message FindAddressByExternalIdResponse {
-  string wallet_id = 1;
-  WalletAddress address = 2;
 }
 
 message GetAddressRequest {
@@ -381,14 +370,6 @@ message Payout {
 
 message ListPayoutsResponse {
   repeated Payout payouts = 1;
-}
-
-message FindPayoutByExternalIdRequest {
-  string external_id = 1;
-}
-
-message FindPayoutByExternalIdResponse {
-  Payout payout = 1;
 }
 
 message GetPayoutRequest {
