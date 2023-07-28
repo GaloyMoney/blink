@@ -20,8 +20,6 @@ import { Transaction } from "@services/ledger/schema"
 import * as LedgerFacade from "@services/ledger/facade"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
 
-import { LessThanDustThresholdError } from "@domain/errors"
-
 import { generateHash, createRandomUserAndWallet } from "test/helpers"
 
 const calc = AmountCalculator()
