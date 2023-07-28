@@ -75,7 +75,7 @@ if (mgCred.user && mgCred.password) {
   path = `mongodb://${mgCred.user}:${mgCred.password}@${mgCred.address}/${mgCred.db}`
 } else {
   path = `mongodb://${mgCred.address}/${mgCred.db}`
-  if (!isProd) {
+  if (isProd) {
     baseLogger.warn({ path }, "Connecting to MongoDB without a username and password")
   }
 }

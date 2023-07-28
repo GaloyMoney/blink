@@ -321,26 +321,6 @@ export const configSchema = {
           role: "editor",
           username: "editor",
         },
-        {
-          ref: "J",
-          phone: "+19876543211",
-          username: "tester2",
-        },
-        {
-          ref: "K",
-          phone: "+16505554328",
-          username: "alice",
-        },
-        {
-          ref: "L",
-          phone: "+16505554350",
-          username: "bob",
-        },
-        {
-          ref: "M",
-          phone: "+16505554351",
-          username: "lnd_funding",
-        },
       ],
       uniqueItems: true,
     },

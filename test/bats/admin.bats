@@ -7,13 +7,11 @@ setup_file() {
 
   login_user \
     "$ADMIN_TOKEN_NAME" \
-    "$ADMIN_PHONE" \
-    "$ADMIN_CODE"
+    "$ADMIN_PHONE" 
 
   login_user \
     "$TESTER_TOKEN_NAME" \
-    "$TESTER_PHONE" \
-    "$TESTER_CODE"
+    "$TESTER_PHONE" 
 }
 
 teardown_file() {
@@ -26,11 +24,9 @@ random_phone() {
 
 ADMIN_TOKEN_NAME="editor"
 ADMIN_PHONE="+16505554336"
-ADMIN_CODE="321321"
 
 TESTER_TOKEN_NAME="tester"
 TESTER_PHONE="+19876543210"
-TESTER_CODE="321321"
 
 @test "admin: update user phone" {
   token_name="$ADMIN_TOKEN_NAME"

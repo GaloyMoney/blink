@@ -67,7 +67,7 @@ type YamlSchema = {
   test_accounts: {
     ref: string
     phone: string
-    code: string
+    code?: string
     needUsdWallet?: boolean
     username?: string
     phoneMetadataCarrierType?: string

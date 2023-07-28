@@ -8,11 +8,9 @@ GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4002}
 
 ALICE_TOKEN_NAME="alice"
 ALICE_PHONE="+16505554328"
-ALICE_CODE="321321"
 
 BOB_TOKEN_NAME="bob"
 BOB_PHONE="+16505554350"
-BOB_CODE="321321"
 
 bitcoin_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
