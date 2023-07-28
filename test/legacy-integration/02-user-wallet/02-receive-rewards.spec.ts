@@ -7,7 +7,6 @@ import find from "lodash.find"
 
 import {
   checkIsBalanced,
-  createMandatoryUsers,
   createUserAndWalletFromPhone,
   getAccountIdByPhone,
   getDefaultWalletIdByPhone,
@@ -48,6 +47,12 @@ jest.mock("@domain/accounts-ips/ip-metadata-validator", () => ({
   }),
 }))
 
+jest.mock("@domain/users/phone-metadata-validator", () => ({
+  PhoneMetadataValidator: () => ({
+    validateForReward: () => true,
+  }),
+}))
+
 const phone = randomPhone()
 
 beforeAll(async () => {
@@ -55,8 +60,6 @@ beforeAll(async () => {
 
   accountIdB = await getAccountIdByPhone(phone)
   walletIdB = await getDefaultWalletIdByPhone(phone)
-
-  await createMandatoryUsers()
 })
 
 afterAll(async () => {
@@ -73,13 +76,12 @@ describe("UserWallet - addEarn", () => {
     const accountRecordBBeforeEarn = await getAccountRecordByPhone(phone)
 
     const getAndVerifyRewards = async () => {
-      const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
-        Payments.addEarn({
+      for (const onBoardingEarnId of onBoardingEarnIds) {
+        await Payments.addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
           accountId: accountIdB,
-        }),
-      )
-      await Promise.all(promises)
+        })
+      }
       const finalBalance = await getBalanceHelper(walletIdB)
       let rewards = onBoardingEarnAmt
 

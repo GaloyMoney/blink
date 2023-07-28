@@ -19,7 +19,7 @@ export const PhoneMetadataValidator = ({
 
     const countryCode = phoneMetadata.countryCode.toUpperCase()
     const allowed =
-      allowPhoneCountries.length <= 0 || allowPhoneCountries.includes(countryCode)
+      allowPhoneCountries.length === 0 || allowPhoneCountries.includes(countryCode)
     const denied =
       denyPhoneCountries.length > 0 && denyPhoneCountries.includes(countryCode)
 

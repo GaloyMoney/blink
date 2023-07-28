@@ -19,8 +19,7 @@ buildVersion:
     minBuildNumber: 362
     lastBuildNumber: 362
 rewards:
-  allowPhoneCountries:
-    - SV
+  allowPhoneCountries: []
   denyPhoneCountries: []
   allowIPCountries: []
   denyIPCountries: []

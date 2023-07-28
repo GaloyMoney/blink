@@ -168,7 +168,7 @@ export const configSchema = {
       ],
       additionalProperties: false,
       default: {
-        allowPhoneCountries: ["SV"],
+        allowPhoneCountries: [],
         denyPhoneCountries: [],
         allowIPCountries: [],
         denyIPCountries: [],
