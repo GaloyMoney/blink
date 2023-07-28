@@ -143,7 +143,7 @@ type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
 
 interface INewOnChainService {
   getBalance(): Promise<BtcPaymentAmount | OnChainServiceError>
-  createOnChainAddress(args: {
+  getAddressForWallet(args: {
     walletDescriptor: WalletDescriptor<WalletCurrency>
     requestId?: OnChainAddressRequestId
   }): Promise<OnChainAddressIdentifier | OnChainServiceError>

@@ -124,7 +124,7 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
-  const createOnChainAddress = async ({
+  const getAddressForWallet = async ({
     walletDescriptor,
     requestId,
   }: {
@@ -285,7 +285,7 @@ export const NewOnChainService = (): INewOnChainService => {
     namespace: "services.bria.onchain",
     fns: {
       getBalance,
-      createOnChainAddress,
+      getAddressForWallet,
       findAddressByRequestId,
       findPayoutByLedgerJournalId,
       queuePayoutToAddress,
