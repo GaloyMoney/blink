@@ -257,7 +257,7 @@ const EntryBuilderCredit = <M extends MediciEntry>({
       currency: creditAmount.currency,
     })
 
-    return removeZeroAmountEntries(updatedEntry)
+    return updatedEntry
   }
 
   const creditOffChain = () =>
@@ -284,14 +284,4 @@ const EntryBuilderCredit = <M extends MediciEntry>({
     creditAccount,
     creditColdStorage,
   }
-}
-
-const removeZeroAmountEntries = <M extends MediciEntry>(entry: M): M => {
-  const updatedTransactions = entry.transactions.filter(
-    (txn) => !(txn.debit === 0 && txn.credit === 0),
-  )
-
-  entry.transactions = updatedTransactions
-
-  return entry
 }

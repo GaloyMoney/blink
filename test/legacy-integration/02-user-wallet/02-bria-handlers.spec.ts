@@ -138,19 +138,31 @@ describe("Bria Event Handlers", () => {
       expect(resultTxId).toEqual(2)
     })
 
-    it("fails if the amount is less than on chain dust amount", async () => {
+    it("persists a zero amount tx if the amount is less than on chain dust amount", async () => {
       const txId = generateHash() as OnChainTxHash
       const vout = VOUT_0
       const satoshis = dustAmount
 
-      const result = await addPendingTransaction({
+      const res = await addPendingTransaction({
         txId,
         vout,
         satoshis,
         address,
       })
+      expect(res).toBe(true)
 
-      expect(result).toBeInstanceOf(LessThanDustThresholdError)
+      const count = await WalletOnChainPendingReceive.countDocuments({
+        transactionHash: txId,
+        vout,
+      })
+      expect(count).toEqual(1)
+
+      const result = await WalletOnChainPendingReceive.findOne({
+        transactionHash: txId,
+        vout,
+      })
+      expect(result).toBeTruthy()
+      expect(result).toHaveProperty("walletAmount", 0)
     })
   })
 
@@ -354,19 +366,67 @@ describe("Bria Event Handlers", () => {
       await Transaction.deleteMany({ hash: txId })
     })
 
-    it("fails if the amount is less than on chain dust amount", async () => {
+    it("persists a zero amount tx if the amount is less than on chain dust amount", async () => {
       const txId = generateHash() as OnChainTxHash
       const vout = VOUT_0
       const satoshis = dustAmount
 
-      const result = await addSettledTransaction({
+      const pending = await addPendingTransaction({
         txId,
         vout,
         satoshis,
         address,
       })
+      expect(pending).toBe(true)
 
-      expect(result).toBeInstanceOf(LessThanDustThresholdError)
+      const pendingCountBefore = await WalletOnChainPendingReceive.countDocuments({
+        transactionHash: txId,
+        vout,
+      })
+      expect(pendingCountBefore).toEqual(1)
+
+      const pendingTxnsBefore = await WalletOnChainPendingReceive.findOne({
+        transactionHash: txId,
+        vout,
+      })
+      expect(pendingTxnsBefore).toBeTruthy()
+      expect(pendingTxnsBefore).toHaveProperty("walletAmount", 0)
+
+      const settledRes = await addSettledTransaction({
+        txId,
+        vout,
+        satoshis,
+        address,
+      })
+      expect(settledRes).toBe(true)
+
+      const pendingTxnsAfter = await WalletOnChainPendingReceive.countDocuments({
+        transactionHash: txId,
+        vout,
+      })
+      expect(pendingTxnsAfter).toEqual(0)
+
+      const ledgerTxnsCount = await Transaction.countDocuments({
+        hash: txId,
+        vout,
+        accounts: toLiabilitiesWalletId(walletId),
+      })
+      expect(ledgerTxnsCount).toEqual(1)
+
+      const ledgerTxns = await Transaction.findOne({
+        hash: txId,
+        vout,
+        accounts: toLiabilitiesWalletId(walletId),
+      })
+      expect(ledgerTxns).toBeTruthy()
+      expect(ledgerTxns).toHaveProperty("debit", 0)
+      expect(ledgerTxns).toHaveProperty("credit", 0)
+      expect(ledgerTxns).toHaveProperty("displayAmount", 0)
+      expect(ledgerTxns).toHaveProperty("satsAmount", 0)
+      expect(ledgerTxns).toHaveProperty("satsFee", Number(satoshis.amount))
+
+      // Cleanup to clear tests accounting
+      await Transaction.deleteMany({ hash: txId })
     })
   })
 
