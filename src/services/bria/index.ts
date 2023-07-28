@@ -23,7 +23,7 @@ import { GrpcStreamClient } from "@utils"
 
 import {
   estimatePayoutFee,
-  findAddressByExternalId,
+  getAddress,
   findPayoutByExternalId,
   getWalletBalanceSummary,
   newAddress,
@@ -35,7 +35,7 @@ import {
   BriaEvent as RawBriaEvent,
   NewAddressRequest,
   GetWalletBalanceSummaryRequest,
-  FindAddressByExternalIdRequest,
+  GetAddressRequest,
   SubmitPayoutRequest,
   EstimatePayoutFeeRequest,
   FindPayoutByExternalIdRequest,
@@ -160,15 +160,15 @@ export const NewOnChainService = (): INewOnChainService => {
     requestId: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
     try {
-      const request = new FindAddressByExternalIdRequest()
+      const request = new GetAddressRequest()
       request.setExternalId(requestId)
 
-      const response = await findAddressByExternalId(request, metadata)
+      const response = await getAddress(request, metadata)
       const foundAddress = response.getAddress()
 
       if (foundAddress === undefined) return new OnChainAddressNotFoundError()
       return {
-        address: foundAddress.getAddress() as OnChainAddress,
+        address: foundAddress as OnChainAddress,
       }
     } catch (err) {
       if (

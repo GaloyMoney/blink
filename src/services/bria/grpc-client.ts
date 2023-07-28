@@ -7,8 +7,8 @@ import { getBriaConfig } from "@config"
 import {
   EstimatePayoutFeeRequest,
   EstimatePayoutFeeResponse,
-  FindAddressByExternalIdRequest,
-  FindAddressByExternalIdResponse,
+  GetAddressRequest,
+  GetAddressResponse,
   FindPayoutByExternalIdRequest,
   FindPayoutByExternalIdResponse,
   GetWalletBalanceSummaryRequest,
@@ -31,11 +31,9 @@ export const newAddress = promisify<NewAddressRequest, Metadata, NewAddressRespo
   bitcoinBridgeClient.newAddress.bind(bitcoinBridgeClient),
 )
 
-export const findAddressByExternalId = promisify<
-  FindAddressByExternalIdRequest,
-  Metadata,
-  FindAddressByExternalIdResponse
->(bitcoinBridgeClient.findAddressByExternalId.bind(bitcoinBridgeClient))
+export const getAddress = promisify<GetAddressRequest, Metadata, GetAddressResponse>(
+  bitcoinBridgeClient.getAddress.bind(bitcoinBridgeClient),
+)
 
 export const findPayoutByExternalId = promisify<
   FindPayoutByExternalIdRequest,
