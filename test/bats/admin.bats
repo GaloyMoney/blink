@@ -37,7 +37,7 @@ TESTER_PHONE="+19876543210"
     --arg phone "$phone" \
     '{phone: $phone}'
   )
-  exec_graphql "$token_name" 'account-details-by-user-phone' "$variables" 'admin'
+  exec_admin_graphql "$token_name" 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$id" != "null" ]] || exit 1
 
@@ -48,7 +48,7 @@ TESTER_PHONE="+19876543210"
     --arg uid "$id" \
     '{input: {phone: $phone, uid: $uid}}'
   )
-  exec_graphql $token_name 'user-update-phone' "$variables" 'admin'
+  exec_admin_graphql $token_name 'user-update-phone' "$variables"
   num_errors="$(graphql_output '.data.userUpdatePhone.errors | length')"
   [[ "$num_errors" == "0" ]] || exit 1
 
@@ -57,7 +57,24 @@ TESTER_PHONE="+19876543210"
     --arg phone "$new_phone" \
     '{phone: $phone}'
   )
-  exec_graphql "$token_name" 'account-details-by-user-phone' "$variables" 'admin'
+  exec_admin_graphql "$token_name" 'account-details-by-user-phone' "$variables"
   refetched_id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
+
+  # TODO: set and check username 
+
+  # variables=$(
+  #   jq -n \
+  #   --arg username "$username" \
+  #   '{username: $username}'
+  # )
+
+  # exec_admin_graphql "$token_name" 'account-details-by-username' "$variables"
+  # refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
+  # [[ "$refetched_id" == "$id" ]] || exit 1
+
+  # TODO: business update map info
+  # TODO: account status level update
+  # TODO: account update status (locked, active)
+  # TODO: add check by email
 }

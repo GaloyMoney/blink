@@ -303,8 +303,6 @@ export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   config.test_accounts.map((account) => ({
     phone: account.phone as PhoneNumber,
     code: account.code as PhoneCode,
-    username: account.username as Username,
-    role: account.role,
   }))
 
 export const getCronConfig = (config = yamlConfig): CronConfig => config.cronConfig

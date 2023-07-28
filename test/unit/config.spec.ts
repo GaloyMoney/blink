@@ -70,11 +70,8 @@ describe("config.ts", () => {
         ],
         test_accounts: [
           {
-            ref: "A",
             phone: "+50365055543",
             code: "182731",
-            needUsdWallet: true,
-            currency: "BTC",
           },
         ],
       }
@@ -90,8 +87,6 @@ describe("config.ts", () => {
         test_accounts: [
           {
             phone: "+50365055543",
-            code: "182731",
-            currency: "BTC",
           },
         ],
       }

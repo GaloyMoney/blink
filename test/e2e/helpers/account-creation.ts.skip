@@ -10,12 +10,10 @@ type ApolloClientAndDispose = {
   authToken: AuthToken
 }
 
-export const loginFromPhoneAndCode = async ({
+export const loginFromPhone = async ({
   phone,
-  code,
 }: {
   phone: PhoneNumber
-  code: PhoneCode
 }): Promise<ApolloClientAndDispose> => {
   let apolloClient: ApolloClient<NormalizedCacheObject>,
     disposeClient: () => Promise<void>
@@ -23,7 +21,7 @@ export const loginFromPhoneAndCode = async ({
   let authToken: AuthToken
   {
     ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
-    const input = { phone, code }
+    const input = { phone, code: "000000" }
     const result = await apolloClient.mutate<UserLoginMutation>({
       mutation: UserLoginDocument,
       variables: { input },

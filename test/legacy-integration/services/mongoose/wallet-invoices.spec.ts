@@ -4,10 +4,12 @@ import { WalletCurrency } from "@domain/shared"
 import { getSecretAndPaymentHash } from "@domain/bitcoin/lightning"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
-import { createUserAndWalletFromUserRef } from "test/helpers"
+import { createUserAndWalletFromPhone, randomPhone } from "test/helpers"
+
+const phoneB = randomPhone()
 
 beforeAll(async () => {
-  await createUserAndWalletFromUserRef("B")
+  await createUserAndWalletFromPhone(phoneB)
 })
 
 const createTestWalletInvoice = (): WalletInvoice => {

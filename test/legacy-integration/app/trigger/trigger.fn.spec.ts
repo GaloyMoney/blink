@@ -17,12 +17,13 @@ import {
   bitcoindClient,
   bitcoindOutside,
   createMandatoryUsers,
-  createUserAndWalletFromUserRef,
-  getDefaultWalletIdByTestUserRef,
   lndCreateOnChainAddress,
+  createUserAndWalletFromPhone,
+  getDefaultWalletIdByPhone,
   lnd1,
   mineBlockAndSyncAll,
   RANDOM_ADDRESS,
+  randomPhone,
   subscribeToBlocks,
   waitFor,
   waitUntilSyncAll,
@@ -33,18 +34,22 @@ let walletIdA: WalletId
 let walletIdD: WalletId
 let walletIdF: WalletId
 
+const phoneA = randomPhone()
+const phoneD = randomPhone()
+const phoneF = randomPhone()
+
 beforeAll(async () => {
   await createMandatoryUsers()
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  await createUserAndWalletFromUserRef("A")
-  await createUserAndWalletFromUserRef("D")
-  await createUserAndWalletFromUserRef("F")
+  await createUserAndWalletFromPhone(phoneA)
+  await createUserAndWalletFromPhone(phoneD)
+  await createUserAndWalletFromPhone(phoneF)
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  walletIdD = await getDefaultWalletIdByTestUserRef("D")
-  walletIdF = await getDefaultWalletIdByTestUserRef("F")
+  walletIdA = await getDefaultWalletIdByPhone(phoneA)
+  walletIdD = await getDefaultWalletIdByPhone(phoneD)
+  walletIdF = await getDefaultWalletIdByPhone(phoneF)
 })
 
 beforeEach(() => {

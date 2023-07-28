@@ -252,6 +252,10 @@ export const configSchema = {
           role: "bankowner",
           phone: "+16505554334",
         },
+        {
+          role: "editor",
+          phone: "+16505554336",
+        },
       ],
       uniqueItems: true,
     },
@@ -260,68 +264,13 @@ export const configSchema = {
       items: {
         type: "object",
         properties: {
-          ref: { type: "string" },
           phone: { type: "string" },
           code: { type: "string" },
-          needUsdWallet: { type: "boolean" },
-          username: { type: "string" },
-          phoneMetadataCarrierType: { type: "string" },
-          title: { type: "string" },
-          role: { type: "string" },
-          currency: { type: "string" },
         },
-        required: ["ref", "phone"],
+        required: ["phone", "code"],
         additionalProperties: false,
       },
-      default: [
-        {
-          ref: "A",
-          phone: "+16505554321",
-          needUsdWallet: true,
-        },
-        {
-          ref: "B",
-          phone: "+16505554322",
-          code: "321432",
-          needUsdWallet: true,
-          phoneMetadataCarrierType: "mobile",
-        },
-        {
-          ref: "C",
-          phone: "+16505554323",
-          title: "business",
-        },
-        {
-          ref: "D",
-          phone: "+16505554324",
-          needUsdWallet: true,
-        },
-        {
-          ref: "E",
-          phone: "+16505554332",
-        },
-        {
-          ref: "F",
-          phone: "+16505554333",
-          needUsdWallet: true,
-        },
-        {
-          ref: "G",
-          phone: "+16505554335",
-          username: "user15",
-        },
-        {
-          ref: "H",
-          phone: "+19876543210",
-          username: "tester",
-        },
-        {
-          ref: "I",
-          phone: "+16505554336",
-          role: "editor",
-          username: "editor",
-        },
-      ],
+      default: [],
       uniqueItems: true,
     },
     rateLimits: {

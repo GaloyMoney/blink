@@ -33,20 +33,21 @@ import { sleep } from "@utils"
 
 import {
   checkIsBalanced,
-  createUserAndWalletFromUserRef,
-  getAccountByTestUserRef,
+  createUserAndWalletFromPhone,
+  getAccountByPhone,
   getAmount,
   getBalanceHelper,
-  getDefaultWalletIdByTestUserRef,
+  getDefaultWalletIdByPhone,
   getError,
   getHash,
   getInvoice,
   getPubKey,
   getTransactionsForWalletId,
-  getUsdWalletIdByTestUserRef,
+  getUsdWalletIdByPhone,
   lnd1,
   lndOutside1,
   pay,
+  randomPhone,
   safePay,
   safePayNoExpect,
   subscribeToInvoices,
@@ -61,19 +62,22 @@ let walletIdUsdF: WalletId
 let initBalanceB: Satoshis
 let initBalanceUsdB: UsdCents
 
+const phoneB = randomPhone()
+const phoneF = randomPhone()
+
 beforeAll(async () => {
-  await createUserAndWalletFromUserRef("B")
-  await createUserAndWalletFromUserRef("F")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
-  accountB = await getAccountByTestUserRef("B")
+  await createUserAndWalletFromPhone(phoneB)
+  await createUserAndWalletFromPhone(phoneF)
+  walletIdB = await getDefaultWalletIdByPhone(phoneB)
+  accountB = await getAccountByPhone(phoneB)
   walletDescriptorB = {
     id: walletIdB,
     currency: WalletCurrency.Btc,
     accountId: accountB.id,
   }
-  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
-  walletIdF = await getDefaultWalletIdByTestUserRef("F")
-  walletIdUsdF = await getUsdWalletIdByTestUserRef("F")
+  walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
+  walletIdF = await getDefaultWalletIdByPhone(phoneF)
+  walletIdUsdF = await getUsdWalletIdByPhone(phoneF)
 })
 
 beforeEach(async () => {

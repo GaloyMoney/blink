@@ -66,17 +66,18 @@ import {
   clearLimiters,
   createMandatoryUsers,
   createRandomUserAndWallet,
-  createUserAndWalletFromUserRef,
-  getAccountIdByTestUserRef,
+  createUserAndWalletFromPhone,
+  getAccountIdByPhone,
   getBalanceHelper,
-  getDefaultWalletIdByTestUserRef,
+  getDefaultWalletIdByPhone,
   getTransactionsForWalletId,
-  getUsdWalletIdByTestUserRef,
+  getUsdWalletIdByPhone,
   lndonchain,
   manyBriaSubscribe,
   mineBlockAndSyncAll,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
+  randomPhone,
   resetOnChainAddressAccountIdLimits,
   sendToAddress,
   sendToAddressAndConfirm,
@@ -102,17 +103,26 @@ const locale = getLocale()
 
 const calc = AmountCalculator()
 
+const phoneA = randomPhone()
+const phoneB = randomPhone()
+const phoneC = randomPhone()
+const phoneE = randomPhone()
+const phoneF = randomPhone()
+const phoneG = randomPhone()
+
 beforeAll(async () => {
   await createMandatoryUsers()
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
-  accountIdA = await getAccountIdByTestUserRef("A")
+  await createUserAndWalletFromPhone(phoneA)
+  await createUserAndWalletFromPhone(phoneB)
+  await createUserAndWalletFromPhone(phoneC)
 
-  await createUserAndWalletFromUserRef("C")
+  walletIdA = await getDefaultWalletIdByPhone(phoneA)
+  walletIdUsdA = await getUsdWalletIdByPhone(phoneA)
+  walletIdB = await getDefaultWalletIdByPhone(phoneB)
+  accountIdA = await getAccountIdByPhone(phoneA)
   ;({ accountId: newAccountIdA, id: newWalletIdA } = await createRandomUserAndWallet())
 })
 
@@ -1484,10 +1494,10 @@ describe("With Lnd", () => {
     it("receives on-chain transaction with max limit for withdrawal level1", async () => {
       /// TODO? add sendAll tests in which the user has more than the limit?
       const withdrawalLimitAccountLevel1 = accountLimits.withdrawalLimit // cents
-      await createUserAndWalletFromUserRef("E")
-      const walletIdE = await getDefaultWalletIdByTestUserRef("E")
-      await createUserAndWalletFromUserRef("G")
-      const walletIdG = await getDefaultWalletIdByTestUserRef("G")
+      await createUserAndWalletFromPhone(phoneE)
+      const walletIdE = await getDefaultWalletIdByPhone(phoneE)
+      await createUserAndWalletFromPhone(phoneG)
+      const walletIdG = await getDefaultWalletIdByPhone(phoneG)
 
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
         currency: WalletCurrency.Usd,
@@ -1511,8 +1521,8 @@ describe("With Lnd", () => {
     it("receives on-chain transaction with max limit for onUs level1", async () => {
       const intraLedgerLimitAccountLevel1 = accountLimits.intraLedgerLimit // cents
 
-      await createUserAndWalletFromUserRef("F")
-      const walletId = await getDefaultWalletIdByTestUserRef("F")
+      await createUserAndWalletFromPhone(phoneF)
+      const walletId = await getDefaultWalletIdByPhone(phoneF)
 
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
         currency: WalletCurrency.Usd,

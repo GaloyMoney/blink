@@ -8,10 +8,11 @@ import find from "lodash.find"
 import {
   checkIsBalanced,
   createMandatoryUsers,
-  createUserAndWalletFromUserRef,
-  getAccountIdByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
-  getAccountRecordByTestUserRef,
+  createUserAndWalletFromPhone,
+  getAccountIdByPhone,
+  getDefaultWalletIdByPhone,
+  getAccountRecordByPhone,
+  randomPhone,
 } from "test/helpers"
 import { resetSelfAccountIdLimits } from "test/helpers/rate-limit"
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
@@ -47,11 +48,13 @@ jest.mock("@domain/accounts-ips/ip-metadata-validator", () => ({
   }),
 }))
 
-beforeAll(async () => {
-  await createUserAndWalletFromUserRef("B")
+const phone = randomPhone()
 
-  accountIdB = await getAccountIdByTestUserRef("B")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
+beforeAll(async () => {
+  await createUserAndWalletFromPhone(phone)
+
+  accountIdB = await getAccountIdByPhone(phone)
+  walletIdB = await getDefaultWalletIdByPhone(phone)
 
   await createMandatoryUsers()
 })
@@ -67,7 +70,7 @@ describe("UserWallet - addEarn", () => {
 
     const initialBalance = await getBalanceHelper(walletIdB)
 
-    const accountRecordBBeforeEarn = await getAccountRecordByTestUserRef("B")
+    const accountRecordBBeforeEarn = await getAccountRecordByPhone(phone)
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>

@@ -162,7 +162,7 @@ interface IAccountsRepository {
   update(account: Account): Promise<Account | RepositoryError>
 }
 
-type AdminRole = "dealer" | "funder" | "bankowner"
+type AdminRole = "dealer" | "funder" | "bankowner" | "editor"
 type AdminAccount = {
   role: AdminRole
   phone: PhoneNumber
@@ -171,8 +171,6 @@ type AdminAccount = {
 type TestAccount = {
   phone: PhoneNumber
   code: PhoneCode
-  username: Username | undefined
-  role: string | undefined // FIXME
 }
 
 type TestAccountsChecker = (testAccounts: TestAccount[]) => {

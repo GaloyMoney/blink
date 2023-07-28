@@ -1,4 +1,4 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "loginFromPhoneAndCode"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "loginFromPhone"] }] */
 
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency } from "@domain/fiat"
@@ -22,10 +22,10 @@ import {
   clearAccountLocks,
   clearLimiters,
   fundWalletIdFromLightning,
-  getDefaultWalletIdByTestUserRef,
-  getPhoneAndCodeFromRef,
+  getDefaultWalletIdByPhone,
+  getPhoneAndCodeFromPhone,
 } from "test/helpers"
-import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
+import { loginFromPhone } from "test/e2e/helpers/account-creation"
 import {
   MainQueryDocument,
   MainQueryQuery,
@@ -43,10 +43,10 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   serverWsPid: PID
 
 const userRef = "K"
-const { phone, code } = getPhoneAndCodeFromRef(userRef)
+const { phone, code } = getPhoneAndCodeFromPhone(userRef)
 
 const otherRef = "A"
-const { phone: phoneOther, code: codeOther } = getPhoneAndCodeFromRef(otherRef)
+const { phone: phoneOther, code: codeOther } = getPhoneAndCodeFromPhone(otherRef)
 
 const satsAmount = toSats(50_000)
 
@@ -218,15 +218,15 @@ gql`
 
 describe("setup", () => {
   it("create main user", async () => {
-    await loginFromPhoneAndCode({ phone, code })
+    await loginFromPhone({ phone, code })
   })
 
   it("create other", async () => {
-    await loginFromPhoneAndCode({ phone: phoneOther, code: codeOther })
+    await loginFromPhone({ phone: phoneOther, code: codeOther })
   })
 
   it("fund user", async () => {
-    walletId = await getDefaultWalletIdByTestUserRef(userRef)
+    walletId = await getDefaultWalletIdByPhone(userRef)
 
     await fundWalletIdFromLightning({ walletId, amount: satsAmount })
     ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))

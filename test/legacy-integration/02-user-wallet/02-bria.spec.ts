@@ -12,7 +12,9 @@ import {
   bitcoindOutside,
   checkIsBalanced,
   createMandatoryUsers,
-  getDefaultWalletIdByTestUserRef,
+  createUserAndWalletFromPhone,
+  getDefaultWalletIdByPhone,
+  randomPhone,
   sendToAddressAndConfirm,
 } from "test/helpers"
 
@@ -20,12 +22,15 @@ let walletIdA: WalletId
 
 const TIMEOUT_BRIA_EVENT = 60_000
 
+const phone = randomPhone()
+
 beforeAll(async () => {
   await createMandatoryUsers()
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  await createUserAndWalletFromPhone(phone)
+  walletIdA = await getDefaultWalletIdByPhone(phone)
 })
 
 afterEach(async () => {

@@ -46,10 +46,6 @@ input AccountUpdateStatusInput {
   uid: ID!
 }
 
-input AccountsAddUsdWalletInput {
-  accountIds: [ID!]!
-}
-
 """An Opaque Bearer token"""
 scalar AuthToken
 
@@ -224,7 +220,6 @@ scalar Memo
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
-  accountsAddUsdWallet(input: AccountsAddUsdWalletInput!): WalletDetailsPayload @deprecated(reason: "All accounts have USD wallets by default")
   businessDeleteMapInfo(input: BusinessDeleteMapInfoInput!): AccountDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
@@ -528,11 +523,6 @@ interface Wallet {
 enum WalletCurrency {
   BTC
   USD
-}
-
-type WalletDetailsPayload {
-  errors: [Error!]!
-  walletDetails: [Wallet!]!
 }
 
 """Unique identifier of a wallet"""

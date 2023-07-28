@@ -205,7 +205,6 @@ redis-cli:
 
 codegen:
 	yarn write-sdl
-	yarn e2e-codegen
 
 gen-test-jwt:
 	yarn gen-test-jwt

@@ -10,31 +10,36 @@ import { Account } from "@services/mongoose/schema"
 
 import {
   createMandatoryUsers,
-  createUserAndWalletFromUserRef,
-  getAccountIdByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
-  getAccountRecordByTestUserRef,
+  randomPhone,
+  createUserAndWalletFromPhone,
+  getAccountRecordByPhone,
+  getDefaultWalletIdByPhone,
+  getAccountIdByPhone,
 } from "test/helpers"
 
 let accountRecordC: AccountRecord
 let walletIdA: WalletId
 let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
 
+const phoneA = randomPhone()
+const phoneB = randomPhone()
+const phoneC = randomPhone()
+
 describe("UserWallet", () => {
   beforeAll(async () => {
     await createMandatoryUsers()
 
-    await createUserAndWalletFromUserRef("A")
-    await createUserAndWalletFromUserRef("B")
-    await createUserAndWalletFromUserRef("C")
+    await createUserAndWalletFromPhone(phoneA)
+    await createUserAndWalletFromPhone(phoneB)
+    await createUserAndWalletFromPhone(phoneC)
 
-    accountRecordC = await getAccountRecordByTestUserRef("C")
+    accountRecordC = await getAccountRecordByPhone(phoneC)
 
-    walletIdA = await getDefaultWalletIdByTestUserRef("A")
+    walletIdA = await getDefaultWalletIdByPhone(phoneA)
 
-    accountIdA = await getAccountIdByTestUserRef("A")
-    accountIdB = await getAccountIdByTestUserRef("B")
-    accountIdC = await getAccountIdByTestUserRef("C")
+    accountIdA = await getAccountIdByPhone(phoneA)
+    accountIdB = await getAccountIdByPhone(phoneB)
+    accountIdC = await getAccountIdByPhone(phoneC)
   })
 
   it("has a role if it was configured", async () => {

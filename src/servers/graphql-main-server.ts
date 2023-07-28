@@ -58,7 +58,10 @@ if (require.main === module) {
   setupMongoConnection(true)
     .then(async () => {
       activateLndHealthCheck()
-      await bootstrap()
+
+      const res = await bootstrap()
+      if (res instanceof Error) throw res
+
       await Promise.race([
         startApolloServerForCoreSchema(),
         startApolloServerForAdminSchema(),

@@ -14,19 +14,22 @@ import { LndService } from "@services/lnd"
 import {
   checkIsBalanced,
   createInvoice,
-  createUserAndWalletFromUserRef,
-  getAccountByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
+  createUserAndWalletFromPhone,
+  getAccountByPhone,
+  getDefaultWalletIdByPhone,
   lndOutside1,
+  randomPhone,
 } from "test/helpers"
 
 let accountB: Account
 let walletIdB: WalletId
 
+const phone = randomPhone()
+
 beforeAll(async () => {
-  await createUserAndWalletFromUserRef("B")
-  accountB = await getAccountByTestUserRef("B")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  await createUserAndWalletFromPhone(phone)
+  accountB = await getAccountByPhone(phone)
+  walletIdB = await getDefaultWalletIdByPhone(phone)
 })
 
 afterEach(async () => {

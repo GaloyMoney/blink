@@ -1,0 +1,32 @@
+mutation accountUpdateStatus($input: AccountUpdateStatusInput!) {
+  accountUpdateStatus(input: $input) {
+    errors {
+      message
+    }
+    accountDetails {
+      id
+      username
+      level
+      status
+      title
+      owner {
+        id
+        language
+        phone
+        createdAt
+      }
+      coordinates {
+        latitude
+        longitude
+      }
+      wallets {
+        id
+        walletCurrency
+        accountId
+        balance
+        pendingIncomingBalance
+      }
+      createdAt
+    }
+  }
+}

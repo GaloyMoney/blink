@@ -173,11 +173,10 @@ fund_wallet_intraledger() {
 initialize_user_from_onchain() {
   local token_name="$1"
   local phone="$2"
-  local code="$3"
   local btc_amount_in_btc=${4:-"0.001"}
   local usd_amount_in_sats=${5:-"75000"}
 
-  login_user "$token_name" "$phone" "$code"
+  login_user "$token_name" "$phone"
 
   fund_wallet_from_onchain \
     "$token_name" \

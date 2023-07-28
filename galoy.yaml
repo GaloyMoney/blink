@@ -45,36 +45,9 @@ admin_accounts:
     phone: "+16505554325"
   - role: bankowner
     phone: "+16505554334"
-test_accounts:
-  - ref: A
-    phone: "+16505554321"
-    needUsdWallet: true
-  - ref: B
-    phone: "+16505554322"
-    code: "321432"
-    needUsdWallet: true
-    phoneMetadataCarrierType: mobile
-  - ref: C
-    phone: "+16505554323"
-    title: business
-  - ref: D
-    phone: "+16505554324"
-    needUsdWallet: true
-  - ref: E
-    phone: "+16505554332"
-  - ref: F
-    phone: "+16505554333"
-    needUsdWallet: true
-  - ref: G
-    phone: "+16505554335"
-    username: user15
-  - ref: H
-    phone: "+19876543210"
-    username: tester
-  - ref: I
+  - role: editor
     phone: "+16505554336"
-    role: editor
-    username: editor
+test_accounts: []
 rateLimits:
   requestCodePerLoginIdentifier:
     points: 4

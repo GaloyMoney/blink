@@ -18,11 +18,11 @@ import {
   clearAccountLocks,
   clearLimiters,
   fundWalletIdFromLightning,
-  getAccountByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
-  getPhoneAndCodeFromRef,
+  getAccountByPhone,
+  getDefaultWalletIdByPhone,
+  getPhoneAndCodeFromPhone,
 } from "test/helpers"
-import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
+import { loginFromPhone } from "test/e2e/helpers/account-creation"
 import {
   LnInvoiceCreateOnBehalfOfRecipientDocument,
   LnInvoiceCreateOnBehalfOfRecipientMutation,
@@ -54,9 +54,9 @@ const receivingUsername = "user15" as Username
 const receivingUserRef = "G"
 const sendingUserRef = "D"
 
-const { phone, code } = getPhoneAndCodeFromRef(sendingUserRef)
+const { phone, code } = getPhoneAndCodeFromPhone(sendingUserRef)
 const { phone: phoneRecipient, code: codeRecipient } =
-  getPhoneAndCodeFromRef(receivingUserRef)
+  getPhoneAndCodeFromPhone(receivingUserRef)
 
 beforeAll(async () => {
   gql`
@@ -80,23 +80,22 @@ beforeAll(async () => {
   serverWsPid = await startServer("start-ws-ci")
 
   // Ensure accounts are created and still exist
-  await loginFromPhoneAndCode({ phone, code })
-  await getAccountByTestUserRef(receivingUserRef)
-  await getAccountByTestUserRef(sendingUserRef)
+  await loginFromPhone({ phone })
+  await getAccountByPhone(receivingUserRef)
+  await getAccountByPhone(sendingUserRef)
 
   // Update username
-  const { apolloClient: client } = await loginFromPhoneAndCode({
+  const { apolloClient: client } = await loginFromPhone({
     phone: phoneRecipient,
-    code: codeRecipient,
   })
   await client.mutate<UserUpdateUsernameMutation>({
     mutation: UserUpdateUsernameDocument,
     variables: { input: { username: receivingUsername } },
   })
 
-  const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserRef)
+  const sendingWalletId = await getDefaultWalletIdByPhone(sendingUserRef)
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
-  receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)
+  receivingWalletId = await getDefaultWalletIdByPhone(receivingUserRef)
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code }
   const result = await apolloClient.mutate<UserLoginMutation>({
