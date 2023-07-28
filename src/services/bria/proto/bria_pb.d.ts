@@ -789,52 +789,6 @@ export namespace WalletAddress {
     }
 }
 
-export class FindAddressByExternalIdRequest extends jspb.Message { 
-    getExternalId(): string;
-    setExternalId(value: string): FindAddressByExternalIdRequest;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): FindAddressByExternalIdRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: FindAddressByExternalIdRequest): FindAddressByExternalIdRequest.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: FindAddressByExternalIdRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): FindAddressByExternalIdRequest;
-    static deserializeBinaryFromReader(message: FindAddressByExternalIdRequest, reader: jspb.BinaryReader): FindAddressByExternalIdRequest;
-}
-
-export namespace FindAddressByExternalIdRequest {
-    export type AsObject = {
-        externalId: string,
-    }
-}
-
-export class FindAddressByExternalIdResponse extends jspb.Message { 
-    getWalletId(): string;
-    setWalletId(value: string): FindAddressByExternalIdResponse;
-
-    hasAddress(): boolean;
-    clearAddress(): void;
-    getAddress(): WalletAddress | undefined;
-    setAddress(value?: WalletAddress): FindAddressByExternalIdResponse;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): FindAddressByExternalIdResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: FindAddressByExternalIdResponse): FindAddressByExternalIdResponse.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: FindAddressByExternalIdResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): FindAddressByExternalIdResponse;
-    static deserializeBinaryFromReader(message: FindAddressByExternalIdResponse, reader: jspb.BinaryReader): FindAddressByExternalIdResponse;
-}
-
-export namespace FindAddressByExternalIdResponse {
-    export type AsObject = {
-        walletId: string,
-        address?: WalletAddress.AsObject,
-    }
-}
-
 export class GetAddressRequest extends jspb.Message { 
 
     hasAddress(): boolean;
@@ -1644,49 +1598,6 @@ export class ListPayoutsResponse extends jspb.Message {
 export namespace ListPayoutsResponse {
     export type AsObject = {
         payoutsList: Array<Payout.AsObject>,
-    }
-}
-
-export class FindPayoutByExternalIdRequest extends jspb.Message { 
-    getExternalId(): string;
-    setExternalId(value: string): FindPayoutByExternalIdRequest;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): FindPayoutByExternalIdRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: FindPayoutByExternalIdRequest): FindPayoutByExternalIdRequest.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: FindPayoutByExternalIdRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): FindPayoutByExternalIdRequest;
-    static deserializeBinaryFromReader(message: FindPayoutByExternalIdRequest, reader: jspb.BinaryReader): FindPayoutByExternalIdRequest;
-}
-
-export namespace FindPayoutByExternalIdRequest {
-    export type AsObject = {
-        externalId: string,
-    }
-}
-
-export class FindPayoutByExternalIdResponse extends jspb.Message { 
-
-    hasPayout(): boolean;
-    clearPayout(): void;
-    getPayout(): Payout | undefined;
-    setPayout(value?: Payout): FindPayoutByExternalIdResponse;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): FindPayoutByExternalIdResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: FindPayoutByExternalIdResponse): FindPayoutByExternalIdResponse.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: FindPayoutByExternalIdResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): FindPayoutByExternalIdResponse;
-    static deserializeBinaryFromReader(message: FindPayoutByExternalIdResponse, reader: jspb.BinaryReader): FindPayoutByExternalIdResponse;
-}
-
-export namespace FindPayoutByExternalIdResponse {
-    export type AsObject = {
-        payout?: Payout.AsObject,
     }
 }
 
