@@ -5,7 +5,7 @@ import {
   lnd1LoopConfig,
   lnd2LoopConfig,
 } from "@app/swap/get-active-loopd"
-import { getSwapDestAddress } from "@app/swap/get-swap-dest-address"
+import { NewOnChainService } from "@services/bria"
 
 import {
   SwapClientNotResponding,
@@ -44,7 +44,7 @@ describe("Swap", () => {
   it("Swap out for default active loop node or lnd1-loop node returns successful swap result", async () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp) {
-      const swapDestAddress = await getSwapDestAddress()
+      const swapDestAddress = await NewOnChainService().getAddressForSwap()
       if (swapDestAddress instanceof Error) return swapDestAddress
       const swapResult = await swapService.swapOut({ amount, swapDestAddress })
       if (swapResult instanceof SwapClientNotResponding) {
@@ -68,7 +68,7 @@ describe("Swap", () => {
       const swapServiceLnd2 = loopService
       const isSwapServerUp2 = await swapServiceLnd2.healthCheck()
       if (isSwapServerUp2) {
-        const swapDestAddress = await getSwapDestAddress()
+        const swapDestAddress = await NewOnChainService().getAddressForSwap()
         if (swapDestAddress instanceof Error) return swapDestAddress
         // this might fail in not enough funds in LND2 in regtest
         const swapResult = await swapServiceLnd2.swapOut({ amount, swapDestAddress })

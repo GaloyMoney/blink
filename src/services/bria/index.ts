@@ -156,6 +156,26 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
+  const getAddressForSwap = async (): Promise<OnChainAddress | OnChainServiceError> => {
+    try {
+      const request = new NewAddressRequest()
+      request.setWalletName(briaConfig.walletName)
+      request.setMetadata(constructMetadata({ galoy: { swap: true } }))
+      const response = await newAddress(request, metadata)
+      return response.getAddress() as OnChainAddress
+    } catch (err) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        err?.code === status.ALREADY_EXISTS
+      ) {
+        return new OnChainAddressAlreadyCreatedForRequestIdError()
+      }
+      return new UnknownOnChainServiceError(err)
+    }
+  }
+
   const findAddressByRequestId = async (
     requestId: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
@@ -286,6 +306,7 @@ export const NewOnChainService = (): INewOnChainService => {
     fns: {
       getBalance,
       getAddressForWallet,
+      getAddressForSwap,
       findAddressByRequestId,
       findPayoutByLedgerJournalId,
       queuePayoutToAddress,
