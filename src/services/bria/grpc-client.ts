@@ -9,8 +9,8 @@ import {
   EstimatePayoutFeeResponse,
   GetAddressRequest,
   GetAddressResponse,
-  FindPayoutByExternalIdRequest,
-  FindPayoutByExternalIdResponse,
+  GetPayoutRequest,
+  GetPayoutResponse,
   GetWalletBalanceSummaryRequest,
   GetWalletBalanceSummaryResponse,
   NewAddressRequest,
@@ -35,11 +35,9 @@ export const getAddress = promisify<GetAddressRequest, Metadata, GetAddressRespo
   bitcoinBridgeClient.getAddress.bind(bitcoinBridgeClient),
 )
 
-export const findPayoutByExternalId = promisify<
-  FindPayoutByExternalIdRequest,
-  Metadata,
-  FindPayoutByExternalIdResponse
->(bitcoinBridgeClient.findPayoutByExternalId.bind(bitcoinBridgeClient))
+export const getPayout = promisify<GetPayoutRequest, Metadata, GetPayoutResponse>(
+  bitcoinBridgeClient.getPayout.bind(bitcoinBridgeClient),
+)
 
 export const getWalletBalanceSummary = promisify<
   GetWalletBalanceSummaryRequest,
