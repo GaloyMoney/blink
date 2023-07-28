@@ -19,7 +19,11 @@ url="http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/create/device-account"
 jwt="eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWIzNyJ9.eyJzdWIiOiIxOjcyMjc5Mjk3MzY2OmFuZHJvaWQ6VEVTVEUyRUFDQ09VTlQ1YWE3NWFmNyIsImF1ZCI6WyJwcm9qZWN0cy83MjI3OTI5NzM2NiIsInByb2plY3RzL2dhbG95YXBwIl0sInByb3ZpZGVyIjoiZGVidWciLCJpc3MiOiJodHRwczovL2ZpcmViYXNlYXBwY2hlY2suZ29vZ2xlYXBpcy5jb20vNzIyNzkyOTczNjYifQ.onGs8nlWA1e1vkEwJhjDtNwCk1jLNezQign7HyCNBOuAxtr7kt0Id6eZtbROuDlVlS4KwO7xMrn3xxsQHZYftu_ihO61OKBw8IEIlLn548May3HGSMletWTANxMLnhwJIjph8ACpRTockFida3XIr2cgIHwPqNRigFh0Ib9HTG5cuzRpQUEkpgiXZ2dJ0hJppX5OX6Q2ywN5LD4mqqqbXV3VNqtGd9oCUI-t7Kfry4UpNBhkhkPzMc5pt_NRsIHFqGtyH1SRX7NJd8BZuPnVfS6zmoPHaOxOixEO4zhFgh_DRePg6_yT4ejRF29mx1gBhfKSz81R5_BVtjgD-LMUdg"
 
 random_uuid() {
-  cat /proc/sys/kernel/random/uuid
+  if [[ -e /proc/sys/kernel/random/uuid ]]; then
+    cat /proc/sys/kernel/random/uuid
+  else
+    uuidgen
+  fi
 }
 
 @test "device-account: create" {
@@ -27,7 +31,13 @@ random_uuid() {
 
   username="$(random_uuid)"
   password="$(random_uuid)"
-  basic_token="$(echo -n $username:$password | base64 -w 0)"
+
+  if [[ "$(uname)" == "Linux" ]]; then
+      basic_token="$(echo -n $username:$password | base64 -w 0)"
+  else
+      basic_token="$(echo -n $username:$password | base64)"
+  fi
+
   auth_header="Authorization: Basic $basic_token"
 
   appcheck_header="Appcheck: $jwt"
