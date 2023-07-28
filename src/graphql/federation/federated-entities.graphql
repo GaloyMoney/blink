@@ -1,1 +1,3 @@
 extend type User @key(fields: "id")
+
+extend interface Account @key(fields: "id")

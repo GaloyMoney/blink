@@ -39,8 +39,9 @@ export const gqlPublicSchema = new GraphQLSchema({
     )
     console.log(`Writing to path: ${schemaPublicPath}`)
 
-    const sortedPublicSchema = printSchema(lexicographicSortSchema(gqlPublicSchema))
-
+    let sortedPublicSchema = printSchema(lexicographicSortSchema(gqlPublicSchema))
+    const linkString = `extend schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@interfaceObject" ])\n `
+    sortedPublicSchema = linkString + sortedPublicSchema
     const fileHandleMain = await fs.open(path.resolve(schemaPublicPath), "w")
     await fileHandleMain.writeFile(sortedPublicSchema)
     await fileHandleMain.close()

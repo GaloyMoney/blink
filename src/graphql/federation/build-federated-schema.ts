@@ -37,7 +37,9 @@ export function buildFederatedSchema(
   walletIdMiddleware: any,
   federationExtendTypes: string,
 ) {
-  const schemaString = printSchema(lexicographicSortSchema(schemaInput))
+  let schemaString = printSchema(lexicographicSortSchema(schemaInput))
+  const linkString = `extend schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@inaccessible", "@override", "@external", "@provides", "@requires", "@interfaceObject" ])\n `
+  schemaString = linkString + schemaString
   const parsedSDL = parse(schemaString)
   const resolvers = getResolversFromSchema(schemaInput)
   const subgraphSchema = buildSubgraphSchema(parsedSDL)

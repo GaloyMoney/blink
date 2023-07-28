@@ -22,15 +22,17 @@ directive @join__unionMember(graph: join__Graph!, member: String!) repeatable on
 directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
 
 interface Account
+  @join__type(graph: CIRCLES, key: "id", isInterfaceObject: true)
   @join__type(graph: PUBLIC)
 {
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
-  displayCurrency: DisplayCurrency!
-  id: ID!
-  level: AccountLevel!
-  limits: AccountLimits!
-  realtimePrice: RealtimePrice!
+  id: ID! @join__field(graph: CIRCLES, external: true) @join__field(graph: PUBLIC)
+  welcomeProfile: WelcomeProfile! @join__field(graph: CIRCLES)
+  csvTransactions(walletIds: [WalletId!]!): String! @join__field(graph: PUBLIC)
+  defaultWalletId: WalletId! @join__field(graph: PUBLIC)
+  displayCurrency: DisplayCurrency! @join__field(graph: PUBLIC)
+  level: AccountLevel! @join__field(graph: PUBLIC)
+  limits: AccountLimits! @join__field(graph: PUBLIC)
+  realtimePrice: RealtimePrice! @join__field(graph: PUBLIC)
   transactions(
     """Returns the items in the list that come after the specified cursor."""
     after: String
@@ -44,8 +46,8 @@ interface Account
     """Returns the last n items from the list."""
     last: Int
     walletIds: [WalletId]
-  ): TransactionConnection
-  wallets: [Wallet!]!
+  ): TransactionConnection @join__field(graph: PUBLIC)
+  wallets: [Wallet!]! @join__field(graph: PUBLIC)
 }
 
 type AccountDeletePayload
@@ -268,6 +270,7 @@ type ConsumerAccount implements Account
     walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
+  welcomeProfile: WelcomeProfile! @join__field
 }
 
 """
