@@ -23,8 +23,8 @@ import { GrpcStreamClient } from "@utils"
 
 import {
   estimatePayoutFee,
-  findAddressByExternalId,
-  findPayoutByExternalId,
+  getAddress,
+  getPayout,
   getWalletBalanceSummary,
   newAddress,
   submitPayout,
@@ -35,10 +35,10 @@ import {
   BriaEvent as RawBriaEvent,
   NewAddressRequest,
   GetWalletBalanceSummaryRequest,
-  FindAddressByExternalIdRequest,
+  GetAddressRequest,
   SubmitPayoutRequest,
   EstimatePayoutFeeRequest,
-  FindPayoutByExternalIdRequest,
+  GetPayoutRequest,
 } from "./proto/bria_pb"
 import { UnknownBriaEventError } from "./errors"
 export { BriaPayloadType } from "./event-handler"
@@ -160,15 +160,15 @@ export const NewOnChainService = (): INewOnChainService => {
     requestId: OnChainAddressRequestId,
   ): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
     try {
-      const request = new FindAddressByExternalIdRequest()
+      const request = new GetAddressRequest()
       request.setExternalId(requestId)
 
-      const response = await findAddressByExternalId(request, metadata)
+      const response = await getAddress(request, metadata)
       const foundAddress = response.getAddress()
 
       if (foundAddress === undefined) return new OnChainAddressNotFoundError()
       return {
-        address: foundAddress.getAddress() as OnChainAddress,
+        address: foundAddress as OnChainAddress,
       }
     } catch (err) {
       if (
@@ -187,10 +187,10 @@ export const NewOnChainService = (): INewOnChainService => {
     journalId: LedgerJournalId,
   ): Promise<PayoutId | OnChainServiceError> => {
     try {
-      const request = new FindPayoutByExternalIdRequest()
+      const request = new GetPayoutRequest()
       request.setExternalId(journalId)
 
-      const response = await findPayoutByExternalId(request, metadata)
+      const response = await getPayout(request, metadata)
       const foundPayout = response.getPayout()
 
       if (foundPayout === undefined) return new PayoutNotFoundError()
