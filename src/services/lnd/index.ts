@@ -1,5 +1,7 @@
 import {
   cancelHodlInvoice,
+  getChainBalance,
+  getPendingChainBalance,
   createHodlInvoice,
   getChannelBalance,
   getClosedChannels,
@@ -102,6 +104,34 @@ export const LndService = (): ILightningService | LightningServiceError => {
 
       const { channel_balance } = await getChannelBalance({ lnd })
       return toSats(channel_balance)
+    } catch (err) {
+      return handleCommonLightningServiceErrors(err)
+    }
+  }
+
+  const getOnChainBalance = async (
+    pubkey?: Pubkey,
+  ): Promise<Satoshis | LightningServiceError> => {
+    try {
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lndInstance instanceof Error) return lndInstance
+
+      const { chain_balance } = await getChainBalance({ lnd: lndInstance })
+      return toSats(chain_balance)
+    } catch (err) {
+      return handleCommonLightningServiceErrors(err)
+    }
+  }
+
+  const getPendingOnChainBalance = async (
+    pubkey?: Pubkey,
+  ): Promise<Satoshis | LightningServiceError> => {
+    try {
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lndInstance instanceof Error) return lndInstance
+
+      const { pending_chain_balance } = await getPendingChainBalance({ lnd: lndInstance })
+      return toSats(pending_chain_balance)
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }
@@ -732,6 +762,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
       listActivePubkeys,
       listAllPubkeys,
       getBalance,
+      getOnChainBalance,
+      getPendingOnChainBalance,
       getInboundOutboundBalance,
       getOpeningChannelsBalance,
       getClosingChannelsBalance,

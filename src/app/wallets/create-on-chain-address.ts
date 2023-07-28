@@ -80,7 +80,7 @@ export const createOnChainAddress = async ({
     const limitOk = await checkOnChainAddressAccountIdLimits(wallet.accountId)
     if (limitOk instanceof Error) return limitOk
 
-    const newOnChainAddress = await onChain.createOnChainAddress({
+    const newOnChainAddress = await onChain.getAddressForWallet({
       walletDescriptor: {
         id: wallet.id,
         currency: wallet.currency,
