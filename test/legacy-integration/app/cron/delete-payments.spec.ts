@@ -41,9 +41,6 @@ beforeAll(async () => {
     amountInBitcoin: 0.02,
     lnd: lnd1,
   })
-
-  // needed to update the balance for some reasons
-  await checkIsBalanced()
 })
 
 afterEach(async () => {

@@ -7,6 +7,10 @@ import { LedgerService } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 import { parseErrorMessageFromUnknown } from "@domain/shared"
 
+import { updateLegacyOnChainReceipt } from "@app/wallets"
+
+import { baseLogger } from "@services/logger"
+
 import {
   BitcoindClient,
   bitcoindDefaultClient,
@@ -120,8 +124,11 @@ export const fundWalletIdFromOnchain = async ({
 
   await waitUntilBlockHeight({ lnd })
 
+  await updateLegacyOnChainReceipt({ logger: baseLogger })
+
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) throw balance
+
   return toSats(balance)
 }
 

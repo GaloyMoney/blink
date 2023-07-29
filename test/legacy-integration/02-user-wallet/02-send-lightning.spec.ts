@@ -231,9 +231,6 @@ beforeAll(async () => {
   await setUsername({ username: usernameB, id: accountB.id })
   await setUsername({ username: usernameC, id: accountC.id })
 
-  // needed to update the balance for some reasons
-  await checkIsBalanced()
-
   walletDescriptorB = {
     id: walletIdB,
     currency: WalletCurrency.Btc,
