@@ -12,12 +12,18 @@ import * as LedgerFacade from "@services/ledger/facade"
 import { baseLogger } from "@services/logger"
 import { BriaPayloadType } from "@services/bria"
 import { EventAugmentationMissingError } from "@services/bria/errors"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainError> => {
   baseLogger.info(
     { sequence: event.sequence, type: event.payload.type },
     "bria event handler",
   )
+  addAttributesToCurrentSpan({
+    ["event.sequence"]: event.sequence,
+    ["event.type"]: event.payload.type,
+  })
+
   switch (event.payload.type) {
     case BriaPayloadType.UtxoDetected:
       return utxoDetectedEventHandler({ event: event.payload })
