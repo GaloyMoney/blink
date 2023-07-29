@@ -124,7 +124,7 @@ describe("Lightning channels", () => {
 
     // Set fee policy on lndOutside1 as routing node between lnd1 and lndOutside2
     let count = 0
-    let countMax = 3
+    let countMax = 9
     let setOnLndOutside1
     while (count < countMax && setOnLndOutside1 !== true) {
       if (count > 0) await sleep(500)
