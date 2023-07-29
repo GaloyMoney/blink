@@ -104,18 +104,8 @@ export const createMandatoryUsers = async () => {
   const adminUsers = getAdminAccounts()
 
   for (const user of adminUsers) {
-    await createUserAndWallet(user)
+    await createUserAndWallet(user.phone)
   }
-}
-
-type TestEntry = {
-  role?: string
-  needUsdWallet?: boolean
-  phone: string
-  username?: string | undefined
-  phoneMetadataCarrierType?: string | undefined
-  title?: string | undefined
-  currency?: string | undefined
 }
 
 export const createUserAndWalletFromPhone = async (
@@ -214,18 +204,16 @@ export const createAccount = async ({
   return account
 }
 
-const getRandomPhoneNumber = () => `+1${Math.floor(Math.random() * 10 ** 10)}`
-
 export const createRandomUserAndWallet = async () => {
-  const randomEntry: TestEntry = { phone: getRandomPhoneNumber() }
-  return createUserAndWallet(randomEntry)
+  const phone = randomPhone()
+  return createUserAndWallet(phone)
 }
 
 export const createRandomUserAndUsdWallet = async (): Promise<
   WalletDescriptor<"USD">
 > => {
-  const randomEntry: TestEntry = { phone: getRandomPhoneNumber() }
-  const { accountId } = await createUserAndWallet(randomEntry)
+  const phone = randomPhone()
+  const { accountId } = await createUserAndWallet(phone)
   const wallet = await addWalletIfNonexistent({
     currency: WalletCurrency.Usd,
     accountId: accountId,
@@ -237,11 +225,9 @@ export const createRandomUserAndUsdWallet = async (): Promise<
 }
 
 export const createUserAndWallet = async (
-  entry: TestEntry,
+  phone: PhoneNumber,
 ): Promise<WalletDescriptor<"BTC">> => {
   let kratosUserId: UserId
-
-  const phone = entry.phone as PhoneNumber
 
   const user = await UsersRepository().findByPhone(phone)
   if (user instanceof CouldNotFindError) {
