@@ -83,9 +83,22 @@ TESTER_PHONE="+19876543210"
   exec_admin_graphql "$token_name" 'account-details-by-username' "$variables"
   refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
+  
+  variables=$(
+    jq -n \
+    --arg level "TWO" \
+    --arg uid "$id" \
+    '{input: {level: $level, uid: $uid}}'
+  )
 
-  # TODO: business update map info
-  # TODO: account status level update
+  exec_admin_graphql "$token_name" 'account-status-level-update' "$variables"
+  refetched_id="$(graphql_output '.data.accountUpdateLevel.accountDetails.id')"
+  [[ "$refetched_id" == "$id" ]] || exit 1
+  level="$(graphql_output '.data.accountUpdateLevel.accountDetails.level')"
+  [[ "$level" == "TWO" ]] || exit 1
+
   # TODO: account update status (locked, active)
   # TODO: add check by email
+  
+  # TODO: business update map info
 }
