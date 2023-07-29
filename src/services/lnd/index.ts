@@ -79,7 +79,13 @@ import { timeoutWithCancel } from "@utils"
 import sumBy from "lodash.sumby"
 
 import { TIMEOUT_PAYMENT } from "./auth"
-import { getActiveLnd, getLndFromPubkey, getLnds, parseLndErrorDetails } from "./utils"
+import {
+  getActiveLnd,
+  getActiveOnchainLnd,
+  getLndFromPubkey,
+  getLnds,
+  parseLndErrorDetails,
+} from "./utils"
 import { KnownLndErrorDetails } from "./errors"
 
 export const LndService = (): ILightningService | LightningServiceError => {
@@ -88,6 +94,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
 
   const defaultLnd = activeNode.lnd
   const defaultPubkey = activeNode.pubkey as Pubkey
+
+  const activeOnchainNode = getActiveOnchainLnd()
+  if (activeOnchainNode instanceof Error) return activeOnchainNode
+
+  const defaultOnchainLnd = activeOnchainNode.lnd
 
   const isLocal = (pubkey: Pubkey): boolean | LightningServiceError =>
     getLnds({ type: "offchain" }).some((item) => item.pubkey === pubkey)
@@ -169,7 +180,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const after = Math.max(0, blockHeight - scanDepth)
 
       const txs = await getChainTransactions({
-        lnd: defaultLnd,
+        lnd: defaultOnchainLnd,
         after,
       })
 
