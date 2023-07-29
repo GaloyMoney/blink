@@ -1,4 +1,9 @@
-import { getGeetestConfig, getTestAccounts, getTwilioConfig, isProd } from "@config"
+import {
+  defaultLoginCode,
+  getGeetestConfig,
+  getTestAccounts,
+  getTwilioConfig,
+} from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { PhoneAlreadyExistsError } from "@domain/authentication/errors"
 import { NotImplementedError } from "@domain/errors"
@@ -61,8 +66,7 @@ export const requestPhoneCodeForUnauthedUser = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  // return true if we are in dev or test mode
-  if (!isProd) {
+  if (defaultLoginCode().enabled) {
     return true
   }
 
@@ -103,8 +107,7 @@ export const requestPhoneCodeForAuthedUser = async ({
     return new PhoneAlreadyExistsError()
   }
 
-  // return true if we are in dev or test mode
-  if (!isProd) {
+  if (defaultLoginCode().enabled) {
     return true
   }
 

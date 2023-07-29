@@ -1,6 +1,6 @@
 import twilio from "twilio"
 
-import { getTestAccounts, getTwilioConfig, isProd } from "@config"
+import { defaultLoginCode, getTestAccounts, getTwilioConfig } from "@config"
 import {
   PhoneCodeInvalidError,
   ExpiredOrNonExistentPhoneNumberError,
@@ -185,10 +185,8 @@ export const isPhoneCodeValid = async ({
   phone: PhoneNumber
   code: PhoneCode
 }) => {
-  if (!isProd) {
-    if (code === "000000") {
-      return true
-    }
+  if (defaultLoginCode().enabled && code === defaultLoginCode().code) {
+    return true
   }
 
   const testAccounts = getTestAccounts()
