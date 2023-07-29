@@ -92,6 +92,9 @@ async function toArray<T>(gen: AsyncIterable<T>): Promise<T[]> {
 describe("notification", () => {
   describe("sendNotification", () => {
     // FIXME
+    // 1/ we don't use this code in production any more
+    // 2/ this is a very convoluted test that relies on other tests as an artefact.
+    // It's hard to debug. it's probably something we'll want to refactor with more cleaner/independant integration tests.
     it.skip("sends daily balance to active users", async () => {
       const sendNotification = jest.fn()
       jest
