@@ -2,6 +2,8 @@
 
 load "helpers/setup-and-teardown"
 
+username="user1"
+
 setup_file() {
   start_server
 
@@ -14,6 +16,15 @@ setup_file() {
     "$TESTER_TOKEN_NAME" \
     "$TESTER_PHONE"  \
     "$CODE"
+
+  variables=$(
+      jq -n \
+      --arg username "$username" \
+      '{input: {username: $username}}'
+  )
+
+  exec_graphql "$TESTER_TOKEN_NAME" 'user-update-username' "$variables"
+
 }
 
 teardown_file() {
@@ -63,17 +74,15 @@ TESTER_PHONE="+19876543210"
   refetched_id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
 
-  # TODO: set and check username 
+  variables=$(
+    jq -n \
+    --arg username "$username" \
+    '{username: $username}'
+  )
 
-  # variables=$(
-  #   jq -n \
-  #   --arg username "$username" \
-  #   '{username: $username}'
-  # )
-
-  # exec_admin_graphql "$token_name" 'account-details-by-username' "$variables"
-  # refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
-  # [[ "$refetched_id" == "$id" ]] || exit 1
+  exec_admin_graphql "$token_name" 'account-details-by-username' "$variables"
+  refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
+  [[ "$refetched_id" == "$id" ]] || exit 1
 
   # TODO: business update map info
   # TODO: account status level update
