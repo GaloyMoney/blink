@@ -111,11 +111,13 @@ balance_for_check() {
 login_user() {
   local token_name=$1
   local phone=$2
+  local code=$3
 
   local variables=$(
     jq -n \
     --arg phone "$phone" \
-    '{input: {phone: $phone, code: "000000"}}'
+    --arg code "$code" \
+    '{input: {phone: $phone, code: $code}}'
   )
   exec_graphql 'anon' 'user-login' "$variables"
   auth_token="$(graphql_output '.data.userLogin.authToken')"
@@ -173,12 +175,14 @@ fund_wallet_intraledger() {
 initialize_user_from_onchain() {
   local token_name="$1"
   local phone="$2"
+  local code="$3"
+
   local btc_amount_in_btc=${4:-"0.001"}
   local usd_amount_in_sats=${5:-"75000"}
 
-  login_user "$token_name" "$phone"
+  login_user "$token_name" "$phone" "$code"
 
-  fund_wallet_from_onchain \
+fund_wallet_from_onchain \
     "$token_name" \
     "$token_name.btc_wallet_id" \
     "$btc_amount_in_btc"

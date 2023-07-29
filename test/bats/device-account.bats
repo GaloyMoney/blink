@@ -67,12 +67,15 @@ random_uuid() {
 @test "device-account: upgrade" {
   token_name="$DEVICE_NAME"
   phone="$DEVICE_PHONE"
+  code="$CODE"
 
   variables=$(
     jq -n \
     --arg phone "$phone" \
-    '{input: {phone: $phone, code: "000000"}}'
+   --arg code "$code" \
+    '{input: {phone: $phone, code: $code}}'
   )
+
   exec_graphql "$token_name" 'user-login-upgrade' "$variables"
   upgrade_success="$(graphql_output '.data.userLoginUpgrade.success')"
   [[ "$upgrade_success" == "true" ]] || exit 1

@@ -12,7 +12,6 @@ teardown_file() {
 
 TOKEN_NAME="charlie"
 PHONE="+16505554354"
-CODE="000000"
 
 randomEmail() {
   local random_string

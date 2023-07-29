@@ -7,11 +7,13 @@ setup_file() {
 
   login_user \
     "$ADMIN_TOKEN_NAME" \
-    "$ADMIN_PHONE" 
+    "$ADMIN_PHONE" \
+    "$CODE"
 
   login_user \
     "$TESTER_TOKEN_NAME" \
-    "$TESTER_PHONE" 
+    "$TESTER_PHONE"  \
+    "$CODE"
 }
 
 teardown_file() {

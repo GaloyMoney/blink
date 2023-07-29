@@ -12,6 +12,8 @@ ALICE_PHONE="+16505554328"
 BOB_TOKEN_NAME="bob"
 BOB_PHONE="+16505554350"
 
+CODE="000000"
+
 bitcoin_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
 }
