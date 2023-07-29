@@ -127,7 +127,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey?: Pubkey,
   ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd
       if (lndInstance instanceof Error) return lndInstance
 
       const { chain_balance } = await getChainBalance({ lnd: lndInstance })
@@ -141,7 +141,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey?: Pubkey,
   ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : defaultOnchainLnd
       if (lndInstance instanceof Error) return lndInstance
 
       const { pending_chain_balance } = await getPendingChainBalance({ lnd: lndInstance })
