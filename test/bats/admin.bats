@@ -97,7 +97,20 @@ TESTER_PHONE="+19876543210"
   level="$(graphql_output '.data.accountUpdateLevel.accountDetails.level')"
   [[ "$level" == "TWO" ]] || exit 1
 
-  # TODO: account update status (locked, active)
+  variables=$(
+    jq -n \
+    --arg status "LOCKED" \
+    --arg uid "$id" \
+    --arg comment "Test lock of the account" \
+    '{input: {status: $status, uid: $uid, comment: $comment}}'
+  )
+
+  exec_admin_graphql "$token_name" 'account-update-status' "$variables"
+  refetched_id="$(graphql_output '.data.accountUpdateStatus.accountDetails.id')"
+  [[ "$refetched_id" == "$id" ]] || exit 1
+  account_status="$(graphql_output '.data.accountUpdateStatus.accountDetails.status')"
+  [[ "$account_status" == "LOCKED" ]] || exit 1
+
   # TODO: add check by email
   
   # TODO: business update map info
