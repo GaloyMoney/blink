@@ -13,6 +13,8 @@ supergraph:
   listen: 0.0.0.0:4004
   introspection: true
   path: /graphql
+cors:
+  allow_any_origin: true
 telemetry:
   tracing:
     otlp:
