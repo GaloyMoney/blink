@@ -21,8 +21,8 @@ setup_file() {
     '{input: {username: $username}}'
   )
   exec_graphql "$ALICE_TOKEN_NAME" 'user-update-username' "$variables"
-  username="$(graphql_output '.data.userUpdateUsername.user.username')"
-  [[ "$ALICE_TOKEN_NAME" == "$username" ]]
+  num_errors="$(graphql_output '.data.userUpdateUsername.errors | length')"
+  [[ "$num_errors" == "0" ]] || exit 1
 }
 
 teardown_file() {
