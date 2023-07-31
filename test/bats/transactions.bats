@@ -10,7 +10,7 @@ setup_file() {
   start_trigger
   start_server
 
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
 }
 
 teardown_file() {

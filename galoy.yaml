@@ -19,8 +19,7 @@ buildVersion:
     minBuildNumber: 362
     lastBuildNumber: 362
 rewards:
-  allowPhoneCountries:
-    - SV
+  allowPhoneCountries: []
   denyPhoneCountries: []
   allowIPCountries: []
   denyIPCountries: []
@@ -45,69 +44,9 @@ admin_accounts:
     phone: "+16505554325"
   - role: bankowner
     phone: "+16505554334"
-test_accounts:
-  - ref: A
-    phone: "+16505554321"
-    code: "321321"
-    needUsdWallet: true
-  - ref: B
-    phone: "+16505554322"
-    code: "321432"
-    needUsdWallet: true
-    phoneMetadataCarrierType: mobile
-  - ref: C
-    phone: "+16505554323"
-    code: "321321"
-    title: business
-  - ref: D
-    phone: "+16505554324"
-    code: "321321"
-    needUsdWallet: true
-  - ref: E
-    phone: "+16505554332"
-    code: "321321"
-  - ref: F
-    phone: "+16505554333"
-    code: "321321"
-    needUsdWallet: true
-  - ref: G
-    phone: "+16505554335"
-    code: "321321"
-    username: user15
-  - ref: H
-    phone: "+19876543210"
-    code: "321321"
-    username: tester
-  - ref: I
+  - role: editor
     phone: "+16505554336"
-    code: "321321"
-    role: editor
-    username: editor
-  - ref: J
-    phone: "+19876543211"
-    code: "321321"
-    username: tester2
-  - ref: K
-    phone: "+16505554328"
-    code: "321321"
-    username: alice
-  - ref: L
-    phone: "+16505554350"
-    code: "321321"
-    username: bob
-  - ref: M
-    phone: "+16505554351"
-    code: "321321"
-    username: lnd_funding
-  - ref: "N"
-    phone: "+16505554352"
-    code: "321321"
-  - ref: O
-    phone: "+16505554353"
-    code: "321321"
-  - ref: P
-    phone: "+16505554354"
-    code: "321321"
+test_accounts: []
 rateLimits:
   requestCodePerLoginIdentifier:
     points: 4

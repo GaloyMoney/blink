@@ -74,9 +74,6 @@ if (mgCred.user && mgCred.password) {
   path = `mongodb://${mgCred.user}:${mgCred.password}@${mgCred.address}/${mgCred.db}`
 } else {
   path = `mongodb://${mgCred.address}/${mgCred.db}`
-  if (process.env.NODE_ENV !== "development") {
-    baseLogger.warn({ path }, "Connecting to MongoDB without a username and password")
-  }
 }
 
 export const setupMongoConnection = async (syncIndexes = false) => {

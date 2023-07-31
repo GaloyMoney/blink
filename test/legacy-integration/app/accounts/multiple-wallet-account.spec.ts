@@ -6,14 +6,15 @@ import { WalletsRepository } from "@services/mongoose"
 import mongoose from "mongoose"
 
 import {
-  createUserAndWalletFromUserRef,
-  getAccountByTestUserRef,
-  getUsdWalletIdByTestUserRef,
+  createUserAndWalletFromPhone,
+  getAccountByPhone,
+  getUsdWalletIdByPhone,
+  randomPhone,
   randomUserId,
 } from "test/helpers"
 
 it("change default walletId of account", async () => {
-  const phone = "+123456789" as PhoneNumber
+  const phone = randomPhone()
 
   const kratosUserId = randomUserId()
 
@@ -55,9 +56,11 @@ it("fail to create an invalid account", async () => {
 })
 
 it("does not add a usd wallet if one exists", async () => {
-  await createUserAndWalletFromUserRef("A")
-  const account = await getAccountByTestUserRef("A")
-  const usdWalletId = await getUsdWalletIdByTestUserRef("A")
+  const phone = randomPhone()
+
+  await createUserAndWalletFromPhone(phone)
+  const account = await getAccountByPhone(phone)
+  const usdWalletId = await getUsdWalletIdByPhone(phone)
   expect(usdWalletId).toBeDefined()
 
   const newWallet = await Accounts.addWalletIfNonexistent({

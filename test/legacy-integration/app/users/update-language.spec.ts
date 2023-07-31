@@ -2,13 +2,14 @@ import { Users } from "@app"
 import { InvalidLanguageError } from "@domain/errors"
 import { UsersRepository } from "@services/mongoose"
 
-import { createUserAndWalletFromUserRef, getUserIdByTestUserRef } from "test/helpers"
+import { createUserAndWalletFromPhone, getUserIdByPhone, randomPhone } from "test/helpers"
 
 let userId: UserId
+const phone = randomPhone()
 
 beforeAll(async () => {
-  await createUserAndWalletFromUserRef("A")
-  userId = await getUserIdByTestUserRef("A")
+  await createUserAndWalletFromPhone(phone)
+  userId = await getUserIdByPhone(phone)
 })
 
 describe("Accounts - updateLanguage", () => {

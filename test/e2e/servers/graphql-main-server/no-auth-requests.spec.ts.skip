@@ -28,9 +28,10 @@ import {
   clearAccountLocks,
   clearLimiters,
   clearLimitersWithExclusions,
-  getPhoneAndCodeFromRef,
+  getPhoneAndCodeFromPhone,
+  randomPhone,
 } from "test/helpers"
-import { loginFromPhoneAndCode } from "test/e2e/helpers/account-creation"
+import { loginFromPhone } from "test/e2e/helpers/account-creation"
 import {
   MainQueryDocument,
   MainQueryQuery,
@@ -50,16 +51,14 @@ let correctCode: PhoneCode,
   serverPid: PID,
   serverWsPid: PID
 
-const { phone, code } = getPhoneAndCodeFromRef("G")
+const phone = randomPhone()
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   serverPid = await startServer("start-main-ci")
   serverWsPid = await startServer("start-ws-ci")
 
-  await loginFromPhoneAndCode({ phone, code })
-
-  correctCode = `${code}` as PhoneCode
+  await loginFromPhone({ phone })
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
 })
 

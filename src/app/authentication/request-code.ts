@@ -1,4 +1,9 @@
-import { getGeetestConfig, getTestAccounts, getTwilioConfig } from "@config"
+import {
+  defaultLoginCode,
+  getGeetestConfig,
+  getTestAccounts,
+  getTwilioConfig,
+} from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { PhoneAlreadyExistsError } from "@domain/authentication/errors"
 import { NotImplementedError } from "@domain/errors"
@@ -61,13 +66,17 @@ export const requestPhoneCodeForUnauthedUser = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  const testAccounts = getTestAccounts()
-  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
+  if (defaultLoginCode().enabled) {
     return true
   }
 
   if (getTwilioConfig().accountSid === TWILIO_ACCOUNT_TEST) {
-    return new NotImplementedError("use test account for local dev and tests")
+    return new NotImplementedError()
+  }
+
+  const testAccounts = getTestAccounts()
+  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
+    return true
   }
 
   return TwilioClient().initiateVerify({ to: phone, channel })
@@ -98,13 +107,17 @@ export const requestPhoneCodeForAuthedUser = async ({
     return new PhoneAlreadyExistsError()
   }
 
-  const testAccounts = getTestAccounts()
-  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
+  if (defaultLoginCode().enabled) {
     return true
   }
 
   if (getTwilioConfig().accountSid === TWILIO_ACCOUNT_TEST) {
-    return new NotImplementedError("use test account for local dev and tests")
+    return new NotImplementedError()
+  }
+
+  const testAccounts = getTestAccounts()
+  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
+    return true
   }
 
   return TwilioClient().initiateVerify({ to: phone, channel })

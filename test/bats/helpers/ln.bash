@@ -1,9 +1,8 @@
-BASH_SOURCE=${BASH_SOURCE:-test/bats/helpers/.}
+lnBASH_SOURCE=${BASH_SOURCE:-test/bats/helpers/.}
 source $(dirname "$BASH_SOURCE")/_common.bash
 
 LND_FUNDING_TOKEN_NAME="lnd_funding"
 LND_FUNDING_PHONE="+16505554351"
-LND_FUNDING_CODE="321321"
 
 lnds_init() {
   # Clean up any existing channels
@@ -44,7 +43,7 @@ lnds_init() {
   login_user \
     "$LND_FUNDING_TOKEN_NAME" \
     "$LND_FUNDING_PHONE" \
-    "$LND_FUNDING_CODE"
+    "$CODE"
 
   fund_wallet_from_lightning \
     "$LND_FUNDING_TOKEN_NAME" \

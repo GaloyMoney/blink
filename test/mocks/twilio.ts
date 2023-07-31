@@ -17,7 +17,7 @@ export const TwilioClient = () => {
 
       return resolve({
         carrier: {
-          type: entry.phoneMetadataCarrierType as CarrierType,
+          type: "mobile" as CarrierType,
           name: "",
           mobile_network_code: "",
           mobile_country_code: "",

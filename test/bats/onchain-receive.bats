@@ -12,7 +12,7 @@ setup_file() {
   start_exporter
   start_server
 
-  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
+  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
 }
 
 teardown_file() {

@@ -86,6 +86,4 @@ export const bootstrap = async () => {
       return new Error("Expected BTC-currency default wallet")
     }
   }
-
-  return true
 }

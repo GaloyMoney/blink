@@ -159,6 +159,14 @@ export const mongodbCredentials = () => {
   return { user, password, address, db }
 }
 
+export const defaultLoginCode = () => {
+  const code = process.env.UNSECURE_DEFAULT_LOGIN_CODE
+  return {
+    enabled: !!code,
+    code,
+  }
+}
+
 export const feedback = {
   mattermostWebhookUrl: process.env.MATTERMOST_WEBHOOK_URL,
 }

@@ -8,11 +8,11 @@ GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4002}
 
 ALICE_TOKEN_NAME="alice"
 ALICE_PHONE="+16505554328"
-ALICE_CODE="321321"
 
 BOB_TOKEN_NAME="bob"
 BOB_PHONE="+16505554350"
-BOB_CODE="321321"
+
+CODE="000000"
 
 bitcoin_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
@@ -91,11 +91,18 @@ gql_file() {
   echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql"
 }
 
+gql_admin_query() {
+  cat "$(gql_admin_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
+}
+
+gql_admin_file() {
+  echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/admin-gql/$1.gql"
+}
+
 exec_graphql() {
   local token_name=$1
   local query_name=$2
   local variables=${3:-"{}"}
-  local admin=$4
   echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
   echo "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}"
 
@@ -111,18 +118,44 @@ exec_graphql() {
     run_cmd=""
   fi
 
-  if [[ "${admin}" == "admin" ]]; then
-    gql_route="admin/graphql"
-  else
-    gql_route="graphql"
-  fi
-
+  gql_route="graphql"
 
   ${run_cmd} curl -s \
     -X POST \
     ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
     -H "Content-Type: application/json" \
     -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
+    "${GALOY_ENDPOINT}/${gql_route}"
+
+  echo "GQL output: '$output'"
+}
+
+exec_admin_graphql() {
+  local token_name=$1
+  local query_name=$2
+  local variables=${3:-"{}"}
+  echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
+  echo "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}"
+
+  if [[ ${token_name} == "anon" ]]; then
+    AUTH_HEADER=""
+  else
+    AUTH_HEADER="Authorization: Bearer $(read_value ${token_name})"
+  fi
+
+  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
+    run_cmd="run"
+  else
+    run_cmd=""
+  fi
+
+  gql_route="admin/graphql"
+
+  ${run_cmd} curl -s \
+    -X POST \
+    ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}" \
     "${GALOY_ENDPOINT}/${gql_route}"
 
   echo "GQL output: '$output'"

@@ -65,15 +65,8 @@ type YamlSchema = {
     phone: string
   }[]
   test_accounts: {
-    ref: string
     phone: string
     code: string
-    needUsdWallet?: boolean
-    username?: string
-    phoneMetadataCarrierType?: string
-    title?: string
-    role?: string
-    currency?: string
   }[]
   rateLimits: {
     requestCodePerLoginIdentifier: RateLimitInput

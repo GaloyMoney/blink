@@ -10,16 +10,17 @@ import {
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
 } from "@domain/rate-limit/errors"
-import { WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { WalletType } from "@domain/wallets"
 import { DealerPriceService } from "@services/dealer-price"
+import { WalletInvoicesRepository } from "@services/mongoose"
 
 import {
-  createUserAndWalletFromUserRef,
-  getAccountIdByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
+  createUserAndWalletFromPhone,
+  getAccountIdByPhone,
+  getDefaultWalletIdByPhone,
   getHash,
+  randomPhone,
 } from "test/helpers"
 import {
   resetRecipientAccountIdLimits,
@@ -35,11 +36,11 @@ const walletInvoices = WalletInvoicesRepository()
 const dealerFns = DealerPriceService()
 
 beforeAll(async () => {
-  const userRef = "B"
-  await createUserAndWalletFromUserRef(userRef)
+  const phoneB = randomPhone()
+  await createUserAndWalletFromPhone(phoneB)
 
-  walletIdBtc = await getDefaultWalletIdByTestUserRef(userRef)
-  accountIdB = await getAccountIdByTestUserRef(userRef)
+  walletIdBtc = await getDefaultWalletIdByPhone(phoneB)
+  accountIdB = await getAccountIdByPhone(phoneB)
 
   const wallet = await addWallet({
     accountId: accountIdB,

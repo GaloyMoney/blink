@@ -36,14 +36,15 @@ import {
   bitcoindOutside,
   createChainAddress,
   createInvoice,
-  createUserAndWalletFromUserRef,
-  getAccountByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
+  createUserAndWalletFromPhone,
+  getAccountByPhone,
+  getDefaultWalletIdByPhone,
   getTransactionsForWalletId,
-  getUsdWalletIdByTestUserRef,
+  getUsdWalletIdByPhone,
   lndOutside1,
   onceBriaSubscribe,
   RANDOM_ADDRESS,
+  randomPhone,
   safePay,
   sendToAddressAndConfirm,
 } from "test/helpers"
@@ -55,16 +56,19 @@ let walletIdB: WalletId
 let walletIdUsdB: WalletId
 let walletIdC: WalletId
 
+const phoneB = randomPhone()
+const phoneC = randomPhone()
+
 beforeAll(async () => {
-  await createUserAndWalletFromUserRef("B")
-  await createUserAndWalletFromUserRef("C")
+  await createUserAndWalletFromPhone(phoneB)
+  await createUserAndWalletFromPhone(phoneC)
 
-  accountB = await getAccountByTestUserRef("B")
-  accountC = await getAccountByTestUserRef("C")
+  accountB = await getAccountByPhone(phoneB)
+  accountC = await getAccountByPhone(phoneC)
 
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
-  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
-  walletIdC = await getDefaultWalletIdByTestUserRef("C")
+  walletIdB = await getDefaultWalletIdByPhone(phoneB)
+  walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
+  walletIdC = await getDefaultWalletIdByPhone(phoneC)
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 

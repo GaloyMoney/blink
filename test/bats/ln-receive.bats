@@ -13,7 +13,7 @@ setup_file() {
   start_exporter
 
   lnds_init
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$ALICE_CODE"
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
 
   subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
   sleep 3

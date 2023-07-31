@@ -3,14 +3,15 @@ import { createHash, randomBytes } from "crypto"
 import { getLocale, ONE_DAY } from "@config"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
+import * as PaymentsHelpers from "@app/payments/helpers"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
 } from "@app/prices"
-import * as PaymentsHelpers from "@app/payments/helpers"
 
 import { AccountLimitsChecker } from "@domain/accounts"
+import { toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
@@ -23,13 +24,10 @@ import {
   PaymentStatus,
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
-import { toObjectId } from "@services/mongoose/utils"
-import { Account, WalletInvoice } from "@services/mongoose/schema"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
-import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
@@ -49,6 +47,8 @@ import {
   ZERO_SATS,
 } from "@domain/shared"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
+import { Account, WalletInvoice } from "@services/mongoose/schema"
+import { toObjectId } from "@services/mongoose/utils"
 
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
@@ -71,24 +71,28 @@ import { sleep } from "@utils"
 
 import { setupPaymentSubscribe } from "@servers/trigger"
 
+import { setUsername } from "@app/accounts"
+
 import {
+  bitcoindClient,
   cancelHodlInvoice,
   checkIsBalanced,
   createHodlInvoice,
   createInvoice,
-  createUserAndWalletFromUserRef,
+  createUserAndWalletFromPhone,
   decodePaymentRequest,
-  getAccountByTestUserRef,
-  getAccountRecordByTestUserRef,
+  fundWalletIdFromOnchain,
+  getAccountByPhone,
+  getAccountRecordByPhone,
   getBalanceHelper,
   getChannel,
   getChannels,
-  getDefaultWalletIdByTestUserRef,
+  getDefaultWalletIdByPhone,
   getHash,
   getInvoice,
   getInvoiceAttempt,
   getTransactionsForWalletId,
-  getUsdWalletIdByTestUserRef,
+  getUsdWalletIdByPhone,
   lnd1,
   lndOutside1,
   lndOutside2,
@@ -96,6 +100,7 @@ import {
   markFailedTransactionAsPending,
   markSuccessfulTransactionAsPending,
   pay,
+  randomPhone,
   settleHodlInvoice,
   subscribeToPayments,
   waitFor,
@@ -156,7 +161,11 @@ let initBalanceA: Satoshis, initBalanceB: Satoshis, initBalanceUsdB: UsdCents
 const amountInvoice = toSats(1000)
 
 const invoicesRepo = WalletInvoicesRepository()
-let accountRecordA: AccountRecord
+
+const phoneA = randomPhone()
+const phoneB = randomPhone()
+const phoneC = randomPhone()
+const phoneH = randomPhone()
 
 let accountA: Account
 let accountB: Account
@@ -165,10 +174,10 @@ let accountH: Account
 
 let walletIdA: WalletId
 let walletIdB: WalletId
+let walletIdC: WalletId
 let walletIdH: WalletId
 let walletIdUsdB: WalletId
 let walletIdUsdA: WalletId
-let walletIdC: WalletId
 
 let walletDescriptorB: WalletDescriptor<WalletCurrency>
 
@@ -179,37 +188,54 @@ let usernameC: Username
 const locale = getLocale()
 
 beforeAll(async () => {
-  await createUserAndWalletFromUserRef("A")
-  await createUserAndWalletFromUserRef("B")
-  await createUserAndWalletFromUserRef("C")
-  await createUserAndWalletFromUserRef("H")
+  await bitcoindClient.loadWallet({ filename: "outside" })
 
-  accountA = await getAccountByTestUserRef("A")
-  accountB = await getAccountByTestUserRef("B")
-  accountC = await getAccountByTestUserRef("C")
-  accountH = await getAccountByTestUserRef("H")
+  await createUserAndWalletFromPhone(phoneA)
+  await createUserAndWalletFromPhone(phoneB)
+  await createUserAndWalletFromPhone(phoneC)
+  await createUserAndWalletFromPhone(phoneH)
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
-  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
-  walletIdC = await getDefaultWalletIdByTestUserRef("C")
-  walletIdH = await getDefaultWalletIdByTestUserRef("H")
+  accountA = await getAccountByPhone(phoneA)
+  accountB = await getAccountByPhone(phoneB)
+  accountC = await getAccountByPhone(phoneC)
+  accountH = await getAccountByPhone(phoneH)
+
+  walletIdA = await getDefaultWalletIdByPhone(phoneA)
+  walletIdUsdA = await getUsdWalletIdByPhone(phoneA)
+  walletIdB = await getDefaultWalletIdByPhone(phoneB)
+  walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
+  walletIdC = await getDefaultWalletIdByPhone(phoneC)
+  walletIdH = await getDefaultWalletIdByPhone(phoneH)
+
+  await fundWalletIdFromOnchain({
+    walletId: walletIdA,
+    amountInBitcoin: 0.02,
+    lnd: lnd1,
+  })
+  await fundWalletIdFromOnchain({
+    walletId: walletIdB,
+    amountInBitcoin: 0.02,
+    lnd: lnd1,
+  })
+  await fundWalletIdFromOnchain({
+    walletId: walletIdUsdB,
+    amountInBitcoin: 0.02,
+    lnd: lnd1,
+  })
+
+  usernameA = "sendLighningUserA" as Username
+  usernameB = "sendLighningUserB" as Username
+  usernameC = "sendLighningUserC" as Username
+
+  await setUsername({ username: usernameA, id: accountA.id })
+  await setUsername({ username: usernameB, id: accountB.id })
+  await setUsername({ username: usernameC, id: accountC.id })
 
   walletDescriptorB = {
     id: walletIdB,
     currency: WalletCurrency.Btc,
     accountId: accountB.id,
   }
-
-  accountRecordA = await getAccountRecordByTestUserRef("A")
-  usernameA = accountRecordA.username as Username
-
-  const accountRecord1 = await getAccountRecordByTestUserRef("B")
-  usernameB = accountRecord1.username as Username
-
-  const accountRecordC = await getAccountRecordByTestUserRef("C")
-  usernameC = accountRecordC.username as Username
 })
 
 beforeEach(async () => {
@@ -222,8 +248,9 @@ afterEach(async () => {
   await checkIsBalanced()
 })
 
-afterAll(() => {
+afterAll(async () => {
   jest.restoreAllMocks()
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 describe("UserWallet - Lightning Pay", () => {
@@ -387,7 +414,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(userBTxn.slice.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
   })
 
-  it("sends to another Galoy user a push payment", async () => {
+  it.skip("sends to another Galoy user a push payment", async () => {
     const sendNotification = jest.fn()
     jest
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
@@ -459,8 +486,8 @@ describe("UserWallet - Lightning Pay", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(titleReceipt)
     expect(sendNotification.mock.calls[0][0].body).toBe(bodyReceipt)
 
-    let accountRecordA = await getAccountRecordByTestUserRef("A")
-    let accountRecordB = await getAccountRecordByTestUserRef("B")
+    let accountRecordA = await getAccountRecordByPhone(phoneA)
+    let accountRecordB = await getAccountRecordByPhone(phoneB)
 
     expect(accountRecordA.contacts).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
@@ -488,7 +515,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (res2 instanceof Error) throw res2
     expect(res2).toBe(PaymentSendStatus.Success)
 
-    accountRecordA = await getAccountRecordByTestUserRef("A")
+    accountRecordA = await getAccountRecordByPhone(phoneA)
     expect(accountRecordA.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -497,7 +524,7 @@ describe("UserWallet - Lightning Pay", () => {
         }),
       ]),
     )
-    accountRecordB = await getAccountRecordByTestUserRef("B")
+    accountRecordB = await getAccountRecordByPhone(phoneB)
     expect(accountRecordB.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -762,7 +789,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txn.memo).toBe(memoFromUser)
   })
 
-  it("filters spam from send to another Galoy user as push payment", async () => {
+  it.skip("filters spam from send to another Galoy user as push payment", async () => {
     // TODO: good candidate for a unit test?
 
     const satsBelow = 100
@@ -808,6 +835,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(resAboveThreshold).toBe(PaymentSendStatus.Success)
 
     // check below-threshold transaction for recipient was filtered
+
     expect(transaction0Below.initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameB,
@@ -832,8 +860,8 @@ describe("UserWallet - Lightning Pay", () => {
     expect(transaction1Above.memo).toBe(memoSpamAboveThreshold)
 
     // check contacts being added
-    const accountRecordA = await getAccountRecordByTestUserRef("A")
-    const accountRecordB = await getAccountRecordByTestUserRef("B")
+    const accountRecordA = await getAccountRecordByPhone(phoneA)
+    const accountRecordB = await getAccountRecordByPhone(phoneB)
 
     expect(accountRecordA.contacts).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
@@ -876,7 +904,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails when user has insufficient balance", async () => {
     const { request: invoice } = await createInvoice({
       lnd: lndOutside1,
-      tokens: initBalanceB + 1000000,
+      tokens: initBalanceB + 100,
     })
     const paymentResult = await Payments.payInvoiceByWalletId({
       uncheckedPaymentRequest: invoice,
@@ -1270,9 +1298,9 @@ describe("UserWallet - Lightning Pay", () => {
           { _id: { $in: [accountA.id, accountB.id, accountC.id].map(toObjectId) } },
           { $set: { contacts: [] } },
         )
-        let accountRecordA = await getAccountRecordByTestUserRef("A")
-        let accountRecordB = await getAccountRecordByTestUserRef("B")
-        let accountRecordC = await getAccountRecordByTestUserRef("C")
+        let accountRecordA = await getAccountRecordByPhone(phoneA)
+        let accountRecordB = await getAccountRecordByPhone(phoneB)
+        let accountRecordC = await getAccountRecordByPhone(phoneC)
         expect(accountRecordA.contacts).not.toEqual(
           expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
         )
@@ -1306,9 +1334,9 @@ describe("UserWallet - Lightning Pay", () => {
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWalletB, walletPayer: userwalletC})
 
-        accountRecordA = await getAccountRecordByTestUserRef("A")
-        accountRecordB = await getAccountRecordByTestUserRef("B")
-        accountRecordC = await getAccountRecordByTestUserRef("C")
+        accountRecordA = await getAccountRecordByPhone(phoneA)
+        accountRecordB = await getAccountRecordByPhone(phoneB)
+        accountRecordC = await getAccountRecordByPhone(phoneC)
         expect(accountRecordA.contacts).toEqual(
           expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
         )

@@ -18,11 +18,12 @@ import {
   lndCreateOnChainAddress,
   bitcoindClient,
   bitcoindOutside,
-  createUserAndWalletFromUserRef,
-  getAccountByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
-  getUsdWalletIdByTestUserRef,
+  createUserAndWalletFromPhone,
+  getAccountByPhone,
+  getDefaultWalletIdByPhone,
+  getUsdWalletIdByPhone,
   lndonchain,
+  randomPhone,
   sendToAddressAndConfirm,
   subscribeToChainAddress,
   waitUntilBlockHeight,
@@ -40,16 +41,19 @@ let accountA: Account
 
 const dealerFns = DealerPriceService()
 
+const phoneA = randomPhone()
+const phoneB = randomPhone()
+
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  await createUserAndWalletFromUserRef("A")
-  await createUserAndWalletFromUserRef("B")
+  await createUserAndWalletFromPhone(phoneA)
+  await createUserAndWalletFromPhone(phoneB)
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
-  accountA = await getAccountByTestUserRef("A")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletIdA = await getDefaultWalletIdByPhone(phoneA)
+  walletIdUsdA = await getUsdWalletIdByPhone(phoneA)
+  accountA = await getAccountByPhone(phoneA)
+  walletIdB = await getDefaultWalletIdByPhone(phoneB)
 
   // Fund walletIdA
   await sendToLndWalletTestWrapper({

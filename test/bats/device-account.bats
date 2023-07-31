@@ -10,10 +10,8 @@ teardown_file() {
 
 DEVICE_NAME="device-user"
 DEVICE_PHONE="+16505554353"
-DEVICE_CODE="321321"
 
-
-url="http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/auth/create/device-account"
+url="http://${GALOY_ENDPOINT}/auth/create/device-account"
 
 # dev/ory/gen-test-jwt.ts
 jwt="eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWIzNyJ9.eyJzdWIiOiIxOjcyMjc5Mjk3MzY2OmFuZHJvaWQ6VEVTVEUyRUFDQ09VTlQ1YWE3NWFmNyIsImF1ZCI6WyJwcm9qZWN0cy83MjI3OTI5NzM2NiIsInByb2plY3RzL2dhbG95YXBwIl0sInByb3ZpZGVyIjoiZGVidWciLCJpc3MiOiJodHRwczovL2ZpcmViYXNlYXBwY2hlY2suZ29vZ2xlYXBpcy5jb20vNzIyNzkyOTczNjYifQ.onGs8nlWA1e1vkEwJhjDtNwCk1jLNezQign7HyCNBOuAxtr7kt0Id6eZtbROuDlVlS4KwO7xMrn3xxsQHZYftu_ihO61OKBw8IEIlLn548May3HGSMletWTANxMLnhwJIjph8ACpRTockFida3XIr2cgIHwPqNRigFh0Ib9HTG5cuzRpQUEkpgiXZ2dJ0hJppX5OX6Q2ywN5LD4mqqqbXV3VNqtGd9oCUI-t7Kfry4UpNBhkhkPzMc5pt_NRsIHFqGtyH1SRX7NJd8BZuPnVfS6zmoPHaOxOixEO4zhFgh_DRePg6_yT4ejRF29mx1gBhfKSz81R5_BVtjgD-LMUdg"
@@ -69,14 +67,15 @@ random_uuid() {
 @test "device-account: upgrade" {
   token_name="$DEVICE_NAME"
   phone="$DEVICE_PHONE"
-  code="$DEVICE_CODE"
+  code="$CODE"
 
   variables=$(
     jq -n \
     --arg phone "$phone" \
-    --arg code "$code" \
+   --arg code "$code" \
     '{input: {phone: $phone, code: $code}}'
   )
+
   exec_graphql "$token_name" 'user-login-upgrade' "$variables"
   upgrade_success="$(graphql_output '.data.userLoginUpgrade.success')"
   [[ "$upgrade_success" == "true" ]] || exit 1

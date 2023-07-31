@@ -10,7 +10,6 @@ import AccountUpdateStatusMutation from "@graphql/admin/root/mutation/account-up
 import BusinessUpdateMapInfoMutation from "@graphql/admin/root/mutation/business-update-map-info"
 
 import UserUpdatePhoneMutation from "./root/mutation/user-update-phone"
-import AccountsAddUsdWalletMutation from "./root/mutation/account-add-usd-wallet"
 import BusinessDeleteMapInfoMutation from "./root/mutation/delete-business-map"
 
 export const mutationFields = {
@@ -25,7 +24,6 @@ export const mutationFields = {
     userUpdatePhone: UserUpdatePhoneMutation,
     accountUpdateLevel: AccountUpdateLevelMutation,
     accountUpdateStatus: AccountUpdateStatusMutation,
-    accountsAddUsdWallet: AccountsAddUsdWalletMutation,
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
     businessDeleteMapInfo: BusinessDeleteMapInfoMutation,
   },
