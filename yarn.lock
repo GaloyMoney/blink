@@ -2196,16 +2196,15 @@
     "@opentelemetry/instrumentation" "0.40.0"
     "@opentelemetry/semantic-conventions" "1.14.0"
 
-"@opentelemetry/instrumentation-http@^0.41.0":
-  version "0.41.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-http/-/instrumentation-http-0.41.0.tgz#c92ffcb9581544d76d17540f7df442fad8601035"
-  integrity sha512-O/YTVH4xE96rxRYoo14vayM9s0MUTtMASMAtYS3yvXMJETgc5aFnTrWezKQ6VJ2Lew5qfm1ZISzFURLSUM0qTw==
+"@opentelemetry/instrumentation-http@^0.41.1":
+  version "0.41.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-http/-/instrumentation-http-0.41.1.tgz#94bc5df488db9f46d65ce22d83bf7dbe256205bd"
+  integrity sha512-fhLBlSxTg+jw5HZVzOvH4tIUQHJkP8L2dyYYXu60sppYZHFVltL/DyfoMErdq5cSn97WHWfRqnbYrG0wlPJedA==
   dependencies:
-    "@opentelemetry/core" "1.15.0"
-    "@opentelemetry/instrumentation" "0.41.0"
-    "@opentelemetry/semantic-conventions" "1.15.0"
+    "@opentelemetry/core" "1.15.1"
+    "@opentelemetry/instrumentation" "0.41.1"
+    "@opentelemetry/semantic-conventions" "1.15.1"
     semver "^7.5.1"
-    tslib "^2.3.1"
 
 "@opentelemetry/instrumentation-ioredis@^0.34.3":
   version "0.34.3"
@@ -2246,17 +2245,16 @@
     semver "^7.3.2"
     shimmer "^1.2.1"
 
-"@opentelemetry/instrumentation@0.41.0", "@opentelemetry/instrumentation@^0.41.0":
-  version "0.41.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation/-/instrumentation-0.41.0.tgz#a67a7f6d215d8802c2e956907a913b793037e04d"
-  integrity sha512-Ut9SnZfi7MexOk+GHCMjEtYHogIb6v1dfbnq+oTbQj0lOQUSNLtlO6bXwUdtmPhbvrx6bC0AGr1L6g3rNimv9w==
+"@opentelemetry/instrumentation@0.41.1", "@opentelemetry/instrumentation@^0.41.0":
+  version "0.41.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation/-/instrumentation-0.41.1.tgz#20b8b1b15812a18acfa3b744abf90223b1d26eb0"
+  integrity sha512-IsOidIIgI7Sg2NhWGYRZRifiv9kLyrxT89hBK1YVPDetuBEBUgFzD5VXdwqwfOKL3kgT4KiERMmLJ8gqig0o1A==
   dependencies:
     "@types/shimmer" "^1.0.2"
     import-in-the-middle "1.4.1"
     require-in-the-middle "^7.1.1"
     semver "^7.5.1"
     shimmer "^1.2.1"
-    tslib "^2.3.1"
 
 "@opentelemetry/otlp-exporter-base@0.40.0":
   version "0.40.0"
