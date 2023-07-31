@@ -136,12 +136,6 @@ input CaptchaRequestAuthCodeInput {
   validationCode: String!
 }
 
-input ColdStorageRebalanceToHotWalletInput {
-  amount: SatAmount!
-  targetConfirmations: TargetConfirmations = 3
-  walletName: String!
-}
-
 type Coordinates {
   latitude: Float!
   longitude: Float!
@@ -235,7 +229,6 @@ type Mutation {
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
-  coldStorageRebalanceToHotWallet(input: ColdStorageRebalanceToHotWalletInput!): PsbtDetailPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
@@ -288,16 +281,6 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
   currencyUnit: String! @deprecated(reason: "Deprecated due to type renaming")
   formattedAmount: String! @deprecated(reason: "Deprecated please use `base / 10^offset`")
   offset: Int!
-}
-
-type PsbtDetail {
-  fee: SatAmount!
-  transaction: String!
-}
-
-type PsbtDetailPayload {
-  errors: [Error!]!
-  psbtDetail: PsbtDetail
 }
 
 type Query {
@@ -353,11 +336,6 @@ type SuccessPayload {
   errors: [Error!]!
   success: Boolean
 }
-
-"""
-(Positive) Number of blocks in which the transaction is expected to be confirmed
-"""
-scalar TargetConfirmations
 
 """
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)

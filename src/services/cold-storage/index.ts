@@ -6,18 +6,16 @@ import {
   getNewAddress,
   getTransaction,
   listWallets as listWalletsRpc,
-  walletCreateFundedPsbt,
 } from "bitcoin-cli-ts"
 
 import { BitcoinNetwork, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config"
 
 import {
-  InsufficientBalanceForRebalanceError,
   InvalidCurrentColdStorageWalletServiceError,
   InvalidOrNonWalletTransactionError,
   UnknownColdStorageServiceError,
 } from "@domain/cold-storage/errors"
-import { btc2sat, sat2btc } from "@domain/bitcoin"
+import { btc2sat } from "@domain/bitcoin"
 import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -74,38 +72,6 @@ export const ColdStorageService = async (): Promise<
       const amount = btc2sat(await getBalanceRpc({ bitcoind }))
       return { walletName, amount }
     } catch (err) {
-      return new UnknownColdStorageServiceError(err)
-    }
-  }
-
-  const createPsbt = async ({
-    walletName,
-    onChainAddress,
-    amount,
-    targetConfirmations,
-  }: GetColdStoragePsbtArgs): Promise<ColdStoragePsbt | ColdStorageServiceError> => {
-    try {
-      const bitcoind = getBitcoindClient(walletName)
-      if (bitcoind instanceof Error) return bitcoind
-
-      const output0: { [onchainaddress: OnChainAddress]: number } = {}
-      output0[onChainAddress] = sat2btc(amount)
-
-      const fundedPsbt = await walletCreateFundedPsbt({
-        bitcoind,
-        inputs: [],
-        outputs: [output0],
-        options: { conf_target: targetConfirmations },
-      })
-
-      return {
-        transaction: fundedPsbt.psbt,
-        fee: btc2sat(fundedPsbt.fee),
-      }
-    } catch (err) {
-      if (err instanceof Error && err.message.includes("Insufficient funds")) {
-        return new InsufficientBalanceForRebalanceError(err.message)
-      }
       return new UnknownColdStorageServiceError(err)
     }
   }
@@ -175,7 +141,6 @@ export const ColdStorageService = async (): Promise<
       listWallets,
       getBalances,
       getBalance,
-      createPsbt,
       createOnChainAddress,
       isDerivedAddress,
       isWithdrawalTransaction,

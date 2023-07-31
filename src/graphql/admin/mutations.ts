@@ -8,7 +8,6 @@ import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-creat
 import AccountUpdateLevelMutation from "@graphql/admin/root/mutation/account-update-level"
 import AccountUpdateStatusMutation from "@graphql/admin/root/mutation/account-update-status"
 import BusinessUpdateMapInfoMutation from "@graphql/admin/root/mutation/business-update-map-info"
-import ColdStorageRebalanceToHotWalletMutation from "@graphql/admin/root/mutation/cold-storage-rebalance-to-hot-wallet"
 
 import UserUpdatePhoneMutation from "./root/mutation/user-update-phone"
 import AccountsAddUsdWalletMutation from "./root/mutation/account-add-usd-wallet"
@@ -29,7 +28,6 @@ export const mutationFields = {
     accountsAddUsdWallet: AccountsAddUsdWalletMutation,
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
     businessDeleteMapInfo: BusinessDeleteMapInfoMutation,
-    coldStorageRebalanceToHotWallet: ColdStorageRebalanceToHotWalletMutation,
   },
 }
 
