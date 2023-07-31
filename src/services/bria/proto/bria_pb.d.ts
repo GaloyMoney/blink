@@ -1482,6 +1482,11 @@ export class SubmitPayoutResponse extends jspb.Message {
     getId(): string;
     setId(value: string): SubmitPayoutResponse;
 
+    hasBatchInclusionEstimatedAt(): boolean;
+    clearBatchInclusionEstimatedAt(): void;
+    getBatchInclusionEstimatedAt(): number | undefined;
+    setBatchInclusionEstimatedAt(value: number): SubmitPayoutResponse;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): SubmitPayoutResponse.AsObject;
     static toObject(includeInstance: boolean, msg: SubmitPayoutResponse): SubmitPayoutResponse.AsObject;
@@ -1495,6 +1500,7 @@ export class SubmitPayoutResponse extends jspb.Message {
 export namespace SubmitPayoutResponse {
     export type AsObject = {
         id: string,
+        batchInclusionEstimatedAt?: number,
     }
 }
 

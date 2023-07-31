@@ -12083,7 +12083,8 @@ proto.services.bria.v1.SubmitPayoutResponse.prototype.toObject = function(opt_in
  */
 proto.services.bria.v1.SubmitPayoutResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, "")
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    batchInclusionEstimatedAt: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -12124,6 +12125,10 @@ proto.services.bria.v1.SubmitPayoutResponse.deserializeBinaryFromReader = functi
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
+    case 2:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setBatchInclusionEstimatedAt(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -12160,6 +12165,13 @@ proto.services.bria.v1.SubmitPayoutResponse.serializeBinaryToWriter = function(m
       f
     );
   }
+  f = /** @type {number} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
+    writer.writeUint32(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -12178,6 +12190,42 @@ proto.services.bria.v1.SubmitPayoutResponse.prototype.getId = function() {
  */
 proto.services.bria.v1.SubmitPayoutResponse.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional uint32 batch_inclusion_estimated_at = 2;
+ * @return {number}
+ */
+proto.services.bria.v1.SubmitPayoutResponse.prototype.getBatchInclusionEstimatedAt = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.services.bria.v1.SubmitPayoutResponse} returns this
+ */
+proto.services.bria.v1.SubmitPayoutResponse.prototype.setBatchInclusionEstimatedAt = function(value) {
+  return jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.services.bria.v1.SubmitPayoutResponse} returns this
+ */
+proto.services.bria.v1.SubmitPayoutResponse.prototype.clearBatchInclusionEstimatedAt = function() {
+  return jspb.Message.setField(this, 2, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.services.bria.v1.SubmitPayoutResponse.prototype.hasBatchInclusionEstimatedAt = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
