@@ -47,11 +47,6 @@ interface IColdStorageService {
   listWallets(): Promise<string[] | ColdStorageServiceError>
   getBalances(): Promise<ColdStorageBalance[] | ColdStorageServiceError>
   getBalance(walletName: string): Promise<ColdStorageBalance | ColdStorageServiceError>
-  createPsbt({
-    walletName,
-    onChainAddress,
-    amount,
-  }: GetColdStoragePsbtArgs): Promise<ColdStoragePsbt | ColdStorageServiceError>
   createOnChainAddress(): Promise<OnChainAddress | ColdStorageServiceError>
   isDerivedAddress(address: OnChainAddress): Promise<boolean | ColdStorageServiceError>
   isWithdrawalTransaction(
