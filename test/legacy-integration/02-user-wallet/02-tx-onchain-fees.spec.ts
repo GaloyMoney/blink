@@ -15,6 +15,7 @@ import { baseLogger } from "@services/logger"
 import { getFunderWalletId } from "@services/ledger/caching"
 
 import {
+  lndCreateOnChainAddress,
   bitcoindClient,
   bitcoindOutside,
   createUserAndWalletFromUserRef,
@@ -75,7 +76,7 @@ const sendToLndWalletTestWrapper = async ({
   amountSats: Satoshis
   walletId: WalletId
 }) => {
-  const address = await Wallets.lndCreateOnChainAddress(walletId)
+  const address = await lndCreateOnChainAddress(walletId)
   if (address instanceof Error) throw address
   expect(address.substring(0, 4)).toBe("bcrt")
 

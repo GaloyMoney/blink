@@ -1,6 +1,5 @@
 import { authenticatedBitcoind, createWallet, importDescriptors } from "bitcoin-cli-ts"
 
-import { Wallets } from "@app"
 import { getBitcoinCoreRPCConfig } from "@config"
 
 import { LedgerService } from "@services/ledger"
@@ -17,6 +16,7 @@ import {
 } from "./bitcoind"
 import { descriptors } from "./multisig-wallet"
 import { descriptors as signerDescriptors } from "./signer-wallet"
+import { lndCreateOnChainAddress } from "./wallet"
 import { waitUntilBlockHeight } from "./lightning"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
@@ -109,7 +109,7 @@ export const fundWalletIdFromOnchain = async ({
   amountInBitcoin: number
   lnd: AuthenticatedLnd
 }): Promise<Satoshis> => {
-  const address = await Wallets.lndCreateOnChainAddress(walletId)
+  const address = await lndCreateOnChainAddress(walletId)
   if (address instanceof Error) throw address
 
   await sendToAddressAndConfirm({
