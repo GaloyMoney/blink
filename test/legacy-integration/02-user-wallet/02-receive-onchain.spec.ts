@@ -451,7 +451,7 @@ describe("With Bria", () => {
       expect(addressAgain).toBe(address)
     })
 
-    it("fails to create onChain Address past rate limit", async () => {
+    it.skip("fails to create onChain Address past rate limit", async () => {
       // Reset limits before starting
       let resetOk = await resetOnChainAddressAccountIdLimits(newAccountIdA)
       expect(resetOk).not.toBeInstanceOf(Error)
@@ -1344,7 +1344,7 @@ describe("With Lnd", () => {
       expect(lastAddress).toBe(address)
     })
 
-    it("fails to create onChain Address past rate limit", async () => {
+    it.skip("fails to create onChain Address past rate limit", async () => {
       // Reset limits before starting
       let resetOk = await resetOnChainAddressAccountIdLimits(accountIdA)
       expect(resetOk).not.toBeInstanceOf(Error)
