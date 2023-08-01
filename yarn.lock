@@ -2266,15 +2266,16 @@
     "@opentelemetry/semantic-conventions" "1.15.1"
     semver "^7.5.1"
 
-"@opentelemetry/instrumentation-ioredis@^0.34.3":
-  version "0.34.3"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.34.3.tgz#95fb4b6ff2b5eb29e01ee8d36ec24c69f2996019"
-  integrity sha512-k/4zPfdZSkdRYbx6CEjwgqi/UZlTUKk+8ZsthOzYsvmpCwPb1a1PomOa+1gk+5OvF83HanSy4mO06FhMx/NUgQ==
+"@opentelemetry/instrumentation-ioredis@^0.35.0":
+  version "0.35.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.35.0.tgz#aa6fb1ff9965980e407950bc44f6e5127eb877df"
+  integrity sha512-tdM1BkrYmx+fXH+t1DViTXqFr9LUJHl0Qdcr6G8PjscsK+bVssSHhi5a3zYPFFFHpjks1mXMZHMr/Vsj2hNQAw==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.40.0"
-    "@opentelemetry/redis-common" "^0.35.1"
+    "@opentelemetry/instrumentation" "^0.41.0"
+    "@opentelemetry/redis-common" "^0.36.0"
     "@opentelemetry/semantic-conventions" "^1.0.0"
     "@types/ioredis4" "npm:@types/ioredis@^4.28.10"
+    tslib "^2.3.1"
 
 "@opentelemetry/instrumentation-mongodb@^0.35.0":
   version "0.35.0"
@@ -2349,10 +2350,12 @@
   dependencies:
     "@opentelemetry/core" "1.15.1"
 
-"@opentelemetry/redis-common@^0.35.1":
-  version "0.35.1"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/redis-common/-/redis-common-0.35.1.tgz#01356f6845d4f9f9fdfd2c4c562a74316d2d24d3"
-  integrity sha512-qLXe7h9VzFLx3LaizFiUlpuohCRyvHlDW5b9synE6omHKTZr/n0EHEdmhp3GezBeAqMGI+q499Mht4SmStaSqQ==
+"@opentelemetry/redis-common@^0.36.0":
+  version "0.36.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/redis-common/-/redis-common-0.36.0.tgz#5b992d76838a385820f452235b7714e0f270e4ac"
+  integrity sha512-rTKuBszerwzKm0uBmffJ8j47+5YBGu6HGUWnez5gev2B4by8TKkY37E/QMq7/3KRL9NkZ08VJCtl3piCCFW30g==
+  dependencies:
+    tslib "^2.3.1"
 
 "@opentelemetry/resources@1.14.0":
   version "1.14.0"
@@ -12951,12 +12954,7 @@ tslib@^1.8.1:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
-tslib@^2.1.0, tslib@^2.3.0, tslib@^2.3.1, tslib@^2.4.0, tslib@^2.5.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.6.0.tgz#b295854684dbda164e181d259a22cd779dcd7bc3"
-  integrity sha512-7At1WUettjcSRHXCyYtTselblcHl9PJFFVKiCAy/bY97+BPZXSQ2wbq0P9s8tK2G7dFQfNnlJnPAiArVBVBsfA==
-
-tslib@^2.6.0:
+tslib@^2.1.0, tslib@^2.3.0, tslib@^2.3.1, tslib@^2.4.0, tslib@^2.5.0, tslib@^2.6.0:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.6.1.tgz#fd8c9a0ff42590b25703c0acb3de3d3f4ede0410"
   integrity sha512-t0hLfiEKfMUoqhG+U1oid7Pva4bbDPHYfJNiB7BiIjRkj1pyC++4N3huJfqY6aRH6VTB0rvtzQwjM4K6qpfOig==
