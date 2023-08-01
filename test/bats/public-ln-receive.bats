@@ -22,7 +22,8 @@ setup_file() {
   )
   exec_graphql "$ALICE_TOKEN_NAME" 'user-update-username' "$variables"
   num_errors="$(graphql_output '.data.userUpdateUsername.errors | length')"
-  [[ "$num_errors" == "0" ]] || exit 1
+  username="$(graphql_output '.data.userUpdateUsername.user.username')"
+  [[ "$num_errors" == "0" || "$username" == "$ALICE_TOKEN_NAME" ]] || exit 1
 }
 
 teardown_file() {
@@ -234,7 +235,7 @@ usd_amount=50
   retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
-@test "public-ln-receive: fail to create invoice - nonexistent wallet-id" {
+@test "public-ln-receive: fail to create invoice - invalid wallet-id" {
   variables=$(
     jq -n \
     --arg amount "$btc_amount" \
@@ -253,6 +254,35 @@ usd_amount=50
     '{"input": {"recipientWalletId": "does-not-exist"}}'
   error_msg="$(graphql_output '.data.lnNoAmountInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
   [[ "$error_msg" == "Invalid value for WalletId" ]] || exit 1
+}
+
+@test "public-ln-receive: fail to create invoice - nonexistent wallet-id" {
+  non_existent_wallet_id="$(random_uuid)"
+
+  variables=$(
+    jq -n \
+    --arg amount "$btc_amount" \
+    --arg recipient_wallet_id "$non_existent_wallet_id" \
+    '{input: {recipientWalletId: $recipient_wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-invoice-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == *CouldNotFindWalletFromIdError* ]] || exit 1
+  exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == *CouldNotFindWalletFromIdError* ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg recipient_wallet_id "$non_existent_wallet_id" \
+    '{input: {recipientWalletId: $recipient_wallet_id}}'
+  )
+  exec_graphql \
+    'anon' \
+    'ln-no-amount-invoice-create-on-behalf-of-recipient' \
+    "$variables"
+  error_msg="$(graphql_output '.data.lnNoAmountInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == *CouldNotFindWalletFromIdError* ]] || exit 1
 }
 
 @test "public-ln-receive: fail to create invoice - negative amount" {

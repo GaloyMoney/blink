@@ -165,6 +165,14 @@ graphql_output() {
   echo $output | jq -r "$@"
 }
 
+random_uuid() {
+  if [[ -e /proc/sys/kernel/random/uuid ]]; then
+    cat /proc/sys/kernel/random/uuid
+  else
+    uuidgen
+  fi
+}
+
 curl_request() {
   local url=$1
   shift
