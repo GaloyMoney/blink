@@ -327,6 +327,7 @@ message EstimatePayoutFeeRequest {
   string payout_queue_name = 2;
   oneof destination {
     string onchain_address = 3;
+    string destination_wallet_name = 5;
   };
   uint64 satoshis = 4;
 }
@@ -340,6 +341,7 @@ message SubmitPayoutRequest {
   string payout_queue_name = 2;
   oneof destination {
     string onchain_address = 3;
+    string destination_wallet_name = 7;
   };
   uint64 satoshis = 4;
   optional string external_id = 5;
@@ -355,6 +357,11 @@ message ListPayoutsRequest {
   string wallet_name = 1;
 }
 
+message BriaWalletDestination {
+  string wallet_id = 1;
+  string address = 2;
+}
+
 message Payout {
   string id = 1;
   string wallet_id = 2;
@@ -363,6 +370,7 @@ message Payout {
   uint64 satoshis = 5;
   oneof destination {
     string onchain_address = 6;
+    BriaWalletDestination wallet = 10;
   }
   bool cancelled = 9;
   string external_id = 7;
@@ -415,6 +423,7 @@ message PayoutSummary {
   uint64 satoshis = 2;
   oneof destination {
     string onchain_address = 3;
+    BriaWalletDestination wallet = 4;
   }
 }
 
@@ -498,6 +507,7 @@ message PayoutSubmitted {
   uint64 satoshis = 4;
   oneof destination {
     string onchain_address = 5;
+    BriaWalletDestination wallet = 6;
   };
 }
 
@@ -508,6 +518,7 @@ message PayoutCancelled {
   uint64 satoshis = 4;
   oneof destination {
     string onchain_address = 5;
+    BriaWalletDestination wallet = 6;
   };
 }
 
@@ -520,6 +531,7 @@ message PayoutCommitted {
   uint64 satoshis = 6;
   oneof destination {
     string onchain_address = 7;
+    BriaWalletDestination wallet = 9;
   };
   uint64 proportional_fee_sats = 8;
 }
@@ -533,6 +545,7 @@ message PayoutBroadcast {
   uint64 satoshis = 6;
   oneof destination {
     string onchain_address = 7;
+    BriaWalletDestination wallet = 9;
   };
   uint64 proportional_fee_sats = 8;
 }
@@ -546,6 +559,7 @@ message PayoutSettled {
   uint64 satoshis = 6;
   oneof destination {
     string onchain_address = 7;
+    BriaWalletDestination wallet = 9;
   };
   uint64 proportional_fee_sats = 8;
 }
