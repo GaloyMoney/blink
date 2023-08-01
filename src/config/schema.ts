@@ -220,6 +220,14 @@ export const configSchema = {
             fast: "dev",
           },
         },
+        coldStorage: {
+          type: "object",
+          properties: {
+            walletName: { type: "string" },
+            hotToColdRebalanceQueueName: { type: "string" },
+          },
+          required: ["walletName", "hotToColdRebalanceQueueName"],
+        },
       },
       required: ["hotWalletName", "queueNames"],
       additionalProperties: false,

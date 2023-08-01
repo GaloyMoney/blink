@@ -533,6 +533,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "NonIntegerError":
     case "ColdStorageError":
     case "ColdStorageServiceError":
+    case "ColdStorageConfigMissingError":
     case "InvalidCurrentColdStorageWalletServiceError":
     case "InvalidOrNonWalletTransactionError":
     case "FeeDifferenceError":

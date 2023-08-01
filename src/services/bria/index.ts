@@ -9,6 +9,7 @@ import {
   PayoutNotFoundError,
   PayoutDestinationBlocked,
   UnknownOnChainServiceError,
+  ColdStorageConfigMissingError,
 } from "@domain/bitcoin/onchain"
 import {
   paymentAmountFromNumber,
@@ -125,10 +126,13 @@ export const NewOnChainService = (): INewOnChainService => {
   }
 
   const getColdBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
-    try {
-      const request = new GetWalletBalanceSummaryRequest()
-      request.setWalletName(briaConfig.coldStorage.walletName)
+    if (briaConfig.coldStorage === undefined) {
+      return new ColdStorageConfigMissingError()
+    }
+    const request = new GetWalletBalanceSummaryRequest()
+    request.setWalletName(briaConfig.coldStorage.walletName)
 
+    try {
       const response = await getWalletBalanceSummary(request, metadata)
 
       return paymentAmountFromNumber({
@@ -283,14 +287,17 @@ export const NewOnChainService = (): INewOnChainService => {
   const rebalanceToColdWallet = async (
     amount: BtcPaymentAmount,
   ): Promise<PayoutId | OnChainServiceError> => {
-    try {
-      const request = new SubmitPayoutRequest()
-      request.setWalletName(briaConfig.hotWalletName)
-      request.setPayoutQueueName(briaConfig.coldStorage.hotToColdRebalanceQueueName)
-      request.setDestinationWalletName(briaConfig.coldStorage.walletName)
-      request.setSatoshis(Number(amount.amount))
-      request.setMetadata(constructMetadata({ galoy: { rebalanceToColdWallet: true } }))
+    if (briaConfig.coldStorage === undefined) {
+      return new ColdStorageConfigMissingError()
+    }
+    const request = new SubmitPayoutRequest()
+    request.setWalletName(briaConfig.hotWalletName)
+    request.setPayoutQueueName(briaConfig.coldStorage.hotToColdRebalanceQueueName)
+    request.setDestinationWalletName(briaConfig.coldStorage.walletName)
+    request.setSatoshis(Number(amount.amount))
+    request.setMetadata(constructMetadata({ galoy: { rebalanceToColdWallet: true } }))
 
+    try {
       const response = await submitPayout(request, metadata)
 
       return response.getId() as PayoutId
