@@ -35,7 +35,16 @@ Code diff contained in this image:
 https://github.com/GaloyMoney/galoy/compare/${old_ref}...${ref}
 EOF
 
+pushd ../repo
+  git cliff --config ../pipeline-tasks/ci/vendor/config/git-cliff.toml ${old_ref}..${ref} > ../charts-repo/release_notes.md
+popd
+
 export GH_TOKEN="$(ghtoken generate -b "${GH_APP_PRIVATE_KEY}" -i "${GH_APP_ID}" | jq -r '.token')"
+
+breaking=""
+if [[ $(cat release_notes.md | grep breaking) != '' ]]; then
+  breaking="--label breaking"
+fi
 
 gh pr close ${BOT_BRANCH} || true
 gh pr create \
@@ -44,4 +53,4 @@ gh pr create \
   --base ${BRANCH} \
   --head ${BOT_BRANCH} \
   --label galoybot \
-  --label galoy
+  --label galoy ${breaking}

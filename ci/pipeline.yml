@@ -323,6 +323,7 @@ jobs:
           platform: linux
           image_resource: #@ nodejs_task_image_config()
           inputs:
+            - name: repo
             - name: pipeline-tasks
             - name: edge-image
             - name: migrate-edge-image
