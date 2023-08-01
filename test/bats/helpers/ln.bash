@@ -1,4 +1,4 @@
-lnBASH_SOURCE=${BASH_SOURCE:-test/bats/helpers/.}
+BASH_SOURCE=${BASH_SOURCE:-test/bats/helpers/.}
 source $(dirname "$BASH_SOURCE")/_common.bash
 
 LND_FUNDING_TOKEN_NAME="lnd_funding"

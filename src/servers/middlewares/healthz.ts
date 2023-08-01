@@ -58,7 +58,7 @@ const isBriaAvailable = async (): Promise<boolean> => {
   try {
     // TODO: replace by bria health check query or other bria method
     const service = NewOnChainService()
-    const response = await service.getBalance()
+    const response = await service.getHotBalance()
     return !(response instanceof Error)
   } catch {
     return false

@@ -24,7 +24,7 @@ export const swapOut = async (): Promise<
   if (!swapService.healthCheck()) return new SwapServiceError("Failed health check")
   const onChainService = NewOnChainService()
   if (onChainService instanceof Error) return onChainService
-  const onChainBalance = await onChainService.getBalance()
+  const onChainBalance = await onChainService.getHotBalance()
   if (onChainBalance instanceof Error) return onChainBalance
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService

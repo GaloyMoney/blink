@@ -73,7 +73,7 @@ describe("connects to bria", () => {
   })
 
   it("receives a bria balance", async () => {
-    const res = await NewOnChainService().getBalance()
+    const res = await NewOnChainService().getHotBalance()
     expect(res).not.toBeInstanceOf(Error)
   })
 })
