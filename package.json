@@ -168,7 +168,7 @@
     "graphql-subscriptions": "^2.0.0",
     "grpc-tools": "^1.12.4",
     "grpc_tools_node_protoc_ts": "^5.3.3",
-    "jest": "^29.5.0",
+    "jest": "^29.6.2",
     "jest-junit": "^16.0.0",
     "jest_workaround": "^0.76.0",
     "lodash.difference": "^4.5.0",
