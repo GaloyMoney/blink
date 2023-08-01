@@ -24,11 +24,27 @@ usd_amount=50
 @test "public: can subscribe to price" {
   subscribe_to 'anon' price-sub
   retry 10 1 grep 'Data.*\bprice\b' .e2e-subscriber.log
+
+  num_errors=$(
+    grep 'Data.*\bprice\b' .e2e-subscriber.log \
+      | awk '{print $2}' \
+      | jq -r '.data.price.errors | length'
+  )
+  [[ "$num_errors" == "0" ]] || exit 1
+
   stop_subscriber
 }
 
 @test "public: can subscribe to realtime price" {
   subscribe_to 'anon' real-time-price-sub '{"currency": "EUR"}'
   retry 10 1 grep 'Data.*\brealtimePrice\b.*EUR' .e2e-subscriber.log
+
+  num_errors=$(
+    grep 'Data.*\brealtimePrice\b.*EUR' .e2e-subscriber.log \
+      | awk '{print $2}' \
+      | jq -r '.data.brealtimePrice.errors | length'
+  )
+  [[ "$num_errors" == "0" ]] || exit 1
+
   stop_subscriber
 }
