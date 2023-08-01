@@ -1376,6 +1376,11 @@ export class EstimatePayoutFeeRequest extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): EstimatePayoutFeeRequest;
+
+    hasDestinationWalletName(): boolean;
+    clearDestinationWalletName(): void;
+    getDestinationWalletName(): string;
+    setDestinationWalletName(value: string): EstimatePayoutFeeRequest;
     getSatoshis(): number;
     setSatoshis(value: number): EstimatePayoutFeeRequest;
 
@@ -1396,12 +1401,14 @@ export namespace EstimatePayoutFeeRequest {
         walletName: string,
         payoutQueueName: string,
         onchainAddress: string,
+        destinationWalletName: string,
         satoshis: number,
     }
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 3,
+        DESTINATION_WALLET_NAME = 5,
     }
 
 }
@@ -1436,6 +1443,11 @@ export class SubmitPayoutRequest extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): SubmitPayoutRequest;
+
+    hasDestinationWalletName(): boolean;
+    clearDestinationWalletName(): void;
+    getDestinationWalletName(): string;
+    setDestinationWalletName(value: string): SubmitPayoutRequest;
     getSatoshis(): number;
     setSatoshis(value: number): SubmitPayoutRequest;
 
@@ -1466,6 +1478,7 @@ export namespace SubmitPayoutRequest {
         walletName: string,
         payoutQueueName: string,
         onchainAddress: string,
+        destinationWalletName: string,
         satoshis: number,
         externalId?: string,
         metadata?: google_protobuf_struct_pb.Struct.AsObject,
@@ -1474,6 +1487,7 @@ export namespace SubmitPayoutRequest {
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 3,
+        DESTINATION_WALLET_NAME = 7,
     }
 
 }
@@ -1524,6 +1538,29 @@ export namespace ListPayoutsRequest {
     }
 }
 
+export class BriaWalletDestination extends jspb.Message { 
+    getWalletId(): string;
+    setWalletId(value: string): BriaWalletDestination;
+    getAddress(): string;
+    setAddress(value: string): BriaWalletDestination;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): BriaWalletDestination.AsObject;
+    static toObject(includeInstance: boolean, msg: BriaWalletDestination): BriaWalletDestination.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: BriaWalletDestination, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): BriaWalletDestination;
+    static deserializeBinaryFromReader(message: BriaWalletDestination, reader: jspb.BinaryReader): BriaWalletDestination;
+}
+
+export namespace BriaWalletDestination {
+    export type AsObject = {
+        walletId: string,
+        address: string,
+    }
+}
+
 export class Payout extends jspb.Message { 
     getId(): string;
     setId(value: string): Payout;
@@ -1543,6 +1580,11 @@ export class Payout extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): Payout;
+
+    hasWallet(): boolean;
+    clearWallet(): void;
+    getWallet(): BriaWalletDestination | undefined;
+    setWallet(value?: BriaWalletDestination): Payout;
     getCancelled(): boolean;
     setCancelled(value: boolean): Payout;
     getExternalId(): string;
@@ -1573,6 +1615,7 @@ export namespace Payout {
         batchId?: string,
         satoshis: number,
         onchainAddress: string,
+        wallet?: BriaWalletDestination.AsObject,
         cancelled: boolean,
         externalId: string,
         metadata?: google_protobuf_struct_pb.Struct.AsObject,
@@ -1581,6 +1624,7 @@ export namespace Payout {
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 6,
+        WALLET = 10,
     }
 
 }
@@ -1806,6 +1850,11 @@ export class PayoutSummary extends jspb.Message {
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutSummary;
 
+    hasWallet(): boolean;
+    clearWallet(): void;
+    getWallet(): BriaWalletDestination | undefined;
+    setWallet(value?: BriaWalletDestination): PayoutSummary;
+
     getDestinationCase(): PayoutSummary.DestinationCase;
 
     serializeBinary(): Uint8Array;
@@ -1823,11 +1872,13 @@ export namespace PayoutSummary {
         id: string,
         satoshis: number,
         onchainAddress: string,
+        wallet?: BriaWalletDestination.AsObject,
     }
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 3,
+        WALLET = 4,
     }
 
 }
@@ -2208,6 +2259,11 @@ export class PayoutSubmitted extends jspb.Message {
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutSubmitted;
 
+    hasWallet(): boolean;
+    clearWallet(): void;
+    getWallet(): BriaWalletDestination | undefined;
+    setWallet(value?: BriaWalletDestination): PayoutSubmitted;
+
     getDestinationCase(): PayoutSubmitted.DestinationCase;
 
     serializeBinary(): Uint8Array;
@@ -2227,11 +2283,13 @@ export namespace PayoutSubmitted {
         payoutQueueId: string,
         satoshis: number,
         onchainAddress: string,
+        wallet?: BriaWalletDestination.AsObject,
     }
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 5,
+        WALLET = 6,
     }
 
 }
@@ -2250,6 +2308,11 @@ export class PayoutCancelled extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutCancelled;
+
+    hasWallet(): boolean;
+    clearWallet(): void;
+    getWallet(): BriaWalletDestination | undefined;
+    setWallet(value?: BriaWalletDestination): PayoutCancelled;
 
     getDestinationCase(): PayoutCancelled.DestinationCase;
 
@@ -2270,11 +2333,13 @@ export namespace PayoutCancelled {
         payoutQueueId: string,
         satoshis: number,
         onchainAddress: string,
+        wallet?: BriaWalletDestination.AsObject,
     }
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 5,
+        WALLET = 6,
     }
 
 }
@@ -2297,6 +2362,11 @@ export class PayoutCommitted extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutCommitted;
+
+    hasWallet(): boolean;
+    clearWallet(): void;
+    getWallet(): BriaWalletDestination | undefined;
+    setWallet(value?: BriaWalletDestination): PayoutCommitted;
     getProportionalFeeSats(): number;
     setProportionalFeeSats(value: number): PayoutCommitted;
 
@@ -2321,12 +2391,14 @@ export namespace PayoutCommitted {
         payoutQueueId: string,
         satoshis: number,
         onchainAddress: string,
+        wallet?: BriaWalletDestination.AsObject,
         proportionalFeeSats: number,
     }
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 7,
+        WALLET = 9,
     }
 
 }
@@ -2349,6 +2421,11 @@ export class PayoutBroadcast extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutBroadcast;
+
+    hasWallet(): boolean;
+    clearWallet(): void;
+    getWallet(): BriaWalletDestination | undefined;
+    setWallet(value?: BriaWalletDestination): PayoutBroadcast;
     getProportionalFeeSats(): number;
     setProportionalFeeSats(value: number): PayoutBroadcast;
 
@@ -2373,12 +2450,14 @@ export namespace PayoutBroadcast {
         payoutQueueId: string,
         satoshis: number,
         onchainAddress: string,
+        wallet?: BriaWalletDestination.AsObject,
         proportionalFeeSats: number,
     }
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 7,
+        WALLET = 9,
     }
 
 }
@@ -2401,6 +2480,11 @@ export class PayoutSettled extends jspb.Message {
     clearOnchainAddress(): void;
     getOnchainAddress(): string;
     setOnchainAddress(value: string): PayoutSettled;
+
+    hasWallet(): boolean;
+    clearWallet(): void;
+    getWallet(): BriaWalletDestination | undefined;
+    setWallet(value?: BriaWalletDestination): PayoutSettled;
     getProportionalFeeSats(): number;
     setProportionalFeeSats(value: number): PayoutSettled;
 
@@ -2425,12 +2509,14 @@ export namespace PayoutSettled {
         payoutQueueId: string,
         satoshis: number,
         onchainAddress: string,
+        wallet?: BriaWalletDestination.AsObject,
         proportionalFeeSats: number,
     }
 
     export enum DestinationCase {
         DESTINATION_NOT_SET = 0,
         ONCHAIN_ADDRESS = 7,
+        WALLET = 9,
     }
 
 }
