@@ -84,7 +84,8 @@ const runCheckBalanceTests = <S extends WalletCurrency, R extends WalletCurrency
   })
 }
 
-describe("LightningPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R extends WalletCurrency>() => {
+describe("LightningPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R extends
+  WalletCurrency>() => {
   const paymentFlowState: PaymentFlowState<S, R> = {
     senderWalletId: "walletId" as WalletId,
     senderAccountId: "accountId" as AccountId,
@@ -119,7 +120,8 @@ describe("LightningPaymentFlowFromLedgerTransaction", <S extends WalletCurrency,
   }
 })
 
-describe("OnChainPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R extends WalletCurrency>() => {
+describe("OnChainPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R extends
+  WalletCurrency>() => {
   const onChainPaymentFlowState: OnChainPaymentFlowState<S, R> = {
     senderWalletId: "walletId" as WalletId,
     senderAccountId: "accountId" as AccountId,

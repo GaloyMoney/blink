@@ -132,7 +132,7 @@ export const PriceService = (): IPriceService => {
             name: c.name,
             flag: c.flag,
             fractionDigits: c.fractionDigits,
-          } as PriceCurrency),
+          }) as PriceCurrency,
       )
     } catch (err) {
       return new UnknownPriceServiceError(err)

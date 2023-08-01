@@ -146,7 +146,7 @@ describe("handleIncomingOnChainTransactions", () => {
           ...wallet,
           onChainAddresses: () =>
             wallet.onChainAddressIdentifiers.map(({ address }) => address),
-        } as Wallet),
+        }) as Wallet,
     )
 
     it("calculates balances for a set of wallets", () => {

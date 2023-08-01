@@ -60,19 +60,23 @@ const graphqlLogger = baseLogger.child({
 
 const apolloConfig = getApolloConfig()
 
-export const isAuthenticated = rule({ cache: "contextual" })(
-  (parent, args, ctx: GraphQLContext) => {
-    return !!ctx.domainAccount || new AuthenticationError({ logger: baseLogger })
-  },
-)
+export const isAuthenticated = rule({ cache: "contextual" })((
+  parent,
+  args,
+  ctx: GraphQLContext,
+) => {
+  return !!ctx.domainAccount || new AuthenticationError({ logger: baseLogger })
+})
 
-export const isEditor = rule({ cache: "contextual" })(
-  (parent, args, ctx: GraphQLContextAuth) => {
-    return ctx.domainAccount.isEditor
-      ? true
-      : new AuthorizationError({ logger: baseLogger })
-  },
-)
+export const isEditor = rule({ cache: "contextual" })((
+  parent,
+  args,
+  ctx: GraphQLContextAuth,
+) => {
+  return ctx.domainAccount.isEditor
+    ? true
+    : new AuthorizationError({ logger: baseLogger })
+})
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 
