@@ -156,9 +156,7 @@ usd_amount=50
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
 
-  # Check for settled
-  retry 15 1 check_ln_payment_settled "$payment_request"
-
+  # Check for settled with subscription
   retry 10 1 grep "Data.*lnInvoicePaymentStatus.*PAID" .e2e-subscriber.log
   stop_subscriber
 }
@@ -183,7 +181,7 @@ usd_amount=50
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request" \
 
-  # Check for settled
+  # Check for settled with query
   retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
@@ -207,7 +205,7 @@ usd_amount=50
     --pay_req "$payment_request" \
     --amt "$btc_amount"
 
-  # Check for settled
+  # Check for settled with query
   retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
@@ -231,7 +229,7 @@ usd_amount=50
     --pay_req "$payment_request" \
     --amt "$btc_amount"
 
-  # Check for settled
+  # Check for settled with query
   retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
