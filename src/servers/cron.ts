@@ -22,7 +22,7 @@ import {
 import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
-import { activateLndHealthCheck } from "@services/lnd/health"
+import { activateLndHealthCheck, checkAllLndHealth } from "@services/lnd/health"
 
 import { elapsedSinceTimestamp, sleep } from "@utils"
 
@@ -69,6 +69,7 @@ const swapOutJob = async () => {
 const main = async () => {
   console.log("cronjob started")
   const start = new Date(Date.now())
+  await checkAllLndHealth()
 
   const cronConfig = getCronConfig()
   const results: Array<boolean> = []

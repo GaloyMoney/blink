@@ -90,8 +90,8 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toCents(
 
 export const getBriaPartialConfigFromYaml = () => ({
   hotWalletName: yamlConfig.bria.hotWalletName,
-  coldStorage: yamlConfig.bria.coldStorage,
   queueNames: yamlConfig.bria.queueNames,
+  coldStorage: yamlConfig.bria.coldStorage,
 })
 
 export const getLightningAddressDomain = (): string => yamlConfig.lightningAddressDomain

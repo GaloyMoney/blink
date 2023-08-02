@@ -227,9 +227,13 @@ export const configSchema = {
             hotToColdRebalanceQueueName: { type: "string" },
           },
           required: ["walletName", "hotToColdRebalanceQueueName"],
+          default: {
+            walletName: "cold",
+            hotToColdRebalanceQueueName: "dev",
+          },
         },
       },
-      required: ["hotWalletName", "queueNames"],
+      required: ["hotWalletName", "queueNames", "coldStorage"],
       additionalProperties: false,
       default: {
         hotWalletName: "dev",

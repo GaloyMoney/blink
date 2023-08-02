@@ -59,8 +59,7 @@ start_trigger() {
 }
 
 run_cron() {
-  export LND_HEALTH_REFRESH_TIME_MS=100
-  run node lib/servers/cron.js
+  node lib/servers/cron.js
 }
 
 start_exporter() {

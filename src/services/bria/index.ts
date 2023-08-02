@@ -9,7 +9,6 @@ import {
   PayoutNotFoundError,
   PayoutDestinationBlocked,
   UnknownOnChainServiceError,
-  ColdStorageConfigMissingError,
 } from "@domain/bitcoin/onchain"
 import {
   paymentAmountFromNumber,
@@ -126,9 +125,6 @@ export const NewOnChainService = (): INewOnChainService => {
   }
 
   const getColdBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
-    if (briaConfig.coldStorage === undefined) {
-      return new ColdStorageConfigMissingError()
-    }
     const request = new GetWalletBalanceSummaryRequest()
     request.setWalletName(briaConfig.coldStorage.walletName)
 
@@ -287,9 +283,6 @@ export const NewOnChainService = (): INewOnChainService => {
   const rebalanceToColdWallet = async (
     amount: BtcPaymentAmount,
   ): Promise<PayoutId | OnChainServiceError> => {
-    if (briaConfig.coldStorage === undefined) {
-      return new ColdStorageConfigMissingError()
-    }
     const request = new SubmitPayoutRequest()
     request.setWalletName(briaConfig.hotWalletName)
     request.setPayoutQueueName(briaConfig.coldStorage.hotToColdRebalanceQueueName)

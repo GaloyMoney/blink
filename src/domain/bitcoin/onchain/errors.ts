@@ -23,9 +23,6 @@ export class UnexpectedDustAmountError extends OnChainServiceError {
 export class UnknownOnChainServiceError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }
-export class ColdStorageConfigMissingError extends OnChainServiceError {
-  level = ErrorLevel.Critical
-}
 export class CouldNotFindOnChainTransactionError extends OnChainServiceError {}
 export class OnChainServiceUnavailableError extends OnChainServiceError {
   level = ErrorLevel.Critical
