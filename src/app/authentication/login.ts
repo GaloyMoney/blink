@@ -362,8 +362,7 @@ export const loginWithDevice = async ({
       return ipFetcherInfo
     }
 
-    const validatedIPMetadata =
-      IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
+    const validatedIPMetadata = IPMetadataValidator(accountConfig).isValid(ipFetcherInfo)
 
     if (validatedIPMetadata instanceof Error) {
       return new InvalidIPForOnboardingError(validatedIPMetadata.name)
@@ -409,8 +408,7 @@ const isAllowedToOnboard = async ({
       return ipFetcherInfo
     }
 
-    const validatedIPMetadata =
-      IPMetadataValidator(accountConfig).validateForOnboarding(ipFetcherInfo)
+    const validatedIPMetadata = IPMetadataValidator(accountConfig).isValid(ipFetcherInfo)
 
     if (validatedIPMetadata instanceof Error) {
       return new InvalidIPForOnboardingError(validatedIPMetadata.name)
