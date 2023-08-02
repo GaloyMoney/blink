@@ -163,7 +163,6 @@ export const OnChainService = (
   const getOnChainFeeEstimate = async ({
     amount,
     address,
-    targetConfirmations,
   }: GetOnChainFeeEstimateArgs): Promise<Satoshis | OnChainServiceError> => {
     const sendTo = [{ address, tokens: amount }]
     try {
@@ -171,7 +170,7 @@ export const OnChainService = (
         lnd,
         send_to: sendTo,
         utxo_confirmations: 1,
-        target_confirmations: targetConfirmations,
+        target_confirmations: 1,
       })
 
       return toSats(fee)
@@ -192,7 +191,6 @@ export const OnChainService = (
   const payToAddress = async ({
     amount,
     address,
-    targetConfirmations,
     description,
   }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError> => {
     try {
@@ -201,7 +199,7 @@ export const OnChainService = (
         address,
         tokens: amount,
         utxo_confirmations: 1,
-        target_confirmations: targetConfirmations,
+        target_confirmations: 1,
         description,
       })
 

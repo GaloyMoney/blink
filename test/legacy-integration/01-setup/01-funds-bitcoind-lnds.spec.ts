@@ -1,4 +1,3 @@
-import { getColdStorageConfig } from "@config"
 import { btc2sat, sat2btc } from "@domain/bitcoin"
 import { getFunderWalletId } from "@services/ledger/caching"
 
@@ -6,9 +5,7 @@ import {
   bitcoindClient,
   bitcoindSignerClient,
   checkIsBalanced,
-  createColdStorageWallet,
   createMandatoryUsers,
-  createRandomColdStorageWallet,
   createSignerWallet,
   fundLnd,
   fundWalletIdFromOnchain,

@@ -29,9 +29,6 @@ coldStorage:
   minOnChainHotWalletBalance: 1000000
   minRebalanceSize: 10000000
   maxHotWalletBalance: 200000000
-  walletPattern: specter
-  onChainWallet: specter/coldstorage
-  targetConfirmations: 6
 bria:
   hotWalletName: dev
   queueNames:

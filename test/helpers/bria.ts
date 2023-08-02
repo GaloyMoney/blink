@@ -15,9 +15,10 @@ export const getBriaBalance = async (): Promise<Satoshis> => {
   const service = NewOnChainService()
   const hot = await service.getHotBalance()
   if (hot instanceof Error) throw hot
-  const cold = await service.getColdBalance()
-  if (cold instanceof Error) throw cold
-  return Number(hot.amount + cold.amount) as Satoshis
+  // Cold wallet is not initialized in JS tests
+  // const cold = await service.getColdBalance()
+  // if (cold instanceof Error) throw cold
+  return Number(hot.amount) as Satoshis
 }
 
 export const onceBriaSubscribe = async ({

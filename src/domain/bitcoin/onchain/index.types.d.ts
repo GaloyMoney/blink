@@ -69,13 +69,11 @@ type LookupOnChainFeeArgs = {
 type GetOnChainFeeEstimateArgs = {
   amount: Satoshis
   address: OnChainAddress
-  targetConfirmations: TargetConfirmations
 }
 
 type PayToAddressArgs = {
   amount: Satoshis
   address: OnChainAddress
-  targetConfirmations: TargetConfirmations
   description?: string
 }
 
@@ -123,13 +121,11 @@ interface IOnChainService {
   getOnChainFeeEstimate({
     amount,
     address,
-    targetConfirmations,
   }: GetOnChainFeeEstimateArgs): Promise<Satoshis | OnChainServiceError>
 
   payToAddress({
     amount,
     address,
-    targetConfirmations,
   }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError>
 }
 

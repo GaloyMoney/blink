@@ -1,8 +1,4 @@
-import {
-  InvalidCurrencyBaseAmountError,
-  InvalidSatoshiAmountError,
-  InvalidTargetConfirmations,
-} from "@domain/errors"
+import { InvalidCurrencyBaseAmountError, InvalidSatoshiAmountError } from "@domain/errors"
 import { MAX_SATS, BtcAmountTooLargeError } from "@domain/shared"
 
 export const SATS_PER_BTC = 10 ** 8
@@ -17,10 +13,6 @@ export const sat2btc = (sat: number) => {
 
 export const toSats = (amount: number | bigint): Satoshis => {
   return Number(amount) as Satoshis
-}
-
-export const toTargetConfs = (confs: number): TargetConfirmations => {
-  return confs as TargetConfirmations
 }
 
 export const toMilliSatsFromNumber = (amount: number): MilliSatoshis => {
@@ -48,14 +40,6 @@ export const checkedToSats = (amount: number): Satoshis | ValidationError => {
   }
 
   return toSats(amount)
-}
-
-export const checkedToTargetConfs = (
-  confs: number,
-): TargetConfirmations | ValidationError => {
-  if (!(confs && confs > 0 && Number.isInteger(confs)))
-    return new InvalidTargetConfirmations()
-  return toTargetConfs(confs)
 }
 
 // Check for hexadecimal (case insensitive) 64-char SHA-256 hash

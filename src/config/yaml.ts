@@ -8,7 +8,7 @@ import { I18n } from "i18n"
 
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
-import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
