@@ -2,7 +2,7 @@ import express from "express"
 import mongoose from "mongoose"
 import { redis } from "@services/redis"
 import { lndStatusEvent } from "@services/lnd/health"
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 
 type HealthzArgs = {
   checkDbConnectionStatus: boolean
@@ -57,7 +57,7 @@ const isRedisAvailable = async (): Promise<boolean> => {
 const isBriaAvailable = async (): Promise<boolean> => {
   try {
     // TODO: replace by bria health check query or other bria method
-    const service = NewOnChainService()
+    const service = OnChainService()
     const response = await service.getHotBalance()
     return !(response instanceof Error)
   } catch {

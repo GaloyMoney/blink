@@ -1,6 +1,6 @@
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 
 export const getHotBalance = async (): Promise<BtcPaymentAmount | ApplicationError> => {
-  const service = NewOnChainService()
+  const service = OnChainService()
   return service.getHotBalance()
 }

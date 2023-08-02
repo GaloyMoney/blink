@@ -90,7 +90,7 @@ interface OnChainEvent {
 
 type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
 
-interface INewOnChainService {
+interface IOnChainService {
   getHotBalance(): Promise<BtcPaymentAmount | OnChainServiceError>
   getColdBalance(): Promise<BtcPaymentAmount | OnChainServiceError>
   getAddressForWallet(args: {

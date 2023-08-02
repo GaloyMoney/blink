@@ -8,7 +8,7 @@ import { RebalanceChecker } from "@domain/cold-storage"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { LndService } from "@services/lnd"
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { getOffChainBalance } from "../lightning/get-balances"
@@ -16,7 +16,7 @@ import { getOffChainBalance } from "../lightning/get-balances"
 export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationError> => {
   const coldStorageConfig = getColdStorageConfig()
 
-  const onChainService = NewOnChainService()
+  const onChainService = OnChainService()
 
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService

@@ -999,10 +999,10 @@ describe("Display properties on transactions", () => {
         // TxMetadata:
         // - OnChainSendLedgerMetadata
 
-        const { NewOnChainService: NewOnChainServiceOrig } =
+        const { OnChainService: OnChainServiceOrig } =
           jest.requireActual("@services/bria")
-        const briaSpy = jest.spyOn(BriaImpl, "NewOnChainService").mockReturnValue({
-          ...NewOnChainServiceOrig(),
+        const briaSpy = jest.spyOn(BriaImpl, "OnChainService").mockReturnValue({
+          ...OnChainServiceOrig(),
           queuePayoutToAddress: async () => "payoutId" as PayoutId,
         })
 

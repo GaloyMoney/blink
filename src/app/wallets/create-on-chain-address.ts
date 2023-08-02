@@ -3,7 +3,7 @@ import { OnChainAddressNotFoundError } from "@domain/bitcoin/onchain"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 import {
   AccountsRepository,
   WalletOnChainAddressesRepository,
@@ -26,7 +26,7 @@ export const createOnChainAddress = async ({
   const accountValidator = AccountValidator(account)
   if (accountValidator instanceof Error) return accountValidator
 
-  const onChain = NewOnChainService()
+  const onChain = OnChainService()
 
   let onChainAddress: OnChainAddressIdentifier | undefined = undefined
   if (requestId) {

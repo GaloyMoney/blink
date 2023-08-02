@@ -104,7 +104,7 @@ export const BriaSubscriber = () => {
 
 const queueNameForSpeed = (speed: PayoutSpeed): string => briaConfig.queueNames[speed]
 
-export const NewOnChainService = (): INewOnChainService => {
+export const OnChainService = (): IOnChainService => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", briaConfig.apiKey)
 
