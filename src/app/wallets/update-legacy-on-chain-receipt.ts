@@ -7,7 +7,6 @@ import {
 
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
-import { toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
@@ -21,7 +20,6 @@ import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { WalletsRepository } from "@services/mongoose"
-import { ColdStorageService } from "@services/cold-storage"
 import { LndService } from "@services/lnd"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
@@ -152,16 +150,6 @@ const processTxForHotWallet = async ({
   tx: IncomingOnChainTransaction
   logger: Logger
 }): Promise<void | ApplicationError> => {
-  const coldStorageService = await ColdStorageService()
-  if (coldStorageService instanceof Error) return coldStorageService
-
-  const isFromColdStorage = await coldStorageService.isWithdrawalTransaction(
-    tx.rawTx.txHash,
-  )
-  if (isFromColdStorage instanceof Error) return isFromColdStorage
-
-  if (!isFromColdStorage) return
-
   const ledger = LedgerService()
 
   const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
@@ -175,52 +163,6 @@ const processTxForHotWallet = async ({
     if (recorded instanceof Error) {
       logger.error({ error: recorded }, "Could not query ledger")
       return recorded
-    }
-
-    if (recorded) return
-
-    for (const { sats, address } of tx.rawTx.outs) {
-      const satsAmount = paymentAmountFromNumber({
-        amount: sats,
-        currency: WalletCurrency.Btc,
-      })
-      if (satsAmount instanceof Error) return satsAmount
-
-      if (address) {
-        const isColdStorageAddress = await coldStorageService.isDerivedAddress(address)
-        if (isColdStorageAddress instanceof Error || isColdStorageAddress) continue
-
-        // we can't trust the lnd decoded tx fee because it sets the fee to zero when it's a deposit
-        let fee =
-          tx.fee || (await coldStorageService.lookupTransactionFee(tx.rawTx.txHash))
-
-        if (fee instanceof Error) fee = toSats(0)
-        const feeAmount = paymentAmountFromNumber({
-          amount: fee,
-          currency: WalletCurrency.Btc,
-        })
-        if (feeAmount instanceof Error) return feeAmount
-
-        const amountDisplayCurrencyAmount =
-          displayPriceRatio.convertFromWallet(satsAmount)
-        const feeDisplayCurrencyAmount = displayPriceRatio.convertFromWallet(feeAmount)
-
-        const description = `deposit to hot wallet of ${sats} sats from the cold storage wallet`
-
-        const journal = await ledger.addColdStorageTxSend({
-          txHash: tx.rawTx.txHash,
-          description,
-          sats,
-          fee,
-          amountDisplayCurrency: amountDisplayCurrencyAmount,
-          feeDisplayCurrency: feeDisplayCurrencyAmount,
-          payeeAddress: address,
-        })
-
-        if (journal instanceof Error) {
-          logger.error({ error: journal }, "Could not record to hot wallet tx in ledger")
-        }
-      }
     }
   })
 }

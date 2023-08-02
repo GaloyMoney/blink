@@ -40,18 +40,6 @@ describe("Bitcoind", () => {
     expect(wallets.length).toBe(0)
   })
 
-  it("create cold wallet", async () => {
-    const { onChainWallet: walletName } = getColdStorageConfig()
-
-    const { name } = await createColdStorageWallet(walletName)
-    expect(name).toBe(walletName)
-
-    const { name: wallet2 } = await createRandomColdStorageWallet("specter/random")
-    const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain(walletName)
-    expect(wallets).toContain(wallet2)
-  })
-
   it("create signer wallet for bria", async () => {
     const walletName = "dev"
     const { name } = await createSignerWallet(walletName)

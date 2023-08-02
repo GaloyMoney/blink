@@ -49,9 +49,6 @@ type YamlSchema = {
     minOnChainHotWalletBalance: number
     minRebalanceSize: number
     maxHotWalletBalance: number
-    walletPattern: string
-    onChainWallet: string
-    targetConfirmations: number
   }
   bria: {
     hotWalletName: string

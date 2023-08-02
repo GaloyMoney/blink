@@ -13,9 +13,11 @@ import { waitFor, waitForNoErrorWithCount } from "./shared"
 
 export const getBriaBalance = async (): Promise<Satoshis> => {
   const service = NewOnChainService()
-  const response = await service.getHotBalance()
-  if (response instanceof Error) throw response
-  return Number(response.amount) as Satoshis
+  const hot = await service.getHotBalance()
+  if (hot instanceof Error) throw hot
+  const cold = await service.getColdBalance()
+  if (cold instanceof Error) throw cold
+  return Number(hot.amount + cold.amount) as Satoshis
 }
 
 export const onceBriaSubscribe = async ({

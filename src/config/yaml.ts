@@ -254,16 +254,10 @@ export const getOnChainWalletConfig = () => ({
 export const getColdStorageConfig = (): ColdStorageConfig => {
   const config = yamlConfig.coldStorage
 
-  const targetConfirmations = checkedToTargetConfs(config.targetConfirmations)
-  if (targetConfirmations instanceof Error) throw targetConfirmations
-
   return {
     minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
     maxHotWalletBalance: toSats(config.maxHotWalletBalance),
     minRebalanceSize: toSats(config.minRebalanceSize),
-    walletPattern: config.walletPattern,
-    onChainWallet: config.onChainWallet,
-    targetConfirmations,
   }
 }
 

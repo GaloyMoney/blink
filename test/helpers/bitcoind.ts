@@ -249,29 +249,3 @@ export class BitcoindSignerWalletClient extends BaseBitcoindWalletClient {
 
 // The default client should remain without a wallet (not generate or receive bitcoin)
 export const bitcoindDefaultClient = new BitcoindClient(getBitcoinCoreRPCConfig())
-
-export const getBalancesDetail = async (): Promise<
-  { wallet: string; balance: number }[]
-> => {
-  const wallets = await bitcoindDefaultClient.listWallets()
-
-  const balances: { wallet: string; balance: number }[] = []
-
-  for await (const wallet of wallets) {
-    // do not consider the "outside" wallet in tests
-    if (wallet === "" || wallet === "outside") {
-      continue
-    }
-
-    const client = new BitcoindWalletClient(wallet)
-    const balance = btc2sat(await client.getBalance())
-    balances.push({ wallet, balance })
-  }
-
-  return balances
-}
-
-export const getBalance = async (): Promise<number> => {
-  const balanceObj = await getBalancesDetail()
-  return sumBy(balanceObj, "balance")
-}
