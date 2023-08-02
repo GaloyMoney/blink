@@ -43,13 +43,13 @@ jest.mock("@config", () => {
 
 jest.mock("@domain/accounts-ips/ip-metadata-validator", () => ({
   IPMetadataValidator: () => ({
-    validateForReward: () => true,
+    validate: () => true,
   }),
 }))
 
 jest.mock("@domain/users/phone-metadata-validator", () => ({
   PhoneMetadataValidator: () => ({
-    validateForReward: () => true,
+    validate: () => true,
   }),
 }))
 

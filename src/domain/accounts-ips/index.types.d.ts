@@ -18,7 +18,7 @@ type IPMetadataValidatorArgs = {
 }
 
 type IPMetadataValidator = {
-  isValid(ipMetadata?: IPType): true | ValidationError
+  validate(ipMetadata?: IPType): true | ValidationError
 }
 
 type FindByAccountIdAndIpArgs = {

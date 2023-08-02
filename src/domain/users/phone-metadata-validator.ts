@@ -28,8 +28,5 @@ export const PhoneMetadataValidator = ({
     return true
   }
 
-  return {
-    validateForReward: validate,
-    validateForOnboarding: validate,
-  }
+  return { validate }
 }
