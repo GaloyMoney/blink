@@ -61,22 +61,6 @@ type TxFilter = {
   apply(txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[]
 }
 
-type LookupOnChainFeeArgs = {
-  txHash: OnChainTxHash
-  scanDepth: ScanDepth
-}
-
-type GetOnChainFeeEstimateArgs = {
-  amount: Satoshis
-  address: OnChainAddress
-}
-
-type PayToAddressArgs = {
-  amount: Satoshis
-  address: OnChainAddress
-  description?: string
-}
-
 type QueuePayoutToAddressArgs = {
   walletDescriptor: WalletDescriptor<WalletCurrency>
   address: OnChainAddress
@@ -96,37 +80,6 @@ type IncomingOnChainTxHandler<S extends WalletCurrency> = {
   balanceByWallet(
     wallets: Wallet[],
   ): { [key: WalletId]: PaymentAmount<S> } | ValidationError
-}
-
-interface IOnChainService {
-  listActivePubkeys(): Pubkey[]
-
-  getBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
-
-  getBalanceAmount(pubkey?: Pubkey): Promise<BtcPaymentAmount | OnChainServiceError>
-
-  getPendingBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
-
-  listIncomingTransactions(
-    scanDepth: ScanDepth,
-  ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
-
-  lookupOnChainFee({
-    txHash,
-    scanDepth,
-  }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError>
-
-  createOnChainAddress(): Promise<LndOnChainAddressIdentifier | OnChainServiceError>
-
-  getOnChainFeeEstimate({
-    amount,
-    address,
-  }: GetOnChainFeeEstimateArgs): Promise<Satoshis | OnChainServiceError>
-
-  payToAddress({
-    amount,
-    address,
-  }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError>
 }
 
 interface OnChainEvent {

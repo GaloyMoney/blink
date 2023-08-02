@@ -289,20 +289,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
 
-    case "InsufficientOnChainFundsError":
-      message =
-        "Onchain withdrawals halted while we replenish the hot wallet. Withdrawals will be resumed shortly, and Lightning withdrawals are still available."
-      return new InsufficientLiquidityError({ message, logger: baseLogger })
-
-    case "UnexpectedDustAmountError":
-      message = "Use lightning to very small dust amounts."
-      return new OnChainPaymentError({ message, logger: baseLogger })
-
-    case "CPFPAncestorLimitReachedError":
-      message =
-        "Onchain payments temporarily unavailable because of busy mempool queue. Withdraw via Lightning until queue is cleared."
-      return new OnChainPaymentError({ message, logger: baseLogger })
-
     case "PaymentInTransitionError":
       message = "Payment was sent and is still in transition."
       return new LightningPaymentError({ message, logger: baseLogger })
@@ -348,7 +334,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OffChainServiceUnavailableError":
     case "OffChainServiceBusyError":
     case "OnChainServiceUnavailableError":
-    case "OnChainServiceBusyError":
       /* eslint-disable-next-line no-case-declarations */
       const serviceType = errorName.includes("OffChainService") ? "Offchain" : "Onchain"
       message = `${serviceType} action failed, please try again in a few minutes. If the problem persists, please contact support.`
@@ -491,7 +476,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OnChainAddressNotFoundError":
     case "PayoutNotFoundError":
     case "PayoutDestinationBlocked":
-    case "CouldNotFindOnChainTransactionError":
     case "NotificationsError":
     case "NotificationsServiceError":
     case "InvalidDeviceNotificationsServiceError":

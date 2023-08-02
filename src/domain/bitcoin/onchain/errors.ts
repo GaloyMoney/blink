@@ -11,22 +11,9 @@ export class PayoutNotFoundError extends OnChainServiceError {}
 export class PayoutDestinationBlocked extends OnChainServiceError {
   level = ErrorLevel.Critical
 }
-export class CPFPAncestorLimitReachedError extends OnChainServiceError {
-  level = ErrorLevel.Critical
-}
-export class InsufficientOnChainFundsError extends OnChainServiceError {
-  level = ErrorLevel.Critical
-}
-export class UnexpectedDustAmountError extends OnChainServiceError {
-  level = ErrorLevel.Critical
-}
 export class UnknownOnChainServiceError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }
-export class CouldNotFindOnChainTransactionError extends OnChainServiceError {}
 export class OnChainServiceUnavailableError extends OnChainServiceError {
-  level = ErrorLevel.Critical
-}
-export class OnChainServiceBusyError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }
