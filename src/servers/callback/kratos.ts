@@ -62,35 +62,28 @@ kratosCallback.post(
         return
       }
 
-      let account: Account | RepositoryError
-
-      if (phoneRaw) {
-        // phone+code flow
-        const phone = checkedToPhoneNumber(phoneRaw)
-        if (phone instanceof Error) {
-          recordExceptionInCurrentSpan({
-            error: phone,
-            level: ErrorLevel.Critical,
-            attributes: {
-              userId,
-              phoneRaw,
-            },
-          })
-          baseLogger.error({ phone, phoneRaw, userId }, "invalid phone")
-          res.status(400).send("invalid phone")
-          return
-        }
-        console.log({ transient_payload }, "transient_payload callback kratos router")
-
-        account = await createAccountWithPhoneIdentifier({
-          newAccountInfo: { phone, kratosUserId: userIdChecked },
-          config: getDefaultAccountsConfig(),
-          phoneMetadata: transient_payload?.phoneMetadata,
+      // phone+code flow
+      const phone = checkedToPhoneNumber(phoneRaw)
+      if (phone instanceof Error) {
+        recordExceptionInCurrentSpan({
+          error: phone,
+          level: ErrorLevel.Critical,
+          attributes: {
+            userId,
+            phoneRaw,
+          },
         })
-      } else {
-        res.status(500).send("Invalid or unsupported login flow")
+        baseLogger.error({ phone, phoneRaw, userId }, "invalid phone")
+        res.status(400).send("invalid phone")
         return
       }
+      baseLogger.info({ transient_payload }, "transient_payload callback kratos router")
+
+      const account = await createAccountWithPhoneIdentifier({
+        newAccountInfo: { phone, kratosUserId: userIdChecked },
+        config: getDefaultAccountsConfig(),
+        phoneMetadata: transient_payload?.phoneMetadata,
+      })
 
       if (account instanceof Error) {
         recordExceptionInCurrentSpan({
