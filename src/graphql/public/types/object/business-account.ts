@@ -130,7 +130,7 @@ const BusinessAccount = GT.Object({
 
         let { walletIds } = args
 
-        if (walletIds === undefined) {
+        if (!walletIds) {
           const wallets = await WalletsRepository().listByAccountId(source.id)
           if (wallets instanceof Error) {
             throw mapError(wallets)
