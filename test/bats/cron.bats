@@ -54,7 +54,6 @@ teardown() {
 
   run_cron
 
-  bria_cli watch-events -o
   bitcoin_cli -generate 1
   for i in {1..20}; do
     cold_balance=$(bria_cli wallet-balance -w cold | jq -r '.effectivePendingIncome')
@@ -72,5 +71,5 @@ teardown() {
     sleep 1
   done
   cold_balance=$(bria_cli wallet-balance -w cold | jq -r '.effectivePendingIncome')
-  # [[ "${cold_balance}" = "0" ]] || exit 1;
+  [[ "${cold_balance}" = "0" ]] || exit 1;
 }
