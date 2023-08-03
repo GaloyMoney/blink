@@ -7,8 +7,8 @@ import {
 import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 
 const defaultConfig = {
-  denyIPCountries: [],
-  allowIPCountries: [],
+  denyCountries: [],
+  allowCountries: [],
   denyASNs: [],
   allowASNs: [],
 }
@@ -31,13 +31,13 @@ describe("IPMetadataValidator", () => {
     })
 
     it("returns true for an allowed country", () => {
-      const config = { ...defaultConfig, allowIPCountries: ["US"] }
+      const config = { ...defaultConfig, allowCountries: ["US"] }
       const validator = IPMetadataValidator(config).validate(defaultIpInfo)
       expect(validator).toBe(true)
     })
 
     it("returns true for a country not defined in deny-list", () => {
-      const config = { ...defaultConfig, denyIPCountries: ["AF"] }
+      const config = { ...defaultConfig, denyCountries: ["AF"] }
       const validator = IPMetadataValidator(config).validate(defaultIpInfo)
       expect(validator).toBe(true)
     })
@@ -55,7 +55,7 @@ describe("IPMetadataValidator", () => {
     })
 
     it("returns error for a country not defined in allow-list", () => {
-      const config = { ...defaultConfig, allowIPCountries: ["US"] }
+      const config = { ...defaultConfig, allowCountries: ["US"] }
       const ipInfo = { ...defaultIpInfo, isoCode: "AF" }
       const validator = IPMetadataValidator(config).validate(ipInfo)
       expect(validator).toBeInstanceOf(InvalidIPMetadataCountryError)
@@ -95,7 +95,7 @@ describe("IPMetadataValidator", () => {
     })
 
     it("returns error for a denied country", () => {
-      const config = { ...defaultConfig, denyIPCountries: ["US"] }
+      const config = { ...defaultConfig, denyCountries: ["US"] }
       const validator = IPMetadataValidator(config).validate(defaultIpInfo)
       expect(validator).toBeInstanceOf(InvalidIPMetadataCountryError)
     })
@@ -109,8 +109,8 @@ describe("IPMetadataValidator", () => {
     it("returns error for a denied/allowed country", () => {
       const config = {
         ...defaultConfig,
-        denyIPCountries: ["US"],
-        allowIPCountries: ["US"],
+        denyCountries: ["US"],
+        allowCountries: ["US"],
       }
       const validator = IPMetadataValidator(config).validate(defaultIpInfo)
       expect(validator).toBeInstanceOf(InvalidIPMetadataCountryError)
@@ -130,7 +130,7 @@ describe("IPMetadataValidator", () => {
       const config = {
         ...defaultConfig,
         denyASNs: ["AS60068"],
-        allowIPCountries: ["US"],
+        allowCountries: ["US"],
       }
       const validator = IPMetadataValidator(config).validate(defaultIpInfo)
       expect(validator).toBeInstanceOf(InvalidIPMetadataASNError)
@@ -140,7 +140,7 @@ describe("IPMetadataValidator", () => {
       const config = {
         ...defaultConfig,
         allowASNs: ["AS60068"],
-        denyIPCountries: ["US"],
+        denyCountries: ["US"],
       }
       const validator = IPMetadataValidator(config).validate(defaultIpInfo)
       expect(validator).toBeInstanceOf(InvalidIPMetadataCountryError)

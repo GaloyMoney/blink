@@ -31,7 +31,7 @@ import { isPhoneCodeValid, TwilioClient } from "@services/twilio"
 
 import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 
-import { getAccountCountries } from "@config"
+import { getAccountsOnboardConfig } from "@config"
 
 import {
   InvalidIPForOnboardingError,
@@ -348,9 +348,9 @@ export const loginWithDevice = async ({
   const password = checkedToIdentityPassword(passwordRaw)
   if (password instanceof Error) return password
 
-  const accountConfig = getAccountCountries()
+  const { ipMetadataValidationSettings } = getAccountsOnboardConfig()
 
-  if (accountConfig.enableIpCheck) {
+  if (ipMetadataValidationSettings.enabled) {
     const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
 
     if (ipFetcherInfo instanceof IpFetcherServiceError) {
@@ -362,7 +362,9 @@ export const loginWithDevice = async ({
       return ipFetcherInfo
     }
 
-    const validatedIPMetadata = IPMetadataValidator(accountConfig).validate(ipFetcherInfo)
+    const validatedIPMetadata = IPMetadataValidator(
+      ipMetadataValidationSettings,
+    ).validate(ipFetcherInfo)
 
     if (validatedIPMetadata instanceof Error) {
       return new InvalidIPForOnboardingError(validatedIPMetadata.name)
@@ -394,9 +396,10 @@ const isAllowedToOnboard = async ({
   ip: IpAddress
   phone: PhoneNumber
 }): Promise<PhoneMetadata | undefined | DomainError> => {
-  const accountConfig = getAccountCountries()
+  const { phoneMetadataValidationSettings, ipMetadataValidationSettings } =
+    getAccountsOnboardConfig()
 
-  if (accountConfig.enableIpCheck) {
+  if (ipMetadataValidationSettings.enabled) {
     const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
 
     if (ipFetcherInfo instanceof IpFetcherServiceError) {
@@ -408,7 +411,9 @@ const isAllowedToOnboard = async ({
       return ipFetcherInfo
     }
 
-    const validatedIPMetadata = IPMetadataValidator(accountConfig).validate(ipFetcherInfo)
+    const validatedIPMetadata = IPMetadataValidator(
+      ipMetadataValidationSettings,
+    ).validate(ipFetcherInfo)
 
     if (validatedIPMetadata instanceof Error) {
       return new InvalidIPForOnboardingError(validatedIPMetadata.name)
@@ -417,7 +422,7 @@ const isAllowedToOnboard = async ({
 
   const newPhoneMetadata = await TwilioClient().getCarrier(phone)
   if (newPhoneMetadata instanceof Error) {
-    if (!accountConfig.enablePhoneCheck) {
+    if (!phoneMetadataValidationSettings.enabled) {
       return undefined
     }
 
@@ -426,9 +431,10 @@ const isAllowedToOnboard = async ({
 
   const phoneMetadata = newPhoneMetadata
 
-  if (accountConfig.enablePhoneCheck) {
-    const validatedPhoneMetadata =
-      PhoneMetadataValidator(accountConfig).validate(phoneMetadata)
+  if (phoneMetadataValidationSettings.enabled) {
+    const validatedPhoneMetadata = PhoneMetadataValidator(
+      phoneMetadataValidationSettings,
+    ).validate(phoneMetadata)
 
     if (validatedPhoneMetadata instanceof Error) {
       return new InvalidPhoneForOnboardingError()

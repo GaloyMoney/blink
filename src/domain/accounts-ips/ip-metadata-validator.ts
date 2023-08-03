@@ -6,8 +6,8 @@ import {
 } from "@domain/errors"
 
 export const IPMetadataValidator = ({
-  denyIPCountries,
-  allowIPCountries,
+  denyCountries,
+  allowCountries,
   denyASNs,
   allowASNs,
 }: IPMetadataValidatorArgs): IPMetadataValidator => {
@@ -18,9 +18,8 @@ export const IPMetadataValidator = ({
     if (ipMetadata.proxy) return new InvalidIPMetadataProxyError()
 
     const isoCode = ipMetadata.isoCode.toUpperCase()
-    const allowedCountry =
-      allowIPCountries.length <= 0 || allowIPCountries.includes(isoCode)
-    const deniedCountry = denyIPCountries.length > 0 && denyIPCountries.includes(isoCode)
+    const allowedCountry = allowCountries.length <= 0 || allowCountries.includes(isoCode)
+    const deniedCountry = denyCountries.length > 0 && denyCountries.includes(isoCode)
     if (!allowedCountry || deniedCountry) return new InvalidIPMetadataCountryError()
 
     const asn = ipMetadata.asn.toUpperCase()
