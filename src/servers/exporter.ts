@@ -303,7 +303,7 @@ const createColdStorageWalletGauge = () => {
     name,
     description,
     collect: async () => {
-      const balance = await ColdStorage.getBalance()
+      const balance = await OnChain.getColdBalance()
       if (balance instanceof Error) {
         logger.error(`error getting ${name} balance`)
         return 0
@@ -329,7 +329,7 @@ export const getBookingVersusRealWorldAssets = async () => {
       ledgerAdmin.getBitcoindBalance(),
       ledgerAdmin.getOnChainBalance(),
       Lightning.getTotalBalance(),
-      ColdStorage.getBalance(),
+      OnChain.getColdBalance(),
       OnChain.getHotBalance(),
     ])
 
