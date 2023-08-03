@@ -24,11 +24,8 @@ import {
   PaymentStatus,
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
-import {
-  InsufficientBalanceError as DomainInsufficientBalanceError,
-  SelfPaymentError as DomainSelfPaymentError,
-} from "@domain/errors"
-import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
+import { InsufficientBalanceError as DomainInsufficientBalanceError } from "@domain/errors"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { NotificationType } from "@domain/notifications"
@@ -61,7 +58,6 @@ import {
   AccountsRepository,
   LnPaymentsRepository,
   PaymentFlowStateRepository,
-  WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
@@ -159,8 +155,6 @@ jest.mock("@services/lnd", () => {
 
 let initBalanceA: Satoshis, initBalanceB: Satoshis, initBalanceUsdB: UsdCents
 const amountInvoice = toSats(1000)
-
-const invoicesRepo = WalletInvoicesRepository()
 
 const phoneA = randomPhone()
 const phoneB = randomPhone()
@@ -730,35 +724,6 @@ describe("UserWallet - Lightning Pay", () => {
     expect(accountRecordB.contacts).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: usernameA })]),
     )
-  })
-
-  it("fails if sends to self", async () => {
-    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-      walletId: walletIdB as WalletId,
-      amount: amountInvoice,
-      memo: "self payment",
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
-
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: invoice,
-      memo: null,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
-  })
-
-  it("fails if sends to self an on us push payment", async () => {
-    const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: walletIdB,
-      memo: "",
-      amount: amountInvoice,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
   })
 
   it("fails when user has insufficient balance", async () => {
@@ -2316,30 +2281,6 @@ describe("USD Wallets - Lightning Pay", () => {
         txType: LedgerTransactionType.WalletIdTradeIntraAccount,
       })
       expect(res).not.toBeInstanceOf(Error)
-    })
-
-    it("fails to self, from BTC wallet to same BTC wallet", async () => {
-      const walletId = walletIdA
-      const res = await testIntraledgerSend({
-        senderWalletId: walletId,
-        senderAccount: accountA,
-        recipientWalletId: walletId,
-        senderAmountInvoice: btcSendAmount,
-        recipientAmountInvoice: btcSendAmount,
-      })
-      expect(res).toBeInstanceOf(DomainSelfPaymentError)
-    })
-
-    it("fails to self, from USD wallet to same USD wallet", async () => {
-      const walletId = walletIdUsdA
-      const res = await testIntraledgerSend({
-        senderWalletId: walletId,
-        senderAccount: accountA,
-        recipientWalletId: walletId,
-        senderAmountInvoice: usdSendAmount,
-        recipientAmountInvoice: usdSendAmount,
-      })
-      expect(res).toBeInstanceOf(DomainSelfPaymentError)
     })
 
     it("sends from BTC wallet to another Galoy user's USD wallet", async () => {
