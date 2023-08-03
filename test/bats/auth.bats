@@ -1,17 +1,21 @@
 #!/usr/bin/env bats
 
 load "helpers/setup-and-teardown"
+AUTH_GALOY_CONFIG_FILE="$REPO_ROOT/test/bats/.auth.galoy.yaml"
 
 setup_file() {
-  start_server
+  awk '/accounts:/{f=1} f && /denyPhoneCountries:/{sub(/denyPhoneCountries: .*/, "denyPhoneCountries: [\"CO\"]")} f && /enablePhoneCheck:/{sub("false", "true"); f=0} 1' "$REPO_ROOT/galoy.yaml" > "$AUTH_GALOY_CONFIG_FILE"
+  start_server $AUTH_GALOY_CONFIG_FILE
 }
 
 teardown_file() {
   stop_server
+  rm -f $AUTH_GALOY_CONFIG_FILE
 }
 
 TOKEN_NAME="charlie"
 PHONE="+16505554354"
+DENY_PHONE="+573005551234"
 
 randomEmail() {
   local random_string
@@ -52,6 +56,22 @@ getEmailCount() {
 generateTotpCode() {
   local secret=$1
   node test/bats/helpers/generate-totp.js "$secret"
+}
+
+@test "auth: fail to create user from deny country" {
+  local variables=$(
+    jq -n \
+    --arg phone "$DENY_PHONE" \
+    --arg code "$CODE" \
+    '{input: {phone: $phone, code: $code}}'
+  )
+  exec_graphql 'anon' 'user-login' "$variables"
+
+  auth_token="$(graphql_output '.data.userLogin.authToken')"
+  [[ "${auth_token}" == "null" ]] || exit 1
+
+  error_code="$(graphql_output '.data.userLogin.errors[0].code')"
+  [[ "$error_code" == "INVALID_PHONE_METADATA_FOR_ONBOARDING_ERROR" ]] || exit 1
 }
 
 @test "auth: create user" {
