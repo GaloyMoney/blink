@@ -159,6 +159,8 @@ describe("EntryBuilder", () => {
   }
 
   const metadata = {
+    memo: "memo",
+    memoPayer: "memoPayer",
     currency: "BAD CURRENCY",
     some: "some",
     more: "more",
@@ -919,36 +921,37 @@ describe("EntryBuilder", () => {
 
   describe("metadata", () => {
     describe("offchain", () => {
+      const entry = createEntry()
+      const builder = EntryBuilder({
+        staticAccountIds,
+        entry,
+        metadata,
+        additionalInternalMetadata,
+      })
+      const result = builder
+        .withTotalAmount(amount)
+        .withBankFee(ZERO_BANK_FEE)
+        .debitAccount({
+          accountDescriptor: btcDebitorAccountDescriptor,
+          additionalMetadata: {
+            ...additionalUserUsdMetadata,
+            more: "yes",
+            muchMore: "muchMore",
+          },
+        })
+        .creditOffChain()
+
+      const debits = result.transactions.filter((t) => t.debit > 0)
+      expectJournalToBeBalanced(result)
+      testEntryDisplayAmounts(entry, {
+        walletAmounts: additionalInternalMetadata,
+        senderAmounts: additionalUserUsdMetadata,
+        recipientAmounts: additionalUserEurMetadata,
+      })
+
+      const resultEntry = findEntry(debits, debitorAccountId)
+
       it("debitor can take additional metadata", () => {
-        const entry = createEntry()
-        const builder = EntryBuilder({
-          staticAccountIds,
-          entry,
-          metadata,
-          additionalInternalMetadata,
-        })
-        const result = builder
-          .withTotalAmount(amount)
-          .withBankFee(ZERO_BANK_FEE)
-          .debitAccount({
-            accountDescriptor: btcDebitorAccountDescriptor,
-            additionalMetadata: {
-              ...additionalUserUsdMetadata,
-              more: "yes",
-              muchMore: "muchMore",
-            },
-          })
-          .creditOffChain()
-
-        const debits = result.transactions.filter((t) => t.debit > 0)
-        expectJournalToBeBalanced(result)
-        testEntryDisplayAmounts(entry, {
-          walletAmounts: additionalInternalMetadata,
-          senderAmounts: additionalUserUsdMetadata,
-          recipientAmounts: additionalUserEurMetadata,
-        })
-
-        const resultEntry = findEntry(debits, debitorAccountId)
         expect(resultEntry.currency).toEqual(WalletCurrency.Btc)
         expect(resultEntry.meta).toEqual(
           expect.objectContaining({
@@ -958,44 +961,63 @@ describe("EntryBuilder", () => {
           }),
         )
       })
+
+      it("debitor can take memos", () => {
+        expect(resultEntry).toEqual(
+          expect.objectContaining({
+            memo: "memo",
+            memoPayer: "memoPayer",
+          }),
+        )
+      })
     })
     describe("onchain", () => {
+      const entry = createEntry()
+      const builder = EntryBuilder({
+        staticAccountIds,
+        entry,
+        metadata,
+        additionalInternalMetadata,
+      })
+      const result = builder
+        .withTotalAmount(amount)
+        .withBankFee(ZERO_BANK_FEE)
+        .debitAccount({
+          accountDescriptor: btcDebitorAccountDescriptor,
+          additionalMetadata: {
+            ...additionalUserUsdMetadata,
+            more: "yes",
+            muchMore: "muchMore",
+          },
+        })
+        .creditOnChain()
+
+      const debits = result.transactions.filter((t) => t.debit > 0)
+      expectJournalToBeBalanced(result)
+      testEntryDisplayAmounts(entry, {
+        walletAmounts: additionalInternalMetadata,
+        senderAmounts: additionalUserUsdMetadata,
+        recipientAmounts: additionalUserEurMetadata,
+      })
+
+      const resultEntry = findEntry(debits, debitorAccountId)
+
       it("debitor can take additional metadata", () => {
-        const entry = createEntry()
-        const builder = EntryBuilder({
-          staticAccountIds,
-          entry,
-          metadata,
-          additionalInternalMetadata,
-        })
-        const result = builder
-          .withTotalAmount(amount)
-          .withBankFee(ZERO_BANK_FEE)
-          .debitAccount({
-            accountDescriptor: btcDebitorAccountDescriptor,
-            additionalMetadata: {
-              ...additionalUserUsdMetadata,
-              more: "yes",
-              muchMore: "muchMore",
-            },
-          })
-          .creditOnChain()
-
-        const debits = result.transactions.filter((t) => t.debit > 0)
-        expectJournalToBeBalanced(result)
-        testEntryDisplayAmounts(entry, {
-          walletAmounts: additionalInternalMetadata,
-          senderAmounts: additionalUserUsdMetadata,
-          recipientAmounts: additionalUserEurMetadata,
-        })
-
-        const resultEntry = findEntry(debits, debitorAccountId)
         expect(resultEntry.currency).toEqual(WalletCurrency.Btc)
         expect(resultEntry.meta).toEqual(
           expect.objectContaining({
             some: "some",
             more: "yes",
             muchMore: "muchMore",
+          }),
+        )
+      })
+
+      it("debitor can take memos", () => {
+        expect(resultEntry).toEqual(
+          expect.objectContaining({
+            memo: "memo",
+            memoPayer: "memoPayer",
           }),
         )
       })
