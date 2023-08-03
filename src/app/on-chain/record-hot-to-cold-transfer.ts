@@ -3,7 +3,7 @@ import { LedgerService } from "@services/ledger"
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 import { DisplayCurrency } from "@domain/fiat"
 
-export const recordIncome = async ({
+export const recordHotToColdTransfer = async ({
   satoshis,
   txId,
   proportionalFee,

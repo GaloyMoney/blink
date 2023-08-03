@@ -3,6 +3,7 @@ import { InvalidOnChainAddress, InvalidScanDepthAmount } from "@domain/errors"
 export * from "./errors"
 export * from "./tx-filter"
 export * from "./tx-decoder"
+export * from "./rebalance-checker"
 
 export const checkedToOnChainAddress = ({
   network,

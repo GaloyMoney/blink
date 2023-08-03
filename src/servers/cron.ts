@@ -1,4 +1,4 @@
-import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
+import { OnChain, Lightning, Wallets, Payments, Swap } from "@app"
 import { extendSessions } from "@app/authentication"
 
 import { getCronConfig, TWO_MONTHS_IN_MS, BitcoinNetwork } from "@config"
@@ -29,7 +29,7 @@ import { elapsedSinceTimestamp, sleep } from "@utils"
 const logger = baseLogger.child({ module: "cron" })
 
 const rebalance = async () => {
-  const result = await ColdStorage.rebalanceToColdWallet()
+  const result = await OnChain.rebalanceToColdWallet()
   if (result instanceof Error) throw result
 }
 

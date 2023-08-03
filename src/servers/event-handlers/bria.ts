@@ -1,4 +1,4 @@
-import { Wallets, ColdStorage } from "@app"
+import { Wallets, OnChain } from "@app"
 
 import {
   AmountLessThanFeeError,
@@ -136,7 +136,7 @@ export const payoutBroadcastEventHandler = async ({
   payoutInfo: PayoutAugmentation
 }): Promise<true | ApplicationError> => {
   if (payoutInfo.metadata?.galoy?.rebalanceToColdWallet) {
-    return ColdStorage.recordIncome(event)
+    return OnChain.recordHotToColdTransfer(event)
   }
   const res = await Wallets.registerBroadcastedPayout({
     payoutId: event.id,

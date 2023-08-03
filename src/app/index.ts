@@ -3,7 +3,6 @@ import { wrapAsyncToRunInSpan } from "@services/tracing"
 import * as AccountsMod from "./accounts"
 import * as AuthMod from "./authentication"
 import * as AdminMod from "./admin"
-import * as ColdStorageMod from "./cold-storage"
 import * as CommMod from "./comm"
 import * as LightningMod from "./lightning"
 import * as OnChainMod from "./on-chain"
@@ -18,7 +17,6 @@ const allFunctions = {
   Accounts: { ...AccountsMod },
   Auth: { ...AuthMod },
   Admin: { ...AdminMod },
-  ColdStorage: { ...ColdStorageMod },
   Comm: { ...CommMod },
   Lightning: { ...LightningMod },
   OnChain: { ...OnChainMod },
@@ -47,7 +45,6 @@ export const {
   Accounts,
   Auth,
   Admin,
-  ColdStorage,
   Comm,
   Lightning,
   OnChain,

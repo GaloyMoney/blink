@@ -513,10 +513,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidWithdrawFeeError":
     case "InvalidUsdCents":
     case "NonIntegerError":
-    case "ColdStorageError":
-    case "ColdStorageServiceError":
-    case "InvalidCurrentColdStorageWalletServiceError":
-    case "InvalidOrNonWalletTransactionError":
     case "FeeDifferenceError":
     case "NoTransactionToSettleError":
     case "CorruptLndDbError":
@@ -632,7 +628,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownIpFetcherServiceError":
     case "UnknownCacheServiceError":
     case "UnknownPhoneProviderServiceError":
-    case "UnknownColdStorageServiceError":
     case "UnknownDealerPriceServiceError":
     case "UnknownPubSubError":
     case "UnknownBigIntConversionError":

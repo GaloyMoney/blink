@@ -4,7 +4,7 @@ import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { DisplayCurrency } from "@domain/fiat"
-import { RebalanceChecker } from "@domain/cold-storage"
+import { RebalanceChecker } from "@domain/bitcoin/onchain"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { LndService } from "@services/lnd"

@@ -3,7 +3,7 @@ import client, { register } from "prom-client"
 
 import { SECS_PER_5_MINS } from "@config"
 
-import { ColdStorage, Lightning, OnChain } from "@app"
+import { Lightning, OnChain } from "@app"
 
 import { toSeconds } from "@domain/primitives"
 
