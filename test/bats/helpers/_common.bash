@@ -103,6 +103,10 @@ gql_admin_file() {
   echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/admin-gql/$1.gql"
 }
 
+new_idempotency_key() {
+  random_uuid
+}
+
 exec_graphql() {
   local token_name=$1
   local query_name=$2
@@ -128,6 +132,7 @@ exec_graphql() {
     -X POST \
     ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
     -H "Content-Type: application/json" \
+    -H "X-Idempotency-Key: $(new_idempotency_key)" \
     -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
     "${GALOY_ENDPOINT}/${gql_route}"
 
