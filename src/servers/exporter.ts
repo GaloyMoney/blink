@@ -323,7 +323,7 @@ const getAssetsLiabilitiesDifference = async () => {
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
-  const [lightning, bitcoin, onChain, lndBalance, coldStorage, briaBalance] =
+  const [lightning, bitcoin, onChain, lndBalance, coldStorage, hotBalance] =
     await Promise.all([
       ledgerAdmin.getLndBalance(),
       ledgerAdmin.getBitcoindBalance(),
@@ -334,13 +334,13 @@ export const getBookingVersusRealWorldAssets = async () => {
     ])
 
   const lnd = lndBalance instanceof Error ? 0 : lndBalance
-  const bria = briaBalance instanceof Error ? 0 : Number(briaBalance.amount)
-  const cold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
+  const briaHot = hotBalance instanceof Error ? 0 : Number(hotBalance.amount)
+  const briaCold = coldStorage instanceof Error ? 0 : Number(coldStorage.amount)
 
   return (
     lnd + // physical assets
-    cold + // physical assets
-    bria + // physical assets
+    briaCold + // physical assets
+    briaHot + // physical assets
     (lightning + bitcoin + onChain) // value in accounting
   )
 }
