@@ -17,6 +17,8 @@ import {
 } from "@services/ledger/domain"
 import * as LedgerFacade from "@services/ledger/facade"
 
+import { generateHash } from "./generate-hash"
+
 const Journal = mongoose.models.Medici_Journal
 const Transaction = mongoose.models.Medici_Transaction
 
@@ -542,8 +544,16 @@ export const recordOnChainTradeIntraAccountTxn: RecordInternalTxTestFn = async <
 export const recordReceiveOnChainFeeReconciliation = async ({
   estimatedFee,
   actualFee,
-  metadata,
-}: RecordOnChainFeeReconciliationArgs) => {
+}: {
+  estimatedFee: BtcPaymentAmount
+  actualFee: BtcPaymentAmount
+}) => {
+  const { metadata } = LedgerFacade.OnChainFeeReconciliationLedgerMetadata({
+    payoutId: crypto.randomUUID() as PayoutId,
+    txHash: generateHash() as OnChainTxHash,
+    pending: true,
+  })
+
   return LedgerFacade.recordReceiveOnChainFeeReconciliation({
     estimatedFee,
     actualFee,
