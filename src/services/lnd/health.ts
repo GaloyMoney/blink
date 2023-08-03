@@ -51,6 +51,12 @@ export const isUp = isLndUp
 // launching a loop to update whether lnd are active or not
 export const activateLndHealthCheck = () => lndsConnect.forEach(isUpLoop)
 
+export const checkAllLndHealth = async () => {
+  for (const param of lndsConnect) {
+    await isLndUp(param)
+  }
+}
+
 export const stopLndHealthCheck = () => intervals.forEach(clearInterval)
 
 class LndStatusEventEmitter extends EventEmitter {}

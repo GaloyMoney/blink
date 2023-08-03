@@ -61,24 +61,6 @@ type TxFilter = {
   apply(txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[]
 }
 
-type LookupOnChainFeeArgs = {
-  txHash: OnChainTxHash
-  scanDepth: ScanDepth
-}
-
-type GetOnChainFeeEstimateArgs = {
-  amount: Satoshis
-  address: OnChainAddress
-  targetConfirmations: TargetConfirmations
-}
-
-type PayToAddressArgs = {
-  amount: Satoshis
-  address: OnChainAddress
-  targetConfirmations: TargetConfirmations
-  description?: string
-}
-
 type QueuePayoutToAddressArgs = {
   walletDescriptor: WalletDescriptor<WalletCurrency>
   address: OnChainAddress
@@ -100,39 +82,6 @@ type IncomingOnChainTxHandler<S extends WalletCurrency> = {
   ): { [key: WalletId]: PaymentAmount<S> } | ValidationError
 }
 
-interface IOnChainService {
-  listActivePubkeys(): Pubkey[]
-
-  getBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
-
-  getBalanceAmount(pubkey?: Pubkey): Promise<BtcPaymentAmount | OnChainServiceError>
-
-  getPendingBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
-
-  listIncomingTransactions(
-    scanDepth: ScanDepth,
-  ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
-
-  lookupOnChainFee({
-    txHash,
-    scanDepth,
-  }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError>
-
-  createOnChainAddress(): Promise<LndOnChainAddressIdentifier | OnChainServiceError>
-
-  getOnChainFeeEstimate({
-    amount,
-    address,
-    targetConfirmations,
-  }: GetOnChainFeeEstimateArgs): Promise<Satoshis | OnChainServiceError>
-
-  payToAddress({
-    amount,
-    address,
-    targetConfirmations,
-  }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError>
-}
-
 interface OnChainEvent {
   payload: string
   sequence: string
@@ -141,8 +90,9 @@ interface OnChainEvent {
 
 type OnChainEventHandler = (event: OnChainEvent) => true | ApplicationError
 
-interface INewOnChainService {
-  getBalance(): Promise<BtcPaymentAmount | OnChainServiceError>
+interface IOnChainService {
+  getHotBalance(): Promise<BtcPaymentAmount | OnChainServiceError>
+  getColdBalance(): Promise<BtcPaymentAmount | OnChainServiceError>
   getAddressForWallet(args: {
     walletDescriptor: WalletDescriptor<WalletCurrency>
     requestId?: OnChainAddressRequestId
@@ -157,7 +107,28 @@ interface INewOnChainService {
   queuePayoutToAddress(
     args: QueuePayoutToAddressArgs,
   ): Promise<PayoutId | OnChainServiceError>
+  rebalanceToColdWallet(amount: BtcPaymentAmount): Promise<PayoutId | OnChainServiceError>
   estimateFeeForPayout(
     args: EstimatePayoutFeeArgs,
   ): Promise<BtcPaymentAmount | OnChainServiceError>
+}
+
+type RebalanceCheckerConfig = {
+  minOnChainHotWalletBalance: Satoshis
+  maxHotWalletBalance: Satoshis
+  minRebalanceSize: Satoshis
+}
+
+type ColdStorageConfig = RebalanceCheckerConfig
+
+type WithdrawFromHotWalletAmountArgs = {
+  onChainHotWalletBalance: Satoshis
+  offChainHotWalletBalance: Satoshis
+}
+
+type RebalanceChecker = {
+  getWithdrawFromHotWalletAmount({
+    onChainHotWalletBalance,
+    offChainHotWalletBalance,
+  }: WithdrawFromHotWalletAmountArgs): Satoshis
 }

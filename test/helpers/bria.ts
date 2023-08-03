@@ -1,4 +1,4 @@
-import { BriaSubscriber, NewOnChainService } from "@services/bria"
+import { BriaSubscriber, OnChainService } from "@services/bria"
 import { baseLogger } from "@services/logger"
 
 import {
@@ -12,10 +12,13 @@ import {
 import { waitFor, waitForNoErrorWithCount } from "./shared"
 
 export const getBriaBalance = async (): Promise<Satoshis> => {
-  const service = NewOnChainService()
-  const response = await service.getBalance()
-  if (response instanceof Error) throw response
-  return Number(response.amount) as Satoshis
+  const service = OnChainService()
+  const hot = await service.getHotBalance()
+  if (hot instanceof Error) throw hot
+  // Cold wallet is not initialized in JS tests
+  // const cold = await service.getColdBalance()
+  // if (cold instanceof Error) throw cold
+  return Number(hot.amount) as Satoshis
 }
 
 export const onceBriaSubscribe = async ({
@@ -133,7 +136,7 @@ export const resetBria = async () => {
 
 const waitUntilBriaZeroBalance = async () => {
   await waitFor(async () => {
-    const balanceAmount = await NewOnChainService().getBalance()
+    const balanceAmount = await OnChainService().getHotBalance()
     if (balanceAmount instanceof Error) throw balanceAmount
     const balance = Number(balanceAmount.amount)
 
@@ -147,6 +150,6 @@ const waitUntilBriaZeroBalance = async () => {
 }
 
 export const waitUntilBriaConnected = async () => {
-  const balance = await waitForNoErrorWithCount(NewOnChainService().getBalance, 60)
+  const balance = await waitForNoErrorWithCount(OnChainService().getHotBalance, 60)
   if (balance instanceof Error) throw balance
 }

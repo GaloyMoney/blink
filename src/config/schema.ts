@@ -182,27 +182,13 @@ export const configSchema = {
         minOnChainHotWalletBalance: { type: "integer" },
         minRebalanceSize: { type: "integer" },
         maxHotWalletBalance: { type: "integer" },
-        walletPattern: { type: "string" },
-        // TODO: confusing: 2 properties with the same name
-        onChainWallet: { type: "string" },
-        targetConfirmations: { type: "integer" },
       },
-      required: [
-        "minOnChainHotWalletBalance",
-        "minRebalanceSize",
-        "maxHotWalletBalance",
-        "walletPattern",
-        "targetConfirmations",
-      ],
+      required: ["minOnChainHotWalletBalance", "minRebalanceSize", "maxHotWalletBalance"],
       additionalProperties: false,
       default: {
         minOnChainHotWalletBalance: 1000000,
         minRebalanceSize: 10000000,
         maxHotWalletBalance: 200000000,
-        walletPattern: "specter",
-        // TODO: confusing: 2 properties with the same name
-        onChainWallet: "specter/coldstorage",
-        targetConfirmations: 6,
       },
     },
     bria: {
@@ -220,8 +206,20 @@ export const configSchema = {
             fast: "dev",
           },
         },
+        coldStorage: {
+          type: "object",
+          properties: {
+            walletName: { type: "string" },
+            hotToColdRebalanceQueueName: { type: "string" },
+          },
+          required: ["walletName", "hotToColdRebalanceQueueName"],
+          default: {
+            walletName: "cold",
+            hotToColdRebalanceQueueName: "dev",
+          },
+        },
       },
-      required: ["hotWalletName", "queueNames"],
+      required: ["hotWalletName", "queueNames", "coldStorage"],
       additionalProperties: false,
       default: {
         hotWalletName: "dev",

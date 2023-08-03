@@ -1,6 +1,6 @@
 import { getSwapConfig } from "@config"
 import { NoOutboundLiquidityForSwapError, SwapServiceError } from "@domain/swap/errors"
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"
@@ -22,9 +22,9 @@ export const swapOut = async (): Promise<
   const activeLoopdConfig = getActiveLoopd()
   const swapService = LoopService(activeLoopdConfig)
   if (!swapService.healthCheck()) return new SwapServiceError("Failed health check")
-  const onChainService = NewOnChainService()
+  const onChainService = OnChainService()
   if (onChainService instanceof Error) return onChainService
-  const onChainBalance = await onChainService.getBalance()
+  const onChainBalance = await onChainService.getHotBalance()
   if (onChainBalance instanceof Error) return onChainBalance
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService

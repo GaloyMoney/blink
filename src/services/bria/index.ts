@@ -104,15 +104,31 @@ export const BriaSubscriber = () => {
 
 const queueNameForSpeed = (speed: PayoutSpeed): string => briaConfig.queueNames[speed]
 
-export const NewOnChainService = (): INewOnChainService => {
+export const OnChainService = (): IOnChainService => {
   const metadata = new Metadata()
   metadata.set("x-bria-api-key", briaConfig.apiKey)
 
-  const getBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
+  const getHotBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
     try {
       const request = new GetWalletBalanceSummaryRequest()
-      request.setWalletName(briaConfig.walletName)
+      request.setWalletName(briaConfig.hotWalletName)
 
+      const response = await getWalletBalanceSummary(request, metadata)
+
+      return paymentAmountFromNumber({
+        amount: response.getEffectiveSettled(),
+        currency: WalletCurrency.Btc,
+      })
+    } catch (error) {
+      return new UnknownOnChainServiceError(error)
+    }
+  }
+
+  const getColdBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
+    const request = new GetWalletBalanceSummaryRequest()
+    request.setWalletName(briaConfig.coldStorage.walletName)
+
+    try {
       const response = await getWalletBalanceSummary(request, metadata)
 
       return paymentAmountFromNumber({
@@ -133,7 +149,7 @@ export const NewOnChainService = (): INewOnChainService => {
   }): Promise<OnChainAddressIdentifier | OnChainServiceError> => {
     try {
       const request = new NewAddressRequest()
-      request.setWalletName(briaConfig.walletName)
+      request.setWalletName(briaConfig.hotWalletName)
       request.setMetadata(
         constructMetadata({ galoy: { walletDetails: walletDescriptor } }),
       )
@@ -159,7 +175,7 @@ export const NewOnChainService = (): INewOnChainService => {
   const getAddressForSwap = async (): Promise<OnChainAddress | OnChainServiceError> => {
     try {
       const request = new NewAddressRequest()
-      request.setWalletName(briaConfig.walletName)
+      request.setWalletName(briaConfig.hotWalletName)
       request.setMetadata(constructMetadata({ galoy: { swap: true } }))
       const response = await newAddress(request, metadata)
       return response.getAddress() as OnChainAddress
@@ -237,7 +253,7 @@ export const NewOnChainService = (): INewOnChainService => {
   }: QueuePayoutToAddressArgs): Promise<PayoutId | OnChainServiceError> => {
     try {
       const request = new SubmitPayoutRequest()
-      request.setWalletName(briaConfig.walletName)
+      request.setWalletName(briaConfig.hotWalletName)
       request.setPayoutQueueName(queueNameForSpeed(speed))
       request.setOnchainAddress(address)
       request.setSatoshis(Number(amount.amount))
@@ -264,6 +280,26 @@ export const NewOnChainService = (): INewOnChainService => {
     }
   }
 
+  const rebalanceToColdWallet = async (
+    amount: BtcPaymentAmount,
+  ): Promise<PayoutId | OnChainServiceError> => {
+    const request = new SubmitPayoutRequest()
+    request.setWalletName(briaConfig.hotWalletName)
+    request.setPayoutQueueName(briaConfig.coldStorage.hotToColdRebalanceQueueName)
+    request.setDestinationWalletName(briaConfig.coldStorage.walletName)
+    request.setSatoshis(Number(amount.amount))
+    request.setMetadata(constructMetadata({ galoy: { rebalanceToColdWallet: true } }))
+
+    try {
+      const response = await submitPayout(request, metadata)
+
+      return response.getId() as PayoutId
+    } catch (err) {
+      const errMsg = parseErrorMessageFromUnknown(err)
+      return new UnknownOnChainServiceError(errMsg)
+    }
+  }
+
   const estimateFeeForPayout = async ({
     address,
     amount,
@@ -280,7 +316,7 @@ export const NewOnChainService = (): INewOnChainService => {
     }): Promise<BtcPaymentAmount | BriaEventError> => {
       try {
         const request = new EstimatePayoutFeeRequest()
-        request.setWalletName(briaConfig.walletName)
+        request.setWalletName(briaConfig.hotWalletName)
         request.setPayoutQueueName(queueNameForSpeed(speed))
         request.setOnchainAddress(address)
         request.setSatoshis(Number(amount.amount))
@@ -304,12 +340,14 @@ export const NewOnChainService = (): INewOnChainService => {
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.bria.onchain",
     fns: {
-      getBalance,
+      getHotBalance,
+      getColdBalance,
       getAddressForWallet,
       getAddressForSwap,
       findAddressByRequestId,
       findPayoutByLedgerJournalId,
       queuePayoutToAddress,
+      rebalanceToColdWallet,
       estimateFeeForPayout,
     },
   })

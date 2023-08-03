@@ -1,7 +1,5 @@
 import { authenticatedBitcoind, createWallet, importDescriptors } from "bitcoin-cli-ts"
 
-import { getBitcoinCoreRPCConfig } from "@config"
-
 import { LedgerService } from "@services/ledger"
 
 import { toSats } from "@domain/bitcoin"
@@ -18,7 +16,6 @@ import {
   BitcoindWalletClient,
   getBitcoinCoreSignerRPCConfig,
 } from "./bitcoind"
-import { descriptors } from "./multisig-wallet"
 import { descriptors as signerDescriptors } from "./signer-wallet"
 import { lndCreateOnChainAddress } from "./wallet"
 import { waitUntilBlockHeight } from "./lightning"
@@ -132,25 +129,6 @@ export const fundWalletIdFromOnchain = async ({
   return toSats(balance)
 }
 
-export const createColdStorageWallet = async (walletName: string) => {
-  const bitcoind = getBitcoindClient()
-  const wallet = await createWallet({
-    bitcoind,
-    wallet_name: walletName,
-    disable_private_keys: true,
-    descriptors: true,
-  })
-
-  const bitcoindWallet = getBitcoindClient(walletName)
-  const result = await importDescriptors({
-    bitcoind: bitcoindWallet,
-    requests: descriptors,
-  })
-  if (result.some((d) => !d.success)) throw new Error("Invalid descriptors")
-
-  return wallet
-}
-
 export const createSignerWallet = async (walletName: string) => {
   const bitcoindSigner = getBitcoindSignerClient()
   const wallet = await createWallet({
@@ -168,30 +146,6 @@ export const createSignerWallet = async (walletName: string) => {
   if (result.some((d) => !d.success)) throw new Error("Invalid descriptors")
 
   return wallet
-}
-
-export const createRandomColdStorageWallet = async (walletName: string) => {
-  const bitcoind = getBitcoindClient()
-  const wallet = await createWallet({
-    bitcoind,
-    wallet_name: walletName,
-    disable_private_keys: true,
-    descriptors: true,
-  })
-  return wallet
-}
-
-const getBitcoindClient = (walletName?: string) => {
-  const { host, username, password, port, timeout } = getBitcoinCoreRPCConfig()
-  return authenticatedBitcoind({
-    protocol: "http",
-    host: host || "",
-    username,
-    password,
-    timeout,
-    port,
-    walletName,
-  })
 }
 
 const getBitcoindSignerClient = (walletName?: string) => {

@@ -17,7 +17,7 @@ import { LedgerService } from "@services/ledger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 
 import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
@@ -155,7 +155,7 @@ export const getMinerFeeAndPaymentFlow = async <
   builder: OPFBWithConversion<S, R>
   speed: PayoutSpeed
 }): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError> => {
-  const onChainService = NewOnChainService()
+  const onChainService = OnChainService()
 
   const proposedBtcAmount = await builder.btcProposedAmount()
   if (proposedBtcAmount instanceof Error) return proposedBtcAmount

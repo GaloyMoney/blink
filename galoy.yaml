@@ -29,13 +29,13 @@ coldStorage:
   minOnChainHotWalletBalance: 1000000
   minRebalanceSize: 10000000
   maxHotWalletBalance: 200000000
-  walletPattern: specter
-  onChainWallet: specter/coldstorage
-  targetConfirmations: 6
 bria:
   hotWalletName: dev
   queueNames:
     fast: dev
+  coldStorage:
+    walletName: cold
+    hotToColdRebalanceQueueName: dev
 lndScbBackupBucketName: lnd-static-channel-backups
 admin_accounts:
   - role: dealer

@@ -8,7 +8,7 @@ import { I18n } from "i18n"
 
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
-import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
@@ -89,8 +89,9 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toCents(
 )
 
 export const getBriaPartialConfigFromYaml = () => ({
-  walletName: yamlConfig.bria.hotWalletName,
+  hotWalletName: yamlConfig.bria.hotWalletName,
   queueNames: yamlConfig.bria.queueNames,
+  coldStorage: yamlConfig.bria.coldStorage,
 })
 
 export const getLightningAddressDomain = (): string => yamlConfig.lightningAddressDomain
@@ -253,16 +254,10 @@ export const getOnChainWalletConfig = () => ({
 export const getColdStorageConfig = (): ColdStorageConfig => {
   const config = yamlConfig.coldStorage
 
-  const targetConfirmations = checkedToTargetConfs(config.targetConfirmations)
-  if (targetConfirmations instanceof Error) throw targetConfirmations
-
   return {
     minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
     maxHotWalletBalance: toSats(config.maxHotWalletBalance),
     minRebalanceSize: toSats(config.minRebalanceSize),
-    walletPattern: config.walletPattern,
-    onChainWallet: config.onChainWallet,
-    targetConfirmations,
   }
 }
 

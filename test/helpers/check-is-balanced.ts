@@ -9,7 +9,6 @@ import {
   waitUntilChannelBalanceSyncE2e,
   waitUntilChannelBalanceSyncIntegration,
 } from "./lightning"
-import { getBalance as getBitcoindBalance } from "./bitcoind"
 import { getBriaBalance } from "./bria"
 
 const logger = baseLogger.child({ module: "test" })
@@ -69,7 +68,6 @@ const balanceSheetIsBalanced = async () => {
     await getLedgerAccounts()
   const { total: lnd } = await lndsBalances() // doesnt include escrow amount
 
-  const bitcoind = await getBitcoindBalance()
   const bria = await getBriaBalance()
 
   const assetsLiabilitiesDifference =
@@ -77,7 +75,6 @@ const balanceSheetIsBalanced = async () => {
 
   const bookingVersusRealWorldAssets =
     lnd + // physical assets
-    bitcoind + // physical assets
     bria + // physical assets
     (lightning + bitcoin + onChain) // value in accounting
 
@@ -91,7 +88,6 @@ const balanceSheetIsBalanced = async () => {
         bankOwnerBalance,
         lnd,
         lightning,
-        bitcoind,
         bitcoin,
         bria,
         onChain,

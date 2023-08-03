@@ -13,7 +13,6 @@ import * as AccountErrors from "@domain/accounts/errors"
 import * as NotificationsErrors from "@domain/notifications/errors"
 import * as CacheErrors from "@domain/cache/errors"
 import * as PhoneProviderServiceErrors from "@domain/phone-provider/errors"
-import * as ColdStorageServiceErrors from "@domain/cold-storage/errors"
 import * as DealerPriceErrors from "@domain/dealer-price/errors"
 import * as PubSubErrors from "@domain/pubsub/errors"
 import * as CaptchaErrors from "@domain/captcha/errors"
@@ -39,7 +38,6 @@ export const ApplicationErrors = {
   ...NotificationsErrors,
   ...CacheErrors,
   ...PhoneProviderServiceErrors,
-  ...ColdStorageServiceErrors,
   ...DealerPriceErrors,
   ...PubSubErrors,
   ...CaptchaErrors,

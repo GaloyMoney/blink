@@ -10,9 +10,16 @@ type AddressAugmentation = {
   externalId: string
 }
 
+type PayoutMetadata = {
+  galoy?: {
+    rebalanceToColdWallet?: boolean
+  }
+}
+
 type PayoutAugmentation = {
   id: PayoutId
   externalId: string
+  metadata?: PayoutMetadata
 }
 
 type BriaEventAugmentation = {

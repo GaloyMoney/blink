@@ -8,7 +8,7 @@ import { toCents } from "@domain/fiat"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
 
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 import { DealerPriceService } from "@services/dealer-price"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { baseLogger } from "@services/logger"
@@ -214,7 +214,7 @@ describe("UserWallet - getOnchainFee", () => {
         it("returns a fee greater than zero for an external address", async () => {
           await testAmountCaseAmounts(dealerFns.getSatsFromCentsForImmediateSell)
 
-          const onChainService = NewOnChainService()
+          const onChainService = OnChainService()
 
           const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
 

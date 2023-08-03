@@ -1,4 +1,3 @@
-import sumBy from "lodash.sumby"
 import {
   authenticatedBitcoind,
   createWallet,
@@ -19,9 +18,6 @@ import {
   finalizePsbt,
   sendRawTransaction,
 } from "bitcoin-cli-ts"
-
-import { btc2sat } from "@domain/bitcoin"
-import { getBitcoinCoreRPCConfig } from "@config"
 
 type GetAddressInfoResult = {
   address: string
@@ -53,6 +49,16 @@ type InWalletTransaction = {
   "hex": string
   // TODO? all available: https://developer.bitcoin.org/reference/rpc/gettransaction.html#result
 }
+
+export const getBitcoinCoreRPCConfig = () => ({
+  network: process.env.NETWORK,
+  username: process.env.BITCOINDRPCUSER || "rpcuser",
+  password: process.env.BITCOINDRPCPASS || "rpcpassword",
+  timeout: parseInt(process.env.BITCOINDTIMEOUT || "20000", 10),
+  version: "24.0.0",
+  host: process.env.BITCOINDADDR,
+  port: parseInt(process.env.BITCOINDPORT || "8332", 10),
+})
 
 export const getBitcoinCoreSignerRPCConfig = () => {
   return {
@@ -249,29 +255,3 @@ export class BitcoindSignerWalletClient extends BaseBitcoindWalletClient {
 
 // The default client should remain without a wallet (not generate or receive bitcoin)
 export const bitcoindDefaultClient = new BitcoindClient(getBitcoinCoreRPCConfig())
-
-export const getBalancesDetail = async (): Promise<
-  { wallet: string; balance: number }[]
-> => {
-  const wallets = await bitcoindDefaultClient.listWallets()
-
-  const balances: { wallet: string; balance: number }[] = []
-
-  for await (const wallet of wallets) {
-    // do not consider the "outside" wallet in tests
-    if (wallet === "" || wallet === "outside") {
-      continue
-    }
-
-    const client = new BitcoindWalletClient(wallet)
-    const balance = btc2sat(await client.getBalance())
-    balances.push({ wallet, balance })
-  }
-
-  return balances
-}
-
-export const getBalance = async (): Promise<number> => {
-  const balanceObj = await getBalancesDetail()
-  return sumBy(balanceObj, "balance")
-}

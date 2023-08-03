@@ -1,4 +1,4 @@
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 import { redis } from "@services/redis"
 import { Account } from "@services/mongoose/schema"
 
@@ -73,7 +73,7 @@ describe("connects to bria", () => {
   })
 
   it("receives a bria balance", async () => {
-    const res = await NewOnChainService().getBalance()
+    const res = await OnChainService().getHotBalance()
     expect(res).not.toBeInstanceOf(Error)
   })
 })

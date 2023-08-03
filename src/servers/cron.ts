@@ -1,4 +1,4 @@
-import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
+import { OnChain, Lightning, Wallets, Payments, Swap } from "@app"
 import { extendSessions } from "@app/authentication"
 
 import { getCronConfig, TWO_MONTHS_IN_MS, BitcoinNetwork } from "@config"
@@ -22,14 +22,14 @@ import {
 import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
-import { activateLndHealthCheck } from "@services/lnd/health"
+import { activateLndHealthCheck, checkAllLndHealth } from "@services/lnd/health"
 
 import { elapsedSinceTimestamp, sleep } from "@utils"
 
 const logger = baseLogger.child({ module: "cron" })
 
 const rebalance = async () => {
-  const result = await ColdStorage.rebalanceToColdWallet()
+  const result = await OnChain.rebalanceToColdWallet()
   if (result instanceof Error) throw result
 }
 
@@ -69,6 +69,7 @@ const swapOutJob = async () => {
 const main = async () => {
   console.log("cronjob started")
   const start = new Date(Date.now())
+  await checkAllLndHealth()
 
   const cronConfig = getCronConfig()
   const results: Array<boolean> = []

@@ -14,6 +14,7 @@ services:
       - bitcoind
       - bitcoind-signer
       - lnd1
+      - lnd2
       - lnd-outside-1
     # restart: on-failure:10
   e2e-deps:

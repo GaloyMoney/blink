@@ -1,4 +1,4 @@
-import { Wallets } from "@app"
+import { Wallets, OnChain } from "@app"
 
 import {
   AmountLessThanFeeError,
@@ -26,7 +26,9 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
 
   switch (event.payload.type) {
     case BriaPayloadType.UtxoDetected:
-      return utxoDetectedEventHandler({ event: event.payload })
+      return utxoDetectedEventHandler({
+        event: event.payload,
+      })
 
     case BriaPayloadType.UtxoDropped:
       return utxoDroppedEventHandler({ event: event.payload })
@@ -44,7 +46,13 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
       })
 
     case BriaPayloadType.PayoutBroadcast:
-      return payoutBroadcastEventHandler({ event: event.payload })
+      if (event.augmentation.payoutInfo === undefined) {
+        return new EventAugmentationMissingError()
+      }
+      return payoutBroadcastEventHandler({
+        event: event.payload,
+        payoutInfo: event.augmentation.payoutInfo,
+      })
 
     case BriaPayloadType.PayoutSettled:
       return payoutSettledEventHandler({ event: event.payload })
@@ -122,9 +130,14 @@ export const payoutSubmittedEventHandler = async ({
 
 export const payoutBroadcastEventHandler = async ({
   event,
+  payoutInfo,
 }: {
   event: PayoutBroadcast
+  payoutInfo: PayoutAugmentation
 }): Promise<true | ApplicationError> => {
+  if (payoutInfo.metadata?.galoy?.rebalanceToColdWallet) {
+    return OnChain.recordHotToColdTransfer(event)
+  }
   const res = await Wallets.registerBroadcastedPayout({
     payoutId: event.id,
     proportionalFee: event.proportionalFee,

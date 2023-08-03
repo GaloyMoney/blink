@@ -1,4 +1,3 @@
-import { getColdStorageConfig } from "@config"
 import { btc2sat, sat2btc } from "@domain/bitcoin"
 import { getFunderWalletId } from "@services/ledger/caching"
 
@@ -6,9 +5,7 @@ import {
   bitcoindClient,
   bitcoindSignerClient,
   checkIsBalanced,
-  createColdStorageWallet,
   createMandatoryUsers,
-  createRandomColdStorageWallet,
   createSignerWallet,
   fundLnd,
   fundWalletIdFromOnchain,
@@ -38,18 +35,6 @@ describe("Bitcoind", () => {
   it("check no wallet", async () => {
     const wallets = await bitcoindClient.listWallets()
     expect(wallets.length).toBe(0)
-  })
-
-  it("create cold wallet", async () => {
-    const { onChainWallet: walletName } = getColdStorageConfig()
-
-    const { name } = await createColdStorageWallet(walletName)
-    expect(name).toBe(walletName)
-
-    const { name: wallet2 } = await createRandomColdStorageWallet("specter/random")
-    const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain(walletName)
-    expect(wallets).toContain(wallet2)
   })
 
   it("create signer wallet for bria", async () => {

@@ -49,14 +49,15 @@ type YamlSchema = {
     minOnChainHotWalletBalance: number
     minRebalanceSize: number
     maxHotWalletBalance: number
-    walletPattern: string
-    onChainWallet: string
-    targetConfirmations: number
   }
   bria: {
     hotWalletName: string
     queueNames: {
       fast: string
+    }
+    coldStorage: {
+      walletName: string
+      hotToColdRebalanceQueueName: string
     }
   }
   lndScbBackupBucketName: string

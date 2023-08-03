@@ -58,6 +58,10 @@ start_trigger() {
   echo $! > $TRIGGER_PID_FILE
 }
 
+run_cron() {
+  node lib/servers/cron.js
+}
+
 start_exporter() {
   background node lib/servers/exporter.js > .e2e-exporter.log
   echo $! > $EXPORTER_PID_FILE

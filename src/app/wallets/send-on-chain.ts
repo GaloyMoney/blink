@@ -32,7 +32,7 @@ import * as LedgerFacade from "@services/ledger/facade"
 
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
-import { NewOnChainService } from "@services/bria"
+import { OnChainService } from "@services/bria"
 import { LockService } from "@services/lock"
 import { baseLogger } from "@services/logger"
 import {
@@ -462,7 +462,7 @@ const executePaymentViaOnChain = async <
   const senderWalletDescriptor = await builder.senderWalletDescriptor()
   if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
 
-  const newOnChainService = NewOnChainService()
+  const newOnChainService = OnChainService()
 
   // Limit check
   const proposedAmounts = await builder.proposedAmounts()

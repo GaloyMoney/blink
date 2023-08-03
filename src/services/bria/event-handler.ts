@@ -85,11 +85,17 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
   }
   const payoutInfo = rawAugmentation.getPayoutInfo()
   if (payoutInfo) {
+    const grpcMeta = payoutInfo.getMetadata()
     const info = payoutInfo.toObject()
+    let metadata: undefined | PayoutMetadata = undefined
+    if (grpcMeta) {
+      metadata = grpcMeta.toJavaScript()
+    }
     augmentation = {
       payoutInfo: {
         id: info.id as PayoutId,
         externalId: info.externalId,
+        metadata,
       },
     }
   }
@@ -104,7 +110,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
     case RawBriaEvent.PayloadCase.PAYLOAD_NOT_SET:
       return new NoPayloadFoundError()
     case RawBriaEvent.PayloadCase.UTXO_DETECTED:
-      if (augmentation === undefined) {
+      if (augmentation.addressInfo === undefined) {
         return new ExpectedAddressInfoMissingInEventError()
       }
       rawPayload = rawEvent.getUtxoDetected()
@@ -115,7 +121,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
         type: BriaPayloadType.UtxoDetected,
         txId: rawPayload.getTxId() as OnChainTxHash,
         vout: rawPayload.getVout() as OnChainTxVout,
-        address: rawPayload.getAddress() as OnChainAddress,
+        address: augmentation.addressInfo.address as OnChainAddress,
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
@@ -123,7 +129,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
       }
       break
     case RawBriaEvent.PayloadCase.UTXO_DROPPED:
-      if (augmentation === undefined) {
+      if (augmentation.addressInfo === undefined) {
         return new ExpectedAddressInfoMissingInEventError()
       }
       rawPayload = rawEvent.getUtxoDropped()
@@ -134,7 +140,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
         type: BriaPayloadType.UtxoDropped,
         txId: rawPayload.getTxId() as OnChainTxHash,
         vout: rawPayload.getVout() as OnChainTxVout,
-        address: rawPayload.getAddress() as OnChainAddress,
+        address: augmentation.addressInfo.address as OnChainAddress,
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
@@ -142,7 +148,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
       }
       break
     case RawBriaEvent.PayloadCase.UTXO_SETTLED:
-      if (augmentation === undefined) {
+      if (augmentation.addressInfo === undefined) {
         return new ExpectedAddressInfoMissingInEventError()
       }
 
@@ -154,7 +160,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
         type: BriaPayloadType.UtxoSettled,
         txId: rawPayload.getTxId() as OnChainTxHash,
         vout: rawPayload.getVout() as OnChainTxVout,
-        address: rawPayload.getAddress() as OnChainAddress,
+        address: augmentation.addressInfo.address as OnChainAddress,
         satoshis: {
           amount: BigInt(rawPayload.getSatoshis()),
           currency: WalletCurrency.Btc,
