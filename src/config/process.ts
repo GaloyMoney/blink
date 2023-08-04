@@ -8,9 +8,6 @@ type TwilioConfig = {
   verifyService: string
 }
 
-export const GALOY_API_KEEPALIVE_TIMEOUT_MS = process.env.GALOY_API_KEEPALIVE_TIMEOUT
-  ? parseInt(process.env.GALOY_API_KEEPALIVE_TIMEOUT, 10)
-  : (3600 + 600) * 1000 // 1 hour + 10 minutes
 export const GALOY_API_PORT = process.env.GALOY_API_PORT || 4012
 export const GALOY_ADMIN_PORT = process.env.GALOY_ADMIN_PORT || 4001
 
