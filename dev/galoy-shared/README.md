@@ -7,6 +7,11 @@ This syncs the basic core functionality of the Galoy stack so you can add it as 
 - A copy of helpers for bat tests
 - It does NOT yet include bria, stablesats or mongodb migrations
 
+### Easy Install
+curl -sSL  | sh
+
+### Manual Install
+
 ```
 cd dev/galoy-shared
 vendir sync
