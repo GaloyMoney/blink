@@ -21,6 +21,14 @@ directories:
           - .envrc
           - .env
           - .env.ci
+      - path: test
+        git:
+          url: https://github.com/GaloyMoney/galoy.git
+          ref: main
+        includePaths:
+          - test/bats/helpers/**/*
+          - test/bats/gql/**/*
+        newRootPath: test
       - path: docker
         inline:
           paths:
@@ -275,12 +283,52 @@ directories:
                   ports:
                     - "5433:5432"
 
+            docker-compose.router.yml: |
+              version: "3"
+              services:
+                bats-deps:
+                  image: busybox
+                  depends_on:
+                    - apollo-router
+                apollo-router:
+                  image: ghcr.io/apollographql/router:v1.25.0
+                  environment:
+                    - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/apollo-federation/supergraph.graphql
+                    - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/apollo-federation/vendor/galoy/dev/apollo-federation/router.yaml
+                  volumes:
+                    - ./:/repo
+                bats-tests-subgraph:
+                    image: us.gcr.io/galoy-org/nodejs-concourse
+                    depends_on:
+                      - bats-deps
+                    command: ["make", "execute-bats-from-within-container"]
+                    working_dir: /repo
+                    env_file:
+                      - ${TMP_ENV_CI:-.env.ci}
+                    environment:
+                      - HOST_PROJECT_PATH=${PWD}
+                      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
+
+            docker-compose.override.router.yml: |
+              version: "3"
+              services:
+                apollo-router:
+                  ports:
+                    - "5004:4004"
+                  extra_hosts:
+                    - "bats-tests-subgraph:host-gateway"
+                bats-tests-subgraph:
+                  ports:
+                    - "4010:4010"
+                    - "4022:4002"
+
             run.sh: |
               #!/bin/sh
               #!/bin/zsh
               #!/bin/bash
 
-              cp docker/* .
+              cp docker/docker-compose.yml .
+              cp docker/docker-compose.override.yml .
               cp envs/* .
               cp envs/.env.ci .
               cp envs/.envrc .

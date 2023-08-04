@@ -2,17 +2,23 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove keep alive timeout (#3004)...'
-      sha: ca63e184f5a4d1413232c751e431f9e419724922
+      commitTitle: 'test: add oathkeeper bats tests (#3003)...'
+      sha: 83245b1bcb251068d4acdefd70666be3d3907cff
       tags:
-      - 0.11.4
+      - 0.11.4-1-g83245b1bc
     path: dev
   - git:
-      commitTitle: 'chore: remove keep alive timeout (#3004)...'
-      sha: ca63e184f5a4d1413232c751e431f9e419724922
+      commitTitle: 'test: add oathkeeper bats tests (#3003)...'
+      sha: 83245b1bcb251068d4acdefd70666be3d3907cff
       tags:
-      - 0.11.4
+      - 0.11.4-1-g83245b1bc
     path: envs
+  - git:
+      commitTitle: 'test: add oathkeeper bats tests (#3003)...'
+      sha: 83245b1bcb251068d4acdefd70666be3d3907cff
+      tags:
+      - 0.11.4-1-g83245b1bc
+    path: test
   - inline: {}
     path: docker
   path: vendor
