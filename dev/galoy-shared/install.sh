@@ -1,5 +1,6 @@
 read -p "Make sure you have vendir and docker installed...[Press enter to continue]"
-mkdir -p dev/galoy/vendor
+mkdir -p dev/galoy
+mkdir -p dev/galoy/galoy
 curl -o dev/galoy/vendir.yml https://raw.githubusercontent.com/GaloyMoney/galoy/1015418d59a6d5daae071a2b60324632aa7b4799/dev/galoy-shared/vendir.yml
 cd dev/galoy
 # todo check if vendir exists
