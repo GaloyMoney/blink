@@ -1,0 +1,19 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: 'chore: remove keep alive timeout (#3004)...'
+      sha: ca63e184f5a4d1413232c751e431f9e419724922
+      tags:
+      - 0.11.4
+    path: dev
+  - git:
+      commitTitle: 'chore: remove keep alive timeout (#3004)...'
+      sha: ca63e184f5a4d1413232c751e431f9e419724922
+      tags:
+      - 0.11.4
+    path: envs
+  - inline: {}
+    path: docker
+  path: vendor
+kind: LockConfig
