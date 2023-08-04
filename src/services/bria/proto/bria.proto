@@ -108,7 +108,7 @@ message SetSignerConfigResponse {}
 
 message SubmitSignedPsbtRequest {
   string batch_id = 1;
-  string xpub_ref = 2; 
+  string xpub_ref = 2;
   string signed_psbt = 3;
 }
 
