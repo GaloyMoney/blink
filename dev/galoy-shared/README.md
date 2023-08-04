@@ -10,7 +10,7 @@ This syncs the basic core functionality of the Galoy stack so you can add it as 
 ### Easy Curl Install
 To install in a blank project, run this in the root of your project:
 ```
-curl -sSL https://raw.githubusercontent.com/GaloyMoney/galoy/9365b15398f82e1b8bb0e782f99f98048e5643e8/dev/galoy-shared/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/GaloyMoney/galoy/b76b45b98c6c75de58830b7e697f7982da084439/dev/galoy-shared/install.sh | sh
 ```
 
 ### Manual Install
