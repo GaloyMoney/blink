@@ -93,6 +93,8 @@ clear_cache() {
 }
 
 balance_for_check() {
+  reset_redis > /dev/null 2>&1
+
   get_metric() {
     metric_name=$1
 
