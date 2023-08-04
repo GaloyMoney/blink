@@ -4,9 +4,34 @@ source $(dirname "$BASH_SOURCE")/_common.bash
 LND_FUNDING_TOKEN_NAME="lnd_funding"
 LND_FUNDING_PHONE="+16505554351"
 
+run_with_lnd() {
+  local func_name="$1"
+  shift  # This will shift away the function name, so $1 becomes the next argument
+
+  if [[ "$func_name" == "lnd_cli" ]]; then
+    lnd_cli "$@"
+  elif [[ "$func_name" == "lnd2_cli" ]]; then
+    lnd2_cli "$@"
+  else
+    echo "Invalid function name passed!" && exit 1
+  fi
+}
+
+close_partner_initiated_channels() {
+  ln_cli_name=$1
+
+  run_with_lnd "$ln_cli_name" listchannels \
+    | jq -r '.channels[] | select(.initiator != true) | .channel_point' \
+    | while read -r channel_point; do
+        # Pass the channel_point to another_function
+        funding_txid="${channel_point%%:*}"
+        run_with_lnd "$ln_cli_name" closechannel "$funding_txid"
+      done
+}
+
 lnds_init() {
   # Clean up any existing channels
-  lnd_cli closeallchannels || true
+  close_partner_initiated_channels lnd_cli || true
 
   # Mine onchain balance
   local amount="1"
