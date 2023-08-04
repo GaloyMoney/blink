@@ -1,6 +1,6 @@
 import util from "util"
 
-import { getDealerPriceConfig } from "@config"
+import { env } from "@config"
 
 import { credentials } from "@grpc/grpc-js"
 
@@ -47,9 +47,8 @@ import {
   GetCentsPerSatsExchangeMidRateResponse,
 } from "./proto/services/price/v1/price_service_pb"
 
-const config = getDealerPriceConfig()
 const client = new PriceServiceClient(
-  `${config.host}:${config.port}`,
+  `${env.PRICE_SERVER_HOST}:${env.PRICE_SERVER_PORT}`,
   credentials.createInsecure(),
 )
 

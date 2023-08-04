@@ -2,18 +2,19 @@ import { toDays } from "@domain/primitives"
 
 import { SvixConfig } from "@services/callback"
 
-import { getBriaPartialConfigFromProcess } from "./process"
 import {
   getBriaPartialConfigFromYaml,
   MEMO_SHARING_CENTS_THRESHOLD,
   MEMO_SHARING_SATS_THRESHOLD,
 } from "./yaml"
+import { env } from "./env"
 
 export * from "./error"
 export * from "./process"
 export * from "./yaml"
 export * from "./schema"
 export * from "./utils"
+export * from "./env"
 
 export const MS_PER_SEC = 1000 as MilliSeconds
 export const MS_PER_HOUR = (60 * 60 * MS_PER_SEC) as MilliSeconds
@@ -33,6 +34,25 @@ export const MAX_LENGTH_FOR_FEEDBACK = 1024
 export const MIN_SATS_FOR_PRICE_RATIO_PRECISION = 5000n
 
 export const Levels: Levels = [0, 1, 2]
+
+export const getGaloyBuildInformation = () => {
+  return {
+    commitHash: env.COMMITHASH,
+    buildTime: env.BUILDTIME,
+    helmRevision: env.HELMREVISION,
+  }
+}
+
+export const getJwksArgs = () => {
+  const urlJkws = `http://localhost:${env.OATHKEEPER_DECISION_PORT}/.well-known/jwks.json`
+
+  return {
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: urlJkws,
+  }
+}
 
 // onboarding
 export const OnboardingEarn: Record<QuizQuestionId, Satoshis> = {
@@ -68,14 +88,11 @@ export const memoSharingConfig = {
   authorizedMemos: Object.keys(OnboardingEarn),
 } as const
 
-export const getBriaConfig = () => ({
-  ...getBriaPartialConfigFromProcess(),
-  ...getBriaPartialConfigFromYaml(),
-})
-
 export const getCallbackServiceConfig = (): SvixConfig => {
   // FIXME type when env.ts PR is merged
   const secret = process.env.SVIX_SECRET as string
   const endpoint = process.env.SVIX_ENDPOINT as string
   return { secret, endpoint }
 }
+
+export const getBriaConfig = getBriaPartialConfigFromYaml

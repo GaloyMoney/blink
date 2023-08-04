@@ -1,7 +1,7 @@
 import cors from "cors"
 import express from "express"
 
-import { getDefaultAccountsConfig, getKratosPasswords } from "@config"
+import { env, getDefaultAccountsConfig } from "@config"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 import { createAccountWithPhoneIdentifier } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
@@ -12,7 +12,7 @@ import { SchemaIdType } from "@services/kratos"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
-const { callbackApiKey } = getKratosPasswords()
+const callbackApiKey = env.KRATOS_CALLBACK_API_KEY
 
 kratosRouter.use(cors({ origin: true, credentials: true }))
 kratosRouter.use(express.json())

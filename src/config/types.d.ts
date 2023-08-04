@@ -10,12 +10,6 @@ type CronConfig = {
   swapEnabled: boolean
 }
 
-type KratosConfig = {
-  adminApi: string
-  publicApi: string
-  corsAllowedOrigins: string[]
-}
-
 type CaptchaConfig = {
   mandatory: boolean
 }

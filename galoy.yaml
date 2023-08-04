@@ -148,14 +148,6 @@ userActivenessMonthlyVolumeThreshold: 100
 cronConfig:
   rebalanceEnabled: true
   swapEnabled: true
-kratosConfig:
-  publicApi: http://localhost:4433
-  adminApi: http://localhost:4434
-  corsAllowedOrigins:
-    - http://localhost:3000
-oathkeeperConfig:
-  urlJkws: http://127.0.0.1:4456/.well-known/jwks.json
-  decisionsApi: http://127.0.0.1:4456/decisions/
 captcha:
   mandatory: false
 skipFeeProbeConfig:
@@ -163,7 +155,3 @@ skipFeeProbeConfig:
   chanId: []
 smsAuthUnsupportedCountries: []
 whatsAppAuthUnsupportedCountries: []
-appcheckConfig:
-  audience: projects/72279297366
-  issuer: https://firebaseappcheck.googleapis.com/72279297366
-  jwksUri: https://firebaseappcheck.googleapis.com/v1beta/jwks

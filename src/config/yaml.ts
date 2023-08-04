@@ -302,19 +302,6 @@ export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
 
 export const getCronConfig = (config = yamlConfig): CronConfig => config.cronConfig
 
-export const getKratosConfig = (config = yamlConfig): KratosConfig => {
-  const kratosConfig = config.kratosConfig
-
-  const publicApi = process.env.KRATOS_PUBLIC_API ?? kratosConfig.publicApi
-  const adminApi = process.env.KRATOS_ADMIN_API ?? kratosConfig.adminApi
-
-  return {
-    ...kratosConfig,
-    publicApi,
-    adminApi,
-  }
-}
-
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
 export const getRewardsConfig = () => {
@@ -358,33 +345,10 @@ export const getSwapConfig = (): SwapConfig => {
   }
 }
 
-export const decisionsApi = (config = yamlConfig) => {
-  return config.oathkeeperConfig.decisionsApi
-}
-
-export const getJwksArgs = (config = yamlConfig) => {
-  const urlJkws = config.oathkeeperConfig.urlJkws
-
-  return {
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: urlJkws,
-  }
-}
-
 export const getSmsAuthUnsupportedCountries = (): CountryCode[] => {
   return yamlConfig.smsAuthUnsupportedCountries as CountryCode[]
 }
 
 export const getWhatsAppAuthUnsupportedCountries = (): CountryCode[] => {
   return yamlConfig.whatsAppAuthUnsupportedCountries as CountryCode[]
-}
-
-export const getAppCheckConfig = (config = yamlConfig) => {
-  return {
-    audience: config.appcheckConfig.audience,
-    issuer: config.appcheckConfig.issuer,
-    jwksUri: config.appcheckConfig.jwksUri,
-  }
 }

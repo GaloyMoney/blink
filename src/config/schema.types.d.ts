@@ -142,24 +142,10 @@ type YamlSchema = {
     rebalanceEnabled: boolean
     swapEnabled: boolean
   }
-  kratosConfig: {
-    publicApi: string
-    adminApi: string
-    corsAllowedOrigins: string[]
-  }
-  oathkeeperConfig: {
-    urlJkws: string
-    decisionsApi: string
-  }
   captcha: {
     mandatory: boolean
   }
   skipFeeProbeConfig: { pubkey: string[]; chanId: string[] }
   smsAuthUnsupportedCountries: string[]
   whatsAppAuthUnsupportedCountries: string[]
-  appcheckConfig: {
-    audience: string
-    issuer: string
-    jwksUri: string
-  }
 }

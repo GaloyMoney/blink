@@ -573,42 +573,6 @@ export const configSchema = {
         swapEnabled: true,
       },
     },
-    kratosConfig: {
-      type: "object",
-      properties: {
-        publicApi: { type: "string" },
-        adminApi: { type: "string" },
-        corsAllowedOrigins: {
-          type: "array",
-          items: { type: "string" },
-          uniqueItems: true,
-        },
-      },
-      required: ["publicApi", "adminApi", "corsAllowedOrigins"],
-      additionalProperties: false,
-      default: {
-        publicApi: "http://localhost:4433",
-        adminApi: "http://localhost:4434",
-        corsAllowedOrigins: ["http://localhost:3000"],
-      },
-    },
-    oathkeeperConfig: {
-      type: "object",
-      properties: {
-        urlJkws: { type: "string" },
-        decisionsApi: { type: "string" },
-      },
-      required: ["urlJkws", "decisionsApi"],
-      additionalProperties: false,
-      default: {
-        urlJkws: `http://${
-          process.env.OATHKEEPER_HOST ?? "oathkeeper"
-        }:4456/.well-known/jwks.json`,
-        decisionsApi: `http://${
-          process.env.OATHKEEPER_HOST ?? "oathkeeper"
-        }:4456/decisions/`,
-      },
-    },
     captcha: {
       type: "object",
       properties: {
@@ -648,21 +612,6 @@ export const configSchema = {
       items: { type: "string" },
       default: [],
     },
-    appcheckConfig: {
-      type: "object",
-      properties: {
-        audience: { type: "string" },
-        issuer: { type: "string" },
-        jwksUri: { type: "string" },
-      },
-      required: ["audience", "issuer", "jwksUri"],
-      additionalProperties: false,
-      default: {
-        audience: process.env.APPCHECK_AUDIENCE || "unknown", // FIXME there should be no process.env in schema.ts
-        issuer: process.env.APPCHECK_ISSUER || "unknown", // FIXME there should be no process.env in schema.ts
-        jwksUri: process.env.APPCHECK_JWKSURI || "unknown", // FIXME there should be no process.env in schema.ts
-      },
-    },
   },
   required: [
     "buildVersion",
@@ -677,7 +626,6 @@ export const configSchema = {
     "onChainWallet",
     "userActivenessMonthlyVolumeThreshold",
     "cronConfig",
-    "kratosConfig",
     "captcha",
     "smsAuthUnsupportedCountries",
     "whatsAppAuthUnsupportedCountries",

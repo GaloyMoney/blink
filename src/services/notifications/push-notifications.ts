@@ -7,7 +7,7 @@ import {
   UnknownNotificationsServiceError,
 } from "@domain/notifications"
 import { baseLogger } from "@services/logger"
-import { googleApplicationCredentialsIsSet } from "@config"
+import { env } from "@config"
 import { Messaging } from "firebase-admin/lib/messaging/messaging"
 import {
   addAttributesToCurrentSpan,
@@ -23,7 +23,7 @@ type NotificationMessagePayload = admin.messaging.NotificationMessagePayload
 
 let messaging: Messaging
 
-if (googleApplicationCredentialsIsSet()) {
+if (env.GOOGLE_APPLICATION_CREDENTIALS_IS_SET) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
   })

@@ -1,4 +1,4 @@
-import { decisionsApi } from "@config"
+import { env } from "@config"
 import {
   OathkeeperUnauthorizedServiceError,
   OathkeeperError,
@@ -11,7 +11,8 @@ import axios, { isAxiosError } from "axios"
 export const sendOathkeeperRequestGraphql = async (
   token: AuthToken | undefined,
 ): Promise<JwtToken | OathkeeperError> => {
-  const requestUrl = `${decisionsApi()}graphql`
+  const decisionsApi = `http://${env.OATHKEEPER_HOST}:${env.OATHKEEPER_DECISION_PORT}/decisions`
+  const requestUrl = `${decisionsApi}/graphql`
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

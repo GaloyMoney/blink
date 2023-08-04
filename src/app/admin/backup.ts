@@ -1,11 +1,11 @@
 import {
-  BitcoinNetwork,
   DropboxAccessToken,
   GcsApplicationCredentials,
   LND_SCB_BACKUP_BUCKET_NAME,
   Nextcloudurl,
   Nextclouduser,
   Nextcloudpassword,
+  env,
 } from "@config"
 import { Storage } from "@google-cloud/storage"
 import axios from "axios"
@@ -22,7 +22,7 @@ export const uploadBackup =
   (logger: Logger) =>
   async ({ backup, pubkey }: { backup: string; pubkey: Pubkey }) => {
     logger.debug({ backup }, "updating scb on dbx")
-    const filename = `${BitcoinNetwork()}_lnd_scb_${pubkey}_${Date.now()}`
+    const filename = `${env.NETWORK}_lnd_scb_${pubkey}_${Date.now()}`
 
     if (
       !(

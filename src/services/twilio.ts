@@ -1,6 +1,6 @@
 import twilio from "twilio"
 
-import { defaultLoginCode, getTestAccounts, getTwilioConfig } from "@config"
+import { defaultLoginCode, env, getTestAccounts } from "@config"
 import {
   PhoneCodeInvalidError,
   ExpiredOrNonExistentPhoneNumberError,
@@ -27,7 +27,9 @@ import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 export const TWILIO_ACCOUNT_TEST = "AC_twilio_id"
 
 export const TwilioClient = (): IPhoneProviderService => {
-  const { accountSid, authToken, verifyService } = getTwilioConfig()
+  const accountSid = env.TWILIO_ACCOUNT_SID
+  const authToken = env.TWILIO_AUTH_TOKEN
+  const verifyService = env.TWILIO_VERIFY_SERVICE_ID
 
   const client = twilio(accountSid, authToken)
   const verify = client.verify.v2.services(verifyService)
@@ -204,7 +206,7 @@ export const isPhoneCodeValid = async ({
   // we can't mock this function properly because in the e2e test,
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
-  if (getTwilioConfig().accountSid === TWILIO_ACCOUNT_TEST) {
+  if (env.TWILIO_ACCOUNT_SID === TWILIO_ACCOUNT_TEST) {
     return new NotImplementedError("use test account for local dev and tests")
   }
 

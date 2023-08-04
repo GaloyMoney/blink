@@ -3,7 +3,7 @@ import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/erro
 
 import { isAxiosError } from "axios"
 
-import { getKratosPasswords } from "@config"
+import { env } from "@config"
 
 import { kratosPublic } from "./private"
 import {
@@ -95,7 +95,7 @@ export const kratosElevatingSessionWithTotp = async ({
 
 const refreshToken = async (authToken: AuthToken): Promise<void | KratosError> => {
   const method = "password"
-  const password = getKratosPasswords().masterUserPassword
+  const password = env.KRATOS_MASTER_USER_PASSWORD
 
   const session = await kratosPublic.toSession({ xSessionToken: authToken })
   const identifier =

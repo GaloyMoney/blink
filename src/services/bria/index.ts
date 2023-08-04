@@ -1,7 +1,7 @@
 import { Metadata, status } from "@grpc/grpc-js"
 import { Struct, Value, ListValue } from "google-protobuf/google/protobuf/struct_pb"
 
-import { getBriaConfig } from "@config"
+import { env, getBriaConfig } from "@config"
 
 import {
   OnChainAddressAlreadyCreatedForRequestIdError,
@@ -50,7 +50,7 @@ const { streamBuilder, FibonacciBackoff } = GrpcStreamClient
 
 export const BriaSubscriber = () => {
   const metadata = new Metadata()
-  metadata.set("x-bria-api-key", briaConfig.apiKey)
+  metadata.set("x-bria-api-key", env.BRIA_API_KEY)
 
   const subscribeToAll = async (
     eventHandler: BriaEventHandler,
@@ -106,7 +106,7 @@ const queueNameForSpeed = (speed: PayoutSpeed): string => briaConfig.queueNames[
 
 export const OnChainService = (): IOnChainService => {
   const metadata = new Metadata()
-  metadata.set("x-bria-api-key", briaConfig.apiKey)
+  metadata.set("x-bria-api-key", env.BRIA_API_KEY)
 
   const getHotBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
     try {

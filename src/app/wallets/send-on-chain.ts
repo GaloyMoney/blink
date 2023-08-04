@@ -1,4 +1,4 @@
-import { BitcoinNetwork, getOnChainWalletConfig } from "@config"
+import { env, getOnChainWalletConfig } from "@config"
 
 import {
   btcFromUsdMidPriceFn,
@@ -97,7 +97,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
     sendAll,
   })
   const checkedAddress = checkedToOnChainAddress({
-    network: BitcoinNetwork(),
+    network: env.NETWORK as BtcNetwork,
     value: address,
   })
   if (checkedAddress instanceof Error) return checkedAddress

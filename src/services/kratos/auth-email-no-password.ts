@@ -1,4 +1,4 @@
-import { getKratosPasswords } from "@config"
+import { env } from "@config"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
@@ -29,8 +29,8 @@ import { createCookieLoginFlow } from "./cookie"
 
 const getKratosKnex = () =>
   knex({
-    client: "pg", // specify the database client
-    connection: process.env.KRATOS_PG_CON,
+    client: "pg",
+    connection: env.KRATOS_PG_CON,
   })
 
 const getIdentityIdFromFlowId = async (flowId: string) => {
@@ -55,7 +55,7 @@ const getIdentityIdFromFlowId = async (flowId: string) => {
 // login with email
 
 export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessService => {
-  const password = getKratosPasswords().masterUserPassword
+  const password = env.KRATOS_MASTER_USER_PASSWORD
 
   // sendEmailWithCode return a flowId even if the user doesn't exist
   // this is to avoid account enumeration attacks
