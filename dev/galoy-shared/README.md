@@ -15,18 +15,58 @@ chmod +x ./docker/run.sh
 ./docker/run.sh
 ```
 
-After this runs you can open http://localhost:4002/graphql (galoy subgraph) (* it make take a few seconds for the galoy server to boot)
+After this runs you can open http://localhost:4002/graphql (galoy subgraph) and test (* it make take a few seconds for the galoy server to boot)
 
 ## To run a supergraph in your project
 There some files you need to copy into your project to run a supergraph in docker-compose.
 
 Copy these files:
 - `vendor/docker/docker-compose.router.yml` to `YOUR_PROJECT_ROOT`
-- `vendor/docker/docker-compose.override.router.yml` to `YOUR_PROJECT_ROOT`
-- `vendor/dev/apollo-federartion/router.yaml` to `YOUR_PROJECT_ROOT/dev/apollo-federation`
-- `vendor/dev/apollo-federartion/supergraph-config.yaml` to `YOUR_PROJECT_ROOT/dev/apollo-federation`
+- `vendor/docker/docker-compose.router.override.yml` to `YOUR_PROJECT_ROOT`
+- `vendor/dev/apollo-federation/router.yaml` to `YOUR_PROJECT_ROOT/dev/apollo-federation`
 
-Then combine and run with your main docker compose, here's an example:
+Next create a config file for your supergraph `YOUR_PROJECT_ROOT/dev/apollo-federation/supergraph-config.yaml`
+Make sure to add your projects subgraph here
 ```
-docker compose -f docker-compose.yml -f docker-compose.router.yml --project-name my-subgraph up -d
+federation_version: =2.3.2
+subgraphs:
+  galoy:
+    routing_url: http://bats-tests-subgraph:4002/graphql
+    schema:
+      file: ../galoy-shared/vendor/graphql/src/graphql/main/schema.graphql
 ```
+
+Then generate a supergraph
+```
+cd PROJECT_ROOT
+rover supergraph compose --config dev/apollo-federation/supergraph-config.yaml --elv2-license accept --output dev/apollo-federation/supergraph.graphql
+```
+
+Finally combine and run with your main docker compose, here's an example:
+```
+docker compose -f docker-compose.router.yml -f docker-compose.router.override.yml --project-name my-subgraph up -d
+```
+
+Or if you have an existing docker-compose.yaml
+```
+docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.router.yml -f docker-compose.router.override.yml --project-name my-subgraph up -d
+```
+
+To test open the supergraph explorer at http://localhost:5004/graphql and you can run graphql like this:
+```
+mutation {
+  userLogin(input: {
+    phone: "+15555555555",
+    code: "000000"
+  }) {
+    authToken
+    errors {
+      message
+    }
+  }
+}
+```
+
+
+### Todo
+This could be automated with a curl install to run a script.
