@@ -1,4 +1,6 @@
-version: "2"
+#@data/values
+---
+version: "3"
 services:
   apollo-router:
     ports:
@@ -7,7 +9,7 @@ services:
       - "bats-tests:host-gateway"
   otel-agent:
     ports:
-      - "4318:4318" # http receiver
+      - "4318:4318" #! http receiver
   price:
     ports:
       - "50051:50051"
@@ -54,9 +56,6 @@ services:
     ports:
       - "2743:2743"
       - "2742:2742"
-  postgres-bria:
-    ports:
-      - "5434:5432"
   loopserver:
     ports:
       - "11009:11009"
@@ -78,8 +77,8 @@ services:
     extra_hosts:
       - "bats-tests:host-gateway"
     ports:
-      - "4433:4433" # public
-      - "4434:4434" # admin
+      - "4433:4433" #! public
+      - "4434:4434" #! admin
   bats-tests:
     ports:
       - "4012:4012"
