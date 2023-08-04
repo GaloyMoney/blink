@@ -59,7 +59,7 @@ start_trigger() {
 }
 
 run_cron() {
-  node lib/servers/cron.js
+  node lib/servers/cron.js > .e2e-cron.log
 }
 
 start_exporter() {
