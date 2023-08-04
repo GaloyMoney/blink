@@ -5,7 +5,7 @@ cd dev/galoy
 curl -o vendir.yml https://raw.githubusercontent.com/GaloyMoney/galoy/45c3153d717a5b80501f2d6ab7747a6319ae0605/dev/galoy-shared/vendir.yml
 # todo check if vendir exists
 vendir sync
-sleep 1 # it takes a second to copy from tmp vendir to vendor
+sleep 5 # it takes a few second to copy from tmp vendir to vendor, todo make cleaner
 cd vendor
 chmod +x ./docker/run.sh
 ./docker/run.sh
