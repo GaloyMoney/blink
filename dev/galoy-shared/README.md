@@ -41,7 +41,7 @@ subgraphs:
   galoy:
     routing_url: http://bats-tests-subgraph:4002/graphql
     schema:
-      file: ../galoy-shared/vendor/graphql/src/graphql/main/schema.graphql
+      file: ../galoy/vendor/graphql/src/graphql/main/schema.graphql
 ```
 
 Then generate a supergraph
@@ -74,7 +74,3 @@ mutation {
   }
 }
 ```
-
-
-### Todo
-This could be automated with a curl install to run a script.
