@@ -4,12 +4,7 @@ import DataLoader from "dataloader"
 import express, { NextFunction, Request, Response } from "express"
 
 import { Accounts, Transactions } from "@app"
-import {
-  GALOY_API_KEEPALIVE_TIMEOUT_MS,
-  getApolloConfig,
-  getJwksArgs,
-  isProd,
-} from "@config"
+import { getApolloConfig, getJwksArgs, isProd } from "@config"
 import { baseLogger } from "@services/logger"
 import {
   ACCOUNT_USERNAME,
@@ -209,7 +204,6 @@ export const startApolloServer = async ({
 }): Promise<Record<string, unknown>> => {
   const app = express()
   const httpServer = createServer(app)
-  httpServer.keepAliveTimeout = GALOY_API_KEEPALIVE_TIMEOUT_MS
 
   const apolloPlugins = [
     createComplexityPlugin({
