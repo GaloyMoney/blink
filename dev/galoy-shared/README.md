@@ -8,7 +8,7 @@ This syncs the basic core functionality of the Galoy stack so you can add it as 
 - It does NOT yet include bria, stablesats or mongodb migrations
 
 ### Easy Install
-curl -sSL https://raw.githubusercontent.com/GaloyMoney/galoy/08fb6bd7c48d1bb773b43c39f1f813cd3fbab6a7/dev/galoy-shared/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/GaloyMoney/galoy/9365b15398f82e1b8bb0e782f99f98048e5643e8/dev/galoy-shared/install.sh | sh
 
 ### Manual Install
 
