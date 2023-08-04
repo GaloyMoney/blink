@@ -1,11 +1,11 @@
 read -p "Make sure you have vendir and docker installed...[Press enter to continue]"
 mkdir -p dev/galoy
-mkdir -p dev/galoy/galoy
+mkdir -p dev/galoy/vendor
 curl -o dev/galoy/vendir.yml https://raw.githubusercontent.com/GaloyMoney/galoy/1015418d59a6d5daae071a2b60324632aa7b4799/dev/galoy-shared/vendir.yml
 cd dev/galoy
 # todo check if vendir exists
-vendir sync # it takes a few seconds to copy from tmp vendir to vendor
-sleep 2
+vendir sync
+sleep 1 # it takes a second to copy from tmp vendir to vendor
 cd vendor
 chmod +x ./docker/run.sh
 ./docker/run.sh
