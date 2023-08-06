@@ -111,11 +111,6 @@ type YamlSchema = {
       defaultMin: number
     }
   }
-  lnds: {
-    name: string
-    type: string[]
-    priority: number
-  }[]
   onChainWallet: {
     dustThreshold: number
     minConfirmations: number

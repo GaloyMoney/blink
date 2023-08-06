@@ -29,7 +29,7 @@ import {
 } from "lightning"
 import lnService from "ln-service"
 
-import { SECS_PER_5_MINS } from "@config"
+import { SECS_PER_5_MINS, env } from "@config"
 
 import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
@@ -79,7 +79,6 @@ import { timeoutWithCancel } from "@utils"
 
 import sumBy from "lodash.sumby"
 
-import { TIMEOUT_PAYMENT } from "./auth"
 import {
   getActiveLnd,
   getActiveOnchainLnd,
@@ -88,6 +87,8 @@ import {
   parseLndErrorDetails,
 } from "./utils"
 import { KnownLndErrorDetails } from "./errors"
+
+const TIMEOUT_PAYMENT = env.NETWORK !== "regtest" ? 45000 : 3000
 
 export const LndService = (): ILightningService | LightningServiceError => {
   const activeNode = getActiveLnd()

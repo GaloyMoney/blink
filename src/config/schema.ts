@@ -74,21 +74,6 @@ const rateLimitConfigSchema = {
   additionalProperties: false,
 }
 
-const lndConfig = {
-  type: "object",
-  properties: {
-    name: { type: "string" },
-    type: {
-      type: "array",
-      items: { enum: ["offchain", "onchain"] },
-      uniqueItems: true,
-    },
-    priority: { type: "integer" },
-  },
-  required: ["name", "type", "priority"],
-  additionalProperties: false,
-}
-
 export const configSchema = {
   type: "object",
   properties: {
@@ -473,23 +458,6 @@ export const configSchema = {
         deposit: { defaultMin: 3000, threshold: 1000000, ratioAsBasisPoints: 30 },
       },
     },
-    lnds: {
-      type: "array",
-      items: lndConfig,
-      uniqueItems: true,
-      default: [
-        {
-          name: "LND1",
-          type: ["offchain", "onchain"],
-          priority: 2,
-        },
-        {
-          name: "LND2",
-          type: ["offchain"],
-          priority: 3,
-        },
-      ],
-    },
     onChainWallet: {
       type: "object",
       properties: {
@@ -614,19 +582,33 @@ export const configSchema = {
     },
   },
   required: [
+    "lightningAddressDomain",
+    "lightningAddressDomainAliases",
+    "locale",
+    "displayCurrency",
+    "funder",
+    "dealer",
+    "ratioPrecision",
     "buildVersion",
+    "rewards",
     "coldStorage",
+    "bria",
     "lndScbBackupBucketName",
+    "admin_accounts",
+    "test_accounts",
     "rateLimits",
+    "accounts",
     "accountLimits",
     "spamLimits",
     "ipRecording",
     "fees",
-    "lnds",
     "onChainWallet",
+    "swap",
+    "apollo",
     "userActivenessMonthlyVolumeThreshold",
     "cronConfig",
     "captcha",
+    "skipFeeProbeConfig",
     "smsAuthUnsupportedCountries",
     "whatsAppAuthUnsupportedCountries",
   ],

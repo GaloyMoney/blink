@@ -14,7 +14,7 @@ import { toCents } from "@domain/fiat"
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 import { toDays, toSeconds } from "@domain/primitives"
-import { checkedToPubkey } from "@domain/bitcoin/lightning"
+
 import { WalletCurrency } from "@domain/shared"
 
 import { AccountLevel } from "@domain/accounts"
@@ -127,53 +127,6 @@ export const getDisplayCurrencyConfig = (): {
 })
 
 export const getDealerConfig = () => yamlConfig.dealer
-
-export const getLndParams = (): LndParams[] => {
-  const lnds = yamlConfig.lnds
-
-  lnds.forEach((input) => {
-    const keys = ["_TLS", "_MACAROON", "_DNS", "_PUBKEY"]
-    keys.forEach((key) => {
-      if (!process.env[`${input.name}${key}`]) {
-        throw new ConfigError(`lnd params missing for: ${input.name}${key}`)
-      }
-    })
-  })
-
-  return lnds.map((input) => {
-    const cert = process.env[`${input.name}_TLS`]
-    if (!cert) throw new ConfigError(`missing TLS for ${input.name}`)
-
-    const macaroon = process.env[`${input.name}_MACAROON`]
-    if (!macaroon) throw new ConfigError(`missing macaroon for ${input.name}`)
-
-    const node = process.env[`${input.name}_DNS`]
-    if (!node) throw new ConfigError(`missing DNS for ${input.name}`)
-
-    const pubkey_ = process.env[`${input.name}_PUBKEY`]
-    if (!pubkey_) throw new ConfigError(`missing PUBKEY for ${input.name}`)
-
-    const pubkey = checkedToPubkey(pubkey_)
-    if (pubkey instanceof Error)
-      throw new ConfigError(`wrong PUBKEY formatting for ${input.name}`)
-
-    const port = process.env[`${input.name}_RPCPORT`] ?? 10009
-    const type = input.type.map((item) => item as NodeType) // TODO: verify if validation is done from yaml.ts
-    const priority = input.priority
-    const name = input.name
-
-    return {
-      cert,
-      macaroon,
-      node,
-      port,
-      pubkey,
-      type,
-      priority,
-      name,
-    }
-  })
-}
 
 export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
   const method = feesConfig.withdraw.method as WithdrawalFeePriceMethod

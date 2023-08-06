@@ -4,7 +4,7 @@ import { WebSocketServer } from "ws" // yarn add ws
 import { gqlMainSchema } from "@graphql/public"
 import { Extra, useServer } from "graphql-ws/lib/use/ws"
 
-import { getJwksArgs, isProd } from "@config"
+import { env, getJwksArgs, isProd } from "@config"
 import { Context } from "graphql-ws"
 import jsonwebtoken from "jsonwebtoken"
 
@@ -30,7 +30,7 @@ import { sessionContext } from "./graphql-server"
 
 const schema = gqlMainSchema
 
-const port = process.env.WEBSOCKET_PORT ? parseInt(process.env.WEBSOCKET_PORT) : 4000
+const port = env.WEBSOCKET_PORT
 const path = "/graphql"
 
 const wsServer = new WebSocketServer({

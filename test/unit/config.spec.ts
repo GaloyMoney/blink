@@ -64,10 +64,6 @@ describe("config.ts", () => {
     it("passes with custom yaml", () => {
       const freshYamlConfig = JSON.parse(JSON.stringify(yamlConfig))
       const customYamlConfig = {
-        lnds: [
-          { name: "LND1", type: ["onchain"], priority: 2 },
-          { name: "LND2", type: ["offchain"], priority: 1 },
-        ],
         test_accounts: [
           {
             phone: "+50365055543",
@@ -98,7 +94,7 @@ describe("config.ts", () => {
 
     it("fails validation missing required property", () => {
       const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
-      delete clonedConfig.lnds
+      delete clonedConfig.buildVersion
       const valid = validate(clonedConfig)
       expect(valid).toBeFalsy()
     })

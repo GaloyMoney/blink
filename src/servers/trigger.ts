@@ -479,7 +479,7 @@ const main = () => {
 
 const healthCheck = () => {
   const app = express()
-  const port = process.env.PORT || 8888
+  const port = env.TRIGGER_PORT
   app.get(
     "/healthz",
     healthzHandler({

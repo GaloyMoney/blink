@@ -4,7 +4,7 @@ import { ZodError, z } from "zod"
 export const env = createEnv({
   onValidationError: (error: ZodError) => {
     console.error("❌ Invalid environment variables:", error.flatten().fieldErrors)
-    throw new Error("Invalid environment variables")
+    throw new Error(`Invalid environment variables: ${error.flatten().fieldErrors}`)
   },
 
   server: {
@@ -16,14 +16,18 @@ export const env = createEnv({
       .enum(["fatal", "error", "warn", "info", "debug", "trace"])
       .default("info"),
 
+    EXPORT_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(3000),
+    TRIGGER_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(8888),
+    WEBSOCKET_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(4000),
+
     KRATOS_PG_CON: z.string().url(),
     OATHKEEPER_HOST: z.string().min(1),
     OATHKEEPER_DECISION_PORT: z.string().min(4),
-    GALOY_API_PORT: z.string().default("4012"),
-    GALOY_ADMIN_PORT: z.string().default("4001"),
+    GALOY_API_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(4012),
+    GALOY_ADMIN_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(4001),
     NETWORK: z.enum(["mainnet", "testnet", "signet", "regtest"]),
 
-    PRICE_SERVER_PORT: z.string().default("3325"),
+    PRICE_SERVER_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(3325),
     PRICE_SERVER_HOST: z.string().default("localhost"),
 
     TWILIO_ACCOUNT_SID: z.string().min(1),
@@ -36,7 +40,7 @@ export const env = createEnv({
     KRATOS_CALLBACK_API_KEY: z.string().min(1),
 
     BRIA_HOST: z.string().min(1),
-    BRIA_PORT: z.string().min(1),
+    BRIA_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()),
     BRIA_API_KEY: z.string().min(1),
 
     GEETEST_ID: z.string().min(1).optional(),
@@ -45,6 +49,60 @@ export const env = createEnv({
     MONGODB_CON: z.string().url(),
 
     GOOGLE_APPLICATION_CREDENTIALS_IS_SET: z.boolean().default(false),
+
+    REDIS_TYPE: z.enum(["sentinel", "standalone"]).default("sentinel"),
+
+    REDIS_MASTER_NAME: z.string().min(1),
+    REDIS_PASSWORD: z.string(),
+    REDIS_0_DNS: z.string().min(1),
+
+    REDIS_0_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(26379),
+    REDIS_1_DNS: z.string().min(1).optional(),
+    REDIS_1_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(26379),
+    REDIS_2_DNS: z.string().min(1).optional(),
+    REDIS_2_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(26379),
+
+    // LND PRIMARY
+    LND_PRIORITY: z.enum(["lnd1", "lnd2"]).default("lnd1"),
+
+    LND1_PUBKEY: z
+      .string()
+      .regex(/^[a-f0-9]{66}$/i)
+      .optional(),
+    LND1_TLS: z.string().min(1).optional(),
+    LND1_MACAROON: z.string().min(1).optional(),
+    LND1_DNS: z.string().min(1).optional(),
+    LND1_RPCPORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(10009),
+    LND1_TYPE: z
+      .enum(["onchain", "offchain", "onchain,offchain", "offchain,onchain"])
+      .default("onchain,offchain")
+      .transform((x) => x.split(",")),
+    LND1_NAME: z.string().min(1).default("lnd1").optional(),
+
+    LND2_PUBKEY: z
+      .string()
+      .regex(/^[a-f0-9]{66}$/i)
+      .optional(),
+    LND2_TLS: z.string().min(1).optional(),
+    LND2_MACAROON: z.string().min(1).optional(),
+    LND2_DNS: z.string().min(1).optional(),
+    LND2_RPCPORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(10009),
+    LND2_TYPE: z
+      .enum(["onchain", "offchain", "onchain,offchain", "offchain,onchain"])
+      .default("onchain,offchain")
+      .transform((x) => x.split(",")),
+    LND2_NAME: z.string().min(1).default("lnd2").optional(),
+
+    PRICE_HOST: z.string().min(1).default("galoy-price"),
+    PRICE_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(50051),
+
+    PRICE_HISTORY_HOST: z.string().min(1).default("price-history"),
+    PRICE_HISTORY_PORT: z
+      .number()
+      .min(1)
+      .or(z.string())
+      .pipe(z.coerce.number())
+      .default(50052),
   },
 
   runtimeEnvStrict: {
@@ -54,12 +112,18 @@ export const env = createEnv({
 
     LOGLEVEL: process.env.LOGLEVEL,
 
+    EXPORT_PORT: process.env.EXPORT_PORT,
+    TRIGGER_PORT: process.env.TRIGGER_PORT,
+    WEBSOCKET_PORT: process.env.WEBSOCKET_PORT,
+
     KRATOS_PG_CON: process.env.KRATOS_PG_CON,
     OATHKEEPER_HOST: process.env.OATHKEEPER_HOST,
     OATHKEEPER_DECISION_PORT: process.env.OATHKEEPER_DECISION_PORT,
     GALOY_API_PORT: process.env.GALOY_API_PORT,
     GALOY_ADMIN_PORT: process.env.GALOY_ADMIN_PORT,
+
     NETWORK: process.env.NETWORK,
+
     PRICE_SERVER_PORT: process.env.PRICE_SERVER_PORT,
     PRICE_SERVER_HOST: process.env.PRICE_SERVER_HOST,
 
@@ -82,5 +146,39 @@ export const env = createEnv({
     MONGODB_CON: process.env.MONGODB_CON,
 
     GOOGLE_APPLICATION_CREDENTIALS_IS_SET: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+
+    REDIS_MASTER_NAME: process.env.REDIS_MASTER_NAME,
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+    REDIS_TYPE: process.env.REDIS_TYPE,
+    REDIS_0_DNS: process.env.REDIS_0_DNS,
+    REDIS_0_PORT: process.env.REDIS_0_PORT,
+    REDIS_1_DNS: process.env.REDIS_1_DNS,
+    REDIS_1_PORT: process.env.REDIS_1_PORT,
+    REDIS_2_DNS: process.env.REDIS_2_DNS,
+    REDIS_2_PORT: process.env.REDIS_2_PORT,
+
+    LND_PRIORITY: process.env.LND_PRIORITY,
+
+    LND1_PUBKEY: process.env.LND1_PUBKEY,
+    LND1_TLS: process.env.LND1_TLS,
+    LND1_MACAROON: process.env.LND1_MACAROON,
+    LND1_DNS: process.env.LND1_DNS,
+    LND1_RPCPORT: process.env.LND1_RPCPORT,
+    LND1_TYPE: process.env.LND1_TYPE,
+    LND1_NAME: process.env.LND1_NAME,
+
+    LND2_PUBKEY: process.env.LND2_PUBKEY,
+    LND2_TLS: process.env.LND2_TLS,
+    LND2_MACAROON: process.env.LND2_MACAROON,
+    LND2_DNS: process.env.LND2_DNS,
+    LND2_RPCPORT: process.env.LND2_RPCPORT,
+    LND2_TYPE: process.env.LND2_TYPE,
+    LND2_NAME: process.env.LND2_NAME,
+
+    PRICE_HOST: process.env.PRICE_HOST,
+    PRICE_PORT: process.env.PRICE_PORT,
+
+    PRICE_HISTORY_HOST: process.env.PRICE_HISTORY_HOST,
+    PRICE_HISTORY_PORT: process.env.PRICE_HISTORY_PORT,
   },
 })
