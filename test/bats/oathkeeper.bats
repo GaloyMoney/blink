@@ -88,7 +88,7 @@ exec_oathkeeper() {
 
 oathkeeper_jwt() {
   echo $output \
-  | grep -oP 'Authorization: Bearer \K[^ ]+'
+  | echo $output | grep -o 'Authorization: Bearer [^ ]*' | sed 's/Authorization: Bearer //'
 }
 
 @test "oathkeeper: returns anon if no bearer assets" {
