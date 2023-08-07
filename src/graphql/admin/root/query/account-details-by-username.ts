@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import GraphQLAccount from "@graphql/admin/types/object/account"
-import Username from "@graphql/types/scalar/username"
+import Username from "@graphql/shared/types/scalar/username"
 import { mapError } from "@graphql/error-map"
 
 import { Admin } from "@app"

@@ -1,9 +1,9 @@
 import { GT } from "@graphql/index"
 
-import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
-import UserLoginMutation from "@graphql/root/mutation/user-login"
-import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-request-auth-code"
-import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
+import UserRequestAuthCodeMutation from "@graphql/shared/root/mutation/user-request-auth-code"
+import UserLoginMutation from "@graphql/shared/root/mutation/user-login"
+import CaptchaRequestAuthCodeMutation from "@graphql/shared/root/mutation/captcha-request-auth-code"
+import CaptchaCreateChallengeMutation from "@graphql/shared/root/mutation/captcha-create-challenge"
 
 import AccountUpdateLevelMutation from "@graphql/admin/root/mutation/account-update-level"
 import AccountUpdateStatusMutation from "@graphql/admin/root/mutation/account-update-status"

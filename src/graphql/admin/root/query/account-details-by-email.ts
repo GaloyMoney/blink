@@ -4,7 +4,7 @@ import GraphQLAccount from "@graphql/admin/types/object/account"
 import { mapError } from "@graphql/error-map"
 
 import { Admin } from "@app"
-import EmailAddress from "@graphql/types/scalar/email-address"
+import EmailAddress from "@graphql/shared/types/scalar/email-address"
 
 const AccountDetailsByUserEmailQuery = GT.Field<{
   // FIXME: doesn't respect the input: {} pattern

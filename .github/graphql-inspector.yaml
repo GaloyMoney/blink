@@ -1,2 +1,2 @@
 branch: main
-schema: src/graphql/main/schema.graphql
+schema: src/graphql/public/schema.graphql

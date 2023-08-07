@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import IError from "@graphql/types/abstract/error"
+import IError from "@graphql/shared/types/abstract/error"
 import PsbtDetail from "@graphql/admin/types/object/psbt-detail"
 
 const PsbtDetailPayload = GT.Object({

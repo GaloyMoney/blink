@@ -4,7 +4,7 @@ spectaql:
   logoFile: ./public/logo.png
 
 introspection:
-  schemaFile: ./src/graphql/main/schema.graphql
+  schemaFile: ./src/graphql/public/schema.graphql
 
 info:
   title: GraphQL API Reference

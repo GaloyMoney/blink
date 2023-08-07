@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 import { Lightning } from "@app"
-import PaymentHash from "@graphql/types/scalar/payment-hash"
+import PaymentHash from "@graphql/shared/types/scalar/payment-hash"
 import LightningPayment from "@graphql/admin/types/object/lightning-payment"
 import { mapError } from "@graphql/error-map"
 import { LnPaymentsRepository } from "@services/mongoose"

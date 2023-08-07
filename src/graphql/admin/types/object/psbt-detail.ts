@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import SatAmount from "@graphql/types/scalar/sat-amount"
+import SatAmount from "@graphql/shared/types/scalar/sat-amount"
 
 const PsbtDetail = GT.Object({
   name: "PsbtDetail",

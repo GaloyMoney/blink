@@ -11,7 +11,7 @@ import { baseLogger } from "@services/logger"
 
 import { GALOY_API_PORT } from "@config"
 
-import { gqlMainSchema, mutationFields, queryFields } from "@graphql/main"
+import { gqlMainSchema, mutationFields, queryFields } from "@graphql/public"
 
 import { isAuthenticated, startApolloServer } from "./graphql-server"
 import { walletIdMiddleware } from "./middlewares/wallet-id"

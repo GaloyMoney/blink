@@ -11,7 +11,7 @@
     "ws": "yarn build && node lib/servers/ws-server.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
-    "graphql-check": "curl -fsS https://raw.githubusercontent.com/GaloyMoney/galoy-mobile/main/app/graphql/generated.gql -o generated.gql && npx @graphql-inspector/cli validate ./generated.gql src/graphql/main/schema.graphql --apollo --noStrictFragments",
+    "graphql-check": "curl -fsS https://raw.githubusercontent.com/GaloyMoney/galoy-mobile/main/app/graphql/generated.gql -o generated.gql && npx @graphql-inspector/cli validate ./generated.gql src/graphql/public/schema.graphql --apollo --noStrictFragments",
     "cron": ". ./.envrc && yarn build && node lib/servers/cron.js",
     "exporter": "yarn build && node lib/servers/exporter.js",
     "daily-notif": "yarn build && node lib/servers/daily-balance-notification.js",
