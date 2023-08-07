@@ -99,3 +99,19 @@ export class ModifiedSet extends Set {
     return new ModifiedSet(Array.from(this).filter((i) => !otherSet.has(i)))
   }
 }
+
+export const waitFor = async ({
+  func,
+  max,
+}: {
+  func: () => Promise<boolean>
+  max: number
+}) => {
+  let res
+  let count = 0
+  while (!(res = await func()) && count < max) {
+    count++
+    await sleep(500)
+  }
+  return res
+}
