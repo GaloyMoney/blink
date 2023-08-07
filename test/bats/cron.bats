@@ -87,6 +87,9 @@ no_pending_lnd1_channels() {
 }
 
 @test "cron: rebalance internal channels" {
+  # NOTE: Not an idempotent test because we haven't implemented accounting for
+  #       closing channels initiated from internal lnds as yet.
+
   # Get onchain funds into lnd1
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
@@ -128,7 +131,17 @@ no_pending_lnd1_channels() {
   retry 10 1 mempool_not_empty
   retry 10 1 no_pending_lnd1_channels
 
-  # Rebalance
+  # Rebalance and check balances
+  channel_balances=$(lnd_cli channelbalance)
+  original_local_balance="$(echo $channel_balances | jq -r '.local_balance.sat')"
+  original_remote_balance="$(echo $channel_balances | jq -r '.remote_balance.sat')"
+
   run_cron
-  # TODO: Check for rebalance
+
+  channel_balances=$(lnd_cli channelbalance)
+  rebalanced_local_balance="$(echo $channel_balances | jq -r '.local_balance.sat')"
+  rebalanced_remote_balance="$(echo $channel_balances | jq -r '.remote_balance.sat')"
+
+  [[ "$rebalanced_local_balance" -lt "$original_local_balance" ]] || exit 1
+  [[ "$rebalanced_remote_balance" -gt "$original_remote_balance" ]] || exit 1
 }
