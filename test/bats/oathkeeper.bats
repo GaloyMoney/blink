@@ -10,8 +10,10 @@ teardown_file() {
   stop_server
 }
 
-decisionsApi=$(cat galoy.yaml| grep decisionsApi | awk '{print $2}')
-OATHKEEPER_ENDPOINT=${decisionsApi:-"http://127.0.0.1:4456/decisions/"}
+CUSTOM_CONFIG_PATH="/var/yaml/custom.yaml"
+DEFAULT_CONFIG_PATH="galoy.yaml"
+CONFIG="$(cat $CUSTOM_CONFIG_PATH 2> /dev/null || cat $DEFAULT_CONFIG_PATH)"
+OATHKEEPER_ENDPOINT=$(echo $CONFIG | grep -o 'decisionsApi: [^ ]*' | awk '{print $2}')
 
 check_is_uuid() {
   uuid_string=$1
