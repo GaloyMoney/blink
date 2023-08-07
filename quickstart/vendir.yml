@@ -26,6 +26,7 @@ directories:
     includePaths:
     - dev/**/*
     - test/bats/bitcoind_signer_descriptors.json
+    - test/bats/gql/*
     - .envrc
     - .env.ci
     - docker-compose.yml

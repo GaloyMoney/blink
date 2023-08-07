@@ -1,0 +1,80 @@
+log:
+  level: debug
+  format: json
+
+tracing:
+  provider: jaeger
+  providers:
+    jaeger:
+      local_agent_address: otel-agent:6831
+
+authenticators:
+  jwt:
+    enabled: true
+    config:
+      trusted_issuers:
+        - https://firebaseappcheck.googleapis.com/72279297366
+      target_audience:
+        - projects/72279297366
+      jwks_urls:
+        - https://firebaseappcheck.googleapis.com/v1beta/jwks
+        - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
+      token_from:
+        header: Appcheck
+
+  bearer_token:
+    enabled: true
+    config:
+      check_session_url: http://kratos:4433/sessions/whoami
+      preserve_path: true
+      subject_from: identity.id
+      extra_from: identity.traits
+
+  anonymous:
+    enabled: true
+    config:
+      subject: anon
+
+  cookie_session:
+    enabled: true
+    config:
+      # TODO cluster-internal mTLS
+      check_session_url: http://kratos:4433/sessions/whoami
+      preserve_path: true
+      subject_from: identity.id
+      extra_from: identity.traits
+
+  unauthorized:
+    enabled: true
+
+  noop:
+    enabled: true
+
+authorizers:
+  allow:
+    enabled: true
+
+mutators:
+  id_token:
+    enabled: true
+    config:
+      jwks_url: file:///home/ory/jwks.json
+      issuer_url: "galoy.io"
+      claims: '{"sub": "{{ print .Subject }}" }'
+
+  noop:
+    enabled: true
+
+errors:
+  fallback:
+    - json
+  handlers:
+    json:
+      enabled: true
+      config:
+        verbose: true
+
+access_rules:
+  repositories:
+    - file:///home/ory/oathkeeper_rules.yaml
+  matching_strategy: regexp

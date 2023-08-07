@@ -18,6 +18,14 @@ services:
       - "/app/lib/services/tracing.js"
       - "lib/servers/graphql-main-server.js"
     env_file: ${HOST_PROJECT_PATH:-.}/.env.galoy
+    depends_on:
+    - trigger
+    - apollo-router
+    - oathkeeper
+    - kratos
+    - lnd1
+    - lnd-outside-1
+    - bria
     networks:
       default:
         aliases:

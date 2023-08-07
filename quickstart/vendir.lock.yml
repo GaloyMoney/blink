@@ -1,0 +1,19 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: 'chore: initial quickstart render'
+      sha: 39555310667b902434f25d86fcc2362d1a49cd0a
+      tags:
+      - 0.11.1-3-g395553106
+    path: ./
+  path: ./dev
+- contents:
+  - git:
+      commitTitle: 'chore: initial quickstart render'
+      sha: 39555310667b902434f25d86fcc2362d1a49cd0a
+      tags:
+      - 0.11.1-3-g395553106
+    path: ./
+  path: ./galoy
+kind: LockConfig
