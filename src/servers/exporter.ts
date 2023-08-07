@@ -189,7 +189,7 @@ const main = async () => {
     }),
   )
 
-  const port = env.EXPORT_PORT
+  const port = env.EXPORTER_PORT
   server.listen(port, () => {
     logger.info(`Server listening to ${port}, metrics exposed on /metrics endpoint`)
   })
