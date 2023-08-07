@@ -300,9 +300,47 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
       const { channels } = await getChannels({ lnd })
-      const pendingHtlcCounts = channels.map((channel) => channel.pending_payments.length)
-      const totalPendingHtlcCount = pendingHtlcCounts.reduce((a, b) => a + b, 0)
-      return totalPendingHtlcCount
+
+      return channels.reduce(
+        (totalCount, channel) => totalCount + channel.pending_payments.length,
+        0,
+      )
+    } catch (err) {
+      return handleCommonLightningServiceErrors(err)
+    }
+  }
+
+  const getIncomingPendingHtlcCount = async (
+    pubkey?: Pubkey,
+  ): Promise<number | LightningServiceError> => {
+    try {
+      const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lnd instanceof Error) return lnd
+      const { channels } = await getChannels({ lnd })
+
+      return channels.reduce(
+        (totalCount, channel) =>
+          totalCount + channel.pending_payments.filter((p) => !p.is_outgoing).length,
+        0,
+      )
+    } catch (err) {
+      return handleCommonLightningServiceErrors(err)
+    }
+  }
+
+  const getOutgoingPendingHtlcCount = async (
+    pubkey?: Pubkey,
+  ): Promise<number | LightningServiceError> => {
+    try {
+      const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lnd instanceof Error) return lnd
+      const { channels } = await getChannels({ lnd })
+
+      return channels.reduce(
+        (totalCount, channel) =>
+          totalCount + channel.pending_payments.filter((p) => p.is_outgoing).length,
+        0,
+      )
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }
@@ -822,6 +860,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
       getOpeningChannelsBalance,
       getClosingChannelsBalance,
       getTotalPendingHtlcCount,
+      getIncomingPendingHtlcCount,
+      getOutgoingPendingHtlcCount,
       getActiveChannels,
       getOfflineChannels,
       getPublicChannels,
