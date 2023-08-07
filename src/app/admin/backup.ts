@@ -19,7 +19,7 @@ export const uploadBackup =
     if (
       !(
         env.DROPBOX_ACCESS_TOKEN ||
-        env.GCS_APPLICATION_CREDENTIALS ||
+        env.GCS_APPLICATION_CREDENTIALS_PATH ||
         (env.NEXTCLOUD_URL && env.NEXTCLOUD_USER && env.NEXTCLOUD_PASSWORD)
       )
     ) {
@@ -66,7 +66,7 @@ export const uploadBackup =
       )
     }
 
-    if (!env.GCS_APPLICATION_CREDENTIALS) {
+    if (!env.GCS_APPLICATION_CREDENTIALS_PATH) {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.googlecloud"]: "false" })
     } else {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.googlecloud"]: "true" })
@@ -81,7 +81,7 @@ export const uploadBackup =
         async () => {
           try {
             const storage = new Storage({
-              keyFilename: env.GCS_APPLICATION_CREDENTIALS,
+              keyFilename: env.GCS_APPLICATION_CREDENTIALS_PATH,
             })
             const bucket = storage.bucket(LND_SCB_BACKUP_BUCKET_NAME)
             const file = bucket.file(`lnd_scb/${filename}`)
