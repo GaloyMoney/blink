@@ -5,11 +5,11 @@ import { getSwapConfig, getLoopConfig, env } from "@config"
 export const getActiveLoopd = (): LoopdConfig => {
   const activeOffChainNode = getActiveLnd()
   if (activeOffChainNode instanceof Error) throw new SwapErrorNoActiveLoopdNode()
-  switch (activeOffChainNode.name) {
-    case "LND1": {
+  switch (activeOffChainNode.name.toLowerCase()) {
+    case "lnd1": {
       return lnd1LoopConfig()
     }
-    case "LND2": {
+    case "lnd2": {
       return lnd2LoopConfig()
     }
     default: {
