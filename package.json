@@ -108,7 +108,7 @@
     "mongoose": "~7.3.4",
     "node-cache": "^5.1.2",
     "pg": "^8.11.2",
-    "pino": "^8.14.2",
+    "pino": "^8.15.0",
     "pino-http": "^8.3.3",
     "prom-client": "^14.2.0",
     "rate-limiter-flexible": "^2.4.2",
