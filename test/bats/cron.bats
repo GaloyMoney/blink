@@ -30,7 +30,7 @@ teardown() {
 no_pending_lnd1_channels() {
   pending_channel="$(lnd_cli pendingchannels | jq -r '.pending_open_channels[0]')"
   if [[ "$pending_channel" != "null" ]]; then
-    bitcoin_cli -generate 3
+    bitcoin_cli -generate 6
     exit 1
   fi
 }
