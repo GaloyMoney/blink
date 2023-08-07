@@ -98,7 +98,7 @@ export const env = createEnv({
     LND2_RPCPORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(10009),
     LND2_TYPE: z
       .enum(["onchain", "offchain", "onchain,offchain", "offchain,onchain"])
-      .default("onchain,offchain")
+      .default("offchain")
       .transform((x) => x.split(",")),
     LND2_NAME: z.string().min(1).default("lnd2").optional(),
 
