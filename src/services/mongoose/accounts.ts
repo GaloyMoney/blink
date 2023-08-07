@@ -1,5 +1,8 @@
+import getUuidByString from "uuid-by-string"
+
 import { OnboardingEarn } from "@config"
-import { AccountLevel, AccountStatus } from "@domain/accounts"
+
+import { AccountStatus } from "@domain/accounts"
 import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
@@ -182,6 +185,9 @@ export const AccountsRepository = (): IAccountsRepository => {
 
 const translateToAccount = (result: AccountRecord): Account => ({
   id: fromObjectId<AccountId>(result._id),
+  // TODO: remove default value after migration
+  uuid: (result.uuid ||
+    getUuidByString(fromObjectId<AccountId>(result._id))) as AccountUUID,
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,

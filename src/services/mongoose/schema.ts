@@ -132,6 +132,15 @@ export const Wallet = mongoose.model<WalletRecord>("Wallet", WalletSchema)
 
 const AccountSchema = new Schema<AccountRecord>(
   {
+    uuid: {
+      type: String,
+      index: true,
+      unique: true,
+      // TODO: uncomment after migration
+      // required: true,
+      default: () => crypto.randomUUID(),
+    },
+
     withdrawFee: {
       type: Number,
       default: feesConfig.withdrawDefaultMin,

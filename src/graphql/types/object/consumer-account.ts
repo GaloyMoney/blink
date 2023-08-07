@@ -1,5 +1,3 @@
-import getUuidByString from "uuid-by-string"
-
 import { Accounts, Prices, Wallets } from "@app"
 
 import {
@@ -39,7 +37,7 @@ const ConsumerAccount = GT.Object<Account>({
   fields: () => ({
     id: {
       type: GT.NonNullID,
-      resolve: (source) => getUuidByString(source.id),
+      resolve: (source) => source.uuid,
     },
 
     wallets: {
