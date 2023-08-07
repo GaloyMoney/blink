@@ -158,16 +158,16 @@ fund_wallet_from_onchain() {
   retry 15 1 check_for_onchain_initiated_settled "$token_name" "$address"
 }
 
-fund_wallet_intraledger() {
+send_btc_intraledger() {
   local from_token_name=$1
   local from_wallet_name=$2
-  local wallet_name=$3
+  local to_wallet_name=$3
   local amount=$4
 
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $from_wallet_name)" \
-    --arg recipient_wallet_id "$(read_value $wallet_name)" \
+    --arg recipient_wallet_id "$(read_value $to_wallet_name)" \
     --arg amount "$amount" \
     '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
   )
@@ -186,12 +186,12 @@ initialize_user_from_onchain() {
 
   login_user "$token_name" "$phone" "$code"
 
-fund_wallet_from_onchain \
+  fund_wallet_from_onchain \
     "$token_name" \
     "$token_name.btc_wallet_id" \
     "$btc_amount_in_btc"
 
-  fund_wallet_intraledger \
+  send_btc_intraledger \
     "$token_name" \
     "$token_name.btc_wallet_id" \
     "$token_name.usd_wallet_id" \
