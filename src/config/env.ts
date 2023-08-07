@@ -19,7 +19,11 @@ export const env = createEnv({
       .default("info"),
 
     UNSECURE_DEFAULT_LOGIN_CODE: z.string().min(1).optional(),
-    UNSECURE_IP_FROM_REQUEST_OBJECT: z.boolean().default(false),
+    UNSECURE_IP_FROM_REQUEST_OBJECT: z
+      .boolean()
+      .or(z.string())
+      .pipe(z.coerce.boolean())
+      .default(false),
 
     EXPORT_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(3000),
     TRIGGER_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(8888),
