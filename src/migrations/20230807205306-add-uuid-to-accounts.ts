@@ -6,7 +6,7 @@ async function migrateAccounts(db, batchSize = 100) {
 
   let batchCount = 0
   while (await cursor.hasNext()) {
-    const batchUpdates = new Array()
+    const batchUpdates: unknown[] = []
     for (let i = 0; i < batchSize && (await cursor.hasNext()); i++) {
       const account = await cursor.next()
       const uuid = getUuidByString(account._id.toString())
