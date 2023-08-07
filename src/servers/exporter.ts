@@ -349,11 +349,31 @@ createGauge({
   name: "totalPendingHtlcCount",
   description: "How many pending HTLCs there are in the channels of the active nodes",
   collect: async () => {
-    const lndService = LndService()
-    if (lndService instanceof Error) return NaN
-    const totalPendingHtlcCount = await lndService.getTotalPendingHtlcCount()
-    if (totalPendingHtlcCount instanceof Error) throw totalPendingHtlcCount
+    const totalPendingHtlcCount = await Lightning.getTotalPendingHtlcCount()
+    if (totalPendingHtlcCount instanceof Error) return NaN
     return totalPendingHtlcCount
+  },
+})
+
+createGauge({
+  name: "incomingPendingHtlcCount",
+  description:
+    "How many pending incoming HTLCs there are in the channels of the active nodes",
+  collect: async () => {
+    const incomingPendingHtlcCount = await Lightning.getIncomingPendingHtlcCount()
+    if (incomingPendingHtlcCount instanceof Error) return NaN
+    return incomingPendingHtlcCount
+  },
+})
+
+createGauge({
+  name: "outgoingPendingHtlcCount",
+  description:
+    "How many pending outgoing HTLCs there are in the channels of the active nodes",
+  collect: async () => {
+    const outgoingPendingHtlcCount = await Lightning.getOutgoingPendingHtlcCount()
+    if (outgoingPendingHtlcCount instanceof Error) return NaN
+    return outgoingPendingHtlcCount
   },
 })
 

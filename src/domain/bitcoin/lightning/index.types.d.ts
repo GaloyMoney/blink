@@ -187,6 +187,8 @@ interface ILightningService {
   getClosingChannelsBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
 
   getTotalPendingHtlcCount(pubkey?: Pubkey): Promise<number | LightningServiceError>
+  getIncomingPendingHtlcCount(pubkey?: Pubkey): Promise<number | LightningServiceError>
+  getOutgoingPendingHtlcCount(pubkey?: Pubkey): Promise<number | LightningServiceError>
 
   getActiveChannels(pubkey?: Pubkey): Promise<number | LightningServiceError>
   getOfflineChannels(pubkey?: Pubkey): Promise<number | LightningServiceError>
