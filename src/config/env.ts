@@ -86,7 +86,7 @@ export const env = createEnv({
       .enum(["onchain", "offchain", "onchain,offchain", "offchain,onchain"])
       .default("onchain,offchain")
       .transform((x) => x.split(",")),
-    LND1_NAME: z.string().min(1).default("lnd1").optional(),
+    LND1_NAME: z.string().min(1).default("lnd1"),
 
     LND2_PUBKEY: z
       .string()
@@ -100,7 +100,7 @@ export const env = createEnv({
       .enum(["onchain", "offchain", "onchain,offchain", "offchain,onchain"])
       .default("offchain")
       .transform((x) => x.split(",")),
-    LND2_NAME: z.string().min(1).default("lnd2").optional(),
+    LND2_NAME: z.string().min(1).default("lnd2"),
 
     LND1_LOOP_TLS: z.string().min(1).optional(),
     LND1_LOOP_MACAROON: z.string().min(1).optional(),
