@@ -62,6 +62,7 @@ type AccountStatusHistory = Array<{
 
 type Account = {
   readonly id: AccountId
+  readonly uuid: AccountUUID
   readonly createdAt: Date
   username: Username
   defaultWalletId: WalletId
