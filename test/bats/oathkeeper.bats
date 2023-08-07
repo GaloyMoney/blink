@@ -10,10 +10,29 @@ teardown_file() {
   stop_server
 }
 
-CUSTOM_CONFIG_PATH="/var/yaml/custom.yaml"
-DEFAULT_CONFIG_PATH="galoy.yaml"
-CONFIG="$(cat $CUSTOM_CONFIG_PATH 2> /dev/null || cat $DEFAULT_CONFIG_PATH)"
-OATHKEEPER_ENDPOINT=$(echo $CONFIG | grep -o 'decisionsApi: [^ ]*' | awk '{print $2}')
+fetch_config_value() {
+  key=$1
+
+  CUSTOM_CONFIG_PATH="/var/yaml/custom.yaml"
+  CUSTOM_CONFIG="$(cat $CUSTOM_CONFIG_PATH 2> /dev/null)"
+  CUSTOM_VALUE=$(
+    echo $CUSTOM_CONFIG \
+      | grep -o "$key: [^ ]*" \
+      | awk -F': +' '{print $2}')
+
+  DEFAULT_CONFIG_PATH="galoy.yaml"
+  DEFAULT_CONFIG="$(cat $DEFAULT_CONFIG_PATH 2> /dev/null)"
+  DEFAULT_VALUE=$(
+    echo $DEFAULT_CONFIG \
+      | grep -o "$key: [^ ]*" \
+      | awk -F': +' '{print $2}')
+
+  if [[ -n "$CUSTOM_VALUE" ]]; then
+    echo "$CUSTOM_VALUE"
+  else
+    echo "$DEFAULT_VALUE"
+  fi
+}
 
 check_is_uuid() {
   uuid_string=$1
@@ -79,6 +98,7 @@ exec_oathkeeper() {
     run_cmd=""
   fi
 
+  OATHKEEPER_ENDPOINT="$(fetch_config_value 'decisionsApi')"
   ${run_cmd} curl -s -I \
     -X POST \
     ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
