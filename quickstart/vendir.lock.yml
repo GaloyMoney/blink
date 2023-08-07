@@ -2,18 +2,18 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: initial quickstart render'
-      sha: 39555310667b902434f25d86fcc2362d1a49cd0a
+      commitTitle: 'chore: extend smoke-test'
+      sha: b14ecbb6c62d1b890fe75294554ccda7ae860ca4
       tags:
-      - 0.11.1-3-g395553106
+      - 0.11.1-4-gb14ecbb6c
     path: ./
   path: ./dev
 - contents:
   - git:
-      commitTitle: 'chore: initial quickstart render'
-      sha: 39555310667b902434f25d86fcc2362d1a49cd0a
+      commitTitle: 'chore: extend smoke-test'
+      sha: b14ecbb6c62d1b890fe75294554ccda7ae860ca4
       tags:
-      - 0.11.1-3-g395553106
+      - 0.11.1-4-gb14ecbb6c
     path: ./
   path: ./galoy
 kind: LockConfig

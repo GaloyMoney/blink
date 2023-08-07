@@ -26,6 +26,9 @@ services:
     - lnd1
     - lnd-outside-1
     - bria
+    - mongodb
+    - redis
+    - stablesats
     networks:
       default:
         aliases:
@@ -37,6 +40,10 @@ services:
       - "/app/lib/services/tracing.js"
       - "lib/servers/trigger.js"
     env_file: ${HOST_PROJECT_PATH:-.}/.env.galoy
+    depends_on:
+    - lnd1
+    - bria
+    - mongodb
 
   #! Database
   redis: #@ data.values.services["redis"]
@@ -58,6 +65,7 @@ services:
   bitcoind: #@ data.values.services["bitcoind"]
   bitcoind-signer: #@ data.values.services["bitcoind-signer"]
   lnd1: #@ data.values.services["lnd1"]
+  lnd2: #@ data.values.services["lnd2"]
   lnd-outside-1: #@ data.values.services["lnd-outside-1"]
   bria: #@ data.values.services["bria"]
   postgres-bria: #@ data.values.services["postgres-bria"]

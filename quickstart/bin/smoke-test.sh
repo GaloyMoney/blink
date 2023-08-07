@@ -3,65 +3,9 @@
 set -e
 
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-quickstart}"
-GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4002}
 
-bitcoin_cli() {
-  docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
-}
-
-lnd_cli() {
-  docker exec "${COMPOSE_PROJECT_NAME}-lnd1-1" \
-    lncli \
-      --macaroonpath /root/.lnd/admin.macaroon \
-      --tlscertpath /root/.lnd/tls.cert \
-      $@
-}
-
-bria_cli() {
-  docker exec "${COMPOSE_PROJECT_NAME}-bria-1" bria $@
-}
-
-bitcoin_signer_cli() {
-  docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-signer-1" bitcoin-cli $@
-}
-
-bitcoind_init() {
-  bitcoin_cli createwallet "outside" || true
-  bitcoin_cli -generate 200 > /dev/null 2>&1
-
-  bitcoin_signer_cli createwallet "dev" || true
-  bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ./galoy/test/bats/bitcoind_signer_descriptors.json)"
-}
-
-gql_file() {
-  echo "galoy/test/bats/gql/$1.gql"
-}
-
-gql_query() {
-  cat "$(gql_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
-}
-
-exec_graphql() {
-  set -x
-  local token_name=$1
-  local query_name=$2
-  local variables=${3:-"{}"}
-
-  if [[ ${token_name} == "anon" ]]; then
-    AUTH_HEADER=""
-  else
-    AUTH_HEADER="Authorization: Bearer $(read_value ${token_name})"
-  fi
-
-  gql_route="graphql"
-
-  curl -s \
-    -X POST \
-    ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
-    -H "Content-Type: application/json" \
-    -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
-    "${GALOY_ENDPOINT}/${gql_route}"
-}
+DIR="$(dirname "$(readlink -f "$BASH_SOURCE")")"
+source ${DIR}/helpers.sh
 
 show_galoy() {
 cat << "EOF"
@@ -80,9 +24,8 @@ EOF
 main() {
   clear
   show_galoy
-  echo
-  echo "----------------"
-  echo "----------------"
+  echo "------------------------------------------------------------"
+  echo "------------------------------------------------------------"
   echo
   echo "Checking that all services are up and running"
   echo
@@ -95,14 +38,33 @@ main() {
   echo "Running getinfo on lnd..."
   lnd_cli getinfo > /dev/null 2>&1
   echo "DONE"
+  echo "Opening lnd-outside -> lnd channel"
+  init_lnd_channel
+  echo "DONE"
   echo
-  echo "----------------"
-  echo "----------------"
+  echo "------------------------------------------------------------"
+  echo "------------------------------------------------------------"
   echo
   echo "Hitting graphql endpoints"
 
-  exec_graphql "anon" "globals"
+  echo "Running on network:"
+  for i in {1..10}; do
+    exec_graphql "anon" "globals"
+    [[ "$(echo $output | jq -r '.data.globals.network')" = 'regtest' ]] && break
+    sleep 1
+  done
+  echo $output | jq -r '.data.globals.network'
+  [[ "$(echo $output | jq -r '.data.globals.network')" = 'regtest' ]] || exit 1
+  echo
+  for i in {1..10}; do
+    echo "Logging in Alice"
+    login_user "alice" "+16505554328" "000000" && break
+    sleep 1
+  done
 
+  echo "Alice receives from lightning"
+  receive_lightning
+  echo "${settled_status}"
   echo "DONE"
 }
 
