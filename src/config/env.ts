@@ -4,7 +4,9 @@ import { ZodError, z } from "zod"
 export const env = createEnv({
   onValidationError: (error: ZodError) => {
     console.error("❌ Invalid environment variables:", error.flatten().fieldErrors)
-    throw new Error(`Invalid environment variables: ${error.flatten().fieldErrors}`)
+    throw new Error(
+      `Invalid environment variables: ${JSON.stringify(error.flatten().fieldErrors)}`,
+    )
   },
 
   server: {
