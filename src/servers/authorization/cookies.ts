@@ -17,7 +17,7 @@ import { validateKratosCookie } from "@services/kratos"
 
 import { parseKratosCookies } from "@services/kratos/cookie"
 
-import { env } from "@config"
+import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
 import { authRouter } from "./router"
 
@@ -34,7 +34,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: express.Request, res: express.Response) => {
-      const ipString = env.UNSECURE_IP_FROM_REQUEST_OBJECT
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
         ? req?.ip
         : req?.headers["x-real-ip"]
       const ip = parseIps(ipString)

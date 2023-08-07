@@ -19,10 +19,13 @@ import { WalletCurrency } from "@domain/shared"
 
 import { AccountLevel } from "@domain/accounts"
 
+import mergeWith from "lodash.mergewith"
+
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
 
-import { merge } from "./utils"
+const merge = (defaultConfig: unknown, customConfig: unknown) =>
+  mergeWith(defaultConfig, customConfig, (a, b) => (Array.isArray(b) ? b : undefined))
 
 let customContent: string, customConfig
 

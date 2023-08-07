@@ -2,17 +2,17 @@ import { ErrorLevel } from "@domain/shared"
 import { Configuration, FrontendApi, IdentityApi } from "@ory/client"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
-import { env } from "@config"
+import { KRATOS_ADMIN_API, KRATOS_PUBLIC_API } from "@config"
 
 import { MissingCreatedAtKratosError, MissingExpiredAtKratosError } from "./errors"
 import { SchemaIdType } from "./schema"
 
 export const kratosPublic = new FrontendApi(
-  new Configuration({ basePath: env.KRATOS_PUBLIC_API }),
+  new Configuration({ basePath: KRATOS_PUBLIC_API }),
 )
 
 export const kratosAdmin = new IdentityApi(
-  new Configuration({ basePath: env.KRATOS_ADMIN_API }),
+  new Configuration({ basePath: KRATOS_ADMIN_API }),
 )
 
 export const toDomainSession = (session: KratosSession): Session => {

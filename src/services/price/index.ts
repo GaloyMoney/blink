@@ -14,14 +14,14 @@ import { WalletCurrency } from "@domain/shared"
 
 import { CENTS_PER_USD, DisplayCurrency } from "@domain/fiat"
 
-import { env } from "@config"
+import { PRICE_HISTORY_HOST, PRICE_HISTORY_PORT, PRICE_HOST, PRICE_PORT } from "@config"
 
 import { baseLogger } from "../logger"
 
 import { PriceHistoryProtoDescriptor, PriceProtoDescriptor } from "./grpc"
 
-const priceUrl = env.PRICE_HOST
-const pricePort = env.PRICE_PORT
+const priceUrl = PRICE_HOST
+const pricePort = PRICE_PORT
 const fullUrl = `${priceUrl}:${pricePort}`
 const priceClient = new PriceProtoDescriptor.PriceFeed(
   fullUrl,
@@ -30,8 +30,8 @@ const priceClient = new PriceProtoDescriptor.PriceFeed(
 const getPrice = util.promisify(priceClient.getPrice).bind(priceClient)
 const listPriceCurrencies = util.promisify(priceClient.listCurrencies).bind(priceClient)
 
-const priceHistoryUrl = env.PRICE_HISTORY_HOST
-const priceHistoryPort = env.PRICE_HISTORY_PORT
+const priceHistoryUrl = PRICE_HISTORY_HOST
+const priceHistoryPort = PRICE_HISTORY_PORT
 const priceHistoryFullUrl = `${priceHistoryUrl}:${priceHistoryPort}`
 const priceHistoryClient = new PriceHistoryProtoDescriptor.PriceHistory(
   priceHistoryFullUrl,

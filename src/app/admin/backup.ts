@@ -1,26 +1,34 @@
-import { LND_SCB_BACKUP_BUCKET_NAME, env } from "@config"
-import { Storage } from "@google-cloud/storage"
-import axios from "axios"
 import {
-  asyncRunInSpan,
+  DROPBOX_ACCESS_TOKEN,
+  GCS_APPLICATION_CREDENTIALS_PATH,
+  LND_SCB_BACKUP_BUCKET_NAME,
+  NETWORK,
+  NEXTCLOUD_PASSWORD,
+  NEXTCLOUD_URL,
+  NEXTCLOUD_USER,
+} from "@config"
+import { ErrorLevel } from "@domain/shared"
+import { Storage } from "@google-cloud/storage"
+import {
   SemanticAttributes,
   addAttributesToCurrentSpan,
   addEventToCurrentSpan,
+  asyncRunInSpan,
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
-import { ErrorLevel } from "@domain/shared"
+import axios from "axios"
 
 export const uploadBackup =
   (logger: Logger) =>
   async ({ backup, pubkey }: { backup: string; pubkey: Pubkey }) => {
     logger.debug({ backup }, "updating scb on dbx")
-    const filename = `${env.NETWORK}_lnd_scb_${pubkey}_${Date.now()}`
+    const filename = `${NETWORK}_lnd_scb_${pubkey}_${Date.now()}`
 
     if (
       !(
-        env.DROPBOX_ACCESS_TOKEN ||
-        env.GCS_APPLICATION_CREDENTIALS_PATH ||
-        (env.NEXTCLOUD_URL && env.NEXTCLOUD_USER && env.NEXTCLOUD_PASSWORD)
+        DROPBOX_ACCESS_TOKEN ||
+        GCS_APPLICATION_CREDENTIALS_PATH ||
+        (NEXTCLOUD_URL && NEXTCLOUD_USER && NEXTCLOUD_PASSWORD)
       )
     ) {
       const err = new Error(
@@ -30,7 +38,7 @@ export const uploadBackup =
       recordExceptionInCurrentSpan({ error: err, level: ErrorLevel.Critical })
     }
 
-    if (!env.DROPBOX_ACCESS_TOKEN) {
+    if (!DROPBOX_ACCESS_TOKEN) {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.dropbox"]: "false" })
     } else {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.dropbox"]: "true" })
@@ -46,7 +54,7 @@ export const uploadBackup =
           try {
             await axios.post(`https://content.dropboxapi.com/2/files/upload`, backup, {
               headers: {
-                "Authorization": `Bearer ${env.DROPBOX_ACCESS_TOKEN}`,
+                "Authorization": `Bearer ${DROPBOX_ACCESS_TOKEN}`,
                 "Content-Type": `Application/octet-stream`,
                 "Dropbox-API-Arg": `{"autorename":false,"mode":"add","mute":true,"path":"/${filename}","strict_conflict":false}`,
               },
@@ -66,7 +74,7 @@ export const uploadBackup =
       )
     }
 
-    if (!env.GCS_APPLICATION_CREDENTIALS_PATH) {
+    if (!GCS_APPLICATION_CREDENTIALS_PATH) {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.googlecloud"]: "false" })
     } else {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.googlecloud"]: "true" })
@@ -81,7 +89,7 @@ export const uploadBackup =
         async () => {
           try {
             const storage = new Storage({
-              keyFilename: env.GCS_APPLICATION_CREDENTIALS_PATH,
+              keyFilename: GCS_APPLICATION_CREDENTIALS_PATH,
             })
             const bucket = storage.bucket(LND_SCB_BACKUP_BUCKET_NAME)
             const file = bucket.file(`lnd_scb/${filename}`)
@@ -101,7 +109,7 @@ export const uploadBackup =
       )
     }
 
-    if (!(env.NEXTCLOUD_URL && env.NEXTCLOUD_USER && env.NEXTCLOUD_PASSWORD)) {
+    if (!(NEXTCLOUD_URL && NEXTCLOUD_USER && NEXTCLOUD_PASSWORD)) {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.nextcloud"]: "false" })
     } else {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.nextcloud"]: "true" })
@@ -115,10 +123,10 @@ export const uploadBackup =
         },
         async () => {
           try {
-            await axios.put(`${env.NEXTCLOUD_URL}/${filename}`, backup, {
+            await axios.put(`${NEXTCLOUD_URL}/${filename}`, backup, {
               auth: {
-                username: `${env.NEXTCLOUD_USER}`,
-                password: `${env.NEXTCLOUD_PASSWORD}`,
+                username: `${NEXTCLOUD_USER}`,
+                password: `${NEXTCLOUD_PASSWORD}`,
               },
             })
             logger.info({ backup }, "Static channel backup to Nextcloud successful.")

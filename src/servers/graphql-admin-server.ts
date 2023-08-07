@@ -8,8 +8,9 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 
-import { env } from "@config"
 import { gqlAdminSchema, adminMutationFields, adminQueryFields } from "@graphql/admin"
+
+import { GALOY_ADMIN_PORT } from "@config"
 
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
 
@@ -37,7 +38,7 @@ export async function startApolloServerForAdminSchema() {
   )
 
   const schema = applyMiddleware(gqlAdminSchema, permissions)
-  return startApolloServer({ schema, port: env.GALOY_ADMIN_PORT, type: "admin" })
+  return startApolloServer({ schema, port: GALOY_ADMIN_PORT, type: "admin" })
 }
 
 if (require.main === module) {

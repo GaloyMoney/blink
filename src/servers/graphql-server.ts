@@ -4,7 +4,7 @@ import DataLoader from "dataloader"
 import express, { NextFunction, Request, Response } from "express"
 
 import { Accounts, Transactions } from "@app"
-import { env, getApolloConfig, getJwksArgs } from "@config"
+import { UNSECURE_IP_FROM_REQUEST_OBJECT, getApolloConfig, getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
 import {
   ACCOUNT_USERNAME,
@@ -37,16 +37,16 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { UsersRepository } from "@services/mongoose"
 import { checkedToUserId } from "@domain/accounts"
 import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/shared"
+import { UsersRepository } from "@services/mongoose"
 
 import { playgroundTabs } from "../graphql/playground"
 
-import { idempotencyMiddleware } from "./middlewares/idempotency"
-import healthzHandler from "./middlewares/healthz"
-import kratosRouter from "./authorization/kratos-router"
 import authRouter from "./authorization"
+import kratosRouter from "./authorization/kratos-router"
+import healthzHandler from "./middlewares/healthz"
+import { idempotencyMiddleware } from "./middlewares/idempotency"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -85,7 +85,7 @@ const setGqlContext = async (
 
   const body = req.body ?? null
 
-  const ipString = env.UNSECURE_IP_FROM_REQUEST_OBJECT
+  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
     ? req.ip
     : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
 

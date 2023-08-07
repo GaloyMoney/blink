@@ -1,8 +1,8 @@
+import { CreateIdentityBody, UpdateIdentityBody } from "@ory/client"
 import libCookie from "cookie"
 import setCookie from "set-cookie-parser"
-import { CreateIdentityBody, UpdateIdentityBody } from "@ory/client"
 
-import { env } from "@config"
+import { KRATOS_MASTER_USER_PASSWORD } from "@config"
 
 import {
   LikelyNoUserWithThisPhoneExistError,
@@ -23,7 +23,7 @@ import { SchemaIdType } from "./schema"
 // login with phone
 
 export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessService => {
-  const password = env.KRATOS_MASTER_USER_PASSWORD
+  const password = KRATOS_MASTER_USER_PASSWORD
 
   const loginToken = async ({
     phone,

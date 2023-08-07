@@ -1,6 +1,6 @@
 import {
   ConfigError,
-  env,
+  TWILIO_ACCOUNT_SID,
   getAdminAccounts,
   getDefaultAccountsConfig,
   isRunningJest,
@@ -102,7 +102,7 @@ export const createAccountWithPhoneIdentifier = async ({
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
   if (
-    env.TWILIO_ACCOUNT_SID !== TWILIO_ACCOUNT_TEST ||
+    TWILIO_ACCOUNT_SID !== TWILIO_ACCOUNT_TEST ||
     isRunningJest /* TwilioClient will be mocked */
   ) {
     phoneMetadata = await TwilioClient().getCarrier(phone)

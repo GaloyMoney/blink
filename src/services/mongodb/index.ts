@@ -1,13 +1,13 @@
 import mongoose from "mongoose"
 
 import {
+  MONGODB_CON,
   MissingBankOwnerAccountConfigError,
   MissingBtcDealerWalletConfigError,
   MissingDealerAccountConfigError,
   MissingFunderAccountConfigError,
   MissingUsdDealerWalletConfigError,
   UnknownConfigError,
-  env,
 } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { lazyLoadLedgerAdmin } from "@services/ledger"
@@ -69,7 +69,7 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
 
 export const setupMongoConnection = async (syncIndexes = false) => {
   try {
-    await mongoose.connect(env.MONGODB_CON, { autoIndex: false })
+    await mongoose.connect(MONGODB_CON, { autoIndex: false })
   } catch (err) {
     baseLogger.fatal(`error connecting to mongodb`)
     throw err

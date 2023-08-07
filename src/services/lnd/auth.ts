@@ -1,5 +1,21 @@
 import { authenticatedLndGrpc, unauthenticatedLndGrpc } from "lightning"
-import { env } from "@config"
+import {
+  LND1_DNS,
+  LND1_MACAROON,
+  LND1_NAME,
+  LND1_PUBKEY,
+  LND1_RPCPORT,
+  LND1_TLS,
+  LND1_TYPE,
+  LND2_DNS,
+  LND2_MACAROON,
+  LND2_NAME,
+  LND2_PUBKEY,
+  LND2_RPCPORT,
+  LND2_TLS,
+  LND2_TYPE,
+  LND_PRIORITY,
+} from "@config"
 
 const addProps = (array: LndParams[]) => {
   const result: LndConnect[] = array.map((input) => {
@@ -18,45 +34,45 @@ const addProps = (array: LndParams[]) => {
 const lndArray: LndParams[] = []
 
 if (
-  env.LND1_PUBKEY &&
-  env.LND1_TLS &&
-  env.LND1_MACAROON &&
-  env.LND1_DNS &&
-  env.LND1_RPCPORT &&
-  env.LND1_TYPE &&
-  env.LND1_NAME
+  LND1_PUBKEY &&
+  LND1_TLS &&
+  LND1_MACAROON &&
+  LND1_DNS &&
+  LND1_RPCPORT &&
+  LND1_TYPE &&
+  LND1_NAME
 ) {
   const lnd1 = {
-    pubkey: env.LND1_PUBKEY as Pubkey,
-    cert: env.LND1_TLS,
-    macaroon: env.LND1_MACAROON,
-    node: env.LND1_DNS,
-    port: env.LND1_RPCPORT,
-    type: env.LND1_TYPE as LndNodeType[],
-    name: env.LND1_NAME,
+    pubkey: LND1_PUBKEY,
+    cert: LND1_TLS,
+    macaroon: LND1_MACAROON,
+    node: LND1_DNS,
+    port: LND1_RPCPORT,
+    type: LND1_TYPE,
+    name: LND1_NAME,
   }
   lndArray.push(lnd1)
 }
 
 if (
-  env.LND2_PUBKEY &&
-  env.LND2_TLS &&
-  env.LND2_MACAROON &&
-  env.LND2_DNS &&
-  env.LND2_RPCPORT &&
-  env.LND2_TYPE &&
-  env.LND2_NAME
+  LND2_PUBKEY &&
+  LND2_TLS &&
+  LND2_MACAROON &&
+  LND2_DNS &&
+  LND2_RPCPORT &&
+  LND2_TYPE &&
+  LND2_NAME
 ) {
   const lnd2 = {
-    pubkey: env.LND2_PUBKEY as Pubkey,
-    cert: env.LND2_TLS,
-    macaroon: env.LND2_MACAROON,
-    node: env.LND2_DNS,
-    port: env.LND2_RPCPORT,
-    type: env.LND2_TYPE as LndNodeType[],
-    name: env.LND2_NAME,
+    pubkey: LND2_PUBKEY,
+    cert: LND2_TLS,
+    macaroon: LND2_MACAROON,
+    node: LND2_DNS,
+    port: LND2_RPCPORT,
+    type: LND2_TYPE,
+    name: LND2_NAME,
   }
-  if (env.LND_PRIORITY === "lnd2") {
+  if (LND_PRIORITY === "lnd2") {
     lndArray.unshift(lnd2)
   } else {
     lndArray.push(lnd2)

@@ -2,36 +2,46 @@ import RedisCache from "ioredis-cache"
 import { RedisPubSub } from "graphql-redis-subscriptions"
 import { baseLogger } from "@services/logger"
 import Redis from "ioredis"
-import { env } from "@config"
+import {
+  REDIS_0_DNS,
+  REDIS_0_PORT,
+  REDIS_1_DNS,
+  REDIS_1_PORT,
+  REDIS_2_DNS,
+  REDIS_2_PORT,
+  REDIS_MASTER_NAME,
+  REDIS_PASSWORD,
+  REDIS_TYPE,
+} from "@config"
 
 let connectionObj = {}
 
-if (env.REDIS_TYPE === "standalone") {
+if (REDIS_TYPE === "standalone") {
   connectionObj = {
-    name: env.REDIS_MASTER_NAME,
-    host: env.REDIS_0_DNS,
-    port: env.REDIS_0_PORT,
-    password: env.REDIS_PASSWORD,
+    name: REDIS_MASTER_NAME,
+    host: REDIS_0_DNS,
+    port: REDIS_0_PORT,
+    password: REDIS_PASSWORD,
   }
 } else {
   connectionObj = {
-    sentinelPassword: env.REDIS_PASSWORD,
+    sentinelPassword: REDIS_PASSWORD,
     sentinels: [
       {
-        host: `${env.REDIS_0_DNS}`,
-        port: env.REDIS_0_PORT,
+        host: `${REDIS_0_DNS}`,
+        port: REDIS_0_PORT,
       },
       {
-        host: `${env.REDIS_1_DNS}`,
-        port: env.REDIS_1_PORT,
+        host: `${REDIS_1_DNS}`,
+        port: REDIS_1_PORT,
       },
       {
-        host: `${env.REDIS_2_DNS}`,
-        port: env.REDIS_2_PORT,
+        host: `${REDIS_2_DNS}`,
+        port: REDIS_2_PORT,
       },
     ],
-    name: env.REDIS_MASTER_NAME,
-    password: env.REDIS_PASSWORD,
+    name: REDIS_MASTER_NAME,
+    password: REDIS_PASSWORD,
   }
 }
 

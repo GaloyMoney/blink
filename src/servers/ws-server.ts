@@ -1,10 +1,10 @@
 import { getOperationAST, GraphQLError, parse, validate } from "graphql"
 
-import { WebSocketServer } from "ws" // yarn add ws
+import { WebSocketServer } from "ws"
 import { gqlMainSchema } from "@graphql/public"
 import { Extra, useServer } from "graphql-ws/lib/use/ws"
 
-import { env, getJwksArgs } from "@config"
+import { getJwksArgs, UNSECURE_IP_FROM_REQUEST_OBJECT, WEBSOCKET_PORT } from "@config"
 import { Context } from "graphql-ws"
 import jsonwebtoken from "jsonwebtoken"
 
@@ -13,15 +13,15 @@ import { ErrorLevel } from "@domain/shared"
 
 import jwksRsa from "jwks-rsa"
 
-import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 import { validateKratosCookie } from "@services/kratos"
-import { setupMongoConnection } from "@services/mongodb"
 import { baseLogger } from "@services/logger"
+import { setupMongoConnection } from "@services/mongodb"
+import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 import {
-  wrapAsyncToRunInSpan,
   addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
   addEventToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
 } from "@services/tracing"
 
 import cookie from "cookie"
@@ -30,7 +30,7 @@ import { sessionContext } from "./graphql-server"
 
 const schema = gqlMainSchema
 
-const port = env.WEBSOCKET_PORT
+const port = WEBSOCKET_PORT
 const path = "/graphql"
 
 const wsServer = new WebSocketServer({
@@ -65,7 +65,7 @@ const getContext = async (
       // TODO: check if nginx pass the ip to the header
       // TODO: ip not been used currently for subscription.
       // implement some rate limiting.
-      const ipString = env.UNSECURE_IP_FROM_REQUEST_OBJECT
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
         ? connectionParams?.ip ?? ctx.extra?.request?.socket?.remoteAddress ?? undefined
         : connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
 

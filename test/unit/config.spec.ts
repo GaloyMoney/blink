@@ -1,12 +1,17 @@
 import fs from "fs"
 
-import { configSchema, getAccountLimits, yamlConfig, merge } from "@config"
+import { configSchema, getAccountLimits, yamlConfig } from "@config"
 import { toCents } from "@domain/fiat"
 import Ajv from "ajv"
 import yaml from "js-yaml"
 
+import mergeWith from "lodash.mergewith"
+
 const ajv = new Ajv()
 let validate
+
+const merge = (defaultConfig: unknown, customConfig: unknown) =>
+  mergeWith(defaultConfig, customConfig, (a, b) => (Array.isArray(b) ? b : undefined))
 
 const accountLimits = {
   withdrawal: {

@@ -9,7 +9,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 
-import { env } from "@config"
+import { GALOY_API_PORT } from "@config"
 
 import { gqlMainSchema, mutationFields, queryFields } from "@graphql/public"
 
@@ -49,7 +49,7 @@ export async function startApolloServerForCoreSchema() {
   const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
   return startApolloServer({
     schema,
-    port: env.GALOY_API_PORT,
+    port: GALOY_API_PORT,
     type: "main",
   })
 }
