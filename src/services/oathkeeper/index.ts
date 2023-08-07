@@ -11,7 +11,7 @@ import axios, { isAxiosError } from "axios"
 export const sendOathkeeperRequestGraphql = async (
   token: AuthToken | undefined,
 ): Promise<JwtToken | OathkeeperError> => {
-  const decisionsApi = `http://${env.OATHKEEPER_HOST}:${env.OATHKEEPER_DECISION_PORT}/decisions`
+  const decisionsApi = `${env.OATHKEEPER_DECISION_ENDPOINT}/decisions`
   const requestUrl = `${decisionsApi}/graphql`
 
   const headers: Record<string, string> = {

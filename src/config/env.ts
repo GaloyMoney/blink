@@ -30,8 +30,7 @@ export const env = createEnv({
     WEBSOCKET_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(4000),
 
     KRATOS_PG_CON: z.string().url(),
-    OATHKEEPER_HOST: z.string().min(1),
-    OATHKEEPER_DECISION_PORT: z.string().min(4),
+    OATHKEEPER_DECISION_ENDPOINT: z.string().url(),
     GALOY_API_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(4012),
     GALOY_ADMIN_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(4001),
     NETWORK: z.enum(["mainnet", "testnet", "signet", "regtest"]),
@@ -142,8 +141,8 @@ export const env = createEnv({
     WEBSOCKET_PORT: process.env.WEBSOCKET_PORT,
 
     KRATOS_PG_CON: process.env.KRATOS_PG_CON,
-    OATHKEEPER_HOST: process.env.OATHKEEPER_HOST,
-    OATHKEEPER_DECISION_PORT: process.env.OATHKEEPER_DECISION_PORT,
+    OATHKEEPER_DECISION_ENDPOINT: process.env.OATHKEEPER_DECISION_ENDPOINT,
+
     GALOY_API_PORT: process.env.GALOY_API_PORT,
     GALOY_ADMIN_PORT: process.env.GALOY_ADMIN_PORT,
 

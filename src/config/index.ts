@@ -44,7 +44,7 @@ export const getGaloyBuildInformation = () => {
 }
 
 export const getJwksArgs = () => {
-  const urlJkws = `http://localhost:${env.OATHKEEPER_DECISION_PORT}/.well-known/jwks.json`
+  const urlJkws = `${env.OATHKEEPER_DECISION_ENDPOINT}/.well-known/jwks.json`
 
   return {
     cache: true,
