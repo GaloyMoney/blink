@@ -1,4 +1,4 @@
-import { defaultLoginCode, env, getGeetestConfig, getTestAccounts } from "@config"
+import { env, getGeetestConfig, getTestAccounts } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { PhoneAlreadyExistsError } from "@domain/authentication/errors"
 import { NotImplementedError } from "@domain/errors"
@@ -61,7 +61,7 @@ export const requestPhoneCodeForUnauthedUser = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  if (defaultLoginCode().enabled) {
+  if (env.UNSECURE_DEFAULT_LOGIN_CODE) {
     return true
   }
 
@@ -102,7 +102,7 @@ export const requestPhoneCodeForAuthedUser = async ({
     return new PhoneAlreadyExistsError()
   }
 
-  if (defaultLoginCode().enabled) {
+  if (env.UNSECURE_DEFAULT_LOGIN_CODE) {
     return true
   }
 

@@ -18,6 +18,9 @@ export const env = createEnv({
       .enum(["fatal", "error", "warn", "info", "debug", "trace"])
       .default("info"),
 
+    UNSECURE_DEFAULT_LOGIN_CODE: z.string().min(1).optional(),
+    UNSECURE_IP_FROM_REQUEST_OBJECT: z.boolean().default(false),
+
     EXPORT_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(3000),
     TRIGGER_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(8888),
     WEBSOCKET_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(4000),
@@ -95,6 +98,11 @@ export const env = createEnv({
       .transform((x) => x.split(",")),
     LND2_NAME: z.string().min(1).default("lnd2").optional(),
 
+    LND1_LOOP_TLS: z.string().min(1).optional(),
+    LND1_LOOP_MACAROON: z.string().min(1).optional(),
+    LND2_LOOP_TLS: z.string().min(1).optional(),
+    LND2_LOOP_MACAROON: z.string().min(1).optional(),
+
     PRICE_HOST: z.string().min(1).default("galoy-price"),
     PRICE_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(50051),
 
@@ -105,6 +113,14 @@ export const env = createEnv({
       .or(z.string())
       .pipe(z.coerce.number())
       .default(50052),
+
+    DROPBOX_ACCESS_TOKEN: z.string().min(1).optional(),
+    GCS_APPLICATION_CREDENTIALS: z.string().min(1).optional(),
+    NEXTCLOUD_URL: z.string().min(1).optional(),
+    NEXTCLOUD_USER: z.string().min(1).optional(),
+    NEXTCLOUD_PASSWORD: z.string().min(1).optional(),
+
+    MATTERMOST_WEBHOOK_URL: z.string().min(1).optional(),
   },
 
   runtimeEnvStrict: {
@@ -113,6 +129,9 @@ export const env = createEnv({
     HELMREVISION: process.env.HELMREVISION,
 
     LOGLEVEL: process.env.LOGLEVEL,
+
+    UNSECURE_DEFAULT_LOGIN_CODE: process.env.UNSECURE_DEFAULT_LOGIN_CODE,
+    UNSECURE_IP_FROM_REQUEST_OBJECT: process.env.UNSECURE_IP_FROM_REQUEST_OBJECT,
 
     EXPORT_PORT: process.env.EXPORT_PORT,
     TRIGGER_PORT: process.env.TRIGGER_PORT,
@@ -177,10 +196,23 @@ export const env = createEnv({
     LND2_TYPE: process.env.LND2_TYPE,
     LND2_NAME: process.env.LND2_NAME,
 
+    LND1_LOOP_TLS: process.env.LND1_LOOP_TLS,
+    LND1_LOOP_MACAROON: process.env.LND1_LOOP_MACAROON,
+    LND2_LOOP_TLS: process.env.LND2_LOOP_TLS,
+    LND2_LOOP_MACAROON: process.env.LND2_LOOP_MACAROON,
+
     PRICE_HOST: process.env.PRICE_HOST,
     PRICE_PORT: process.env.PRICE_PORT,
 
     PRICE_HISTORY_HOST: process.env.PRICE_HISTORY_HOST,
     PRICE_HISTORY_PORT: process.env.PRICE_HISTORY_PORT,
+
+    DROPBOX_ACCESS_TOKEN: process.env.DROPBOX_ACCESS_TOKEN,
+    GCS_APPLICATION_CREDENTIALS: process.env.GCS_APPLICATION_CREDENTIALS,
+    NEXTCLOUD_URL: process.env.NEXTCLOUD_URL,
+    NEXTCLOUD_USER: process.env.NEXTCLOUD_USER,
+    NEXTCLOUD_PASSWORD: process.env.NEXTCLOUD_PASSWORD,
+
+    MATTERMOST_WEBHOOK_URL: process.env.MATTERMOST_WEBHOOK_URL,
   },
 })

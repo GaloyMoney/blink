@@ -1,6 +1,6 @@
 import twilio from "twilio"
 
-import { defaultLoginCode, env, getTestAccounts } from "@config"
+import { env, getTestAccounts } from "@config"
 import {
   PhoneCodeInvalidError,
   ExpiredOrNonExistentPhoneNumberError,
@@ -187,7 +187,7 @@ export const isPhoneCodeValid = async ({
   phone: PhoneNumber
   code: PhoneCode
 }) => {
-  if (defaultLoginCode().enabled && code === defaultLoginCode().code) {
+  if (code === env.UNSECURE_DEFAULT_LOGIN_CODE) {
     return true
   }
 

@@ -14,41 +14,22 @@ export const getGeetestConfig = () => {
   return config
 }
 
-export const isProd = process.env.NODE_ENV === "production"
 export const isRunningJest = typeof jest !== "undefined"
-
-export const DropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN
-export const GcsApplicationCredentials = process.env.GCS_APPLICATION_CREDENTIALS
-export const Nextcloudurl = process.env.NEXTCLOUD_URL
-export const Nextclouduser = process.env.NEXTCLOUD_USER
-export const Nextcloudpassword = process.env.NEXTCLOUD_PASSWORD
 
 export const getLoopConfig = () => {
   if (getCronConfig().swapEnabled) {
-    if (!process.env.LND1_LOOP_TLS) throw new ConfigError("Missing LND1_LOOP_TLS config")
-    if (!process.env.LND2_LOOP_TLS) throw new ConfigError("Missing LND2_LOOP_TLS config")
-    if (!process.env.LND1_LOOP_MACAROON)
+    if (!env.LND1_LOOP_TLS) throw new ConfigError("Missing LND1_LOOP_TLS config")
+    if (!env.LND2_LOOP_TLS) throw new ConfigError("Missing LND2_LOOP_TLS config")
+    if (!env.LND1_LOOP_MACAROON)
       throw new ConfigError("Missing LND1_LOOP_MACAROON config")
-    if (!process.env.LND2_LOOP_MACAROON)
+    if (!env.LND2_LOOP_MACAROON)
       throw new ConfigError("Missing LND2_LOOP_MACAROON config")
     return {
-      lnd1LoopTls: process.env.LND1_LOOP_TLS,
-      lnd1LoopMacaroon: process.env.LND1_LOOP_MACAROON as Macaroon,
-      lnd2LoopTls: process.env.LND2_LOOP_TLS,
-      lnd2LoopMacaroon: process.env.LND2_LOOP_MACAROON as Macaroon,
+      lnd1LoopTls: env.LND1_LOOP_TLS,
+      lnd1LoopMacaroon: env.LND1_LOOP_MACAROON as Macaroon,
+      lnd2LoopTls: env.LND2_LOOP_TLS,
+      lnd2LoopMacaroon: env.LND2_LOOP_MACAROON as Macaroon,
     }
   }
   throw new ConfigError("getLoopConfig() was called though swapEnabled is false")
-}
-
-export const defaultLoginCode = () => {
-  const code = process.env.UNSECURE_DEFAULT_LOGIN_CODE
-  return {
-    enabled: !!code,
-    code,
-  }
-}
-
-export const feedback = {
-  mattermostWebhookUrl: process.env.MATTERMOST_WEBHOOK_URL,
 }

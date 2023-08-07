@@ -1,12 +1,4 @@
-import {
-  DropboxAccessToken,
-  GcsApplicationCredentials,
-  LND_SCB_BACKUP_BUCKET_NAME,
-  Nextcloudurl,
-  Nextclouduser,
-  Nextcloudpassword,
-  env,
-} from "@config"
+import { LND_SCB_BACKUP_BUCKET_NAME, env } from "@config"
 import { Storage } from "@google-cloud/storage"
 import axios from "axios"
 import {
@@ -26,9 +18,9 @@ export const uploadBackup =
 
     if (
       !(
-        DropboxAccessToken ||
-        GcsApplicationCredentials ||
-        (Nextcloudurl && Nextclouduser && Nextcloudpassword)
+        env.DROPBOX_ACCESS_TOKEN ||
+        env.GCS_APPLICATION_CREDENTIALS ||
+        (env.NEXTCLOUD_URL && env.NEXTCLOUD_USER && env.NEXTCLOUD_PASSWORD)
       )
     ) {
       const err = new Error(
@@ -38,7 +30,7 @@ export const uploadBackup =
       recordExceptionInCurrentSpan({ error: err, level: ErrorLevel.Critical })
     }
 
-    if (!DropboxAccessToken) {
+    if (!env.DROPBOX_ACCESS_TOKEN) {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.dropbox"]: "false" })
     } else {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.dropbox"]: "true" })
@@ -54,7 +46,7 @@ export const uploadBackup =
           try {
             await axios.post(`https://content.dropboxapi.com/2/files/upload`, backup, {
               headers: {
-                "Authorization": `Bearer ${DropboxAccessToken}`,
+                "Authorization": `Bearer ${env.DROPBOX_ACCESS_TOKEN}`,
                 "Content-Type": `Application/octet-stream`,
                 "Dropbox-API-Arg": `{"autorename":false,"mode":"add","mute":true,"path":"/${filename}","strict_conflict":false}`,
               },
@@ -74,7 +66,7 @@ export const uploadBackup =
       )
     }
 
-    if (!GcsApplicationCredentials) {
+    if (!env.GCS_APPLICATION_CREDENTIALS) {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.googlecloud"]: "false" })
     } else {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.googlecloud"]: "true" })
@@ -89,7 +81,7 @@ export const uploadBackup =
         async () => {
           try {
             const storage = new Storage({
-              keyFilename: GcsApplicationCredentials,
+              keyFilename: env.GCS_APPLICATION_CREDENTIALS,
             })
             const bucket = storage.bucket(LND_SCB_BACKUP_BUCKET_NAME)
             const file = bucket.file(`lnd_scb/${filename}`)
@@ -109,7 +101,7 @@ export const uploadBackup =
       )
     }
 
-    if (!(Nextcloudurl && Nextclouduser && Nextcloudpassword)) {
+    if (!(env.NEXTCLOUD_URL && env.NEXTCLOUD_USER && env.NEXTCLOUD_PASSWORD)) {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.nextcloud"]: "false" })
     } else {
       addAttributesToCurrentSpan({ ["uploadBackup.destination.nextcloud"]: "true" })
@@ -123,10 +115,10 @@ export const uploadBackup =
         },
         async () => {
           try {
-            await axios.put(`${Nextcloudurl}/${filename}`, backup, {
+            await axios.put(`${env.NEXTCLOUD_URL}/${filename}`, backup, {
               auth: {
-                username: `${Nextclouduser}`,
-                password: `${Nextcloudpassword}`,
+                username: `${env.NEXTCLOUD_USER}`,
+                password: `${env.NEXTCLOUD_PASSWORD}`,
               },
             })
             logger.info({ backup }, "Static channel backup to Nextcloud successful.")

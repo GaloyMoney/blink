@@ -1,4 +1,4 @@
-import { ConfigError, feedback as feedbackConfig } from "@config"
+import { ConfigError, env } from "@config"
 import { MattermostError } from "@domain/comm/errors"
 import { ErrorLevel } from "@domain/shared"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
@@ -13,13 +13,13 @@ export const submitFeedback = async ({
   accountId: AccountId
   username?: Username
 }) => {
-  const mattermostWebhookUrl = feedbackConfig.mattermostWebhookUrl
+  const mattermostWebhookUrl = env.MATTERMOST_WEBHOOK_URL
   if (!mattermostWebhookUrl) {
     recordExceptionInCurrentSpan({
-      error: "missing mattermostWebhookUrl",
+      error: "missing MATTERMOST_WEBHOOK_URL",
       level: ErrorLevel.Critical,
     })
-    return new ConfigError("missing mattermostWebhookUrl")
+    return new ConfigError("missing MATTERMOST_WEBHOOK_URL")
   }
 
   const text = `Feedback from ${accountId}${

@@ -4,7 +4,7 @@ import DataLoader from "dataloader"
 import express, { NextFunction, Request, Response } from "express"
 
 import { Accounts, Transactions } from "@app"
-import { getApolloConfig, getJwksArgs, isProd } from "@config"
+import { env, getApolloConfig, getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
 import {
   ACCOUNT_USERNAME,
@@ -85,9 +85,9 @@ const setGqlContext = async (
 
   const body = req.body ?? null
 
-  const ipString = isProd
-    ? req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
-    : req.ip
+  const ipString = env.UNSECURE_IP_FROM_REQUEST_OBJECT
+    ? req.ip
+    : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
 
   const ip = parseIps(ipString)
 
@@ -350,15 +350,13 @@ export const startApolloServer = async ({
         `🚀 "${type}" server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
       )
 
-      if (!isProd) {
-        console.log(
-          `in dev mode, ${type} server should be accessed through oathkeeper reverse proxy at ${
-            type === "admin"
-              ? "http://localhost:4002/admin/graphql"
-              : "http://localhost:4002/graphql"
-          }`,
-        )
-      }
+      console.log(
+        `in dev mode, ${type} server should be accessed through oathkeeper reverse proxy at ${
+          type === "admin"
+            ? "http://localhost:4002/admin/graphql"
+            : "http://localhost:4002/graphql"
+        }`,
+      )
 
       resolve({ app, httpServer, apolloServer })
     })
