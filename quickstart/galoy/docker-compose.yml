@@ -64,7 +64,7 @@ services:
       - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/apollo-federation/supergraph.graphql
       - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/apollo-federation/router.yaml
     volumes:
-      - ./:/repo
+      - ${HOST_PROJECT_PATH:-.}/dev:/repo/dev
     extra_hosts: []
   otel-agent:
     ports: []

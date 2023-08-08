@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: change paths'
-      sha: eee06405c6fafe790e9d372e686a86f98862afbd
+      commitTitle: 'fix: apollo volume path'
+      sha: 62ded77286b1e49f7b52752f670c12852ade0161
       tags:
-      - 0.11.9-10-geee06405c
+      - 0.11.9-12-g62ded7728
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: change paths'
-      sha: eee06405c6fafe790e9d372e686a86f98862afbd
+      commitTitle: 'fix: apollo volume path'
+      sha: 62ded77286b1e49f7b52752f670c12852ade0161
       tags:
-      - 0.11.9-10-geee06405c
+      - 0.11.9-12-g62ded7728
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: change paths'
-      sha: eee06405c6fafe790e9d372e686a86f98862afbd
+      commitTitle: 'fix: apollo volume path'
+      sha: 62ded77286b1e49f7b52752f670c12852ade0161
       tags:
-      - 0.11.9-10-geee06405c
+      - 0.11.9-12-g62ded7728
     path: ./
   path: ./graphql
 kind: LockConfig
