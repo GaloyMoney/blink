@@ -26,7 +26,7 @@ export const markAccountForDeletion = async ({
     if (balance instanceof Error) return balance
     if (balance > 0 && cancelIfPositiveBalance) {
       return new AccountHasPositiveBalanceError(
-        "The new phone is associated with an account with a non empty wallet",
+        `The new phone is associated with an account with a non empty wallet. walletId: ${wallet.id}, balance: ${balance}, accountId: ${account.id}, cancelIfPositiveBalance: ${cancelIfPositiveBalance}`,
       )
     }
     addEventToCurrentSpan(`deleting_wallet`, {

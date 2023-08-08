@@ -463,8 +463,8 @@ input UserRequestAuthCodeInput {
 }
 
 input UserUpdatePhoneInput {
+  accountId: ID!
   phone: Phone!
-  uid: ID!
 }
 
 """Unique identifier of a user"""

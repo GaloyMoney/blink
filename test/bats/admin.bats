@@ -11,20 +11,6 @@ setup_file() {
     "$ADMIN_TOKEN_NAME" \
     "$ADMIN_PHONE" \
     "$CODE"
-
-  login_user \
-    "$TESTER_TOKEN_NAME" \
-    "$TESTER_PHONE"  \
-    "$CODE"
-
-  variables=$(
-      jq -n \
-      --arg username "$username" \
-      '{input: {username: $username}}'
-  )
-
-  exec_graphql "$TESTER_TOKEN_NAME" 'user-update-username' "$variables"
-
 }
 
 teardown_file() {
@@ -42,15 +28,27 @@ TESTER_TOKEN_NAME="tester"
 TESTER_PHONE="+19876543210"
 
 @test "admin: update user phone" {
-  token_name="$ADMIN_TOKEN_NAME"
-  phone="$TESTER_PHONE"
+  admin_token="$ADMIN_TOKEN_NAME"
+
+  login_user \
+    "$TESTER_TOKEN_NAME" \
+    "$TESTER_PHONE"  \
+    "$CODE"
+
+  variables=$(
+      jq -n \
+      --arg username "$username" \
+      '{input: {username: $username}}'
+  )
+
+  exec_graphql "$TESTER_TOKEN_NAME" 'user-update-username' "$variables"
 
   variables=$(
     jq -n \
-    --arg phone "$phone" \
+    --arg phone "$TESTER_PHONE" \
     '{phone: $phone}'
   )
-  exec_admin_graphql "$token_name" 'account-details-by-user-phone' "$variables"
+  exec_admin_graphql "$admin_token" 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$id" != "null" ]] || exit 1
 
@@ -58,10 +56,11 @@ TESTER_PHONE="+19876543210"
   variables=$(
     jq -n \
     --arg phone "$new_phone" \
-    --arg uid "$id" \
-    '{input: {phone: $phone, uid: $uid}}'
+    --arg accountId "$id" \
+    '{input: {phone: $phone, accountId: $accountId}}'
   )
-  exec_admin_graphql $token_name 'user-update-phone' "$variables"
+
+  exec_admin_graphql $admin_token 'user-update-phone' "$variables"
   num_errors="$(graphql_output '.data.userUpdatePhone.errors | length')"
   [[ "$num_errors" == "0" ]] || exit 1
 
@@ -70,7 +69,8 @@ TESTER_PHONE="+19876543210"
     --arg phone "$new_phone" \
     '{phone: $phone}'
   )
-  exec_admin_graphql "$token_name" 'account-details-by-user-phone' "$variables"
+
+  exec_admin_graphql "$admin_token" 'account-details-by-user-phone' "$variables"
   refetched_id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
 
@@ -80,7 +80,7 @@ TESTER_PHONE="+19876543210"
     '{username: $username}'
   )
 
-  exec_admin_graphql "$token_name" 'account-details-by-username' "$variables"
+  exec_admin_graphql "$admin_token" 'account-details-by-username' "$variables"
   refetched_id="$(graphql_output '.data.accountDetailsByUsername.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
   
@@ -91,7 +91,7 @@ TESTER_PHONE="+19876543210"
     '{input: {level: $level, uid: $uid}}'
   )
 
-  exec_admin_graphql "$token_name" 'account-status-level-update' "$variables"
+  exec_admin_graphql "$admin_token" 'account-status-level-update' "$variables"
   refetched_id="$(graphql_output '.data.accountUpdateLevel.accountDetails.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
   level="$(graphql_output '.data.accountUpdateLevel.accountDetails.level')"
@@ -105,7 +105,7 @@ TESTER_PHONE="+19876543210"
     '{input: {status: $status, uid: $uid, comment: $comment}}'
   )
 
-  exec_admin_graphql "$token_name" 'account-update-status' "$variables"
+  exec_admin_graphql "$admin_token" 'account-update-status' "$variables"
   refetched_id="$(graphql_output '.data.accountUpdateStatus.accountDetails.id')"
   [[ "$refetched_id" == "$id" ]] || exit 1
   account_status="$(graphql_output '.data.accountUpdateStatus.accountDetails.status')"
