@@ -33,3 +33,13 @@ directories:
     - docker-compose.override.yml
     excludePaths:
     - dev/bin/**/*
+- path: ./graphql
+  contents:
+  - path: ./
+    git:
+      url: https://github.com/GaloyMoney/galoy.git
+      ref: quickstart
+    includePaths:
+    - src/graphql/public/schema.graphql
+    - src/graphql/admin/schema.graphql
+    newRootPath: src/graphql

@@ -3,17 +3,25 @@ directories:
 - contents:
   - git:
       commitTitle: 'chore: change paths'
-      sha: b373d02ede494e8f8df295aa3c9832b19f25c852
+      sha: eee06405c6fafe790e9d372e686a86f98862afbd
       tags:
-      - 0.11.9-10-gb373d02ed
+      - 0.11.9-10-geee06405c
     path: ./
   path: dev
 - contents:
   - git:
       commitTitle: 'chore: change paths'
-      sha: b373d02ede494e8f8df295aa3c9832b19f25c852
+      sha: eee06405c6fafe790e9d372e686a86f98862afbd
       tags:
-      - 0.11.9-10-gb373d02ed
+      - 0.11.9-10-geee06405c
     path: ./
   path: ./galoy
+- contents:
+  - git:
+      commitTitle: 'chore: change paths'
+      sha: eee06405c6fafe790e9d372e686a86f98862afbd
+      tags:
+      - 0.11.9-10-geee06405c
+    path: ./
+  path: ./graphql
 kind: LockConfig
