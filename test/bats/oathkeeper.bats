@@ -34,6 +34,13 @@ fetch_config_value() {
   fi
 }
 
+# TODO: Refactor when we clean up env variable handling
+if [[ -n "$OATHKEEPER_HOST" ]]; then
+  OATHKEEPER_ENDPOINT="${OATHKEEPER_HOST}:4456/decisions/"
+else
+  OATHKEEPER_ENDPOINT="$(fetch_config_value 'decisionsApi')"
+fi
+
 check_is_uuid() {
   uuid_string=$1
 
@@ -98,7 +105,6 @@ exec_oathkeeper() {
     run_cmd=""
   fi
 
-  OATHKEEPER_ENDPOINT="$(fetch_config_value 'decisionsApi')"
   ${run_cmd} curl -s -I \
     -X POST \
     ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
