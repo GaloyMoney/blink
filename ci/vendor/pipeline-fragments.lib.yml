@@ -134,6 +134,7 @@ plan:
   - { get: repo, trigger: true }
   - { get: pipeline-tasks }
 - task: #@ container
+  attempts: 2
   timeout: 12m
   tags: ["galoy-staging"]
   config:
