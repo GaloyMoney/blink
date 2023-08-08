@@ -139,7 +139,7 @@ const AccountSchema = new Schema<AccountRecord>(
       sparse: true,
       // TODO: uncomment after migration
       // required: true,
-      default: () => crypto.randomUUID(),
+      // default: () => crypto.randomUUID(),
     },
 
     withdrawFee: {

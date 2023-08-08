@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 import getUuidByString from "uuid-by-string"
 
 import { OnboardingEarn } from "@config"
@@ -94,6 +96,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 
   const update = async ({
     id,
+    uuid,
     level,
     statusHistory,
     coordinates,
@@ -112,6 +115,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       const result = await Account.findOneAndUpdate(
         { _id: toObjectId<AccountId>(id) },
         {
+          uuid,
           level,
           statusHistory,
           coordinates,
@@ -149,6 +153,8 @@ export const AccountsRepository = (): IAccountsRepository => {
     try {
       const account = new Account()
       account.kratosUserId = kratosUserId
+      // TODO: remove after migration
+      account.uuid = crypto.randomUUID()
       await account.save()
       return translateToAccount(account)
     } catch (err) {
