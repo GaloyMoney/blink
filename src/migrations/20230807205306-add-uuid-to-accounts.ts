@@ -1,3 +1,5 @@
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-nocheck
 /* eslint @typescript-eslint/no-var-requires: "off" */
 const getUuidByString = require("uuid-by-string")
 
@@ -6,7 +8,7 @@ async function migrateAccounts(db, batchSize = 100) {
 
   let batchCount = 0
   while (await cursor.hasNext()) {
-    const batchUpdates: unknown[] = []
+    const batchUpdates = []
     for (let i = 0; i < batchSize && (await cursor.hasNext()); i++) {
       const account = await cursor.next()
       const uuid = getUuidByString(account._id.toString())

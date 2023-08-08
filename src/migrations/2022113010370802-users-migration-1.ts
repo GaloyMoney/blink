@@ -14,14 +14,18 @@ module.exports = {
       const phone = account.phone
       const createdAt = account.created_at
 
-      await db.collection("users").insertOne({
-        userId,
-        phoneMetadata,
-        language,
-        deviceTokens,
-        phone,
-        createdAt,
-      })
+      try {
+        await db.collection("users").insertOne({
+          userId,
+          phoneMetadata,
+          language,
+          deviceTokens,
+          phone,
+          createdAt,
+        })
+      } catch (error) {
+        console.log("User already exists", error)
+      }
 
       if (progress % 1000 === 0) {
         console.log(`${progress} users updated`)
