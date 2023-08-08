@@ -136,6 +136,7 @@ const AccountSchema = new Schema<AccountRecord>(
       type: String,
       index: true,
       unique: true,
+      sparse: true,
       // TODO: uncomment after migration
       // required: true,
       default: () => crypto.randomUUID(),
