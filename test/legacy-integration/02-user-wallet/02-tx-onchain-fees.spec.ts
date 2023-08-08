@@ -1,14 +1,13 @@
 import { once } from "events"
 
-import { Wallets, Payments } from "@app"
-import { getFeesConfig, getOnChainWalletConfig } from "@config"
+import { Wallets } from "@app"
+import { getOnChainWalletConfig } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
 
-import { OnChainService } from "@services/bria"
 import { DealerPriceService } from "@services/dealer-price"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { baseLogger } from "@services/logger"
@@ -59,6 +58,12 @@ beforeAll(async () => {
   await sendToLndWalletTestWrapper({
     amountSats: toSats(defaultAmount * 5),
     walletId: walletIdA,
+  })
+
+  // Fund walletIdUsdA
+  await sendToLndWalletTestWrapper({
+    amountSats: toSats(defaultAmount * 5),
+    walletId: walletIdUsdA,
   })
 
   // Fund lnd
@@ -214,8 +219,6 @@ describe("UserWallet - getOnchainFee", () => {
         it("returns a fee greater than zero for an external address", async () => {
           await testAmountCaseAmounts(dealerFns.getSatsFromCentsForImmediateSell)
 
-          const onChainService = OnChainService()
-
           const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
 
           const paymentAmount = paymentAmountFromNumber({
@@ -223,26 +226,6 @@ describe("UserWallet - getOnchainFee", () => {
             currency: WalletCurrency.Btc,
           })
           if (paymentAmount instanceof Error) throw paymentAmount
-
-          const minerFee = await onChainService.estimateFeeForPayout({
-            amount: paymentAmount,
-            address,
-            speed: PayoutSpeed.Fast,
-          })
-          if (minerFee instanceof Error) throw minerFee
-
-          const feeRates = getFeesConfig()
-          const feeSats = toSats(feeRates.withdrawDefaultMin + Number(minerFee.amount))
-
-          // Fund empty USD wallet
-          const payResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-            recipientWalletId: walletIdUsdA,
-            memo: "",
-            amount: defaultAmount + feeSats,
-            senderWalletId: walletIdA,
-            senderAccount: accountA,
-          })
-          if (payResult instanceof Error) throw payResult
 
           const getFeeArgs = {
             walletId: walletIdUsdA,
