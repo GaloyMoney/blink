@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from "crypto"
 
-import { getLocale, ONE_DAY } from "@config"
+import { getLocale } from "@config"
 
-import { Lightning, Payments, Prices, Wallets } from "@app"
+import { Lightning, Payments, Wallets } from "@app"
 import * as PaymentsHelpers from "@app/payments/helpers"
 import {
   btcFromUsdMidPriceFn,
@@ -27,7 +27,6 @@ import {
 import { InsufficientBalanceError as DomainInsufficientBalanceError } from "@domain/errors"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { NotificationType } from "@domain/notifications"
 import {
   LnFees,
@@ -43,16 +42,14 @@ import {
   WalletCurrency,
   ZERO_SATS,
 } from "@domain/shared"
-import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
-import { Account, WalletInvoice } from "@services/mongoose/schema"
+import { PaymentInitiationMethod } from "@domain/wallets"
+import { Account } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
 
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
-import { TransactionsMetadataRepository } from "@services/ledger/services"
 import { LndService } from "@services/lnd"
-import { getActiveLnd } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import {
   AccountsRepository,
@@ -76,7 +73,6 @@ import {
   createHodlInvoice,
   createInvoice,
   createUserAndWalletFromPhone,
-  decodePaymentRequest,
   fundWalletIdFromOnchain,
   getAccountByPhone,
   getAccountRecordByPhone,
@@ -153,7 +149,7 @@ jest.mock("@services/lnd", () => {
   }
 })
 
-let initBalanceA: Satoshis, initBalanceB: Satoshis, initBalanceUsdB: UsdCents
+let initBalanceB: Satoshis, initBalanceUsdB: UsdCents
 const amountInvoice = toSats(1000)
 
 const phoneA = randomPhone()
@@ -172,8 +168,6 @@ let walletIdC: WalletId
 let walletIdH: WalletId
 let walletIdUsdB: WalletId
 let walletIdUsdA: WalletId
-
-let walletDescriptorB: WalletDescriptor<WalletCurrency>
 
 let usernameA: Username
 let usernameB: Username
@@ -224,16 +218,9 @@ beforeAll(async () => {
   await setUsername({ username: usernameA, id: accountA.id })
   await setUsername({ username: usernameB, id: accountB.id })
   await setUsername({ username: usernameC, id: accountC.id })
-
-  walletDescriptorB = {
-    id: walletIdB,
-    currency: WalletCurrency.Btc,
-    accountId: accountB.id,
-  }
 })
 
 beforeEach(async () => {
-  initBalanceA = toSats(await getBalanceHelper(walletIdA))
   initBalanceB = toSats(await getBalanceHelper(walletIdB))
   initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 })
@@ -266,275 +253,6 @@ describe("UserWallet - Lightning Pay", () => {
     if (paymentResult instanceof Error) throw paymentResult
 
     expect(paymentResult).toBe(PaymentSendStatus.Success)
-  })
-
-  it.skip("sends to another Galoy user a push payment", async () => {
-    const sendNotification = jest.fn()
-    jest
-      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementationOnce(() => ({ sendNotification }))
-
-    const res = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: walletIdA,
-      memo: "",
-      amount: amountInvoice,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    if (res instanceof Error) throw res
-
-    const finalBalanceA = await getBalanceHelper(walletIdA)
-    const { result: txWalletA, error } = await getTransactionsForWalletId(walletIdA)
-    if (error instanceof Error || txWalletA === null) {
-      throw error
-    }
-
-    const finalBalanceB = await getBalanceHelper(walletIdB)
-    const txResult = await getTransactionsForWalletId(walletIdB)
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
-    }
-    const userBTransaction = txResult.result.slice
-    expect(res).toBe(PaymentSendStatus.Success)
-    expect(finalBalanceA).toBe(initBalanceA + amountInvoice)
-    expect(finalBalanceB).toBe(initBalanceB - amountInvoice)
-
-    expect(txWalletA.slice[0].initiationVia).toHaveProperty(
-      "type",
-      PaymentInitiationMethod.IntraLedger,
-    )
-    expect(txWalletA.slice[0].initiationVia).toHaveProperty(
-      "counterPartyUsername",
-      usernameB,
-    )
-    expect(userBTransaction[0].initiationVia).toHaveProperty(
-      "counterPartyUsername",
-      usernameA,
-    )
-    expect(userBTransaction[0].initiationVia).toHaveProperty(
-      "type",
-      PaymentInitiationMethod.IntraLedger,
-    )
-
-    await sleep(1000)
-
-    const satsPrice = await Prices.getCurrentSatPrice({ currency: DisplayCurrency.Usd })
-    if (satsPrice instanceof Error) throw satsPrice
-
-    const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-      currency: DisplayCurrency.Usd,
-    })
-    if (displayPriceRatio instanceof Error) throw displayPriceRatio
-
-    const paymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
-    const displayPaymentAmount = displayPriceRatio.convertFromWallet(paymentAmount)
-
-    const { title: titleReceipt, body: bodyReceipt } = createPushNotificationContent({
-      type: NotificationType.IntraLedgerReceipt,
-      userLanguage: locale as UserLanguage,
-      amount: paymentAmount,
-      displayAmount: displayPaymentAmount,
-    })
-
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].title).toBe(titleReceipt)
-    expect(sendNotification.mock.calls[0][0].body).toBe(bodyReceipt)
-
-    let accountRecordA = await getAccountRecordByPhone(phoneA)
-    let accountRecordB = await getAccountRecordByPhone(phoneB)
-
-    expect(accountRecordA.contacts).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
-    )
-    const contactA = accountRecordA.contacts.find(
-      (userContact) => userContact.id === usernameB,
-    )
-    const txnCountA = contactA?.transactionsCount || 0
-
-    expect(accountRecordB.contacts).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: usernameA })]),
-    )
-    const contact1 = accountRecordB.contacts.find(
-      (userContact) => userContact.id === usernameA,
-    )
-    const txnCount1 = contact1?.transactionsCount || 0
-
-    const res2 = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: walletIdA,
-      memo: "",
-      amount: amountInvoice,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    if (res2 instanceof Error) throw res2
-    expect(res2).toBe(PaymentSendStatus.Success)
-
-    accountRecordA = await getAccountRecordByPhone(phoneA)
-    expect(accountRecordA.contacts).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: usernameB,
-          transactionsCount: txnCountA + 1,
-        }),
-      ]),
-    )
-    accountRecordB = await getAccountRecordByPhone(phoneB)
-    expect(accountRecordB.contacts).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: usernameA,
-          transactionsCount: txnCount1 + 1,
-        }),
-      ]),
-    )
-  })
-
-  it("pay zero amount invoice", async () => {
-    const imbalanceCalc = ImbalanceCalculator({
-      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
-      sinceDaysAgo: ONE_DAY,
-      volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
-      volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
-    })
-
-    const imbalanceInit = await imbalanceCalc.getSwapOutImbalanceAmount(walletDescriptorB)
-    if (imbalanceInit instanceof Error) throw imbalanceInit
-
-    const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
-    const paymentHash = id as PaymentHash
-    const revealedPreImage = secret as RevealedPreImage
-
-    // Test payment is successful
-    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      amount: amountInvoice,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const txns = await LedgerService().getTransactionsByHash(paymentHash)
-    if (txns instanceof Error) throw txns
-
-    const btcPaymentAmount = paymentAmountFromNumber({
-      amount: amountInvoice,
-      currency: WalletCurrency.Btc,
-    })
-    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
-
-    const usdPaymentAmount = await usdFromBtcMidPriceFn(btcPaymentAmount)
-    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
-    const cents = Number(usdPaymentAmount.amount)
-
-    // Check transaction metadata for BTC 'LedgerTransactionType.Payment'
-    // ===
-    const txnPayment = txns.find((tx) => tx.type === LedgerTransactionType.Payment)
-    expect(txnPayment).not.toBeUndefined()
-    if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
-    if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
-    if (!txnPayment?.centsFee) throw new Error("centsFee missing from payment")
-    if (!txnPayment?.satsFee) throw new Error("satsFee missing from payment")
-    expect(amountInvoice).toEqual(txnPayment.satsAmount)
-    expect(Number(usdPaymentAmount.amount)).toEqual(txnPayment.centsAmount)
-
-    const priceRatio = WalletPriceRatio({
-      usd: usdPaymentAmount,
-      btc: btcPaymentAmount,
-    })
-    if (priceRatio instanceof Error) throw priceRatio
-
-    const feeAmountSats = LnFees().maxProtocolAndBankFee({
-      amount: BigInt(amountInvoice),
-      currency: WalletCurrency.Btc,
-    })
-    const satsFee = toSats(feeAmountSats.amount)
-
-    const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
-    const centsFee = toCents(feeAmountCents.amount)
-
-    const expectedFields = {
-      type: LedgerTransactionType.Payment,
-
-      debit: amountInvoice + satsFee,
-      credit: 0,
-
-      satsAmount: amountInvoice,
-      satsFee,
-      centsAmount: cents,
-      centsFee,
-      displayAmount: cents,
-      displayFee: centsFee,
-
-      displayCurrency: DisplayCurrency.Usd,
-    }
-    expect(txnPayment).toEqual(expect.objectContaining(expectedFields))
-
-    // Test fee reimbursement amounts
-    const txnFeeReimburse = txns.find(
-      (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,
-    )
-
-    expect(txnFeeReimburse).not.toBeUndefined()
-    expect(txnFeeReimburse).toEqual(
-      expect.objectContaining({
-        debit: 0,
-        credit: toSats(feeAmountSats.amount),
-
-        satsAmount: toSats(feeAmountSats.amount),
-        satsFee: 0,
-        centsAmount: centsFee,
-        centsFee: 0,
-        displayAmount: centsFee,
-        displayFee: 0,
-
-        displayCurrency: DisplayCurrency.Usd,
-      }),
-    )
-
-    // Test metadata is correctly persisted
-    const txns_metadata = await Promise.all(
-      txns.map(async (txn) => TransactionsMetadataRepository().findById(txn.id)),
-    )
-    expect(txns_metadata).toHaveLength(txns.length)
-
-    const metadataCheck = txns_metadata.every((txn) => !(txn instanceof Error))
-    expect(metadataCheck).toBeTruthy()
-    if (!metadataCheck) throw txns_metadata.find((txn) => txn instanceof Error)
-
-    const revealedPreImages = new Set(
-      txns_metadata.map((txn) =>
-        txn instanceof Error
-          ? txn
-          : "revealedPreImage" in txn
-          ? txn.revealedPreImage
-          : undefined,
-      ),
-    )
-    expect(revealedPreImages.size).toEqual(1)
-    expect(revealedPreImages.has(revealedPreImage)).toBeTruthy()
-
-    const paymentHashes = new Set(
-      txns_metadata.map((txn) =>
-        txn instanceof Error ? txn : "hash" in txn ? txn.hash : undefined,
-      ),
-    )
-    expect(paymentHashes.size).toEqual(1)
-    expect(paymentHashes.has(paymentHash)).toBeTruthy()
-
-    const finalBalance = await getBalanceHelper(walletIdB)
-    expect(finalBalance).toBe(initBalanceB - amountInvoice)
-
-    const imbalanceFinal = await imbalanceCalc.getSwapOutImbalanceAmount(
-      walletDescriptorB,
-    )
-    if (imbalanceFinal instanceof Error) throw imbalanceFinal
-
-    // imbalance is reduced with lightning payment
-    expect(Number(imbalanceFinal.amount)).toBe(
-      Number(imbalanceInit.amount) - amountInvoice,
-    )
   })
 
   it("pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
@@ -641,89 +359,6 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txns.length).toBeGreaterThan(0)
     const txn = txns[0]
     expect(txn.memo).toBe(memoFromUser)
-  })
-
-  it.skip("filters spam from send to another Galoy user as push payment", async () => {
-    // TODO: good candidate for a unit test?
-
-    const satsBelow = 100
-    const memoSpamBelowThreshold = "Spam BELOW threshold"
-    const resBelowThreshold = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: walletIdA,
-      memo: memoSpamBelowThreshold,
-      amount: toSats(satsBelow),
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    if (resBelowThreshold instanceof Error) throw resBelowThreshold
-
-    const satsAbove = 1100
-    const memoSpamAboveThreshold = "Spam ABOVE threshold"
-    const resAboveThreshold = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: walletIdA,
-      memo: memoSpamAboveThreshold,
-      amount: toSats(satsAbove),
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    if (resAboveThreshold instanceof Error) throw resAboveThreshold
-
-    let txResult = await getTransactionsForWalletId(walletIdA)
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
-    }
-    const userTransaction0 = txResult.result.slice
-    const transaction0Above = userTransaction0[0]
-    const transaction0Below = userTransaction0[1]
-
-    txResult = await getTransactionsForWalletId(walletIdB)
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
-    }
-    const userBTransaction = txResult.result.slice
-    const transaction1Above = userBTransaction[0]
-    const transaction1Below = userBTransaction[1]
-
-    // confirm both transactions succeeded
-    expect(resBelowThreshold).toBe(PaymentSendStatus.Success)
-    expect(resAboveThreshold).toBe(PaymentSendStatus.Success)
-
-    // check below-threshold transaction for recipient was filtered
-
-    expect(transaction0Below.initiationVia).toHaveProperty(
-      "counterPartyUsername",
-      usernameB,
-    )
-    expect(transaction0Below.memo).toBeNull()
-    expect(transaction1Below.initiationVia).toHaveProperty(
-      "counterPartyUsername",
-      usernameA,
-    )
-    expect(transaction1Below.memo).toBe(memoSpamBelowThreshold)
-
-    // check above-threshold transaction for recipient was NOT filtered
-    expect(transaction0Above.initiationVia).toHaveProperty(
-      "counterPartyUsername",
-      usernameB,
-    )
-    expect(transaction0Above.memo).toBe(memoSpamAboveThreshold)
-    expect(transaction1Above.initiationVia).toHaveProperty(
-      "counterPartyUsername",
-      usernameA,
-    )
-    expect(transaction1Above.memo).toBe(memoSpamAboveThreshold)
-
-    // check contacts being added
-    const accountRecordA = await getAccountRecordByPhone(phoneA)
-    const accountRecordB = await getAccountRecordByPhone(phoneB)
-
-    expect(accountRecordA.contacts).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
-    )
-
-    expect(accountRecordB.contacts).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: usernameA })]),
-    )
   })
 
   it("fails when user has insufficient balance", async () => {
@@ -2734,78 +2369,3 @@ describe("UserWalletLimit - handles 1 sat send with high btc outgoing volume", (
     expect(paidIntraledger).not.toBeInstanceOf(Error)
   })
 })
-
-it.skip("expired payment", async () => {
-  const memo = "payment that should expire"
-
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const Lightning = require("src/Lightning")
-  jest.spyOn(Lightning, "delay").mockImplementation(() => ({
-    value: 1,
-    unit: "seconds",
-    additional_delay_value: 0,
-  }))
-
-  const activeNode = getActiveLnd()
-  if (activeNode instanceof Error) throw activeNode
-
-  const lnd = activeNode.lnd
-
-  const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-    walletId: walletIdB as WalletId,
-    amount: amountInvoice,
-    memo,
-  })
-  if (lnInvoice instanceof Error) throw lnInvoice
-  const { paymentRequest: request } = lnInvoice
-
-  const { id } = await decodePaymentRequest({ lnd, request })
-  expect(await WalletInvoice.countDocuments({ _id: id })).toBe(1)
-
-  // is deleting the invoice the same as when as invoice expired?
-  // const res = await cancelHodlInvoice({ lnd, id })
-  // baseLogger.debug({res}, "cancelHodlInvoice result")
-
-  await sleep(5000)
-
-  // hacky way to test if an invoice has expired
-  // without having to to have a big timeout.
-  // let i = 30
-  // let hasExpired = false
-  // while (i > 0 || hasExpired) {
-  //   try {
-  //     baseLogger.debug({i}, "get invoice start")
-  //     const res = await getInvoice({ lnd, id })
-  //     baseLogger.debug({res, i}, "has expired?")
-  //   } catch (err) {
-  //     baseLogger.warn({err})
-  //   }
-  //   i--
-  //   await sleep(1000)
-  // }
-
-  // try {
-  //   await pay({ lnd: lndOutside1, request })
-  // } catch (err) {
-  //   baseLogger.warn({err}, "error paying expired/cancelled invoice (that is intended)")
-  // }
-
-  // await expect(pay({ lnd: lndOutside1, request })).rejects.toThrow()
-
-  // await sleep(1000)
-
-  // await getBalanceHelper(walletB)
-
-  // FIXME: test is failing.
-  // lnd doesn't always delete invoice just after they have expired
-
-  // expect(await WalletInvoice.countDocuments({_id: id})).toBe(0)
-
-  // try {
-  //   await getInvoice({ lnd, id })
-  // } catch (err) {
-  //   baseLogger.warn({err}, "invoice should not exist any more")
-  // }
-
-  // expect(await userWalletB.updatePendingInvoice({ hash: id })).toBeFalsy()
-}, 150000)
