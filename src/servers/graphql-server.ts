@@ -39,7 +39,6 @@ import jwksRsa from "jwks-rsa"
 
 import { UsersRepository } from "@services/mongoose"
 import { checkedToUserId } from "@domain/accounts"
-import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
 import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 
 import { playgroundTabs } from "../graphql/playground"
@@ -140,12 +139,7 @@ export const sessionContext = ({
       if (!(maybeUserId instanceof ValidationError)) {
         const userId = maybeUserId
         const account = await Accounts.getAccountFromUserId(userId)
-        if (account instanceof CouldNotFindAccountFromKratosIdError) {
-          // do nothing, the jwt is valid but the account does not exist
-          // TODO: refactor to remove https://github.com/GaloyMoney/galoy/pull/2071/files#diff-2a3744191b13e4b2375d4bc44df6706cd453f9b3ccbf3970f801ad4ce97219aaR16
-          // or of the graphql in a rest endoing.
-          // more context: https://github.com/GaloyMoney/galoy/pull/2071/files#r1214595029
-        } else if (account instanceof Error) {
+        if (account instanceof Error) {
           throw mapError(account)
         } else {
           domainAccount = account
