@@ -416,9 +416,7 @@ services:
     extra_hosts: []
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
-      - type: bind
-        source: ${HOST_PROJECT_PATH:-.}/dev/ory
-        target: /home/ory
+      - ${HOST_PROJECT_PATH:-.}/dev/ory:/home/ory
   kratos:
     image: oryd/kratos:v1.0.0
     ports: []
@@ -430,9 +428,7 @@ services:
     links:
       - kratos-pg:kratos-pg
     volumes:
-      - type: bind
-        source: dev/ory
-        target: /home/ory
+      - ${HOST_PROJECT_PATH:-.}/dev/ory:/home/ory
   kratos-pg:
     image: postgres:14.1
     ports: []
