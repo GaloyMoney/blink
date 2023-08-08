@@ -6,15 +6,15 @@ import { UsersRepository } from "@services/mongoose/users"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const updateUserPhone = async ({
-  id,
+  accountId: accountIdRaw,
   phone,
   updatedByUserId,
 }: {
-  id: string
+  accountId: string
   phone: PhoneNumber
   updatedByUserId: UserId
 }): Promise<Account | ApplicationError> => {
-  const accountId = checkedToAccountId(id)
+  const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
   const accountsRepo = AccountsRepository()
@@ -24,11 +24,16 @@ export const updateUserPhone = async ({
 
   const usersRepo = UsersRepository()
 
-  const existingUser = await usersRepo.findByPhone(phone)
-  if (!(existingUser instanceof Error)) {
+  const newUser = await usersRepo.findByPhone(phone)
+  if (!(newUser instanceof Error)) {
+    // if newUser exists, then we need to delete it (only if balance is 0
     addAttributesToCurrentSpan({ existingUser: true })
+
+    const newAccount = await accountsRepo.findByUserId(newUser.id)
+    if (newAccount instanceof Error) return newAccount
+
     const result = await markAccountForDeletion({
-      accountId,
+      accountId: newAccount.id,
       cancelIfPositiveBalance: true,
       updatedByUserId,
     })

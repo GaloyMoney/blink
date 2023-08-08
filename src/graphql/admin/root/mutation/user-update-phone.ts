@@ -8,7 +8,7 @@ import Phone from "@graphql/shared/types/scalar/phone"
 const UserUpdatePhoneInput = GT.Input({
   name: "UserUpdatePhoneInput",
   fields: () => ({
-    uid: {
+    accountId: {
       type: GT.NonNullID,
     },
     phone: {
@@ -19,7 +19,7 @@ const UserUpdatePhoneInput = GT.Input({
 
 const UserUpdatePhoneMutation = GT.Field<
   {
-    input: { uid: string; phone: PhoneNumber | Error }
+    input: { accountId: string; phone: PhoneNumber | Error }
   },
   null,
   GraphQLContextAuth
@@ -32,8 +32,8 @@ const UserUpdatePhoneMutation = GT.Field<
     input: { type: GT.NonNull(UserUpdatePhoneInput) },
   },
   resolve: async (_, args, { user }) => {
-    const { uid, phone } = args.input
-    for (const input of [uid, phone]) {
+    const { accountId, phone } = args.input
+    for (const input of [accountId, phone]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -42,7 +42,7 @@ const UserUpdatePhoneMutation = GT.Field<
     if (phone instanceof Error) return { errors: [{ message: phone.message }] }
 
     const account = await Admin.updateUserPhone({
-      id: uid,
+      accountId,
       phone,
       updatedByUserId: user.id,
     })
