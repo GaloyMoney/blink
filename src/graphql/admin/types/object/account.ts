@@ -1,13 +1,14 @@
 import { Wallets, Users } from "@app"
 import { GT } from "@graphql/index"
-import Coordinates from "@graphql/types/object/coordinates"
-import Timestamp from "@graphql/types/scalar/timestamp"
-import Username from "@graphql/types/scalar/username"
+import Coordinates from "@graphql/shared/types/object/coordinates"
+import Timestamp from "@graphql/shared/types/scalar/timestamp"
+import Username from "@graphql/shared/types/scalar/username"
 import { GraphQLObjectType } from "graphql"
-import Wallet from "@graphql/types/abstract/wallet"
+import Wallet from "@graphql/shared/types/abstract/wallet"
 import { mapError } from "@graphql/error-map"
 
-import AccountLevel from "../../../types/scalar/account-level"
+import AccountLevel from "@graphql/shared/types/scalar/account-level"
+
 import AccountStatus from "../scalar/account-status"
 
 import GraphQLUser from "./user"

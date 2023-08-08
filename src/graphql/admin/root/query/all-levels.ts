@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import { Levels } from "@config"
 
-import AccountLevel from "@graphql/types/scalar/account-level"
+import AccountLevel from "@graphql/shared/types/scalar/account-level"
 
 const AllLevelsQuery = GT.Field({
   type: GT.NonNullList(AccountLevel),

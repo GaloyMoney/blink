@@ -1,6 +1,6 @@
 import { Accounts } from "@app"
 import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
-import AccountLevel from "@graphql/types/scalar/account-level"
+import AccountLevel from "@graphql/shared/types/scalar/account-level"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 

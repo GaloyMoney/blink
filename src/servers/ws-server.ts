@@ -1,7 +1,7 @@
 import { getOperationAST, GraphQLError, parse, validate } from "graphql"
 
 import { WebSocketServer } from "ws" // yarn add ws
-import { gqlMainSchema } from "@graphql/main"
+import { gqlMainSchema } from "@graphql/public"
 import { Extra, useServer } from "graphql-ws/lib/use/ws"
 
 import { getJwksArgs, isProd } from "@config"

@@ -1,8 +1,8 @@
 import { GT } from "@graphql/index"
-import LnPaymentPreImage from "@graphql/types/scalar/ln-payment-preimage"
-import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import SatAmount from "@graphql/types/scalar/sat-amount"
-import Timestamp from "@graphql/types/scalar/timestamp"
+import LnPaymentPreImage from "@graphql/shared/types/scalar/ln-payment-preimage"
+import LnPaymentRequest from "@graphql/shared/types/scalar/ln-payment-request"
+import SatAmount from "@graphql/shared/types/scalar/sat-amount"
+import Timestamp from "@graphql/shared/types/scalar/timestamp"
 
 const LightningInvoice = GT.Object<LnInvoiceLookup>({
   name: "LightningInvoice",

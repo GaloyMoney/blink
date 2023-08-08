@@ -1,5 +1,5 @@
 import { ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
-import { normalizePaymentAmount } from "@graphql/root/mutation"
+import { normalizePaymentAmount } from "@graphql/shared/root/mutation"
 
 describe("normalizePaymentAmount", () => {
   it("returns the correct type", () => {

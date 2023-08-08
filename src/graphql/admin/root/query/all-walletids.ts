@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { Wallets } from "@app"
-import WalletCurrency from "@graphql/types/scalar/wallet-currency"
-import WalletId from "@graphql/types/scalar/wallet-id"
+import WalletCurrency from "@graphql/shared/types/scalar/wallet-currency"
+import WalletId from "@graphql/shared/types/scalar/wallet-id"
 
 const ListWalletIdsQuery = GT.Field({
   type: GT.NonNullList(WalletId),

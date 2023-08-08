@@ -1,10 +1,10 @@
 import { GT } from "@graphql/index"
-import LnPubkey from "@graphql/types/scalar/ln-pubkey"
-import Timestamp from "@graphql/types/scalar/timestamp"
-import SatAmount from "@graphql/types/scalar/sat-amount"
-import LnPaymentStatus from "@graphql/types/scalar/ln-payment-status"
-import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import LnPaymentPreImage from "@graphql/types/scalar/ln-payment-preimage"
+import LnPubkey from "@graphql/shared/types/scalar/ln-pubkey"
+import Timestamp from "@graphql/shared/types/scalar/timestamp"
+import SatAmount from "@graphql/shared/types/scalar/sat-amount"
+import LnPaymentStatus from "@graphql/shared/types/scalar/ln-payment-status"
+import LnPaymentRequest from "@graphql/shared/types/scalar/ln-payment-request"
+import LnPaymentPreImage from "@graphql/shared/types/scalar/ln-payment-preimage"
 
 const LightningPayment = GT.Object<LnPaymentLookup>({
   name: "LightningPayment",

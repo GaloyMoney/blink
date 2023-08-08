@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import { Wallets } from "@app"
-import Transaction from "@graphql/types/object/transaction"
+import Transaction from "@graphql/shared/types/object/transaction"
 import { mapError } from "@graphql/error-map"
 
 const TransactionByIdQuery = GT.Field({
