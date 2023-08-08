@@ -509,23 +509,6 @@ export const configSchema = {
         feeAccountingEnabled: true,
       },
     },
-    apollo: {
-      type: "object",
-      properties: {
-        playground: { type: "boolean" },
-        playgroundUrl: { type: "string" },
-      },
-      required: ["playground"],
-      if: {
-        properties: { playground: { const: true } },
-      },
-      then: { required: ["playgroundUrl"] },
-      additionalProperties: false,
-      default: {
-        playground: true,
-        playgroundUrl: "https://api.staging.galoy.io/graphql",
-      },
-    },
     userActivenessMonthlyVolumeThreshold: { type: "integer", default: 100 },
     cronConfig: {
       type: "object",
@@ -603,7 +586,6 @@ export const configSchema = {
     "fees",
     "onChainWallet",
     "swap",
-    "apollo",
     "userActivenessMonthlyVolumeThreshold",
     "cronConfig",
     "captcha",

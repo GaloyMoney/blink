@@ -127,10 +127,6 @@ type YamlSchema = {
     swapProviders: Array<SwapProvider>
     feeAccountingEnabled: boolean
   }
-  apollo: {
-    playground: boolean
-    playgroundUrl: string
-  }
   userActivenessMonthlyVolumeThreshold: number
   cronConfig: {
     rebalanceEnabled: boolean

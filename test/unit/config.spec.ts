@@ -57,15 +57,6 @@ describe("config.ts", () => {
       expect(contentOrg).toEqual(contentNew)
     })
 
-    it("passes validation with conditional not required", () => {
-      const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
-      clonedConfig.apollo.playground = false
-      delete clonedConfig.apollo.playgroundUrl
-
-      const valid = validate(clonedConfig)
-      expect(valid).toBeTruthy()
-    })
-
     it("passes with custom yaml", () => {
       const freshYamlConfig = JSON.parse(JSON.stringify(yamlConfig))
       const customYamlConfig = {
@@ -106,8 +97,8 @@ describe("config.ts", () => {
 
     it("fails validation missing conditional required", () => {
       const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
-      clonedConfig.apollo.playground = true
-      delete clonedConfig.apollo.playgroundUrl
+      clonedConfig.cronConfig.swapEnabled = true
+      delete clonedConfig.cronConfig.swapEnabled
 
       const valid = validate(clonedConfig)
       expect(valid).toBeFalsy()

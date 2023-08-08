@@ -4,7 +4,7 @@ import DataLoader from "dataloader"
 import express, { NextFunction, Request, Response } from "express"
 
 import { Accounts, Transactions } from "@app"
-import { UNSECURE_IP_FROM_REQUEST_OBJECT, getApolloConfig, getJwksArgs } from "@config"
+import { UNSECURE_IP_FROM_REQUEST_OBJECT, getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
 import {
   ACCOUNT_USERNAME,
@@ -13,16 +13,11 @@ import {
   addAttributesToCurrentSpanAndPropagate,
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
-import {
-  ApolloServerPluginDrainHttpServer,
-  ApolloServerPluginLandingPageDisabled,
-  ApolloServerPluginLandingPageGraphQLPlayground,
-} from "apollo-server-core"
+import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
 import { GraphQLError, GraphQLSchema } from "graphql"
 import { rule } from "graphql-shield"
-import helmet from "helmet"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 
@@ -41,8 +36,6 @@ import { checkedToUserId } from "@domain/accounts"
 import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 import { UsersRepository } from "@services/mongoose"
 
-import { playgroundTabs } from "../graphql/playground"
-
 import authRouter from "./authorization"
 import kratosRouter from "./authorization/kratos-router"
 import healthzHandler from "./middlewares/healthz"
@@ -51,8 +44,6 @@ import { idempotencyMiddleware } from "./middlewares/idempotency"
 const graphqlLogger = baseLogger.child({
   module: "graphql",
 })
-
-const apolloConfig = getApolloConfig()
 
 export const isAuthenticated = rule({ cache: "contextual" })((
   parent,
@@ -210,23 +201,11 @@ export const startApolloServer = async ({
       },
     }),
     ApolloServerPluginDrainHttpServer({ httpServer }),
-    apolloConfig.playground
-      ? ApolloServerPluginLandingPageGraphQLPlayground({
-          settings: { "schema.polling.enable": false },
-          tabs: [
-            {
-              endpoint: apolloConfig.playgroundUrl,
-              ...playgroundTabs.default,
-            },
-          ],
-        })
-      : ApolloServerPluginLandingPageDisabled(),
   ]
 
   const apolloServer = new ApolloServer({
     schema,
     cache: "bounded",
-    introspection: apolloConfig.playground,
     plugins: apolloPlugins,
     context: (context) => {
       return (context.req as RequestWithGqlContext).gqlContext
@@ -254,17 +233,6 @@ export const startApolloServer = async ({
 
   app.use("/auth", authRouter)
   app.use("/kratos", kratosRouter)
-
-  const enablePolicy = apolloConfig.playground ? false : undefined
-
-  app.use(
-    helmet({
-      crossOriginEmbedderPolicy: enablePolicy,
-      crossOriginOpenerPolicy: enablePolicy,
-      crossOriginResourcePolicy: enablePolicy,
-      contentSecurityPolicy: enablePolicy,
-    }),
-  )
 
   // Health check
   app.get(

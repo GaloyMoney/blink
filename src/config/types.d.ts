@@ -14,11 +14,6 @@ type CaptchaConfig = {
   mandatory: boolean
 }
 
-type ApolloConfig = {
-  playground: boolean
-  playgroundUrl: string
-}
-
 type AccountsConfig = {
   initialStatus: AccountStatus
   initialWallets: WalletCurrency[]
