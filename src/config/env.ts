@@ -124,6 +124,8 @@ export const env = createEnv({
     NEXTCLOUD_PASSWORD: z.string().min(1).optional(),
 
     MATTERMOST_WEBHOOK_URL: z.string().min(1).optional(),
+
+    PROXY_CHECK_APIKEY: z.string().min(1).optional(),
   },
 
   runtimeEnvStrict: {
@@ -217,5 +219,7 @@ export const env = createEnv({
     NEXTCLOUD_PASSWORD: process.env.NEXTCLOUD_PASSWORD,
 
     MATTERMOST_WEBHOOK_URL: process.env.MATTERMOST_WEBHOOK_URL,
+
+    PROXY_CHECK_APIKEY: process.env.PROXY_CHECK_APIKEY,
   },
 })

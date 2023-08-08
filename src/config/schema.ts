@@ -77,7 +77,6 @@ const rateLimitConfigSchema = {
 export const configSchema = {
   type: "object",
   properties: {
-    PROXY_CHECK_APIKEY: { type: "string" }, // TODO: move out of yaml and to env
     lightningAddressDomain: { type: "string", default: "pay.domain.com" },
     lightningAddressDomainAliases: {
       type: "array",
