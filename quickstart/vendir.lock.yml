@@ -2,18 +2,18 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: extend smoke-test'
-      sha: b14ecbb6c62d1b890fe75294554ccda7ae860ca4
+      commitTitle: 'chore: remove complex bind'
+      sha: 9d966395cb46d20893a1617fd8bf00b830da7a75
       tags:
-      - 0.11.1-4-gb14ecbb6c
-    path: ./
-  path: ./dev
+      - 0.11.9-8-g9d966395c
+    path: galoy-quickstart/dev
+  path: vendor
 - contents:
   - git:
-      commitTitle: 'chore: extend smoke-test'
-      sha: b14ecbb6c62d1b890fe75294554ccda7ae860ca4
+      commitTitle: 'chore: remove complex bind'
+      sha: 9d966395cb46d20893a1617fd8bf00b830da7a75
       tags:
-      - 0.11.1-4-gb14ecbb6c
+      - 0.11.9-8-g9d966395c
     path: ./
   path: ./galoy
 kind: LockConfig

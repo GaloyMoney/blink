@@ -3,4 +3,4 @@ subgraphs:
   public:
     routing_url: http://bats-tests:4012/graphql
     schema:
-      file: ../../src/graphql/main/schema.graphql
+      file: ../../src/graphql/public/schema.graphql

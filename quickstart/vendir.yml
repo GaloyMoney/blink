@@ -2,9 +2,9 @@ apiVersion: vendir.k14s.io/v1alpha1
 kind: Config
 
 directories:
-- path: ./dev
+- path: vendor
   contents:
-  - path: ./
+  - path: galoy-quickstart/dev
     git:
       url: https://github.com/GaloyMoney/galoy.git
       ref: quickstart
