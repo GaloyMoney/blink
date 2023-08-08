@@ -15,4 +15,4 @@ ytt -f ./docker-compose.tmpl.yml -f ${GALOY_ROOT_DIR}/docker-compose.yml -f ${GA
 pushd ${GALOY_ROOT_DIR}
 source .envrc
 mkdir -p "${GALOY_ROOT_DIR}/../vendor/galoy-quickstart/env"
-envsubst < .env.ci > ${GALOY_ROOT_DIR}/../vendor/galoy-quickstart/env/.env.galoy
+envsubst < .env.ci > ${GALOY_ROOT_DIR}/../.env.galoy

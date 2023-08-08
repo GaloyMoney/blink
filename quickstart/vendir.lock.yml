@@ -2,18 +2,18 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove complex bind'
-      sha: 9d966395cb46d20893a1617fd8bf00b830da7a75
+      commitTitle: 'chore: change paths'
+      sha: b373d02ede494e8f8df295aa3c9832b19f25c852
       tags:
-      - 0.11.9-8-g9d966395c
-    path: galoy-quickstart/dev
-  path: vendor
+      - 0.11.9-10-gb373d02ed
+    path: ./
+  path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove complex bind'
-      sha: 9d966395cb46d20893a1617fd8bf00b830da7a75
+      commitTitle: 'chore: change paths'
+      sha: b373d02ede494e8f8df295aa3c9832b19f25c852
       tags:
-      - 0.11.9-8-g9d966395c
+      - 0.11.9-10-gb373d02ed
     path: ./
   path: ./galoy
 kind: LockConfig

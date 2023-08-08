@@ -16,7 +16,7 @@ services:
     - 4456:4456
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/ory:/home/ory
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/ory:/home/ory
   kratos:
     image: oryd/kratos:v1.0.0
     ports:
@@ -29,7 +29,7 @@ services:
     links:
     - kratos-pg:kratos-pg
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/ory:/home/ory
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/ory:/home/ory
   kratos-pg:
     image: postgres:14.1
     ports:
@@ -51,7 +51,7 @@ services:
     - -r
     - /app/lib/services/tracing.js
     - lib/servers/graphql-main-server.js
-    env_file: ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/env/.env.galoy
+    env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - trigger
     - apollo-router
@@ -73,7 +73,7 @@ services:
     - -r
     - /app/lib/services/tracing.js
     - lib/servers/trigger.js
-    env_file: ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/env/.env.galoy
+    env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - lnd1
     - bria
@@ -147,13 +147,13 @@ services:
     ports:
     - 18443:18443
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   bitcoind-signer:
     image: lncm/bitcoind:v24.0.1
     ports:
     - 18543:18443
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
     depends_on:
     - bitcoind
     entrypoint:
@@ -167,12 +167,12 @@ services:
     ports:
     - 10009:10009
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/tls.key:/root/.lnd/tls.key
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/tls.key:/root/.lnd/tls.key
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on:
     - bitcoind
     entrypoint:
@@ -190,12 +190,12 @@ services:
     ports:
     - 10010:10009
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/tls.key:/root/.lnd/tls.key
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/tls.key:/root/.lnd/tls.key
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on:
     - bitcoind
     entrypoint:
@@ -213,12 +213,12 @@ services:
     ports:
     - 10012:10009
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/tls.key:/root/.lnd/tls.key
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/tls.key:/root/.lnd/tls.key
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
     entrypoint:
     - /bin/sh
     - -c
@@ -260,7 +260,7 @@ services:
         condition: service_healthy
     restart: on-failure:10
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/:/repo
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/:/repo
   postgres-bria:
     image: postgres:14.1
     environment:
@@ -281,9 +281,9 @@ services:
     depends_on:
     - bitcoind
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/fulcrum/fulcrum.conf:/fulcrum.conf
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/fulcrum/tls.key:/tls.key
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/fulcrum/tls.cert:/tls.cert
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/fulcrum/fulcrum.conf:/fulcrum.conf
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/fulcrum/tls.key:/tls.key
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/fulcrum/tls.cert:/tls.cert
     environment:
     - DATA_DIR=/db
     - SSL_CERTFILE=/tls.cert
@@ -304,7 +304,7 @@ services:
     - redis
     restart: on-failure:10
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/:/repo
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/:/repo
   otel-agent:
     ports:
     - 4318:4318
@@ -315,4 +315,4 @@ services:
     - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
     - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
     volumes:
-    - ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml

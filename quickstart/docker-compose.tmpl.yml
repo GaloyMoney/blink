@@ -17,7 +17,7 @@ services:
       - "-r"
       - "/app/lib/services/tracing.js"
       - "lib/servers/graphql-main-server.js"
-    env_file: ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/env/.env.galoy
+    env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - trigger
     - apollo-router
@@ -39,7 +39,7 @@ services:
       - "-r"
       - "/app/lib/services/tracing.js"
       - "lib/servers/trigger.js"
-    env_file: ${HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart/env/.env.galoy
+    env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - lnd1
     - bria
@@ -89,5 +89,5 @@ services:
     #@overlay/match when=1
     volumes:
     #@overlay/match by=overlay.all, expects="0+"
-    #@overlay/replace via=lambda left, right: left.replace("HOST_PROJECT_PATH:-.}", "HOST_PROJECT_PATH:-.}/vendor/galoy-quickstart")
+    #@overlay/replace via=lambda left, right: left.replace("HOST_PROJECT_PATH:-.}", "HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-/vendor/galoy-quickstart}")
     - REPLACED
