@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add webhook config'
-      sha: 9d0f008e41df2f5d5e0461171c02fc0c4aee1d6f
+      commitTitle: 'chore: retry test-on-docker'
+      sha: 95c4fd73e3a8aa92e4b52b97e4066a1f6bdb19ab
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: add webhook config'
-      sha: 9d0f008e41df2f5d5e0461171c02fc0c4aee1d6f
+      commitTitle: 'chore: retry test-on-docker'
+      sha: 95c4fd73e3a8aa92e4b52b97e4066a1f6bdb19ab
     path: .
   path: ./vendor
 kind: LockConfig
