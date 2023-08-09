@@ -25,6 +25,7 @@ import {
 
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
+let memo
 
 const calc = AmountCalculator()
 
@@ -42,6 +43,14 @@ beforeAll(async () => {
   const noAmountInvoice = decodeInvoice(randomNoAmountRequest)
   if (noAmountInvoice instanceof Error) throw noAmountInvoice
   noAmountLnInvoice = noAmountInvoice
+})
+
+beforeEach(() => {
+  memo = randomLightningMemo()
+})
+
+afterEach(async () => {
+  await Transaction.deleteMany({ memo })
 })
 
 const amount = toSats(10040)
@@ -75,8 +84,6 @@ const randomLightningMemo = () =>
 describe("lightningPay", () => {
   describe("settles via lightning", () => {
     it("fails if sender account is locked", async () => {
-      const memo = randomLightningMemo()
-
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
@@ -121,13 +128,10 @@ describe("lightningPay", () => {
       expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
-      await Transaction.deleteMany({ memo })
       lndServiceSpy.mockReset()
     })
 
     it("fails if sends to self", async () => {
-      const memo = randomLightningMemo()
-
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
@@ -174,13 +178,10 @@ describe("lightningPay", () => {
 
       // Restore system state
       await WalletInvoicesRepository().deleteByPaymentHash(lnInvoice.paymentHash)
-      await Transaction.deleteMany({ memo })
       lndServiceSpy.mockReset()
     })
 
     it("fails when user has insufficient balance", async () => {
-      const memo = randomLightningMemo()
-
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
@@ -205,13 +206,10 @@ describe("lightningPay", () => {
       expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
 
       // Restore system state
-      await Transaction.deleteMany({ memo })
       lndServiceSpy.mockReset()
     })
 
     it("fails to pay zero amount invoice without separate amount", async () => {
-      const memo = randomLightningMemo()
-
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
@@ -236,13 +234,10 @@ describe("lightningPay", () => {
       expect(paymentResult).toBeInstanceOf(LnPaymentRequestNonZeroAmountRequiredError)
 
       // Restore system state
-      await Transaction.deleteMany({ memo })
       lndServiceSpy.mockReset()
     })
 
     it("fails if user sends balance amount without accounting for fee", async () => {
-      const memo = randomLightningMemo()
-
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
@@ -279,14 +274,12 @@ describe("lightningPay", () => {
       expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
 
       // Restore system state
-      await Transaction.deleteMany({ memo })
       lndServiceSpy.mockReset()
     })
   })
 
   describe("settles intraledger", () => {
     it("fails if recipient account is locked", async () => {
-      const memo = randomLightningMemo()
       const { paymentHash, destination } = lnInvoice
 
       // Setup mocks
@@ -351,13 +344,10 @@ describe("lightningPay", () => {
 
       // Restore system state
       await WalletInvoicesRepository().deleteByPaymentHash(paymentHash)
-      await Transaction.deleteMany({ memo })
       lndServiceSpy.mockReset()
     })
 
     it("fails if sends to self", async () => {
-      const memo = randomLightningMemo()
-
       // Create users
       const newWalletDescriptor = await createRandomUserAndWallet()
       const newAccount = await AccountsRepository().findById(
@@ -384,9 +374,6 @@ describe("lightningPay", () => {
         senderAccount: newAccount,
       })
       expect(paymentResult).toBeInstanceOf(SelfPaymentError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
   })
 })
