@@ -4,7 +4,12 @@ import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { DisplayCurrency, toCents } from "@domain/fiat"
-import { InactiveAccountError, SelfPaymentError } from "@domain/errors"
+import { LnPaymentRequestNonZeroAmountRequiredError } from "@domain/payments"
+import {
+  InactiveAccountError,
+  InsufficientBalanceError,
+  SelfPaymentError,
+} from "@domain/errors"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { AccountsRepository, WalletInvoicesRepository } from "@services/mongoose"
@@ -14,10 +19,12 @@ import * as LndImpl from "@services/lnd"
 import {
   createMandatoryUsers,
   createRandomUserAndWallet,
+  getBalanceHelper,
   recordReceiveLnPayment,
 } from "test/helpers"
 
 let lnInvoice: LnInvoice
+let noAmountLnInvoice: LnInvoice
 
 const calc = AmountCalculator()
 
@@ -29,6 +36,12 @@ beforeAll(async () => {
   const invoice = decodeInvoice(randomRequest)
   if (invoice instanceof Error) throw invoice
   lnInvoice = invoice
+
+  const randomNoAmountRequest =
+    "lnbcrt1pjd9dmfpp5rf6q3rdstzcflshyux9dp05ft86xldx5s3ht99slsneneuefsjhsdqqcqzzsxqyz5vqsp5dl52mgulmljxlng5eafs7n3f54teg858dth67exxvk7wsgh62t6q9qyyssqjqekrkdga0uqnd0fv5dzhuky0l2wnmzr4q846x7grtw75zejla68pjh7vww2y6qvhx576yfexj8x24my72vj2y5929w5lju0f6fpnegp08kdm0"
+  const noAmountInvoice = decodeInvoice(randomNoAmountRequest)
+  if (noAmountInvoice instanceof Error) throw noAmountInvoice
+  noAmountLnInvoice = noAmountInvoice
 })
 
 const amount = toSats(10040)
@@ -161,6 +174,111 @@ describe("lightningPay", () => {
 
       // Restore system state
       await WalletInvoicesRepository().deleteByPaymentHash(lnInvoice.paymentHash)
+      await Transaction.deleteMany({ memo })
+      lndServiceSpy.mockReset()
+    })
+
+    it("fails when user has insufficient balance", async () => {
+      const memo = randomLightningMemo()
+
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [],
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Attempt pay
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest: lnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+      })
+      expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
+
+      // Restore system state
+      await Transaction.deleteMany({ memo })
+      lndServiceSpy.mockReset()
+    })
+
+    it("fails to pay zero amount invoice without separate amount", async () => {
+      const memo = randomLightningMemo()
+
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [],
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Attempt pay
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+      })
+      expect(paymentResult).toBeInstanceOf(LnPaymentRequestNonZeroAmountRequiredError)
+
+      // Restore system state
+      await Transaction.deleteMany({ memo })
+      lndServiceSpy.mockReset()
+    })
+
+    it("fails if user sends balance amount without accounting for fee", async () => {
+      const memo = randomLightningMemo()
+
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [],
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Attempt pay
+      const balance = await getBalanceHelper(newWalletDescriptor.id)
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount: balance,
+      })
+      expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
+
+      // Restore system state
       await Transaction.deleteMany({ memo })
       lndServiceSpy.mockReset()
     })

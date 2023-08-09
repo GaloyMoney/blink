@@ -23,7 +23,6 @@ import {
   PaymentStatus,
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
-import { InsufficientBalanceError as DomainInsufficientBalanceError } from "@domain/errors"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
@@ -37,7 +36,6 @@ import * as LnFeesImpl from "@domain/payments/ln-fees"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
-  ValidationError,
   WalletCurrency,
   ZERO_SATS,
 } from "@domain/shared"
@@ -356,20 +354,6 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txn.memo).toBe(memoFromUser)
   })
 
-  it("fails when user has insufficient balance", async () => {
-    const { request: invoice } = await createInvoice({
-      lnd: lndOutside1,
-      tokens: initBalanceB + 100,
-    })
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: invoice,
-      memo: null,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
-  })
-
   it("fails to pay when channel capacity exceeded", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1500000 })
     const paymentResult = await Payments.payInvoiceByWalletId({
@@ -379,41 +363,6 @@ describe("UserWallet - Lightning Pay", () => {
       senderAccount: accountA,
     })
     expect(paymentResult).toBeInstanceOf(LightningServiceError)
-  })
-
-  it("fails to pay zero amount invoice without separate amount", async () => {
-    const { request } = await createInvoice({ lnd: lndOutside1 })
-    // TODO: use custom ValidationError not apollo error
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(paymentResult).toBeInstanceOf(ValidationError)
-  })
-
-  it("fails if user sends balance amount without accounting for fee", async () => {
-    const res = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: walletIdH,
-      memo: "",
-      amount: toSats(1000),
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(res).not.toBeInstanceOf(Error)
-    if (res instanceof Error) return res
-
-    const balance = await getBalanceHelper(walletIdH)
-    const { request } = await createInvoice({ lnd: lndOutside1, tokens: balance })
-
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: walletIdH,
-      senderAccount: accountH,
-    })
-    expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
   })
 
   it("sends balance amount accounting for fee", async () => {
