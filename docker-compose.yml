@@ -323,6 +323,7 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     environment:
       - GALOY_ENDPOINT=oathkeeper:4455
+      - OATHKEEPER_ENDPOINT=http://${OATHKEEPER_HOST:-oathkeeper}:${OATHKEEPER_PORT:-4456}/decisions/
       - HOST_PROJECT_PATH=${PWD}
       - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}
     volumes:

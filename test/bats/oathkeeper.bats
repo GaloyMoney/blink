@@ -10,36 +10,7 @@ teardown_file() {
   stop_server
 }
 
-fetch_config_value() {
-  key=$1
-
-  CUSTOM_CONFIG_PATH="/var/yaml/custom.yaml"
-  CUSTOM_CONFIG="$(cat $CUSTOM_CONFIG_PATH 2> /dev/null)"
-  CUSTOM_VALUE=$(
-    echo $CUSTOM_CONFIG \
-      | grep -o "$key: [^ ]*" \
-      | awk -F': +' '{print $2}')
-
-  DEFAULT_CONFIG_PATH="galoy.yaml"
-  DEFAULT_CONFIG="$(cat $DEFAULT_CONFIG_PATH 2> /dev/null)"
-  DEFAULT_VALUE=$(
-    echo $DEFAULT_CONFIG \
-      | grep -o "$key: [^ ]*" \
-      | awk -F': +' '{print $2}')
-
-  if [[ -n "$CUSTOM_VALUE" ]]; then
-    echo "$CUSTOM_VALUE"
-  else
-    echo "$DEFAULT_VALUE"
-  fi
-}
-
-# TODO: Refactor when we clean up env variable handling
-if [[ -n "$OATHKEEPER_HOST" ]]; then
-  OATHKEEPER_ENDPOINT="${OATHKEEPER_HOST}:4456/decisions/"
-else
-  OATHKEEPER_ENDPOINT="$(fetch_config_value 'decisionsApi')"
-fi
+OATHKEEPER_ENDPOINT=${OATHKEEPER_ENDPOINT:-"http://127.0.0.1:4456/decisions/"}
 
 check_is_uuid() {
   uuid_string=$1
