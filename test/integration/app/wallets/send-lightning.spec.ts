@@ -2,7 +2,10 @@ import { Accounts, Payments } from "@app"
 
 import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
-import { decodeInvoice } from "@domain/bitcoin/lightning"
+import {
+  MaxFeeTooLargeForRoutelessPaymentError,
+  decodeInvoice,
+} from "@domain/bitcoin/lightning"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LnPaymentRequestNonZeroAmountRequiredError } from "@domain/payments"
 import {
@@ -11,8 +14,10 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import * as LnFeesImpl from "@domain/payments/ln-fees"
 
 import { AccountsRepository, WalletInvoicesRepository } from "@services/mongoose"
+import { LedgerService } from "@services/ledger"
 import { Transaction } from "@services/ledger/schema"
 import * as LndImpl from "@services/lnd"
 
@@ -28,6 +33,9 @@ let noAmountLnInvoice: LnInvoice
 let memo
 
 const calc = AmountCalculator()
+
+const DEFAULT_PUBKEY =
+  "03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2" as Pubkey
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -51,6 +59,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await Transaction.deleteMany({ memo })
+  await Transaction.deleteMany({ memoPayer: memo })
 })
 
 const amount = toSats(10040)
@@ -274,6 +283,75 @@ describe("lightningPay", () => {
       expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
 
       // Restore system state
+      lndServiceSpy.mockReset()
+    })
+
+    it("pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [],
+        defaultPubkey: () => DEFAULT_PUBKEY,
+      })
+
+      const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments/ln-fees")
+      const lndFeesSpy = jest.spyOn(LnFeesImpl, "LnFees").mockReturnValue({
+        ...LnFeesOrig(),
+        verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Attempt pay
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest: lnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+      })
+      expect(paymentResult).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
+
+      // Expect transaction to be canceled
+      const txns = await LedgerService().getTransactionsByHash(lnInvoice.paymentHash)
+      if (txns instanceof Error) throw txns
+
+      const { satsAmount, satsFee } = txns[0]
+      expect(txns.length).toEqual(2)
+      expect(txns).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            lnMemo: "Payment canceled",
+            credit: (satsAmount || 0) + (satsFee || 0),
+            debit: 0,
+            pendingConfirmation: false,
+          }),
+          expect.objectContaining({
+            lnMemo: memo,
+            debit: (satsAmount || 0) + (satsFee || 0),
+            credit: 0,
+            pendingConfirmation: false,
+          }),
+        ]),
+      )
+
+      // Restore system state
+      lndFeesSpy.mockReset()
       lndServiceSpy.mockReset()
     })
   })

@@ -17,7 +17,6 @@ import {
   InvalidFeeProbeStateError,
   InvoiceExpiredOrBadPaymentHashError,
   LightningServiceError,
-  MaxFeeTooLargeForRoutelessPaymentError,
   PaymentNotFoundError,
   PaymentSendStatus,
   PaymentStatus,
@@ -32,7 +31,6 @@ import {
   WalletPriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
-import * as LnFeesImpl from "@domain/payments/ln-fees"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
@@ -246,55 +244,6 @@ describe("UserWallet - Lightning Pay", () => {
     if (paymentResult instanceof Error) throw paymentResult
 
     expect(paymentResult).toBe(PaymentSendStatus.Success)
-  })
-
-  it("pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
-    const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments/ln-fees")
-    jest
-      .spyOn(LnFeesImpl, "LnFees")
-      // 1st call is in PaymentFlow
-      .mockReturnValueOnce({
-        ...LnFeesOrig(),
-      })
-      // 2nd call is in use-case at verifyMaxFee
-      .mockReturnValueOnce({
-        ...LnFeesOrig(),
-        verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
-      })
-
-    const { request, id } = await createInvoice({ lnd: lndOutside1 })
-    const paymentHash = id as PaymentHash
-
-    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      amount: amountInvoice,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(paymentResult).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
-
-    const txns = await LedgerService().getTransactionsByHash(paymentHash)
-    if (txns instanceof Error) throw txns
-
-    const { satsAmount, satsFee } = txns[0]
-    expect(txns.length).toEqual(2)
-    expect(txns).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          lnMemo: "Payment canceled",
-          credit: (satsAmount || 0) + (satsFee || 0),
-          debit: 0,
-          pendingConfirmation: false,
-        }),
-        expect.objectContaining({
-          lnMemo: "",
-          debit: (satsAmount || 0) + (satsFee || 0),
-          credit: 0,
-          pendingConfirmation: false,
-        }),
-      ]),
-    )
   })
 
   it("pay zero amount invoice with amount less than 1 cent", async () => {
