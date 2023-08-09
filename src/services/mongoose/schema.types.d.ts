@@ -68,7 +68,7 @@ interface WalletInvoiceRecord {
 interface AccountRecord {
   _id: ObjectId
   // TODO: remove optional after migration
-  uuid?: string
+  id?: string
   kratosUserId: string
 
   username: string | null

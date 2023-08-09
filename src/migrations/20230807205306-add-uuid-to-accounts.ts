@@ -4,18 +4,18 @@
 const getUuidByString = require("uuid-by-string")
 
 async function migrateAccounts(db, batchSize = 100) {
-  const cursor = db.collection("accounts").find({ uuid: { $exists: false } })
+  const cursor = db.collection("accounts").find()
 
   let batchCount = 0
   while (await cursor.hasNext()) {
     const batchUpdates = []
     for (let i = 0; i < batchSize && (await cursor.hasNext()); i++) {
       const account = await cursor.next()
-      const uuid = getUuidByString(account._id.toString())
+      const id = account.uuid || getUuidByString(account._id.toString())
       batchUpdates.push({
         updateOne: {
           filter: { _id: account._id },
-          update: { $set: { uuid } },
+          update: { $set: { id }, $unset: { uuid: 1 } },
         },
       })
     }
