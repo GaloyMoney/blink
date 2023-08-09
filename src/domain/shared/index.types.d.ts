@@ -1,13 +1,13 @@
 type ErrorLevel =
-  typeof import("./errors").ErrorLevel[keyof typeof import("./errors").ErrorLevel]
+  (typeof import("./errors").ErrorLevel)[keyof typeof import("./errors").ErrorLevel]
 type ValidationError = import("./errors").ValidationError
 type BigIntConversionError = import("./errors").BigIntConversionError
 
 type WalletCurrency =
-  typeof import("./primitives").WalletCurrency[keyof typeof import("./primitives").WalletCurrency]
+  (typeof import("./primitives").WalletCurrency)[keyof typeof import("./primitives").WalletCurrency]
 
 type ExchangeCurrencyUnit =
-  typeof import("./primitives").ExchangeCurrencyUnit[keyof typeof import("./primitives").ExchangeCurrencyUnit]
+  (typeof import("./primitives").ExchangeCurrencyUnit)[keyof typeof import("./primitives").ExchangeCurrencyUnit]
 
 type DisplayCurrencyMajorAmount = string & {
   readonly brand?: unique symbol

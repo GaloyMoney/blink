@@ -2,7 +2,7 @@ type NotificationsError = import("./errors").NotificationsError
 type NotificationsServiceError = import("./errors").NotificationsServiceError
 
 type NotificationType =
-  typeof import("./index").NotificationType[keyof typeof import("./index").NotificationType]
+  (typeof import("./index").NotificationType)[keyof typeof import("./index").NotificationType]
 
 type TransactionNotificationBaseArgs = {
   paymentAmount: PaymentAmount<WalletCurrency>

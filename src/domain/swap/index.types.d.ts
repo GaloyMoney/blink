@@ -1,10 +1,11 @@
 type SwapClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
 type SwapServiceError = import("./errors").SwapServiceError
 type SwapProvider =
-  typeof import("./index").SwapProvider[keyof typeof import("./index").SwapProvider]
-type SwapType = typeof import("./index").SwapType[keyof typeof import("./index").SwapType]
+  (typeof import("./index").SwapProvider)[keyof typeof import("./index").SwapProvider]
+type SwapType =
+  (typeof import("./index").SwapType)[keyof typeof import("./index").SwapType]
 type SwapState =
-  typeof import("./index").SwapState[keyof typeof import("./index").SwapState]
+  (typeof import("./index").SwapState)[keyof typeof import("./index").SwapState]
 
 interface ISwapService {
   healthCheck: () => Promise<boolean>
