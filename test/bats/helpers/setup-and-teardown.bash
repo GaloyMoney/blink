@@ -1,6 +1,5 @@
 BASH_SOURCE=${BASH_SOURCE:-test/bats/helpers/.}
 source $(dirname "$BASH_SOURCE")/onchain.bash
-source $(dirname "$BASH_SOURCE")/ln.bash
 
 SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
 WS_SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_ws_server_pid
@@ -93,31 +92,6 @@ clear_cache() {
   mkdir -p ${CACHE_DIR}
 }
 
-calculate_anchor_outputs() {
-  # This function assumes commit_weights can either be '772' or '1116' depending
-  # on if there are 1 or 2 anchor outputs included in the transaction. It also
-  # assumes that each anchor output is 330 sats which must be added to the commit
-  # weight to get the actual amount deducted from channel's lightning balance.
-  #
-  # Anchor outputs are currently not accounted for in our accounting system.
-
-  ln_cli_name=$1
-
-  anchor_total=0
-  while read -r commit_weight; do
-    if [[ "$commit_weight" == "772" ]]; then
-      # Add for 1 anchor output
-      ((anchor_total += 330))
-    else
-      # Add for 2 anchor outputs
-      ((anchor_total += 660))
-    fi
-  done < <(run_with_lnd "$ln_cli_name" listchannels \
-            | jq -r '.channels[] | select(.initiator == true) | .commit_weight')
-
-  echo "$anchor_total"
-}
-
 balance_for_check() {
   reset_redis > /dev/null 2>&1
 
@@ -133,15 +107,11 @@ balance_for_check() {
   is_number "$lnd_balance_sync"
   abs_lnd_balance_sync=$(abs $lnd_balance_sync)
 
-  lnd1_anchor_amount=$(calculate_anchor_outputs lnd_cli)
-  lnd2_anchor_amount=$(calculate_anchor_outputs lnd2_cli)
-  final_lnd_balance_sync=$(($abs_lnd_balance_sync - $lnd1_anchor_amount - $lnd2_anchor_amount))
-
   assets_eq_liabilities=$(get_metric "galoy_assetsEqLiabilities")
   is_number "$assets_eq_liabilities"
   abs_assets_eq_liabilities=$(abs $assets_eq_liabilities)
 
-  echo $(( $final_lnd_balance_sync + $abs_assets_eq_liabilities ))
+  echo $(( $abs_lnd_balance_sync + $abs_assets_eq_liabilities ))
 }
 
 login_user() {
