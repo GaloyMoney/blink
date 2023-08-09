@@ -93,7 +93,7 @@ export const recordReceiveLnPayment = async <S extends WalletCurrency>({
   displayAmounts,
   memo,
 }: RecordExternalTxTestArgs<S>) => {
-  const paymentHash = crypto.randomUUID() as PaymentHash
+  const paymentHash = generateHash() as PaymentHash
 
   const {
     metadata,
