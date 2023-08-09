@@ -268,7 +268,10 @@ export const updateEscrows = async () => {
   )
   const escrowInLnd = toSats(
     selfInitiatedChannels.reduce(
-      (acc, chan) => acc + (chan.capacity - (chan.local_balance + chan.remote_balance)),
+      (acc, chan) =>
+        acc +
+        (chan.capacity -
+          (chan.local_balance + chan.remote_balance + chan.unsettled_balance)),
       0,
     ),
   )
