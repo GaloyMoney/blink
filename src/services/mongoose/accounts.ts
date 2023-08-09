@@ -115,7 +115,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       const result = await Account.findOneAndUpdate(
         { _id: toObjectId<AccountId>(id) },
         {
-          uuid,
+          id: uuid,
           level,
           statusHistory,
           coordinates,
@@ -154,7 +154,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       const account = new Account()
       account.kratosUserId = kratosUserId
       // TODO: remove after migration
-      account.uuid = crypto.randomUUID()
+      account.id = crypto.randomUUID()
       await account.save()
       return translateToAccount(account)
     } catch (err) {
@@ -192,7 +192,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 const translateToAccount = (result: AccountRecord): Account => ({
   id: fromObjectId<AccountId>(result._id),
   // TODO: remove default value after migration
-  uuid: (result.uuid ||
+  uuid: (result.id ||
     getUuidByString(fromObjectId<AccountId>(result._id))) as AccountUUID,
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,

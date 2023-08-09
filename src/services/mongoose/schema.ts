@@ -132,7 +132,7 @@ export const Wallet = mongoose.model<WalletRecord>("Wallet", WalletSchema)
 
 const AccountSchema = new Schema<AccountRecord>(
   {
-    uuid: {
+    id: {
       type: String,
       index: true,
       unique: true,
