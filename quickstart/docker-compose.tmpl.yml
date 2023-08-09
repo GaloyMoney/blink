@@ -1,5 +1,8 @@
 #@ load("@ytt:data", "data")
 
+#@ galoy_image_digest = "local"
+#@ mongodb_migrate_image_digest = "local"
+
 version: #@ data.values.version
 services:
   #! Proxies
@@ -12,7 +15,12 @@ services:
   mailslurper: #@ data.values.services["mailslurper"]
 
   galoy:
-    image: us.gcr.io/galoy-org/galoy-app:edge
+#@ if galoy_image_digest == "local":
+    build:
+      context: ../
+#@ else:
+    image: #@ "us.gcr.io/galoy-org/galoy-app:" + galoy_image_digest
+#@ end
     command:
       - "-r"
       - "/app/lib/services/tracing.js"
@@ -34,7 +42,12 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-app:edge
+#@ if galoy_image_digest == "local":
+    build:
+      context: ../
+#@ else:
+    image: #@ "us.gcr.io/galoy-org/galoy-app:" + galoy_image_digest
+#@ end
     command:
       - "-r"
       - "/app/lib/services/tracing.js"
@@ -49,7 +62,13 @@ services:
   redis: #@ data.values.services["redis"]
   mongodb: #@ data.values.services["mongodb"]
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate:edge
+#@ if mongodb_migrate_image_digest == "local":
+    build:
+      context: ../
+      dockerfile: Dockerfile-migrate
+#@ else:
+    image: #@ "us.gcr.io/galoy-org/galoy-app-migrate:" + mongodb_migrate_image_digest
+#@ end
     depends_on:
     - mongodb
     environment:

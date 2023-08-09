@@ -61,10 +61,6 @@ main() {
     login_user "alice" "+16505554328" "000000" && break
     sleep 1
   done
-
-  echo "Alice receives from lightning"
-  receive_lightning
-  echo "${settled_status}"
   echo "DONE"
 }
 

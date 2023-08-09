@@ -4,6 +4,7 @@ tmp
 charts
 protos
 .vscode
+quickstart
 
 .github
 ci/**/*

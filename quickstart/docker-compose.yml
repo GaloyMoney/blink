@@ -46,7 +46,8 @@ services:
     - 4436:4436
     - 4437:4437
   galoy:
-    image: us.gcr.io/galoy-org/galoy-app:edge
+    build:
+      context: ../
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -68,7 +69,8 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-app:edge
+    build:
+      context: ../
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -93,7 +95,9 @@ services:
     - MONGO_INITDB_DATABASE=galoy
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate:edge
+    build:
+      context: ../
+      dockerfile: Dockerfile-migrate
     depends_on:
     - mongodb
     environment:

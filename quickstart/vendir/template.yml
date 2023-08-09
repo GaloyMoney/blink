@@ -1,12 +1,15 @@
+#@ load("@ytt:data", "data")
+
 apiVersion: vendir.k14s.io/v1alpha1
 kind: Config
+
 directories:
 - path: dev
   contents:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 9e3ea92bd7dabd7f4dc65ef1e2f538bfce80c68e
+      ref: #@ data.values.galoy_git_ref
     includePaths:
     - dev/**/*
     - .envrc
@@ -21,7 +24,7 @@ directories:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 9e3ea92bd7dabd7f4dc65ef1e2f538bfce80c68e
+      ref: #@ data.values.galoy_git_ref
     includePaths:
     - dev/**/*
     - test/bats/bitcoind_signer_descriptors.json
@@ -37,7 +40,7 @@ directories:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 9e3ea92bd7dabd7f4dc65ef1e2f538bfce80c68e
+      ref: #@ data.values.galoy_git_ref
     includePaths:
     - src/graphql/public/schema.graphql
     - src/graphql/admin/schema.graphql
