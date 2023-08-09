@@ -4,6 +4,11 @@ source $(dirname "$BASH_SOURCE")/_common.bash
 LND_FUNDING_TOKEN_NAME="lnd_funding"
 LND_FUNDING_PHONE="+16505554351"
 
+mempool_not_empty() {
+  local txid="$(bitcoin_cli getrawmempool | jq -r ".[0]")"
+  [[ "$txid" != "null" ]] || exit 1
+}
+
 lnds_init() {
   # Clean up any existing channels
   lnd_cli closeallchannels || true
@@ -22,11 +27,6 @@ lnds_init() {
   lnd_outside_cli openchannel \
     --node_key "$lnd_local_pubkey" \
     --local_amt "$local_amount" \
-
-  mempool_not_empty() {
-    local txid= [[ "$(bitcoin_cli getrawmempool | jq -r ".[0]")" != "null" ]]
-    [[ "$txid" != "null" ]] || exit 1
-  }
 
   no_pending_channels() {
     pending_channel="$(lnd_outside_cli pendingchannels | jq -r '.pending_open_channels[0]')"
@@ -53,6 +53,14 @@ lnds_init() {
 
 lnd_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-lnd1-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
+}
+
+lnd2_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd2-1" \
     lncli \
       --macaroonpath /root/.lnd/admin.macaroon \
       --tlscertpath /root/.lnd/tls.cert \
