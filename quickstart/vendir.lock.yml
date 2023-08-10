@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: apollo volume path in quickstart'
-      sha: 9e3ea92bd7dabd7f4dc65ef1e2f538bfce80c68e
+      commitTitle: 'ci: don''t clear term in smoke-test'
+      sha: 21dc9ed396c76137a16cbca064f960b992bf1341
       tags:
-      - 0.11.9-13-g9e3ea92bd
+      - 0.11.15-14-g21dc9ed39
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: apollo volume path in quickstart'
-      sha: 9e3ea92bd7dabd7f4dc65ef1e2f538bfce80c68e
+      commitTitle: 'ci: don''t clear term in smoke-test'
+      sha: 21dc9ed396c76137a16cbca064f960b992bf1341
       tags:
-      - 0.11.9-13-g9e3ea92bd
+      - 0.11.15-14-g21dc9ed39
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: apollo volume path in quickstart'
-      sha: 9e3ea92bd7dabd7f4dc65ef1e2f538bfce80c68e
+      commitTitle: 'ci: don''t clear term in smoke-test'
+      sha: 21dc9ed396c76137a16cbca064f960b992bf1341
       tags:
-      - 0.11.9-13-g9e3ea92bd
+      - 0.11.15-14-g21dc9ed39
     path: ./
   path: ./graphql
 kind: LockConfig

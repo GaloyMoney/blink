@@ -1,6 +1,3 @@
-pubsub:
-  host: redis
-
 exchanges:
   okex:
     weight: 1.0

@@ -22,9 +22,6 @@ EOF
 }
 
 main() {
-  if [ -n "$TERM" ]; then
-    clear
-  fi
   show_galoy
   echo "------------------------------------------------------------"
   echo "------------------------------------------------------------"
@@ -35,7 +32,11 @@ main() {
   bitcoind_init > /dev/null 2>&1
   echo "DONE"
   echo "Getting balance from bria..."
-  bria_cli wallet-balance -w dev > /dev/null 2>&1
+  for i in {1..20}; do
+    bria_cli wallet-balance -w dev-wallet > /dev/null 2>&1 && break
+    sleep 1
+  done
+  bria_cli wallet-balance -w dev-wallet > /dev/null 2>&1 || exit 1
   echo "DONE"
   echo "Running getinfo on lnd..."
   lnd_cli getinfo > /dev/null 2>&1

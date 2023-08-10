@@ -1,7 +1,7 @@
 #@ load("@ytt:data", "data")
 
-#@ galoy_image_digest = "local"
-#@ mongodb_migrate_image_digest = "local"
+#@ galoy_image_digest = "edge"
+#@ mongodb_migrate_image_digest = "edge"
 
 version: #@ data.values.version
 services:
