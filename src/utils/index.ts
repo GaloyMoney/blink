@@ -1,4 +1,4 @@
-import { MS_PER_DAY } from "@config"
+import { MS_PER_DAY, MS_PER_SEC } from "@config"
 import { NonIntegerError } from "@domain/errors"
 
 export * as GrpcStreamClient from "./grpc-stream-client"
@@ -100,18 +100,18 @@ export class ModifiedSet extends Set {
   }
 }
 
-export const waitFor = async ({
+export const delayWhile = async ({
   func,
-  max,
+  maxRetries,
 }: {
   func: () => Promise<boolean>
-  max: number
+  maxRetries: number
 }) => {
   let res
   let count = 0
-  while (!(res = await func()) && count < max) {
+  while (!(res = await func()) && count < maxRetries) {
     count++
-    await sleep(500)
+    await sleep(MS_PER_SEC)
   }
   return res
 }

@@ -1,7 +1,7 @@
 import { readFile } from "fs"
 
 import { baseLogger } from "@services/logger"
-import { waitFor } from "@utils"
+import { delayWhile } from "@utils"
 
 import { getChannels, GetChannelsResult } from "lightning"
 
@@ -56,7 +56,7 @@ export const rebalancingInternalChannels = async () => {
   // but pushPayment doesn't take a channelId currently
   const largestChannel = [channels.sort((a, b) => (a.capacity > b.capacity ? -1 : 1))[0]]
 
-  const checkNoPendingHtlc = async () => {
+  const internalChannelsHavePendingHtlcs = async () => {
     const { channels } = await getDirectChannels({ lnd: selfLnd, otherPubkey })
     let count = 0
     for (const chan of channels) {
@@ -86,7 +86,7 @@ export const rebalancingInternalChannels = async () => {
         ...settings,
       })
 
-      await waitFor({ func: checkNoPendingHtlc, max: 20 })
+      await delayWhile({ func: internalChannelsHavePendingHtlcs, maxRetries: 10 })
     } else if (diff < 0) {
       // there is more liquidity on the local node
       await pushPayment({
@@ -94,7 +94,7 @@ export const rebalancingInternalChannels = async () => {
         destination: otherPubkey,
         ...settings,
       })
-      await waitFor({ func: checkNoPendingHtlc, max: 20 })
+      await delayWhile({ func: internalChannelsHavePendingHtlcs, maxRetries: 10 })
     } else {
       baseLogger.info("no rebalancing needed")
     }
