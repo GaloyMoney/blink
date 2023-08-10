@@ -10,6 +10,9 @@
 
 Galoy is an opinionated bitcoin banking platform.
 
+This repo represents the main api that brings all functionality together.
+Take a look at the [Quickstart](./quickstart) if you want to take it for a spin.
+
 ### Responsible disclosure 
 
 Found critical bugs/vulnerabilities?
