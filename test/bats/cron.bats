@@ -12,6 +12,7 @@ setup_file() {
   start_exporter
 
   lnds_init
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
 }
 
 teardown_file() {
@@ -21,8 +22,19 @@ teardown_file() {
 }
 
 teardown() {
-  [[ "$(balance_for_check)" == 0 ]] || exit 1
+  if [[ "$(balance_for_check)" != 0 ]]; then
+    fail "Error: balance_for_check failed"
+  fi
 }
+
+no_pending_lnd1_channels() {
+  pending_channel="$(lnd_cli pendingchannels | jq -r '.pending_open_channels[0]')"
+  if [[ "$pending_channel" != "null" ]]; then
+    bitcoin_cli -generate 6
+    exit 1
+  fi
+}
+
 
 @test "cron: rebalance hot to cold storage" {
   login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
@@ -72,4 +84,64 @@ teardown() {
     sleep 1
   done
   [[ "${cold_balance}" = "0" ]] || exit 1;
+}
+
+@test "cron: rebalance internal channels" {
+  # NOTE: Not an idempotent test because we haven't implemented accounting for
+  #       closing channels initiated from internal lnds as yet.
+
+  # Get onchain funds into lnd1
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg amount "600000" \
+    '{input: {walletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$token_name" 'ln-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request"
+
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  close_partner_initiated_channels_with_external || true
+  retry 10 1 mempool_not_empty
+  bitcoin_cli -generate 3
+
+  # Setup lnd1 -> lnd2 channel
+  local local_amount="500000"
+  lnd2_local_pubkey="$(lnd2_cli getinfo | jq -r '.identity_pubkey')"
+  lnd_cli connect "${lnd2_local_pubkey}@${COMPOSE_PROJECT_NAME}-lnd2-1:9735" || true
+  opened=$(
+    lnd_cli openchannel \
+      --node_key "$lnd2_local_pubkey" \
+      --local_amt "$local_amount"
+  )
+  funding_txid="$(echo $opened | jq -r '.funding_txid')"
+
+  retry 10 1 mempool_not_empty
+  retry 10 1 no_pending_lnd1_channels
+
+  # Rebalance and check balances
+  channel_balances=$(lnd_cli channelbalance)
+  original_local_balance="$(echo $channel_balances | jq -r '.local_balance.sat')"
+  original_remote_balance="$(echo $channel_balances | jq -r '.remote_balance.sat')"
+
+  run_cron
+
+  channel_balances=$(lnd_cli channelbalance)
+  rebalanced_local_balance="$(echo $channel_balances | jq -r '.local_balance.sat')"
+  rebalanced_remote_balance="$(echo $channel_balances | jq -r '.remote_balance.sat')"
+
+  [[ "$rebalanced_local_balance" -lt "$original_local_balance" ]] || exit 1
+  [[ "$rebalanced_remote_balance" -gt "$original_remote_balance" ]] || exit 1
 }

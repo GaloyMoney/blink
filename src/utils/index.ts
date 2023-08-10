@@ -1,4 +1,4 @@
-import { MS_PER_DAY } from "@config"
+import { MS_PER_DAY, MS_PER_SEC } from "@config"
 import { NonIntegerError } from "@domain/errors"
 
 export * as GrpcStreamClient from "./grpc-stream-client"
@@ -98,4 +98,20 @@ export class ModifiedSet extends Set {
   difference<T>(otherSet: Set<T>): Set<T> {
     return new ModifiedSet(Array.from(this).filter((i) => !otherSet.has(i)))
   }
+}
+
+export const delayWhile = async ({
+  func,
+  maxRetries,
+}: {
+  func: () => Promise<boolean>
+  maxRetries: number
+}) => {
+  let res
+  let count = 0
+  while (!(res = await func()) && count < maxRetries) {
+    count++
+    await sleep(MS_PER_SEC)
+  }
+  return res
 }

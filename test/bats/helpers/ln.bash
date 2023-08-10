@@ -4,9 +4,61 @@ source $(dirname "$BASH_SOURCE")/_common.bash
 LND_FUNDING_TOKEN_NAME="lnd_funding"
 LND_FUNDING_PHONE="+16505554351"
 
+mempool_not_empty() {
+  local txid= [[ "$(bitcoin_cli getrawmempool | jq -r ".[0]")" != "null" ]]
+  [[ "$txid" != "null" ]] || exit 1
+}
+
+run_with_lnd() {
+  local func_name="$1"
+  shift  # This will shift away the function name, so $1 becomes the next argument
+
+  if [[ "$func_name" == "lnd_cli" ]]; then
+    lnd_cli "$@"
+  elif [[ "$func_name" == "lnd2_cli" ]]; then
+    lnd2_cli "$@"
+  else
+    echo "Invalid function name passed!" && exit 1
+  fi
+}
+
+close_partner_initiated_channels_with_external() {
+  lnd1_pubkey=$(lnd_cli getinfo | jq -r '.identity_pubkey')
+  lnd2_pubkey=$(lnd2_cli getinfo | jq -r '.identity_pubkey')
+
+  partner_initiated_external_channel_filter='
+  .channels[]?
+    | select(.initiator != true)
+    | select(.remote_pubkey != $lnd1_pubkey)
+    | select(.remote_pubkey != $lnd2_pubkey)
+    | .channel_point
+  '
+
+  lnd_cli listchannels \
+    | jq -r \
+      --arg lnd1_pubkey "$lnd1_pubkey" \
+      --arg lnd2_pubkey "$lnd2_pubkey" \
+      "$partner_initiated_external_channel_filter" \
+    | while read -r channel_point; do
+        funding_txid="${channel_point%%:*}"
+        lnd_cli closechannel "$funding_txid"
+      done
+
+  lnd2_cli listchannels \
+    | jq -r \
+      --arg lnd1_pubkey "$lnd1_pubkey" \
+      --arg lnd2_pubkey "$lnd2_pubkey" \
+      "$partner_initiated_external_channel_filter" \
+    | while read -r channel_point; do
+        funding_txid="${channel_point%%:*}"
+        lnd2_cli closechannel "$funding_txid"
+      done
+
+}
+
 lnds_init() {
   # Clean up any existing channels
-  lnd_cli closeallchannels || true
+  close_partner_initiated_channels_with_external || true
 
   # Mine onchain balance
   local amount="1"
@@ -16,17 +68,12 @@ lnds_init() {
   bitcoin_cli sendtoaddress "$address" "$amount"
   bitcoin_cli -generate 3
 
-  # Open balanced channel from lnd1 to lndoutside1
+  # Open channel from lnd1 to lndoutside1
   lnd_local_pubkey="$(lnd_cli getinfo | jq -r '.identity_pubkey')"
   lnd_outside_cli connect "${lnd_local_pubkey}@${COMPOSE_PROJECT_NAME}-lnd1-1:9735" || true
   lnd_outside_cli openchannel \
     --node_key "$lnd_local_pubkey" \
     --local_amt "$local_amount" \
-
-  mempool_not_empty() {
-    local txid= [[ "$(bitcoin_cli getrawmempool | jq -r ".[0]")" != "null" ]]
-    [[ "$txid" != "null" ]] || exit 1
-  }
 
   no_pending_channels() {
     pending_channel="$(lnd_outside_cli pendingchannels | jq -r '.pending_open_channels[0]')"
@@ -53,6 +100,14 @@ lnds_init() {
 
 lnd_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-lnd1-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
+}
+
+lnd2_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd2-1" \
     lncli \
       --macaroonpath /root/.lnd/admin.macaroon \
       --tlscertpath /root/.lnd/tls.cert \

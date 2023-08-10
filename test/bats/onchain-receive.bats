@@ -22,7 +22,9 @@ teardown_file() {
 }
 
 teardown() {
-  [[ "$(balance_for_check)" = 0 ]] || exit 1
+  if [[ "$(balance_for_check)" != 0 ]]; then
+    fail "Error: balance_for_check failed"
+  fi
 }
 
 @test "onchain-receive: settle onchain for BTC wallet" {

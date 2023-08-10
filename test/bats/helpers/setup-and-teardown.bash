@@ -59,7 +59,7 @@ start_trigger() {
 }
 
 run_cron() {
-  node lib/servers/cron.js
+  node lib/servers/cron.js > .e2e-cron.log
 }
 
 start_exporter() {
@@ -93,6 +93,8 @@ clear_cache() {
 }
 
 balance_for_check() {
+  reset_redis > /dev/null 2>&1
+
   get_metric() {
     metric_name=$1
 

@@ -32,7 +32,10 @@ setup() {
 }
 
 teardown() {
-  [[ "$(balance_for_check)" == 0 ]] || exit 1
+  if [[ "$(balance_for_check)" != 0 ]]; then
+    fail "Error: balance_for_check failed"
+  fi
+
 }
 
 btc_amount=1000
