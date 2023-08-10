@@ -345,7 +345,6 @@ services:
     working_dir: /repo/dev
     depends_on:
       - otel-agent
-      - redis
     restart: on-failure:10
     volumes:
       - ${HOST_PROJECT_PATH:-.}/:/repo

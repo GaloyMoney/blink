@@ -30,12 +30,12 @@ coldStorage:
   minRebalanceSize: 10000000
   maxHotWalletBalance: 200000000
 bria:
-  hotWalletName: dev
+  hotWalletName: dev-wallet
   queueNames:
-    fast: dev
+    fast: dev-queue
   coldStorage:
     walletName: cold
-    hotToColdRebalanceQueueName: dev
+    hotToColdRebalanceQueueName: dev-queue
 lndScbBackupBucketName: lnd-static-channel-backups
 admin_accounts:
   - role: dealer

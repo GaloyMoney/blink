@@ -203,7 +203,7 @@ export const configSchema = {
           required: ["fast"],
           additionalProperties: false,
           default: {
-            fast: "dev",
+            fast: "dev-queue",
           },
         },
         coldStorage: {
@@ -215,14 +215,14 @@ export const configSchema = {
           required: ["walletName", "hotToColdRebalanceQueueName"],
           default: {
             walletName: "cold",
-            hotToColdRebalanceQueueName: "dev",
+            hotToColdRebalanceQueueName: "dev-queue",
           },
         },
       },
       required: ["hotWalletName", "queueNames", "coldStorage"],
       additionalProperties: false,
       default: {
-        hotWalletName: "dev",
+        hotWalletName: "dev-wallet",
       },
     },
     lndScbBackupBucketName: { type: "string", default: "lnd-static-channel-backups" },
