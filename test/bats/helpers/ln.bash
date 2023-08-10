@@ -22,20 +22,43 @@ run_with_lnd() {
   fi
 }
 
-close_partner_initiated_channels() {
-  ln_cli_name=$1
+close_partner_initiated_channels_with_external() {
+  lnd1_pubkey=$(lnd_cli getinfo | jq -r '.identity_pubkey')
+  lnd2_pubkey=$(lnd2_cli getinfo | jq -r '.identity_pubkey')
 
-  run_with_lnd "$ln_cli_name" listchannels \
-    | jq -r '.channels[] | select(.initiator != true) | .channel_point' \
+  partner_initiated_external_channel_filter='
+  .channels[]?
+    | select(.initiator != true)
+    | select(.remote_pubkey != $lnd1_pubkey)
+    | select(.remote_pubkey != $lnd2_pubkey)
+    | .channel_point
+  '
+
+  lnd_cli listchannels \
+    | jq -r \
+      --arg lnd1_pubkey "$lnd1_pubkey" \
+      --arg lnd2_pubkey "$lnd2_pubkey" \
+      "$partner_initiated_external_channel_filter" \
     | while read -r channel_point; do
         funding_txid="${channel_point%%:*}"
-        run_with_lnd "$ln_cli_name" closechannel "$funding_txid"
+        lnd_cli closechannel "$funding_txid"
       done
+
+  lnd2_cli listchannels \
+    | jq -r \
+      --arg lnd1_pubkey "$lnd1_pubkey" \
+      --arg lnd2_pubkey "$lnd2_pubkey" \
+      "$partner_initiated_external_channel_filter" \
+    | while read -r channel_point; do
+        funding_txid="${channel_point%%:*}"
+        lnd2_cli closechannel "$funding_txid"
+      done
+
 }
 
 lnds_init() {
   # Clean up any existing channels
-  close_partner_initiated_channels lnd_cli || true
+  close_partner_initiated_channels_with_external || true
 
   # Mine onchain balance
   local amount="1"

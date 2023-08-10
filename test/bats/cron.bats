@@ -113,7 +113,7 @@ no_pending_lnd1_channels() {
 
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 
-  close_partner_initiated_channels lnd_cli || true
+  close_partner_initiated_channels_with_external || true
   retry 10 1 mempool_not_empty
   bitcoin_cli -generate 3
 
