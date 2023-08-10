@@ -5,7 +5,7 @@ LND_FUNDING_TOKEN_NAME="lnd_funding"
 LND_FUNDING_PHONE="+16505554351"
 
 mempool_not_empty() {
-  local txid= [[ "$(bitcoin_cli getrawmempool | jq -r ".[0]")" != "null" ]]
+  local txid="$(bitcoin_cli getrawmempool | jq -r ".[0]")"
   [[ "$txid" != "null" ]] || exit 1
 }
 
