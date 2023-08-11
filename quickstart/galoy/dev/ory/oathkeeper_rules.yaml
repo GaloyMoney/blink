@@ -1,0 +1,108 @@
+- id: anonymous-rest-auth
+  upstream:
+    url: "http://bats-tests:4012"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(clearCookies|login|logout|email/code|email/login|totp/validate|email/login/cookie)>"
+    methods: ["GET", "POST", "OPTIONS"]
+  authenticators:
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: device-login
+  upstream:
+    url: "http://bats-tests:4012"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/create/device-account"
+    methods: ["POST"]
+  authenticators:
+    - handler: jwt
+      config:
+        trusted_issuers:
+          - https://firebaseappcheck.googleapis.com/72279297366
+        target_audience:
+          - projects/72279297366
+        jwks_urls:
+          - https://firebaseappcheck.googleapis.com/v1beta/jwks
+          - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION
+        token_from:
+          header: Appcheck
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: galoy-ws
+  upstream:
+    url: "http://bats-tests:4000/graphql"
+    strip_path: /graphqlws # ONLY FOR DEV, in prod should resolve to /graphql, like ws.blink.sv/graphql
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphqlws" # ONLY FOR DEV, in prod should resolve to /graphql
+    methods: ["POST", "GET"]
+  authenticators:
+    - handler: noop
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+- id: galoy-backend
+  upstream:
+    url: "http://apollo-router:4004"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphql"
+    methods: ["POST", "GET", "OPTIONS"]
+  authenticators:
+    - handler: cookie_session
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
+    - handler: bearer_token
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: id_token
+      config:
+        claims: '{"sub": "{{ print .Subject }}" }'
+
+- id: admin-backend
+  upstream:
+    url: "http://bats-tests:4001"
+    strip_path: /admin
+  match:
+    url: "<(http|https)>://<.*><[0-9]+>/admin<.*>"
+    methods: ["GET", "POST", "OPTIONS"]
+  authenticators:
+    - handler: cookie_session
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
+    - handler: bearer_token
+      config:
+        check_session_url: http://kratos:4433/sessions/whoami
+        preserve_path: true
+        preserve_query: true
+        subject_from: identity.id
+        extra_from: identity.traits
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: id_token
+      config:
+        claims: '{"sub": "{{ print .Subject }}"}'

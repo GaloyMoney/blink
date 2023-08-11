@@ -1,0 +1,15 @@
+mutation userPhoneDelete {
+  userPhoneDelete {
+    errors {
+      message
+    }
+    me {
+      id
+      phone
+      email {
+        address
+        verified
+      }
+    }
+  }
+}

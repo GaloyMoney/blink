@@ -1,0 +1,112 @@
+#@ load("@ytt:data", "data")
+
+#@ galoy_image_digest = "edge"
+#@ mongodb_migrate_image_digest = "edge"
+
+version: #@ data.values.version
+services:
+  #! Proxies
+  apollo-router: #@ data.values.services["apollo-router"]
+  oathkeeper: #@ data.values.services["oathkeeper"]
+
+  #! Authentication
+  kratos: #@ data.values.services["kratos"]
+  kratos-pg: #@ data.values.services["kratos-pg"]
+  mailslurper: #@ data.values.services["mailslurper"]
+
+  galoy:
+#@ if galoy_image_digest == "local":
+    build:
+      context: ../
+#@ else:
+    image: #@ "us.gcr.io/galoy-org/galoy-app:" + galoy_image_digest
+#@ end
+    command:
+      - "-r"
+      - "/app/lib/services/tracing.js"
+      - "lib/servers/graphql-main-server.js"
+    env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
+    depends_on:
+    - trigger
+    - apollo-router
+    - oathkeeper
+    - kratos
+    - lnd1
+    - lnd-outside-1
+    - bria
+    - mongodb
+    - redis
+    - stablesats
+    networks:
+      default:
+        aliases:
+        - bats-tests
+  trigger:
+#@ if galoy_image_digest == "local":
+    build:
+      context: ../
+#@ else:
+    image: #@ "us.gcr.io/galoy-org/galoy-app:" + galoy_image_digest
+#@ end
+    command:
+      - "-r"
+      - "/app/lib/services/tracing.js"
+      - "lib/servers/trigger.js"
+    env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
+    depends_on:
+    - lnd1
+    - bria
+    - mongodb
+
+  #! Database
+  redis: #@ data.values.services["redis"]
+  mongodb: #@ data.values.services["mongodb"]
+  mongodb-migrate:
+#@ if mongodb_migrate_image_digest == "local":
+    build:
+      context: ../
+      dockerfile: Dockerfile-migrate
+#@ else:
+    image: #@ "us.gcr.io/galoy-org/galoy-app-migrate:" + mongodb_migrate_image_digest
+#@ end
+    depends_on:
+    - mongodb
+    environment:
+    - MONGODB_ADDRESS=mongodb
+
+  #! Price
+  price: #@ data.values.services["price"]
+  price-history: #@ data.values.services["price-history"]
+  price-history-migrate: #@ data.values.services["price-history-migrate"]
+  postgres-price-history: #@ data.values.services["postgres-price-history"]
+
+  #! Bitcoin stack
+  bitcoind: #@ data.values.services["bitcoind"]
+  bitcoind-signer: #@ data.values.services["bitcoind-signer"]
+  lnd1: #@ data.values.services["lnd1"]
+  lnd2: #@ data.values.services["lnd2"]
+  lnd-outside-1: #@ data.values.services["lnd-outside-1"]
+  bria: #@ data.values.services["bria"]
+  postgres-bria: #@ data.values.services["postgres-bria"]
+  fulcrum: #@ data.values.services["fulcrum"]
+
+  #! Stablesats
+  stablesats: #@ data.values.services["stablesats"]
+
+  #! Otel
+  otel-agent: #@ data.values.services["otel-agent"]
+
+#@ load("@ytt:overlay", "overlay")
+#@overlay/match by=overlay.all
+---
+services:
+  #@overlay/match by=overlay.all, expects="1+"
+  _:
+    #@overlay/match when=1
+    #@overlay/remove
+    extra_hosts: _
+    #@overlay/match when=1
+    volumes:
+    #@overlay/match by=overlay.all, expects="0+"
+    #@overlay/replace via=lambda left, right: left.replace("HOST_PROJECT_PATH:-.}", "HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}")
+    - REPLACED

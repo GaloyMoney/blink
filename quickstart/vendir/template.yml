@@ -1,0 +1,47 @@
+#@ load("@ytt:data", "data")
+
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+
+directories:
+- path: dev
+  contents:
+  - path: ./
+    git:
+      url: https://github.com/GaloyMoney/galoy.git
+      ref: #@ data.values.galoy_git_ref
+    includePaths:
+    - dev/**/*
+    - .envrc
+    - .env.ci
+    - docker-compose.yml
+    - docker-compose.override.yml
+    excludePaths:
+    - dev/bin/**/*
+    newRootPath: dev
+- path: ./galoy
+  contents:
+  - path: ./
+    git:
+      url: https://github.com/GaloyMoney/galoy.git
+      ref: #@ data.values.galoy_git_ref
+    includePaths:
+    - dev/**/*
+    - test/bats/bitcoind_signer_descriptors.json
+    - test/bats/gql/*
+    - .envrc
+    - .env.ci
+    - docker-compose.yml
+    - docker-compose.override.yml
+    excludePaths:
+    - dev/bin/**/*
+- path: ./graphql
+  contents:
+  - path: ./
+    git:
+      url: https://github.com/GaloyMoney/galoy.git
+      ref: #@ data.values.galoy_git_ref
+    includePaths:
+    - src/graphql/public/schema.graphql
+    - src/graphql/admin/schema.graphql
+    newRootPath: src/graphql

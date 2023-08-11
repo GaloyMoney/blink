@@ -1,0 +1,9 @@
+mutation accountDelete {
+  accountDelete {
+    errors {
+      message
+      code
+    }
+    success
+  }
+}

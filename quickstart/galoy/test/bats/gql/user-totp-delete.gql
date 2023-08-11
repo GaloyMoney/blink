@@ -1,0 +1,14 @@
+mutation userTotpDelete($input: UserTotpDeleteInput!) {
+  userTotpDelete(input: $input) {
+    errors {
+      message
+    }
+    me {
+      totpEnabled
+      email {
+        address
+        verified
+      }
+    }
+  }
+}
