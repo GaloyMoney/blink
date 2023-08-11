@@ -7,6 +7,7 @@ import {
   LnFees,
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
+  InvalidZeroAmountPriceRatioInputError,
 } from "@domain/payments"
 import { ValidationError, WalletCurrency } from "@domain/shared"
 
@@ -750,12 +751,20 @@ describe("LightningPaymentFlowBuilder", () => {
         })
       })
     })
+
     describe("invoice with no amount", () => {
       const uncheckedAmount = 10000n
       const withAmountBuilder = intraledgerBuilder.withNoAmountInvoice({
         invoice: invoiceWithNoAmount,
         uncheckedAmount: Number(uncheckedAmount),
       })
+
+      const lessThan1CentAmount = 1n
+      const lessThan1CentWithAmountBuilder = intraledgerBuilder.withNoAmountInvoice({
+        invoice: invoiceWithNoAmount,
+        uncheckedAmount: Number(lessThan1CentAmount),
+      })
+
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -763,8 +772,11 @@ describe("LightningPaymentFlowBuilder", () => {
           }),
         )
       }
+
       describe("with btc wallet", () => {
         const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(senderBtcWallet)
+        const lessThan1CentWithBtcWalletBuilder =
+          lessThan1CentWithAmountBuilder.withSenderWallet(senderBtcWallet)
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
@@ -831,6 +843,9 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
             withBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+          const lessThan1CentWithUsdRecipientBuilder =
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -874,6 +889,26 @@ describe("LightningPaymentFlowBuilder", () => {
                 usdPaymentAmount,
               }),
             )
+          })
+
+          it("fails to send amount less than 1 cent", async () => {
+            const payment = await lessThan1CentWithUsdRecipientBuilder
+              .withConversion({
+                mid: {
+                  usdFromBtc: usdFromBtcMid,
+                  btcFromUsd: btcFromUsdMid,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc: usdFromBtcBuy,
+                  btcFromUsd: btcFromUsdBuy,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc: usdFromBtcSell,
+                  btcFromUsd: btcFromUsdSell,
+                },
+              })
+              .withoutRoute()
+            expect(payment).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
           })
         })
       })
@@ -1014,6 +1049,13 @@ describe("LightningPaymentFlowBuilder", () => {
         uncheckedAmount: Number(uncheckedAmount),
         description: "",
       })
+
+      const lessThan1CentAmount = 1n
+      const lessThan1CentWithAmountBuilder = intraledgerBuilder.withoutInvoice({
+        uncheckedAmount: Number(lessThan1CentAmount),
+        description: "",
+      })
+
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -1021,8 +1063,11 @@ describe("LightningPaymentFlowBuilder", () => {
           }),
         )
       }
+
       describe("with btc wallet", () => {
         const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(senderBtcWallet)
+        const lessThan1CentWithBtcWalletBuilder =
+          lessThan1CentWithAmountBuilder.withSenderWallet(senderBtcWallet)
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
@@ -1089,6 +1134,9 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
             withBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+          const lessThan1CentWithUsdRecipientBuilder =
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -1132,6 +1180,26 @@ describe("LightningPaymentFlowBuilder", () => {
                 usdPaymentAmount,
               }),
             )
+          })
+
+          it("fails to send amount less than 1 cent", async () => {
+            const payment = await lessThan1CentWithUsdRecipientBuilder
+              .withConversion({
+                mid: {
+                  usdFromBtc: usdFromBtcMid,
+                  btcFromUsd: btcFromUsdMid,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc: usdFromBtcBuy,
+                  btcFromUsd: btcFromUsdBuy,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc: usdFromBtcSell,
+                  btcFromUsd: btcFromUsdSell,
+                },
+              })
+              .withoutRoute()
+            expect(payment).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
           })
         })
       })
