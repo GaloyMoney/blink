@@ -1,0 +1,9 @@
+mutation intraLedgerUsdPaymentSend($input: IntraLedgerUsdPaymentSendInput!) {
+  intraLedgerUsdPaymentSend(input: $input) {
+    status
+    errors {
+      message
+      path
+    }
+  }
+}
