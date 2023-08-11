@@ -18,6 +18,8 @@ reset_redis() {
 }
 
 start_server() {
+  stop_server > /dev/null 2>&1 || true
+
   background node lib/servers/graphql-main-server.js > .e2e-server.log
   echo $! > $SERVER_PID_FILE
 
@@ -31,6 +33,8 @@ start_server() {
 }
 
 subscribe_to() {
+  stop_subscriber > /dev/null 2>&1 || true
+
   token_name=$1
   if [[ -n "$token_name" && "$token_name" != 'anon' ]]; then
      token="$(read_value $token_name)"
@@ -49,11 +53,15 @@ subscribe_to() {
 }
 
 start_ws_server() {
+  stop_ws_server > /dev/null 2>&1 || true
+
   background node lib/servers/ws-server.js > .e2e-ws-server.log
   echo $! > $WS_SERVER_PID_FILE
 }
 
 start_trigger() {
+  stop_trigger > /dev/null 2>&1 || true
+
   background node lib/servers/trigger.js > .e2e-trigger.log
   echo $! > $TRIGGER_PID_FILE
 }
@@ -63,6 +71,8 @@ run_cron() {
 }
 
 start_exporter() {
+  stop_exporter > /dev/null 2>&1 || true
+
   background node lib/servers/exporter.js > .e2e-exporter.log
   echo $! > $EXPORTER_PID_FILE
 }
@@ -93,7 +103,7 @@ clear_cache() {
 }
 
 balance_for_check() {
-  reset_redis > /dev/null 2>&1
+  reset_redis > /dev/null 2>&1 || true
 
   get_metric() {
     metric_name=$1
