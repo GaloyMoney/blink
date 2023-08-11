@@ -40,11 +40,6 @@ services:
     - POSTGRES_USER=dbuser
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=default
-  mailslurper:
-    image: oryd/mailslurper:latest-smtps
-    ports:
-    - 4436:4436
-    - 4437:4437
   galoy:
     image: us.gcr.io/galoy-org/galoy-app:edge
     command:
