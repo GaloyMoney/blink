@@ -90,7 +90,7 @@ const receiveDisplayAmounts = {
 const randomLightningMemo = () =>
   "this is my lightning memo #" + (Math.random() * 1_000_000).toFixed()
 
-describe("lightningPay", () => {
+describe("initiated via lightning", () => {
   describe("settles via lightning", () => {
     it("fails if sender account is locked", async () => {
       // Setup mocks
@@ -137,56 +137,6 @@ describe("lightningPay", () => {
       expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
-    })
-
-    it("fails if sends to self", async () => {
-      // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
-      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
-        ...LnServiceOrig(),
-        listAllPubkeys: () => [lnInvoice.destination],
-      })
-
-      // Create users
-      const newWalletDescriptor = await createRandomUserAndWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
-
-      // Persist invoice as self-invoice
-      const persisted = await WalletInvoicesRepository().persistNew({
-        paymentHash: lnInvoice.paymentHash,
-        secret: "secret" as SecretPreImage,
-        selfGenerated: true,
-        pubkey: lnInvoice.destination,
-        recipientWalletDescriptor: newWalletDescriptor,
-        paid: false,
-      })
-      if (persisted instanceof Error) throw persisted
-
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: newWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      // Attempt pay
-      const paymentResult = await Payments.payInvoiceByWalletId({
-        uncheckedPaymentRequest: lnInvoice.paymentRequest,
-        memo,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-      })
-      expect(paymentResult).toBeInstanceOf(SelfPaymentError)
-
-      // Restore system state
-      await WalletInvoicesRepository().deleteByPaymentHash(lnInvoice.paymentHash)
       lndServiceSpy.mockReset()
     })
 
@@ -425,6 +375,60 @@ describe("lightningPay", () => {
       lndServiceSpy.mockReset()
     })
 
+    it("fails if sends to self", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [lnInvoice.destination],
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Persist invoice as self-invoice
+      const persisted = await WalletInvoicesRepository().persistNew({
+        paymentHash: lnInvoice.paymentHash,
+        secret: "secret" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: lnInvoice.destination,
+        recipientWalletDescriptor: newWalletDescriptor,
+        paid: false,
+      })
+      if (persisted instanceof Error) throw persisted
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Attempt pay
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest: lnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+      })
+      expect(paymentResult).toBeInstanceOf(SelfPaymentError)
+
+      // Restore system state
+      await WalletInvoicesRepository().deleteByPaymentHash(lnInvoice.paymentHash)
+      lndServiceSpy.mockReset()
+    })
+  })
+})
+
+describe("initiated intraledger", () => {
+  describe("settles intraledger", () => {
     it("fails if sends to self", async () => {
       // Create users
       const newWalletDescriptor = await createRandomUserAndWallet()
