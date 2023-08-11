@@ -137,9 +137,8 @@ const AccountSchema = new Schema<AccountRecord>(
       index: true,
       unique: true,
       sparse: true,
-      // TODO: uncomment after migration
-      // required: true,
-      // default: () => crypto.randomUUID(),
+      required: true,
+      default: () => crypto.randomUUID(),
     },
 
     withdrawFee: {
