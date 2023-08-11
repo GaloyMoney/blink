@@ -17,7 +17,7 @@ To embed galoy as a dependency we recommend syncing this folder via vendir:
 install vendir if not already:
 ```
 brew tap carvel-dev/carvel
-brew install vendir
+brew install vendir ytt
 ```
 
 ```
@@ -29,7 +29,7 @@ curl https://raw.githubusercontent.com/GaloyMoney/galoy/main/quickstart/quicksta
 # synchronize vendor folder
 vendir sync
 
-# set HOST_PROJECT_PATH to your environement. we're using direnv here.
+# set HOST_PROJECT_PATH to your environment. we're using direnv here.
 echo 'export HOST_PROJECT_PATH="$(pwd)"' >> .envrc
 direnv allow
 
@@ -37,8 +37,10 @@ direnv allow
 docker compose -p $(basename "$PWD") -f ./vendor/galoy-quickstart/docker-compose.yml up -d
 ```
 
-
-if you want to use `docker compose`, you need to keep the "prefix": `-p $(basename "$PWD") -f ./vendor/galoy-quickstart/docker-compose.yml `
-ie:
-
-`docker compose -p $(basename "$PWD") -f ./vendor/galoy-quickstart/docker-compose.yml ps`
+If you want to use `docker compose`, you need to keep the "prefix": `-p $(basename "$PWD") -f ./vendor/galoy-quickstart/docker-compose.yml `
+You can create an alias like:
+```
+alias dp="docker compose -p $(basename "$PWD") -f ./vendor/galoy-quickstart/docker-compose.yml"
+dp up -d
+dp ps
+```
