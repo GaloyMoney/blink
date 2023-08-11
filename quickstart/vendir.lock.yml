@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: adding otel for svix (#3078)...'
-      sha: cc801fa80cf034e12b9ccb2797d8ebabe5d76b01
+      commitTitle: 'chore: add quickstart-test container'
+      sha: 75c88ef737bc70f39ad49d6f87f52030da40bbca
       tags:
-      - 0.11.37
+      - 0.12.7-8-g75c88ef73
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: adding otel for svix (#3078)...'
-      sha: cc801fa80cf034e12b9ccb2797d8ebabe5d76b01
+      commitTitle: 'chore: add quickstart-test container'
+      sha: 75c88ef737bc70f39ad49d6f87f52030da40bbca
       tags:
-      - 0.11.37
+      - 0.12.7-8-g75c88ef73
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: adding otel for svix (#3078)...'
-      sha: cc801fa80cf034e12b9ccb2797d8ebabe5d76b01
+      commitTitle: 'chore: add quickstart-test container'
+      sha: 75c88ef737bc70f39ad49d6f87f52030da40bbca
       tags:
-      - 0.11.37
+      - 0.12.7-8-g75c88ef73
     path: ./
   path: ./graphql
 kind: LockConfig

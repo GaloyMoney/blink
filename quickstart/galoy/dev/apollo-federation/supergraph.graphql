@@ -183,7 +183,6 @@ type BTCWallet implements Wallet
 type BuildInformation
   @join__type(graph: PUBLIC)
 {
-  buildTime: Timestamp
   commitHash: String
   helmRevision: Int
 }

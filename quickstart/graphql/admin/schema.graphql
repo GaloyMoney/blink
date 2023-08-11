@@ -13,6 +13,7 @@ type Account {
   status: AccountStatus!
   title: String
   username: Username
+  uuid: String!
   wallets: [Wallet!]!
 }
 
@@ -279,6 +280,7 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
 }
 
 type Query {
+  accountDetailsByAccountId(accountId: ID!): Account!
   accountDetailsByEmail(email: EmailAddress!): Account!
   accountDetailsByUserPhone(phone: Phone!): Account!
   accountDetailsByUsername(username: Username!): Account!
