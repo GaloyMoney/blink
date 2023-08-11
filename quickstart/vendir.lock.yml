@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: don''t clear term in smoke-test'
-      sha: 21dc9ed396c76137a16cbca064f960b992bf1341
+      commitTitle: 'feat: Quickstart (#3042)...'
+      sha: 176666a1006bd556deaa29173173abbb181ae8ab
       tags:
-      - 0.11.15-14-g21dc9ed39
+      - 0.11.19
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: don''t clear term in smoke-test'
-      sha: 21dc9ed396c76137a16cbca064f960b992bf1341
+      commitTitle: 'feat: Quickstart (#3042)...'
+      sha: 176666a1006bd556deaa29173173abbb181ae8ab
       tags:
-      - 0.11.15-14-g21dc9ed39
+      - 0.11.19
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: don''t clear term in smoke-test'
-      sha: 21dc9ed396c76137a16cbca064f960b992bf1341
+      commitTitle: 'feat: Quickstart (#3042)...'
+      sha: 176666a1006bd556deaa29173173abbb181ae8ab
       tags:
-      - 0.11.15-14-g21dc9ed39
+      - 0.11.19
     path: ./
   path: ./graphql
 kind: LockConfig

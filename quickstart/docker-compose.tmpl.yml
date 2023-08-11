@@ -12,7 +12,6 @@ services:
   #! Authentication
   kratos: #@ data.values.services["kratos"]
   kratos-pg: #@ data.values.services["kratos-pg"]
-  mailslurper: #@ data.values.services["mailslurper"]
 
   galoy:
 #@ if galoy_image_digest == "local":
