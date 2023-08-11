@@ -23,7 +23,7 @@ import * as LndImpl from "@services/lnd"
 
 import {
   createMandatoryUsers,
-  createRandomUserAndWallet,
+  createRandomUserAndBtcWallet,
   getBalanceHelper,
   recordReceiveLnPayment,
 } from "test/helpers"
@@ -101,7 +101,7 @@ describe("initiated via lightning", () => {
       })
 
       // Create users
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -149,7 +149,7 @@ describe("initiated via lightning", () => {
       })
 
       // Create users
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -177,7 +177,7 @@ describe("initiated via lightning", () => {
       })
 
       // Create users
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -205,7 +205,7 @@ describe("initiated via lightning", () => {
       })
 
       // Create users
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -252,7 +252,7 @@ describe("initiated via lightning", () => {
       })
 
       // Create users
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -318,13 +318,13 @@ describe("initiated via lightning", () => {
       })
 
       // Setup users and wallets
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
       if (newAccount instanceof Error) throw newAccount
 
-      const recipientWalletDescriptor = await createRandomUserAndWallet()
+      const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
       const recipientAccount = await AccountsRepository().findById(
         recipientWalletDescriptor.accountId,
       )
@@ -384,7 +384,7 @@ describe("initiated via lightning", () => {
       })
 
       // Create users
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -431,7 +431,7 @@ describe("initiated intraledger", () => {
   describe("settles intraledger", () => {
     it("fails if sends to self", async () => {
       // Create users
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )

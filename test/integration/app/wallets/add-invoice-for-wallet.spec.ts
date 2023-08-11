@@ -5,11 +5,11 @@ import { InactiveAccountError } from "@domain/errors"
 
 import { AccountsRepository } from "@services/mongoose"
 
-import { createRandomUserAndWallet } from "test/helpers"
+import { createRandomUserAndBtcWallet } from "test/helpers"
 
 describe("addInvoice", () => {
   it("fails for self if account is locked", async () => {
-    const newWalletDescriptor = await createRandomUserAndWallet()
+    const newWalletDescriptor = await createRandomUserAndBtcWallet()
     const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
 

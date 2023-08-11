@@ -12,7 +12,7 @@ import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import {
   createMandatoryUsers,
-  createRandomUserAndWallet,
+  createRandomUserAndBtcWallet,
   recordReceiveLnPayment,
 } from "test/helpers"
 
@@ -54,13 +54,13 @@ describe("intraLedgerPay", () => {
   it("fails if sender account is locked", async () => {
     const memo = randomOnChainMemo()
 
-    const senderWalletDescriptor = await createRandomUserAndWallet()
+    const senderWalletDescriptor = await createRandomUserAndBtcWallet()
     const senderAccount = await AccountsRepository().findById(
       senderWalletDescriptor.accountId,
     )
     if (senderAccount instanceof Error) throw senderAccount
 
-    const recipientWalletDescriptor = await createRandomUserAndWallet()
+    const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
     const recipientAccount = await AccountsRepository().findById(
       recipientWalletDescriptor.accountId,
     )
@@ -103,13 +103,13 @@ describe("intraLedgerPay", () => {
   it("fails if recipient account is locked", async () => {
     const memo = randomOnChainMemo()
 
-    const senderWalletDescriptor = await createRandomUserAndWallet()
+    const senderWalletDescriptor = await createRandomUserAndBtcWallet()
     const senderAccount = await AccountsRepository().findById(
       senderWalletDescriptor.accountId,
     )
     if (senderAccount instanceof Error) throw senderAccount
 
-    const recipientWalletDescriptor = await createRandomUserAndWallet()
+    const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
     const recipientAccount = await AccountsRepository().findById(
       recipientWalletDescriptor.accountId,
     )

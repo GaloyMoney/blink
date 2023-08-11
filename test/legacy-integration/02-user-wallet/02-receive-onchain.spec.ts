@@ -65,7 +65,7 @@ import {
   checkIsBalanced,
   clearLimiters,
   createMandatoryUsers,
-  createRandomUserAndWallet,
+  createRandomUserAndBtcWallet,
   createUserAndWalletFromPhone,
   getAccountIdByPhone,
   getBalanceHelper,
@@ -123,7 +123,7 @@ beforeAll(async () => {
   walletIdUsdA = await getUsdWalletIdByPhone(phoneA)
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
   accountIdA = await getAccountIdByPhone(phoneA)
-  ;({ accountId: newAccountIdA, id: newWalletIdA } = await createRandomUserAndWallet())
+  ;({ accountId: newAccountIdA, id: newWalletIdA } = await createRandomUserAndBtcWallet())
 })
 
 beforeEach(async () => {
