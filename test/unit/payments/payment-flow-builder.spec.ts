@@ -9,7 +9,7 @@ import {
   WalletPriceRatio,
   InvalidZeroAmountPriceRatioInputError,
 } from "@domain/payments"
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import { ONE_CENT, ValidationError, WalletCurrency } from "@domain/shared"
 
 const skippedPubkey =
   "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6" as Pubkey
@@ -71,6 +71,13 @@ describe("LightningPaymentFlowBuilder", () => {
   const immediateSpread = 0.001 // 0.10 %
   // const futureSpread = 0.0012 // 0.12%
 
+  const centsFromSatsForMid = ({ sats, spread, round }): bigint => {
+    if (Number(sats) === 0) return 0n
+
+    const result = BigInt(round(sats * midPriceRatio * spread))
+    return result || 1n
+  }
+
   const centsFromSats = ({ sats, spread, round }): bigint =>
     BigInt(round(sats * midPriceRatio * spread))
   const satsFromCents = ({ cents, spread, round }): bigint =>
@@ -78,7 +85,7 @@ describe("LightningPaymentFlowBuilder", () => {
 
   const usdFromBtcMid = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: centsFromSats({
+      amount: centsFromSatsForMid({
         sats: Number(amount.amount),
         spread: 1,
         round: Math.round,
@@ -794,6 +801,9 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
             withBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+          const lessThan1CentWithBtcRecipientBuilder =
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -835,6 +845,32 @@ describe("LightningPaymentFlowBuilder", () => {
             expect(payment).toEqual(
               expect.objectContaining({
                 usdPaymentAmount,
+              }),
+            )
+          })
+
+          it("sends amount less than 1 cent", async () => {
+            const paymentBefore = lessThan1CentWithBtcRecipientBuilder.withConversion({
+              mid: {
+                usdFromBtc: usdFromBtcMid,
+                btcFromUsd: btcFromUsdMid,
+              },
+              hedgeBuyUsd: {
+                usdFromBtc: usdFromBtcBuy,
+                btcFromUsd: btcFromUsdBuy,
+              },
+              hedgeSellUsd: {
+                usdFromBtc: usdFromBtcSell,
+                btcFromUsd: btcFromUsdSell,
+              },
+            })
+            const payment = await paymentBefore.withoutRoute()
+            if (payment instanceof Error) throw payment
+
+            checkSettlementMethod(payment)
+            expect(payment).toEqual(
+              expect.objectContaining({
+                usdPaymentAmount: ONE_CENT,
               }),
             )
           })
@@ -1085,6 +1121,10 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
             withBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+
+          const lessThan1CentWithBtcRecipientBuilder =
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -1126,6 +1166,32 @@ describe("LightningPaymentFlowBuilder", () => {
             expect(payment).toEqual(
               expect.objectContaining({
                 usdPaymentAmount,
+              }),
+            )
+          })
+
+          it("sends amount less than 1 cent", async () => {
+            const paymentBefore = lessThan1CentWithBtcRecipientBuilder.withConversion({
+              mid: {
+                usdFromBtc: usdFromBtcMid,
+                btcFromUsd: btcFromUsdMid,
+              },
+              hedgeBuyUsd: {
+                usdFromBtc: usdFromBtcBuy,
+                btcFromUsd: btcFromUsdBuy,
+              },
+              hedgeSellUsd: {
+                usdFromBtc: usdFromBtcSell,
+                btcFromUsd: btcFromUsdSell,
+              },
+            })
+            const payment = await paymentBefore.withoutRoute()
+            if (payment instanceof Error) throw payment
+
+            checkSettlementMethod(payment)
+            expect(payment).toEqual(
+              expect.objectContaining({
+                usdPaymentAmount: ONE_CENT,
               }),
             )
           })
