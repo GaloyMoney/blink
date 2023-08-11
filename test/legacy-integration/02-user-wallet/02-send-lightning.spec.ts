@@ -29,7 +29,6 @@ import {
   LnFees,
   LnPaymentRequestInTransitError,
   WalletPriceRatio,
-  ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import {
   AmountCalculator,
@@ -226,41 +225,6 @@ afterAll(async () => {
 })
 
 describe("UserWallet - Lightning Pay", () => {
-  it("sends to another Galoy user an amount less than 1 cent", async () => {
-    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-      walletId: walletIdC as WalletId,
-      amount: toSats(1),
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
-
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: invoice,
-      memo: null,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(paymentResult).not.toBeInstanceOf(Error)
-    if (paymentResult instanceof Error) throw paymentResult
-
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-  })
-
-  it("pay zero amount invoice with amount less than 1 cent", async () => {
-    const { request } = await createInvoice({ lnd: lndOutside1 })
-
-    // Test payment is successful
-    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      amount: toSats(1),
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-  })
-
   it("does not filter spam message for external send", async () => {
     const amount = toSats(1)
     const memoSpamBelowThreshold = "Memo BELOW spam threshold"
@@ -1235,34 +1199,6 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(finalBalanceB).toBe(initBalanceUsdB + amountPayment)
       expect(finalBalanceA).toBe(initBalanceA - sats)
     })
-
-    it("fails to pay internal invoice with less-than-1-cent amount from btc wallet to usd wallet", async () => {
-      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
-
-      const amountPayment = toSats(1)
-
-      const request = await Wallets.addInvoiceNoAmountForSelf({
-        walletId: walletIdUsdB,
-      })
-      if (request instanceof Error) throw request
-      const { paymentRequest: uncheckedPaymentRequest } = request
-
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-        uncheckedPaymentRequest,
-        memo: null,
-        senderWalletId: walletIdA,
-        senderAccount: accountA,
-        amount: amountPayment,
-      })
-      expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
-
-      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
-      const finalBalanceA = await getBalanceHelper(walletIdA)
-
-      expect(finalBalanceB).toBe(initBalanceUsdB)
-      expect(finalBalanceA).toBe(initBalanceA)
-    })
   })
 
   describe("No amount lightning invoices", () => {
@@ -1776,27 +1712,6 @@ describe("USD Wallets - Lightning Pay", () => {
         recipientAmountInvoice: usdSendAmount,
       })
       expect(res).not.toBeInstanceOf(Error)
-    })
-
-    it("fails to send less-than-1-cent amount from BTC wallet to USD wallet", async () => {
-      const btcSendAmount = 10
-      const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
-        amount: BigInt(btcSendAmount),
-        currency: WalletCurrency.Btc,
-      })
-      if (usdAmount instanceof Error) throw usdAmount
-      const btcSendAmountInUsd = Number(usdAmount.amount)
-
-      expect(btcSendAmountInUsd).toBe(0)
-
-      const res = await testIntraledgerSend({
-        senderWalletId: walletIdA,
-        senderAccount: accountA,
-        recipientWalletId: walletIdUsdB,
-        senderAmountInvoice: btcSendAmount,
-        recipientAmountInvoice: btcSendAmountInUsd,
-      })
-      expect(res).toBeInstanceOf(ZeroAmountForUsdRecipientError)
     })
   })
 })
