@@ -389,6 +389,7 @@ const executePaymentViaIntraledger = async <
         accountUUID: recipientAccount.uuid,
         eventType: CallbackEventType.ReceiveIntraledger,
         payload: {
+          // FIXME: [0] might not be correct
           txid: journal.transactionIds[0],
         },
       })

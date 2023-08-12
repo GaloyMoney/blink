@@ -88,7 +88,7 @@ curl --silent -X 'GET' \
 get message attempts (update msdig first):
 
 ```
-msgid="msg_2TsrIn1bYT3Jc8tcJMg6sF18fa1" && \
+msgid="msg_2Tt19uCGoGAKalsDrKooszfaTrk" && \
 curl --silent -X 'GET' \
   "$SVIX_ENDPOINT/api/v1/app/$account_path/attempt/msg/$msgid/" \
   -H "Authorization: Bearer $SVIX_SECRET" \

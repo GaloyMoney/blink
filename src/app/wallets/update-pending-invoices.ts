@@ -306,6 +306,7 @@ const updatePendingInvoiceBeforeFinally = async ({
         accountUUID: recipientAccount.uuid,
         eventType: CallbackEventType.ReceiveLightning,
         payload: {
+          // FIXME: [0] might not be correct
           txid: result.transactionIds[0],
         },
       })
