@@ -112,6 +112,8 @@ usd_amount=50
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
 
+  exec_graphql "$token_name" 'account-details'
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
   cat .e2e-callback.log | grep "$account_id" || exit 1
 }
 

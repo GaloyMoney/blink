@@ -1,3 +1,20 @@
+create an application:
+
+```
+variables=$(
+  jq -n \
+  --arg account_id "account.$account_id" \
+  '{ "name": "Client application", "uid": $account_id }' \
+)
+
+curl --silent -X 'POST' \
+  'http://127.0.0.1:8071/api/v1/app/' \
+  -H "Authorization: Bearer $SVIX_SECRET" \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d "$variables" | jq
+```
+
 get the applications:
 
 ```
@@ -68,10 +85,10 @@ curl --silent -X 'GET' \
   -H 'Content-Type: application/json' | jq
 ```
 
-get message attempts:
+get message attempts (update msdig first):
 
 ```
-msgid="msg_2TqrKlbkTmsDd0lzSmB6LDv010J" && \
+msgid="msg_2TsrIn1bYT3Jc8tcJMg6sF18fa1" && \
 curl --silent -X 'GET' \
   "$SVIX_ENDPOINT/api/v1/app/$account_path/attempt/msg/$msgid/" \
   -H "Authorization: Bearer $SVIX_SECRET" \
