@@ -462,20 +462,15 @@ services:
     platform: linux/amd64
     environment:
       WAIT_FOR: "true"
-      SVIX_REDIS_DSN: "redis://svix-redis:6379"
       SVIX_DB_DSN: "postgresql://postgres:postgres@svix-pg/postgres"
       SVIX_JWT_SECRET: "8KjzRXrKkd9YFcNyqLSIY8JwiaCeRc6WK4UkMnSW"
       SVIX_WHITELIST_SUBNETS: "[127.0.0.1/32, 192.168.0.0/16]"
+      SVIX_QUEUE_TYPE: "memory"
     depends_on:
       - svix-pg
-      - svix-redis
     ports: []
 
   svix-pg:
     image: postgres:13.4
     environment:
       POSTGRES_PASSWORD: postgres
-
-  svix-redis:
-    image: "redis:7-alpine"
-    command: "--save 60 500 --appendonly yes --appendfsync everysec"
