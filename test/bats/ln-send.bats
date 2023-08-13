@@ -149,7 +149,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-send: intraledger settled - lnInvoicePaymentSend from btc" {
+@test "ln-send: intraledger settled - lnInvoicePaymentSend from btc to btc" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
@@ -185,7 +185,7 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-send: intraledger settled - lnInvoicePaymentSend from usd" {
+@test "ln-send: intraledger settled - lnInvoicePaymentSend from usd to btc" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
@@ -225,16 +225,16 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-send: intraledger settled - lnNoAmountInvoicePaymentSend" {
+@test "ln-send: intraledger settled - lnNoAmountInvoicePaymentSend from btc to usd" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
   recipient_token_name="$BOB_TOKEN_NAME"
-  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+  usd_recipient_wallet_name="$recipient_token_name.usd_wallet_id"
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    --arg wallet_id "$(read_value $usd_recipient_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
   exec_graphql "$recipient_token_name" 'ln-no-amount-invoice-create' "$variables"
@@ -261,16 +261,16 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-send: intraledger settled - lnNoAmountUsdInvoicePaymentSend" {
+@test "ln-send: intraledger settled - lnNoAmountUsdInvoicePaymentSend from usd to usd" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
 
   recipient_token_name="$BOB_TOKEN_NAME"
-  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+  usd_recipient_wallet_name="$recipient_token_name.usd_wallet_id"
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    --arg wallet_id "$(read_value $usd_recipient_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
   exec_graphql "$recipient_token_name" 'ln-no-amount-invoice-create' "$variables"
