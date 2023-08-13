@@ -71,7 +71,7 @@ curl --silent -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
         "eventType": "user.signup",
-        "payload": {"email":"test@example.com","type":"user.created","username":"test_user"}
+        "payload": {"paymentHash":"409ba1c57aa8dad3ee142fa379afe7672157de4d088445dc690e8c3e010e68db","accountId":"account123", "txid": "txid", "eventType": "receive.intraledger"}
     }' | jq
 ```
 

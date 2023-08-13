@@ -557,6 +557,7 @@ const executePaymentViaIntraledger = async <
         payload: {
           // FIXME: [0] might not be correct
           txid: journal.transactionIds[0],
+          paymentHash,
         },
       })
     }
