@@ -397,21 +397,6 @@ describe("UserWallet - Lightning Pay", () => {
         expect(finalBalance).toBe(initBalanceB - Math.ceil(milliSatsAmount / 1000))
       })
 
-      it("pay invoice with High CLTV Delta", async () => {
-        const { request } = await createInvoice({
-          lnd: lndOutside1,
-          tokens: amountInvoice,
-          cltv_delta: 200,
-        })
-        const result = await fn({ account: accountB, walletId: walletIdB })({
-          invoice: request,
-        })
-        if (result instanceof Error) throw result
-        expect(result).toBe(PaymentSendStatus.Success)
-        const finalBalance = await getBalanceHelper(walletIdB)
-        expect(finalBalance).toBe(initBalanceB - amountInvoice)
-      })
-
       it("pay invoice to another Galoy user", async () => {
         const memo = "my memo as a payer"
         const sendNotification = jest.fn()

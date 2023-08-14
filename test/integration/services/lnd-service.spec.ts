@@ -101,4 +101,23 @@ describe("LndService", () => {
     })
     expect(retryPaid).toBeInstanceOf(LnAlreadyPaidError)
   })
+
+  it("pay invoice with High CLTV Delta", async () => {
+    // Create invoice
+    const { request } = await createInvoice({
+      lnd: lndOutside1,
+      tokens: amountInvoice,
+      cltv_delta: 200,
+    })
+    const lnInvoice = decodeInvoice(request)
+    if (lnInvoice instanceof Error) throw lnInvoice
+
+    const paid = await lndService.payInvoiceViaPaymentDetails({
+      decodedInvoice: lnInvoice,
+      btcPaymentAmount,
+      maxFeeAmount: undefined,
+    })
+    if (paid instanceof Error) throw paid
+    expect(paid.revealedPreImage).toHaveLength(64)
+  })
 })
