@@ -188,6 +188,65 @@ export const openChannelTesting = async ({
   return { lndNewChannel, lndPartnerNewChannel }
 }
 
+export const openChannelTestingNoAccounting = async ({
+  lnd,
+  lndPartner,
+  socket,
+  is_private = false,
+}) => {
+  await waitUntilSync({ lnds: [lnd, lndPartner] })
+
+  const local_tokens = 1000000
+  const { public_key: partner_public_key } = await getWalletInfo({ lnd: lndPartner })
+
+  const openChannelPromise = waitFor(async () => {
+    try {
+      return openChannel({
+        lnd,
+        local_tokens,
+        is_private,
+        partner_public_key,
+        partner_socket: socket,
+      })
+    } catch (error) {
+      baseLogger.warn({ error }, "openChannel failed. trying again.")
+      return Promise.resolve(null)
+    }
+  })
+
+  let lndNewChannel, lndPartnerNewChannel
+  const sub = subscribeToChannels({ lnd })
+  sub.once("channel_opened", (channel) => {
+    lndNewChannel = channel
+  })
+
+  const subPartner = subscribeToChannels({ lnd: lndPartner })
+  subPartner.once("channel_opened", (channel) => {
+    lndPartnerNewChannel = channel
+  })
+
+  await Promise.all([once(sub, "channel_opening"), openChannelPromise])
+
+  baseLogger.debug("mining blocks and waiting for channel being opened")
+  await Promise.all([
+    // error: https://github.com/alexbosworth/ln-service/issues/122
+    // once(sub, 'channel_opened'),
+    waitFor(() => lndNewChannel && lndPartnerNewChannel),
+    mineBlockAndSync({ lnds: [lnd, lndPartner] }),
+  ])
+
+  if (lndPartner === lnd1) {
+    expect(lndPartnerNewChannel.is_partner_initiated).toBe(true)
+  }
+
+  sub.removeAllListeners()
+  subPartner.removeAllListeners()
+
+  baseLogger.debug({ lndNewChannel, lndPartnerNewChannel }, "new channels")
+
+  return { lndNewChannel, lndPartnerNewChannel }
+}
+
 // all the following uses of bitcoind client that send/receive coin must be "outside"
 
 export const fundLnd = async (lnd, amount = 1) => {
@@ -202,7 +261,6 @@ export const fundLnd = async (lnd, amount = 1) => {
 const resetLnds = async (lnds) => {
   const block = await bitcoindClient.getBlockCount()
   if (!block) return // skip if we are just getting started
-
   // just in case pending transactions
   await mineBlockAndSync({ lnds })
 
