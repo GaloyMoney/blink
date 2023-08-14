@@ -6,27 +6,41 @@ import { LnAlreadyPaidError, decodeInvoice } from "@domain/bitcoin/lightning"
 
 import { LndService } from "@services/lnd"
 
+import { sleep } from "@utils"
+
 import {
   bitcoindClient,
   fundLnd,
   lnd1,
   lndOutside1,
+  lndOutside2,
   mineAndConfirm,
   openChannelTestingNoAccounting,
   resetIntegrationLnds,
+  setChannelFees,
 } from "test/helpers"
 import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
 const amountInvoice = toSats(1000)
 const btcPaymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
 
+const loadBitcoindWallet = async (walletName) => {
+  const wallets = await bitcoindClient.listWallets()
+  if (!wallets.includes(walletName)) {
+    try {
+      await bitcoindClient.createWallet({ walletName })
+    } catch (err) {
+      const error = err as Error
+      if (error.message.includes("Database already exists")) {
+        await bitcoindClient.loadWallet({ filename: walletName })
+      }
+    }
+  }
+}
+
 const fundOnChainWallets = async () => {
   // Setup outside bitcoind
   const walletName = "outside"
-  const wallets = await bitcoindClient.listWallets()
-  if (!wallets.includes(walletName)) {
-    await bitcoindClient.createWallet({ walletName })
-  }
   const bitcoindOutside = new BitcoindWalletClient(walletName)
 
   // Fund outside bitcoind
@@ -45,6 +59,7 @@ const fundOnChainWallets = async () => {
 
 beforeAll(async () => {
   // Seed lnd1 & lndOutside1
+  await loadBitcoindWallet("outside")
   await resetIntegrationLnds()
   await fundOnChainWallets()
   await openChannelTestingNoAccounting({
@@ -52,6 +67,10 @@ beforeAll(async () => {
     lndPartner: lndOutside1,
     socket: `lnd-outside-1:9735`,
   })
+})
+
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 describe("LndService", () => {
