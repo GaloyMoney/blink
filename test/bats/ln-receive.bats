@@ -62,18 +62,24 @@ usd_amount=50
     -H 'Content-Type: application/json' \
     -d "$variables" | jq
 
+  variables=$(
+    jq -n \
+    --arg callback_url "$SVIX_CALLBACK_URL" \
+    '{
+        "description": "An example endpoint name",
+        "url": "$callback_url",
+        "version": 1,
+        "secret": "whsec_abcd1234abcd1234abcd1234abcd1234"
+     }'
+  )
+
   echo create endpoint for the account.$account_id application
   curl --silent -X 'POST' \
     "$SVIX_ENDPOINT/api/v1/app/account.$account_id/endpoint/" \
     -H "Authorization: Bearer $SVIX_SECRET" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
-    -d '{
-          "description": "An example endpoint name",
-          "url": "http://host.docker.internal:8080/webhook/",
-          "version": 1,
-          "secret": "whsec_abcd1234abcd1234abcd1234abcd1234"
-        }'
+    -d "$variables" | jq
 
   initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
 
