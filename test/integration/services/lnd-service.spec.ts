@@ -4,7 +4,9 @@ import { WalletCurrency } from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
 import {
   LnAlreadyPaidError,
+  PaymentNotFoundError,
   PaymentRejectedByDestinationError,
+  PaymentStatus,
   decodeInvoice,
 } from "@domain/bitcoin/lightning"
 
@@ -260,5 +262,40 @@ describe("LndService", () => {
     const fee = Math.ceil(baseFee + feeRate)
 
     expect(fee).toEqual(paid.roundedUpFee)
+  })
+
+  it("deletes payment", async () => {
+    const { request, secret } = await createInvoice({ lnd: lndOutside1 })
+    const revealedPreImage = secret as RevealedPreImage
+    const lnInvoice = decodeInvoice(request)
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentHash } = lnInvoice
+
+    const paid = await lndService.payInvoiceViaPaymentDetails({
+      decodedInvoice: lnInvoice,
+      btcPaymentAmount,
+      maxFeeAmount: undefined,
+    })
+    if (paid instanceof Error) throw paid
+
+    // Confirm payment exists in lnd
+    const retrievedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedPayment).not.toBeInstanceOf(Error)
+    if (retrievedPayment instanceof Error) return retrievedPayment
+    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
+    if (retrievedPayment.status !== PaymentStatus.Settled) return
+    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
+
+    // Delete payment
+    const deleted = await lndService.deletePaymentByHash({ paymentHash })
+    expect(deleted).not.toBeInstanceOf(Error)
+
+    // Check that payment no longer exists
+    const retrievedDeletedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
+
+    // Check that deleting missing payment doesn't return error
+    const deletedAttempt = await lndService.deletePaymentByHash({ paymentHash })
+    expect(deletedAttempt).not.toBeInstanceOf(Error)
   })
 })
