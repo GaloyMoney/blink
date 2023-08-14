@@ -63,14 +63,14 @@ usd_amount=50
     -d "$variables" | jq
 
   variables=$(
-    jq -n \
-    --arg callback_url "$SVIX_CALLBACK_URL" \
-    '{
-        "description": "An example endpoint name",
-        "url": "$callback_url",
-        "version": 1,
-        "secret": "whsec_abcd1234abcd1234abcd1234abcd1234"
-     }'
+      jq -n \
+      --arg callback_url "$SVIX_CALLBACK_URL" \
+      '{
+          "description": "An example endpoint name",
+          "url": $callback_url,
+          "version": 1,
+          "secret": "whsec_abcd1234abcd1234abcd1234abcd1234"
+      }'
   )
 
   echo create endpoint for the account.$account_id application
@@ -86,7 +86,6 @@ usd_amount=50
   subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
 
   sleep 3
-  exit 1
 }
 
 @test "ln-receive: settle via ln for BTC wallet, invoice with amount" {
