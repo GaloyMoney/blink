@@ -80,6 +80,7 @@ usd_amount=50
   subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
 
   sleep 3
+  exit 1
 }
 
 @test "ln-receive: settle via ln for BTC wallet, invoice with amount" {
