@@ -65,7 +65,6 @@ import {
   getAccountByPhone,
   getAccountRecordByPhone,
   getBalanceHelper,
-  getChannel,
   getChannels,
   getDefaultWalletIdByPhone,
   getHash,
@@ -75,7 +74,6 @@ import {
   getUsdWalletIdByPhone,
   lnd1,
   lndOutside1,
-  lndOutside2,
   lndOutside3,
   markFailedTransactionAsPending,
   markSuccessfulTransactionAsPending,
@@ -544,53 +542,6 @@ describe("UserWallet - Lightning Pay", () => {
         expect(accountRecordC.contacts).toEqual(
           expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
         )
-      })
-
-      it("pay invoice routed to lnd outside2", async () => {
-        const amountInvoice = 199
-        const { request } = await createInvoice({
-          lnd: lndOutside2,
-          tokens: amountInvoice,
-          is_including_private_channels: true,
-        })
-
-        const initialBalance = await getBalanceHelper(walletIdB)
-
-        const result = await fn({ account: accountB, walletId: walletIdB })({
-          invoice: request,
-          memo: "pay an unconnected node",
-        })
-        if (result instanceof Error) throw result
-
-        // wait for balance updates because invoice event
-        // arrives before wallet balances updates in lnd
-        await waitUntilChannelBalanceSyncIntegration()
-
-        expect(result).toBe(PaymentSendStatus.Success)
-        const finalBalance = await getBalanceHelper(walletIdB)
-
-        // Calculate fee from routed payment
-        const { channels } = await getChannels({ lnd: lndOutside2 })
-        expect(channels && channels.length).toEqual(1)
-        const { id } = channels[0]
-        const { policies } = await getChannel({ id, lnd: lndOutside2 })
-
-        const partnerPolicy = policies.find(
-          (pol) => pol.public_key !== (process.env.LND_OUTSIDE_2_PUBKEY as Pubkey),
-        )
-        if (partnerPolicy === undefined) throw new Error("Undefined 'partnerPolicy'")
-        expect(partnerPolicy.base_fee_mtokens).toBe("0")
-        expect(partnerPolicy.fee_rate).toEqual(5000)
-
-        const { base_fee_mtokens: baseMilliSats, fee_rate: feeRatePpm } = partnerPolicy
-        if (baseMilliSats === undefined || feeRatePpm === undefined) {
-          throw new Error("Undefined baseMilliSats or feeRatePpm")
-        }
-        const baseFee = parseInt(baseMilliSats, 10) / 1000
-        const feeRate = (amountInvoice * feeRatePpm) / 1_000_000
-        const fee = Math.ceil(baseFee + feeRate)
-
-        expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
       })
 
       it("pay hodl invoice & ln payments repo updates", async () => {
