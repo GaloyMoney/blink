@@ -103,3 +103,5 @@ services:
   svix:
     ports:
       - "8071:8071"
+    extra_hosts:
+      - "bats-tests:host-gateway"
