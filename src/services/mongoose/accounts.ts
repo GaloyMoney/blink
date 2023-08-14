@@ -47,6 +47,20 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
+  const findByUuid = async (
+    accountUuid: AccountUUID,
+  ): Promise<Account | RepositoryError> => {
+    try {
+      const result = await Account.findOne({
+        uuid: accountUuid,
+      })
+      if (!result) return new CouldNotFindError()
+      return translateToAccount(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   const findByUsername = async (
     username: Username,
   ): Promise<Account | RepositoryError> => {
@@ -175,6 +189,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     findByUserId,
     listUnlockedAccounts,
     findById,
+    findByUuid,
     findByUsername,
     listBusinessesForMap,
     update,

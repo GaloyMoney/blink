@@ -155,6 +155,7 @@ interface IAccountsRepository {
   listUnlockedAccounts(): AsyncGenerator<Account> | RepositoryError
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   findByUserId(kratosUserId: UserId): Promise<Account | RepositoryError>
+  findByUuid(accountUuid: AccountUUID): Promise<Account | RepositoryError>
 
   persistNew(kratosUserId: UserId): Promise<Account | RepositoryError>
 
