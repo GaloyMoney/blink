@@ -39,6 +39,7 @@ export class UnknownNextPeerError extends LightningServiceError {}
 export class InsufficientBalanceForRoutingError extends LightningServiceError {}
 export class InsufficientBalanceForLnPaymentError extends LightningServiceError {}
 export class InvoiceExpiredOrBadPaymentHashError extends LightningServiceError {}
+export class PaymentRejectedByDestinationError extends LightningServiceError {}
 export class PaymentAttemptsTimedOutError extends LightningServiceError {}
 export class ProbeForRouteTimedOutError extends LightningServiceError {}
 export class ProbeForRouteTimedOutFromApplicationError extends LightningServiceError {}

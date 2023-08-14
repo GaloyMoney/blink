@@ -2,7 +2,11 @@ import { createInvoice, getChannel, getChannels } from "lightning"
 
 import { WalletCurrency } from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
-import { LnAlreadyPaidError, decodeInvoice } from "@domain/bitcoin/lightning"
+import {
+  LnAlreadyPaidError,
+  PaymentRejectedByDestinationError,
+  decodeInvoice,
+} from "@domain/bitcoin/lightning"
 
 import { LndService } from "@services/lnd"
 
@@ -166,6 +170,19 @@ describe("LndService", () => {
       maxFeeAmount: undefined,
     })
     expect(retryPaid).toBeInstanceOf(LnAlreadyPaidError)
+  })
+
+  it("fails to pay when channel capacity exceeded", async () => {
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1500000 })
+    const lnInvoice = decodeInvoice(request)
+    if (lnInvoice instanceof Error) throw lnInvoice
+
+    const paid = await lndService.payInvoiceViaPaymentDetails({
+      decodedInvoice: lnInvoice,
+      btcPaymentAmount,
+      maxFeeAmount: undefined,
+    })
+    expect(paid).toBeInstanceOf(PaymentRejectedByDestinationError)
   })
 
   it("pay invoice with High CLTV Delta", async () => {

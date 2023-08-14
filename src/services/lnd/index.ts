@@ -62,6 +62,7 @@ import {
   LookupPaymentTimedOutError,
   TemporaryNodeFailureError,
   OffChainServiceBusyError,
+  PaymentRejectedByDestinationError,
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
@@ -1102,6 +1103,7 @@ const handleSendPaymentLndErrors = ({
     case match(KnownLndErrorDetails.UnknownNextPeer):
       return new UnknownNextPeerError()
     case match(KnownLndErrorDetails.PaymentRejectedByDestination):
+      return new PaymentRejectedByDestinationError(paymentHash)
     case match(KnownLndErrorDetails.UnknownPaymentHash):
       return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
     case match(KnownLndErrorDetails.PaymentAttemptsTimedOut):

@@ -65,6 +65,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `Temporary failure when trying to pay, please try again later`
       return new LightningPaymentError({ message, logger: baseLogger })
 
+    case "PaymentRejectedByDestinationError":
+      message = `Payment was rejected by destination as invalid`
+      return new LightningPaymentError({ message, logger: baseLogger })
+
     case "InvoiceExpiredOrBadPaymentHashError":
       message = `Invoice already expired, or has bad payment hash`
       return new LightningPaymentError({ message, logger: baseLogger })

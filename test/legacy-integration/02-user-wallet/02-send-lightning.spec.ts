@@ -12,7 +12,7 @@ import {
   defaultTimeToExpiryInSeconds,
   InvalidFeeProbeStateError,
   InvoiceExpiredOrBadPaymentHashError,
-  LightningServiceError,
+  PaymentRejectedByDestinationError,
   PaymentNotFoundError,
   PaymentSendStatus,
   PaymentStatus,
@@ -255,17 +255,6 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txns.length).toBeGreaterThan(0)
     const txn = txns[0]
     expect(txn.memo).toBe(memoFromUser)
-  })
-
-  it("fails to pay when channel capacity exceeded", async () => {
-    const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1500000 })
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: walletIdA,
-      senderAccount: accountA,
-    })
-    expect(paymentResult).toBeInstanceOf(LightningServiceError)
   })
 
   it("sends balance amount accounting for fee", async () => {
@@ -775,7 +764,10 @@ describe("UserWallet - Lightning Pay", () => {
         })({
           invoice: request,
         })
-        expect(paymentAfterFailed).toBeInstanceOf(InvoiceExpiredOrBadPaymentHashError)
+        expect(
+          paymentAfterFailed instanceof InvoiceExpiredOrBadPaymentHashError ||
+            paymentAfterFailed instanceof PaymentRejectedByDestinationError,
+        ).toBe(true)
 
         // Check for invoice
         const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
