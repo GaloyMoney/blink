@@ -114,6 +114,9 @@ usd_amount=50
 
   exec_graphql "$token_name" 'account-details'
   account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ "$account_id" != "null" ]] || exit 1
+
+  cat .e2e-callback.log
   cat .e2e-callback.log | grep "$account_id" || exit 1
 }
 
