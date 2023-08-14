@@ -4,11 +4,7 @@ import { getLocale } from "@config"
 
 import { Lightning, Payments, Wallets } from "@app"
 import * as PaymentsHelpers from "@app/payments/helpers"
-import {
-  btcFromUsdMidPriceFn,
-  getCurrentPriceAsDisplayPriceRatio,
-  usdFromBtcMidPriceFn,
-} from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import { AccountLimitsChecker } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
@@ -42,11 +38,9 @@ import { toObjectId } from "@services/mongoose/utils"
 
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
-import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { LndService } from "@services/lnd"
 import { baseLogger } from "@services/logger"
 import {
-  AccountsRepository,
   LnPaymentsRepository,
   PaymentFlowStateRepository,
   WalletsRepository,
@@ -157,7 +151,6 @@ let walletIdB: WalletId
 let walletIdC: WalletId
 let walletIdH: WalletId
 let walletIdUsdB: WalletId
-let walletIdUsdA: WalletId
 
 let usernameA: Username
 let usernameB: Username
@@ -179,7 +172,6 @@ beforeAll(async () => {
   accountH = await getAccountByPhone(phoneH)
 
   walletIdA = await getDefaultWalletIdByPhone(phoneA)
-  walletIdUsdA = await getUsdWalletIdByPhone(phoneA)
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
   walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
   walletIdC = await getDefaultWalletIdByPhone(phoneC)
