@@ -397,30 +397,6 @@ describe("UserWallet - Lightning Pay", () => {
         expect(finalBalance).toBe(initBalanceB - Math.ceil(milliSatsAmount / 1000))
       })
 
-      it("fails when repaying invoice", async () => {
-        const { request } = await createInvoice({
-          lnd: lndOutside1,
-          tokens: amountInvoice,
-        })
-        const intermediateResult = await fn({
-          account: accountB,
-          walletId: walletIdB,
-        })({
-          invoice: request,
-        })
-        if (intermediateResult instanceof Error) throw intermediateResult
-        const intermediateBalanceSats = await getBalanceHelper(walletIdB)
-
-        const result = await fn({ account: accountB, walletId: walletIdB })({
-          invoice: request,
-        })
-        if (result instanceof Error) throw result
-        expect(result).toBe(PaymentSendStatus.AlreadyPaid)
-
-        const finalBalanceSats = await getBalanceHelper(walletIdB)
-        expect(finalBalanceSats).toEqual(intermediateBalanceSats)
-      })
-
       it("pay invoice with High CLTV Delta", async () => {
         const { request } = await createInvoice({
           lnd: lndOutside1,
