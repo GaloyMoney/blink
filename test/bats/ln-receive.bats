@@ -56,7 +56,7 @@ usd_amount=50
   )
 
   curl --silent -X 'POST' \
-    'http://127.0.0.1:8071/api/v1/app/' \
+    "$SVIX_ENDPOINT/api/v1/app/" \
     -H "Authorization: Bearer $SVIX_SECRET" \
     -H 'Accept: application/json' \
     -H 'Content-Type: application/json' \
