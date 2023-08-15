@@ -46,7 +46,7 @@ is_number() {
 }
 
 abs() {
-  is_number $1 || exit 1
+  is_number $1 || return 1
 
   if [[ $1 -lt 0 ]]; then
     echo "$((- $1))"

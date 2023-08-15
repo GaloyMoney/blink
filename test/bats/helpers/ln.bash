@@ -19,8 +19,10 @@ run_with_lnd() {
     lnd2_cli "$@"
   elif [[ "$func_name" == "lnd_outside_cli" ]]; then
     lnd_outside_cli "$@"
+  elif [[ "$func_name" == "lnd_outside_2_cli" ]]; then
+    lnd_outside_2_cli "$@"
   else
-    echo "Invalid function name passed!" && exit 1
+    echo "Invalid function name passed!" && return 1
   fi
 }
 
@@ -112,6 +114,38 @@ lnds_init() {
     "$LND_FUNDING_TOKEN_NAME" \
     "$LND_FUNDING_TOKEN_NAME.btc_wallet_id" \
     "$push_amount"
+}
+
+rebalance_channel() {
+    lnd_cli_value="$1"
+    lnd_partner_cli_value="$2"
+    target_local_balance="$3"
+
+    local_pubkey="$(run_with_lnd $lnd_cli_value getinfo | jq -r '.identity_pubkey')"
+    remote_pubkey="$(run_with_lnd $lnd_partner_cli_value getinfo | jq -r '.identity_pubkey')"
+
+    partner_channel_filter='
+    [
+      .channels[]?
+      | select(.remote_pubkey == $remote_pubkey)
+    ] | first
+    '
+
+    channel=$(
+      run_with_lnd "$lnd_cli_value" listchannels \
+        | jq -r \
+          --arg remote_pubkey "$remote_pubkey" \
+          "$partner_channel_filter"
+    )
+    [[ "$channel" != "null" ]]
+
+    actual_local_balance=$(echo $channel | jq -r '.local_balance')
+    diff="$(( $actual_local_balance - $target_local_balance ))"
+    if [[ "$diff" -gt 0 ]]; then
+      run_with_lnd "$lnd_cli_value" sendpayment --dest=$remote_pubkey --amt=$diff --keysend
+    elif [[ "$diff" -lt 0 ]]; then
+      run_with_lnd "$lnd_partner_cli_value" sendpayment --dest=$local_pubkey --amt="$(abs $diff)" --keysend
+    fi
 }
 
 lnd_cli() {
