@@ -29,4 +29,5 @@ jobs:
         run: |
           . ./.envrc && make reset-bats
       - name: sleep
+        if: always()
         run: sleep 3600
