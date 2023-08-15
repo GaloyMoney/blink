@@ -1,5 +1,9 @@
 import { ApplicationIn, Svix } from "svix"
 
+import { baseLogger } from "@services/logger"
+
+import { UnknownSvixError } from "./error"
+
 interface SvixErrorBody {
   code: string
   detail: string
@@ -53,8 +57,7 @@ export const CallbackService = (config: SvixConfig) => {
       if ((err as SvixError).code === 409) {
         // we create app on the fly, so we are expect this error and can ignore it
       } else {
-        console.log(err)
-        // TODO: return Error
+        return new UnknownSvixError(err)
       }
     }
 
@@ -63,30 +66,49 @@ export const CallbackService = (config: SvixConfig) => {
         eventType,
         payload: { ...payload, accountId: accountUUID, eventType },
       })
-      console.log({ res }, `message sent successfully to ${accountPath}`)
+      baseLogger.info({ res }, `message sent successfully to ${accountPath}`)
       return res
     } catch (err) {
-      console.log(err)
+      return new UnknownSvixError(err)
     }
   }
 
   // only work for hosted svix
   const getWebsocketPortal = async (accountUUID: AccountUUID) => {
-    return svix.authentication.appPortalAccess(accountUUID, {})
+    try {
+      const res = await svix.authentication.appPortalAccess(accountUUID, {})
+      return res
+    } catch (err) {
+      return new UnknownSvixError(err)
+    }
   }
 
   const addEndpoint = async (accountUUID: AccountUUID, url: string) => {
-    return svix.endpoint.create(accountUUID, {
-      url,
-    })
+    try {
+      const res = await svix.endpoint.create(accountUUID, {
+        url,
+      })
+      return res
+    } catch (err) {
+      return new UnknownSvixError(err)
+    }
   }
 
   const listEndpoints = async (accountUUID: AccountUUID) => {
-    return svix.endpoint.list(accountUUID)
+    try {
+      const res = await svix.endpoint.list(accountUUID)
+      return res
+    } catch (err) {
+      return new UnknownSvixError(err)
+    }
   }
 
   const removeEndpoint = async (accountUUID: AccountUUID, endpointId: string) => {
-    return svix.endpoint.delete(accountUUID, endpointId)
+    try {
+      await svix.endpoint.delete(accountUUID, endpointId)
+    } catch (err) {
+      return new UnknownSvixError(err)
+    }
   }
 
   return { sendMessage, getWebsocketPortal, addEndpoint, listEndpoints, removeEndpoint }
