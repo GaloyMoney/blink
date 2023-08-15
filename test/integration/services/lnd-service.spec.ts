@@ -1,4 +1,9 @@
-import { createInvoice, getChannel, getChannels } from "lightning"
+import {
+  createInvoice,
+  getChannel,
+  getChannels,
+  deleteForwardingReputations,
+} from "lightning"
 
 import { WalletCurrency } from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
@@ -300,6 +305,9 @@ describe("LndService", () => {
       invoice: lnInvoice,
     })
     expect(probed).toBeInstanceOf(RouteNotFoundError)
+
+    // Reset lnd mission control
+    await deleteForwardingReputations({ lnd: lnd1 })
   })
 
   it("deletes payment", async () => {
