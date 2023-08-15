@@ -28,3 +28,5 @@ jobs:
       - name: Run bats tests
         run: |
           . ./.envrc && make reset-bats
+      - name: sleep
+        run: sleep 3600
