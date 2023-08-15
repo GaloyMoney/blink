@@ -1,4 +1,4 @@
-import { createInvoice, getChannel } from "lightning"
+import { createInvoice, getChannel, getChannels } from "lightning"
 
 import { WalletCurrency } from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
@@ -67,47 +67,41 @@ const fundOnChainWallets = async () => {
   await fundLnd(lnd1, btc)
 }
 
-const setupLndRoute = async () => {
-  // Setup route from lnd1 -> lndOutside1 -> lndOutside2
-  const btc = 1
-  await fundLnd(lndOutside1, btc)
+const setFeesOnChannel = async ({ localLnd, partnerLnd, base, rate }) => {
+  const countMax = 9
 
-  const { lndNewChannel: lndOutside2Channel } = await openChannelTestingNoAccounting({
-    lnd: lndOutside1,
-    lndPartner: lndOutside2,
-    socket: `lnd-outside-2:9735`,
-    is_private: true,
-  })
+  // Get routing channel details
+  const { channels } = await getChannels({ lnd: partnerLnd })
+  const { id: chanId } = channels[0]
+  const channel = await getChannel({ id: chanId, lnd: localLnd })
 
-  // Set fee policy on lndOutside1 as routing node between lnd1 and lndOutside2
+  // Set channel policy
+  let setOnChannel
   let count = 0
-  let countMax = 9
-  let setOnLndOutside1
-  while (count < countMax && setOnLndOutside1 !== true) {
+  while (count < countMax && setOnChannel !== true) {
     if (count > 0) await sleep(500)
     count++
 
-    setOnLndOutside1 = await setChannelFees({
-      lnd: lndOutside1,
-      channel: lndOutside2Channel,
-      base: 0,
-      rate: ROUTE_PPM_RATE,
+    setOnChannel = await setChannelFees({
+      lnd: localLnd,
+      channel,
+      base,
+      rate,
     })
   }
-  if (!(count < countMax && setOnLndOutside1)) {
+  if (!(count < countMax && setOnChannel)) {
     throw new Error("Could not update channel fees")
   }
 
+  // Verify policy change
   let policies
   let errMsg: string | undefined = "FullChannelDetailsNotFound"
   count = 0
-  countMax = 8
-  // Try to getChannel for up to 2 secs (250ms x 8)
   while (count < countMax && errMsg === "FullChannelDetailsNotFound") {
     count++
     await sleep(250)
     try {
-      ;({ policies } = await getChannel({ id: lndOutside2Channel.id, lnd: lndOutside1 }))
+      ;({ policies } = await getChannel({ id: channel.id, lnd: localLnd }))
       errMsg = undefined
     } catch (err) {
       if (Array.isArray(err)) errMsg = err[1]
@@ -120,16 +114,32 @@ const setupLndRoute = async () => {
     throw new Error("No channel policies found")
   }
 
-  const { base_fee_mtokens, fee_rate, public_key } = policies[0]
-  if (
-    !(
-      public_key === process.env.LND_OUTSIDE_1_PUBKEY &&
-      base_fee_mtokens === "0" &&
-      fee_rate === ROUTE_PPM_RATE
-    )
-  ) {
+  const { base_fee_mtokens, fee_rate } = policies[0]
+  if (!(base_fee_mtokens === `${base * 1000}` && fee_rate === rate)) {
     throw new Error("Incorrect policy on channel")
   }
+
+  return chanId
+}
+
+const setupLndRoute = async () => {
+  // Setup route from lnd1 -> lndOutside1 -> lndOutside2
+  const btc = 1
+  await fundLnd(lndOutside1, btc)
+
+  await openChannelTestingNoAccounting({
+    lnd: lndOutside1,
+    lndPartner: lndOutside2,
+    socket: `lnd-outside-2:9735`,
+    is_private: true,
+  })
+
+  await setFeesOnChannel({
+    localLnd: lndOutside1,
+    partnerLnd: lndOutside2,
+    base: 0,
+    rate: ROUTE_PPM_RATE,
+  })
 }
 
 beforeAll(async () => {
