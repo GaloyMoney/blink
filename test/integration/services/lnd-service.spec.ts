@@ -278,6 +278,30 @@ describe("LndService", () => {
     expect(paid).toBeInstanceOf(RouteNotFoundError)
   })
 
+  it("probes across route with fee higher than payment amount", async () => {
+    const amountInvoice = 1
+
+    // Change channel policy
+    await setFeesOnChannel({
+      localLnd: lndOutside1,
+      partnerLnd: lndOutside2,
+      base: 10,
+      rate: ROUTE_PPM_RATE,
+    })
+
+    // Create invoice
+    const lnInvoice = await createPrivateInvoice({
+      lnd: lndOutside2,
+      tokens: amountInvoice,
+    })
+
+    // Execute probe and check result
+    const probed = await lndService.findRouteForInvoice({
+      invoice: lnInvoice,
+    })
+    expect(probed).toBeInstanceOf(RouteNotFoundError)
+  })
+
   it("deletes payment", async () => {
     const { request, secret } = await createInvoice({ lnd: lndOutside1 })
     const revealedPreImage = secret as RevealedPreImage
