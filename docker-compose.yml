@@ -469,6 +469,7 @@ services:
     depends_on:
       - svix-pg
     ports: []
+    extra_hosts: []
 
   svix-pg:
     image: postgres:13.4
