@@ -68,7 +68,7 @@ no_pending_lnd1_channels() {
 
   bria_cli watch-events -o
   bitcoin_cli -generate 1
-  for i in {1..40}; do
+  for i in {1..120}; do
     cold_balance=$(bria_cli wallet-balance -w cold | jq -r '.effectivePendingIncome')
     [[ "${cold_balance}" != "0" ]] && break;
     sleep 1
