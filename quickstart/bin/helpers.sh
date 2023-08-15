@@ -4,7 +4,15 @@ set -e
 
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-quickstart}"
 GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4002}
-CACHE_DIR=tmp/smoke-test-cache
+
+if [ -n "$HOST_PROJECT_PATH" ]; then
+  GALOY_DIR="./vendor/galoy-quickstart"
+else
+  GALOY_DIR="."
+fi
+export GALOY_DIR
+
+CACHE_DIR=$GALOY_DIR/tmp/smoke-test-cache
 mkdir -p $CACHE_DIR
 
 cache_value() {
@@ -22,7 +30,7 @@ bitcoin_cli() {
 lnd_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-lnd1-1" \
     lncli \
-      --macaroonpath /root/.lnd/admin.macaroon \
+      --macaroonpath /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon \
       --tlscertpath /root/.lnd/tls.cert \
       $@
 }
@@ -30,7 +38,7 @@ lnd_cli() {
 lnd_outside_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-1-1" \
     lncli \
-      --macaroonpath /root/.lnd/admin.macaroon \
+      --macaroonpath /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon \
       --tlscertpath /root/.lnd/tls.cert \
       $@
 }
@@ -76,11 +84,11 @@ bitcoind_init() {
   bitcoin_cli -generate 200 > /dev/null 2>&1
 
   bitcoin_signer_cli createwallet "dev" || true
-  bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ./galoy/test/bats/bitcoind_signer_descriptors.json)"
+  bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat $GALOY_DIR/galoy/test/bats/bitcoind_signer_descriptors.json)"
 }
 
 gql_file() {
-  echo "galoy/test/bats/gql/$1.gql"
+  echo "$GALOY_DIR/galoy/test/bats/gql/$1.gql"
 }
 
 gql_query() {

@@ -30,8 +30,10 @@ curl https://raw.githubusercontent.com/GaloyMoney/galoy/main/quickstart/quicksta
 # synchronize vendor folder
 vendir sync
 
-# set HOST_PROJECT_PATH to your environment. we can use direnv here to automatically load the environment variable
+# set HOST_PROJECT_PATH and COMPOSE_PROJECT_NAME to your environment. 
+# it's not mandatory, but we're using direnv here to auto reload the env variables
 echo 'export HOST_PROJECT_PATH="$(pwd)"' >> .envrc
+echo 'export COMPOSE_PROJECT_NAME="$(basename $PWD)"' >> .envrc
 direnv allow
 
 # launch docker
