@@ -12,14 +12,15 @@ open http://localhost:4002/graphql
 
 ## Embedded
 
-To embed galoy as a dependency we recommend syncing this folder via vendir:
+To embed galoy as a dependency, we recommend syncing this folder via vendir:
 
-install vendir if not already:
+install `vendir` and `ytt`:
 ```
 brew tap carvel-dev/carvel
 brew install vendir ytt
 ```
 
+follow those instructions to get a docker compose that will contain a minimal viable setup for running the Galoy stack locally
 ```
 cd <path/to/your/repo>
 
@@ -29,7 +30,7 @@ curl https://raw.githubusercontent.com/GaloyMoney/galoy/main/quickstart/quicksta
 # synchronize vendor folder
 vendir sync
 
-# set HOST_PROJECT_PATH to your environment. we're using direnv here.
+# set HOST_PROJECT_PATH to your environment. we can use direnv here to automatically load the environment variable
 echo 'export HOST_PROJECT_PATH="$(pwd)"' >> .envrc
 direnv allow
 
