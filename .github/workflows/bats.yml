@@ -30,4 +30,4 @@ jobs:
           . ./.envrc && make reset-bats
       - name: sleep
         if: always()
-        run: sleep 3600
+        run: sleep 500 && echo "next" && sleep 500 && echo "next" && sleep 500

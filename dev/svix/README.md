@@ -54,7 +54,7 @@ curl --silent -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
         "description": "An example endpoint name",
-        "url": "http://host.docker.internal:8080/webhook/",
+        "url": "http://bats-tests:8080/webhook/",
         "version": 1,
         "secret": "whsec_abcd1234abcd1234abcd1234abcd1234"
       }' | jq
@@ -88,7 +88,7 @@ curl --silent -X 'GET' \
 get message attempts (update msdig first):
 
 ```
-msgid="msg_2Tt19uCGoGAKalsDrKooszfaTrk" && \
+msgid="msg_2U12tQGRMiiZsdT8Q2eh9m3jahh" && \
 curl --silent -X 'GET' \
   "$SVIX_ENDPOINT/api/v1/app/$account_path/attempt/msg/$msgid/" \
   -H "Authorization: Bearer $SVIX_SECRET" \
