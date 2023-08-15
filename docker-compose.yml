@@ -388,14 +388,10 @@ services:
       - -d
       - m/84h/0h/0h
     depends_on:
-      bitcoind-signer:
-        condition: service_started
-      otel-agent:
-        condition: service_started
-      fulcrum:
-        condition: service_started
-      postgres-bria:
-        condition: service_healthy
+      - bitcoind-signer
+      - otel-agent
+      - fulcrum
+      - postgres-bria
     restart: on-failure:10
     volumes:
       - ${HOST_PROJECT_PATH:-.}/:/repo
