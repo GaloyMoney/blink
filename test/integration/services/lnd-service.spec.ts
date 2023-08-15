@@ -1,4 +1,4 @@
-import { createInvoice, getChannel, getChannels } from "lightning"
+import { createInvoice, getChannel } from "lightning"
 
 import { WalletCurrency } from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
@@ -7,8 +7,10 @@ import {
   PaymentNotFoundError,
   PaymentRejectedByDestinationError,
   PaymentStatus,
+  RouteNotFoundError,
   decodeInvoice,
 } from "@domain/bitcoin/lightning"
+import { LnFees } from "@domain/payments"
 
 import { LndService } from "@services/lnd"
 
@@ -29,6 +31,8 @@ import { BitcoindWalletClient } from "test/helpers/bitcoind"
 
 const amountInvoice = toSats(1000)
 const btcPaymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
+const ROUTE_PPM_RATE = 10_000
+const ROUTE_PPM_PERCENT = ROUTE_PPM_RATE / 1_000_000
 
 const loadBitcoindWallet = async (walletName) => {
   const wallets = await bitcoindClient.listWallets()
@@ -87,7 +91,7 @@ const setupLndRoute = async () => {
       lnd: lndOutside1,
       channel: lndOutside2Channel,
       base: 0,
-      rate: 5000,
+      rate: ROUTE_PPM_RATE,
     })
   }
   if (!(count < countMax && setOnLndOutside1)) {
@@ -121,7 +125,7 @@ const setupLndRoute = async () => {
     !(
       public_key === process.env.LND_OUTSIDE_1_PUBKEY &&
       base_fee_mtokens === "0" &&
-      fee_rate === 5000
+      fee_rate === ROUTE_PPM_RATE
     )
   ) {
     throw new Error("Incorrect policy on channel")
@@ -206,13 +210,7 @@ describe("LndService", () => {
     expect(paid.revealedPreImage).toHaveLength(64)
   })
 
-  it("pay invoice routed to lnd outside2", async () => {
-    const amountInvoice = 199
-    const btcPaymentAmount = {
-      amount: BigInt(amountInvoice),
-      currency: WalletCurrency.Btc,
-    }
-
+  it("pays high fee route with no max limit", async () => {
     let lnInvoice: LnInvoice | undefined = undefined
     let tries = 0
     let routeHints: Hop[][] = []
@@ -221,7 +219,6 @@ describe("LndService", () => {
 
       const { request } = await createInvoice({
         lnd: lndOutside2,
-        tokens: amountInvoice,
         is_including_private_channels: true,
       })
       const invoice = decodeInvoice(request)
@@ -239,29 +236,36 @@ describe("LndService", () => {
       maxFeeAmount: undefined,
     })
     if (paid instanceof Error) throw paid
+    expect(paid.revealedPreImage).toHaveLength(64)
+    expect(paid.roundedUpFee).toEqual(Number(btcPaymentAmount.amount) * ROUTE_PPM_PERCENT)
+  })
 
-    // Calculate fee from routed payment
-    const { channels } = await getChannels({ lnd: lndOutside2 })
-    expect(channels && channels.length).toEqual(1)
-    const { id } = channels[0]
-    const { policies } = await getChannel({ id, lnd: lndOutside2 })
+  it("fails to pay high fee route with max limit set", async () => {
+    let lnInvoice: LnInvoice | undefined = undefined
+    let tries = 0
+    let routeHints: Hop[][] = []
+    while (routeHints.length === 0 && tries < 20) {
+      tries++
 
-    const partnerPolicy = policies.find(
-      (pol) => pol.public_key !== (process.env.LND_OUTSIDE_2_PUBKEY as Pubkey),
-    )
-    if (partnerPolicy === undefined) throw new Error("Undefined 'partnerPolicy'")
-    expect(partnerPolicy.base_fee_mtokens).toBe("0")
-    expect(partnerPolicy.fee_rate).toEqual(5000)
+      const { request } = await createInvoice({
+        lnd: lndOutside2,
+        is_including_private_channels: true,
+      })
+      const invoice = decodeInvoice(request)
+      if (invoice instanceof Error) throw invoice
 
-    const { base_fee_mtokens: baseMilliSats, fee_rate: feeRatePpm } = partnerPolicy
-    if (baseMilliSats === undefined || feeRatePpm === undefined) {
-      throw new Error("Undefined baseMilliSats or feeRatePpm")
+      lnInvoice = invoice
+      ;({ routeHints } = lnInvoice)
+      await sleep(500)
     }
-    const baseFee = parseInt(baseMilliSats, 10) / 1000
-    const feeRate = (amountInvoice * feeRatePpm) / 1_000_000
-    const fee = Math.ceil(baseFee + feeRate)
+    if (lnInvoice === undefined) throw new Error("lnInvoice is undefined")
 
-    expect(fee).toEqual(paid.roundedUpFee)
+    const paid = await lndService.payInvoiceViaPaymentDetails({
+      decodedInvoice: lnInvoice,
+      btcPaymentAmount,
+      maxFeeAmount: LnFees().maxProtocolAndBankFee(btcPaymentAmount),
+    })
+    expect(paid).toBeInstanceOf(RouteNotFoundError)
   })
 
   it("deletes payment", async () => {
