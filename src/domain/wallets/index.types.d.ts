@@ -1,11 +1,11 @@
 type PaymentInitiationMethod =
-  typeof import("./tx-methods").PaymentInitiationMethod[keyof typeof import("./tx-methods").PaymentInitiationMethod]
+  (typeof import("./tx-methods").PaymentInitiationMethod)[keyof typeof import("./tx-methods").PaymentInitiationMethod]
 type SettlementMethod =
-  typeof import("./tx-methods").SettlementMethod[keyof typeof import("./tx-methods").SettlementMethod]
+  (typeof import("./tx-methods").SettlementMethod)[keyof typeof import("./tx-methods").SettlementMethod]
 type TxStatus =
-  typeof import("./tx-status").TxStatus[keyof typeof import("./tx-status").TxStatus]
+  (typeof import("./tx-status").TxStatus)[keyof typeof import("./tx-status").TxStatus]
 type WalletType =
-  typeof import("./primitives").WalletType[keyof typeof import("./primitives").WalletType]
+  (typeof import("./primitives").WalletType)[keyof typeof import("./primitives").WalletType]
 
 type InitiationViaIntraledger = {
   readonly type: "intraledger"
@@ -208,7 +208,7 @@ type OnChainWithdrawalFeeArgs = {
 }
 
 type WithdrawalFeePriceMethod =
-  typeof import("./index").WithdrawalFeePriceMethod[keyof typeof import("./index").WithdrawalFeePriceMethod]
+  (typeof import("./index").WithdrawalFeePriceMethod)[keyof typeof import("./index").WithdrawalFeePriceMethod]
 
 type OnChainFeeCalculator = {
   withdrawalFee(args: OnChainWithdrawalFeeArgs): {

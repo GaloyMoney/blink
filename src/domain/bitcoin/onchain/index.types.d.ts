@@ -3,7 +3,7 @@ type TransactionDecodeError = import("./errors").TransactionDecodeError
 type OnChainServiceError = import("./errors").OnChainServiceError
 
 type PayoutSpeed =
-  typeof import("./index").PayoutSpeed[keyof typeof import("./index").PayoutSpeed]
+  (typeof import("./index").PayoutSpeed)[keyof typeof import("./index").PayoutSpeed]
 
 type OnChainAddress = string & { readonly brand: unique symbol }
 type OnChainAddressRequestId = string & { readonly brand: unique symbol }

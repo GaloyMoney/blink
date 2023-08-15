@@ -3,7 +3,7 @@ type BriaEventError = import("./errors").BriaEventError
 type ClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
 
 type BriaPayloadType =
-  typeof import("./index").BriaPayloadType[keyof typeof import("./index").BriaPayloadType]
+  (typeof import("./index").BriaPayloadType)[keyof typeof import("./index").BriaPayloadType]
 
 type AddressAugmentation = {
   address: OnChainAddress
