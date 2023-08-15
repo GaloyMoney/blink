@@ -82,13 +82,13 @@ curl --silent -X 'GET' \
   "$SVIX_ENDPOINT/api/v1/app/$account_path/msg/" \
   -H "Authorization: Bearer $SVIX_SECRET" \
   -H 'Accept: application/json' \
-  -H 'Content-Type: application/json' | jq
+  -H 'Content-Type: application/json' | jq '.data[] | {id: .id}'
 ```
 
 get message attempts (update msdig first):
 
 ```
-msgid="msg_2U12tQGRMiiZsdT8Q2eh9m3jahh" && \
+msgid="msg_2U142wNkbNBmefv2qfcHoaOsi1t" && \
 curl --silent -X 'GET' \
   "$SVIX_ENDPOINT/api/v1/app/$account_path/attempt/msg/$msgid/" \
   -H "Authorization: Bearer $SVIX_SECRET" \

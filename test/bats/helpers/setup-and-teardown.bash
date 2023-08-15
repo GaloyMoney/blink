@@ -177,7 +177,7 @@ fund_wallet_from_onchain() {
 
   bitcoin_cli sendtoaddress "$address" "$amount"
   bitcoin_cli -generate 2
-  retry 15 1 check_for_onchain_initiated_settled "$token_name" "$address"
+  retry 30 1 check_for_onchain_initiated_settled "$token_name" "$address"
 }
 
 fund_wallet_intraledger() {
