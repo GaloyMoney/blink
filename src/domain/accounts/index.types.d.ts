@@ -2,16 +2,16 @@ type AccountError = import("./errors").AccountError
 
 type CurrencyRatio = number & { readonly brand: unique symbol }
 type AccountLevel =
-  typeof import("./index").AccountLevel[keyof typeof import("./index").AccountLevel]
+  (typeof import("./index").AccountLevel)[keyof typeof import("./index").AccountLevel]
 
 type AccountStatus =
-  typeof import("./index").AccountStatus[keyof typeof import("./index").AccountStatus]
+  (typeof import("./index").AccountStatus)[keyof typeof import("./index").AccountStatus]
 
 type AccountLimitsRange =
-  typeof import("./index").AccountLimitsRange[keyof typeof import("./index").AccountLimitsRange]
+  (typeof import("./index").AccountLimitsRange)[keyof typeof import("./index").AccountLimitsRange]
 
 type AccountLimitsType =
-  typeof import("./index").AccountLimitsType[keyof typeof import("./index").AccountLimitsType]
+  (typeof import("./index").AccountLimitsType)[keyof typeof import("./index").AccountLimitsType]
 
 type DepositFeeRatioAsBasisPoints = bigint & { readonly brand: unique symbol }
 

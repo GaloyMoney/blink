@@ -8,16 +8,16 @@ type LoginIdentifier = PhoneNumber | EmailAddress
 
 type DeviceId = string & { readonly brand: unique symbol }
 
-type UserLanguage = typeof import("./languages").Languages[number]
+type UserLanguage = (typeof import("./languages").Languages)[number]
 type UserLanguageOrEmpty = UserLanguage | ""
 
 type DeviceToken = string & { readonly brand: unique symbol }
 
 type CarrierType =
-  typeof import("../phone-provider/index").CarrierType[keyof typeof import("../phone-provider/index").CarrierType]
+  (typeof import("../phone-provider/index").CarrierType)[keyof typeof import("../phone-provider/index").CarrierType]
 
 type ChannelType =
-  typeof import("../phone-provider/index").ChannelType[keyof typeof import("../phone-provider/index").ChannelType]
+  (typeof import("../phone-provider/index").ChannelType)[keyof typeof import("../phone-provider/index").ChannelType]
 
 type PhoneMetadata = {
   // from twilio

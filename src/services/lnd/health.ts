@@ -11,7 +11,7 @@ import { lndsConnect } from "./auth"
 	Check the status of the wallet and emit current state
 */
 
-const intervals: NodeJS.Timer[] = []
+const intervals: NodeJS.Timeout[] = []
 
 const isUpLoop = async (param: LndConnect): Promise<void> => {
   await isUp(param)

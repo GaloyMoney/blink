@@ -1,7 +1,7 @@
 type PubSubServiceError = import("./errors").PubSubServiceError
 
 type PubSubDefaultTrigger =
-  typeof import("./index").PubSubDefaultTriggers[keyof typeof import("./index").PubSubDefaultTriggers]
+  (typeof import("./index").PubSubDefaultTriggers)[keyof typeof import("./index").PubSubDefaultTriggers]
 
 type PubSubCustomTrigger = string & { readonly brand: unique symbol }
 

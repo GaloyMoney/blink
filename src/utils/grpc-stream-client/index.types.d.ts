@@ -7,7 +7,7 @@ type Stream<
 > = import("./stream").Stream<T, R>
 
 type StreamEvents =
-  typeof import("./stream").StreamEvents[keyof typeof import("./stream").StreamEvents]
+  (typeof import("./stream").StreamEvents)[keyof typeof import("./stream").StreamEvents]
 type StreamMethod<T extends GrpcData> = <A extends Array<unknown>>(
   ...args: A
 ) => ClientReadableStream<T>

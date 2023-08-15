@@ -23,12 +23,12 @@ type RouteValidator = {
 }
 
 type PaymentStatus =
-  typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
+  (typeof import("./index").PaymentStatus)[keyof typeof import("./index").PaymentStatus]
 
 type FailedPaymentStatus = typeof import("./index").PaymentStatus.Failed
 
 type PaymentSendStatus =
-  typeof import("./index").PaymentSendStatus[keyof typeof import("./index").PaymentSendStatus]
+  (typeof import("./index").PaymentSendStatus)[keyof typeof import("./index").PaymentSendStatus]
 
 type Hop = {
   baseFeeMTokens?: string

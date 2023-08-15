@@ -2,10 +2,10 @@ type UsdCents = number & { readonly brand: unique symbol }
 type CentsPerSatsRatio = number & { readonly brand: unique symbol }
 type DisplayCurrencyBaseAmount = number & { readonly brand: unique symbol }
 type DisplayCurrency =
-  | typeof import(".").DisplayCurrency[keyof typeof import(".").DisplayCurrency]
+  | (typeof import(".").DisplayCurrency)[keyof typeof import(".").DisplayCurrency]
   | (string & { readonly brand: unique symbol })
 type CurrencyMajorExponent =
-  typeof import("./index").MajorExponent[keyof typeof import("./index").MajorExponent]
+  (typeof import("./index").MajorExponent)[keyof typeof import("./index").MajorExponent]
 
 type DisplayTxnAmounts = {
   displayAmount: DisplayCurrencyBaseAmount
@@ -28,7 +28,7 @@ interface AmountFromCents {
 type CentsXORSats = XOR<AmountFromSatoshis, AmountFromCents>
 
 type OrderType =
-  typeof import("./index").OrderType[keyof typeof import("./index").OrderType]
+  (typeof import("./index").OrderType)[keyof typeof import("./index").OrderType]
 
 type GetAmountsSendOrReceiveArgs = {
   walletCurrency: WalletCurrency
