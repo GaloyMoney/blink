@@ -142,6 +142,36 @@ const setupLndRoute = async () => {
   })
 }
 
+const createPrivateInvoice = async ({
+  lnd,
+  tokens,
+}: {
+  lnd: AuthenticatedLnd
+  tokens?: number
+}): Promise<LnInvoice> => {
+  let lnInvoice: LnInvoice | undefined = undefined
+  let tries = 0
+  let routeHints: Hop[][] = []
+  while (routeHints.length === 0 && tries < 20) {
+    tries++
+
+    const { request } = await createInvoice({
+      lnd,
+      tokens,
+      is_including_private_channels: true,
+    })
+    const invoice = decodeInvoice(request)
+    if (invoice instanceof Error) throw invoice
+
+    lnInvoice = invoice
+    ;({ routeHints } = lnInvoice)
+    await sleep(500)
+  }
+  if (lnInvoice === undefined) throw new Error("lnInvoice is undefined")
+
+  return lnInvoice
+}
+
 beforeAll(async () => {
   // Seed lnd1 & lndOutside1
   await loadBitcoindWallet("outside")
@@ -221,24 +251,9 @@ describe("LndService", () => {
   })
 
   it("pays high fee route with no max limit", async () => {
-    let lnInvoice: LnInvoice | undefined = undefined
-    let tries = 0
-    let routeHints: Hop[][] = []
-    while (routeHints.length === 0 && tries < 20) {
-      tries++
-
-      const { request } = await createInvoice({
-        lnd: lndOutside2,
-        is_including_private_channels: true,
-      })
-      const invoice = decodeInvoice(request)
-      if (invoice instanceof Error) throw invoice
-
-      lnInvoice = invoice
-      ;({ routeHints } = lnInvoice)
-      await sleep(500)
-    }
-    if (lnInvoice === undefined) throw new Error("lnInvoice is undefined")
+    const lnInvoice = await createPrivateInvoice({
+      lnd: lndOutside2,
+    })
 
     const paid = await lndService.payInvoiceViaPaymentDetails({
       decodedInvoice: lnInvoice,
@@ -251,24 +266,9 @@ describe("LndService", () => {
   })
 
   it("fails to pay high fee route with max limit set", async () => {
-    let lnInvoice: LnInvoice | undefined = undefined
-    let tries = 0
-    let routeHints: Hop[][] = []
-    while (routeHints.length === 0 && tries < 20) {
-      tries++
-
-      const { request } = await createInvoice({
-        lnd: lndOutside2,
-        is_including_private_channels: true,
-      })
-      const invoice = decodeInvoice(request)
-      if (invoice instanceof Error) throw invoice
-
-      lnInvoice = invoice
-      ;({ routeHints } = lnInvoice)
-      await sleep(500)
-    }
-    if (lnInvoice === undefined) throw new Error("lnInvoice is undefined")
+    const lnInvoice = await createPrivateInvoice({
+      lnd: lndOutside2,
+    })
 
     const paid = await lndService.payInvoiceViaPaymentDetails({
       decodedInvoice: lnInvoice,
