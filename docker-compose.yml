@@ -19,6 +19,7 @@ services:
       - lnd2
       - lnd-outside-1
       - svix
+      - lnd-outside-2
   e2e-deps:
     image: busybox
     depends_on:

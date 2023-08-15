@@ -17,43 +17,42 @@ run_with_lnd() {
     lnd_cli "$@"
   elif [[ "$func_name" == "lnd2_cli" ]]; then
     lnd2_cli "$@"
+  elif [[ "$func_name" == "lnd_outside_cli" ]]; then
+    lnd_outside_cli "$@"
   else
     echo "Invalid function name passed!" && exit 1
   fi
 }
 
 close_partner_initiated_channels_with_external() {
-  lnd1_pubkey=$(lnd_cli getinfo | jq -r '.identity_pubkey')
-  lnd2_pubkey=$(lnd2_cli getinfo | jq -r '.identity_pubkey')
+  close_channels_with_external() {
+    lnd_cli_value="$1"
+    lnd1_pubkey=$(lnd_cli getinfo | jq -r '.identity_pubkey')
+    lnd2_pubkey=$(lnd2_cli getinfo | jq -r '.identity_pubkey')
 
-  partner_initiated_external_channel_filter='
-  .channels[]?
-    | select(.initiator != true)
-    | select(.remote_pubkey != $lnd1_pubkey)
-    | select(.remote_pubkey != $lnd2_pubkey)
-    | .channel_point
-  '
+    partner_initiated_external_channel_filter='
+    .channels[]?
+      | select(.initiator != true)
+      | select(.remote_pubkey != $lnd1_pubkey)
+      | select(.remote_pubkey != $lnd2_pubkey)
+      | .channel_point
+    '
 
-  lnd_cli listchannels \
-    | jq -r \
-      --arg lnd1_pubkey "$lnd1_pubkey" \
-      --arg lnd2_pubkey "$lnd2_pubkey" \
-      "$partner_initiated_external_channel_filter" \
-    | while read -r channel_point; do
-        funding_txid="${channel_point%%:*}"
-        lnd_cli closechannel "$funding_txid"
-      done
+    run_with_lnd "$lnd_cli_value" listchannels \
+      | jq -r \
+        --arg lnd1_pubkey "$lnd1_pubkey" \
+        --arg lnd2_pubkey "$lnd2_pubkey" \
+        "$partner_initiated_external_channel_filter" \
+      | while read -r channel_point; do
+          funding_txid="${channel_point%%:*}"
+          run_with_lnd "$lnd_cli_value" closechannel "$funding_txid"
+        done
+  }
 
-  lnd2_cli listchannels \
-    | jq -r \
-      --arg lnd1_pubkey "$lnd1_pubkey" \
-      --arg lnd2_pubkey "$lnd2_pubkey" \
-      "$partner_initiated_external_channel_filter" \
-    | while read -r channel_point; do
-        funding_txid="${channel_point%%:*}"
-        lnd2_cli closechannel "$funding_txid"
-      done
-
+  close_channels_with_external lnd_cli
+  close_channels_with_external lnd2_cli
+  close_channels_with_external lnd_outside_cli
+  close_channels_with_external lnd_outside_2_cli
 }
 
 lnds_init() {
@@ -68,13 +67,6 @@ lnds_init() {
   bitcoin_cli sendtoaddress "$address" "$amount"
   bitcoin_cli -generate 3
 
-  # Open channel from lnd1 to lndoutside1
-  lnd_local_pubkey="$(lnd_cli getinfo | jq -r '.identity_pubkey')"
-  lnd_outside_cli connect "${lnd_local_pubkey}@${COMPOSE_PROJECT_NAME}-lnd1-1:9735" || true
-  lnd_outside_cli openchannel \
-    --node_key "$lnd_local_pubkey" \
-    --local_amt "$local_amount" \
-
   no_pending_channels() {
     pending_channel="$(lnd_outside_cli pendingchannels | jq -r '.pending_open_channels[0]')"
     if [[ "$pending_channel" != "null" ]]; then
@@ -83,6 +75,26 @@ lnds_init() {
     fi
   }
 
+  # Open channel from lndoutside1 -> lnd1
+  pubkey="$(lnd_cli getinfo | jq -r '.identity_pubkey')"
+  endpoint="${COMPOSE_PROJECT_NAME}-lnd1-1:9735"
+  lnd_outside_cli connect "${pubkey}@${endpoint}" || true
+  lnd_outside_cli openchannel \
+    --node_key "$pubkey" \
+    --local_amt "$local_amount"
+
+  retry 10 1 mempool_not_empty
+  retry 10 1 no_pending_channels
+
+  # Open channel with push from lndoutside1 -> lndoutside2
+  pubkey="$(lnd_outside_2_cli getinfo | jq -r '.identity_pubkey')"
+  endpoint="${COMPOSE_PROJECT_NAME}-lnd-outside-2-1:9735"
+  lnd_outside_cli connect "${pubkey}@${endpoint}" || true
+  lnd_outside_cli openchannel \
+    --node_key "$pubkey" \
+    --local_amt "$local_amount" \
+    --push_amt "$push_amount"
+
   retry 10 1 mempool_not_empty
   retry 10 1 no_pending_channels
 
@@ -90,7 +102,7 @@ lnds_init() {
   # NB: I get randomly a "no route" error otherwise
   sleep 10
 
-  # Fund lnd1 node via funding user
+  # Fund lnd1 node with push_amount via funding user
   login_user \
     "$LND_FUNDING_TOKEN_NAME" \
     "$LND_FUNDING_PHONE" \
@@ -120,6 +132,14 @@ lnd2_cli() {
 
 lnd_outside_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-1-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
+}
+
+lnd_outside_2_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-2-1" \
     lncli \
       --macaroonpath /root/.lnd/admin.macaroon \
       --tlscertpath /root/.lnd/tls.cert \
