@@ -77,10 +77,16 @@ lnds_init() {
     fi
   }
 
+  synced_to_graph() {
+    is_synced="$(lnd_outside_cli getinfo | jq -r '.synced_to_graph')"
+    [[ "$is_synced" == "true" ]] || exit 1
+  }
+
   # Open channel from lndoutside1 -> lnd1
   pubkey="$(lnd_cli getinfo | jq -r '.identity_pubkey')"
   endpoint="${COMPOSE_PROJECT_NAME}-lnd1-1:9735"
   lnd_outside_cli connect "${pubkey}@${endpoint}" || true
+  retry 10 1 synced_to_graph
   lnd_outside_cli openchannel \
     --node_key "$pubkey" \
     --local_amt "$local_amount"
@@ -92,6 +98,7 @@ lnds_init() {
   pubkey="$(lnd_outside_2_cli getinfo | jq -r '.identity_pubkey')"
   endpoint="${COMPOSE_PROJECT_NAME}-lnd-outside-2-1:9735"
   lnd_outside_cli connect "${pubkey}@${endpoint}" || true
+  retry 10 1 synced_to_graph
   lnd_outside_cli openchannel \
     --node_key "$pubkey" \
     --local_amt "$local_amount" \
