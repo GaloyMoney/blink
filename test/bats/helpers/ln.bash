@@ -266,3 +266,28 @@ check_for_ln_update() {
 
   [[ "$paid_status" == "PAID" ]] || exit 1
 }
+
+num_txns_for_hash() {
+  token_name="$1"
+  payment_hash="$2"
+
+  first=20
+  txn_variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$txn_variables" > /dev/null
+
+  jq_query='
+    [
+      .data.me.defaultAccount.transactions.edges[]
+      | select(.node.initiationVia.paymentHash == $payment_hash)
+    ]
+      | length
+  '
+  echo $output \
+    | jq -r \
+      --arg payment_hash "$payment_hash" \
+      "$jq_query"
+}
