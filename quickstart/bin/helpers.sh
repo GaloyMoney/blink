@@ -222,26 +222,7 @@ fund_wallet_from_onchain() {
   [[ "${address}" != "null" ]]
 
   bitcoin_cli sendtoaddress "$address" "$amount"
-  bitcoin_cli -generate 2
-  retry 30 1 check_for_onchain_initiated_settled "$token_name" "$address"
-}
-
-fund_wallet_intraledger() {
-  local from_token_name=$1
-  local from_wallet_name=$2
-  local wallet_name=$3
-  local amount=$4
-
-  variables=$(
-    jq -n \
-    --arg wallet_id "$(read_value $from_wallet_name)" \
-    --arg recipient_wallet_id "$(read_value $wallet_name)" \
-    --arg amount "$amount" \
-    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
-  )
-  exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
-  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
-  [[ "${send_status}" = "SUCCESS" ]]
+  bitcoin_cli -generate 5
 }
 
 initialize_user_from_onchain() {
@@ -249,71 +230,13 @@ initialize_user_from_onchain() {
   local phone="$2"
   local code="$3"
 
-  local btc_amount_in_btc=${4:-"0.001"}
-  local usd_amount_in_sats=${5:-"75000"}
+  local btc_amount_in_btc="1"
 
   login_user "$token_name" "$phone" "$code"
 
-fund_wallet_from_onchain \
+  fund_wallet_from_onchain \
     "$token_name" \
     "$token_name.btc_wallet_id" \
     "$btc_amount_in_btc"
-
-  fund_wallet_intraledger \
-    "$token_name" \
-    "$token_name.btc_wallet_id" \
-    "$token_name.usd_wallet_id" \
-    "$usd_amount_in_sats"
 }
 
-# Taken from https://github.com/docker/swarm/blob/master/test/integration/helpers.bash
-# Retry a command $1 times until it succeeds. Wait $2 seconds between retries.
-retry() {
-  local attempts=$1
-  shift
-  local delay=$1
-  shift
-  local i
-
-  for ((i = 0; i < attempts; i++)); do
-    if [[ "${BATS_TEST_DIRNAME}" = "" ]]; then
-      "$@"
-    else
-      run "$@"
-    fi
-
-    if [[ "$status" -eq 0 ]]; then
-      return 0
-    fi
-    sleep "$delay"
-  done
-
-  echo "Command \"$*\" failed $attempts times. Output: $output"
-  false
-}
-
-check_for_onchain_initiated_settled() {
-  local token_name=$1
-  local address=$2
-  local first=${3:-"1"}
-
-  echo "first: $first"
-  variables=$(
-  jq -n \
-  --argjson first "$first" \
-  '{"first": $first}'
-  )
-  exec_graphql "$token_name" 'transactions' "$variables"
-
-  settled_status="$(get_from_transaction_by_address $address '.status')"
-  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
-}
-
-get_from_transaction_by_address() {
-  property_query=$2
-
-  jq_query='.data.me.defaultAccount.transactions.edges[] | select(.node.initiationVia.address == $address) .node'
-  echo $output \
-    | jq -r --arg address "$1" "$jq_query" \
-    | jq -r "$property_query"
-}

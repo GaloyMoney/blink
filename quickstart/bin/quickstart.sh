@@ -65,10 +65,8 @@ main() {
     sleep 1
   done
 
-  read_value "alice"
-
   initialize_user_from_onchain "alice" "+16505554328" "000000" 
-  echo "Alice account set up successfully"
+  echo "Alice account set up, token: $(read_value "alice")"
 }
 
 main
