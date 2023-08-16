@@ -11,12 +11,9 @@ setup_file() {
   start_ws_server
   start_server
   start_exporter
+  start_callback
 
   lnds_init
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-
-  subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
-  sleep 3
 }
 
 teardown_file() {
@@ -25,6 +22,7 @@ teardown_file() {
   stop_ws_server
   stop_exporter
   stop_subscriber
+  stop_callback
 }
 
 setup() {
@@ -41,9 +39,59 @@ teardown() {
 btc_amount=1000
 usd_amount=50
 
-@test "ln-receive: settle via ln for BTC wallet" {
-  # Generate invoice
+@test "ln-receive: init" {
   token_name="$ALICE_TOKEN_NAME"
+
+  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+
+  # create "application" for svix
+  exec_graphql "$token_name" 'account-details'
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ "$account_id" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg account_id "account.$account_id" \
+    '{ "name": "Client application", "uid": $account_id }' \
+  )
+
+  curl --silent -X 'POST' \
+    "$SVIX_ENDPOINT/api/v1/app/" \
+    -H "Authorization: Bearer $SVIX_SECRET" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d "$variables" | jq
+
+  variables=$(
+      jq -n \
+      --arg callback_url "$SVIX_CALLBACK_URL" \
+      '{
+          "description": "An example endpoint name",
+          "url": $callback_url,
+          "version": 1,
+          "secret": "whsec_abcd1234abcd1234abcd1234abcd1234"
+      }'
+  )
+
+  echo create endpoint for the account.$account_id application
+  curl --silent -X 'POST' \
+    "$SVIX_ENDPOINT/api/v1/app/account.$account_id/endpoint/" \
+    -H "Authorization: Bearer $SVIX_SECRET" \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d "$variables" | jq
+
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+
+  subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
+
+  sleep 3
+}
+
+@test "ln-receive: settle via ln for BTC wallet, invoice with amount" {
+  token_name="$ALICE_TOKEN_NAME"
+
+  # Generate invoice
   btc_wallet_name="$token_name.btc_wallet_id"
 
   variables=$(
@@ -69,9 +117,16 @@ usd_amount=50
 
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
+
+  exec_graphql "$token_name" 'account-details'
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ "$account_id" != "null" ]] || exit 1
+
+  cat .e2e-callback.log
+  cat .e2e-callback.log | grep "$account_id" || exit 1
 }
 
-@test "ln-receive: settle via ln for USD wallet" {
+@test "ln-receive: settle via ln for USD wallet, invoice with amount" {
   # Generate invoice
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"

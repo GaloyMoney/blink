@@ -1,4 +1,4 @@
-import { AccountValidator } from "@domain/accounts"
+import { AccountLevel, AccountValidator } from "@domain/accounts"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
@@ -56,7 +56,9 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
-import { reimburseFee } from "./reimburse-fee"
+import { CallbackService } from "@services/callback"
+import { getCallbackServiceConfig } from "@config"
+import { CallbackEventType } from "@domain/callback"
 
 import {
   constructPaymentFlowBuilder,
@@ -66,6 +68,8 @@ import {
   checkWithdrawalLimits,
   addContactsAfterSend,
 } from "./helpers"
+
+import { reimburseFee } from "./reimburse-fee"
 
 const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
@@ -540,6 +544,22 @@ const executePaymentViaIntraledger = async <
 
     if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
       await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+    }
+
+    if (
+      recipientAccount.level === AccountLevel.One ||
+      recipientAccount.level === AccountLevel.Two
+    ) {
+      const callbackService = CallbackService(getCallbackServiceConfig())
+      await callbackService.sendMessage({
+        accountUUID: recipientAccount.uuid,
+        eventType: CallbackEventType.ReceiveIntraledger,
+        payload: {
+          // FIXME: [0] might not be correct
+          txid: journal.transactionIds[0],
+          paymentHash,
+        },
+      })
     }
 
     if (senderAccount.id !== recipientAccount.id) {
