@@ -12,7 +12,7 @@ else
 fi
 export GALOY_DIR
 
-CACHE_DIR=$GALOY_DIR/tmp/smoke-test-cache
+CACHE_DIR=$GALOY_DIR/tmp/quickstart-cache
 mkdir -p $CACHE_DIR
 
 cache_value() {
