@@ -19,6 +19,7 @@ services:
       - lnd2
       - lnd-outside-1
       - svix
+      - lnd-outside-2
     restart: on-failure:10
   integration-deps:
     image: busybox

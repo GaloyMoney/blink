@@ -55,7 +55,6 @@ clean-deps:
 
 reset-deps: clean-deps start-deps
 reset-deps-integration: clean-deps start-deps-integration
-reset-deps-bats: clean-deps start-deps-bats
 
 test: unit legacy-integration integration
 
@@ -92,7 +91,7 @@ bats:
 	yarn build && \
 	bats -t test/bats
 
-reset-bats: reset-deps-bats bats
+reset-bats: reset-deps bats
 
 execute-bats-from-within-container:
 	git config --global --add safe.directory /repo # otherwise bats complains
