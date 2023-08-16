@@ -399,6 +399,13 @@ const isAllowedToOnboard = async ({
   const { phoneMetadataValidationSettings, ipMetadataValidationSettings } =
     getAccountsOnboardConfig()
 
+  addAttributesToCurrentSpan({
+    "login.phoneMetadataValidation": phoneMetadataValidationSettings.enabled,
+  })
+  addAttributesToCurrentSpan({
+    "login.ipMetadataValidation": ipMetadataValidationSettings.enabled,
+  })
+
   if (ipMetadataValidationSettings.enabled) {
     const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
 
@@ -410,6 +417,10 @@ const isAllowedToOnboard = async ({
       })
       return ipFetcherInfo
     }
+
+    addAttributesToCurrentSpan({
+      "login.ipFetcherInfo": JSON.stringify(ipFetcherInfo),
+    })
 
     const validatedIPMetadata = IPMetadataValidator(
       ipMetadataValidationSettings,
@@ -435,6 +446,10 @@ const isAllowedToOnboard = async ({
     const validatedPhoneMetadata = PhoneMetadataValidator(
       phoneMetadataValidationSettings,
     ).validate(phoneMetadata)
+
+    addAttributesToCurrentSpan({
+      "login.phoneMetadata": JSON.stringify(phoneMetadata),
+    })
 
     if (validatedPhoneMetadata instanceof Error) {
       return new InvalidPhoneForOnboardingError()
