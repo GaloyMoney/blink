@@ -14,16 +14,7 @@ setup_file() {
 
   lnds_init
   initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-
-  variables=$(
-    jq -n \
-    --arg username "$ALICE_TOKEN_NAME" \
-    '{input: {username: $username}}'
-  )
-  exec_graphql "$ALICE_TOKEN_NAME" 'user-update-username' "$variables"
-  num_errors="$(graphql_output '.data.userUpdateUsername.errors | length')"
-  username="$(graphql_output '.data.userUpdateUsername.user.username')"
-  [[ "$num_errors" == "0" || "$username" == "$ALICE_TOKEN_NAME" ]] || exit 1
+  user_update_username "$ALICE_TOKEN_NAME"
 }
 
 teardown_file() {

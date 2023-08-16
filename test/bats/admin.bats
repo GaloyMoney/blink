@@ -17,10 +17,6 @@ teardown_file() {
   stop_server
 }
 
-random_phone() {
-  printf "+1%010d\n" $(( ($RANDOM * 1000000) + ($RANDOM % 1000000) ))
-}
-
 ADMIN_TOKEN_NAME="editor"
 ADMIN_PHONE="+16505554336"
 
@@ -40,7 +36,6 @@ TESTER_PHONE="+19876543210"
       --arg username "$username" \
       '{input: {username: $username}}'
   )
-
   exec_graphql "$TESTER_TOKEN_NAME" 'user-update-username' "$variables"
 
   variables=$(
