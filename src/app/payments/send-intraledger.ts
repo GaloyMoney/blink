@@ -1,4 +1,4 @@
-import { getValuesToSkipProbe } from "@config"
+import { getCallbackServiceConfig, getValuesToSkipProbe } from "@config"
 
 import {
   btcFromUsdMidPriceFn,
@@ -14,7 +14,7 @@ import {
   LightningPaymentFlowBuilder,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
-import { AccountValidator } from "@domain/accounts"
+import { AccountLevel, AccountValidator } from "@domain/accounts"
 import { displayAmountFromNumber } from "@domain/fiat"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -36,6 +36,10 @@ import {
   UsersRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
+
+import { CallbackService } from "@services/callback"
+
+import { CallbackEventType } from "@domain/callback"
 
 import {
   getPriceRatioForLimits,
@@ -374,6 +378,21 @@ const executePaymentViaIntraledger = async <
 
     if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {
       await removeDeviceTokens({ userId: recipientUser.id, deviceTokens: result.tokens })
+    }
+
+    if (
+      recipientAccount.level === AccountLevel.One ||
+      recipientAccount.level === AccountLevel.Two
+    ) {
+      const callbackService = CallbackService(getCallbackServiceConfig())
+      await callbackService.sendMessage({
+        accountUUID: recipientAccount.uuid,
+        eventType: CallbackEventType.ReceiveIntraledger,
+        payload: {
+          // FIXME: [0] might not be correct
+          txid: journal.transactionIds[0],
+        },
+      })
     }
 
     return PaymentSendStatus.Success
