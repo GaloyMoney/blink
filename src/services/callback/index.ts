@@ -20,7 +20,7 @@ export type SvixConfig = {
 }
 
 export const CallbackService = (config: SvixConfig) => {
-  if (!config.secret || !config.endpoint) {
+  if (!config.secret) {
     const nullFn = async () => {
       null
     }
@@ -33,7 +33,9 @@ export const CallbackService = (config: SvixConfig) => {
     }
   }
 
-  const svix = new Svix(config.secret, { serverUrl: config.endpoint })
+  const svix = config.endpoint
+    ? new Svix(config.secret, { serverUrl: config.endpoint })
+    : new Svix(config.secret)
 
   const sendMessage = async ({
     eventType,
