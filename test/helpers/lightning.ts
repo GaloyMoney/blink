@@ -188,6 +188,57 @@ export const openChannelTesting = async ({
   return { lndNewChannel, lndPartnerNewChannel }
 }
 
+export const openChannelTestingNoAccounting = async ({
+  lnd,
+  lndPartner,
+  socket,
+  is_private = false,
+}) => {
+  await waitUntilSync({ lnds: [lnd, lndPartner] })
+
+  const local_tokens = 1000000
+  const { public_key: partner_public_key } = await getWalletInfo({ lnd: lndPartner })
+
+  const openChannelPromise = waitFor(async () => {
+    try {
+      return openChannel({
+        lnd,
+        local_tokens,
+        is_private,
+        partner_public_key,
+        partner_socket: socket,
+      })
+    } catch (error) {
+      baseLogger.warn({ error }, "openChannel failed. trying again.")
+      return Promise.resolve(null)
+    }
+  })
+
+  let lndNewChannel
+  const sub = subscribeToChannels({ lnd })
+  sub.once("channel_opened", (channel) => {
+    lndNewChannel = channel
+  })
+
+  let lndPartnerNewChannel
+  const subPartner = subscribeToChannels({ lnd: lndPartner })
+  subPartner.once("channel_opened", (channel) => {
+    lndPartnerNewChannel = channel
+  })
+
+  await Promise.all([once(sub, "channel_opening"), openChannelPromise])
+
+  await Promise.all([
+    waitFor(() => lndNewChannel && lndPartnerNewChannel),
+    mineBlockAndSync({ lnds: [lnd, lndPartner] }),
+  ])
+
+  sub.removeAllListeners()
+  subPartner.removeAllListeners()
+
+  return { lndNewChannel, lndPartnerNewChannel }
+}
+
 // all the following uses of bitcoind client that send/receive coin must be "outside"
 
 export const fundLnd = async (lnd, amount = 1) => {
@@ -202,7 +253,6 @@ export const fundLnd = async (lnd, amount = 1) => {
 const resetLnds = async (lnds) => {
   const block = await bitcoindClient.getBlockCount()
   if (!block) return // skip if we are just getting started
-
   // just in case pending transactions
   await mineBlockAndSync({ lnds })
 
