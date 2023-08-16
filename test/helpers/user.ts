@@ -204,24 +204,33 @@ export const createAccount = async ({
   return account
 }
 
-export const createRandomUserAndWallet = async () => {
+export const createRandomUserAndBtcWallet = async () => {
   const phone = randomPhone()
   return createUserAndWallet(phone)
 }
 
-export const createRandomUserAndUsdWallet = async (): Promise<
-  WalletDescriptor<"USD">
-> => {
+export const createRandomUserAndWallets = async (): Promise<{
+  usdWalletDescriptor: WalletDescriptor<"USD">
+  btcWalletDescriptor: WalletDescriptor<"BTC">
+}> => {
   const phone = randomPhone()
-  const { accountId } = await createUserAndWallet(phone)
-  const wallet = await addWalletIfNonexistent({
+  const btcWalletDescriptor = await createUserAndWallet(phone)
+
+  const usdWallet = await addWalletIfNonexistent({
     currency: WalletCurrency.Usd,
-    accountId: accountId,
+    accountId: btcWalletDescriptor.accountId,
     type: WalletType.Checking,
   })
-  if (wallet instanceof Error) throw wallet
+  if (usdWallet instanceof Error) throw usdWallet
 
-  return { id: wallet.id, currency: WalletCurrency.Usd, accountId }
+  return {
+    btcWalletDescriptor,
+    usdWalletDescriptor: {
+      id: usdWallet.id,
+      currency: WalletCurrency.Usd,
+      accountId: usdWallet.accountId,
+    },
+  }
 }
 
 export const createUserAndWallet = async (

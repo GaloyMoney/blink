@@ -11,7 +11,7 @@ import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import {
   createMandatoryUsers,
-  createRandomUserAndWallet,
+  createRandomUserAndBtcWallet,
   recordReceiveLnPayment,
 } from "test/helpers"
 
@@ -52,7 +52,7 @@ describe("getTransactionsForAccountByWalletIds", () => {
   it("returns an error if non-owned walletId is included", async () => {
     const memo = randomMemo()
 
-    const senderWalletDescriptor = await createRandomUserAndWallet()
+    const senderWalletDescriptor = await createRandomUserAndBtcWallet()
     const senderAccount = await AccountsRepository().findById(
       senderWalletDescriptor.accountId,
     )
@@ -69,7 +69,7 @@ describe("getTransactionsForAccountByWalletIds", () => {
     expect(receive).not.toBeInstanceOf(Error)
 
     // Attempt transactions call
-    const otherWalletDescriptor = await createRandomUserAndWallet()
+    const otherWalletDescriptor = await createRandomUserAndBtcWallet()
 
     const txns = await Accounts.getTransactionsForAccountByWalletIds({
       account: senderAccount,

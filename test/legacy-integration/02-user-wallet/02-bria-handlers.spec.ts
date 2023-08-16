@@ -22,7 +22,7 @@ import { getBankOwnerWalletId } from "@services/ledger/caching"
 
 import { LessThanDustThresholdError } from "@domain/errors"
 
-import { generateHash, createRandomUserAndWallet } from "test/helpers"
+import { generateHash, createRandomUserAndBtcWallet } from "test/helpers"
 
 const calc = AmountCalculator()
 
@@ -36,7 +36,7 @@ let accountId: AccountId
 let address: OnChainAddress
 
 beforeAll(async () => {
-  ;({ id: walletId, accountId } = await createRandomUserAndWallet())
+  ;({ id: walletId, accountId } = await createRandomUserAndBtcWallet())
 
   const addressResult = await getLastOnChainAddress(walletId)
   if (addressResult instanceof Error) throw addressResult

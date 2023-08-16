@@ -31,8 +31,8 @@ import { DealerPriceService } from "@services/dealer-price"
 
 import {
   createMandatoryUsers,
-  createRandomUserAndWallet,
-  createRandomUserAndUsdWallet,
+  createRandomUserAndBtcWallet,
+  createRandomUserAndWallets,
   recordReceiveLnPayment,
 } from "test/helpers"
 import { getBalanceHelper } from "test/helpers/wallet"
@@ -82,7 +82,7 @@ const randomOnChainMemo = () =>
 describe("onChainPay", () => {
   describe("common", () => {
     it("fails to send all from empty wallet", async () => {
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -110,7 +110,7 @@ describe("onChainPay", () => {
 
       const memo = randomOnChainMemo()
 
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -146,7 +146,7 @@ describe("onChainPay", () => {
     it("fails if builder 'withConversion' step fails", async () => {
       const memo = randomOnChainMemo()
 
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -180,7 +180,7 @@ describe("onChainPay", () => {
     it("fails if withdrawal limit hit", async () => {
       const memo = randomOnChainMemo()
 
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -237,7 +237,7 @@ describe("onChainPay", () => {
     it("fails if has insufficient balance for fee", async () => {
       const memo = randomOnChainMemo()
 
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -275,7 +275,7 @@ describe("onChainPay", () => {
     it("fails if sender account is locked", async () => {
       const memo = randomOnChainMemo()
 
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -321,7 +321,7 @@ describe("onChainPay", () => {
     it("fails if builder 'withRecipient' step fails", async () => {
       const memo = randomOnChainMemo()
 
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
@@ -360,13 +360,14 @@ describe("onChainPay", () => {
     it("fails if builder 'withConversion' step fails", async () => {
       const memo = randomOnChainMemo()
 
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
       if (newAccount instanceof Error) throw newAccount
 
-      const recipientUsdWalletDescriptor = await createRandomUserAndUsdWallet()
+      const { usdWalletDescriptor: recipientUsdWalletDescriptor } =
+        await createRandomUserAndWallets()
       const recipientAccount = await AccountsRepository().findById(
         recipientUsdWalletDescriptor.accountId,
       )
@@ -416,13 +417,13 @@ describe("onChainPay", () => {
     it("fails if recipient account is locked", async () => {
       const memo = randomOnChainMemo()
 
-      const newWalletDescriptor = await createRandomUserAndWallet()
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
       if (newAccount instanceof Error) throw newAccount
 
-      const recipientWalletDescriptor = await createRandomUserAndWallet()
+      const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
       const recipientAccount = await AccountsRepository().findById(
         recipientWalletDescriptor.accountId,
       )
