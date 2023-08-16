@@ -72,13 +72,39 @@ const fundOnChainWallets = async () => {
   await fundLnd(lnd1, btc)
 }
 
+const getChannelWithRetry = async ({ lnd, id }) => {
+  const countMax = 9
+
+  let channel
+  let errMsg: string | undefined = "FullChannelDetailsNotFound"
+  let count = 0
+  while (count < countMax && errMsg === "FullChannelDetailsNotFound") {
+    count++
+    await sleep(250)
+    try {
+      channel = await getChannel({ id, lnd })
+      errMsg = undefined
+    } catch (err) {
+      if (Array.isArray(err)) errMsg = err[1]
+    }
+  }
+  if (!(count < countMax && errMsg !== "FullChannelDetailsNotFound")) {
+    throw new Error("Could find updated channel details")
+  }
+  if (!(channel.policies && channel.policies.length)) {
+    throw new Error("No channel policies found")
+  }
+
+  return channel
+}
+
 const setFeesOnChannel = async ({ localLnd, partnerLnd, base, rate }) => {
   const countMax = 9
 
   // Get routing channel details
   const { channels } = await getChannels({ lnd: partnerLnd })
   const { id: chanId } = channels[0]
-  const channel = await getChannel({ id: chanId, lnd: localLnd })
+  const channel = await getChannelWithRetry({ id: chanId, lnd: localLnd })
 
   // Set channel policy
   let setOnChannel
@@ -99,26 +125,7 @@ const setFeesOnChannel = async ({ localLnd, partnerLnd, base, rate }) => {
   }
 
   // Verify policy change
-  let policies
-  let errMsg: string | undefined = "FullChannelDetailsNotFound"
-  count = 0
-  while (count < countMax && errMsg === "FullChannelDetailsNotFound") {
-    count++
-    await sleep(250)
-    try {
-      ;({ policies } = await getChannel({ id: channel.id, lnd: localLnd }))
-      errMsg = undefined
-    } catch (err) {
-      if (Array.isArray(err)) errMsg = err[1]
-    }
-  }
-  if (!(count < countMax && errMsg !== "FullChannelDetailsNotFound")) {
-    throw new Error("Could find updated channel details")
-  }
-  if (!(policies && policies.length)) {
-    throw new Error("No channel policies found")
-  }
-
+  const { policies } = await getChannelWithRetry({ id: channel.id, lnd: localLnd })
   const { base_fee_mtokens, fee_rate } = policies[0]
   if (!(base_fee_mtokens === `${base * 1000}` && fee_rate === rate)) {
     throw new Error("Incorrect policy on channel")
