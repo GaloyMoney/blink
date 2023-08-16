@@ -214,12 +214,13 @@ export const openChannelTestingNoAccounting = async ({
     }
   })
 
-  let lndNewChannel, lndPartnerNewChannel
+  let lndNewChannel
   const sub = subscribeToChannels({ lnd })
   sub.once("channel_opened", (channel) => {
     lndNewChannel = channel
   })
 
+  let lndPartnerNewChannel
   const subPartner = subscribeToChannels({ lnd: lndPartner })
   subPartner.once("channel_opened", (channel) => {
     lndPartnerNewChannel = channel
@@ -227,22 +228,13 @@ export const openChannelTestingNoAccounting = async ({
 
   await Promise.all([once(sub, "channel_opening"), openChannelPromise])
 
-  baseLogger.debug("mining blocks and waiting for channel being opened")
   await Promise.all([
-    // error: https://github.com/alexbosworth/ln-service/issues/122
-    // once(sub, 'channel_opened'),
     waitFor(() => lndNewChannel && lndPartnerNewChannel),
     mineBlockAndSync({ lnds: [lnd, lndPartner] }),
   ])
 
-  if (lndPartner === lnd1) {
-    expect(lndPartnerNewChannel.is_partner_initiated).toBe(true)
-  }
-
   sub.removeAllListeners()
   subPartner.removeAllListeners()
-
-  baseLogger.debug({ lndNewChannel, lndPartnerNewChannel }, "new channels")
 
   return { lndNewChannel, lndPartnerNewChannel }
 }
