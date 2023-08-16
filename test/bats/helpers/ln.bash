@@ -17,43 +17,44 @@ run_with_lnd() {
     lnd_cli "$@"
   elif [[ "$func_name" == "lnd2_cli" ]]; then
     lnd2_cli "$@"
+  elif [[ "$func_name" == "lnd_outside_cli" ]]; then
+    lnd_outside_cli "$@"
+  elif [[ "$func_name" == "lnd_outside_2_cli" ]]; then
+    lnd_outside_2_cli "$@"
   else
-    echo "Invalid function name passed!" && exit 1
+    echo "Invalid function name passed!" && return 1
   fi
 }
 
 close_partner_initiated_channels_with_external() {
-  lnd1_pubkey=$(lnd_cli getinfo | jq -r '.identity_pubkey')
-  lnd2_pubkey=$(lnd2_cli getinfo | jq -r '.identity_pubkey')
+  close_channels_with_external() {
+    lnd_cli_value="$1"
+    lnd1_pubkey=$(lnd_cli getinfo | jq -r '.identity_pubkey')
+    lnd2_pubkey=$(lnd2_cli getinfo | jq -r '.identity_pubkey')
 
-  partner_initiated_external_channel_filter='
-  .channels[]?
-    | select(.initiator != true)
-    | select(.remote_pubkey != $lnd1_pubkey)
-    | select(.remote_pubkey != $lnd2_pubkey)
-    | .channel_point
-  '
+    partner_initiated_external_channel_filter='
+    .channels[]?
+      | select(.initiator != true)
+      | select(.remote_pubkey != $lnd1_pubkey)
+      | select(.remote_pubkey != $lnd2_pubkey)
+      | .channel_point
+    '
 
-  lnd_cli listchannels \
-    | jq -r \
-      --arg lnd1_pubkey "$lnd1_pubkey" \
-      --arg lnd2_pubkey "$lnd2_pubkey" \
-      "$partner_initiated_external_channel_filter" \
-    | while read -r channel_point; do
-        funding_txid="${channel_point%%:*}"
-        lnd_cli closechannel "$funding_txid"
-      done
+    run_with_lnd "$lnd_cli_value" listchannels \
+      | jq -r \
+        --arg lnd1_pubkey "$lnd1_pubkey" \
+        --arg lnd2_pubkey "$lnd2_pubkey" \
+        "$partner_initiated_external_channel_filter" \
+      | while read -r channel_point; do
+          funding_txid="${channel_point%%:*}"
+          run_with_lnd "$lnd_cli_value" closechannel "$funding_txid"
+        done
+  }
 
-  lnd2_cli listchannels \
-    | jq -r \
-      --arg lnd1_pubkey "$lnd1_pubkey" \
-      --arg lnd2_pubkey "$lnd2_pubkey" \
-      "$partner_initiated_external_channel_filter" \
-    | while read -r channel_point; do
-        funding_txid="${channel_point%%:*}"
-        lnd2_cli closechannel "$funding_txid"
-      done
-
+  close_channels_with_external lnd_cli
+  close_channels_with_external lnd2_cli
+  close_channels_with_external lnd_outside_cli
+  close_channels_with_external lnd_outside_2_cli
 }
 
 lnds_init() {
@@ -68,13 +69,6 @@ lnds_init() {
   bitcoin_cli sendtoaddress "$address" "$amount"
   bitcoin_cli -generate 3
 
-  # Open channel from lnd1 to lndoutside1
-  lnd_local_pubkey="$(lnd_cli getinfo | jq -r '.identity_pubkey')"
-  lnd_outside_cli connect "${lnd_local_pubkey}@${COMPOSE_PROJECT_NAME}-lnd1-1:9735" || true
-  lnd_outside_cli openchannel \
-    --node_key "$lnd_local_pubkey" \
-    --local_amt "$local_amount" \
-
   no_pending_channels() {
     pending_channel="$(lnd_outside_cli pendingchannels | jq -r '.pending_open_channels[0]')"
     if [[ "$pending_channel" != "null" ]]; then
@@ -83,6 +77,33 @@ lnds_init() {
     fi
   }
 
+  synced_to_graph() {
+    is_synced="$(lnd_outside_cli getinfo | jq -r '.synced_to_graph')"
+    [[ "$is_synced" == "true" ]] || exit 1
+  }
+
+  # Open channel from lndoutside1 -> lnd1
+  pubkey="$(lnd_cli getinfo | jq -r '.identity_pubkey')"
+  endpoint="${COMPOSE_PROJECT_NAME}-lnd1-1:9735"
+  lnd_outside_cli connect "${pubkey}@${endpoint}" || true
+  retry 10 1 synced_to_graph
+  lnd_outside_cli openchannel \
+    --node_key "$pubkey" \
+    --local_amt "$local_amount"
+
+  retry 10 1 mempool_not_empty
+  retry 10 1 no_pending_channels
+
+  # Open channel with push from lndoutside1 -> lndoutside2
+  pubkey="$(lnd_outside_2_cli getinfo | jq -r '.identity_pubkey')"
+  endpoint="${COMPOSE_PROJECT_NAME}-lnd-outside-2-1:9735"
+  lnd_outside_cli connect "${pubkey}@${endpoint}" || true
+  retry 10 1 synced_to_graph
+  lnd_outside_cli openchannel \
+    --node_key "$pubkey" \
+    --local_amt "$local_amount" \
+    --push_amt "$push_amount"
+
   retry 10 1 mempool_not_empty
   retry 10 1 no_pending_channels
 
@@ -90,7 +111,7 @@ lnds_init() {
   # NB: I get randomly a "no route" error otherwise
   sleep 10
 
-  # Fund lnd1 node via funding user
+  # Fund lnd1 node with push_amount via funding user
   login_user \
     "$LND_FUNDING_TOKEN_NAME" \
     "$LND_FUNDING_PHONE" \
@@ -100,6 +121,38 @@ lnds_init() {
     "$LND_FUNDING_TOKEN_NAME" \
     "$LND_FUNDING_TOKEN_NAME.btc_wallet_id" \
     "$push_amount"
+}
+
+rebalance_channel() {
+    lnd_cli_value="$1"
+    lnd_partner_cli_value="$2"
+    target_local_balance="$3"
+
+    local_pubkey="$(run_with_lnd $lnd_cli_value getinfo | jq -r '.identity_pubkey')"
+    remote_pubkey="$(run_with_lnd $lnd_partner_cli_value getinfo | jq -r '.identity_pubkey')"
+
+    partner_channel_filter='
+    [
+      .channels[]?
+      | select(.remote_pubkey == $remote_pubkey)
+    ] | first
+    '
+
+    channel=$(
+      run_with_lnd "$lnd_cli_value" listchannels \
+        | jq -r \
+          --arg remote_pubkey "$remote_pubkey" \
+          "$partner_channel_filter"
+    )
+    [[ "$channel" != "null" ]]
+
+    actual_local_balance=$(echo $channel | jq -r '.local_balance')
+    diff="$(( $actual_local_balance - $target_local_balance ))"
+    if [[ "$diff" -gt 0 ]]; then
+      run_with_lnd "$lnd_cli_value" sendpayment --dest=$remote_pubkey --amt=$diff --keysend
+    elif [[ "$diff" -lt 0 ]]; then
+      run_with_lnd "$lnd_partner_cli_value" sendpayment --dest=$local_pubkey --amt="$(abs $diff)" --keysend
+    fi
 }
 
 lnd_cli() {
@@ -120,6 +173,14 @@ lnd2_cli() {
 
 lnd_outside_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-1-1" \
+    lncli \
+      --macaroonpath /root/.lnd/admin.macaroon \
+      --tlscertpath /root/.lnd/tls.cert \
+      $@
+}
+
+lnd_outside_2_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-lnd-outside-2-1" \
     lncli \
       --macaroonpath /root/.lnd/admin.macaroon \
       --tlscertpath /root/.lnd/tls.cert \
@@ -151,10 +212,11 @@ fund_wallet_from_lightning() {
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-check_for_ln_initiated_settled() {
-  local token_name=$1
-  local payment_hash=$2
-  local first=${3:-"2"}
+check_for_ln_initiated_status() {
+  local expected_status=$1
+  local token_name=$2
+  local payment_hash=$3
+  local first=${4:-"2"}
 
   variables=$(
   jq -n \
@@ -163,9 +225,18 @@ check_for_ln_initiated_settled() {
   )
   exec_graphql "$token_name" 'transactions' "$variables"
 
-  settled_status="$(get_from_transaction_by_ln_hash $payment_hash '.status')"
-  [[ "${settled_status}" = "SUCCESS" ]]
+  status="$(get_from_transaction_by_ln_hash_and_status $payment_hash $expected_status '.status')"
+  [[ "${status}" == "${expected_status}" ]] || return 1
 }
+
+check_for_ln_initiated_settled() {
+  check_for_ln_initiated_status "SUCCESS" "$@"
+}
+
+check_for_ln_initiated_pending() {
+  check_for_ln_initiated_status "PENDING" "$@"
+}
+
 
 check_ln_payment_settled() {
   local payment_request=$1
@@ -180,12 +251,21 @@ check_ln_payment_settled() {
   [[ "${payment_status}" = "PAID" ]]
 }
 
-get_from_transaction_by_ln_hash() {
-  property_query=$2
+get_from_transaction_by_ln_hash_and_status() {
+  payment_hash="$1"
+  expected_status="$2"
+  property_query="$3"
 
-  jq_query='.data.me.defaultAccount.transactions.edges[] | select(.node.initiationVia.paymentHash == $payment_hash) .node'
+  jq_query='
+    .data.me.defaultAccount.transactions.edges[]
+    | select(.node.initiationVia.paymentHash == $payment_hash)
+    | select(.node.status == $expected_status)
+    .node'
   echo $output \
-    | jq -r --arg payment_hash "$1" "$jq_query" \
+    | jq -r \
+      --arg payment_hash "$payment_hash" \
+      --arg expected_status "$expected_status" \
+      "$jq_query" \
     | jq -r "$property_query"
 }
 
@@ -204,4 +284,29 @@ check_for_ln_update() {
   )
 
   [[ "$paid_status" == "PAID" ]] || exit 1
+}
+
+num_txns_for_hash() {
+  token_name="$1"
+  payment_hash="$2"
+
+  first=20
+  txn_variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$txn_variables" > /dev/null
+
+  jq_query='
+    [
+      .data.me.defaultAccount.transactions.edges[]
+      | select(.node.initiationVia.paymentHash == $payment_hash)
+    ]
+      | length
+  '
+  echo $output \
+    | jq -r \
+      --arg payment_hash "$payment_hash" \
+      "$jq_query"
 }

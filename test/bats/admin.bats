@@ -99,10 +99,10 @@ TESTER_PHONE="+19876543210"
 
   variables=$(
     jq -n \
-    --arg status "LOCKED" \
+    --arg account_status "LOCKED" \
     --arg uid "$id" \
     --arg comment "Test lock of the account" \
-    '{input: {status: $status, uid: $uid, comment: $comment}}'
+    '{input: {status: $account_status, uid: $uid, comment: $comment}}'
   )
 
   exec_admin_graphql "$admin_token" 'account-update-status' "$variables"

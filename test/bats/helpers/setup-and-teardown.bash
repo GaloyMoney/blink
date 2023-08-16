@@ -150,7 +150,7 @@ login_user() {
   [[ -n "${auth_token}" && "${auth_token}" != "null" ]]
   cache_value "$token_name" "$auth_token"
 
-  exec_graphql "$token_name" 'wallet-ids-for-account'
+  exec_graphql "$token_name" 'wallets-for-account'
 
   btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
   [[ "${btc_wallet_id}" != "null" ]]
@@ -203,7 +203,7 @@ initialize_user_from_onchain() {
   local phone="$2"
   local code="$3"
 
-  local btc_amount_in_btc=${4:-"0.001"}
+  local btc_amount_in_btc=${4:-"0.01"}
   local usd_amount_in_sats=${5:-"75000"}
 
   login_user "$token_name" "$phone" "$code"
@@ -220,3 +220,14 @@ fund_wallet_from_onchain \
     "$usd_amount_in_sats"
 }
 
+balance_for_wallet() {
+  token_name="$1"
+  wallet="$2"
+
+  exec_graphql "$token_name" 'wallets-for-account' > /dev/null
+  if [[ "$wallet" == "USD" ]]; then
+    graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "USD") .balance'
+  else
+    graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .balance'
+  fi
+}
