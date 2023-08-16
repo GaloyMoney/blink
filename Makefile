@@ -1,13 +1,10 @@
 BIN_DIR=node_modules/.bin
 
 start-deps:
-	docker compose up e2e-deps -d
+	docker compose up bats-deps -d
 
 start-deps-integration:
 	docker compose up integration-deps -d
-
-start-deps-bats:
-	docker compose up bats-deps -d
 
 update-price-history:
 	docker compose run price-history node servers/history/cron.js
@@ -90,12 +87,6 @@ integration:
 	yarn test:integration
 
 reset-integration: reset-deps-integration integration
-
-e2e:
-	yarn build && \
-	yarn test:e2e
-
-reset-e2e: reset-deps e2e
 
 bats:
 	yarn build && \

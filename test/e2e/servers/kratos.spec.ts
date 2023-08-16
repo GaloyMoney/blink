@@ -32,24 +32,20 @@ import { authenticator } from "otplib"
 
 import { sleep } from "@utils"
 
-import { killServer, startServer } from "test/e2e/helpers"
 import { getError, randomEmail, randomPhone } from "test/helpers"
 
 import { getEmailCode } from "test/helpers/kratos"
 
 const identityRepo = IdentityRepository()
 
-let serverPid: PID
-
 beforeAll(async () => {
   // await removeIdentities()
-
   // needed for the kratos callback to registration
-  serverPid = await startServer("start-main-ci")
+  // serverPid = await startServer("start-main-ci")
 })
 
 afterAll(async () => {
-  await killServer(serverPid)
+  // await killServer(serverPid)
 })
 
 describe("phoneNoPassword", () => {
