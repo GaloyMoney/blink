@@ -86,10 +86,6 @@ lnds_init() {
   retry 10 1 mempool_not_empty
   retry 10 1 no_pending_channels
 
-  # FIXME: we may need some check on the graph or something else
-  # NB: I get randomly a "no route" error otherwise
-  sleep 10
-
   # Fund lnd1 node via funding user
   login_user \
     "$LND_FUNDING_TOKEN_NAME" \

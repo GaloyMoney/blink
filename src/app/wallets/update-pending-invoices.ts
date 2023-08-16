@@ -31,10 +31,6 @@ import { DealerPriceService } from "@services/dealer-price"
 import { NotificationsService } from "@services/notifications"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
-import { CallbackEventType } from "@domain/callback"
-import { AccountLevel } from "@domain/accounts"
-import { CallbackService } from "@services/callback"
-import { getCallbackServiceConfig } from "@config"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -294,21 +290,6 @@ const updatePendingInvoiceBeforeFinally = async ({
       await removeDeviceTokens({
         userId: recipientUser.id,
         deviceTokens: notificationResult.tokens,
-      })
-    }
-
-    if (
-      recipientAccount.level === AccountLevel.One ||
-      recipientAccount.level === AccountLevel.Two
-    ) {
-      const callbackService = CallbackService(getCallbackServiceConfig())
-      await callbackService.sendMessage({
-        accountUUID: recipientAccount.uuid,
-        eventType: CallbackEventType.ReceiveLightning,
-        payload: {
-          // FIXME: [0] might not be correct
-          txid: result.transactionIds[0],
-        },
       })
     }
 
