@@ -77,49 +77,8 @@ watch-unit:
 watch-compile:
 	$(BIN_DIR)/tsc --watch  --noEmit
 
-e2e-in-ci:
-	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up e2e-tests
-
-reset-e2e-in-ci-with-build: reset-deps e2e-in-ci-with-build
-
-e2e-in-ci-with-build:
-	yarn build && \
-	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make execute-e2e-from-within-container-cached || \
-	docker rm `docker ps -q -f status=exited`
-
-e2e-in-ci-cached:
-	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make execute-e2e-from-within-container-cached || \
-	docker rm `docker ps -q -f status=exited`
-
-delete-e2e:
-	docker container kill `docker ps -f name="e2e-tests" -q` && \
-	sleep 1 && \
-	docker container rm `docker ps -f name="e2e-tests" -q`
-
-main-in-ci-build:
-	yarn build && \
-	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml -f docker-compose.override.yml run --name e2e-tests e2e-tests make start-main-ci || \
-	docker rm e2e-tests
-
-main-in-ci-cached:
-	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make start-main-ci || \
-	docker rm e2e-tests
-
 del-containers:
 	docker compose rm -sfv
-
-execute-e2e-from-within-container:
-	yarn install && \
-	yarn build && \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/e2e/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
-
-execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/e2e/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 legacy-integration:
 	yarn build && \
@@ -210,8 +169,3 @@ codegen:
 
 gen-test-jwt:
 	yarn gen-test-jwt
-
-reset-sleep-e2e:
-	make reset-deps
-	sleep 8
-	make e2e
