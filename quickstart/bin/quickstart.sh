@@ -64,7 +64,11 @@ main() {
     login_user "alice" "+16505554328" "000000" && break
     sleep 1
   done
-  echo "DONE"
+
+  read_value "alice"
+
+  initialize_user_from_onchain "alice" "+16505554328" "000000" 
+  echo "Alice account set up successfully"
 }
 
 main

@@ -13,6 +13,8 @@ directories:
     - .env.ci
     - docker-compose.yml
     - docker-compose.override.yml
+    excludePaths:
+    - dev/bin/**/*
     newRootPath: dev
 - path: ./galoy
   contents:

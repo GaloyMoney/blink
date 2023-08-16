@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: callback api (#3043)...'
-      sha: b674f6f9d79f766f11c0e0105027878f38390492
+      commitTitle: 'ci: fix callback 2 (#3062)...'
+      sha: cd896b18743be6f45bb3457e9722225a6836d313
       tags:
-      - 0.11.27-1-gb674f6f9d
+      - 0.11.27-6-gcd896b187
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: callback api (#3043)...'
-      sha: b674f6f9d79f766f11c0e0105027878f38390492
+      commitTitle: 'ci: fix callback 2 (#3062)...'
+      sha: cd896b18743be6f45bb3457e9722225a6836d313
       tags:
-      - 0.11.27-1-gb674f6f9d
+      - 0.11.27-6-gcd896b187
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: callback api (#3043)...'
-      sha: b674f6f9d79f766f11c0e0105027878f38390492
+      commitTitle: 'ci: fix callback 2 (#3062)...'
+      sha: cd896b18743be6f45bb3457e9722225a6836d313
       tags:
-      - 0.11.27-1-gb674f6f9d
+      - 0.11.27-6-gcd896b187
     path: ./
   path: ./graphql
 kind: LockConfig

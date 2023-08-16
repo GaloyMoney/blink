@@ -25,4 +25,4 @@ jobs:
           make re-render
           source .envrc
           docker compose up -d
-          ./bin/smoke-test.sh
+          ./bin/quickstart.sh
