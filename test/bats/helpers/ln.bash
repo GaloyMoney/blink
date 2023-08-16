@@ -212,10 +212,11 @@ fund_wallet_from_lightning() {
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-check_for_ln_initiated_settled() {
-  local token_name=$1
-  local payment_hash=$2
-  local first=${3:-"2"}
+check_for_ln_initiated_status() {
+  local expected_status=$1
+  local token_name=$2
+  local payment_hash=$3
+  local first=${4:-"2"}
 
   variables=$(
   jq -n \
@@ -224,9 +225,18 @@ check_for_ln_initiated_settled() {
   )
   exec_graphql "$token_name" 'transactions' "$variables"
 
-  settled_status="$(get_from_transaction_by_ln_hash $payment_hash '.status')"
-  [[ "${settled_status}" = "SUCCESS" ]]
+  status="$(get_from_transaction_by_ln_hash_and_status $payment_hash $expected_status '.status')"
+  [[ "${status}" == "${expected_status}" ]] || return 1
 }
+
+check_for_ln_initiated_settled() {
+  check_for_ln_initiated_status "SUCCESS" "$@"
+}
+
+check_for_ln_initiated_pending() {
+  check_for_ln_initiated_status "PENDING" "$@"
+}
+
 
 check_ln_payment_settled() {
   local payment_request=$1
@@ -241,12 +251,21 @@ check_ln_payment_settled() {
   [[ "${payment_status}" = "PAID" ]]
 }
 
-get_from_transaction_by_ln_hash() {
-  property_query=$2
+get_from_transaction_by_ln_hash_and_status() {
+  payment_hash="$1"
+  expected_status="$2"
+  property_query="$3"
 
-  jq_query='.data.me.defaultAccount.transactions.edges[] | select(.node.initiationVia.paymentHash == $payment_hash) .node'
+  jq_query='
+    .data.me.defaultAccount.transactions.edges[]
+    | select(.node.initiationVia.paymentHash == $payment_hash)
+    | select(.node.status == $expected_status)
+    .node'
   echo $output \
-    | jq -r --arg payment_hash "$1" "$jq_query" \
+    | jq -r \
+      --arg payment_hash "$payment_hash" \
+      --arg expected_status "$expected_status" \
+      "$jq_query" \
     | jq -r "$property_query"
 }
 
