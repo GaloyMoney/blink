@@ -1,7 +1,5 @@
 import { toDays } from "@domain/primitives"
 
-import { SvixConfig } from "@services/callback"
-
 import { getBriaPartialConfigFromProcess } from "./process"
 import {
   getBriaPartialConfigFromYaml,
@@ -72,10 +70,3 @@ export const getBriaConfig = () => ({
   ...getBriaPartialConfigFromProcess(),
   ...getBriaPartialConfigFromYaml(),
 })
-
-export const getCallbackServiceConfig = (): SvixConfig => {
-  // FIXME type when env.ts PR is merged
-  const secret = process.env.SVIX_SECRET as string
-  const endpoint = process.env.SVIX_ENDPOINT as string
-  return { secret, endpoint }
-}

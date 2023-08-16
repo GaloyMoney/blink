@@ -18,7 +18,6 @@ services:
       - lnd1
       - lnd2
       - lnd-outside-1
-      - svix
   e2e-deps:
     image: busybox
     depends_on:
@@ -41,7 +40,6 @@ services:
       - otel-agent
       - oathkeeper
       - mailslurper
-      - svix
     restart: on-failure:10
   integration-deps:
     image: busybox
@@ -456,22 +454,3 @@ services:
       - SSL_CERTFILE=/tls.cert
       - SSL_KEYFILE=/tls.key
     command: ["Fulcrum", "/fulcrum.conf"]
-
-  svix:
-    image: svix/svix-server
-    platform: linux/amd64
-    environment:
-      WAIT_FOR: "true"
-      SVIX_DB_DSN: "postgresql://postgres:postgres@svix-pg/postgres"
-      SVIX_JWT_SECRET: "8KjzRXrKkd9YFcNyqLSIY8JwiaCeRc6WK4UkMnSW"
-      SVIX_WHITELIST_SUBNETS: "[0.0.0.0/0]"
-      SVIX_QUEUE_TYPE: "memory"
-    depends_on:
-      - svix-pg
-    ports: []
-    extra_hosts: []
-
-  svix-pg:
-    image: postgres:14.1
-    environment:
-      POSTGRES_PASSWORD: postgres

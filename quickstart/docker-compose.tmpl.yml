@@ -83,6 +83,7 @@ services:
   bitcoind: #@ data.values.services["bitcoind"]
   bitcoind-signer: #@ data.values.services["bitcoind-signer"]
   lnd1: #@ data.values.services["lnd1"]
+  lnd2: #@ data.values.services["lnd2"]
   lnd-outside-1: #@ data.values.services["lnd-outside-1"]
   bria: #@ data.values.services["bria"]
   postgres-bria: #@ data.values.services["postgres-bria"]
@@ -93,10 +94,6 @@ services:
 
   #! Otel
   otel-agent: #@ data.values.services["otel-agent"]
-
-  #! Svix / callbacks
-  svix: #@ data.values.services["svix"]
-  svix-pg: #@ data.values.services["svix-pg"]
 
 #@ load("@ytt:overlay", "overlay")
 #@overlay/match by=overlay.all

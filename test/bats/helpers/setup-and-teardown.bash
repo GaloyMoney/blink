@@ -6,7 +6,6 @@ WS_SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_ws_server_pid
 TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
 EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
 SUBSCRIBER_PID_FILE=$REPO_ROOT/test/bats/.gql_subscriber_pid
-CALLBACK_PID_FILE=$REPO_ROOT/test/bats/.callback_pid
 
 METRICS_ENDPOINT="localhost:3000/metrics"
 
@@ -78,11 +77,6 @@ start_exporter() {
   echo $! > $EXPORTER_PID_FILE
 }
 
-start_callback() {
-  background node test/bats/helpers/callback.js > .e2e-callback.log
-  echo $! > $CALLBACK_PID_FILE
-}
-
 stop_server() {
   [[ -f "$SERVER_PID_FILE" ]] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
 }
@@ -101,10 +95,6 @@ stop_exporter() {
 
 stop_subscriber() {
   [[ -f "$SUBSCRIBER_PID_FILE" ]] && kill -9 $(cat $SUBSCRIBER_PID_FILE) > /dev/null || true
-}
-
-stop_callback() {
-  [[ -f "$CALLBACK_PID_FILE" ]] && kill -9 $(cat $CALLBACK_PID_FILE) > /dev/null || true
 }
 
 clear_cache() {
@@ -177,7 +167,7 @@ fund_wallet_from_onchain() {
 
   bitcoin_cli sendtoaddress "$address" "$amount"
   bitcoin_cli -generate 2
-  retry 30 1 check_for_onchain_initiated_settled "$token_name" "$address"
+  retry 15 1 check_for_onchain_initiated_settled "$token_name" "$address"
 }
 
 fund_wallet_intraledger() {

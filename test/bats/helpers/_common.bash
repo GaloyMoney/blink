@@ -14,14 +14,6 @@ BOB_PHONE="+16505554350"
 
 CODE="000000"
 
-if ! type fail &>/dev/null; then
-  fail() {
-    echo "$1"
-    exit 1
-  }
-fi
-
-
 bitcoin_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-1" bitcoin-cli $@
 }
