@@ -2318,14 +2318,13 @@
     "@opentelemetry/semantic-conventions" "^1.0.0"
     tslib "^2.3.1"
 
-"@opentelemetry/instrumentation-net@^0.32.0":
-  version "0.32.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-net/-/instrumentation-net-0.32.0.tgz#8f19cf8c869ece15f61399a4f2d79e4ae0ee6133"
-  integrity sha512-fIgmkTpkdDXlRKUC4X2SdpJJof+KCA7feiBlLXHJ6xcaqBWG/6mt25A1FTyaJiXRWPhk+faGhtMxT0WX2AD3kQ==
+"@opentelemetry/instrumentation-net@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-net/-/instrumentation-net-0.32.1.tgz#7b394b5250f160b46f2363d37c1ebe7c8c1ac6b7"
+  integrity sha512-r9YC8fFDi+B/JiNfMn+vJaOpgdA83bQM3u4mW9mJi2hAI/LcvjJYPx4aTRLWAPSd/HRG/Olzdvx5LdWvzL8LHg==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.41.0"
+    "@opentelemetry/instrumentation" "^0.41.2"
     "@opentelemetry/semantic-conventions" "^1.0.0"
-    tslib "^2.3.1"
 
 "@opentelemetry/instrumentation@0.41.2", "@opentelemetry/instrumentation@^0.41.0", "@opentelemetry/instrumentation@^0.41.2":
   version "0.41.2"
@@ -2472,12 +2471,12 @@
   dependencies:
     tslib "^2.3.1"
 
-"@opentelemetry/semantic-conventions@1.15.1", "@opentelemetry/semantic-conventions@^1.0.0", "@opentelemetry/semantic-conventions@^1.14.0":
+"@opentelemetry/semantic-conventions@1.15.1":
   version "1.15.1"
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.15.1.tgz#3d745996b2bd11095b515515fd3d68d46092a02d"
   integrity sha512-n8Kur1/CZlYG32YCEj30CoUqA8R7UyDVZzoEU6SDP+13+kXDT2kFVu6MpcnEUTyGP3i058ID6Qjp5h6IJxdPPQ==
 
-"@opentelemetry/semantic-conventions@1.15.2":
+"@opentelemetry/semantic-conventions@1.15.2", "@opentelemetry/semantic-conventions@^1.0.0", "@opentelemetry/semantic-conventions@^1.14.0":
   version "1.15.2"
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.15.2.tgz#3bafb5de3e20e841dff6cb3c66f4d6e9694c4241"
   integrity sha512-CjbOKwk2s+3xPIMcd5UNYQzsf+v94RczbdNix9/kQh38WiQkM90sUOi3if8eyHFgiBjBjhwXrA7W3ydiSQP9mw==
