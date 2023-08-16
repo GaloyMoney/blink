@@ -99,3 +99,8 @@ services:
   fulcrum:
     ports:
       - "50001:50001"
+  svix:
+    ports:
+      - "8071:8071"
+    extra_hosts:
+      - "bats-tests:host-gateway"

@@ -180,29 +180,6 @@ services:
       cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
       cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
       /bin/lnd
-  lnd2:
-    image: lightninglabs/lnd:v0.16.2-beta
-    ports:
-    - 10010:10009
-    volumes:
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/lnd/tls.key:/root/.lnd/tls.key
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
-    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
-    depends_on:
-    - bitcoind
-    entrypoint:
-    - /bin/sh
-    - -c
-    command:
-    - |
-      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
-      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
-      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
-      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-      /bin/lnd
   lnd-outside-1:
     image: lightninglabs/lnd:v0.16.2-beta
     ports:
@@ -310,3 +287,20 @@ services:
     - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
     volumes:
     - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
+  svix:
+    image: svix/svix-server
+    platform: linux/amd64
+    environment:
+      WAIT_FOR: "true"
+      SVIX_DB_DSN: postgresql://postgres:postgres@svix-pg/postgres
+      SVIX_JWT_SECRET: 8KjzRXrKkd9YFcNyqLSIY8JwiaCeRc6WK4UkMnSW
+      SVIX_WHITELIST_SUBNETS: '[127.0.0.1/32, 192.168.0.0/16, 172.0.0.0/8]'
+      SVIX_QUEUE_TYPE: memory
+    depends_on:
+    - svix-pg
+    ports:
+    - 8071:8071
+  svix-pg:
+    image: postgres:14.1
+    environment:
+      POSTGRES_PASSWORD: postgres

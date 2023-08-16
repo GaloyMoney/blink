@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: Quickstart (#3042)...'
-      sha: 176666a1006bd556deaa29173173abbb181ae8ab
+      commitTitle: 'feat: callback api (#3043)...'
+      sha: b674f6f9d79f766f11c0e0105027878f38390492
       tags:
-      - 0.11.19
+      - 0.11.27-1-gb674f6f9d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: Quickstart (#3042)...'
-      sha: 176666a1006bd556deaa29173173abbb181ae8ab
+      commitTitle: 'feat: callback api (#3043)...'
+      sha: b674f6f9d79f766f11c0e0105027878f38390492
       tags:
-      - 0.11.19
+      - 0.11.27-1-gb674f6f9d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: Quickstart (#3042)...'
-      sha: 176666a1006bd556deaa29173173abbb181ae8ab
+      commitTitle: 'feat: callback api (#3043)...'
+      sha: b674f6f9d79f766f11c0e0105027878f38390492
       tags:
-      - 0.11.19
+      - 0.11.27-1-gb674f6f9d
     path: ./
   path: ./graphql
 kind: LockConfig
