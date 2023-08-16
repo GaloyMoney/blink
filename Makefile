@@ -158,6 +158,10 @@ integration-in-ci:
 # heap allocation issue has been resolved in dependencies (fails at 2048).
 execute-integration-from-within-container:
 	yarn install && \
+	echo $SVIX_SECRET
+	echo $SVIX_ENDPOINT
+	export SVIX_ENDPOINT=""
+	export SVIX_SECRET=""
 	NODE_OPTIONS="--max-old-space-size=6144" \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/legacy-integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
 	NODE_OPTIONS="--max-old-space-size=6144" \
