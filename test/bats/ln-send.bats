@@ -183,6 +183,7 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$recipient_token_name" "$payment_hash"
 }
 
 @test "ln-send: intraledger settled - lnInvoicePaymentSend from usd to btc" {
@@ -223,6 +224,7 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$recipient_token_name" "$payment_hash"
 }
 
 @test "ln-send: intraledger settled - lnNoAmountInvoicePaymentSend from btc to usd" {
@@ -259,6 +261,7 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$recipient_token_name" "$payment_hash"
 }
 
 @test "ln-send: intraledger settled - lnNoAmountUsdInvoicePaymentSend from usd to usd" {
@@ -295,4 +298,5 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$recipient_token_name" "$payment_hash"
 }
