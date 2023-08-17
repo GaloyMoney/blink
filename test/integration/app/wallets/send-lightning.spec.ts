@@ -4,6 +4,7 @@ import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import {
   MaxFeeTooLargeForRoutelessPaymentError,
+  PaymentSendStatus,
   decodeInvoice,
 } from "@domain/bitcoin/lightning"
 import { DisplayCurrency, toCents } from "@domain/fiat"
@@ -24,6 +25,7 @@ import { LedgerService } from "@services/ledger"
 import { Transaction } from "@services/ledger/schema"
 import { WalletInvoice } from "@services/mongoose/schema"
 import * as LndImpl from "@services/lnd"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
 import {
   createMandatoryUsers,
@@ -65,6 +67,8 @@ beforeEach(() => {
 afterEach(async () => {
   await Transaction.deleteMany({ memo })
   await Transaction.deleteMany({ memoPayer: memo })
+  await Transaction.deleteMany({ hash: lnInvoice.paymentHash })
+  await Transaction.deleteMany({ hash: noAmountLnInvoice.paymentHash })
   await WalletInvoice.deleteMany({})
 })
 
@@ -479,6 +483,68 @@ describe("initiated via lightning", () => {
       // Restore system state
       lndServiceSpy.mockReset()
     })
+
+    it("calls sendNotification on successful intraledger send", async () => {
+      // Setup mocks
+      const sendNotification = jest.fn()
+      const pushNotificationsServiceSpy = jest
+        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+        .mockImplementationOnce(() => ({ sendNotification }))
+
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [noAmountLnInvoice.destination],
+        cancelInvoice: () => true,
+      })
+
+      // Create users
+      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+        await createRandomUserAndWallets()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Persist invoice as self-invoice
+      const persisted = await WalletInvoicesRepository().persistNew({
+        paymentHash: noAmountLnInvoice.paymentHash,
+        secret: "secret" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: noAmountLnInvoice.destination,
+        recipientWalletDescriptor: usdWalletDescriptor,
+        paid: false,
+      })
+      if (persisted instanceof Error) throw persisted
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Execute pay
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+      })
+      expect(paymentResult).toEqual(PaymentSendStatus.Success)
+
+      // Expect sent notification
+      expect(sendNotification.mock.calls.length).toBe(1)
+      expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
+
+      // Restore system state
+      pushNotificationsServiceSpy.mockReset()
+      lndServiceSpy.mockReset()
+    })
   })
 })
 
@@ -541,6 +607,49 @@ describe("initiated intraledger", () => {
         senderAccount: newAccount,
       })
       expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
+    })
+
+    it("calls sendNotification on successful intraledger send", async () => {
+      // Setup mocks
+      const sendNotification = jest.fn()
+      const pushNotificationsServiceSpy = jest
+        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+        .mockImplementationOnce(() => ({ sendNotification }))
+
+      // Create users
+      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+        await createRandomUserAndWallets()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Pay intraledger
+      const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+        recipientWalletId: usdWalletDescriptor.id,
+        memo,
+        amount,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+      })
+      expect(paymentResult).toEqual(PaymentSendStatus.Success)
+
+      // Expect sent notification
+      expect(sendNotification.mock.calls.length).toBe(1)
+      expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
+
+      // Restore system state
+      pushNotificationsServiceSpy.mockReset()
     })
   })
 })
