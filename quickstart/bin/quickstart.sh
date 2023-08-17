@@ -67,6 +67,9 @@ main() {
 
   initialize_user_from_onchain "alice" "+16505554328" "000000" 
   echo "Alice account set up, token: $(read_value "alice")"
+  
+  echo "TOKEN_ALICE=$(read_value "alice")"
+  export TOKEN_ALICE=$(read_value "alice")
 }
 
 main
