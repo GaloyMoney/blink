@@ -363,8 +363,6 @@ usd_amount=50
 }
 
 @test "ln-send: ln settled - settle failed and then pending-to-failed payment" {
-  skip "failing on concourse"
-
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
