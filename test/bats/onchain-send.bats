@@ -13,6 +13,7 @@ setup_file() {
   start_server
 
   initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+  user_update_username "$ALICE_TOKEN_NAME"
   initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$CODE"
 }
 
@@ -134,21 +135,33 @@ teardown() {
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
-@test "onchain-send: settle intraledger" {
+@test "onchain-send: settle intraledger, with no contacts check" {
   alice_token_name="$ALICE_TOKEN_NAME"
   alice_btc_wallet_name="$alice_token_name.btc_wallet_id"
   alice_usd_wallet_name="$alice_token_name.usd_wallet_id"
 
-  bob_token_name="$BOB_TOKEN_NAME"
-  bob_btc_wallet_name="$bob_token_name.btc_wallet_id"
+  recipient_token_name="user_$RANDOM"
+  recipient_phone="$(random_phone)"
+  login_user \
+    "$recipient_token_name" \
+    "$recipient_phone"  \
+    "$CODE"
+  user_update_username "$recipient_token_name"
+  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+
+  # Check is not contact before send
+  run is_contact "$alice_token_name" "$recipient_token_name"
+  [[ "$status" -ne "0" ]] || exit 1
+  run is_contact "$recipient_token_name" "$alice_token_name"
+  [[ "$status" -ne "0" ]] || exit 1
 
   # mutation: onChainPaymentSend, alice btc -> bob btc
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$bob_token_name" 'on-chain-address-create' "$variables"
+  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
   on_chain_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_payment_send_address}" != "null" ]] || exit 1
 
@@ -167,13 +180,19 @@ teardown() {
   settled_status="$(get_from_transaction_by_address $on_chain_payment_send_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 
+  # Check is not contact after send
+  run is_contact "$alice_token_name" "$recipient_token_name"
+  [[ "$status" -ne "0" ]] || exit 1
+  run is_contact "$recipient_token_name" "$alice_token_name"
+  [[ "$status" -ne "0" ]] || exit 1
+
   # mutation: onChainUsdPaymentSend, alice usd -> bob btc
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$bob_token_name" 'on-chain-address-create' "$variables"
+  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
   on_chain_usd_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_usd_payment_send_address}" != "null" ]] || exit 1
 
@@ -195,10 +214,10 @@ teardown() {
   # mutation: onChainUsdPaymentSendAsBtcDenominated, alice usd -> bob btc
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
-  exec_graphql "$bob_token_name" 'on-chain-address-create' "$variables"
+  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
   on_chain_usd_payment_send_as_btc_denominated_address="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_usd_payment_send_as_btc_denominated_address}" != "null" ]] || exit 1
 
@@ -229,15 +248,15 @@ teardown() {
 
   variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
     --arg address "$on_chain_payment_send_all_address" \
     '{input: {walletId: $wallet_id, address: $address}}'
   )
-  exec_graphql "$bob_token_name" 'on-chain-payment-send-all' "$variables"
+  exec_graphql "$recipient_token_name" 'on-chain-payment-send-all' "$variables"
   send_status="$(graphql_output '.data.onChainPaymentSendAll.status')"
   [[ "${send_status}" = "SUCCESS" ]] || exit 1
 
-  exec_graphql "$bob_token_name" 'transactions' '{"first": 1}'
+  exec_graphql "$recipient_token_name" 'transactions' '{"first": 1}'
   settled_status="$(get_from_transaction_by_address $on_chain_payment_send_all_address '.status')"
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
