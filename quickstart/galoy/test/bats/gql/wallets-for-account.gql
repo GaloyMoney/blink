@@ -4,6 +4,7 @@ query me {
       wallets {
         id
         walletCurrency
+        balance
       }
     }
   }

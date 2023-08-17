@@ -136,7 +136,7 @@ login_user() {
   [[ -n "${auth_token}" && "${auth_token}" != "null" ]]
   cache_value "$token_name" "$auth_token"
 
-  exec_graphql "$token_name" 'wallet-ids-for-account'
+  exec_graphql "$token_name" 'wallets-for-account'
 
   btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
   [[ "${btc_wallet_id}" != "null" ]]

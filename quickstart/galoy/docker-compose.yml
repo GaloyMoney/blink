@@ -19,29 +19,7 @@ services:
       - lnd2
       - lnd-outside-1
       - svix
-  e2e-deps:
-    image: busybox
-    depends_on:
-      - apollo-router
-      - kratos
-      - price
-      - price-history
-      - price-history-migrate
-      - stablesats
-      - bria
-      - redis
-      - mongodb
-      - postgres-price-history
-      - bitcoind
-      - bitcoind-signer
-      - lnd1
-      - lnd2
-      - lnd-outside-1
       - lnd-outside-2
-      - otel-agent
-      - oathkeeper
-      - mailslurper
-      - svix
     restart: on-failure:10
   integration-deps:
     image: busybox
@@ -325,17 +303,6 @@ services:
       --tlsautorefresh\
       --restlisten=0.0.0.0:8081\
       --rpclisten=0.0.0.0:11010"
-  e2e-tests:
-    image: us.gcr.io/galoy-org/nodejs-concourse
-    ports: []
-    depends_on:
-      - e2e-deps
-    command: ["make", "execute-e2e-from-within-container"]
-    working_dir: /repo
-    env_file:
-      - ${TMP_ENV_CI:-.env.ci}
-    volumes:
-      - ./:/repo
   bats-tests:
     image: us.gcr.io/galoy-org/nodejs-concourse
     ports: []
