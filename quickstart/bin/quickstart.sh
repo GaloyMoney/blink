@@ -29,17 +29,17 @@ main() {
   echo "Checking that all services are up and running"
   echo
   echo "Seeding some regtest blocks..."
-  bitcoind_init > /dev/null 2>&1
+  bitcoind_init
   echo "DONE"
   echo "Getting balance from bria..."
   for i in {1..20}; do
-    bria_cli wallet-balance -w dev-wallet > /dev/null 2>&1 && break
+    bria_cli wallet-balance -w dev-wallet && break
     sleep 1
   done
-  bria_cli wallet-balance -w dev-wallet > /dev/null 2>&1 || exit 1
+  bria_cli wallet-balance -w dev-wallet || exit 1
   echo "DONE"
   echo "Running getinfo on lnd..."
-  lnd_cli getinfo > /dev/null 2>&1
+  lnd_cli getinfo
   echo "DONE"
   echo "Opening lnd-outside -> lnd channel"
   init_lnd_channel
@@ -64,7 +64,9 @@ main() {
     login_user "alice" "+16505554328" "000000" && break
     sleep 1
   done
-  echo "DONE"
+
+  initialize_user_from_onchain "alice" "+16505554328" "000000" 
+  echo "Alice account set up, token: $(read_value "alice")"
 }
 
 main
