@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: fix callback 2 (#3062)...'
-      sha: cd896b18743be6f45bb3457e9722225a6836d313
+      commitTitle: 'ci: fix bats test for now (#3076)...'
+      sha: 9e5492965f845b453caef33a60ff2259d78ac6e8
       tags:
-      - 0.11.27-6-gcd896b187
+      - 0.11.34-4-g9e5492965
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: fix callback 2 (#3062)...'
-      sha: cd896b18743be6f45bb3457e9722225a6836d313
+      commitTitle: 'ci: fix bats test for now (#3076)...'
+      sha: 9e5492965f845b453caef33a60ff2259d78ac6e8
       tags:
-      - 0.11.27-6-gcd896b187
+      - 0.11.34-4-g9e5492965
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: fix callback 2 (#3062)...'
-      sha: cd896b18743be6f45bb3457e9722225a6836d313
+      commitTitle: 'ci: fix bats test for now (#3076)...'
+      sha: 9e5492965f845b453caef33a60ff2259d78ac6e8
       tags:
-      - 0.11.27-6-gcd896b187
+      - 0.11.34-4-g9e5492965
     path: ./
   path: ./graphql
 kind: LockConfig
