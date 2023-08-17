@@ -21,7 +21,6 @@
     "test:unit": ". ./.envrc && LOGLEVEL=warn jest --config ./test/unit/jest.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
     "test:legacy-integration": ". ./.envrc && LOGLEVEL=warn jest --config ./test/legacy-integration/jest.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l",
     "test:integration": ". ./.envrc && LOGLEVEL=warn jest --config ./test/integration/jest.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l",
-    "test:e2e": ". ./.envrc && LOGLEVEL=warn jest --config ./test/e2e/jest.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l",
     "build-docs": "npx spectaql spectaql-config.yml -1",
     "fix-yaml": "prettier --write '**/*.(yaml|yml)'",
     "check-yaml": "prettier --check '**/*.(yaml|yml)'",

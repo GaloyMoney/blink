@@ -38,3 +38,5 @@ generated.gql
 -
 .e2e-*.log
 .*_pid
+
+junit.xml

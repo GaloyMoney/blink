@@ -11,7 +11,6 @@
   - [Testing](#testing)
     - [Run unit tests](#run-unit-tests)
     - [Run integration tests](#run-integration-tests)
-    - [Run e2e tests](#run-e2e-tests)
     - [Run specific test file](#run-specific-test-file)
       - [Unit](#unit)
       - [Integration](#integration)
@@ -73,14 +72,7 @@ $ make start
 
 After running `make start-deps` or `make reset-deps`, the lightning network - running on regtest - will not have any channel, and the mongodb database - that includes some mandatory accounts for Galoy to work - will be empty.
 
-To seed the channels and accounts, run: `TEST="with-auth" make e2e`
-
-You can then login with the following credentials to get an account with an existing balance: `phone: +16505554328`, `code: 321321`
-
-Alernatively, to start the GraphQL server in watch mode (with automatic restart on changes):
-```
-$ make watch
-```
+You can then login with the following credentials to get an account with an existing balance: `phone: +16505554328`, `code: 000000`
 
 ### Config
 There is a sample configuration file `galoy.yaml`. This is the applications default configuration and contains settings for  LND, test accounts, rate limits, fees and more.
@@ -151,21 +143,6 @@ $ make integration
 The  integration tests are *not* fully idempotent (yet) so currently to re-run the tests, run:
 ```
 $ make reset-integration
-```
-
-### Run e2e tests
-
-To execute the e2e tests [runtime dependencies](#runtime-dependencies) must be running.
-
-```bash
-$ yarn test:e2e
-# or
-$ make e2e
-```
-
-The e2e tests should be able to run multiple times without resetting dependencies, however they are *not* fully idempotent so if you are having issues you can reset the dependencies and run again with:
-```
-$ make reset-e2e
 ```
 
 ### Run specific test file
