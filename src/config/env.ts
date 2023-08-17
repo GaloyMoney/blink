@@ -128,7 +128,7 @@ export const env = createEnv({
     PROXY_CHECK_APIKEY: z.string().min(1).optional(),
 
     SVIX_SECRET: z.string().min(1).optional(),
-    SVIX_ENDPOINT: z.string().url().optional(),
+    SVIX_ENDPOINT: z.string().optional().url(),
   },
 
   runtimeEnvStrict: {
