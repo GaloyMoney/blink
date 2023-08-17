@@ -118,9 +118,8 @@ export const memoSharingConfig = {
 } as const
 
 export const getCallbackServiceConfig = (): SvixConfig => {
-  // FIXME type when env.ts PR is merged
-  const secret = process.env.SVIX_SECRET as string
-  const endpoint = process.env.SVIX_ENDPOINT as string
+  const secret = env.SVIX_SECRET
+  const endpoint = env.SVIX_ENDPOINT
   return { secret, endpoint }
 }
 

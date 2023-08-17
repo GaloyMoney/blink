@@ -126,6 +126,9 @@ export const env = createEnv({
     MATTERMOST_WEBHOOK_URL: z.string().min(1).optional(),
 
     PROXY_CHECK_APIKEY: z.string().min(1).optional(),
+
+    SVIX_SECRET: z.string().min(1).optional(),
+    SVIX_ENDPOINT: z.string().url().optional(),
   },
 
   runtimeEnvStrict: {
@@ -221,5 +224,8 @@ export const env = createEnv({
     MATTERMOST_WEBHOOK_URL: process.env.MATTERMOST_WEBHOOK_URL,
 
     PROXY_CHECK_APIKEY: process.env.PROXY_CHECK_APIKEY,
+
+    SVIX_SECRET: process.env.SVIX_SECRET,
+    SVIX_ENDPOINT: process.env.SVIX_ENDPOINT,
   },
 })
