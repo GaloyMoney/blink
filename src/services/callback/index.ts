@@ -2,6 +2,11 @@ import { ApplicationIn, Svix } from "svix"
 
 import { baseLogger } from "@services/logger"
 
+import {
+  addAttributesToCurrentSpan,
+  wrapAsyncFunctionsToRunInSpan,
+} from "@services/tracing"
+
 import { UnknownSvixError } from "./error"
 
 interface SvixErrorBody {
@@ -17,6 +22,19 @@ interface SvixError extends Error {
 export type SvixConfig = {
   secret: string
   endpoint: string
+}
+
+function prefixObjectKeys(
+  obj: Record<string, string>,
+  prefix: string,
+): Record<string, string> {
+  return Object.keys(obj).reduce(
+    (acc, key) => {
+      acc[`${prefix}${key}`] = obj[key]
+      return acc
+    },
+    {} as Record<string, string>,
+  )
 }
 
 export const CallbackService = (config: SvixConfig) => {
@@ -47,10 +65,11 @@ export const CallbackService = (config: SvixConfig) => {
     payload: Record<string, string>
   }) => {
     const accountPath = `account.${accountUUID}`
+    addAttributesToCurrentSpan({ "callback.application": accountPath })
 
     try {
       const application: ApplicationIn = {
-        name: `callback for account ${accountUUID}`,
+        name: accountPath,
         uid: accountPath,
       }
 
@@ -67,6 +86,13 @@ export const CallbackService = (config: SvixConfig) => {
       const res = await svix.message.create(accountPath, {
         eventType,
         payload: { ...payload, accountId: accountUUID, eventType },
+      })
+
+      const prefixedPayload = prefixObjectKeys(payload, "callback.payload.")
+      addAttributesToCurrentSpan({
+        ...prefixedPayload,
+        ["callback.accountId"]: accountUUID,
+        ["callback.eventType"]: eventType,
       })
       baseLogger.info({ res }, `message sent successfully to ${accountPath}`)
       return res
@@ -113,5 +139,8 @@ export const CallbackService = (config: SvixConfig) => {
     }
   }
 
-  return { sendMessage, getWebsocketPortal, addEndpoint, listEndpoints, removeEndpoint }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.callback",
+    fns: { sendMessage, getWebsocketPortal, addEndpoint, listEndpoints, removeEndpoint },
+  })
 }
