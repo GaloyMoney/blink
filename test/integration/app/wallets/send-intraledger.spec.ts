@@ -2,24 +2,39 @@ import { Accounts, Payments } from "@app"
 
 import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
+import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { DisplayCurrency, toCents } from "@domain/fiat"
-import { InactiveAccountError } from "@domain/errors"
+import { ZeroAmountForUsdRecipientError } from "@domain/payments"
+import { InactiveAccountError, SelfPaymentError } from "@domain/errors"
 
 import { AccountsRepository } from "@services/mongoose"
 import { Transaction } from "@services/ledger/schema"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import {
   createMandatoryUsers,
   createRandomUserAndBtcWallet,
+  createRandomUserAndWallets,
   recordReceiveLnPayment,
 } from "test/helpers"
+
+let memo
 
 const calc = AmountCalculator()
 
 beforeAll(async () => {
   await createMandatoryUsers()
+})
+
+beforeEach(() => {
+  memo = randomIntraLedgerMemo()
+})
+
+afterEach(async () => {
+  await Transaction.deleteMany({ memo })
+  await Transaction.deleteMany({ memoPayer: memo })
 })
 
 const amount = toSats(10040)
@@ -47,13 +62,11 @@ const receiveDisplayAmounts = {
   displayCurrency: DisplayCurrency.Usd,
 }
 
-const randomOnChainMemo = () =>
-  "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
+const randomIntraLedgerMemo = () =>
+  "this is my intraledger memo #" + (Math.random() * 1_000_000).toFixed()
 
 describe("intraLedgerPay", () => {
   it("fails if sender account is locked", async () => {
-    const memo = randomOnChainMemo()
-
     const senderWalletDescriptor = await createRandomUserAndBtcWallet()
     const senderAccount = await AccountsRepository().findById(
       senderWalletDescriptor.accountId,
@@ -95,14 +108,9 @@ describe("intraLedgerPay", () => {
       memo,
     })
     expect(res).toBeInstanceOf(InactiveAccountError)
-
-    // Restore system state
-    await Transaction.deleteMany({ memo })
   })
 
   it("fails if recipient account is locked", async () => {
-    const memo = randomOnChainMemo()
-
     const senderWalletDescriptor = await createRandomUserAndBtcWallet()
     const senderAccount = await AccountsRepository().findById(
       senderWalletDescriptor.accountId,
@@ -143,8 +151,101 @@ describe("intraLedgerPay", () => {
       memo,
     })
     expect(res).toBeInstanceOf(InactiveAccountError)
+  })
+
+  it("fails if sends to self", async () => {
+    // Create users
+    const newWalletDescriptor = await createRandomUserAndBtcWallet()
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
+    if (newAccount instanceof Error) throw newAccount
+
+    // Fund balance for send
+    const receive = await recordReceiveLnPayment({
+      walletDescriptor: newWalletDescriptor,
+      paymentAmount: receiveAmounts,
+      bankFee: receiveBankFee,
+      displayAmounts: receiveDisplayAmounts,
+      memo,
+    })
+    if (receive instanceof Error) throw receive
+
+    // Pay intraledger
+    const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+      recipientWalletId: newWalletDescriptor.id,
+      memo,
+      amount,
+      senderWalletId: newWalletDescriptor.id,
+      senderAccount: newAccount,
+    })
+    expect(paymentResult).toBeInstanceOf(SelfPaymentError)
+  })
+
+  it("fails to send less-than-1-cent amount to usd recipient", async () => {
+    // Create users
+    const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+      await createRandomUserAndWallets()
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
+    if (newAccount instanceof Error) throw newAccount
+
+    // Fund balance for send
+    const receive = await recordReceiveLnPayment({
+      walletDescriptor: usdWalletDescriptor,
+      paymentAmount: receiveAmounts,
+      bankFee: receiveBankFee,
+      displayAmounts: receiveDisplayAmounts,
+      memo,
+    })
+    if (receive instanceof Error) throw receive
+
+    // Pay intraledger
+    const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+      recipientWalletId: usdWalletDescriptor.id,
+      memo,
+      amount: 1,
+      senderWalletId: newWalletDescriptor.id,
+      senderAccount: newAccount,
+    })
+    expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
+  })
+
+  it("calls sendNotification on successful intraledger send", async () => {
+    // Setup mocks
+    const sendNotification = jest.fn()
+    const pushNotificationsServiceSpy = jest
+      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+      .mockImplementationOnce(() => ({ sendNotification }))
+
+    // Create users
+    const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+      await createRandomUserAndWallets()
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
+    if (newAccount instanceof Error) throw newAccount
+
+    // Fund balance for send
+    const receive = await recordReceiveLnPayment({
+      walletDescriptor: newWalletDescriptor,
+      paymentAmount: receiveAmounts,
+      bankFee: receiveBankFee,
+      displayAmounts: receiveDisplayAmounts,
+      memo,
+    })
+    if (receive instanceof Error) throw receive
+
+    // Pay intraledger
+    const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+      recipientWalletId: usdWalletDescriptor.id,
+      memo,
+      amount,
+      senderWalletId: newWalletDescriptor.id,
+      senderAccount: newAccount,
+    })
+    expect(paymentResult).toEqual(PaymentSendStatus.Success)
+
+    // Expect sent notification
+    expect(sendNotification.mock.calls.length).toBe(1)
+    expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
 
     // Restore system state
-    await Transaction.deleteMany({ memo })
+    pushNotificationsServiceSpy.mockReset()
   })
 })
