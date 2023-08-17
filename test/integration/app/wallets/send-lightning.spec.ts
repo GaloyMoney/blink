@@ -20,10 +20,15 @@ import {
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 import * as LnFeesImpl from "@domain/payments/ln-fees"
 
-import { AccountsRepository, WalletInvoicesRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  LnPaymentsRepository,
+  WalletInvoicesRepository,
+} from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
 import { Transaction } from "@services/ledger/schema"
 import { WalletInvoice } from "@services/mongoose/schema"
+import { LnPayment } from "@services/lnd/schema"
 import * as LndImpl from "@services/lnd"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
@@ -60,8 +65,9 @@ beforeAll(async () => {
   noAmountLnInvoice = noAmountInvoice
 })
 
-beforeEach(() => {
+beforeEach(async () => {
   memo = randomLightningMemo()
+  await LnPayment.deleteMany({})
 })
 
 afterEach(async () => {
@@ -70,6 +76,7 @@ afterEach(async () => {
   await Transaction.deleteMany({ hash: lnInvoice.paymentHash })
   await Transaction.deleteMany({ hash: noAmountLnInvoice.paymentHash })
   await WalletInvoice.deleteMany({})
+  await LnPayment.deleteMany({})
 })
 
 const amount = toSats(10040)
@@ -312,6 +319,57 @@ describe("initiated via lightning", () => {
 
       // Restore system state
       lndFeesSpy.mockReset()
+      lndServiceSpy.mockReset()
+    })
+
+    it("persists ln-payment on successful ln send", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [],
+        payInvoiceViaPaymentDetails: () => ({
+          roundedUpFee: toSats(0),
+          revealedPreImage: "revealedPreImage" as RevealedPreImage,
+          sentFromPubkey: DEFAULT_PUBKEY,
+        }),
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Execute pay
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+      })
+      expect(paymentResult).toEqual(PaymentSendStatus.Success)
+
+      // Check lnPayment collection after
+      const lnPaymentAfter = await LnPaymentsRepository().findByPaymentHash(
+        noAmountLnInvoice.paymentHash,
+      )
+      if (lnPaymentAfter instanceof Error) throw lnPaymentAfter
+      expect(lnPaymentAfter.paymentHash).toEqual(noAmountLnInvoice.paymentHash)
+
+      // Restore system state
       lndServiceSpy.mockReset()
     })
   })
