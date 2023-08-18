@@ -55,7 +55,7 @@ export const env = createEnv({
 
     MONGODB_CON: z.string().url(),
 
-    GOOGLE_APPLICATION_CREDENTIALS_IS_SET: z.boolean().default(false),
+    GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
 
     REDIS_TYPE: z.enum(["sentinel", "standalone"]).default("sentinel"),
 
@@ -172,7 +172,7 @@ export const env = createEnv({
 
     MONGODB_CON: process.env.MONGODB_CON,
 
-    GOOGLE_APPLICATION_CREDENTIALS_IS_SET: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 
     REDIS_MASTER_NAME: process.env.REDIS_MASTER_NAME,
     REDIS_PASSWORD: process.env.REDIS_PASSWORD,
