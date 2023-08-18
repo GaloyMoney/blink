@@ -4,7 +4,7 @@ import * as PaymentsHelpers from "@app/payments/helpers"
 import { AccountLimitsChecker } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
-import { InvalidFeeProbeStateError, PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { WalletCurrency } from "@domain/shared"
 
 import { LndService } from "@services/lnd"
@@ -18,7 +18,6 @@ import {
   createUserAndWalletFromPhone,
   fundWalletIdFromOnchain,
   getAccountByPhone,
-  getBalanceHelper,
   getDefaultWalletIdByPhone,
   getTransactionsForWalletId,
   getUsdWalletIdByPhone,
@@ -78,12 +77,10 @@ const phoneH = randomPhone()
 let accountA: Account
 let accountB: Account
 let accountC: Account
-let accountH: Account
 
 let walletIdA: WalletId
 let walletIdB: WalletId
 let walletIdC: WalletId
-let walletIdH: WalletId
 let walletIdUsdB: WalletId
 
 let usernameA: Username
@@ -101,13 +98,11 @@ beforeAll(async () => {
   accountA = await getAccountByPhone(phoneA)
   accountB = await getAccountByPhone(phoneB)
   accountC = await getAccountByPhone(phoneC)
-  accountH = await getAccountByPhone(phoneH)
 
   walletIdA = await getDefaultWalletIdByPhone(phoneA)
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
   walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
   walletIdC = await getDefaultWalletIdByPhone(phoneC)
-  walletIdH = await getDefaultWalletIdByPhone(phoneH)
 
   await fundWalletIdFromOnchain({
     walletId: walletIdA,
@@ -184,43 +179,6 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txns.length).toBeGreaterThan(0)
     const txn = txns[0]
     expect(txn.memo).toBe(memoFromUser)
-  })
-
-  it("sends balance amount accounting for fee", async () => {
-    const res = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: walletIdH,
-      memo: "",
-      amount: toSats(1000),
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(res).not.toBeInstanceOf(Error)
-    if (res instanceof Error) return res
-
-    const balanceBefore = await getBalanceHelper(walletIdH)
-    const { request } = await createInvoice({ lnd: lndOutside1, tokens: balanceBefore })
-
-    const { result: fee, error } = await Payments.getLightningFeeEstimationForBtcWallet({
-      walletId: walletIdH,
-      uncheckedPaymentRequest: request,
-    })
-    if (error instanceof Error) throw error
-    expect(fee).not.toBeNull()
-    if (fee === null) throw new InvalidFeeProbeStateError()
-    expect(fee.amount).toBe(0n)
-
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: walletIdH,
-      senderAccount: accountH,
-    })
-    if (paymentResult instanceof Error) return paymentResult
-    expect(paymentResult).not.toBeInstanceOf(Error)
-    expect(paymentResult).toStrictEqual(PaymentSendStatus.Success)
-
-    const balanceAfter = await getBalanceHelper(walletIdH)
-    expect(balanceAfter).toBe(0)
   })
 })
 
