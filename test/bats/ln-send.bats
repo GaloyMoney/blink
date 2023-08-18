@@ -64,6 +64,37 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
+@test "ln-send: lightning settled - lnInvoicePaymentSend from btc, no fee probe" {
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  initial_balance="$(balance_for_wallet $token_name 'BTC')"
+
+  invoice_response="$(lnd_outside_cli addinvoice --amt $btc_amount)"
+  payment_request="$(echo $invoice_response | jq -r '.payment_request')"
+  payment_hash=$(echo $invoice_response | jq -r '.r_hash')
+  [[ "${payment_request}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request}}'
+  )
+
+  exec_graphql "$token_name" 'ln-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for fee reimbursement
+  final_balance="$(balance_for_wallet $token_name 'BTC')"
+  diff="$(( $initial_balance - $final_balance ))"
+  [[ "$diff" == "$btc_amount" ]] || exit 1
+}
+
 @test "ln-send: lightning settled - lnInvoicePaymentSend from usd" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
@@ -90,6 +121,38 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+}
+
+@test "ln-send: lightning settled - lnInvoicePaymentSend from usd, no fee probe" {
+  token_name="$ALICE_TOKEN_NAME"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  initial_balance="$(balance_for_wallet $token_name 'USD')"
+
+  invoice_response="$(lnd_outside_cli addinvoice --amt $btc_amount)"
+  payment_request="$(echo $invoice_response | jq -r '.payment_request')"
+  payment_hash=$(echo $invoice_response | jq -r '.r_hash')
+  [[ "${payment_request}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request}}'
+  )
+
+  exec_graphql "$token_name" 'ln-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for fee reimbursement
+  final_balance="$(balance_for_wallet $token_name 'USD')"
+  diff="$(( $initial_balance - $final_balance ))"
+  # TODO: find a better way to check reimbursements here than hardcoded converted usd amount
+  [[ "$diff" == "21" ]] || exit 1
 }
 
 @test "ln-send: lightning settled - lnNoAmountInvoicePaymentSend" {
@@ -121,6 +184,38 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
+@test "ln-send: lightning settled - lnNoAmountInvoicePaymentSend, no fee probe" {
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  initial_balance="$(balance_for_wallet $token_name 'BTC')"
+
+  invoice_response="$(lnd_outside_cli addinvoice)"
+  payment_request="$(echo $invoice_response | jq -r '.payment_request')"
+  payment_hash=$(echo $invoice_response | jq -r '.r_hash')
+  [[ "${payment_request}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    --arg amount $btc_amount \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
+  )
+
+  exec_graphql "$token_name" 'ln-no-amount-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for fee reimbursement
+  final_balance="$(balance_for_wallet $token_name 'BTC')"
+  diff="$(( $initial_balance - $final_balance ))"
+  [[ "$diff" == "$btc_amount" ]] || exit 1
+}
+
 @test "ln-send: lightning settled - lnNoAmountUsdInvoicePaymentSend" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
@@ -148,6 +243,38 @@ usd_amount=50
 
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+}
+
+@test "ln-send: lightning settled - lnNoAmountUsdInvoicePaymentSend, no fee probe" {
+  token_name="$ALICE_TOKEN_NAME"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  initial_balance="$(balance_for_wallet $token_name 'USD')"
+
+  invoice_response="$(lnd_outside_cli addinvoice)"
+  payment_request="$(echo $invoice_response | jq -r '.payment_request')"
+  payment_hash=$(echo $invoice_response | jq -r '.r_hash')
+  [[ "${payment_request}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    --arg amount $usd_amount \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
+  )
+
+  exec_graphql "$token_name" 'ln-no-amount-usd-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnNoAmountUsdInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for fee reimbursement
+  final_balance="$(balance_for_wallet $token_name 'USD')"
+  diff="$(( $initial_balance - $final_balance ))"
+    [[ "$diff" == "$usd_amount" ]] || exit 1
 }
 
 @test "ln-send: intraledger settled - lnInvoicePaymentSend from btc to btc, with contacts check" {
