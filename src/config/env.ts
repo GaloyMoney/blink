@@ -11,7 +11,6 @@ export const env = createEnv({
 
   server: {
     COMMITHASH: z.string().default("dev"),
-    BUILDTIME: z.string().min(1),
     HELMREVISION: z.string().min(1),
 
     LOGLEVEL: z
@@ -133,7 +132,6 @@ export const env = createEnv({
 
   runtimeEnvStrict: {
     COMMITHASH: process.env.COMMITHASH,
-    BUILDTIME: process.env.BUILDTIME,
     HELMREVISION: process.env.HELMREVISION,
 
     LOGLEVEL: process.env.LOGLEVEL,
