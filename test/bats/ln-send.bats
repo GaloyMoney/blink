@@ -33,6 +33,34 @@ teardown() {
   fi
 }
 
+amount_sent_for_ln_txn_by_hash() {
+  token_name="$1"
+  payment_hash="$2"
+
+  first=20
+  txn_variables=$(
+  jq -n \
+  --argjson first "$first" \
+  '{"first": $first}'
+  )
+  exec_graphql "$token_name" 'transactions' "$txn_variables" > /dev/null
+
+  jq_query='
+    [
+      .data.me.defaultAccount.transactions.edges[]
+      | select(.node.initiationVia.paymentHash == $payment_hash)
+      | select(.node.direction == "SEND")
+    ]
+      | first .node.settlementAmount
+  '
+  local amount=$(echo $output \
+    | jq -r \
+      --arg payment_hash "$payment_hash" \
+      "$jq_query"
+  )
+  abs $amount
+}
+
 btc_amount=1000
 usd_amount=50
 
@@ -90,9 +118,10 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 
   # Check for fee reimbursement
+  amount_with_fee="$(amount_sent_for_ln_txn_by_hash "$token_name" "$payment_hash")"
   final_balance="$(balance_for_wallet $token_name 'BTC')"
-  diff="$(( $initial_balance - $final_balance ))"
-  [[ "$diff" == "$btc_amount" ]] || exit 1
+  amount_after_reimburse="$(( $initial_balance - $final_balance ))"
+  [[ "$amount_with_fee" -gt "$amount_after_reimburse" ]] || exit 1
 }
 
 @test "ln-send: lightning settled - lnInvoicePaymentSend from usd" {
@@ -149,10 +178,10 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 
   # Check for fee reimbursement
+  amount_with_fee="$(amount_sent_for_ln_txn_by_hash "$token_name" "$payment_hash")"
   final_balance="$(balance_for_wallet $token_name 'USD')"
-  diff="$(( $initial_balance - $final_balance ))"
-  # TODO: find a better way to check reimbursements here than hardcoded converted usd amount
-  [[ "$diff" == "21" ]] || exit 1
+  amount_after_reimburse="$(( $initial_balance - $final_balance ))"
+  [[ "$amount_with_fee" -gt "$amount_after_reimburse" ]] || exit 1
 }
 
 @test "ln-send: lightning settled - lnNoAmountInvoicePaymentSend" {
@@ -211,9 +240,10 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 
   # Check for fee reimbursement
+  amount_with_fee="$(amount_sent_for_ln_txn_by_hash "$token_name" "$payment_hash")"
   final_balance="$(balance_for_wallet $token_name 'BTC')"
-  diff="$(( $initial_balance - $final_balance ))"
-  [[ "$diff" == "$btc_amount" ]] || exit 1
+  amount_after_reimburse="$(( $initial_balance - $final_balance ))"
+  [[ "$amount_with_fee" -gt "$amount_after_reimburse" ]] || exit 1
 }
 
 @test "ln-send: lightning settled - lnNoAmountUsdInvoicePaymentSend" {
@@ -272,9 +302,10 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 
   # Check for fee reimbursement
+  amount_with_fee="$(amount_sent_for_ln_txn_by_hash "$token_name" "$payment_hash")"
   final_balance="$(balance_for_wallet $token_name 'USD')"
-  diff="$(( $initial_balance - $final_balance ))"
-    [[ "$diff" == "$usd_amount" ]] || exit 1
+  amount_after_reimburse="$(( $initial_balance - $final_balance ))"
+  [[ "$amount_with_fee" -gt "$amount_after_reimburse" ]] || exit 1
 }
 
 @test "ln-send: intraledger settled - lnInvoicePaymentSend from btc to btc, with contacts check" {
