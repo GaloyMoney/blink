@@ -8,4 +8,3 @@ if [[ -f version/version ]]; then
 fi
 
 echo "COMMITHASH=$(cat repo/.git/ref)" >> repo/.env
-echo "BUILDTIME=$(date -u '+%F-%T')" >> repo/.env

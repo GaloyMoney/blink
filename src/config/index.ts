@@ -36,7 +36,6 @@ export const Levels: Levels = [0, 1, 2]
 export const getGaloyBuildInformation = () => {
   return {
     commitHash: env.COMMITHASH,
-    buildTime: env.BUILDTIME,
     helmRevision: env.HELMREVISION,
   }
 }
@@ -126,7 +125,6 @@ export const getCallbackServiceConfig = (): SvixConfig => {
 export const getBriaConfig = getBriaPartialConfigFromYaml
 
 export const COMMITHASH = env.COMMITHASH
-export const BUILDTIME = env.BUILDTIME
 export const HELMREVISION = env.HELMREVISION
 export const LOGLEVEL = env.LOGLEVEL
 export const UNSECURE_DEFAULT_LOGIN_CODE = env.UNSECURE_DEFAULT_LOGIN_CODE

@@ -134,7 +134,6 @@ type BTCWallet implements Wallet {
 }
 
 type BuildInformation {
-  buildTime: Timestamp
   commitHash: String
   helmRevision: Int
 }
