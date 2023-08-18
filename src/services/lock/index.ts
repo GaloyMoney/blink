@@ -8,13 +8,13 @@ import {
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { redis } from "@services/redis"
-import { BitcoinNetwork } from "@config"
+import { NETWORK } from "@config"
 
 const durationLockIdempotencyKey = (1000 * 60 * 60) as MilliSeconds // 1 hour
 
 // the maximum amount of time you want the resource to initially be locked,
 // note: with redlock 5, the lock is automatically extended
-const ttl = () => (BitcoinNetwork() !== "regtest" ? 180000 : 10000)
+const ttl = () => (NETWORK !== "regtest" ? 180000 : 10000)
 
 const redlockClient = new Redlock(
   // you should have one client for each independent redis node

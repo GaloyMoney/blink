@@ -1,26 +1,24 @@
 import cors from "cors"
 import express from "express"
 
-import { isProd } from "@config"
-
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { parseIps } from "@domain/accounts-ips"
 
-import { checkedToEmailAddress } from "@domain/users"
 import {
   elevatingSessionWithTotp,
   loginWithEmail,
-  requestEmailCode,
   loginWithEmailCookie,
+  requestEmailCode,
 } from "@app/authentication"
+import { checkedToEmailAddress } from "@domain/users"
 
 import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 import { checkedToEmailCode } from "@domain/authentication"
 import {
-  checkedToEmailLoginId,
   checkedToAuthToken,
+  checkedToEmailLoginId,
   checkedToTotpCode,
 } from "@services/kratos"
 
@@ -38,6 +36,8 @@ import bodyParser from "body-parser"
 
 import cookieParser from "cookie-parser"
 
+import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
+
 import { authRouter } from "./router"
 
 authRouter.use(cors({ origin: true, credentials: true }))
@@ -54,7 +54,9 @@ authRouter.post(
     fn: async (req: express.Request, res: express.Response) => {
       baseLogger.info("/email/code")
 
-      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+        ? req?.ip
+        : req?.headers["x-real-ip"]
       const ip = parseIps(ipString)
 
       if (!ip) {
@@ -99,7 +101,9 @@ authRouter.post(
     fn: async (req: express.Request, res: express.Response) => {
       baseLogger.info("/email/login")
 
-      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+        ? req?.ip
+        : req?.headers["x-real-ip"]
       const ip = parseIps(ipString)
 
       if (!ip) {
@@ -164,7 +168,9 @@ authRouter.post(
     fn: async (req: express.Request, res: express.Response) => {
       baseLogger.info("/totp/validate")
 
-      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+        ? req?.ip
+        : req?.headers["x-real-ip"]
       const ip = parseIps(ipString)
 
       if (!ip) {
@@ -231,7 +237,9 @@ authRouter.post(
     fn: async (req: express.Request, res: express.Response) => {
       baseLogger.info("/email/login/cookie")
 
-      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+        ? req?.ip
+        : req?.headers["x-real-ip"]
       const ip = parseIps(ipString)
 
       if (!ip) {

@@ -1,8 +1,8 @@
 import {
-  defaultLoginCode,
+  TWILIO_ACCOUNT_SID,
+  UNSECURE_DEFAULT_LOGIN_CODE,
   getGeetestConfig,
   getTestAccounts,
-  getTwilioConfig,
 } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { PhoneAlreadyExistsError } from "@domain/authentication/errors"
@@ -66,11 +66,11 @@ export const requestPhoneCodeForUnauthedUser = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  if (defaultLoginCode().enabled) {
+  if (UNSECURE_DEFAULT_LOGIN_CODE) {
     return true
   }
 
-  if (getTwilioConfig().accountSid === TWILIO_ACCOUNT_TEST) {
+  if (TWILIO_ACCOUNT_SID === TWILIO_ACCOUNT_TEST) {
     return new NotImplementedError()
   }
 
@@ -107,11 +107,11 @@ export const requestPhoneCodeForAuthedUser = async ({
     return new PhoneAlreadyExistsError()
   }
 
-  if (defaultLoginCode().enabled) {
+  if (UNSECURE_DEFAULT_LOGIN_CODE) {
     return true
   }
 
-  if (getTwilioConfig().accountSid === TWILIO_ACCOUNT_TEST) {
+  if (TWILIO_ACCOUNT_SID === TWILIO_ACCOUNT_TEST) {
     return new NotImplementedError()
   }
 

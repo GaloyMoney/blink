@@ -1,5 +1,6 @@
 import EventEmitter from "events"
 
+import express from "express"
 import {
   GetInvoiceResult,
   subscribeToBackups,
@@ -15,10 +16,9 @@ import {
   subscribeToTransactions,
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
-import express from "express"
 import debounce from "lodash.debounce"
 
-import { BitcoinNetwork, getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getSwapConfig, NETWORK, ONCHAIN_MIN_CONFIRMATIONS, TRIGGER_PORT } from "@config"
 
 import {
   Payments,
@@ -26,36 +26,36 @@ import {
   Swap as SwapWithSpans,
   Wallets as WalletWithSpans,
 } from "@app"
-import * as Wallets from "@app/wallets"
 import { uploadBackup } from "@app/admin/backup"
 import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
+import * as Wallets from "@app/wallets"
 
+import { TxDecoder } from "@domain/bitcoin/onchain"
+import { CacheKeys } from "@domain/cache"
 import {
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletInvoiceError,
 } from "@domain/errors"
-import { CacheKeys } from "@domain/cache"
-import { SwapTriggerError } from "@domain/swap/errors"
-import { TxDecoder } from "@domain/bitcoin/onchain"
-import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToDisplayCurrency } from "@domain/fiat"
+import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { SwapTriggerError } from "@domain/swap/errors"
 
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { BriaSubscriber } from "@services/bria"
+import { RedisCacheService } from "@services/cache"
+import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
+import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
+import { onChannelUpdated } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"
-import { BriaSubscriber } from "@services/bria"
-import { LedgerService } from "@services/ledger"
-import { RedisCacheService } from "@services/cache"
-import { onChannelUpdated } from "@services/lnd/utils"
 import { setupMongoConnection } from "@services/mongodb"
+import { WalletInvoicesRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-import healthzHandler from "./middlewares/healthz"
 import { SubscriptionInterruptedError } from "./errors"
 import { briaEventHandler } from "./event-handlers/bria"
+import healthzHandler from "./middlewares/healthz"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
@@ -79,7 +79,7 @@ const handleLndPendingIncomingOnChainTx = async ({
     return
   }
 
-  const outs = TxDecoder(BitcoinNetwork()).decode(tx.transaction).outs
+  const outs = TxDecoder(NETWORK).decode(tx.transaction).outs
   for (const { vout, sats, address } of outs) {
     const satoshis = paymentAmountFromNumber({
       amount: sats,
@@ -479,7 +479,7 @@ const main = () => {
 
 const healthCheck = () => {
   const app = express()
-  const port = process.env.PORT || 8888
+  const port = TRIGGER_PORT
   app.get(
     "/healthz",
     healthzHandler({

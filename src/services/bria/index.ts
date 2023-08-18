@@ -1,26 +1,29 @@
 import { Metadata, status } from "@grpc/grpc-js"
-import { Struct, Value, ListValue } from "google-protobuf/google/protobuf/struct_pb"
+import { ListValue, Struct, Value } from "google-protobuf/google/protobuf/struct_pb"
 
-import { getBriaConfig } from "@config"
+import { BRIA_API_KEY, getBriaConfig } from "@config"
 
 import {
   OnChainAddressAlreadyCreatedForRequestIdError,
   OnChainAddressNotFoundError,
-  PayoutNotFoundError,
   PayoutDestinationBlocked,
+  PayoutNotFoundError,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
 import {
-  paymentAmountFromNumber,
   WalletCurrency,
   parseErrorMessageFromUnknown,
+  paymentAmountFromNumber,
 } from "@domain/shared"
 
 import { baseLogger } from "@services/logger"
-import { wrapAsyncToRunInSpan, wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+import { wrapAsyncFunctionsToRunInSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { GrpcStreamClient } from "@utils"
 
+import { UnknownBriaEventError } from "./errors"
+import { eventDataHandler } from "./event-handler"
+import { BriaEventRepo } from "./event-repository"
 import {
   estimatePayoutFee,
   getAddress,
@@ -31,26 +34,23 @@ import {
   subscribeAll,
 } from "./grpc-client"
 import {
-  SubscribeAllRequest,
-  BriaEvent as RawBriaEvent,
-  NewAddressRequest,
-  GetWalletBalanceSummaryRequest,
-  GetAddressRequest,
-  SubmitPayoutRequest,
   EstimatePayoutFeeRequest,
+  GetAddressRequest,
   GetPayoutRequest,
+  GetWalletBalanceSummaryRequest,
+  NewAddressRequest,
+  BriaEvent as RawBriaEvent,
+  SubmitPayoutRequest,
+  SubscribeAllRequest,
 } from "./proto/bria_pb"
-import { UnknownBriaEventError } from "./errors"
 export { BriaPayloadType } from "./event-handler"
-import { BriaEventRepo } from "./event-repository"
-import { eventDataHandler } from "./event-handler"
 
 const briaConfig = getBriaConfig()
 const { streamBuilder, FibonacciBackoff } = GrpcStreamClient
 
 export const BriaSubscriber = () => {
   const metadata = new Metadata()
-  metadata.set("x-bria-api-key", briaConfig.apiKey)
+  metadata.set("x-bria-api-key", BRIA_API_KEY)
 
   const subscribeToAll = async (
     eventHandler: BriaEventHandler,
@@ -106,7 +106,7 @@ const queueNameForSpeed = (speed: PayoutSpeed): string => briaConfig.queueNames[
 
 export const OnChainService = (): IOnChainService => {
   const metadata = new Metadata()
-  metadata.set("x-bria-api-key", briaConfig.apiKey)
+  metadata.set("x-bria-api-key", BRIA_API_KEY)
 
   const getHotBalance = async (): Promise<BtcPaymentAmount | OnChainServiceError> => {
     try {

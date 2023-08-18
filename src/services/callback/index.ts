@@ -20,8 +20,8 @@ interface SvixError extends Error {
 }
 
 export type SvixConfig = {
-  secret: string
-  endpoint: string
+  secret?: string
+  endpoint?: string | null
 }
 
 function prefixObjectKeys(

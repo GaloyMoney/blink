@@ -1,17 +1,17 @@
-import { UiNodeTextAttributes } from "@ory/client"
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
+import { UiNodeTextAttributes } from "@ory/client"
 
 import { isAxiosError } from "axios"
 
-import { getKratosPasswords } from "@config"
+import { KRATOS_MASTER_USER_PASSWORD } from "@config"
 
-import { kratosPublic } from "./private"
 import {
   AuthenticationKratosError,
   MissingTotpKratosError,
   SessionRefreshRequiredError,
   UnknownKratosError,
 } from "./errors"
+import { kratosPublic } from "./private"
 
 export const kratosInitiateTotp = async (token: AuthToken) => {
   try {
@@ -95,7 +95,7 @@ export const kratosElevatingSessionWithTotp = async ({
 
 const refreshToken = async (authToken: AuthToken): Promise<void | KratosError> => {
   const method = "password"
-  const password = getKratosPasswords().masterUserPassword
+  const password = KRATOS_MASTER_USER_PASSWORD
 
   const session = await kratosPublic.toSession({ xSessionToken: authToken })
   const identifier =

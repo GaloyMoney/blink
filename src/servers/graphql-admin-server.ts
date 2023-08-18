@@ -8,8 +8,9 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 
-import { GALOY_ADMIN_PORT } from "@config"
 import { gqlAdminSchema, adminMutationFields, adminQueryFields } from "@graphql/admin"
+
+import { GALOY_ADMIN_PORT } from "@config"
 
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
 

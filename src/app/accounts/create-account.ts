@@ -1,8 +1,8 @@
 import {
   ConfigError,
+  TWILIO_ACCOUNT_SID,
   getAdminAccounts,
   getDefaultAccountsConfig,
-  getTwilioConfig,
   isRunningJest,
 } from "@config"
 import { AccountLevel } from "@domain/accounts"
@@ -13,7 +13,7 @@ import {
   WalletsRepository,
   UsersRepository,
 } from "@services/mongoose"
-import { TwilioClient } from "@services/twilio"
+import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@services/twilio"
 
 const initializeCreatedAccount = async ({
   account,
@@ -102,7 +102,7 @@ export const createAccountWithPhoneIdentifier = async ({
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
   if (
-    getTwilioConfig().accountSid !== "AC_twilio_id" ||
+    TWILIO_ACCOUNT_SID !== TWILIO_ACCOUNT_TEST ||
     isRunningJest /* TwilioClient will be mocked */
   ) {
     phoneMetadata = await TwilioClient().getCarrier(phone)

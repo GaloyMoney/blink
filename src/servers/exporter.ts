@@ -1,7 +1,7 @@
 import express from "express"
 import client, { register } from "prom-client"
 
-import { SECS_PER_5_MINS } from "@config"
+import { EXPORTER_PORT, SECS_PER_5_MINS } from "@config"
 
 import { Lightning, OnChain } from "@app"
 
@@ -189,7 +189,7 @@ const main = async () => {
     }),
   )
 
-  const port = process.env.PORT || 3000
+  const port = EXPORTER_PORT
   server.listen(port, () => {
     logger.info(`Server listening to ${port}, metrics exposed on /metrics endpoint`)
   })

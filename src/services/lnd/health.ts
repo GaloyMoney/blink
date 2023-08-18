@@ -3,8 +3,6 @@ import { EventEmitter } from "events"
 import { getWalletStatus } from "lightning"
 import { baseLogger } from "@services/logger"
 
-import { LND_HEALTH_REFRESH_TIME_MS } from "@config"
-
 import { lndsConnect } from "./auth"
 
 /*
@@ -13,11 +11,13 @@ import { lndsConnect } from "./auth"
 
 const intervals: NodeJS.Timeout[] = []
 
+const refreshTime = 20000
+
 const isUpLoop = async (param: LndConnect): Promise<void> => {
   await isUp(param)
   const interval = setInterval(async () => {
     await isUp(param)
-  }, LND_HEALTH_REFRESH_TIME_MS)
+  }, refreshTime)
   intervals.push(interval)
 }
 

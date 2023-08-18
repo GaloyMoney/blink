@@ -4,12 +4,6 @@ import { LocalCacheService } from "@services/cache/local-cache"
 import { PriceCurrenciesNotAvailableError } from "@domain/price"
 import { listCurrencies } from "@app/prices"
 
-jest.mock("@config", () => {
-  const config = jest.requireActual("@config")
-  const getLndParams = (): LndParams[] => []
-  return { ...config, getLndParams }
-})
-
 jest.mock("@services/tracing", () => ({
   wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
 }))

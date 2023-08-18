@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: fix bats test for now (#3076)...'
-      sha: 9e5492965f845b453caef33a60ff2259d78ac6e8
+      commitTitle: 'chore: adding otel for svix (#3078)...'
+      sha: cc801fa80cf034e12b9ccb2797d8ebabe5d76b01
       tags:
-      - 0.11.34-4-g9e5492965
+      - 0.11.37
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: fix bats test for now (#3076)...'
-      sha: 9e5492965f845b453caef33a60ff2259d78ac6e8
+      commitTitle: 'chore: adding otel for svix (#3078)...'
+      sha: cc801fa80cf034e12b9ccb2797d8ebabe5d76b01
       tags:
-      - 0.11.34-4-g9e5492965
+      - 0.11.37
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: fix bats test for now (#3076)...'
-      sha: 9e5492965f845b453caef33a60ff2259d78ac6e8
+      commitTitle: 'chore: adding otel for svix (#3078)...'
+      sha: cc801fa80cf034e12b9ccb2797d8ebabe5d76b01
       tags:
-      - 0.11.34-4-g9e5492965
+      - 0.11.37
     path: ./
   path: ./graphql
 kind: LockConfig

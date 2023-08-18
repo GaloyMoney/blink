@@ -115,16 +115,6 @@ fees:
     defaultMin: 3000
     threshold: 1000000
     ratioAsBasisPoints: 30
-lnds:
-  - name: LND1
-    type:
-      - offchain
-      - onchain
-    priority: 2
-  - name: LND2
-    type:
-      - offchain
-    priority: 3
 onChainWallet:
   dustThreshold: 5000
   minConfirmations: 2
@@ -141,21 +131,10 @@ swap:
   lnd2loopRestEndpoint: https://localhost:8082
   lnd2loopRpcEndpoint: localhost:11011
   feeAccountingEnabled: true
-apollo:
-  playground: true
-  playgroundUrl: https://api.staging.galoy.io/graphql
 userActivenessMonthlyVolumeThreshold: 100
 cronConfig:
   rebalanceEnabled: true
   swapEnabled: true
-kratosConfig:
-  publicApi: http://localhost:4433
-  adminApi: http://localhost:4434
-  corsAllowedOrigins:
-    - http://localhost:3000
-oathkeeperConfig:
-  urlJkws: http://127.0.0.1:4456/.well-known/jwks.json
-  decisionsApi: http://127.0.0.1:4456/decisions/
 captcha:
   mandatory: false
 skipFeeProbeConfig:
@@ -163,7 +142,3 @@ skipFeeProbeConfig:
   chanId: []
 smsAuthUnsupportedCountries: []
 whatsAppAuthUnsupportedCountries: []
-appcheckConfig:
-  audience: projects/72279297366
-  issuer: https://firebaseappcheck.googleapis.com/72279297366
-  jwksUri: https://firebaseappcheck.googleapis.com/v1beta/jwks

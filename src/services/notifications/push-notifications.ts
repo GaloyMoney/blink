@@ -1,20 +1,20 @@
 import * as admin from "firebase-admin"
 
+import { GOOGLE_APPLICATION_CREDENTIALS_IS_SET } from "@config"
 import {
   DeviceTokensNotRegisteredNotificationsServiceError,
   InvalidDeviceNotificationsServiceError,
   NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
 } from "@domain/notifications"
+import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
 import { baseLogger } from "@services/logger"
-import { googleApplicationCredentialsIsSet } from "@config"
-import { Messaging } from "firebase-admin/lib/messaging/messaging"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
   wrapAsyncToRunInSpan,
 } from "@services/tracing"
-import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
+import { Messaging } from "firebase-admin/lib/messaging/messaging"
 
 const logger = baseLogger.child({ module: "notifications" })
 
@@ -23,7 +23,7 @@ type NotificationMessagePayload = admin.messaging.NotificationMessagePayload
 
 let messaging: Messaging
 
-if (googleApplicationCredentialsIsSet()) {
+if (GOOGLE_APPLICATION_CREDENTIALS_IS_SET) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
   })

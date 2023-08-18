@@ -1,43 +1,42 @@
 import {
+  GetChainTransactionsResult,
+  GetInvoiceResult,
+  GetInvoicesResult,
+  GetPaymentResult,
+  PayViaPaymentDetailsArgs,
+  PayViaPaymentDetailsResult,
+  PayViaRoutesResult,
   cancelHodlInvoice,
-  getWalletInfo,
-  getChainBalance,
-  getPendingChainBalance,
   createHodlInvoice,
+  deletePayment,
+  getChainBalance,
+  getChainTransactions,
   getChannelBalance,
+  getChannels,
   getClosedChannels,
   getFailedPayments,
   getInvoice,
-  GetInvoiceResult,
-  GetChainTransactionsResult,
-  getChainTransactions,
-  getPayment,
-  GetPaymentResult,
-  getPayments,
-  getPendingPayments,
-  payViaPaymentDetails,
-  PayViaPaymentDetailsArgs,
-  PayViaPaymentDetailsResult,
-  payViaRoutes,
-  PayViaRoutesResult,
-  deletePayment,
-  settleHodlInvoice,
   getInvoices,
-  GetInvoicesResult,
+  getPayment,
+  getPayments,
+  getPendingChainBalance,
   getPendingChannels,
-  getChannels,
+  getPendingPayments,
+  getWalletInfo,
+  payViaPaymentDetails,
+  payViaRoutes,
+  settleHodlInvoice,
 } from "lightning"
 import lnService from "ln-service"
 
-import { SECS_PER_5_MINS } from "@config"
+import { NETWORK, SECS_PER_5_MINS } from "@config"
 
 import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
-import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import {
   BadPaymentDataError,
   CorruptLndDbError,
   CouldNotDecodeReturnedPaymentRequest,
-  decodeInvoice,
+  DestinationMissingDependentFeatureError,
   InsufficientBalanceForLnPaymentError,
   InsufficientBalanceForRoutingError,
   InvoiceExpiredOrBadPaymentHashError,
@@ -45,6 +44,8 @@ import {
   LightningServiceError,
   LnAlreadyPaidError,
   LnPaymentPendingError,
+  LookupPaymentTimedOutError,
+  OffChainServiceBusyError,
   OffChainServiceUnavailableError,
   PaymentAttemptsTimedOutError,
   PaymentInTransitionError,
@@ -53,23 +54,22 @@ import {
   ProbeForRouteTimedOutError,
   ProbeForRouteTimedOutFromApplicationError,
   RouteNotFoundError,
-  UnknownNextPeerError,
   SecretDoesNotMatchAnyExistingHodlInvoiceError,
   TemporaryChannelFailureError,
-  UnknownLightningServiceError,
-  UnknownRouteNotFoundError,
-  DestinationMissingDependentFeatureError,
-  LookupPaymentTimedOutError,
   TemporaryNodeFailureError,
-  OffChainServiceBusyError,
   PaymentRejectedByDestinationError,
+  UnknownLightningServiceError,
+  UnknownNextPeerError,
+  UnknownRouteNotFoundError,
+  decodeInvoice,
 } from "@domain/bitcoin/lightning"
+import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
 import { LnFees } from "@domain/payments"
 import {
+  WalletCurrency,
   parseErrorMessageFromUnknown,
   paymentAmountFromNumber,
-  WalletCurrency,
 } from "@domain/shared"
 
 import { LocalCacheService } from "@services/cache"
@@ -79,7 +79,7 @@ import { timeoutWithCancel } from "@utils"
 
 import sumBy from "lodash.sumby"
 
-import { TIMEOUT_PAYMENT } from "./auth"
+import { KnownLndErrorDetails } from "./errors"
 import {
   getActiveLnd,
   getActiveOnchainLnd,
@@ -87,7 +87,8 @@ import {
   getLnds,
   parseLndErrorDetails,
 } from "./utils"
-import { KnownLndErrorDetails } from "./errors"
+
+const TIMEOUT_PAYMENT = NETWORK !== "regtest" ? 45000 : 3000
 
 export const LndService = (): ILightningService | LightningServiceError => {
   const activeNode = getActiveLnd()

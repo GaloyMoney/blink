@@ -235,6 +235,9 @@ provider.addSpanProcessor(new SpanProcessorWrapper(new OTLPTraceExporter()))
 
 provider.register()
 
+// the reason we have to use process.env.COMMITHASH instead of env.COMMITHASH
+// is because tracing is been initialized before any other code is imported,
+// including the env variables
 export const tracer = trace.getTracer(process.env.COMMITHASH || "dev")
 
 export const addAttributesToCurrentSpan = (attributes: Attributes) => {

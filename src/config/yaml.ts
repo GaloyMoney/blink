@@ -14,15 +14,18 @@ import { toCents } from "@domain/fiat"
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 import { toDays, toSeconds } from "@domain/primitives"
-import { checkedToPubkey } from "@domain/bitcoin/lightning"
+
 import { WalletCurrency } from "@domain/shared"
 
 import { AccountLevel } from "@domain/accounts"
 
+import mergeWith from "lodash.mergewith"
+
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
 
-import { merge } from "./utils"
+const merge = (defaultConfig: unknown, customConfig: unknown) =>
+  mergeWith(defaultConfig, customConfig, (a, b) => (Array.isArray(b) ? b : undefined))
 
 let customContent: string, customConfig
 
@@ -128,53 +131,6 @@ export const getDisplayCurrencyConfig = (): {
 
 export const getDealerConfig = () => yamlConfig.dealer
 
-export const getLndParams = (): LndParams[] => {
-  const lnds = yamlConfig.lnds
-
-  lnds.forEach((input) => {
-    const keys = ["_TLS", "_MACAROON", "_DNS", "_PUBKEY"]
-    keys.forEach((key) => {
-      if (!process.env[`${input.name}${key}`]) {
-        throw new ConfigError(`lnd params missing for: ${input.name}${key}`)
-      }
-    })
-  })
-
-  return lnds.map((input) => {
-    const cert = process.env[`${input.name}_TLS`]
-    if (!cert) throw new ConfigError(`missing TLS for ${input.name}`)
-
-    const macaroon = process.env[`${input.name}_MACAROON`]
-    if (!macaroon) throw new ConfigError(`missing macaroon for ${input.name}`)
-
-    const node = process.env[`${input.name}_DNS`]
-    if (!node) throw new ConfigError(`missing DNS for ${input.name}`)
-
-    const pubkey_ = process.env[`${input.name}_PUBKEY`]
-    if (!pubkey_) throw new ConfigError(`missing PUBKEY for ${input.name}`)
-
-    const pubkey = checkedToPubkey(pubkey_)
-    if (pubkey instanceof Error)
-      throw new ConfigError(`wrong PUBKEY formatting for ${input.name}`)
-
-    const port = process.env[`${input.name}_RPCPORT`] ?? 10009
-    const type = input.type.map((item) => item as NodeType) // TODO: verify if validation is done from yaml.ts
-    const priority = input.priority
-    const name = input.name
-
-    return {
-      cert,
-      macaroon,
-      node,
-      port,
-      pubkey,
-      type,
-      priority,
-      name,
-    }
-  })
-}
-
 export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
   const method = feesConfig.withdraw.method as WithdrawalFeePriceMethod
   const depositRatioAsBasisPoints = BigInt(
@@ -277,14 +233,10 @@ export const getBuildVersions = (): {
   }
 }
 
-export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
-
 export const getIpConfig = (config = yamlConfig): IpConfig => ({
   ipRecordingEnabled: config.ipRecording.enabled,
   proxyCheckingEnabled: config.ipRecording.proxyChecking.enabled,
 })
-
-export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo
 
 export const LND_SCB_BACKUP_BUCKET_NAME = yamlConfig.lndScbBackupBucketName
 
@@ -301,19 +253,6 @@ export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   }))
 
 export const getCronConfig = (config = yamlConfig): CronConfig => config.cronConfig
-
-export const getKratosConfig = (config = yamlConfig): KratosConfig => {
-  const kratosConfig = config.kratosConfig
-
-  const publicApi = process.env.KRATOS_PUBLIC_API ?? kratosConfig.publicApi
-  const adminApi = process.env.KRATOS_ADMIN_API ?? kratosConfig.adminApi
-
-  return {
-    ...kratosConfig,
-    publicApi,
-    adminApi,
-  }
-}
 
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
@@ -358,33 +297,10 @@ export const getSwapConfig = (): SwapConfig => {
   }
 }
 
-export const decisionsApi = (config = yamlConfig) => {
-  return config.oathkeeperConfig.decisionsApi
-}
-
-export const getJwksArgs = (config = yamlConfig) => {
-  const urlJkws = config.oathkeeperConfig.urlJkws
-
-  return {
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: urlJkws,
-  }
-}
-
 export const getSmsAuthUnsupportedCountries = (): CountryCode[] => {
   return yamlConfig.smsAuthUnsupportedCountries as CountryCode[]
 }
 
 export const getWhatsAppAuthUnsupportedCountries = (): CountryCode[] => {
   return yamlConfig.whatsAppAuthUnsupportedCountries as CountryCode[]
-}
-
-export const getAppCheckConfig = (config = yamlConfig) => {
-  return {
-    audience: config.appcheckConfig.audience,
-    issuer: config.appcheckConfig.issuer,
-    jwksUri: config.appcheckConfig.jwksUri,
-  }
 }

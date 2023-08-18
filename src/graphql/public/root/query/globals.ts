@@ -1,5 +1,5 @@
 import {
-  BitcoinNetwork,
+  NETWORK,
   getFeesConfig,
   getGaloyBuildInformation,
   getLightningAddressDomain,
@@ -8,9 +8,10 @@ import {
 
 import { Lightning } from "@app"
 
+import { getSupportedCountries } from "@app/authentication/get-supported-countries"
+
 import { GT } from "@graphql/index"
 import Globals from "@graphql/public/types/object/globals"
-import { getSupportedCountries } from "@app/authentication/get-supported-countries"
 
 const feesConfig = getFeesConfig()
 
@@ -22,7 +23,7 @@ const GlobalsQuery = GT.Field({
 
     return {
       nodesIds,
-      network: BitcoinNetwork(),
+      network: NETWORK,
       lightningAddressDomain: getLightningAddressDomain(),
       lightningAddressDomainAliases: getLightningAddressDomainAliases(),
       buildInformation: getGaloyBuildInformation(),

@@ -1,7 +1,6 @@
 import express from "express"
 
 import { Auth } from "@app"
-import { isProd } from "@config"
 
 import {
   addAttributesToCurrentSpan,
@@ -15,6 +14,8 @@ import basicAuth from "basic-auth"
 
 import { parseErrorMessageFromUnknown } from "@domain/shared"
 
+import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
+
 import { authRouter } from "./router"
 
 authRouter.post(
@@ -23,7 +24,9 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "createDeviceAccount",
     fn: async (req: express.Request, res: express.Response) => {
-      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+        ? req?.ip
+        : req?.headers["x-real-ip"]
       const ip = parseIps(ipString)
 
       if (!ip) {

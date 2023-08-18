@@ -2,7 +2,6 @@ import cors from "cors"
 import express from "express"
 
 import { Auth } from "@app"
-import { isProd } from "@config"
 
 import { mapError } from "@graphql/error-map"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
@@ -17,6 +16,8 @@ import cookieParser from "cookie-parser"
 import { validateKratosCookie } from "@services/kratos"
 
 import { parseKratosCookies } from "@services/kratos/cookie"
+
+import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
 import { authRouter } from "./router"
 
@@ -33,7 +34,9 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: express.Request, res: express.Response) => {
-      const ipString = isProd ? req?.headers["x-real-ip"] : req?.ip
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+        ? req?.ip
+        : req?.headers["x-real-ip"]
       const ip = parseIps(ipString)
       if (!ip) {
         recordExceptionInCurrentSpan({ error: "IP is not defined" })

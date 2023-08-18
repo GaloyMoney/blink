@@ -351,7 +351,7 @@ export const onChannelUpdated = async ({
 export const getLnds = ({
   type,
   active,
-}: { type?: NodeType; active?: boolean } = {}): LndConnect[] => {
+}: { type?: LndNodeType; active?: boolean } = {}): LndConnect[] => {
   let result = lndsConnect
 
   if (type) {

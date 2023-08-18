@@ -1,15 +1,15 @@
-import { getActiveLnd } from "@services/lnd/utils"
+import { NETWORK, getLoopConfig, getSwapConfig } from "@config"
 import { SwapErrorNoActiveLoopdNode } from "@domain/swap/errors"
-import { BitcoinNetwork, getSwapConfig, getLoopConfig } from "@config"
+import { getActiveLnd } from "@services/lnd/utils"
 
 export const getActiveLoopd = (): LoopdConfig => {
   const activeOffChainNode = getActiveLnd()
   if (activeOffChainNode instanceof Error) throw new SwapErrorNoActiveLoopdNode()
-  switch (activeOffChainNode.name) {
-    case "LND1": {
+  switch (activeOffChainNode.name.toLowerCase()) {
+    case "lnd1": {
       return lnd1LoopConfig()
     }
-    case "LND2": {
+    case "lnd2": {
       return lnd2LoopConfig()
     }
     default: {
@@ -19,7 +19,7 @@ export const getActiveLoopd = (): LoopdConfig => {
 }
 
 export const lnd1LoopConfig = (): LoopdConfig => ({
-  btcNetwork: BitcoinNetwork(),
+  btcNetwork: NETWORK,
   grpcEndpoint: getSwapConfig().lnd1loopRpcEndpoint,
   tlsCert: getLoopConfig().lnd1LoopTls,
   macaroon: getLoopConfig().lnd1LoopMacaroon,
@@ -27,7 +27,7 @@ export const lnd1LoopConfig = (): LoopdConfig => ({
 })
 
 export const lnd2LoopConfig = (): LoopdConfig => ({
-  btcNetwork: BitcoinNetwork(),
+  btcNetwork: NETWORK,
   grpcEndpoint: getSwapConfig().lnd2loopRpcEndpoint,
   tlsCert: getLoopConfig().lnd2LoopTls,
   macaroon: getLoopConfig().lnd2LoopMacaroon,
