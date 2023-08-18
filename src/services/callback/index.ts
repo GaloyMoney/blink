@@ -16,7 +16,7 @@ interface SvixError extends Error {
 
 export type SvixConfig = {
   secret?: string
-  endpoint?: string
+  endpoint?: string | null
 }
 
 export const CallbackService = (config: SvixConfig) => {
