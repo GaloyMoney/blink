@@ -19,6 +19,7 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
     "Accounts are core to the Galoy architecture. they have users, and own wallets",
   fields: () => ({
     id: { type: GT.NonNullID },
+    uuid: { type: GT.NonNull(GT.String) },
     username: { type: Username },
     level: { type: GT.NonNull(AccountLevel) },
     status: { type: GT.NonNull(AccountStatus) },

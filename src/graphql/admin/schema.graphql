@@ -13,6 +13,7 @@ type Account {
   status: AccountStatus!
   title: String
   username: Username
+  uuid: String!
   wallets: [Wallet!]!
 }
 
