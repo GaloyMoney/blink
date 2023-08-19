@@ -70,7 +70,7 @@ export const env = createEnv({
     REDIS_2_PORT: z.number().or(z.string()).pipe(z.coerce.number()).default(26379),
 
     // LND PRIMARY
-    LND_PRIORITY: z.enum(["lnd1", "lnd2"]).default("lnd2"),
+    LND_PRIORITY: z.enum(["lnd1", "lnd2"]).default("lnd1"),
 
     LND1_PUBKEY: z
       .string()
