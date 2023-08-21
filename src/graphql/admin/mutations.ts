@@ -11,6 +11,7 @@ import BusinessUpdateMapInfoMutation from "@graphql/admin/root/mutation/business
 
 import UserUpdatePhoneMutation from "./root/mutation/user-update-phone"
 import BusinessDeleteMapInfoMutation from "./root/mutation/delete-business-map"
+import SendAdminPushNotificationMutation from "./root/mutation/send-admin-push-notification"
 
 export const mutationFields = {
   unauthed: {
@@ -26,6 +27,7 @@ export const mutationFields = {
     accountUpdateStatus: AccountUpdateStatusMutation,
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
     businessDeleteMapInfo: BusinessDeleteMapInfoMutation,
+    sendAdminPushNotification: SendAdminPushNotificationMutation,
   },
 }
 
