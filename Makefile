@@ -102,7 +102,7 @@ execute-bats-from-within-container:
 
 integration-in-ci:
 	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests --attach integration-tests
 
 # NODE_OPTIONS line should be removed whenever we upgrade yarn.lock to see if
 # heap allocation issue has been resolved in dependencies (fails at 2048).
