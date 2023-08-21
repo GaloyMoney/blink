@@ -5,13 +5,13 @@ import { mapError } from "@graphql/error-map"
 
 import { Admin } from "@app"
 
-const AccountDetailsByUsernameQuery = GT.Field({
+const AccountDetailsByAccountId = GT.Field({
   type: GT.NonNull(GraphQLAccount),
   args: {
     // TODO: type for AccountId
     accountId: { type: GT.NonNullID },
   },
-  resolve: async (parent, { accountId }) => {
+  resolve: async (_, { accountId }) => {
     if (accountId instanceof Error) {
       throw accountId
     }
@@ -25,4 +25,4 @@ const AccountDetailsByUsernameQuery = GT.Field({
   },
 })
 
-export default AccountDetailsByUsernameQuery
+export default AccountDetailsByAccountId
