@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: retry test-on-docker'
-      sha: 95c4fd73e3a8aa92e4b52b97e4066a1f6bdb19ab
+      commitTitle: 'chore: use --attach on docker host'
+      sha: 9d971fd13c024c5f8e6888208a0311178453409d
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: retry test-on-docker'
-      sha: 95c4fd73e3a8aa92e4b52b97e4066a1f6bdb19ab
+      commitTitle: 'chore: use --attach on docker host'
+      sha: 9d971fd13c024c5f8e6888208a0311178453409d
     path: .
   path: ./vendor
 kind: LockConfig

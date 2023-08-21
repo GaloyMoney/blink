@@ -42,7 +42,7 @@ gcloud compute scp --ssh-key-file=${CI_ROOT}/login.ssh \
   --zone=${host_zone} \
   --project=${gcp_project} > /dev/null
 
-gcloud_ssh "cd ${REPO_PATH}; export TMP_ENV_CI=tmp.env.ci; export COMPOSE_PROJECT_NAME=${REPO_PATH}; docker compose pull; docker compose -f docker-compose.yml up ${TEST_CONTAINER}"
+gcloud_ssh "cd ${REPO_PATH}; export TMP_ENV_CI=tmp.env.ci; export COMPOSE_PROJECT_NAME=${REPO_PATH}; docker compose pull; docker compose -f docker-compose.yml up ${TEST_CONTAINER} --attach ${TEST_CONTAINER} 2>&1"
 
 container_id=$(gcloud_ssh "docker ps -q -f status=exited -f name=${PWD##*/}-${TEST_CONTAINER}-")
 test_status=$(gcloud_ssh "docker inspect $container_id --format='{{.State.ExitCode}}'")
