@@ -2,9 +2,9 @@ import { OnboardingEarn } from "@config"
 
 import { AccountStatus } from "@domain/accounts"
 import {
+  CouldNotFindAccountError,
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
-  CouldNotFindError,
   RepositoryError,
 } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
@@ -40,7 +40,21 @@ export const AccountsRepository = (): IAccountsRepository => {
       const result = await Account.findOne({
         _id: toObjectId<AccountId>(accountId),
       })
-      if (!result) return new CouldNotFindError()
+      if (!result) return new CouldNotFindAccountError()
+      return translateToAccount(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
+  const findByUuid = async (
+    accountUuid: AccountUUID,
+  ): Promise<Account | RepositoryError> => {
+    try {
+      const result = await Account.findOne({
+        id: accountUuid,
+      })
+      if (!result) return new CouldNotFindAccountError()
       return translateToAccount(result)
     } catch (err) {
       return parseRepositoryError(err)
@@ -75,7 +89,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       )
 
       if (!accounts) {
-        return new CouldNotFindError()
+        return new CouldNotFindAccountError()
       }
 
       return accounts.map((account) => ({
@@ -175,6 +189,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     findByUserId,
     listUnlockedAccounts,
     findById,
+    findByUuid,
     findByUsername,
     listBusinessesForMap,
     update,

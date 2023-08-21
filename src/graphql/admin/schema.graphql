@@ -280,6 +280,7 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
 }
 
 type Query {
+  accountDetailsByAccountId(accountId: ID!): Account!
   accountDetailsByEmail(email: EmailAddress!): Account!
   accountDetailsByUserPhone(phone: Phone!): Account!
   accountDetailsByUsername(username: Username!): Account!

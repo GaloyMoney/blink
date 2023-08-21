@@ -31,6 +31,7 @@ export class CouldNotUnsetPhoneFromUserError extends CouldNotUpdateError {}
 
 export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 
+export class CouldNotFindAccountError extends CouldNotFindError {}
 export class CouldNotFindUserError extends CouldNotFindError {}
 export class CouldNotFindUserFromIdError extends CouldNotFindError {}
 export class CouldNotFindAccountIpError extends CouldNotFindError {}

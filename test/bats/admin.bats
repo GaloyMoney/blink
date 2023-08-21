@@ -27,7 +27,7 @@ ADMIN_PHONE="+16505554336"
 TESTER_TOKEN_NAME="tester"
 TESTER_PHONE="+19876543210"
 
-@test "admin: update user phone" {
+@test "admin: perform admin queries/mutations" {
   admin_token="$ADMIN_TOKEN_NAME"
 
   login_user \
@@ -51,6 +51,8 @@ TESTER_PHONE="+19876543210"
   exec_admin_graphql "$admin_token" 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$id" != "null" ]] || exit 1
+  uuid="$(graphql_output '.data.accountDetailsByUserPhone.uuid')"
+  [[ "$uuid" != "null" ]] || exit 1
 
   new_phone="$(random_phone)"
   variables=$(
@@ -110,6 +112,16 @@ TESTER_PHONE="+19876543210"
   [[ "$refetched_id" == "$id" ]] || exit 1
   account_status="$(graphql_output '.data.accountUpdateStatus.accountDetails.status')"
   [[ "$account_status" == "LOCKED" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg accountId "$uuid" \
+    '{accountId: $accountId}'
+  )
+
+  exec_admin_graphql "$admin_token" 'account-details-by-account-id' "$variables"
+  returnedId="$(graphql_output '.data.accountDetailsByAccountId.uuid')"
+  [[ "$returnedId" == "$uuid" ]] || exit 1
 
   # TODO: add check by email
   
