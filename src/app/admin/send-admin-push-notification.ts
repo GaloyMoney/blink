@@ -3,7 +3,7 @@ import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
 import { NotificationsService } from "@services/notifications"
 
-export const adminPushNotificationSend = async ({
+export const sendAdminPushNotification = async ({
   accountId: accountIdRaw,
   title,
   body,
