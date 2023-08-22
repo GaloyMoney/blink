@@ -66,6 +66,10 @@ type LoginWithPhoneCookieSchemaResponse = {
 type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
 type CreateKratosUserForPhoneNoPasswordSchemaCookieResponse = WithCookieResponse
 
+type AuthenticationKeyValidator = {
+  validate(rawKey: string | undefined): true | ValidationError
+}
+
 interface IAuthWithPhonePasswordlessService {
   loginToken(args: {
     phone: PhoneNumber

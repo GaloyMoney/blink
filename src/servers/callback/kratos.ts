@@ -9,6 +9,7 @@ import { checkedToUserId } from "@domain/accounts"
 import { ErrorLevel } from "@domain/shared"
 import { baseLogger } from "@services/logger"
 import { SchemaIdType } from "@services/kratos"
+import { AuthenticationKeyValidator } from "@domain/authentication/key-validator"
 
 const kratosCallback = express.Router({ caseSensitive: true })
 
@@ -22,15 +23,11 @@ kratosCallback.post(
     fn: async (req: express.Request, res: express.Response) => {
       const key = req.headers.authorization
 
-      if (!key) {
-        baseLogger.error("missing authorization header")
-        res.status(401).send("missing authorization header")
-        return
-      }
-
-      if (key !== KRATOS_CALLBACK_API_KEY) {
-        baseLogger.error("incorrect authorization header")
-        res.status(401).send("incorrect authorization header")
+      const isValidKey = AuthenticationKeyValidator(KRATOS_CALLBACK_API_KEY).validate(key)
+      if (isValidKey instanceof Error) {
+        const { message } = isValidKey
+        baseLogger.error(message)
+        res.status(401).send(message)
         return
       }
 

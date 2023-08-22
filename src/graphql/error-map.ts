@@ -627,6 +627,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUrlError":
     case "SvixEventError":
     case "UnknownSvixError":
+    case "MissingAuthZHeaderForAuthNError":
+    case "InvalidAuthZHeaderForAuthNError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

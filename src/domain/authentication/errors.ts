@@ -1,4 +1,4 @@
-import { DomainError, ErrorLevel } from "@domain/shared"
+import { DomainError, ValidationError, ErrorLevel } from "@domain/shared"
 
 export class AuthenticationError extends DomainError {}
 export class LikelyNoUserWithThisPhoneExistError extends AuthenticationError {}
@@ -14,6 +14,9 @@ export class AccountAlreadyHasEmailError extends AuthenticationError {}
 export class IdentifierNotFoundError extends AuthenticationError {}
 
 export class EmailValidationSubmittedTooOftenError extends AuthenticationError {}
+
+export class MissingAuthZHeaderForAuthNError extends ValidationError {}
+export class InvalidAuthZHeaderForAuthNError extends ValidationError {}
 
 export class AuthTokenUserIdMismatchError extends AuthenticationError {
   level = ErrorLevel.Critical
