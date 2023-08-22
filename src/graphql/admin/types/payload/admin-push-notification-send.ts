@@ -1,8 +1,8 @@
 import { GT } from "@graphql/index"
 import IError from "@graphql/shared/types/abstract/error"
 
-const SendAdminPushNotificationPayload = GT.Object({
-  name: "SendAdminPushNotificationPayload",
+const AdminPushNotificationSendPayload = GT.Object({
+  name: "AdminPushNotificationSendPayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
@@ -13,4 +13,4 @@ const SendAdminPushNotificationPayload = GT.Object({
   }),
 })
 
-export default SendAdminPushNotificationPayload
+export default AdminPushNotificationSendPayload

@@ -3,7 +3,7 @@ import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
 import { NotificationsService } from "@services/notifications"
 
-export const sendAdminPushNotification = async ({
+export const adminPushNotificationSend = async ({
   accountId: accountIdRaw,
   title,
   body,
@@ -24,7 +24,7 @@ export const sendAdminPushNotification = async ({
   const user = await usersRepo.findById(kratosUserId)
   if (user instanceof Error) return user
 
-  const success = await NotificationsService().sendAdminPushNotification({
+  const success = await NotificationsService().adminPushNotificationSend({
     deviceTokens: user.deviceTokens,
     title,
     body,

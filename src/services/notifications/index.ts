@@ -319,11 +319,11 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
-  const sendAdminPushNotification = async ({
+  const adminPushNotificationSend = async ({
     deviceTokens,
     title,
     body,
-  }: SendAdminPushNotificationArgs): Promise<true | NotificationsServiceError> => {
+  }: AdminPushNotificationSendArgs): Promise<true | NotificationsServiceError> => {
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return true
 
@@ -350,7 +350,7 @@ export const NotificationsService = (): INotificationsService => {
         onChainTxReceivedPending,
         onChainTxSent,
         sendBalance,
-        sendAdminPushNotification,
+        adminPushNotificationSend,
       },
     }),
   }

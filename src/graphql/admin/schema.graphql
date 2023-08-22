@@ -55,6 +55,15 @@ type AuditedUser {
   id: ID!
   language: Language!
   phone: Phone
+input AdminPushNotificationSendInput {
+  accountId: String
+  body: String
+  title: String
+}
+
+type AdminPushNotificationSendPayload {
+  errors: [Error!]!
+  success: Boolean
 }
 
 """An Opaque Bearer token"""
@@ -231,11 +240,11 @@ scalar Memo
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
+  adminPushNotificationSend(input: AdminPushNotificationSendInput!): AdminPushNotificationSendPayload!
   businessDeleteMapInfo(input: BusinessDeleteMapInfoInput!): AccountDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
-  sendAdminPushNotification(input: SendAdminPushNotificationInput!): SendAdminPushNotificationPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
@@ -311,17 +320,6 @@ scalar SafeInt
 
 """(Positive) Satoshi amount"""
 scalar SatAmount
-
-input SendAdminPushNotificationInput {
-  accountId: String
-  body: String
-  title: String
-}
-
-type SendAdminPushNotificationPayload {
-  errors: [Error!]!
-  success: Boolean
-}
 
 union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
 

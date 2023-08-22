@@ -50,7 +50,7 @@ type PriceUpdateArgs<C extends DisplayCurrency> = {
   pricePerUsdCent: RealTimePrice<C>
 }
 
-type SendAdminPushNotificationArgs = {
+type AdminPushNotificationSendArgs = {
   deviceTokens: DeviceToken[]
   title: string
   body: string
@@ -75,7 +75,7 @@ interface INotificationsService {
 
   priceUpdate: <C extends DisplayCurrency>(args: PriceUpdateArgs<C>) => void
   sendBalance(args: SendBalanceArgs): Promise<true | NotificationsServiceError>
-  sendAdminPushNotification(
-    args: SendAdminPushNotificationArgs,
+  adminPushNotificationSend(
+    args: AdminPushNotificationSendArgs,
   ): Promise<true | NotificationsServiceError>
 }
