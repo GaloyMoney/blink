@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: use --attach on docker host'
-      sha: 9d971fd13c024c5f8e6888208a0311178453409d
+      commitTitle: 'chore: more generic test-on-docker-host'
+      sha: 0c17e2d69a71a42b83b8fbd0136abd27b8d97a74
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: use --attach on docker host'
-      sha: 9d971fd13c024c5f8e6888208a0311178453409d
+      commitTitle: 'chore: more generic test-on-docker-host'
+      sha: 0c17e2d69a71a42b83b8fbd0136abd27b8d97a74
     path: .
   path: ./vendor
 kind: LockConfig

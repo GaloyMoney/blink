@@ -30,7 +30,7 @@ ${SSH_PUB_KEY}
 EOF
 gcloud auth activate-service-account --key-file ${CI_ROOT}/gcloud-creds.json 2> /dev/null
 
-gcloud_ssh "docker ps -qa | xargs docker rm -fv || true; sudo rm -rf ${REPO_PATH}"
+gcloud_ssh "docker ps -qa | xargs docker rm -fv || true; sudo rm -rf ${REPO_PATH} || true; mkdir -p ${REPO_PATH} && cd ${REPO_PATH}/../ && rmdir $(basename ${REPO_PATH})"
 
 pushd ${REPO_PATH}
 
@@ -42,11 +42,11 @@ gcloud compute scp --ssh-key-file=${CI_ROOT}/login.ssh \
   --zone=${host_zone} \
   --project=${gcp_project} > /dev/null
 
-gcloud_ssh "cd ${REPO_PATH}; export TMP_ENV_CI=tmp.env.ci; export COMPOSE_PROJECT_NAME=${REPO_PATH}; docker compose pull; docker compose -f docker-compose.yml up ${TEST_CONTAINER} --attach ${TEST_CONTAINER} 2>&1"
+gcloud_ssh "cd ${REPO_PATH}; export TMP_ENV_CI=tmp.env.ci; export COMPOSE_PROJECT_NAME=$(basename ${REPO_PATH}); source .envrc || true;  docker compose pull; docker compose -f docker-compose.yml up ${TEST_CONTAINER} --attach ${TEST_CONTAINER} 2>&1"
 
 container_id=$(gcloud_ssh "docker ps -q -f status=exited -f name=${PWD##*/}-${TEST_CONTAINER}-")
 test_status=$(gcloud_ssh "docker inspect $container_id --format='{{.State.ExitCode}}'")
 
-gcloud_ssh "cd ${REPO_PATH}; docker compose down --remove-orphans --timeout 1"
+gcloud_ssh "cd ${REPO_PATH}; export COMPOSE_PROJECT_NAME=$(basename ${REPO_PATH}); docker compose down --remove-orphans --timeout 1"
 
 exit $test_status
