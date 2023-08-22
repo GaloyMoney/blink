@@ -301,7 +301,6 @@ type Query {
   listWalletIds(walletCurrency: WalletCurrency!): [WalletId!]!
   transactionById(id: ID!): Transaction
   transactionsByHash(hash: PaymentHash!): [Transaction]
-  userDetailsByAccountId(accountId: ID!): User!
   wallet(walletId: WalletId!): Wallet!
 }
 
