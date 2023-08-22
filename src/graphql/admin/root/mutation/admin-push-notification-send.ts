@@ -36,7 +36,7 @@ const AdminPushNotificationSendMutation = GT.Field<
   resolve: async (_, args) => {
     const { accountId, body, title } = args.input
 
-    const success = await Admin.adminPushNotificationSend({ accountId, title, body })
+    const success = await Admin.sendAdminPushNotification({ accountId, title, body })
 
     if (success instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(success)] }
