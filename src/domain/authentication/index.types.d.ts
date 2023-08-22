@@ -70,6 +70,20 @@ type AuthenticationKeyValidator = {
   validate(rawKey: string | undefined): true | ValidationError
 }
 
+type RegistrationPayload = {
+  userId: UserId
+  phone: PhoneNumber
+  phoneMetadata: PhoneMetadata | undefined
+}
+type RegistrationPayloadValidator = {
+  validate(rawBody: {
+    identity_id?: string
+    phone?: string
+    schema_id?: string
+    transient_payload?: { phoneMetadata?: PhoneMetadata }
+  }): RegistrationPayload | ValidationError
+}
+
 interface IAuthWithPhonePasswordlessService {
   loginToken(args: {
     phone: PhoneNumber

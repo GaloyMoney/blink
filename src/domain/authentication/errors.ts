@@ -17,6 +17,8 @@ export class EmailValidationSubmittedTooOftenError extends AuthenticationError {
 
 export class MissingAuthZHeaderForAuthNError extends ValidationError {}
 export class InvalidAuthZHeaderForAuthNError extends ValidationError {}
+export class MissingRegistrationPayloadPropertiesError extends ValidationError {}
+export class UnsupportedSchemaTypeError extends ValidationError {}
 
 export class AuthTokenUserIdMismatchError extends AuthenticationError {
   level = ErrorLevel.Critical

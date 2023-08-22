@@ -2,14 +2,17 @@ import cors from "cors"
 import express from "express"
 
 import { KRATOS_CALLBACK_API_KEY, getDefaultAccountsConfig } from "@config"
-import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
-import { createAccountWithPhoneIdentifier } from "@app/accounts"
-import { checkedToPhoneNumber } from "@domain/users"
-import { checkedToUserId } from "@domain/accounts"
+
+import { AuthenticationKeyValidator } from "@domain/authentication/key-validator"
+import { RegistrationPayloadValidator } from "@domain/authentication/registration-payload-validator"
 import { ErrorLevel } from "@domain/shared"
+import { InvalidPhoneNumber, InvalidUserId } from "@domain/errors"
+
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 import { baseLogger } from "@services/logger"
 import { SchemaIdType } from "@services/kratos"
-import { AuthenticationKeyValidator } from "@domain/authentication/key-validator"
+
+import { createAccountWithPhoneIdentifier } from "@app/accounts"
 
 const kratosCallback = express.Router({ caseSensitive: true })
 
@@ -32,66 +35,54 @@ kratosCallback.post(
       }
 
       const body = req.body
+      baseLogger.info(
+        { transient_payload: body.transient_payload },
+        "transient_payload callback kratos router",
+      )
 
-      const { identity_id: userId, phone: phoneRaw, schema_id, transient_payload } = body
+      const regPayloadValidator = RegistrationPayloadValidator(
+        SchemaIdType.PhoneNoPasswordV0,
+      )
+      const regPayload = regPayloadValidator.validate(body)
+      if (regPayload instanceof Error) {
+        let attributes: { userIdRaw: string; phoneRaw: string } | undefined = undefined
+        if (
+          regPayload instanceof InvalidUserId ||
+          regPayload instanceof InvalidPhoneNumber
+        ) {
+          attributes = {
+            userIdRaw: body.identity_id,
+            phoneRaw: body.phone,
+          }
+          recordExceptionInCurrentSpan({
+            error: regPayload,
+            level: ErrorLevel.Critical,
+            attributes,
+          })
+        }
 
-      if (schema_id !== SchemaIdType.PhoneNoPasswordV0) {
-        return res.status(400).send("unsupported schema_id")
-      }
-
-      if (!phoneRaw || !userId) {
-        baseLogger.error({ phoneRaw, userId }, "missing inputs")
-        res.status(400).send("missing inputs")
+        const { message: errMsg } = regPayload
+        baseLogger.error(attributes, errMsg)
+        res.status(400).send(errMsg)
         return
       }
 
-      const userIdChecked = checkedToUserId(userId)
-      if (userIdChecked instanceof Error) {
-        recordExceptionInCurrentSpan({
-          error: userIdChecked,
-          level: ErrorLevel.Critical,
-          attributes: {
-            userId,
-          },
-        })
-        baseLogger.error({ userIdChecked, userId }, "invalid userId")
-        res.status(400).send("invalid userId")
-        return
-      }
-
-      // phone+code flow
-      const phone = checkedToPhoneNumber(phoneRaw)
-      if (phone instanceof Error) {
-        recordExceptionInCurrentSpan({
-          error: phone,
-          level: ErrorLevel.Critical,
-          attributes: {
-            userId,
-            phoneRaw,
-          },
-        })
-        baseLogger.error({ phone, phoneRaw, userId }, "invalid phone")
-        res.status(400).send("invalid phone")
-        return
-      }
-      baseLogger.info({ transient_payload }, "transient_payload callback kratos router")
-
+      const { userId, phone, phoneMetadata } = regPayload
       const account = await createAccountWithPhoneIdentifier({
-        newAccountInfo: { phone, kratosUserId: userIdChecked },
+        newAccountInfo: { phone, kratosUserId: userId },
         config: getDefaultAccountsConfig(),
-        phoneMetadata: transient_payload?.phoneMetadata,
+        phoneMetadata,
       })
-
       if (account instanceof Error) {
         recordExceptionInCurrentSpan({
           error: account,
           level: ErrorLevel.Critical,
           attributes: {
             userId,
-            phoneRaw,
+            phone,
           },
         })
-        baseLogger.error({ account, phoneRaw }, `error createAccountWithPhoneIdentifier`)
+        baseLogger.error({ account, phone }, `error createAccountWithPhoneIdentifier`)
         res.status(500).send(`error createAccountWithPhoneIdentifier: ${account}`)
         return
       }
