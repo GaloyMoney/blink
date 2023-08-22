@@ -23,28 +23,18 @@ export const RegistrationPayloadValidator = (
     } = rawBody
 
     if (!(phoneRaw && userIdRaw && schemaIdRaw)) {
-      const errMsg = "missing inputs"
-      return new MissingRegistrationPayloadPropertiesError(errMsg)
+      return new MissingRegistrationPayloadPropertiesError()
     }
 
     if (schemaIdRaw !== schemaId) {
-      const errMsg = "unsupported schema_id"
-      return new UnsupportedSchemaTypeError(errMsg)
+      return new UnsupportedSchemaTypeError()
     }
 
     const userIdChecked = checkedToUserId(userIdRaw)
-    if (userIdChecked instanceof Error) {
-      const errMsg = "invalid userId"
-      userIdChecked.message = errMsg
-      return userIdChecked
-    }
+    if (userIdChecked instanceof Error) return userIdChecked
 
     const phoneChecked = checkedToPhoneNumber(phoneRaw)
-    if (phoneChecked instanceof Error) {
-      const errMsg = "invalid phone"
-      phoneChecked.message = errMsg
-      return phoneChecked
-    }
+    if (phoneChecked instanceof Error) return phoneChecked
 
     const phoneMetadata = transient_payload?.phoneMetadata
 

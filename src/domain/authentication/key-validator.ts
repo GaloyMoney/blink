@@ -7,15 +7,12 @@ export const AuthenticationKeyValidator = (
   internal_callback_api_key: string,
 ): AuthenticationKeyValidator => {
   const validate = (rawKey: string | undefined): true | ValidationError => {
-    let errMsg = ""
     switch (true) {
       case !rawKey:
-        errMsg = "missing authorization header"
-        return new MissingAuthZHeaderForAuthNError(errMsg)
+        return new MissingAuthZHeaderForAuthNError()
 
       case rawKey !== internal_callback_api_key:
-        errMsg = "incorrect authorization header"
-        return new InvalidAuthZHeaderForAuthNError(errMsg)
+        return new InvalidAuthZHeaderForAuthNError()
 
       default:
         return true
