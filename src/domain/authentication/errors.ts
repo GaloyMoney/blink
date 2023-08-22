@@ -15,10 +15,13 @@ export class IdentifierNotFoundError extends AuthenticationError {}
 
 export class EmailValidationSubmittedTooOftenError extends AuthenticationError {}
 
-export class MissingAuthZHeaderForAuthNError extends ValidationError {}
-export class InvalidAuthZHeaderForAuthNError extends ValidationError {}
-export class MissingRegistrationPayloadPropertiesError extends ValidationError {}
-export class UnsupportedSchemaTypeError extends ValidationError {}
+export class AuthZHeaderForAuthNValidationError extends ValidationError {}
+export class MissingAuthZHeaderForAuthNError extends AuthZHeaderForAuthNValidationError {}
+export class InvalidAuthZHeaderForAuthNError extends AuthZHeaderForAuthNValidationError {}
+
+export class RegistrationPayloadValidationError extends ValidationError {}
+export class MissingRegistrationPayloadPropertiesError extends RegistrationPayloadValidationError {}
+export class UnsupportedSchemaTypeError extends RegistrationPayloadValidationError {}
 
 export class AuthTokenUserIdMismatchError extends AuthenticationError {
   level = ErrorLevel.Critical

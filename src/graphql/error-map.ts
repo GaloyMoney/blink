@@ -631,6 +631,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidAuthZHeaderForAuthNError":
     case "MissingRegistrationPayloadPropertiesError":
     case "UnsupportedSchemaTypeError":
+    case "AuthZHeaderForAuthNValidationError":
+    case "RegistrationPayloadValidationError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`
