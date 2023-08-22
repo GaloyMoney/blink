@@ -1,24 +1,5 @@
-"""
-Accounts are core to the Galoy architecture. they have users, and own wallets
-"""
-type Account {
-  """
-  GPS coordinates for the account that can be used to place the related business on a map
-  """
-  coordinates: Coordinates
-  createdAt: Timestamp!
-  id: ID!
-  level: AccountLevel!
-  owner: User!
-  status: AccountStatus!
-  title: String
-  username: Username
-  uuid: String!
-  wallets: [Wallet!]!
-}
-
 type AccountDetailPayload {
-  accountDetails: Account
+  accountDetails: AuditedAccount
   errors: [Error!]!
 }
 
@@ -45,6 +26,35 @@ input AccountUpdateStatusInput {
   comment: String
   status: AccountStatus!
   uid: ID!
+}
+
+"""
+Accounts are core to the Galoy architecture. they have users, and own wallets
+"""
+type AuditedAccount {
+  """
+  GPS coordinates for the account that can be used to place the related business on a map
+  """
+  coordinates: Coordinates
+  createdAt: Timestamp!
+  id: ID!
+  level: AccountLevel!
+  owner: AuditedUser!
+  status: AccountStatus!
+  title: String
+  username: Username
+  uuid: String!
+  wallets: [Wallet!]!
+}
+
+type AuditedUser {
+  createdAt: Timestamp!
+
+  """Email address"""
+  email: Email
+  id: ID!
+  language: Language!
+  phone: Phone
 }
 
 """An Opaque Bearer token"""
@@ -280,10 +290,10 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
 }
 
 type Query {
-  accountDetailsByAccountId(accountId: ID!): Account!
-  accountDetailsByEmail(email: EmailAddress!): Account!
-  accountDetailsByUserPhone(phone: Phone!): Account!
-  accountDetailsByUsername(username: Username!): Account!
+  accountDetailsByAccountId(accountId: ID!): AuditedAccount!
+  accountDetailsByEmail(email: EmailAddress!): AuditedAccount!
+  accountDetailsByUserPhone(phone: Phone!): AuditedAccount!
+  accountDetailsByUsername(username: Username!): AuditedAccount!
   allLevels: [AccountLevel!]!
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
@@ -442,16 +452,6 @@ type UsdWallet implements Wallet {
     last: Int
   ): TransactionConnection
   walletCurrency: WalletCurrency!
-}
-
-type User {
-  createdAt: Timestamp!
-
-  """Email address"""
-  email: Email
-  id: ID!
-  language: Language!
-  phone: Phone
 }
 
 input UserLoginInput {

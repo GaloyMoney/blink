@@ -9,7 +9,7 @@ import Timestamp from "@graphql/shared/types/scalar/timestamp"
 import { IdentityRepository } from "@services/kratos"
 
 const User = GT.Object<User>({
-  name: "User",
+  name: "AuditedUser",
 
   fields: () => ({
     id: { type: GT.NonNullID },
