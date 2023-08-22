@@ -28,6 +28,17 @@ input AccountUpdateStatusInput {
   uid: ID!
 }
 
+input AdminPushNotificationSendInput {
+  accountId: String
+  body: String
+  title: String
+}
+
+type AdminPushNotificationSendPayload {
+  errors: [Error!]!
+  success: Boolean
+}
+
 """
 Accounts are core to the Galoy architecture. they have users, and own wallets
 """
@@ -55,15 +66,6 @@ type AuditedUser {
   id: ID!
   language: Language!
   phone: Phone
-input AdminPushNotificationSendInput {
-  accountId: String
-  body: String
-  title: String
-}
-
-type AdminPushNotificationSendPayload {
-  errors: [Error!]!
-  success: Boolean
 }
 
 """An Opaque Bearer token"""
