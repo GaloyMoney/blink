@@ -39,3 +39,17 @@ export const getAccountByAccountUuid = async (accountUuid: AccountUUID) => {
   const accounts = AccountsRepository()
   return accounts.findByUuid(accountUuidValid)
 }
+
+export const getUserByAccountUuid = async (accountUuid: AccountUUID) => {
+  const accountUuidValid = checkedToAccountUuid(accountUuid)
+  if (accountUuidValid instanceof Error) return accountUuidValid
+  const accounts = AccountsRepository()
+  const account = await accounts.findByUuid(accountUuidValid)
+  if (account instanceof Error) return account
+
+  const kratosUserId = account.kratosUserId
+  const usersRepo = UsersRepository()
+  const user = await usersRepo.findById(kratosUserId)
+  if (user instanceof Error) return user
+  return user
+}

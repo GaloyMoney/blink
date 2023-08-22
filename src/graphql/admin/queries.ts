@@ -11,6 +11,7 @@ import AccountDetailsByUserEmailQuery from "./root/query/account-details-by-emai
 import ListWalletIdsQuery from "./root/query/all-walletids"
 import WalletQuery from "./root/query/wallet"
 import AccountDetailsByAccountId from "./root/query/account-details-by-account-id"
+import UserDetailsByAccountId from "./root/query/user-details-by-account-id"
 
 export const queryFields = {
   unauthed: {},
@@ -20,6 +21,7 @@ export const queryFields = {
     accountDetailsByUsername: AccountDetailsByUsernameQuery,
     accountDetailsByEmail: AccountDetailsByUserEmailQuery,
     accountDetailsByAccountId: AccountDetailsByAccountId,
+    userDetailsByAccountId: UserDetailsByAccountId,
     transactionById: TransactionByIdQuery,
     transactionsByHash: TransactionsByHashQuery,
     lightningInvoice: LightningInvoiceQuery,
