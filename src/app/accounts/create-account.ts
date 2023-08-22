@@ -1,10 +1,4 @@
-import {
-  ConfigError,
-  TWILIO_ACCOUNT_SID,
-  getAdminAccounts,
-  getDefaultAccountsConfig,
-  isRunningJest,
-} from "@config"
+import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@config"
 
 import { WalletType } from "@domain/wallets"
 import { AccountLevel } from "@domain/accounts"
@@ -14,7 +8,6 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@services/twilio"
 
 const initializeCreatedAccount = async ({
   account,

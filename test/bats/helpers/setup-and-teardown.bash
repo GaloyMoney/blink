@@ -8,8 +8,6 @@ EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
 SUBSCRIBER_PID_FILE=$REPO_ROOT/test/bats/.gql_subscriber_pid
 CALLBACK_PID_FILE=$REPO_ROOT/test/bats/.callback_pid
 
-SERVER_LOG_FILE=$REPO_ROOT/test/bats/.e2e-server.log
-
 METRICS_ENDPOINT="localhost:3000/metrics"
 
 redis_cli() {
@@ -23,8 +21,7 @@ reset_redis() {
 start_server() {
   stop_server > /dev/null 2>&1 || true
 
-  config_file=${1:-${REPO_ROOT}/galoy.yaml}
-  background node lib/servers/graphql-main-server.js $config_file > $SERVER_LOG_FILE
+  background node lib/servers/graphql-main-server.js > .e2e-server.log
   echo $! > $SERVER_PID_FILE
 
   server_is_up() {
@@ -87,7 +84,7 @@ start_callback() {
 }
 
 stop_server() {
-  [[ -f "$SERVER_PID_FILE" ]] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null && rm -f $SERVER_PID_FILE || true
+  [[ -f "$SERVER_PID_FILE" ]] && kill -9 $(cat $SERVER_PID_FILE) > /dev/null || true
 }
 
 stop_ws_server() {
