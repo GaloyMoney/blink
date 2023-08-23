@@ -1,4 +1,3 @@
-import { EmailCodeInvalidError } from "@domain/authentication/errors"
 import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
@@ -7,13 +6,10 @@ import {
   getNextPage,
   validateKratosToken,
   AuthenticationKratosError,
-  IncompatibleSchemaUpgradeError,
   KratosError,
-  AuthWithEmailPasswordlessService,
   kratosValidateTotp,
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
-  SchemaIdType,
   kratosRemoveTotp,
 } from "@services/kratos"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
@@ -26,9 +22,7 @@ import { authenticator } from "otplib"
 
 import { sleep } from "@utils"
 
-import { getError, randomEmail, randomPhone } from "test/helpers"
-
-import { getEmailCode } from "test/helpers/kratos"
+import { getError, randomPhone } from "test/helpers"
 
 beforeAll(async () => {
   // await removeIdentities()
@@ -294,162 +288,6 @@ it("extend session", async () => {
   const newExpiresAt = new Date(newSession.expires_at)
 
   expect(initialExpiresAt.getTime()).toBeLessThan(newExpiresAt.getTime())
-})
-
-describe("phone+email schema", () => {
-  const authServiceEmail = AuthWithEmailPasswordlessService()
-  const authServicePhone = AuthWithPhonePasswordlessService()
-
-  let kratosUserId: UserId
-  const email = randomEmail()
-  const phone = randomPhone()
-
-  it("email verification", async () => {
-    const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
-    if (emailFlowId instanceof Error) throw emailFlowId
-
-    {
-      // TODO: look if there are rate limit on the side of kratos
-      const wrongCode = "000000" as EmailCode
-      const res = await authServiceEmail.validateCode({
-        code: wrongCode,
-        emailFlowId,
-      })
-      expect(res).toBeInstanceOf(EmailCodeInvalidError)
-
-      expect(await authServiceEmail.isEmailVerified({ email })).toBe(false)
-    }
-
-    {
-      const code = await getEmailCode(email)
-
-      const res = await authServiceEmail.validateCode({
-        code,
-        emailFlowId,
-      })
-      if (res instanceof Error) throw res
-      expect(res.email).toBe(email)
-
-      expect(await authServiceEmail.isEmailVerified({ email })).toBe(true)
-    }
-  })
-
-  it("login back to an email account", async () => {
-    const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
-    if (emailFlowId instanceof Error) throw emailFlowId
-
-    const code = await getEmailCode(email)
-
-    {
-      const wrongCode = "000000" as EmailCode
-      const res = await authServiceEmail.validateCode({
-        code: wrongCode,
-        emailFlowId: emailFlowId,
-      })
-      expect(res).toBeInstanceOf(EmailCodeInvalidError)
-    }
-
-    {
-      const res = await authServiceEmail.validateCode({
-        code,
-        emailFlowId: emailFlowId,
-      })
-      if (res instanceof Error) throw res
-      expect(res.email).toBe(email)
-    }
-
-    {
-      const res = await authServiceEmail.loginToken({ email })
-      if (res instanceof Error) throw res
-      expect(res.kratosUserId).toBe(kratosUserId)
-    }
-  })
-
-  it("login back to an email account using cookies auth", async () => {
-    const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
-    if (emailFlowId instanceof Error) throw emailFlowId
-
-    const code = await getEmailCode(email)
-
-    {
-      const wrongCode = "000000" as EmailCode
-      const res = await authServiceEmail.validateCode({
-        code: wrongCode,
-        emailFlowId: emailFlowId,
-      })
-      expect(res).toBeInstanceOf(EmailCodeInvalidError)
-    }
-
-    {
-      const res = await authServiceEmail.validateCode({
-        code,
-        emailFlowId: emailFlowId,
-      })
-      if (res instanceof Error) throw res
-      expect(res.email).toBe(email)
-    }
-
-    {
-      const res = await authServiceEmail.loginCookie({ email })
-      if (res instanceof Error) throw res
-      expect(res.cookiesToSendBackToClient.length).toBe(2)
-    }
-  })
-
-  // TODO: verification code expired
-
-  it("login back to an phone+email account by phone", async () => {
-    const res = await authServicePhone.loginToken({ phone })
-    if (res instanceof Error) throw res
-
-    expect(res.kratosUserId).toBe(kratosUserId)
-    const identity = await kratosAdmin.getIdentity({ id: kratosUserId })
-    expect(identity.data.schema_id).toBe("phone_email_no_password_v0")
-  })
-
-  it("remove email", async () => {
-    const res = await authServiceEmail.removeEmailFromIdentity({ kratosUserId })
-    if (res instanceof Error) throw res
-
-    const identity = await kratosAdmin.getIdentity({ id: kratosUserId })
-    expect(identity.data.schema_id).toBe(SchemaIdType.PhoneNoPasswordV0)
-    expect(identity.data.traits.email).toBe(undefined)
-  })
-
-  it("can't remove phone if there is no email attached", async () => {
-    const res = await authServiceEmail.removePhoneFromIdentity({ kratosUserId })
-    expect(res).toBeInstanceOf(IncompatibleSchemaUpgradeError)
-  })
-
-  it("remove phone from identity", async () => {
-    await authServiceEmail.addUnverifiedEmailToIdentity({
-      kratosUserId,
-      email,
-    })
-
-    const emailRegistrationId = await authServiceEmail.sendEmailWithCode({ email })
-    if (emailRegistrationId instanceof Error) throw emailRegistrationId
-
-    {
-      const code = await getEmailCode(email)
-      await authServiceEmail.validateCode({ code, emailFlowId: emailRegistrationId })
-    }
-
-    await authServiceEmail.removePhoneFromIdentity({ kratosUserId })
-
-    const identity = await kratosAdmin.getIdentity({ id: kratosUserId })
-    expect(identity.data.schema_id).toBe("email_no_password_v0")
-  })
-
-  it("verification on an inexistent email address result in not send an email", async () => {
-    const email = randomEmail()
-
-    const flow = await authServiceEmail.sendEmailWithCode({ email })
-    if (flow instanceof Error) throw flow
-
-    // there is no email
-    await expect(async () => getEmailCode(email)).rejects.toThrow()
-  })
 })
 
 describe("decoding link header", () => {

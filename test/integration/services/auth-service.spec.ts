@@ -1,4 +1,6 @@
 import {
+  EmailCodeInvalidError,
+  EmailUnverifiedError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
@@ -7,10 +9,13 @@ import {
   AuthWithPhonePasswordlessService,
   EmailAlreadyExistsError,
   IdentityRepository,
+  IncompatibleSchemaUpgradeError,
+  SchemaIdType,
   listSessions,
 } from "@services/kratos"
 
 import { randomEmail, randomPhone } from "test/helpers"
+import { getEmailCode } from "test/helpers/kratos"
 
 const createIdentity = async () => {
   const phone = randomPhone()
@@ -23,6 +28,7 @@ const createIdentity = async () => {
 
 describe("phoneNoPassword schema", () => {
   const authService = AuthWithPhonePasswordlessService()
+  const identities = IdentityRepository()
 
   describe("public selflogin api", () => {
     describe("user", () => {
@@ -42,6 +48,10 @@ describe("phoneNoPassword schema", () => {
         const res = await authService.loginToken({ phone })
         if (res instanceof Error) throw res
         expect(res.kratosUserId).toBe(kratosUserId)
+
+        const identity = await identities.getIdentity(kratosUserId)
+        if (identity instanceof Error) throw identity
+        expect(identity.schema).toBe(SchemaIdType.PhoneNoPasswordV0)
       })
 
       it("fails to log user in if doesn't exist", async () => {
@@ -68,8 +78,6 @@ describe("phoneNoPassword schema", () => {
   })
 
   describe("IdentityRepository", () => {
-    const identities = IdentityRepository()
-
     it("get user id through getUserIdFromIdentifier(phone)", async () => {
       const { phone, kratosUserId } = await createIdentity()
 
@@ -82,6 +90,7 @@ describe("phoneNoPassword schema", () => {
 
 describe("phone+email schema", () => {
   const authServiceEmail = AuthWithEmailPasswordlessService()
+  const authServicePhone = AuthWithPhonePasswordlessService()
   const identities = IdentityRepository()
 
   describe("user", () => {
@@ -129,6 +138,149 @@ describe("phone+email schema", () => {
         email,
       })
       expect(res).toBeInstanceOf(EmailAlreadyExistsError)
+    })
+
+    it("verifies email for identity", async () => {
+      const { kratosUserId } = await createIdentity()
+      const email = randomEmail()
+      await authServiceEmail.addUnverifiedEmailToIdentity({
+        kratosUserId,
+        email,
+      })
+
+      const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
+      if (emailFlowId instanceof Error) throw emailFlowId
+
+      // TODO: look if there are rate limit on the side of kratos
+      const wrongCode = "000000" as EmailCode
+      let res = await authServiceEmail.validateCode({
+        code: wrongCode,
+        emailFlowId,
+      })
+      expect(res).toBeInstanceOf(EmailCodeInvalidError)
+      expect(await authServiceEmail.isEmailVerified({ email })).toBe(false)
+
+      const code = await getEmailCode(email)
+      res = await authServiceEmail.validateCode({
+        code,
+        emailFlowId,
+      })
+      if (res instanceof Error) throw res
+      expect(res.email).toBe(email)
+      expect(await authServiceEmail.isEmailVerified({ email })).toBe(true)
+    })
+
+    it("fails to verify non-existent email", async () => {
+      const email = randomEmail()
+      const flow = await authServiceEmail.sendEmailWithCode({ email })
+      if (flow instanceof Error) throw flow
+
+      await expect(async () => getEmailCode(email)).rejects.toThrow()
+    })
+
+    it("gets login token using unverified email", async () => {
+      const { kratosUserId } = await createIdentity()
+      const email = randomEmail()
+      await authServiceEmail.addUnverifiedEmailToIdentity({
+        kratosUserId,
+        email,
+      })
+
+      const res = await authServiceEmail.loginToken({ email })
+      if (res instanceof Error) throw res
+      expect(res.kratosUserId).toBe(kratosUserId)
+      expect(res.authToken).toBeTruthy()
+    })
+
+    it("gets login cookie using unverified email", async () => {
+      const { kratosUserId } = await createIdentity()
+      const email = randomEmail()
+      await authServiceEmail.addUnverifiedEmailToIdentity({
+        kratosUserId,
+        email,
+      })
+
+      const res = await authServiceEmail.loginCookie({ email })
+      if (res instanceof Error) throw res
+      expect(res.kratosUserId).toBe(kratosUserId)
+      expect(res.cookiesToSendBackToClient.length).toBe(2)
+    })
+
+    it("gets login token & correct schema using phone", async () => {
+      const { phone, kratosUserId } = await createIdentity()
+      const email = randomEmail()
+      await authServiceEmail.addUnverifiedEmailToIdentity({
+        kratosUserId,
+        email,
+      })
+
+      const res = await authServicePhone.loginToken({ phone })
+      if (res instanceof Error) throw res
+      expect(res.kratosUserId).toBe(kratosUserId)
+      expect(res.authToken).toBeTruthy()
+
+      const identity = await identities.getIdentity(kratosUserId)
+      if (identity instanceof Error) throw identity
+      expect(identity.schema).toBe(SchemaIdType.PhoneEmailNoPasswordV0)
+    })
+
+    it("removes email from identity", async () => {
+      const { kratosUserId } = await createIdentity()
+      const email = randomEmail()
+      await authServiceEmail.addUnverifiedEmailToIdentity({
+        kratosUserId,
+        email,
+      })
+
+      const res = await authServiceEmail.removeEmailFromIdentity({ kratosUserId })
+      if (res instanceof Error) throw res
+
+      const identity = await identities.getIdentity(kratosUserId)
+      if (identity instanceof Error) throw identity
+      expect(identity.schema).toBe(SchemaIdType.PhoneNoPasswordV0)
+    })
+
+    it("fails to remove phone if no email attached", async () => {
+      const { kratosUserId } = await createIdentity()
+      const res = await authServiceEmail.removePhoneFromIdentity({ kratosUserId })
+      expect(res).toBeInstanceOf(IncompatibleSchemaUpgradeError)
+    })
+
+    it("removes phone from identity with verified email", async () => {
+      const { kratosUserId } = await createIdentity()
+      const email = randomEmail()
+      await authServiceEmail.addUnverifiedEmailToIdentity({
+        kratosUserId,
+        email,
+      })
+
+      const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
+      if (emailFlowId instanceof Error) throw emailFlowId
+      const code = await getEmailCode(email)
+      const validated = await authServiceEmail.validateCode({
+        code,
+        emailFlowId,
+      })
+      if (validated instanceof Error) throw validated
+
+      const res = await authServiceEmail.removePhoneFromIdentity({ kratosUserId })
+      expect(res).not.toBeInstanceOf(Error)
+
+      const identity = await identities.getIdentity(kratosUserId)
+      if (identity instanceof Error) throw identity
+      expect(identity.schema).toBe(SchemaIdType.EmailNoPasswordV0)
+    })
+
+    it("fails to remove phone with unverified email", async () => {
+      const { kratosUserId } = await createIdentity()
+      const email = randomEmail()
+      await authServiceEmail.addUnverifiedEmailToIdentity({
+        kratosUserId,
+        email,
+      })
+
+      const res = await authServiceEmail.removePhoneFromIdentity({ kratosUserId })
+      expect(res).toBeInstanceOf(EmailUnverifiedError)
     })
   })
 
