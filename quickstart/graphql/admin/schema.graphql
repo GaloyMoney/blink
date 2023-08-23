@@ -28,6 +28,17 @@ input AccountUpdateStatusInput {
   uid: ID!
 }
 
+input AdminPushNotificationSendInput {
+  accountId: String
+  body: String
+  title: String
+}
+
+type AdminPushNotificationSendPayload {
+  errors: [Error!]!
+  success: Boolean
+}
+
 """
 Accounts are core to the Galoy architecture. they have users, and own wallets
 """
@@ -231,6 +242,7 @@ scalar Memo
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
+  adminPushNotificationSend(input: AdminPushNotificationSendInput!): AdminPushNotificationSendPayload!
   businessDeleteMapInfo(input: BusinessDeleteMapInfoInput!): AccountDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!

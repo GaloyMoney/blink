@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: renaming auth to authentication (#3108)...'
-      sha: ec875403999fbb06191f7929caedf8146517ed03
+      commitTitle: 'feat: send admin push notification (#3099)...'
+      sha: c69fb281ae8b6ed04563b2288c74188ac4d3186d
       tags:
-      - 0.13.4-1-gec8754039
+      - 0.13.5-1-gc69fb281a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: renaming auth to authentication (#3108)...'
-      sha: ec875403999fbb06191f7929caedf8146517ed03
+      commitTitle: 'feat: send admin push notification (#3099)...'
+      sha: c69fb281ae8b6ed04563b2288c74188ac4d3186d
       tags:
-      - 0.13.4-1-gec8754039
+      - 0.13.5-1-gc69fb281a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: renaming auth to authentication (#3108)...'
-      sha: ec875403999fbb06191f7929caedf8146517ed03
+      commitTitle: 'feat: send admin push notification (#3099)...'
+      sha: c69fb281ae8b6ed04563b2288c74188ac4d3186d
       tags:
-      - 0.13.4-1-gec8754039
+      - 0.13.5-1-gc69fb281a
     path: ./
   path: ./graphql
 kind: LockConfig
