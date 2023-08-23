@@ -60,6 +60,7 @@ groups:
       - build-websocket-edge-image
       - install-deps
       - bump-image-in-chart
+      - quickstart
       - release
   - name: sync-proto
     jobs:
@@ -211,6 +212,76 @@ jobs:
         params:
           image: image/image.tar
 
+  - name: quickstart
+    serial: true
+    plan:
+      - in_parallel:
+        - get: repo
+          trigger: true
+          passed:
+            - build-debug-edge-image
+            - build-migrate-edge-image
+            - build-edge-image
+            - build-websocket-edge-image
+        - get: pipeline-tasks
+        - get: edge-image
+          passed: [build-edge-image]
+          params:
+            format: oci
+        - get: migrate-edge-image
+          passed: [build-migrate-edge-image]
+          params:
+            format: oci
+        - get: websocket-edge-image
+          passed: [build-websocket-edge-image]
+          params:
+            format: oci
+        - get: version
+      - task: prep-quickstart
+        config:
+          platform: linux
+          image_resource: #@ release_task_image_config()
+          inputs:
+            - name: repo
+            - name: edge-image
+            - name: migrate-edge-image
+            - name: pipeline-tasks
+          outputs:
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/prep-quickstart.sh
+      - { put: docker-host, params: { acquire: true } }
+      - task: test-on-docker-host
+        attempts: 2
+        timeout: 12m
+        tags: ["galoy-staging"]
+        config:
+          platform: linux
+          image_resource: #@ release_task_image_config()
+          inputs:
+          - name: pipeline-tasks
+          - name: docker-host
+          - name: repo
+            path: galoy-quickstart
+          caches:
+          - path: cargo-home
+          - path: cargo-target-dir
+          params:
+            REPO_PATH: galoy-quickstart/quickstart
+            GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
+            SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
+            SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
+            TEST_CONTAINER: quickstart-test
+          run:
+            path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+        ensure:
+          put: docker-host
+          params:
+            release: docker-host
+      - put: repo
+        params:
+          repository: repo
+          merge: true
   - name: release
     plan:
       - in_parallel:

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -eux
 
 export CI_ROOT=$(pwd)
 
