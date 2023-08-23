@@ -1,7 +1,7 @@
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import * as AccountsMod from "./accounts"
-import * as AuthMod from "./authentication"
+import * as AuthenticationMod from "./authentication"
 import * as AdminMod from "./admin"
 import * as CommMod from "./comm"
 import * as LightningMod from "./lightning"
@@ -15,7 +15,7 @@ import * as SwapMod from "./swap"
 
 const allFunctions = {
   Accounts: { ...AccountsMod },
-  Auth: { ...AuthMod },
+  Authentication: { ...AuthenticationMod },
   Admin: { ...AdminMod },
   Comm: { ...CommMod },
   Lightning: { ...LightningMod },
@@ -43,7 +43,7 @@ for (subModule in allFunctions) {
 
 export const {
   Accounts,
-  Auth,
+  Authentication,
   Admin,
   Comm,
   Lightning,

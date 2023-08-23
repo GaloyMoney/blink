@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import OneTimeAuthCode from "@graphql/shared/types/scalar/one-time-auth-code"
 
 import Phone from "@graphql/shared/types/scalar/phone"
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import UpgradePayload from "@graphql/public/types/payload/upgrade-payload"
 
@@ -50,7 +50,7 @@ const UserLoginUpgradeMutation = GT.Field<
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const res = await Auth.loginDeviceUpgradeWithPhone({
+    const res = await Authentication.loginDeviceUpgradeWithPhone({
       phone,
       code,
       ip,

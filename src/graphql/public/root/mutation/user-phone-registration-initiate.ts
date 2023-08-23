@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import Phone from "@graphql/shared/types/scalar/phone"
 import SuccessPayload from "@graphql/shared/types/payload/success-payload"
@@ -47,7 +47,7 @@ const UserPhoneRegistrationInitiateMutation = GT.Field<
     if (channelInput?.toLowerCase() === ChannelType.Whatsapp)
       channel = ChannelType.Whatsapp
 
-    const success = await Auth.requestPhoneCodeForAuthedUser({
+    const success = await Authentication.requestPhoneCodeForAuthedUser({
       phone,
       ip,
       channel,

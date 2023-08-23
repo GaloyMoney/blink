@@ -3,7 +3,7 @@ import OneTimeAuthCode from "@graphql/shared/types/scalar/one-time-auth-code"
 
 import Phone from "@graphql/shared/types/scalar/phone"
 import AuthTokenPayload from "@graphql/shared/types/payload/auth-token"
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const UserLoginInput = GT.Input({
@@ -46,7 +46,7 @@ const UserLoginMutation = GT.Field<{
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const res = await Auth.loginWithPhoneToken({
+    const res = await Authentication.loginWithPhoneToken({
       phone,
       code,
       ip,
