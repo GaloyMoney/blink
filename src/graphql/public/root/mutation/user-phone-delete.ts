@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import UserPhoneDeletePayload from "@graphql/public/types/payload/user-phone-delete"
 
@@ -10,7 +10,7 @@ const UserPhoneDeleteMutation = GT.Field<null, null, GraphQLContextAuth>({
   },
   type: GT.NonNull(UserPhoneDeletePayload),
   resolve: async (_, args, { user }) => {
-    const me = await Auth.removePhoneFromIdentity({
+    const me = await Authentication.removePhoneFromIdentity({
       userId: user.id,
     })
 

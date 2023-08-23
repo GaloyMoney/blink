@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import Phone from "@graphql/shared/types/scalar/phone"
 import SuccessPayload from "@graphql/shared/types/payload/success-payload"
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { getCaptcha } from "@config"
 import { ChannelType } from "@domain/phone-provider"
@@ -47,7 +47,7 @@ const UserRequestAuthCodeMutation = GT.Field({
     if (channelInput?.toLowerCase() === ChannelType.Whatsapp)
       channel = ChannelType.Whatsapp
 
-    const success = await Auth.requestPhoneCodeForUnauthedUser({
+    const success = await Authentication.requestPhoneCodeForUnauthedUser({
       phone,
       ip,
       channel,

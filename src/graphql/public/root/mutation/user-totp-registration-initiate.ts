@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import AuthToken from "@graphql/shared/types/scalar/auth-token"
 import UserTotpRegistrationInitiatePayload from "@graphql/public/types/payload/user-totp-registration-initiate"
@@ -37,7 +37,7 @@ const UserTotpRegistrationInitiateMutation = GT.Field<
       return { errors: [{ message: authToken.message }] }
     }
 
-    const res = await Auth.initiateTotpRegistration({
+    const res = await Authentication.initiateTotpRegistration({
       authToken,
     })
 

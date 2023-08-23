@@ -1,6 +1,6 @@
 import express from "express"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 
 import {
   addAttributesToCurrentSpan,
@@ -44,7 +44,7 @@ authRouter.post(
       const deviceId = username
 
       try {
-        const authToken = await Auth.loginWithDevice({
+        const authToken = await Authentication.loginWithDevice({
           username,
           password,
           ip,

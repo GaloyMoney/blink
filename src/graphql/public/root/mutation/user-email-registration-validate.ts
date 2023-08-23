@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import EmailRegistrationId from "@graphql/public/types/scalar/email-verify-id"
 import OneTimeAuthCode from "@graphql/shared/types/scalar/one-time-auth-code"
@@ -49,7 +49,7 @@ const UserEmailRegistrationValidateMutation = GT.Field<
     // FIXME: should the user be the only that can verify the email?
     // not sure what attack vector it could limit, but I guess
     // this is probably a safe assumption we should add it nonetheless
-    const me = await Auth.verifyEmail({
+    const me = await Authentication.verifyEmail({
       emailRegistrationId,
       code,
     })

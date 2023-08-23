@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import UserTotpDeletePayload from "@graphql/public/types/payload/user-totp-delete"
 import AuthToken from "@graphql/shared/types/scalar/auth-token"
@@ -37,7 +37,7 @@ const UserTotpDeleteMutation = GT.Field<
       return { errors: [{ message: authToken.message }] }
     }
 
-    const me = await Auth.removeTotp({
+    const me = await Authentication.removeTotp({
       authToken,
       userId: user.id,
     })

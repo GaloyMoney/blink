@@ -1,7 +1,7 @@
 import cors from "cors"
 import express from "express"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 
 import { mapError } from "@graphql/error-map"
 import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
@@ -45,7 +45,7 @@ authRouter.post(
       const code = req.body.authCode
       const phone = checkedToPhoneNumber(req.body.phoneNumber)
       if (phone instanceof Error) return res.status(400).send("invalid phone")
-      const loginResp = await Auth.loginWithPhoneCookie({
+      const loginResp = await Authentication.loginWithPhoneCookie({
         phone,
         code,
         ip,
