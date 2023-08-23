@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore(release): [ci skip] bump quickstart image to sha256@bcbd3dda7bf9a24820fb011f0a9ba4c291622d10542c1b9ffa8cb9fa3d8d5c5f'
-      sha: 0931fa6600b902fa9b16b6bfb16a697e76a6f8f2
+      commitTitle: 'chore: renaming auth to authentication (#3108)...'
+      sha: ec875403999fbb06191f7929caedf8146517ed03
       tags:
-      - 0.13.3-1-g0931fa660
+      - 0.13.4-1-gec8754039
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore(release): [ci skip] bump quickstart image to sha256@bcbd3dda7bf9a24820fb011f0a9ba4c291622d10542c1b9ffa8cb9fa3d8d5c5f'
-      sha: 0931fa6600b902fa9b16b6bfb16a697e76a6f8f2
+      commitTitle: 'chore: renaming auth to authentication (#3108)...'
+      sha: ec875403999fbb06191f7929caedf8146517ed03
       tags:
-      - 0.13.3-1-g0931fa660
+      - 0.13.4-1-gec8754039
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore(release): [ci skip] bump quickstart image to sha256@bcbd3dda7bf9a24820fb011f0a9ba4c291622d10542c1b9ffa8cb9fa3d8d5c5f'
-      sha: 0931fa6600b902fa9b16b6bfb16a697e76a6f8f2
+      commitTitle: 'chore: renaming auth to authentication (#3108)...'
+      sha: ec875403999fbb06191f7929caedf8146517ed03
       tags:
-      - 0.13.3-1-g0931fa660
+      - 0.13.4-1-gec8754039
     path: ./
   path: ./graphql
 kind: LockConfig
