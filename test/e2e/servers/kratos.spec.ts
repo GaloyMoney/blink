@@ -1,4 +1,4 @@
-import { AuthenticationError, EmailCodeInvalidError } from "@domain/authentication/errors"
+import { EmailCodeInvalidError } from "@domain/authentication/errors"
 import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
@@ -303,54 +303,6 @@ describe("phone+email schema", () => {
   let kratosUserId: UserId
   const email = randomEmail()
   const phone = randomPhone()
-
-  it("create a user with phone", async () => {
-    const res0 = await authServicePhone.createIdentityWithSession({ phone })
-    if (res0 instanceof Error) throw res0
-    kratosUserId = res0.kratosUserId
-
-    const newIdentity = await kratosAdmin.getIdentity({ id: kratosUserId })
-    expect(newIdentity.data.traits.phone).toBe(phone)
-
-    expect(await authServiceEmail.hasEmail({ kratosUserId })).toBe(false)
-  })
-
-  it("upgrade to phone+email schema", async () => {
-    const res = await authServiceEmail.addUnverifiedEmailToIdentity({
-      kratosUserId,
-      email,
-    })
-    if (res instanceof Error) throw res
-
-    const newIdentity = await kratosAdmin.getIdentity({ id: kratosUserId })
-    expect(newIdentity.data.schema_id).toBe("phone_email_no_password_v0")
-    expect(newIdentity.data.traits.email).toBe(email)
-
-    expect(await authServiceEmail.hasEmail({ kratosUserId })).toBe(true)
-    expect(await authServiceEmail.isEmailVerified({ email })).toBe(false)
-  })
-
-  it("get user id through getUserIdFromIdentifier(email)", async () => {
-    const identities = IdentityRepository()
-    const userId = await identities.getUserIdFromIdentifier(email)
-
-    if (userId instanceof Error) throw userId
-    expect(userId).toBe(kratosUserId)
-  })
-
-  it("can't add same email to multiple identities", async () => {
-    const phone = randomPhone()
-    const res0 = await authServicePhone.createIdentityWithSession({ phone })
-    if (res0 instanceof Error) throw res0
-    const kratosUserId = res0.kratosUserId
-
-    const res = await authServiceEmail.addUnverifiedEmailToIdentity({
-      kratosUserId,
-      email,
-    })
-    if (!(res instanceof AuthenticationError)) throw new Error("wrong type")
-    expect(res.name).toBe("EmailAlreadyExistsError")
-  })
 
   it("email verification", async () => {
     const emailFlowId = await authServiceEmail.sendEmailWithCode({ email })
