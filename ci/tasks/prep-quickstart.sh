@@ -14,4 +14,4 @@ make re-render
 pushd ../
 
 git add -A
-git commit -m "chore(release): bump quickstart image to ${digest}"
+git commit -m "chore(release): [ci skip] bump quickstart image to ${digest}"
