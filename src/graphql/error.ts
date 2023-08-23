@@ -321,6 +321,17 @@ export class EmailAlreadyExistsError extends CustomApolloError {
   }
 }
 
+export class CodeExpiredError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Code has expired. please ask for a new code and try again",
+      forwardToClient: true,
+      code: "CODE_EXPIRED_ERROR",
+      ...errData,
+    })
+  }
+}
+
 export class SessionRefreshRequiredError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({

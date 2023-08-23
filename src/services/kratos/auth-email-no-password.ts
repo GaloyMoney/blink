@@ -19,6 +19,7 @@ import knex from "knex"
 
 import { createCookieLoginFlow } from "./cookie"
 import {
+  CodeExpiredKratosError,
   EmailAlreadyExistsError,
   IncompatibleSchemaUpgradeError,
   KratosError,
@@ -184,6 +185,10 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         }
 
         return { email, kratosUserId, totpRequired }
+      }
+      // kratos return a 403 - Forbidden error when the code has expired
+      if (isAxiosError(err) && err.response?.status === 403) {
+        return new CodeExpiredKratosError()
       }
       return new UnknownKratosError(err)
     }
