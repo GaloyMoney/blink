@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: unknown error on code expired (#3105)...'
-      sha: 7116974291f172289b49d9d6c022b1abac60d6d7
+      commitTitle: 'chore(release): [ci skip] bump quickstart image to sha256@bcbd3dda7bf9a24820fb011f0a9ba4c291622d10542c1b9ffa8cb9fa3d8d5c5f'
+      sha: 0931fa6600b902fa9b16b6bfb16a697e76a6f8f2
       tags:
-      - 0.13.3
+      - 0.13.3-1-g0931fa660
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: unknown error on code expired (#3105)...'
-      sha: 7116974291f172289b49d9d6c022b1abac60d6d7
+      commitTitle: 'chore(release): [ci skip] bump quickstart image to sha256@bcbd3dda7bf9a24820fb011f0a9ba4c291622d10542c1b9ffa8cb9fa3d8d5c5f'
+      sha: 0931fa6600b902fa9b16b6bfb16a697e76a6f8f2
       tags:
-      - 0.13.3
+      - 0.13.3-1-g0931fa660
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: unknown error on code expired (#3105)...'
-      sha: 7116974291f172289b49d9d6c022b1abac60d6d7
+      commitTitle: 'chore(release): [ci skip] bump quickstart image to sha256@bcbd3dda7bf9a24820fb011f0a9ba4c291622d10542c1b9ffa8cb9fa3d8d5c5f'
+      sha: 0931fa6600b902fa9b16b6bfb16a697e76a6f8f2
       tags:
-      - 0.13.3
+      - 0.13.3-1-g0931fa660
     path: ./
   path: ./graphql
 kind: LockConfig
