@@ -4,7 +4,7 @@ start-deps:
 	docker compose up bats-deps -d
 
 start-deps-integration:
-	docker compose up integration-deps -d
+	CONTEXT=".integration" docker compose up integration-deps -d
 
 update-price-history:
 	docker compose run price-history node servers/history/cron.js
@@ -102,7 +102,7 @@ execute-bats-from-within-container:
 
 integration-in-ci:
 	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests --attach integration-tests
+	CONTEXT=".integration" TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests --attach integration-tests
 
 # NODE_OPTIONS line should be removed whenever we upgrade yarn.lock to see if
 # heap allocation issue has been resolved in dependencies (fails at 2048).
