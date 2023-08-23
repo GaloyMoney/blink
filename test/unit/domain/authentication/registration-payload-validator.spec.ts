@@ -7,13 +7,13 @@ import { InvalidPhoneNumber, InvalidUserId } from "@domain/errors"
 
 import { SchemaIdType } from "@services/kratos"
 
-import { randomPhone } from "test/helpers"
+import { randomPhone, randomUserId } from "test/helpers/random"
 
 describe("RegistrationPayloadValidator", () => {
   const validator = RegistrationPayloadValidator(SchemaIdType.PhoneNoPasswordV0)
 
   it("validates valid body", () => {
-    const rawUserId = crypto.randomUUID()
+    const rawUserId = randomUserId()
     const rawPhone = randomPhone()
     const expectedPayload: RegistrationPayload = {
       userId: rawUserId as UserId,
@@ -57,7 +57,7 @@ describe("RegistrationPayloadValidator", () => {
   it("return invalid schema_id error", () => {
     const invalidSchemaId = "invalid-schema-id"
     const validatedBadSchemaId = validator.validate({
-      identity_id: crypto.randomUUID(),
+      identity_id: randomUserId(),
       phone: randomPhone(),
       schema_id: invalidSchemaId,
     })
@@ -76,7 +76,7 @@ describe("RegistrationPayloadValidator", () => {
 
   it("return invalid phone error", () => {
     const validatedBadPhone = validator.validate({
-      identity_id: crypto.randomUUID(),
+      identity_id: randomUserId(),
       phone: "invalid-phone",
       schema_id: SchemaIdType.PhoneNoPasswordV0,
     })

@@ -1,5 +1,3 @@
-import { randomUUID, randomBytes } from "crypto"
-
 import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
@@ -7,6 +5,8 @@ import { AccountsRepository } from "@services/mongoose"
 import { getCurrencyMajorExponent, priceAmountFromNumber } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { AmountCalculator } from "@domain/shared"
+
+import { randomUserId } from "./random"
 
 export * from "./bitcoin-core"
 export * from "./bria"
@@ -16,6 +16,7 @@ export * from "./generate-hash"
 export * from "./ledger"
 export * from "./lightning"
 export * from "./price"
+export * from "./random"
 export * from "./rate-limit"
 export * from "./redis"
 export * from "./shared"
@@ -23,16 +24,6 @@ export * from "./user"
 export * from "./wallet"
 
 const calc = AmountCalculator()
-
-export const randomEmail = () =>
-  (randomBytes(20).toString("hex") + "@galoy.io") as EmailAddress
-
-export const randomPassword = () => randomBytes(20).toString("hex") as IdentityPassword
-
-export const randomPhone = () =>
-  `+1415${Math.floor(Math.random() * 9000000 + 1000000)}` as PhoneNumber
-
-export const randomUserId = () => randomUUID() as UserId
 
 // TODO: use same function as createUserAndWallet
 export const randomAccount = async () => {
