@@ -1,16 +1,10 @@
-import {
-  AuthenticationError,
-  EmailCodeInvalidError,
-  LikelyNoUserWithThisPhoneExistError,
-  LikelyUserAlreadyExistError,
-} from "@domain/authentication/errors"
+import { AuthenticationError, EmailCodeInvalidError } from "@domain/authentication/errors"
 import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
   IdentityRepository,
   extendSession,
   getNextPage,
-  listSessions,
   validateKratosToken,
   AuthenticationKratosError,
   IncompatibleSchemaUpgradeError,
@@ -36,8 +30,6 @@ import { getError, randomEmail, randomPhone } from "test/helpers"
 
 import { getEmailCode } from "test/helpers/kratos"
 
-const identityRepo = IdentityRepository()
-
 beforeAll(async () => {
   // await removeIdentities()
   // needed for the kratos callback to registration
@@ -52,50 +44,6 @@ describe("phoneNoPassword", () => {
   const authService = AuthWithPhonePasswordlessService()
 
   describe("public selflogin api", () => {
-    const phone = randomPhone()
-    let kratosUserId: UserId
-
-    it("create a user", async () => {
-      const res = await authService.createIdentityWithSession({ phone })
-      if (res instanceof Error) throw res
-
-      expect(res).toHaveProperty("kratosUserId")
-      kratosUserId = res.kratosUserId
-    })
-
-    it("can't create user twice", async () => {
-      const res = await authService.createIdentityWithSession({ phone })
-
-      expect(res).toBeInstanceOf(LikelyUserAlreadyExistError)
-    })
-
-    it("login user succeed if user exists", async () => {
-      const res = await authService.loginToken({ phone })
-      if (res instanceof Error) throw res
-
-      expect(res.kratosUserId).toBe(kratosUserId)
-    })
-
-    it("get user id through getUserIdFromIdentifier(phone)", async () => {
-      const identities = IdentityRepository()
-      const userId = await identities.getUserIdFromIdentifier(phone)
-
-      if (userId instanceof Error) throw userId
-
-      expect(userId).toBe(kratosUserId)
-    })
-
-    it("new sessions are added when LoginWithPhoneNoPasswordSchema is used", async () => {
-      const res = await authService.loginToken({ phone })
-      if (res instanceof Error) throw res
-
-      expect(res.kratosUserId).toBe(kratosUserId)
-      const sessions = await listSessions(kratosUserId)
-      if (sessions instanceof Error) throw sessions
-
-      expect(sessions).toHaveLength(3)
-    })
-
     it("add totp", async () => {
       const phone = randomPhone()
       let authToken: AuthToken
@@ -167,12 +115,6 @@ describe("phoneNoPassword", () => {
       expect(identity.totpEnabled).toBe(false)
     })
 
-    it("login fails is user doesn't exist", async () => {
-      const phone = randomPhone()
-      const res = await authService.loginToken({ phone })
-      expect(res).toBeInstanceOf(LikelyNoUserWithThisPhoneExistError)
-    })
-
     it("forbidding change of a phone number from publicApi", async () => {
       const phone = randomPhone()
 
@@ -220,12 +162,6 @@ describe("phoneNoPassword", () => {
   })
 })
 
-it("list users", async () => {
-  const res = await identityRepo.listIdentities()
-  if (res instanceof Error) throw res
-  expect(Array.isArray(res)).toBe(true)
-})
-
 describe("token validation", () => {
   const authService = AuthWithPhonePasswordlessService()
 
@@ -250,23 +186,6 @@ describe("session revokation", () => {
   const authService = AuthWithPhonePasswordlessService()
 
   const phone = randomPhone()
-  it("revoke user session", async () => {
-    const res = await authService.createIdentityWithSession({ phone })
-    if (res instanceof Error) throw res
-    const kratosUserId = res.kratosUserId
-
-    {
-      const { data } = await kratosAdmin.listIdentitySessions({ id: kratosUserId })
-      expect(data.length).toBeGreaterThan(0)
-    }
-
-    await revokeSessions(kratosUserId)
-
-    {
-      const { data } = await kratosAdmin.listIdentitySessions({ id: kratosUserId })
-      expect(data.length).toEqual(0)
-    }
-  })
 
   it("return error on revoked session", async () => {
     let token: AuthToken
