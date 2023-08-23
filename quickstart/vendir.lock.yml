@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add quickstart-test container'
-      sha: 75c88ef737bc70f39ad49d6f87f52030da40bbca
+      commitTitle: 'ci: add quicksart to concourse (#3101)'
+      sha: b9ac66812e12db1444bca3585a16074e13c96f19
       tags:
-      - 0.12.7-8-g75c88ef73
+      - 0.13.1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add quickstart-test container'
-      sha: 75c88ef737bc70f39ad49d6f87f52030da40bbca
+      commitTitle: 'ci: add quicksart to concourse (#3101)'
+      sha: b9ac66812e12db1444bca3585a16074e13c96f19
       tags:
-      - 0.12.7-8-g75c88ef73
+      - 0.13.1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add quickstart-test container'
-      sha: 75c88ef737bc70f39ad49d6f87f52030da40bbca
+      commitTitle: 'ci: add quicksart to concourse (#3101)'
+      sha: b9ac66812e12db1444bca3585a16074e13c96f19
       tags:
-      - 0.12.7-8-g75c88ef73
+      - 0.13.1
     path: ./
   path: ./graphql
 kind: LockConfig
