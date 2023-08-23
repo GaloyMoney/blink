@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: send admin push notification (#3099)...'
-      sha: c69fb281ae8b6ed04563b2288c74188ac4d3186d
+      commitTitle: 'chore: move ''extendSessions'' to its own file (#3107)'
+      sha: 8e8cbcbadd4e2ab19294ef072d2463c7aa9b9aa7
       tags:
-      - 0.13.5-1-gc69fb281a
+      - 0.13.6-1-g8e8cbcbad
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: send admin push notification (#3099)...'
-      sha: c69fb281ae8b6ed04563b2288c74188ac4d3186d
+      commitTitle: 'chore: move ''extendSessions'' to its own file (#3107)'
+      sha: 8e8cbcbadd4e2ab19294ef072d2463c7aa9b9aa7
       tags:
-      - 0.13.5-1-gc69fb281a
+      - 0.13.6-1-g8e8cbcbad
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: send admin push notification (#3099)...'
-      sha: c69fb281ae8b6ed04563b2288c74188ac4d3186d
+      commitTitle: 'chore: move ''extendSessions'' to its own file (#3107)'
+      sha: 8e8cbcbadd4e2ab19294ef072d2463c7aa9b9aa7
       tags:
-      - 0.13.5-1-gc69fb281a
+      - 0.13.6-1-g8e8cbcbad
     path: ./
   path: ./graphql
 kind: LockConfig
