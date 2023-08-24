@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: add contact check for intraledger settled in bats (#3072)...'
-      sha: 4614d585d2b53bfb01d170df7f0aba11bf4cf896
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4fe380262439d5be84646cf6f12e5fe32b37db79
       tags:
-      - 0.13.9-4-g4614d585d
+      - 0.13.9-7-g4fe380262
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: add contact check for intraledger settled in bats (#3072)...'
-      sha: 4614d585d2b53bfb01d170df7f0aba11bf4cf896
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4fe380262439d5be84646cf6f12e5fe32b37db79
       tags:
-      - 0.13.9-4-g4614d585d
+      - 0.13.9-7-g4fe380262
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: add contact check for intraledger settled in bats (#3072)...'
-      sha: 4614d585d2b53bfb01d170df7f0aba11bf4cf896
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4fe380262439d5be84646cf6f12e5fe32b37db79
       tags:
-      - 0.13.9-4-g4614d585d
+      - 0.13.9-7-g4fe380262
     path: ./
   path: ./graphql
 kind: LockConfig
