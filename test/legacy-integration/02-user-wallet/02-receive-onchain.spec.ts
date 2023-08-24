@@ -220,9 +220,8 @@ describe("With Bria", () => {
         }),
     )
 
-    const { result: transactions, error: txnsError } = await getTransactionsForWalletId(
-      walletId,
-    )
+    const { result: transactions, error: txnsError } =
+      await getTransactionsForWalletId(walletId)
     if (txnsError instanceof Error || transactions === null) {
       throw txnsError
     }

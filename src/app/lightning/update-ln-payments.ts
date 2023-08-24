@@ -142,9 +142,8 @@ const updateLnPaymentsPaginated = async ({
 
     persistedPaymentLookup.isCompleteRecord = true
 
-    const updatedPaymentLookup = await LnPaymentsRepository().update(
-      persistedPaymentLookup,
-    )
+    const updatedPaymentLookup =
+      await LnPaymentsRepository().update(persistedPaymentLookup)
     if (updatedPaymentLookup instanceof Error) {
       baseLogger.error(
         { error: updatedPaymentLookup },
