@@ -1,14 +1,16 @@
 import Redlock, { ExecutionError } from "redlock"
 
+import { NETWORK } from "@config"
+
 import {
   ResourceAttemptsLockServiceError,
   ResourceExpiredLockServiceError,
   UnknownLockServiceError,
 } from "@domain/lock"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+import { parseErrorMessageFromUnknown } from "@domain/shared"
 
 import { redis } from "@services/redis"
-import { NETWORK } from "@config"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 const durationLockIdempotencyKey = (1000 * 60 * 60) as MilliSeconds // 1 hour
 
@@ -94,7 +96,7 @@ export const redlock = async <Signal extends RedlockAbortSignal, Ret>({
       return new ResourceAttemptsLockServiceError()
     }
 
-    return new UnknownLockServiceError()
+    return new UnknownLockServiceError(parseErrorMessageFromUnknown(error))
   }
 }
 

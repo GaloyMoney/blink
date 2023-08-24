@@ -18,7 +18,7 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
-import * as LnFeesImpl from "@domain/payments/ln-fees"
+import * as LnFeesImpl from "@domain/payments"
 
 import {
   AccountsRepository,
@@ -154,7 +154,7 @@ describe("initiated via lightning", () => {
       expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails when user has insufficient balance", async () => {
@@ -182,7 +182,7 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails to pay zero amount invoice without separate amount", async () => {
@@ -210,7 +210,7 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(LnPaymentRequestNonZeroAmountRequiredError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails if user sends balance amount without accounting for fee", async () => {
@@ -250,7 +250,7 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
@@ -259,10 +259,10 @@ describe("initiated via lightning", () => {
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [],
-        defaultPubkey: () => DEFAULT_PUBKEY,
+        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
       })
 
-      const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments/ln-fees")
+      const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments")
       const lndFeesSpy = jest.spyOn(LnFeesImpl, "LnFees").mockReturnValue({
         ...LnFeesOrig(),
         verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
@@ -318,8 +318,8 @@ describe("initiated via lightning", () => {
       )
 
       // Restore system state
-      lndFeesSpy.mockReset()
-      lndServiceSpy.mockReset()
+      lndFeesSpy.mockRestore()
+      lndServiceSpy.mockRestore()
     })
 
     it("persists ln-payment on successful ln send", async () => {
@@ -327,6 +327,7 @@ describe("initiated via lightning", () => {
       const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
+        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
         listAllPubkeys: () => [],
         payInvoiceViaPaymentDetails: () => ({
           roundedUpFee: toSats(0),
@@ -370,7 +371,7 @@ describe("initiated via lightning", () => {
       expect(lnPaymentAfter.paymentHash).toEqual(noAmountLnInvoice.paymentHash)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
   })
 
@@ -439,7 +440,7 @@ describe("initiated via lightning", () => {
       expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails if sends to self", async () => {
@@ -488,7 +489,7 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(SelfPaymentError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails to send less-than-1-cent amount to usd recipient", async () => {
@@ -539,7 +540,7 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("calls sendNotification on successful intraledger send", async () => {
@@ -600,8 +601,8 @@ describe("initiated via lightning", () => {
       expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
 
       // Restore system state
-      pushNotificationsServiceSpy.mockReset()
-      lndServiceSpy.mockReset()
+      pushNotificationsServiceSpy.mockRestore()
+      lndServiceSpy.mockRestore()
     })
   })
 })
