@@ -156,6 +156,19 @@ describe("phoneNoPassword schema", () => {
     })
   })
 
+  describe("admin api", () => {
+    it("create a user with admin api, and can login with self api", async () => {
+      const phone = randomPhone()
+      const kratosUserId = await authService.createIdentityNoSession({ phone })
+      if (kratosUserId instanceof Error) throw kratosUserId
+
+      const res = await authService.loginToken({ phone })
+      if (res instanceof Error) throw res
+
+      expect(res.kratosUserId).toBe(kratosUserId)
+    })
+  })
+
   describe("IdentityRepository", () => {
     it("gets user id from phone", async () => {
       const { phone, kratosUserId } = await createIdentity()

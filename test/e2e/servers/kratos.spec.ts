@@ -135,19 +135,6 @@ describe("phoneNoPassword", () => {
       expect(err).toBeTruthy()
     })
   })
-
-  describe("admin api", () => {
-    it("create a user with admin api, and can login with self api", async () => {
-      const phone = randomPhone()
-      const kratosUserId = await authService.createIdentityNoSession({ phone })
-      if (kratosUserId instanceof Error) throw kratosUserId
-
-      const res2 = await authService.loginToken({ phone })
-      if (res2 instanceof Error) throw res2
-
-      expect(res2.kratosUserId).toBe(kratosUserId)
-    })
-  })
 })
 
 describe("token validation", () => {
