@@ -37,7 +37,7 @@ main() {
   echo "Hitting graphql endpoints"
 
   echo "Running on network:"
-  for i in {1..10}; do
+  for i in {1..20}; do
     exec_graphql "anon" "globals"
     [[ "$(echo $output | jq -r '.data.globals.network')" = 'regtest' ]] && break
     sleep 1
