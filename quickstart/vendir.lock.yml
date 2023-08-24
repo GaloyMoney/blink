@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removing bos as a dependency (#3106)...'
-      sha: 7a8d37dd240995aa7167112b45317f733556021d
+      commitTitle: 'chore: bump dev dependencies (#3084)...'
+      sha: abea6603a256ca4288ea9a464a9b660e05d1ffbb
       tags:
-      - 0.13.7-1-g7a8d37dd2
+      - 0.13.8-1-gabea6603a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removing bos as a dependency (#3106)...'
-      sha: 7a8d37dd240995aa7167112b45317f733556021d
+      commitTitle: 'chore: bump dev dependencies (#3084)...'
+      sha: abea6603a256ca4288ea9a464a9b660e05d1ffbb
       tags:
-      - 0.13.7-1-g7a8d37dd2
+      - 0.13.8-1-gabea6603a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: removing bos as a dependency (#3106)...'
-      sha: 7a8d37dd240995aa7167112b45317f733556021d
+      commitTitle: 'chore: bump dev dependencies (#3084)...'
+      sha: abea6603a256ca4288ea9a464a9b660e05d1ffbb
       tags:
-      - 0.13.7-1-g7a8d37dd2
+      - 0.13.8-1-gabea6603a
     path: ./
   path: ./graphql
 kind: LockConfig
