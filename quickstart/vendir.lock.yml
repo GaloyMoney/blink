@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: move ''extendSessions'' to its own file (#3107)'
-      sha: 8e8cbcbadd4e2ab19294ef072d2463c7aa9b9aa7
+      commitTitle: 'chore: removing bos as a dependency (#3106)...'
+      sha: 7a8d37dd240995aa7167112b45317f733556021d
       tags:
-      - 0.13.6-1-g8e8cbcbad
+      - 0.13.7-1-g7a8d37dd2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: move ''extendSessions'' to its own file (#3107)'
-      sha: 8e8cbcbadd4e2ab19294ef072d2463c7aa9b9aa7
+      commitTitle: 'chore: removing bos as a dependency (#3106)...'
+      sha: 7a8d37dd240995aa7167112b45317f733556021d
       tags:
-      - 0.13.6-1-g8e8cbcbad
+      - 0.13.7-1-g7a8d37dd2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: move ''extendSessions'' to its own file (#3107)'
-      sha: 8e8cbcbadd4e2ab19294ef072d2463c7aa9b9aa7
+      commitTitle: 'chore: removing bos as a dependency (#3106)...'
+      sha: 7a8d37dd240995aa7167112b45317f733556021d
       tags:
-      - 0.13.6-1-g8e8cbcbad
+      - 0.13.7-1-g7a8d37dd2
     path: ./
   path: ./graphql
 kind: LockConfig
