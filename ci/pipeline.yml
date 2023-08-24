@@ -278,7 +278,7 @@ jobs:
           put: docker-host
           params:
             release: docker-host
-      - put: repo
+      - put: repo-out
         params:
           repository: repo
           merge: true
@@ -588,6 +588,13 @@ jobs:
 
 resources:
   -  #@ repo_resource(True)
+  - name: repo-out
+    type: git
+    source:
+      fetch_tags: true
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key
   -  #@ pipeline_tasks_resource()
 
   -  #@ nodejs_deps_resource(True)
