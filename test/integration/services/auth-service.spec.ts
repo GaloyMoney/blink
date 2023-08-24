@@ -14,11 +14,13 @@ import {
   IncompatibleSchemaUpgradeError,
   KratosError,
   SchemaIdType,
+  extendSession,
   listSessions,
   validateKratosToken,
 } from "@services/kratos"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import { revokeSessions } from "@services/kratos/tests-but-not-prod"
+import { sleep } from "@utils"
 
 import { randomEmail, randomPassword, randomPhone, randomUsername } from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
@@ -152,6 +154,27 @@ describe("phoneNoPassword schema", () => {
         const isSession2Valid = await validateKratosToken(session2Token)
         expect(isSession1Valid).toBeDefined()
         expect(isSession2Valid).toBeInstanceOf(KratosError)
+      })
+
+      it("extend session", async () => {
+        const { authToken } = await createIdentity()
+
+        const res = await kratosPublic.toSession({ xSessionToken: authToken })
+        const sessionKratos = res.data
+        if (!sessionKratos.expires_at) throw Error("should have expired_at")
+        const initialExpiresAt = new Date(sessionKratos.expires_at)
+
+        const sessionId = sessionKratos.id as SessionId
+
+        await extendSession(sessionId)
+        await sleep(200)
+
+        const res2 = await kratosPublic.toSession({ xSessionToken: authToken })
+        const newSession = res2.data
+        if (!newSession.expires_at) throw Error("should have expired_at")
+        const newExpiresAt = new Date(newSession.expires_at)
+
+        expect(initialExpiresAt.getTime()).toBeLessThan(newExpiresAt.getTime())
       })
     })
   })

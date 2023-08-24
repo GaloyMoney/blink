@@ -1,7 +1,6 @@
 import {
   AuthWithPhonePasswordlessService,
   IdentityRepository,
-  extendSession,
   getNextPage,
   validateKratosToken,
   AuthenticationKratosError,
@@ -183,31 +182,6 @@ describe.skip("update status", () => {
     if (res instanceof Error) throw res
     expect(res.kratosUserId).toBe(kratosUserId)
   })
-})
-
-it("extend session", async () => {
-  const authService = AuthWithPhonePasswordlessService()
-
-  const phone = randomPhone()
-  const res = await authService.createIdentityWithSession({ phone })
-  if (res instanceof Error) throw res
-
-  expect(res).toHaveProperty("kratosUserId")
-  const res2 = await kratosPublic.toSession({ xSessionToken: res.authToken })
-  const sessionKratos = res2.data
-  if (!sessionKratos.expires_at) throw Error("should have expired_at")
-  const initialExpiresAt = new Date(sessionKratos.expires_at)
-
-  const sessionId = sessionKratos.id as SessionId
-
-  await extendSession(sessionId)
-  await sleep(200)
-  const res3 = await kratosPublic.toSession({ xSessionToken: res.authToken })
-  const newSession = res3.data
-  if (!newSession.expires_at) throw Error("should have expired_at")
-  const newExpiresAt = new Date(newSession.expires_at)
-
-  expect(initialExpiresAt.getTime()).toBeLessThan(newExpiresAt.getTime())
 })
 
 describe("decoding link header", () => {
