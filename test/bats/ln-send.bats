@@ -13,6 +13,7 @@ setup_file() {
 
   lnds_init
   initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+  user_update_username "$ALICE_TOKEN_NAME"
   initialize_user_from_onchain "$BOB_TOKEN_NAME" "$BOB_PHONE" "$CODE"
 }
 
@@ -149,12 +150,24 @@ usd_amount=50
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
 }
 
-@test "ln-send: intraledger settled - lnInvoicePaymentSend from btc to btc" {
+@test "ln-send: intraledger settled - lnInvoicePaymentSend from btc to btc, with contacts check" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
-  recipient_token_name="$BOB_TOKEN_NAME"
+  recipient_token_name="user_$RANDOM"
+  recipient_phone="$(random_phone)"
+  login_user \
+    "$recipient_token_name" \
+    "$recipient_phone"  \
+    "$CODE"
+  user_update_username "$recipient_token_name"
   btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+
+  # Check is not contact before send
+  run is_contact "$token_name" "$recipient_token_name"
+  [[ "$status" -ne "0" ]] || exit 1
+  run is_contact "$recipient_token_name" "$token_name"
+  [[ "$status" -ne "0" ]] || exit 1
 
   variables=$(
     jq -n \
@@ -184,6 +197,12 @@ usd_amount=50
   # Check for settled
   retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
   check_for_ln_initiated_settled "$recipient_token_name" "$payment_hash"
+
+  # Check is contact after send
+  run is_contact "$token_name" "$recipient_token_name"
+  [[ "$status" == "0" ]] || exit 1
+  run is_contact "$recipient_token_name" "$token_name"
+  [[ "$status" == "0" ]] || exit 1
 }
 
 @test "ln-send: intraledger settled - lnInvoicePaymentSend from usd to btc" {

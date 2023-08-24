@@ -134,6 +134,10 @@ balance_for_check() {
   echo $(( $abs_lnd_balance_sync + $abs_assets_eq_liabilities ))
 }
 
+random_phone() {
+  printf "+1%010d\n" $(( ($RANDOM * 1000000) + ($RANDOM % 1000000) ))
+}
+
 login_user() {
   local token_name=$1
   local phone=$2
@@ -221,8 +225,8 @@ initialize_user_from_onchain() {
 }
 
 balance_for_wallet() {
-  token_name="$1"
-  wallet="$2"
+  local token_name="$1"
+  local wallet="$2"
 
   exec_graphql "$token_name" 'wallets-for-account' > /dev/null
   if [[ "$wallet" == "USD" ]]; then
@@ -230,4 +234,18 @@ balance_for_wallet() {
   else
     graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .balance'
   fi
+}
+
+user_update_username() {
+  local token_name="$1"
+
+  local variables=$(
+    jq -n \
+    --arg username "$token_name" \
+    '{input: {username: $username}}'
+  )
+  exec_graphql "$token_name" 'user-update-username' "$variables"
+  num_errors="$(graphql_output '.data.userUpdateUsername.errors | length')"
+  username="$(graphql_output '.data.userUpdateUsername.user.username')"
+  [[ "$num_errors" == "0" || "$username" == "$token_name" ]] || exit 1
 }
