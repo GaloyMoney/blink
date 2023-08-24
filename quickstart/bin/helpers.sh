@@ -79,14 +79,6 @@ bitcoin_signer_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-signer-1" bitcoin-cli $@
 }
 
-bitcoind_init() {
-  bitcoin_cli createwallet "outside" || true
-  bitcoin_cli -generate 200 > /dev/null 2>&1
-
-  bitcoin_signer_cli createwallet "dev" || true
-  bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat $GALOY_DIR/galoy/test/bats/bitcoind_signer_descriptors.json)"
-}
-
 gql_file() {
   echo "$GALOY_DIR/galoy/test/bats/gql/$1.gql"
 }
