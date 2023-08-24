@@ -1,16 +1,5 @@
-import {
-  AuthWithPhonePasswordlessService,
-  IdentityRepository,
-  validateKratosToken,
-  kratosValidateTotp,
-  kratosInitiateTotp,
-  kratosElevatingSessionWithTotp,
-  kratosRemoveTotp,
-} from "@services/kratos"
+import { AuthWithPhonePasswordlessService, validateKratosToken } from "@services/kratos"
 import { kratosPublic } from "@services/kratos/private"
-import { authenticator } from "otplib"
-
-import { sleep } from "@utils"
 
 import { getError, randomPhone } from "test/helpers"
 
@@ -28,77 +17,6 @@ describe("phoneNoPassword", () => {
   const authService = AuthWithPhonePasswordlessService()
 
   describe("public selflogin api", () => {
-    it("add totp", async () => {
-      const phone = randomPhone()
-      let authToken: AuthToken
-      let userId: UserId
-
-      let totpSecret: string
-      {
-        const res0 = await authService.createIdentityWithSession({ phone })
-        if (res0 instanceof Error) throw res0
-
-        authToken = res0.authToken
-
-        const res1 = await kratosInitiateTotp(authToken)
-        if (res1 instanceof Error) throw res1
-
-        const { totpSecret: totpSecret_, totpRegistrationId } = res1
-        totpSecret = totpSecret_
-        const totpCode = authenticator.generate(totpSecret)
-
-        const res = kratosValidateTotp({ totpRegistrationId, totpCode, authToken })
-        if (res instanceof Error) throw res
-
-        const res2 = await validateKratosToken(authToken)
-        if (res2 instanceof Error) throw res2
-        expect(res2).toEqual(
-          expect.objectContaining({
-            kratosUserId: expect.any(String),
-            session: expect.any(Object),
-          }),
-        )
-
-        // wait for the identity to be updated?
-        // some cache or asynchronous method need to run on the kratos side?
-        await sleep(100)
-        const identity = await IdentityRepository().getIdentity(res2.kratosUserId)
-        if (identity instanceof Error) throw identity
-        expect(identity.totpEnabled).toBe(true)
-
-        userId = res2.kratosUserId
-      }
-
-      {
-        const res = await authService.loginToken({ phone })
-        if (res instanceof Error) throw res
-        expect(res).toEqual(
-          expect.objectContaining({
-            kratosUserId: undefined,
-            authToken: expect.any(String),
-          }),
-        )
-
-        const totpCode = authenticator.generate(totpSecret) as TotpCode
-
-        const res2 = await kratosElevatingSessionWithTotp({
-          authToken: res.authToken,
-          totpCode,
-        })
-        if (res2 instanceof Error) throw res2
-        expect(res2).toBe(true)
-      }
-
-      await kratosRemoveTotp(authToken)
-
-      // wait for the identity to be updated?
-      // some cache or asynchronous method need to run on the kratos side?
-      await sleep(100)
-      const identity = await IdentityRepository().getIdentity(userId)
-      if (identity instanceof Error) throw identity
-      expect(identity.totpEnabled).toBe(false)
-    })
-
     it("forbidding change of a phone number from publicApi", async () => {
       const phone = randomPhone()
 
