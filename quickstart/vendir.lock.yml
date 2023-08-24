@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: move reimburse-failed-usd test to bats (#3081)...'
-      sha: f81b5541dc860beac0075d1e4ba5e9c5738216dc
+      commitTitle: 'test: add contact check for intraledger settled in bats (#3072)...'
+      sha: 4614d585d2b53bfb01d170df7f0aba11bf4cf896
       tags:
-      - 0.13.9-2-gf81b5541d
+      - 0.13.9-4-g4614d585d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: move reimburse-failed-usd test to bats (#3081)...'
-      sha: f81b5541dc860beac0075d1e4ba5e9c5738216dc
+      commitTitle: 'test: add contact check for intraledger settled in bats (#3072)...'
+      sha: 4614d585d2b53bfb01d170df7f0aba11bf4cf896
       tags:
-      - 0.13.9-2-gf81b5541d
+      - 0.13.9-4-g4614d585d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: move reimburse-failed-usd test to bats (#3081)...'
-      sha: f81b5541dc860beac0075d1e4ba5e9c5738216dc
+      commitTitle: 'test: add contact check for intraledger settled in bats (#3072)...'
+      sha: 4614d585d2b53bfb01d170df7f0aba11bf4cf896
       tags:
-      - 0.13.9-2-gf81b5541d
+      - 0.13.9-4-g4614d585d
     path: ./
   path: ./graphql
 kind: LockConfig
