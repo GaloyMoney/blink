@@ -204,11 +204,11 @@ initialize_user_from_onchain() {
   local code="$3"
 
   local btc_amount_in_btc=${4:-"0.01"}
-  local usd_amount_in_sats=${5:-"75000"}
+  local usd_amount_in_sats=${5:-"200000"}
 
   login_user "$token_name" "$phone" "$code"
 
-fund_wallet_from_onchain \
+  fund_wallet_from_onchain \
     "$token_name" \
     "$token_name.btc_wallet_id" \
     "$btc_amount_in_btc"

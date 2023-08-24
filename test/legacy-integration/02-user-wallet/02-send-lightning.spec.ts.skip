@@ -1,58 +1,32 @@
-import { createHash, randomBytes } from "crypto"
-
-import { Lightning, Payments } from "@app"
+import { Payments } from "@app"
 import * as PaymentsHelpers from "@app/payments/helpers"
 
 import { AccountLimitsChecker } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
-import {
-  InvalidFeeProbeStateError,
-  PaymentSendStatus,
-  PaymentStatus,
-} from "@domain/bitcoin/lightning"
-import { LnFees, WalletPriceRatio } from "@domain/payments"
-import {
-  AmountCalculator,
-  paymentAmountFromNumber,
-  WalletCurrency,
-  ZERO_SATS,
-} from "@domain/shared"
+import { InvalidFeeProbeStateError, PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { WalletCurrency } from "@domain/shared"
 
-import { DealerPriceService } from "@services/dealer-price"
-import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
-import { baseLogger } from "@services/logger"
-import { LnPaymentsRepository, WalletsRepository } from "@services/mongoose"
-
-import { setupPaymentSubscribe } from "@servers/trigger"
+import { WalletsRepository } from "@services/mongoose"
 
 import { setUsername } from "@app/accounts"
 
 import {
   bitcoindClient,
-  cancelHodlInvoice,
   checkIsBalanced,
-  createHodlInvoice,
   createInvoice,
   createUserAndWalletFromPhone,
   fundWalletIdFromOnchain,
   getAccountByPhone,
   getBalanceHelper,
   getDefaultWalletIdByPhone,
-  getInvoiceAttempt,
   getTransactionsForWalletId,
   getUsdWalletIdByPhone,
   lnd1,
   lndOutside1,
   randomPhone,
-  subscribeToPayments,
-  waitFor,
-  waitUntilChannelBalanceSyncIntegration,
 } from "test/helpers"
-
-const dealerFns = DealerPriceService()
-const calc = AmountCalculator()
 
 jest.mock("@config", () => {
   return {
@@ -97,7 +71,7 @@ jest.mock("@services/lnd", () => {
   }
 })
 
-let initBalanceB: Satoshis, initBalanceUsdB: UsdCents
+let initBalanceB: Satoshis
 const amountInvoice = toSats(1000)
 
 const phoneA = randomPhone()
@@ -166,7 +140,6 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   initBalanceB = toSats(await getBalanceHelper(walletIdB))
-  initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 })
 
 afterEach(async () => {
@@ -258,18 +231,9 @@ describe("UserWallet - Lightning Pay", () => {
     expect(balanceAfter).toBe(0)
   })
 
-  const createInvoiceHash = () => {
-    const randomSecret = () => randomBytes(32)
-    const sha256 = (buffer) => createHash("sha256").update(buffer).digest("hex")
-    const secret = randomSecret()
-    const id = sha256(secret)
-    return { id, secret: secret.toString("hex") }
-  }
-
   const functionToTests = [
     {
       name: "getFeeAndPay",
-      applyMaxFee: false,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const wallet = await WalletsRepository().findById(walletId)
@@ -300,7 +264,6 @@ describe("UserWallet - Lightning Pay", () => {
     },
     {
       name: "directPay",
-      applyMaxFee: true,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const paymentResult = await Payments.payInvoiceByWalletId({
@@ -315,7 +278,7 @@ describe("UserWallet - Lightning Pay", () => {
     },
   ]
 
-  functionToTests.forEach(({ fn, name, applyMaxFee }) => {
+  functionToTests.forEach(({ fn, name }) => {
     describe(`${name}`, () => {
       it("pay invoice", async () => {
         const { request } = await createInvoice({
@@ -331,113 +294,6 @@ describe("UserWallet - Lightning Pay", () => {
         const finalBalance = await getBalanceHelper(walletIdB)
         expect(finalBalance).toBe(initBalanceB - amountInvoice)
       })
-
-      it("reimburse failed USD payment", async () => {
-        const { id } = createInvoiceHash()
-        const paymentHash = id as PaymentHash
-
-        const subPayments = subscribeToPayments({ lnd: lnd1 })
-        setupPaymentSubscribe({ subPayments })
-
-        const btcInvoiceAmount = paymentAmountFromNumber({
-          amount: amountInvoice,
-          currency: WalletCurrency.Btc,
-        })
-        if (btcInvoiceAmount instanceof Error) throw btcInvoiceAmount
-        const usdInvoiceAmount = await dealerFns.getCentsFromSatsForImmediateSell(
-          btcInvoiceAmount,
-        )
-        if (usdInvoiceAmount instanceof Error) throw usdInvoiceAmount
-
-        const { request } = await createHodlInvoice({
-          id,
-          lnd: lndOutside1,
-          tokens: amountInvoice,
-        })
-        const result = await fn({ account: accountB, walletId: walletIdUsdB })({
-          invoice: request,
-        })
-        if (result instanceof Error) throw result
-
-        expect(result).toBe(PaymentSendStatus.Pending)
-        baseLogger.info("payment has timeout. status is pending.")
-        const intermediateBalance = await getBalanceHelper(walletIdUsdB)
-
-        const priceRatio = WalletPriceRatio({
-          btc: btcInvoiceAmount,
-          usd: usdInvoiceAmount,
-        })
-        if (priceRatio instanceof Error) return priceRatio
-        const btcProtocolAndBankFee = applyMaxFee
-          ? LnFees().maxProtocolAndBankFee({
-              amount: btcInvoiceAmount.amount,
-              currency: WalletCurrency.Btc,
-            })
-          : ZERO_SATS
-        const usdProtocolAndBankFee = priceRatio.convertFromBtc(btcProtocolAndBankFee)
-
-        const amountInvoiceWithFee = calc.add(usdInvoiceAmount, usdProtocolAndBankFee)
-
-        expect(intermediateBalance).toBe(
-          initBalanceUsdB - Number(amountInvoiceWithFee.amount),
-        )
-
-        await cancelHodlInvoice({ id, lnd: lndOutside1 })
-
-        await waitFor(async () => {
-          const count = await LedgerService().getPendingPaymentsCount(walletIdUsdB)
-          if (count instanceof Error) throw count
-
-          return count === 0
-        })
-
-        // Test 'lnpayment' is failed
-        const lnPaymentUpdateOnSettled = await Lightning.updateLnPayments()
-        if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
-
-        const lnPaymentOnSettled = await LnPaymentsRepository().findByPaymentHash(
-          paymentHash,
-        )
-        expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
-        if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
-
-        const lndService = LndService()
-        if (lndService instanceof Error) throw lndService
-        const payments = await lndService.listFailedPayments({
-          pubkey: lnPaymentOnSettled.sentFromPubkey,
-          after: undefined,
-        })
-        if (payments instanceof Error) throw payments
-
-        const payment = payments.lnPayments.find((p) => p.paymentHash === id)
-        expect(payment).not.toBeUndefined()
-        if (payment === undefined) throw new Error("Could not find payment in lnd")
-
-        expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Failed)
-
-        // Check for invoice
-        const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
-        expect(invoice).toBeNull()
-
-        // wait for balance updates because invoice event
-        // arrives before wallet balances updates in lnd
-        await waitUntilChannelBalanceSyncIntegration()
-
-        // Check BTC wallet balance
-        const btcAmountInvoiceWithFee = calc.add(btcInvoiceAmount, btcProtocolAndBankFee)
-        const finalBalanceBtc = await getBalanceHelper(walletIdB)
-        expect(finalBalanceBtc).toBe(
-          initBalanceB + Number(btcAmountInvoiceWithFee.amount),
-        )
-
-        // Check USD wallet balance
-        const finalBalanceUsd = await getBalanceHelper(walletIdUsdB)
-        expect(finalBalanceUsd).toBe(
-          initBalanceUsdB - Number(amountInvoiceWithFee.amount),
-        )
-
-        subPayments.removeAllListeners()
-      }, 60000)
     })
   })
 })
