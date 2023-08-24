@@ -105,10 +105,9 @@ describe("WalletInvoiceBuilder", () => {
 
       describe("with amount", () => {
         it("registers and persists invoice with no conversion", async () => {
-          const WIBWithAmount =
-            await WIBWithRecipient.withExpiration(expirationInMinutes).withAmount(
-              uncheckedAmount,
-            )
+          const WIBWithAmount = await WIBWithRecipient.withExpiration(
+            expirationInMinutes,
+          ).withAmount(uncheckedAmount)
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
@@ -141,8 +140,9 @@ describe("WalletInvoiceBuilder", () => {
 
       describe("with no amount", () => {
         it("registers and persists invoice", async () => {
-          const WIBWithAmount =
-            await WIBWithRecipient.withExpiration(expirationInMinutes).withoutAmount()
+          const WIBWithAmount = await WIBWithRecipient.withExpiration(
+            expirationInMinutes,
+          ).withoutAmount()
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
@@ -182,10 +182,9 @@ describe("WalletInvoiceBuilder", () => {
 
       describe("with amount", () => {
         it("registers and persists invoice with conversion", async () => {
-          const WIBWithAmount =
-            await WIBWithRecipient.withExpiration(expirationInMinutes).withAmount(
-              uncheckedAmount,
-            )
+          const WIBWithAmount = await WIBWithRecipient.withExpiration(
+            expirationInMinutes,
+          ).withAmount(uncheckedAmount)
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
@@ -222,8 +221,9 @@ describe("WalletInvoiceBuilder", () => {
 
       describe("with no amount", () => {
         it("registers and persists invoice", async () => {
-          const WIBWithAmount =
-            await WIBWithRecipient.withExpiration(expirationInMinutes).withoutAmount()
+          const WIBWithAmount = await WIBWithRecipient.withExpiration(
+            expirationInMinutes,
+          ).withoutAmount()
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {

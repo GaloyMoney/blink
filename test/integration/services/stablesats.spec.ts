@@ -16,8 +16,9 @@ const dealerFns = DealerPriceService()
 
 const centsFromSats = async (btc: BtcPaymentAmount) => {
   // Conversions with spreads
-  const getCentsFromSatsForImmediateBuy =
-    await dealerFns.getCentsFromSatsForImmediateBuy(btc)
+  const getCentsFromSatsForImmediateBuy = await dealerFns.getCentsFromSatsForImmediateBuy(
+    btc,
+  )
   if (getCentsFromSatsForImmediateBuy instanceof Error) {
     throw getCentsFromSatsForImmediateBuy
   }
@@ -57,8 +58,9 @@ const centsFromSats = async (btc: BtcPaymentAmount) => {
 
 const satsFromCents = async (usd: UsdPaymentAmount) => {
   //  Conversions with spreads
-  const getSatsFromCentsForImmediateBuy =
-    await dealerFns.getSatsFromCentsForImmediateBuy(usd)
+  const getSatsFromCentsForImmediateBuy = await dealerFns.getSatsFromCentsForImmediateBuy(
+    usd,
+  )
   if (getSatsFromCentsForImmediateBuy instanceof Error) {
     throw getSatsFromCentsForImmediateBuy
   }

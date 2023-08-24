@@ -126,8 +126,9 @@ export const addPendingTransaction = async ({
       },
     }
 
-    const res =
-      await WalletOnChainPendingReceiveRepository().persistNew(pendingTransaction)
+    const res = await WalletOnChainPendingReceiveRepository().persistNew(
+      pendingTransaction,
+    )
     if (res instanceof Error && !(res instanceof DuplicateKeyForPersistError)) {
       return res
     }
