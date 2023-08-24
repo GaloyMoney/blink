@@ -37,6 +37,17 @@ import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
 import { parseErrorMessageFromUnknown } from "@domain/shared"
 
+import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@domain/authentication"
+
+import {
+  EmailCodeInvalidError,
+  EmailValidationSubmittedTooOftenError,
+} from "@domain/authentication/errors"
+
+import { UserLoginIpRateLimiterExceededError } from "@domain/rate-limit/errors"
+
+import { registerCaptchaGeetest } from "@app/captcha"
+
 const authRouter = express.Router({ caseSensitive: true })
 
 // FIXME: those directive should only apply if you select a cookie-related route
@@ -63,14 +74,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: Request, res: Response) => {
-      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? req?.ip
-        : req?.headers["x-real-ip"]
-      const ip = parseIps(ipString)
-      if (!ip) {
-        recordExceptionInCurrentSpan({ error: "IP is not defined" })
-        return res.status(500).send({ error: "IP is not defined" })
-      }
+      const ip = req.ip as IpAddress
       const code = req.body.authCode
       const phone = checkedToPhoneNumber(req.body.phoneNumber)
       if (phone instanceof Error) return res.status(400).send("invalid phone")
@@ -185,15 +189,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "createDeviceAccount",
     fn: async (req: Request, res: Response) => {
-      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? req?.ip
-        : req?.headers["x-real-ip"]
-      const ip = parseIps(ipString)
-
-      if (!ip) {
-        return res.status(500).send({ error: "IP is not defined" })
-      }
-
+      const ip = req.ip as IpAddress
       const user = basicAuth(req)
 
       if (!user?.name || !user?.pass) {
@@ -227,22 +223,6 @@ authRouter.post(
   }),
 )
 
-import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@domain/authentication"
-
-import { baseLogger } from "@services/logger"
-
-import {
-  EmailCodeInvalidError,
-  EmailValidationSubmittedTooOftenError,
-} from "@domain/authentication/errors"
-
-import { UserLoginIpRateLimiterExceededError } from "@domain/rate-limit/errors"
-
-authRouter.use(cors({ origin: true, credentials: true }))
-authRouter.use(bodyParser.urlencoded({ extended: true }))
-authRouter.use(bodyParser.json())
-authRouter.use(cookieParser())
-
 // TODO: should code request behind captcha or device token?
 authRouter.post(
   "/email/code",
@@ -250,17 +230,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "emailCodeRequest",
     fn: async (req: Request, res: Response) => {
-      baseLogger.info("/email/code")
-
-      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? req?.ip
-        : req?.headers["x-real-ip"]
-      const ip = parseIps(ipString)
-
-      if (!ip) {
-        recordExceptionInCurrentSpan({ error: "IP is not defined" })
-        return res.status(500).send({ error: "IP is not defined" })
-      }
+      const ip = req.ip as IpAddress
 
       const emailRaw = req.body.email
       if (!emailRaw) {
@@ -297,17 +267,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "emailLogin",
     fn: async (req: Request, res: Response) => {
-      baseLogger.info("/email/login")
-
-      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? req?.ip
-        : req?.headers["x-real-ip"]
-      const ip = parseIps(ipString)
-
-      if (!ip) {
-        recordExceptionInCurrentSpan({ error: "IP is not defined" })
-        return res.status(500).send({ error: "IP is not defined" })
-      }
+      const ip = req.ip as IpAddress
 
       const emailLoginIdRaw = req.body.emailLoginId
       if (!emailLoginIdRaw) {
@@ -364,18 +324,6 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "totpValidate",
     fn: async (req: Request, res: Response) => {
-      baseLogger.info("/totp/validate")
-
-      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? req?.ip
-        : req?.headers["x-real-ip"]
-      const ip = parseIps(ipString)
-
-      if (!ip) {
-        recordExceptionInCurrentSpan({ error: "IP is not defined" })
-        return res.status(500).send({ error: "IP is not defined" })
-      }
-
       const totpCodeRaw = req.body.totpCode
       if (!totpCodeRaw) {
         return res.status(422).send({ error: "Missing input" })
@@ -433,17 +381,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "emailLoginCookie",
     fn: async (req: Request, res: Response) => {
-      baseLogger.info("/email/login/cookie")
-
-      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? req?.ip
-        : req?.headers["x-real-ip"]
-      const ip = parseIps(ipString)
-
-      if (!ip) {
-        recordExceptionInCurrentSpan({ error: "IP is not defined" })
-        return res.status(500).send({ error: "IP is not defined" })
-      }
+      const ip = req.ip as IpAddress
 
       const emailLoginIdRaw = req.body.emailLoginId
       if (!emailLoginIdRaw) {
@@ -523,8 +461,6 @@ authRouter.post(
   }),
 )
 
-import { registerCaptchaGeetest } from "@app/captcha"
-
 authRouter.post(
   "/phone/captcha",
   wrapAsyncToRunInSpan({
@@ -554,14 +490,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: Request, res: Response) => {
-      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? req?.ip
-        : req?.headers["x-real-ip"]
-      const ip = parseIps(ipString)
-      if (!ip) {
-        recordExceptionInCurrentSpan({ error: "IP is not defined" })
-        return res.status(500).send({ error: "IP is not defined" })
-      }
+      const ip = req.ip as IpAddress
 
       const phoneRaw = req.body.phone
       const challengeCodeRaw = req.body.challengeCode
@@ -603,14 +532,8 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: Request, res: Response) => {
-      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-        ? req?.ip
-        : req?.headers["x-real-ip"]
-      const ip = parseIps(ipString)
-      if (!ip) {
-        recordExceptionInCurrentSpan({ error: "IP is not defined" })
-        return res.status(500).send({ error: "IP is not defined" })
-      }
+      const ip = req.ip as IpAddress
+
       const codeRaw = req.body.code
       const phoneRaw = req.body.phone
       if (!codeRaw || !phoneRaw) {
