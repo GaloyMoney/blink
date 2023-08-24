@@ -5,18 +5,13 @@ import {
   getNextPage,
   validateKratosToken,
   AuthenticationKratosError,
-  KratosError,
   kratosValidateTotp,
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   kratosRemoveTotp,
 } from "@services/kratos"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
-import {
-  activateUser,
-  deactivateUser,
-  revokeSessions,
-} from "@services/kratos/tests-but-not-prod"
+import { activateUser, deactivateUser } from "@services/kratos/tests-but-not-prod"
 import { authenticator } from "otplib"
 
 import { sleep } from "@utils"
@@ -175,67 +170,6 @@ describe("token validation", () => {
   })
 })
 
-describe("session revokation", () => {
-  const authService = AuthWithPhonePasswordlessService()
-
-  const phone = randomPhone()
-
-  it("return error on revoked session", async () => {
-    let token: AuthToken
-    {
-      const res = await authService.loginToken({ phone })
-      if (res instanceof Error) throw res
-      if (res.kratosUserId === undefined) throw new Error("kratosUserId is undefined")
-
-      token = res.authToken
-      await revokeSessions(res.kratosUserId)
-    }
-    {
-      const res = await validateKratosToken(token)
-      expect(res).toBeInstanceOf(AuthenticationKratosError)
-    }
-  })
-
-  it("revoke a user's second session only", async () => {
-    // Session 1
-    const session1 = await authService.loginToken({ phone })
-    if (session1 instanceof Error) throw session1
-    const session1Token = session1.authToken
-
-    // Session 2
-    const session2 = await authService.loginToken({ phone })
-    if (session2 instanceof Error) throw session2
-    const session2Token = session2.authToken
-
-    // Session Details
-    //  *caveat, you need to have at least 2 active sessions
-    //  for 'listMySessions' to work properly if you only
-    //  have 1 active session the data will come back null
-    const session1Details = await kratosPublic.listMySessions({
-      xSessionToken: session1Token,
-    })
-    const session1Id = session1Details.data[0].id
-    const session2Details = await kratosPublic.listMySessions({
-      xSessionToken: session2Token,
-    })
-    const session2Id = session2Details.data[0].id
-    expect(session1Id).toBeDefined()
-    expect(session2Id).toBeDefined()
-
-    // Revoke Session 2
-    await kratosPublic.performNativeLogout({
-      performNativeLogoutBody: {
-        session_token: session2Token,
-      },
-    })
-
-    const isSession1Valid = await validateKratosToken(session1Token)
-    const isSession2Valid = await validateKratosToken(session2Token)
-    expect(isSession1Valid).toBeDefined()
-    expect(isSession2Valid).toBeInstanceOf(KratosError)
-  })
-})
-
 describe.skip("update status", () => {
   // Status on kratos is not implemented
   const authService = AuthWithPhonePasswordlessService()
@@ -302,32 +236,5 @@ describe("decoding link header", () => {
 
   it("should be undefined when no more next is present", () => {
     expect(getNextPage(withoutNext)).toBe(undefined)
-  })
-})
-
-describe("cookie flow", () => {
-  it("login with cookie then revoke session", async () => {
-    const authService = AuthWithPhonePasswordlessService()
-    const phone = randomPhone()
-
-    const res = (await authService.createIdentityWithCookie({
-      phone,
-    })) as WithCookieResponse
-    expect(res).toHaveProperty("kratosUserId")
-    expect(res).toHaveProperty("cookiesToSendBackToClient")
-
-    const cookies: Array<SessionCookie> = res.cookiesToSendBackToClient
-    let cookieStr = ""
-    for (const cookie of cookies) {
-      cookieStr = cookieStr + cookie + "; "
-    }
-    cookieStr = decodeURIComponent(cookieStr)
-
-    const kratosSession = await kratosPublic.toSession({ cookie: cookieStr })
-    const sessionId = kratosSession.data.id
-    const kratosResp = await kratosAdmin.disableSession({
-      id: sessionId,
-    })
-    expect(kratosResp.status).toBe(204)
   })
 })
