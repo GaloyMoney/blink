@@ -3,7 +3,8 @@
 set -e
 
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-quickstart}"
-GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4002}
+# default is oathkeeper endpoint
+GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4004}
 
 if [ -n "$HOST_PROJECT_PATH" ]; then
   GALOY_DIR="./vendor/galoy-quickstart"
@@ -129,6 +130,10 @@ login_user() {
   cache_value "$token_name" "$auth_token"
 
   exec_graphql "$token_name" 'wallets-for-account'
+
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ "${account_id}" != "null" ]]
+  cache_value "$token_name.account_id" "$account_id"
 
   btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
   [[ "${btc_wallet_id}" != "null" ]]
