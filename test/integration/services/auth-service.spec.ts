@@ -67,6 +67,19 @@ describe("phoneNoPassword schema", () => {
         const res = await authService.loginToken({ phone })
         expect(res).toBeInstanceOf(LikelyNoUserWithThisPhoneExistError)
       })
+
+      it("validate bearer token", async () => {
+        const { kratosUserId, authToken } = await createIdentity()
+
+        const res = await validateKratosToken(authToken)
+        if (res instanceof Error) throw res
+        expect(res.kratosUserId).toBe(kratosUserId)
+      })
+
+      it("return error on invalid token", async () => {
+        const res = await validateKratosToken("invalid_token" as AuthToken)
+        expect(res).toBeInstanceOf(AuthenticationKratosError)
+      })
     })
 
     describe("user sessions", () => {

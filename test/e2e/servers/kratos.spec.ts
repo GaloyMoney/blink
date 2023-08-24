@@ -135,26 +135,6 @@ describe("phoneNoPassword", () => {
   })
 })
 
-describe("token validation", () => {
-  const authService = AuthWithPhonePasswordlessService()
-
-  it("validate bearer token", async () => {
-    const phone = randomPhone()
-    const res = await authService.createIdentityWithSession({ phone })
-    if (res instanceof Error) throw res
-
-    const token = res.authToken
-    const res2 = await validateKratosToken(token)
-    if (res2 instanceof Error) throw res2
-    expect(res2.kratosUserId).toBe(res.kratosUserId)
-  })
-
-  it("return error on invalid token", async () => {
-    const res = await validateKratosToken("invalid_token" as AuthToken)
-    expect(res).toBeInstanceOf(AuthenticationKratosError)
-  })
-})
-
 describe.skip("update status", () => {
   // Status on kratos is not implemented
   const authService = AuthWithPhonePasswordlessService()
