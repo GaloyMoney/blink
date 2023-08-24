@@ -31,7 +31,13 @@ import {
 import { sleep } from "@utils"
 import { authenticator } from "otplib"
 
-import { randomEmail, randomPassword, randomPhone, randomUsername } from "test/helpers"
+import {
+  getError,
+  randomEmail,
+  randomPassword,
+  randomPhone,
+  randomUsername,
+} from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
 
 const createIdentity = async () => {
@@ -150,6 +156,34 @@ describe("phoneNoPassword schema", () => {
           if (identity instanceof Error) throw identity
           expect(identity.totpEnabled).toBe(false)
         }
+      })
+
+      it("fails to change phone number from publicApi", async () => {
+        const { phone, authToken } = await createIdentity()
+
+        const validated = await validateKratosToken(authToken)
+        if (validated instanceof Error) throw validated
+        expect(validated.session.identity.phone).toStrictEqual(phone)
+
+        const res = await kratosPublic.createNativeSettingsFlow({
+          xSessionToken: authToken,
+        })
+
+        const newPhone = randomPhone()
+        const err = await getError(() =>
+          kratosPublic.updateSettingsFlow({
+            flow: res.data.id,
+            updateSettingsFlowBody: {
+              method: "profile",
+              traits: {
+                phone: newPhone,
+              },
+            },
+            xSessionToken: authToken,
+          }),
+        )
+
+        expect(err).toBeTruthy()
       })
     })
 
