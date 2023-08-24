@@ -35,7 +35,7 @@
   "dependencies": {
     "@google-cloud/storage": "^7.0.1",
     "@grpc/grpc-js": "^1.9.1",
-    "@grpc/proto-loader": "^0.7.2",
+    "@grpc/proto-loader": "^0.7.9",
     "@opentelemetry/api": "^1.4.1",
     "@opentelemetry/core": "^1.14.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.40.0",
@@ -50,8 +50,8 @@
     "@opentelemetry/sdk-trace-base": "^1.14.0",
     "@opentelemetry/sdk-trace-node": "^1.15.1",
     "@opentelemetry/semantic-conventions": "^1.14.0",
-    "@ory/client": "^1.1.41",
-    "@t3-oss/env-core": "^0.6.0",
+    "@ory/client": "^1.1.49",
+    "@t3-oss/env-core": "^0.6.1",
     "ajv": "^8.12.0",
     "apollo-server-core": "^3.12.0",
     "apollo-server-errors": "^3.3.1",
@@ -73,7 +73,7 @@
     "express-jwt": "^8.4.1",
     "firebase-admin": "^11.9.0",
     "google-protobuf": "^3.21.2",
-    "graphql": "^16.7.1",
+    "graphql": "^16.8.0",
     "graphql-middleware": "^6.1.33",
     "graphql-query-complexity": "^0.12.0",
     "graphql-query-complexity-apollo-plugin": "^1.0.2",
@@ -92,9 +92,9 @@
     "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^3.0.1",
     "knex": "^2.5.1",
-    "libphonenumber-js": "^1.10.38",
-    "lightning": "^9.5.1",
-    "ln-service": "^56.8.0",
+    "libphonenumber-js": "^1.10.41",
+    "lightning": "^9.11.3",
+    "ln-service": "^56.11.1",
     "lodash.debounce": "^4.0.8",
     "lodash.groupby": "^4.6.0",
     "lodash.map": "^4.6.0",
@@ -103,9 +103,9 @@
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
     "medici": "^6.2.0",
-    "mongoose": "~7.3.4",
+    "mongoose": "~7.4.4",
     "node-cache": "^5.1.2",
-    "pg": "^8.11.2",
+    "pg": "^8.11.3",
     "pino": "^8.15.0",
     "pino-http": "^8.4.0",
     "prom-client": "^14.2.0",
@@ -113,11 +113,11 @@
     "redlock": "^5.0.0-beta.2",
     "set-cookie-parser": "^2.6.0",
     "subscriptions-transport-ws": "^0.11.0",
-    "svix": "^1.8.0",
-    "twilio": "^4.12.0",
+    "svix": "^1.8.1",
+    "twilio": "^4.15.0",
     "uuid-by-string": "^4.0.0",
     "ws": "^8.13.0",
-    "zod": "^3.21.4"
+    "zod": "^3.22.2"
   },
   "devDependencies": {
     "@apollo/client": "3.8.1",
@@ -193,10 +193,10 @@
     "zen-observable-ts": "^1.1.0"
   },
   "resolutions": {
-    "protobufjs": "7.2.4",
+    "protobufjs": "7.2.5",
     "http-cache-semantics": "4.1.1",
     "import-in-the-middle": "1.4.2",
-    "**/**/mongoose": "~7.3.4"
+    "**/**/mongoose": "~7.4.4"
   },
   "private": true
 }
