@@ -1,7 +1,7 @@
 import { OnChain, Lightning, Wallets, Payments, Swap } from "@app"
 import { extendSessions } from "@app/authentication"
 
-import { getCronConfig, NETWORK, TWO_MONTHS_IN_MS } from "@config"
+import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
 
 import { ErrorLevel } from "@domain/shared"
 import { OperationInterruptedError } from "@domain/errors"
@@ -18,13 +18,12 @@ import {
   updateEscrows,
   updateRoutingRevenues,
 } from "@services/lnd/utils"
-import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
+import { rebalancingInternalChannels } from "@services/lnd/utils-bos"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck, checkAllLndHealth } from "@services/lnd/health"
 
 import { elapsedSinceTimestamp, sleep } from "@utils"
-import { BtcNetwork } from "@domain/bitcoin"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -77,10 +76,7 @@ const main = async () => {
 
   const tasks = [
     // bitcoin related tasks
-    reconnectNodes,
-
-    // work around for https://github.com/alexbosworth/ln-sync/issues/5
-    ...(NETWORK !== BtcNetwork.signet ? [rebalancingInternalChannels] : []),
+    rebalancingInternalChannels,
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,

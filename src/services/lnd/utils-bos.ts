@@ -1,29 +1,16 @@
-import { readFile } from "fs"
-
 import { baseLogger } from "@services/logger"
 import { delayWhile } from "@utils"
 
-import { getChannels, GetChannelsResult } from "lightning"
-
-import { pushPayment, reconnect } from "balanceofsatoshis/network"
-
-import { simpleRequest } from "balanceofsatoshis/commands"
+import {
+  createInvoice,
+  getChannels,
+  GetChannelsResult,
+  payViaPaymentRequest,
+} from "lightning"
 
 import { getLnds } from "./utils"
 
 import { LndService } from "."
-
-export const reconnectNodes = async () => {
-  const lndService = LndService()
-  if (lndService instanceof Error) throw lndService
-
-  const lndsParamsAuth = getLnds({ type: "offchain", active: true })
-
-  for (const lndParamsAuth of lndsParamsAuth) {
-    const { lnd } = lndParamsAuth
-    await reconnect({ lnd })
-  }
-}
 
 export const rebalancingInternalChannels = async () => {
   const lndService = LndService()
@@ -39,7 +26,6 @@ export const rebalancingInternalChannels = async () => {
 
   const selfLnd = lndsParamsAuth[0].lnd
   const otherLnd = lndsParamsAuth[1].lnd
-  const selfPubkey = lndsParamsAuth[0].pubkey
   const otherPubkey = lndsParamsAuth[1].pubkey
 
   const { channels } = await getDirectChannels({ lnd: selfLnd, otherPubkey })
@@ -67,32 +53,31 @@ export const rebalancingInternalChannels = async () => {
 
   for (const channel of largestChannel) {
     const diff = channel.capacity / 2 /* half point */ - channel.local_balance
-
-    const settings = {
-      avoid: [],
-      fs: { getFile: readFile },
-      logger: baseLogger /* expecting winston logger but pino should be api compatible */,
-      max_fee: 0,
-      quiz_answers: [],
-      request: simpleRequest,
-      amount: String(Math.abs(diff)),
-    }
+    const amount = Math.abs(diff)
 
     if (diff > 0) {
-      // there is more liquidity on the other node
-      await pushPayment({
+      const { request } = await createInvoice({
+        lnd: selfLnd,
+        tokens: amount,
+        is_including_private_channels: true,
+      })
+
+      await payViaPaymentRequest({
         lnd: otherLnd,
-        destination: selfPubkey,
-        ...settings,
+        request,
       })
 
       await delayWhile({ func: internalChannelsHavePendingHtlcs, maxRetries: 10 })
     } else if (diff < 0) {
-      // there is more liquidity on the local node
-      await pushPayment({
+      const { request } = await createInvoice({
+        lnd: otherLnd,
+        tokens: amount,
+        is_including_private_channels: true,
+      })
+
+      await payViaPaymentRequest({
         lnd: selfLnd,
-        destination: otherPubkey,
-        ...settings,
+        request,
       })
       await delayWhile({ func: internalChannelsHavePendingHtlcs, maxRetries: 10 })
     } else {
