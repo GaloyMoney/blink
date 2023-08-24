@@ -886,7 +886,6 @@ type Mutation
   userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload!
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
   userQuizQuestionUpdateCompleted(input: UserQuizQuestionUpdateCompletedInput!): UserQuizQuestionUpdateCompletedPayload! @deprecated(reason: "Use QuizCompletedMutation instead")
-  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload!
   userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload!
   userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload!
@@ -1692,13 +1691,6 @@ type UserQuizQuestionUpdateCompletedPayload
 {
   errors: [Error!]!
   userQuizQuestion: UserQuizQuestion
-}
-
-input UserRequestAuthCodeInput
-  @join__type(graph: PUBLIC)
-{
-  channel: PhoneCodeChannelType
-  phone: Phone!
 }
 
 input UserTotpDeleteInput

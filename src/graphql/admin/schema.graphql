@@ -248,7 +248,6 @@ type Mutation {
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
 
@@ -468,11 +467,6 @@ type UsdWallet implements Wallet {
 
 input UserLoginInput {
   code: OneTimeAuthCode!
-  phone: Phone!
-}
-
-input UserRequestAuthCodeInput {
-  channel: PhoneCodeChannelType
   phone: Phone!
 }
 

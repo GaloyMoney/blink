@@ -10,12 +10,12 @@ import { ErrorLevel } from "@domain/shared"
 import { baseLogger } from "@services/logger"
 import { SchemaIdType } from "@services/kratos"
 
-const kratosRouter = express.Router({ caseSensitive: true })
+const kratosCallback = express.Router({ caseSensitive: true })
 
-kratosRouter.use(cors({ origin: true, credentials: true }))
-kratosRouter.use(express.json())
+kratosCallback.use(cors({ origin: true, credentials: true }))
+kratosCallback.use(express.json())
 
-kratosRouter.post(
+kratosCallback.post(
   "/registration",
   wrapAsyncToRunInSpan({
     namespace: "registration",
@@ -108,4 +108,4 @@ kratosRouter.post(
   }),
 )
 
-export default kratosRouter
+export default kratosCallback
