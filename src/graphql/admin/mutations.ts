@@ -1,6 +1,5 @@
 import { GT } from "@graphql/index"
 
-import UserRequestAuthCodeMutation from "@graphql/shared/root/mutation/user-request-auth-code"
 import UserLoginMutation from "@graphql/shared/root/mutation/user-login"
 import CaptchaRequestAuthCodeMutation from "@graphql/shared/root/mutation/captcha-request-auth-code"
 import CaptchaCreateChallengeMutation from "@graphql/shared/root/mutation/captcha-create-challenge"
@@ -15,7 +14,6 @@ import AdminPushNotificationSendMutation from "./root/mutation/admin-push-notifi
 
 export const mutationFields = {
   unauthed: {
-    userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
 
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
