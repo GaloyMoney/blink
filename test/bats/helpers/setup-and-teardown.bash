@@ -44,7 +44,7 @@ subscribe_to() {
   variables=$3
 
   background \
-    ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/src/debug/gqlsubscribe.ts" \
+    ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/test/helpers/servers/gql-subscribe.ts" \
     "ws://${GALOY_ENDPOINT}/graphqlws" \
     "$(gql_file $gql_filename)" \
     "$token" \
