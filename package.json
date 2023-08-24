@@ -94,7 +94,7 @@
     "knex": "^2.5.1",
     "libphonenumber-js": "^1.10.38",
     "lightning": "^9.5.1",
-    "ln-service": "^56.8.0",
+    "ln-service": "^56.11.1",
     "lodash.debounce": "^4.0.8",
     "lodash.groupby": "^4.6.0",
     "lodash.map": "^4.6.0",
