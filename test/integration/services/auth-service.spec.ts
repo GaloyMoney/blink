@@ -7,6 +7,7 @@ import {
 import {
   AuthWithEmailPasswordlessService,
   AuthWithPhonePasswordlessService,
+  AuthWithUsernamePasswordDeviceIdService,
   EmailAlreadyExistsError,
   IdentityRepository,
   IncompatibleSchemaUpgradeError,
@@ -14,7 +15,7 @@ import {
   listSessions,
 } from "@services/kratos"
 
-import { randomEmail, randomPhone } from "test/helpers"
+import { randomEmail, randomPassword, randomPhone, randomUsername } from "test/helpers"
 import { getEmailCode } from "test/helpers/kratos"
 
 const createIdentity = async () => {
@@ -78,7 +79,7 @@ describe("phoneNoPassword schema", () => {
   })
 
   describe("IdentityRepository", () => {
-    it("get user id through getUserIdFromIdentifier(phone)", async () => {
+    it("gets user id from phone", async () => {
       const { phone, kratosUserId } = await createIdentity()
 
       const userId = await identities.getUserIdFromIdentifier(phone)
@@ -299,5 +300,49 @@ describe("phone+email schema", () => {
       if (userId instanceof Error) throw userId
       expect(userId).toBe(kratosUserId)
     })
+  })
+})
+
+describe("username+password schema (device account)", () => {
+  const authServiceUsername = AuthWithUsernamePasswordDeviceIdService()
+  const authServicePhone = AuthWithPhonePasswordlessService()
+  const identities = IdentityRepository()
+
+  it("create an account", async () => {
+    const username = randomUsername()
+    const password = randomPassword()
+
+    const res = await authServiceUsername.createIdentityWithSession({
+      username,
+      password,
+    })
+    if (res instanceof Error) throw res
+    const { kratosUserId } = res
+
+    const newIdentity = await identities.getIdentity(kratosUserId)
+    if (newIdentity instanceof Error) throw newIdentity
+    expect(newIdentity.schema).toBe(SchemaIdType.UsernamePasswordDeviceIdV0)
+    expect(newIdentity.username).toBe(username)
+  })
+
+  it("upgrade account", async () => {
+    const username = randomUsername()
+    const password = randomPassword()
+    const usernameResult = await authServiceUsername.createIdentityWithSession({
+      username,
+      password,
+    })
+    if (usernameResult instanceof Error) throw usernameResult
+    const { kratosUserId } = usernameResult
+
+    const phone = randomPhone()
+    const res = await authServicePhone.updateIdentityFromDeviceAccount({
+      phone,
+      userId: kratosUserId,
+    })
+    if (res instanceof Error) throw res
+
+    expect(res.phone).toBe(phone)
+    expect(res.id).toBe(kratosUserId)
   })
 })
