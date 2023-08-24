@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump dev dependencies (#3084)...'
-      sha: abea6603a256ca4288ea9a464a9b660e05d1ffbb
+      commitTitle: 'test: move reimburse-failed-usd test to bats (#3081)...'
+      sha: f81b5541dc860beac0075d1e4ba5e9c5738216dc
       tags:
-      - 0.13.8-1-gabea6603a
+      - 0.13.9-2-gf81b5541d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump dev dependencies (#3084)...'
-      sha: abea6603a256ca4288ea9a464a9b660e05d1ffbb
+      commitTitle: 'test: move reimburse-failed-usd test to bats (#3081)...'
+      sha: f81b5541dc860beac0075d1e4ba5e9c5738216dc
       tags:
-      - 0.13.8-1-gabea6603a
+      - 0.13.9-2-gf81b5541d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump dev dependencies (#3084)...'
-      sha: abea6603a256ca4288ea9a464a9b660e05d1ffbb
+      commitTitle: 'test: move reimburse-failed-usd test to bats (#3081)...'
+      sha: f81b5541dc860beac0075d1e4ba5e9c5738216dc
       tags:
-      - 0.13.8-1-gabea6603a
+      - 0.13.9-2-gf81b5541d
     path: ./
   path: ./graphql
 kind: LockConfig
