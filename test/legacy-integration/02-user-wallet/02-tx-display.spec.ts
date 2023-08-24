@@ -7,7 +7,7 @@ import {
 } from "@domain/bitcoin/lightning"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
-import * as LnFeesImpl from "@domain/payments/ln-fees"
+import * as LnFeesImpl from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { TxStatus } from "@domain/wallets"
 import { DisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
@@ -570,19 +570,11 @@ describe("Display properties on transactions", () => {
       it("(LnFailedPaymentReceiveLedgerMetadata) pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
         // TxMetadata:
         // - LnFailedPaymentReceiveLedgerMetadata
-
-        const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments/ln-fees")
-        jest
-          .spyOn(LnFeesImpl, "LnFees")
-          // 1st call is in PaymentFlow
-          .mockReturnValueOnce({
-            ...LnFeesOrig(),
-          })
-          // 2nd call is in use-case at verifyMaxFee
-          .mockReturnValueOnce({
-            ...LnFeesOrig(),
-            verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
-          })
+        const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments")
+        const lndFeesSpy = jest.spyOn(LnFeesImpl, "LnFees").mockReturnValue({
+          ...LnFeesOrig(),
+          verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
+        })
 
         const senderWalletId = walletIdB
         const senderAccount = accountB
@@ -600,6 +592,8 @@ describe("Display properties on transactions", () => {
           senderAccount,
         })
         expect(paymentResult).toBeInstanceOf(MaxFeeTooLargeForRoutelessPaymentError)
+        // Restore system state
+        lndFeesSpy.mockReset()
 
         const txns = await getAllTransactionsByHash(paymentHash)
         if (txns instanceof Error) throw txns
