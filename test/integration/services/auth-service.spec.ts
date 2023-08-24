@@ -19,7 +19,11 @@ import {
   validateKratosToken,
 } from "@services/kratos"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
-import { revokeSessions } from "@services/kratos/tests-but-not-prod"
+import {
+  activateUser,
+  deactivateUser,
+  revokeSessions,
+} from "@services/kratos/tests-but-not-prod"
 import { sleep } from "@utils"
 
 import { randomEmail, randomPassword, randomPhone, randomUsername } from "test/helpers"
@@ -202,6 +206,34 @@ describe("phoneNoPassword schema", () => {
       if (res instanceof Error) throw res
 
       expect(res.kratosUserId).toBe(kratosUserId)
+    })
+
+    describe.skip("update status", () => {
+      // Status on kratos is not implemented
+      const authService = AuthWithPhonePasswordlessService()
+
+      let kratosUserId: UserId
+      const phone = randomPhone()
+
+      it("deactivate user", async () => {
+        {
+          const res = await authService.createIdentityWithSession({ phone })
+          if (res instanceof Error) throw res
+          kratosUserId = res.kratosUserId
+        }
+        await deactivateUser(kratosUserId)
+        await authService.loginToken({ phone })
+
+        const res = await authService.loginToken({ phone })
+        expect(res).toBeInstanceOf(AuthenticationKratosError)
+      })
+
+      it("activate user", async () => {
+        await activateUser(kratosUserId)
+        const res = await authService.loginToken({ phone })
+        if (res instanceof Error) throw res
+        expect(res.kratosUserId).toBe(kratosUserId)
+      })
     })
   })
 

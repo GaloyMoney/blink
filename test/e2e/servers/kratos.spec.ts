@@ -2,14 +2,12 @@ import {
   AuthWithPhonePasswordlessService,
   IdentityRepository,
   validateKratosToken,
-  AuthenticationKratosError,
   kratosValidateTotp,
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   kratosRemoveTotp,
 } from "@services/kratos"
 import { kratosPublic } from "@services/kratos/private"
-import { activateUser, deactivateUser } from "@services/kratos/tests-but-not-prod"
 import { authenticator } from "otplib"
 
 import { sleep } from "@utils"
@@ -132,33 +130,5 @@ describe("phoneNoPassword", () => {
 
       expect(err).toBeTruthy()
     })
-  })
-})
-
-describe.skip("update status", () => {
-  // Status on kratos is not implemented
-  const authService = AuthWithPhonePasswordlessService()
-
-  let kratosUserId: UserId
-  const phone = randomPhone()
-
-  it("deactivate user", async () => {
-    {
-      const res = await authService.createIdentityWithSession({ phone })
-      if (res instanceof Error) throw res
-      kratosUserId = res.kratosUserId
-    }
-    await deactivateUser(kratosUserId)
-    await authService.loginToken({ phone })
-
-    const res = await authService.loginToken({ phone })
-    expect(res).toBeInstanceOf(AuthenticationKratosError)
-  })
-
-  it("activate user", async () => {
-    await activateUser(kratosUserId)
-    const res = await authService.loginToken({ phone })
-    if (res instanceof Error) throw res
-    expect(res.kratosUserId).toBe(kratosUserId)
   })
 })
