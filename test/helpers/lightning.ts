@@ -91,13 +91,7 @@ export const lndOutside2 = authenticatedLndGrpc({
   socket: `${process.env.LNDOUTSIDE2ADDR}:${process.env.LNDOUTSIDE2RPCPORT ?? 10009}`,
 }).lnd
 
-export const lndOutside3 = authenticatedLndGrpc({
-  cert: process.env.TLSOUTSIDE3,
-  macaroon: process.env.MACAROONOUTSIDE3,
-  socket: `${process.env.LNDOUTSIDE3ADDR}:${process.env.LNDOUTSIDE3RPCPORT ?? 10009}`,
-}).lnd
-
-export const lndsIntegration = [lnd1, lnd2, lndOutside1, lndOutside2, lndOutside3]
+export const lndsIntegration = [lnd1, lnd2, lndOutside1, lndOutside2]
 export const lndsE2e = [lnd1, lnd2, lndOutside1, lndOutside2]
 
 export const waitUntilBlockHeight = async ({ lnd, blockHeight = 0 }) => {
