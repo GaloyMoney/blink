@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 4fe380262439d5be84646cf6f12e5fe32b37db79
+      commitTitle: 'chore: bump deps + fix open handles (#3103)...'
+      sha: 3c646c8615e45a466b26ae8caee7189bc4441bc7
       tags:
-      - 0.13.9-7-g4fe380262
+      - 0.13.9-9-g3c646c861
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 4fe380262439d5be84646cf6f12e5fe32b37db79
+      commitTitle: 'chore: bump deps + fix open handles (#3103)...'
+      sha: 3c646c8615e45a466b26ae8caee7189bc4441bc7
       tags:
-      - 0.13.9-7-g4fe380262
+      - 0.13.9-9-g3c646c861
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 4fe380262439d5be84646cf6f12e5fe32b37db79
+      commitTitle: 'chore: bump deps + fix open handles (#3103)...'
+      sha: 3c646c8615e45a466b26ae8caee7189bc4441bc7
       tags:
-      - 0.13.9-7-g4fe380262
+      - 0.13.9-9-g3c646c861
     path: ./
   path: ./graphql
 kind: LockConfig
