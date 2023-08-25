@@ -86,6 +86,7 @@ import {
   waitUntilBlockHeight,
   waitUntilSyncAll,
   lndCreateOnChainAddress,
+  waitFor,
 } from "test/helpers"
 
 let walletIdA: WalletId
@@ -1576,14 +1577,20 @@ describe("With Lnd", () => {
       // mine and sync all before use tx subscription
       await mineBlockAndSyncAll()
 
+      let isTxProcessed = false
       const sub = subscribeToTransactions({ lnd: lndonchain })
-      sub.on("chain_transaction", onchainTransactionEventHandler)
+      sub.on("chain_transaction", async (tx) => {
+        await onchainTransactionEventHandler(tx)
+        isTxProcessed = true
+      })
+      // hack to solve sendRawTransaction not triggering chain tx event
+      await bitcoindOutside.getBalance()
+      const txHash = await bitcoindOutside.sendRawTransaction({
+        hexstring: finalizedPsbt.hex,
+      })
+      await Promise.all([waitFor(() => isTxProcessed), waitUntilSyncAll()])
 
-      const [_, txHash] = await Promise.all([
-        once(sub, "chain_transaction"),
-        bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex }),
-      ])
-      _
+      sub.removeAllListeners()
       await sleep(1000)
 
       const defaultDepositFeeRatio = feesConfig.depositRatioAsBasisPoints
@@ -1654,8 +1661,6 @@ describe("With Lnd", () => {
             }),
         )
       }
-
-      sub.removeAllListeners()
     })
 
     it("identifies unconfirmed incoming on-chain transactions", async () => {

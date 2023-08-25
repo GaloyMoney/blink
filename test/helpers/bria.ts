@@ -50,7 +50,7 @@ export const onceBriaSubscribe = async ({
     }
   }
 
-  const timeout = 30_000
+  const timeout = 20_000
   let wrapper
   const promise = new Promise(async (resolve, reject) => {
     const timeoutId = setTimeout(() => {
@@ -96,7 +96,7 @@ export const manyBriaSubscribe = async ({
     }
   }
 
-  const timeout = 30_000
+  const timeout = 20_000
   let wrapper
   const promise = new Promise(async (resolve, reject) => {
     const timeoutId = setTimeout(() => {
