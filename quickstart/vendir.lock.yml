@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: skip xxd bats test (#3114)'
-      sha: 23938b6ffa351cd98890f178a84a0dcd262cea01
+      commitTitle: 'test: move ln-send limits tests to new integration (#3094)...'
+      sha: 50e2de82a6f7014e94e70b9c4cddf9df2db0ee86
       tags:
-      - 0.13.9-11-g23938b6ff
+      - 0.13.10-2-g50e2de82a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: skip xxd bats test (#3114)'
-      sha: 23938b6ffa351cd98890f178a84a0dcd262cea01
+      commitTitle: 'test: move ln-send limits tests to new integration (#3094)...'
+      sha: 50e2de82a6f7014e94e70b9c4cddf9df2db0ee86
       tags:
-      - 0.13.9-11-g23938b6ff
+      - 0.13.10-2-g50e2de82a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: skip xxd bats test (#3114)'
-      sha: 23938b6ffa351cd98890f178a84a0dcd262cea01
+      commitTitle: 'test: move ln-send limits tests to new integration (#3094)...'
+      sha: 50e2de82a6f7014e94e70b9c4cddf9df2db0ee86
       tags:
-      - 0.13.9-11-g23938b6ff
+      - 0.13.10-2-g50e2de82a
     path: ./
   path: ./graphql
 kind: LockConfig
