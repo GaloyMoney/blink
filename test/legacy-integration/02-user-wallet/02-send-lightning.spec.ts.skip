@@ -4,11 +4,9 @@ import * as PaymentsHelpers from "@app/payments/helpers"
 import { AccountLimitsChecker } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
-import { InvalidFeeProbeStateError, PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { WalletCurrency } from "@domain/shared"
 
 import { LndService } from "@services/lnd"
-import { WalletsRepository } from "@services/mongoose"
 
 import { setUsername } from "@app/accounts"
 
@@ -19,9 +17,7 @@ import {
   createUserAndWalletFromPhone,
   fundWalletIdFromOnchain,
   getAccountByPhone,
-  getBalanceHelper,
   getDefaultWalletIdByPhone,
-  getTransactionsForWalletId,
   getUsdWalletIdByPhone,
   lnd1,
   lndOutside1,
@@ -71,9 +67,6 @@ jest.mock("@services/lnd", () => {
   }
 })
 
-let initBalanceB: Satoshis
-const amountInvoice = toSats(1000)
-
 const phoneA = randomPhone()
 const phoneB = randomPhone()
 const phoneC = randomPhone()
@@ -82,12 +75,10 @@ const phoneH = randomPhone()
 let accountA: Account
 let accountB: Account
 let accountC: Account
-let accountH: Account
 
 let walletIdA: WalletId
 let walletIdB: WalletId
 let walletIdC: WalletId
-let walletIdH: WalletId
 let walletIdUsdB: WalletId
 
 let usernameA: Username
@@ -105,13 +96,11 @@ beforeAll(async () => {
   accountA = await getAccountByPhone(phoneA)
   accountB = await getAccountByPhone(phoneB)
   accountC = await getAccountByPhone(phoneC)
-  accountH = await getAccountByPhone(phoneH)
 
   walletIdA = await getDefaultWalletIdByPhone(phoneA)
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
   walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
   walletIdC = await getDefaultWalletIdByPhone(phoneC)
-  walletIdH = await getDefaultWalletIdByPhone(phoneH)
 
   await fundWalletIdFromOnchain({
     walletId: walletIdA,
@@ -138,10 +127,6 @@ beforeAll(async () => {
   await setUsername({ username: usernameC, id: accountC.id })
 })
 
-beforeEach(async () => {
-  initBalanceB = toSats(await getBalanceHelper(walletIdB))
-})
-
 afterEach(async () => {
   await checkIsBalanced()
 })
@@ -149,153 +134,6 @@ afterEach(async () => {
 afterAll(async () => {
   jest.restoreAllMocks()
   await bitcoindClient.unloadWallet({ walletName: "outside" })
-})
-
-describe("UserWallet - Lightning Pay", () => {
-  it("does not filter spam message for external send", async () => {
-    const amount = toSats(1)
-    const memoSpamBelowThreshold = "Memo BELOW spam threshold"
-    const memoOnInvoice = `${memoSpamBelowThreshold} -- from payment request`
-    const memoFromUser = `${memoSpamBelowThreshold} -- from user`
-
-    const { request } = await createInvoice({
-      lnd: lndOutside1,
-      description: memoOnInvoice,
-    })
-
-    // Test probe + payment is successful
-    const { result: fee, error } =
-      await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
-        walletId: walletIdB,
-        uncheckedPaymentRequest: request,
-        amount,
-      })
-    if (error instanceof Error) throw error
-    expect(fee).not.toBeNull()
-
-    const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-      uncheckedPaymentRequest: request,
-      memo: memoFromUser,
-      amount,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    // Check memo on txns
-    const txResult = await getTransactionsForWalletId(walletIdB)
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
-    }
-    const txns = txResult.result.slice
-    expect(txns.length).toBeGreaterThan(0)
-    const txn = txns[0]
-    expect(txn.memo).toBe(memoFromUser)
-  })
-
-  it("sends balance amount accounting for fee", async () => {
-    const res = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: walletIdH,
-      memo: "",
-      amount: toSats(1000),
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-    expect(res).not.toBeInstanceOf(Error)
-    if (res instanceof Error) return res
-
-    const balanceBefore = await getBalanceHelper(walletIdH)
-    const { request } = await createInvoice({ lnd: lndOutside1, tokens: balanceBefore })
-
-    const { result: fee, error } = await Payments.getLightningFeeEstimationForBtcWallet({
-      walletId: walletIdH,
-      uncheckedPaymentRequest: request,
-    })
-    if (error instanceof Error) throw error
-    expect(fee).not.toBeNull()
-    if (fee === null) throw new InvalidFeeProbeStateError()
-    expect(fee.amount).toBe(0n)
-
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: walletIdH,
-      senderAccount: accountH,
-    })
-    if (paymentResult instanceof Error) return paymentResult
-    expect(paymentResult).not.toBeInstanceOf(Error)
-    expect(paymentResult).toStrictEqual(PaymentSendStatus.Success)
-
-    const balanceAfter = await getBalanceHelper(walletIdH)
-    expect(balanceAfter).toBe(0)
-  })
-
-  const functionToTests = [
-    {
-      name: "getFeeAndPay",
-      fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
-        return async (input): Promise<PaymentSendStatus | ApplicationError> => {
-          const wallet = await WalletsRepository().findById(walletId)
-          if (wallet instanceof Error) throw wallet
-
-          const getLightningFeeFn =
-            wallet.currency === WalletCurrency.Btc
-              ? Payments.getLightningFeeEstimationForBtcWallet
-              : Payments.getLightningFeeEstimationForUsdWallet
-
-          const { result: feeFromProbe, error } = await getLightningFeeFn({
-            walletId: walletId,
-            uncheckedPaymentRequest: input.invoice,
-          })
-          if (error instanceof Error) throw error
-          expect(feeFromProbe).not.toBeNull()
-          if (feeFromProbe === null) throw new InvalidFeeProbeStateError()
-
-          const paymentResult = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: input.invoice,
-            memo: input.memo,
-            senderWalletId: walletId,
-            senderAccount: account,
-          })
-          return paymentResult
-        }
-      },
-    },
-    {
-      name: "directPay",
-      fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
-        return async (input): Promise<PaymentSendStatus | ApplicationError> => {
-          const paymentResult = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: input.invoice,
-            senderAccount: account,
-            memo: input.memo,
-            senderWalletId: walletId,
-          })
-          return paymentResult
-        }
-      },
-    },
-  ]
-
-  functionToTests.forEach(({ fn, name }) => {
-    describe(`${name}`, () => {
-      it("pay invoice", async () => {
-        const { request } = await createInvoice({
-          lnd: lndOutside1,
-          tokens: amountInvoice,
-        })
-        const result = await fn({ account: accountB, walletId: walletIdB })({
-          invoice: request,
-        })
-        if (result instanceof Error) throw result
-        expect(result).toBe(PaymentSendStatus.Success)
-
-        const finalBalance = await getBalanceHelper(walletIdB)
-        expect(finalBalance).toBe(initBalanceB - amountInvoice)
-      })
-    })
-  })
 })
 
 describe("UserWalletLimit - handles 1 sat send with high btc outgoing volume", () => {
