@@ -63,7 +63,8 @@ export const LoopService = ({
       const request = new TokensRequest()
       const resp = await clientHealthCheck(request)
       if (resp) return true
-    } catch (error) {
+    } catch {
+      swapClient.close()
       return false
     }
     return false
