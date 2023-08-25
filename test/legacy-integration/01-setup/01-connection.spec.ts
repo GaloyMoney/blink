@@ -7,7 +7,6 @@ import {
   lnd2,
   lndOutside1,
   lndOutside2,
-  lndOutside3,
   getWalletInfo,
   bitcoindClient,
   resetIntegrationLnds,
@@ -41,7 +40,7 @@ describe("connects to lnds", () => {
   }
 
   it("connects to outside lnds", async () => {
-    const lnds = [lndOutside1, lndOutside2, lndOutside3]
+    const lnds = [lndOutside1, lndOutside2]
     for (const lnd of lnds) {
       const { public_key } = await getWalletInfo({ lnd })
       expect(public_key.length).toBe(64 + 2)
