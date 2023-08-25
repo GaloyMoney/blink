@@ -34,7 +34,6 @@ services:
       - lnd2
       - lnd-outside-1
       - lnd-outside-2
-      - lnd-outside-3
       - otel-agent
     restart: on-failure:10
   apollo-router:
@@ -194,25 +193,6 @@ services:
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
-        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
-        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
-        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-        /bin/lnd
-    depends_on: [bitcoind]
-  lnd-outside-3:
-    image: lightninglabs/lnd:v0.16.2-beta
-    ports: []
-    volumes:
-      - ${HOST_PROJECT_PATH:-.}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-      - ${HOST_PROJECT_PATH:-.}/dev/lnd/tls.key:/root/.lnd/tls.key
-      - ${HOST_PROJECT_PATH:-.}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-      - ${HOST_PROJECT_PATH:-.}/dev/lnd/regtest/lnd-outside-3.wallet.db:/root/.lnd/wallet.db
-      - ${HOST_PROJECT_PATH:-.}/dev/lnd/regtest/lnd-outside-3.macaroons.db:/root/.lnd/macaroons.db
-      - ${HOST_PROJECT_PATH:-.}/dev/lnd/regtest/lnd-outside-3.admin.macaroon:/root/.lnd/admin.macaroon
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |

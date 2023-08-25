@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: move ln-send limits tests to new integration (#3094)...'
-      sha: 50e2de82a6f7014e94e70b9c4cddf9df2db0ee86
+      commitTitle: 'chore: remove lnd-outside-3 (#3115)'
+      sha: 2905721102206cd5529b8ba45ce81a2a9b8be94d
       tags:
-      - 0.13.10-2-g50e2de82a
+      - 0.13.11-1-g290572110
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: move ln-send limits tests to new integration (#3094)...'
-      sha: 50e2de82a6f7014e94e70b9c4cddf9df2db0ee86
+      commitTitle: 'chore: remove lnd-outside-3 (#3115)'
+      sha: 2905721102206cd5529b8ba45ce81a2a9b8be94d
       tags:
-      - 0.13.10-2-g50e2de82a
+      - 0.13.11-1-g290572110
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: move ln-send limits tests to new integration (#3094)...'
-      sha: 50e2de82a6f7014e94e70b9c4cddf9df2db0ee86
+      commitTitle: 'chore: remove lnd-outside-3 (#3115)'
+      sha: 2905721102206cd5529b8ba45ce81a2a9b8be94d
       tags:
-      - 0.13.10-2-g50e2de82a
+      - 0.13.11-1-g290572110
     path: ./
   path: ./graphql
 kind: LockConfig
