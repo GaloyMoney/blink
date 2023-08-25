@@ -6,7 +6,7 @@ directories:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 3c646c8615e45a466b26ae8caee7189bc4441bc7
+      ref: 23938b6ffa351cd98890f178a84a0dcd262cea01
     includePaths:
     - dev/**/*
     - .envrc
@@ -21,7 +21,7 @@ directories:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 3c646c8615e45a466b26ae8caee7189bc4441bc7
+      ref: 23938b6ffa351cd98890f178a84a0dcd262cea01
     includePaths:
     - dev/**/*
     - test/bats/bitcoind_signer_descriptors.json
@@ -37,7 +37,7 @@ directories:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: 3c646c8615e45a466b26ae8caee7189bc4441bc7
+      ref: 23938b6ffa351cd98890f178a84a0dcd262cea01
     includePaths:
     - src/graphql/public/schema.graphql
     - src/graphql/admin/schema.graphql

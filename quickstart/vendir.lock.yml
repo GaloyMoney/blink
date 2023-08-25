@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps + fix open handles (#3103)...'
-      sha: 3c646c8615e45a466b26ae8caee7189bc4441bc7
+      commitTitle: 'chore: skip xxd bats test (#3114)'
+      sha: 23938b6ffa351cd98890f178a84a0dcd262cea01
       tags:
-      - 0.13.9-9-g3c646c861
+      - 0.13.9-11-g23938b6ff
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps + fix open handles (#3103)...'
-      sha: 3c646c8615e45a466b26ae8caee7189bc4441bc7
+      commitTitle: 'chore: skip xxd bats test (#3114)'
+      sha: 23938b6ffa351cd98890f178a84a0dcd262cea01
       tags:
-      - 0.13.9-9-g3c646c861
+      - 0.13.9-11-g23938b6ff
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump deps + fix open handles (#3103)...'
-      sha: 3c646c8615e45a466b26ae8caee7189bc4441bc7
+      commitTitle: 'chore: skip xxd bats test (#3114)'
+      sha: 23938b6ffa351cd98890f178a84a0dcd262cea01
       tags:
-      - 0.13.9-9-g3c646c861
+      - 0.13.9-11-g23938b6ff
     path: ./
   path: ./graphql
 kind: LockConfig
