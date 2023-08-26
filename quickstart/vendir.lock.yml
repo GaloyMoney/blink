@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove lnd-outside-3 (#3115)'
-      sha: 2905721102206cd5529b8ba45ce81a2a9b8be94d
+      commitTitle: 'test: add hot wallet balance check before running cron (#3116)'
+      sha: ec398e81b516e340ff091e0d3ae4fe07b7b9d54b
       tags:
-      - 0.13.11-1-g290572110
+      - 0.13.12-1-gec398e81b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove lnd-outside-3 (#3115)'
-      sha: 2905721102206cd5529b8ba45ce81a2a9b8be94d
+      commitTitle: 'test: add hot wallet balance check before running cron (#3116)'
+      sha: ec398e81b516e340ff091e0d3ae4fe07b7b9d54b
       tags:
-      - 0.13.11-1-g290572110
+      - 0.13.12-1-gec398e81b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove lnd-outside-3 (#3115)'
-      sha: 2905721102206cd5529b8ba45ce81a2a9b8be94d
+      commitTitle: 'test: add hot wallet balance check before running cron (#3116)'
+      sha: ec398e81b516e340ff091e0d3ae4fe07b7b9d54b
       tags:
-      - 0.13.11-1-g290572110
+      - 0.13.12-1-gec398e81b
     path: ./
   path: ./graphql
 kind: LockConfig
