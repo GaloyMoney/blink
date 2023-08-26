@@ -98,9 +98,8 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
     if (lnPaymentUpdateOnPending instanceof Error) throw lnPaymentUpdateOnPending
 
     // Run delete-payments cronjob again for payments before 2 weeks ago
-    const deleteLnPayments1HourRetry = await Lightning.deleteLnPaymentsBefore(
-      timestamp2Months,
-    )
+    const deleteLnPayments1HourRetry =
+      await Lightning.deleteLnPaymentsBefore(timestamp2Months)
     if (deleteLnPayments1HourRetry instanceof Error) throw deleteLnPayments1HourRetry
 
     // Confirm payment still exists
