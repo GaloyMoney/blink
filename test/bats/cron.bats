@@ -35,6 +35,16 @@ no_pending_lnd1_channels() {
   fi
 }
 
+wait_for_bria_hot_balance_at_least() {
+  amount=$1
+
+  bria_settled_hot_balance=$(
+    bria_cli wallet-balance -w "dev-wallet" \
+    | jq -r '.effectiveSettled'
+  )
+
+  [[ "$amount" -lt "$bria_settled_hot_balance" ]] || return 1
+}
 
 @test "cron: rebalance hot to cold storage" {
   login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
@@ -53,6 +63,8 @@ no_pending_lnd1_channels() {
   bitcoin_cli sendtoaddress "$address" "10"
   bitcoin_cli -generate 2
 
+  retry 15 1 wait_for_bria_hot_balance_at_least 1000000000
+
   local key1="tpubDEaDfeS1EXpqLVASNCW7qAHW1TFPBpk2Z39gUXjFnsfctomZ7N8iDpy6RuGwqdXAAZ5sr5kQZrxyuEn15tqPJjM4mcPSuXzV27AWRD3p9Q4"
   local key2="tpubDEPCxBfMFRNdfJaUeoTmepLJ6ZQmeTiU1Sko2sdx1R3tmPpZemRUjdAHqtmLfaVrBg1NBx2Yx3cVrsZ2FTyBuhiH9mPSL5ozkaTh1iZUTZx"
   
@@ -68,7 +80,7 @@ no_pending_lnd1_channels() {
 
   bria_cli watch-events -o
   bitcoin_cli -generate 1
-  for i in {1..120}; do
+  for i in {1..30}; do
     cold_balance=$(bria_cli wallet-balance -w cold | jq -r '.effectivePendingIncome')
     [[ "${cold_balance}" != "0" ]] && break;
     sleep 1
