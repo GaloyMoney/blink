@@ -64,7 +64,8 @@ authRouter.use((req: Request, res: Response, next: NextFunction) => {
     recordExceptionInCurrentSpan({ error: "IP is not defined" })
     return res.status(500).send({ error: "IP is not defined" })
   }
-  req.ip = ip
+  req["originalIp"] = ip as IpAddress
+
   next()
 })
 
@@ -74,7 +75,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: Request, res: Response) => {
-      const ip = req.ip as IpAddress
+      const ip = req.originalIp
       const code = req.body.authCode
       const phone = checkedToPhoneNumber(req.body.phoneNumber)
       if (phone instanceof Error) return res.status(400).send("invalid phone")
@@ -189,7 +190,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "createDeviceAccount",
     fn: async (req: Request, res: Response) => {
-      const ip = req.ip as IpAddress
+      const ip = req.originalIp
       const user = basicAuth(req)
 
       if (!user?.name || !user?.pass) {
@@ -230,7 +231,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "emailCodeRequest",
     fn: async (req: Request, res: Response) => {
-      const ip = req.ip as IpAddress
+      const ip = req.originalIp
 
       const emailRaw = req.body.email
       if (!emailRaw) {
@@ -267,7 +268,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "emailLogin",
     fn: async (req: Request, res: Response) => {
-      const ip = req.ip as IpAddress
+      const ip = req.originalIp
 
       const emailLoginIdRaw = req.body.emailLoginId
       if (!emailLoginIdRaw) {
@@ -381,7 +382,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "emailLoginCookie",
     fn: async (req: Request, res: Response) => {
-      const ip = req.ip as IpAddress
+      const ip = req.originalIp
 
       const emailLoginIdRaw = req.body.emailLoginId
       if (!emailLoginIdRaw) {
@@ -490,7 +491,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: Request, res: Response) => {
-      const ip = req.ip as IpAddress
+      const ip = req.originalIp
 
       const phoneRaw = req.body.phone
       const challengeCodeRaw = req.body.challengeCode
@@ -532,7 +533,7 @@ authRouter.post(
     namespace: "servers.middlewares.authRouter",
     fnName: "login",
     fn: async (req: Request, res: Response) => {
-      const ip = req.ip as IpAddress
+      const ip = req.originalIp
 
       const codeRaw = req.body.code
       const phoneRaw = req.body.phone
