@@ -16,21 +16,13 @@ dotenv.config()
 import { NextFunction, Request, Response } from "express"
 
 import {
-  ACCOUNT_USERNAME,
   SemanticAttributes,
   addAttributesToCurrentSpanAndPropagate,
 } from "@services/tracing"
 
 import { parseIps } from "@domain/accounts-ips"
 
-import {
-  RequestWithGqlContext,
-  isAuthenticated,
-  isEditor,
-  startApolloServer,
-} from "./graphql-server"
-
-import { sessionPublicContext } from "./middlewares/session"
+import { isAuthenticated, isEditor, startApolloServer } from "./graphql-server"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -47,20 +39,11 @@ const setGqlContext = async (
 
   const ip = parseIps(ipString)
 
-  const gqlContext = await sessionPublicContext({
-    tokenPayload,
-    ip,
-  })
-
-  const reqWithGqlContext = req as RequestWithGqlContext
-  reqWithGqlContext.gqlContext = gqlContext
-
   addAttributesToCurrentSpanAndPropagate(
     {
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
-      [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
-      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
+      [SemanticAttributes.ENDUSER_ID]: tokenPayload.sub,
     },
     next,
   )
