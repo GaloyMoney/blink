@@ -1,17 +1,13 @@
 import { createServer } from "http"
 
-import DataLoader from "dataloader"
 import express, { NextFunction, Request, Response } from "express"
 
-import { Accounts, Transactions } from "@app"
 import { UNSECURE_IP_FROM_REQUEST_OBJECT, getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
 import {
   ACCOUNT_USERNAME,
   SemanticAttributes,
-  addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
-  recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
@@ -32,14 +28,13 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { checkedToUserId } from "@domain/accounts"
-import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/shared"
-import { UsersRepository } from "@services/mongoose"
+import { parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 
 import authRouter from "./authorization"
 import kratosCallback from "./callback/kratos"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
+import { sessionPublicContext } from "./middlewares/session"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -80,7 +75,7 @@ const setGqlContext = async (
 
   const ip = parseIps(ipString)
 
-  const gqlContext = await sessionContext({
+  const gqlContext = await sessionPublicContext({
     tokenPayload,
     ip,
   })
@@ -96,80 +91,6 @@ const setGqlContext = async (
       [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
     },
     next,
-  )
-}
-
-export const sessionContext = ({
-  tokenPayload,
-  ip,
-}: {
-  tokenPayload: jsonwebtoken.JwtPayload
-  ip: IpAddress | undefined
-}): Promise<GraphQLContext> => {
-  const logger = graphqlLogger.child({ tokenPayload })
-
-  let domainAccount: Account | undefined
-  let user: User | undefined
-
-  return addAttributesToCurrentSpanAndPropagate(
-    {
-      "token.sub": tokenPayload?.sub,
-      "token.iss": tokenPayload?.iss,
-      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-    },
-    async () => {
-      // note: value should match (ie: "anon") if not an accountId
-      // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-      const maybeUserId = checkedToUserId(tokenPayload?.sub ?? "")
-
-      if (!(maybeUserId instanceof ValidationError)) {
-        const userId = maybeUserId
-        const account = await Accounts.getAccountFromUserId(userId)
-        if (account instanceof Error) {
-          throw mapError(account)
-        } else {
-          domainAccount = account
-          // not awaiting on purpose. just updating metadata
-          // TODO: look if this can be a source of memory leaks
-          Accounts.updateAccountIPsInfo({
-            accountId: account.id,
-            ip,
-            logger,
-          })
-          const userRes = await UsersRepository().findById(account.kratosUserId)
-          if (userRes instanceof Error) throw mapError(userRes)
-          user = userRes
-          addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
-        }
-      }
-
-      const loaders = {
-        txnMetadata: new DataLoader(async (keys) => {
-          const txnMetadata = await Transactions.getTransactionsMetadataByIds(
-            keys as LedgerTransactionId[],
-          )
-          if (txnMetadata instanceof Error) {
-            recordExceptionInCurrentSpan({
-              error: txnMetadata,
-              level: txnMetadata.level,
-            })
-
-            return keys.map(() => undefined)
-          }
-
-          return txnMetadata
-        }),
-      }
-
-      return {
-        logger,
-        loaders,
-        // FIXME: we should not return this for the admin graphql endpoint
-        user,
-        domainAccount,
-        ip,
-      }
-    },
   )
 }
 
