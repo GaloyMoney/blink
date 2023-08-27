@@ -49,7 +49,6 @@ const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 
 const authorizedContexts: Record<string, unknown> = {}
 
-// new ws server
 const getContext = async (
   ctx: Context<
     Record<string, unknown> | undefined,
@@ -82,10 +81,10 @@ const getContext = async (
         const tokenPayload = {
           sub: kratosCookieRes.kratosUserId,
         }
+
         return sessionContext({
           tokenPayload,
           ip,
-          body: null,
         })
       }
 
@@ -110,9 +109,6 @@ const getContext = async (
       return sessionContext({
         tokenPayload,
         ip,
-
-        // TODO: Resolve what's needed here
-        body: null,
       })
     },
   })()
