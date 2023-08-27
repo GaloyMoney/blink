@@ -19,6 +19,12 @@ type GraphQLPublicContextAuth = Omit<GraphQLPublicContext, "user" | "domainAccou
   domainAccount: Account
 }
 
+type GraphQLAdminContext = {
+  logger: Logger
+  user: User
+  ip: IpAddress
+}
+
 // globally used types
 type Logger = import("pino").Logger
 

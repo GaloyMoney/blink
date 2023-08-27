@@ -32,7 +32,7 @@ const AdminPushNotificationSendMutation = GT.Field<
     }
   },
   null,
-  GraphQLPublicContextAuth
+  GraphQLAdminContext
 >({
   extensions: {
     complexity: 120,

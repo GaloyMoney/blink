@@ -22,7 +22,7 @@ const UserUpdatePhoneMutation = GT.Field<
     input: { accountId: string; phone: PhoneNumber | Error }
   },
   null,
-  GraphQLPublicContextAuth
+  GraphQLAdminContext
 >({
   extensions: {
     complexity: 120,
