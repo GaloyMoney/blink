@@ -47,7 +47,7 @@ import UserPhoneRegistrationInitiateMutation from "@graphql/public/root/mutation
 import UserPhoneRegistrationValidateMutation from "@graphql/public/root/mutation/user-phone-registration-validate"
 import UserTotpDeleteMutation from "@graphql/public/root/mutation/user-totp-delete"
 
-// TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
+// TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {
   unauthed: {
     captchaCreateChallenge: CaptchaCreateChallengeMutation,

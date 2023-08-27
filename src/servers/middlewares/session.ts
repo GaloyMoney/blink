@@ -23,7 +23,7 @@ export const sessionPublicContext = ({
 }: {
   tokenPayload: jsonwebtoken.JwtPayload
   ip: IpAddress | undefined
-}): Promise<GraphQLContext> => {
+}): Promise<GraphQLPublicContext> => {
   const logger = baseLogger.child({ tokenPayload })
 
   let domainAccount: Account | undefined

@@ -23,7 +23,7 @@ const UserUpdateUsernameMutation = GT.Field({
   },
   deprecationReason:
     "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles",
-  resolve: async (_, args, { domainAccount }: GraphQLContextAuth) => {
+  resolve: async (_, args, { domainAccount }: GraphQLPublicContextAuth) => {
     const { username } = args.input
 
     if (username instanceof Error) {

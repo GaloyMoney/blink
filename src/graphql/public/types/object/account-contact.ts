@@ -14,7 +14,7 @@ import Username from "../../../shared/types/scalar/username"
 
 import { TransactionConnection } from "../../../shared/types/object/transaction"
 
-const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
+const AccountContact = GT.Object<AccountRecord, GraphQLPublicContextAuth>({
   name: "UserContact",
   fields: () => ({
     id: { type: GT.NonNull(Username) },

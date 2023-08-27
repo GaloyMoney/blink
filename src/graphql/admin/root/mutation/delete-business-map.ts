@@ -20,7 +20,7 @@ const BusinessDeleteMapInfoMutation = GT.Field<
     }
   },
   null,
-  GraphQLContextAuth
+  GraphQLPublicContextAuth
 >({
   extensions: {
     complexity: 120,

@@ -24,7 +24,7 @@ const UserPhoneRegistrationInitiateMutation = GT.Field<
     }
   },
   null,
-  GraphQLContextAuth
+  GraphQLPublicContextAuth
 >({
   extensions: {
     complexity: 120,
@@ -35,6 +35,10 @@ const UserPhoneRegistrationInitiateMutation = GT.Field<
   },
   resolve: async (_, args, { ip, user }) => {
     const { phone, channel: channelInput } = args.input
+
+    if (ip === undefined) {
+      return { errors: [{ message: "ip is undefined" }] }
+    }
 
     if (phone instanceof Error) {
       return { errors: [{ message: phone.message }] }

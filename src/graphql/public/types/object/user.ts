@@ -25,7 +25,7 @@ import GraphQLEmail from "../../../shared/types/object/email"
 import AccountContact from "./account-contact"
 import UserQuizQuestion from "./user-quiz-question"
 
-const GraphQLUser = GT.Object<User, GraphQLContextAuth>({
+const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",
   fields: () => ({
     id: {

@@ -110,5 +110,5 @@ export const graphqlAdmin = async <
   contextValue,
 }: {
   source: string | Source
-  contextValue?: Partial<GraphQLContext>
+  contextValue?: Partial<GraphQLPublicContext>
 }) => graphql({ schema: gqlAdminSchema, source, contextValue }) as unknown as T

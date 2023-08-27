@@ -23,7 +23,7 @@ const UserPhoneRegistrationValidateMutation = GT.Field<
     }
   },
   null,
-  GraphQLContextAuth
+  GraphQLPublicContextAuth
 >({
   extensions: {
     complexity: 120,

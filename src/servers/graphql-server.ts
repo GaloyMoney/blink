@@ -2,13 +2,8 @@ import { createServer } from "http"
 
 import express, { NextFunction, Request, Response } from "express"
 
-import { UNSECURE_IP_FROM_REQUEST_OBJECT, getJwksArgs } from "@config"
+import { getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
-import {
-  ACCOUNT_USERNAME,
-  SemanticAttributes,
-  addAttributesToCurrentSpanAndPropagate,
-} from "@services/tracing"
 import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
@@ -19,8 +14,6 @@ import PinoHttp from "pino-http"
 
 import { AuthenticationError, AuthorizationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
-
-import { parseIps } from "@domain/accounts-ips"
 
 import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
 
@@ -34,7 +27,6 @@ import authRouter from "./authorization"
 import kratosCallback from "./callback/kratos"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
-import { sessionPublicContext } from "./middlewares/session"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -43,7 +35,7 @@ const graphqlLogger = baseLogger.child({
 export const isAuthenticated = rule({ cache: "contextual" })((
   parent,
   args,
-  ctx: GraphQLContext,
+  ctx: GraphQLPublicContext,
 ) => {
   return !!ctx.domainAccount || new AuthenticationError({ logger: baseLogger })
 })
@@ -51,7 +43,7 @@ export const isAuthenticated = rule({ cache: "contextual" })((
 export const isEditor = rule({ cache: "contextual" })((
   parent,
   args,
-  ctx: GraphQLContextAuth,
+  ctx: GraphQLPublicContextAuth,
 ) => {
   return ctx.domainAccount.isEditor
     ? true
@@ -60,48 +52,20 @@ export const isEditor = rule({ cache: "contextual" })((
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 
-type RequestWithGqlContext = Request & { gqlContext: GraphQLContext | undefined }
-
-const setGqlContext = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  const tokenPayload = req.token
-
-  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-    ? req.ip
-    : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
-
-  const ip = parseIps(ipString)
-
-  const gqlContext = await sessionPublicContext({
-    tokenPayload,
-    ip,
-  })
-
-  const reqWithGqlContext = req as RequestWithGqlContext
-  reqWithGqlContext.gqlContext = gqlContext
-
-  addAttributesToCurrentSpanAndPropagate(
-    {
-      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-      [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
-      [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
-      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
-    },
-    next,
-  )
+export type RequestWithGqlContext = Request & {
+  gqlContext: GraphQLPublicContext | undefined
 }
 
 export const startApolloServer = async ({
   schema,
   port,
   type,
+  setGqlContext,
 }: {
   schema: GraphQLSchema
   port: string | number
   type: string
+  setGqlContext: (req: Request, res: Response, next: NextFunction) => Promise<void>
 }): Promise<Record<string, unknown>> => {
   const app = express()
   const httpServer = createServer(app)

@@ -25,7 +25,7 @@ const AccountUpdateStatusMutation = GT.Field<
     input: { uid: string; status: AccountStatus | Error; comment: string }
   },
   null,
-  GraphQLContextAuth
+  GraphQLPublicContextAuth
 >({
   extensions: {
     complexity: 120,

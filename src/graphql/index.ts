@@ -24,7 +24,7 @@ import {
 } from "graphql"
 
 type GTType = {
-  Field<TArgs = any, TSource = any, TContext = GraphQLContext>(
+  Field<TArgs = any, TSource = any, TContext = GraphQLPublicContext>(
     arg: GraphQLFieldConfig<TSource, TContext, TArgs>,
   ): GraphQLFieldConfig<TSource, TContext, TArgs>
 
@@ -34,10 +34,10 @@ type GTType = {
   Boolean: GraphQLScalarType
   Float: GraphQLScalarType
 
-  Interface<TSource = any, TContext = GraphQLContext>(
+  Interface<TSource = any, TContext = GraphQLPublicContext>(
     config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>,
   ): GraphQLInterfaceType
-  Union<TSource = any, TContext = GraphQLContext>(
+  Union<TSource = any, TContext = GraphQLPublicContext>(
     config: Readonly<GraphQLUnionTypeConfig<TSource, TContext>>,
   ): GraphQLUnionType
 
@@ -46,7 +46,7 @@ type GTType = {
   ): GraphQLScalarType<TInternal, TExternal>
   Enum(config: Readonly<GraphQLEnumTypeConfig>): GraphQLEnumType
 
-  Object<TSource = any, TContext = GraphQLContext>(
+  Object<TSource = any, TContext = GraphQLPublicContext>(
     arg: GraphQLObjectTypeConfig<TSource, TContext>,
   ): GraphQLObjectType<TSource, TContext>
   Input(arg: Readonly<GraphQLInputObjectTypeConfig>): GraphQLInputObjectType

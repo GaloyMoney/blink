@@ -7,13 +7,64 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 
-import { gqlAdminSchema, adminMutationFields, adminQueryFields } from "@graphql/admin"
+import { adminMutationFields, adminQueryFields, gqlAdminSchema } from "@graphql/admin"
 
-import { GALOY_ADMIN_PORT } from "@config"
+import { GALOY_ADMIN_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
-import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
+dotenv.config()
+
+import { NextFunction, Request, Response } from "express"
+
+import {
+  ACCOUNT_USERNAME,
+  SemanticAttributes,
+  addAttributesToCurrentSpanAndPropagate,
+} from "@services/tracing"
+
+import { parseIps } from "@domain/accounts-ips"
+
+import {
+  RequestWithGqlContext,
+  isAuthenticated,
+  isEditor,
+  startApolloServer,
+} from "./graphql-server"
+
+import { sessionPublicContext } from "./middlewares/session"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
+
+const setGqlContext = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  const tokenPayload = req.token
+
+  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+    ? req.ip
+    : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
+
+  const ip = parseIps(ipString)
+
+  const gqlContext = await sessionPublicContext({
+    tokenPayload,
+    ip,
+  })
+
+  const reqWithGqlContext = req as RequestWithGqlContext
+  reqWithGqlContext.gqlContext = gqlContext
+
+  addAttributesToCurrentSpanAndPropagate(
+    {
+      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+      [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
+      [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
+      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
+    },
+    next,
+  )
+}
 
 export async function startApolloServerForAdminSchema() {
   const authedQueryFields: { [key: string]: RuleAnd } = {}
@@ -35,7 +86,12 @@ export async function startApolloServerForAdminSchema() {
   )
 
   const schema = applyMiddleware(gqlAdminSchema, permissions)
-  return startApolloServer({ schema, port: GALOY_ADMIN_PORT, type: "admin" })
+  return startApolloServer({
+    schema,
+    port: GALOY_ADMIN_PORT,
+    type: "admin",
+    setGqlContext,
+  })
 }
 
 if (require.main === module) {
