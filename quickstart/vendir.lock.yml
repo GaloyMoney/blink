@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: unused dotenv (#3120)...'
-      sha: a17c45f9853865ae9139a0217177be63a7d840ca
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 061fba1b26e01fb74aefc11e48cf6795c7ea3182
       tags:
-      - 0.13.13-2-ga17c45f98
+      - 0.13.13-5-g061fba1b2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: unused dotenv (#3120)...'
-      sha: a17c45f9853865ae9139a0217177be63a7d840ca
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 061fba1b26e01fb74aefc11e48cf6795c7ea3182
       tags:
-      - 0.13.13-2-ga17c45f98
+      - 0.13.13-5-g061fba1b2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: unused dotenv (#3120)...'
-      sha: a17c45f9853865ae9139a0217177be63a7d840ca
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 061fba1b26e01fb74aefc11e48cf6795c7ea3182
       tags:
-      - 0.13.13-2-ga17c45f98
+      - 0.13.13-5-g061fba1b2
     path: ./
   path: ./graphql
 kind: LockConfig
