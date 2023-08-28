@@ -74,8 +74,6 @@ const setGqlContext = async (
 ): Promise<void> => {
   const tokenPayload = req.token
 
-  const body = req.body ?? null
-
   const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
     ? req.ip
     : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
@@ -85,7 +83,6 @@ const setGqlContext = async (
   const gqlContext = await sessionContext({
     tokenPayload,
     ip,
-    body,
   })
 
   const reqWithGqlContext = req as RequestWithGqlContext
@@ -96,7 +93,7 @@ const setGqlContext = async (
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
       [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
-      [SemanticAttributes.ENDUSER_ID]: gqlContext.domainAccount?.id || tokenPayload?.sub,
+      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
     },
     next,
   )
@@ -105,13 +102,11 @@ const setGqlContext = async (
 export const sessionContext = ({
   tokenPayload,
   ip,
-  body,
 }: {
   tokenPayload: jsonwebtoken.JwtPayload
   ip: IpAddress | undefined
-  body: unknown
 }): Promise<GraphQLContext> => {
-  const logger = graphqlLogger.child({ tokenPayload, body })
+  const logger = graphqlLogger.child({ tokenPayload })
 
   let domainAccount: Account | undefined
   let user: User | undefined
