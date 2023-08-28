@@ -1,6 +1,7 @@
 query me {
   me {
     defaultAccount {
+      id
       wallets {
         id
         walletCurrency

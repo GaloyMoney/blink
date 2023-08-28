@@ -3,6 +3,7 @@
 set -e
 
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-quickstart}"
+# default is oathkeeper endpoint
 GALOY_ENDPOINT=${GALOY_ENDPOINT:-localhost:4002}
 
 if [ -n "$HOST_PROJECT_PATH" ]; then
@@ -79,14 +80,6 @@ bitcoin_signer_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bitcoind-signer-1" bitcoin-cli $@
 }
 
-bitcoind_init() {
-  bitcoin_cli createwallet "outside" || true
-  bitcoin_cli -generate 200 > /dev/null 2>&1
-
-  bitcoin_signer_cli createwallet "dev" || true
-  bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat $GALOY_DIR/galoy/test/bats/bitcoind_signer_descriptors.json)"
-}
-
 gql_file() {
   echo "$GALOY_DIR/galoy/test/bats/gql/$1.gql"
 }
@@ -137,6 +130,10 @@ login_user() {
   cache_value "$token_name" "$auth_token"
 
   exec_graphql "$token_name" 'wallets-for-account'
+
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ "${account_id}" != "null" ]]
+  cache_value "$token_name.account_id" "$account_id"
 
   btc_wallet_id="$(graphql_output '.data.me.defaultAccount.wallets[] | select(.walletCurrency == "BTC") .id')"
   [[ "${btc_wallet_id}" != "null" ]]

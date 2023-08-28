@@ -28,22 +28,8 @@ main() {
   echo
   echo "Checking that all services are up and running"
   echo
-  echo "Seeding some regtest blocks..."
-  bitcoind_init
-  echo "DONE"
-  echo "Getting balance from bria..."
-  for i in {1..20}; do
-    bria_cli wallet-balance -w dev-wallet && break
-    sleep 1
-  done
-  bria_cli wallet-balance -w dev-wallet || exit 1
-  echo "DONE"
-  echo "Running getinfo on lnd..."
-  lnd_cli getinfo
-  echo "DONE"
-  echo "Opening lnd-outside -> lnd channel"
-  init_lnd_channel
-  echo "DONE"
+  ${DIR}/init-onchain.sh
+  ${DIR}/init-lightning.sh
   echo
   echo "------------------------------------------------------------"
   echo "------------------------------------------------------------"
@@ -51,7 +37,7 @@ main() {
   echo "Hitting graphql endpoints"
 
   echo "Running on network:"
-  for i in {1..10}; do
+  for i in {1..20}; do
     exec_graphql "anon" "globals"
     [[ "$(echo $output | jq -r '.data.globals.network')" = 'regtest' ]] && break
     sleep 1
