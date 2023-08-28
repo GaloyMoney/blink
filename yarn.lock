@@ -10754,10 +10754,10 @@ sparse-bitfield@^3.0.3:
   dependencies:
     memory-pager "^1.0.2"
 
-spectaql@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/spectaql/-/spectaql-2.2.1.tgz#9318a60320b6f7b5d93f78516e4c604887d78aae"
-  integrity sha512-9rtgEBJnVhV8K3hJoATK6nY79Ea7nwdnkCsBFy++UkZTbU8DLmMAa+tDWbmLSPAktIifVoAtvkRKSfYsTW2vSw==
+spectaql@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/spectaql/-/spectaql-2.3.0.tgz#6072b949f8bfb91efe2d0534dc39c48e993df594"
+  integrity sha512-fk0zWo6R8F/5l5Gy6dpbTyiituXXRpCUcIxj8VTRwbSw2+Xj2xNRkYJC3fIEwTaeNshL88Pts5fnFxFGNA1K7A==
   dependencies:
     "@anvilco/apollo-server-plugin-introspection-metadata" "^2.0.1"
     "@graphql-tools/load-files" "^6.3.2"
