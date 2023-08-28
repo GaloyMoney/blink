@@ -20,9 +20,11 @@ import {
 } from "@domain/shared"
 
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
+import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 
 import { AccountsRepository } from "@services/mongoose"
 import { Transaction, TransactionMetadata } from "@services/ledger/schema"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { DealerPriceService } from "@services/dealer-price"
 
 import { timestampDaysAgo } from "@utils"
@@ -430,6 +432,57 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(InactiveAccountError)
+    })
+
+    it("calls sendNotification on successful intraledger receive", async () => {
+      // Setup mocks
+      const sendNotification = jest.fn()
+      const pushNotificationsServiceSpy = jest
+        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+        .mockImplementationOnce(() => ({ sendNotification }))
+
+      // Create users
+      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+        await createRandomUserAndWallets()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const recipientWalletIdAddress = await Wallets.createOnChainAddress({
+        walletId: usdWalletDescriptor.id,
+      })
+      if (recipientWalletIdAddress instanceof Error) throw recipientWalletIdAddress
+
+      // Execute payment
+      const paymentResult = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+        address: recipientWalletIdAddress,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult.status).toEqual(PaymentSendStatus.Success)
+
+      // Expect sent notification
+      expect(sendNotification.mock.calls.length).toBe(1)
+      expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
+
+      // Restore system state
+      pushNotificationsServiceSpy.mockRestore()
     })
   })
 })
