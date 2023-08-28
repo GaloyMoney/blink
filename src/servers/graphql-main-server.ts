@@ -1,4 +1,3 @@
-import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
 import { Rule } from "graphql-shield/typings/rules"
@@ -18,8 +17,6 @@ import { walletIdMiddleware } from "./middlewares/wallet-id"
 import { startApolloServerForAdminSchema } from "./graphql-admin-server"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
-
-dotenv.config()
 
 export async function startApolloServerForCoreSchema() {
   const authedQueryFields: { [key: string]: Rule } = {}

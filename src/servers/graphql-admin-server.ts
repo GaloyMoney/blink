@@ -1,4 +1,3 @@
-import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { and, shield } from "graphql-shield"
 import { RuleAnd } from "graphql-shield/typings/rules"
@@ -13,8 +12,6 @@ import { gqlAdminSchema, adminMutationFields, adminQueryFields } from "@graphql/
 import { GALOY_ADMIN_PORT } from "@config"
 
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
-
-dotenv.config()
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
