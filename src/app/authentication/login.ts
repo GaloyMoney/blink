@@ -143,7 +143,7 @@ export const loginWithPhoneCookie = async ({
   return kratosResult
 }
 
-export const loginWithEmail = async ({
+export const loginWithEmailToken = async ({
   emailFlowId,
   code: codeRaw,
   ip,
@@ -306,6 +306,8 @@ export const loginWithDevice = async ({
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
   }
+
+  // add check on property from jwt, like expiry
 
   const deviceId = checkedToDeviceId(deviceIdRaw)
   if (deviceId instanceof Error) return deviceId

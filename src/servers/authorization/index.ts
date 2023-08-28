@@ -13,8 +13,8 @@ import {
 
 import {
   elevatingSessionWithTotp,
-  loginWithEmail,
   loginWithEmailCookie,
+  loginWithEmailToken,
   logoutCookie,
   requestEmailCode,
 } from "@app/authentication"
@@ -31,7 +31,7 @@ import {
   validateKratosCookie,
 } from "@services/kratos"
 
-import { parseKratosCookies } from "@services/kratos/cookie"
+import { KratosCookie, parseKratosCookies } from "@services/kratos/cookie"
 
 import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
@@ -267,7 +267,7 @@ authRouter.post("/email/login", async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await loginWithEmail({ ip, emailFlowId: emailLoginId, code })
+    const result = await loginWithEmailToken({ ip, emailFlowId: emailLoginId, code })
     if (result instanceof EmailCodeInvalidError) {
       recordExceptionInCurrentSpan({ error: result })
       return res.status(401).send({ error: "invalid code" })
@@ -366,7 +366,7 @@ authRouter.post("/email/login/cookie", async (req: Request, res: Response) => {
     return res.status(422).send({ error: code.message })
   }
 
-  let loginResult
+  let loginResult: LoginWithEmailCookieResult | ApplicationError
   try {
     loginResult = await loginWithEmailCookie({ ip, emailFlowId: emailLoginId, code })
     if (loginResult instanceof EmailCodeInvalidError) {
@@ -390,7 +390,7 @@ authRouter.post("/email/login/cookie", async (req: Request, res: Response) => {
   }
 
   const { cookiesToSendBackToClient, kratosUserId, totpRequired } = loginResult
-  let kratosCookies
+  let kratosCookies: KratosCookie
   try {
     kratosCookies = parseKratosCookies(cookiesToSendBackToClient)
   } catch (error) {
