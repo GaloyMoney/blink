@@ -13,12 +13,6 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { InvalidZeroAmountPriceRatioInputError } from "@domain/payments"
-
-import { timestampDaysAgo } from "@utils"
-
-import { AccountsRepository } from "@services/mongoose"
-import { Transaction } from "@services/ledger/schema"
-
 import {
   AmountCalculator,
   WalletCurrency,
@@ -27,7 +21,11 @@ import {
 
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
 
+import { AccountsRepository } from "@services/mongoose"
+import { Transaction, TransactionMetadata } from "@services/ledger/schema"
 import { DealerPriceService } from "@services/dealer-price"
+
+import { timestampDaysAgo } from "@utils"
 
 import {
   createMandatoryUsers,
@@ -38,6 +36,7 @@ import {
 import { getBalanceHelper } from "test/helpers/wallet"
 
 let outsideAddress: OnChainAddress
+let memo
 
 const dealerFns = DealerPriceService()
 
@@ -47,6 +46,15 @@ beforeAll(async () => {
   await createMandatoryUsers()
 
   outsideAddress = "bcrt1qs758ursh4q9z627kt3pp5yysm78ddny6txaqgw" as OnChainAddress
+})
+
+beforeEach(async () => {
+  memo = randomOnChainMemo()
+})
+
+afterEach(async () => {
+  await Transaction.deleteMany()
+  await TransactionMetadata.deleteMany()
 })
 
 const amount = toSats(10040)
@@ -88,8 +96,6 @@ describe("onChainPay", () => {
       )
       if (newAccount instanceof Error) throw newAccount
 
-      const memo = randomOnChainMemo()
-
       // Execute use-case
       const res = await Wallets.payAllOnChainByWalletId({
         senderWalletId: newWalletDescriptor.id,
@@ -100,15 +106,10 @@ describe("onChainPay", () => {
       })
       expect(res).toBeInstanceOf(InsufficientBalanceError)
       expect(res instanceof Error && res.message).toEqual(`No balance left to send.`)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
 
     it("fails if 'validatePaymentInput' fails", async () => {
       const amount = -1000
-
-      const memo = randomOnChainMemo()
 
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
@@ -136,16 +137,11 @@ describe("onChainPay", () => {
         memo,
       })
       expect(result).toBeInstanceOf(InvalidBtcPaymentAmountError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
   })
 
   describe("settles onchain", () => {
     it("fails if builder 'withConversion' step fails", async () => {
-      const memo = randomOnChainMemo()
-
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
@@ -172,14 +168,9 @@ describe("onChainPay", () => {
         memo,
       })
       expect(result).toBeInstanceOf(LessThanDustThresholdError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
 
     it("fails if withdrawal limit hit", async () => {
-      const memo = randomOnChainMemo()
-
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
@@ -229,14 +220,9 @@ describe("onChainPay", () => {
       })
 
       expect(result).toBeInstanceOf(LimitsExceededError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
 
     it("fails if has insufficient balance for fee", async () => {
-      const memo = randomOnChainMemo()
-
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
@@ -267,14 +253,9 @@ describe("onChainPay", () => {
 
       //should fail because user does not have balance to pay for on-chain fee
       expect(result).toBeInstanceOf(InsufficientBalanceError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
 
     it("fails if sender account is locked", async () => {
-      const memo = randomOnChainMemo()
-
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
@@ -311,16 +292,11 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(InactiveAccountError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
   })
 
   describe("settles intraledger", () => {
     it("fails if builder 'withRecipient' step fails", async () => {
-      const memo = randomOnChainMemo()
-
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
@@ -352,14 +328,9 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(SelfPaymentError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
 
     it("fails if builder 'withConversion' step fails", async () => {
-      const memo = randomOnChainMemo()
-
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
@@ -409,14 +380,9 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
 
     it("fails if recipient account is locked", async () => {
-      const memo = randomOnChainMemo()
-
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
@@ -464,9 +430,6 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(InactiveAccountError)
-
-      // Restore system state
-      await Transaction.deleteMany({ memo })
     })
   })
 })
