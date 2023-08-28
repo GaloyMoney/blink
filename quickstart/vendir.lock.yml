@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: add hot wallet balance check before running cron (#3116)'
-      sha: ec398e81b516e340ff091e0d3ae4fe07b7b9d54b
+      commitTitle: 'chore: unused dotenv (#3120)...'
+      sha: a17c45f9853865ae9139a0217177be63a7d840ca
       tags:
-      - 0.13.12-1-gec398e81b
+      - 0.13.13-2-ga17c45f98
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: add hot wallet balance check before running cron (#3116)'
-      sha: ec398e81b516e340ff091e0d3ae4fe07b7b9d54b
+      commitTitle: 'chore: unused dotenv (#3120)...'
+      sha: a17c45f9853865ae9139a0217177be63a7d840ca
       tags:
-      - 0.13.12-1-gec398e81b
+      - 0.13.13-2-ga17c45f98
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: add hot wallet balance check before running cron (#3116)'
-      sha: ec398e81b516e340ff091e0d3ae4fe07b7b9d54b
+      commitTitle: 'chore: unused dotenv (#3120)...'
+      sha: a17c45f9853865ae9139a0217177be63a7d840ca
       tags:
-      - 0.13.12-1-gec398e81b
+      - 0.13.13-2-ga17c45f98
     path: ./
   path: ./graphql
 kind: LockConfig
