@@ -91,7 +91,7 @@
     "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^3.0.1",
     "knex": "^2.5.1",
-    "libphonenumber-js": "^1.10.41",
+    "libphonenumber-js": "^1.10.42",
     "lightning": "^9.11.3",
     "ln-service": "^56.11.1",
     "lodash.debounce": "^4.0.8",
