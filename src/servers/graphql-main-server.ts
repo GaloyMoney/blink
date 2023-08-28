@@ -24,11 +24,7 @@ import {
 import { parseIps } from "@domain/accounts-ips"
 
 import { startApolloServerForAdminSchema } from "./graphql-admin-server"
-import {
-  RequestWithGqlContext,
-  isAuthenticated,
-  startApolloServer,
-} from "./graphql-server"
+import { isAuthenticated, startApolloServer } from "./graphql-server"
 import { walletIdMiddleware } from "./middlewares/wallet-id"
 
 import { sessionPublicContext } from "./middlewares/session"
@@ -51,8 +47,7 @@ const setGqlContext = async (
     ip,
   })
 
-  const reqWithGqlContext = req as RequestWithGqlContext
-  reqWithGqlContext.gqlContext = gqlContext
+  req.gqlContext = gqlContext
 
   addAttributesToCurrentSpanAndPropagate(
     {

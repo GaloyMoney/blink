@@ -52,10 +52,6 @@ export const isEditor = rule({ cache: "contextual" })((
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 
-export type RequestWithGqlContext = Request & {
-  gqlContext: GraphQLPublicContext | undefined
-}
-
 export const startApolloServer = async ({
   schema,
   port,
@@ -88,7 +84,7 @@ export const startApolloServer = async ({
     cache: "bounded",
     plugins: apolloPlugins,
     context: (context) => {
-      return (context.req as RequestWithGqlContext).gqlContext
+      return context.req.gqlContext
     },
     formatError: (err) => {
       try {

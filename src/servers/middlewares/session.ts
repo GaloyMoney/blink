@@ -82,11 +82,47 @@ export const sessionPublicContext = ({
       return {
         logger,
         loaders,
-        // FIXME: we should not return this for the admin graphql endpoint
         user,
         domainAccount,
         ip,
       }
     },
   )
+}
+
+export const sessionAdminContext = async ({
+  tokenPayload,
+  ip,
+}: {
+  tokenPayload: jsonwebtoken.JwtPayload
+  ip: IpAddress
+}): Promise<GraphQLAdminContext> => {
+  const logger = baseLogger.child({ tokenPayload })
+
+  const auditorId: UserId = tokenPayload?.sub as UserId
+
+  const loaders = {
+    txnMetadata: new DataLoader(async (keys) => {
+      const txnMetadata = await Transactions.getTransactionsMetadataByIds(
+        keys as LedgerTransactionId[],
+      )
+      if (txnMetadata instanceof Error) {
+        recordExceptionInCurrentSpan({
+          error: txnMetadata,
+          level: txnMetadata.level,
+        })
+
+        return keys.map(() => undefined)
+      }
+
+      return txnMetadata
+    }),
+  }
+
+  return {
+    logger,
+    loaders,
+    auditorId,
+    ip,
+  }
 }

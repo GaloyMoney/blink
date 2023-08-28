@@ -31,7 +31,7 @@ const UserUpdatePhoneMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(UserUpdatePhoneInput) },
   },
-  resolve: async (_, args, { user }) => {
+  resolve: async (_, args, { auditorId }) => {
     const { accountId, phone } = args.input
     for (const input of [accountId, phone]) {
       if (input instanceof Error) {
@@ -44,7 +44,7 @@ const UserUpdatePhoneMutation = GT.Field<
     const account = await Admin.updateUserPhone({
       accountId,
       phone,
-      updatedByUserId: user.id,
+      updatedByUserId: auditorId,
     })
     if (account instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(account)] }

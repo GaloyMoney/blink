@@ -21,9 +21,12 @@ type GraphQLPublicContextAuth = Omit<GraphQLPublicContext, "user" | "domainAccou
 
 type GraphQLAdminContext = {
   logger: Logger
-  user: User
+  loaders: Loaders
+  auditorId: UserId
   ip: IpAddress
 }
+
+type GraphQLIntersectionContext = GraphQLPublicContext & GraphQLAdminContext
 
 // globally used types
 type Logger = import("pino").Logger
@@ -31,5 +34,6 @@ type Logger = import("pino").Logger
 declare namespace Express {
   interface Request {
     token: import("jsonwebtoken").JwtPayload
+    gqlContext: GraphQLPublicContext
   }
 }
