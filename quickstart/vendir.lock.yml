@@ -3,25 +3,25 @@ directories:
 - contents:
   - git:
       commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 15980e8b95f61b8fbaa6bc4143b544d1751a15bc
+      sha: 11da9b70f1752f2ebae6f7c5b5d892e625763feb
       tags:
-      - 0.13.20-4-g15980e8b9
+      - 0.13.20-7-g11da9b70f
     path: ./
   path: dev
 - contents:
   - git:
       commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 15980e8b95f61b8fbaa6bc4143b544d1751a15bc
+      sha: 11da9b70f1752f2ebae6f7c5b5d892e625763feb
       tags:
-      - 0.13.20-4-g15980e8b9
+      - 0.13.20-7-g11da9b70f
     path: ./
   path: ./galoy
 - contents:
   - git:
       commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 15980e8b95f61b8fbaa6bc4143b544d1751a15bc
+      sha: 11da9b70f1752f2ebae6f7c5b5d892e625763feb
       tags:
-      - 0.13.20-4-g15980e8b9
+      - 0.13.20-7-g11da9b70f
     path: ./
   path: ./graphql
 kind: LockConfig
