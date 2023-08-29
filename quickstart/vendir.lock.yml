@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 11da9b70f1752f2ebae6f7c5b5d892e625763feb
+      commitTitle: 'test: add notification tests for onchain receive actions (#3129)...'
+      sha: 6797eded9e7140ca639ab3f467271d37da7bc544
       tags:
-      - 0.13.20-7-g11da9b70f
+      - 0.13.21-1-g6797eded9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 11da9b70f1752f2ebae6f7c5b5d892e625763feb
+      commitTitle: 'test: add notification tests for onchain receive actions (#3129)...'
+      sha: 6797eded9e7140ca639ab3f467271d37da7bc544
       tags:
-      - 0.13.20-7-g11da9b70f
+      - 0.13.21-1-g6797eded9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 11da9b70f1752f2ebae6f7c5b5d892e625763feb
+      commitTitle: 'test: add notification tests for onchain receive actions (#3129)...'
+      sha: 6797eded9e7140ca639ab3f467271d37da7bc544
       tags:
-      - 0.13.20-7-g11da9b70f
+      - 0.13.21-1-g6797eded9
     path: ./
   path: ./graphql
 kind: LockConfig
