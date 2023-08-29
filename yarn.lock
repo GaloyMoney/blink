@@ -1482,14 +1482,6 @@
   resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.2.0.tgz#5f3d96ec6b2354ad6d8a28bf216a1d97b5426861"
   integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
 
-"@grpc/grpc-js@1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.9.0.tgz#bdb599e339adabb16aa7243e70c311f75a572867"
-  integrity sha512-H8+iZh+kCE6VR/Krj6W28Y/ZlxoZ1fOzsNt77nrdE3knkbSelW1Uus192xOFCxHyeszLj8i4APQkSIXjAoOxXg==
-  dependencies:
-    "@grpc/proto-loader" "^0.7.0"
-    "@types/node" ">=12.12.47"
-
 "@grpc/grpc-js@1.9.1", "@grpc/grpc-js@^1.9.1":
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.9.1.tgz#d6df7943cd2875a4feaf725f85ff605c08ac245d"
@@ -1506,18 +1498,7 @@
     "@grpc/proto-loader" "^0.7.0"
     "@types/node" ">=12.12.47"
 
-"@grpc/proto-loader@0.7.8":
-  version "0.7.8"
-  resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.7.8.tgz#c050bbeae5f000a1919507f195a1b094e218036e"
-  integrity sha512-GU12e2c8dmdXb7XUlOgYWZ2o2i+z9/VeACkxTA/zzAe2IjclC5PnVL0lpgjhrqfpDYHzM8B1TF6pqWegMYAzlA==
-  dependencies:
-    "@types/long" "^4.0.1"
-    lodash.camelcase "^4.3.0"
-    long "^4.0.0"
-    protobufjs "^7.2.4"
-    yargs "^17.7.2"
-
-"@grpc/proto-loader@^0.7.0", "@grpc/proto-loader@^0.7.8", "@grpc/proto-loader@^0.7.9":
+"@grpc/proto-loader@0.7.9", "@grpc/proto-loader@^0.7.0", "@grpc/proto-loader@^0.7.8", "@grpc/proto-loader@^0.7.9":
   version "0.7.9"
   resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.7.9.tgz#3ca68236f1a0d77566dafa53c715eb31d096279a"
   integrity sha512-YJsOehVXzgurc+lLAxYnlSMc1p/Gu6VAvnfx0ATi2nzvr0YZcjhmZDeY8SeAKv1M7zE3aEJH0Xo9mK1iZ8GYoQ==
@@ -2679,7 +2660,7 @@
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.197.tgz#e95c5ddcc814ec3e84c891910a01e0c8a378c54b"
   integrity sha512-BMVOiWs0uNxHVlHBgzTIqJYmj+PgCo4euloGF+5m4okL3rEYzM2EEv78mw8zWSMM57dM7kVIgJ2QDvwHSoCI5g==
 
-"@types/long@^4.0.0", "@types/long@^4.0.1":
+"@types/long@^4.0.0":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.2.tgz#b74129719fc8d11c01868010082d483b7545591a"
   integrity sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==
@@ -2726,20 +2707,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@^20.5.7":
+"@types/node@*", "@types/node@20.5.7", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@^20.5.7":
   version "20.5.7"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.5.7.tgz#4b8ecac87fbefbc92f431d09c30e176fc0a7c377"
   integrity sha512-dP7f3LdZIysZnmvP3ANJYTSwg+wLLl8p7RqniVlV7j+oXSXAbt9h0WIBFmJy5inWZoX9wZN6eXx+YXd9Rh3RBA==
-
-"@types/node@20.5.0":
-  version "20.5.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.5.0.tgz#7fc8636d5f1aaa3b21e6245e97d56b7f56702313"
-  integrity sha512-Mgq7eCtoTjT89FqNoTzzXg2XvCi5VMhRV6+I2aYanc6kQCBImeNaAYRs/DyoVqk1YEUJK5gN9VO7HRIdz4Wo3Q==
-
-"@types/node@20.5.3":
-  version "20.5.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.5.3.tgz#fa52c147f405d56b2f1dd8780d840aa87ddff629"
-  integrity sha512-ITI7rbWczR8a/S6qjAW7DMqxqFMjjTo61qZVWJ1ubPvbIQsL5D/TvwjYEalM8Kthpe3hTzOGrF2TGbAu2uyqeA==
 
 "@types/node@^10.0.3", "@types/node@^10.1.0":
   version "10.17.60"
@@ -8205,41 +8176,15 @@ liftup@~3.0.1:
     rechoir "^0.7.0"
     resolve "^1.19.0"
 
-lightning@9.11.2:
-  version "9.11.2"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.11.2.tgz#ef985735c61d7094cdeef055c0a39ada0351ac09"
-  integrity sha512-OR82DX8c8He9nrB4hqdwSNRh9goG/JJuI7JBOi1FbRCakxD1XuRJZz7pjyVUz0k65+eMvJl9zAoVpP87P2b/cQ==
-  dependencies:
-    "@grpc/grpc-js" "1.9.0"
-    "@grpc/proto-loader" "0.7.8"
-    "@types/express" "4.17.17"
-    "@types/node" "20.5.0"
-    "@types/request" "2.48.8"
-    "@types/ws" "8.5.5"
-    async "3.2.4"
-    asyncjs-util "1.2.12"
-    bitcoinjs-lib "6.1.3"
-    bn.js "5.2.1"
-    body-parser "1.20.2"
-    bolt07 "1.8.4"
-    bolt09 "1.0.0"
-    cbor "9.0.1"
-    ecpair "2.1.0"
-    express "4.18.2"
-    invoices "3.0.0"
-    psbt "3.0.0"
-    tiny-secp256k1 "2.2.3"
-    type-fest "4.2.0"
-
-lightning@^9.11.3:
-  version "9.11.3"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.11.3.tgz#eb3be88bc35902f5e349358e01eca7582f45750e"
-  integrity sha512-m2a/58cfmkQe6i8xtMeW/VANhUOD51snk6g+76IfdiZLTtiumvDRL2cYt0qK6rrRyDgUR77zNq3TC2CjY0GDuQ==
+lightning@9.12.0, lightning@^9.11.3:
+  version "9.12.0"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.12.0.tgz#b9ff0950e5ce2ba86b777ea9a804b1f1a88b79e0"
+  integrity sha512-lhaYySMITyTFPga/75E5yrFJ+eUzZIKEsvTljy9HBfWENLljn9g8Kl4ImR6vVyBWb9MLLh0EffRJxmzO12DpQA==
   dependencies:
     "@grpc/grpc-js" "1.9.1"
-    "@grpc/proto-loader" "0.7.8"
+    "@grpc/proto-loader" "0.7.9"
     "@types/express" "4.17.17"
-    "@types/node" "20.5.3"
+    "@types/node" "20.5.7"
     "@types/request" "2.48.8"
     "@types/ws" "8.5.5"
     async "3.2.4"
@@ -8255,7 +8200,7 @@ lightning@^9.11.3:
     invoices "3.0.0"
     psbt "3.0.0"
     tiny-secp256k1 "2.2.3"
-    type-fest "4.2.0"
+    type-fest "4.3.1"
 
 limiter@^1.1.5:
   version "1.1.5"
@@ -8279,16 +8224,16 @@ livereload-js@^2.3.0:
   resolved "https://registry.yarnpkg.com/livereload-js/-/livereload-js-2.4.0.tgz#447c31cf1ea9ab52fc20db615c5ddf678f78009c"
   integrity sha512-XPQH8Z2GDP/Hwz2PCDrh2mth4yFejwA1OZ/81Ti3LgKyhDcEjsSsqFWZojHG0va/duGd+WyosY7eXLDoOyqcPw==
 
-ln-service@^56.11.1:
-  version "56.11.1"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-56.11.1.tgz#aca71d6f9a6470402bb1c7e114207139aab82bd3"
-  integrity sha512-ZnyeX3EPsHWjUsksK+jFKzJXJSJEjNwyZICVuWZwf+SOXgM4HEgPx8kPfPHz4D2b765/uzUXDdOlB94HVxTi1g==
+ln-service@^56.12.0:
+  version "56.12.0"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-56.12.0.tgz#4c01e2d4cff5ff02ca7a305746eb4511fe954ac1"
+  integrity sha512-BTDJ201kGPgvSRvjgZFgLGNWJav5hkyHbesx1EqHDwVpRXcTeLnqOZx+qFzKssrSg/Ih3u077G/2OfDdaY6XBw==
   dependencies:
     bolt07 "1.8.4"
     cors "2.8.5"
     express "4.18.2"
     invoices "3.0.0"
-    lightning "9.11.2"
+    lightning "9.12.0"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "8.13.0"
@@ -11542,10 +11487,10 @@ type-detect@4.0.8:
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.8.tgz#7646fb5f18871cfbb7749e69bd39a6388eb7450c"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
 
-type-fest@4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.2.0.tgz#e259430307710e77721ecf6f545840acad72195f"
-  integrity sha512-5zknd7Dss75pMSED270A1RQS3KloqRJA9XbXLe0eCxyw7xXFb3rd+9B0UQ/0E+LQT6lnrLviEolYORlRWamn4w==
+type-fest@4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.3.1.tgz#5cb58cdab5120f7ab0b40cfdc35073fb9adb651d"
+  integrity sha512-pphNW/msgOUSkJbH58x8sqpq8uQj6b0ZKGxEsLKMUnGorRcDjrUaLS+39+/ub41JNTwrrMyJcUB8+YZs3mbwqw==
 
 type-fest@^0.20.2:
   version "0.20.2"
