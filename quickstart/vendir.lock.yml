@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: move ''get last onchain address'' test (#3117)'
-      sha: fd99ab7bf3925cd739c4942455643695626fb46f
+      commitTitle: 'chore: bump eslint from 8.47.0 to 8.48.0 (#3133)...'
+      sha: d71b929901cb105bf720867a2ef47c0992f6ddfa
       tags:
-      - 0.13.18-1-gfd99ab7bf
+      - 0.13.20-1-gd71b92990
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: move ''get last onchain address'' test (#3117)'
-      sha: fd99ab7bf3925cd739c4942455643695626fb46f
+      commitTitle: 'chore: bump eslint from 8.47.0 to 8.48.0 (#3133)...'
+      sha: d71b929901cb105bf720867a2ef47c0992f6ddfa
       tags:
-      - 0.13.18-1-gfd99ab7bf
+      - 0.13.20-1-gd71b92990
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: move ''get last onchain address'' test (#3117)'
-      sha: fd99ab7bf3925cd739c4942455643695626fb46f
+      commitTitle: 'chore: bump eslint from 8.47.0 to 8.48.0 (#3133)...'
+      sha: d71b929901cb105bf720867a2ef47c0992f6ddfa
       tags:
-      - 0.13.18-1-gfd99ab7bf
+      - 0.13.20-1-gd71b92990
     path: ./
   path: ./graphql
 kind: LockConfig
