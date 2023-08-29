@@ -29,7 +29,7 @@ import {
   WalletInvoicesRepository,
 } from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
-import { Transaction } from "@services/ledger/schema"
+import { Transaction, TransactionMetadata } from "@services/ledger/schema"
 import { WalletInvoice } from "@services/mongoose/schema"
 import { LnPayment } from "@services/lnd/schema"
 import * as LndImpl from "@services/lnd"
@@ -81,10 +81,8 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
-  await Transaction.deleteMany({ memo })
-  await Transaction.deleteMany({ memoPayer: memo })
-  await Transaction.deleteMany({ hash: lnInvoice.paymentHash })
-  await Transaction.deleteMany({ hash: noAmountLnInvoice.paymentHash })
+  await Transaction.deleteMany({})
+  await TransactionMetadata.deleteMany({})
   await WalletInvoice.deleteMany({})
   await LnPayment.deleteMany({})
 })
