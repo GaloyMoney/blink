@@ -14,6 +14,7 @@ directories:
     - dev/**/*
     excludePaths:
     - dev/bin/**/*
+    - dev/.gitignore
     newRootPath: dev
 - path: ./galoy
   contents:
