@@ -8796,10 +8796,10 @@ mongodb@^5.3.0:
   optionalDependencies:
     "@mongodb-js/saslprep" "^1.1.0"
 
-"mongoose@5 - 7", mongoose@~7.4.4:
-  version "7.4.4"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-7.4.4.tgz#e45a02f0cee37e6c5343c95f9ad6feb06187a9a8"
-  integrity sha512-LOOviiEqWOLH4PuBK+jbpm5vjBkdSNBcP/4UCevOJMTl5SXSbCXr68ulEYcthLcN2/xi08452HupKD8BfxNIQw==
+"mongoose@5 - 7", mongoose@~7.4.4, mongoose@~7.4.5:
+  version "7.4.5"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-7.4.5.tgz#7c843c6e3e8dcd22b0ff0f0981aca69b863e7723"
+  integrity sha512-X7Mw7KHUYZmyOQmlu7D9TnZh/3vOrAYmZwEpXDU0VDvLPKT0T7PF6blwiv3aXOEMwv9T3rLTC9lJb3C5dWld2A==
   dependencies:
     bson "^5.4.0"
     kareem "2.5.1"
