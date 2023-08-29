@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: fix add all files in prep-quickstart'
-      sha: 2892a4abd2917765bf7a9be408690c853e1e2919
+      commitTitle: 'ci: do not sync dev/.gitignore in quickstart'
+      sha: 6d3b276edcd6e9152b246030a6e2aaac4d8378ef
       tags:
-      - 0.13.17-1-g2892a4abd
+      - 0.13.17-3-g6d3b276ed
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: fix add all files in prep-quickstart'
-      sha: 2892a4abd2917765bf7a9be408690c853e1e2919
+      commitTitle: 'ci: do not sync dev/.gitignore in quickstart'
+      sha: 6d3b276edcd6e9152b246030a6e2aaac4d8378ef
       tags:
-      - 0.13.17-1-g2892a4abd
+      - 0.13.17-3-g6d3b276ed
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: fix add all files in prep-quickstart'
-      sha: 2892a4abd2917765bf7a9be408690c853e1e2919
+      commitTitle: 'ci: do not sync dev/.gitignore in quickstart'
+      sha: 6d3b276edcd6e9152b246030a6e2aaac4d8378ef
       tags:
-      - 0.13.17-1-g2892a4abd
+      - 0.13.17-3-g6d3b276ed
     path: ./
   path: ./graphql
 kind: LockConfig
