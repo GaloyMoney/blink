@@ -40,22 +40,6 @@ export const requestPhoneCodeWithCaptcha = async ({
   )
   if (verifySuccess instanceof Error) return verifySuccess
 
-  return requestPhoneCodeForUnauthedUser({
-    phone,
-    ip,
-    channel,
-  })
-}
-
-export const requestPhoneCodeForUnauthedUser = async ({
-  phone,
-  ip,
-  channel,
-}: {
-  phone: PhoneNumber
-  ip: IpAddress
-  channel: ChannelType
-}): Promise<true | PhoneProviderServiceError> => {
   {
     const limitOk = await checkRequestCodeAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk

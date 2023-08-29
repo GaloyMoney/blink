@@ -33,16 +33,18 @@ export const createCookieLoginFlow = async (): Promise<
   }
 }
 
-export const parseKratosCookies = (
-  cookie: string | Array<SessionCookie>,
-): {
+export type KratosCookie = {
   asString: () => string | SessionCookie[]
   asArray: () => setCookie.Cookie[]
   csrf: () => setCookie.Cookie | undefined
   kratosSession: () => setCookie.Cookie | undefined
   kratosSessionAsString: () => string
   formatCookieOptions: (cookieVal: Cookie) => ICookieOptions
-} => {
+}
+
+export const parseKratosCookies = (
+  cookie: string | Array<SessionCookie>,
+): KratosCookie => {
   let cookiesStr = ""
   if (cookie instanceof Array) {
     for (const cookieVal of cookie) {

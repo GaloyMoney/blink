@@ -1,3 +1,4 @@
+import { validOneTimeAuthCodeValue } from "@domain/authentication"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 
@@ -19,12 +20,5 @@ const OneTimeAuthCode = GT.Scalar({
     return new InputValidationError({ message: "Invalid type for OneTimeAuthCode" })
   },
 })
-
-const validOneTimeAuthCodeValue = (value: string) => {
-  if (value.match(/^[0-9]{6}/i)) {
-    return value.toLowerCase() as PhoneCode
-  }
-  return new InputValidationError({ message: "Invalid value for OneTimeAuthCode" })
-}
 
 export default OneTimeAuthCode

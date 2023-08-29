@@ -37,7 +37,7 @@ import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/sha
 import { UsersRepository } from "@services/mongoose"
 
 import authRouter from "./authorization"
-import kratosRouter from "./authorization/kratos-router"
+import kratosCallback from "./callback/kratos"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
 
@@ -227,7 +227,7 @@ export const startApolloServer = async ({
   })
 
   app.use("/auth", authRouter)
-  app.use("/kratos", kratosRouter)
+  app.use("/kratos", kratosCallback)
 
   // Health check
   app.get(
