@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: do not sync dev/.gitignore in quickstart'
-      sha: 6d3b276edcd6e9152b246030a6e2aaac4d8378ef
+      commitTitle: 'test: move ''get last onchain address'' test (#3117)'
+      sha: fd99ab7bf3925cd739c4942455643695626fb46f
       tags:
-      - 0.13.17-3-g6d3b276ed
+      - 0.13.18-1-gfd99ab7bf
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: do not sync dev/.gitignore in quickstart'
-      sha: 6d3b276edcd6e9152b246030a6e2aaac4d8378ef
+      commitTitle: 'test: move ''get last onchain address'' test (#3117)'
+      sha: fd99ab7bf3925cd739c4942455643695626fb46f
       tags:
-      - 0.13.17-3-g6d3b276ed
+      - 0.13.18-1-gfd99ab7bf
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: do not sync dev/.gitignore in quickstart'
-      sha: 6d3b276edcd6e9152b246030a6e2aaac4d8378ef
+      commitTitle: 'test: move ''get last onchain address'' test (#3117)'
+      sha: fd99ab7bf3925cd739c4942455643695626fb46f
       tags:
-      - 0.13.17-3-g6d3b276ed
+      - 0.13.18-1-gfd99ab7bf
     path: ./
   path: ./graphql
 kind: LockConfig
