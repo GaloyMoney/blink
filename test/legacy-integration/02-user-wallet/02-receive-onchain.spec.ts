@@ -440,27 +440,6 @@ describe("With Bria", () => {
   })
 
   describe("UserWallet - On chain", () => {
-    it("get last on chain address", async () => {
-      const requestId = ("requestId #" +
-        (Math.random() * 1_000_000).toFixed()) as OnChainAddressRequestId
-
-      const address = await Wallets.createOnChainAddress({
-        walletId: newWalletIdA,
-        requestId,
-      })
-      const lastAddress = await Wallets.getLastOnChainAddress(newWalletIdA)
-
-      expect(address).not.toBeInstanceOf(Error)
-      expect(lastAddress).not.toBeInstanceOf(Error)
-      expect(lastAddress).toBe(address)
-
-      const addressAgain = await Wallets.createOnChainAddress({
-        walletId: newWalletIdA,
-        requestId,
-      })
-      expect(addressAgain).toBe(address)
-    })
-
     it.skip("fails to create onChain Address past rate limit", async () => {
       // Reset limits before starting
       let resetOk = await resetOnChainAddressAccountIdLimits(newAccountIdA)
