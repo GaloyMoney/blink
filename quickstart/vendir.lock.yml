@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: correct OTLP endpoint in quickstart'
-      sha: df4fabfdb330d110ec95a53b5acd422721880516
+      commitTitle: 'ci: fix add all files in prep-quickstart'
+      sha: 2892a4abd2917765bf7a9be408690c853e1e2919
       tags:
-      - 0.13.16-1-gdf4fabfdb
+      - 0.13.17-1-g2892a4abd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: correct OTLP endpoint in quickstart'
-      sha: df4fabfdb330d110ec95a53b5acd422721880516
+      commitTitle: 'ci: fix add all files in prep-quickstart'
+      sha: 2892a4abd2917765bf7a9be408690c853e1e2919
       tags:
-      - 0.13.16-1-gdf4fabfdb
+      - 0.13.17-1-g2892a4abd
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: correct OTLP endpoint in quickstart'
-      sha: df4fabfdb330d110ec95a53b5acd422721880516
+      commitTitle: 'ci: fix add all files in prep-quickstart'
+      sha: 2892a4abd2917765bf7a9be408690c853e1e2919
       tags:
-      - 0.13.16-1-gdf4fabfdb
+      - 0.13.17-1-g2892a4abd
     path: ./
   path: ./graphql
 kind: LockConfig
