@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/parser from 6.4.1 to 6.5.0 (#3130)...'
-      sha: 7016549f3be74dd959191750c0efe04864617625
+      commitTitle: 'fix: correct OTLP endpoint in quickstart'
+      sha: df4fabfdb330d110ec95a53b5acd422721880516
       tags:
-      - 0.13.15-8-g7016549f3
+      - 0.13.16-1-gdf4fabfdb
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/parser from 6.4.1 to 6.5.0 (#3130)...'
-      sha: 7016549f3be74dd959191750c0efe04864617625
+      commitTitle: 'fix: correct OTLP endpoint in quickstart'
+      sha: df4fabfdb330d110ec95a53b5acd422721880516
       tags:
-      - 0.13.15-8-g7016549f3
+      - 0.13.16-1-gdf4fabfdb
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/parser from 6.4.1 to 6.5.0 (#3130)...'
-      sha: 7016549f3be74dd959191750c0efe04864617625
+      commitTitle: 'fix: correct OTLP endpoint in quickstart'
+      sha: df4fabfdb330d110ec95a53b5acd422721880516
       tags:
-      - 0.13.15-8-g7016549f3
+      - 0.13.16-1-gdf4fabfdb
     path: ./
   path: ./graphql
 kind: LockConfig
