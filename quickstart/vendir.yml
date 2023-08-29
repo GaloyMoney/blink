@@ -9,10 +9,6 @@ directories:
       ref: df4fabfdb330d110ec95a53b5acd422721880516
     includePaths:
     - dev/**/*
-    - .envrc
-    - .env.ci
-    - docker-compose.yml
-    - docker-compose.override.yml
     excludePaths:
     - dev/bin/**/*
     newRootPath: dev

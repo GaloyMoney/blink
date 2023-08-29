@@ -12,10 +12,6 @@ directories:
       ref: #@ data.values.galoy_git_ref
     includePaths:
     - dev/**/*
-    - .envrc
-    - .env.ci
-    - docker-compose.yml
-    - docker-compose.override.yml
     excludePaths:
     - dev/bin/**/*
     newRootPath: dev

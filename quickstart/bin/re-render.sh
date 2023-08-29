@@ -9,7 +9,6 @@ GALOY_ROOT_DIR=${REPO_ROOT}/quickstart/galoy
 pushd ${REPO_ROOT}/quickstart
 
 ytt -f vendir > vendir.yml
-
 vendir sync
 
 ytt -f ./docker-compose.tmpl.yml -f ${GALOY_ROOT_DIR}/docker-compose.yml -f ${GALOY_ROOT_DIR}/docker-compose.override.yml > docker-compose.yml
