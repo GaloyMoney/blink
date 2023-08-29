@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: decompose quickstart script (#3111)...'
-      sha: 969c27d3cadfb2346246548d3df12a7681073d41
+      commitTitle: 'feat: exposing all auth method over rest (#3118)...'
+      sha: aab4a1ce4b532f0bb4524d1f4b9e1540337132be
       tags:
-      - 0.13.14-1-g969c27d3c
+      - 0.13.15-6-gaab4a1ce4
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: decompose quickstart script (#3111)...'
-      sha: 969c27d3cadfb2346246548d3df12a7681073d41
+      commitTitle: 'feat: exposing all auth method over rest (#3118)...'
+      sha: aab4a1ce4b532f0bb4524d1f4b9e1540337132be
       tags:
-      - 0.13.14-1-g969c27d3c
+      - 0.13.15-6-gaab4a1ce4
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: decompose quickstart script (#3111)...'
-      sha: 969c27d3cadfb2346246548d3df12a7681073d41
+      commitTitle: 'feat: exposing all auth method over rest (#3118)...'
+      sha: aab4a1ce4b532f0bb4524d1f4b9e1540337132be
       tags:
-      - 0.13.14-1-g969c27d3c
+      - 0.13.15-6-gaab4a1ce4
     path: ./
   path: ./graphql
 kind: LockConfig
