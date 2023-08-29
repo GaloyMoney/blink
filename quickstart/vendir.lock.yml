@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: exposing all auth method over rest (#3118)...'
-      sha: aab4a1ce4b532f0bb4524d1f4b9e1540337132be
+      commitTitle: 'chore: bump @typescript-eslint/parser from 6.4.1 to 6.5.0 (#3130)...'
+      sha: 7016549f3be74dd959191750c0efe04864617625
       tags:
-      - 0.13.15-6-gaab4a1ce4
+      - 0.13.15-8-g7016549f3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: exposing all auth method over rest (#3118)...'
-      sha: aab4a1ce4b532f0bb4524d1f4b9e1540337132be
+      commitTitle: 'chore: bump @typescript-eslint/parser from 6.4.1 to 6.5.0 (#3130)...'
+      sha: 7016549f3be74dd959191750c0efe04864617625
       tags:
-      - 0.13.15-6-gaab4a1ce4
+      - 0.13.15-8-g7016549f3
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: exposing all auth method over rest (#3118)...'
-      sha: aab4a1ce4b532f0bb4524d1f4b9e1540337132be
+      commitTitle: 'chore: bump @typescript-eslint/parser from 6.4.1 to 6.5.0 (#3130)...'
+      sha: 7016549f3be74dd959191750c0efe04864617625
       tags:
-      - 0.13.15-6-gaab4a1ce4
+      - 0.13.15-8-g7016549f3
     path: ./
   path: ./graphql
 kind: LockConfig
