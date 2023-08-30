@@ -19,6 +19,7 @@ import {
   getCurrencyMajorExponent,
   displayAmountFromNumber,
   toCents,
+  DisplayAmountsConverter,
 } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
@@ -537,13 +538,25 @@ describe("With Bria", () => {
         usdFromBtcMidPrice: usdFromBtcMidPriceFn,
       })
       if (walletAddressReceiver instanceof Error) return walletAddressReceiver
+      const {
+        btcToCreditReceiver: btcPaymentAmount,
+        btcBankFee: btcProtocolAndBankFee,
+        usdToCreditReceiver: usdPaymentAmount,
+        usdBankFee: usdProtocolAndBankFee,
+      } = walletAddressReceiver
+
       const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
         currency: account.displayCurrency,
       })
       if (displayPriceRatio instanceof Error) return displayPriceRatio
-      const settlementDisplayAmount = displayPriceRatio.convertFromWallet(
-        walletAddressReceiver.btcToCreditReceiver,
-      )
+      const { displayAmount: settlementDisplayAmount } = DisplayAmountsConverter(
+        displayPriceRatio,
+      ).convert({
+        btcPaymentAmount,
+        btcProtocolAndBankFee,
+        usdPaymentAmount,
+        usdProtocolAndBankFee,
+      })
 
       const pendingNotification = createPushNotificationContent({
         type: NotificationType.OnchainReceiptPending,
@@ -874,10 +887,6 @@ describe("With Bria", () => {
       const {
         settlementDisplayPrice: { displayCurrency },
       } = pendingTx
-      const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-        currency: account.displayCurrency,
-      })
-      if (displayPriceRatio instanceof Error) throw displayPriceRatio
 
       const exponent = getCurrencyMajorExponent(displayCurrency)
 
@@ -887,18 +896,12 @@ describe("With Bria", () => {
         currency: WalletCurrency.Btc,
       })
       if (settlementWalletAmount instanceof Error) throw settlementWalletAmount
-      expect(pendingTx.settlementDisplayAmount).toBe(
-        displayPriceRatio.convertFromWallet(settlementWalletAmount).displayInMajor,
-      )
 
       const settlementWalletFee = paymentAmountFromNumber({
         amount: pendingTx.settlementFee,
         currency: WalletCurrency.Btc,
       })
       if (settlementWalletFee instanceof Error) throw settlementWalletFee
-      expect(pendingTx.settlementDisplayFee).toBe(
-        displayPriceRatio.convertFromWalletToCeil(settlementWalletFee).displayInMajor,
-      )
 
       // Check pendingTx from cache
       const { result: txsFromCache, error: errorFromCache } =

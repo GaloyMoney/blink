@@ -13,7 +13,7 @@ import {
 import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@domain/shared"
 import { UnknownLedgerError, toLiabilitiesWalletId } from "@domain/ledger"
 import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
-import { displayAmountFromNumber } from "@domain/fiat"
+import { DisplayAmountsConverter, displayAmountFromNumber } from "@domain/fiat"
 
 import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
 import { Transaction } from "@services/ledger/schema"
@@ -402,14 +402,21 @@ describe("Bria Event Handlers", () => {
       const usdBankFee = priceRatio.convertFromBtc(btcBankFee)
       const btcProtocolAndBankFee = calc.add(btcMinerFee, btcBankFee)
       const usdProtocolAndBankFee = priceRatio.convertFromBtc(btcProtocolAndBankFee)
-      const displayProtocolAndBankFee =
-        displayPriceRatio.convertFromWallet(btcProtocolAndBankFee)
 
       const btcPaymentAmount = { amount: 10_000n, currency: WalletCurrency.Btc }
       const usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
-      const displayPaymentAmount = displayPriceRatio.convertFromWallet(btcPaymentAmount)
       const btcTotalAmount = calc.add(btcProtocolAndBankFee, btcPaymentAmount)
       const usdTotalAmount = priceRatio.convertFromBtc(btcTotalAmount)
+
+      const {
+        displayAmount: displayPaymentAmount,
+        displayFee: displayProtocolAndBankFee,
+      } = DisplayAmountsConverter(displayPriceRatio).convert({
+        btcPaymentAmount,
+        btcProtocolAndBankFee,
+        usdPaymentAmount,
+        usdProtocolAndBankFee,
+      })
 
       const {
         metadata,
