@@ -311,7 +311,7 @@ services:
     volumes:
     - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   svix:
-    image: svix/svix-server
+    image: svix/svix-server:1.8.0
     platform: linux/amd64
     environment:
       WAIT_FOR: "true"
