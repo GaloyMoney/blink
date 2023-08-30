@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: add notification tests for onchain receive actions (#3129)...'
-      sha: 6797eded9e7140ca639ab3f467271d37da7bc544
+      commitTitle: 'chore: pin svix to v1.8 (#3141)...'
+      sha: 7ffa78d4aa66955aba891253d576c64b75a8d127
       tags:
-      - 0.13.21-1-g6797eded9
+      - 0.13.21-3-g7ffa78d4a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: add notification tests for onchain receive actions (#3129)...'
-      sha: 6797eded9e7140ca639ab3f467271d37da7bc544
+      commitTitle: 'chore: pin svix to v1.8 (#3141)...'
+      sha: 7ffa78d4aa66955aba891253d576c64b75a8d127
       tags:
-      - 0.13.21-1-g6797eded9
+      - 0.13.21-3-g7ffa78d4a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: add notification tests for onchain receive actions (#3129)...'
-      sha: 6797eded9e7140ca639ab3f467271d37da7bc544
+      commitTitle: 'chore: pin svix to v1.8 (#3141)...'
+      sha: 7ffa78d4aa66955aba891253d576c64b75a8d127
       tags:
-      - 0.13.21-1-g6797eded9
+      - 0.13.21-3-g7ffa78d4a
     path: ./
   path: ./graphql
 kind: LockConfig
