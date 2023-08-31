@@ -31,6 +31,7 @@ input AccountUpdateStatusInput {
 input AdminPushNotificationSendInput {
   accountId: String
   body: String
+  data: Object
   title: String
 }
 
@@ -250,6 +251,8 @@ type Mutation {
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
+
+scalar Object
 
 """An address for an on-chain bitcoin destination"""
 scalar OnChainAddress

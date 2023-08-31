@@ -323,7 +323,8 @@ export const NotificationsService = (): INotificationsService => {
     deviceTokens,
     title,
     body,
-  }: AdminPushNotificationSendArgs): Promise<true | NotificationsServiceError> => {
+    data,
+  }: SendPushNotificationArgs): Promise<true | NotificationsServiceError> => {
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return true
 
@@ -332,6 +333,7 @@ export const NotificationsService = (): INotificationsService => {
         deviceTokens,
         title,
         body,
+        data,
       })
     } catch (err) {
       return handleCommonNotificationErrors(err)

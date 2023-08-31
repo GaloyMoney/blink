@@ -7,10 +7,12 @@ export const sendAdminPushNotification = async ({
   accountId: accountIdRaw,
   title,
   body,
+  data,
 }: {
   accountId: string
   title: string
   body: string
+  data?: { [key: string]: string }
 }): Promise<true | ApplicationError> => {
   const accountId = checkedToAccountUuid(accountIdRaw)
   if (accountId instanceof Error) return accountId
@@ -28,6 +30,7 @@ export const sendAdminPushNotification = async ({
     deviceTokens: user.deviceTokens,
     title,
     body,
+    data,
   })
 
   if (success instanceof Error) return success
