@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: pin svix to v1.8 (#3141)...'
-      sha: 7ffa78d4aa66955aba891253d576c64b75a8d127
+      commitTitle: 'feat: add data field to admin push notification (#3143)'
+      sha: ee7371173183b27bbe95712cea290a9ef005bb32
       tags:
-      - 0.13.21-3-g7ffa78d4a
+      - 0.13.22-1-gee7371173
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: pin svix to v1.8 (#3141)...'
-      sha: 7ffa78d4aa66955aba891253d576c64b75a8d127
+      commitTitle: 'feat: add data field to admin push notification (#3143)'
+      sha: ee7371173183b27bbe95712cea290a9ef005bb32
       tags:
-      - 0.13.21-3-g7ffa78d4a
+      - 0.13.22-1-gee7371173
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: pin svix to v1.8 (#3141)...'
-      sha: 7ffa78d4aa66955aba891253d576c64b75a8d127
+      commitTitle: 'feat: add data field to admin push notification (#3143)'
+      sha: ee7371173183b27bbe95712cea290a9ef005bb32
       tags:
-      - 0.13.21-3-g7ffa78d4a
+      - 0.13.22-1-gee7371173
     path: ./
   path: ./graphql
 kind: LockConfig
