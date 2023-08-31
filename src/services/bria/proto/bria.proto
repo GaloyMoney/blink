@@ -48,6 +48,11 @@ service BriaService {
 
 message CreateProfileRequest {
   string name = 1;
+  optional SpendingPolicy spending_policy = 2;
+}
+
+message SpendingPolicy {
+  repeated string allowed_payout_addresses = 1;
 }
 
 message CreateProfileResponse {
@@ -68,6 +73,7 @@ message ListProfilesRequest {}
 message Profile {
   string id = 1;
   string name = 2;
+  SpendingPolicy spending_policy = 3;
 }
 
 message ListProfilesResponse {

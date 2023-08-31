@@ -11,6 +11,11 @@ export class CreateProfileRequest extends jspb.Message {
     getName(): string;
     setName(value: string): CreateProfileRequest;
 
+    hasSpendingPolicy(): boolean;
+    clearSpendingPolicy(): void;
+    getSpendingPolicy(): SpendingPolicy | undefined;
+    setSpendingPolicy(value?: SpendingPolicy): CreateProfileRequest;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): CreateProfileRequest.AsObject;
     static toObject(includeInstance: boolean, msg: CreateProfileRequest): CreateProfileRequest.AsObject;
@@ -24,6 +29,29 @@ export class CreateProfileRequest extends jspb.Message {
 export namespace CreateProfileRequest {
     export type AsObject = {
         name: string,
+        spendingPolicy?: SpendingPolicy.AsObject,
+    }
+}
+
+export class SpendingPolicy extends jspb.Message { 
+    clearAllowedPayoutAddressesList(): void;
+    getAllowedPayoutAddressesList(): Array<string>;
+    setAllowedPayoutAddressesList(value: Array<string>): SpendingPolicy;
+    addAllowedPayoutAddresses(value: string, index?: number): string;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SpendingPolicy.AsObject;
+    static toObject(includeInstance: boolean, msg: SpendingPolicy): SpendingPolicy.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: SpendingPolicy, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SpendingPolicy;
+    static deserializeBinaryFromReader(message: SpendingPolicy, reader: jspb.BinaryReader): SpendingPolicy;
+}
+
+export namespace SpendingPolicy {
+    export type AsObject = {
+        allowedPayoutAddressesList: Array<string>,
     }
 }
 
@@ -113,6 +141,11 @@ export class Profile extends jspb.Message {
     getName(): string;
     setName(value: string): Profile;
 
+    hasSpendingPolicy(): boolean;
+    clearSpendingPolicy(): void;
+    getSpendingPolicy(): SpendingPolicy | undefined;
+    setSpendingPolicy(value?: SpendingPolicy): Profile;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Profile.AsObject;
     static toObject(includeInstance: boolean, msg: Profile): Profile.AsObject;
@@ -127,6 +160,7 @@ export namespace Profile {
     export type AsObject = {
         id: string,
         name: string,
+        spendingPolicy?: SpendingPolicy.AsObject,
     }
 }
 
