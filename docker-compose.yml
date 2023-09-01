@@ -26,6 +26,7 @@ services:
     depends_on:
       - redis
       - mongodb
+      - kratos
       - bitcoind
       - bitcoind-signer
       - stablesats
@@ -368,12 +369,16 @@ services:
       - ${HOST_PROJECT_PATH:-.}/dev/ory:/home/ory
   kratos:
     image: oryd/kratos:v1.0.0
+    environment:
+      DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+      CONTEXT: ${CONTEXT}
     ports: []
     extra_hosts: []
     entrypoint: sh -c
-    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
-    environment:
-      DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+    command:
+      - |
+        kratos migrate sql up -y -e
+        kratos serve -c /home/ory/kratos$$CONTEXT.yml --watch-courier --sqa-opt-out
     links:
       - kratos-pg:kratos-pg
     volumes:
