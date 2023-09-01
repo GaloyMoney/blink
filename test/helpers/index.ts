@@ -27,7 +27,6 @@ const calc = AmountCalculator()
 export const randomEmail = () =>
   (randomBytes(20).toString("hex") + "@galoy.io") as EmailAddress
 
-export const randomUsername = () => randomUUID() as IdentityUsername
 export const randomPassword = () => randomBytes(20).toString("hex") as IdentityPassword
 
 export const randomPhone = () =>

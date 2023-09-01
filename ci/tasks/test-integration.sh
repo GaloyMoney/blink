@@ -38,7 +38,7 @@ rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
 echo "Done!"
 
 ssh ${ADDITIONAL_SSH_OPTS} ${DOCKER_HOST_USER}@${DOCKER_HOST_IP} \
-  "cd ${REPO_PATH}; docker compose down --volumes --remove-orphans --timeout 1; CONTEXT=".integration" DOCKER_HOST_IP=${DOCKER_HOST_IP} docker compose -f docker-compose.yml up integration-deps -d"
+  "cd ${REPO_PATH}; docker compose down --volumes --remove-orphans --timeout 1; DOCKER_HOST_IP=${DOCKER_HOST_IP} docker compose -f docker-compose.yml up integration-deps -d"
 
 export DOCKER_HOST=ssh://${DOCKER_HOST_USER}@${DOCKER_HOST_IP}
 
@@ -51,7 +51,7 @@ rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
 echo "Done!"
 
 ssh ${ADDITIONAL_SSH_OPTS} ${DOCKER_HOST_USER}@${DOCKER_HOST_IP} \
-  "cd ${REPO_PATH}; CONTEXT=".integration" TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests"
+  "cd ${REPO_PATH}; TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests"
 
 container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-integration-tests-")
 test_status=$(docker inspect $container_id --format='{{.State.ExitCode}}')
