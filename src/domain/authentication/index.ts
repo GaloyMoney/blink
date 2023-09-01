@@ -35,6 +35,19 @@ export const getSupportedCountries = ({
   return countries
 }
 
+export const getNextPage = (link: string): number | undefined => {
+  const links = link.split(",")
+  const next = links.find((l) => l.includes('rel="next"'))
+  if (!next) return undefined
+
+  const nextSplit = next.split("page=")
+  const splittingOnNumber = nextSplit[1].match(/^\d+&/)
+  if (splittingOnNumber === null) return undefined
+
+  const page = +splittingOnNumber[0].slice(0, -1)
+  return page
+}
+
 export const checkedToEmailCode = (code: string): EmailCode | ApplicationError => {
   if (!/^[0-9]{6}$/.test(code)) return new EmailCodeInvalidError()
   return code as EmailCode
