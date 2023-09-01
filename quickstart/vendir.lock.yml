@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/eslint-plugin from 6.4.1 to 6.5.0
-        (#3140)...'
-      sha: 035ccbfc97db7f8e224531c02ed86b5058cc469e
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: f851bc1ec42e63c7298df1f79151d538b5201fe3
       tags:
-      - 0.13.26-1-g035ccbfc9
+      - 0.13.26-4-gf851bc1ec
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/eslint-plugin from 6.4.1 to 6.5.0
-        (#3140)...'
-      sha: 035ccbfc97db7f8e224531c02ed86b5058cc469e
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: f851bc1ec42e63c7298df1f79151d538b5201fe3
       tags:
-      - 0.13.26-1-g035ccbfc9
+      - 0.13.26-4-gf851bc1ec
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/eslint-plugin from 6.4.1 to 6.5.0
-        (#3140)...'
-      sha: 035ccbfc97db7f8e224531c02ed86b5058cc469e
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: f851bc1ec42e63c7298df1f79151d538b5201fe3
       tags:
-      - 0.13.26-1-g035ccbfc9
+      - 0.13.26-4-gf851bc1ec
     path: ./
   path: ./graphql
 kind: LockConfig
