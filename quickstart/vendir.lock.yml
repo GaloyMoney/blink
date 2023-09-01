@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add data field to admin push notification (#3143)'
-      sha: ee7371173183b27bbe95712cea290a9ef005bb32
+      commitTitle: 'feat: add ip and phone onboard validation (#2997)...'
+      sha: bfd4b55e5eda6584603cf21595088a4e2f93f5a4
       tags:
-      - 0.13.22-1-gee7371173
+      - 0.13.23-1-gbfd4b55e5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add data field to admin push notification (#3143)'
-      sha: ee7371173183b27bbe95712cea290a9ef005bb32
+      commitTitle: 'feat: add ip and phone onboard validation (#2997)...'
+      sha: bfd4b55e5eda6584603cf21595088a4e2f93f5a4
       tags:
-      - 0.13.22-1-gee7371173
+      - 0.13.23-1-gbfd4b55e5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add data field to admin push notification (#3143)'
-      sha: ee7371173183b27bbe95712cea290a9ef005bb32
+      commitTitle: 'feat: add ip and phone onboard validation (#2997)...'
+      sha: bfd4b55e5eda6584603cf21595088a4e2f93f5a4
       tags:
-      - 0.13.22-1-gee7371173
+      - 0.13.23-1-gbfd4b55e5
     path: ./
   path: ./graphql
 kind: LockConfig
