@@ -42,17 +42,13 @@ services:
     - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/ory:/home/ory
   kratos:
     image: oryd/kratos:v1.0.0
-    environment:
-      DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
-      CONTEXT: ${CONTEXT}
     ports:
     - 4433:4433
     - 4434:4434
     entrypoint: sh -c
-    command:
-    - |
-      kratos migrate sql up -y -e
-      kratos serve -c /home/ory/kratos$$CONTEXT.yml --watch-courier --sqa-opt-out
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
+    environment:
+      DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
     links:
     - kratos-pg:kratos-pg
     volumes:
@@ -68,7 +64,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=default
   galoy:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:3a19f3a25eb95176315e07dae836b61e5cd1f96b3097c10b9856102cbc327f88
+    image: us.gcr.io/galoy-org/galoy-app@sha256:09e5cb6e186756467070dd81b2af2200c8d18262850d134416476852b7f3fe94
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -90,7 +86,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:3a19f3a25eb95176315e07dae836b61e5cd1f96b3097c10b9856102cbc327f88
+    image: us.gcr.io/galoy-org/galoy-app@sha256:09e5cb6e186756467070dd81b2af2200c8d18262850d134416476852b7f3fe94
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -115,7 +111,7 @@ services:
     - MONGO_INITDB_DATABASE=galoy
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:1d8edeca996972aacee16f317ed42ec338478c004a1e90d732154acad8197b46
+    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:df3548a723799ae0c2375727e5a305d05621cd5accd7262f0693ae548e2c3dbf
     depends_on:
     - mongodb
     environment:

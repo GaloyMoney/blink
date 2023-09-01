@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 4da52b3678b47986d5cafbc110cbbca444f7f467
+      commitTitle: 'Revert "test: move kratos e2e tests to integration (#3109)" (#3148)...'
+      sha: 3df9db2b021a6f3b6fe6a1e1e1ddc8f68f0bc219
       tags:
-      - 0.13.24
+      - 0.13.24-2-g3df9db2b0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 4da52b3678b47986d5cafbc110cbbca444f7f467
+      commitTitle: 'Revert "test: move kratos e2e tests to integration (#3109)" (#3148)...'
+      sha: 3df9db2b021a6f3b6fe6a1e1e1ddc8f68f0bc219
       tags:
-      - 0.13.24
+      - 0.13.24-2-g3df9db2b0
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 4da52b3678b47986d5cafbc110cbbca444f7f467
+      commitTitle: 'Revert "test: move kratos e2e tests to integration (#3109)" (#3148)...'
+      sha: 3df9db2b021a6f3b6fe6a1e1e1ddc8f68f0bc219
       tags:
-      - 0.13.24
+      - 0.13.24-2-g3df9db2b0
     path: ./
   path: ./graphql
 kind: LockConfig
