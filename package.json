@@ -156,7 +156,7 @@
     "@types/prettier": "^3.0.0",
     "@types/react": "^18.2.21",
     "@types/set-cookie-parser": "^2.4.2",
-    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "@xascode/tscpaths": "0.1.4",
     "axios-mock-adapter": "^1.21.5",
