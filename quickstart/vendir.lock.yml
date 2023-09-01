@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add ip and phone onboard validation (#2997)...'
-      sha: bfd4b55e5eda6584603cf21595088a4e2f93f5a4
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4da52b3678b47986d5cafbc110cbbca444f7f467
       tags:
-      - 0.13.23-1-gbfd4b55e5
+      - 0.13.24
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add ip and phone onboard validation (#2997)...'
-      sha: bfd4b55e5eda6584603cf21595088a4e2f93f5a4
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4da52b3678b47986d5cafbc110cbbca444f7f467
       tags:
-      - 0.13.23-1-gbfd4b55e5
+      - 0.13.24
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add ip and phone onboard validation (#2997)...'
-      sha: bfd4b55e5eda6584603cf21595088a4e2f93f5a4
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4da52b3678b47986d5cafbc110cbbca444f7f467
       tags:
-      - 0.13.23-1-gbfd4b55e5
+      - 0.13.24
     path: ./
   path: ./graphql
 kind: LockConfig
