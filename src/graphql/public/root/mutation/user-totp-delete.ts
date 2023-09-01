@@ -15,13 +15,13 @@ const UserTotpDeleteInput = GT.Input({
 })
 
 const UserTotpDeleteMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       authToken: AuthToken | InputValidationError
     }
-  },
-  null,
-  GraphQLPublicContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

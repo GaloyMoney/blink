@@ -18,14 +18,14 @@ const AccountUpdateLevelInput = GT.Input({
 })
 
 const AccountUpdateLevelMutation = GT.Field<
+  null,
+  GraphQLAdminContext,
   {
     input: {
       uid: string
       level: AccountLevel | Error
     }
-  },
-  null,
-  GraphQLAdminContext
+  }
 >({
   extensions: {
     complexity: 120,

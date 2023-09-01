@@ -18,12 +18,16 @@ const UserLoginInput = GT.Input({
   }),
 })
 
-const UserLoginMutation = GT.Field<{
-  input: {
-    phone: PhoneNumber | InputValidationError
-    code: PhoneCode | InputValidationError
+const UserLoginMutation = GT.Field<
+  null,
+  GraphQLPublicContext | GraphQLAdminContext,
+  {
+    input: {
+      phone: PhoneNumber | InputValidationError
+      code: PhoneCode | InputValidationError
+    }
   }
-}>({
+>({
   extensions: {
     complexity: 120,
   },

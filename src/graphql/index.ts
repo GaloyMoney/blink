@@ -24,7 +24,8 @@ import {
 } from "graphql"
 
 type GTType = {
-  Field<TArgs = any, TSource = any, TContext = GraphQLPublicContext>(
+  // TODO: remove any by providing type to every query/mutation
+  Field<TSource, TContext, TArgs = any>(
     arg: GraphQLFieldConfig<TSource, TContext, TArgs>,
   ): GraphQLFieldConfig<TSource, TContext, TArgs>
 

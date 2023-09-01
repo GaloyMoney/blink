@@ -23,15 +23,15 @@ const UserTotpRegistrationValidateInput = GT.Input({
 })
 
 const UserTotpRegistrationValidateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       authToken: AuthToken | InputValidationError
       totpCode: TotpCode | InputValidationError
       totpRegistrationId: TotpRegistrationId | InputValidationError
     }
-  },
-  null,
-  GraphQLPublicContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

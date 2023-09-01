@@ -19,15 +19,19 @@ const CaptchaRequestAuthCodeInput = GT.Input({
   }),
 })
 
-const CaptchaRequestAuthCodeMutation = GT.Field<{
-  input: {
-    phone: PhoneNumber | InputValidationError
-    challengeCode: string | InputValidationError
-    validationCode: string | InputValidationError
-    secCode: string | InputValidationError
-    channel: string | InputValidationError
+const CaptchaRequestAuthCodeMutation = GT.Field<
+  null,
+  GraphQLPublicContext | GraphQLAdminContext,
+  {
+    input: {
+      phone: PhoneNumber | InputValidationError
+      challengeCode: string | InputValidationError
+      validationCode: string | InputValidationError
+      secCode: string | InputValidationError
+      channel: string | InputValidationError
+    }
   }
-}>({
+>({
   extensions: {
     complexity: 120,
   },

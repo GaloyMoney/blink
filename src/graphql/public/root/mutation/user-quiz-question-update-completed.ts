@@ -12,9 +12,9 @@ const UserQuizQuestionUpdateCompletedInput = GT.Input({
 })
 
 const UserQuizQuestionUpdateCompletedMutation = GT.Field<
-  { input: { id: string } },
   null,
-  GraphQLPublicContextAuth
+  GraphQLPublicContextAuth,
+  { input: { id: string } }
 >({
   deprecationReason: "Use QuizCompletedMutation instead",
   extensions: {

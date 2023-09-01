@@ -11,8 +11,6 @@ import { adminMutationFields, adminQueryFields, gqlAdminSchema } from "@graphql/
 
 import { GALOY_ADMIN_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
-dotenv.config()
-
 import { NextFunction, Request, Response } from "express"
 
 import {

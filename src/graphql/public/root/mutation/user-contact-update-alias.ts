@@ -15,14 +15,14 @@ const UserContactUpdateAliasInput = GT.Input({
 })
 
 const UserContactUpdateAliasMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       username: string | InputValidationError
       alias: string | InputValidationError
     }
-  },
-  null,
-  GraphQLPublicContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

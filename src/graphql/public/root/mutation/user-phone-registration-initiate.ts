@@ -17,14 +17,14 @@ const UserPhoneRegistrationInitiateInput = GT.Input({
 })
 
 const UserPhoneRegistrationInitiateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       phone: PhoneNumber | InputValidationError
       channel: ChannelType | InputValidationError
     }
-  },
-  null,
-  GraphQLPublicContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

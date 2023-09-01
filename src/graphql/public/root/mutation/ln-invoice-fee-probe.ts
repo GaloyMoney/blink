@@ -18,12 +18,16 @@ const LnInvoiceFeeProbeInput = GT.Input({
   }),
 })
 
-const LnInvoiceFeeProbeMutation = GT.Field<{
-  input: {
-    walletId: WalletId | InputValidationError
-    paymentRequest: string | InputValidationError
+const LnInvoiceFeeProbeMutation = GT.Field<
+  null,
+  GraphQLPublicContext,
+  {
+    input: {
+      walletId: WalletId | InputValidationError
+      paymentRequest: string | InputValidationError
+    }
   }
-}>({
+>({
   extensions: {
     complexity: 120,
   },

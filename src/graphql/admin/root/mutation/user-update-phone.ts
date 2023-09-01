@@ -18,11 +18,11 @@ const UserUpdatePhoneInput = GT.Input({
 })
 
 const UserUpdatePhoneMutation = GT.Field<
+  null,
+  GraphQLAdminContext,
   {
     input: { accountId: string; phone: PhoneNumber | Error }
-  },
-  null,
-  GraphQLAdminContext
+  }
 >({
   extensions: {
     complexity: 120,

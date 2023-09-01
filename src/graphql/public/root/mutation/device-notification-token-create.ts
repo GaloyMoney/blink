@@ -13,9 +13,9 @@ const DeviceNotificationTokenCreateInput = GT.Input({
 })
 
 const DeviceNotificationTokenCreateMutation = GT.Field<
-  { input: { deviceToken: string } },
   null,
-  GraphQLPublicContextAuth
+  GraphQLPublicContextAuth,
+  { input: { deviceToken: string } }
 >({
   extensions: {
     complexity: 120,

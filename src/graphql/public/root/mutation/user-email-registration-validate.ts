@@ -19,14 +19,14 @@ const UserEmailRegistrationValidateInput = GT.Input({
 })
 
 const UserEmailRegistrationValidateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       emailRegistrationId: EmailRegistrationId | InputValidationError
       code: EmailCode | InputValidationError
     }
-  },
-  null,
-  GraphQLPublicContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

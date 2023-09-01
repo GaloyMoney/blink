@@ -21,11 +21,11 @@ const AccountUpdateStatusInput = GT.Input({
 })
 
 const AccountUpdateStatusMutation = GT.Field<
+  null,
+  GraphQLAdminContext,
   {
     input: { uid: string; status: AccountStatus | Error; comment: string }
-  },
-  null,
-  GraphQLAdminContext
+  }
 >({
   extensions: {
     complexity: 120,

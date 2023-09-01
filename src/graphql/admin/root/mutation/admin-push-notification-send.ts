@@ -23,6 +23,8 @@ const AdminPushNotificationSendInput = GT.Input({
 })
 
 const AdminPushNotificationSendMutation = GT.Field<
+  null,
+  GraphQLAdminContext,
   {
     input: {
       accountId: string
@@ -30,9 +32,7 @@ const AdminPushNotificationSendMutation = GT.Field<
       body: string
       data?: { [key: string]: string }
     }
-  },
-  null,
-  GraphQLAdminContext
+  }
 >({
   extensions: {
     complexity: 120,
