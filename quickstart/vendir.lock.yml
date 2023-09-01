@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'Revert "test: move kratos e2e tests to integration (#3109)" (#3148)...'
-      sha: 3df9db2b021a6f3b6fe6a1e1e1ddc8f68f0bc219
+      commitTitle: 'chore: bump svix from 1.8.1 to 1.10.0 (#3145)...'
+      sha: 5c7b23262394db6fedf0815c44717abf15e12924
       tags:
-      - 0.13.24-2-g3df9db2b0
+      - 0.13.25-1-g5c7b23262
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'Revert "test: move kratos e2e tests to integration (#3109)" (#3148)...'
-      sha: 3df9db2b021a6f3b6fe6a1e1e1ddc8f68f0bc219
+      commitTitle: 'chore: bump svix from 1.8.1 to 1.10.0 (#3145)...'
+      sha: 5c7b23262394db6fedf0815c44717abf15e12924
       tags:
-      - 0.13.24-2-g3df9db2b0
+      - 0.13.25-1-g5c7b23262
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'Revert "test: move kratos e2e tests to integration (#3109)" (#3148)...'
-      sha: 3df9db2b021a6f3b6fe6a1e1e1ddc8f68f0bc219
+      commitTitle: 'chore: bump svix from 1.8.1 to 1.10.0 (#3145)...'
+      sha: 5c7b23262394db6fedf0815c44717abf15e12924
       tags:
-      - 0.13.24-2-g3df9db2b0
+      - 0.13.25-1-g5c7b23262
     path: ./
   path: ./graphql
 kind: LockConfig
