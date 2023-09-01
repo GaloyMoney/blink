@@ -1,19 +1,13 @@
-import {
-  ConfigError,
-  TWILIO_ACCOUNT_SID,
-  getAdminAccounts,
-  getDefaultAccountsConfig,
-  isRunningJest,
-} from "@config"
-import { AccountLevel } from "@domain/accounts"
+import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@config"
+
 import { WalletType } from "@domain/wallets"
-import { baseLogger } from "@services/logger"
+import { AccountLevel } from "@domain/accounts"
+
 import {
   AccountsRepository,
-  WalletsRepository,
   UsersRepository,
+  WalletsRepository,
 } from "@services/mongoose"
-import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@services/twilio"
 
 const initializeCreatedAccount = async ({
   account,
@@ -92,27 +86,12 @@ export const createAccountForDeviceAccount = async ({
 export const createAccountWithPhoneIdentifier = async ({
   newAccountInfo: { kratosUserId, phone },
   config,
+  phoneMetadata,
 }: {
   newAccountInfo: NewAccountWithPhoneIdentifier
   config: AccountsConfig
+  phoneMetadata?: PhoneMetadata
 }): Promise<Account | RepositoryError> => {
-  let phoneMetadata: PhoneMetadata | PhoneProviderServiceError | undefined
-
-  // we can't mock getCarrier properly because in the end to end test,
-  // the server is been launched as a sub process,
-  // so it's not been mocked by jest
-  if (
-    TWILIO_ACCOUNT_SID !== TWILIO_ACCOUNT_TEST ||
-    isRunningJest /* TwilioClient will be mocked */
-  ) {
-    phoneMetadata = await TwilioClient().getCarrier(phone)
-  }
-
-  if (phoneMetadata instanceof Error) {
-    baseLogger.warn({ phone }, "impossible to fetch carrier")
-    phoneMetadata = undefined
-  }
-
   const user = await UsersRepository().update({ id: kratosUserId, phone, phoneMetadata })
   if (user instanceof Error) return user
 

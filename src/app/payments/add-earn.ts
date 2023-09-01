@@ -46,9 +46,9 @@ export const addEarn = async ({
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
 
-  const validatedPhoneMetadata = PhoneMetadataValidator(rewardsConfig).validateForReward(
-    user.phoneMetadata,
-  )
+  const validatedPhoneMetadata = PhoneMetadataValidator(
+    rewardsConfig.phoneMetadataValidationSettings,
+  ).validate(user.phoneMetadata)
 
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
@@ -56,9 +56,9 @@ export const addEarn = async ({
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
   if (accountIP instanceof Error) return accountIP
 
-  const validatedIPMetadata = IPMetadataValidator(rewardsConfig).validateForReward(
-    accountIP.metadata,
-  )
+  const validatedIPMetadata = IPMetadataValidator(
+    rewardsConfig.ipMetadataValidationSettings,
+  ).validate(accountIP.metadata)
   if (validatedIPMetadata instanceof Error) {
     return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
   }

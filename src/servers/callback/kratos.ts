@@ -36,7 +36,7 @@ kratosCallback.post(
 
       const body = req.body
 
-      const { identity_id: userId, phone: phoneRaw, schema_id } = body
+      const { identity_id: userId, phone: phoneRaw, schema_id, transient_payload } = body
 
       if (schema_id !== SchemaIdType.PhoneNoPasswordV0) {
         return res.status(400).send("unsupported schema_id")
@@ -62,32 +62,28 @@ kratosCallback.post(
         return
       }
 
-      let account: Account | RepositoryError
-
-      if (phoneRaw) {
-        // phone+code flow
-        const phone = checkedToPhoneNumber(phoneRaw)
-        if (phone instanceof Error) {
-          recordExceptionInCurrentSpan({
-            error: phone,
-            level: ErrorLevel.Critical,
-            attributes: {
-              userId,
-              phoneRaw,
-            },
-          })
-          baseLogger.error({ phone, phoneRaw, userId }, "invalid phone")
-          res.status(400).send("invalid phone")
-          return
-        }
-        account = await createAccountWithPhoneIdentifier({
-          newAccountInfo: { phone, kratosUserId: userIdChecked },
-          config: getDefaultAccountsConfig(),
+      // phone+code flow
+      const phone = checkedToPhoneNumber(phoneRaw)
+      if (phone instanceof Error) {
+        recordExceptionInCurrentSpan({
+          error: phone,
+          level: ErrorLevel.Critical,
+          attributes: {
+            userId,
+            phoneRaw,
+          },
         })
-      } else {
-        res.status(500).send("Invalid or unsupported login flow")
+        baseLogger.error({ phone, phoneRaw, userId }, "invalid phone")
+        res.status(400).send("invalid phone")
         return
       }
+      baseLogger.info({ transient_payload }, "transient_payload callback kratos router")
+
+      const account = await createAccountWithPhoneIdentifier({
+        newAccountInfo: { phone, kratosUserId: userIdChecked },
+        config: getDefaultAccountsConfig(),
+        phoneMetadata: transient_payload?.phoneMetadata,
+      })
 
       if (account instanceof Error) {
         recordExceptionInCurrentSpan({

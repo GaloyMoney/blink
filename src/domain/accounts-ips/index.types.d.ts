@@ -11,14 +11,14 @@ type AccountIPNew = {
 }
 
 type IPMetadataValidatorArgs = {
-  denyIPCountries: string[]
-  allowIPCountries: string[]
+  denyCountries: string[]
+  allowCountries: string[]
   denyASNs: string[]
   allowASNs: string[]
 }
 
 type IPMetadataValidator = {
-  validateForReward(ipMetadata?: IPType): true | ValidationError
+  validate(ipMetadata?: IPType): true | ValidationError
 }
 
 type FindByAccountIdAndIpArgs = {

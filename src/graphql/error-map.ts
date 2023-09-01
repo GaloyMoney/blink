@@ -27,6 +27,9 @@ import {
   EmailAlreadyExistsError,
   SessionRefreshRequiredError,
   CodeExpiredError,
+  InvalidIPForOnboardingError,
+  InvalidPhoneMetadataForOnboardingError,
+  InvalidPhoneForOnboardingError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -409,6 +412,15 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "SessionRefreshRequiredError":
       return new SessionRefreshRequiredError({ logger: baseLogger })
+
+    case "InvalidIPForOnboardingError":
+      return new InvalidIPForOnboardingError({ logger: baseLogger })
+
+    case "InvalidPhoneMetadataForOnboardingError":
+      return new InvalidPhoneMetadataForOnboardingError({ logger: baseLogger })
+
+    case "InvalidPhoneForOnboardingError":
+      return new InvalidPhoneForOnboardingError({ logger: baseLogger })
 
     // ----------
     // Unhandled below here

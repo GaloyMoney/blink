@@ -256,7 +256,7 @@ export const getCronConfig = (config = yamlConfig): CronConfig => config.cronCon
 
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
-export const getRewardsConfig = () => {
+export const getRewardsConfig = (): RewardsConfig => {
   const denyPhoneCountries = yamlConfig.rewards.denyPhoneCountries || []
   const allowPhoneCountries = yamlConfig.rewards.allowPhoneCountries || []
   const denyIPCountries = yamlConfig.rewards.denyIPCountries || []
@@ -265,12 +265,16 @@ export const getRewardsConfig = () => {
   const allowASNs = yamlConfig.rewards.allowASNs || []
 
   return {
-    denyPhoneCountries: denyPhoneCountries.map((c) => c.toUpperCase()),
-    allowPhoneCountries: allowPhoneCountries.map((c) => c.toUpperCase()),
-    denyIPCountries: denyIPCountries.map((c) => c.toUpperCase()),
-    allowIPCountries: allowIPCountries.map((c) => c.toUpperCase()),
-    denyASNs: denyASNs.map((c) => c.toUpperCase()),
-    allowASNs: allowASNs.map((c) => c.toUpperCase()),
+    phoneMetadataValidationSettings: {
+      denyCountries: denyPhoneCountries.map((c) => c.toUpperCase()),
+      allowCountries: allowPhoneCountries.map((c) => c.toUpperCase()),
+    },
+    ipMetadataValidationSettings: {
+      denyCountries: denyIPCountries.map((c) => c.toUpperCase()),
+      allowCountries: allowIPCountries.map((c) => c.toUpperCase()),
+      denyASNs: denyASNs.map((c) => c.toUpperCase()),
+      allowASNs: allowASNs.map((c) => c.toUpperCase()),
+    },
   }
 }
 
@@ -279,6 +283,32 @@ export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig =>
   initialWallets: config.accounts.initialWallets,
   initialLevel: AccountLevel.One,
 })
+
+export const getAccountsOnboardConfig = (config = yamlConfig): AccountsOnboardConfig => {
+  const { enablePhoneCheck, enableIpCheck } = config.accounts
+
+  const denyPhoneCountries = config.accounts.denyPhoneCountries || []
+  const allowPhoneCountries = config.accounts.allowPhoneCountries || []
+  const denyIPCountries = config.accounts.denyIPCountries || []
+  const allowIPCountries = config.accounts.allowIPCountries || []
+  const denyASNs = yamlConfig.rewards.denyASNs || []
+  const allowASNs = yamlConfig.rewards.allowASNs || []
+
+  return {
+    phoneMetadataValidationSettings: {
+      enabled: enablePhoneCheck,
+      denyCountries: denyPhoneCountries.map((c) => c.toUpperCase()),
+      allowCountries: allowPhoneCountries.map((c) => c.toUpperCase()),
+    },
+    ipMetadataValidationSettings: {
+      enabled: enableIpCheck,
+      denyCountries: denyIPCountries.map((c) => c.toUpperCase()),
+      allowCountries: allowIPCountries.map((c) => c.toUpperCase()),
+      denyASNs: denyASNs.map((c) => c.toUpperCase()),
+      allowASNs: allowASNs.map((c) => c.toUpperCase()),
+    },
+  }
+}
 
 export const getSwapConfig = (): SwapConfig => {
   const config = yamlConfig.swap

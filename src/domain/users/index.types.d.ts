@@ -32,7 +32,7 @@ type PhoneMetadata = {
 }
 
 type PhoneMetadataValidator = {
-  validateForReward(phoneMetadata?: PhoneMetadata): true | ValidationError
+  validate(phoneMetadata?: PhoneMetadata): true | ValidationError
 }
 
 type SetPhoneMetadataArgs = {
