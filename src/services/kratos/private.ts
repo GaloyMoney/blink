@@ -56,12 +56,10 @@ export const toDomainIdentity = (identity: KratosIdentity): AnyIdentity => {
     createdAt = new Date()
   }
 
-  const { username: rawUsername } = identity.traits
   return {
     id: identity.id as UserId,
     phone: identity.traits.phone as PhoneNumber,
     email: identity.traits.email as EmailAddress,
-    username: rawUsername !== undefined ? (rawUsername as IdentityUsername) : rawUsername,
     emailVerified: identity.verifiable_addresses?.[0].verified ?? false,
     totpEnabled: identity?.credentials?.totp?.type === "totp",
     schema: toSchema(identity.schema_id),

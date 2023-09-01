@@ -2,11 +2,23 @@ import { assert } from "console"
 
 import { Identity as KratosIdentity } from "@ory/client"
 
-import { getNextPage } from "@domain/authentication"
 import { IdentifierNotFoundError } from "@domain/authentication/errors"
 
 import { KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentity } from "./private"
+
+export const getNextPage = (link: string): number | undefined => {
+  const links = link.split(",")
+  const next = links.find((l) => l.includes('rel="next"'))
+  if (!next) return undefined
+
+  const nextSplit = next.split("page=")
+  const splittingOnNumber = nextSplit[1].match(/^\d+&/)
+  if (splittingOnNumber === null) return undefined
+
+  const page = +splittingOnNumber[0].slice(0, -1)
+  return page
+}
 
 const perPage = 50
 
