@@ -9,6 +9,7 @@ import {
   checkedToDeviceId,
   checkedToIdentityPassword,
   checkedToIdentityUsername,
+  PhoneMetadataAuthorizer,
 } from "@domain/users"
 import {
   AuthWithEmailPasswordlessService,
@@ -35,17 +36,17 @@ import { getAccountsOnboardConfig } from "@config"
 
 import {
   UnauthorizedIPForOnboardingError,
-  InvalidPhoneForOnboardingError,
-  InvalidPhoneMetadataForOnboardingError,
   MissingIPMetadataError,
   InvalidIpMetadataError,
 } from "@domain/errors"
+import {
+  InvalidPhoneForOnboardingError,
+  InvalidPhoneMetadataForOnboardingError,
+} from "@domain/users/errors"
 import { IpFetcher } from "@services/ipfetcher"
 
 import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { ErrorLevel } from "@domain/shared"
-
-import { PhoneMetadataAuthorizer } from "@domain/users/phone-metadata-authorizer"
 
 import {
   checkFailedLoginAttemptPerIpLimits,
@@ -460,7 +461,7 @@ const isAllowedToOnboard = async ({
     })
 
     if (authorizedPhoneMetadata instanceof Error) {
-      return new InvalidPhoneForOnboardingError()
+      return new InvalidPhoneForOnboardingError(authorizedPhoneMetadata.name)
     }
   }
 

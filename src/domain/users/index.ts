@@ -10,6 +10,8 @@ import {
 
 import { Languages } from "./languages"
 
+export * from "./phone-metadata-authorizer"
+
 // TODO: we could be using https://gitlab.com/catamphetamine/libphonenumber-js#readme
 // for a more precise "regex"
 const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined

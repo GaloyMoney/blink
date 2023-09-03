@@ -32,7 +32,7 @@ type PhoneMetadata = {
 }
 
 type PhoneMetadataAuthorizer = {
-  authorize(phoneMetadata?: PhoneMetadata): true | ValidationError
+  authorize(phoneMetadata?: PhoneMetadata): true | AuthorizationError
 }
 
 type SetPhoneMetadataArgs = {

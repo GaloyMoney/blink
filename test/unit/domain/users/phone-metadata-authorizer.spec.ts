@@ -1,10 +1,10 @@
 import { getRewardsConfig, yamlConfig } from "@config"
 import {
-  InvalidPhoneMetadataCountryError,
-  InvalidPhoneMetadataTypeError,
-  MissingPhoneMetadataError,
-} from "@domain/errors"
-import { PhoneMetadataAuthorizer } from "@domain/users/phone-metadata-authorizer"
+  PhoneCountryNotAllowedError,
+  PhoneMetadataCarrierTypeNotAllowedError,
+  ExpectedPhoneMetadataMissingError,
+} from "@domain/users/errors"
+import { PhoneMetadataAuthorizer } from "@domain/users"
 
 beforeEach(async () => {
   yamlConfig.rewards = {
@@ -113,7 +113,7 @@ describe("PhoneMetadataAuthorizer - validate", () => {
       },
       countryCode: "CO",
     })
-    expect(validator).toBeInstanceOf(InvalidPhoneMetadataCountryError)
+    expect(validator).toBeInstanceOf(PhoneCountryNotAllowedError)
 
     const config = {
       denyCountries: ["AF"],
@@ -129,7 +129,7 @@ describe("PhoneMetadataAuthorizer - validate", () => {
       },
       countryCode: "AF",
     })
-    expect(validatorAF).toBeInstanceOf(InvalidPhoneMetadataCountryError)
+    expect(validatorAF).toBeInstanceOf(PhoneCountryNotAllowedError)
   })
 
   it("returns error for allowed and denied country", () => {
@@ -149,14 +149,14 @@ describe("PhoneMetadataAuthorizer - validate", () => {
     })
 
     // denyPhoneCountries config should have priority
-    expect(validator).toBeInstanceOf(InvalidPhoneMetadataCountryError)
+    expect(validator).toBeInstanceOf(PhoneCountryNotAllowedError)
   })
 
   it("returns error with undefined metadata", () => {
     const validator = PhoneMetadataAuthorizer(
       getPhoneMetadataRewardsSettings(),
     ).authorize(undefined)
-    expect(validator).toBeInstanceOf(MissingPhoneMetadataError)
+    expect(validator).toBeInstanceOf(ExpectedPhoneMetadataMissingError)
   })
 
   it("returns error with voip type", () => {
@@ -172,6 +172,6 @@ describe("PhoneMetadataAuthorizer - validate", () => {
       },
       countryCode: "US",
     })
-    expect(validator).toBeInstanceOf(InvalidPhoneMetadataTypeError)
+    expect(validator).toBeInstanceOf(PhoneMetadataCarrierTypeNotAllowedError)
   })
 })
