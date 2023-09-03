@@ -80,7 +80,7 @@ type RegistrationPayloadValidator = {
     identity_id?: string
     phone?: string
     schema_id?: string
-    transient_payload?: { phoneMetadata?: PhoneMetadata }
+    transient_payload?: { phoneMetadata?: Record<string, Record<string, string>> }
   }): RegistrationPayload | ValidationError
 }
 

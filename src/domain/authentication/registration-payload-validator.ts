@@ -1,5 +1,5 @@
 import { checkedToUserId } from "@domain/accounts"
-import { checkedToPhoneNumber } from "@domain/users"
+import { checkedToPhoneNumber, PhoneMetadataValidator } from "@domain/users"
 
 import {
   MissingRegistrationPayloadPropertiesError,
@@ -13,7 +13,7 @@ export const RegistrationPayloadValidator = (
     identity_id?: string
     phone?: string
     schema_id?: string
-    transient_payload?: { phoneMetadata?: PhoneMetadata }
+    transient_payload?: { phoneMetadata?: Record<string, Record<string, string>> }
   }): RegistrationPayload | ValidationError => {
     const {
       identity_id: userIdRaw,
@@ -36,7 +36,14 @@ export const RegistrationPayloadValidator = (
     const phoneChecked = checkedToPhoneNumber(phoneRaw)
     if (phoneChecked instanceof Error) return phoneChecked
 
-    const phoneMetadata = transient_payload?.phoneMetadata
+    const rawPhoneMetadata = transient_payload?.phoneMetadata
+
+    let phoneMetadata: PhoneMetadata | undefined = undefined
+    if (rawPhoneMetadata !== undefined) {
+      const validated = PhoneMetadataValidator().validate(rawPhoneMetadata)
+      if (validated instanceof Error) return validated
+      phoneMetadata = validated
+    }
 
     return {
       userId: userIdChecked,

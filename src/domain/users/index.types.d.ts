@@ -35,6 +35,12 @@ type PhoneMetadataAuthorizer = {
   authorize(phoneMetadata?: PhoneMetadata): true | AuthorizationError
 }
 
+type PhoneMetadataValidator = {
+  validate(
+    rawPhoneMetadata: Record<string, string | Record<string, string>>,
+  ): PhoneMetadata | ValidationError
+}
+
 type SetPhoneMetadataArgs = {
   id: UserId
   phoneMetadata: PhoneMetadata
