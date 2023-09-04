@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @types/node from 20.5.7 to 20.5.9 (#3155)...'
-      sha: 3430558680283f5a551a5041c9ac08a4f7817524
+      commitTitle: 'chore: bump ln-service from 56.12.0 to 56.13.0 (#3154)...'
+      sha: be01873da730643458045112ce6f9c89a40c882a
       tags:
-      - 0.13.31-1-g343055868
+      - 0.13.32-1-gbe01873da
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @types/node from 20.5.7 to 20.5.9 (#3155)...'
-      sha: 3430558680283f5a551a5041c9ac08a4f7817524
+      commitTitle: 'chore: bump ln-service from 56.12.0 to 56.13.0 (#3154)...'
+      sha: be01873da730643458045112ce6f9c89a40c882a
       tags:
-      - 0.13.31-1-g343055868
+      - 0.13.32-1-gbe01873da
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @types/node from 20.5.7 to 20.5.9 (#3155)...'
-      sha: 3430558680283f5a551a5041c9ac08a4f7817524
+      commitTitle: 'chore: bump ln-service from 56.12.0 to 56.13.0 (#3154)...'
+      sha: be01873da730643458045112ce6f9c89a40c882a
       tags:
-      - 0.13.31-1-g343055868
+      - 0.13.32-1-gbe01873da
     path: ./
   path: ./graphql
 kind: LockConfig
