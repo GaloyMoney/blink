@@ -8153,10 +8153,10 @@ liftup@~3.0.1:
     rechoir "^0.7.0"
     resolve "^1.19.0"
 
-lightning@9.12.0, lightning@^9.11.3:
-  version "9.12.0"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.12.0.tgz#b9ff0950e5ce2ba86b777ea9a804b1f1a88b79e0"
-  integrity sha512-lhaYySMITyTFPga/75E5yrFJ+eUzZIKEsvTljy9HBfWENLljn9g8Kl4ImR6vVyBWb9MLLh0EffRJxmzO12DpQA==
+lightning@9.13.0, lightning@^9.11.3:
+  version "9.13.0"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.13.0.tgz#de6121fe0dacf0eb41217f427231e5d8d8ada0bf"
+  integrity sha512-Q1b9qbMia+NgiXPW3kn8v7GDeexrIWouWhlS5m5lpEakXK/kvKyM9Jn/CJmPXt+7tcM3+NUN59Jh89HySez7CA==
   dependencies:
     "@grpc/grpc-js" "1.9.1"
     "@grpc/proto-loader" "0.7.9"
@@ -8201,16 +8201,16 @@ livereload-js@^2.3.0:
   resolved "https://registry.yarnpkg.com/livereload-js/-/livereload-js-2.4.0.tgz#447c31cf1ea9ab52fc20db615c5ddf678f78009c"
   integrity sha512-XPQH8Z2GDP/Hwz2PCDrh2mth4yFejwA1OZ/81Ti3LgKyhDcEjsSsqFWZojHG0va/duGd+WyosY7eXLDoOyqcPw==
 
-ln-service@^56.12.0:
-  version "56.12.0"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-56.12.0.tgz#4c01e2d4cff5ff02ca7a305746eb4511fe954ac1"
-  integrity sha512-BTDJ201kGPgvSRvjgZFgLGNWJav5hkyHbesx1EqHDwVpRXcTeLnqOZx+qFzKssrSg/Ih3u077G/2OfDdaY6XBw==
+ln-service@^56.13.0:
+  version "56.13.0"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-56.13.0.tgz#ff46ed935f27629c9acf39a37fc740e688c4610f"
+  integrity sha512-Gwb3WBBbY5fr1S6OaK8K1IkL52oh0aBDfoNnSuI13NbHE2/EufDJjf7ox1JKu2jCHSYu61xiHE2GfskS2YHDJA==
   dependencies:
     bolt07 "1.8.4"
     cors "2.8.5"
     express "4.18.2"
     invoices "3.0.0"
-    lightning "9.12.0"
+    lightning "9.13.0"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "8.13.0"
