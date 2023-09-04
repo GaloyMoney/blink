@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: f851bc1ec42e63c7298df1f79151d538b5201fe3
+      commitTitle: 'chore: bump rate-limiter-flexible from 2.4.2 to 3.0.0 (#3139)...'
+      sha: 05ac8a871b3f1733f22e908228fc375485a087b4
       tags:
-      - 0.13.26-4-gf851bc1ec
+      - 0.13.27-1-g05ac8a871
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: f851bc1ec42e63c7298df1f79151d538b5201fe3
+      commitTitle: 'chore: bump rate-limiter-flexible from 2.4.2 to 3.0.0 (#3139)...'
+      sha: 05ac8a871b3f1733f22e908228fc375485a087b4
       tags:
-      - 0.13.26-4-gf851bc1ec
+      - 0.13.28
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: f851bc1ec42e63c7298df1f79151d538b5201fe3
+      commitTitle: 'chore: bump rate-limiter-flexible from 2.4.2 to 3.0.0 (#3139)...'
+      sha: 05ac8a871b3f1733f22e908228fc375485a087b4
       tags:
-      - 0.13.26-4-gf851bc1ec
+      - 0.13.28
     path: ./
   path: ./graphql
 kind: LockConfig
