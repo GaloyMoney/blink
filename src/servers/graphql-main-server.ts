@@ -4,8 +4,6 @@ import { GALOY_API_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
 import { gqlMainSchema, mutationFields, queryFields } from "@graphql/public"
 
-const graphqlLogger = baseLogger.child({ module: "graphql" })
-
 import { bootstrap } from "@app/bootstrap"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
@@ -107,5 +105,5 @@ if (require.main === module) {
         startApolloServerForAdminSchema(),
       ])
     })
-    .catch((err) => graphqlLogger.error(err, "server error"))
+    .catch((err) => baseLogger.error(err, "server error"))
 }
