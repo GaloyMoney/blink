@@ -64,7 +64,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=default
   galoy:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:33d6d2e038e97a77f223508e21cde1f0999690a8bb0d837ad6119f08ca108a94
+    image: us.gcr.io/galoy-org/galoy-app@sha256:f1247870d32783a7e0dc31ee6c057214cfff416f7f23949805241eab5bfca065
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -86,7 +86,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:33d6d2e038e97a77f223508e21cde1f0999690a8bb0d837ad6119f08ca108a94
+    image: us.gcr.io/galoy-org/galoy-app@sha256:f1247870d32783a7e0dc31ee6c057214cfff416f7f23949805241eab5bfca065
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -111,7 +111,7 @@ services:
     - MONGO_INITDB_DATABASE=galoy
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:3a078a4fa31235be0eb2f97a0d3306e1a9017db46303f70c6c65d03e64e6859a
+    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:0fb68c2d405fe798d7559e586d1184ba20c077f5ac42cf6cc635b2b3cddcbeef
     depends_on:
     - mongodb
     environment:
@@ -311,7 +311,7 @@ services:
     volumes:
     - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   svix:
-    image: svix/svix-server:v1.8
+    image: svix/svix-server:v1.10
     platform: linux/amd64
     environment:
       WAIT_FOR: "true"

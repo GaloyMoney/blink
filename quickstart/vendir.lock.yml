@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump rate-limiter-flexible from 2.4.2 to 3.0.0 (#3139)...'
-      sha: 05ac8a871b3f1733f22e908228fc375485a087b4
+      commitTitle: 'chore: update svix (#3157)...'
+      sha: 1508fcde7c3df8d76ff3790621cbdfb2529fc851
       tags:
-      - 0.13.27-1-g05ac8a871
+      - 0.13.28-2-g1508fcde7
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump rate-limiter-flexible from 2.4.2 to 3.0.0 (#3139)...'
-      sha: 05ac8a871b3f1733f22e908228fc375485a087b4
+      commitTitle: 'chore: update svix (#3157)...'
+      sha: 1508fcde7c3df8d76ff3790621cbdfb2529fc851
       tags:
-      - 0.13.28
+      - 0.13.28-2-g1508fcde7
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump rate-limiter-flexible from 2.4.2 to 3.0.0 (#3139)...'
-      sha: 05ac8a871b3f1733f22e908228fc375485a087b4
+      commitTitle: 'chore: update svix (#3157)...'
+      sha: 1508fcde7c3df8d76ff3790621cbdfb2529fc851
       tags:
-      - 0.13.28
+      - 0.13.28-2-g1508fcde7
     path: ./
   path: ./graphql
 kind: LockConfig
