@@ -88,7 +88,7 @@
     "ioredis-cache": "^2.0.0",
     "ipaddr.js": "^2.1.0",
     "js-yaml": "^4.1.0",
-    "jsonwebtoken": "^9.0.0",
+    "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.0.1",
     "knex": "^2.5.1",
     "libphonenumber-js": "^1.10.43",
