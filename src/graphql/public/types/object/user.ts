@@ -2,7 +2,7 @@ import dedent from "dedent"
 
 import { GT } from "@graphql/index"
 
-import { Accounts, Users } from "@app"
+import { Accounts } from "@app"
 
 import { mapError } from "@graphql/error-map"
 import { UnknownClientError } from "@graphql/error"
@@ -75,18 +75,6 @@ const GraphQLUser = GT.Object<User, GraphQLContextAuth>({
       type: GT.NonNull(Language),
       description: dedent`Preferred language for user.
         When value is 'default' the intent is to use preferred language from OS settings.`,
-      resolve: async (source, _args, { domainAccount }) => {
-        if (source.language || source.language === "") return source.language
-
-        // fallback when source is different from user type
-        const userId = domainAccount?.kratosUserId
-        if (!userId) return ""
-
-        const user = await Users.getUser(userId)
-        if (user instanceof Error) throw mapError(user)
-
-        return user.language
-      },
     },
 
     quizQuestions: {
