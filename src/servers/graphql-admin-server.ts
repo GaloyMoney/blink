@@ -16,9 +16,14 @@ import { NextFunction, Request, Response } from "express"
 import {
   SemanticAttributes,
   addAttributesToCurrentSpanAndPropagate,
+  recordExceptionInCurrentSpan,
 } from "@services/tracing"
 
 import { parseIps } from "@domain/accounts-ips"
+
+import DataLoader from "dataloader"
+
+import { Transactions } from "@app"
 
 import { isAuthenticated, isEditor, startApolloServer } from "./graphql-server"
 
@@ -29,6 +34,7 @@ const setGqlContext = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
+  const logger = baseLogger
   const tokenPayload = req.token
 
   const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
@@ -36,6 +42,35 @@ const setGqlContext = async (
     : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
 
   const ip = parseIps(ipString)
+  if (!ip) {
+    logger.error("ip missing")
+    return
+  }
+
+  // TODO: loaders probably not needed for the admin panel
+  const loaders = {
+    txnMetadata: new DataLoader(async (keys) => {
+      const txnMetadata = await Transactions.getTransactionsMetadataByIds(
+        keys as LedgerTransactionId[],
+      )
+      if (txnMetadata instanceof Error) {
+        recordExceptionInCurrentSpan({
+          error: txnMetadata,
+          level: txnMetadata.level,
+        })
+
+        return keys.map(() => undefined)
+      }
+
+      return txnMetadata
+    }),
+  }
+
+  // can be anon.
+  // TODO: refactor to remove auth endpoint and make context always carry a uuid v4 .sub/UserId
+  const auditorId = tokenPayload.sub as UserId
+
+  req.gqlContext = { ip, loaders, auditorId, logger }
 
   addAttributesToCurrentSpanAndPropagate(
     {

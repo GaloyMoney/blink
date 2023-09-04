@@ -26,14 +26,12 @@ type GraphQLAdminContext = {
   ip: IpAddress
 }
 
-type GraphQLIntersectionContext = GraphQLPublicContext & GraphQLAdminContext
-
 // globally used types
 type Logger = import("pino").Logger
 
 declare namespace Express {
   interface Request {
     token: import("jsonwebtoken").JwtPayload
-    gqlContext: GraphQLPublicContext
+    gqlContext: GraphQLPublicContext | GraphQLAdminContext
   }
 }
