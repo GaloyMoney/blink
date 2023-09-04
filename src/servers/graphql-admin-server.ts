@@ -1,5 +1,5 @@
 import { applyMiddleware } from "graphql-middleware"
-import { and, shield } from "graphql-shield"
+import { and, rule, shield } from "graphql-shield"
 import { RuleAnd } from "graphql-shield/typings/rules"
 
 import { baseLogger } from "@services/logger"
@@ -25,11 +25,25 @@ import DataLoader from "dataloader"
 
 import { Transactions } from "@app"
 
-import { isAuthenticated, isEditor, startApolloServer } from "./graphql-server"
+import { AuthorizationError } from "@graphql/error"
+
+import { checkedToUserId } from "@domain/accounts"
+
+import { AccountsRepository } from "@services/mongoose"
+
+import { isAuthenticated, startApolloServer } from "./graphql-server"
+
+export const isEditor = rule({ cache: "contextual" })((
+  parent,
+  args,
+  ctx: GraphQLAdminContext,
+) => {
+  return ctx.isEditor ? true : new AuthorizationError({ logger: baseLogger })
+})
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
-const setGqlContext = async (
+const setGqlAdminContext = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -70,7 +84,16 @@ const setGqlContext = async (
   // TODO: refactor to remove auth endpoint and make context always carry a uuid v4 .sub/UserId
   const auditorId = tokenPayload.sub as UserId
 
-  req.gqlContext = { ip, loaders, auditorId, logger }
+  // TODO: should be using casbin instead of account
+  const userId = checkedToUserId(auditorId)
+  if (userId instanceof Error) return
+
+  const account = await AccountsRepository().findByUserId(userId)
+  if (account instanceof Error) return
+
+  const isEditor = account.isEditor
+
+  req.gqlContext = { ip, loaders, auditorId, logger, isEditor }
 
   addAttributesToCurrentSpanAndPropagate(
     {
@@ -106,7 +129,7 @@ export async function startApolloServerForAdminSchema() {
     schema,
     port: GALOY_ADMIN_PORT,
     type: "admin",
-    setGqlContext,
+    setGqlContext: setGqlAdminContext,
   })
 }
 

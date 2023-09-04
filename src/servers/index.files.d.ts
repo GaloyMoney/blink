@@ -23,6 +23,7 @@ type GraphQLAdminContext = {
   logger: Logger
   loaders: Loaders
   auditorId: UserId
+  isEditor: boolean
   ip: IpAddress
 }
 

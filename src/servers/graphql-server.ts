@@ -12,7 +12,7 @@ import { rule } from "graphql-shield"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 
-import { AuthenticationError, AuthorizationError } from "@graphql/error"
+import { AuthenticationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
 
 import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
@@ -35,19 +35,14 @@ const graphqlLogger = baseLogger.child({
 export const isAuthenticated = rule({ cache: "contextual" })((
   parent,
   args,
-  ctx: GraphQLPublicContext,
+  ctx: GraphQLPublicContext & GraphQLAdminContext,
 ) => {
-  return !!ctx.domainAccount || new AuthenticationError({ logger: baseLogger })
-})
-
-export const isEditor = rule({ cache: "contextual" })((
-  parent,
-  args,
-  ctx: GraphQLPublicContextAuth,
-) => {
-  return ctx.domainAccount.isEditor
-    ? true
-    : new AuthorizationError({ logger: baseLogger })
+  return (
+    // TODO: remove !== "anon" when auth endpoints have been removed from admin graphql
+    !!(ctx.auditorId !== ("anon" as UserId)) || // admin API
+    !!ctx.domainAccount || // public API
+    new AuthenticationError({ logger: baseLogger })
+  )
 })
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
