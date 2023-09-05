@@ -12,10 +12,7 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
-import {
-  InvalidZeroAmountPriceRatioInputError,
-  SubOneCentSatAmountForUsdSelfSendError,
-} from "@domain/payments"
+import { SubOneCentSatAmountForUsdSelfSendError } from "@domain/payments"
 import {
   AmountCalculator,
   WalletCurrency,
@@ -336,14 +333,15 @@ describe("onChainPay", () => {
     })
 
     it("fails if builder 'withConversion' step fails", async () => {
-      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const {
+        btcWalletDescriptor: newWalletDescriptor,
+        usdWalletDescriptor: recipientUsdWalletDescriptor,
+      } = await createRandomUserAndWallets()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
       if (newAccount instanceof Error) throw newAccount
 
-      const { usdWalletDescriptor: recipientUsdWalletDescriptor } =
-        await createRandomUserAndWallets()
       const recipientAccount = await AccountsRepository().findById(
         recipientUsdWalletDescriptor.accountId,
       )
@@ -384,7 +382,7 @@ describe("onChainPay", () => {
         speed: PayoutSpeed.Fast,
         memo,
       })
-      expect(res).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+      expect(res).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
     })
 
     it("fails if recipient account is locked", async () => {

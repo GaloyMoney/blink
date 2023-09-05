@@ -259,6 +259,8 @@ type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
 
   addressForFlow(): Promise<OnChainAddress | DealerPriceServiceError>
   senderWalletDescriptor(): Promise<WalletDescriptor<S> | DealerPriceServiceError>
+
+  checkForBuilderError(): Promise<false | ValidationError | DealerPriceServiceError>
 }
 
 type LPFBTest = {
@@ -294,6 +296,7 @@ type OPFBWithError = {
   proposedAmounts(): Promise<ValidationError | DealerPriceServiceError>
   addressForFlow(): Promise<ValidationError | DealerPriceServiceError>
   senderWalletDescriptor(): Promise<ValidationError | DealerPriceServiceError>
+  checkForBuilderError(): Promise<ValidationError | DealerPriceServiceError>
 }
 
 interface IPaymentFlowRepository {

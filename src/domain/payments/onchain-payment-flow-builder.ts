@@ -11,7 +11,11 @@ import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
-import { InvalidOnChainPaymentFlowBuilderStateError } from "./errors"
+import {
+  InvalidOnChainPaymentFlowBuilderStateError,
+  InvalidZeroAmountPriceRatioInputError,
+  ZeroAmountForUsdRecipientError,
+} from "./errors"
 import { WalletPriceRatio } from "./price-ratio"
 import { OnChainPaymentFlow } from "./payment-flow"
 
@@ -253,7 +257,18 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
           usd: convertedAmount,
           btc: btcProposedAmount,
         })
-        if (priceRatio instanceof Error) return priceRatio
+        if (
+          priceRatio instanceof Error &&
+          !(priceRatio instanceof InvalidZeroAmountPriceRatioInputError)
+        ) {
+          return priceRatio
+        }
+        // At this point we have a usd recipient and a btc send amount. If the ratio
+        // comes back with this zero-amount error, it means the btc send amount is
+        // under 1-cent.
+        if (priceRatio instanceof InvalidZeroAmountPriceRatioInputError) {
+          return new ZeroAmountForUsdRecipientError()
+        }
 
         return {
           ...stateWithCreatedAt,
@@ -499,6 +514,13 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     }
   }
 
+  const checkForBuilderError = async () => {
+    const state = await statePromise
+    if (state instanceof Error) return state
+
+    return false
+  }
+
   return {
     withoutMinerFee,
     withMinerFee,
@@ -507,6 +529,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     proposedAmounts,
     addressForFlow,
     senderWalletDescriptor,
+    checkForBuilderError,
   }
 }
 
@@ -561,6 +584,10 @@ const OPFBWithError = (
     return Promise.resolve(error)
   }
 
+  const checkForBuilderError = async () => {
+    return Promise.resolve(error)
+  }
+
   return {
     withSenderWalletAndAccount,
     withAmount,
@@ -575,5 +602,6 @@ const OPFBWithError = (
     proposedAmounts,
     addressForFlow,
     senderWalletDescriptor,
+    checkForBuilderError,
   }
 }

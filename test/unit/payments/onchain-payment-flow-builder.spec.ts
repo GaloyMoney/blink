@@ -4,7 +4,7 @@ import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@domain/
 import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import {
   InvalidOnChainPaymentFlowBuilderStateError,
-  InvalidZeroAmountPriceRatioInputError,
+  ZeroAmountForUsdRecipientError,
   WalletPriceRatio,
 } from "@domain/payments"
 import {
@@ -964,10 +964,10 @@ describe("OnChainPaymentFlowBuilder", () => {
             .withConversion(withConversionArgs)
 
           const proposedBtcAmount = await builder.btcProposedAmount()
-          expect(proposedBtcAmount).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+          expect(proposedBtcAmount).toBeInstanceOf(ZeroAmountForUsdRecipientError)
 
           const proposedAmounts = await builder.proposedAmounts()
-          expect(proposedAmounts).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+          expect(proposedAmounts).toBeInstanceOf(ZeroAmountForUsdRecipientError)
         })
       })
     })

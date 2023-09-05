@@ -16,13 +16,20 @@ import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
-import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
+import {
+  CouldNotFindError,
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
+  InsufficientBalanceError,
+  SelfPaymentError,
+} from "@domain/errors"
 import { displayAmountFromNumber } from "@domain/fiat"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
+  SubOneCentSatAmountForUsdSelfSendError,
   WalletPriceRatio,
+  ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 import { WalletCurrency } from "@domain/shared"
@@ -151,7 +158,7 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
     )
     if (recipientAccount instanceof Error) return recipientAccount
 
-    const builder = withSenderBuilder
+    let builder = withSenderBuilder
       .withRecipientWallet({
         ...recipientWalletDescriptor,
         userId: recipientAccount.kratosUserId,
@@ -159,6 +166,37 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
       })
       .withAmount(amount)
       .withConversion(withConversionArgs)
+
+    const check = await builder.checkForBuilderError()
+    if (check instanceof ZeroAmountForUsdRecipientError) {
+      const recipientWallets = await WalletsRepository().listByAccountId(
+        recipientWalletDescriptor.accountId,
+      )
+      if (recipientWallets instanceof Error) return recipientWallets
+      const recipientBtcWallet = recipientWallets.find(
+        (w) => w.currency === WalletCurrency.Btc,
+      )
+      if (recipientBtcWallet === undefined) {
+        return new CouldNotFindWalletFromAccountIdAndCurrencyError()
+      }
+
+      builder = withSenderBuilder
+        .withRecipientWallet({
+          id: recipientBtcWallet.id,
+          accountId: recipientBtcWallet.accountId,
+          currency: recipientBtcWallet.currency as R,
+
+          userId: recipientAccount.kratosUserId,
+          username: recipientAccount.username,
+        })
+        .withAmount(amount)
+        .withConversion(withConversionArgs)
+
+      const postCheck = await builder.checkForBuilderError()
+      if (postCheck instanceof SelfPaymentError) {
+        return new SubOneCentSatAmountForUsdSelfSendError()
+      }
+    }
 
     return executePaymentViaIntraledger({
       builder,
