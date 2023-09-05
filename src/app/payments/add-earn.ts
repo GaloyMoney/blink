@@ -1,13 +1,16 @@
 import { getRewardsConfig, OnboardingEarn } from "@config"
-import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
+import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
 import {
-  InvalidIPMetadataForRewardError,
+  InvalidIpMetadataError,
   InvalidPhoneMetadataForRewardError,
   InvalidQuizQuestionIdError,
+  MissingIPMetadataError,
   NoBtcWalletExistsForAccountError,
+  UnauthorizedIPForRewardError,
+  UnknownRepositoryError,
 } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
-import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
+import { PhoneMetadataAuthorizer } from "@domain/users/phone-metadata-authorizer"
 import { getFunderWalletId } from "@services/ledger/caching"
 import {
   AccountsRepository,
@@ -46,21 +49,27 @@ export const addEarn = async ({
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
 
-  const validatedPhoneMetadata = PhoneMetadataValidator(
+  const validatedPhoneMetadata = PhoneMetadataAuthorizer(
     rewardsConfig.phoneMetadataValidationSettings,
-  ).validate(user.phoneMetadata)
+  ).authorize(user.phoneMetadata)
 
   if (validatedPhoneMetadata instanceof Error)
-    return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
+    return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata)
 
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
   if (accountIP instanceof Error) return accountIP
 
-  const validatedIPMetadata = IPMetadataValidator(
+  const validatedIPMetadata = IPMetadataAuthorizer(
     rewardsConfig.ipMetadataValidationSettings,
-  ).validate(accountIP.metadata)
+  ).authorize(accountIP.metadata)
   if (validatedIPMetadata instanceof Error) {
-    return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
+    if (validatedIPMetadata instanceof MissingIPMetadataError)
+      return new InvalidIpMetadataError(validatedIPMetadata)
+
+    if (validatedIPMetadata instanceof UnauthorizedIPForRewardError)
+      return validatedIPMetadata
+
+    return new UnknownRepositoryError("add earn error")
   }
 
   const recipientWallets = await WalletsRepository().listByAccountId(accountId)

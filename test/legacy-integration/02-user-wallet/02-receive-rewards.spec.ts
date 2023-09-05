@@ -41,15 +41,15 @@ jest.mock("@config", () => {
   return config
 })
 
-jest.mock("@domain/accounts-ips/ip-metadata-validator", () => ({
-  IPMetadataValidator: () => ({
-    validate: () => true,
+jest.mock("@domain/accounts-ips/ip-metadata-authorizer", () => ({
+  IPMetadataAuthorizer: () => ({
+    authorize: () => true,
   }),
 }))
 
-jest.mock("@domain/users/phone-metadata-validator", () => ({
-  PhoneMetadataValidator: () => ({
-    validate: () => true,
+jest.mock("@domain/users/phone-metadata-authorizer", () => ({
+  PhoneMetadataAuthorizer: () => ({
+    authorize: () => true,
   }),
 }))
 

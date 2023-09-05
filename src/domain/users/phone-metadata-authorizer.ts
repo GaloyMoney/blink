@@ -4,14 +4,14 @@ import {
   InvalidPhoneMetadataCountryError,
 } from "@domain/errors"
 
-export const PhoneMetadataValidator = ({
+export const PhoneMetadataAuthorizer = ({
   denyCountries,
   allowCountries,
 }: {
   denyCountries: string[]
   allowCountries: string[]
-}): PhoneMetadataValidator => {
-  const validate = (phoneMetadata?: PhoneMetadata): true | ValidationError => {
+}): PhoneMetadataAuthorizer => {
+  const authorize = (phoneMetadata?: PhoneMetadata): true | AuthorizationError => {
     if (!phoneMetadata || !phoneMetadata.carrier || !phoneMetadata.countryCode)
       return new MissingPhoneMetadataError()
 
@@ -26,5 +26,5 @@ export const PhoneMetadataValidator = ({
     return true
   }
 
-  return { validate }
+  return { authorize }
 }

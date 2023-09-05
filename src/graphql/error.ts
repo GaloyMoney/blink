@@ -343,7 +343,7 @@ export class SessionRefreshRequiredError extends CustomApolloError {
   }
 }
 
-export class InvalidIPForOnboardingError extends CustomApolloError {
+export class UnauthorizedIPForOnboardingError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       message: "This IP address is not allowed to onboard.",
@@ -360,6 +360,39 @@ export class InvalidPhoneForOnboardingError extends CustomApolloError {
       message: "This phone number is not allowed to onboard.",
       forwardToClient: true,
       code: "PHONE_NOT_ALLOWED_TO_ONBOARD_ERROR",
+      ...errData,
+    })
+  }
+}
+
+export class UnauthorizedIPMetadataCountryForRewardError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Country not not authorized for rewards.",
+      forwardToClient: true,
+      code: "UNAUTHORIZED_COUNTRY_IP_FOR_REWARD",
+      ...errData,
+    })
+  }
+}
+
+export class UnauthorizedIPMetadataProxyForRewardError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "VPN ips are not authorized for rewards.",
+      forwardToClient: true,
+      code: "UNAUTHORIZED_VPN_IP_FOR_REWARD",
+      ...errData,
+    })
+  }
+}
+
+export class UnauthorizedIPForRewardError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "This ip is unauthorized for rewards.",
+      forwardToClient: true,
+      code: "UNAUTHORIZED_IP_FOR_REWARD",
       ...errData,
     })
   }

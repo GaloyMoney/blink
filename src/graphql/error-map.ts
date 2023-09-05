@@ -27,9 +27,12 @@ import {
   EmailAlreadyExistsError,
   SessionRefreshRequiredError,
   CodeExpiredError,
-  InvalidIPForOnboardingError,
+  UnauthorizedIPForOnboardingError,
   InvalidPhoneMetadataForOnboardingError,
   InvalidPhoneForOnboardingError,
+  UnauthorizedIPForRewardError,
+  UnauthorizedIPMetadataProxyForRewardError,
+  UnauthorizedIPMetadataCountryForRewardError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -261,7 +264,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidIPMetadataForRewardError":
+    case "InvalidIpMetadataError":
       message = "Unsupported IP for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -413,14 +416,23 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "SessionRefreshRequiredError":
       return new SessionRefreshRequiredError({ logger: baseLogger })
 
-    case "InvalidIPForOnboardingError":
-      return new InvalidIPForOnboardingError({ logger: baseLogger })
+    case "UnauthorizedIPForOnboardingError":
+      return new UnauthorizedIPForOnboardingError({ logger: baseLogger })
 
     case "InvalidPhoneMetadataForOnboardingError":
       return new InvalidPhoneMetadataForOnboardingError({ logger: baseLogger })
 
     case "InvalidPhoneForOnboardingError":
       return new InvalidPhoneForOnboardingError({ logger: baseLogger })
+
+    case "UnauthorizedIPForRewardError":
+      return new UnauthorizedIPForRewardError({ logger: baseLogger })
+
+    case "UnauthorizedIPMetadataProxyForRewardError":
+      return new UnauthorizedIPMetadataProxyForRewardError({ logger: baseLogger })
+
+    case "UnauthorizedIPMetadataCountryForRewardError":
+      return new UnauthorizedIPMetadataCountryForRewardError({ logger: baseLogger })
 
     // ----------
     // Unhandled below here
@@ -519,9 +531,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidPhoneMetadataTypeError":
     case "InvalidPhoneMetadataCountryError":
     case "MissingIPMetadataError":
-    case "InvalidIPMetadataProxyError":
-    case "InvalidIPMetadataASNError":
-    case "InvalidIPMetadataCountryError":
+    case "UnauthorizedIPMetadataASNForRewardError":
     case "InvalidAccountStatusError":
     case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":
