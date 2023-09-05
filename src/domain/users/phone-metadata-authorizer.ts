@@ -11,7 +11,7 @@ export const PhoneMetadataAuthorizer = ({
   denyCountries: string[]
   allowCountries: string[]
 }): PhoneMetadataAuthorizer => {
-  const authorize = (phoneMetadata?: PhoneMetadata): true | ValidationError => {
+  const authorize = (phoneMetadata?: PhoneMetadata): true | AuthorizationError => {
     if (!phoneMetadata || !phoneMetadata.carrier || !phoneMetadata.countryCode)
       return new MissingPhoneMetadataError()
 

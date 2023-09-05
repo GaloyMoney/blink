@@ -11,7 +11,7 @@ export const IPMetadataAuthorizer = ({
   denyASNs,
   allowASNs,
 }: IPMetadataAuthorizerArgs): IPMetadataAuthorizer => {
-  const authorize = (ipMetadata?: IPType): true | ValidationError => {
+  const authorize = (ipMetadata?: IPType): true | AuthorizationError => {
     if (!ipMetadata || !ipMetadata.isoCode || !ipMetadata.asn)
       return new MissingIPMetadataError()
 

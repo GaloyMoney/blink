@@ -111,22 +111,23 @@ export class NoWalletExistsForUserError extends ValidationError {}
 export class NoBtcWalletExistsForAccountError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
 export class MissingPhoneMetadataError extends ValidationError {}
-export class InvalidPhoneMetadataTypeError extends ValidationError {}
-export class InvalidPhoneMetadataCountryError extends ValidationError {}
-export class InvalidPhoneMetadataForOnboardingError extends ValidationError {
-  level = ErrorLevel.Critical
-}
-export class InvalidPhoneForOnboardingError extends ValidationError {}
-export class InvalidPhoneMetadataForRewardError extends ValidationError {}
 
-export class MissingIPMetadataError extends ValidationError {}
-export class InvalidIPMetadataProxyError extends ValidationError {}
-export class InvalidIPMetadataCountryError extends ValidationError {}
-export class InvalidIPMetadataASNError extends ValidationError {}
-export class InvalidIPMetadataForRewardError extends ValidationError {
+export class InvalidPhoneMetadataTypeError extends AuthorizationError {}
+export class InvalidPhoneMetadataCountryError extends AuthorizationError {}
+export class InvalidPhoneMetadataForOnboardingError extends AuthorizationError {
   level = ErrorLevel.Critical
 }
-export class InvalidIPForOnboardingError extends ValidationError {}
+export class InvalidPhoneForOnboardingError extends AuthorizationError {}
+export class InvalidPhoneMetadataForRewardError extends AuthorizationError {}
+
+export class MissingIPMetadataError extends AuthorizationError {}
+export class InvalidIPMetadataProxyError extends AuthorizationError {}
+export class InvalidIPMetadataCountryError extends AuthorizationError {}
+export class InvalidIPMetadataASNError extends AuthorizationError {}
+export class InvalidIPMetadataForRewardError extends AuthorizationError {
+  level = ErrorLevel.Critical
+}
+export class InvalidIPForOnboardingError extends AuthorizationError {}
 
 export class InvalidDeviceTokenError extends ValidationError {}
 
