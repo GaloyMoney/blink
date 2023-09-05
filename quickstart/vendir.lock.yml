@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: improving naming from validator to authorizer (#3166)...'
-      sha: 28a8add3818a51f69b28735b71bcba4087356d28
+      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.1 to 1.9.2 (#3162)...'
+      sha: 6b05eb8aae0386f4b857294b67bb403c586b661a
       tags:
-      - 0.13.35-1-g28a8add38
+      - 0.13.35-3-g6b05eb8aa
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: improving naming from validator to authorizer (#3166)...'
-      sha: 28a8add3818a51f69b28735b71bcba4087356d28
+      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.1 to 1.9.2 (#3162)...'
+      sha: 6b05eb8aae0386f4b857294b67bb403c586b661a
       tags:
-      - 0.13.35-1-g28a8add38
+      - 0.13.35-3-g6b05eb8aa
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: improving naming from validator to authorizer (#3166)...'
-      sha: 28a8add3818a51f69b28735b71bcba4087356d28
+      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.1 to 1.9.2 (#3162)...'
+      sha: 6b05eb8aae0386f4b857294b67bb403c586b661a
       tags:
-      - 0.13.35-1-g28a8add38
+      - 0.13.35-3-g6b05eb8aa
     path: ./
   path: ./graphql
 kind: LockConfig
