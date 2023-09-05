@@ -29,7 +29,7 @@ export const mutationFields = {
   },
 }
 
-export const MutationType = GT.Object({
+export const MutationType = GT.Object<null, GraphQLAdminContext>({
   name: "Mutation",
   fields: () => ({ ...mutationFields.unauthed, ...mutationFields.authed }),
 })

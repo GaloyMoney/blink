@@ -26,7 +26,7 @@ import {
 
 import cookie from "cookie"
 
-import { sessionContext } from "./graphql-server"
+import { sessionPublicContext } from "./middlewares/session"
 
 const schema = gqlMainSchema
 
@@ -82,7 +82,7 @@ const getContext = async (
           sub: kratosCookieRes.kratosUserId,
         }
 
-        return sessionContext({
+        return sessionPublicContext({
           tokenPayload,
           ip,
         })
@@ -106,7 +106,7 @@ const getContext = async (
         return false
       }
 
-      return sessionContext({
+      return sessionPublicContext({
         tokenPayload,
         ip,
       })

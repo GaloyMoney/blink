@@ -18,7 +18,7 @@ const IntraLedgerPaymentSendInput = GT.Input({
   }),
 })
 
-const IntraLedgerPaymentSendMutation = GT.Field({
+const IntraLedgerPaymentSendMutation = GT.Field<null, GraphQLPublicContextAuth>({
   extensions: {
     complexity: 120,
   },
@@ -29,7 +29,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(IntraLedgerPaymentSendInput) },
   },
-  resolve: async (_, args, { domainAccount }: GraphQLContextAuth) => {
+  resolve: async (_, args, { domainAccount }: GraphQLPublicContextAuth) => {
     const { walletId, recipientWalletId, amount, memo } = args.input
     for (const input of [walletId, recipientWalletId, amount, memo]) {
       if (input instanceof Error) {

@@ -14,13 +14,13 @@ const BusinessDeleteMapInfoInput = GT.Input({
 })
 
 const BusinessDeleteMapInfoMutation = GT.Field<
+  null,
+  GraphQLAdminContext,
   {
     input: {
       username: Username | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

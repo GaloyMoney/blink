@@ -20,7 +20,7 @@ const UserUpdateLanguageMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserUpdateLanguageInput) },
   },
-  resolve: async (_, args, { user }: GraphQLContextAuth) => {
+  resolve: async (_, args, { user }: GraphQLPublicContextAuth) => {
     const { language } = args.input
 
     if (language instanceof Error) {

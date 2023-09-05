@@ -12,9 +12,9 @@ const QuizCompletedInput = GT.Input({
 })
 
 const QuizCompletedMutation = GT.Field<
-  { input: { id: string } },
   null,
-  GraphQLContextAuth
+  GraphQLPublicContextAuth,
+  { input: { id: string } }
 >({
   extensions: {
     complexity: 120,

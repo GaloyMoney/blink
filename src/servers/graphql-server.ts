@@ -1,18 +1,9 @@
 import { createServer } from "http"
 
-import DataLoader from "dataloader"
 import express, { NextFunction, Request, Response } from "express"
 
-import { Accounts, Transactions } from "@app"
-import { UNSECURE_IP_FROM_REQUEST_OBJECT, getJwksArgs } from "@config"
+import { getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
-import {
-  ACCOUNT_USERNAME,
-  SemanticAttributes,
-  addAttributesToCurrentSpan,
-  addAttributesToCurrentSpanAndPropagate,
-  recordExceptionInCurrentSpan,
-} from "@services/tracing"
 import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
@@ -21,10 +12,8 @@ import { rule } from "graphql-shield"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 
-import { AuthenticationError, AuthorizationError } from "@graphql/error"
+import { AuthenticationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
-
-import { parseIps } from "@domain/accounts-ips"
 
 import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
 
@@ -32,9 +21,7 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { checkedToUserId } from "@domain/accounts"
-import { ValidationError, parseUnknownDomainErrorFromUnknown } from "@domain/shared"
-import { UsersRepository } from "@services/mongoose"
+import { parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 
 import authRouter from "./authorization"
 import kratosCallback from "./callback/kratos"
@@ -48,139 +35,28 @@ const graphqlLogger = baseLogger.child({
 export const isAuthenticated = rule({ cache: "contextual" })((
   parent,
   args,
-  ctx: GraphQLContext,
+  ctx: GraphQLPublicContext & GraphQLAdminContext,
 ) => {
-  return !!ctx.domainAccount || new AuthenticationError({ logger: baseLogger })
-})
-
-export const isEditor = rule({ cache: "contextual" })((
-  parent,
-  args,
-  ctx: GraphQLContextAuth,
-) => {
-  return ctx.domainAccount.isEditor
-    ? true
-    : new AuthorizationError({ logger: baseLogger })
+  return (
+    // TODO: remove !== "anon" when auth endpoints have been removed from admin graphql
+    !!(ctx.auditorId !== ("anon" as UserId)) || // admin API
+    !!ctx.domainAccount || // public API
+    new AuthenticationError({ logger: baseLogger })
+  )
 })
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
-
-type RequestWithGqlContext = Request & { gqlContext: GraphQLContext | undefined }
-
-const setGqlContext = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  const tokenPayload = req.token
-
-  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
-    ? req.ip
-    : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
-
-  const ip = parseIps(ipString)
-
-  const gqlContext = await sessionContext({
-    tokenPayload,
-    ip,
-  })
-
-  const reqWithGqlContext = req as RequestWithGqlContext
-  reqWithGqlContext.gqlContext = gqlContext
-
-  addAttributesToCurrentSpanAndPropagate(
-    {
-      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-      [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
-      [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
-      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
-    },
-    next,
-  )
-}
-
-export const sessionContext = ({
-  tokenPayload,
-  ip,
-}: {
-  tokenPayload: jsonwebtoken.JwtPayload
-  ip: IpAddress | undefined
-}): Promise<GraphQLContext> => {
-  const logger = graphqlLogger.child({ tokenPayload })
-
-  let domainAccount: Account | undefined
-  let user: User | undefined
-
-  return addAttributesToCurrentSpanAndPropagate(
-    {
-      "token.sub": tokenPayload?.sub,
-      "token.iss": tokenPayload?.iss,
-      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-    },
-    async () => {
-      // note: value should match (ie: "anon") if not an accountId
-      // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-      const maybeUserId = checkedToUserId(tokenPayload?.sub ?? "")
-
-      if (!(maybeUserId instanceof ValidationError)) {
-        const userId = maybeUserId
-        const account = await Accounts.getAccountFromUserId(userId)
-        if (account instanceof Error) {
-          throw mapError(account)
-        } else {
-          domainAccount = account
-          // not awaiting on purpose. just updating metadata
-          // TODO: look if this can be a source of memory leaks
-          Accounts.updateAccountIPsInfo({
-            accountId: account.id,
-            ip,
-            logger,
-          })
-          const userRes = await UsersRepository().findById(account.kratosUserId)
-          if (userRes instanceof Error) throw mapError(userRes)
-          user = userRes
-          addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
-        }
-      }
-
-      const loaders = {
-        txnMetadata: new DataLoader(async (keys) => {
-          const txnMetadata = await Transactions.getTransactionsMetadataByIds(
-            keys as LedgerTransactionId[],
-          )
-          if (txnMetadata instanceof Error) {
-            recordExceptionInCurrentSpan({
-              error: txnMetadata,
-              level: txnMetadata.level,
-            })
-
-            return keys.map(() => undefined)
-          }
-
-          return txnMetadata
-        }),
-      }
-
-      return {
-        logger,
-        loaders,
-        // FIXME: we should not return this for the admin graphql endpoint
-        user,
-        domainAccount,
-        ip,
-      }
-    },
-  )
-}
 
 export const startApolloServer = async ({
   schema,
   port,
   type,
+  setGqlContext,
 }: {
   schema: GraphQLSchema
   port: string | number
   type: string
+  setGqlContext: (req: Request, res: Response, next: NextFunction) => Promise<void>
 }): Promise<Record<string, unknown>> => {
   const app = express()
   const httpServer = createServer(app)
@@ -203,7 +79,7 @@ export const startApolloServer = async ({
     cache: "bounded",
     plugins: apolloPlugins,
     context: (context) => {
-      return (context.req as RequestWithGqlContext).gqlContext
+      return context.req.gqlContext
     },
     formatError: (err) => {
       try {

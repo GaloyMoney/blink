@@ -19,14 +19,14 @@ const UserLoginUpgradeInput = GT.Input({
 })
 
 const UserLoginUpgradeMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       phone: PhoneNumber | InputValidationError
       code: PhoneCode | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

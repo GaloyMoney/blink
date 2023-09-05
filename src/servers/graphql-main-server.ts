@@ -1,22 +1,62 @@
 import { applyMiddleware } from "graphql-middleware"
-import { shield } from "graphql-shield"
-import { Rule } from "graphql-shield/typings/rules"
 
-import { bootstrap } from "@app/bootstrap"
-
-import { setupMongoConnection } from "@services/mongodb"
-import { activateLndHealthCheck } from "@services/lnd/health"
-import { baseLogger } from "@services/logger"
-
-import { GALOY_API_PORT } from "@config"
+import { GALOY_API_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
 import { gqlMainSchema, mutationFields, queryFields } from "@graphql/public"
 
+import { bootstrap } from "@app/bootstrap"
+import { activateLndHealthCheck } from "@services/lnd/health"
+import { baseLogger } from "@services/logger"
+import { setupMongoConnection } from "@services/mongodb"
+import { shield } from "graphql-shield"
+import { Rule } from "graphql-shield/typings/rules"
+
+import { NextFunction, Request, Response } from "express"
+
+import {
+  ACCOUNT_USERNAME,
+  SemanticAttributes,
+  addAttributesToCurrentSpanAndPropagate,
+} from "@services/tracing"
+
+import { parseIps } from "@domain/accounts-ips"
+
+import { startApolloServerForAdminSchema } from "./graphql-admin-server"
 import { isAuthenticated, startApolloServer } from "./graphql-server"
 import { walletIdMiddleware } from "./middlewares/wallet-id"
-import { startApolloServerForAdminSchema } from "./graphql-admin-server"
 
-const graphqlLogger = baseLogger.child({ module: "graphql" })
+import { sessionPublicContext } from "./middlewares/session"
+
+const setGqlContext = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  const tokenPayload = req.token
+
+  const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+    ? req.ip
+    : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
+
+  const ip = parseIps(ipString)
+
+  const gqlContext = await sessionPublicContext({
+    tokenPayload,
+    ip,
+  })
+
+  req.gqlContext = gqlContext
+
+  addAttributesToCurrentSpanAndPropagate(
+    {
+      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+      [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
+      [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
+      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
+    },
+    next,
+  )
+}
 
 export async function startApolloServerForCoreSchema() {
   const authedQueryFields: { [key: string]: Rule } = {}
@@ -48,6 +88,7 @@ export async function startApolloServerForCoreSchema() {
     schema,
     port: GALOY_API_PORT,
     type: "main",
+    setGqlContext,
   })
 }
 
@@ -64,5 +105,5 @@ if (require.main === module) {
         startApolloServerForAdminSchema(),
       ])
     })
-    .catch((err) => graphqlLogger.error(err, "server error"))
+    .catch((err) => baseLogger.error(err, "server error"))
 }

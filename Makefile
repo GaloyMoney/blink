@@ -139,8 +139,8 @@ audit:
 	bash -c 'yarn audit --level critical; [[ $$? -ge 16 ]] && exit 1 || exit 0'
 
 mine-block:
-	container_id=$$(docker ps -q -f status=running -f name="bitcoind"); \
-	docker exec -it "$$container_id" /bin/sh -c 'ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
+	container_id=$$(docker ps -q -f status=running -f name="bitcoind-1"); \
+	docker exec -it "$$container_id" /bin/sh -c 'bitcoin-cli createwallet -chain=regtest || ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
 
 lncli-1:
 	docker exec -it $$(docker ps -q -f status=running -f name="lnd1-1") /bin/sh -c 'lncli -n regtest ${command}'

@@ -28,15 +28,15 @@ const LnInvoicePaymentInput = GT.Input({
 })
 
 const LnInvoicePaymentSendMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       walletId: WalletId | InputValidationError
       paymentRequest: string | InputValidationError
       memo?: string | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

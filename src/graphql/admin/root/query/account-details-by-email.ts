@@ -6,10 +6,14 @@ import { mapError } from "@graphql/error-map"
 import { Admin } from "@app"
 import EmailAddress from "@graphql/shared/types/scalar/email-address"
 
-const AccountDetailsByUserEmailQuery = GT.Field<{
-  // FIXME: doesn't respect the input: {} pattern
-  email: EmailAddress | ValidationError
-}>({
+const AccountDetailsByUserEmailQuery = GT.Field<
+  null,
+  GraphQLAdminContext,
+  {
+    // FIXME: doesn't respect the input: {} pattern
+    email: EmailAddress | ValidationError
+  }
+>({
   type: GT.NonNull(GraphQLAccount),
   args: {
     email: { type: GT.NonNull(EmailAddress) },

@@ -15,7 +15,7 @@ import OnChainTxFee from "@graphql/public/types/object/onchain-tx-fee"
 
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
 
-const OnChainTxFeeQuery = GT.Field({
+const OnChainTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
   type: GT.NonNull(OnChainTxFee),
   args: {
     walletId: { type: GT.NonNull(WalletId) },

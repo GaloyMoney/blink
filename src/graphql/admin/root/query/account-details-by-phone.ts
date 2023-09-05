@@ -6,10 +6,14 @@ import { mapError } from "@graphql/error-map"
 
 import { Admin } from "@app"
 
-const AccountDetailsByUserPhoneQuery = GT.Field<{
-  // FIXME: doesn't respect the input: {} pattern
-  phone: PhoneNumber | ValidationError
-}>({
+const AccountDetailsByUserPhoneQuery = GT.Field<
+  null,
+  GraphQLAdminContext,
+  {
+    // FIXME: doesn't respect the input: {} pattern
+    phone: PhoneNumber | ValidationError
+  }
+>({
   type: GT.NonNull(GraphQLAccount),
   args: {
     phone: { type: GT.NonNull(Phone) },

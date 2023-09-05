@@ -12,13 +12,13 @@ const FeedbackSubmitInput = GT.Input({
 })
 
 const FeedbackSubmitMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       feedback: Feedback | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

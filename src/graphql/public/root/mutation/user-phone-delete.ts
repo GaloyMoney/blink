@@ -4,7 +4,7 @@ import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import UserPhoneDeletePayload from "@graphql/public/types/payload/user-phone-delete"
 
-const UserPhoneDeleteMutation = GT.Field<null, null, GraphQLContextAuth>({
+const UserPhoneDeleteMutation = GT.Field<null, GraphQLPublicContextAuth>({
   extensions: {
     complexity: 120,
   },

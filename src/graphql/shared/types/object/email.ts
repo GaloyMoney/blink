@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import EmailAddress from "../scalar/email-address"
 
-const GraphQLEmail = GT.Object<AnyIdentity, GraphQLContextAuth>({
+const GraphQLEmail = GT.Object({
   name: "Email",
   fields: () => ({
     address: {

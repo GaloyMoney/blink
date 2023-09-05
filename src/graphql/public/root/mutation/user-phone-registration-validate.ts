@@ -16,14 +16,14 @@ const UserPhoneRegistrationValidateInput = GT.Input({
 })
 
 const UserPhoneRegistrationValidateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       phone: PhoneNumber | InputValidationError
       code: PhoneCode | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

@@ -32,6 +32,8 @@ const OnChainUsdPaymentSendAsBtcDenominatedInput = GT.Input({
 })
 
 const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       walletId: WalletId | InputValidationError
@@ -40,9 +42,7 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       memo: Memo | InputValidationError | null
       speed: PayoutSpeed | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

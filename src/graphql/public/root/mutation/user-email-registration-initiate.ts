@@ -15,13 +15,13 @@ const UserEmailRegistrationInitiateInput = GT.Input({
 })
 
 const UserEmailRegistrationInitiateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       email: EmailAddress | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

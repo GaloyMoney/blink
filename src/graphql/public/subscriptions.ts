@@ -23,7 +23,7 @@ const addTracing = () => {
     const original = fields[key].resolve
     /* eslint @typescript-eslint/ban-ts-comment: "off" */
     // @ts-ignore-next-line no-implicit-any error
-    fields[key].resolve = (source, args, context: GraphQLContextForUser, info) => {
+    fields[key].resolve = (source, args, context: GraphQLPublicContextForUser, info) => {
       const { ip, domainAccount } = context
       addAttributesToCurrentSpan({
         [SemanticAttributes.ENDUSER_ID]: domainAccount?.id,
