@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump svix (#3165)...'
-      sha: e2f0acb2379eab6e1a52ea1009a03ba501f5310e
+      commitTitle: 'chore: improving naming from validator to authorizer (#3166)...'
+      sha: 28a8add3818a51f69b28735b71bcba4087356d28
       tags:
-      - 0.13.34-1-ge2f0acb23
+      - 0.13.35-1-g28a8add38
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump svix (#3165)...'
-      sha: e2f0acb2379eab6e1a52ea1009a03ba501f5310e
+      commitTitle: 'chore: improving naming from validator to authorizer (#3166)...'
+      sha: 28a8add3818a51f69b28735b71bcba4087356d28
       tags:
-      - 0.13.34-1-ge2f0acb23
+      - 0.13.35-1-g28a8add38
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump svix (#3165)...'
-      sha: e2f0acb2379eab6e1a52ea1009a03ba501f5310e
+      commitTitle: 'chore: improving naming from validator to authorizer (#3166)...'
+      sha: 28a8add3818a51f69b28735b71bcba4087356d28
       tags:
-      - 0.13.34-1-ge2f0acb23
+      - 0.13.35-1-g28a8add38
     path: ./
   path: ./graphql
 kind: LockConfig
