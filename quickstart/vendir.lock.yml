@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: c47a4cc6004179745aedcaa56a040069da06f841
+      commitTitle: 'chore: bump svix from 1.10.0 to 1.11.0 (#3163)...'
+      sha: 149a34a6111e8d2be7ade6be28f583d848acccab
       tags:
-      - 0.13.32-4-gc47a4cc60
+      - 0.13.33-2-g149a34a61
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: c47a4cc6004179745aedcaa56a040069da06f841
+      commitTitle: 'chore: bump svix from 1.10.0 to 1.11.0 (#3163)...'
+      sha: 149a34a6111e8d2be7ade6be28f583d848acccab
       tags:
-      - 0.13.32-4-gc47a4cc60
+      - 0.13.33-2-g149a34a61
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: c47a4cc6004179745aedcaa56a040069da06f841
+      commitTitle: 'chore: bump svix from 1.10.0 to 1.11.0 (#3163)...'
+      sha: 149a34a6111e8d2be7ade6be28f583d848acccab
       tags:
-      - 0.13.32-4-gc47a4cc60
+      - 0.13.33-2-g149a34a61
     path: ./
   path: ./graphql
 kind: LockConfig
