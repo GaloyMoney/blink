@@ -14,6 +14,7 @@ beforeEach(async () => {
     allowIPCountries: [],
     denyASNs: [],
     allowASNs: [],
+    enableIpProxyCheck: true,
   }
 })
 

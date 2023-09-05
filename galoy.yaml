@@ -19,6 +19,7 @@ buildVersion:
     minBuildNumber: 362
     lastBuildNumber: 362
 rewards:
+  enableIpProxyCheck: true
   allowPhoneCountries: []
   denyPhoneCountries: []
   allowIPCountries: []
@@ -83,6 +84,7 @@ accounts:
     - USD
   enablePhoneCheck: false
   enableIpCheck: false
+  enableIpProxyCheck: false
   allowPhoneCountries: []
   denyPhoneCountries: []
   allowIPCountries: []

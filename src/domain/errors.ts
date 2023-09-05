@@ -119,7 +119,7 @@ export class InvalidPhoneMetadataForOnboardingError extends AuthorizationError {
   level = ErrorLevel.Critical
 }
 export class InvalidPhoneForOnboardingError extends AuthorizationError {}
-export class InvalidPhoneMetadataForRewardError extends AuthorizationError {}
+export class InvalidPhoneMetadataError extends AuthorizationError {}
 
 export class InvalidIpMetadataError extends ValidationError {
   level = ErrorLevel.Critical
@@ -127,10 +127,10 @@ export class InvalidIpMetadataError extends ValidationError {
 
 export class UnauthorizedIPForOnboardingError extends AuthorizationError {}
 
-export class UnauthorizedIPForRewardError extends AuthorizationError {}
-export class UnauthorizedIPMetadataProxyForRewardError extends UnauthorizedIPForRewardError {}
-export class UnauthorizedIPMetadataCountryForRewardError extends UnauthorizedIPForRewardError {}
-export class UnauthorizedIPMetadataASNForRewardError extends UnauthorizedIPForRewardError {}
+export class UnauthorizedIPError extends AuthorizationError {}
+export class UnauthorizedIPMetadataProxyError extends UnauthorizedIPError {}
+export class UnauthorizedIPMetadataCountryError extends UnauthorizedIPError {}
+export class UnauthorizedIPMetadataASNError extends UnauthorizedIPError {}
 
 export class InvalidDeviceTokenError extends ValidationError {}
 

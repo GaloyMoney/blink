@@ -1,8 +1,8 @@
 import {
   MissingIPMetadataError,
-  UnauthorizedIPMetadataASNForRewardError,
-  UnauthorizedIPMetadataCountryForRewardError,
-  UnauthorizedIPMetadataProxyForRewardError,
+  UnauthorizedIPMetadataASNError,
+  UnauthorizedIPMetadataCountryError,
+  UnauthorizedIPMetadataProxyError,
 } from "@domain/errors"
 
 export const IPMetadataAuthorizer = ({
@@ -10,23 +10,23 @@ export const IPMetadataAuthorizer = ({
   allowCountries,
   denyASNs,
   allowASNs,
+  checkProxy,
 }: IPMetadataAuthorizerArgs): IPMetadataAuthorizer => {
   const authorize = (ipMetadata?: IPType): true | AuthorizationError => {
     if (!ipMetadata || !ipMetadata.isoCode || !ipMetadata.asn)
       return new MissingIPMetadataError()
 
-    if (ipMetadata.proxy) return new UnauthorizedIPMetadataProxyForRewardError()
+    if (checkProxy && ipMetadata.proxy) return new UnauthorizedIPMetadataProxyError()
 
     const isoCode = ipMetadata.isoCode.toUpperCase()
     const allowedCountry = allowCountries.length <= 0 || allowCountries.includes(isoCode)
     const deniedCountry = denyCountries.length > 0 && denyCountries.includes(isoCode)
-    if (!allowedCountry || deniedCountry)
-      return new UnauthorizedIPMetadataCountryForRewardError()
+    if (!allowedCountry || deniedCountry) return new UnauthorizedIPMetadataCountryError()
 
     const asn = ipMetadata.asn.toUpperCase()
     const allowedASN = allowASNs.length <= 0 || allowASNs.includes(asn)
     const deniedASN = denyASNs.length > 0 && denyASNs.includes(asn)
-    if (!allowedASN || deniedASN) return new UnauthorizedIPMetadataASNForRewardError()
+    if (!allowedASN || deniedASN) return new UnauthorizedIPMetadataASNError()
 
     return true
   }

@@ -274,6 +274,7 @@ export const getRewardsConfig = (): RewardsConfig => {
       allowCountries: allowIPCountries.map((c) => c.toUpperCase()),
       denyASNs: denyASNs.map((c) => c.toUpperCase()),
       allowASNs: allowASNs.map((c) => c.toUpperCase()),
+      checkProxy: yamlConfig.rewards.enableIpProxyCheck,
     },
   }
 }
@@ -285,14 +286,14 @@ export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig =>
 })
 
 export const getAccountsOnboardConfig = (config = yamlConfig): AccountsOnboardConfig => {
-  const { enablePhoneCheck, enableIpCheck } = config.accounts
+  const { enablePhoneCheck, enableIpCheck, enableIpProxyCheck } = config.accounts
 
   const denyPhoneCountries = config.accounts.denyPhoneCountries || []
   const allowPhoneCountries = config.accounts.allowPhoneCountries || []
   const denyIPCountries = config.accounts.denyIPCountries || []
   const allowIPCountries = config.accounts.allowIPCountries || []
-  const denyASNs = yamlConfig.rewards.denyASNs || []
-  const allowASNs = yamlConfig.rewards.allowASNs || []
+  const denyASNs = config.accounts.denyASNs || []
+  const allowASNs = config.accounts.allowASNs || []
 
   return {
     phoneMetadataValidationSettings: {
@@ -306,6 +307,7 @@ export const getAccountsOnboardConfig = (config = yamlConfig): AccountsOnboardCo
       allowCountries: allowIPCountries.map((c) => c.toUpperCase()),
       denyASNs: denyASNs.map((c) => c.toUpperCase()),
       allowASNs: allowASNs.map((c) => c.toUpperCase()),
+      checkProxy: enableIpProxyCheck,
     },
   }
 }

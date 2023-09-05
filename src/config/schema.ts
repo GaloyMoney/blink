@@ -111,6 +111,7 @@ export const configSchema = {
     rewards: {
       type: "object",
       properties: {
+        enableIpProxyCheck: { type: "boolean" },
         allowPhoneCountries: {
           type: "array",
           items: { type: "string" },
@@ -143,6 +144,7 @@ export const configSchema = {
         },
       },
       required: [
+        "enableIpProxyCheck",
         "allowPhoneCountries",
         "denyPhoneCountries",
         "allowIPCountries",
@@ -152,6 +154,7 @@ export const configSchema = {
       ],
       additionalProperties: false,
       default: {
+        enableIpProxyCheck: true,
         allowPhoneCountries: [],
         denyPhoneCountries: [],
         allowIPCountries: [],
@@ -327,6 +330,7 @@ export const configSchema = {
         },
         enablePhoneCheck: { type: "boolean" },
         enableIpCheck: { type: "boolean" },
+        enableIpProxyCheck: { type: "boolean" },
         allowPhoneCountries: {
           type: "array",
           items: { type: "string" },
@@ -363,6 +367,7 @@ export const configSchema = {
         "initialWallets",
         "enablePhoneCheck",
         "enableIpCheck",
+        "enableIpProxyCheck",
         "allowPhoneCountries",
         "denyPhoneCountries",
         "allowIPCountries",
@@ -376,6 +381,7 @@ export const configSchema = {
         initialWallets: ["BTC", "USD"],
         enablePhoneCheck: false,
         enableIpCheck: false,
+        enableIpProxyCheck: false,
         allowPhoneCountries: [],
         denyPhoneCountries: [],
         allowIPCountries: [],

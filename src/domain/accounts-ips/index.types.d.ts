@@ -15,6 +15,7 @@ type IPMetadataAuthorizerArgs = {
   allowCountries: string[]
   denyASNs: string[]
   allowASNs: string[]
+  checkProxy: boolean
 }
 
 type IPMetadataAuthorizer = {
