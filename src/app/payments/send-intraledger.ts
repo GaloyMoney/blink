@@ -21,6 +21,10 @@ import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+import {
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
+  SelfPaymentError,
+} from "@domain/errors"
 
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
@@ -93,11 +97,7 @@ const intraledgerPaymentSendWalletId = async ({
     usdPaymentAmount: undefined,
   }
 
-  const builderAfterRecipientStep = builderWithSenderWallet.withRecipientWallet(
-    recipientDetailsForBuilder,
-  )
-
-  const builderWithConversion = builderAfterRecipientStep.withConversion({
+  const withConversionArgs = {
     mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
     hedgeBuyUsd: {
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
@@ -107,13 +107,43 @@ const intraledgerPaymentSendWalletId = async ({
       usdFromBtc: dealer.getCentsFromSatsForImmediateSell,
       btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
     },
-  })
+  }
+
+  let builderWithConversion = builderWithSenderWallet
+    .withRecipientWallet(recipientDetailsForBuilder)
+    .withConversion(withConversionArgs)
   if (builderWithConversion instanceof Error) return builderWithConversion
 
-  const paymentFlow = await builderWithConversion.withoutRoute()
-  if (paymentFlow instanceof InvalidZeroAmountPriceRatioInputError) {
-    return new ZeroAmountForUsdRecipientError()
+  const check = await builderWithConversion.usdPaymentAmount()
+  if (check instanceof InvalidZeroAmountPriceRatioInputError) {
+    const recipientWallets = await WalletsRepository().listByAccountId(
+      recipientDetailsForBuilder.accountId,
+    )
+    if (recipientWallets instanceof Error) return recipientWallets
+    const recipientBtcWallet = recipientWallets.find(
+      (w) => w.currency === WalletCurrency.Btc,
+    )
+    if (recipientBtcWallet === undefined) {
+      return new CouldNotFindWalletFromAccountIdAndCurrencyError()
+    }
+    const recipientBtcDetails = {
+      ...recipientDetailsForBuilder,
+      id: recipientBtcWallet.id,
+      currency: recipientBtcWallet.currency,
+      usdPaymentAmount: undefined,
+    }
+
+    builderWithConversion = builderWithSenderWallet
+      .withRecipientWallet(recipientBtcDetails)
+      .withConversion(withConversionArgs)
+
+    const postCheck = await builderWithConversion.usdPaymentAmount()
+    if (postCheck instanceof SelfPaymentError) {
+      return new ZeroAmountForUsdRecipientError()
+    }
   }
+
+  const paymentFlow = await builderWithConversion.withoutRoute()
   if (paymentFlow instanceof Error) return paymentFlow
 
   addAttributesToCurrentSpan({

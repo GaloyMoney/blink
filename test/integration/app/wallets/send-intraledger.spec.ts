@@ -197,7 +197,7 @@ describe("intraLedgerPay", () => {
     expect(paymentResult).toBeInstanceOf(SelfPaymentError)
   })
 
-  it("fails to send less-than-1-cent amount to usd recipient", async () => {
+  it("fails to send less-than-1-cent amount from self btc to usd", async () => {
     // Create users
     const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
       await createRandomUserAndWallets()
@@ -206,7 +206,7 @@ describe("intraLedgerPay", () => {
 
     // Fund balance for send
     const receive = await recordReceiveLnPayment({
-      walletDescriptor: usdWalletDescriptor,
+      walletDescriptor: newWalletDescriptor,
       paymentAmount: receiveAmounts,
       bankFee: receiveBankFee,
       displayAmounts: receiveDisplayAmounts,

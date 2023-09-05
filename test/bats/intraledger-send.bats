@@ -79,13 +79,23 @@ teardown() {
   run is_contact "$to_token_name" "$from_token_name"
   [[ "$status" == "0" ]] || exit 1
 
+  # Check balances
+  btc_balance="$(balance_for_wallet $to_token_name 'BTC')"
+  usd_balance="$(balance_for_wallet $to_token_name 'USD')"
+  [[ "$btc_balance" -gt "0" ]] || exit 1
+  [[ "$usd_balance" -gt "0" ]] || exit 1
 }
 
 @test "intraledger-send: settle intraledger, from USD wallet" {
   local from_token_name="$ALICE_TOKEN_NAME"
   local from_wallet_name="$from_token_name.usd_wallet_id"
 
-  local to_token_name="$BOB_TOKEN_NAME"
+  local to_token_name="user_$RANDOM"
+  to_phone="$(random_phone)"
+  login_user \
+    "$to_token_name" \
+    "$to_phone"  \
+    "$CODE"
   local wallet_name_btc="$to_token_name.btc_wallet_id"
   local wallet_name_usd="$to_token_name.usd_wallet_id"
   local amount=20
@@ -113,6 +123,57 @@ teardown() {
   exec_graphql "$from_token_name" 'intraledger-usd-payment-send' "$variables"
   send_status="$(graphql_output '.data.intraLedgerUsdPaymentSend.status')"
   [[ "${send_status}" = "SUCCESS" ]]
+
+    # Check balances
+  btc_balance="$(balance_for_wallet $to_token_name 'BTC')"
+  usd_balance="$(balance_for_wallet $to_token_name 'USD')"
+  [[ "$btc_balance" -gt "0" ]] || exit 1
+  [[ "$usd_balance" -gt "0" ]] || exit 1
+}
+
+@test "intraledger-send: settle intraledger, receive 1 sat to any wallet, settle to BTC wallet" {
+  local from_token_name="$ALICE_TOKEN_NAME"
+  local from_wallet_name="$from_token_name.btc_wallet_id"
+
+  local to_token_name="user_$RANDOM"
+  to_phone="$(random_phone)"
+  login_user \
+    "$to_token_name" \
+    "$to_phone"  \
+    "$CODE"
+  local wallet_name_btc="$to_token_name.btc_wallet_id"
+  local wallet_name_usd="$to_token_name.usd_wallet_id"
+  local amount=1
+
+  # To btc wallet
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $from_wallet_name)" \
+    --arg recipient_wallet_id "$(read_value $wallet_name_btc)" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]]
+
+  # To usd wallet
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $from_wallet_name)" \
+    --arg recipient_wallet_id "$(read_value $wallet_name_usd)" \
+    --arg amount "$amount" \
+    '{input: {walletId: $wallet_id, recipientWalletId: $recipient_wallet_id, amount: $amount}}'
+  )
+  exec_graphql "$from_token_name" 'intraledger-payment-send' "$variables"
+  send_status="$(graphql_output '.data.intraLedgerPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]]
+
+  # Check balances
+  btc_balance="$(balance_for_wallet $to_token_name 'BTC')"
+  usd_balance="$(balance_for_wallet $to_token_name 'USD')"
+  [[ "$btc_balance" = "2" ]] || exit 1
+  [[ "$usd_balance" = "0" ]] || exit 1
 }
 
 @test "intraledger-send: settle trade intra-account, from BTC wallet" {
