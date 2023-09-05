@@ -128,9 +128,9 @@ export class InvalidIpMetadataError extends ValidationError {
 export class UnauthorizedIPForOnboardingError extends AuthorizationError {}
 
 export class UnauthorizedIPForRewardError extends AuthorizationError {}
-export class UnauthorizedIPMetadataProxyForRewardError extends UnauthorizedIPForRewardError {}
-export class UnauthorizedIPMetadataCountryForRewardError extends UnauthorizedIPForRewardError {}
-export class UnauthorizedIPMetadataASNForRewardError extends UnauthorizedIPForRewardError {}
+export class UnauthorizedIPMetadataProxyError extends UnauthorizedIPForRewardError {}
+export class UnauthorizedIPMetadataCountryError extends UnauthorizedIPForRewardError {}
+export class UnauthorizedIPMetadataASNError extends UnauthorizedIPForRewardError {}
 
 export class InvalidDeviceTokenError extends ValidationError {}
 

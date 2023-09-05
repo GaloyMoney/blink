@@ -365,7 +365,7 @@ export class InvalidPhoneForOnboardingError extends CustomApolloError {
   }
 }
 
-export class UnauthorizedIPMetadataCountryForRewardError extends CustomApolloError {
+export class UnauthorizedIPMetadataCountryError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       message: "Country not not authorized for rewards.",
@@ -376,7 +376,7 @@ export class UnauthorizedIPMetadataCountryForRewardError extends CustomApolloErr
   }
 }
 
-export class UnauthorizedIPMetadataProxyForRewardError extends CustomApolloError {
+export class UnauthorizedIPMetadataProxyError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       message: "VPN ips are not authorized for rewards.",

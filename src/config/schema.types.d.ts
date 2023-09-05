@@ -37,6 +37,7 @@ type YamlSchema = {
     ios: BuildNumberInput
   }
   rewards: {
+    enableIpProxyCheck: boolean
     denyPhoneCountries: string[]
     allowPhoneCountries: string[]
     denyIPCountries: string[]
@@ -82,10 +83,13 @@ type YamlSchema = {
     initialWallets: WalletCurrency[]
     enablePhoneCheck: boolean
     enableIpCheck: boolean
+    enableIpProxyCheck: boolean
     denyPhoneCountries: string[]
     allowPhoneCountries: string[]
     denyIPCountries: string[]
     allowIPCountries: string[]
+    denyASNs: string[]
+    allowASNs: string[]
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig
