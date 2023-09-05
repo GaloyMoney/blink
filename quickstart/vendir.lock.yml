@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.1 to 1.9.2 (#3162)...'
-      sha: 6b05eb8aae0386f4b857294b67bb403c586b661a
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 14a2d035ad74addfc06c4f66ce6cbe1a78ee5af9
       tags:
-      - 0.13.35-3-g6b05eb8aa
+      - 0.13.36-2-g14a2d035a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.1 to 1.9.2 (#3162)...'
-      sha: 6b05eb8aae0386f4b857294b67bb403c586b661a
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 14a2d035ad74addfc06c4f66ce6cbe1a78ee5af9
       tags:
-      - 0.13.35-3-g6b05eb8aa
+      - 0.13.36-2-g14a2d035a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.1 to 1.9.2 (#3162)...'
-      sha: 6b05eb8aae0386f4b857294b67bb403c586b661a
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 14a2d035ad74addfc06c4f66ce6cbe1a78ee5af9
       tags:
-      - 0.13.35-3-g6b05eb8aa
+      - 0.13.36-2-g14a2d035a
     path: ./
   path: ./graphql
 kind: LockConfig
