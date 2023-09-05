@@ -12,7 +12,10 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { InvalidZeroAmountPriceRatioInputError } from "@domain/payments"
+import {
+  InvalidZeroAmountPriceRatioInputError,
+  SubOneCentSatAmountForUsdSelfSendError,
+} from "@domain/payments"
 import {
   AmountCalculator,
   WalletCurrency,
@@ -432,6 +435,43 @@ describe("onChainPay", () => {
         memo,
       })
       expect(res).toBeInstanceOf(InactiveAccountError)
+    })
+
+    it("fails to send less-than-1-cent amount from self btc to usd", async () => {
+      // Create users
+      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+        await createRandomUserAndWallets()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const recipientWalletIdAddress = await Wallets.createOnChainAddress({
+        walletId: usdWalletDescriptor.id,
+      })
+      if (recipientWalletIdAddress instanceof Error) throw recipientWalletIdAddress
+
+      // Execute payment
+      const paymentResult = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount: 1,
+        address: recipientWalletIdAddress,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+      expect(paymentResult).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
     })
 
     it("calls sendNotification on successful intraledger receive", async () => {

@@ -261,6 +261,56 @@ teardown() {
   [[ "${settled_status}" = "SUCCESS" ]] || exit 1
 }
 
+@test "onchain-send: settle intraledger, 1 sat from btc to usd, settles btc" {
+  one_sat_btc_amount=1
+
+  alice_token_name="$ALICE_TOKEN_NAME"
+  alice_btc_wallet_name="$alice_token_name.btc_wallet_id"
+
+  recipient_token_name="user_$RANDOM"
+  recipient_phone="$(random_phone)"
+  login_user \
+    "$recipient_token_name" \
+    "$recipient_phone"  \
+    "$CODE"
+  user_update_username "$recipient_token_name"
+  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+  usd_recipient_wallet_name="$recipient_token_name.usd_wallet_id"
+
+  # mutation: onChainPaymentSend, alice btc -> bob usd
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_recipient_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
+  on_chain_payment_send_address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${on_chain_payment_send_address}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $alice_btc_wallet_name)" \
+    --arg address "$on_chain_payment_send_address" \
+    --arg amount "$one_sat_btc_amount" \
+    '{input: {walletId: $wallet_id, address: $address, amount: $amount}}'
+  )
+  exec_graphql "$alice_token_name" 'on-chain-payment-send' "$variables"
+  send_status="$(graphql_output '.data.onChainPaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+
+  # Check for settled
+  exec_graphql "$alice_token_name" 'transactions' '{"first": 1}'
+  settled_status="$(get_from_transaction_by_address $on_chain_payment_send_address '.status')"
+  [[ "${settled_status}" = "SUCCESS" ]] || exit 1
+
+  recipient_btc_balance="$(balance_for_wallet $recipient_token_name 'BTC')"
+  [[ "$recipient_btc_balance" = "1" ]] || exit 1
+
+  recipient_usd_balance="$(balance_for_wallet $recipient_token_name 'USD')"
+  [[ "$recipient_usd_balance" = "0" ]] || exit 1
+}
+
 @test "onchain-send: settle onchain" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
