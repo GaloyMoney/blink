@@ -10,7 +10,7 @@ import {
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
-  ZeroAmountForUsdRecipientError,
+  SubOneCentSatAmountForUsdSelfSendError,
 } from "@domain/payments"
 import {
   InactiveAccountError,
@@ -631,7 +631,7 @@ describe("initiated via lightning", () => {
         senderAccount: newAccount,
         amount: 1,
       })
-      expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
+      expect(paymentResult).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
 
       // Restore system state
       lndServiceSpy.mockRestore()

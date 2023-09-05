@@ -20,6 +20,8 @@ import { ModifiedSet } from "@utils"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidLightningPaymentFlowStateError,
+  InvalidZeroAmountPriceRatioInputError,
+  ZeroAmountForUsdRecipientError,
 } from "./errors"
 import { LnFees } from "./ln-fees"
 import { WalletPriceRatio } from "./price-ratio"
@@ -407,7 +409,18 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
           usd: convertedAmount,
           btc: btcPaymentAmount,
         })
-        if (priceRatio instanceof Error) return priceRatio
+        if (
+          priceRatio instanceof Error &&
+          !(priceRatio instanceof InvalidZeroAmountPriceRatioInputError)
+        ) {
+          return priceRatio
+        }
+        // At this point we have a usd recipient and a btc send amount. If the ratio
+        // comes back with this zero-amount error, it means the btc send amount is
+        // under 1-cent.
+        if (priceRatio instanceof InvalidZeroAmountPriceRatioInputError) {
+          return new ZeroAmountForUsdRecipientError()
+        }
 
         const usdProtocolAndBankFee =
           priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
@@ -590,6 +603,13 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     )
   }
 
+  const checkForBuilderError = async () => {
+    const state = await statePromise
+    if (state instanceof Error) return state
+
+    return false
+  }
+
   return {
     withRoute,
     withoutRoute,
@@ -598,6 +618,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     skipProbeForDestination,
     isIntraLedger,
     isTradeIntraAccount,
+    checkForBuilderError,
   }
 }
 
@@ -643,6 +664,10 @@ const LPFBWithError = (
     return Promise.resolve(error)
   }
 
+  const checkForBuilderError = async () => {
+    return Promise.resolve(error)
+  }
+
   return {
     withSenderWallet,
     withoutRecipientWallet,
@@ -655,5 +680,6 @@ const LPFBWithError = (
     withoutRoute,
     btcPaymentAmount,
     usdPaymentAmount,
+    checkForBuilderError,
   }
 }

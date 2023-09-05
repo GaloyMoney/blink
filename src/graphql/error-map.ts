@@ -253,7 +253,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Reward for quiz question was already claimed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "ZeroAmountForUsdRecipientError":
+    case "SubOneCentSatAmountForUsdSelfSendError":
       message = "Amount sent was too low for recipient's usd wallet."
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -609,6 +609,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MattermostError":
     case "CouldNotFindAccountIpError":
     case "InvalidFlowId":
+    case "ZeroAmountForUsdRecipientError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

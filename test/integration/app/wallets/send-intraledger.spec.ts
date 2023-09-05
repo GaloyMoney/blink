@@ -4,7 +4,7 @@ import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { DisplayCurrency, toCents } from "@domain/fiat"
-import { ZeroAmountForUsdRecipientError } from "@domain/payments"
+import { SubOneCentSatAmountForUsdSelfSendError } from "@domain/payments"
 import {
   InactiveAccountError,
   IntraledgerLimitsExceededError,
@@ -222,7 +222,7 @@ describe("intraLedgerPay", () => {
       senderWalletId: newWalletDescriptor.id,
       senderAccount: newAccount,
     })
-    expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
+    expect(paymentResult).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
   })
 
   it("fails if amount greater than trade-intra-account limit", async () => {

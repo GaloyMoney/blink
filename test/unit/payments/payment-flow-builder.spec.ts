@@ -7,7 +7,7 @@ import {
   LnFees,
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
-  InvalidZeroAmountPriceRatioInputError,
+  ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { ONE_CENT, ValidationError, WalletCurrency } from "@domain/shared"
 
@@ -944,7 +944,7 @@ describe("LightningPaymentFlowBuilder", () => {
                 },
               })
               .withoutRoute()
-            expect(payment).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+            expect(payment).toBeInstanceOf(ZeroAmountForUsdRecipientError)
           })
         })
       })
@@ -1265,7 +1265,7 @@ describe("LightningPaymentFlowBuilder", () => {
                 },
               })
               .withoutRoute()
-            expect(payment).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+            expect(payment).toBeInstanceOf(ZeroAmountForUsdRecipientError)
           })
         })
       })

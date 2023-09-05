@@ -13,8 +13,8 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import {
-  InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
+  SubOneCentSatAmountForUsdSelfSendError,
   WalletPriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
@@ -74,8 +74,8 @@ export const constructPaymentFlowBuilder = async <
     const builderWithConversion = builderWithSenderWallet
       .withRecipientWallet<R>(recipientDetails)
       .withConversion(withConversionArgs)
-    const check = await builderWithConversion.usdPaymentAmount()
-    if (!(check instanceof InvalidZeroAmountPriceRatioInputError)) {
+    const check = await builderWithConversion.checkForBuilderError()
+    if (!(check instanceof ZeroAmountForUsdRecipientError)) {
       return builderWithConversion
     }
 
@@ -100,9 +100,9 @@ export const constructPaymentFlowBuilder = async <
       .withRecipientWallet<R>(recipientBtcDetails)
       .withConversion(withConversionArgs)
 
-    const postCheck = await redoneBuilderWithConversion.usdPaymentAmount()
+    const postCheck = await redoneBuilderWithConversion.checkForBuilderError()
     if (postCheck instanceof SelfPaymentError) {
-      return new ZeroAmountForUsdRecipientError()
+      return new SubOneCentSatAmountForUsdSelfSendError()
     }
 
     return redoneBuilderWithConversion

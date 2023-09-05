@@ -225,12 +225,18 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   }): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
   withoutRoute(): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
 
-  btcPaymentAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
-  usdPaymentAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
-  skipProbeForDestination(): Promise<boolean | DealerPriceServiceError>
+  btcPaymentAmount(): Promise<
+    BtcPaymentAmount | ValidationError | DealerPriceServiceError
+  >
+  usdPaymentAmount(): Promise<
+    UsdPaymentAmount | ValidationError | DealerPriceServiceError
+  >
+  skipProbeForDestination(): Promise<boolean | ValidationError | DealerPriceServiceError>
 
-  isIntraLedger(): Promise<boolean | DealerPriceServiceError>
-  isTradeIntraAccount(): Promise<boolean | DealerPriceServiceError>
+  isIntraLedger(): Promise<boolean | ValidationError | DealerPriceServiceError>
+  isTradeIntraAccount(): Promise<boolean | ValidationError | DealerPriceServiceError>
+
+  checkForBuilderError(): Promise<false | ValidationError | DealerPriceServiceError>
 }
 
 type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -271,6 +277,7 @@ type LPFBWithError = {
   skipProbeForDestination(): Promise<ValidationError | DealerPriceServiceError>
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
   isTradeIntraAccount(): Promise<ValidationError | DealerPriceServiceError>
+  checkForBuilderError(): Promise<ValidationError | DealerPriceServiceError>
 }
 
 type OPFBWithError = {
