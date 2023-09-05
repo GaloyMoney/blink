@@ -7,7 +7,11 @@ import {
   ONE_DAY,
 } from "@config"
 import { AccountLimitsChecker } from "@domain/accounts"
-import { AlreadyPaidError } from "@domain/errors"
+import {
+  AlreadyPaidError,
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
+  SelfPaymentError,
+} from "@domain/errors"
 import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
@@ -58,31 +62,55 @@ export const constructPaymentFlowBuilder = async <
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
 
-  let builderAfterRecipientStep: LPFBWithRecipientWallet<S, R> | LPFBWithError
-  if (builderWithSenderWallet.isIntraLedger()) {
-    const recipientDetails = await recipientDetailsFromInvoice<R>(invoice)
-    if (recipientDetails instanceof Error) return recipientDetails
-    builderAfterRecipientStep =
-      builderWithSenderWallet.withRecipientWallet<R>(recipientDetails)
-  } else {
-    builderAfterRecipientStep = builderWithSenderWallet.withoutRecipientWallet()
-  }
-
-  const builderWithConversion = await builderAfterRecipientStep.withConversion({
+  const withConversionArgs = {
     mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
     hedgeBuyUsd,
     hedgeSellUsd,
-  })
-
-  const check = await builderWithConversion.usdPaymentAmount()
-  if (
-    check instanceof InvalidZeroAmountPriceRatioInputError &&
-    builderWithSenderWallet.isIntraLedger() === true
-  ) {
-    return new ZeroAmountForUsdRecipientError()
   }
 
-  return builderWithConversion
+  if (builderWithSenderWallet.isIntraLedger()) {
+    const recipientDetails = await recipientDetailsFromInvoice<R>(invoice)
+    if (recipientDetails instanceof Error) return recipientDetails
+    const builderWithConversion = builderWithSenderWallet
+      .withRecipientWallet<R>(recipientDetails)
+      .withConversion(withConversionArgs)
+    const check = await builderWithConversion.usdPaymentAmount()
+    if (!(check instanceof InvalidZeroAmountPriceRatioInputError)) {
+      return builderWithConversion
+    }
+
+    const recipientWallets = await WalletsRepository().listByAccountId(
+      recipientDetails.accountId,
+    )
+    if (recipientWallets instanceof Error) return recipientWallets
+    const recipientBtcWallet = recipientWallets.find(
+      (w) => w.currency === WalletCurrency.Btc,
+    )
+    if (recipientBtcWallet === undefined) {
+      return new CouldNotFindWalletFromAccountIdAndCurrencyError()
+    }
+    const recipientBtcDetails = {
+      ...recipientDetails,
+      id: recipientBtcWallet.id,
+      currency: recipientBtcWallet.currency as R,
+      usdPaymentAmount: undefined,
+    }
+
+    const redoneBuilderWithConversion = builderWithSenderWallet
+      .withRecipientWallet<R>(recipientBtcDetails)
+      .withConversion(withConversionArgs)
+
+    const postCheck = await redoneBuilderWithConversion.usdPaymentAmount()
+    if (postCheck instanceof SelfPaymentError) {
+      return new ZeroAmountForUsdRecipientError()
+    }
+
+    return redoneBuilderWithConversion
+  }
+
+  return builderWithSenderWallet
+    .withoutRecipientWallet<R>()
+    .withConversion(withConversionArgs)
 }
 
 const recipientDetailsFromInvoice = async <R extends WalletCurrency>(

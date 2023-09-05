@@ -586,7 +586,7 @@ describe("initiated via lightning", () => {
       lndServiceSpy.mockRestore()
     })
 
-    it("fails to send less-than-1-cent amount to usd recipient", async () => {
+    it("fails to send less-than-1-cent amount from self btc to usd", async () => {
       // Setup mocks
       const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({

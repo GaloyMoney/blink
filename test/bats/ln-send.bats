@@ -400,6 +400,57 @@ usd_amount=50
   [[ "$status" == "0" ]] || exit 1
 }
 
+@test "ln-send: intraledger settled - lnNoAmountInvoicePaymentSend 1 sat from btc to btc, settles btc" {
+  one_sat_btc_amount=1
+
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  recipient_token_name="$BOB_TOKEN_NAME"
+  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+  usd_recipient_wallet_name="$recipient_token_name.usd_wallet_id"
+
+  initial_recipient_btc_balance="$(balance_for_wallet $recipient_token_name 'BTC')"
+  initial_recipient_usd_balance="$(balance_for_wallet $recipient_token_name 'USD')"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$recipient_token_name" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    --arg amount $one_sat_btc_amount \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
+  )
+
+  exec_graphql "$token_name" 'ln-no-amount-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$recipient_token_name" "$payment_hash"
+
+  final_recipient_btc_balance="$(balance_for_wallet $recipient_token_name 'BTC')"
+  btc_wallet_diff="$(( $final_recipient_btc_balance - $initial_recipient_btc_balance ))"
+  [[ "$btc_wallet_diff" = "1" ]] || exit 1
+
+  final_recipient_usd_balance="$(balance_for_wallet $recipient_token_name 'USD')"
+  usd_wallet_diff="$(( $final_recipient_usd_balance - $initial_recipient_usd_balance ))"
+  [[ "$usd_wallet_diff" = "0" ]] || exit 1
+}
+
 @test "ln-send: intraledger settled - lnInvoicePaymentSend from usd to btc" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
@@ -498,6 +549,57 @@ usd_amount=50
   final_lnd1_balance=$(lnd_cli channelbalance | jq -r '.balance')
   lnd1_diff="$(( $initial_lnd1_balance - $final_lnd1_balance ))"
   [[ "$lnd1_diff" == "0" ]] || exit 1
+}
+
+@test "ln-send: intraledger settled - lnNoAmountInvoicePaymentSend 1 sat from btc to usd, settles btc" {
+  one_sat_btc_amount=1
+
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  recipient_token_name="$BOB_TOKEN_NAME"
+  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+  usd_recipient_wallet_name="$recipient_token_name.usd_wallet_id"
+
+  initial_recipient_btc_balance="$(balance_for_wallet $recipient_token_name 'BTC')"
+  initial_recipient_usd_balance="$(balance_for_wallet $recipient_token_name 'USD')"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_recipient_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$recipient_token_name" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_request "$payment_request" \
+    --arg amount $one_sat_btc_amount \
+    '{input: {walletId: $wallet_id, paymentRequest: $payment_request, amount: $amount}}'
+  )
+
+  exec_graphql "$token_name" 'ln-no-amount-invoice-payment-send' "$variables"
+  send_status="$(graphql_output '.data.lnNoAmountInvoicePaymentSend.status')"
+  [[ "${send_status}" = "SUCCESS" ]] || exit 1
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+  check_for_ln_initiated_settled "$recipient_token_name" "$payment_hash"
+
+  final_recipient_btc_balance="$(balance_for_wallet $recipient_token_name 'BTC')"
+  btc_wallet_diff="$(( $final_recipient_btc_balance - $initial_recipient_btc_balance ))"
+  [[ "$btc_wallet_diff" = "1" ]] || exit 1
+
+  final_recipient_usd_balance="$(balance_for_wallet $recipient_token_name 'USD')"
+  usd_wallet_diff="$(( $final_recipient_usd_balance - $initial_recipient_usd_balance ))"
+  [[ "$usd_wallet_diff" = "0" ]] || exit 1
 }
 
 @test "ln-send: intraledger settled - lnNoAmountUsdInvoicePaymentSend from usd to usd" {
