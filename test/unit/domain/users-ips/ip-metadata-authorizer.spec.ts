@@ -14,12 +14,12 @@ const defaultConfig = {
 }
 
 const defaultIpInfo: IPType = {
-  asn: "AS60068",
   provider: "ISP",
   country: "United States",
   isoCode: "US",
   region: "Florida",
   city: "Miami",
+  asn: "AS60068",
   proxy: false,
 }
 
