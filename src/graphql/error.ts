@@ -343,7 +343,7 @@ export class SessionRefreshRequiredError extends CustomApolloError {
   }
 }
 
-export class InvalidIPForOnboardingError extends CustomApolloError {
+export class UnauthorizedIPForOnboardingError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       message: "This IP address is not allowed to onboard.",

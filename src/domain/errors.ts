@@ -121,11 +121,11 @@ export class InvalidPhoneMetadataForOnboardingError extends AuthorizationError {
 export class InvalidPhoneForOnboardingError extends AuthorizationError {}
 export class InvalidPhoneMetadataForRewardError extends AuthorizationError {}
 
-export class InvalidIPMetadataForRewardError extends AuthorizationError {
+export class InvalidIpMetadataError extends ValidationError {
   level = ErrorLevel.Critical
 }
 
-export class InvalidIPForOnboardingError extends AuthorizationError {}
+export class UnauthorizedIPForOnboardingError extends AuthorizationError {}
 
 export class UnauthorizedIPForRewardError extends AuthorizationError {}
 export class UnauthorizedIPMetadataProxyForRewardError extends UnauthorizedIPForRewardError {}

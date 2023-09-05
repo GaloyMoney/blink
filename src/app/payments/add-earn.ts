@@ -1,7 +1,7 @@
 import { getRewardsConfig, OnboardingEarn } from "@config"
 import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
 import {
-  InvalidIPMetadataForRewardError,
+  InvalidIpMetadataError,
   InvalidPhoneMetadataForRewardError,
   InvalidQuizQuestionIdError,
   MissingIPMetadataError,
@@ -64,7 +64,7 @@ export const addEarn = async ({
   ).authorize(accountIP.metadata)
   if (validatedIPMetadata instanceof Error) {
     if (validatedIPMetadata instanceof MissingIPMetadataError)
-      return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
+      return new InvalidIpMetadataError(validatedIPMetadata.name)
 
     if (validatedIPMetadata instanceof UnauthorizedIPForRewardError)
       return validatedIPMetadata

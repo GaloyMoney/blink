@@ -27,7 +27,7 @@ import {
   EmailAlreadyExistsError,
   SessionRefreshRequiredError,
   CodeExpiredError,
-  InvalidIPForOnboardingError,
+  UnauthorizedIPForOnboardingError,
   InvalidPhoneMetadataForOnboardingError,
   InvalidPhoneForOnboardingError,
   UnauthorizedIPForRewardError,
@@ -264,7 +264,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidIPMetadataForRewardError":
+    case "InvalidIpMetadataError":
       message = "Unsupported IP for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -416,8 +416,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "SessionRefreshRequiredError":
       return new SessionRefreshRequiredError({ logger: baseLogger })
 
-    case "InvalidIPForOnboardingError":
-      return new InvalidIPForOnboardingError({ logger: baseLogger })
+    case "UnauthorizedIPForOnboardingError":
+      return new UnauthorizedIPForOnboardingError({ logger: baseLogger })
 
     case "InvalidPhoneMetadataForOnboardingError":
       return new InvalidPhoneMetadataForOnboardingError({ logger: baseLogger })

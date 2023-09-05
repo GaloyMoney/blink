@@ -34,9 +34,11 @@ import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorize
 import { getAccountsOnboardConfig } from "@config"
 
 import {
-  InvalidIPForOnboardingError,
+  UnauthorizedIPForOnboardingError,
   InvalidPhoneForOnboardingError,
   InvalidPhoneMetadataForOnboardingError,
+  MissingIPMetadataError,
+  InvalidIpMetadataError,
 } from "@domain/errors"
 import { IpFetcher } from "@services/ipfetcher"
 
@@ -367,7 +369,10 @@ export const loginWithDevice = async ({
     ).authorize(ipFetcherInfo)
 
     if (authorizedIPMetadata instanceof Error) {
-      return new InvalidIPForOnboardingError(authorizedIPMetadata.name)
+      if (authorizedIPMetadata instanceof MissingIPMetadataError)
+        return new InvalidIpMetadataError(authorizedIPMetadata.name)
+
+      return new UnauthorizedIPForOnboardingError(authorizedIPMetadata.name)
     }
   }
 
@@ -427,7 +432,10 @@ const isAllowedToOnboard = async ({
     ).authorize(ipFetcherInfo)
 
     if (authorizedIPMetadata instanceof Error) {
-      return new InvalidIPForOnboardingError(authorizedIPMetadata.name)
+      if (authorizedIPMetadata instanceof MissingIPMetadataError)
+        return new InvalidIpMetadataError(authorizedIPMetadata.name)
+
+      return new UnauthorizedIPForOnboardingError(authorizedIPMetadata.name)
     }
   }
 
