@@ -48,7 +48,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 
   const findByUuid = async (
-    accountUuid: AccountUUID,
+    accountUuid: AccountUuid,
   ): Promise<Account | RepositoryError> => {
     try {
       const result = await Account.findOne({
@@ -198,7 +198,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 
 const translateToAccount = (result: AccountRecord): Account => ({
   id: fromObjectId<AccountId>(result._id),
-  uuid: result.id as AccountUUID,
+  uuid: result.id as AccountUuid,
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,

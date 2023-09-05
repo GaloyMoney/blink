@@ -23,7 +23,7 @@ const UUIDV4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 const KratosUserIdRegex = UUIDV4
-const AccountUUIDRegex = UUIDV4
+const AccountUuidRegex = UUIDV4
 
 // device id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
 const DeviceIdRegex = /^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i
@@ -109,11 +109,11 @@ export const checkedToAccountId = (
 
 export const checkedToAccountUuid = (
   accountUuid: string,
-): AccountUUID | InvalidAccountIdError => {
-  if (accountUuid.match(AccountUUIDRegex)) {
-    return accountUuid as AccountUUID
+): AccountUuid | InvalidAccountIdError => {
+  if (accountUuid.match(AccountUuidRegex)) {
+    return accountUuid as AccountUuid
   }
-  // InvalidAccountUUIDError
+  // InvalidAccountUuidError
   return new InvalidAccountIdError(accountUuid)
 }
 

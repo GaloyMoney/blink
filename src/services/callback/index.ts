@@ -57,14 +57,14 @@ export const CallbackService = (config: SvixConfig) => {
 
   const sendMessage = async ({
     eventType,
-    accountUUID,
+    accountUuid,
     payload,
   }: {
     eventType: string
-    accountUUID: string
+    accountUuid: string
     payload: Record<string, string>
   }) => {
-    const accountPath = `account.${accountUUID}`
+    const accountPath = `account.${accountUuid}`
     addAttributesToCurrentSpan({ "callback.application": accountPath })
 
     try {
@@ -76,7 +76,7 @@ export const CallbackService = (config: SvixConfig) => {
       await svix.application.create(application)
     } catch (err) {
       if ((err as SvixError).code === 409) {
-        // we create app on the fly, so we are expect this error and can ignore it
+        // we create app on the fly, so we are expecting this error and can ignore it
       } else {
         return new UnknownSvixError(err)
       }
@@ -85,13 +85,13 @@ export const CallbackService = (config: SvixConfig) => {
     try {
       const res = await svix.message.create(accountPath, {
         eventType,
-        payload: { ...payload, accountId: accountUUID, eventType },
+        payload: { ...payload, accountId: accountUuid, eventType },
       })
 
       const prefixedPayload = prefixObjectKeys(payload, "callback.payload.")
       addAttributesToCurrentSpan({
         ...prefixedPayload,
-        ["callback.accountId"]: accountUUID,
+        ["callback.accountId"]: accountUuid,
         ["callback.eventType"]: eventType,
       })
       baseLogger.info({ res }, `message sent successfully to ${accountPath}`)
@@ -102,18 +102,18 @@ export const CallbackService = (config: SvixConfig) => {
   }
 
   // only work for hosted svix
-  const getWebsocketPortal = async (accountUUID: AccountUUID) => {
+  const getWebsocketPortal = async (accountUuid: AccountUuid) => {
     try {
-      const res = await svix.authentication.appPortalAccess(accountUUID, {})
+      const res = await svix.authentication.appPortalAccess(accountUuid, {})
       return res
     } catch (err) {
       return new UnknownSvixError(err)
     }
   }
 
-  const addEndpoint = async (accountUUID: AccountUUID, url: string) => {
+  const addEndpoint = async (accountUuid: AccountUuid, url: string) => {
     try {
-      const res = await svix.endpoint.create(accountUUID, {
+      const res = await svix.endpoint.create(accountUuid, {
         url,
       })
       return res
@@ -122,18 +122,18 @@ export const CallbackService = (config: SvixConfig) => {
     }
   }
 
-  const listEndpoints = async (accountUUID: AccountUUID) => {
+  const listEndpoints = async (accountUuid: AccountUuid) => {
     try {
-      const res = await svix.endpoint.list(accountUUID)
+      const res = await svix.endpoint.list(accountUuid)
       return res
     } catch (err) {
       return new UnknownSvixError(err)
     }
   }
 
-  const removeEndpoint = async (accountUUID: AccountUUID, endpointId: string) => {
+  const removeEndpoint = async (accountUuid: AccountUuid, endpointId: string) => {
     try {
-      await svix.endpoint.delete(accountUUID, endpointId)
+      await svix.endpoint.delete(accountUuid, endpointId)
     } catch (err) {
       return new UnknownSvixError(err)
     }

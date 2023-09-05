@@ -386,7 +386,7 @@ const executePaymentViaIntraledger = async <
     ) {
       const callbackService = CallbackService(getCallbackServiceConfig())
       await callbackService.sendMessage({
-        accountUUID: recipientAccount.uuid,
+        accountUuid: recipientAccount.uuid,
         eventType: CallbackEventType.ReceiveIntraledger,
         payload: {
           // FIXME: [0] might not be correct
