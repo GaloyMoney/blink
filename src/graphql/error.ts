@@ -387,7 +387,7 @@ export class UnauthorizedIPMetadataProxyError extends CustomApolloError {
   }
 }
 
-export class UnauthorizedIPForRewardError extends CustomApolloError {
+export class UnauthorizedIPError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       message: "This ip is unauthorized for rewards.",

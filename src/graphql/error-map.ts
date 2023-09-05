@@ -30,7 +30,7 @@ import {
   UnauthorizedIPForOnboardingError,
   InvalidPhoneMetadataForOnboardingError,
   InvalidPhoneForOnboardingError,
-  UnauthorizedIPForRewardError,
+  UnauthorizedIPError,
   UnauthorizedIPMetadataProxyError,
   UnauthorizedIPMetadataCountryError,
 } from "@graphql/error"
@@ -260,7 +260,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Amount sent was too low for recipient's usd wallet."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidPhoneMetadataForRewardError":
+    case "InvalidPhoneMetadataError":
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -425,8 +425,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidPhoneForOnboardingError":
       return new InvalidPhoneForOnboardingError({ logger: baseLogger })
 
-    case "UnauthorizedIPForRewardError":
-      return new UnauthorizedIPForRewardError({ logger: baseLogger })
+    case "UnauthorizedIPError":
+      return new UnauthorizedIPError({ logger: baseLogger })
 
     case "UnauthorizedIPMetadataProxyError":
       return new UnauthorizedIPMetadataProxyError({ logger: baseLogger })
