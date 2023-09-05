@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: create different context for public and admin api (#3122)...'
-      sha: 319cf7702fa85c6ee1416bb196faa5d25625f74d
+      commitTitle: 'feat: add enable proxy check setting (#3167)...'
+      sha: 1d53235a52f8908a97fbe10c441c4424905b74c0
       tags:
-      - 0.13.37-2-g319cf7702
+      - 0.13.38-2-g1d53235a5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: create different context for public and admin api (#3122)...'
-      sha: 319cf7702fa85c6ee1416bb196faa5d25625f74d
+      commitTitle: 'feat: add enable proxy check setting (#3167)...'
+      sha: 1d53235a52f8908a97fbe10c441c4424905b74c0
       tags:
-      - 0.13.37-2-g319cf7702
+      - 0.13.38-2-g1d53235a5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: create different context for public and admin api (#3122)...'
-      sha: 319cf7702fa85c6ee1416bb196faa5d25625f74d
+      commitTitle: 'feat: add enable proxy check setting (#3167)...'
+      sha: 1d53235a52f8908a97fbe10c441c4424905b74c0
       tags:
-      - 0.13.37-2-g319cf7702
+      - 0.13.38-2-g1d53235a5
     path: ./
   path: ./graphql
 kind: LockConfig
