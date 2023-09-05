@@ -30,6 +30,9 @@ import {
   InvalidIPForOnboardingError,
   InvalidPhoneMetadataForOnboardingError,
   InvalidPhoneForOnboardingError,
+  UnauthorizedIPForRewardError,
+  UnauthorizedIPMetadataProxyForRewardError,
+  UnauthorizedIPMetadataCountryForRewardError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -422,6 +425,15 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidPhoneForOnboardingError":
       return new InvalidPhoneForOnboardingError({ logger: baseLogger })
 
+    case "UnauthorizedIPForRewardError":
+      return new UnauthorizedIPForRewardError({ logger: baseLogger })
+
+    case "UnauthorizedIPMetadataProxyForRewardError":
+      return new UnauthorizedIPMetadataProxyForRewardError({ logger: baseLogger })
+
+    case "UnauthorizedIPMetadataCountryForRewardError":
+      return new UnauthorizedIPMetadataCountryForRewardError({ logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -520,7 +532,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidPhoneMetadataCountryError":
     case "MissingIPMetadataError":
     case "InvalidIPMetadataProxyError":
-    case "InvalidIPMetadataASNError":
+    case "UnauthorizedIPMetadataASNForRewardError":
     case "InvalidIPMetadataCountryError":
     case "InvalidAccountStatusError":
     case "InvalidOnChainAddress":

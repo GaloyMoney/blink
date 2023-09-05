@@ -111,6 +111,7 @@ export class NoWalletExistsForUserError extends ValidationError {}
 export class NoBtcWalletExistsForAccountError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
 export class MissingPhoneMetadataError extends ValidationError {}
+export class MissingIPMetadataError extends ValidationError {}
 
 export class InvalidPhoneMetadataTypeError extends AuthorizationError {}
 export class InvalidPhoneMetadataCountryError extends AuthorizationError {}
@@ -120,14 +121,18 @@ export class InvalidPhoneMetadataForOnboardingError extends AuthorizationError {
 export class InvalidPhoneForOnboardingError extends AuthorizationError {}
 export class InvalidPhoneMetadataForRewardError extends AuthorizationError {}
 
-export class MissingIPMetadataError extends AuthorizationError {}
 export class InvalidIPMetadataProxyError extends AuthorizationError {}
 export class InvalidIPMetadataCountryError extends AuthorizationError {}
-export class InvalidIPMetadataASNError extends AuthorizationError {}
 export class InvalidIPMetadataForRewardError extends AuthorizationError {
   level = ErrorLevel.Critical
 }
+
 export class InvalidIPForOnboardingError extends AuthorizationError {}
+
+export class UnauthorizedIPForRewardError extends AuthorizationError {}
+export class UnauthorizedIPMetadataProxyForRewardError extends UnauthorizedIPForRewardError {}
+export class UnauthorizedIPMetadataCountryForRewardError extends UnauthorizedIPForRewardError {}
+export class UnauthorizedIPMetadataASNForRewardError extends UnauthorizedIPForRewardError {}
 
 export class InvalidDeviceTokenError extends ValidationError {}
 
