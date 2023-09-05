@@ -43,13 +43,13 @@ jest.mock("@config", () => {
 
 jest.mock("@domain/accounts-ips/ip-metadata-authorizer", () => ({
   IPMetadataAuthorizer: () => ({
-    validate: () => true,
+    authorize: () => true,
   }),
 }))
 
 jest.mock("@domain/users/phone-metadata-authorizer", () => ({
   PhoneMetadataAuthorizer: () => ({
-    validate: () => true,
+    authorize: () => true,
   }),
 }))
 

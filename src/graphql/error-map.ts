@@ -531,9 +531,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidPhoneMetadataTypeError":
     case "InvalidPhoneMetadataCountryError":
     case "MissingIPMetadataError":
-    case "InvalidIPMetadataProxyError":
     case "UnauthorizedIPMetadataASNForRewardError":
-    case "InvalidIPMetadataCountryError":
     case "InvalidAccountStatusError":
     case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":

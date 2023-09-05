@@ -1,8 +1,8 @@
 import {
   UnauthorizedIPMetadataASNForRewardError,
-  InvalidIPMetadataCountryError,
-  InvalidIPMetadataProxyError,
   MissingIPMetadataError,
+  UnauthorizedIPMetadataCountryForRewardError,
+  UnauthorizedIPMetadataProxyForRewardError,
 } from "@domain/errors"
 import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
 
@@ -58,7 +58,7 @@ describe("IPMetadataAuthorizer", () => {
       const config = { ...defaultConfig, allowCountries: ["US"] }
       const ipInfo = { ...defaultIpInfo, isoCode: "AF" }
       const authorizer = IPMetadataAuthorizer(config).authorize(ipInfo)
-      expect(authorizer).toBeInstanceOf(InvalidIPMetadataCountryError)
+      expect(authorizer).toBeInstanceOf(UnauthorizedIPMetadataCountryForRewardError)
     })
 
     it("returns error for an ASN not defined in allow-list", () => {
@@ -71,7 +71,7 @@ describe("IPMetadataAuthorizer", () => {
     it("returns error for proxy/vpn", () => {
       const ipInfo = { ...defaultIpInfo, proxy: true }
       const authorizer = IPMetadataAuthorizer(defaultConfig).authorize(ipInfo)
-      expect(authorizer).toBeInstanceOf(InvalidIPMetadataProxyError)
+      expect(authorizer).toBeInstanceOf(UnauthorizedIPMetadataProxyForRewardError)
     })
 
     it("returns error for empty isoCode", () => {
@@ -97,7 +97,7 @@ describe("IPMetadataAuthorizer", () => {
     it("returns error for a denied country", () => {
       const config = { ...defaultConfig, denyCountries: ["US"] }
       const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
-      expect(authorizer).toBeInstanceOf(InvalidIPMetadataCountryError)
+      expect(authorizer).toBeInstanceOf(UnauthorizedIPMetadataCountryForRewardError)
     })
 
     it("returns error for a denied asn", () => {
@@ -113,7 +113,7 @@ describe("IPMetadataAuthorizer", () => {
         allowCountries: ["US"],
       }
       const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
-      expect(authorizer).toBeInstanceOf(InvalidIPMetadataCountryError)
+      expect(authorizer).toBeInstanceOf(UnauthorizedIPMetadataCountryForRewardError)
     })
 
     it("returns error for a denied/allowed asn", () => {
@@ -143,7 +143,7 @@ describe("IPMetadataAuthorizer", () => {
         denyCountries: ["US"],
       }
       const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
-      expect(authorizer).toBeInstanceOf(InvalidIPMetadataCountryError)
+      expect(authorizer).toBeInstanceOf(UnauthorizedIPMetadataCountryForRewardError)
     })
   })
 })
