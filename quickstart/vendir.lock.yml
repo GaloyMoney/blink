@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump svix from 1.10.0 to 1.11.0 (#3163)...'
-      sha: 149a34a6111e8d2be7ade6be28f583d848acccab
+      commitTitle: 'chore: bump svix (#3165)...'
+      sha: e2f0acb2379eab6e1a52ea1009a03ba501f5310e
       tags:
-      - 0.13.33-2-g149a34a61
+      - 0.13.34-1-ge2f0acb23
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump svix from 1.10.0 to 1.11.0 (#3163)...'
-      sha: 149a34a6111e8d2be7ade6be28f583d848acccab
+      commitTitle: 'chore: bump svix (#3165)...'
+      sha: e2f0acb2379eab6e1a52ea1009a03ba501f5310e
       tags:
-      - 0.13.33-2-g149a34a61
+      - 0.13.34-1-ge2f0acb23
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump svix from 1.10.0 to 1.11.0 (#3163)...'
-      sha: 149a34a6111e8d2be7ade6be28f583d848acccab
+      commitTitle: 'chore: bump svix (#3165)...'
+      sha: e2f0acb2379eab6e1a52ea1009a03ba501f5310e
       tags:
-      - 0.13.33-2-g149a34a61
+      - 0.13.34-1-ge2f0acb23
     path: ./
   path: ./graphql
 kind: LockConfig

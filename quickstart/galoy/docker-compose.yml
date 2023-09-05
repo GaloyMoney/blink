@@ -405,7 +405,7 @@ services:
     command: ["Fulcrum", "/fulcrum.conf"]
 
   svix:
-    image: svix/svix-server:v1.10
+    image: svix/svix-server:v1.11
     platform: linux/amd64
     environment:
       WAIT_FOR: "true"
