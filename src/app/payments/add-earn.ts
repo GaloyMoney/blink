@@ -1,5 +1,5 @@
 import { getRewardsConfig, OnboardingEarn } from "@config"
-import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
+import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
 import {
   InvalidIPMetadataForRewardError,
   InvalidPhoneMetadataForRewardError,
@@ -7,7 +7,7 @@ import {
   NoBtcWalletExistsForAccountError,
 } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
-import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
+import { PhoneMetadataAuthorizer } from "@domain/users/phone-metadata-authorizer"
 import { getFunderWalletId } from "@services/ledger/caching"
 import {
   AccountsRepository,
@@ -46,9 +46,9 @@ export const addEarn = async ({
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
 
-  const validatedPhoneMetadata = PhoneMetadataValidator(
+  const validatedPhoneMetadata = PhoneMetadataAuthorizer(
     rewardsConfig.phoneMetadataValidationSettings,
-  ).validate(user.phoneMetadata)
+  ).authorize(user.phoneMetadata)
 
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
@@ -56,9 +56,9 @@ export const addEarn = async ({
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
   if (accountIP instanceof Error) return accountIP
 
-  const validatedIPMetadata = IPMetadataValidator(
+  const validatedIPMetadata = IPMetadataAuthorizer(
     rewardsConfig.ipMetadataValidationSettings,
-  ).validate(accountIP.metadata)
+  ).authorize(accountIP.metadata)
   if (validatedIPMetadata instanceof Error) {
     return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
   }

@@ -10,15 +10,15 @@ type AccountIPNew = {
   metadata?: IPType
 }
 
-type IPMetadataValidatorArgs = {
+type IPMetadataAuthorizerArgs = {
   denyCountries: string[]
   allowCountries: string[]
   denyASNs: string[]
   allowASNs: string[]
 }
 
-type IPMetadataValidator = {
-  validate(ipMetadata?: IPType): true | ValidationError
+type IPMetadataAuthorizer = {
+  authorize(ipMetadata?: IPType): true | ValidationError
 }
 
 type FindByAccountIdAndIpArgs = {

@@ -31,8 +31,8 @@ type PhoneMetadata = {
   countryCode: string
 }
 
-type PhoneMetadataValidator = {
-  validate(phoneMetadata?: PhoneMetadata): true | ValidationError
+type PhoneMetadataAuthorizer = {
+  authorize(phoneMetadata?: PhoneMetadata): true | ValidationError
 }
 
 type SetPhoneMetadataArgs = {

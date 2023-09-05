@@ -29,7 +29,7 @@ import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
 import { checkedToEmailCode } from "@domain/authentication"
 import { isPhoneCodeValid, TwilioClient } from "@services/twilio"
 
-import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
+import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
 
 import { getAccountsOnboardConfig } from "@config"
 
@@ -43,7 +43,7 @@ import { IpFetcher } from "@services/ipfetcher"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { ErrorLevel } from "@domain/shared"
 
-import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
+import { PhoneMetadataAuthorizer } from "@domain/users/phone-metadata-authorizer"
 
 import {
   checkFailedLoginAttemptPerIpLimits,
@@ -362,12 +362,12 @@ export const loginWithDevice = async ({
       return ipFetcherInfo
     }
 
-    const validatedIPMetadata = IPMetadataValidator(
+    const authorizedIPMetadata = IPMetadataAuthorizer(
       ipMetadataValidationSettings,
-    ).validate(ipFetcherInfo)
+    ).authorize(ipFetcherInfo)
 
-    if (validatedIPMetadata instanceof Error) {
-      return new InvalidIPForOnboardingError(validatedIPMetadata.name)
+    if (authorizedIPMetadata instanceof Error) {
+      return new InvalidIPForOnboardingError(authorizedIPMetadata.name)
     }
   }
 
@@ -422,12 +422,12 @@ const isAllowedToOnboard = async ({
       "login.ipFetcherInfo": JSON.stringify(ipFetcherInfo),
     })
 
-    const validatedIPMetadata = IPMetadataValidator(
+    const authorizedIPMetadata = IPMetadataAuthorizer(
       ipMetadataValidationSettings,
-    ).validate(ipFetcherInfo)
+    ).authorize(ipFetcherInfo)
 
-    if (validatedIPMetadata instanceof Error) {
-      return new InvalidIPForOnboardingError(validatedIPMetadata.name)
+    if (authorizedIPMetadata instanceof Error) {
+      return new InvalidIPForOnboardingError(authorizedIPMetadata.name)
     }
   }
 
@@ -443,15 +443,15 @@ const isAllowedToOnboard = async ({
   const phoneMetadata = newPhoneMetadata
 
   if (phoneMetadataValidationSettings.enabled) {
-    const validatedPhoneMetadata = PhoneMetadataValidator(
+    const authorizedPhoneMetadata = PhoneMetadataAuthorizer(
       phoneMetadataValidationSettings,
-    ).validate(phoneMetadata)
+    ).authorize(phoneMetadata)
 
     addAttributesToCurrentSpan({
       "login.phoneMetadata": JSON.stringify(phoneMetadata),
     })
 
-    if (validatedPhoneMetadata instanceof Error) {
+    if (authorizedPhoneMetadata instanceof Error) {
       return new InvalidPhoneForOnboardingError()
     }
   }

@@ -4,7 +4,7 @@ import {
   InvalidIPMetadataProxyError,
   MissingIPMetadataError,
 } from "@domain/errors"
-import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
+import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
 
 const defaultConfig = {
   denyCountries: [],
@@ -23,87 +23,87 @@ const defaultIpInfo: IPType = {
   proxy: false,
 }
 
-describe("IPMetadataValidator", () => {
+describe("IPMetadataAuthorizer", () => {
   describe("validate", () => {
     it("returns true for empty config", () => {
-      const validator = IPMetadataValidator(defaultConfig).validate(defaultIpInfo)
-      expect(validator).toBe(true)
+      const authorizer = IPMetadataAuthorizer(defaultConfig).authorize(defaultIpInfo)
+      expect(authorizer).toBe(true)
     })
 
     it("returns true for an allowed country", () => {
       const config = { ...defaultConfig, allowCountries: ["US"] }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBe(true)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBe(true)
     })
 
     it("returns true for a country not defined in deny-list", () => {
       const config = { ...defaultConfig, denyCountries: ["AF"] }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBe(true)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBe(true)
     })
 
     it("returns true for an allowed asn", () => {
       const config = { ...defaultConfig, allowASNs: ["AS60068"] }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBe(true)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBe(true)
     })
 
     it("returns true for an ASN not defined in deny-list", () => {
       const config = { ...defaultConfig, denyASNs: ["AS60067"] }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBe(true)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBe(true)
     })
 
     it("returns error for a country not defined in allow-list", () => {
       const config = { ...defaultConfig, allowCountries: ["US"] }
       const ipInfo = { ...defaultIpInfo, isoCode: "AF" }
-      const validator = IPMetadataValidator(config).validate(ipInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataCountryError)
+      const authorizer = IPMetadataAuthorizer(config).authorize(ipInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataCountryError)
     })
 
     it("returns error for an ASN not defined in allow-list", () => {
       const config = { ...defaultConfig, allowASNs: ["AS60068"] }
       const ipInfo = { ...defaultIpInfo, asn: "AS60067" }
-      const validator = IPMetadataValidator(config).validate(ipInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataASNError)
+      const authorizer = IPMetadataAuthorizer(config).authorize(ipInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataASNError)
     })
 
     it("returns error for proxy/vpn", () => {
       const ipInfo = { ...defaultIpInfo, proxy: true }
-      const validator = IPMetadataValidator(defaultConfig).validate(ipInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataProxyError)
+      const authorizer = IPMetadataAuthorizer(defaultConfig).authorize(ipInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataProxyError)
     })
 
     it("returns error for empty isoCode", () => {
       const ipInfo = { ...defaultIpInfo, isoCode: undefined }
-      let validator = IPMetadataValidator(defaultConfig).validate(ipInfo)
-      expect(validator).toBeInstanceOf(MissingIPMetadataError)
+      let authorizer = IPMetadataAuthorizer(defaultConfig).authorize(ipInfo)
+      expect(authorizer).toBeInstanceOf(MissingIPMetadataError)
 
       const ipInfo1 = { ...defaultIpInfo, isoCode: "" }
-      validator = IPMetadataValidator(defaultConfig).validate(ipInfo1)
-      expect(validator).toBeInstanceOf(MissingIPMetadataError)
+      authorizer = IPMetadataAuthorizer(defaultConfig).authorize(ipInfo1)
+      expect(authorizer).toBeInstanceOf(MissingIPMetadataError)
     })
 
     it("returns error for empty asn", () => {
       const ipInfo = { ...defaultIpInfo, asn: undefined }
-      let validator = IPMetadataValidator(defaultConfig).validate(ipInfo)
-      expect(validator).toBeInstanceOf(MissingIPMetadataError)
+      let authorizer = IPMetadataAuthorizer(defaultConfig).authorize(ipInfo)
+      expect(authorizer).toBeInstanceOf(MissingIPMetadataError)
 
       const ipInfo1 = { ...defaultIpInfo, asn: "" }
-      validator = IPMetadataValidator(defaultConfig).validate(ipInfo1)
-      expect(validator).toBeInstanceOf(MissingIPMetadataError)
+      authorizer = IPMetadataAuthorizer(defaultConfig).authorize(ipInfo1)
+      expect(authorizer).toBeInstanceOf(MissingIPMetadataError)
     })
 
     it("returns error for a denied country", () => {
       const config = { ...defaultConfig, denyCountries: ["US"] }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataCountryError)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataCountryError)
     })
 
     it("returns error for a denied asn", () => {
       const config = { ...defaultConfig, denyASNs: ["AS60068"] }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataASNError)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataASNError)
     })
 
     it("returns error for a denied/allowed country", () => {
@@ -112,8 +112,8 @@ describe("IPMetadataValidator", () => {
         denyCountries: ["US"],
         allowCountries: ["US"],
       }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataCountryError)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataCountryError)
     })
 
     it("returns error for a denied/allowed asn", () => {
@@ -122,8 +122,8 @@ describe("IPMetadataValidator", () => {
         denyASNs: ["AS60068"],
         allowASNs: ["AS60068"],
       }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataASNError)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataASNError)
     })
 
     it("returns error for a denied asn and allowed country", () => {
@@ -132,8 +132,8 @@ describe("IPMetadataValidator", () => {
         denyASNs: ["AS60068"],
         allowCountries: ["US"],
       }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataASNError)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataASNError)
     })
 
     it("returns error for a denied country and allowed asn", () => {
@@ -142,8 +142,8 @@ describe("IPMetadataValidator", () => {
         allowASNs: ["AS60068"],
         denyCountries: ["US"],
       }
-      const validator = IPMetadataValidator(config).validate(defaultIpInfo)
-      expect(validator).toBeInstanceOf(InvalidIPMetadataCountryError)
+      const authorizer = IPMetadataAuthorizer(config).authorize(defaultIpInfo)
+      expect(authorizer).toBeInstanceOf(InvalidIPMetadataCountryError)
     })
   })
 })

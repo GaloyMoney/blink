@@ -5,13 +5,13 @@ import {
   InvalidIPMetadataASNError,
 } from "@domain/errors"
 
-export const IPMetadataValidator = ({
+export const IPMetadataAuthorizer = ({
   denyCountries,
   allowCountries,
   denyASNs,
   allowASNs,
-}: IPMetadataValidatorArgs): IPMetadataValidator => {
-  const validate = (ipMetadata?: IPType): true | ValidationError => {
+}: IPMetadataAuthorizerArgs): IPMetadataAuthorizer => {
+  const authorize = (ipMetadata?: IPType): true | ValidationError => {
     if (!ipMetadata || !ipMetadata.isoCode || !ipMetadata.asn)
       return new MissingIPMetadataError()
 
@@ -30,5 +30,5 @@ export const IPMetadataValidator = ({
     return true
   }
 
-  return { validate }
+  return { authorize }
 }
