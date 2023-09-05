@@ -370,9 +370,9 @@ export const loginWithDevice = async ({
 
     if (authorizedIPMetadata instanceof Error) {
       if (authorizedIPMetadata instanceof MissingIPMetadataError)
-        return new InvalidIpMetadataError(authorizedIPMetadata.name)
+        return new InvalidIpMetadataError(authorizedIPMetadata)
 
-      return new UnauthorizedIPForOnboardingError(authorizedIPMetadata.name)
+      return new UnauthorizedIPForOnboardingError(authorizedIPMetadata)
     }
   }
 
@@ -433,9 +433,9 @@ const isAllowedToOnboard = async ({
 
     if (authorizedIPMetadata instanceof Error) {
       if (authorizedIPMetadata instanceof MissingIPMetadataError)
-        return new InvalidIpMetadataError(authorizedIPMetadata.name)
+        return new InvalidIpMetadataError(authorizedIPMetadata)
 
-      return new UnauthorizedIPForOnboardingError(authorizedIPMetadata.name)
+      return new UnauthorizedIPForOnboardingError(authorizedIPMetadata)
     }
   }
 

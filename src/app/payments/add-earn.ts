@@ -54,7 +54,7 @@ export const addEarn = async ({
   ).authorize(user.phoneMetadata)
 
   if (validatedPhoneMetadata instanceof Error)
-    return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
+    return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata)
 
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
   if (accountIP instanceof Error) return accountIP
@@ -64,7 +64,7 @@ export const addEarn = async ({
   ).authorize(accountIP.metadata)
   if (validatedIPMetadata instanceof Error) {
     if (validatedIPMetadata instanceof MissingIPMetadataError)
-      return new InvalidIpMetadataError(validatedIPMetadata.name)
+      return new InvalidIpMetadataError(validatedIPMetadata)
 
     if (validatedIPMetadata instanceof UnauthorizedIPForRewardError)
       return validatedIPMetadata
