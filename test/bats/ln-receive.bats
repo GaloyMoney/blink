@@ -161,6 +161,8 @@ usd_amount=50
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
 
+  initial_btc_balance="$(balance_for_wallet $token_name 'BTC')"
+
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
@@ -184,12 +186,18 @@ usd_amount=50
 
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
+
+  # Check balances
+  final_btc_balance="$(balance_for_wallet $token_name 'BTC')"
+  [[ "$final_btc_balance" -gt "$initial_btc_balance" ]] || exit 1
 }
 
 @test "ln-receive: settle via ln for USD wallet, amountless invoice" {
   # Generate invoice
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
+
+  initial_usd_balance="$(balance_for_wallet $token_name 'USD')"
 
   variables=$(
     jq -n \
@@ -214,4 +222,51 @@ usd_amount=50
 
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
+
+  # Check balances
+  final_usd_balance="$(balance_for_wallet $token_name 'USD')"
+  [[ "$final_usd_balance" -gt "$initial_usd_balance" ]] || exit 1
+}
+
+@test "ln-receive: settle via ln for USD wallet, amountless invoice, 1 sat incoming" {
+  one_sat_btc_amount=1
+
+  # Generate invoice
+  token_name="$ALICE_TOKEN_NAME"
+  usd_wallet_name="$token_name.usd_wallet_id"
+  btc_wallet_name="$token_name.btc_wallet_id"
+
+  initial_btc_balance="$(balance_for_wallet $token_name 'BTC')"
+  initial_usd_balance="$(balance_for_wallet $token_name 'USD')"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'ln-no-amount-invoice-create' "$variables"
+  invoice="$(graphql_output '.data.lnNoAmountInvoiceCreate.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+  payment_hash="$(echo $invoice | jq -r '.paymentHash')"
+  [[ "${payment_hash}" != "null" ]] || exit 1
+
+  # Receive payment
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+    --amt "$one_sat_btc_amount"
+
+  # Check for settled
+  retry 15 1 check_for_ln_initiated_settled "$token_name" "$payment_hash"
+
+  # Check for subscriber event
+  check_for_ln_update "$payment_hash" || exit 1
+
+  # Check balances
+  final_btc_balance="$(balance_for_wallet $token_name 'BTC')"
+  [[ "$final_btc_balance" -gt "$initial_btc_balance" ]] || exit 1
+
+  final_usd_balance="$(balance_for_wallet $token_name 'USD')"
+  [[ "$final_usd_balance" == "$initial_usd_balance" ]] || exit 1
 }

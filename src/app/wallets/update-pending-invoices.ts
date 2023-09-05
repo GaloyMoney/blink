@@ -2,6 +2,7 @@ import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import {
+  CouldNotFindBtcWalletForAccountError,
   CouldNotFindError,
   CouldNotFindWalletInvoiceError,
   InvalidNonHodlInvoiceError,
@@ -35,6 +36,7 @@ import { CallbackEventType } from "@domain/callback"
 import { AccountLevel } from "@domain/accounts"
 import { CallbackService } from "@services/callback"
 import { getCallbackServiceConfig } from "@config"
+import { ZeroAmountForUsdRecipientError } from "@domain/payments"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -176,13 +178,41 @@ const updatePendingInvoiceBeforeFinally = async ({
     }
 
     // Prepare metadata and record transaction
-    const walletInvoiceReceiver = await WalletInvoiceReceiver({
+    let walletInvoiceReceiver = await WalletInvoiceReceiver({
       walletInvoice,
       receivedBtc,
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
       usdFromBtcMidPrice: usdFromBtcMidPriceFn,
     })
-    if (walletInvoiceReceiver instanceof Error) return walletInvoiceReceiver
+    if (
+      walletInvoiceReceiver instanceof Error &&
+      !(walletInvoiceReceiver instanceof ZeroAmountForUsdRecipientError)
+    ) {
+      return walletInvoiceReceiver
+    }
+    if (walletInvoiceReceiver instanceof ZeroAmountForUsdRecipientError) {
+      const recipientWallet = await WalletsRepository().findById(
+        recipientWalletDescriptor.id,
+      )
+      if (recipientWallet instanceof Error) return recipientWallet
+      const wallets = await WalletsRepository().listByAccountId(recipientWallet.accountId)
+      if (wallets instanceof Error) return wallets
+      const recipientBtcWallet = wallets.find(
+        (wallet) => wallet.currency === WalletCurrency.Btc,
+      )
+      if (recipientBtcWallet === undefined) {
+        return new CouldNotFindBtcWalletForAccountError()
+      }
+
+      walletInvoice.recipientWalletDescriptor = recipientBtcWallet
+      walletInvoiceReceiver = await WalletInvoiceReceiver({
+        walletInvoice,
+        receivedBtc,
+        usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+        usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+      })
+      if (walletInvoiceReceiver instanceof Error) return walletInvoiceReceiver
+    }
 
     if (!lnInvoiceLookup.isSettled) {
       const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })

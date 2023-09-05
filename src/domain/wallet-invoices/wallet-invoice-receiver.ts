@@ -1,4 +1,8 @@
-import { WalletPriceRatio } from "@domain/payments"
+import {
+  InvalidZeroAmountPriceRatioInputError,
+  WalletPriceRatio,
+  ZeroAmountForUsdRecipientError,
+} from "@domain/payments"
 import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
 
 const calc = AmountCalculator()
@@ -59,7 +63,18 @@ export const WalletInvoiceReceiver = async ({
   if (receivedUsd instanceof Error) return receivedUsd
 
   const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
-  if (priceRatio instanceof Error) return priceRatio
+  if (
+    priceRatio instanceof Error &&
+    !(priceRatio instanceof InvalidZeroAmountPriceRatioInputError)
+  ) {
+    return priceRatio
+  }
+  // At this point we have a usd recipient and a btc send amount. If the ratio
+  // comes back with this zero-amount error, it means the btc send amount is
+  // under 1-cent.
+  if (priceRatio instanceof InvalidZeroAmountPriceRatioInputError) {
+    return new ZeroAmountForUsdRecipientError()
+  }
 
   const btcBankFee = satsFee
   const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
