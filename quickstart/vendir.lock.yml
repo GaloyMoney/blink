@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add enable proxy check setting (#3167)...'
-      sha: 1d53235a52f8908a97fbe10c441c4424905b74c0
+      commitTitle: 'fix: add ''CouldNotFindWalletFromOnChainAddressError'' as an ignored
+        error (#3178)'
+      sha: 3826ef3ba8dea3fa14367bce62a63a5a7e5ce3d2
       tags:
-      - 0.13.38-2-g1d53235a5
+      - 0.13.39-2-g3826ef3ba
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add enable proxy check setting (#3167)...'
-      sha: 1d53235a52f8908a97fbe10c441c4424905b74c0
+      commitTitle: 'fix: add ''CouldNotFindWalletFromOnChainAddressError'' as an ignored
+        error (#3178)'
+      sha: 3826ef3ba8dea3fa14367bce62a63a5a7e5ce3d2
       tags:
-      - 0.13.38-2-g1d53235a5
+      - 0.13.39-2-g3826ef3ba
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add enable proxy check setting (#3167)...'
-      sha: 1d53235a52f8908a97fbe10c441c4424905b74c0
+      commitTitle: 'fix: add ''CouldNotFindWalletFromOnChainAddressError'' as an ignored
+        error (#3178)'
+      sha: 3826ef3ba8dea3fa14367bce62a63a5a7e5ce3d2
       tags:
-      - 0.13.38-2-g1d53235a5
+      - 0.13.39-2-g3826ef3ba
     path: ./
   path: ./graphql
 kind: LockConfig
