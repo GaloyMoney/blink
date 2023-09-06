@@ -3,20 +3,6 @@ import { InvalidUrlError } from "@domain/callback/errors"
 import { CallbackService } from "@services/svix"
 import { z } from "zod"
 
-const urlSchema = z.string().refine(
-  (value) => {
-    try {
-      new URL(value)
-      return true
-    } catch {
-      return false
-    }
-  },
-  {
-    message: "Invalid URL",
-  },
-)
-
 export const addEndpoint = async ({
   accountUuid,
   url,
@@ -24,7 +10,7 @@ export const addEndpoint = async ({
   accountUuid: AccountUuid
   url: string
 }) => {
-  const validationResult = urlSchema.safeParse(url)
+  const validationResult = z.string().url().safeParse(url)
   if (!validationResult.success) {
     return new InvalidUrlError(`${url} is invalid`)
   }
