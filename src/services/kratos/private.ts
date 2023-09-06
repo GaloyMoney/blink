@@ -8,6 +8,7 @@ import {
   InvalidIdentitySessionKratosError,
   MissingCreatedAtKratosError,
   MissingExpiredAtKratosError,
+  UnknownKratosError,
 } from "./errors"
 import { SchemaIdType } from "./schema"
 
@@ -43,7 +44,7 @@ const toSchema = (schemaId: string): SchemaId => {
     case "username_password_deviceid_v0":
       return SchemaIdType.UsernamePasswordDeviceIdV0
     default:
-      throw new Error(`Invalid schemaId: ${schemaId}`)
+      throw new UnknownKratosError(`Invalid schemaId: ${schemaId}`)
   }
 }
 

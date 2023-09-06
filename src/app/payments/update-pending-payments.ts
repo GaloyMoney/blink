@@ -134,9 +134,9 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
 
     // If we had PaymentLedgerType => no need for checking the fields
     if (!paymentHash)
-      throw new InconsistentDataError("paymentHash missing from payment transaction")
+      return new InconsistentDataError("paymentHash missing from payment transaction")
     if (!pubkey)
-      throw new InconsistentDataError("pubkey missing from payment transaction")
+      return new InconsistentDataError("pubkey missing from payment transaction")
 
     const lnPaymentLookup = await lndService.lookupPayment({
       pubkey,

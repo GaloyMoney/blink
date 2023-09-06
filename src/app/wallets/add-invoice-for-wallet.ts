@@ -194,7 +194,7 @@ const addInvoice = async ({
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
   const account = await AccountsRepository().findById(wallet.accountId)
-  if (account instanceof Error) throw account
+  if (account instanceof Error) return account
 
   const accountValidator = AccountValidator(account)
   if (accountValidator instanceof Error) return accountValidator
