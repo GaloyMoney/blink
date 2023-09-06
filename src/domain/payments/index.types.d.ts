@@ -159,18 +159,22 @@ type OPFBWithAddress<S extends WalletCurrency> = {
   }): OPFBWithSenderWalletAndAccount<S> | OPFBWithError
 }
 
+type LPFBWithRecipientArgs<R extends WalletCurrency> = {
+  recipientWalletDescriptor: WalletDescriptor<R>
+  recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
+  userId: UserId
+  pubkey?: Pubkey
+  usdPaymentAmount?: UsdPaymentAmount
+  username?: Username
+}
+
 type LPFBWithSenderWallet<S extends WalletCurrency> = {
   isIntraLedger(): boolean
   withoutRecipientWallet<R extends WalletCurrency>():
     | LPFBWithRecipientWallet<S, R>
     | LPFBWithError
   withRecipientWallet<R extends WalletCurrency>(
-    args: WalletDescriptor<R> & {
-      userId: UserId
-      pubkey?: Pubkey
-      usdPaymentAmount?: UsdPaymentAmount
-      username?: Username
-    },
+    args: LPFBWithRecipientArgs<R>,
   ): LPFBWithRecipientWallet<S, R> | LPFBWithError
 }
 
@@ -359,6 +363,7 @@ type LPFBWithRecipientWalletState<
   recipientUsername?: Username
   recipientUserId?: UserId
   recipientAccountId?: AccountId
+  recipientWalletDescriptorsForAccount?: WalletDescriptor<WalletCurrency>[]
 }
 
 type LPFBWithConversionState<

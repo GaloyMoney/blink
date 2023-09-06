@@ -221,19 +221,17 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
   }
 
   const withRecipientWallet = <R extends WalletCurrency>({
-    id: recipientWalletId,
-    currency: recipientWalletCurrency,
+    recipientWalletDescriptor: {
+      id: recipientWalletId,
+      currency: recipientWalletCurrency,
+      accountId: recipientAccountId,
+    },
+    recipientWalletDescriptorsForAccount,
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,
-    accountId: recipientAccountId,
     userId: recipientUserId,
-  }: WalletDescriptor<R> & {
-    userId: UserId
-    pubkey?: Pubkey
-    usdPaymentAmount?: UsdPaymentAmount
-    username?: Username
-  }): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
+  }: LPFBWithRecipientArgs<R>): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
     if (recipientWalletId === state.senderWalletId) {
       return LPFBWithError(new SelfPaymentError())
     }
@@ -258,6 +256,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
       recipientAccountId,
       recipientUsername,
       recipientUserId,
+      recipientWalletDescriptorsForAccount,
       usdPaymentAmount: usdPaymentAmount || state.usdPaymentAmount,
     })
   }

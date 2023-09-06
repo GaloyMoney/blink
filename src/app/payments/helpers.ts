@@ -89,9 +89,8 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   invoice: LnInvoice,
 ): Promise<
   | {
-      id: WalletId
-      currency: R
-      accountId: AccountId
+      recipientWalletDescriptor: WalletDescriptor<R>
+      recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
       pubkey: Pubkey
       usdPaymentAmount: UsdPaymentAmount | undefined
       username: Username
@@ -118,14 +117,20 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   if (recipientWallet instanceof Error) return recipientWallet
   const { accountId } = recipientWallet
 
+  const wallets = await WalletsRepository().listByAccountId(accountId)
+  if (wallets instanceof Error) return wallets
+
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
   const { username: recipientUsername, kratosUserId: recipientUserId } = recipientAccount
 
   return {
-    id: recipientWalletId,
-    currency: recipientsWalletCurrency as R,
-    accountId: recipientAccount.id,
+    recipientWalletDescriptor: {
+      id: recipientWalletId,
+      currency: recipientsWalletCurrency as R,
+      accountId: recipientAccount.id,
+    },
+    recipientWalletDescriptorsForAccount: wallets,
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,
