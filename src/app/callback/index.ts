@@ -16,7 +16,7 @@ export const addEndpoint = async ({
   }
 
   const callbackService = CallbackService(getCallbackServiceConfig())
-  const res = await callbackService.addEndpoint(accountUuid, url)
+  const res = await callbackService.addEndpoint({ accountUuid, url })
 
   if (res instanceof Error) return res
   return { id: res.id }
@@ -38,8 +38,8 @@ export const deleteEndpoint = async ({
   id: string
 }) => {
   const callbackService = CallbackService(getCallbackServiceConfig())
-  const res = await callbackService.deleteEndpoint({ accountUuid, endpointId: id })
+  const success = await callbackService.deleteEndpoint({ accountUuid, endpointId: id })
 
-  if (res instanceof Error) return res
-  return res
+  if (success instanceof Error) return success
+  return success
 }

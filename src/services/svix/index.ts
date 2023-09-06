@@ -109,7 +109,13 @@ export const CallbackService = (config: SvixConfig) => {
     }
   }
 
-  const addEndpoint = async (accountUuid: AccountUuid, url: string) => {
+  const addEndpoint = async ({
+    accountUuid,
+    url,
+  }: {
+    accountUuid: AccountUuid
+    url: string
+  }) => {
     const accountCallbackId = getAccountCallbackId(accountUuid)
 
     const res = await createApplication(accountCallbackId)
