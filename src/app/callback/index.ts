@@ -1,6 +1,7 @@
 import { getCallbackServiceConfig } from "@config"
 import { InvalidUrlError } from "@domain/callback/errors"
 import { CallbackService } from "@services/svix"
+import { UnknownSvixError } from "@services/svix/errors"
 import { z } from "zod"
 
 export const addEndpoint = async ({
@@ -19,6 +20,8 @@ export const addEndpoint = async ({
   const res = await callbackService.addEndpoint({ accountUuid, url })
 
   if (res instanceof Error) return res
+  if (!res) throw new UnknownSvixError("CallbackService not configured")
+
   return { id: res.id }
 }
 

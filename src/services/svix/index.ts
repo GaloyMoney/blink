@@ -25,7 +25,8 @@ function prefixObjectKeys(
 export const CallbackService = (config: SvixConfig) => {
   if (!config.secret) {
     const nullFn = async () => {
-      throw new UnknownSvixError("CallbackService not configured")
+      baseLogger.warn("CallbackService not configured")
+      return
     }
     return {
       sendMessage: nullFn,
