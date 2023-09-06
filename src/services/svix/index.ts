@@ -7,22 +7,7 @@ import {
   wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
 
-import { UnknownSvixError } from "./error"
-
-interface SvixErrorBody {
-  code: string
-  detail: string
-}
-
-interface SvixError extends Error {
-  code: number
-  body: SvixErrorBody
-}
-
-export type SvixConfig = {
-  secret?: string
-  endpoint?: string | null
-}
+import { SvixError, UnknownSvixError } from "./errors"
 
 function prefixObjectKeys(
   obj: Record<string, string>,
@@ -40,14 +25,14 @@ function prefixObjectKeys(
 export const CallbackService = (config: SvixConfig) => {
   if (!config.secret) {
     const nullFn = async () => {
-      null
+      throw new UnknownSvixError("CallbackService not configured")
     }
     return {
       sendMessage: nullFn,
       getWebsocketPortal: nullFn,
       addEndpoint: nullFn,
       listEndpoints: nullFn,
-      removeEndpoint: nullFn,
+      deleteEndpoint: nullFn,
     }
   }
 
@@ -55,22 +40,14 @@ export const CallbackService = (config: SvixConfig) => {
     ? new Svix(config.secret, { serverUrl: config.endpoint })
     : new Svix(config.secret)
 
-  const sendMessage = async ({
-    eventType,
-    accountUuid,
-    payload,
-  }: {
-    eventType: string
-    accountUuid: string
-    payload: Record<string, string>
-  }) => {
-    const accountPath = `account.${accountUuid}`
-    addAttributesToCurrentSpan({ "callback.application": accountPath })
+  const getAccountCallbackId = (accountUuid: AccountUuid): AccountCallbackId =>
+    `account.${accountUuid}` as AccountCallbackId
 
+  const createApplication = async (accountCallbackId: AccountCallbackId) => {
     try {
       const application: ApplicationIn = {
-        name: accountPath,
-        uid: accountPath,
+        name: accountCallbackId,
+        uid: accountCallbackId,
       }
 
       await svix.application.create(application)
@@ -81,9 +58,25 @@ export const CallbackService = (config: SvixConfig) => {
         return new UnknownSvixError(err)
       }
     }
+  }
+
+  const sendMessage = async ({
+    eventType,
+    accountUuid,
+    payload,
+  }: {
+    eventType: string
+    accountUuid: AccountUuid
+    payload: Record<string, string>
+  }) => {
+    const accountCallbackId = getAccountCallbackId(accountUuid)
+    addAttributesToCurrentSpan({ "callback.application": accountCallbackId })
+
+    const res = await createApplication(accountCallbackId)
+    if (res instanceof Error) return res
 
     try {
-      const res = await svix.message.create(accountPath, {
+      const res = await svix.message.create(accountCallbackId, {
         eventType,
         payload: { ...payload, accountId: accountUuid, eventType },
       })
@@ -94,7 +87,7 @@ export const CallbackService = (config: SvixConfig) => {
         ["callback.accountId"]: accountUuid,
         ["callback.eventType"]: eventType,
       })
-      baseLogger.info({ res }, `message sent successfully to ${accountPath}`)
+      baseLogger.info({ res }, `message sent successfully to ${accountCallbackId}`)
       return res
     } catch (err) {
       return new UnknownSvixError(err)
@@ -103,8 +96,13 @@ export const CallbackService = (config: SvixConfig) => {
 
   // only work for hosted svix
   const getWebsocketPortal = async (accountUuid: AccountUuid) => {
+    const accountCallbackId = getAccountCallbackId(accountUuid)
+
+    const res = await createApplication(accountCallbackId)
+    if (res instanceof Error) return res
+
     try {
-      const res = await svix.authentication.appPortalAccess(accountUuid, {})
+      const res = await svix.authentication.appPortalAccess(accountCallbackId, {})
       return res
     } catch (err) {
       return new UnknownSvixError(err)
@@ -112,8 +110,13 @@ export const CallbackService = (config: SvixConfig) => {
   }
 
   const addEndpoint = async (accountUuid: AccountUuid, url: string) => {
+    const accountCallbackId = getAccountCallbackId(accountUuid)
+
+    const res = await createApplication(accountCallbackId)
+    if (res instanceof Error) return res
+
     try {
-      const res = await svix.endpoint.create(accountUuid, {
+      const res = await svix.endpoint.create(accountCallbackId, {
         url,
       })
       return res
@@ -123,17 +126,31 @@ export const CallbackService = (config: SvixConfig) => {
   }
 
   const listEndpoints = async (accountUuid: AccountUuid) => {
+    const accountCallbackId = getAccountCallbackId(accountUuid)
+
+    const res = await createApplication(accountCallbackId)
+    if (res instanceof Error) return res
+
     try {
-      const res = await svix.endpoint.list(accountUuid)
-      return res
+      const res = await svix.endpoint.list(accountCallbackId)
+      return res.data.map((endpoint) => ({ id: endpoint.id, url: endpoint.url }))
     } catch (err) {
       return new UnknownSvixError(err)
     }
   }
 
-  const removeEndpoint = async (accountUuid: AccountUuid, endpointId: string) => {
+  const deleteEndpoint = async ({
+    accountUuid,
+    endpointId,
+  }: {
+    accountUuid: AccountUuid
+    endpointId: string
+  }) => {
+    const accountCallbackId = getAccountCallbackId(accountUuid)
+
     try {
-      await svix.endpoint.delete(accountUuid, endpointId)
+      await svix.endpoint.delete(accountCallbackId, endpointId)
+      return true
     } catch (err) {
       return new UnknownSvixError(err)
     }
@@ -141,6 +158,6 @@ export const CallbackService = (config: SvixConfig) => {
 
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.callback",
-    fns: { sendMessage, getWebsocketPortal, addEndpoint, listEndpoints, removeEndpoint },
+    fns: { sendMessage, getWebsocketPortal, addEndpoint, listEndpoints, deleteEndpoint },
   })
 }

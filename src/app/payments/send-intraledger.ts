@@ -37,7 +37,7 @@ import {
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
-import { CallbackService } from "@services/callback"
+import { CallbackService } from "@services/svix"
 
 import { CallbackEventType } from "@domain/callback"
 

@@ -47,6 +47,9 @@ import UserPhoneRegistrationInitiateMutation from "@graphql/public/root/mutation
 import UserPhoneRegistrationValidateMutation from "@graphql/public/root/mutation/user-phone-registration-validate"
 import UserTotpDeleteMutation from "@graphql/public/root/mutation/user-totp-delete"
 
+import CallbackEndpointAdd from "./root/mutation/callback-endpoint-add"
+import CallbackEndpointDelete from "./root/mutation/callback-endpoint-delete"
+
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {
   unauthed: {
@@ -85,6 +88,9 @@ export const mutationFields = {
       accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
       accountDelete: AccountDeleteMutation,
       feedbackSubmit: FeedbackSubmitMutation,
+
+      callbackEndpointAdd: CallbackEndpointAdd,
+      callbackEndpointDelete: CallbackEndpointDelete,
     },
 
     atWalletLevel: {

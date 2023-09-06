@@ -1,0 +1,8 @@
+mutation callbackEndpointDelete($input: CallbackEndpointDeleteInput!) {
+  callbackEndpointDelete(input: $input) {
+    errors {
+      message
+    }
+    success
+  }
+}

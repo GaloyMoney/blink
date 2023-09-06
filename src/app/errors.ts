@@ -2,6 +2,7 @@ import * as SharedErrors from "@domain/shared/errors"
 import * as DomainErrors from "@domain/errors"
 import * as PaymentErrors from "@domain/payments/errors"
 import * as LedgerErrors from "@domain/ledger/errors"
+import * as CallbackErrors from "@domain/callback/errors"
 import * as CommErrors from "@domain/comm/errors"
 import * as OnChainErrors from "@domain/bitcoin/onchain/errors"
 import * as LightningErrors from "@domain/bitcoin/lightning/errors"
@@ -21,12 +22,14 @@ import * as AuthenticationErrors from "@domain/authentication/errors"
 import * as LedgerFacadeErrors from "@services/ledger/domain/errors"
 import * as KratosErrors from "@services/kratos/errors"
 import * as BriaEventErrors from "@services/bria/errors"
+import * as SvixErrors from "@services/svix/errors"
 
 export const ApplicationErrors = {
   ...SharedErrors,
   ...DomainErrors,
   ...PaymentErrors,
   ...LedgerErrors,
+  ...CallbackErrors,
   ...CommErrors,
   ...OnChainErrors,
   ...LightningErrors,
@@ -46,4 +49,5 @@ export const ApplicationErrors = {
   ...KratosErrors,
   ...LedgerFacadeErrors,
   ...BriaEventErrors,
+  ...SvixErrors,
 } as const

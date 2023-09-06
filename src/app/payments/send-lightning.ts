@@ -56,7 +56,7 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
-import { CallbackService } from "@services/callback"
+import { CallbackService } from "@services/svix"
 import { getCallbackServiceConfig } from "@config"
 import { CallbackEventType } from "@domain/callback"
 
