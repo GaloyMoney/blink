@@ -36,9 +36,6 @@ teardown() {
 
 }
 
-btc_amount=1000
-usd_amount=50
-
 @test "callback endpoints" {
   token_name="$ALICE_TOKEN_NAME"
 
