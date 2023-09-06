@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add ''CouldNotFindWalletFromOnChainAddressError'' as an ignored
-        error (#3178)'
-      sha: 3826ef3ba8dea3fa14367bce62a63a5a7e5ce3d2
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4f92aaf2918df51f2ddbc50b66d38b25de98427b
       tags:
-      - 0.13.39-2-g3826ef3ba
+      - 0.13.40
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add ''CouldNotFindWalletFromOnChainAddressError'' as an ignored
-        error (#3178)'
-      sha: 3826ef3ba8dea3fa14367bce62a63a5a7e5ce3d2
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4f92aaf2918df51f2ddbc50b66d38b25de98427b
       tags:
-      - 0.13.39-2-g3826ef3ba
+      - 0.13.40
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: add ''CouldNotFindWalletFromOnChainAddressError'' as an ignored
-        error (#3178)'
-      sha: 3826ef3ba8dea3fa14367bce62a63a5a7e5ce3d2
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 4f92aaf2918df51f2ddbc50b66d38b25de98427b
       tags:
-      - 0.13.39-2-g3826ef3ba
+      - 0.13.40
     path: ./
   path: ./graphql
 kind: LockConfig
