@@ -4,6 +4,7 @@ import { ListValue, Struct, Value } from "google-protobuf/google/protobuf/struct
 import { BRIA_API_KEY, getBriaConfig } from "@config"
 
 import {
+  BatchNotFoundError,
   OnChainAddressAlreadyCreatedForRequestIdError,
   OnChainAddressNotFoundError,
   PayoutDestinationBlocked,
@@ -27,21 +28,25 @@ import { BriaEventRepo } from "./event-repository"
 import {
   estimatePayoutFee,
   getAddress,
+  getBatch,
   getPayout,
   getWalletBalanceSummary,
   newAddress,
   submitPayout,
   subscribeAll,
+  triggerPayoutQueue,
 } from "./grpc-client"
 import {
   EstimatePayoutFeeRequest,
   GetAddressRequest,
+  GetBatchRequest,
   GetPayoutRequest,
   GetWalletBalanceSummaryRequest,
   NewAddressRequest,
   BriaEvent as RawBriaEvent,
   SubmitPayoutRequest,
   SubscribeAllRequest,
+  TriggerPayoutQueueRequest,
 } from "./proto/bria_pb"
 export { BriaPayloadType } from "./event-handler"
 
@@ -300,6 +305,47 @@ export const OnChainService = (): IOnChainService => {
     }
   }
 
+  const rebalanceToHotWallet = async (
+    amount: BtcPaymentAmount,
+  ): Promise<UnsignedPsbt | OnChainServiceError> => {
+    const submitPayoutRequest = new SubmitPayoutRequest()
+    submitPayoutRequest.setWalletName(briaConfig.coldStorage.walletName)
+    submitPayoutRequest.setPayoutQueueName(
+      briaConfig.coldStorage.coldToHotRebalanceQueueName,
+    )
+    submitPayoutRequest.setDestinationWalletName(briaConfig.hotWalletName)
+    submitPayoutRequest.setSatoshis(Number(amount.amount))
+    submitPayoutRequest.setMetadata(
+      constructMetadata({ galoy: { rebalanceToHotWallet: true } }),
+    )
+
+    const triggerPayoutQueueRequest = new TriggerPayoutQueueRequest()
+    triggerPayoutQueueRequest.setName(briaConfig.coldStorage.coldToHotRebalanceQueueName)
+
+    try {
+      const submitPayoutResponse = await submitPayout(submitPayoutRequest, metadata)
+
+      await triggerPayoutQueue(triggerPayoutQueueRequest, metadata)
+
+      const payoutRequest = new GetPayoutRequest()
+      payoutRequest.setId(submitPayoutResponse.getId())
+      const getPayoutResponse = await getPayout(payoutRequest, metadata)
+
+      const foundPayout = getPayoutResponse.getPayout()
+      if (!foundPayout) return new PayoutNotFoundError()
+      const batchId = foundPayout.getBatchId()
+      if (!batchId) return new BatchNotFoundError()
+
+      const getBatchRequest = new GetBatchRequest()
+      getBatchRequest.setId(batchId)
+      const getBatchResponse = await getBatch(getBatchRequest, metadata)
+      return getBatchResponse.getUnsignedPsbt() as UnsignedPsbt
+    } catch (err) {
+      const errMsg = parseErrorMessageFromUnknown(err)
+      return new UnknownOnChainServiceError(errMsg)
+    }
+  }
+
   const estimateFeeForPayout = async ({
     address,
     amount,
@@ -348,6 +394,7 @@ export const OnChainService = (): IOnChainService => {
       findPayoutByLedgerJournalId,
       queuePayoutToAddress,
       rebalanceToColdWallet,
+      rebalanceToHotWallet,
       estimateFeeForPayout,
     },
   })

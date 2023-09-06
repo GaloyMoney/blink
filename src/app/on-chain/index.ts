@@ -1,4 +1,5 @@
 export * from "./rebalance-to-cold-wallet"
+export * from "./rebalance-to-hot-wallet"
 export * from "./record-hot-to-cold-transfer"
 
 import { OnChainService } from "@services/bria"
