@@ -106,7 +106,7 @@
     "node-cache": "^5.1.2",
     "pg": "^8.11.3",
     "pino": "^8.15.0",
-    "pino-http": "^8.4.0",
+    "pino-http": "^8.5.0",
     "prom-client": "^14.2.0",
     "rate-limiter-flexible": "^3.0.0",
     "redlock": "^5.0.0-beta.2",
