@@ -84,14 +84,17 @@ const setGqlAdminContext = async (
   // TODO: refactor to remove auth endpoint and make context always carry a uuid v4 .sub/UserId
   const auditorId = tokenPayload.sub as UserId
 
+  let isEditor = false
+
   // TODO: should be using casbin instead of account
-  const userId = checkedToUserId(auditorId)
-  if (userId instanceof Error) return
+  if (auditorId !== "anon") {
+    const userId = checkedToUserId(auditorId)
+    if (userId instanceof Error) throw userId // need to throw otherwise the request hangs
 
-  const account = await AccountsRepository().findByUserId(userId)
-  if (account instanceof Error) return
-
-  const isEditor = account.isEditor
+    const account = await AccountsRepository().findByUserId(userId)
+    if (account instanceof Error) throw account // need to throw otherwise the request hangs
+    isEditor = account.isEditor
+  }
 
   req.gqlContext = { ip, loaders, auditorId, logger, isEditor }
 
