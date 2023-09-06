@@ -121,7 +121,7 @@
   "devDependencies": {
     "@apollo/client": "3.8.1",
     "@apollo/rover": "^0.18.1",
-    "@babel/core": "^7.22.11",
+    "@babel/core": "^7.22.15",
     "@babel/preset-env": "^7.22.14",
     "@graphql-tools/jest-transform": "^2.0.0",
     "@jest/test-sequencer": "^29.6.4",
