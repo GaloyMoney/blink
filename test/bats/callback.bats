@@ -36,7 +36,7 @@ teardown() {
 
 }
 
-@test "callback endpoints" {
+@test "callback: setup callback endpoints" {
   token_name="$ALICE_TOKEN_NAME"
 
   login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
