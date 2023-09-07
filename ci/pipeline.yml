@@ -281,7 +281,7 @@ jobs:
       - put: repo-out
         params:
           repository: repo
-          merge: true
+          rebase: true
   - name: release
     plan:
       - in_parallel:
