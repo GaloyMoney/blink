@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: b261356e135f45f303794263993cfbf6f4fc30a9
+      commitTitle: 'chore: bump apollo-server-express from 3.12.0 to 3.12.1 (#3173)...'
+      sha: c223a863493dc6106a0d773ec5d1dfe3d2360353
       tags:
-      - 0.13.41-5-gb261356e1
+      - 0.13.42-1-gc223a8634
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: b261356e135f45f303794263993cfbf6f4fc30a9
+      commitTitle: 'chore: bump apollo-server-express from 3.12.0 to 3.12.1 (#3173)...'
+      sha: c223a863493dc6106a0d773ec5d1dfe3d2360353
       tags:
-      - 0.13.41-5-gb261356e1
+      - 0.13.42-1-gc223a8634
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: b261356e135f45f303794263993cfbf6f4fc30a9
+      commitTitle: 'chore: bump apollo-server-express from 3.12.0 to 3.12.1 (#3173)...'
+      sha: c223a863493dc6106a0d773ec5d1dfe3d2360353
       tags:
-      - 0.13.41-5-gb261356e1
+      - 0.13.42-1-gc223a8634
     path: ./
   path: ./graphql
 kind: LockConfig
