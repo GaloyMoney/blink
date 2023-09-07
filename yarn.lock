@@ -1507,7 +1507,7 @@
     "@grpc/proto-loader" "^0.7.8"
     "@types/node" ">=12.12.47"
 
-"@grpc/grpc-js@^1.9.2":
+"@grpc/grpc-js@1.9.2", "@grpc/grpc-js@^1.9.2":
   version "1.9.2"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.9.2.tgz#151148f6485eab8fb13fe53042d25f4ffa9c7d09"
   integrity sha512-Lf2pUhNTaviEdEaGgjU+29qw3arX7Qd/45q66F3z1EV5hroE6wM9xSHPvjB8EY+b1RmKZgwnLWXQorC6fZ9g5g==
@@ -8212,12 +8212,38 @@ liftup@~3.0.1:
     rechoir "^0.7.0"
     resolve "^1.19.0"
 
-lightning@9.13.0, lightning@^9.11.3:
+lightning@9.13.0:
   version "9.13.0"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.13.0.tgz#de6121fe0dacf0eb41217f427231e5d8d8ada0bf"
   integrity sha512-Q1b9qbMia+NgiXPW3kn8v7GDeexrIWouWhlS5m5lpEakXK/kvKyM9Jn/CJmPXt+7tcM3+NUN59Jh89HySez7CA==
   dependencies:
     "@grpc/grpc-js" "1.9.1"
+    "@grpc/proto-loader" "0.7.9"
+    "@types/express" "4.17.17"
+    "@types/node" "20.5.7"
+    "@types/request" "2.48.8"
+    "@types/ws" "8.5.5"
+    async "3.2.4"
+    asyncjs-util "1.2.12"
+    bitcoinjs-lib "6.1.3"
+    bn.js "5.2.1"
+    body-parser "1.20.2"
+    bolt07 "1.8.4"
+    bolt09 "1.0.0"
+    cbor "9.0.1"
+    ecpair "2.1.0"
+    express "4.18.2"
+    invoices "3.0.0"
+    psbt "3.0.0"
+    tiny-secp256k1 "2.2.3"
+    type-fest "4.3.1"
+
+lightning@^9.13.1:
+  version "9.13.1"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-9.13.1.tgz#3128ec3e1ad120c972abf8ae748dc2b1ee9046be"
+  integrity sha512-+w/T2FxaKf51+WsG+EANtSGIMOGE5v8UFBTwKIf2MuigT7K1TNKW3TmqMkQVXJ7Te/+wi+TVqgAEZ4gQ9uKRxQ==
+  dependencies:
+    "@grpc/grpc-js" "1.9.2"
     "@grpc/proto-loader" "0.7.9"
     "@types/express" "4.17.17"
     "@types/node" "20.5.7"
