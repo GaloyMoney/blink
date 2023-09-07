@@ -4,7 +4,10 @@ import {
   checkedToUsdPaymentAmount,
   checkedToBtcPaymentAmount,
 } from "@domain/shared"
-import { SelfPaymentError } from "@domain/errors"
+import {
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
+  SelfPaymentError,
+} from "@domain/errors"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 
 import { generateIntraLedgerHash } from "@domain/payments/get-intraledger-hash"
@@ -20,6 +23,8 @@ import { ModifiedSet } from "@utils"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidLightningPaymentFlowStateError,
+  InvalidZeroAmountPriceRatioInputError,
+  SubOneCentSatAmountForUsdSelfSendError,
 } from "./errors"
 import { LnFees } from "./ln-fees"
 import { WalletPriceRatio } from "./price-ratio"
@@ -306,9 +311,10 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
     const updatedStateFromBtcPaymentAmountMid = async ({
       btcPaymentAmount,
       btcProtocolAndBankFee,
-    }: BtcAmountsAndFees): Promise<
-      LPFBWithConversionState<S, R> | DealerPriceServiceError
-    > => {
+      recipientWalletDescriptor,
+    }: BtcAmountsAndFees & {
+      recipientWalletDescriptor?: WalletDescriptor<WalletCurrency>
+    }): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
       const convertedAmount = await mid.usdFromBtc(btcPaymentAmount)
       if (convertedAmount instanceof Error) return convertedAmount
 
@@ -321,6 +327,12 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
       const usdProtocolAndBankFee = priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
       return {
         ...stateWithCreatedAt,
+        ...(recipientWalletDescriptor !== undefined
+          ? {
+              recipientWalletId: recipientWalletDescriptor.id,
+              recipientWalletCurrency: recipientWalletDescriptor.currency as R,
+            }
+          : {}),
         btcPaymentAmount,
         usdPaymentAmount: convertedAmount,
         btcProtocolAndBankFee,
@@ -463,12 +475,34 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
     }
 
     if (hasBtcAmounts) {
-      return LPFBWithConversion(
-        updatedStateFromBtcPaymentAmountDealer({
+      const updatedStateFromBtcPaymentAmountDealerFallbackMid = async () => {
+        const updatedState = await updatedStateFromBtcPaymentAmountDealer({
           btcPaymentAmount,
           btcProtocolAndBankFee,
-        }),
-      )
+        })
+        if (!(updatedState instanceof InvalidZeroAmountPriceRatioInputError)) {
+          return updatedState
+        }
+
+        const recipientBtcWalletDescriptor =
+          state.recipientWalletDescriptorsForAccount?.find(
+            (wallet) => wallet.currency === WalletCurrency.Btc,
+          )
+        if (recipientBtcWalletDescriptor === undefined) {
+          return new CouldNotFindWalletFromAccountIdAndCurrencyError()
+        }
+        if (recipientBtcWalletDescriptor.id === state.senderWalletId) {
+          return new SubOneCentSatAmountForUsdSelfSendError()
+        }
+
+        return updatedStateFromBtcPaymentAmountMid({
+          btcPaymentAmount,
+          btcProtocolAndBankFee,
+          recipientWalletDescriptor: recipientBtcWalletDescriptor,
+        })
+      }
+
+      return LPFBWithConversion(updatedStateFromBtcPaymentAmountDealerFallbackMid())
     }
 
     if (hasUsdAmounts) {
