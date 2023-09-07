@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 3fbb9dbad7df7f606530c7d405aff5496ce88e31
+      commitTitle: 'feat: add held invoices count to exporter (#3147)...'
+      sha: f6997cd19151679818287f755f736b7bd282f1a2
       tags:
-      - 0.13.44
+      - 0.13.45-1-gf6997cd19
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 3fbb9dbad7df7f606530c7d405aff5496ce88e31
+      commitTitle: 'feat: add held invoices count to exporter (#3147)...'
+      sha: f6997cd19151679818287f755f736b7bd282f1a2
       tags:
-      - 0.13.44
+      - 0.13.45-1-gf6997cd19
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
-      sha: 3fbb9dbad7df7f606530c7d405aff5496ce88e31
+      commitTitle: 'feat: add held invoices count to exporter (#3147)...'
+      sha: f6997cd19151679818287f755f736b7bd282f1a2
       tags:
-      - 0.13.44
+      - 0.13.45-1-gf6997cd19
     path: ./
   path: ./graphql
 kind: LockConfig
