@@ -378,6 +378,16 @@ createGauge({
 })
 
 createGauge({
+  name: "getHeldInvoicesCount",
+  description: "How many hold invoices are not settled or declined",
+  collect: async () => {
+    const heldInvoicesCount = await Lightning.getHeldInvoicesCount()
+    if (heldInvoicesCount instanceof Error) return NaN
+    return heldInvoicesCount
+  },
+})
+
+createGauge({
   name: "activeChannels",
   description: "How many active channels there are on the active nodes",
   collect: async () => {

@@ -1,5 +1,6 @@
 export * from "./delete-ln-payments"
 export * from "./get-balances"
+export * from "./get-held-invoices"
 export * from "./get-pending-htlc"
 export * from "./list-nodes-pubkeys"
 export * from "./lookup-invoice-by-hash"

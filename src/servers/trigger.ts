@@ -36,9 +36,10 @@ import {
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletInvoiceError,
 } from "@domain/errors"
-import { checkedToDisplayCurrency } from "@domain/fiat"
-import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { SwapTriggerError } from "@domain/swap/errors"
+import { checkedToDisplayCurrency } from "@domain/fiat"
+import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
+import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { BriaSubscriber } from "@services/bria"
 import { RedisCacheService } from "@services/cache"
@@ -273,7 +274,10 @@ const listenerExistingHodlInvoices = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const invoices = await lndService.listInvoices(lnd)
+  const { delay } = DEFAULT_EXPIRATIONS[WalletCurrency.Btc]
+  const createdAfter = new Date(new Date().getTime() - delay * 2 * 1000)
+
+  const invoices = await lndService.listInvoices({ pubkey, createdAfter })
   if (invoices instanceof Error) return invoices
 
   for (const lnInvoice of invoices) {
