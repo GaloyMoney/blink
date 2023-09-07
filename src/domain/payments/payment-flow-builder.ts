@@ -286,85 +286,164 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
       usdProtocolAndBankFee,
     } = state
 
-    // Use mid price when no buy / sell required
+    // Setup conditions
     const noConversionRequired =
       (state.senderWalletCurrency === WalletCurrency.Btc &&
         state.settlementMethod === SettlementMethod.Lightning) ||
       (state.senderWalletCurrency as WalletCurrency) ===
         (state.recipientWalletCurrency as WalletCurrency)
 
+    const hasBtcAmounts = !!(btcPaymentAmount && btcProtocolAndBankFee)
+    const hasUsdAmounts = !!(usdPaymentAmount && usdProtocolAndBankFee)
+    const isUsdRecipient = !!(state.recipientWalletCurrency === WalletCurrency.Usd)
+
+    // Define conversion methods
+    const currentStateFromAllAmountsPresent = async (amounts: AmountsAndFees) => ({
+      ...stateWithCreatedAt,
+      ...amounts,
+    })
+
+    const updatedStateFromBtcPaymentAmountMid = async ({
+      btcPaymentAmount,
+      btcProtocolAndBankFee,
+    }: BtcAmountsAndFees): Promise<
+      LPFBWithConversionState<S, R> | DealerPriceServiceError
+    > => {
+      const convertedAmount = await mid.usdFromBtc(btcPaymentAmount)
+      if (convertedAmount instanceof Error) return convertedAmount
+
+      const priceRatio = WalletPriceRatio({
+        usd: convertedAmount,
+        btc: btcPaymentAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
+
+      const usdProtocolAndBankFee = priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
+      return {
+        ...stateWithCreatedAt,
+        btcPaymentAmount,
+        usdPaymentAmount: convertedAmount,
+        btcProtocolAndBankFee,
+        usdProtocolAndBankFee,
+      }
+    }
+
+    const updatedStateFromBtcPaymentAmountDealer = async ({
+      btcPaymentAmount,
+      btcProtocolAndBankFee,
+    }: BtcAmountsAndFees): Promise<
+      LPFBWithConversionState<S, R> | DealerPriceServiceError
+    > => {
+      const usdFromBtc =
+        state.senderWalletCurrency === WalletCurrency.Btc
+          ? hedgeBuyUsd.usdFromBtc
+          : hedgeSellUsd.usdFromBtc
+
+      const convertedAmount = await usdFromBtc(btcPaymentAmount)
+      if (convertedAmount instanceof Error) return convertedAmount
+
+      const priceRatio = WalletPriceRatio({
+        usd: convertedAmount,
+        btc: btcPaymentAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
+
+      const usdProtocolAndBankFee = priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
+      return {
+        ...stateWithCreatedAt,
+        btcPaymentAmount,
+        usdPaymentAmount: convertedAmount,
+        btcProtocolAndBankFee,
+        usdProtocolAndBankFee,
+      }
+    }
+
+    const updatedStateFromUsdPaymentAmountMid = async ({
+      usdPaymentAmount,
+      usdProtocolAndBankFee,
+    }: UsdAmountsAndFees): Promise<
+      LPFBWithConversionState<S, R> | DealerPriceServiceError
+    > => {
+      const convertedAmount = await mid.btcFromUsd(usdPaymentAmount)
+      if (convertedAmount instanceof Error) return convertedAmount
+
+      const priceRatio = WalletPriceRatio({
+        btc: convertedAmount,
+        usd: usdPaymentAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
+
+      const btcProtocolAndBankFee = priceRatio.convertFromUsd(usdProtocolAndBankFee)
+      return {
+        ...stateWithCreatedAt,
+        btcPaymentAmount: convertedAmount,
+        usdPaymentAmount,
+        btcProtocolAndBankFee,
+        usdProtocolAndBankFee,
+      }
+    }
+
+    const updatedStateFromUsdPaymentAmountDealer = async ({
+      usdPaymentAmount,
+      usdProtocolAndBankFee,
+    }: UsdAmountsAndFees): Promise<
+      LPFBWithConversionState<S, R> | DealerPriceServiceError
+    > => {
+      const btcFromUsd =
+        state.senderWalletCurrency === WalletCurrency.Btc
+          ? hedgeBuyUsd.btcFromUsd
+          : hedgeSellUsd.btcFromUsd
+
+      const convertedAmount = await btcFromUsd(usdPaymentAmount)
+      if (convertedAmount instanceof Error) return convertedAmount
+
+      const priceRatio = WalletPriceRatio({
+        btc: convertedAmount,
+        usd: usdPaymentAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
+
+      const btcProtocolAndBankFee = priceRatio.convertFromUsd(usdProtocolAndBankFee)
+      return {
+        ...stateWithCreatedAt,
+        btcPaymentAmount: convertedAmount,
+        usdPaymentAmount,
+        btcProtocolAndBankFee,
+        usdProtocolAndBankFee,
+      }
+    }
+
+    // Apply conversion methods based on conditional checks
+    if (noConversionRequired && hasBtcAmounts && hasUsdAmounts) {
+      return LPFBWithConversion(
+        currentStateFromAllAmountsPresent({
+          btcPaymentAmount,
+          usdPaymentAmount,
+          btcProtocolAndBankFee,
+          usdProtocolAndBankFee,
+        }),
+      )
+    }
+
+    if (noConversionRequired && hasBtcAmounts) {
+      return LPFBWithConversion(
+        updatedStateFromBtcPaymentAmountMid({
+          btcPaymentAmount,
+          btcProtocolAndBankFee,
+        }),
+      )
+    }
+
+    if (noConversionRequired && hasUsdAmounts) {
+      return LPFBWithConversion(
+        updatedStateFromUsdPaymentAmountMid({
+          usdPaymentAmount,
+          usdProtocolAndBankFee,
+        }),
+      )
+    }
+
     if (noConversionRequired) {
-      if (
-        btcPaymentAmount &&
-        btcProtocolAndBankFee &&
-        usdPaymentAmount &&
-        usdProtocolAndBankFee
-      ) {
-        return LPFBWithConversion(
-          new Promise((res) =>
-            res({
-              ...stateWithCreatedAt,
-              btcPaymentAmount,
-              usdPaymentAmount,
-              btcProtocolAndBankFee,
-              usdProtocolAndBankFee,
-            }),
-          ),
-        )
-      }
-
-      if (btcPaymentAmount && btcProtocolAndBankFee) {
-        const updatedStateFromBtcPaymentAmount = async (
-          btcPaymentAmount: BtcPaymentAmount,
-        ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-          const convertedAmount = await mid.usdFromBtc(btcPaymentAmount)
-          if (convertedAmount instanceof Error) return convertedAmount
-
-          const priceRatio = WalletPriceRatio({
-            usd: convertedAmount,
-            btc: btcPaymentAmount,
-          })
-          if (priceRatio instanceof Error) return priceRatio
-
-          const usdProtocolAndBankFee =
-            priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
-          return {
-            ...stateWithCreatedAt,
-            btcPaymentAmount,
-            usdPaymentAmount: convertedAmount,
-            btcProtocolAndBankFee,
-            usdProtocolAndBankFee,
-          }
-        }
-
-        return LPFBWithConversion(updatedStateFromBtcPaymentAmount(btcPaymentAmount))
-      }
-      if (usdPaymentAmount && usdProtocolAndBankFee) {
-        const updatedStateFromUsdPaymentAmount = async (
-          usdPaymentAmount: UsdPaymentAmount,
-        ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-          const convertedAmount = await mid.btcFromUsd(usdPaymentAmount)
-          if (convertedAmount instanceof Error) return convertedAmount
-
-          const priceRatio = WalletPriceRatio({
-            btc: convertedAmount,
-            usd: usdPaymentAmount,
-          })
-          if (priceRatio instanceof Error) return priceRatio
-
-          const btcProtocolAndBankFee = priceRatio.convertFromUsd(usdProtocolAndBankFee)
-          return {
-            ...stateWithCreatedAt,
-            btcPaymentAmount: convertedAmount,
-            usdPaymentAmount,
-            btcProtocolAndBankFee,
-            usdProtocolAndBankFee,
-          }
-        }
-
-        return LPFBWithConversion(updatedStateFromUsdPaymentAmount(usdPaymentAmount))
-      }
-
       return LPFBWithError(
         new InvalidLightningPaymentFlowBuilderStateError(
           "withConversion - btcPaymentAmount || btcProtocolAndBankFee not set",
@@ -372,85 +451,33 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
       )
     }
 
-    // Convert to usd if necessary
-    if (btcPaymentAmount && btcProtocolAndBankFee) {
-      // We already know usd amount from the recipient invoice
-      if (
-        state.recipientWalletCurrency === WalletCurrency.Usd &&
-        usdPaymentAmount &&
-        usdProtocolAndBankFee
-      ) {
-        return LPFBWithConversion(
-          Promise.resolve({
-            ...stateWithCreatedAt,
-            btcPaymentAmount,
-            usdPaymentAmount,
-            btcProtocolAndBankFee,
-            usdProtocolAndBankFee,
-          }),
-        )
-      }
-
-      const updatedStateFromBtcPaymentAmount = async (
-        btcPaymentAmount: BtcPaymentAmount,
-      ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-        const usdFromBtc =
-          state.senderWalletCurrency === WalletCurrency.Btc
-            ? hedgeBuyUsd.usdFromBtc
-            : hedgeSellUsd.usdFromBtc
-
-        const convertedAmount = await usdFromBtc(btcPaymentAmount)
-        if (convertedAmount instanceof Error) return convertedAmount
-
-        const priceRatio = WalletPriceRatio({
-          usd: convertedAmount,
-          btc: btcPaymentAmount,
-        })
-        if (priceRatio instanceof Error) return priceRatio
-
-        const usdProtocolAndBankFee =
-          priceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
-        return {
-          ...stateWithCreatedAt,
+    if (hasBtcAmounts && hasUsdAmounts && isUsdRecipient) {
+      return LPFBWithConversion(
+        currentStateFromAllAmountsPresent({
           btcPaymentAmount,
-          usdPaymentAmount: convertedAmount,
-          btcProtocolAndBankFee,
-          usdProtocolAndBankFee,
-        }
-      }
-
-      return LPFBWithConversion(updatedStateFromBtcPaymentAmount(btcPaymentAmount))
-    }
-
-    if (usdPaymentAmount && usdProtocolAndBankFee) {
-      const updatedStateFromUsdPaymentAmount = async (
-        usdPaymentAmount: UsdPaymentAmount,
-      ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-        const btcFromUsd =
-          state.senderWalletCurrency === WalletCurrency.Btc
-            ? hedgeBuyUsd.btcFromUsd
-            : hedgeSellUsd.btcFromUsd
-
-        const convertedAmount = await btcFromUsd(usdPaymentAmount)
-        if (convertedAmount instanceof Error) return convertedAmount
-
-        const priceRatio = WalletPriceRatio({
-          btc: convertedAmount,
-          usd: usdPaymentAmount,
-        })
-        if (priceRatio instanceof Error) return priceRatio
-
-        const btcProtocolAndBankFee = priceRatio.convertFromUsd(usdProtocolAndBankFee)
-        return {
-          ...stateWithCreatedAt,
-          btcPaymentAmount: convertedAmount,
           usdPaymentAmount,
           btcProtocolAndBankFee,
           usdProtocolAndBankFee,
-        }
-      }
+        }),
+      )
+    }
 
-      return LPFBWithConversion(updatedStateFromUsdPaymentAmount(usdPaymentAmount))
+    if (hasBtcAmounts) {
+      return LPFBWithConversion(
+        updatedStateFromBtcPaymentAmountDealer({
+          btcPaymentAmount,
+          btcProtocolAndBankFee,
+        }),
+      )
+    }
+
+    if (hasUsdAmounts) {
+      return LPFBWithConversion(
+        updatedStateFromUsdPaymentAmountDealer({
+          usdPaymentAmount,
+          usdProtocolAndBankFee,
+        }),
+      )
     }
 
     return LPFBWithError(

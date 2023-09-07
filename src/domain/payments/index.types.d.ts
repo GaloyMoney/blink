@@ -37,6 +37,16 @@ type AmountsAndFees = {
   usdProtocolAndBankFee: UsdPaymentAmount
 }
 
+type BtcAmountsAndFees = {
+  btcPaymentAmount: BtcPaymentAmount
+  btcProtocolAndBankFee: BtcPaymentAmount
+}
+
+type UsdAmountsAndFees = {
+  usdPaymentAmount: UsdPaymentAmount
+  usdProtocolAndBankFee: UsdPaymentAmount
+}
+
 type PaymentFlowCommonState<
   S extends WalletCurrency,
   R extends WalletCurrency,
