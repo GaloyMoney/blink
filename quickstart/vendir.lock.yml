@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump pino-http from 8.4.0 to 8.5.0 (#3172)...'
-      sha: ba34092656c3051709697c5e5dc52cf76d15f27d
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: b261356e135f45f303794263993cfbf6f4fc30a9
       tags:
-      - 0.13.41-1-gba3409265
+      - 0.13.41-5-gb261356e1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump pino-http from 8.4.0 to 8.5.0 (#3172)...'
-      sha: ba34092656c3051709697c5e5dc52cf76d15f27d
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: b261356e135f45f303794263993cfbf6f4fc30a9
       tags:
-      - 0.13.41-1-gba3409265
+      - 0.13.41-5-gb261356e1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump pino-http from 8.4.0 to 8.5.0 (#3172)...'
-      sha: ba34092656c3051709697c5e5dc52cf76d15f27d
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: b261356e135f45f303794263993cfbf6f4fc30a9
       tags:
-      - 0.13.41-1-gba3409265
+      - 0.13.41-5-gb261356e1
     path: ./
   path: ./graphql
 kind: LockConfig
