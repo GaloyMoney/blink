@@ -7,7 +7,7 @@ import {
   LnFees,
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
-  InvalidZeroAmountPriceRatioInputError,
+  SubOneCentSatAmountForUsdSelfSendError,
 } from "@domain/payments"
 import { ONE_CENT, ValidationError, WalletCurrency } from "@domain/shared"
 
@@ -918,8 +918,14 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
             withBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
           const lessThan1CentWithUsdRecipientBuilder =
             lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
+          const lessThan1CentWithSelfUsdRecipientBuilder =
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(
+              senderUsdAsRecipientArgs,
+            )
 
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
@@ -966,8 +972,8 @@ describe("LightningPaymentFlowBuilder", () => {
             )
           })
 
-          it("fails to send amount less than 1 cent", async () => {
-            const payment = await lessThan1CentWithUsdRecipientBuilder
+          it("credits amount less than 1 cent amount to recipient btc wallet", async () => {
+            const paymentFlow = await lessThan1CentWithUsdRecipientBuilder
               .withConversion({
                 mid: {
                   usdFromBtc: usdFromBtcMid,
@@ -983,7 +989,31 @@ describe("LightningPaymentFlowBuilder", () => {
                 },
               })
               .withoutRoute()
-            expect(payment).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+            if (paymentFlow instanceof Error) throw paymentFlow
+
+            const { walletDescriptor: recipientWalletDescriptor } =
+              paymentFlow.recipientDetails()
+            expect(recipientWalletDescriptor).toStrictEqual(recipientBtcWalletDescriptor)
+          })
+
+          it("fails to send less than 1 cent to self", async () => {
+            const paymentFlow = await lessThan1CentWithSelfUsdRecipientBuilder
+              .withConversion({
+                mid: {
+                  usdFromBtc: usdFromBtcMid,
+                  btcFromUsd: btcFromUsdMid,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc: usdFromBtcBuy,
+                  btcFromUsd: btcFromUsdBuy,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc: usdFromBtcSell,
+                  btcFromUsd: btcFromUsdSell,
+                },
+              })
+              .withoutRoute()
+            expect(paymentFlow).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
           })
         })
       })
@@ -1243,8 +1273,14 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
             withBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
           const lessThan1CentWithUsdRecipientBuilder =
             lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
+          const lessThan1CentWithSelfUsdRecipientBuilder =
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(
+              senderUsdAsRecipientArgs,
+            )
 
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
@@ -1291,8 +1327,8 @@ describe("LightningPaymentFlowBuilder", () => {
             )
           })
 
-          it("fails to send amount less than 1 cent", async () => {
-            const payment = await lessThan1CentWithUsdRecipientBuilder
+          it("credits amount less than 1 cent amount to recipient btc wallet", async () => {
+            const paymentFlow = await lessThan1CentWithUsdRecipientBuilder
               .withConversion({
                 mid: {
                   usdFromBtc: usdFromBtcMid,
@@ -1308,7 +1344,31 @@ describe("LightningPaymentFlowBuilder", () => {
                 },
               })
               .withoutRoute()
-            expect(payment).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+            if (paymentFlow instanceof Error) throw paymentFlow
+
+            const { walletDescriptor: recipientWalletDescriptor } =
+              paymentFlow.recipientDetails()
+            expect(recipientWalletDescriptor).toStrictEqual(recipientBtcWalletDescriptor)
+          })
+
+          it("fails to send amount less than 1 cent to self", async () => {
+            const payment = await lessThan1CentWithSelfUsdRecipientBuilder
+              .withConversion({
+                mid: {
+                  usdFromBtc: usdFromBtcMid,
+                  btcFromUsd: btcFromUsdMid,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc: usdFromBtcBuy,
+                  btcFromUsd: btcFromUsdBuy,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc: usdFromBtcSell,
+                  btcFromUsd: btcFromUsdSell,
+                },
+              })
+              .withoutRoute()
+            expect(payment).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
           })
         })
       })
