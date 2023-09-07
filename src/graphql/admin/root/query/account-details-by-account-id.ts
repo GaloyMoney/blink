@@ -8,7 +8,7 @@ import { Admin } from "@app"
 const AccountDetailsByAccountId = GT.Field({
   type: GT.NonNull(GraphQLAccount),
   args: {
-    // TODO: type for AccountId when AccountId / AccountUUID are properly exposed
+    // TODO: type for AccountId when AccountId / AccountUuid are properly exposed
     accountId: { type: GT.NonNullID },
   },
   resolve: async (_, { accountId }) => {

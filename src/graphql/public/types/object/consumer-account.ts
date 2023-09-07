@@ -23,14 +23,17 @@ import DisplayCurrency from "@graphql/shared/types/scalar/display-currency"
 
 import { WalletsRepository } from "@services/mongoose"
 
+import { listEndpoints } from "@app/callback"
+
 import AccountLevel from "../../../shared/types/scalar/account-level"
 
 import { TransactionConnection } from "../../../shared/types/object/transaction"
 
 import AccountLimits from "./account-limits"
 import Quiz from "./quiz"
+import CallbackEndpoint from "./callback-endpoint"
 
-const ConsumerAccount = GT.Object<Account>({
+const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   name: "ConsumerAccount",
   interfaces: () => [IAccount],
   isTypeOf: () => true, // TODO: improve
@@ -39,6 +42,13 @@ const ConsumerAccount = GT.Object<Account>({
     id: {
       type: GT.NonNullID,
       resolve: (source) => source.uuid,
+    },
+
+    callbackEndpoints: {
+      type: GT.NonNullList(CallbackEndpoint),
+      resolve: async (source, args, { domainAccount }) => {
+        return listEndpoints(domainAccount.uuid)
+      },
     },
 
     wallets: {

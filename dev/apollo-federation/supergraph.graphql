@@ -24,6 +24,7 @@ directive @link(url: String, as: String, for: link__Purpose, import: [link__Impo
 interface Account
   @join__type(graph: PUBLIC)
 {
+  callbackEndpoints: [CallbackEndpoint!]!
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   displayCurrency: DisplayCurrency!
@@ -187,6 +188,33 @@ type BuildInformation
   helmRevision: Int
 }
 
+type CallbackEndpoint
+  @join__type(graph: PUBLIC)
+{
+  id: EndpointId!
+  url: EndpointUrl!
+}
+
+input CallbackEndpointAddInput
+  @join__type(graph: PUBLIC)
+{
+  """callback endpoint to be called"""
+  url: EndpointUrl!
+}
+
+type CallbackEndpointAddPayload
+  @join__type(graph: PUBLIC)
+{
+  errors: [Error!]!
+  id: EndpointId
+}
+
+input CallbackEndpointDeleteInput
+  @join__type(graph: PUBLIC)
+{
+  id: EndpointId!
+}
+
 type CaptchaCreateChallengePayload
   @join__type(graph: PUBLIC)
 {
@@ -228,6 +256,8 @@ type ConsumerAccount implements Account
   @join__implements(graph: PUBLIC, interface: "Account")
   @join__type(graph: PUBLIC)
 {
+  callbackEndpoints: [CallbackEndpoint!]!
+
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
@@ -333,6 +363,13 @@ scalar EmailAddress
 An id to be passed between registrationInitiate and registrationValidate for confirming email
 """
 scalar EmailRegistrationId
+  @join__type(graph: PUBLIC)
+
+scalar EndpointId
+  @join__type(graph: PUBLIC)
+
+"""Url that will be fetched on events for the account"""
+scalar EndpointUrl
   @join__type(graph: PUBLIC)
 
 interface Error
@@ -781,6 +818,8 @@ type Mutation
   accountDelete: AccountDeletePayload!
   accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload!
   accountUpdateDisplayCurrency(input: AccountUpdateDisplayCurrencyInput!): AccountUpdateDisplayCurrencyPayload!
+  callbackEndpointAdd(input: CallbackEndpointAddInput!): CallbackEndpointAddPayload!
+  callbackEndpointDelete(input: CallbackEndpointDeleteInput!): SuccessPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   deviceNotificationTokenCreate(input: DeviceNotificationTokenCreateInput!): SuccessPayload!

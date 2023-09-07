@@ -33,7 +33,7 @@ import { NotificationsService } from "@services/notifications"
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
 import { CallbackEventType } from "@domain/callback"
 import { AccountLevel } from "@domain/accounts"
-import { CallbackService } from "@services/callback"
+import { CallbackService } from "@services/svix"
 import { getCallbackServiceConfig } from "@config"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
@@ -303,7 +303,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     ) {
       const callbackService = CallbackService(getCallbackServiceConfig())
       await callbackService.sendMessage({
-        accountUUID: recipientAccount.uuid,
+        accountUuid: recipientAccount.uuid,
         eventType: CallbackEventType.ReceiveLightning,
         payload: {
           // FIXME: [0] might not be correct
