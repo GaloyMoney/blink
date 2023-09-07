@@ -275,7 +275,7 @@ const listenerExistingHodlInvoices = async ({
   if (lndService instanceof Error) return lndService
 
   const { delay } = DEFAULT_EXPIRATIONS[WalletCurrency.Btc]
-  const createdAfter = new Date(new Date().getTime() - delay * 1000)
+  const createdAfter = new Date(new Date().getTime() - delay * 2 * 1000)
 
   const invoices = await lndService.listInvoices({ pubkey, createdAfter })
   if (invoices instanceof Error) return invoices

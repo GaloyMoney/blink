@@ -9,7 +9,7 @@ export const getHeldInvoicesCount = async (): Promise<number | ApplicationError>
   if (offChainService instanceof Error) return offChainService
 
   const { delay } = DEFAULT_EXPIRATIONS[WalletCurrency.Btc]
-  const createdAfter = new Date(new Date().getTime() - delay * 1000)
+  const createdAfter = new Date(new Date().getTime() - delay * 2 * 1000)
 
   const invoices = await Promise.all(
     offChainService.listActivePubkeys().map(async (pubkey) => {
