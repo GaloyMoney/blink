@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add dockerhost-alias to svix extra_hosts (#3183)'
-      sha: edade0937bf4f566dbeca5014f429c6ba6f82e8e
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 3fbb9dbad7df7f606530c7d405aff5496ce88e31
       tags:
-      - 0.13.43-1-gedade0937
+      - 0.13.44
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add dockerhost-alias to svix extra_hosts (#3183)'
-      sha: edade0937bf4f566dbeca5014f429c6ba6f82e8e
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 3fbb9dbad7df7f606530c7d405aff5496ce88e31
       tags:
-      - 0.13.43-1-gedade0937
+      - 0.13.44
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add dockerhost-alias to svix extra_hosts (#3183)'
-      sha: edade0937bf4f566dbeca5014f429c6ba6f82e8e
+      commitTitle: Merge branch 'main' of github.com:GaloyMoney/galoy into HEAD
+      sha: 3fbb9dbad7df7f606530c7d405aff5496ce88e31
       tags:
-      - 0.13.43-1-gedade0937
+      - 0.13.44
     path: ./
   path: ./graphql
 kind: LockConfig
