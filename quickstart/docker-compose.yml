@@ -323,6 +323,8 @@ services:
     - svix-pg
     ports:
     - 8071:8071
+    extra_hosts:
+    - dockerhost-alias:host-gateway
   svix-pg:
     image: postgres:14.1
     environment:

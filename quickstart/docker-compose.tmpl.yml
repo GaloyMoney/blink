@@ -142,3 +142,11 @@ services:
     #@overlay/match by=overlay.all, expects="0+"
     #@overlay/replace via=lambda left, right: left.replace("HOST_PROJECT_PATH:-.}", "HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}")
     - REPLACED
+
+#@overlay/match by=overlay.all
+---
+services:
+  svix:
+    #@overlay/match missing_ok=True
+    extra_hosts:
+      - "dockerhost-alias:host-gateway"
