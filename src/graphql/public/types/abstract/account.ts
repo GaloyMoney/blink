@@ -10,12 +10,16 @@ import { TransactionConnection } from "@graphql/shared/types/object/transaction"
 import AccountLevel from "../../../shared/types/scalar/account-level"
 
 import Wallet from "../../../shared/types/abstract/wallet"
+import CallbackEndpoint from "../object/callback-endpoint"
 
 const IAccount = GT.Interface({
   name: "Account",
   fields: () => ({
     id: {
       type: GT.NonNullID,
+    },
+    callbackEndpoints: {
+      type: GT.NonNullList(CallbackEndpoint),
     },
     wallets: {
       type: GT.NonNullList(Wallet),

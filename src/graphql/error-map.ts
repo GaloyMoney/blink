@@ -618,6 +618,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MattermostError":
     case "CouldNotFindAccountIpError":
     case "InvalidFlowId":
+    case "CallbackError":
+    case "InvalidUrlError":
+    case "SvixEventError":
+    case "UnknownSvixError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

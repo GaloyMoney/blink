@@ -32,7 +32,7 @@ export const getAccountByUserEmail = async (email: EmailAddress) => {
   return accounts.findByUserId(userId)
 }
 
-export const getAccountByAccountUuid = async (accountUuid: AccountUUID) => {
+export const getAccountByAccountUuid = async (accountUuid: AccountUuid) => {
   const accountUuidValid = checkedToAccountUuid(accountUuid)
   if (accountUuidValid instanceof Error) return accountUuidValid
 

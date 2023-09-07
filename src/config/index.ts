@@ -1,7 +1,5 @@
 import { toDays } from "@domain/primitives"
 
-import { SvixConfig } from "@services/callback"
-
 import {
   getBriaPartialConfigFromYaml,
   MEMO_SHARING_CENTS_THRESHOLD,

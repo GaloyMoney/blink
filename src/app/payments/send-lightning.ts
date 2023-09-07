@@ -56,7 +56,7 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
-import { CallbackService } from "@services/callback"
+import { CallbackService } from "@services/svix"
 import { getCallbackServiceConfig } from "@config"
 import { CallbackEventType } from "@domain/callback"
 
@@ -552,7 +552,7 @@ const executePaymentViaIntraledger = async <
     ) {
       const callbackService = CallbackService(getCallbackServiceConfig())
       await callbackService.sendMessage({
-        accountUUID: recipientAccount.uuid,
+        accountUuid: recipientAccount.uuid,
         eventType: CallbackEventType.ReceiveIntraledger,
         payload: {
           // FIXME: [0] might not be correct
