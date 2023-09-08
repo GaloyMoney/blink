@@ -4,7 +4,7 @@ import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@domain/
 import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import {
   InvalidOnChainPaymentFlowBuilderStateError,
-  InvalidZeroAmountPriceRatioInputError,
+  SubOneCentSatAmountForUsdSelfSendError,
   WalletPriceRatio,
 } from "@domain/payments"
 import {
@@ -47,6 +47,11 @@ describe("OnChainPaymentFlowBuilder", () => {
   const senderBtcAsRecipientArgs = {
     ...senderAsRecipientCommonArgs,
     recipientWalletDescriptor: senderBtcWalletDescriptor,
+  }
+
+  const senderUsdAsRecipientArgs = {
+    ...senderAsRecipientCommonArgs,
+    recipientWalletDescriptor: senderUsdWalletDescriptor,
   }
 
   const senderAccount = { withdrawFee: toSats(100) } as Account
@@ -529,6 +534,12 @@ describe("OnChainPaymentFlowBuilder", () => {
             const withUsdRecipientBuilder =
               withBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
 
+            const lessThan1CentWithUsdRecipientBuilder =
+              withBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
+            const lessThan1CentWithSelfUsdRecipientBuilder =
+              withBtcWalletBuilder.withRecipientWallet(senderUsdAsRecipientArgs)
+
             it("correctly applies no fees, with normal amount", async () => {
               const amount = uncheckedAmount
               const withAmountBuilder = withUsdRecipientBuilder.withAmount({
@@ -650,6 +661,36 @@ describe("OnChainPaymentFlowBuilder", () => {
                   usdProtocolAndBankFee: onChainFees.intraLedgerFees().usd,
                 }),
               )
+            })
+
+            it("credits amount less than 1 cent amount to recipient btc wallet", async () => {
+              const amount = 1
+              const paymentFlow = await lessThan1CentWithUsdRecipientBuilder
+                .withAmount({
+                  amount: BigInt(amount),
+                  currency: amountCurrency,
+                })
+                .withConversion(withConversionArgs)
+                .withoutMinerFee()
+              if (paymentFlow instanceof Error) throw paymentFlow
+
+              const { walletDescriptor: recipientWalletDescriptor } =
+                paymentFlow.recipientDetails()
+              expect(recipientWalletDescriptor).toStrictEqual(
+                recipientBtcWalletDescriptor,
+              )
+            })
+
+            it("fails to send less than 1 cent to self", async () => {
+              const amount = 1
+              const paymentFlow = await lessThan1CentWithSelfUsdRecipientBuilder
+                .withAmount({
+                  amount: BigInt(amount),
+                  currency: amountCurrency,
+                })
+                .withConversion(withConversionArgs)
+                .withoutMinerFee()
+              expect(paymentFlow).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
             })
           })
         })
@@ -1218,32 +1259,6 @@ describe("OnChainPaymentFlowBuilder", () => {
 
         const proposedAmounts = await builder.proposedAmounts()
         expect(proposedAmounts).toBeInstanceOf(LessThanDustThresholdError)
-      })
-
-      describe("btcProposedAmount less-than-1-cent from btc wallet to usd wallet", () => {
-        it("returns InvalidZeroAmountPriceRatioInputError", async () => {
-          const builder = await OnChainPaymentFlowBuilder({
-            volumeLightningFn,
-            volumeOnChainFn,
-            isExternalAddress: async () => Promise.resolve(true),
-            sendAll: false,
-            dustThreshold,
-          })
-            .withAddress("address" as OnChainAddress)
-            .withSenderWalletAndAccount({
-              wallet: senderBtcWalletDescriptor,
-              account: senderAccount,
-            })
-            .withRecipientWallet(recipientUsdArgs)
-            .withAmount({ amount: BigInt(1), currency: amountCurrency })
-            .withConversion(withConversionArgs)
-
-          const proposedBtcAmount = await builder.btcProposedAmount()
-          expect(proposedBtcAmount).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
-
-          const proposedAmounts = await builder.proposedAmounts()
-          expect(proposedAmounts).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
-        })
       })
     })
   })
