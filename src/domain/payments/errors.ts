@@ -1,7 +1,6 @@
 import { ValidationError, ErrorLevel } from "@domain/shared"
 
 export class InvalidZeroAmountPriceRatioInputError extends ValidationError {}
-export class ZeroAmountForUsdRecipientError extends ValidationError {}
 export class SubOneCentSatAmountForUsdSelfSendError extends ValidationError {}
 export class LnPaymentRequestNonZeroAmountRequiredError extends ValidationError {}
 export class LnPaymentRequestZeroAmountRequiredError extends ValidationError {}

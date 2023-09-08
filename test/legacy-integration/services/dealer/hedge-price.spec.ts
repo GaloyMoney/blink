@@ -4,12 +4,13 @@ import { getDealerConfig } from "@config"
 
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
-import { ZeroAmountForUsdRecipientError } from "@domain/payments"
 import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose"
 
 import { createAccount, createAndFundNewWallet, getBalanceHelper } from "test/helpers"
+
+class ZeroAmountForUsdRecipientError extends Error {}
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")

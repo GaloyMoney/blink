@@ -7,11 +7,19 @@ import {
   WalletCurrency,
   ZERO_BANK_FEE,
 } from "@domain/shared"
-import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
+import {
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
+  LessThanDustThresholdError,
+  SelfPaymentError,
+} from "@domain/errors"
 import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
-import { InvalidOnChainPaymentFlowBuilderStateError } from "./errors"
+import {
+  InvalidOnChainPaymentFlowBuilderStateError,
+  InvalidZeroAmountPriceRatioInputError,
+  SubOneCentSatAmountForUsdSelfSendError,
+} from "./errors"
 import { WalletPriceRatio } from "./price-ratio"
 import { OnChainPaymentFlow } from "./payment-flow"
 
@@ -169,9 +177,13 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
       usdProposedAmount,
     })
 
-    const updatedStateFromBtcProposedAmountMid = async (
-      btcProposedAmount: BtcPaymentAmount,
-    ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+    const updatedStateFromBtcProposedAmountMid = async ({
+      btcProposedAmount,
+      recipientWalletDescriptor,
+    }: {
+      btcProposedAmount: BtcPaymentAmount
+      recipientWalletDescriptor?: WalletDescriptor<WalletCurrency>
+    }): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
       const convertedAmountRaw = await mid.usdFromBtc(btcProposedAmount)
       if (convertedAmountRaw instanceof Error) return convertedAmountRaw
 
@@ -189,6 +201,12 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
 
       return {
         ...stateWithCreatedAt,
+        ...(recipientWalletDescriptor !== undefined
+          ? {
+              recipientWalletId: recipientWalletDescriptor.id,
+              recipientWalletCurrency: recipientWalletDescriptor.currency as R,
+            }
+          : {}),
         btcProposedAmount,
         usdProposedAmount: convertedAmount,
       }
@@ -270,12 +288,17 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
 
     if (noConversionRequired && btcProposedAmount && usdProposedAmount) {
       return OPFBWithConversion(
-        currentStateFromAllAmountsPresent({ btcProposedAmount, usdProposedAmount }),
+        currentStateFromAllAmountsPresent({
+          btcProposedAmount,
+          usdProposedAmount,
+        }),
       )
     }
 
     if (noConversionRequired && btcProposedAmount) {
-      return OPFBWithConversion(updatedStateFromBtcProposedAmountMid(btcProposedAmount))
+      return OPFBWithConversion(
+        updatedStateFromBtcProposedAmountMid({ btcProposedAmount }),
+      )
     }
 
     if (noConversionRequired && usdProposedAmount) {
@@ -291,9 +314,31 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
     }
 
     if (btcProposedAmount) {
-      return OPFBWithConversion(
-        updatedStateFromBtcProposedAmountDealer(btcProposedAmount),
-      )
+      const updatedStateFromBtcProposedAmountDealerFallbackMid = async () => {
+        const updatedState =
+          await updatedStateFromBtcProposedAmountDealer(btcProposedAmount)
+        if (!(updatedState instanceof InvalidZeroAmountPriceRatioInputError)) {
+          return updatedState
+        }
+
+        const recipientBtcWalletDescriptor =
+          state.recipientWalletDescriptorsForAccount?.find(
+            (wallet) => wallet.currency === WalletCurrency.Btc,
+          )
+        if (recipientBtcWalletDescriptor === undefined) {
+          return new CouldNotFindWalletFromAccountIdAndCurrencyError()
+        }
+        if (recipientBtcWalletDescriptor.id === state.senderWalletId) {
+          return new SubOneCentSatAmountForUsdSelfSendError()
+        }
+
+        return updatedStateFromBtcProposedAmountMid({
+          btcProposedAmount,
+          recipientWalletDescriptor: recipientBtcWalletDescriptor,
+        })
+      }
+
+      return OPFBWithConversion(updatedStateFromBtcProposedAmountDealerFallbackMid())
     }
 
     if (usdProposedAmount) {
