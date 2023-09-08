@@ -10,9 +10,7 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import {
   InvalidLightningPaymentFlowBuilderStateError,
-  InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
-  ZeroAmountForUsdRecipientError,
   toDisplayBaseAmount,
 } from "@domain/payments"
 import { AccountLevel, AccountValidator } from "@domain/accounts"
@@ -117,9 +115,6 @@ const intraledgerPaymentSendWalletId = async ({
   if (builderWithConversion instanceof Error) return builderWithConversion
 
   const paymentFlow = await builderWithConversion.withoutRoute()
-  if (paymentFlow instanceof InvalidZeroAmountPriceRatioInputError) {
-    return new ZeroAmountForUsdRecipientError()
-  }
   if (paymentFlow instanceof Error) return paymentFlow
 
   addAttributesToCurrentSpan({
