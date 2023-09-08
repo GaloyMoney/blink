@@ -11,8 +11,9 @@ import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-re
 describe("WalletInvoiceReceiver", () => {
   const midPriceRatio = 2n
   const usdFromBtcMidPrice = async (amount: BtcPaymentAmount) => {
+    const finalAmount = amount.amount / midPriceRatio || 1n
     return Promise.resolve({
-      amount: amount.amount / midPriceRatio,
+      amount: finalAmount,
       currency: WalletCurrency.Usd,
     })
   }
@@ -164,6 +165,25 @@ describe("WalletInvoiceReceiver", () => {
             btcToCreditReceiver: receivedBtc,
           }),
         )
+      })
+
+      it("credits amount less than 1 cent amount to recipient btc wallet", async () => {
+        const walletInvoiceAmounts = await WalletInvoiceReceiver({
+          walletInvoice: noAmountUsdInvoice,
+          receivedBtc: BtcPaymentAmount(1n),
+          recipientAccountId,
+          recipientWalletDescriptorsForAccount: [
+            recipientBtcWalletDescriptor,
+            recipientUsdWalletDescriptor,
+          ],
+        }).withConversion({
+          mid: { usdFromBtc: usdFromBtcMidPrice },
+          hedgeBuyUsd: { usdFromBtc },
+        })
+        if (walletInvoiceAmounts instanceof Error) throw walletInvoiceAmounts
+
+        const { recipientWalletDescriptor } = walletInvoiceAmounts
+        expect(recipientWalletDescriptor).toStrictEqual(recipientBtcWalletDescriptor)
       })
     })
   })
