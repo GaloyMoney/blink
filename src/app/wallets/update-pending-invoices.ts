@@ -177,8 +177,14 @@ const updatePendingInvoiceBeforeFinally = async ({
     }
 
     // Prepare metadata and record transaction
+    const recipientWallet = await WalletsRepository().findById(
+      recipientWalletDescriptor.id,
+    )
+    if (recipientWallet instanceof Error) return recipientWallet
+
     const walletInvoiceReceiver = await WalletInvoiceReceiver({
       walletInvoice,
+      recipientAccountId: recipientWallet.accountId,
       receivedBtc,
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
       usdFromBtcMidPrice: usdFromBtcMidPriceFn,
@@ -198,11 +204,6 @@ const updatePendingInvoiceBeforeFinally = async ({
 
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
-
-    const recipientWallet = await WalletsRepository().findById(
-      recipientWalletDescriptor.id,
-    )
-    if (recipientWallet instanceof Error) return recipientWallet
 
     const recipientAccount = await AccountsRepository().findById(
       recipientWallet.accountId,
@@ -251,10 +252,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     //TODO: add displayCurrency: displayPaymentAmount.currency,
     const result = await LedgerFacade.recordReceiveOffChain({
       description,
-      recipientWalletDescriptor: {
-        ...walletInvoice.recipientWalletDescriptor,
-        accountId: recipientAccount.id,
-      },
+      recipientWalletDescriptor: walletInvoiceReceiver.recipientWalletDescriptor,
       amountToCreditReceiver: {
         usd: walletInvoiceReceiver.usdToCreditReceiver,
         btc: walletInvoiceReceiver.btcToCreditReceiver,

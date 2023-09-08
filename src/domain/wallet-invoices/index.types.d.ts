@@ -93,6 +93,7 @@ type WalletInvoiceReceiver = {
   btcToCreditReceiver: BtcPaymentAmount
   usdBankFee: UsdPaymentAmount
   btcBankFee: BtcPaymentAmount
+  recipientWalletDescriptor: WalletDescriptor<WalletCurrency>
   receivedAmount: () => BtcPaymentAmount | UsdPaymentAmount
 }
 
@@ -120,6 +121,7 @@ type WalletReceiverArgs = {
 
 type WalletInvoiceReceiverArgs = WalletReceiverArgs & {
   walletInvoice: WalletInvoice
+  recipientAccountId: AccountId
 }
 
 type WalletAddressReceiverArgs<S extends WalletCurrency> = WalletReceiverArgs & {

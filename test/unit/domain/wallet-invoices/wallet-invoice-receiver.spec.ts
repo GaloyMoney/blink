@@ -37,6 +37,8 @@ describe("WalletInvoiceReceiver", () => {
     username: "Username" as Username,
   }
 
+  const recipientAccountId = "recipientAccountId" as AccountId
+
   describe("for btc invoice", () => {
     const btcInvoice: WalletInvoice = {
       paymentHash: "paymentHash" as PaymentHash,
@@ -51,6 +53,7 @@ describe("WalletInvoiceReceiver", () => {
     it("returns correct amounts", async () => {
       const walletInvoiceAmounts = await WalletInvoiceReceiver({
         walletInvoice: btcInvoice,
+        recipientAccountId,
         receivedBtc,
         usdFromBtcMidPrice,
         usdFromBtc,
@@ -88,6 +91,7 @@ describe("WalletInvoiceReceiver", () => {
       it("returns correct amounts", async () => {
         const walletInvoiceAmounts = await WalletInvoiceReceiver({
           walletInvoice: amountUsdInvoice,
+          recipientAccountId,
           receivedBtc,
           usdFromBtcMidPrice,
           usdFromBtc,
@@ -118,6 +122,7 @@ describe("WalletInvoiceReceiver", () => {
       it("returns correct amounts", async () => {
         const walletInvoiceAmounts = await WalletInvoiceReceiver({
           walletInvoice: noAmountUsdInvoice,
+          recipientAccountId,
           receivedBtc,
           usdFromBtcMidPrice,
           usdFromBtc,

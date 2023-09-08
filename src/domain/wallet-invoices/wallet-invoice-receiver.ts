@@ -5,6 +5,7 @@ const calc = AmountCalculator()
 
 export const WalletInvoiceReceiver = async ({
   walletInvoice,
+  recipientAccountId,
   receivedBtc,
   satsFee = ZERO_BANK_FEE.btcBankFee,
   usdFromBtc,
@@ -12,7 +13,16 @@ export const WalletInvoiceReceiver = async ({
 }: WalletInvoiceReceiverArgs): Promise<
   WalletInvoiceReceiver | DealerPriceServiceError | ValidationError
 > => {
-  if (walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc) {
+  const {
+    recipientWalletDescriptor: partialWalletDescriptor,
+    usdAmount: usdAmountFromInvoice,
+  } = walletInvoice
+
+  const recipientWalletDescriptor = {
+    ...partialWalletDescriptor,
+    accountId: recipientAccountId,
+  }
+  if (recipientWalletDescriptor.currency === WalletCurrency.Btc) {
     const receivedUsd = await usdFromBtcMidPrice(receivedBtc)
     if (receivedUsd instanceof Error) return receivedUsd
 
@@ -27,15 +37,16 @@ export const WalletInvoiceReceiver = async ({
       usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
       usdBankFee,
       btcBankFee,
+      recipientWalletDescriptor,
       receivedAmount: () =>
-        walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
+        recipientWalletDescriptor.currency === WalletCurrency.Btc
           ? receivedBtc
           : receivedUsd,
     }
   }
 
-  if (walletInvoice.usdAmount) {
-    const receivedUsd = walletInvoice.usdAmount
+  if (usdAmountFromInvoice) {
+    const receivedUsd = usdAmountFromInvoice
 
     const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
     if (priceRatio instanceof Error) return priceRatio
@@ -48,8 +59,9 @@ export const WalletInvoiceReceiver = async ({
       usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
       usdBankFee,
       btcBankFee,
+      recipientWalletDescriptor,
       receivedAmount: () =>
-        walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
+        recipientWalletDescriptor.currency === WalletCurrency.Btc
           ? receivedBtc
           : receivedUsd,
     }
@@ -69,8 +81,9 @@ export const WalletInvoiceReceiver = async ({
     usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
     usdBankFee,
     btcBankFee,
+    recipientWalletDescriptor,
     receivedAmount: () =>
-      walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
+      recipientWalletDescriptor.currency === WalletCurrency.Btc
         ? receivedBtc
         : receivedUsd,
   }
