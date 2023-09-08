@@ -88,7 +88,24 @@ type WalletAddress<S extends WalletCurrency> = {
   recipientWalletDescriptor: WalletDescriptor<S>
 }
 
+type WalletInvoiceConversionFns = {
+  usdFromBtc(
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+}
+
+type WalletInvoiceWithConversionArgs = {
+  hedgeBuyUsd: WalletInvoiceConversionFns
+  mid: WalletInvoiceConversionFns
+}
+
 type WalletInvoiceReceiver = {
+  withConversion(
+    args: WalletInvoiceWithConversionArgs,
+  ): Promise<ReceivedWalletInvoice | ValidationError | DealerPriceServiceError>
+}
+
+type ReceivedWalletInvoice = {
   usdToCreditReceiver: UsdPaymentAmount
   btcToCreditReceiver: BtcPaymentAmount
   usdBankFee: UsdPaymentAmount
@@ -108,7 +125,15 @@ type WalletAddressReceiver = {
     | { amountToCreditReceiver: UsdPaymentAmount; bankFee: UsdPaymentAmount }
 }
 
-type WalletReceiverArgs = {
+type WalletInvoiceReceiverArgs = {
+  receivedBtc: BtcPaymentAmount
+  satsFee?: BtcPaymentAmount
+
+  walletInvoice: WalletInvoice
+  recipientAccountId: AccountId
+}
+
+type WalletAddressReceiverArgs<S extends WalletCurrency> = {
   receivedBtc: BtcPaymentAmount
   satsFee?: BtcPaymentAmount
   usdFromBtc(
@@ -117,14 +142,7 @@ type WalletReceiverArgs = {
   usdFromBtcMidPrice(
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
-}
 
-type WalletInvoiceReceiverArgs = WalletReceiverArgs & {
-  walletInvoice: WalletInvoice
-  recipientAccountId: AccountId
-}
-
-type WalletAddressReceiverArgs<S extends WalletCurrency> = WalletReceiverArgs & {
   walletAddress: WalletAddress<S>
 }
 

@@ -55,8 +55,9 @@ describe("WalletInvoiceReceiver", () => {
         walletInvoice: btcInvoice,
         recipientAccountId,
         receivedBtc,
-        usdFromBtcMidPrice,
-        usdFromBtc,
+      }).withConversion({
+        mid: { usdFromBtc: usdFromBtcMidPrice },
+        hedgeBuyUsd: { usdFromBtc },
       })
 
       if (walletInvoiceAmounts instanceof Error) throw walletInvoiceAmounts
@@ -93,8 +94,9 @@ describe("WalletInvoiceReceiver", () => {
           walletInvoice: amountUsdInvoice,
           recipientAccountId,
           receivedBtc,
-          usdFromBtcMidPrice,
-          usdFromBtc,
+        }).withConversion({
+          mid: { usdFromBtc: usdFromBtcMidPrice },
+          hedgeBuyUsd: { usdFromBtc },
         })
 
         if (walletInvoiceAmounts instanceof Error) throw walletInvoiceAmounts
@@ -124,8 +126,9 @@ describe("WalletInvoiceReceiver", () => {
           walletInvoice: noAmountUsdInvoice,
           recipientAccountId,
           receivedBtc,
-          usdFromBtcMidPrice,
-          usdFromBtc,
+        }).withConversion({
+          mid: { usdFromBtc: usdFromBtcMidPrice },
+          hedgeBuyUsd: { usdFromBtc },
         })
 
         if (walletInvoiceAmounts instanceof Error) throw walletInvoiceAmounts

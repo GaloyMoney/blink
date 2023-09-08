@@ -186,8 +186,9 @@ const updatePendingInvoiceBeforeFinally = async ({
       walletInvoice,
       recipientAccountId: recipientWallet.accountId,
       receivedBtc,
-      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-      usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+    }).withConversion({
+      mid: { usdFromBtc: usdFromBtcMidPriceFn },
+      hedgeBuyUsd: { usdFromBtc: dealer.getCentsFromSatsForImmediateBuy },
     })
     if (walletInvoiceReceiver instanceof Error) return walletInvoiceReceiver
     const {
