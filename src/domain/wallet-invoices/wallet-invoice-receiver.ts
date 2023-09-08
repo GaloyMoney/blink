@@ -6,6 +6,7 @@ const calc = AmountCalculator()
 export const WalletInvoiceReceiver = ({
   walletInvoice,
   recipientAccountId,
+  recipientWalletDescriptorsForAccount,
   receivedBtc,
   satsFee = ZERO_BANK_FEE.btcBankFee,
 }: WalletInvoiceReceiverArgs): WalletInvoiceReceiver => {

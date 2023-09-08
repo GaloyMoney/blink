@@ -131,6 +131,7 @@ type WalletInvoiceReceiverArgs = {
 
   walletInvoice: WalletInvoice
   recipientAccountId: AccountId
+  recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
 }
 
 type WalletAddressReceiverArgs<S extends WalletCurrency> = {
