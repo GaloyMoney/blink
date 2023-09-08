@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add held invoices count to exporter (#3147)...'
-      sha: f6997cd19151679818287f755f736b7bd282f1a2
+      commitTitle: 'chore: bump lightning from 9.13.0 to 9.13.1 (#3181)...'
+      sha: 1b57eaffe4f56da5000396f7634f8e312a31a2db
       tags:
-      - 0.13.45-1-gf6997cd19
+      - 0.13.46-1-g1b57eaffe
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add held invoices count to exporter (#3147)...'
-      sha: f6997cd19151679818287f755f736b7bd282f1a2
+      commitTitle: 'chore: bump lightning from 9.13.0 to 9.13.1 (#3181)...'
+      sha: 1b57eaffe4f56da5000396f7634f8e312a31a2db
       tags:
-      - 0.13.45-1-gf6997cd19
+      - 0.13.46-1-g1b57eaffe
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add held invoices count to exporter (#3147)...'
-      sha: f6997cd19151679818287f755f736b7bd282f1a2
+      commitTitle: 'chore: bump lightning from 9.13.0 to 9.13.1 (#3181)...'
+      sha: 1b57eaffe4f56da5000396f7634f8e312a31a2db
       tags:
-      - 0.13.45-1-gf6997cd19
+      - 0.13.46-1-g1b57eaffe
     path: ./
   path: ./graphql
 kind: LockConfig
