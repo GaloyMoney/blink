@@ -348,6 +348,9 @@ export const setupInvoiceSubscribe = ({
   })
 
   listenerExistingHodlInvoices({ lnd, pubkey })
+
+  // Update existing pending invoices
+  Wallets.handleHeldInvoices(logger)
 }
 
 export const setupPaymentSubscribe = async ({
