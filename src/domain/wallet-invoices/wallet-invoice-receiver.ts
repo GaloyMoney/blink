@@ -1,4 +1,5 @@
-import { WalletPriceRatio } from "@domain/payments"
+import { CouldNotFindWalletFromAccountIdAndCurrencyError } from "@domain/errors"
+import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
 import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
 
 const calc = AmountCalculator()
@@ -30,7 +31,9 @@ export const WalletInvoiceReceiver = ({
     const isBtcRecipient = recipientWalletDescriptor.currency === WalletCurrency.Btc
 
     // Define conversion methods
-    const receivedWalletInvoiceFromBtcAmountMid = async () => {
+    const receivedWalletInvoiceFromBtcAmountMid = async (
+      newRecipientWalletDescriptor?: WalletDescriptor<"BTC">,
+    ) => {
       const receivedUsd = await mid.usdFromBtc(receivedBtc)
       if (receivedUsd instanceof Error) return receivedUsd
 
@@ -40,20 +43,23 @@ export const WalletInvoiceReceiver = ({
       const btcBankFee = satsFee
       const usdBankFee = priceRatio.convertFromBtcToCeil(btcBankFee)
 
+      const walletDescriptor =
+        newRecipientWalletDescriptor !== undefined
+          ? newRecipientWalletDescriptor
+          : recipientWalletDescriptor
+
       return {
         btcToCreditReceiver: calc.sub(receivedBtc, btcBankFee),
         usdToCreditReceiver: calc.sub(receivedUsd, usdBankFee),
         usdBankFee,
         btcBankFee,
-        recipientWalletDescriptor,
+        recipientWalletDescriptor: walletDescriptor,
         receivedAmount: () =>
-          recipientWalletDescriptor.currency === WalletCurrency.Btc
-            ? receivedBtc
-            : receivedUsd,
+          walletDescriptor.currency === WalletCurrency.Btc ? receivedBtc : receivedUsd,
       }
     }
 
-    const receivedWalletInvoiceFromUsdAmountMid = async (
+    const receivedWalletInvoiceFromUsdAmountRatio = async (
       receivedUsd: UsdPaymentAmount,
     ) => {
       const priceRatio = WalletPriceRatio({ usd: receivedUsd, btc: receivedBtc })
@@ -104,10 +110,20 @@ export const WalletInvoiceReceiver = ({
     }
 
     if (usdAmountFromInvoice) {
-      return receivedWalletInvoiceFromUsdAmountMid(usdAmountFromInvoice)
+      return receivedWalletInvoiceFromUsdAmountRatio(usdAmountFromInvoice)
     }
 
-    return receivedWalletInvoiceFromBtcAmountDealer()
+    const received = await receivedWalletInvoiceFromBtcAmountDealer()
+    if (!(received instanceof InvalidZeroAmountPriceRatioInputError)) return received
+
+    const recipientBtcWalletDescriptor = recipientWalletDescriptorsForAccount?.find(
+      (wallet): wallet is WalletDescriptor<"BTC"> =>
+        wallet.currency === WalletCurrency.Btc,
+    )
+    if (recipientBtcWalletDescriptor === undefined) {
+      return new CouldNotFindWalletFromAccountIdAndCurrencyError()
+    }
+    return receivedWalletInvoiceFromBtcAmountMid(recipientBtcWalletDescriptor)
   }
 
   return { withConversion }
