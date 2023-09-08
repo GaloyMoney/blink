@@ -121,6 +121,7 @@ const intraledgerPaymentSendWalletId = async ({
     "payment.intraLedger.inputAmount": paymentFlow.inputAmount.toString(),
     "payment.intraLedger.hash": paymentFlow.intraLedgerHash,
     "payment.intraLedger.description": memo || "",
+    "payment.finalRecipient": JSON.stringify(paymentFlow.recipientWalletDescriptor()),
   })
 
   const paymentSendStatus = await executePaymentViaIntraledger({

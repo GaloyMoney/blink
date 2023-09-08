@@ -112,6 +112,10 @@ const updatePendingInvoiceBeforeFinally = async ({
     recipientWalletDescriptor: recipientInvoiceWalletDescriptor,
   } = walletInvoice
 
+  addAttributesToCurrentSpan({
+    "invoices.originalRecipient": JSON.stringify(recipientInvoiceWalletDescriptor),
+  })
+
   const pendingInvoiceLogger = logger.child({
     hash: paymentHash,
     walletId: recipientInvoiceWalletDescriptor.id,
@@ -209,6 +213,10 @@ const updatePendingInvoiceBeforeFinally = async ({
       usdToCreditReceiver,
       usdBankFee,
     } = receivedWalletInvoice
+
+    addAttributesToCurrentSpan({
+      "invoices.finalRecipient": JSON.stringify(recipientWalletDescriptor),
+    })
 
     if (!lnInvoiceLookup.isSettled) {
       const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })

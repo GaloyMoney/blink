@@ -147,6 +147,10 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
       accountId: recipientWallet.accountId,
     }
 
+    addAttributesToCurrentSpan({
+      "payment.originalRecipient": JSON.stringify(recipientWalletDescriptor),
+    })
+
     const wallets = await WalletsRepository().listByAccountId(recipientWallet.accountId)
     if (wallets instanceof Error) return wallets
 
@@ -257,6 +261,7 @@ const executePaymentViaIntraledger = async <
 
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.IntraLedger,
+    "payment.finalRecipient": JSON.stringify(paymentFlow.recipientWalletDescriptor()),
   })
 
   const {

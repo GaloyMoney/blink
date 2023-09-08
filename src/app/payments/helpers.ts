@@ -17,7 +17,7 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 import { timestampDaysAgo } from "@utils"
 
 const ledger = LedgerService()
@@ -57,6 +57,13 @@ export const constructPaymentFlowBuilder = async <
   if (builderWithSenderWallet.isIntraLedger()) {
     const recipientDetails = await recipientDetailsFromInvoice<R>(invoice)
     if (recipientDetails instanceof Error) return recipientDetails
+
+    addAttributesToCurrentSpan({
+      "payment.originalRecipient": JSON.stringify(
+        recipientDetails.recipientWalletDescriptor,
+      ),
+    })
+
     builderAfterRecipientStep =
       builderWithSenderWallet.withRecipientWallet<R>(recipientDetails)
   } else {
