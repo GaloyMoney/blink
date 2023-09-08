@@ -92,7 +92,7 @@
     "jwks-rsa": "^3.0.1",
     "knex": "^2.5.1",
     "libphonenumber-js": "^1.10.43",
-    "lightning": "^9.11.3",
+    "lightning": "^9.13.1",
     "ln-service": "^56.13.0",
     "lodash.debounce": "^4.0.8",
     "lodash.groupby": "^4.6.0",
