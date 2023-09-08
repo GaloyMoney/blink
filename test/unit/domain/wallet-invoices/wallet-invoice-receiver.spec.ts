@@ -12,7 +12,7 @@ describe("WalletInvoiceReceiver", () => {
   const midPriceRatio = 2n
   const usdFromBtcMidPrice = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount * midPriceRatio,
+      amount: amount.amount / midPriceRatio,
       currency: WalletCurrency.Usd,
     })
   }
@@ -20,7 +20,7 @@ describe("WalletInvoiceReceiver", () => {
   const immediatePriceRation = 3n
   const usdFromBtc = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount * immediatePriceRation,
+      amount: amount.amount / immediatePriceRation,
       currency: WalletCurrency.Usd,
     })
   }
