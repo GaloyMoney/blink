@@ -85,16 +85,15 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
   }
 
   const withRecipientWallet = <R extends WalletCurrency>({
-    id: recipientWalletId,
-    currency: recipientWalletCurrency,
+    recipientWalletDescriptor: {
+      id: recipientWalletId,
+      currency: recipientWalletCurrency,
+      accountId: recipientAccountId,
+    },
+    recipientWalletDescriptorsForAccount,
     username: recipientUsername,
-    accountId: recipientAccountId,
     userId: recipientUserId,
-  }: WalletDescriptor<R> & {
-    userId: UserId
-    usdProposedAmount?: UsdPaymentAmount
-    username?: Username
-  }): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
+  }: OPFBWithRecipientArgs<R>): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
     if (recipientWalletId === state.senderWalletId) {
       return OPFBWithError(new SelfPaymentError())
     }
@@ -106,6 +105,7 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
       recipientAccountId,
       recipientUserId,
       recipientUsername,
+      recipientWalletDescriptorsForAccount,
     })
   }
 

@@ -147,6 +147,9 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
       accountId: recipientWallet.accountId,
     }
 
+    const wallets = await WalletsRepository().listByAccountId(recipientWallet.accountId)
+    if (wallets instanceof Error) return wallets
+
     const recipientAccount = await AccountsRepository().findById(
       recipientWallet.accountId,
     )
@@ -154,7 +157,8 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
 
     const builder = withSenderBuilder
       .withRecipientWallet({
-        ...recipientWalletDescriptor,
+        recipientWalletDescriptor,
+        recipientWalletDescriptorsForAccount: wallets,
         userId: recipientAccount.kratosUserId,
         username: recipientAccount.username,
       })

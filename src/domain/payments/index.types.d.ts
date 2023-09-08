@@ -203,16 +203,20 @@ type WithConversionArgs = {
   mid: ConversionFns
 }
 
+type OPFBWithRecipientArgs<R extends WalletCurrency> = {
+  recipientWalletDescriptor: WalletDescriptor<R>
+  recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
+  userId: UserId
+  usdProposedAmount?: UsdPaymentAmount
+  username?: Username
+}
+
 type OPFBWithSenderWalletAndAccount<S extends WalletCurrency> = {
   withoutRecipientWallet<R extends WalletCurrency>():
     | OPFBWithRecipientWallet<S, R>
     | OPFBWithError
   withRecipientWallet<R extends WalletCurrency>(
-    args: WalletDescriptor<R> & {
-      userId: UserId
-      usdProposedAmount?: UsdPaymentAmount
-      username?: Username
-    },
+    args: OPFBWithRecipientArgs<R>,
   ): OPFBWithRecipientWallet<S, R> | OPFBWithError
   isIntraLedger(): Promise<boolean | DealerPriceServiceError>
 }
@@ -411,6 +415,7 @@ type OPFBWithRecipientWalletState<
   recipientUsername?: Username
   recipientUserId?: UserId
   recipientAccountId?: AccountId
+  recipientWalletDescriptorsForAccount?: WalletDescriptor<WalletCurrency>[]
 }
 
 type OPFBWithAmountState<
