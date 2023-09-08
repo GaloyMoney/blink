@@ -130,7 +130,7 @@
     "@types/babel__core": "^7.20.1",
     "@types/babel__preset-env": "^7.9.2",
     "@types/basic-auth": "^1.1.3",
-    "@types/cookie": "^0.5.1",
+    "@types/cookie": "^0.5.2",
     "@types/cookie-parser": "^1.4.4",
     "@types/dedent": "^0.7.0",
     "@types/eslint": "^8.44.2",
