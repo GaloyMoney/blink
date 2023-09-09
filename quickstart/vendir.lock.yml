@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump lightning from 9.13.0 to 9.13.1 (#3181)...'
-      sha: 1b57eaffe4f56da5000396f7634f8e312a31a2db
+      commitTitle: 'chore: some optimization on latency (#3079)...'
+      sha: 7045f16c5ddc9d922e5ba2c36dca755edc4b102d
       tags:
-      - 0.13.46-1-g1b57eaffe
+      - 0.13.47-1-g7045f16c5
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump lightning from 9.13.0 to 9.13.1 (#3181)...'
-      sha: 1b57eaffe4f56da5000396f7634f8e312a31a2db
+      commitTitle: 'chore: some optimization on latency (#3079)...'
+      sha: 7045f16c5ddc9d922e5ba2c36dca755edc4b102d
       tags:
-      - 0.13.46-1-g1b57eaffe
+      - 0.13.47-1-g7045f16c5
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump lightning from 9.13.0 to 9.13.1 (#3181)...'
-      sha: 1b57eaffe4f56da5000396f7634f8e312a31a2db
+      commitTitle: 'chore: some optimization on latency (#3079)...'
+      sha: 7045f16c5ddc9d922e5ba2c36dca755edc4b102d
       tags:
-      - 0.13.46-1-g1b57eaffe
+      - 0.13.47-1-g7045f16c5
     path: ./
   path: ./graphql
 kind: LockConfig
