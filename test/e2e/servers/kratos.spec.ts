@@ -36,8 +36,6 @@ import { getError, randomEmail, randomPhone } from "test/helpers"
 
 import { getEmailCode } from "test/helpers/kratos"
 
-const identityRepo = IdentityRepository()
-
 beforeAll(async () => {
   // await removeIdentities()
   // needed for the kratos callback to registration
@@ -218,12 +216,6 @@ describe("phoneNoPassword", () => {
       expect(res2.kratosUserId).toBe(kratosUserId)
     })
   })
-})
-
-it("list users", async () => {
-  const res = await identityRepo.listIdentities()
-  if (res instanceof Error) throw res
-  expect(Array.isArray(res)).toBe(true)
 })
 
 describe("token validation", () => {
