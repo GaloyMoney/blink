@@ -2,35 +2,46 @@ import RedisCache from "ioredis-cache"
 import { RedisPubSub } from "graphql-redis-subscriptions"
 import { baseLogger } from "@services/logger"
 import Redis from "ioredis"
+import {
+  REDIS_0_DNS,
+  REDIS_0_PORT,
+  REDIS_1_DNS,
+  REDIS_1_PORT,
+  REDIS_2_DNS,
+  REDIS_2_PORT,
+  REDIS_MASTER_NAME,
+  REDIS_PASSWORD,
+  REDIS_TYPE,
+} from "@config"
 
 let connectionObj = {}
 
-if (process.env.LOCAL === "docker-compose") {
+if (REDIS_TYPE === "standalone") {
   connectionObj = {
-    name: process.env.REDIS_MASTER_NAME ?? "mymaster",
-    host: process.env.REDIS_0_INTERNAL_IP,
-    port: process.env.REDIS_0_PORT,
-    password: process.env.REDIS_PASSWORD,
+    name: REDIS_MASTER_NAME,
+    host: REDIS_0_DNS,
+    port: REDIS_0_PORT,
+    password: REDIS_PASSWORD,
   }
 } else {
   connectionObj = {
-    sentinelPassword: process.env.REDIS_PASSWORD,
+    sentinelPassword: REDIS_PASSWORD,
     sentinels: [
       {
-        host: `${process.env.REDIS_0_DNS}`,
-        port: process.env.REDIS_0_SENTINEL_PORT || 26379,
+        host: `${REDIS_0_DNS}`,
+        port: REDIS_0_PORT,
       },
       {
-        host: `${process.env.REDIS_1_DNS}`,
-        port: process.env.REDIS_1_SENTINEL_PORT || 26379,
+        host: `${REDIS_1_DNS}`,
+        port: REDIS_1_PORT,
       },
       {
-        host: `${process.env.REDIS_2_DNS}`,
-        port: process.env.REDIS_2_SENTINEL_PORT || 26379,
+        host: `${REDIS_2_DNS}`,
+        port: REDIS_2_PORT,
       },
     ],
-    name: process.env.REDIS_MASTER_NAME ?? "mymaster",
-    password: process.env.REDIS_PASSWORD,
+    name: REDIS_MASTER_NAME,
+    password: REDIS_PASSWORD,
   }
 }
 

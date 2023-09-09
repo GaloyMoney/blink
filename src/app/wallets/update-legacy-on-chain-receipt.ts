@@ -1,5 +1,5 @@
 import {
-  BitcoinNetwork,
+  NETWORK,
   ONCHAIN_MIN_CONFIRMATIONS,
   ONCHAIN_SCAN_DEPTH,
   SECS_PER_10_MINS,
@@ -40,7 +40,7 @@ export const updateLegacyOnChainReceipt = async ({
   }
 
   const onChainTxs = await offChain.listIncomingOnChainTransactions({
-    decoder: TxDecoder(BitcoinNetwork()),
+    decoder: TxDecoder(NETWORK),
     scanDepth,
   })
   if (onChainTxs instanceof Error) return onChainTxs

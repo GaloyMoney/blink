@@ -12,7 +12,6 @@ import {
   getChainBalance,
   lnd1,
   lndOutside1,
-  lndOutside3,
   mineAndConfirm,
 } from "test/helpers"
 import { BitcoindWalletClient } from "test/helpers/bitcoind"
@@ -68,7 +67,7 @@ describe("Bitcoind", () => {
   })
 
   it("funds outside lnd node", async () => {
-    const outsideLnds = [lndOutside1, lndOutside3]
+    const outsideLnds = [lndOutside1]
     for (const lnd of outsideLnds) {
       const amount = btc2sat(1)
       const { chain_balance: initialBalance } = await getChainBalance({

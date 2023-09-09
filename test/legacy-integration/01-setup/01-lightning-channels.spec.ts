@@ -11,7 +11,6 @@ import {
   lnd2,
   lndOutside1,
   lndOutside2,
-  lndOutside3,
   mineBlockAndSync,
   openChannelTesting,
   setChannelFees,
@@ -37,7 +36,6 @@ afterEach(async () => {
 
 // Setup the next network
 // lnd2 <- lnd1 <-> lndOutside1 -> lndOutside2
-//                              <- lndOutside3
 // this setup avoids close channels for routing fees tests
 describe("Lightning channels", () => {
   it("opens channel from lnd1 to lnd2", async () => {
@@ -90,22 +88,6 @@ describe("Lightning channels", () => {
 
     await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })
     await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
-  })
-
-  it("opens channel from lndOutside3 to lndOutside1", async () => {
-    const socket = `lnd-outside-1:9735`
-
-    const { lndNewChannel: channel } = await openChannelTesting({
-      lnd: lndOutside3,
-      lndPartner: lndOutside1,
-      socket,
-    })
-
-    const { channels } = await getChannels({ lnd: lndOutside1 })
-    expect(channels.length).toEqual(channelLengthOutside1 + 1)
-
-    await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
-    await setChannelFees({ lnd: lndOutside3, channel, base: 1, rate: 0 })
   })
 
   it("opens private channel from lndOutside1 to lndOutside2", async () => {
@@ -161,8 +143,7 @@ describe("Lightning channels", () => {
     expect(errMsg).not.toBe("FullChannelDetailsNotFound")
     expect(policies && policies.length).toBeGreaterThan(0)
 
-    const { base_fee_mtokens, fee_rate, public_key } = policies[0]
-    expect(public_key).toBe(process.env.LND_OUTSIDE_1_PUBKEY)
+    const { base_fee_mtokens, fee_rate } = policies[0]
     expect(base_fee_mtokens).toBe("0")
     expect(fee_rate).toEqual(5000)
   })

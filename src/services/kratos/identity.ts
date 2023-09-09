@@ -2,8 +2,6 @@ import { assert } from "console"
 
 import { Identity as KratosIdentity } from "@ory/client"
 
-import { isProd } from "@config"
-
 import { IdentifierNotFoundError } from "@domain/authentication/errors"
 
 import { KratosError, UnknownKratosError } from "./errors"
@@ -22,10 +20,7 @@ export const getNextPage = (link: string): number | undefined => {
   return page
 }
 
-// FIXME: there is a bug where page = 0 and page = 1 return the same result
-// related bug: https://github.com/ory/kratos/issues/2834
-// with 1, only 1 entry will be missing in the result
-const perPage = isProd ? 50 : 3
+const perPage = 50
 
 export const IdentityRepository = (): IIdentityRepository => {
   const getIdentity = async (

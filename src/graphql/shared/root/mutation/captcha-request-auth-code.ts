@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import Phone from "@graphql/shared/types/scalar/phone"
 import SuccessPayload from "@graphql/shared/types/payload/success-payload"
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { ChannelType } from "@domain/phone-provider"
 import PhoneCodeChannelType from "@graphql/shared/types/scalar/phone-code-channel-type"
@@ -19,15 +19,19 @@ const CaptchaRequestAuthCodeInput = GT.Input({
   }),
 })
 
-const CaptchaRequestAuthCodeMutation = GT.Field<{
-  input: {
-    phone: PhoneNumber | InputValidationError
-    challengeCode: string | InputValidationError
-    validationCode: string | InputValidationError
-    secCode: string | InputValidationError
-    channel: string | InputValidationError
+const CaptchaRequestAuthCodeMutation = GT.Field<
+  null,
+  GraphQLPublicContext | GraphQLAdminContext,
+  {
+    input: {
+      phone: PhoneNumber | InputValidationError
+      challengeCode: string | InputValidationError
+      validationCode: string | InputValidationError
+      secCode: string | InputValidationError
+      channel: string | InputValidationError
+    }
   }
-}>({
+>({
   extensions: {
     complexity: 120,
   },
@@ -61,7 +65,7 @@ const CaptchaRequestAuthCodeMutation = GT.Field<{
     let channel: ChannelType = ChannelType.Sms
     if (channelInput === "WHATSAPP") channel = ChannelType.Whatsapp
 
-    const result = await Auth.requestPhoneCodeWithCaptcha({
+    const result = await Authentication.requestPhoneCodeWithCaptcha({
       phone,
       geetestChallenge,
       geetestValidate,

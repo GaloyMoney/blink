@@ -31,6 +31,8 @@ export class MissingTotpKratosError extends KratosError {
 
 export class IncompatibleSchemaUpgradeError extends KratosError {}
 
+export class CodeExpiredKratosError extends KratosError {}
+
 export class UnknownKratosError extends KratosError {
   level = ErrorLevel.Critical
 }

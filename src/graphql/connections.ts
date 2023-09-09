@@ -8,7 +8,7 @@ import { GT } from "."
 
 const CURSOR_REGEX = /^[A-Fa-f0-9]{24}$/
 
-// The following function is temporary. It shloud be replaced by db pagination.
+// The following function is temporary. It should be replaced by db pagination.
 
 // It's a slightly modified version of the same function in graphql-relay.
 // The original function uses offset-based cursors which means

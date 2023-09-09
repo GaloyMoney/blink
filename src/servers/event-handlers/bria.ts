@@ -87,6 +87,9 @@ export const utxoDroppedEventHandler = async ({
   event: UtxoDropped
 }): Promise<true | DomainError> => {
   const res = await Wallets.removePendingTransaction(event)
+  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
+    return true
+  }
 
   return res
 }

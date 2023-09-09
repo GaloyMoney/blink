@@ -1,8 +1,8 @@
+import { CreateIdentityBody, UpdateIdentityBody } from "@ory/client"
 import libCookie from "cookie"
 import setCookie from "set-cookie-parser"
-import { CreateIdentityBody, UpdateIdentityBody } from "@ory/client"
 
-import { getKratosPasswords } from "@config"
+import { KRATOS_MASTER_USER_PASSWORD } from "@config"
 
 import {
   LikelyNoUserWithThisPhoneExistError,
@@ -23,7 +23,7 @@ import { SchemaIdType } from "./schema"
 // login with phone
 
 export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessService => {
-  const password = getKratosPasswords().masterUserPassword
+  const password = KRATOS_MASTER_USER_PASSWORD
 
   const loginToken = async ({
     phone,
@@ -145,8 +145,10 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
   const createIdentityWithSession = async ({
     phone,
+    phoneMetadata,
   }: {
     phone: PhoneNumber
+    phoneMetadata?: PhoneMetadata
   }): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | KratosError> => {
     const traits = { phone }
     const method = "password"
@@ -158,6 +160,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
           traits,
           method,
           password,
+          transient_payload: { phoneMetadata },
         },
       })
       const authToken = result.data.session_token as AuthToken

@@ -30,6 +30,8 @@ const LnNoAmountUsdInvoicePaymentInput = GT.Input({
 })
 
 const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       walletId: WalletId | InputValidationError
@@ -37,9 +39,7 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
       amount: Satoshis | InputValidationError
       memo?: string | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

@@ -1,4 +1,4 @@
-import { ConfigError, feedback as feedbackConfig } from "@config"
+import { ConfigError, MATTERMOST_WEBHOOK_URL } from "@config"
 import { MattermostError } from "@domain/comm/errors"
 import { ErrorLevel } from "@domain/shared"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
@@ -13,13 +13,12 @@ export const submitFeedback = async ({
   accountId: AccountId
   username?: Username
 }) => {
-  const mattermostWebhookUrl = feedbackConfig.mattermostWebhookUrl
-  if (!mattermostWebhookUrl) {
+  if (!MATTERMOST_WEBHOOK_URL) {
     recordExceptionInCurrentSpan({
-      error: "missing mattermostWebhookUrl",
+      error: "missing MATTERMOST_WEBHOOK_URL",
       level: ErrorLevel.Critical,
     })
-    return new ConfigError("missing mattermostWebhookUrl")
+    return new ConfigError("missing MATTERMOST_WEBHOOK_URL")
   }
 
   const text = `Feedback from ${accountId}${
@@ -28,7 +27,7 @@ export const submitFeedback = async ({
 
   try {
     const response = await axios.post(
-      mattermostWebhookUrl,
+      MATTERMOST_WEBHOOK_URL,
       { text },
       { headers: { "Content-Type": "application/json" } },
     )

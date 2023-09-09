@@ -6,15 +6,16 @@ import {
   NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
 } from "@domain/notifications"
+import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
 import { baseLogger } from "@services/logger"
-import { googleApplicationCredentialsIsSet } from "@config"
-import { Messaging } from "firebase-admin/lib/messaging/messaging"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
   wrapAsyncToRunInSpan,
 } from "@services/tracing"
-import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
+import { Messaging } from "firebase-admin/lib/messaging/messaging"
+
+import { GOOGLE_APPLICATION_CREDENTIALS } from "@config"
 
 const logger = baseLogger.child({ module: "notifications" })
 
@@ -23,7 +24,7 @@ type NotificationMessagePayload = admin.messaging.NotificationMessagePayload
 
 let messaging: Messaging
 
-if (googleApplicationCredentialsIsSet()) {
+if (GOOGLE_APPLICATION_CREDENTIALS) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
   })

@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import EmailAddress from "@graphql/shared/types/scalar/email-address"
 import UserEmailRegistrationInitiatePayload from "@graphql/public/types/payload/user-email-registration-initiate"
@@ -15,13 +15,13 @@ const UserEmailRegistrationInitiateInput = GT.Input({
 })
 
 const UserEmailRegistrationInitiateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       email: EmailAddress | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,
@@ -37,7 +37,7 @@ const UserEmailRegistrationInitiateMutation = GT.Field<
       return { errors: [{ message: email.message }] }
     }
 
-    const res = await Auth.addEmailToIdentity({
+    const res = await Authentication.addEmailToIdentity({
       email,
       userId: user.id,
     })

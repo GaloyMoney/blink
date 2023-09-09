@@ -14,11 +14,15 @@ const UserLogoutInput = GT.Input({
   }),
 })
 
-const UserLogoutMutation = GT.Field<{
-  input: {
-    authToken: AuthToken | InputValidationError
+const UserLogoutMutation = GT.Field<
+  null,
+  GraphQLPublicContext | GraphQLAdminContext,
+  {
+    input: {
+      authToken: AuthToken | InputValidationError
+    }
   }
-}>({
+>({
   extensions: {
     complexity: 120,
   },

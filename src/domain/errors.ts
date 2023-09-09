@@ -31,6 +31,7 @@ export class CouldNotUnsetPhoneFromUserError extends CouldNotUpdateError {}
 
 export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 
+export class CouldNotFindAccountError extends CouldNotFindError {}
 export class CouldNotFindUserError extends CouldNotFindError {}
 export class CouldNotFindUserFromIdError extends CouldNotFindError {}
 export class CouldNotFindAccountIpError extends CouldNotFindError {}
@@ -110,15 +111,26 @@ export class NoWalletExistsForUserError extends ValidationError {}
 export class NoBtcWalletExistsForAccountError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
 export class MissingPhoneMetadataError extends ValidationError {}
-export class InvalidPhoneMetadataTypeError extends ValidationError {}
-export class InvalidPhoneMetadataCountryError extends ValidationError {}
-export class InvalidPhoneMetadataForRewardError extends ValidationError {}
-
 export class MissingIPMetadataError extends ValidationError {}
-export class InvalidIPMetadataProxyError extends ValidationError {}
-export class InvalidIPMetadataCountryError extends ValidationError {}
-export class InvalidIPMetadataASNError extends ValidationError {}
-export class InvalidIPMetadataForRewardError extends ValidationError {}
+
+export class InvalidPhoneMetadataTypeError extends AuthorizationError {}
+export class InvalidPhoneMetadataCountryError extends AuthorizationError {}
+export class InvalidPhoneMetadataForOnboardingError extends AuthorizationError {
+  level = ErrorLevel.Critical
+}
+export class InvalidPhoneForOnboardingError extends AuthorizationError {}
+export class InvalidPhoneMetadataError extends AuthorizationError {}
+
+export class InvalidIpMetadataError extends ValidationError {
+  level = ErrorLevel.Critical
+}
+
+export class UnauthorizedIPForOnboardingError extends AuthorizationError {}
+
+export class UnauthorizedIPError extends AuthorizationError {}
+export class UnauthorizedIPMetadataProxyError extends UnauthorizedIPError {}
+export class UnauthorizedIPMetadataCountryError extends UnauthorizedIPError {}
+export class UnauthorizedIPMetadataASNError extends UnauthorizedIPError {}
 
 export class InvalidDeviceTokenError extends ValidationError {}
 

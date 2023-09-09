@@ -1,9 +1,8 @@
 import { OnChain, Lightning, Wallets, Payments, Swap } from "@app"
 import { extendSessions } from "@app/authentication"
 
-import { getCronConfig, TWO_MONTHS_IN_MS, BitcoinNetwork } from "@config"
+import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
 
-import { BtcNetwork } from "@domain/bitcoin"
 import { ErrorLevel } from "@domain/shared"
 import { OperationInterruptedError } from "@domain/errors"
 
@@ -19,7 +18,7 @@ import {
   updateEscrows,
   updateRoutingRevenues,
 } from "@services/lnd/utils"
-import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
+import { rebalancingInternalChannels } from "@services/lnd/utils-bos"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck, checkAllLndHealth } from "@services/lnd/health"
@@ -77,8 +76,7 @@ const main = async () => {
 
   const tasks = [
     // bitcoin related tasks
-    reconnectNodes,
-    ...(BitcoinNetwork() !== BtcNetwork.signet ? [rebalancingInternalChannels] : []),
+    rebalancingInternalChannels,
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,

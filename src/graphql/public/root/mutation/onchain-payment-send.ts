@@ -32,6 +32,8 @@ const OnChainPaymentSendInput = GT.Input({
 })
 
 const OnChainPaymentSendMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       walletId: WalletId | InputValidationError
@@ -40,9 +42,7 @@ const OnChainPaymentSendMutation = GT.Field<
       memo: Memo | InputValidationError | null
       speed: PayoutSpeed | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,

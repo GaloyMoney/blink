@@ -321,12 +321,89 @@ export class EmailAlreadyExistsError extends CustomApolloError {
   }
 }
 
+export class CodeExpiredError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Code has expired. please ask for a new code and try again",
+      forwardToClient: true,
+      code: "CODE_EXPIRED_ERROR",
+      ...errData,
+    })
+  }
+}
+
 export class SessionRefreshRequiredError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       message: "Session refresh required.",
       forwardToClient: true,
       code: "SESSION_REFRESH_REQUIRED_ERROR",
+      ...errData,
+    })
+  }
+}
+
+export class UnauthorizedIPForOnboardingError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "This IP address is not allowed to onboard.",
+      forwardToClient: true,
+      code: "IP_NOT_ALLOWED_TO_ONBOARD_ERROR",
+      ...errData,
+    })
+  }
+}
+
+export class InvalidPhoneForOnboardingError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "This phone number is not allowed to onboard.",
+      forwardToClient: true,
+      code: "PHONE_NOT_ALLOWED_TO_ONBOARD_ERROR",
+      ...errData,
+    })
+  }
+}
+
+export class UnauthorizedIPMetadataCountryError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Country not not authorized for rewards.",
+      forwardToClient: true,
+      code: "UNAUTHORIZED_COUNTRY_IP_FOR_REWARD",
+      ...errData,
+    })
+  }
+}
+
+export class UnauthorizedIPMetadataProxyError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "VPN ips are not authorized for rewards.",
+      forwardToClient: true,
+      code: "UNAUTHORIZED_VPN_IP_FOR_REWARD",
+      ...errData,
+    })
+  }
+}
+
+export class UnauthorizedIPError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "This ip is unauthorized for rewards.",
+      forwardToClient: true,
+      code: "UNAUTHORIZED_IP_FOR_REWARD",
+      ...errData,
+    })
+  }
+}
+
+export class InvalidPhoneMetadataForOnboardingError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Error fetching phone information.",
+      forwardToClient: true,
+      code: "INVALID_PHONE_METADATA_FOR_ONBOARDING_ERROR",
       ...errData,
     })
   }

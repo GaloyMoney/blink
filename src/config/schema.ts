@@ -74,25 +74,9 @@ const rateLimitConfigSchema = {
   additionalProperties: false,
 }
 
-const lndConfig = {
-  type: "object",
-  properties: {
-    name: { type: "string" },
-    type: {
-      type: "array",
-      items: { enum: ["offchain", "onchain"] },
-      uniqueItems: true,
-    },
-    priority: { type: "integer" },
-  },
-  required: ["name", "type", "priority"],
-  additionalProperties: false,
-}
-
 export const configSchema = {
   type: "object",
   properties: {
-    PROXY_CHECK_APIKEY: { type: "string" }, // TODO: move out of yaml and to env
     lightningAddressDomain: { type: "string", default: "pay.domain.com" },
     lightningAddressDomainAliases: {
       type: "array",
@@ -127,6 +111,7 @@ export const configSchema = {
     rewards: {
       type: "object",
       properties: {
+        enableIpProxyCheck: { type: "boolean" },
         allowPhoneCountries: {
           type: "array",
           items: { type: "string" },
@@ -159,6 +144,7 @@ export const configSchema = {
         },
       },
       required: [
+        "enableIpProxyCheck",
         "allowPhoneCountries",
         "denyPhoneCountries",
         "allowIPCountries",
@@ -168,6 +154,7 @@ export const configSchema = {
       ],
       additionalProperties: false,
       default: {
+        enableIpProxyCheck: true,
         allowPhoneCountries: [],
         denyPhoneCountries: [],
         allowIPCountries: [],
@@ -341,12 +328,66 @@ export const configSchema = {
             enum: Object.values(WalletCurrency),
           },
         },
+        enablePhoneCheck: { type: "boolean" },
+        enableIpCheck: { type: "boolean" },
+        enableIpProxyCheck: { type: "boolean" },
+        allowPhoneCountries: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
+        denyPhoneCountries: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
+        allowIPCountries: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
+        denyIPCountries: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
+        allowASNs: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
+        denyASNs: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
       },
-      required: ["initialStatus", "initialWallets"],
+      required: [
+        "initialStatus",
+        "initialWallets",
+        "enablePhoneCheck",
+        "enableIpCheck",
+        "enableIpProxyCheck",
+        "allowPhoneCountries",
+        "denyPhoneCountries",
+        "allowIPCountries",
+        "denyIPCountries",
+        "allowASNs",
+        "denyASNs",
+      ],
       additionalProperties: false,
       default: {
         initialStatus: "active",
         initialWallets: ["BTC", "USD"],
+        enablePhoneCheck: false,
+        enableIpCheck: false,
+        enableIpProxyCheck: false,
+        allowPhoneCountries: [],
+        denyPhoneCountries: [],
+        allowIPCountries: [],
+        denyIPCountries: [],
+        allowASNs: [],
+        denyASNs: [],
       },
     },
     accountLimits: {
@@ -473,23 +514,6 @@ export const configSchema = {
         deposit: { defaultMin: 3000, threshold: 1000000, ratioAsBasisPoints: 30 },
       },
     },
-    lnds: {
-      type: "array",
-      items: lndConfig,
-      uniqueItems: true,
-      default: [
-        {
-          name: "LND1",
-          type: ["offchain", "onchain"],
-          priority: 2,
-        },
-        {
-          name: "LND2",
-          type: ["offchain"],
-          priority: 3,
-        },
-      ],
-    },
     onChainWallet: {
       type: "object",
       properties: {
@@ -542,23 +566,6 @@ export const configSchema = {
         feeAccountingEnabled: true,
       },
     },
-    apollo: {
-      type: "object",
-      properties: {
-        playground: { type: "boolean" },
-        playgroundUrl: { type: "string" },
-      },
-      required: ["playground"],
-      if: {
-        properties: { playground: { const: true } },
-      },
-      then: { required: ["playgroundUrl"] },
-      additionalProperties: false,
-      default: {
-        playground: true,
-        playgroundUrl: "https://api.staging.galoy.io/graphql",
-      },
-    },
     userActivenessMonthlyVolumeThreshold: { type: "integer", default: 100 },
     cronConfig: {
       type: "object",
@@ -571,42 +578,6 @@ export const configSchema = {
       default: {
         rebalanceEnabled: true,
         swapEnabled: true,
-      },
-    },
-    kratosConfig: {
-      type: "object",
-      properties: {
-        publicApi: { type: "string" },
-        adminApi: { type: "string" },
-        corsAllowedOrigins: {
-          type: "array",
-          items: { type: "string" },
-          uniqueItems: true,
-        },
-      },
-      required: ["publicApi", "adminApi", "corsAllowedOrigins"],
-      additionalProperties: false,
-      default: {
-        publicApi: "http://localhost:4433",
-        adminApi: "http://localhost:4434",
-        corsAllowedOrigins: ["http://localhost:3000"],
-      },
-    },
-    oathkeeperConfig: {
-      type: "object",
-      properties: {
-        urlJkws: { type: "string" },
-        decisionsApi: { type: "string" },
-      },
-      required: ["urlJkws", "decisionsApi"],
-      additionalProperties: false,
-      default: {
-        urlJkws: `http://${
-          process.env.OATHKEEPER_HOST ?? "oathkeeper"
-        }:4456/.well-known/jwks.json`,
-        decisionsApi: `http://${
-          process.env.OATHKEEPER_HOST ?? "oathkeeper"
-        }:4456/decisions/`,
       },
     },
     captcha: {
@@ -648,37 +619,34 @@ export const configSchema = {
       items: { type: "string" },
       default: [],
     },
-    appcheckConfig: {
-      type: "object",
-      properties: {
-        audience: { type: "string" },
-        issuer: { type: "string" },
-        jwksUri: { type: "string" },
-      },
-      required: ["audience", "issuer", "jwksUri"],
-      additionalProperties: false,
-      default: {
-        audience: process.env.APPCHECK_AUDIENCE || "unknown", // FIXME there should be no process.env in schema.ts
-        issuer: process.env.APPCHECK_ISSUER || "unknown", // FIXME there should be no process.env in schema.ts
-        jwksUri: process.env.APPCHECK_JWKSURI || "unknown", // FIXME there should be no process.env in schema.ts
-      },
-    },
   },
   required: [
+    "lightningAddressDomain",
+    "lightningAddressDomainAliases",
+    "locale",
+    "displayCurrency",
+    "funder",
+    "dealer",
+    "ratioPrecision",
     "buildVersion",
+    "rewards",
     "coldStorage",
+    "bria",
     "lndScbBackupBucketName",
+    "admin_accounts",
+    "test_accounts",
     "rateLimits",
+    "accounts",
     "accountLimits",
     "spamLimits",
     "ipRecording",
     "fees",
-    "lnds",
     "onChainWallet",
+    "swap",
     "userActivenessMonthlyVolumeThreshold",
     "cronConfig",
-    "kratosConfig",
     "captcha",
+    "skipFeeProbeConfig",
     "smsAuthUnsupportedCountries",
     "whatsAppAuthUnsupportedCountries",
   ],

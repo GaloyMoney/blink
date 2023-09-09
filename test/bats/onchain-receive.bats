@@ -27,27 +27,54 @@ teardown() {
   fi
 }
 
-@test "onchain-receive: settle onchain for BTC wallet" {
+@test "onchain-receive: btc wallet, can create new address if current one is unused" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
-  amount="0.01"
 
-    # Create address
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
 
+  # Create address
   exec_graphql "$token_name" 'on-chain-address-create' "$variables"
   on_chain_address_created="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_address_created}" != "null" ]] || exit 1
 
+  # Fetch current address
   exec_graphql "$token_name" 'on-chain-address-current' "$variables"
   on_chain_address_current="$(graphql_output '.data.onChainAddressCurrent.address')"
   [[ "${on_chain_address_current}" != "null" ]] || exit 1
-
   [[ "${on_chain_address_created}" == "${on_chain_address_current}" ]] || exit 1
+
+  # Create new address
+  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  retry_on_chain_address_created="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${retry_on_chain_address_created}" != "null" ]] || exit 1
+  [[ "${on_chain_address_created}" != "${retry_on_chain_address_created}" ]] || exit 1
+
+  # Fetch new current address
+  exec_graphql "$token_name" 'on-chain-address-current' "$variables"
+  retry_on_chain_address_current="$(graphql_output '.data.onChainAddressCurrent.address')"
+  [[ "${retry_on_chain_address_current}" != "null" ]] || exit 1
+  [[ "${retry_on_chain_address_created}" == "${retry_on_chain_address_current}" ]] || exit 1
+}
+
+@test "onchain-receive: settle onchain for BTC wallet" {
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+  amount="0.01"
+
+  # Create address
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  on_chain_address_created="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${on_chain_address_created}" != "null" ]] || exit 1
 
   # Execute onchain send and check for transaction
   bitcoin_cli sendtoaddress "$on_chain_address_created" "$amount"
@@ -56,27 +83,54 @@ teardown() {
   retry 15 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_address_created" 1
 }
 
-@test "onchain-receive: settle onchain for USD wallet" {
+@test "onchain-receive: usd wallet, can create new address if current one is unused" {
   token_name="$ALICE_TOKEN_NAME"
   usd_wallet_name="$token_name.usd_wallet_id"
-  amount="0.01"
 
-    # Create address
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $usd_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
 
+  # Create address
   exec_graphql "$token_name" 'on-chain-address-create' "$variables"
   on_chain_address_created="$(graphql_output '.data.onChainAddressCreate.address')"
   [[ "${on_chain_address_created}" != "null" ]] || exit 1
 
+  # Fetch current address
   exec_graphql "$token_name" 'on-chain-address-current' "$variables"
   on_chain_address_current="$(graphql_output '.data.onChainAddressCurrent.address')"
   [[ "${on_chain_address_current}" != "null" ]] || exit 1
-
   [[ "${on_chain_address_created}" == "${on_chain_address_current}" ]] || exit 1
+
+  # Create new address
+  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  retry_on_chain_address_created="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${retry_on_chain_address_created}" != "null" ]] || exit 1
+  [[ "${on_chain_address_created}" != "${retry_on_chain_address_created}" ]] || exit 1
+
+  # Fetch new current address
+  exec_graphql "$token_name" 'on-chain-address-current' "$variables"
+  retry_on_chain_address_current="$(graphql_output '.data.onChainAddressCurrent.address')"
+  [[ "${retry_on_chain_address_current}" != "null" ]] || exit 1
+  [[ "${retry_on_chain_address_created}" == "${retry_on_chain_address_current}" ]] || exit 1
+}
+
+@test "onchain-receive: settle onchain for USD wallet" {
+  token_name="$ALICE_TOKEN_NAME"
+  usd_wallet_name="$token_name.usd_wallet_id"
+  amount="0.01"
+
+  # Create address
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$token_name" 'on-chain-address-create' "$variables"
+  on_chain_address_created="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${on_chain_address_created}" != "null" ]] || exit 1
 
   # Execute onchain send and check for transaction
   bitcoin_cli sendtoaddress "$on_chain_address_created" "$amount"

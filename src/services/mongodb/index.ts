@@ -1,13 +1,13 @@
 import mongoose from "mongoose"
 
 import {
+  MONGODB_CON,
   MissingBankOwnerAccountConfigError,
   MissingBtcDealerWalletConfigError,
   MissingDealerAccountConfigError,
   MissingFunderAccountConfigError,
   MissingUsdDealerWalletConfigError,
   UnknownConfigError,
-  mongodbCredentials,
 } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { lazyLoadLedgerAdmin } from "@services/ledger"
@@ -67,23 +67,11 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first successful connection
 
-const mgCred = mongodbCredentials()
-
-let path: string
-if (mgCred.user && mgCred.password) {
-  path = `mongodb://${mgCred.user}:${mgCred.password}@${mgCred.address}/${mgCred.db}`
-} else {
-  path = `mongodb://${mgCred.address}/${mgCred.db}`
-}
-
 export const setupMongoConnection = async (syncIndexes = false) => {
   try {
-    await mongoose.connect(path, { autoIndex: false })
+    await mongoose.connect(MONGODB_CON, { autoIndex: false })
   } catch (err) {
-    baseLogger.fatal(
-      { err, user: mgCred.user, address: mgCred.address, db: mgCred.db },
-      `error connecting to mongodb`,
-    )
+    baseLogger.fatal(`error connecting to mongodb`)
     throw err
   }
 
@@ -96,10 +84,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
       }
     }
   } catch (err) {
-    baseLogger.fatal(
-      { err, user: mgCred.user, address: mgCred.address, db: mgCred.db },
-      `error setting the indexes`,
-    )
+    baseLogger.fatal(`error setting the indexes`)
     throw err
   }
 

@@ -1,4 +1,4 @@
-import { getKratosPasswords } from "@config"
+import { KRATOS_MASTER_USER_PASSWORD, KRATOS_PG_CON } from "@config"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
@@ -17,7 +17,9 @@ import { checkedToEmailAddress } from "@domain/users"
 
 import knex from "knex"
 
+import { createCookieLoginFlow } from "./cookie"
 import {
+  CodeExpiredKratosError,
   EmailAlreadyExistsError,
   IncompatibleSchemaUpgradeError,
   KratosError,
@@ -25,12 +27,11 @@ import {
 } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainIdentityEmailPhone } from "./private"
 import { SchemaIdType } from "./schema"
-import { createCookieLoginFlow } from "./cookie"
 
 const getKratosKnex = () =>
   knex({
-    client: "pg", // specify the database client
-    connection: process.env.KRATOS_PG_CON,
+    client: "pg",
+    connection: KRATOS_PG_CON,
   })
 
 const getIdentityIdFromFlowId = async (flowId: string) => {
@@ -55,7 +56,7 @@ const getIdentityIdFromFlowId = async (flowId: string) => {
 // login with email
 
 export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessService => {
-  const password = getKratosPasswords().masterUserPassword
+  const password = KRATOS_MASTER_USER_PASSWORD
 
   // sendEmailWithCode return a flowId even if the user doesn't exist
   // this is to avoid account enumeration attacks
@@ -184,6 +185,10 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         }
 
         return { email, kratosUserId, totpRequired }
+      }
+      // kratos return a 403 - Forbidden error when the code has expired
+      if (isAxiosError(err) && err.response?.status === 403) {
+        return new CodeExpiredKratosError()
       }
       return new UnknownKratosError(err)
     }

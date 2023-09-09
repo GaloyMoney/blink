@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import Phone from "@graphql/shared/types/scalar/phone"
 import SuccessPayload from "@graphql/shared/types/payload/success-payload"
@@ -17,14 +17,14 @@ const UserPhoneRegistrationInitiateInput = GT.Input({
 })
 
 const UserPhoneRegistrationInitiateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       phone: PhoneNumber | InputValidationError
       channel: ChannelType | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,
@@ -35,6 +35,10 @@ const UserPhoneRegistrationInitiateMutation = GT.Field<
   },
   resolve: async (_, args, { ip, user }) => {
     const { phone, channel: channelInput } = args.input
+
+    if (ip === undefined) {
+      return { errors: [{ message: "ip is undefined" }] }
+    }
 
     if (phone instanceof Error) {
       return { errors: [{ message: phone.message }] }
@@ -47,7 +51,7 @@ const UserPhoneRegistrationInitiateMutation = GT.Field<
     if (channelInput?.toLowerCase() === ChannelType.Whatsapp)
       channel = ChannelType.Whatsapp
 
-    const success = await Auth.requestPhoneCodeForAuthedUser({
+    const success = await Authentication.requestPhoneCodeForAuthedUser({
       phone,
       ip,
       channel,

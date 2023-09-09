@@ -1,12 +1,17 @@
 import fs from "fs"
 
-import { configSchema, getAccountLimits, yamlConfig, merge } from "@config"
+import { configSchema, getAccountLimits, yamlConfig } from "@config"
 import { toCents } from "@domain/fiat"
 import Ajv from "ajv"
 import yaml from "js-yaml"
 
+import mergeWith from "lodash.mergewith"
+
 const ajv = new Ajv()
 let validate
+
+const merge = (defaultConfig: unknown, customConfig: unknown) =>
+  mergeWith(defaultConfig, customConfig, (a, b) => (Array.isArray(b) ? b : undefined))
 
 const accountLimits = {
   withdrawal: {
@@ -52,22 +57,9 @@ describe("config.ts", () => {
       expect(contentOrg).toEqual(contentNew)
     })
 
-    it("passes validation with conditional not required", () => {
-      const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
-      clonedConfig.apollo.playground = false
-      delete clonedConfig.apollo.playgroundUrl
-
-      const valid = validate(clonedConfig)
-      expect(valid).toBeTruthy()
-    })
-
     it("passes with custom yaml", () => {
       const freshYamlConfig = JSON.parse(JSON.stringify(yamlConfig))
       const customYamlConfig = {
-        lnds: [
-          { name: "LND1", type: ["onchain"], priority: 2 },
-          { name: "LND2", type: ["offchain"], priority: 1 },
-        ],
         test_accounts: [
           {
             phone: "+50365055543",
@@ -98,15 +90,15 @@ describe("config.ts", () => {
 
     it("fails validation missing required property", () => {
       const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
-      delete clonedConfig.lnds
+      delete clonedConfig.buildVersion
       const valid = validate(clonedConfig)
       expect(valid).toBeFalsy()
     })
 
     it("fails validation missing conditional required", () => {
       const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
-      clonedConfig.apollo.playground = true
-      delete clonedConfig.apollo.playgroundUrl
+      clonedConfig.cronConfig.swapEnabled = true
+      delete clonedConfig.cronConfig.swapEnabled
 
       const valid = validate(clonedConfig)
       expect(valid).toBeFalsy()

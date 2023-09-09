@@ -6,12 +6,6 @@ import * as PriceServiceImpl from "@services/price"
 import { LocalCacheService } from "@services/cache/local-cache"
 import { getCurrentSatPrice, getCurrentUsdCentPrice } from "@app/prices"
 
-jest.mock("@config", () => {
-  const config = jest.requireActual("@config")
-  const getLndParams = (): LndParams[] => []
-  return { ...config, getLndParams }
-})
-
 jest.mock("@services/tracing", () => ({
   wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
 }))

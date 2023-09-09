@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import Phone from "@graphql/shared/types/scalar/phone"
 
@@ -16,14 +16,14 @@ const UserPhoneRegistrationValidateInput = GT.Input({
 })
 
 const UserPhoneRegistrationValidateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       phone: PhoneNumber | InputValidationError
       code: PhoneCode | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,
@@ -47,7 +47,7 @@ const UserPhoneRegistrationValidateMutation = GT.Field<
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const me = await Auth.verifyPhone({
+    const me = await Authentication.verifyPhone({
       userId: user.id,
       phone,
       code,

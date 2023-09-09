@@ -225,3 +225,16 @@ curl_request() {
 curl_output() {
   echo $output | jq -r "$@"
 }
+
+is_contact() {
+  local token_name="$1"
+  local contact_username="$2"
+
+  exec_graphql "$token_name" 'contacts'
+  local fetched_username=$(
+    graphql_output \
+    --arg contact_username "$contact_username" \
+    '.data.me.contacts[] | select(.username == $contact_username) .username'
+  )
+  [[ "$fetched_username" == "$contact_username" ]] || return 1
+}

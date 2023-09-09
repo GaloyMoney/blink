@@ -17,7 +17,6 @@ type AccountLimitsConfig = {
 }
 
 type YamlSchema = {
-  PROXY_CHECK_APIKEY: string
   name: string
   lightningAddressDomain: string
   lightningAddressDomainAliases: string[]
@@ -38,6 +37,7 @@ type YamlSchema = {
     ios: BuildNumberInput
   }
   rewards: {
+    enableIpProxyCheck: boolean
     denyPhoneCountries: string[]
     allowPhoneCountries: string[]
     denyIPCountries: string[]
@@ -81,6 +81,15 @@ type YamlSchema = {
   accounts: {
     initialStatus: string
     initialWallets: WalletCurrency[]
+    enablePhoneCheck: boolean
+    enableIpCheck: boolean
+    enableIpProxyCheck: boolean
+    denyPhoneCountries: string[]
+    allowPhoneCountries: string[]
+    denyIPCountries: string[]
+    allowIPCountries: string[]
+    denyASNs: string[]
+    allowASNs: string[]
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig
@@ -111,11 +120,6 @@ type YamlSchema = {
       defaultMin: number
     }
   }
-  lnds: {
-    name: string
-    type: string[]
-    priority: number
-  }[]
   onChainWallet: {
     dustThreshold: number
     minConfirmations: number
@@ -133,23 +137,10 @@ type YamlSchema = {
     swapProviders: Array<SwapProvider>
     feeAccountingEnabled: boolean
   }
-  apollo: {
-    playground: boolean
-    playgroundUrl: string
-  }
   userActivenessMonthlyVolumeThreshold: number
   cronConfig: {
     rebalanceEnabled: boolean
     swapEnabled: boolean
-  }
-  kratosConfig: {
-    publicApi: string
-    adminApi: string
-    corsAllowedOrigins: string[]
-  }
-  oathkeeperConfig: {
-    urlJkws: string
-    decisionsApi: string
   }
   captcha: {
     mandatory: boolean
@@ -157,9 +148,4 @@ type YamlSchema = {
   skipFeeProbeConfig: { pubkey: string[]; chanId: string[] }
   smsAuthUnsupportedCountries: string[]
   whatsAppAuthUnsupportedCountries: string[]
-  appcheckConfig: {
-    audience: string
-    issuer: string
-    jwksUri: string
-  }
 }

@@ -22,7 +22,7 @@ const BusinessUpdateMapInfoInput = GT.Input({
   }),
 })
 
-const BusinessUpdateMapInfoMutation = GT.Field({
+const BusinessUpdateMapInfoMutation = GT.Field<null, GraphQLAdminContext>({
   extensions: {
     complexity: 120,
   },

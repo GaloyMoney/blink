@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: retry test-on-docker'
-      sha: 95c4fd73e3a8aa92e4b52b97e4066a1f6bdb19ab
+      commitTitle: 'feat: allow public or private repo selection (#34)'
+      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
     path: .
   path: ../.github/workflows/vendor
 - contents:
   - git:
-      commitTitle: 'chore: retry test-on-docker'
-      sha: 95c4fd73e3a8aa92e4b52b97e4066a1f6bdb19ab
+      commitTitle: 'feat: allow public or private repo selection (#34)'
+      sha: 53fc9dd805d3574d200e8e6e99f856c0912b52a8
     path: .
   path: ./vendor
 kind: LockConfig

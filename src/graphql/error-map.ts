@@ -26,6 +26,13 @@ import {
   PhoneAlreadyExistsError,
   EmailAlreadyExistsError,
   SessionRefreshRequiredError,
+  CodeExpiredError,
+  UnauthorizedIPForOnboardingError,
+  InvalidPhoneMetadataForOnboardingError,
+  InvalidPhoneForOnboardingError,
+  UnauthorizedIPError,
+  UnauthorizedIPMetadataProxyError,
+  UnauthorizedIPMetadataCountryError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -253,11 +260,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Amount sent was too low for recipient's usd wallet."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidPhoneMetadataForRewardError":
+    case "InvalidPhoneMetadataError":
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidIPMetadataForRewardError":
+    case "InvalidIpMetadataError":
       message = "Unsupported IP for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -338,7 +345,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OnChainServiceUnavailableError":
       /* eslint-disable-next-line no-case-declarations */
       const serviceType = errorName.includes("OffChainService") ? "Offchain" : "Onchain"
-      message = `${serviceType} action failed, please try again in a few minutes. If the problem persists, please contact support.`
+      message = `${serviceType} action failed, please try again in a few minutes. If the problem persists, please contact support. If you are on regtest, it might because blocks need to be generated so that lnd can be considered active.`
       return new LndOfflineError({ message, logger: baseLogger })
 
     case "InactiveAccountError":
@@ -403,8 +410,29 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "EmailAlreadyExistsError":
       return new EmailAlreadyExistsError({ logger: baseLogger })
 
+    case "CodeExpiredKratosError":
+      return new CodeExpiredError({ logger: baseLogger })
+
     case "SessionRefreshRequiredError":
       return new SessionRefreshRequiredError({ logger: baseLogger })
+
+    case "UnauthorizedIPForOnboardingError":
+      return new UnauthorizedIPForOnboardingError({ logger: baseLogger })
+
+    case "InvalidPhoneMetadataForOnboardingError":
+      return new InvalidPhoneMetadataForOnboardingError({ logger: baseLogger })
+
+    case "InvalidPhoneForOnboardingError":
+      return new InvalidPhoneForOnboardingError({ logger: baseLogger })
+
+    case "UnauthorizedIPError":
+      return new UnauthorizedIPError({ logger: baseLogger })
+
+    case "UnauthorizedIPMetadataProxyError":
+      return new UnauthorizedIPMetadataProxyError({ logger: baseLogger })
+
+    case "UnauthorizedIPMetadataCountryError":
+      return new UnauthorizedIPMetadataCountryError({ logger: baseLogger })
 
     // ----------
     // Unhandled below here
@@ -503,9 +531,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidPhoneMetadataTypeError":
     case "InvalidPhoneMetadataCountryError":
     case "MissingIPMetadataError":
-    case "InvalidIPMetadataProxyError":
-    case "InvalidIPMetadataASNError":
-    case "InvalidIPMetadataCountryError":
+    case "UnauthorizedIPMetadataASNError":
     case "InvalidAccountStatusError":
     case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":
@@ -592,6 +618,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MattermostError":
     case "CouldNotFindAccountIpError":
     case "InvalidFlowId":
+    case "CallbackError":
+    case "InvalidUrlError":
+    case "SvixEventError":
+    case "UnknownSvixError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`
@@ -637,6 +667,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownBigIntConversionError":
     case "UnknownDomainError":
     case "UnknownBriaEventError":
+    case "CouldNotFindAccountError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

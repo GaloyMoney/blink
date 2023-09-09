@@ -83,6 +83,7 @@ legacy-integration:
 reset-legacy-integration: reset-deps-integration legacy-integration
 
 integration:
+	yarn build && \
 	yarn test:integration
 
 reset-integration: reset-deps-integration integration
@@ -101,7 +102,7 @@ execute-bats-from-within-container:
 
 integration-in-ci:
 	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests --attach integration-tests
 
 # NODE_OPTIONS line should be removed whenever we upgrade yarn.lock to see if
 # heap allocation issue has been resolved in dependencies (fails at 2048).
@@ -138,8 +139,8 @@ audit:
 	bash -c 'yarn audit --level critical; [[ $$? -ge 16 ]] && exit 1 || exit 0'
 
 mine-block:
-	container_id=$$(docker ps -q -f status=running -f name="bitcoind"); \
-	docker exec -it "$$container_id" /bin/sh -c 'ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
+	container_id=$$(docker ps -q -f status=running -f name="bitcoind-1"); \
+	docker exec -it "$$container_id" /bin/sh -c 'bitcoin-cli createwallet -chain=regtest || ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
 
 lncli-1:
 	docker exec -it $$(docker ps -q -f status=running -f name="lnd1-1") /bin/sh -c 'lncli -n regtest ${command}'

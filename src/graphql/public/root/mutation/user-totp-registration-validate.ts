@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { Auth } from "@app"
+import { Authentication } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import AuthToken from "@graphql/shared/types/scalar/auth-token"
 import TotpCode from "@graphql/public/types/scalar/totp-code"
@@ -23,15 +23,15 @@ const UserTotpRegistrationValidateInput = GT.Input({
 })
 
 const UserTotpRegistrationValidateMutation = GT.Field<
+  null,
+  GraphQLPublicContextAuth,
   {
     input: {
       authToken: AuthToken | InputValidationError
       totpCode: TotpCode | InputValidationError
       totpRegistrationId: TotpRegistrationId | InputValidationError
     }
-  },
-  null,
-  GraphQLContextAuth
+  }
 >({
   extensions: {
     complexity: 120,
@@ -53,7 +53,7 @@ const UserTotpRegistrationValidateMutation = GT.Field<
       return { errors: [{ message: totpRegistrationId.message }] }
     }
 
-    const me = await Auth.validateTotpRegistration({
+    const me = await Authentication.validateTotpRegistration({
       authToken,
       totpCode,
       totpRegistrationId,

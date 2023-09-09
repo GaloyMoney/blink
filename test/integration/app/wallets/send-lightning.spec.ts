@@ -4,6 +4,7 @@ import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import {
   MaxFeeTooLargeForRoutelessPaymentError,
+  PaymentSendStatus,
   decodeInvoice,
 } from "@domain/bitcoin/lightning"
 import { DisplayCurrency, toCents } from "@domain/fiat"
@@ -14,16 +15,25 @@ import {
 import {
   InactiveAccountError,
   InsufficientBalanceError,
+  IntraledgerLimitsExceededError,
   SelfPaymentError,
+  TradeIntraAccountLimitsExceededError,
+  WithdrawalLimitsExceededError,
 } from "@domain/errors"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
-import * as LnFeesImpl from "@domain/payments/ln-fees"
+import * as LnFeesImpl from "@domain/payments"
 
-import { AccountsRepository, WalletInvoicesRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  LnPaymentsRepository,
+  WalletInvoicesRepository,
+} from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
-import { Transaction } from "@services/ledger/schema"
+import { Transaction, TransactionMetadata } from "@services/ledger/schema"
 import { WalletInvoice } from "@services/mongoose/schema"
+import { LnPayment } from "@services/lnd/schema"
 import * as LndImpl from "@services/lnd"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
 import {
   createMandatoryUsers,
@@ -35,6 +45,7 @@ import {
 
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
+let largeWithAmountLnInvoice: LnInvoice
 let memo
 
 const calc = AmountCalculator()
@@ -56,16 +67,24 @@ beforeAll(async () => {
   const noAmountInvoice = decodeInvoice(randomNoAmountRequest)
   if (noAmountInvoice instanceof Error) throw noAmountInvoice
   noAmountLnInvoice = noAmountInvoice
+
+  const largeWithAmountRequest =
+    "lnbcrt31pjdlc2mpp54seydar5l4pz20aq4ngmdp8ghx4s63476yrpy0a04l534g5u3ueqdqqcqzzsxqyz5vqsp5v45qm8fzn5r7hw7qcku0a92qrmfrsycqjwahue3vetyx9cljgeks9qyyssqzdpd0pq7m9qpy5v7r50yswmx57y7uh2q4czrz7cesxhz0rg52y8h6vp2e7jy9vsffxqjxtu82y58smj48f427up8kmlxql4m3r8pn8cq8yhwzl"
+  const largeWithAmountInvoice = decodeInvoice(largeWithAmountRequest)
+  if (largeWithAmountInvoice instanceof Error) throw largeWithAmountInvoice
+  largeWithAmountLnInvoice = largeWithAmountInvoice
 })
 
-beforeEach(() => {
+beforeEach(async () => {
   memo = randomLightningMemo()
+  await LnPayment.deleteMany({})
 })
 
 afterEach(async () => {
-  await Transaction.deleteMany({ memo })
-  await Transaction.deleteMany({ memoPayer: memo })
+  await Transaction.deleteMany({})
+  await TransactionMetadata.deleteMany({})
   await WalletInvoice.deleteMany({})
+  await LnPayment.deleteMany({})
 })
 
 const amount = toSats(10040)
@@ -93,10 +112,54 @@ const receiveDisplayAmounts = {
   displayCurrency: DisplayCurrency.Usd,
 }
 
+const receiveAboveLimitAmounts = {
+  btc: { amount: 300_000_000n, currency: WalletCurrency.Btc },
+  usd: { amount: 6_000_000n, currency: WalletCurrency.Usd },
+}
+const receiveAboveLimitDisplayAmounts = {
+  amountDisplayCurrency: Number(
+    receiveAboveLimitAmounts.usd.amount,
+  ) as DisplayCurrencyBaseAmount,
+  feeDisplayCurrency: Number(receiveBankFee.usd.amount) as DisplayCurrencyBaseAmount,
+  displayCurrency: DisplayCurrency.Usd,
+}
+
 const randomLightningMemo = () =>
   "this is my lightning memo #" + (Math.random() * 1_000_000).toFixed()
 
 describe("initiated via lightning", () => {
+  describe("fee probe", () => {
+    it("fails if amount greater than limit", async () => {
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      for (let i = 0; i < 2; i++) {
+        const receive = await recordReceiveLnPayment({
+          walletDescriptor: newWalletDescriptor,
+          paymentAmount: receiveAboveLimitAmounts,
+          bankFee: receiveBankFee,
+          displayAmounts: receiveAboveLimitDisplayAmounts,
+          memo,
+        })
+        if (receive instanceof Error) throw receive
+      }
+
+      // Execute probe
+      const { error } = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
+        walletId: newWalletDescriptor.id,
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+
+        amount: toSats(receiveAboveLimitAmounts.btc.amount),
+      })
+      expect(error).toBeInstanceOf(WithdrawalLimitsExceededError)
+    })
+  })
+
   describe("settles via lightning", () => {
     it("fails if sender account is locked", async () => {
       // Setup mocks
@@ -143,7 +206,7 @@ describe("initiated via lightning", () => {
       expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails when user has insufficient balance", async () => {
@@ -171,7 +234,7 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails to pay zero amount invoice without separate amount", async () => {
@@ -199,7 +262,7 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(LnPaymentRequestNonZeroAmountRequiredError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails if user sends balance amount without accounting for fee", async () => {
@@ -239,7 +302,49 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(InsufficientBalanceError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
+    })
+
+    it("fails if amount greater than limit", async () => {
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      for (let i = 0; i < 2; i++) {
+        const receive = await recordReceiveLnPayment({
+          walletDescriptor: newWalletDescriptor,
+          paymentAmount: receiveAboveLimitAmounts,
+          bankFee: receiveBankFee,
+          displayAmounts: receiveAboveLimitDisplayAmounts,
+          memo,
+        })
+        if (receive instanceof Error) throw receive
+      }
+
+      // Attempt pay with invoice with amount
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest: largeWithAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+      })
+      expect(paymentResult).toBeInstanceOf(WithdrawalLimitsExceededError)
+
+      // Attempt pay with no amount invoice
+      const noAmountPaymentResult =
+        await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+          uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+          memo,
+          senderWalletId: newWalletDescriptor.id,
+          senderAccount: newAccount,
+
+          amount: toSats(receiveAboveLimitAmounts.btc.amount),
+        })
+      expect(noAmountPaymentResult).toBeInstanceOf(WithdrawalLimitsExceededError)
     })
 
     it("pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
@@ -248,10 +353,10 @@ describe("initiated via lightning", () => {
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [],
-        defaultPubkey: () => DEFAULT_PUBKEY,
+        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
       })
 
-      const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments/ln-fees")
+      const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments")
       const lndFeesSpy = jest.spyOn(LnFeesImpl, "LnFees").mockReturnValue({
         ...LnFeesOrig(),
         verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
@@ -307,8 +412,60 @@ describe("initiated via lightning", () => {
       )
 
       // Restore system state
-      lndFeesSpy.mockReset()
-      lndServiceSpy.mockReset()
+      lndFeesSpy.mockRestore()
+      lndServiceSpy.mockRestore()
+    })
+
+    it("persists ln-payment on successful ln send", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
+        listAllPubkeys: () => [],
+        payInvoiceViaPaymentDetails: () => ({
+          roundedUpFee: toSats(0),
+          revealedPreImage: "revealedPreImage" as RevealedPreImage,
+          sentFromPubkey: DEFAULT_PUBKEY,
+        }),
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: receiveAmounts,
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      // Execute pay
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        amount,
+      })
+      expect(paymentResult).toEqual(PaymentSendStatus.Success)
+
+      // Check lnPayment collection after
+      const lnPaymentAfter = await LnPaymentsRepository().findByPaymentHash(
+        noAmountLnInvoice.paymentHash,
+      )
+      if (lnPaymentAfter instanceof Error) throw lnPaymentAfter
+      expect(lnPaymentAfter.paymentHash).toEqual(noAmountLnInvoice.paymentHash)
+
+      // Restore system state
+      lndServiceSpy.mockRestore()
     })
   })
 
@@ -377,7 +534,7 @@ describe("initiated via lightning", () => {
       expect(res).toBeInstanceOf(InactiveAccountError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails if sends to self", async () => {
@@ -426,7 +583,7 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(SelfPaymentError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
 
     it("fails to send less-than-1-cent amount to usd recipient", async () => {
@@ -477,20 +634,203 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
 
       // Restore system state
-      lndServiceSpy.mockReset()
+      lndServiceSpy.mockRestore()
     })
-  })
-})
 
-describe("initiated intraledger", () => {
-  describe("settles intraledger", () => {
-    it("fails if sends to self", async () => {
+    it("fails if amount greater than trade-intra-account limit", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [
+          noAmountLnInvoice.destination,
+          largeWithAmountLnInvoice.destination,
+        ],
+      })
+
       // Create users
-      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+        await createRandomUserAndWallets()
       const newAccount = await AccountsRepository().findById(
         newWalletDescriptor.accountId,
       )
       if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      for (let i = 0; i < 2; i++) {
+        const receive = await recordReceiveLnPayment({
+          walletDescriptor: newWalletDescriptor,
+          paymentAmount: receiveAboveLimitAmounts,
+          bankFee: receiveBankFee,
+          displayAmounts: receiveAboveLimitDisplayAmounts,
+          memo,
+        })
+        if (receive instanceof Error) throw receive
+      }
+
+      expect(largeWithAmountLnInvoice.paymentAmount).toStrictEqual(
+        receiveAboveLimitAmounts.btc,
+      )
+      const usdAmount = receiveAboveLimitAmounts.usd
+
+      // Persist invoice as self-invoice
+      const persisted = await WalletInvoicesRepository().persistNew({
+        paymentHash: largeWithAmountLnInvoice.paymentHash,
+        secret: "secret" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: largeWithAmountLnInvoice.destination,
+        recipientWalletDescriptor: usdWalletDescriptor,
+        paid: false,
+        usdAmount,
+      })
+      if (persisted instanceof Error) throw persisted
+
+      // Attempt pay with invoice with amount
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest: largeWithAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+      })
+      expect(paymentResult).toBeInstanceOf(TradeIntraAccountLimitsExceededError)
+
+      // Persist no-amount invoice as self-invoice
+      const noAmountPersisted = await WalletInvoicesRepository().persistNew({
+        paymentHash: noAmountLnInvoice.paymentHash,
+        secret: "secret" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: noAmountLnInvoice.destination,
+        recipientWalletDescriptor: usdWalletDescriptor,
+        paid: false,
+      })
+      if (noAmountPersisted instanceof Error) throw noAmountPersisted
+
+      // Attempt pay with no-amount invoice
+      const noAmountPaymentResult =
+        await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+          uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+          memo,
+          senderWalletId: newWalletDescriptor.id,
+          senderAccount: newAccount,
+
+          amount: toSats(receiveAboveLimitAmounts.btc.amount),
+        })
+      expect(noAmountPaymentResult).toBeInstanceOf(TradeIntraAccountLimitsExceededError)
+
+      // Restore system state
+      lndServiceSpy.mockReset()
+    })
+
+    it("fails if amount greater than intraledger limit", async () => {
+      // Setup mocks
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [
+          noAmountLnInvoice.destination,
+          largeWithAmountLnInvoice.destination,
+        ],
+      })
+
+      // Create users
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const otherWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Fund balance for send
+      for (let i = 0; i < 2; i++) {
+        const receive = await recordReceiveLnPayment({
+          walletDescriptor: newWalletDescriptor,
+          paymentAmount: receiveAboveLimitAmounts,
+          bankFee: receiveBankFee,
+          displayAmounts: receiveAboveLimitDisplayAmounts,
+          memo,
+        })
+        if (receive instanceof Error) throw receive
+      }
+
+      // Persist invoice as self-invoice
+      const persisted = await WalletInvoicesRepository().persistNew({
+        paymentHash: largeWithAmountLnInvoice.paymentHash,
+        secret: "secret" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: largeWithAmountLnInvoice.destination,
+        recipientWalletDescriptor: otherWalletDescriptor,
+        paid: false,
+      })
+      if (persisted instanceof Error) throw persisted
+
+      // Attempt pay with invoice with amount
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest: largeWithAmountLnInvoice.paymentRequest,
+        memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+      })
+      expect(paymentResult).toBeInstanceOf(IntraledgerLimitsExceededError)
+
+      // Persist no-amount invoice as self-invoice
+      const noAmountPersisted = await WalletInvoicesRepository().persistNew({
+        paymentHash: noAmountLnInvoice.paymentHash,
+        secret: "secret" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: noAmountLnInvoice.destination,
+        recipientWalletDescriptor: otherWalletDescriptor,
+        paid: false,
+      })
+      if (noAmountPersisted instanceof Error) throw noAmountPersisted
+
+      // Attempt pay with no-amount invoice
+      const noAmountPaymentResult =
+        await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+          uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
+          memo,
+          senderWalletId: newWalletDescriptor.id,
+          senderAccount: newAccount,
+
+          amount: toSats(receiveAboveLimitAmounts.btc.amount),
+        })
+      expect(noAmountPaymentResult).toBeInstanceOf(IntraledgerLimitsExceededError)
+
+      // Restore system state
+      lndServiceSpy.mockReset()
+    })
+
+    it("calls sendNotification on successful intraledger send", async () => {
+      // Setup mocks
+      const sendNotification = jest.fn()
+      const pushNotificationsServiceSpy = jest
+        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+        .mockImplementationOnce(() => ({ sendNotification }))
+
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        listAllPubkeys: () => [noAmountLnInvoice.destination],
+        cancelInvoice: () => true,
+      })
+
+      // Create users
+      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
+        await createRandomUserAndWallets()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Persist invoice as self-invoice
+      const persisted = await WalletInvoicesRepository().persistNew({
+        paymentHash: noAmountLnInvoice.paymentHash,
+        secret: "secret" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: noAmountLnInvoice.destination,
+        recipientWalletDescriptor: usdWalletDescriptor,
+        paid: false,
+      })
+      if (persisted instanceof Error) throw persisted
 
       // Fund balance for send
       const receive = await recordReceiveLnPayment({
@@ -502,45 +842,23 @@ describe("initiated intraledger", () => {
       })
       if (receive instanceof Error) throw receive
 
-      // Pay intraledger
-      const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-        recipientWalletId: newWalletDescriptor.id,
+      // Execute pay
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
+        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
         memo,
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
         amount,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
       })
-      expect(paymentResult).toBeInstanceOf(SelfPaymentError)
-    })
+      expect(paymentResult).toEqual(PaymentSendStatus.Success)
 
-    it("fails to send less-than-1-cent amount to usd recipient", async () => {
-      // Create users
-      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
-        await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
+      // Expect sent notification
+      expect(sendNotification.mock.calls.length).toBe(1)
+      expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
 
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: usdWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      // Pay intraledger
-      const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-        recipientWalletId: usdWalletDescriptor.id,
-        memo,
-        amount: 1,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-      })
-      expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
+      // Restore system state
+      pushNotificationsServiceSpy.mockRestore()
+      lndServiceSpy.mockRestore()
     })
   })
 })

@@ -1,4 +1,4 @@
-import { ChannelType } from "@domain/phone-provider"
+import { ChannelType, PhoneCodeInvalidError } from "@domain/phone-provider"
 
 import { EmailCodeInvalidError } from "./errors"
 
@@ -38,4 +38,11 @@ export const getSupportedCountries = ({
 export const checkedToEmailCode = (code: string): EmailCode | ApplicationError => {
   if (!/^[0-9]{6}$/.test(code)) return new EmailCodeInvalidError()
   return code as EmailCode
+}
+
+export const validOneTimeAuthCodeValue = (code: string) => {
+  if (code.match(/^[0-9]{6}/i)) {
+    return code as PhoneCode
+  }
+  return new PhoneCodeInvalidError({ message: "Invalid value for OneTimeAuthCode" })
 }

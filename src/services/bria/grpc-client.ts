@@ -2,7 +2,7 @@ import { promisify } from "util"
 
 import { credentials, Metadata } from "@grpc/grpc-js"
 
-import { getBriaConfig } from "@config"
+import { BRIA_HOST, BRIA_PORT } from "@config"
 
 import {
   EstimatePayoutFeeRequest,
@@ -20,10 +20,10 @@ import {
 } from "./proto/bria_pb"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
 
-const briaConfig = getBriaConfig()
+const briaEndpoint = `${BRIA_HOST}:${BRIA_PORT}`
 
 const bitcoinBridgeClient = new BriaServiceClient(
-  briaConfig.endpoint,
+  briaEndpoint,
   credentials.createInsecure(),
 )
 

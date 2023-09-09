@@ -1,9 +1,10 @@
+import { KRATOS_PG_CON } from "@config"
 import knex from "knex"
 
 const getKratosKnex = () =>
   knex({
     client: "pg", // specify the database client
-    connection: process.env.KRATOS_PG_CON,
+    connection: KRATOS_PG_CON,
   })
 
 export const getEmailCode = async (email: EmailAddress) => {

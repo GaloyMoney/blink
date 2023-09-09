@@ -1,16 +1,19 @@
-import { getKratosConfig } from "@config"
-
 import { ErrorLevel } from "@domain/shared"
 import { Configuration, FrontendApi, IdentityApi } from "@ory/client"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
+import { KRATOS_ADMIN_API, KRATOS_PUBLIC_API } from "@config"
+
 import { MissingCreatedAtKratosError, MissingExpiredAtKratosError } from "./errors"
 import { SchemaIdType } from "./schema"
 
-const { publicApi, adminApi } = getKratosConfig()
+export const kratosPublic = new FrontendApi(
+  new Configuration({ basePath: KRATOS_PUBLIC_API }),
+)
 
-export const kratosPublic = new FrontendApi(new Configuration({ basePath: publicApi }))
-export const kratosAdmin = new IdentityApi(new Configuration({ basePath: adminApi }))
+export const kratosAdmin = new IdentityApi(
+  new Configuration({ basePath: KRATOS_ADMIN_API }),
+)
 
 export const toDomainSession = (session: KratosSession): Session => {
   // is throw ok? this should not happen I (nb) believe but the type say it can

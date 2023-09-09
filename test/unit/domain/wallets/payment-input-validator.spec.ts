@@ -9,7 +9,7 @@ import { WalletCurrency, InvalidBtcPaymentAmountError } from "@domain/shared"
 describe("PaymentInputValidator", () => {
   const dummyAccount: Account = {
     id: crypto.randomUUID() as AccountId,
-    uuid: crypto.randomUUID() as AccountUUID,
+    uuid: crypto.randomUUID() as AccountUuid,
     createdAt: new Date(),
     username: "username" as Username,
     defaultWalletId: "senderWalletId" as WalletId,

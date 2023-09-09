@@ -1,10 +1,10 @@
 import { getOperationAST, GraphQLError, parse, validate } from "graphql"
 
-import { WebSocketServer } from "ws" // yarn add ws
+import { WebSocketServer } from "ws"
 import { gqlMainSchema } from "@graphql/public"
 import { Extra, useServer } from "graphql-ws/lib/use/ws"
 
-import { getJwksArgs, isProd } from "@config"
+import { getJwksArgs, UNSECURE_IP_FROM_REQUEST_OBJECT, WEBSOCKET_PORT } from "@config"
 import { Context } from "graphql-ws"
 import jsonwebtoken from "jsonwebtoken"
 
@@ -13,24 +13,24 @@ import { ErrorLevel } from "@domain/shared"
 
 import jwksRsa from "jwks-rsa"
 
-import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 import { validateKratosCookie } from "@services/kratos"
-import { setupMongoConnection } from "@services/mongodb"
 import { baseLogger } from "@services/logger"
+import { setupMongoConnection } from "@services/mongodb"
+import { sendOathkeeperRequestGraphql } from "@services/oathkeeper"
 import {
-  wrapAsyncToRunInSpan,
   addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
   addEventToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
 } from "@services/tracing"
 
 import cookie from "cookie"
 
-import { sessionContext } from "./graphql-server"
+import { sessionPublicContext } from "./middlewares/session"
 
 const schema = gqlMainSchema
 
-const port = process.env.WEBSOCKET_PORT ? parseInt(process.env.WEBSOCKET_PORT) : 4000
+const port = WEBSOCKET_PORT
 const path = "/graphql"
 
 const wsServer = new WebSocketServer({
@@ -49,7 +49,6 @@ const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 
 const authorizedContexts: Record<string, unknown> = {}
 
-// new ws server
 const getContext = async (
   ctx: Context<
     Record<string, unknown> | undefined,
@@ -65,9 +64,9 @@ const getContext = async (
       // TODO: check if nginx pass the ip to the header
       // TODO: ip not been used currently for subscription.
       // implement some rate limiting.
-      const ipString = isProd
-        ? connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
-        : connectionParams?.ip ?? ctx.extra?.request?.socket?.remoteAddress ?? undefined
+      const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
+        ? connectionParams?.ip ?? ctx.extra?.request?.socket?.remoteAddress
+        : connectionParams?.["x-real-ip"] || connectionParams?.["x-forwarded-for"]
 
       const ip = parseIps(ipString)
 
@@ -82,10 +81,10 @@ const getContext = async (
         const tokenPayload = {
           sub: kratosCookieRes.kratosUserId,
         }
-        return sessionContext({
+
+        return sessionPublicContext({
           tokenPayload,
           ip,
-          body: null,
         })
       }
 
@@ -107,12 +106,9 @@ const getContext = async (
         return false
       }
 
-      return sessionContext({
+      return sessionPublicContext({
         tokenPayload,
         ip,
-
-        // TODO: Resolve what's needed here
-        body: null,
       })
     },
   })()

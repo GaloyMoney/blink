@@ -21,7 +21,6 @@ import OnChainAddressCurrentMutation from "@graphql/public/root/mutation/on-chai
 import UserLoginMutation from "@graphql/shared/root/mutation/user-login"
 
 import UserLogoutMutation from "@graphql/public/root/mutation/user-logout"
-import UserRequestAuthCodeMutation from "@graphql/shared/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/public/root/mutation/user-update-language"
 import UserUpdateUsernameMutation from "@graphql/public/root/mutation/user-update-username"
 import AccountUpdateDefaultWalletIdMutation from "@graphql/public/root/mutation/account-update-default-wallet-id"
@@ -48,12 +47,14 @@ import UserPhoneRegistrationInitiateMutation from "@graphql/public/root/mutation
 import UserPhoneRegistrationValidateMutation from "@graphql/public/root/mutation/user-phone-registration-validate"
 import UserTotpDeleteMutation from "@graphql/public/root/mutation/user-totp-delete"
 
-// TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
+import CallbackEndpointAdd from "./root/mutation/callback-endpoint-add"
+import CallbackEndpointDelete from "./root/mutation/callback-endpoint-delete"
+
+// TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {
   unauthed: {
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
     captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
-    userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
     userLogout: UserLogoutMutation,
 
@@ -87,6 +88,9 @@ export const mutationFields = {
       accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
       accountDelete: AccountDeleteMutation,
       feedbackSubmit: FeedbackSubmitMutation,
+
+      callbackEndpointAdd: CallbackEndpointAdd,
+      callbackEndpointDelete: CallbackEndpointDelete,
     },
 
     atWalletLevel: {

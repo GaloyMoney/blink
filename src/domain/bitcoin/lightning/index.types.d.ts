@@ -159,6 +159,11 @@ type LightningServiceConfig = {
   feeCapPercent: number
 }
 
+type ListLnInvoicesArgs = {
+  pubkey?: Pubkey
+  createdAfter?: Date
+}
+
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
@@ -241,7 +246,9 @@ interface ILightningService {
 
   listFailedPayments: ListLnPayments
 
-  listInvoices(lnd: AuthenticatedLnd): Promise<LnInvoiceLookup[] | LightningServiceError>
+  listInvoices(
+    args: ListLnInvoicesArgs,
+  ): Promise<LnInvoiceLookup[] | LightningServiceError>
 
   deletePaymentByHash({
     paymentHash,

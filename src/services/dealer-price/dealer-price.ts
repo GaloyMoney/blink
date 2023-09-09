@@ -1,6 +1,6 @@
 import util from "util"
 
-import { getDealerPriceConfig } from "@config"
+import { PRICE_SERVER_HOST, PRICE_SERVER_PORT } from "@config"
 
 import { credentials } from "@grpc/grpc-js"
 
@@ -27,29 +27,28 @@ import { baseLogger } from "../logger"
 
 import { PriceServiceClient } from "./proto/services/price/v1/price_service_grpc_pb"
 import {
-  GetCentsFromSatsForImmediateBuyRequest,
-  GetCentsFromSatsForImmediateBuyResponse,
-  GetCentsFromSatsForImmediateSellRequest,
-  GetCentsFromSatsForImmediateSellResponse,
   GetCentsFromSatsForFutureBuyRequest,
   GetCentsFromSatsForFutureBuyResponse,
   GetCentsFromSatsForFutureSellRequest,
   GetCentsFromSatsForFutureSellResponse,
-  GetSatsFromCentsForImmediateBuyRequest,
-  GetSatsFromCentsForImmediateBuyResponse,
-  GetSatsFromCentsForImmediateSellRequest,
-  GetSatsFromCentsForImmediateSellResponse,
+  GetCentsFromSatsForImmediateBuyRequest,
+  GetCentsFromSatsForImmediateBuyResponse,
+  GetCentsFromSatsForImmediateSellRequest,
+  GetCentsFromSatsForImmediateSellResponse,
+  GetCentsPerSatsExchangeMidRateRequest,
+  GetCentsPerSatsExchangeMidRateResponse,
   GetSatsFromCentsForFutureBuyRequest,
   GetSatsFromCentsForFutureBuyResponse,
   GetSatsFromCentsForFutureSellRequest,
   GetSatsFromCentsForFutureSellResponse,
-  GetCentsPerSatsExchangeMidRateRequest,
-  GetCentsPerSatsExchangeMidRateResponse,
+  GetSatsFromCentsForImmediateBuyRequest,
+  GetSatsFromCentsForImmediateBuyResponse,
+  GetSatsFromCentsForImmediateSellRequest,
+  GetSatsFromCentsForImmediateSellResponse,
 } from "./proto/services/price/v1/price_service_pb"
 
-const config = getDealerPriceConfig()
 const client = new PriceServiceClient(
-  `${config.host}:${config.port}`,
+  `${PRICE_SERVER_HOST}:${PRICE_SERVER_PORT}`,
   credentials.createInsecure(),
 )
 

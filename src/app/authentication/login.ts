@@ -11,20 +11,41 @@ import {
   checkedToIdentityUsername,
 } from "@domain/users"
 import {
+  AuthWithEmailPasswordlessService,
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
-  AuthWithEmailPasswordlessService,
-  PhoneAccountAlreadyExistsNeedToSweepFundsError,
   IdentityRepository,
+  PhoneAccountAlreadyExistsNeedToSweepFundsError,
 } from "@services/kratos"
 
 import { LedgerService } from "@services/ledger"
 import { WalletsRepository } from "@services/mongoose"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 
 import { upgradeAccountFromDeviceToPhone } from "@app/accounts"
 import { checkedToEmailCode } from "@domain/authentication"
-import { isPhoneCodeValid } from "@services/twilio"
+import { isPhoneCodeValid, TwilioClient } from "@services/twilio"
+
+import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
+
+import { getAccountsOnboardConfig } from "@config"
+
+import {
+  UnauthorizedIPForOnboardingError,
+  InvalidPhoneForOnboardingError,
+  InvalidPhoneMetadataForOnboardingError,
+  MissingIPMetadataError,
+  InvalidIpMetadataError,
+} from "@domain/errors"
+import { IpFetcher } from "@services/ipfetcher"
+
+import { IpFetcherServiceError } from "@domain/ipfetcher"
+import { ErrorLevel } from "@domain/shared"
+
+import { PhoneMetadataAuthorizer } from "@domain/users/phone-metadata-authorizer"
 
 import {
   checkFailedLoginAttemptPerIpLimits,
@@ -72,7 +93,13 @@ export const loginWithPhoneToken = async ({
     // this branch exists because we currently make no difference between a registration and login
     addAttributesToCurrentSpan({ "login.newAccount": true })
 
-    const kratosResult = await authService.createIdentityWithSession({ phone })
+    const phoneMetadata = await isAllowedToOnboard({ ip, phone })
+    if (phoneMetadata instanceof Error) return phoneMetadata
+
+    const kratosResult = await authService.createIdentityWithSession({
+      phone,
+      phoneMetadata,
+    })
     if (kratosResult instanceof Error) return kratosResult
 
     return { authToken: kratosResult.authToken, totpRequired: false }
@@ -143,7 +170,7 @@ export const loginWithPhoneCookie = async ({
   return kratosResult
 }
 
-export const loginWithEmail = async ({
+export const loginWithEmailToken = async ({
   emailFlowId,
   code: codeRaw,
   ip,
@@ -255,6 +282,10 @@ export const loginDeviceUpgradeWithPhone = async ({
     // a. create kratos account
     // b. and c. migrate account/user collection in mongo via kratos/registration webhook
 
+    // check if account is upgradeable
+    const phoneMetadata = await isAllowedToOnboard({ ip, phone })
+    if (phoneMetadata instanceof Error) return phoneMetadata
+
     const success = await AuthWithUsernamePasswordDeviceIdService().upgradeToPhoneSchema({
       phone,
       userId: account.kratosUserId,
@@ -264,6 +295,7 @@ export const loginDeviceUpgradeWithPhone = async ({
     const res = await upgradeAccountFromDeviceToPhone({
       userId: account.kratosUserId,
       phone,
+      phoneMetadata,
     })
     if (res instanceof Error) return res
     return { success }
@@ -307,6 +339,8 @@ export const loginWithDevice = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
+  // add check on property from jwt, like expiry
+
   const deviceId = checkedToDeviceId(deviceIdRaw)
   if (deviceId instanceof Error) return deviceId
 
@@ -315,6 +349,32 @@ export const loginWithDevice = async ({
 
   const password = checkedToIdentityPassword(passwordRaw)
   if (password instanceof Error) return password
+
+  const { ipMetadataValidationSettings } = getAccountsOnboardConfig()
+
+  if (ipMetadataValidationSettings.enabled) {
+    const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
+
+    if (ipFetcherInfo instanceof IpFetcherServiceError) {
+      recordExceptionInCurrentSpan({
+        error: ipFetcherInfo,
+        level: ErrorLevel.Critical,
+        attributes: { ip },
+      })
+      return ipFetcherInfo
+    }
+
+    const authorizedIPMetadata = IPMetadataAuthorizer(
+      ipMetadataValidationSettings,
+    ).authorize(ipFetcherInfo)
+
+    if (authorizedIPMetadata instanceof Error) {
+      if (authorizedIPMetadata instanceof MissingIPMetadataError)
+        return new InvalidIpMetadataError(authorizedIPMetadata)
+
+      return new UnauthorizedIPForOnboardingError(authorizedIPMetadata)
+    }
+  }
 
   const authService = AuthWithUsernamePasswordDeviceIdService()
   const res = await authService.createIdentityWithSession({
@@ -332,4 +392,77 @@ export const loginWithDevice = async ({
   }
 
   return res.authToken
+}
+
+const isAllowedToOnboard = async ({
+  ip,
+  phone,
+}: {
+  ip: IpAddress
+  phone: PhoneNumber
+}): Promise<PhoneMetadata | undefined | DomainError> => {
+  const { phoneMetadataValidationSettings, ipMetadataValidationSettings } =
+    getAccountsOnboardConfig()
+
+  addAttributesToCurrentSpan({
+    "login.phoneMetadataValidation": phoneMetadataValidationSettings.enabled,
+  })
+  addAttributesToCurrentSpan({
+    "login.ipMetadataValidation": ipMetadataValidationSettings.enabled,
+  })
+
+  if (ipMetadataValidationSettings.enabled) {
+    const ipFetcherInfo = await IpFetcher().fetchIPInfo(ip)
+
+    if (ipFetcherInfo instanceof IpFetcherServiceError) {
+      recordExceptionInCurrentSpan({
+        error: ipFetcherInfo,
+        level: ErrorLevel.Critical,
+        attributes: { ip },
+      })
+      return ipFetcherInfo
+    }
+
+    addAttributesToCurrentSpan({
+      "login.ipFetcherInfo": JSON.stringify(ipFetcherInfo),
+    })
+
+    const authorizedIPMetadata = IPMetadataAuthorizer(
+      ipMetadataValidationSettings,
+    ).authorize(ipFetcherInfo)
+
+    if (authorizedIPMetadata instanceof Error) {
+      if (authorizedIPMetadata instanceof MissingIPMetadataError)
+        return new InvalidIpMetadataError(authorizedIPMetadata)
+
+      return new UnauthorizedIPForOnboardingError(authorizedIPMetadata)
+    }
+  }
+
+  const newPhoneMetadata = await TwilioClient().getCarrier(phone)
+  if (newPhoneMetadata instanceof Error) {
+    if (!phoneMetadataValidationSettings.enabled) {
+      return undefined
+    }
+
+    return new InvalidPhoneMetadataForOnboardingError()
+  }
+
+  const phoneMetadata = newPhoneMetadata
+
+  if (phoneMetadataValidationSettings.enabled) {
+    const authorizedPhoneMetadata = PhoneMetadataAuthorizer(
+      phoneMetadataValidationSettings,
+    ).authorize(phoneMetadata)
+
+    addAttributesToCurrentSpan({
+      "login.phoneMetadata": JSON.stringify(phoneMetadata),
+    })
+
+    if (authorizedPhoneMetadata instanceof Error) {
+      return new InvalidPhoneForOnboardingError()
+    }
+  }
+
+  return phoneMetadata
 }

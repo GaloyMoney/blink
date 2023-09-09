@@ -86,6 +86,7 @@ import {
   waitUntilBlockHeight,
   waitUntilSyncAll,
   lndCreateOnChainAddress,
+  waitFor,
 } from "test/helpers"
 
 let walletIdA: WalletId
@@ -220,9 +221,8 @@ describe("With Bria", () => {
         }),
     )
 
-    const { result: transactions, error: txnsError } = await getTransactionsForWalletId(
-      walletId,
-    )
+    const { result: transactions, error: txnsError } =
+      await getTransactionsForWalletId(walletId)
     if (txnsError instanceof Error || transactions === null) {
       throw txnsError
     }
@@ -440,27 +440,6 @@ describe("With Bria", () => {
   })
 
   describe("UserWallet - On chain", () => {
-    it("get last on chain address", async () => {
-      const requestId = ("requestId #" +
-        (Math.random() * 1_000_000).toFixed()) as OnChainAddressRequestId
-
-      const address = await Wallets.createOnChainAddress({
-        walletId: newWalletIdA,
-        requestId,
-      })
-      const lastAddress = await Wallets.getLastOnChainAddress(newWalletIdA)
-
-      expect(address).not.toBeInstanceOf(Error)
-      expect(lastAddress).not.toBeInstanceOf(Error)
-      expect(lastAddress).toBe(address)
-
-      const addressAgain = await Wallets.createOnChainAddress({
-        walletId: newWalletIdA,
-        requestId,
-      })
-      expect(addressAgain).toBe(address)
-    })
-
     it.skip("fails to create onChain Address past rate limit", async () => {
       // Reset limits before starting
       let resetOk = await resetOnChainAddressAccountIdLimits(newAccountIdA)
@@ -1577,14 +1556,20 @@ describe("With Lnd", () => {
       // mine and sync all before use tx subscription
       await mineBlockAndSyncAll()
 
+      let isTxProcessed = false
       const sub = subscribeToTransactions({ lnd: lndonchain })
-      sub.on("chain_transaction", onchainTransactionEventHandler)
+      sub.on("chain_transaction", async (tx) => {
+        await onchainTransactionEventHandler(tx)
+        isTxProcessed = true
+      })
+      // hack to solve sendRawTransaction not triggering chain tx event
+      await bitcoindOutside.getBalance()
+      const txHash = await bitcoindOutside.sendRawTransaction({
+        hexstring: finalizedPsbt.hex,
+      })
+      await Promise.all([waitFor(() => isTxProcessed), waitUntilSyncAll()])
 
-      const [_, txHash] = await Promise.all([
-        once(sub, "chain_transaction"),
-        bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex }),
-      ])
-      _
+      sub.removeAllListeners()
       await sleep(1000)
 
       const defaultDepositFeeRatio = feesConfig.depositRatioAsBasisPoints
@@ -1655,8 +1640,6 @@ describe("With Lnd", () => {
             }),
         )
       }
-
-      sub.removeAllListeners()
     })
 
     it("identifies unconfirmed incoming on-chain transactions", async () => {

@@ -319,6 +319,27 @@ export const NotificationsService = (): INotificationsService => {
     }
   }
 
+  const adminPushNotificationSend = async ({
+    deviceTokens,
+    title,
+    body,
+    data,
+  }: SendPushNotificationArgs): Promise<true | NotificationsServiceError> => {
+    const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
+    if (!hasDeviceTokens) return true
+
+    try {
+      return pushNotification.sendNotification({
+        deviceTokens,
+        title,
+        body,
+        data,
+      })
+    } catch (err) {
+      return handleCommonNotificationErrors(err)
+    }
+  }
+
   // trace everything except price update because it runs every 30 seconds
   return {
     priceUpdate,
@@ -331,6 +352,7 @@ export const NotificationsService = (): INotificationsService => {
         onChainTxReceivedPending,
         onChainTxSent,
         sendBalance,
+        adminPushNotificationSend,
       },
     }),
   }

@@ -6,22 +6,19 @@ directories:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: main
+      ref: 1b57eaffe4f56da5000396f7634f8e312a31a2db
     includePaths:
     - dev/**/*
-    - .envrc
-    - .env.ci
-    - docker-compose.yml
-    - docker-compose.override.yml
     excludePaths:
     - dev/bin/**/*
+    - dev/.gitignore
     newRootPath: dev
 - path: ./galoy
   contents:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: main
+      ref: 1b57eaffe4f56da5000396f7634f8e312a31a2db
     includePaths:
     - dev/**/*
     - test/bats/bitcoind_signer_descriptors.json
@@ -37,7 +34,7 @@ directories:
   - path: ./
     git:
       url: https://github.com/GaloyMoney/galoy.git
-      ref: main
+      ref: 1b57eaffe4f56da5000396f7634f8e312a31a2db
     includePaths:
     - src/graphql/public/schema.graphql
     - src/graphql/admin/schema.graphql

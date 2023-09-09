@@ -69,4 +69,7 @@ interface INotificationsService {
 
   priceUpdate: <C extends DisplayCurrency>(args: PriceUpdateArgs<C>) => void
   sendBalance(args: SendBalanceArgs): Promise<true | NotificationsServiceError>
+  adminPushNotificationSend(
+    args: SendPushNotificationArgs,
+  ): Promise<true | NotificationsServiceError>
 }

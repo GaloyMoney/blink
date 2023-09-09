@@ -1,23 +1,5 @@
-"""
-Accounts are core to the Galoy architecture. they have users, and own wallets
-"""
-type Account {
-  """
-  GPS coordinates for the account that can be used to place the related business on a map
-  """
-  coordinates: Coordinates
-  createdAt: Timestamp!
-  id: ID!
-  level: AccountLevel!
-  owner: User!
-  status: AccountStatus!
-  title: String
-  username: Username
-  wallets: [Wallet!]!
-}
-
 type AccountDetailPayload {
-  accountDetails: Account
+  accountDetails: AuditedAccount
   errors: [Error!]!
 }
 
@@ -44,6 +26,47 @@ input AccountUpdateStatusInput {
   comment: String
   status: AccountStatus!
   uid: ID!
+}
+
+input AdminPushNotificationSendInput {
+  accountId: String
+  body: String
+  data: Object
+  title: String
+}
+
+type AdminPushNotificationSendPayload {
+  errors: [Error!]!
+  success: Boolean
+}
+
+"""
+Accounts are core to the Galoy architecture. they have users, and own wallets
+"""
+type AuditedAccount {
+  """
+  GPS coordinates for the account that can be used to place the related business on a map
+  """
+  coordinates: Coordinates
+  createdAt: Timestamp!
+  id: ID!
+  level: AccountLevel!
+  owner: AuditedUser!
+  status: AccountStatus!
+  title: String
+  username: Username
+  uuid: String!
+  wallets: [Wallet!]!
+}
+
+type AuditedUser {
+  createdAt: Timestamp!
+
+  """Email address"""
+  email: Email
+  id: ID!
+  language: Language!
+  phone: Phone
 }
 
 """An Opaque Bearer token"""
@@ -220,14 +243,16 @@ scalar Memo
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
+  adminPushNotificationSend(input: AdminPushNotificationSendInput!): AdminPushNotificationSendPayload!
   businessDeleteMapInfo(input: BusinessDeleteMapInfoInput!): AccountDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
+
+scalar Object
 
 """An address for an on-chain bitcoin destination"""
 scalar OnChainAddress
@@ -279,9 +304,10 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
 }
 
 type Query {
-  accountDetailsByEmail(email: EmailAddress!): Account!
-  accountDetailsByUserPhone(phone: Phone!): Account!
-  accountDetailsByUsername(username: Username!): Account!
+  accountDetailsByAccountId(accountId: ID!): AuditedAccount!
+  accountDetailsByEmail(email: EmailAddress!): AuditedAccount!
+  accountDetailsByUserPhone(phone: Phone!): AuditedAccount!
+  accountDetailsByUsername(username: Username!): AuditedAccount!
   allLevels: [AccountLevel!]!
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
@@ -442,23 +468,8 @@ type UsdWallet implements Wallet {
   walletCurrency: WalletCurrency!
 }
 
-type User {
-  createdAt: Timestamp!
-
-  """Email address"""
-  email: Email
-  id: ID!
-  language: Language!
-  phone: Phone
-}
-
 input UserLoginInput {
   code: OneTimeAuthCode!
-  phone: Phone!
-}
-
-input UserRequestAuthCodeInput {
-  channel: PhoneCodeChannelType
   phone: Phone!
 }
 

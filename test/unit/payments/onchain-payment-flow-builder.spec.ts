@@ -238,9 +238,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                   currency: WalletCurrency.Btc,
                 }
 
-                const usdPaymentAmount = await convertForBtcWalletToBtcAddress.usdFromBtc(
-                  btcPaymentAmount,
-                )
+                const usdPaymentAmount =
+                  await convertForBtcWalletToBtcAddress.usdFromBtc(btcPaymentAmount)
 
                 const sendAmount = paymentAmountFromNumber({
                   amount: uncheckedAmount,
@@ -260,9 +259,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                   volumeOnChainFn,
                   sinceDaysAgo: feeConfig.withdrawDaysLookback,
                 })
-                const imbalance = await imbalanceCalculator.getSwapOutImbalanceAmount(
-                  senderBtcWallet,
-                )
+                const imbalance =
+                  await imbalanceCalculator.getSwapOutImbalanceAmount(senderBtcWallet)
                 if (imbalance instanceof Error) throw imbalance
 
                 const withdrawFees = onChainFees.withdrawalFee({
@@ -280,9 +278,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                 if (walletPriceRatio instanceof Error) throw walletPriceRatio
 
                 const btcProtocolAndBankFee = withdrawFees.totalFee
-                const usdProtocolAndBankFee = await walletPriceRatio.convertFromBtcToCeil(
-                  btcProtocolAndBankFee,
-                )
+                const usdProtocolAndBankFee =
+                  await walletPriceRatio.convertFromBtcToCeil(btcProtocolAndBankFee)
 
                 checkAddress(payment)
                 checkSettlementMethod(payment)
