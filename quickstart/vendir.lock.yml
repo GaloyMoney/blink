@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: adding attribute to span for kratos extend session (#3190)...'
-      sha: 609a0a6a32962473d96cf475a6d26ed2d854a6f9
+      commitTitle: 'chore: removing extend session from cronjob (#3188)...'
+      sha: 08cf8980841b470ae9db9efbb9dbcf5a7fff29ce
       tags:
-      - 0.13.49-1-g609a0a6a3
+      - 0.13.50-1-g08cf89808
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: adding attribute to span for kratos extend session (#3190)...'
-      sha: 609a0a6a32962473d96cf475a6d26ed2d854a6f9
+      commitTitle: 'chore: removing extend session from cronjob (#3188)...'
+      sha: 08cf8980841b470ae9db9efbb9dbcf5a7fff29ce
       tags:
-      - 0.13.49-1-g609a0a6a3
+      - 0.13.50-1-g08cf89808
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: adding attribute to span for kratos extend session (#3190)...'
-      sha: 609a0a6a32962473d96cf475a6d26ed2d854a6f9
+      commitTitle: 'chore: removing extend session from cronjob (#3188)...'
+      sha: 08cf8980841b470ae9db9efbb9dbcf5a7fff29ce
       tags:
-      - 0.13.49-1-g609a0a6a3
+      - 0.13.50-1-g08cf89808
     path: ./
   path: ./graphql
 kind: LockConfig
