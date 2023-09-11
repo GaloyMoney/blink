@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removing extend session from cronjob (#3188)...'
-      sha: 08cf8980841b470ae9db9efbb9dbcf5a7fff29ce
+      commitTitle: 'test: refactor limits tests to remove overloaded helpers (#3149)'
+      sha: 5999708df650aad3cf9132a9a0907fe0bd4a73c1
       tags:
-      - 0.13.50-1-g08cf89808
+      - 0.13.51-1-g5999708df
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removing extend session from cronjob (#3188)...'
-      sha: 08cf8980841b470ae9db9efbb9dbcf5a7fff29ce
+      commitTitle: 'test: refactor limits tests to remove overloaded helpers (#3149)'
+      sha: 5999708df650aad3cf9132a9a0907fe0bd4a73c1
       tags:
-      - 0.13.50-1-g08cf89808
+      - 0.13.51-1-g5999708df
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: removing extend session from cronjob (#3188)...'
-      sha: 08cf8980841b470ae9db9efbb9dbcf5a7fff29ce
+      commitTitle: 'test: refactor limits tests to remove overloaded helpers (#3149)'
+      sha: 5999708df650aad3cf9132a9a0907fe0bd4a73c1
       tags:
-      - 0.13.50-1-g08cf89808
+      - 0.13.51-1-g5999708df
     path: ./
   path: ./graphql
 kind: LockConfig
