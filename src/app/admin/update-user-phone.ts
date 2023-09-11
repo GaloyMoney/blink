@@ -1,24 +1,24 @@
 import { markAccountForDeletion } from "@app/accounts"
-import { checkedToAccountId } from "@domain/accounts"
+import { checkedToAccountUuid } from "@domain/accounts"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const updateUserPhone = async ({
-  accountId: accountIdRaw,
+  accountUuid: accountUuidRaw,
   phone,
   updatedByUserId,
 }: {
-  accountId: string
+  accountUuid: string
   phone: PhoneNumber
   updatedByUserId: UserId
 }): Promise<Account | ApplicationError> => {
-  const accountId = checkedToAccountId(accountIdRaw)
-  if (accountId instanceof Error) return accountId
+  const accountUuid = checkedToAccountUuid(accountUuidRaw)
+  if (accountUuid instanceof Error) return accountUuid
 
   const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findById(accountId)
+  const account = await accountsRepo.findByUuid(accountUuid)
   if (account instanceof Error) return account
   const kratosUserId = account.kratosUserId
 
