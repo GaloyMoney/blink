@@ -1,5 +1,4 @@
 import { OnChain, Lightning, Wallets, Payments, Swap } from "@app"
-import { extendSessions } from "@app/authentication"
 
 import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
 
@@ -89,9 +88,6 @@ const main = async () => {
     deleteExpiredInvoices,
     deleteLndPaymentsBefore2Months,
     deleteFailedPaymentsAttemptAllLnds,
-
-    // auth related tasks
-    extendSessions,
   ]
 
   const PROCESS_KILL_EVENTS = ["SIGTERM", "SIGINT"]
@@ -134,7 +130,7 @@ const main = async () => {
 
           // Always remove listener on loop continue, else signalHandler could target incorrect span
           try {
-            const res = await task(logger)
+            const res = await task()
 
             for (const event of PROCESS_KILL_EVENTS) {
               process.removeListener(event, signalHandler)
