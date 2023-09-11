@@ -434,6 +434,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnauthorizedIPMetadataCountryError":
       return new UnauthorizedIPMetadataCountryError({ logger: baseLogger })
 
+    case "CouldNotFindAccountError":
+      message = "Invalid account id"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -669,7 +673,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownBigIntConversionError":
     case "UnknownDomainError":
     case "UnknownBriaEventError":
-    case "CouldNotFindAccountError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
