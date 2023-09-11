@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: extend session dynamically when requests are made (#3187)...'
-      sha: ebe3306009d296ddca89a38f1216a5dd40fe87b6
+      commitTitle: 'chore: adding attribute to span for kratos extend session (#3190)...'
+      sha: 609a0a6a32962473d96cf475a6d26ed2d854a6f9
       tags:
-      - 0.13.48-1-gebe330600
+      - 0.13.49-1-g609a0a6a3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: extend session dynamically when requests are made (#3187)...'
-      sha: ebe3306009d296ddca89a38f1216a5dd40fe87b6
+      commitTitle: 'chore: adding attribute to span for kratos extend session (#3190)...'
+      sha: 609a0a6a32962473d96cf475a6d26ed2d854a6f9
       tags:
-      - 0.13.48-1-gebe330600
+      - 0.13.49-1-g609a0a6a3
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: extend session dynamically when requests are made (#3187)...'
-      sha: ebe3306009d296ddca89a38f1216a5dd40fe87b6
+      commitTitle: 'chore: adding attribute to span for kratos extend session (#3190)...'
+      sha: 609a0a6a32962473d96cf475a6d26ed2d854a6f9
       tags:
-      - 0.13.48-1-gebe330600
+      - 0.13.49-1-g609a0a6a3
     path: ./
   path: ./graphql
 kind: LockConfig
