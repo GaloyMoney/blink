@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: some optimization on latency (#3079)...'
-      sha: 7045f16c5ddc9d922e5ba2c36dca755edc4b102d
+      commitTitle: 'chore: extend session dynamically when requests are made (#3187)...'
+      sha: ebe3306009d296ddca89a38f1216a5dd40fe87b6
       tags:
-      - 0.13.47-1-g7045f16c5
+      - 0.13.48-1-gebe330600
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: some optimization on latency (#3079)...'
-      sha: 7045f16c5ddc9d922e5ba2c36dca755edc4b102d
+      commitTitle: 'chore: extend session dynamically when requests are made (#3187)...'
+      sha: ebe3306009d296ddca89a38f1216a5dd40fe87b6
       tags:
-      - 0.13.47-1-g7045f16c5
+      - 0.13.48-1-gebe330600
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: some optimization on latency (#3079)...'
-      sha: 7045f16c5ddc9d922e5ba2c36dca755edc4b102d
+      commitTitle: 'chore: extend session dynamically when requests are made (#3187)...'
+      sha: ebe3306009d296ddca89a38f1216a5dd40fe87b6
       tags:
-      - 0.13.47-1-g7045f16c5
+      - 0.13.48-1-gebe330600
     path: ./
   path: ./graphql
 kind: LockConfig

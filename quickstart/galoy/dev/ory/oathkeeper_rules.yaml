@@ -61,21 +61,21 @@
         preserve_path: true
         preserve_query: true
         subject_from: identity.id
-        extra_from: identity.traits
+        extra_from: "@this"
     - handler: bearer_token
       config:
         check_session_url: http://kratos:4433/sessions/whoami
         preserve_path: true
         preserve_query: true
         subject_from: identity.id
-        extra_from: identity.traits
+        extra_from: "@this"
     - handler: anonymous
   authorizer:
     handler: allow
   mutators:
     - handler: id_token
       config:
-        claims: '{"sub": "{{ print .Subject }}" }'
+        claims: '{"sub": "{{ print .Subject }}", "session_id": "{{ print .Extra.id }}", "expires_at": "{{ print .Extra.expires_at }}" }'
 
 - id: admin-backend
   upstream:
@@ -91,14 +91,14 @@
         preserve_path: true
         preserve_query: true
         subject_from: identity.id
-        extra_from: identity.traits
+        extra_from: "@this"
     - handler: bearer_token
       config:
         check_session_url: http://kratos:4433/sessions/whoami
         preserve_path: true
         preserve_query: true
         subject_from: identity.id
-        extra_from: identity.traits
+        extra_from: "@this"
     - handler: anonymous
   authorizer:
     handler: allow
