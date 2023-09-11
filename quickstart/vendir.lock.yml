@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: switch to btc wallet for sub 1 cent usd receipts (#3176)...'
-      sha: 47372b7a855068985a29ae51c1bb7bd7020a2b55
+      commitTitle: 'chore: bump dep dependencies...'
+      sha: b2eb083ad272f4bf7b0be1b16107bc77df5af87c
       tags:
-      - 0.13.52-1-g47372b7a8
+      - 0.13.54-1-gb2eb083ad
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: switch to btc wallet for sub 1 cent usd receipts (#3176)...'
-      sha: 47372b7a855068985a29ae51c1bb7bd7020a2b55
+      commitTitle: 'chore: bump dep dependencies...'
+      sha: b2eb083ad272f4bf7b0be1b16107bc77df5af87c
       tags:
-      - 0.13.52-1-g47372b7a8
+      - 0.13.54-1-gb2eb083ad
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: switch to btc wallet for sub 1 cent usd receipts (#3176)...'
-      sha: 47372b7a855068985a29ae51c1bb7bd7020a2b55
+      commitTitle: 'chore: bump dep dependencies...'
+      sha: b2eb083ad272f4bf7b0be1b16107bc77df5af87c
       tags:
-      - 0.13.52-1-g47372b7a8
+      - 0.13.54-1-gb2eb083ad
     path: ./
   path: ./graphql
 kind: LockConfig
