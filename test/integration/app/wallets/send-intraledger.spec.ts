@@ -4,7 +4,6 @@ import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { DisplayCurrency, toCents } from "@domain/fiat"
-import { ZeroAmountForUsdRecipientError } from "@domain/payments"
 import {
   InactiveAccountError,
   IntraledgerLimitsExceededError,
@@ -195,34 +194,6 @@ describe("intraLedgerPay", () => {
       senderAccount: newAccount,
     })
     expect(paymentResult).toBeInstanceOf(SelfPaymentError)
-  })
-
-  it("fails to send less-than-1-cent amount to usd recipient", async () => {
-    // Create users
-    const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
-      await createRandomUserAndWallets()
-    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
-    if (newAccount instanceof Error) throw newAccount
-
-    // Fund balance for send
-    const receive = await recordReceiveLnPayment({
-      walletDescriptor: usdWalletDescriptor,
-      paymentAmount: receiveAmounts,
-      bankFee: receiveBankFee,
-      displayAmounts: receiveDisplayAmounts,
-      memo,
-    })
-    if (receive instanceof Error) throw receive
-
-    // Pay intraledger
-    const paymentResult = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
-      recipientWalletId: usdWalletDescriptor.id,
-      memo,
-      amount: 1,
-      senderWalletId: newWalletDescriptor.id,
-      senderAccount: newAccount,
-    })
-    expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
   })
 
   it("fails if amount greater than trade-intra-account limit", async () => {

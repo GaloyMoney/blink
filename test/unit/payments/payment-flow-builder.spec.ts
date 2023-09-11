@@ -7,7 +7,7 @@ import {
   LnFees,
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
-  InvalidZeroAmountPriceRatioInputError,
+  SubOneCentSatAmountForUsdSelfSendError,
 } from "@domain/payments"
 import { ONE_CENT, ValidationError, WalletCurrency } from "@domain/shared"
 
@@ -36,33 +36,66 @@ describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithNoAmount =
     "lnbc1p3zn402pp54skf32qeal5jnfm73u5e3d9h5448l4yutszy0kr9l56vdsy8jefsdqqcqzpuxqyz5vqsp5c6z7a4lrey4ejvhx5q4l83jm9fhy34dsqgxnceem4dgz6fmh456s9qyyssqkxkg6ke6nt39dusdhpansu8j0r5f7gadwcampnw2g8ap0fccteer7hzjc8tgat9m5wxd98nxjxhwx0ha6g95v9edmgd30f0m8kujslgpxtzt6w" as EncodedPaymentRequest
   const invoiceWithNoAmount = decodeInvoice(paymentRequestWithNoAmount) as LnInvoice
-  const senderBtcWallet = {
-    id: "senderWalletId" as WalletId,
+
+  const senderBtcWalletDescriptor = {
+    id: "senderBtcWalletId" as WalletId,
     currency: WalletCurrency.Btc,
     accountId: "senderAccountId" as AccountId,
-    userId: "senderUserId" as UserId,
   }
 
-  const recipientBtcWallet = {
-    id: "recipientWalletId" as WalletId,
-    currency: WalletCurrency.Btc,
-    accountId: "recipientAccountId" as AccountId,
-    username: "Username" as Username,
-    userId: "recipientUserId" as UserId,
-  }
-  const senderUsdWallet = {
-    id: "walletId" as WalletId,
+  const senderUsdWalletDescriptor = {
+    id: "senderUsdWalletId" as WalletId,
     currency: WalletCurrency.Usd,
     accountId: "senderAccountId" as AccountId,
-    userId: "senderUserId" as UserId,
   }
-  const recipientUsdWallet = {
-    id: "recipientWalletId" as WalletId,
+
+  const senderAsRecipientCommonArgs = {
+    userId: "senderUserId" as UserId,
+    recipientWalletDescriptorsForAccount: [
+      senderBtcWalletDescriptor,
+      senderUsdWalletDescriptor,
+    ],
+  }
+  const senderBtcAsRecipientArgs = {
+    ...senderAsRecipientCommonArgs,
+    recipientWalletDescriptor: senderBtcWalletDescriptor,
+  }
+
+  const senderUsdAsRecipientArgs = {
+    ...senderAsRecipientCommonArgs,
+    recipientWalletDescriptor: senderUsdWalletDescriptor,
+  }
+
+  const recipientBtcWalletDescriptor = {
+    id: "recipientBtcWalletId" as WalletId,
+    currency: WalletCurrency.Btc,
+    accountId: "recipientAccountId" as AccountId,
+  }
+  const recipientUsdWalletDescriptor = {
+    id: "recipientUsdWalletId" as WalletId,
     currency: WalletCurrency.Usd,
     accountId: "recipientAccountId" as AccountId,
+  }
+
+  const recipientCommonArgs = {
+    recipientWalletDescriptorsForAccount: [
+      recipientBtcWalletDescriptor,
+      recipientUsdWalletDescriptor,
+    ],
     username: "Username" as Username,
     userId: "recipientUserId" as UserId,
   }
+
+  const recipientBtcArgs = {
+    ...recipientCommonArgs,
+    recipientWalletDescriptor: recipientBtcWalletDescriptor,
+  }
+
+  const recipientUsdArgs = {
+    ...recipientCommonArgs,
+    recipientWalletDescriptor: recipientUsdWalletDescriptor,
+  }
+
   const pubkey = "pubkey" as Pubkey
   const rawRoute = { total_mtokens: "21000000", safe_fee: 210 } as RawRoute
 
@@ -188,22 +221,22 @@ describe("LightningPaymentFlowBuilder", () => {
 
       describe("with btc wallet", () => {
         const withBtcWalletBuilder = withAmountBuilder
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
 
         const withSkippedPubkeyBtcWalletBuilder = withSkippedPubkeyAmountBuilder
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
 
         const withSkippedChanIdBtcWalletBuilder = withSkippedChanIdAmountBuilder
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderBtcWallet.id,
-              senderWalletCurrency: senderBtcWallet.currency,
+              senderWalletId: senderBtcWalletDescriptor.id,
+              senderWalletCurrency: senderBtcWalletDescriptor.currency,
             }),
           )
         }
@@ -309,14 +342,14 @@ describe("LightningPaymentFlowBuilder", () => {
 
       describe("with usd wallet", () => {
         const withUsdWalletBuilder = withAmountBuilder
-          .withSenderWallet(senderUsdWallet)
+          .withSenderWallet(senderUsdWalletDescriptor)
           .withoutRecipientWallet()
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderUsdWallet.id,
-              senderWalletCurrency: senderUsdWallet.currency,
+              senderWalletId: senderUsdWalletDescriptor.id,
+              senderWalletCurrency: senderUsdWalletDescriptor.currency,
               skipProbeForDestination: false,
             }),
           )
@@ -414,14 +447,14 @@ describe("LightningPaymentFlowBuilder", () => {
 
       describe("with btc wallet", () => {
         const withBtcWalletBuilder = withAmountBuilder
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderBtcWallet.id,
-              senderWalletCurrency: senderBtcWallet.currency,
+              senderWalletId: senderBtcWalletDescriptor.id,
+              senderWalletCurrency: senderBtcWalletDescriptor.currency,
               btcPaymentAmount: {
                 amount: uncheckedAmount,
                 currency: WalletCurrency.Btc,
@@ -477,14 +510,14 @@ describe("LightningPaymentFlowBuilder", () => {
 
       describe("with usd wallet", () => {
         const withUsdWalletBuilder = withAmountBuilder
-          .withSenderWallet(senderUsdWallet)
+          .withSenderWallet(senderUsdWalletDescriptor)
           .withoutRecipientWallet()
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderUsdWallet.id,
-              senderWalletCurrency: senderUsdWallet.currency,
+              senderWalletId: senderUsdWalletDescriptor.id,
+              senderWalletCurrency: senderUsdWalletDescriptor.currency,
               usdPaymentAmount: {
                 amount: uncheckedAmount,
                 currency: WalletCurrency.Usd,
@@ -550,26 +583,28 @@ describe("LightningPaymentFlowBuilder", () => {
         )
       }
       describe("with btc wallet", () => {
-        const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(senderBtcWallet)
+        const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(
+          senderBtcWalletDescriptor,
+        )
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderBtcWallet.id,
-              senderWalletCurrency: senderBtcWallet.currency,
+              senderWalletId: senderBtcWalletDescriptor.id,
+              senderWalletCurrency: senderBtcWalletDescriptor.currency,
             }),
           )
         }
 
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
-            withBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+            withBtcWalletBuilder.withRecipientWallet(recipientBtcArgs)
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientBtcWallet.id,
-                recipientWalletCurrency: recipientBtcWallet.currency,
-                recipientUsername: recipientBtcWallet.username,
+                recipientWalletId: recipientBtcWalletDescriptor.id,
+                recipientWalletCurrency: recipientBtcWalletDescriptor.currency,
+                recipientUsername: recipientBtcArgs.username,
               }),
             )
           }
@@ -613,15 +648,15 @@ describe("LightningPaymentFlowBuilder", () => {
             currency: WalletCurrency.Usd,
           }
           const withUsdRecipientBuilder = withBtcWalletBuilder.withRecipientWallet({
-            ...recipientUsdWallet,
+            ...recipientUsdArgs,
             usdPaymentAmount,
           })
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientUsdWallet.id,
-                recipientWalletCurrency: recipientUsdWallet.currency,
-                recipientUsername: recipientUsdWallet.username,
+                recipientWalletId: recipientUsdWalletDescriptor.id,
+                recipientWalletCurrency: recipientUsdWalletDescriptor.currency,
+                recipientUsername: recipientUsdArgs.username,
                 usdPaymentAmount,
               }),
             )
@@ -654,26 +689,28 @@ describe("LightningPaymentFlowBuilder", () => {
         })
       })
       describe("with usd wallet", () => {
-        const withUsdWalletBuilder = withAmountBuilder.withSenderWallet(senderUsdWallet)
+        const withUsdWalletBuilder = withAmountBuilder.withSenderWallet(
+          senderUsdWalletDescriptor,
+        )
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderUsdWallet.id,
-              senderWalletCurrency: senderUsdWallet.currency,
+              senderWalletId: senderUsdWalletDescriptor.id,
+              senderWalletCurrency: senderUsdWalletDescriptor.currency,
             }),
           )
         }
 
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
-            withUsdWalletBuilder.withRecipientWallet(recipientBtcWallet)
+            withUsdWalletBuilder.withRecipientWallet(recipientBtcArgs)
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientBtcWallet.id,
-                recipientWalletCurrency: recipientBtcWallet.currency,
-                recipientUsername: recipientBtcWallet.username,
+                recipientWalletId: recipientBtcWalletDescriptor.id,
+                recipientWalletCurrency: recipientBtcWalletDescriptor.currency,
+                recipientUsername: recipientBtcArgs.username,
               }),
             )
           }
@@ -717,15 +754,15 @@ describe("LightningPaymentFlowBuilder", () => {
             currency: WalletCurrency.Usd,
           }
           const withUsdRecipientBuilder = withUsdWalletBuilder.withRecipientWallet({
-            ...recipientUsdWallet,
+            ...recipientUsdArgs,
             usdPaymentAmount,
           })
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientUsdWallet.id,
-                recipientWalletCurrency: recipientUsdWallet.currency,
-                recipientUsername: recipientUsdWallet.username,
+                recipientWalletId: recipientUsdWalletDescriptor.id,
+                recipientWalletCurrency: recipientUsdWalletDescriptor.currency,
+                recipientUsername: recipientUsdArgs.username,
                 usdPaymentAmount,
               }),
             )
@@ -781,15 +818,17 @@ describe("LightningPaymentFlowBuilder", () => {
       }
 
       describe("with btc wallet", () => {
-        const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(senderBtcWallet)
+        const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(
+          senderBtcWalletDescriptor,
+        )
         const lessThan1CentWithBtcWalletBuilder =
-          lessThan1CentWithAmountBuilder.withSenderWallet(senderBtcWallet)
+          lessThan1CentWithAmountBuilder.withSenderWallet(senderBtcWalletDescriptor)
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderBtcWallet.id,
-              senderWalletCurrency: senderBtcWallet.currency,
+              senderWalletId: senderBtcWalletDescriptor.id,
+              senderWalletCurrency: senderBtcWalletDescriptor.currency,
               btcPaymentAmount: {
                 amount: uncheckedAmount,
                 currency: WalletCurrency.Btc,
@@ -800,16 +839,16 @@ describe("LightningPaymentFlowBuilder", () => {
 
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
-            withBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+            withBtcWalletBuilder.withRecipientWallet(recipientBtcArgs)
           const lessThan1CentWithBtcRecipientBuilder =
-            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientBtcArgs)
 
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientBtcWallet.id,
-                recipientWalletCurrency: recipientBtcWallet.currency,
-                recipientUsername: recipientBtcWallet.username,
+                recipientWalletId: recipientBtcWalletDescriptor.id,
+                recipientWalletCurrency: recipientBtcWalletDescriptor.currency,
+                recipientUsername: recipientBtcArgs.username,
               }),
             )
           }
@@ -878,16 +917,22 @@ describe("LightningPaymentFlowBuilder", () => {
 
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
-            withBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+            withBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
           const lessThan1CentWithUsdRecipientBuilder =
-            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
+          const lessThan1CentWithSelfUsdRecipientBuilder =
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(
+              senderUsdAsRecipientArgs,
+            )
 
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientUsdWallet.id,
-                recipientWalletCurrency: recipientUsdWallet.currency,
-                recipientUsername: recipientUsdWallet.username,
+                recipientWalletId: recipientUsdWalletDescriptor.id,
+                recipientWalletCurrency: recipientUsdWalletDescriptor.currency,
+                recipientUsername: recipientUsdArgs.username,
               }),
             )
           }
@@ -927,8 +972,8 @@ describe("LightningPaymentFlowBuilder", () => {
             )
           })
 
-          it("fails to send amount less than 1 cent", async () => {
-            const payment = await lessThan1CentWithUsdRecipientBuilder
+          it("credits amount less than 1 cent amount to recipient btc wallet", async () => {
+            const paymentFlow = await lessThan1CentWithUsdRecipientBuilder
               .withConversion({
                 mid: {
                   usdFromBtc: usdFromBtcMid,
@@ -944,19 +989,45 @@ describe("LightningPaymentFlowBuilder", () => {
                 },
               })
               .withoutRoute()
-            expect(payment).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+            if (paymentFlow instanceof Error) throw paymentFlow
+
+            const { walletDescriptor: recipientWalletDescriptor } =
+              paymentFlow.recipientDetails()
+            expect(recipientWalletDescriptor).toStrictEqual(recipientBtcWalletDescriptor)
+          })
+
+          it("fails to send less than 1 cent to self", async () => {
+            const paymentFlow = await lessThan1CentWithSelfUsdRecipientBuilder
+              .withConversion({
+                mid: {
+                  usdFromBtc: usdFromBtcMid,
+                  btcFromUsd: btcFromUsdMid,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc: usdFromBtcBuy,
+                  btcFromUsd: btcFromUsdBuy,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc: usdFromBtcSell,
+                  btcFromUsd: btcFromUsdSell,
+                },
+              })
+              .withoutRoute()
+            expect(paymentFlow).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
           })
         })
       })
 
       describe("with usd wallet", () => {
-        const withUsdWalletBuilder = withAmountBuilder.withSenderWallet(senderUsdWallet)
+        const withUsdWalletBuilder = withAmountBuilder.withSenderWallet(
+          senderUsdWalletDescriptor,
+        )
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderUsdWallet.id,
-              senderWalletCurrency: senderUsdWallet.currency,
+              senderWalletId: senderUsdWalletDescriptor.id,
+              senderWalletCurrency: senderUsdWalletDescriptor.currency,
               usdPaymentAmount: {
                 amount: uncheckedAmount,
                 currency: WalletCurrency.Usd,
@@ -967,13 +1038,13 @@ describe("LightningPaymentFlowBuilder", () => {
 
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
-            withUsdWalletBuilder.withRecipientWallet(recipientBtcWallet)
+            withUsdWalletBuilder.withRecipientWallet(recipientBtcArgs)
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientBtcWallet.id,
-                recipientWalletCurrency: recipientBtcWallet.currency,
-                recipientUsername: recipientUsdWallet.username,
+                recipientWalletId: recipientBtcWalletDescriptor.id,
+                recipientWalletCurrency: recipientBtcWalletDescriptor.currency,
+                recipientUsername: recipientBtcArgs.username,
               }),
             )
           }
@@ -1014,13 +1085,13 @@ describe("LightningPaymentFlowBuilder", () => {
         })
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
-            withUsdWalletBuilder.withRecipientWallet(recipientUsdWallet)
+            withUsdWalletBuilder.withRecipientWallet(recipientUsdArgs)
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientUsdWallet.id,
-                recipientWalletCurrency: recipientUsdWallet.currency,
-                recipientUsername: recipientUsdWallet.username,
+                recipientWalletId: recipientUsdWalletDescriptor.id,
+                recipientWalletCurrency: recipientUsdWalletDescriptor.currency,
+                recipientUsername: recipientUsdArgs.username,
               }),
             )
           }
@@ -1101,15 +1172,17 @@ describe("LightningPaymentFlowBuilder", () => {
       }
 
       describe("with btc wallet", () => {
-        const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(senderBtcWallet)
+        const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(
+          senderBtcWalletDescriptor,
+        )
         const lessThan1CentWithBtcWalletBuilder =
-          lessThan1CentWithAmountBuilder.withSenderWallet(senderBtcWallet)
+          lessThan1CentWithAmountBuilder.withSenderWallet(senderBtcWalletDescriptor)
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderBtcWallet.id,
-              senderWalletCurrency: senderBtcWallet.currency,
+              senderWalletId: senderBtcWalletDescriptor.id,
+              senderWalletCurrency: senderBtcWalletDescriptor.currency,
               btcPaymentAmount: {
                 amount: uncheckedAmount,
                 currency: WalletCurrency.Btc,
@@ -1120,17 +1193,17 @@ describe("LightningPaymentFlowBuilder", () => {
 
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
-            withBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+            withBtcWalletBuilder.withRecipientWallet(recipientBtcArgs)
 
           const lessThan1CentWithBtcRecipientBuilder =
-            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientBtcArgs)
 
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientBtcWallet.id,
-                recipientWalletCurrency: recipientBtcWallet.currency,
-                recipientUsername: recipientBtcWallet.username,
+                recipientWalletId: recipientBtcWalletDescriptor.id,
+                recipientWalletCurrency: recipientBtcWalletDescriptor.currency,
+                recipientUsername: recipientBtcArgs.username,
               }),
             )
           }
@@ -1199,16 +1272,22 @@ describe("LightningPaymentFlowBuilder", () => {
 
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
-            withBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+            withBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
           const lessThan1CentWithUsdRecipientBuilder =
-            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
+          const lessThan1CentWithSelfUsdRecipientBuilder =
+            lessThan1CentWithBtcWalletBuilder.withRecipientWallet(
+              senderUsdAsRecipientArgs,
+            )
 
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientUsdWallet.id,
-                recipientWalletCurrency: recipientUsdWallet.currency,
-                recipientUsername: recipientUsdWallet.username,
+                recipientWalletId: recipientUsdWalletDescriptor.id,
+                recipientWalletCurrency: recipientUsdWalletDescriptor.currency,
+                recipientUsername: recipientUsdArgs.username,
               }),
             )
           }
@@ -1248,8 +1327,8 @@ describe("LightningPaymentFlowBuilder", () => {
             )
           })
 
-          it("fails to send amount less than 1 cent", async () => {
-            const payment = await lessThan1CentWithUsdRecipientBuilder
+          it("credits amount less than 1 cent amount to recipient btc wallet", async () => {
+            const paymentFlow = await lessThan1CentWithUsdRecipientBuilder
               .withConversion({
                 mid: {
                   usdFromBtc: usdFromBtcMid,
@@ -1265,19 +1344,45 @@ describe("LightningPaymentFlowBuilder", () => {
                 },
               })
               .withoutRoute()
-            expect(payment).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+            if (paymentFlow instanceof Error) throw paymentFlow
+
+            const { walletDescriptor: recipientWalletDescriptor } =
+              paymentFlow.recipientDetails()
+            expect(recipientWalletDescriptor).toStrictEqual(recipientBtcWalletDescriptor)
+          })
+
+          it("fails to send amount less than 1 cent to self", async () => {
+            const payment = await lessThan1CentWithSelfUsdRecipientBuilder
+              .withConversion({
+                mid: {
+                  usdFromBtc: usdFromBtcMid,
+                  btcFromUsd: btcFromUsdMid,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc: usdFromBtcBuy,
+                  btcFromUsd: btcFromUsdBuy,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc: usdFromBtcSell,
+                  btcFromUsd: btcFromUsdSell,
+                },
+              })
+              .withoutRoute()
+            expect(payment).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
           })
         })
       })
 
       describe("with usd wallet", () => {
-        const withUsdWalletBuilder = withAmountBuilder.withSenderWallet(senderUsdWallet)
+        const withUsdWalletBuilder = withAmountBuilder.withSenderWallet(
+          senderUsdWalletDescriptor,
+        )
 
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderUsdWallet.id,
-              senderWalletCurrency: senderUsdWallet.currency,
+              senderWalletId: senderUsdWalletDescriptor.id,
+              senderWalletCurrency: senderUsdWalletDescriptor.currency,
               usdPaymentAmount: {
                 amount: uncheckedAmount,
                 currency: WalletCurrency.Usd,
@@ -1288,13 +1393,13 @@ describe("LightningPaymentFlowBuilder", () => {
 
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
-            withUsdWalletBuilder.withRecipientWallet(recipientBtcWallet)
+            withUsdWalletBuilder.withRecipientWallet(recipientBtcArgs)
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientBtcWallet.id,
-                recipientWalletCurrency: recipientBtcWallet.currency,
-                recipientUsername: recipientUsdWallet.username,
+                recipientWalletId: recipientBtcWalletDescriptor.id,
+                recipientWalletCurrency: recipientBtcWalletDescriptor.currency,
+                recipientUsername: recipientBtcArgs.username,
               }),
             )
           }
@@ -1335,13 +1440,13 @@ describe("LightningPaymentFlowBuilder", () => {
         })
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
-            withUsdWalletBuilder.withRecipientWallet(recipientUsdWallet)
+            withUsdWalletBuilder.withRecipientWallet(recipientUsdArgs)
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
-                recipientWalletId: recipientUsdWallet.id,
-                recipientWalletCurrency: recipientUsdWallet.currency,
-                recipientUsername: recipientUsdWallet.username,
+                recipientWalletId: recipientUsdWalletDescriptor.id,
+                recipientWalletCurrency: recipientUsdWalletDescriptor.currency,
+                recipientUsername: recipientUsdArgs.username,
               }),
             )
           }
@@ -1393,7 +1498,7 @@ describe("LightningPaymentFlowBuilder", () => {
           skipProbe,
         })
           .withInvoice(invoiceWithNoAmount)
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
           .withConversion({
             mid,
@@ -1412,7 +1517,7 @@ describe("LightningPaymentFlowBuilder", () => {
           skipProbe,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0.4 })
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
           .withConversion({
             mid,
@@ -1431,7 +1536,7 @@ describe("LightningPaymentFlowBuilder", () => {
           skipProbe,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0 })
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
           .withConversion({
             mid,
@@ -1450,7 +1555,7 @@ describe("LightningPaymentFlowBuilder", () => {
           skipProbe,
         })
           .withInvoice(invoiceWithAmount)
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
           .withConversion({
             mid,
@@ -1470,8 +1575,8 @@ describe("LightningPaymentFlowBuilder", () => {
           skipProbe,
         })
           .withInvoice(invoiceWithAmount)
-          .withSenderWallet(senderBtcWallet)
-          .withRecipientWallet(senderUsdWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
+          .withRecipientWallet(senderUsdAsRecipientArgs)
           .withConversion({
             mid,
             hedgeBuyUsd,
@@ -1490,9 +1595,9 @@ describe("LightningPaymentFlowBuilder", () => {
           skipProbe,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 1000 })
-          .withSenderWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
           .withRecipientWallet({
-            ...senderUsdWallet,
+            ...senderUsdAsRecipientArgs,
             usdPaymentAmount: { amount: 1000n, currency: WalletCurrency.Usd },
           })
           .withConversion({
@@ -1513,8 +1618,8 @@ describe("LightningPaymentFlowBuilder", () => {
           skipProbe,
         })
           .withInvoice(invoiceWithAmount)
-          .withSenderWallet(senderBtcWallet)
-          .withRecipientWallet(senderBtcWallet)
+          .withSenderWallet(senderBtcWalletDescriptor)
+          .withRecipientWallet(senderBtcAsRecipientArgs)
           .withConversion({
             mid,
             hedgeBuyUsd,

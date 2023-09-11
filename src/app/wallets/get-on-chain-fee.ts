@@ -99,6 +99,9 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
       accountId: recipientWallet.accountId,
     }
 
+    const wallets = await WalletsRepository().listByAccountId(recipientWallet.accountId)
+    if (wallets instanceof Error) return wallets
+
     const recipientAccount = await AccountsRepository().findById(
       recipientWallet.accountId,
     )
@@ -106,7 +109,8 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
 
     const paymentFlow = await withSenderBuilder
       .withRecipientWallet({
-        ...recipientWalletDescriptor,
+        recipientWalletDescriptor,
+        recipientWalletDescriptorsForAccount: wallets,
         userId: recipientAccount.kratosUserId,
         username: recipientAccount.username,
       })

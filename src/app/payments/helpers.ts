@@ -8,12 +8,7 @@ import {
 } from "@config"
 import { AccountLimitsChecker } from "@domain/accounts"
 import { AlreadyPaidError } from "@domain/errors"
-import {
-  InvalidZeroAmountPriceRatioInputError,
-  LightningPaymentFlowBuilder,
-  WalletPriceRatio,
-  ZeroAmountForUsdRecipientError,
-} from "@domain/payments"
+import { LightningPaymentFlowBuilder, WalletPriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
@@ -22,7 +17,7 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 import { timestampDaysAgo } from "@utils"
 
 const ledger = LedgerService()
@@ -62,36 +57,32 @@ export const constructPaymentFlowBuilder = async <
   if (builderWithSenderWallet.isIntraLedger()) {
     const recipientDetails = await recipientDetailsFromInvoice<R>(invoice)
     if (recipientDetails instanceof Error) return recipientDetails
+
+    addAttributesToCurrentSpan({
+      "payment.originalRecipient": JSON.stringify(
+        recipientDetails.recipientWalletDescriptor,
+      ),
+    })
+
     builderAfterRecipientStep =
       builderWithSenderWallet.withRecipientWallet<R>(recipientDetails)
   } else {
     builderAfterRecipientStep = builderWithSenderWallet.withoutRecipientWallet()
   }
 
-  const builderWithConversion = await builderAfterRecipientStep.withConversion({
+  return builderAfterRecipientStep.withConversion({
     mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
     hedgeBuyUsd,
     hedgeSellUsd,
   })
-
-  const check = await builderWithConversion.usdPaymentAmount()
-  if (
-    check instanceof InvalidZeroAmountPriceRatioInputError &&
-    builderWithSenderWallet.isIntraLedger() === true
-  ) {
-    return new ZeroAmountForUsdRecipientError()
-  }
-
-  return builderWithConversion
 }
 
 const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   invoice: LnInvoice,
 ): Promise<
   | {
-      id: WalletId
-      currency: R
-      accountId: AccountId
+      recipientWalletDescriptor: WalletDescriptor<R>
+      recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
       pubkey: Pubkey
       usdPaymentAmount: UsdPaymentAmount | undefined
       username: Username
@@ -118,14 +109,20 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   if (recipientWallet instanceof Error) return recipientWallet
   const { accountId } = recipientWallet
 
+  const wallets = await WalletsRepository().listByAccountId(accountId)
+  if (wallets instanceof Error) return wallets
+
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
   const { username: recipientUsername, kratosUserId: recipientUserId } = recipientAccount
 
   return {
-    id: recipientWalletId,
-    currency: recipientsWalletCurrency as R,
-    accountId: recipientAccount.id,
+    recipientWalletDescriptor: {
+      id: recipientWalletId,
+      currency: recipientsWalletCurrency as R,
+      accountId: recipientAccount.id,
+    },
+    recipientWalletDescriptorsForAccount: wallets,
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,

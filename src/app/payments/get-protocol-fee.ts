@@ -230,6 +230,10 @@ const estimateLightningFee = async ({
   }
   if (paymentFlow instanceof Error) return PartialResult.err(paymentFlow)
 
+  addAttributesToCurrentSpan({
+    "payment.finalRecipient": JSON.stringify(paymentFlow.recipientWalletDescriptor()),
+  })
+
   const persistedPayment = await PaymentFlowStateRepository(
     defaultTimeToExpiryInSeconds,
   ).persistNew(paymentFlow)

@@ -105,11 +105,20 @@ const updatePendingInvoiceBeforeFinally = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, secret, recipientWalletDescriptor } = walletInvoice
+  const {
+    pubkey,
+    paymentHash,
+    secret,
+    recipientWalletDescriptor: recipientInvoiceWalletDescriptor,
+  } = walletInvoice
+
+  addAttributesToCurrentSpan({
+    "invoices.originalRecipient": JSON.stringify(recipientInvoiceWalletDescriptor),
+  })
 
   const pendingInvoiceLogger = logger.child({
     hash: paymentHash,
-    walletId: recipientWalletDescriptor.id,
+    walletId: recipientInvoiceWalletDescriptor.id,
     topic: "payment",
     protocol: "lightning",
     transactionType: "receipt",
@@ -177,19 +186,37 @@ const updatePendingInvoiceBeforeFinally = async ({
     }
 
     // Prepare metadata and record transaction
-    const walletInvoiceReceiver = await WalletInvoiceReceiver({
+    const recipientInvoiceWallet = await WalletsRepository().findById(
+      recipientInvoiceWalletDescriptor.id,
+    )
+    if (recipientInvoiceWallet instanceof Error) return recipientInvoiceWallet
+    const { accountId: recipientAccountId } = recipientInvoiceWallet
+
+    const wallets = await WalletsRepository().listByAccountId(recipientAccountId)
+    if (wallets instanceof Error) return wallets
+
+    const receivedWalletInvoice = await WalletInvoiceReceiver({
       walletInvoice,
       receivedBtc,
-      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-      usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+      recipientAccountId,
+      recipientWalletDescriptorsForAccount: wallets,
+    }).withConversion({
+      mid: { usdFromBtc: usdFromBtcMidPriceFn },
+      hedgeBuyUsd: { usdFromBtc: dealer.getCentsFromSatsForImmediateBuy },
     })
-    if (walletInvoiceReceiver instanceof Error) return walletInvoiceReceiver
+    if (receivedWalletInvoice instanceof Error) return receivedWalletInvoice
+
     const {
-      btcToCreditReceiver: btcPaymentAmount,
-      btcBankFee: btcProtocolAndBankFee,
-      usdToCreditReceiver: usdPaymentAmount,
-      usdBankFee: usdProtocolAndBankFee,
-    } = walletInvoiceReceiver
+      recipientWalletDescriptor,
+      btcToCreditReceiver,
+      btcBankFee,
+      usdToCreditReceiver,
+      usdBankFee,
+    } = receivedWalletInvoice
+
+    addAttributesToCurrentSpan({
+      "invoices.finalRecipient": JSON.stringify(recipientWalletDescriptor),
+    })
 
     if (!lnInvoiceLookup.isSettled) {
       const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
@@ -199,16 +226,8 @@ const updatePendingInvoiceBeforeFinally = async ({
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
 
-    const recipientWallet = await WalletsRepository().findById(
-      recipientWalletDescriptor.id,
-    )
-    if (recipientWallet instanceof Error) return recipientWallet
-
-    const recipientAccount = await AccountsRepository().findById(
-      recipientWallet.accountId,
-    )
+    const recipientAccount = await AccountsRepository().findById(recipientAccountId)
     if (recipientAccount instanceof Error) return recipientAccount
-
     const { displayCurrency: recipientDisplayCurrency } = recipientAccount
     const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
       currency: recipientDisplayCurrency,
@@ -218,10 +237,10 @@ const updatePendingInvoiceBeforeFinally = async ({
     const { displayAmount: displayPaymentAmount, displayFee } = DisplayAmountsConverter(
       displayPriceRatio,
     ).convert({
-      btcPaymentAmount,
-      btcProtocolAndBankFee,
-      usdPaymentAmount,
-      usdProtocolAndBankFee,
+      btcPaymentAmount: btcToCreditReceiver,
+      btcProtocolAndBankFee: btcBankFee,
+      usdPaymentAmount: usdToCreditReceiver,
+      usdProtocolAndBankFee: usdBankFee,
     })
 
     // TODO: this should be a in a mongodb transaction session with the ledger transaction below
@@ -237,10 +256,10 @@ const updatePendingInvoiceBeforeFinally = async ({
       paymentHash,
       pubkey: walletInvoice.pubkey,
       paymentAmounts: {
-        btcPaymentAmount: walletInvoiceReceiver.btcToCreditReceiver,
-        usdPaymentAmount: walletInvoiceReceiver.usdToCreditReceiver,
-        btcProtocolAndBankFee: walletInvoiceReceiver.btcBankFee,
-        usdProtocolAndBankFee: walletInvoiceReceiver.usdBankFee,
+        btcPaymentAmount: btcToCreditReceiver,
+        usdPaymentAmount: usdToCreditReceiver,
+        btcProtocolAndBankFee: btcBankFee,
+        usdProtocolAndBankFee: usdBankFee,
       },
 
       feeDisplayCurrency: toDisplayBaseAmount(displayFee),
@@ -251,17 +270,14 @@ const updatePendingInvoiceBeforeFinally = async ({
     //TODO: add displayCurrency: displayPaymentAmount.currency,
     const result = await LedgerFacade.recordReceiveOffChain({
       description,
-      recipientWalletDescriptor: {
-        ...walletInvoice.recipientWalletDescriptor,
-        accountId: recipientAccount.id,
-      },
+      recipientWalletDescriptor,
       amountToCreditReceiver: {
-        usd: walletInvoiceReceiver.usdToCreditReceiver,
-        btc: walletInvoiceReceiver.btcToCreditReceiver,
+        usd: usdToCreditReceiver,
+        btc: btcToCreditReceiver,
       },
       bankFee: {
-        usd: walletInvoiceReceiver.usdBankFee,
-        btc: walletInvoiceReceiver.btcBankFee,
+        usd: usdBankFee,
+        btc: btcBankFee,
       },
       metadata,
       txMetadata: {
@@ -270,7 +286,6 @@ const updatePendingInvoiceBeforeFinally = async ({
       additionalCreditMetadata: creditAccountAdditionalMetadata,
       additionalInternalMetadata: internalAccountsAdditionalMetadata,
     })
-
     if (result instanceof Error) return result
 
     // Prepare and send notification
@@ -278,9 +293,9 @@ const updatePendingInvoiceBeforeFinally = async ({
     if (recipientUser instanceof Error) return recipientUser
 
     const notificationResult = await NotificationsService().lightningTxReceived({
-      recipientAccountId: recipientWallet.accountId,
-      recipientWalletId: recipientWallet.id,
-      paymentAmount: walletInvoiceReceiver.receivedAmount(),
+      recipientAccountId,
+      recipientWalletId: recipientWalletDescriptor.id,
+      paymentAmount: receivedWalletInvoice.receivedAmount(),
       displayPaymentAmount,
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,

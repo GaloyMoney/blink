@@ -10,9 +10,7 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 
 import {
   InvalidLightningPaymentFlowBuilderStateError,
-  InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
-  ZeroAmountForUsdRecipientError,
   toDisplayBaseAmount,
 } from "@domain/payments"
 import { AccountLevel, AccountValidator } from "@domain/accounts"
@@ -84,10 +82,15 @@ const intraledgerPaymentSendWalletId = async ({
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
 
-  const recipientDetailsForBuilder = {
-    id: recipientWalletId,
-    currency: recipientWalletCurrency,
-    accountId: recipientAccountId,
+  const wallets = await WalletsRepository().listByAccountId(recipientAccountId)
+  if (wallets instanceof Error) return wallets
+  const recipientArgsForBuilder = {
+    recipientWalletDescriptor: {
+      id: recipientWalletId,
+      currency: recipientWalletCurrency,
+      accountId: recipientAccountId,
+    },
+    recipientWalletDescriptorsForAccount: wallets,
     username: recipientUsername,
     userId: recipientUserId,
     pubkey: undefined,
@@ -95,7 +98,7 @@ const intraledgerPaymentSendWalletId = async ({
   }
 
   const builderAfterRecipientStep = builderWithSenderWallet.withRecipientWallet(
-    recipientDetailsForBuilder,
+    recipientArgsForBuilder,
   )
 
   const builderWithConversion = builderAfterRecipientStep.withConversion({
@@ -112,15 +115,13 @@ const intraledgerPaymentSendWalletId = async ({
   if (builderWithConversion instanceof Error) return builderWithConversion
 
   const paymentFlow = await builderWithConversion.withoutRoute()
-  if (paymentFlow instanceof InvalidZeroAmountPriceRatioInputError) {
-    return new ZeroAmountForUsdRecipientError()
-  }
   if (paymentFlow instanceof Error) return paymentFlow
 
   addAttributesToCurrentSpan({
     "payment.intraLedger.inputAmount": paymentFlow.inputAmount.toString(),
     "payment.intraLedger.hash": paymentFlow.intraLedgerHash,
     "payment.intraLedger.description": memo || "",
+    "payment.finalRecipient": JSON.stringify(paymentFlow.recipientWalletDescriptor()),
   })
 
   const paymentSendStatus = await executePaymentViaIntraledger({

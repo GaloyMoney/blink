@@ -7,11 +7,19 @@ import {
   WalletCurrency,
   ZERO_BANK_FEE,
 } from "@domain/shared"
-import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
+import {
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
+  LessThanDustThresholdError,
+  SelfPaymentError,
+} from "@domain/errors"
 import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
-import { InvalidOnChainPaymentFlowBuilderStateError } from "./errors"
+import {
+  InvalidOnChainPaymentFlowBuilderStateError,
+  InvalidZeroAmountPriceRatioInputError,
+  SubOneCentSatAmountForUsdSelfSendError,
+} from "./errors"
 import { WalletPriceRatio } from "./price-ratio"
 import { OnChainPaymentFlow } from "./payment-flow"
 
@@ -85,16 +93,15 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
   }
 
   const withRecipientWallet = <R extends WalletCurrency>({
-    id: recipientWalletId,
-    currency: recipientWalletCurrency,
+    recipientWalletDescriptor: {
+      id: recipientWalletId,
+      currency: recipientWalletCurrency,
+      accountId: recipientAccountId,
+    },
+    recipientWalletDescriptorsForAccount,
     username: recipientUsername,
-    accountId: recipientAccountId,
     userId: recipientUserId,
-  }: WalletDescriptor<R> & {
-    userId: UserId
-    usdProposedAmount?: UsdPaymentAmount
-    username?: Username
-  }): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
+  }: OPFBWithRecipientArgs<R>): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
     if (recipientWalletId === state.senderWalletId) {
       return OPFBWithError(new SelfPaymentError())
     }
@@ -106,6 +113,7 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
       recipientAccountId,
       recipientUserId,
       recipientUsername,
+      recipientWalletDescriptorsForAccount,
     })
   }
 
@@ -157,6 +165,120 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
     }
     const { btcProposedAmount, usdProposedAmount } = state
 
+    const currentStateFromAllAmountsPresent = async ({
+      btcProposedAmount,
+      usdProposedAmount,
+    }: {
+      btcProposedAmount: BtcPaymentAmount
+      usdProposedAmount: UsdPaymentAmount
+    }): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => ({
+      ...stateWithCreatedAt,
+      btcProposedAmount,
+      usdProposedAmount,
+    })
+
+    const updatedStateFromBtcProposedAmountMid = async ({
+      btcProposedAmount,
+      recipientWalletDescriptor,
+    }: {
+      btcProposedAmount: BtcPaymentAmount
+      recipientWalletDescriptor?: WalletDescriptor<WalletCurrency>
+    }): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+      const convertedAmountRaw = await mid.usdFromBtc(btcProposedAmount)
+      if (convertedAmountRaw instanceof Error) return convertedAmountRaw
+
+      // Round up USD if sats is non-zero in intraledger (mid-price) case and cents is zero
+      const convertedAmount =
+        btcProposedAmount.amount > 0n && convertedAmountRaw.amount === 0n
+          ? ONE_CENT
+          : convertedAmountRaw
+
+      const priceRatio = WalletPriceRatio({
+        usd: convertedAmount,
+        btc: btcProposedAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
+
+      return {
+        ...stateWithCreatedAt,
+        ...(recipientWalletDescriptor !== undefined
+          ? {
+              recipientWalletId: recipientWalletDescriptor.id,
+              recipientWalletCurrency: recipientWalletDescriptor.currency as R,
+            }
+          : {}),
+        btcProposedAmount,
+        usdProposedAmount: convertedAmount,
+      }
+    }
+
+    const updatedStateFromUsdProposedAmountMid = async (
+      usdProposedAmount: UsdPaymentAmount,
+    ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+      const convertedAmount = await mid.btcFromUsd(usdProposedAmount)
+      if (convertedAmount instanceof Error) return convertedAmount
+
+      const priceRatio = WalletPriceRatio({
+        btc: convertedAmount,
+        usd: usdProposedAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
+
+      return {
+        ...stateWithCreatedAt,
+        btcProposedAmount: convertedAmount,
+        usdProposedAmount,
+      }
+    }
+
+    const updatedStateFromBtcProposedAmountDealer = async (
+      btcProposedAmount: BtcPaymentAmount,
+    ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+      const usdFromBtc =
+        state.senderWalletCurrency === WalletCurrency.Btc
+          ? hedgeBuyUsd.usdFromBtc
+          : hedgeSellUsd.usdFromBtc
+
+      const convertedAmount = await usdFromBtc(btcProposedAmount)
+      if (convertedAmount instanceof Error) return convertedAmount
+
+      const priceRatio = WalletPriceRatio({
+        usd: convertedAmount,
+        btc: btcProposedAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
+
+      return {
+        ...stateWithCreatedAt,
+        btcProposedAmount,
+        usdProposedAmount: convertedAmount,
+      }
+    }
+
+    const updatedStateFromUsdProposedAmountDealer = async (
+      usdProposedAmount: UsdPaymentAmount,
+    ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+      const btcFromUsd =
+        state.senderWalletCurrency === WalletCurrency.Btc
+          ? hedgeBuyUsd.btcFromUsd
+          : hedgeSellUsd.btcFromUsd
+
+      const convertedAmount = await btcFromUsd(usdProposedAmount)
+      if (convertedAmount instanceof Error) return convertedAmount
+
+      const priceRatio = WalletPriceRatio({
+        btc: convertedAmount,
+        usd: usdProposedAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
+
+      return {
+        ...stateWithCreatedAt,
+        btcProposedAmount: convertedAmount,
+        usdProposedAmount,
+      }
+    }
+
     // Use mid price when no buy / sell required
     const noConversionRequired =
       (state.senderWalletCurrency === WalletCurrency.Btc &&
@@ -164,71 +286,26 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
       (state.senderWalletCurrency as WalletCurrency) ===
         (state.recipientWalletCurrency as WalletCurrency)
 
+    if (noConversionRequired && btcProposedAmount && usdProposedAmount) {
+      return OPFBWithConversion(
+        currentStateFromAllAmountsPresent({
+          btcProposedAmount,
+          usdProposedAmount,
+        }),
+      )
+    }
+
+    if (noConversionRequired && btcProposedAmount) {
+      return OPFBWithConversion(
+        updatedStateFromBtcProposedAmountMid({ btcProposedAmount }),
+      )
+    }
+
+    if (noConversionRequired && usdProposedAmount) {
+      return OPFBWithConversion(updatedStateFromUsdProposedAmountMid(usdProposedAmount))
+    }
+
     if (noConversionRequired) {
-      if (btcProposedAmount && usdProposedAmount) {
-        return OPFBWithConversion(
-          new Promise((res) =>
-            res({
-              ...stateWithCreatedAt,
-              btcProposedAmount,
-              usdProposedAmount,
-            }),
-          ),
-        )
-      }
-
-      if (btcProposedAmount) {
-        const updatedStateFromBtcProposedAmount = async (
-          btcProposedAmount: BtcPaymentAmount,
-        ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-          const convertedAmountRaw = await mid.usdFromBtc(btcProposedAmount)
-          if (convertedAmountRaw instanceof Error) return convertedAmountRaw
-
-          // Round up USD if sats is non-zero in intraledger (mid-price) case and cents is zero
-          const convertedAmount =
-            btcProposedAmount.amount > 0n && convertedAmountRaw.amount === 0n
-              ? ONE_CENT
-              : convertedAmountRaw
-
-          const priceRatio = WalletPriceRatio({
-            usd: convertedAmount,
-            btc: btcProposedAmount,
-          })
-          if (priceRatio instanceof Error) return priceRatio
-
-          return {
-            ...stateWithCreatedAt,
-            btcProposedAmount,
-            usdProposedAmount: convertedAmount,
-          }
-        }
-
-        return OPFBWithConversion(updatedStateFromBtcProposedAmount(btcProposedAmount))
-      }
-
-      if (usdProposedAmount) {
-        const updatedStateFromUsdProposedAmount = async (
-          usdProposedAmount: UsdPaymentAmount,
-        ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-          const convertedAmount = await mid.btcFromUsd(usdProposedAmount)
-          if (convertedAmount instanceof Error) return convertedAmount
-
-          const priceRatio = WalletPriceRatio({
-            btc: convertedAmount,
-            usd: usdProposedAmount,
-          })
-          if (priceRatio instanceof Error) return priceRatio
-
-          return {
-            ...stateWithCreatedAt,
-            btcProposedAmount: convertedAmount,
-            usdProposedAmount,
-          }
-        }
-
-        return OPFBWithConversion(updatedStateFromUsdProposedAmount(usdProposedAmount))
-      }
-
       return OPFBWithError(
         new InvalidOnChainPaymentFlowBuilderStateError(
           "withConversion - btcProposedAmount || btcProtocolAndBankFee not set",
@@ -236,61 +313,38 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
       )
     }
 
-    // Convert to usd if necessary
     if (btcProposedAmount) {
-      const updatedStateFromBtcProposedAmount = async (
-        btcProposedAmount: BtcPaymentAmount,
-      ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-        const usdFromBtc =
-          state.senderWalletCurrency === WalletCurrency.Btc
-            ? hedgeBuyUsd.usdFromBtc
-            : hedgeSellUsd.usdFromBtc
-
-        const convertedAmount = await usdFromBtc(btcProposedAmount)
-        if (convertedAmount instanceof Error) return convertedAmount
-
-        const priceRatio = WalletPriceRatio({
-          usd: convertedAmount,
-          btc: btcProposedAmount,
-        })
-        if (priceRatio instanceof Error) return priceRatio
-
-        return {
-          ...stateWithCreatedAt,
-          btcProposedAmount,
-          usdProposedAmount: convertedAmount,
+      const updatedStateFromBtcProposedAmountDealerFallbackMid = async () => {
+        const updatedState =
+          await updatedStateFromBtcProposedAmountDealer(btcProposedAmount)
+        if (!(updatedState instanceof InvalidZeroAmountPriceRatioInputError)) {
+          return updatedState
         }
+
+        const recipientBtcWalletDescriptor =
+          state.recipientWalletDescriptorsForAccount?.find(
+            (wallet) => wallet.currency === WalletCurrency.Btc,
+          )
+        if (recipientBtcWalletDescriptor === undefined) {
+          return new CouldNotFindWalletFromAccountIdAndCurrencyError()
+        }
+        if (recipientBtcWalletDescriptor.id === state.senderWalletId) {
+          return new SubOneCentSatAmountForUsdSelfSendError()
+        }
+
+        return updatedStateFromBtcProposedAmountMid({
+          btcProposedAmount,
+          recipientWalletDescriptor: recipientBtcWalletDescriptor,
+        })
       }
 
-      return OPFBWithConversion(updatedStateFromBtcProposedAmount(btcProposedAmount))
+      return OPFBWithConversion(updatedStateFromBtcProposedAmountDealerFallbackMid())
     }
 
     if (usdProposedAmount) {
-      const updatedStateFromUsdProposedAmount = async (
-        usdProposedAmount: UsdPaymentAmount,
-      ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-        const btcFromUsd =
-          state.senderWalletCurrency === WalletCurrency.Btc
-            ? hedgeBuyUsd.btcFromUsd
-            : hedgeSellUsd.btcFromUsd
-
-        const convertedAmount = await btcFromUsd(usdProposedAmount)
-        if (convertedAmount instanceof Error) return convertedAmount
-
-        const priceRatio = WalletPriceRatio({
-          btc: convertedAmount,
-          usd: usdProposedAmount,
-        })
-        if (priceRatio instanceof Error) return priceRatio
-
-        return {
-          ...stateWithCreatedAt,
-          btcProposedAmount: convertedAmount,
-          usdProposedAmount,
-        }
-      }
-
-      return OPFBWithConversion(updatedStateFromUsdProposedAmount(usdProposedAmount))
+      return OPFBWithConversion(
+        updatedStateFromUsdProposedAmountDealer(usdProposedAmount),
+      )
     }
 
     return OPFBWithError(

@@ -8,10 +8,7 @@ import {
   decodeInvoice,
 } from "@domain/bitcoin/lightning"
 import { DisplayCurrency, toCents } from "@domain/fiat"
-import {
-  LnPaymentRequestNonZeroAmountRequiredError,
-  ZeroAmountForUsdRecipientError,
-} from "@domain/payments"
+import { LnPaymentRequestNonZeroAmountRequiredError } from "@domain/payments"
 import {
   InactiveAccountError,
   InsufficientBalanceError,
@@ -581,57 +578,6 @@ describe("initiated via lightning", () => {
         senderAccount: newAccount,
       })
       expect(paymentResult).toBeInstanceOf(SelfPaymentError)
-
-      // Restore system state
-      lndServiceSpy.mockRestore()
-    })
-
-    it("fails to send less-than-1-cent amount to usd recipient", async () => {
-      // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
-      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
-        ...LnServiceOrig(),
-        listAllPubkeys: () => [noAmountLnInvoice.destination],
-      })
-
-      // Create users
-      const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
-        await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
-      )
-      if (newAccount instanceof Error) throw newAccount
-
-      // Persist invoice as self-invoice
-      const persisted = await WalletInvoicesRepository().persistNew({
-        paymentHash: noAmountLnInvoice.paymentHash,
-        secret: "secret" as SecretPreImage,
-        selfGenerated: true,
-        pubkey: noAmountLnInvoice.destination,
-        recipientWalletDescriptor: usdWalletDescriptor,
-        paid: false,
-      })
-      if (persisted instanceof Error) throw persisted
-
-      // Fund balance for send
-      const receive = await recordReceiveLnPayment({
-        walletDescriptor: newWalletDescriptor,
-        paymentAmount: receiveAmounts,
-        bankFee: receiveBankFee,
-        displayAmounts: receiveDisplayAmounts,
-        memo,
-      })
-      if (receive instanceof Error) throw receive
-
-      // Attempt pay
-      const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
-        uncheckedPaymentRequest: noAmountLnInvoice.paymentRequest,
-        memo,
-        senderWalletId: newWalletDescriptor.id,
-        senderAccount: newAccount,
-        amount: 1,
-      })
-      expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
 
       // Restore system state
       lndServiceSpy.mockRestore()

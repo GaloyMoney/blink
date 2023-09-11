@@ -335,6 +335,7 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
 
   addAttributesToCurrentSpan({
     "payment.amount": paymentFlow.btcPaymentAmount.amount.toString(),
+    "payment.finalRecipient": JSON.stringify(paymentFlow.recipientWalletDescriptor()),
   })
 
   return paymentFlow

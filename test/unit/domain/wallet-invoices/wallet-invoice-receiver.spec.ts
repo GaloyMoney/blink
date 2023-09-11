@@ -11,8 +11,9 @@ import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-re
 describe("WalletInvoiceReceiver", () => {
   const midPriceRatio = 2n
   const usdFromBtcMidPrice = async (amount: BtcPaymentAmount) => {
+    const finalAmount = amount.amount / midPriceRatio || 1n
     return Promise.resolve({
-      amount: amount.amount * midPriceRatio,
+      amount: finalAmount,
       currency: WalletCurrency.Usd,
     })
   }
@@ -20,21 +21,31 @@ describe("WalletInvoiceReceiver", () => {
   const immediatePriceRation = 3n
   const usdFromBtc = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount * immediatePriceRation,
+      amount: amount.amount / immediatePriceRation,
       currency: WalletCurrency.Usd,
     })
   }
 
   const receivedBtc = BtcPaymentAmount(1200n)
-  const recipientBtcWallet = {
-    id: "recipientWalletId" as WalletId,
+
+  const recipientAccountId = "recipientAccountId" as AccountId
+
+  const partialRecipientBtcWalletDescriptor = {
+    id: "recipientBtcWalletId" as WalletId,
     currency: WalletCurrency.Btc,
-    username: "Username" as Username,
   }
-  const recipientUsdWallet = {
-    id: "recipientWalletId" as WalletId,
+  const recipientBtcWalletDescriptor = {
+    ...partialRecipientBtcWalletDescriptor,
+    accountId: recipientAccountId,
+  }
+
+  const partialRecipientUsdWalletDescriptor = {
+    id: "recipientUsdWalletId" as WalletId,
     currency: WalletCurrency.Usd,
-    username: "Username" as Username,
+  }
+  const recipientUsdWalletDescriptor = {
+    ...partialRecipientUsdWalletDescriptor,
+    accountId: recipientAccountId,
   }
 
   describe("for btc invoice", () => {
@@ -45,15 +56,21 @@ describe("WalletInvoiceReceiver", () => {
       pubkey: "pubkey" as Pubkey,
       usdAmount: undefined,
       paid: false,
-      recipientWalletDescriptor: recipientBtcWallet,
+      recipientWalletDescriptor: partialRecipientBtcWalletDescriptor,
     }
 
     it("returns correct amounts", async () => {
       const walletInvoiceAmounts = await WalletInvoiceReceiver({
         walletInvoice: btcInvoice,
         receivedBtc,
-        usdFromBtcMidPrice,
-        usdFromBtc,
+        recipientAccountId,
+        recipientWalletDescriptorsForAccount: [
+          recipientBtcWalletDescriptor,
+          recipientUsdWalletDescriptor,
+        ],
+      }).withConversion({
+        mid: { usdFromBtc: usdFromBtcMidPrice },
+        hedgeBuyUsd: { usdFromBtc },
       })
 
       if (walletInvoiceAmounts instanceof Error) throw walletInvoiceAmounts
@@ -78,7 +95,7 @@ describe("WalletInvoiceReceiver", () => {
       const amountUsdInvoice: WalletInvoice = {
         paymentHash: "paymentHash" as PaymentHash,
         secret: "secret" as SecretPreImage,
-        recipientWalletDescriptor: recipientUsdWallet,
+        recipientWalletDescriptor: partialRecipientUsdWalletDescriptor,
         selfGenerated: false,
         pubkey: "pubkey" as Pubkey,
         usdAmount: UsdPaymentAmount(BigInt(100)),
@@ -89,8 +106,14 @@ describe("WalletInvoiceReceiver", () => {
         const walletInvoiceAmounts = await WalletInvoiceReceiver({
           walletInvoice: amountUsdInvoice,
           receivedBtc,
-          usdFromBtcMidPrice,
-          usdFromBtc,
+          recipientAccountId,
+          recipientWalletDescriptorsForAccount: [
+            recipientBtcWalletDescriptor,
+            recipientUsdWalletDescriptor,
+          ],
+        }).withConversion({
+          mid: { usdFromBtc: usdFromBtcMidPrice },
+          hedgeBuyUsd: { usdFromBtc },
         })
 
         if (walletInvoiceAmounts instanceof Error) throw walletInvoiceAmounts
@@ -109,7 +132,7 @@ describe("WalletInvoiceReceiver", () => {
       const noAmountUsdInvoice: WalletInvoice = {
         paymentHash: "paymentHash" as PaymentHash,
         secret: "secret" as SecretPreImage,
-        recipientWalletDescriptor: recipientUsdWallet,
+        recipientWalletDescriptor: partialRecipientUsdWalletDescriptor,
         selfGenerated: false,
         pubkey: "pubkey" as Pubkey,
         paid: false,
@@ -119,8 +142,14 @@ describe("WalletInvoiceReceiver", () => {
         const walletInvoiceAmounts = await WalletInvoiceReceiver({
           walletInvoice: noAmountUsdInvoice,
           receivedBtc,
-          usdFromBtcMidPrice,
-          usdFromBtc,
+          recipientAccountId,
+          recipientWalletDescriptorsForAccount: [
+            recipientBtcWalletDescriptor,
+            recipientUsdWalletDescriptor,
+          ],
+        }).withConversion({
+          mid: { usdFromBtc: usdFromBtcMidPrice },
+          hedgeBuyUsd: { usdFromBtc },
         })
 
         if (walletInvoiceAmounts instanceof Error) throw walletInvoiceAmounts
@@ -136,6 +165,25 @@ describe("WalletInvoiceReceiver", () => {
             btcToCreditReceiver: receivedBtc,
           }),
         )
+      })
+
+      it("credits amount less than 1 cent amount to recipient btc wallet", async () => {
+        const walletInvoiceAmounts = await WalletInvoiceReceiver({
+          walletInvoice: noAmountUsdInvoice,
+          receivedBtc: BtcPaymentAmount(1n),
+          recipientAccountId,
+          recipientWalletDescriptorsForAccount: [
+            recipientBtcWalletDescriptor,
+            recipientUsdWalletDescriptor,
+          ],
+        }).withConversion({
+          mid: { usdFromBtc: usdFromBtcMidPrice },
+          hedgeBuyUsd: { usdFromBtc },
+        })
+        if (walletInvoiceAmounts instanceof Error) throw walletInvoiceAmounts
+
+        const { recipientWalletDescriptor } = walletInvoiceAmounts
+        expect(recipientWalletDescriptor).toStrictEqual(recipientBtcWalletDescriptor)
       })
     })
   })
