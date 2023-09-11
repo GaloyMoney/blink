@@ -1,7 +1,7 @@
 import { toSats } from "@domain/bitcoin"
 import { LedgerService } from "@services/ledger"
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 
 export const recordHotToColdTransfer = async ({
   satoshis,
@@ -17,7 +17,7 @@ export const recordHotToColdTransfer = async ({
   const description = `deposit of ${satoshis.amount} sats to the cold storage wallet`
 
   const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: DisplayCurrency.Usd,
+    currency: UsdDisplayCurrency,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
   const amountDisplayCurrency = displayPriceRatio.convertFromWallet(satoshis)

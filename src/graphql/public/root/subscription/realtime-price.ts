@@ -6,9 +6,9 @@ import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import {
   checkedToDisplayCurrency,
   majorToMinorUnit,
-  DisplayCurrency,
   SAT_PRICE_PRECISION_OFFSET,
   USD_PRICE_PRECISION_OFFSET,
+  UsdDisplayCurrency,
 } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
@@ -27,7 +27,7 @@ const RealtimePriceInput = GT.Input({
   fields: () => ({
     currency: {
       type: DisplayCurrencyGT,
-      defaultValue: DisplayCurrency.Usd,
+      defaultValue: UsdDisplayCurrency,
     },
   }),
 })

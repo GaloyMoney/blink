@@ -4,7 +4,7 @@ import {
 } from "@app/prices"
 import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
 
@@ -47,7 +47,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
 
         if (balanceAmount.currency === WalletCurrency.Usd) {
           const usdWalletPriceRatio = await getCurrentPriceAsWalletPriceRatio({
-            currency: DisplayCurrency.Usd,
+            currency: UsdDisplayCurrency,
           })
 
           if (!(usdWalletPriceRatio instanceof Error)) {

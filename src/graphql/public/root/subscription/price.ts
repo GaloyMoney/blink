@@ -5,9 +5,9 @@ import { Prices } from "@app"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import {
   checkedToDisplayCurrency,
-  DisplayCurrency,
   majorToMinorUnit,
   SAT_PRICE_PRECISION_OFFSET,
+  UsdDisplayCurrency,
 } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
@@ -67,7 +67,7 @@ const PriceSubscription = {
     }
 
     if (source.errors) return { errors: source.errors }
-    if (source.displayCurrency !== DisplayCurrency.Usd) {
+    if (source.displayCurrency !== UsdDisplayCurrency) {
       return {
         errors: [{ message: "Price is deprecated, please use realtimePrice event" }],
       }

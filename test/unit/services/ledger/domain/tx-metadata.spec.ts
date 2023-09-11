@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { UsdDisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
 import {
@@ -71,7 +71,7 @@ describe("Tx metadata", () => {
       displayFee: Number(
         paymentAmounts.usdProtocolAndBankFee.amount,
       ) as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
+      displayCurrency: UsdDisplayCurrency,
     },
 
     sender: {
@@ -183,7 +183,7 @@ describe("Tx metadata", () => {
               internalAccountsAdditionalMetadata,
             } = MetadataFn({
               ...metadataArgs,
-              senderDisplayCurrency: DisplayCurrency.Usd,
+              senderDisplayCurrency: UsdDisplayCurrency,
             })
 
             expect(debitAccountAdditionalMetadata).toEqual(
@@ -211,7 +211,7 @@ describe("Tx metadata", () => {
               internalAccountsAdditionalMetadata,
             } = MetadataFn({
               ...metadataArgs,
-              recipientDisplayCurrency: DisplayCurrency.Usd,
+              recipientDisplayCurrency: UsdDisplayCurrency,
             })
 
             expect(debitAccountAdditionalMetadata).toEqual(
@@ -280,7 +280,7 @@ describe("Tx metadata", () => {
               internalAccountsAdditionalMetadata,
             } = MetadataFn({
               ...metadataArgs,
-              senderDisplayCurrency: DisplayCurrency.Usd,
+              senderDisplayCurrency: UsdDisplayCurrency,
             })
 
             expect(metadata).toEqual(

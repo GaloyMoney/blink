@@ -1,5 +1,5 @@
 import { getCurrentPriceAsWalletPriceRatio, getMidPriceRatio } from "@app/prices"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 
 import { DealerPriceService } from "@services/dealer-price"
 
@@ -10,7 +10,7 @@ describe("getMidPriceRatio", () => {
     if (dealerMidPriceRatio instanceof Error) throw dealerMidPriceRatio
 
     const priceMidPriceRatio = await getCurrentPriceAsWalletPriceRatio({
-      currency: DisplayCurrency.Usd,
+      currency: UsdDisplayCurrency,
     })
     if (priceMidPriceRatio instanceof Error) throw priceMidPriceRatio
 

@@ -1,6 +1,6 @@
 import { getDealerConfig } from "@config"
 
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
 
 import {
@@ -96,10 +96,10 @@ export const getMidPriceRatio = async (
         error: priceRatio,
         level: ErrorLevel.Warn,
       })
-      return getCurrentPriceAsWalletPriceRatio({ currency: DisplayCurrency.Usd })
+      return getCurrentPriceAsWalletPriceRatio({ currency: UsdDisplayCurrency })
     }
     return priceRatio
   }
 
-  return getCurrentPriceAsWalletPriceRatio({ currency: DisplayCurrency.Usd })
+  return getCurrentPriceAsWalletPriceRatio({ currency: UsdDisplayCurrency })
 }

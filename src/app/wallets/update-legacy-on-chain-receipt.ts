@@ -14,7 +14,7 @@ import {
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletFromOnChainAddressesError,
 } from "@domain/errors"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
@@ -153,7 +153,7 @@ const processTxForHotWallet = async ({
   const ledger = LedgerService()
 
   const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: DisplayCurrency.Usd,
+    currency: UsdDisplayCurrency,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
 

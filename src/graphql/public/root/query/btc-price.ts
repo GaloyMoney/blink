@@ -1,6 +1,6 @@
 import { Prices } from "@app"
 
-import { DisplayCurrency, SAT_PRICE_PRECISION_OFFSET } from "@domain/fiat"
+import { SAT_PRICE_PRECISION_OFFSET, UsdDisplayCurrency } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
@@ -11,7 +11,10 @@ const BtcPriceQuery = GT.Field({
   deprecationReason: "Deprecated in favor of realtimePrice",
   type: Price,
   args: {
-    currency: { type: GT.NonNull(DisplayCurrencyGT), defaultValue: DisplayCurrency.Usd },
+    currency: {
+      type: GT.NonNull(DisplayCurrencyGT),
+      defaultValue: UsdDisplayCurrency,
+    },
   },
   resolve: async (_, args) => {
     const { currency } = args

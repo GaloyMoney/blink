@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 import { AccountLevel, AccountStatus } from "@domain/accounts"
 import { InvalidAccountStatusError, SelfPaymentError } from "@domain/errors"
 import { PaymentInputValidator, WalletType } from "@domain/wallets"
@@ -28,7 +28,7 @@ describe("PaymentInputValidator", () => {
     quizQuestions: [],
     quiz: [],
     kratosUserId: "kratosUserId" as UserId,
-    displayCurrency: DisplayCurrency.Usd,
+    displayCurrency: UsdDisplayCurrency,
   }
 
   const dummySenderWallet: Wallet = {

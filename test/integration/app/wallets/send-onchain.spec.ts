@@ -4,7 +4,7 @@ import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@config"
 
 import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { toCents, UsdDisplayCurrency } from "@domain/fiat"
 import {
   InactiveAccountError,
   InsufficientBalanceError,
@@ -81,7 +81,7 @@ const receiveBankFee = {
 const receiveDisplayAmounts = {
   amountDisplayCurrency: Number(receiveAmounts.usd.amount) as DisplayCurrencyBaseAmount,
   feeDisplayCurrency: Number(receiveBankFee.usd.amount) as DisplayCurrencyBaseAmount,
-  displayCurrency: DisplayCurrency.Usd,
+  displayCurrency: UsdDisplayCurrency,
 }
 
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
@@ -191,7 +191,7 @@ describe("onChainPay", () => {
         currency: WalletCurrency.Usd,
       }
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-        currency: WalletCurrency.Usd,
+        currency: UsdDisplayCurrency,
       })
       if (walletPriceRatio instanceof Error) throw walletPriceRatio
       const withdrawalLimitBtcAmount = walletPriceRatio.convertFromUsd(

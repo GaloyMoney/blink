@@ -1,4 +1,1 @@
-export const DisplayCurrency = {
-  Usd: "USD",
-  Btc: "BTC",
-} as const
+export const UsdDisplayCurrency = "USD" as DisplayCurrency

@@ -2,7 +2,7 @@ import crypto from "crypto"
 
 import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 import { CouldNotFindError } from "@domain/errors"
 
 import { LedgerService } from "@services/ledger"
@@ -45,7 +45,7 @@ describe("Facade", () => {
   const displayReceiveUsdAmounts = {
     amountDisplayCurrency: Number(receiveAmount.usd.amount) as DisplayCurrencyBaseAmount,
     feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
-    displayCurrency: DisplayCurrency.Usd,
+    displayCurrency: UsdDisplayCurrency,
   }
 
   const displayReceiveEurAmounts = {

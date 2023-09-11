@@ -10,7 +10,7 @@ import {
   onChainLedgerAccountId,
 } from "@services/ledger/domain"
 import { MainBook } from "@services/ledger/books"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 
 const createEntry = () => MainBook.entry("")
 
@@ -169,13 +169,13 @@ describe("EntryBuilder", () => {
   const additionalInternalMetadata = {
     displayAmount: 20 as DisplayCurrencyBaseAmount,
     displayFee: 0 as DisplayCurrencyBaseAmount,
-    displayCurrency: DisplayCurrency.Usd,
+    displayCurrency: UsdDisplayCurrency,
   }
 
   const additionalUserUsdMetadata = {
     displayAmount: 22 as DisplayCurrencyBaseAmount,
     displayFee: 0 as DisplayCurrencyBaseAmount,
-    displayCurrency: DisplayCurrency.Usd,
+    displayCurrency: UsdDisplayCurrency,
   }
 
   const additionalUserEurMetadata = {

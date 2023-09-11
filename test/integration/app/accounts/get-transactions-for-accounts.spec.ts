@@ -1,7 +1,7 @@
 import { Accounts } from "@app"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { UsdDisplayCurrency, toCents } from "@domain/fiat"
 import { InvalidWalletId } from "@domain/errors"
 
 import { AccountsRepository } from "@services/mongoose"
@@ -43,7 +43,7 @@ const receiveBankFee = {
 const receiveDisplayAmounts = {
   amountDisplayCurrency: Number(receiveAmounts.usd.amount) as DisplayCurrencyBaseAmount,
   feeDisplayCurrency: Number(receiveBankFee.usd.amount) as DisplayCurrencyBaseAmount,
-  displayCurrency: DisplayCurrency.Usd,
+  displayCurrency: UsdDisplayCurrency,
 }
 
 const randomMemo = () => "this is my memo #" + (Math.random() * 1_000_000).toFixed()

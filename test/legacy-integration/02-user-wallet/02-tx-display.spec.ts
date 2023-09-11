@@ -10,7 +10,7 @@ import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
 import * as LnFeesImpl from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { TxStatus } from "@domain/wallets"
-import { DisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
+import { UsdDisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
 
 import { updateDisplayCurrency } from "@app/accounts"
 
@@ -264,7 +264,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: recipientTxn.centsAmount,
               displayFee: recipientTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
             }),
           )
         }
@@ -400,7 +400,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
             }),
           )
         }
@@ -469,7 +469,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
             }),
           )
         }
@@ -554,13 +554,13 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
               type: LedgerTransactionType.Payment,
             }),
             expect.objectContaining({
               displayAmount: reimbursementTxn.centsAmount,
               displayFee: reimbursementTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
               type: LedgerTransactionType.LnFeeReimbursement,
             }),
           ]),
@@ -634,7 +634,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
             }),
           )
         }
@@ -735,7 +735,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: recipientTxn.centsAmount,
               displayFee: recipientTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
             }),
           )
         }
@@ -981,7 +981,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
             }),
           )
         }
@@ -1054,7 +1054,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
             }),
           )
         }
@@ -1193,7 +1193,7 @@ describe("Display properties on transactions", () => {
             expect.objectContaining({
               displayAmount: senderTxn.centsAmount,
               displayFee: senderTxn.centsFee,
-              displayCurrency: DisplayCurrency.Usd,
+              displayCurrency: UsdDisplayCurrency,
             }),
           )
         }

@@ -81,7 +81,7 @@ export const displayAmountFromWalletAmount = <D extends DisplayCurrency>(
 ): DisplayAmount<D> => {
   const { amount: amountInMinor, currency } = walletAmount
 
-  const displayMajorExponent = getCurrencyMajorExponent(walletAmount.currency)
+  const displayMajorExponent = getCurrencyMajorExponent(currency as D)
 
   return {
     amountInMinor,

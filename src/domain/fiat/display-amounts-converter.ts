@@ -2,7 +2,8 @@ import {
   displayAmountFromWalletAmount,
   priceAmountFromDisplayPriceRatio,
 } from "./display-currency"
-import { DisplayCurrency } from "./primitives"
+
+import { UsdDisplayCurrency } from "./primitives"
 
 export const DisplayAmountsConverter = <D extends DisplayCurrency>(
   displayPriceRatio: DisplayPriceRatio<"BTC", D>,
@@ -12,7 +13,7 @@ export const DisplayAmountsConverter = <D extends DisplayCurrency>(
 
     let displayAmount = displayPriceRatio.convertFromWallet(args.btcPaymentAmount)
     let displayFee = displayPriceRatio.convertFromWalletToCeil(args.btcProtocolAndBankFee)
-    if (displayCurrency === DisplayCurrency.Usd) {
+    if (displayCurrency === UsdDisplayCurrency) {
       displayAmount = displayAmountFromWalletAmount<D>(args.usdPaymentAmount)
       displayFee = displayAmountFromWalletAmount<D>(args.usdProtocolAndBankFee)
     }

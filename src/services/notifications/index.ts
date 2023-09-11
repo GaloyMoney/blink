@@ -1,6 +1,6 @@
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { toCents, UsdDisplayCurrency } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
 
@@ -283,7 +283,7 @@ export const NotificationsService = (): INotificationsService => {
       event: PubSubDefaultTriggers.UserPriceUpdate,
       suffix: displayCurrency,
     })
-    if (displayCurrency === DisplayCurrency.Usd) {
+    if (displayCurrency === UsdDisplayCurrency) {
       pubsub.publish({ trigger: userPriceUpdateTrigger, payload: { price: payload } })
     }
     pubsub.publish({

@@ -1,7 +1,7 @@
 import { Prices } from "@app"
 
 import { SATS_PER_BTC } from "@domain/bitcoin"
-import { DisplayCurrency, BTC_PRICE_PRECISION_OFFSET } from "@domain/fiat"
+import { BTC_PRICE_PRECISION_OFFSET, UsdDisplayCurrency } from "@domain/fiat"
 import { PriceInterval, PriceRange } from "@domain/price"
 
 import { GT } from "@graphql/index"
@@ -85,7 +85,7 @@ const BtcPriceListQuery = GT.Field({
     // Add the current price as the last item in the array
     // This is used by the mobile app to convert prices
     const currentPrice = await Prices.getCurrentSatPrice({
-      currency: DisplayCurrency.Usd,
+      currency: UsdDisplayCurrency,
     })
     if (!(currentPrice instanceof Error)) {
       const currentBtcPriceInCents = currentPrice.price * 100 * SATS_PER_BTC

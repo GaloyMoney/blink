@@ -13,7 +13,11 @@ import {
 import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@domain/shared"
 import { UnknownLedgerError, toLiabilitiesWalletId } from "@domain/ledger"
 import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
-import { DisplayAmountsConverter, displayAmountFromNumber } from "@domain/fiat"
+import {
+  DisplayAmountsConverter,
+  UsdDisplayCurrency,
+  displayAmountFromNumber,
+} from "@domain/fiat"
 
 import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
 import { Transaction } from "@services/ledger/schema"
@@ -389,7 +393,10 @@ describe("Bria Event Handlers", () => {
       })
       if (priceRatio instanceof Error) throw priceRatio
 
-      const displayAmount = displayAmountFromNumber({ amount: 20, currency: "USD" })
+      const displayAmount = displayAmountFromNumber({
+        amount: 20,
+        currency: UsdDisplayCurrency,
+      })
       if (displayAmount instanceof Error) throw displayAmount
       const displayPriceRatio = DisplayPriceRatio({
         displayAmount,

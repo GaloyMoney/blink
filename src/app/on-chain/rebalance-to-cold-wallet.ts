@@ -3,7 +3,7 @@ import { getColdStorageConfig } from "@config"
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 import { RebalanceChecker } from "@domain/bitcoin/onchain"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
@@ -22,7 +22,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   if (offChainService instanceof Error) return offChainService
 
   const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: DisplayCurrency.Usd,
+    currency: UsdDisplayCurrency,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
 

@@ -1,11 +1,10 @@
 import { AccountStatus } from "@domain/accounts/primitives"
-import { DisplayCurrency } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
 const displayCurrencyConfigSchema = {
   type: "object",
   properties: {
-    code: { type: "string", enum: Object.values(DisplayCurrency) },
+    code: { type: "string" },
     symbol: { type: "string" },
   },
   required: ["code", "symbol"],

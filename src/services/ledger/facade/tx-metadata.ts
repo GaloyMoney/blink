@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { UsdDisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 
 const displayArgsFromArgs = ({
@@ -40,7 +40,7 @@ const internalMetadataAmounts = ({
 }): DisplayTxnAmounts => ({
   displayAmount: Number(centsAmount) as DisplayCurrencyBaseAmount,
   displayFee: Number(centsFee) as DisplayCurrencyBaseAmount,
-  displayCurrency: DisplayCurrency.Usd,
+  displayCurrency: UsdDisplayCurrency,
 })
 
 const debitOrCreditMetadataAmounts = ({
@@ -61,9 +61,9 @@ const debitOrCreditMetadataAmounts = ({
   const walletUsdFee = Number(centsFee) as DisplayCurrencyBaseAmount
 
   const resultDisplayAmount =
-    displayCurrency === DisplayCurrency.Usd ? walletUsdAmount : displayAmount
+    displayCurrency === UsdDisplayCurrency ? walletUsdAmount : displayAmount
   const resultDisplayFee =
-    displayCurrency === DisplayCurrency.Usd ? walletUsdFee : displayFee
+    displayCurrency === UsdDisplayCurrency ? walletUsdFee : displayFee
 
   return {
     debitOrCreditAdditionalMetadata: {
