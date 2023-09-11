@@ -8,7 +8,7 @@ import Phone from "@graphql/shared/types/scalar/phone"
 const UserUpdatePhoneInput = GT.Input({
   name: "UserUpdatePhoneInput",
   fields: () => ({
-    accountId: {
+    accountUuid: {
       type: GT.NonNullID,
     },
     phone: {
@@ -21,7 +21,7 @@ const UserUpdatePhoneMutation = GT.Field<
   null,
   GraphQLAdminContext,
   {
-    input: { accountId: string; phone: PhoneNumber | Error }
+    input: { accountUuid: string; phone: PhoneNumber | Error }
   }
 >({
   extensions: {
@@ -32,8 +32,8 @@ const UserUpdatePhoneMutation = GT.Field<
     input: { type: GT.NonNull(UserUpdatePhoneInput) },
   },
   resolve: async (_, args, { auditorId }) => {
-    const { accountId, phone } = args.input
-    for (const input of [accountId, phone]) {
+    const { accountUuid, phone } = args.input
+    for (const input of [accountUuid, phone]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -42,7 +42,7 @@ const UserUpdatePhoneMutation = GT.Field<
     if (phone instanceof Error) return { errors: [{ message: phone.message }] }
 
     const account = await Admin.updateUserPhone({
-      accountId,
+      accountUuid,
       phone,
       updatedByUserId: auditorId,
     })

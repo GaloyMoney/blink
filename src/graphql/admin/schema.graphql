@@ -474,7 +474,7 @@ input UserLoginInput {
 }
 
 input UserUpdatePhoneInput {
-  accountId: ID!
+  accountUuid: ID!
   phone: Phone!
 }
 

@@ -53,8 +53,8 @@ TESTER_PHONE="+19876543210"
   variables=$(
     jq -n \
     --arg phone "$new_phone" \
-    --arg accountId "$id" \
-    '{input: {phone: $phone, accountId: $accountId}}'
+    --arg accountUuid "$uuid" \
+    '{input: {phone: $phone, accountUuid: $accountUuid}}'
   )
 
   exec_admin_graphql $admin_token 'user-update-phone' "$variables"
