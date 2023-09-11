@@ -1,3 +1,5 @@
+import { addAttributesToCurrentSpan } from "@services/tracing"
+
 import { UnknownKratosError } from "./errors"
 import { kratosAdmin } from "./private"
 
@@ -8,6 +10,8 @@ export const extendSession = async (
     const res = await kratosAdmin.extendSession({
       id: sessionId,
     })
+    const newExpiresAt = res.data.expires_at
+    addAttributesToCurrentSpan({ ["kratos.newExpiresAt"]: newExpiresAt })
     return res.data?.active ? true : false
   } catch (err) {
     return new UnknownKratosError(err)
