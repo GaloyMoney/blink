@@ -6,10 +6,11 @@ import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
 
 import { DepositFeeCalculator } from "@domain/wallets"
-import { displayAmountFromNumber } from "@domain/fiat"
+import { DisplayAmountsConverter } from "@domain/fiat"
 import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+import { toDisplayBaseAmount } from "@domain/payments"
 
 import {
   AccountsRepository,
@@ -78,6 +79,7 @@ const addSettledTransactionBeforeFinally = async ({
 
     const account = await AccountsRepository().findById(wallet.accountId)
     if (account instanceof Error) return account
+    const { displayCurrency } = account
 
     const fee = DepositFeeCalculator().onChainDepositFee({
       amount,
@@ -98,24 +100,26 @@ const addSettledTransactionBeforeFinally = async ({
       usdFromBtcMidPrice: usdFromBtcMidPriceFn,
     })
     if (walletAddressReceiver instanceof Error) return walletAddressReceiver
-
-    const { displayCurrency } = account
+    const {
+      btcToCreditReceiver: btcPaymentAmount,
+      btcBankFee: btcProtocolAndBankFee,
+      usdToCreditReceiver: usdPaymentAmount,
+      usdBankFee: usdProtocolAndBankFee,
+    } = walletAddressReceiver
 
     const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
       currency: displayCurrency,
     })
-    if (displayPriceRatio instanceof Error) {
-      return displayPriceRatio
-    }
-    const amountDisplayCurrency = Number(
-      displayPriceRatio.convertFromWallet(walletAddressReceiver.btcToCreditReceiver)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
 
-    const feeDisplayCurrency = Number(
-      displayPriceRatio.convertFromWalletToCeil(walletAddressReceiver.btcBankFee)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
+    const { displayAmount, displayFee } = DisplayAmountsConverter(
+      displayPriceRatio,
+    ).convert({
+      btcPaymentAmount,
+      btcProtocolAndBankFee,
+      usdPaymentAmount,
+      usdProtocolAndBankFee,
+    })
 
     let newAddressRequestId: OnChainAddressRequestId | undefined = undefined
     const currentAddress = await getLastOnChainAddress(wallet.id)
@@ -136,8 +140,8 @@ const addSettledTransactionBeforeFinally = async ({
         btcProtocolAndBankFee: walletAddressReceiver.btcBankFee,
         usdProtocolAndBankFee: walletAddressReceiver.usdBankFee,
       },
-      feeDisplayCurrency,
-      amountDisplayCurrency,
+      feeDisplayCurrency: toDisplayBaseAmount(displayFee),
+      amountDisplayCurrency: toDisplayBaseAmount(displayAmount),
       displayCurrency,
 
       payeeAddresses: [address],
@@ -167,12 +171,6 @@ const addSettledTransactionBeforeFinally = async ({
 
     const user = await UsersRepository().findById(account.kratosUserId)
     if (user instanceof Error) return user
-
-    const displayAmount = displayAmountFromNumber({
-      amount: creditAccountAdditionalMetadata.displayAmount,
-      currency: creditAccountAdditionalMetadata.displayCurrency,
-    })
-    if (displayAmount instanceof Error) return displayAmount
 
     const notificationResult = await NotificationsService().onChainTxReceived({
       recipientAccountId: wallet.accountId,

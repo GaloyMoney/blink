@@ -6,6 +6,8 @@ import {
 } from "@domain/errors"
 
 export * from "./display-currency"
+export * from "./display-amounts-converter"
+export * from "./primitives"
 
 export const toCents = (amount: number | bigint): UsdCents => {
   return Number(amount) as UsdCents
@@ -41,8 +43,3 @@ export const sub = <T extends number>(
   if (result < 0) return new InvalidNegativeAmountError()
   return result as T
 }
-
-export const DisplayCurrency = {
-  Usd: "USD",
-  Btc: "BTC",
-} as const

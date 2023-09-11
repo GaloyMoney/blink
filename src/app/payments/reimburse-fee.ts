@@ -1,6 +1,10 @@
-import { displayAmountFromNumber } from "@domain/fiat"
+import { DisplayAmountsConverter, displayAmountFromNumber } from "@domain/fiat"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
-import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
+import {
+  DisplayPriceRatio,
+  WalletPriceRatio,
+  toDisplayBaseAmount,
+} from "@domain/payments"
 import {
   paymentAmountFromNumber,
   WalletCurrency,
@@ -69,12 +73,16 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     walletAmount: paymentFlow.btcPaymentAmount,
   })
   if (displayPriceRatio instanceof Error) return displayPriceRatio
-  const reimburseAmountDisplayCurrency = displayPriceRatio.convertFromWallet(
-    feeDifference.btc,
-  )
-  const reimburseAmountAsNumber = Number(
-    reimburseAmountDisplayCurrency.amountInMinor,
-  ) as DisplayCurrencyBaseAmount
+
+  const {
+    displayAmount: reimburseAmountDisplayCurrency,
+    displayFee: reimburseFeeDisplayCurrency,
+  } = DisplayAmountsConverter(displayPriceRatio).convert({
+    btcPaymentAmount: feeDifference.btc,
+    btcProtocolAndBankFee: ZERO_SATS,
+    usdPaymentAmount: feeDifference.usd,
+    usdProtocolAndBankFee: ZERO_CENTS,
+  })
 
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
@@ -92,8 +100,8 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     },
     paymentHash,
     journalId,
-    feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-    amountDisplayCurrency: reimburseAmountAsNumber,
+    feeDisplayCurrency: toDisplayBaseAmount(reimburseFeeDisplayCurrency),
+    amountDisplayCurrency: toDisplayBaseAmount(reimburseAmountDisplayCurrency),
     displayCurrency: senderDisplayCurrency,
   })
 

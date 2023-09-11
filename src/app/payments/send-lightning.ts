@@ -7,7 +7,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
-import { displayAmountFromNumber } from "@domain/fiat"
+import { DisplayAmountsConverter } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   LnFees,
@@ -15,6 +15,7 @@ import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
   WalletPriceRatio,
+  toDisplayBaseAmount,
 } from "@domain/payments"
 import {
   WalletCurrency,
@@ -414,19 +415,15 @@ const executePaymentViaIntraledger = async <
       currency: senderAccount.displayCurrency,
     })
     if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
-    const senderAmountDisplayCurrencyAsNumber = Number(
-      senderDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
+    const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
+      DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
 
     const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
       currency: recipientAccount.displayCurrency,
     })
     if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
-    const recipientAmountDisplayCurrencyAsNumber = Number(
-      recipientDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
+    const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
+      DisplayAmountsConverter(recipientDisplayPriceRatio).convert(paymentFlow)
 
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
@@ -460,8 +457,8 @@ const executePaymentViaIntraledger = async <
         pubkey: recipientPubkey,
         paymentAmounts: paymentFlow,
 
-        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
-        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
         senderDisplayCurrency: senderAccount.displayCurrency,
 
         memoOfPayer: memo || undefined,
@@ -477,12 +474,12 @@ const executePaymentViaIntraledger = async <
         pubkey: recipientPubkey,
         paymentAmounts: paymentFlow,
 
-        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
-        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
         senderDisplayCurrency: senderAccount.displayCurrency,
 
-        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
-        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
+        recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
         recipientDisplayCurrency: recipientAccount.displayCurrency,
 
         memoOfPayer: memo || undefined,
@@ -525,12 +522,6 @@ const executePaymentViaIntraledger = async <
     if (recipientWalletCurrency === WalletCurrency.Usd) {
       amount = paymentFlow.usdPaymentAmount.amount
     }
-
-    const recipientDisplayAmount = displayAmountFromNumber({
-      amount: recipientAmountDisplayCurrencyAsNumber,
-      currency: recipientAccount.displayCurrency,
-    })
-    if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
 
     const result = await NotificationsService().lightningTxReceived({
       recipientAccountId: recipientWallet.accountId,
@@ -628,13 +619,8 @@ const executePaymentViaLn = async ({
       currency: senderDisplayCurrency,
     })
     if (displayPriceRatio instanceof Error) return displayPriceRatio
-    const amountDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount).amountInMinor,
-    ) as DisplayCurrencyBaseAmount
-    const feeDisplayCurrencyAsNumber = Number(
-      displayPriceRatio.convertFromWalletToCeil(paymentFlow.btcProtocolAndBankFee)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
+    const { displayAmount, displayFee } =
+      DisplayAmountsConverter(displayPriceRatio).convert(paymentFlow)
 
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
@@ -645,8 +631,8 @@ const executePaymentViaLn = async ({
       debitAccountAdditionalMetadata,
       internalAccountsAdditionalMetadata,
     } = LedgerFacade.LnSendLedgerMetadata({
-      amountDisplayCurrency: amountDisplayCurrencyAsNumber,
-      feeDisplayCurrency: feeDisplayCurrencyAsNumber,
+      amountDisplayCurrency: toDisplayBaseAmount(displayAmount),
+      feeDisplayCurrency: toDisplayBaseAmount(displayFee),
       displayCurrency: senderDisplayCurrency,
 
       paymentAmounts: paymentFlow,
@@ -758,7 +744,7 @@ const executePaymentViaLn = async ({
     if (!rawRoute) {
       const reimbursed = await reimburseFee({
         paymentFlow,
-        senderDisplayAmount: amountDisplayCurrencyAsNumber,
+        senderDisplayAmount: toDisplayBaseAmount(displayAmount),
         senderDisplayCurrency,
         journalId,
         actualFee: payResult.roundedUpFee,

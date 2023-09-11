@@ -7,7 +7,7 @@ import {
   InvalidNonHodlInvoiceError,
 } from "@domain/errors"
 import { checkedToSats } from "@domain/bitcoin"
-import { displayAmountFromNumber } from "@domain/fiat"
+import { DisplayAmountsConverter } from "@domain/fiat"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
@@ -35,6 +35,7 @@ import { CallbackEventType } from "@domain/callback"
 import { AccountLevel } from "@domain/accounts"
 import { CallbackService } from "@services/svix"
 import { getCallbackServiceConfig } from "@config"
+import { toDisplayBaseAmount } from "@domain/payments"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -183,6 +184,12 @@ const updatePendingInvoiceBeforeFinally = async ({
       usdFromBtcMidPrice: usdFromBtcMidPriceFn,
     })
     if (walletInvoiceReceiver instanceof Error) return walletInvoiceReceiver
+    const {
+      btcToCreditReceiver: btcPaymentAmount,
+      btcBankFee: btcProtocolAndBankFee,
+      usdToCreditReceiver: usdPaymentAmount,
+      usdBankFee: usdProtocolAndBankFee,
+    } = walletInvoiceReceiver
 
     if (!lnInvoiceLookup.isSettled) {
       const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
@@ -208,15 +215,14 @@ const updatePendingInvoiceBeforeFinally = async ({
     })
     if (displayPriceRatio instanceof Error) return displayPriceRatio
 
-    const amountDisplayCurrency = Number(
-      displayPriceRatio.convertFromWallet(walletInvoiceReceiver.btcToCreditReceiver)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
-
-    const feeDisplayCurrency = Number(
-      displayPriceRatio.convertFromWalletToCeil(walletInvoiceReceiver.btcBankFee)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
+    const { displayAmount: displayPaymentAmount, displayFee } = DisplayAmountsConverter(
+      displayPriceRatio,
+    ).convert({
+      btcPaymentAmount,
+      btcProtocolAndBankFee,
+      usdPaymentAmount,
+      usdProtocolAndBankFee,
+    })
 
     // TODO: this should be a in a mongodb transaction session with the ledger transaction below
     // markAsPaid could be done after the transaction, but we should in that case not only look
@@ -237,8 +243,8 @@ const updatePendingInvoiceBeforeFinally = async ({
         usdProtocolAndBankFee: walletInvoiceReceiver.usdBankFee,
       },
 
-      feeDisplayCurrency,
-      amountDisplayCurrency,
+      feeDisplayCurrency: toDisplayBaseAmount(displayFee),
+      amountDisplayCurrency: toDisplayBaseAmount(displayPaymentAmount),
       displayCurrency: recipientDisplayCurrency,
     })
 
@@ -268,13 +274,6 @@ const updatePendingInvoiceBeforeFinally = async ({
     if (result instanceof Error) return result
 
     // Prepare and send notification
-    const { displayAmount, displayCurrency } = creditAccountAdditionalMetadata
-    const displayPaymentAmount = displayAmountFromNumber({
-      amount: displayAmount,
-      currency: displayCurrency,
-    })
-    if (displayPaymentAmount instanceof Error) throw displayPaymentAmount
-
     const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 

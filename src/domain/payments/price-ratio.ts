@@ -121,6 +121,11 @@ const toDisplayAmount = <T extends DisplayCurrency>({
   }
 }
 
+export const toDisplayBaseAmount = (
+  displayAmount: DisplayAmount<DisplayCurrency>,
+): DisplayCurrencyBaseAmount =>
+  Number(displayAmount.amountInMinor) as DisplayCurrencyBaseAmount
+
 export const DisplayPriceRatio = <S extends WalletCurrency, T extends DisplayCurrency>({
   displayAmount,
   walletAmount,

@@ -8,7 +8,6 @@ import {
   PaymentInitiationMethod,
   SettlementMethod,
 } from "@domain/wallets"
-import { priceAmountFromDisplayPriceRatio } from "@domain/fiat"
 import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@domain/errors"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
@@ -24,6 +23,7 @@ import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { DealerPriceService } from "@services/dealer-price"
 import { NotificationsService } from "@services/notifications"
+import { DisplayAmountsConverter } from "@domain/fiat/display-amounts-converter"
 
 const dealer = DealerPriceService()
 const { dustThreshold } = getOnChainWalletConfig()
@@ -89,19 +89,31 @@ export const addPendingTransaction = async ({
       usdFromBtcMidPrice: usdFromBtcMidPriceFn,
     })
     if (walletAddressReceiver instanceof Error) return walletAddressReceiver
+
+    const {
+      btcToCreditReceiver: btcPaymentAmount,
+      btcBankFee: btcProtocolAndBankFee,
+      usdToCreditReceiver: usdPaymentAmount,
+      usdBankFee: usdProtocolAndBankFee,
+    } = walletAddressReceiver
     const { amountToCreditReceiver: settlementAmount, bankFee: settlementFee } =
       walletAddressReceiver.settlementAmounts()
 
     const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
       currency: account.displayCurrency,
     })
-    if (displayPriceRatio instanceof Error) {
-      return displayPriceRatio
-    }
+    if (displayPriceRatio instanceof Error) return displayPriceRatio
 
-    const settlementDisplayAmount = displayPriceRatio.convertFromWallet(
-      walletAddressReceiver.btcToCreditReceiver,
-    )
+    const {
+      displayAmount: settlementDisplayAmount,
+      displayFee: settlementDisplayFee,
+      displayPrice: settlementDisplayPrice,
+    } = DisplayAmountsConverter(displayPriceRatio).convert({
+      btcPaymentAmount,
+      btcProtocolAndBankFee,
+      usdPaymentAmount,
+      usdProtocolAndBankFee,
+    })
 
     const pendingTransaction: WalletOnChainPendingTransaction = {
       walletId: wallet.id,
@@ -109,10 +121,8 @@ export const addPendingTransaction = async ({
       settlementFee,
       settlementCurrency: wallet.currency,
       settlementDisplayAmount,
-      settlementDisplayFee: displayPriceRatio.convertFromWalletToCeil(
-        walletAddressReceiver.btcBankFee,
-      ),
-      settlementDisplayPrice: priceAmountFromDisplayPriceRatio(displayPriceRatio),
+      settlementDisplayFee,
+      settlementDisplayPrice,
 
       createdAt: new Date(Date.now()),
       initiationVia: {

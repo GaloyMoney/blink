@@ -49,6 +49,14 @@ export const getCurrencyMajorExponent = (
   }
 }
 
+const displayMinorToMajor = ({
+  amountInMinor,
+  displayMajorExponent,
+}: {
+  amountInMinor: bigint
+  displayMajorExponent: CurrencyMajorExponent
+}) => (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(displayMajorExponent)
+
 export const displayAmountFromNumber = <T extends DisplayCurrency>({
   amount,
   currency,
@@ -64,9 +72,21 @@ export const displayAmountFromNumber = <T extends DisplayCurrency>({
   return {
     amountInMinor,
     currency,
-    displayInMajor: (Number(amountInMinor) / 10 ** displayMajorExponent).toFixed(
-      displayMajorExponent,
-    ),
+    displayInMajor: displayMinorToMajor({ amountInMinor, displayMajorExponent }),
+  }
+}
+
+export const displayAmountFromWalletAmount = <D extends DisplayCurrency>(
+  walletAmount: PaymentAmount<WalletCurrency>,
+): DisplayAmount<D> => {
+  const { amount: amountInMinor, currency } = walletAmount
+
+  const displayMajorExponent = getCurrencyMajorExponent(walletAmount.currency)
+
+  return {
+    amountInMinor,
+    currency: currency as D,
+    displayInMajor: displayMinorToMajor({ amountInMinor, displayMajorExponent }),
   }
 }
 

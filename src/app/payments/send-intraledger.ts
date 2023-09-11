@@ -13,9 +13,10 @@ import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
   ZeroAmountForUsdRecipientError,
+  toDisplayBaseAmount,
 } from "@domain/payments"
 import { AccountLevel, AccountValidator } from "@domain/accounts"
-import { displayAmountFromNumber } from "@domain/fiat"
+import { DisplayAmountsConverter } from "@domain/fiat"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -264,19 +265,15 @@ const executePaymentViaIntraledger = async <
       currency: senderDisplayCurrency,
     })
     if (senderDisplayPriceRatio instanceof Error) return senderDisplayPriceRatio
-    const senderAmountDisplayCurrencyAsNumber = Number(
-      senderDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
+    const { displayAmount: senderDisplayAmount, displayFee: senderDisplayFee } =
+      DisplayAmountsConverter(senderDisplayPriceRatio).convert(paymentFlow)
 
     const recipientDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
       currency: recipientAccount.displayCurrency,
     })
     if (recipientDisplayPriceRatio instanceof Error) return recipientDisplayPriceRatio
-    const recipientAmountDisplayCurrencyAsNumber = Number(
-      recipientDisplayPriceRatio.convertFromWallet(paymentFlow.btcPaymentAmount)
-        .amountInMinor,
-    ) as DisplayCurrencyBaseAmount
+    const { displayAmount: recipientDisplayAmount, displayFee: recipientDisplayFee } =
+      DisplayAmountsConverter(recipientDisplayPriceRatio).convert(paymentFlow)
 
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
@@ -303,8 +300,8 @@ const executePaymentViaIntraledger = async <
       } = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
         paymentAmounts: paymentFlow,
 
-        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
-        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
         senderDisplayCurrency: senderDisplayCurrency,
 
         memoOfPayer: memo || undefined,
@@ -318,12 +315,12 @@ const executePaymentViaIntraledger = async <
       } = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
         paymentAmounts: paymentFlow,
 
-        senderAmountDisplayCurrency: senderAmountDisplayCurrencyAsNumber,
-        senderFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        senderAmountDisplayCurrency: toDisplayBaseAmount(senderDisplayAmount),
+        senderFeeDisplayCurrency: toDisplayBaseAmount(senderDisplayFee),
         senderDisplayCurrency: senderDisplayCurrency,
 
-        recipientAmountDisplayCurrency: recipientAmountDisplayCurrencyAsNumber,
-        recipientFeeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+        recipientAmountDisplayCurrency: toDisplayBaseAmount(recipientDisplayAmount),
+        recipientFeeDisplayCurrency: toDisplayBaseAmount(recipientDisplayFee),
         recipientDisplayCurrency: recipientAccount.displayCurrency,
 
         memoOfPayer: memo || undefined,
@@ -360,12 +357,6 @@ const executePaymentViaIntraledger = async <
     if (recipientWalletCurrency === WalletCurrency.Usd) {
       amount = totalSendAmounts.usd.amount
     }
-
-    const recipientDisplayAmount = displayAmountFromNumber({
-      amount: recipientAmountDisplayCurrencyAsNumber,
-      currency: recipientAccount.displayCurrency,
-    })
-    if (recipientDisplayAmount instanceof Error) return recipientDisplayAmount
 
     const result = await NotificationsService().intraLedgerTxReceived({
       recipientAccountId: recipientWallet.accountId,
