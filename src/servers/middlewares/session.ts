@@ -12,10 +12,11 @@ import jsonwebtoken from "jsonwebtoken"
 
 import { mapError } from "@graphql/error-map"
 
+import { maybeExtendSession } from "@app/authentication"
 import { checkedToUserId } from "@domain/accounts"
 import { ValidationError } from "@domain/shared"
-import { UsersRepository } from "@services/mongoose"
 import { baseLogger } from "@services/logger"
+import { UsersRepository } from "@services/mongoose"
 
 export const sessionPublicContext = ({
   tokenPayload,
@@ -29,10 +30,15 @@ export const sessionPublicContext = ({
   let domainAccount: Account | undefined
   let user: User | undefined
 
+  const sessionId = tokenPayload?.session_id
+  const expiresAt = tokenPayload?.expires_at
+
   return addAttributesToCurrentSpanAndPropagate(
     {
       "token.sub": tokenPayload?.sub,
       "token.iss": tokenPayload?.iss,
+      "token.session_id": sessionId,
+      "token.expires_at": expiresAt,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {
@@ -54,6 +60,11 @@ export const sessionPublicContext = ({
             ip,
             logger,
           })
+
+          if (sessionId && expiresAt) {
+            maybeExtendSession({ sessionId, expiresAt })
+          }
+
           const userRes = await UsersRepository().findById(account.kratosUserId)
           if (userRes instanceof Error) throw mapError(userRes)
           user = userRes
