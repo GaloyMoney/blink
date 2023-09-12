@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump mongoose from 7.4.4 to 7.5.1 (#3195)...'
-      sha: 84a766715d0e627e457b016bf9dec65be510a1e3
+      commitTitle: 'chore: update server (#3199)...'
+      sha: 0f4c588aa055cab225a8fe28f5d9a7b2110ab058
       tags:
-      - 0.13.56-1-g84a766715
+      - 0.13.57-2-g0f4c588aa
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump mongoose from 7.4.4 to 7.5.1 (#3195)...'
-      sha: 84a766715d0e627e457b016bf9dec65be510a1e3
+      commitTitle: 'chore: update server (#3199)...'
+      sha: 0f4c588aa055cab225a8fe28f5d9a7b2110ab058
       tags:
-      - 0.13.56-1-g84a766715
+      - 0.13.57-2-g0f4c588aa
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump mongoose from 7.4.4 to 7.5.1 (#3195)...'
-      sha: 84a766715d0e627e457b016bf9dec65be510a1e3
+      commitTitle: 'chore: update server (#3199)...'
+      sha: 0f4c588aa055cab225a8fe28f5d9a7b2110ab058
       tags:
-      - 0.13.56-1-g84a766715
+      - 0.13.57-2-g0f4c588aa
     path: ./
   path: ./graphql
 kind: LockConfig
