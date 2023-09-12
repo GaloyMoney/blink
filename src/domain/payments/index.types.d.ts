@@ -204,8 +204,8 @@ type WithConversionArgs = {
 }
 
 type OPFBWithRecipientArgs<R extends WalletCurrency> = {
-  recipientWalletDescriptor: WalletDescriptor<R>
-  recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
+  defaultWalletCurrency: R
+  recipientWalletDescriptors: AccountWalletDescriptors
   userId: UserId
   usdProposedAmount?: UsdPaymentAmount
   username?: Username
@@ -415,7 +415,7 @@ type OPFBWithRecipientWalletState<
   recipientUsername?: Username
   recipientUserId?: UserId
   recipientAccountId?: AccountId
-  recipientWalletDescriptorsForAccount?: WalletDescriptor<WalletCurrency>[]
+  recipientWalletDescriptors?: AccountWalletDescriptors
 }
 
 type OPFBWithAmountState<
