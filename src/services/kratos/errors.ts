@@ -4,6 +4,7 @@ import { ErrorLevel } from "@domain/shared"
 export class KratosError extends AuthenticationError {}
 export class AuthenticationKratosError extends KratosError {}
 export class ExtendSessionKratosError extends KratosError {}
+export class InvalidIdentitySessionKratosError extends KratosError {}
 
 export class SessionRefreshRequiredError extends KratosError {}
 

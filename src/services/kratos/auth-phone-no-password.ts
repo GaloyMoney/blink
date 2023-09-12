@@ -14,6 +14,7 @@ import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 import {
   AuthenticationKratosError,
   IncompatibleSchemaUpgradeError,
+  InvalidIdentitySessionKratosError,
   KratosError,
   UnknownKratosError,
 } from "./errors"
@@ -94,6 +95,8 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
         },
       })
       const cookiesToSendBackToClient: Array<SessionCookie> = result.headers["set-cookie"]
+
+      if (!result.data.session.identity) return new InvalidIdentitySessionKratosError()
       // note: this only works when whoami: required_aal = aal1
       const kratosUserId = result.data.session.identity.id as UserId
       return { cookiesToSendBackToClient, kratosUserId }

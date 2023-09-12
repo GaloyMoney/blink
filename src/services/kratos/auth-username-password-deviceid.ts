@@ -4,7 +4,11 @@ import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { isAxiosError } from "axios"
 
-import { KratosError, UnknownKratosError } from "./errors"
+import {
+  InvalidIdentitySessionKratosError,
+  KratosError,
+  UnknownKratosError,
+} from "./errors"
 import { kratosAdmin, kratosPublic } from "./private"
 import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
 
@@ -54,6 +58,8 @@ export const AuthWithUsernamePasswordDeviceIdService =
           },
         })
         const authToken = result.data.session_token as AuthToken
+
+        if (!result.data.session.identity) return new InvalidIdentitySessionKratosError()
 
         // note: this only works when whoami: required_aal = aal1
         const kratosUserId = result.data.session.identity.id as UserId
