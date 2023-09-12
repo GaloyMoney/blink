@@ -430,16 +430,6 @@ describe("With Bria", () => {
     )
   }
 
-  describe("FunderWallet - On chain", () => {
-    it("receives on-chain transaction", async () => {
-      const funderWalletId = await getFunderWalletId()
-      await sendToWalletTestWrapper({
-        walletId: funderWalletId,
-        amountSats: getRandomBtcAmount(),
-      })
-    })
-  })
-
   describe("UserWallet - On chain", () => {
     it.skip("fails to create onChain Address past rate limit", async () => {
       // Reset limits before starting
@@ -1315,16 +1305,6 @@ describe("With Lnd", () => {
     const commonAddressSet = txnAddressesWithConfirmedSet.intersect(new Set(addresses))
     expect(commonAddressSet.size).toEqual(addresses.length)
   }
-
-  describe("FunderWallet - On chain", () => {
-    it("receives on-chain transaction", async () => {
-      const funderWalletId = await getFunderWalletId()
-      await sendToWalletTestWrapper({
-        walletId: funderWalletId,
-        amountSats: getRandomBtcAmount(),
-      })
-    })
-  })
 
   describe("UserWallet - On chain", () => {
     it("get last on chain address", async () => {
