@@ -1,16 +1,16 @@
+import { Types } from "mongoose"
+
 import {
   CouldNotFindWalletFromIdError,
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletFromOnChainAddressesError,
   CouldNotListWalletsFromAccountIdError,
   CouldNotListWalletsFromWalletCurrencyError,
-  RepositoryError,
 } from "@domain/errors"
-import { Types } from "mongoose"
 
-import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
-import { Wallet } from "./schema"
 import { AccountsRepository } from "./accounts"
+import { Wallet } from "./schema"
+import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
 
 export interface WalletRecord {
   id: string
@@ -71,6 +71,13 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
+  const findAccountWalletsByAccountId = async (
+    accountId: AccountId,
+  ): Promise<AccountWalletDescriptors | RepositoryError> => {
+    accountId
+    return new Error()
+  }
+
   const findByAddress = async (
     address: OnChainAddress,
   ): Promise<Wallet | RepositoryError> => {
@@ -121,6 +128,7 @@ export const WalletsRepository = (): IWalletsRepository => {
   return {
     findById,
     listByAccountId,
+    findAccountWalletsByAccountId,
     findByAddress,
     listByAddresses,
     persistNew,

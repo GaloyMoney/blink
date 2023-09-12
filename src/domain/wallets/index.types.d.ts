@@ -166,6 +166,11 @@ type Wallet = NewWalletInfo & {
   onChainAddresses(): OnChainAddress[]
 }
 
+type AccountWalletDescriptors = {
+  BTC: WalletDescriptor<"BTC">
+  USD: WalletDescriptor<"USD">
+}
+
 interface IWalletsRepository {
   persistNew({
     accountId,
@@ -173,9 +178,10 @@ interface IWalletsRepository {
     currency,
   }: NewWalletInfo): Promise<Wallet | RepositoryError>
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
-
   listByAccountId(accountId: AccountId): Promise<Wallet[] | RepositoryError>
-
+  findAccountWalletsByAccountId(
+    accountId: AccountId,
+  ): Promise<AccountWalletDescriptors | RepositoryError>
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: OnChainAddress[]): Promise<Wallet[] | RepositoryError>
   listByWalletCurrency(
