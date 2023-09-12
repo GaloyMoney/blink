@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update server (#3199)...'
-      sha: 0f4c588aa055cab225a8fe28f5d9a7b2110ab058
+      commitTitle: 'chore: bump pino from 8.15.0 to 8.15.1 (#3198)...'
+      sha: 547d9c2f334c9bc911b5c2946b16e8ee841857da
       tags:
-      - 0.13.57-2-g0f4c588aa
+      - 0.13.58-1-g547d9c2f3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update server (#3199)...'
-      sha: 0f4c588aa055cab225a8fe28f5d9a7b2110ab058
+      commitTitle: 'chore: bump pino from 8.15.0 to 8.15.1 (#3198)...'
+      sha: 547d9c2f334c9bc911b5c2946b16e8ee841857da
       tags:
-      - 0.13.57-2-g0f4c588aa
+      - 0.13.58-1-g547d9c2f3
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: update server (#3199)...'
-      sha: 0f4c588aa055cab225a8fe28f5d9a7b2110ab058
+      commitTitle: 'chore: bump pino from 8.15.0 to 8.15.1 (#3198)...'
+      sha: 547d9c2f334c9bc911b5c2946b16e8ee841857da
       tags:
-      - 0.13.57-2-g0f4c588aa
+      - 0.13.58-1-g547d9c2f3
     path: ./
   path: ./graphql
 kind: LockConfig
