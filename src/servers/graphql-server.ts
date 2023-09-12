@@ -12,7 +12,6 @@ import { rule } from "graphql-shield"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 
-import { AuthenticationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
 
 import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
@@ -39,9 +38,8 @@ export const isAuthenticated = rule({ cache: "contextual" })((
 ) => {
   return (
     // TODO: remove !== "anon" when auth endpoints have been removed from admin graphql
-    !!(ctx.auditorId !== ("anon" as UserId)) || // admin API
-    !!ctx.domainAccount || // public API
-    new AuthenticationError({ logger: baseLogger })
+    !!("auditorId" in ctx && ctx.auditorId !== ("anon" as UserId)) || // admin API
+    ("domainAccount" in ctx && !!ctx.domainAccount)
   )
 })
 
