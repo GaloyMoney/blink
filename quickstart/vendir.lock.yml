@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump pino from 8.15.0 to 8.15.1 (#3198)...'
-      sha: 547d9c2f334c9bc911b5c2946b16e8ee841857da
+      commitTitle: 'fix: add authorization error code to shield plugin (#3200)'
+      sha: 9f082a132d55bf79dde95fb2f47cb8dd2bdcd444
       tags:
-      - 0.13.58-1-g547d9c2f3
+      - 0.13.59-1-g9f082a132
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump pino from 8.15.0 to 8.15.1 (#3198)...'
-      sha: 547d9c2f334c9bc911b5c2946b16e8ee841857da
+      commitTitle: 'fix: add authorization error code to shield plugin (#3200)'
+      sha: 9f082a132d55bf79dde95fb2f47cb8dd2bdcd444
       tags:
-      - 0.13.58-1-g547d9c2f3
+      - 0.13.59-1-g9f082a132
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump pino from 8.15.0 to 8.15.1 (#3198)...'
-      sha: 547d9c2f334c9bc911b5c2946b16e8ee841857da
+      commitTitle: 'fix: add authorization error code to shield plugin (#3200)'
+      sha: 9f082a132d55bf79dde95fb2f47cb8dd2bdcd444
       tags:
-      - 0.13.58-1-g547d9c2f3
+      - 0.13.59-1-g9f082a132
     path: ./
   path: ./graphql
 kind: LockConfig
