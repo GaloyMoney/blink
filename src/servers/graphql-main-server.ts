@@ -2,6 +2,7 @@ import { applyMiddleware } from "graphql-middleware"
 
 import { GALOY_API_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
 
+import { AuthorizationError } from "@graphql/error"
 import { gqlMainSchema, mutationFields, queryFields } from "@graphql/public"
 
 import { bootstrap } from "@app/bootstrap"
@@ -80,7 +81,10 @@ export async function startApolloServerForCoreSchema() {
       Query: authedQueryFields,
       Mutation: authedMutationFields,
     },
-    { allowExternalErrors: true },
+    {
+      allowExternalErrors: true,
+      fallbackError: new AuthorizationError({ logger: baseLogger }),
+    },
   )
 
   const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
