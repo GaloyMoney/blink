@@ -64,7 +64,7 @@ const intraledgerPaymentSendWalletId = async ({
 
   const { senderWallet, recipientWallet, recipientAccount } = validatedPaymentInputs
 
-  const { id: recipientWalletId, currency: recipientWalletCurrency } = recipientWallet
+  const { currency: recipientWalletCurrency } = recipientWallet
   const {
     id: recipientAccountId,
     username: recipientUsername,
@@ -82,15 +82,12 @@ const intraledgerPaymentSendWalletId = async ({
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
 
-  const wallets = await WalletsRepository().listByAccountId(recipientAccountId)
+  const wallets =
+    await WalletsRepository().findAccountWalletsByAccountId(recipientAccountId)
   if (wallets instanceof Error) return wallets
   const recipientArgsForBuilder = {
-    recipientWalletDescriptor: {
-      id: recipientWalletId,
-      currency: recipientWalletCurrency,
-      accountId: recipientAccountId,
-    },
-    recipientWalletDescriptorsForAccount: wallets,
+    defaultWalletCurrency: recipientWalletCurrency,
+    recipientWalletDescriptors: wallets,
     username: recipientUsername,
     userId: recipientUserId,
     pubkey: undefined,

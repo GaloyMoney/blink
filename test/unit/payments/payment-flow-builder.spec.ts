@@ -51,19 +51,19 @@ describe("LightningPaymentFlowBuilder", () => {
 
   const senderAsRecipientCommonArgs = {
     userId: "senderUserId" as UserId,
-    recipientWalletDescriptorsForAccount: [
-      senderBtcWalletDescriptor,
-      senderUsdWalletDescriptor,
-    ],
+    recipientWalletDescriptors: {
+      [WalletCurrency.Btc]: senderBtcWalletDescriptor,
+      [WalletCurrency.Usd]: senderUsdWalletDescriptor,
+    },
   }
   const senderBtcAsRecipientArgs = {
     ...senderAsRecipientCommonArgs,
-    recipientWalletDescriptor: senderBtcWalletDescriptor,
+    defaultWalletCurrency: WalletCurrency.Btc,
   }
 
   const senderUsdAsRecipientArgs = {
     ...senderAsRecipientCommonArgs,
-    recipientWalletDescriptor: senderUsdWalletDescriptor,
+    defaultWalletCurrency: WalletCurrency.Usd,
   }
 
   const recipientBtcWalletDescriptor = {
@@ -78,22 +78,22 @@ describe("LightningPaymentFlowBuilder", () => {
   }
 
   const recipientCommonArgs = {
-    recipientWalletDescriptorsForAccount: [
-      recipientBtcWalletDescriptor,
-      recipientUsdWalletDescriptor,
-    ],
+    recipientWalletDescriptors: {
+      [WalletCurrency.Btc]: recipientBtcWalletDescriptor,
+      [WalletCurrency.Usd]: recipientUsdWalletDescriptor,
+    },
     username: "Username" as Username,
     userId: "recipientUserId" as UserId,
   }
 
   const recipientBtcArgs = {
     ...recipientCommonArgs,
-    recipientWalletDescriptor: recipientBtcWalletDescriptor,
+    defaultWalletCurrency: WalletCurrency.Btc,
   }
 
   const recipientUsdArgs = {
     ...recipientCommonArgs,
-    recipientWalletDescriptor: recipientUsdWalletDescriptor,
+    defaultWalletCurrency: WalletCurrency.Usd,
   }
 
   const pubkey = "pubkey" as Pubkey

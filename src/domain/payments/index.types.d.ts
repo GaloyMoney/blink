@@ -170,8 +170,8 @@ type OPFBWithAddress<S extends WalletCurrency> = {
 }
 
 type LPFBWithRecipientArgs<R extends WalletCurrency> = {
-  recipientWalletDescriptor: WalletDescriptor<R>
-  recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
+  defaultWalletCurrency: R
+  recipientWalletDescriptors: AccountWalletDescriptors
   userId: UserId
   pubkey?: Pubkey
   usdPaymentAmount?: UsdPaymentAmount
@@ -377,7 +377,7 @@ type LPFBWithRecipientWalletState<
   recipientUsername?: Username
   recipientUserId?: UserId
   recipientAccountId?: AccountId
-  recipientWalletDescriptorsForAccount?: WalletDescriptor<WalletCurrency>[]
+  recipientWalletDescriptors?: AccountWalletDescriptors
 }
 
 type LPFBWithConversionState<
