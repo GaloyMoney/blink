@@ -124,7 +124,10 @@ export async function startApolloServerForAdminSchema() {
       Query: authedQueryFields,
       Mutation: authedMutationFields,
     },
-    { allowExternalErrors: true },
+    {
+      allowExternalErrors: true,
+      fallbackError: new AuthorizationError({ logger: baseLogger }),
+    },
   )
 
   const schema = applyMiddleware(gqlAdminSchema, permissions)
