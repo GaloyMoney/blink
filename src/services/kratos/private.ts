@@ -4,7 +4,11 @@ import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import { KRATOS_ADMIN_API, KRATOS_PUBLIC_API } from "@config"
 
-import { MissingCreatedAtKratosError, MissingExpiredAtKratosError } from "./errors"
+import {
+  InvalidIdentitySessionKratosError,
+  MissingCreatedAtKratosError,
+  MissingExpiredAtKratosError,
+} from "./errors"
 import { SchemaIdType } from "./schema"
 
 export const kratosPublic = new FrontendApi(
@@ -18,6 +22,7 @@ export const kratosAdmin = new IdentityApi(
 export const toDomainSession = (session: KratosSession): Session => {
   // is throw ok? this should not happen I (nb) believe but the type say it can
   // this may probably be a type issue in kratos SDK
+  if (!session.identity) throw new InvalidIdentitySessionKratosError()
   if (!session.expires_at) throw new MissingExpiredAtKratosError()
 
   return {

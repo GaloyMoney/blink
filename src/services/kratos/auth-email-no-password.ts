@@ -22,6 +22,7 @@ import {
   CodeExpiredKratosError,
   EmailAlreadyExistsError,
   IncompatibleSchemaUpgradeError,
+  InvalidIdentitySessionKratosError,
   KratosError,
   UnknownKratosError,
 } from "./errors"
@@ -133,6 +134,7 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
 
         try {
           const session = await kratosPublic.toSession({ cookie: sessionCookie })
+          if (!session.data.identity) return new InvalidIdentitySessionKratosError()
 
           const emailRaw = checkedToEmailAddress(
             session.data.identity.recovery_addresses?.[0].value ?? "",
@@ -258,6 +260,8 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
         },
       })
       const cookiesToSendBackToClient: Array<SessionCookie> = result.headers["set-cookie"]
+
+      if (!result.data.session.identity) return new InvalidIdentitySessionKratosError()
       // identity is only defined when identity has not enabled totp
       const kratosUserId = result.data.session.identity.id as UserId | undefined
       return { cookiesToSendBackToClient, kratosUserId }

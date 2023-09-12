@@ -607,6 +607,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "ExpectedAddressInfoMissingInEventError":
     case "MissingCreatedAtKratosError":
     case "MissingExpiredAtKratosError":
+    case "InvalidIdentitySessionKratosError":
     case "MissingTotpKratosError":
     case "IncompatibleSchemaUpgradeError":
     case "UnknownKratosError":
