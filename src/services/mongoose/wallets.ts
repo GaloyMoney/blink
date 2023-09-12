@@ -1,11 +1,15 @@
 import { Types } from "mongoose"
 
+import { WalletCurrency } from "@domain/shared"
+import { toWalletDescriptor } from "@domain/wallets"
 import {
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
   CouldNotFindWalletFromIdError,
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletFromOnChainAddressesError,
   CouldNotListWalletsFromAccountIdError,
   CouldNotListWalletsFromWalletCurrencyError,
+  MultipleWalletsFoundForAccountIdAndCurrency,
 } from "@domain/errors"
 
 import { AccountsRepository } from "./accounts"
@@ -74,8 +78,31 @@ export const WalletsRepository = (): IWalletsRepository => {
   const findAccountWalletsByAccountId = async (
     accountId: AccountId,
   ): Promise<AccountWalletDescriptors | RepositoryError> => {
-    accountId
-    return new Error()
+    const wallets = await listByAccountId(accountId)
+    if (wallets instanceof Error) return wallets
+
+    const btcWallets = wallets.filter((wallet) => wallet.currency === WalletCurrency.Btc)
+    if (btcWallets.length === 0) {
+      return new CouldNotFindWalletFromAccountIdAndCurrencyError(WalletCurrency.Btc)
+    }
+    if (btcWallets.length > 1) {
+      return new MultipleWalletsFoundForAccountIdAndCurrency(WalletCurrency.Btc)
+    }
+    const btcWallet = btcWallets[0]
+
+    const usdWallets = wallets.filter((wallet) => wallet.currency === WalletCurrency.Usd)
+    if (usdWallets.length === 0) {
+      return new CouldNotFindWalletFromAccountIdAndCurrencyError(WalletCurrency.Usd)
+    }
+    if (usdWallets.length > 1) {
+      return new MultipleWalletsFoundForAccountIdAndCurrency(WalletCurrency.Usd)
+    }
+    const usdWallet = usdWallets[0]
+
+    return {
+      [WalletCurrency.Btc]: toWalletDescriptor(btcWallet),
+      [WalletCurrency.Usd]: toWalletDescriptor(usdWallet),
+    }
   }
 
   const findByAddress = async (
