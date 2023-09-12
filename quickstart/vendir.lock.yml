@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3189)...'
-      sha: fb3931e41e10e6a1a93cbbd45f8b4f68d577a86c
+      commitTitle: 'chore: bump mongoose from 7.4.4 to 7.5.1 (#3195)...'
+      sha: 84a766715d0e627e457b016bf9dec65be510a1e3
       tags:
-      - 0.13.55-2-gfb3931e41
+      - 0.13.56-1-g84a766715
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3189)...'
-      sha: fb3931e41e10e6a1a93cbbd45f8b4f68d577a86c
+      commitTitle: 'chore: bump mongoose from 7.4.4 to 7.5.1 (#3195)...'
+      sha: 84a766715d0e627e457b016bf9dec65be510a1e3
       tags:
-      - 0.13.55-2-gfb3931e41
+      - 0.13.56-1-g84a766715
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump deps (#3189)...'
-      sha: fb3931e41e10e6a1a93cbbd45f8b4f68d577a86c
+      commitTitle: 'chore: bump mongoose from 7.4.4 to 7.5.1 (#3195)...'
+      sha: 84a766715d0e627e457b016bf9dec65be510a1e3
       tags:
-      - 0.13.55-2-gfb3931e41
+      - 0.13.56-1-g84a766715
     path: ./
   path: ./graphql
 kind: LockConfig
