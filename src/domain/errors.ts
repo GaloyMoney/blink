@@ -60,6 +60,7 @@ export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {
   level = ErrorLevel.Critical
 }
 
+export class CouldNotFindAccountFromUuidError extends CouldNotFindError {}
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindTransactionsForAccountError extends CouldNotFindError {}
