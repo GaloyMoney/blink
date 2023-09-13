@@ -118,6 +118,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     withdrawFee,
     kratosUserId,
     displayCurrency,
+    pushNotificationSettings,
 
     role,
   }: Account): Promise<Account | RepositoryError> => {
@@ -142,6 +143,7 @@ export const AccountsRepository = (): IAccountsRepository => {
           withdrawFee,
           kratosUserId,
           displayCurrency,
+          pushNotificationSettings,
 
           role,
         },
@@ -225,6 +227,12 @@ const translateToAccount = (result: AccountRecord): Account => ({
   ),
   withdrawFee: result.withdrawFee as Satoshis,
   isEditor: result.role === "editor",
+  pushNotificationSettings:
+    result.pushNotificationSettings ||
+    ({
+      enabled: true,
+      settings: [],
+    } as PushNotificationSettings),
 
   // TODO: remove
   quizQuestions:

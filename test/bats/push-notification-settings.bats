@@ -22,7 +22,6 @@ teardown_file() {
 @test "push-notification-settings: set and get" {
   token_name="$ALICE_TOKEN_NAME"
 
-  # notification_setting="{type: \"Circles\", enabled: false, disabledSubtypes: []}"
   notification_setting=$( 
     jq -n \
     --arg type "Circles" \
@@ -34,11 +33,11 @@ teardown_file() {
   variables=$( 
       jq -n \
       --argjson notification_setting "$notification_setting" \
-      '{input: {notificationsEnabled: true, notificationSettings: [$notification_setting]}}' 
+      '{input: {enabled: true, settings: [$notification_setting]}}' 
   )
 
   exec_graphql "$token_name" 'account-update-push-notification-settings' "$variables"
 
-  wallet_id="$(graphql_output '.data.accountUpdatePushNotificationSettings.account.defaultWalletId')"
-  [[ "$wallet_id" == "1232" ]] || exit 1
+  notification_type="$(graphql_output '.data.accountUpdatePushNotificationSettings.account.pushNotificationSettings.settings[0].type')"
+  [[ "$notification_type" == "Circles" ]] || exit 1
 }

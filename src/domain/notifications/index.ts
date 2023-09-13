@@ -1,3 +1,5 @@
+import { InvalidPushNotificationSettingError } from "./errors"
+
 export * from "./errors"
 
 export const NotificationType = {
@@ -8,3 +10,44 @@ export const NotificationType = {
   OnchainPayment: "onchain_payment",
   LnInvoicePaid: "paid-invoice",
 } as const
+
+export const checkedToPushNotificationSettings = ({
+  enabled,
+  settings,
+}: {
+  enabled: boolean
+  settings: {
+    type: string
+    enabled: boolean
+    disabledSubtypes: string[]
+  }[]
+}): PushNotificationSettings | InvalidPushNotificationSettingError => {
+  const checkedSettings = settings.map(checkedToPushNotificationSetting)
+
+  const notificationTypes = checkedSettings.map((s) => s.type)
+  const uniqueTypes = [...new Set(notificationTypes)]
+  if (notificationTypes.length !== uniqueTypes.length) {
+    return new InvalidPushNotificationSettingError("Duplicate notification types")
+  }
+
+  return {
+    enabled,
+    settings: checkedSettings,
+  }
+}
+
+export const checkedToPushNotificationSetting = ({
+  type,
+  enabled,
+  disabledSubtypes,
+}: {
+  type: string
+  enabled: boolean
+  disabledSubtypes: string[]
+}): PushNotificationSetting => {
+  return {
+    type: type as PushNotificationType,
+    enabled,
+    disabledSubtypes: disabledSubtypes as PushNotificationSubType[],
+  }
+}

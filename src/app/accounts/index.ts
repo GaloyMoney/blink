@@ -21,6 +21,7 @@ export * from "./update-display-currency"
 export * from "./username-available"
 export * from "./delete-business-map-info"
 export * from "./upgrade-device-account"
+export * from "./update-push-notification-settings"
 
 const accounts = AccountsRepository()
 

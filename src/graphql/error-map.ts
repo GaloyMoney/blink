@@ -256,6 +256,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid quiz question id was passed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidPushNotificationSettingError":
+      message = "Invalid push notification setting was passed."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "RewardAlreadyPresentError":
       message = "Reward for quiz question was already claimed."
       return new ValidationInternalError({ message, logger: baseLogger })

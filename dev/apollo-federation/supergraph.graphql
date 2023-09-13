@@ -31,6 +31,7 @@ interface Account
   id: ID!
   level: AccountLevel!
   limits: AccountLimits!
+  pushNotificationSettings: PushNotificationSettings!
   realtimePrice: RealtimePrice!
   transactions(
     """Returns the items in the list that come after the specified cursor."""
@@ -123,8 +124,8 @@ type AccountUpdateDisplayCurrencyPayload
 input AccountUpdatePushNotificationSettingsInput
   @join__type(graph: PUBLIC)
 {
-  notificationSettings: [PushNotifcationSettingsInput]!
-  notificationsEnabled: Boolean!
+  enabled: Boolean!
+  settings: [PushNotificationSettingsInput]!
 }
 
 type AccountUpdatePushNotificationSettingsPayload
@@ -281,6 +282,7 @@ type ConsumerAccount implements Account
   id: ID!
   level: AccountLevel!
   limits: AccountLimits!
+  pushNotificationSettings: PushNotificationSettings!
 
   """List the quiz questions of the consumer account"""
   quiz: [Quiz!]!
@@ -1229,7 +1231,22 @@ type PublicWallet
   walletCurrency: WalletCurrency!
 }
 
-input PushNotifcationSettingsInput
+type PushNotificationSetting
+  @join__type(graph: PUBLIC)
+{
+  disabledSubtypes: [PushNotificationSubType]!
+  enabled: Boolean!
+  type: PushNotificationType!
+}
+
+type PushNotificationSettings
+  @join__type(graph: PUBLIC)
+{
+  enabled: Boolean!
+  settings: [PushNotificationSetting]!
+}
+
+input PushNotificationSettingsInput
   @join__type(graph: PUBLIC)
 {
   disabledSubtypes: [PushNotificationSubType]!

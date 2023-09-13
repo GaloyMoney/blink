@@ -32,6 +32,7 @@ import { TransactionConnection } from "../../../shared/types/object/transaction"
 import AccountLimits from "./account-limits"
 import Quiz from "./quiz"
 import CallbackEndpoint from "./callback-endpoint"
+import { PushNotificationSettings } from "./push-notification-settings"
 
 const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   name: "ConsumerAccount",
@@ -181,6 +182,11 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
           paginationArgs,
         )
       },
+    },
+
+    pushNotificationSettings: {
+      type: GT.NonNull(PushNotificationSettings),
+      resolve: (source) => source.pushNotificationSettings,
     },
   }),
 })

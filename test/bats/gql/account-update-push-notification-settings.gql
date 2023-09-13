@@ -4,7 +4,12 @@ mutation accountUpdatePushNotificationSettings($input: AccountUpdatePushNotifica
       message
     }
     account {
-      defaultWalletId
+      pushNotificationSettings {
+        enabled
+        settings {
+          type
+        }
+      }
     }
   }
 }

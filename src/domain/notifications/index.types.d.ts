@@ -73,3 +73,14 @@ interface INotificationsService {
     args: SendPushNotificationArgs,
   ): Promise<true | NotificationsServiceError>
 }
+
+type PushNotificationSettings = {
+  enabled: boolean
+  settings: PushNotificationSetting[]
+}
+
+type PushNotificationSetting = {
+  type: PushNotificationType
+  enabled: boolean
+  disabledSubtypes: PushNotificationSubType[]
+}
