@@ -202,14 +202,14 @@ const updatePendingInvoiceBeforeFinally = async ({
     if (recipientInvoiceWallet instanceof Error) return recipientInvoiceWallet
     const { accountId: recipientAccountId } = recipientInvoiceWallet
 
-    const wallets = await WalletsRepository().listByAccountId(recipientAccountId)
-    if (wallets instanceof Error) return wallets
+    const accountWallets =
+      await WalletsRepository().findAccountWalletsByAccountId(recipientAccountId)
+    if (accountWallets instanceof Error) return accountWallets
 
     const receivedWalletInvoice = await WalletInvoiceReceiver({
       walletInvoice,
       receivedBtc,
-      recipientAccountId,
-      recipientWalletDescriptorsForAccount: wallets,
+      recipientWalletDescriptors: accountWallets,
     }).withConversion({
       mid: { usdFromBtc: usdFromBtcMidPriceFn },
       hedgeBuyUsd: { usdFromBtc: dealer.getCentsFromSatsForImmediateBuy },
