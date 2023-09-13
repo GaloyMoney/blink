@@ -158,7 +158,7 @@ export const startApolloServer = async ({
 
   const secret = jwksRsa.expressJwtSecret(getJwksArgs()) as GetVerificationKey // https://github.com/auth0/express-jwt/issues/288#issuecomment-1122524366
 
-  app.use(idempotencyMiddleware)
+  app.use(idempotencyMiddleware) // TODO: only needed for public endpoint
 
   app.use(
     "/graphql",

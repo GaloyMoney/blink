@@ -14,12 +14,6 @@ import { Rule } from "graphql-shield/typings/rules"
 
 import { NextFunction, Request, Response } from "express"
 
-import {
-  ACCOUNT_USERNAME,
-  SemanticAttributes,
-  addAttributesToCurrentSpanAndPropagate,
-} from "@services/tracing"
-
 import { parseIps } from "@domain/accounts-ips"
 
 import { startApolloServerForAdminSchema } from "./graphql-admin-server"
@@ -44,19 +38,12 @@ const setGqlContext = async (
   const gqlContext = await sessionPublicContext({
     tokenPayload,
     ip,
+    userAgent: req.headers["user-agent"],
   })
 
   req.gqlContext = gqlContext
 
-  addAttributesToCurrentSpanAndPropagate(
-    {
-      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-      [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
-      [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
-      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
-    },
-    next,
-  )
+  next()
 }
 
 export async function startApolloServerForCoreSchema() {
