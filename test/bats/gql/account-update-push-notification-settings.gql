@@ -1,0 +1,10 @@
+mutation accountUpdatePushNotificationSettings($input: AccountUpdatePushNotificationSettingsInput!) {
+  accountUpdatePushNotificationSettings(input: $input) {
+    errors {
+      message
+    }
+    account {
+      defaultWalletId
+    }
+  }
+}

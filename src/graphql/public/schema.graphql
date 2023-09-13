@@ -79,6 +79,16 @@ type AccountUpdateDisplayCurrencyPayload {
   errors: [Error!]!
 }
 
+input AccountUpdatePushNotificationSettingsInput {
+  notificationSettings: [PushNotifcationSettingsInput]!
+  notificationsEnabled: Boolean!
+}
+
+type AccountUpdatePushNotificationSettingsPayload {
+  account: ConsumerAccount
+  errors: [Error!]!
+}
+
 """An Opaque Bearer token"""
 scalar AuthToken
 
@@ -622,6 +632,7 @@ type Mutation {
   accountDelete: AccountDeletePayload!
   accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload!
   accountUpdateDisplayCurrency(input: AccountUpdateDisplayCurrencyInput!): AccountUpdateDisplayCurrencyPayload!
+  accountUpdatePushNotificationSettings(input: AccountUpdatePushNotificationSettingsInput!): AccountUpdatePushNotificationSettingsPayload!
   callbackEndpointAdd(input: CallbackEndpointAddInput!): CallbackEndpointAddPayload!
   callbackEndpointDelete(input: CallbackEndpointDeleteInput!): SuccessPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
@@ -952,6 +963,16 @@ type PublicWallet {
   id: ID!
   walletCurrency: WalletCurrency!
 }
+
+input PushNotifcationSettingsInput {
+  disabledSubtypes: [PushNotificationSubType]!
+  enabled: Boolean!
+  type: PushNotificationType!
+}
+
+scalar PushNotificationSubType
+
+scalar PushNotificationType
 
 type Query {
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
