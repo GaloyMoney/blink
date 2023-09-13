@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add authorization error code to shield plugin (#3200)'
-      sha: 9f082a132d55bf79dde95fb2f47cb8dd2bdcd444
+      commitTitle: 'fix: unkown invalid account id error (#3194)...'
+      sha: be1e2e15cecc8bb13cae858b02820746ae945f1a
       tags:
-      - 0.13.59-1-g9f082a132
+      - 0.13.60-1-gbe1e2e15c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add authorization error code to shield plugin (#3200)'
-      sha: 9f082a132d55bf79dde95fb2f47cb8dd2bdcd444
+      commitTitle: 'fix: unkown invalid account id error (#3194)...'
+      sha: be1e2e15cecc8bb13cae858b02820746ae945f1a
       tags:
-      - 0.13.59-1-g9f082a132
+      - 0.13.60-1-gbe1e2e15c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: add authorization error code to shield plugin (#3200)'
-      sha: 9f082a132d55bf79dde95fb2f47cb8dd2bdcd444
+      commitTitle: 'fix: unkown invalid account id error (#3194)...'
+      sha: be1e2e15cecc8bb13cae858b02820746ae945f1a
       tags:
-      - 0.13.59-1-g9f082a132
+      - 0.13.60-1-gbe1e2e15c
     path: ./
   path: ./graphql
 kind: LockConfig
