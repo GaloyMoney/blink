@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fix typos.yaml (#3202)...'
-      sha: 0f4dc4f2f35fb2373f731acac65b0ec60342991f
+      commitTitle: 'chore: bump @opentelemetry/instrumentation from 0.42.0 to 0.43.0
+        (#3203)...'
+      sha: 2abce31ffaa1e7d2eea78c728a4df2109dd09329
       tags:
-      - 0.13.61-1-g0f4dc4f2f
+      - 0.13.62-1-g2abce31ff
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fix typos.yaml (#3202)...'
-      sha: 0f4dc4f2f35fb2373f731acac65b0ec60342991f
+      commitTitle: 'chore: bump @opentelemetry/instrumentation from 0.42.0 to 0.43.0
+        (#3203)...'
+      sha: 2abce31ffaa1e7d2eea78c728a4df2109dd09329
       tags:
-      - 0.13.61-1-g0f4dc4f2f
+      - 0.13.62-1-g2abce31ff
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: fix typos.yaml (#3202)...'
-      sha: 0f4dc4f2f35fb2373f731acac65b0ec60342991f
+      commitTitle: 'chore: bump @opentelemetry/instrumentation from 0.42.0 to 0.43.0
+        (#3203)...'
+      sha: 2abce31ffaa1e7d2eea78c728a4df2109dd09329
       tags:
-      - 0.13.61-1-g0f4dc4f2f
+      - 0.13.62-1-g2abce31ff
     path: ./
   path: ./graphql
 kind: LockConfig
