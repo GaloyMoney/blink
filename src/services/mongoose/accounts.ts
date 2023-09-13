@@ -5,6 +5,7 @@ import {
   CouldNotFindAccountError,
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
+  CouldNotFindAccountFromUuidError,
   RepositoryError,
 } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
@@ -54,7 +55,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       const result = await Account.findOne({
         id: accountUuid,
       })
-      if (!result) return new CouldNotFindAccountError()
+      if (!result) return new CouldNotFindAccountFromUuidError(accountUuid)
       return translateToAccount(result)
     } catch (err) {
       return parseRepositoryError(err)
