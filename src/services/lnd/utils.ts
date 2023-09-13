@@ -2,12 +2,7 @@ import { assert } from "console"
 
 import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE, ONE_DAY } from "@config"
 import { toSats } from "@domain/bitcoin"
-import {
-  NoValidNodeForPubkeyError,
-  OffChainServiceUnavailableError,
-  defaultTimeToExpiryInSeconds,
-} from "@domain/bitcoin/lightning"
-import { OnChainServiceUnavailableError } from "@domain/bitcoin/onchain"
+import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
 
 import {
@@ -19,13 +14,11 @@ import { baseLogger } from "@services/logger"
 import { PaymentFlowStateRepository, WalletInvoicesRepository } from "@services/mongoose"
 import { DbMetadata } from "@services/mongoose/schema"
 
-import { delayWhile, timestampDaysAgo } from "@utils"
+import { timestampDaysAgo } from "@utils"
 
 import {
-  GetChannelsResult,
   SubscribeToChannelsChannelClosedEvent,
   SubscribeToChannelsChannelOpenedEvent,
-  createInvoice,
   deleteFailedPayAttempts,
   getChainBalance,
   getChainTransactions,
@@ -35,16 +28,13 @@ import {
   getForwards,
   getPendingChainBalance,
   getWalletInfo,
-  payViaPaymentRequest,
 } from "lightning"
 import groupBy from "lodash.groupby"
 import map from "lodash.map"
 import mapValues from "lodash.mapvalues"
 import sumBy from "lodash.sumby"
 
-import { lndsConnect } from "./auth"
-
-import { LndService } from "."
+import { getActiveLnd, getLnds, offchainLnds } from "./config"
 
 export const deleteExpiredWalletInvoice = async (): Promise<number> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
@@ -352,170 +342,3 @@ export const onChannelUpdated = async ({
     baseLogger.info({ channel, fee, txid }, `${stateChange} channel fee added to ledger`)
   }
 }
-
-export const getLnds = ({
-  type,
-  active,
-}: { type?: LndNodeType; active?: boolean } = {}): LndConnect[] => {
-  let result = lndsConnect
-
-  if (type) {
-    result = result.filter((node) => node.type.some((nodeType) => nodeType === type))
-  }
-
-  if (active) {
-    result = result.filter(({ active }) => active)
-  }
-
-  return result
-}
-
-export const offchainLnds = getLnds({ type: "offchain" })
-
-// only returning the first one for now
-export const getActiveLnd = (): LndConnect | LightningServiceError => {
-  const lnds = getLnds({ active: true, type: "offchain" })
-  if (lnds.length === 0) {
-    return new OffChainServiceUnavailableError("no active lightning node (for offchain)")
-  }
-  return lnds[0]
-
-  // an alternative that would load balance would be:
-  // const index = Math.floor(Math.random() * lnds.length)
-  // return lnds[index]
-}
-
-export const getActiveOnchainLnd = (): LndConnect | OnChainServiceError => {
-  const lnds = getLnds({ active: true, type: "onchain" })
-  if (lnds.length === 0) {
-    return new OnChainServiceUnavailableError("no active lightning node (for onchain)")
-  }
-  return lnds[0]
-}
-
-export const onchainLnds = getLnds({ type: "onchain" })
-
-export const nodesPubKey = offchainLnds.map((item) => item.pubkey)
-
-export const getLndFromPubkey = ({
-  pubkey,
-}: {
-  pubkey: string
-}): AuthenticatedLnd | LightningServiceError => {
-  const lnds = getLnds({ active: true })
-  const lndParams = lnds.find(({ pubkey: nodePubKey }) => nodePubKey === pubkey)
-  return (
-    lndParams?.lnd ||
-    new NoValidNodeForPubkeyError(`lnd with pubkey:${pubkey} is offline`)
-  )
-}
-
-// A rough description of the error type we get back from the
-// 'lightning' library can be described as:
-//
-// [
-//   0: <Error Classification Code Number>
-//   1: <Error Type String>
-//   2: {
-//     err?: <Error Code Details Object>
-//     failures?: [
-//       [
-//         0: <Error Code Number>
-//         1: <Error Code Message String>
-//         2: {
-//           err?: <Error Code Details Object>
-//         }
-//       ]
-//     ]
-//   }
-// ]
-//
-// where '<Error Code Details Object>' is an Error object with
-// the usual 'message', 'stack' etc. properties and additional
-// properties: 'code', 'details', 'metadata'.
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line no-implicit-any error
-export const parseLndErrorDetails = (err) =>
-  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]
-
-export const rebalancingInternalChannels = async () => {
-  const lndService = LndService()
-  if (lndService instanceof Error) throw lndService
-
-  const lndsParamsAuth = getLnds({ type: "offchain", active: true })
-
-  if (lndsParamsAuth.length !== 2) {
-    // TODO: rebalancing algo for more than 2 internal nodes
-    baseLogger.warn("rebalancing needs 2 active internal nodes")
-    return
-  }
-
-  const selfLnd = lndsParamsAuth[0].lnd
-  const otherLnd = lndsParamsAuth[1].lnd
-  const otherPubkey = lndsParamsAuth[1].pubkey
-
-  const { channels } = await getDirectChannels({ lnd: selfLnd, otherPubkey })
-
-  if (channels.length === 0) {
-    baseLogger.warn("need at least one active channel to rebalance")
-    return
-  }
-
-  // TODO:
-  // we currently only rebalancing the biggest channel between both peers.
-
-  // we need to be able to specify the channel for when we have many direct channels
-  // but pushPayment doesn't take a channelId currently
-  const largestChannel = [channels.sort((a, b) => (a.capacity > b.capacity ? -1 : 1))[0]]
-
-  const internalChannelsHavePendingHtlcs = async () => {
-    const { channels } = await getDirectChannels({ lnd: selfLnd, otherPubkey })
-    let count = 0
-    for (const chan of channels) {
-      count += chan.pending_payments.length
-    }
-    return count === 0
-  }
-
-  for (const channel of largestChannel) {
-    const diff = channel.capacity / 2 /* half point */ - channel.local_balance
-    const amount = Math.abs(diff)
-
-    if (diff > 0) {
-      const { request } = await createInvoice({
-        lnd: selfLnd,
-        tokens: amount,
-        is_including_private_channels: true,
-      })
-
-      await payViaPaymentRequest({
-        lnd: otherLnd,
-        request,
-      })
-
-      await delayWhile({ func: internalChannelsHavePendingHtlcs, maxRetries: 10 })
-    } else if (diff < 0) {
-      const { request } = await createInvoice({
-        lnd: otherLnd,
-        tokens: amount,
-        is_including_private_channels: true,
-      })
-
-      await payViaPaymentRequest({
-        lnd: selfLnd,
-        request,
-      })
-      await delayWhile({ func: internalChannelsHavePendingHtlcs, maxRetries: 10 })
-    } else {
-      baseLogger.info("no rebalancing needed")
-    }
-  }
-}
-
-const getDirectChannels = async ({
-  lnd,
-  otherPubkey,
-}: {
-  lnd: AuthenticatedLnd
-  otherPubkey: Pubkey
-}): Promise<GetChannelsResult> => getChannels({ lnd, partner_public_key: otherPubkey })

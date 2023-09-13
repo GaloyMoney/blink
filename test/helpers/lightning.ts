@@ -3,12 +3,7 @@ import { once } from "events"
 import { Wallets } from "@app"
 
 import { WalletCurrency } from "@domain/shared"
-import {
-  offchainLnds,
-  onchainLnds,
-  onChannelUpdated,
-  updateEscrows,
-} from "@services/lnd/utils"
+import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
 
@@ -33,6 +28,8 @@ import {
 } from "lightning"
 
 import { parsePaymentRequest } from "invoices"
+
+import { offchainLnds, onchainLnds } from "@services/lnd/config"
 
 import {
   bitcoindClient,

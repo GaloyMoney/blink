@@ -18,7 +18,6 @@ import {
 } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
 import { LndService } from "@services/lnd"
-import { getLndFromPubkey } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose"
 import {
@@ -28,6 +27,7 @@ import {
   SemanticAttributes,
 } from "@services/tracing"
 import { setupMongoConnection } from "@services/mongodb"
+import { getLndFromPubkey } from "@services/lnd/config"
 
 const indexRegex = /{"offset":(\d+),"limit":\d+}/
 
