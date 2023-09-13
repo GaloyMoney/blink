@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: unkown invalid account id error (#3194)...'
-      sha: be1e2e15cecc8bb13cae858b02820746ae945f1a
+      commitTitle: 'chore: fix typos.yaml (#3202)...'
+      sha: 0f4dc4f2f35fb2373f731acac65b0ec60342991f
       tags:
-      - 0.13.60-1-gbe1e2e15c
+      - 0.13.61-1-g0f4dc4f2f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: unkown invalid account id error (#3194)...'
-      sha: be1e2e15cecc8bb13cae858b02820746ae945f1a
+      commitTitle: 'chore: fix typos.yaml (#3202)...'
+      sha: 0f4dc4f2f35fb2373f731acac65b0ec60342991f
       tags:
-      - 0.13.60-1-gbe1e2e15c
+      - 0.13.61-1-g0f4dc4f2f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: unkown invalid account id error (#3194)...'
-      sha: be1e2e15cecc8bb13cae858b02820746ae945f1a
+      commitTitle: 'chore: fix typos.yaml (#3202)...'
+      sha: 0f4dc4f2f35fb2373f731acac65b0ec60342991f
       tags:
-      - 0.13.60-1-gbe1e2e15c
+      - 0.13.61-1-g0f4dc4f2f
     path: ./
   path: ./graphql
 kind: LockConfig
