@@ -3,7 +3,8 @@ files.extend-exclude = [
   "src/domain/users/languages.ts",
   "src/services/loopd/protos",
   "docs/postman-collection/galoy_graphql_main_api.postman_collection.json",
-  "docker-compose.yml"
+  "docker-compose.yml",
+  "quickstart/*.yml"
 ]
 
 default.extend-ignore-identifiers-re = [
