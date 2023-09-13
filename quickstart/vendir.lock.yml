@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @opentelemetry/instrumentation from 0.42.0 to 0.43.0
-        (#3203)...'
-      sha: 2abce31ffaa1e7d2eea78c728a4df2109dd09329
+      commitTitle: 'chore: removing a few unintended throw (#3175)'
+      sha: 5b5ff1896c3c37efa3c1f9f8f5cc828a287edf00
       tags:
-      - 0.13.62-1-g2abce31ff
+      - 0.13.63-1-g5b5ff1896
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @opentelemetry/instrumentation from 0.42.0 to 0.43.0
-        (#3203)...'
-      sha: 2abce31ffaa1e7d2eea78c728a4df2109dd09329
+      commitTitle: 'chore: removing a few unintended throw (#3175)'
+      sha: 5b5ff1896c3c37efa3c1f9f8f5cc828a287edf00
       tags:
-      - 0.13.62-1-g2abce31ff
+      - 0.13.63-1-g5b5ff1896
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @opentelemetry/instrumentation from 0.42.0 to 0.43.0
-        (#3203)...'
-      sha: 2abce31ffaa1e7d2eea78c728a4df2109dd09329
+      commitTitle: 'chore: removing a few unintended throw (#3175)'
+      sha: 5b5ff1896c3c37efa3c1f9f8f5cc828a287edf00
       tags:
-      - 0.13.62-1-g2abce31ff
+      - 0.13.63-1-g5b5ff1896
     path: ./
   path: ./graphql
 kind: LockConfig
