@@ -11,6 +11,11 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { shield } from "graphql-shield"
 import { Rule } from "graphql-shield/typings/rules"
+import {
+  ACCOUNT_USERNAME,
+  SemanticAttributes,
+  addAttributesToCurrentSpanAndPropagate,
+} from "@services/tracing"
 
 import { NextFunction, Request, Response } from "express"
 
@@ -38,12 +43,22 @@ const setGqlContext = async (
   const gqlContext = await sessionPublicContext({
     tokenPayload,
     ip,
-    userAgent: req.headers["user-agent"],
   })
 
   req.gqlContext = gqlContext
 
-  next()
+  return addAttributesToCurrentSpanAndPropagate(
+    {
+      "token.iss": tokenPayload?.iss,
+      "token.session_id": tokenPayload?.session_id,
+      "token.expires_at": tokenPayload?.expires_at,
+      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+      [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
+      [ACCOUNT_USERNAME]: gqlContext?.domainAccount?.username,
+      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
+    },
+    next,
+  )
 }
 
 export async function startApolloServerForCoreSchema() {

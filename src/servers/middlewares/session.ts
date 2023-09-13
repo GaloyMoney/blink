@@ -1,12 +1,7 @@
 import DataLoader from "dataloader"
 
 import { Accounts, Transactions } from "@app"
-import {
-  ACCOUNT_USERNAME,
-  SemanticAttributes,
-  addAttributesToCurrentSpanAndPropagate,
-  recordExceptionInCurrentSpan,
-} from "@services/tracing"
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 import jsonwebtoken from "jsonwebtoken"
 
 import { mapError } from "@graphql/error-map"
@@ -20,11 +15,9 @@ import { UsersRepository } from "@services/mongoose"
 export const sessionPublicContext = async ({
   tokenPayload,
   ip,
-  userAgent,
 }: {
   tokenPayload: jsonwebtoken.JwtPayload
   ip: IpAddress | undefined
-  userAgent?: string | undefined
 }): Promise<GraphQLPublicContext> => {
   const logger = baseLogger.child({ tokenPayload })
 
@@ -81,22 +74,11 @@ export const sessionPublicContext = async ({
     }),
   }
 
-  return addAttributesToCurrentSpanAndPropagate(
-    {
-      "token.iss": tokenPayload?.iss,
-      "token.session_id": sessionId,
-      "token.expires_at": expiresAt,
-      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-      [SemanticAttributes.HTTP_USER_AGENT]: userAgent,
-      [ACCOUNT_USERNAME]: domainAccount?.username,
-      [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
-    },
-    () => ({
-      logger,
-      loaders,
-      user,
-      domainAccount,
-      ip,
-    }),
-  )
+  return {
+    logger,
+    loaders,
+    user,
+    domainAccount,
+    ip,
+  }
 }
