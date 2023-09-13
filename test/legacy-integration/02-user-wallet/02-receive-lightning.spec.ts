@@ -22,7 +22,6 @@ import { LedgerService } from "@services/ledger"
 import { TransactionsMetadataRepository } from "@services/ledger/services"
 import { LndService } from "@services/lnd"
 import { KnownLndErrorDetails } from "@services/lnd/errors"
-import { parseLndErrorDetails } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupInvoiceSubscribe } from "@servers/trigger"
 
@@ -30,6 +29,8 @@ import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { LedgerTransactionType } from "@domain/ledger"
 
 import { sleep } from "@utils"
+
+import { parseLndErrorDetails } from "@services/lnd/config"
 
 import {
   checkIsBalanced,

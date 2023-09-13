@@ -17,12 +17,12 @@ import {
   updateEscrows,
   updateRoutingRevenues,
 } from "@services/lnd/utils"
-import { rebalancingInternalChannels } from "@services/lnd/utils-bos"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck, checkAllLndHealth } from "@services/lnd/health"
 
 import { elapsedSinceTimestamp, sleep } from "@utils"
+import { rebalancingInternalChannels } from "@services/lnd/rebalancing"
 
 const logger = baseLogger.child({ module: "cron" })
 

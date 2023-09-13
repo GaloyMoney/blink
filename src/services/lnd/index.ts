@@ -86,7 +86,7 @@ import {
   getLndFromPubkey,
   getLnds,
   parseLndErrorDetails,
-} from "./utils"
+} from "./config"
 
 const TIMEOUT_PAYMENT = NETWORK !== "regtest" ? 45000 : 3000
 

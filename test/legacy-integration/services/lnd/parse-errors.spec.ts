@@ -1,5 +1,5 @@
 import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { getActiveLnd, parseLndErrorDetails } from "@services/lnd/utils"
+import { getActiveLnd, parseLndErrorDetails } from "@services/lnd/config"
 
 import {
   createInvoice,

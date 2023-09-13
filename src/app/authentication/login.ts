@@ -205,7 +205,7 @@ export const loginWithEmailToken = async ({
   await rewardFailedLoginAttemptPerIpLimits(ip)
 
   const res = await authServiceEmail.loginToken({ email })
-  if (res instanceof Error) throw res
+  if (res instanceof Error) return res
   return { authToken: res.authToken, totpRequired }
 }
 

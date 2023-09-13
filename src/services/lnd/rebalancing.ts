@@ -1,14 +1,15 @@
 import { baseLogger } from "@services/logger"
+
 import { delayWhile } from "@utils"
 
 import {
+  GetChannelsResult,
   createInvoice,
   getChannels,
-  GetChannelsResult,
   payViaPaymentRequest,
 } from "lightning"
 
-import { getLnds } from "./utils"
+import { getLnds } from "./config"
 
 import { LndService } from "."
 
