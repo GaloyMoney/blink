@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fix otel regression (#3208)'
-      sha: 3fedc5de865886a8c59b1bdeff10624b60edc602
+      commitTitle: 'fix: cron usd invoices processing (#3209)...'
+      sha: a9f0a26ba4194b7546ea20f43747baf1cfc8bf86
       tags:
-      - 0.13.65-1-g3fedc5de8
+      - 0.13.66-1-ga9f0a26ba
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fix otel regression (#3208)'
-      sha: 3fedc5de865886a8c59b1bdeff10624b60edc602
+      commitTitle: 'fix: cron usd invoices processing (#3209)...'
+      sha: a9f0a26ba4194b7546ea20f43747baf1cfc8bf86
       tags:
-      - 0.13.65-1-g3fedc5de8
+      - 0.13.66-1-ga9f0a26ba
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: fix otel regression (#3208)'
-      sha: 3fedc5de865886a8c59b1bdeff10624b60edc602
+      commitTitle: 'fix: cron usd invoices processing (#3209)...'
+      sha: a9f0a26ba4194b7546ea20f43747baf1cfc8bf86
       tags:
-      - 0.13.65-1-g3fedc5de8
+      - 0.13.66-1-ga9f0a26ba
     path: ./
   path: ./graphql
 kind: LockConfig
