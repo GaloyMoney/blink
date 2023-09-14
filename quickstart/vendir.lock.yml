@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: more graphql layer clean up (#3211)...'
-      sha: d050af8048a6de674c647037f84eb60e6b9b7e5d
+      commitTitle: 'test: fix random date error (#3212)...'
+      sha: fc27d2f19fc7cb7431099af58ccc1890d4cba169
       tags:
-      - 0.13.67-1-gd050af804
+      - 0.13.67-3-gfc27d2f19
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: more graphql layer clean up (#3211)...'
-      sha: d050af8048a6de674c647037f84eb60e6b9b7e5d
+      commitTitle: 'test: fix random date error (#3212)...'
+      sha: fc27d2f19fc7cb7431099af58ccc1890d4cba169
       tags:
-      - 0.13.67-1-gd050af804
+      - 0.13.67-3-gfc27d2f19
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: more graphql layer clean up (#3211)...'
-      sha: d050af8048a6de674c647037f84eb60e6b9b7e5d
+      commitTitle: 'test: fix random date error (#3212)...'
+      sha: fc27d2f19fc7cb7431099af58ccc1890d4cba169
       tags:
-      - 0.13.67-1-gd050af804
+      - 0.13.67-3-gfc27d2f19
     path: ./
   path: ./graphql
 kind: LockConfig
