@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: fix random date error (#3212)...'
-      sha: fc27d2f19fc7cb7431099af58ccc1890d4cba169
+      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.2 to 1.9.3 (#3210)...'
+      sha: 4231ba8975cc7eb48cbace737371b26d75f88e53
       tags:
-      - 0.13.67-3-gfc27d2f19
+      - 0.13.68-1-g4231ba897
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: fix random date error (#3212)...'
-      sha: fc27d2f19fc7cb7431099af58ccc1890d4cba169
+      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.2 to 1.9.3 (#3210)...'
+      sha: 4231ba8975cc7eb48cbace737371b26d75f88e53
       tags:
-      - 0.13.67-3-gfc27d2f19
+      - 0.13.68-1-g4231ba897
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: fix random date error (#3212)...'
-      sha: fc27d2f19fc7cb7431099af58ccc1890d4cba169
+      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.2 to 1.9.3 (#3210)...'
+      sha: 4231ba8975cc7eb48cbace737371b26d75f88e53
       tags:
-      - 0.13.67-3-gfc27d2f19
+      - 0.13.68-1-g4231ba897
     path: ./
   path: ./graphql
 kind: LockConfig
