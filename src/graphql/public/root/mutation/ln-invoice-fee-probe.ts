@@ -20,7 +20,7 @@ const LnInvoiceFeeProbeInput = GT.Input({
 
 const LnInvoiceFeeProbeMutation = GT.Field<
   null,
-  GraphQLPublicContext,
+  GraphQLPublicContextAuth,
   {
     input: {
       walletId: WalletId | InputValidationError

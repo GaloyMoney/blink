@@ -978,7 +978,6 @@ input OnChainPaymentSendAllInput
   address: OnChainAddress!
   memo: Memo
   speed: PayoutSpeed = FAST
-  targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -989,7 +988,6 @@ input OnChainPaymentSendInput
   amount: SatAmount!
   memo: Memo
   speed: PayoutSpeed = FAST
-  targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -997,7 +995,6 @@ type OnChainTxFee
   @join__type(graph: PUBLIC)
 {
   amount: SatAmount!
-  targetConfirmations: TargetConfirmations! @deprecated(reason: "Ignored - will be removed")
 }
 
 scalar OnChainTxHash
@@ -1021,7 +1018,6 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput
   amount: SatAmount!
   memo: Memo
   speed: PayoutSpeed = FAST
-  targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -1032,7 +1028,6 @@ input OnChainUsdPaymentSendInput
   amount: CentAmount!
   memo: Memo
   speed: PayoutSpeed = FAST
-  targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced")
   walletId: WalletId!
 }
 
@@ -1040,7 +1035,6 @@ type OnChainUsdTxFee
   @join__type(graph: PUBLIC)
 {
   amount: CentAmount!
-  targetConfirmations: TargetConfirmations! @deprecated(reason: "Ignored - will be removed")
 }
 
 type OneDayAccountLimit implements AccountLimit
@@ -1232,9 +1226,9 @@ type Query
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
   me: User
   mobileVersions: [MobileVersions]
-  onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainTxFee!
-  onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainUsdTxFee!
-  onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, targetConfirmations: TargetConfirmations = 0 @deprecated(reason: "Ignored - will be replaced"), walletId: WalletId!): OnChainUsdTxFee!
+  onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, walletId: WalletId!): OnChainTxFee!
+  onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed = FAST, walletId: WalletId!): OnChainUsdTxFee!
+  onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, walletId: WalletId!): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion] @deprecated(reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated")
 
   """Returns 1 Sat and 1 Usd Cent price for the given currency"""
@@ -1379,12 +1373,6 @@ type SuccessPayload
   errors: [Error!]!
   success: Boolean
 }
-
-"""
-(Positive) Number of blocks in which the transaction is expected to be confirmed
-"""
-scalar TargetConfirmations
-  @join__type(graph: PUBLIC)
 
 """
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)

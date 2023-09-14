@@ -16,7 +16,7 @@ const UserLogoutInput = GT.Input({
 
 const UserLogoutMutation = GT.Field<
   null,
-  GraphQLPublicContext | GraphQLAdminContext,
+  GraphQLPublicContext,
   {
     input: {
       authToken: AuthToken | InputValidationError
