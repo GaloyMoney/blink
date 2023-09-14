@@ -1,0 +1,21 @@
+extends layout
+
+block content
+    h1(id="verification-title") Enter Verification Code
+    if error
+        p.
+            #{error}
+    form(action=action, method="POST")
+        input(type="hidden", name="_csrf", value=csrfToken)
+        input(type="hidden", name="challenge", value=challenge)
+        input(type="hidden", name="email", value=email)
+        input(type="hidden", name="emailLoginId", value=emailLoginId)
+        p The code was sent to your email: #{email}. Please enter it below.
+        table(style="")
+            tr
+                td
+                    input(type="text", id="code", name="code", placeholder="Enter code here")
+                td.
+        br
+        input(type="submit", id="accept", name="submit", value="Submit")
+        input(type="submit", id="reject", name="submit", value="Deny access")
