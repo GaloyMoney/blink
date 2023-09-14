@@ -98,7 +98,7 @@ export async function startApolloServerForCoreSchema() {
   })
 }
 
-if (require.main === module) {
+if (import.meta.path === Bun.main) {
   setupMongoConnection(true)
     .then(async () => {
       activateLndHealthCheck()

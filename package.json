@@ -26,6 +26,7 @@
     "check-yaml": "prettier --check '**/*.(yaml|yml)'",
     "watch-main": ". ./.envrc && nodemon -V -e ts,graphql -w ./src --exec yarn run start-main",
     "start-main": ". ./.envrc && yarn run build && node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js",
+    "bun-main": ". ./.envrc && bun run --inspect -r ./lib/services/tracing.js ./src/servers/graphql-main-server.ts",
     "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'",
     "gen-test-jwt": "ts-node ./dev/bin/gen-test-jwt.ts"
   },

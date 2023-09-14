@@ -139,7 +139,7 @@ export async function startApolloServerForAdminSchema() {
   })
 }
 
-if (require.main === module) {
+if (import.meta.path === Bun.main) {
   setupMongoConnection()
     .then(async () => {
       activateLndHealthCheck()
