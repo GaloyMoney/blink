@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: cron usd invoices processing (#3209)...'
-      sha: a9f0a26ba4194b7546ea20f43747baf1cfc8bf86
+      commitTitle: 'chore: more graphql layer clean up (#3211)...'
+      sha: d050af8048a6de674c647037f84eb60e6b9b7e5d
       tags:
-      - 0.13.66-1-ga9f0a26ba
+      - 0.13.67-1-gd050af804
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: cron usd invoices processing (#3209)...'
-      sha: a9f0a26ba4194b7546ea20f43747baf1cfc8bf86
+      commitTitle: 'chore: more graphql layer clean up (#3211)...'
+      sha: d050af8048a6de674c647037f84eb60e6b9b7e5d
       tags:
-      - 0.13.66-1-ga9f0a26ba
+      - 0.13.67-1-gd050af804
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: cron usd invoices processing (#3209)...'
-      sha: a9f0a26ba4194b7546ea20f43747baf1cfc8bf86
+      commitTitle: 'chore: more graphql layer clean up (#3211)...'
+      sha: d050af8048a6de674c647037f84eb60e6b9b7e5d
       tags:
-      - 0.13.66-1-ga9f0a26ba
+      - 0.13.67-1-gd050af804
     path: ./
   path: ./graphql
 kind: LockConfig
