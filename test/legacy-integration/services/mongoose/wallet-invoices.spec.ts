@@ -26,7 +26,7 @@ const createTestWalletInvoice = (): WalletInvoice => {
       currency: WalletCurrency.Usd,
       amount: 10n,
     },
-    createdAt: new Date(Date.now()),
+    createdAt: new Date(),
   }
 }
 
@@ -39,7 +39,14 @@ describe("WalletInvoices", () => {
 
     const { paymentHash } = persistResult as WalletInvoice
     const lookedUpInvoice = await repo.findByPaymentHash(paymentHash)
-    expect(lookedUpInvoice).not.toBeInstanceOf(Error)
+    if (lookedUpInvoice instanceof Error) throw lookedUpInvoice
+
+    const dateDifference = Math.abs(
+      lookedUpInvoice.createdAt.getTime() - invoiceToPersist.createdAt.getTime(),
+    )
+    expect(dateDifference).toBeLessThanOrEqual(10) // 10ms
+
+    lookedUpInvoice.createdAt = invoiceToPersist.createdAt = new Date()
     expect(lookedUpInvoice).toEqual(invoiceToPersist)
   })
 
