@@ -1,26 +1,18 @@
 import { GT } from "@graphql/index"
 
 import PushNotificationType from "@graphql/shared/types/scalar/push-notification-type"
-import PushNotificationSubType from "@graphql/shared/types/scalar/push-notification-sub-type"
 import AccountUpdatePushNotificationSettingsPayload from "@graphql/public/types/payload/account-update-push-notification-settings"
 import { Accounts } from "@app/index"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
-const PushNotificationSettingsInput = GT.Input({
-  name: "PushNotificationSettingsInput",
-  fields: () => ({
-    type: { type: GT.NonNull(PushNotificationType) },
-    enabled: { type: GT.NonNull(GT.Boolean) },
-    disabledSubtypes: { type: GT.NonNull(GT.List(PushNotificationSubType)) },
-  }),
-})
-
 const AccountUpdatePushNotificationSettingsInput = GT.Input({
   name: "AccountUpdatePushNotificationSettingsInput",
   fields: () => ({
-    enabled: { type: GT.NonNull(GT.Boolean) },
-    settings: {
-      type: GT.NonNull(GT.List(PushNotificationSettingsInput)),
+    pushNotificationsEnabled: {
+      type: GT.NonNull(GT.Boolean),
+    },
+    disabledPushNotificationTypes: {
+      type: GT.NonNull(GT.List(PushNotificationType)),
     },
   }),
 })
@@ -30,12 +22,8 @@ const AccountUpdatePushNotificationSettingsMutation = GT.Field<
   GraphQLPublicContextAuth,
   {
     input: {
-      enabled: boolean
-      settings: {
-        type: string
-        enabled: boolean
-        disabledSubtypes: string[]
-      }[]
+      disabledPushNotificationTypes: string[]
+      pushNotificationsEnabled: boolean
     }
   }
 >({
@@ -47,9 +35,11 @@ const AccountUpdatePushNotificationSettingsMutation = GT.Field<
     input: { type: GT.NonNull(AccountUpdatePushNotificationSettingsInput) },
   },
   resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
+    const { disabledPushNotificationTypes, pushNotificationsEnabled } = args.input
     const result = await Accounts.updatePushNotificationSettings({
       accountId: domainAccount.id,
-      notificationSettings: args.input,
+      disabledPushNotificationTypes,
+      pushNotificationsEnabled,
     })
 
     if (result instanceof Error) {

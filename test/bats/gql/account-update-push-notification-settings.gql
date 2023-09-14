@@ -5,10 +5,8 @@ mutation accountUpdatePushNotificationSettings($input: AccountUpdatePushNotifica
     }
     account {
       pushNotificationSettings {
-        enabled
-        settings {
-          type
-        }
+        pushNotificationsEnabled
+        disabledPushNotificationTypes
       }
     }
   }

@@ -124,8 +124,8 @@ type AccountUpdateDisplayCurrencyPayload
 input AccountUpdatePushNotificationSettingsInput
   @join__type(graph: PUBLIC)
 {
-  enabled: Boolean!
-  settings: [PushNotificationSettingsInput]!
+  disabledPushNotificationTypes: [PushNotificationType]!
+  pushNotificationsEnabled: Boolean!
 }
 
 type AccountUpdatePushNotificationSettingsPayload
@@ -1231,31 +1231,12 @@ type PublicWallet
   walletCurrency: WalletCurrency!
 }
 
-type PushNotificationSetting
-  @join__type(graph: PUBLIC)
-{
-  disabledSubtypes: [PushNotificationSubType]!
-  enabled: Boolean!
-  type: PushNotificationType!
-}
-
 type PushNotificationSettings
   @join__type(graph: PUBLIC)
 {
-  enabled: Boolean!
-  settings: [PushNotificationSetting]!
+  disabledPushNotificationTypes: [PushNotificationType]!
+  pushNotificationsEnabled: Boolean!
 }
-
-input PushNotificationSettingsInput
-  @join__type(graph: PUBLIC)
-{
-  disabledSubtypes: [PushNotificationSubType]!
-  enabled: Boolean!
-  type: PushNotificationType!
-}
-
-scalar PushNotificationSubType
-  @join__type(graph: PUBLIC)
 
 scalar PushNotificationType
   @join__type(graph: PUBLIC)

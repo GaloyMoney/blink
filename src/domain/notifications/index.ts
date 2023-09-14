@@ -12,42 +12,36 @@ export const NotificationType = {
 } as const
 
 export const checkedToPushNotificationSettings = ({
-  enabled,
-  settings,
+  disabledPushNotificationTypes,
+  pushNotificationsEnabled,
 }: {
-  enabled: boolean
-  settings: {
-    type: string
-    enabled: boolean
-    disabledSubtypes: string[]
-  }[]
+  disabledPushNotificationTypes: string[]
+  pushNotificationsEnabled: boolean
 }): PushNotificationSettings | InvalidPushNotificationSettingError => {
-  const checkedSettings = settings.map(checkedToPushNotificationSetting)
+  const checkedDisabledPushNotificationTypes: PushNotificationType[] = []
 
-  const notificationTypes = checkedSettings.map((s) => s.type)
-  const uniqueTypes = [...new Set(notificationTypes)]
-  if (notificationTypes.length !== uniqueTypes.length) {
-    return new InvalidPushNotificationSettingError("Duplicate notification types")
+  for (const pushNotification of disabledPushNotificationTypes) {
+    const checkedPushNotification = checkedToPushNotificationType(pushNotification)
+    if (checkedPushNotification instanceof Error) {
+      return checkedPushNotification
+    } else {
+      checkedDisabledPushNotificationTypes.push(checkedPushNotification)
+    }
   }
 
   return {
-    enabled,
-    settings: checkedSettings,
+    pushNotificationsEnabled,
+    disabledPushNotificationTypes: checkedDisabledPushNotificationTypes,
   }
 }
 
-export const checkedToPushNotificationSetting = ({
-  type,
-  enabled,
-  disabledSubtypes,
-}: {
-  type: string
-  enabled: boolean
-  disabledSubtypes: string[]
-}): PushNotificationSetting => {
-  return {
-    type: type as PushNotificationType,
-    enabled,
-    disabledSubtypes: disabledSubtypes as PushNotificationSubType[],
+const checkedToPushNotificationType = (
+  type: string,
+): PushNotificationType | ValidationError => {
+  // TODO: add validation
+  if (!type) {
+    return new InvalidPushNotificationSettingError("Invalid notification type")
   }
+
+  return type as PushNotificationType
 }

@@ -20,24 +20,14 @@ teardown_file() {
 
 
 @test "push-notification-settings: set and get" {
-  token_name="$ALICE_TOKEN_NAME"
-
-  notification_setting=$( 
-    jq -n \
-    --arg type "Circles" \
-    --argjson enabled false \
-    --argjson disabledSubtypes "[]" \
-    '{type: $type, enabled: $enabled, disabledSubtypes: $disabledSubtypes}' 
-  ) 
+  token_name="$ALICE_TOKEN_NAME" 
 
   variables=$( 
       jq -n \
-      --argjson notification_setting "$notification_setting" \
-      '{input: {enabled: true, settings: [$notification_setting]}}' 
-  )
+      '{input: { pushNotificationsEnabled: true, disabledPushNotificationTypes: [ "Circles" ] }}')
 
   exec_graphql "$token_name" 'account-update-push-notification-settings' "$variables"
 
-  notification_type="$(graphql_output '.data.accountUpdatePushNotificationSettings.account.pushNotificationSettings.settings[0].type')"
-  [[ "$notification_type" == "Circles" ]] || exit 1
+  disabled_notification="$(graphql_output '.data.accountUpdatePushNotificationSettings.account.pushNotificationSettings.disabledPushNotificationTypes[0]')"
+  [[ "$disabled_notification" == "Circles" ]] || exit 1
 }

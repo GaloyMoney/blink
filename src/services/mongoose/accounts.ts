@@ -230,8 +230,8 @@ const translateToAccount = (result: AccountRecord): Account => ({
   pushNotificationSettings:
     result.pushNotificationSettings ||
     ({
-      enabled: true,
-      settings: [],
+      pushNotificationsEnabled: true,
+      disabledPushNotificationTypes: [],
     } as PushNotificationSettings),
 
   // TODO: remove

@@ -261,28 +261,13 @@ const AccountSchema = new Schema<AccountRecord>(
     },
     pushNotificationSettings: {
       type: {
-        enabled: {
+        pushNotificationsEnabled: {
           type: Boolean,
           default: true,
         },
-        settings: {
-          type: [
-            {
-              type: {
-                type: String,
-                required: true,
-              },
-              enabled: {
-                type: Boolean,
-                required: true,
-              },
-              disabledSubtypes: {
-                type: [String],
-                required: true,
-                default: [],
-              },
-            },
-          ],
+        disabledPushNotificationTypes: {
+          type: [String],
+          required: true,
           default: [],
         },
       },

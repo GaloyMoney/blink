@@ -4,20 +4,17 @@ import { AccountsRepository } from "@services/mongoose"
 
 export const updatePushNotificationSettings = async ({
   accountId,
-  notificationSettings,
+  pushNotificationsEnabled,
+  disabledPushNotificationTypes,
 }: {
   accountId: AccountId
-  notificationSettings: {
-    enabled: boolean
-    settings: {
-      type: string
-      enabled: boolean
-      disabledSubtypes: string[]
-    }[]
-  }
+  pushNotificationsEnabled: boolean
+  disabledPushNotificationTypes: string[]
 }): Promise<Account | ApplicationError> => {
-  const checkedPushNotificationSettings =
-    checkedToPushNotificationSettings(notificationSettings)
+  const checkedPushNotificationSettings = checkedToPushNotificationSettings({
+    disabledPushNotificationTypes,
+    pushNotificationsEnabled,
+  })
 
   if (checkedPushNotificationSettings instanceof Error)
     return checkedPushNotificationSettings

@@ -75,12 +75,6 @@ interface INotificationsService {
 }
 
 type PushNotificationSettings = {
-  enabled: boolean
-  settings: PushNotificationSetting[]
-}
-
-type PushNotificationSetting = {
-  type: PushNotificationType
-  enabled: boolean
-  disabledSubtypes: PushNotificationSubType[]
+  pushNotificationsEnabled: boolean
+  disabledPushNotificationTypes: PushNotificationType[]
 }
