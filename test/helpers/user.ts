@@ -404,7 +404,8 @@ export const fundWallet = async ({
     (async () => {
       // TODO: we could use event instead of a sleep to lower test latency
       await sleep(500)
-      return updateInvoice()
+      const res = await updateInvoice()
+      if (res instanceof Error) throw res
     })(),
   ])
   {
