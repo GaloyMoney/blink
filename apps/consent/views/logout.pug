@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    h1 Do you wish to log out?
+    if error
+        p.
+            #{error}
+    form(action=action,method="POST")
+        input(type="hidden",name="_csrf",value=csrfToken)
+        input(type="hidden",name="challenge",value=challenge)
+        input(type="submit",id="accept",value="Yes")
+        input(type="submit",id="reject",value="No")

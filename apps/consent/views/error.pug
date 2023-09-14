@@ -1,0 +1,7 @@
+extends layout
+
+block content
+  h1= message
+  
+  if error
+    pre #{error.stack}
