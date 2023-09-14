@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: properly handle null walletIds (#2998)'
-      sha: 3c1df34e4f1bc41c80ea88b56c488f338cf7ef77
+      commitTitle: 'chore: fix otel regression (#3208)'
+      sha: 3fedc5de865886a8c59b1bdeff10624b60edc602
       tags:
-      - 0.13.64-1-g3c1df34e4
+      - 0.13.65-1-g3fedc5de8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: properly handle null walletIds (#2998)'
-      sha: 3c1df34e4f1bc41c80ea88b56c488f338cf7ef77
+      commitTitle: 'chore: fix otel regression (#3208)'
+      sha: 3fedc5de865886a8c59b1bdeff10624b60edc602
       tags:
-      - 0.13.64-1-g3c1df34e4
+      - 0.13.65-1-g3fedc5de8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: properly handle null walletIds (#2998)'
-      sha: 3c1df34e4f1bc41c80ea88b56c488f338cf7ef77
+      commitTitle: 'chore: fix otel regression (#3208)'
+      sha: 3fedc5de865886a8c59b1bdeff10624b60edc602
       tags:
-      - 0.13.64-1-g3c1df34e4
+      - 0.13.65-1-g3fedc5de8
     path: ./
   path: ./graphql
 kind: LockConfig
