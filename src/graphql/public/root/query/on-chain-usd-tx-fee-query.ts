@@ -8,14 +8,13 @@ import { mapError } from "@graphql/error-map"
 import CentAmount from "@graphql/public/types/scalar/cent-amount"
 import OnChainAddress from "@graphql/shared/types/scalar/on-chain-address"
 import PayoutSpeed from "@graphql/public/types/scalar/payout-speed"
-import TargetConfirmations from "@graphql/public/types/scalar/target-confirmations"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
 
 import OnChainUsdTxFee from "@graphql/public/types/object/onchain-usd-tx-fee"
 
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
 
-const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContext>({
+const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
   type: GT.NonNull(OnChainUsdTxFee),
   args: {
     walletId: { type: GT.NonNull(WalletId) },
@@ -24,11 +23,6 @@ const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContext>({
     speed: {
       type: PayoutSpeed,
       defaultValue: DomainPayoutSpeed.Fast,
-    },
-    targetConfirmations: {
-      deprecationReason: "Ignored - will be replaced",
-      type: TargetConfirmations,
-      defaultValue: 0,
     },
   },
   resolve: async (_, args, { domainAccount }) => {
@@ -49,7 +43,6 @@ const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContext>({
 
     return {
       amount: normalizePaymentAmount(fee).amount,
-      targetConfirmations: 0,
     }
   },
 })

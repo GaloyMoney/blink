@@ -9,17 +9,17 @@ import { InvalidWalletId } from "@domain/errors"
 type InputArgs = Record<"input", Record<string, unknown>>
 
 const validateWalletId = async (
-  resolve: GraphQLFieldResolver<unknown, GraphQLPublicContext | GraphQLPublicContextAuth>,
+  resolve: GraphQLFieldResolver<unknown, GraphQLPublicContextAuth>,
   parent: unknown,
   args: unknown,
-  context: GraphQLPublicContext | GraphQLPublicContextAuth,
+  context: GraphQLPublicContextAuth,
   info: GraphQLResolveInfo,
 ) => {
   const { walletId } = (args as InputArgs).input || args || {}
   if (!walletId) return mapError(new InvalidWalletId())
   if (walletId instanceof Error) return walletId
 
-  if (!context.domainAccount) {
+  if (!("domainAccount" in context) || !context.domainAccount) {
     return mapError(new InvalidAccountError())
   }
 
@@ -36,10 +36,10 @@ const validateWalletId = async (
 }
 
 const validateWalletIdQuery = async (
-  resolve: GraphQLFieldResolver<unknown, GraphQLPublicContext | GraphQLPublicContextAuth>,
+  resolve: GraphQLFieldResolver<unknown, GraphQLPublicContextAuth>,
   parent: unknown,
   args: unknown,
-  context: GraphQLPublicContext | GraphQLPublicContextAuth,
+  context: GraphQLPublicContextAuth,
   info: GraphQLResolveInfo,
 ) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
@@ -48,10 +48,10 @@ const validateWalletIdQuery = async (
 }
 
 const validateWalletIdMutation = async (
-  resolve: GraphQLFieldResolver<unknown, GraphQLPublicContext | GraphQLPublicContextAuth>,
+  resolve: GraphQLFieldResolver<unknown, GraphQLPublicContextAuth>,
   parent: unknown,
   args: unknown,
-  context: GraphQLPublicContext | GraphQLPublicContextAuth,
+  context: GraphQLPublicContextAuth,
   info: GraphQLResolveInfo,
 ) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
@@ -61,10 +61,10 @@ const validateWalletIdMutation = async (
 
 // Placed here because 'GraphQLFieldResolver' not working from .d.ts file
 type ValidateWalletIdFn = (
-  resolve: GraphQLFieldResolver<unknown, GraphQLPublicContext | GraphQLPublicContextAuth>,
+  resolve: GraphQLFieldResolver<unknown, GraphQLPublicContextAuth>,
   parent: unknown,
   args: unknown,
-  context: GraphQLPublicContext | GraphQLPublicContextAuth,
+  context: GraphQLPublicContextAuth,
   info: GraphQLResolveInfo,
 ) => Promise<unknown>
 

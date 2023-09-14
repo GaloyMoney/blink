@@ -6,7 +6,6 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import OnChainAddress from "@graphql/shared/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/public/types/payload/payment-send"
 import PayoutSpeed from "@graphql/public/types/scalar/payout-speed"
-import TargetConfirmations from "@graphql/public/types/scalar/target-confirmations"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
 
 import { Wallets } from "@app"
@@ -21,11 +20,6 @@ const OnChainPaymentSendAllInput = GT.Input({
       defaultValue: DomainPayoutSpeed.Fast,
     },
     memo: { type: Memo },
-    targetConfirmations: {
-      deprecationReason: "Ignored - will be replaced",
-      type: TargetConfirmations,
-      defaultValue: 0,
-    },
   }),
 })
 

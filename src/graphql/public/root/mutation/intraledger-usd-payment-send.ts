@@ -18,7 +18,7 @@ const IntraLedgerUsdPaymentSendInput = GT.Input({
   }),
 })
 
-const IntraLedgerUsdPaymentSendMutation = GT.Field({
+const IntraLedgerUsdPaymentSendMutation = GT.Field<null, GraphQLPublicContextAuth>({
   extensions: {
     complexity: 120,
   },
