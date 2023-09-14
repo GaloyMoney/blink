@@ -81,6 +81,7 @@ type WalletInvoice = {
   usdAmount?: UsdPaymentAmount
   recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
   paid: boolean
+  createdAt: Date
 }
 
 type WalletAddress<S extends WalletCurrency> = {
@@ -151,8 +152,12 @@ type WalletInvoiceValidator = {
   validateToSend(fromWalletId: WalletId): true | ValidationError
 }
 
+type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt">
+
 interface IWalletInvoicesRepository {
-  persistNew: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
+  persistNew: (
+    invoice: WalletInvoicesPersistNewArgs,
+  ) => Promise<WalletInvoice | RepositoryError>
 
   markAsPaid: (paymentHash: PaymentHash) => Promise<WalletInvoice | RepositoryError>
 
