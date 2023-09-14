@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removing a few unintended throw (#3175)'
-      sha: 5b5ff1896c3c37efa3c1f9f8f5cc828a287edf00
+      commitTitle: 'fix: properly handle null walletIds (#2998)'
+      sha: 3c1df34e4f1bc41c80ea88b56c488f338cf7ef77
       tags:
-      - 0.13.63-1-g5b5ff1896
+      - 0.13.64-1-g3c1df34e4
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removing a few unintended throw (#3175)'
-      sha: 5b5ff1896c3c37efa3c1f9f8f5cc828a287edf00
+      commitTitle: 'fix: properly handle null walletIds (#2998)'
+      sha: 3c1df34e4f1bc41c80ea88b56c488f338cf7ef77
       tags:
-      - 0.13.63-1-g5b5ff1896
+      - 0.13.64-1-g3c1df34e4
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: removing a few unintended throw (#3175)'
-      sha: 5b5ff1896c3c37efa3c1f9f8f5cc828a287edf00
+      commitTitle: 'fix: properly handle null walletIds (#2998)'
+      sha: 3c1df34e4f1bc41c80ea88b56c488f338cf7ef77
       tags:
-      - 0.13.63-1-g5b5ff1896
+      - 0.13.64-1-g3c1df34e4
     path: ./
   path: ./graphql
 kind: LockConfig
