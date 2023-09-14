@@ -43,7 +43,6 @@ const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
 
     return {
       amount: normalizePaymentAmount(fee).amount,
-      targetConfirmations: 0,
     }
   },
 })

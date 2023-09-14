@@ -43,7 +43,6 @@ const OnChainUsdTxFeeAsBtcDenominatedQuery = GT.Field<null, GraphQLPublicContext
 
     return {
       amount: normalizePaymentAmount(fee).amount,
-      targetConfirmations: 0,
     }
   },
 })
