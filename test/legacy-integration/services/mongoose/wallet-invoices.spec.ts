@@ -26,6 +26,7 @@ const createTestWalletInvoice = (): WalletInvoice => {
       currency: WalletCurrency.Usd,
       amount: 10n,
     },
+    createdAt: new Date(Date.now()),
   }
 }
 

@@ -130,6 +130,7 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
       usdAmount: state.usdAmount,
       recipientWalletDescriptor: state.recipientWalletDescriptor,
       paid: false,
+      createdAt: new Date(Date.now()),
     }
     return {
       walletInvoice,

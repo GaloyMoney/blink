@@ -8,7 +8,10 @@ import {
 } from "@domain/errors"
 import { checkedToSats } from "@domain/bitcoin"
 import { DisplayAmountsConverter } from "@domain/fiat"
-import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
+import {
+  InvoiceNotFoundError,
+  invoiceExpirationForCurrency,
+} from "@domain/bitcoin/lightning"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
@@ -56,13 +59,21 @@ export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
     processor: async (walletInvoice: WalletInvoice, index: number) => {
       logger.trace("updating pending invoices %s in worker %d", index)
 
-      walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
-        ? await updatePendingInvoice({ walletInvoice, logger })
-        : await declineHeldInvoice({
-            pubkey: walletInvoice.pubkey,
-            paymentHash: walletInvoice.paymentHash,
-            logger,
-          })
+      const { pubkey, paymentHash, recipientWalletDescriptor, createdAt } = walletInvoice
+      const expiresIn = invoiceExpirationForCurrency(
+        recipientWalletDescriptor.currency,
+        createdAt,
+      )
+
+      if (
+        recipientWalletDescriptor.currency === WalletCurrency.Btc ||
+        expiresIn.getTime() <= Date.now()
+      ) {
+        await updatePendingInvoice({ walletInvoice, logger })
+        return
+      }
+
+      await declineHeldInvoice({ pubkey, paymentHash, logger })
     },
   })
 
