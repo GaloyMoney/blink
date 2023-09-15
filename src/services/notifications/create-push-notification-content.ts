@@ -3,6 +3,10 @@ import { getI18nInstance } from "@config"
 import { getCurrencyMajorExponent, MajorExponent } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { getLanguageOrDefault } from "@domain/locale"
+import {
+  GaloyPushNotifications,
+  mapNotificationTypeToPushNotificationType,
+} from "@domain/notifications"
 
 const i18n = getI18nInstance()
 
@@ -33,6 +37,7 @@ export const createPushNotificationContent = <T extends DisplayCurrency>({
 }): {
   title: string
   body: string
+  pushNotificationType: PushNotificationType
 } => {
   const locale = getLanguageOrDefault(userLanguage)
   const baseCurrency = amount.currency
@@ -87,5 +92,10 @@ export const createPushNotificationContent = <T extends DisplayCurrency>({
     )
   }
 
-  return { title, body }
+  const pushNotificationType =
+    type === "balance"
+      ? GaloyPushNotifications.Balance
+      : mapNotificationTypeToPushNotificationType(type)
+
+  return { title, body, pushNotificationType }
 }

@@ -35,6 +35,25 @@ export const checkedToPushNotificationSettings = ({
   }
 }
 
+export const GaloyPushNotifications = {
+  Payments: "Payments" as PushNotificationType,
+  Balance: "Balance" as PushNotificationType,
+} as const
+
+export const mapNotificationTypeToPushNotificationType = (
+  notificationType: NotificationType,
+): PushNotificationType => {
+  switch (notificationType) {
+    case NotificationType.IntraLedgerReceipt:
+    case NotificationType.IntraLedgerPayment:
+    case NotificationType.OnchainReceipt:
+    case NotificationType.OnchainReceiptPending:
+    case NotificationType.LnInvoicePaid:
+    case NotificationType.OnchainPayment:
+      return GaloyPushNotifications.Payments
+  }
+}
+
 const checkedToPushNotificationType = (
   type: string,
 ): PushNotificationType | ValidationError => {
@@ -44,4 +63,20 @@ const checkedToPushNotificationType = (
   }
 
   return type as PushNotificationType
+}
+
+export const shouldSendPushNotification = ({
+  pushNotificationSettings,
+  pushNotificationType,
+}: {
+  pushNotificationSettings: PushNotificationSettings
+  pushNotificationType: PushNotificationType
+}): boolean => {
+  if (pushNotificationSettings.pushNotificationsEnabled) {
+    return !pushNotificationSettings.disabledPushNotificationTypes.includes(
+      pushNotificationType,
+    )
+  }
+
+  return false
 }

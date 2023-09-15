@@ -72,6 +72,9 @@ interface INotificationsService {
   adminPushNotificationSend(
     args: SendPushNotificationArgs,
   ): Promise<true | NotificationsServiceError>
+  adminPushNotificationFilteredSend(
+    args: SendFilteredPushNotificationArgs,
+  ): Promise<true | NotificationsServiceError>
 }
 
 type PushNotificationSettings = {

@@ -3,8 +3,10 @@ import * as admin from "firebase-admin"
 import {
   DeviceTokensNotRegisteredNotificationsServiceError,
   InvalidDeviceNotificationsServiceError,
+  NotificationsServiceError,
   NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
+  shouldSendPushNotification,
 } from "@domain/notifications"
 import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
 import { baseLogger } from "@services/logger"
@@ -112,7 +114,43 @@ export const PushNotificationsService = (): IPushNotificationsService => {
     })()
   }
 
-  return { sendNotification }
+  const sendFilteredNotification = async (args: SendFilteredPushNotificationArgs) => {
+    const {
+      pushNotificationSettings,
+      pushNotificationType,
+      data,
+      ...sendNotificationArgs
+    } = args
+
+    if (
+      !shouldSendPushNotification({
+        pushNotificationSettings,
+        pushNotificationType,
+      })
+    ) {
+      return {
+        status: SendFilteredPushNotificationStatus.Filtered,
+      }
+    }
+
+    const result = await sendNotification({
+      ...sendNotificationArgs,
+      data: {
+        ...data,
+        PushNotificationType: pushNotificationType,
+      },
+    })
+
+    if (result instanceof NotificationsServiceError) {
+      return result
+    }
+
+    return {
+      status: SendFilteredPushNotificationStatus.Sent,
+    }
+  }
+
+  return { sendNotification, sendFilteredNotification }
 }
 
 export const handleCommonNotificationErrors = (err: Error | string | unknown) => {
@@ -134,3 +172,8 @@ export const KnownNotificationErrorMessages = {
   GoogleBadGatewayError: /Raw server response .* Error 502/,
   GoogleInternalServerError: /Raw server response .* Error 500/,
 } as const
+
+export const SendFilteredPushNotificationStatus = {
+  Sent: "Sent",
+  Filtered: "Filtered",
+}
