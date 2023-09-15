@@ -15,11 +15,11 @@ import {
 
 import { sat2btc, toSats } from "@domain/bitcoin"
 import {
-  DisplayCurrency,
   getCurrencyMajorExponent,
   displayAmountFromNumber,
   toCents,
   DisplayAmountsConverter,
+  UsdDisplayCurrency,
 } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
@@ -291,7 +291,7 @@ describe("With Bria", () => {
       displayAmount: centsAmount - centsFee,
       displayFee: centsFee,
 
-      displayCurrency: DisplayCurrency.Usd,
+      displayCurrency: UsdDisplayCurrency,
     }
     expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
 
@@ -513,7 +513,7 @@ describe("With Bria", () => {
 
       const displayAmountForMajor = displayAmountFromNumber({
         amount: displayAmountRaw || 0,
-        currency: displayCurrency || DisplayCurrency.Usd,
+        currency: displayCurrency || UsdDisplayCurrency,
       })
       if (displayAmountForMajor instanceof Error) throw displayAmountForMajor
 
@@ -643,7 +643,7 @@ describe("With Bria", () => {
       if (wallet instanceof Error) throw wallet
 
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-        currency: WalletCurrency.Usd,
+        currency: UsdDisplayCurrency,
       })
       if (walletPriceRatio instanceof Error) throw walletPriceRatio
       const satsAmount = walletPriceRatio.convertFromUsd({
@@ -667,7 +667,7 @@ describe("With Bria", () => {
       if (wallet instanceof Error) throw wallet
 
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-        currency: WalletCurrency.Usd,
+        currency: UsdDisplayCurrency,
       })
       if (walletPriceRatio instanceof Error) throw walletPriceRatio
       const satsAmount = walletPriceRatio.convertFromUsd({
@@ -1089,7 +1089,7 @@ describe("With Lnd", () => {
       displayAmount: centsAmount - centsFee,
       displayFee: centsFee,
 
-      displayCurrency: DisplayCurrency.Usd,
+      displayCurrency: UsdDisplayCurrency,
     }
     expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
 
@@ -1401,7 +1401,7 @@ describe("With Lnd", () => {
 
       const displayAmountForMajor = displayAmountFromNumber({
         amount: displayAmountRaw || 0,
-        currency: displayCurrency || DisplayCurrency.Usd,
+        currency: displayCurrency || UsdDisplayCurrency,
       })
       if (displayAmountForMajor instanceof Error) throw displayAmountForMajor
 
@@ -1482,7 +1482,7 @@ describe("With Lnd", () => {
       const walletIdG = await getDefaultWalletIdByPhone(phoneG)
 
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-        currency: WalletCurrency.Usd,
+        currency: UsdDisplayCurrency,
       })
       if (walletPriceRatio instanceof Error) throw walletPriceRatio
       const satsAmount = walletPriceRatio.convertFromUsd({
@@ -1507,7 +1507,7 @@ describe("With Lnd", () => {
       const walletId = await getDefaultWalletIdByPhone(phoneF)
 
       const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-        currency: WalletCurrency.Usd,
+        currency: UsdDisplayCurrency,
       })
       if (walletPriceRatio instanceof Error) throw walletPriceRatio
       const satsAmount = walletPriceRatio.convertFromUsd({

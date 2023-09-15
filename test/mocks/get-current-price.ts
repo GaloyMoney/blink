@@ -53,7 +53,7 @@ export const getCurrentPriceAsWalletPriceRatio = async ({
   return toWalletPriceRatio(price.price * 10 ** exponent)
 }
 
-export const getCurrentPriceAsDisplayPriceRatio = async <T extends WalletCurrency>({
+export const getCurrentPriceAsDisplayPriceRatio = async <T extends DisplayCurrency>({
   currency,
 }: GetCurrentSatPriceArgs): Promise<DisplayPriceRatio<"BTC", T> | PriceServiceError> => {
   const price = await getCurrentSatPrice({ currency })

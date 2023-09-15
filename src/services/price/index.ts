@@ -12,7 +12,7 @@ import { SATS_PER_BTC } from "@domain/bitcoin"
 
 import { WalletCurrency } from "@domain/shared"
 
-import { CENTS_PER_USD, DisplayCurrency } from "@domain/fiat"
+import { CENTS_PER_USD, UsdDisplayCurrency } from "@domain/fiat"
 
 import { PRICE_HISTORY_HOST, PRICE_HISTORY_PORT, PRICE_HOST, PRICE_PORT } from "@config"
 
@@ -69,7 +69,7 @@ export const PriceService = (): IPriceService => {
     try {
       if (walletCurrency === displayCurrency) {
         const offset =
-          displayCurrency === DisplayCurrency.Usd ? CENTS_PER_USD : SATS_PER_BTC
+          displayCurrency === UsdDisplayCurrency ? CENTS_PER_USD : SATS_PER_BTC
         return {
           timestamp: new Date(),
           price: 1 / offset,
@@ -83,7 +83,9 @@ export const PriceService = (): IPriceService => {
 
       let displayCurrencyPrice = price / SATS_PER_BTC
       if (walletCurrency === WalletCurrency.Usd) {
-        const { price: usdBtcPrice } = await getPrice({ currency: DisplayCurrency.Usd })
+        const { price: usdBtcPrice } = await getPrice({
+          currency: UsdDisplayCurrency,
+        })
         if (!usdBtcPrice) return new PriceNotAvailableError()
 
         displayCurrencyPrice = price / usdBtcPrice / CENTS_PER_USD

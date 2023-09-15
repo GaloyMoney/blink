@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency, displayAmountFromNumber, toCents } from "@domain/fiat"
+import { UsdDisplayCurrency, displayAmountFromNumber, toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
 
@@ -93,7 +93,7 @@ describe("SettlementAmounts", () => {
 
           const expectedDisplayAmountForDebitObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
-            currency: txnDebit.displayCurrency || DisplayCurrency.Usd,
+            currency: txnDebit.displayCurrency || UsdDisplayCurrency,
           })
           if (expectedDisplayAmountForDebitObj instanceof Error) {
             throw expectedDisplayAmountForDebitObj
@@ -128,7 +128,7 @@ describe("SettlementAmounts", () => {
 
           const expectedDisplayAmountForCreditObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
-            currency: txnCredit.displayCurrency || DisplayCurrency.Usd,
+            currency: txnCredit.displayCurrency || UsdDisplayCurrency,
           })
           if (expectedDisplayAmountForCreditObj instanceof Error) {
             throw expectedDisplayAmountForCreditObj
@@ -171,7 +171,7 @@ describe("SettlementAmounts", () => {
 
           const expectedDisplayAmountForDebitObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
-            currency: txnDebit.displayCurrency || DisplayCurrency.Usd,
+            currency: txnDebit.displayCurrency || UsdDisplayCurrency,
           })
           if (expectedDisplayAmountForDebitObj instanceof Error) {
             throw expectedDisplayAmountForDebitObj
@@ -206,7 +206,7 @@ describe("SettlementAmounts", () => {
 
           const expectedDisplayAmountForCreditObj = displayAmountFromNumber({
             amount: expectedDisplayAmount,
-            currency: txnCredit.displayCurrency || DisplayCurrency.Usd,
+            currency: txnCredit.displayCurrency || UsdDisplayCurrency,
           })
           if (expectedDisplayAmountForCreditObj instanceof Error) {
             throw expectedDisplayAmountForCreditObj

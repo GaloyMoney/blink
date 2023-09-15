@@ -2,7 +2,7 @@ import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 
 import { toSats } from "@domain/bitcoin"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
 import * as serviceLedger from "@services/ledger"
 import {
@@ -45,7 +45,7 @@ const crcDisplayPaymentAmount = {
 
 beforeAll(async () => {
   const usdDisplayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-    currency: DisplayCurrency.Usd,
+    currency: UsdDisplayCurrency,
   })
   if (usdDisplayPriceRatio instanceof Error) throw usdDisplayPriceRatio
 
@@ -154,7 +154,7 @@ describe("notification", () => {
           displayPaymentAmount = displayAmount
         } else {
           const walletPriceRatio = await getCurrentPriceAsWalletPriceRatio({
-            currency: WalletCurrency.Usd,
+            currency: UsdDisplayCurrency,
           })
           if (walletPriceRatio instanceof Error) throw walletPriceRatio
           const btcBalanceAmount = walletPriceRatio.convertFromUsd(

@@ -1,10 +1,10 @@
 import { NotificationType } from "@domain/notifications"
 import { WalletCurrency } from "@domain/shared"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 
 const usdDisplayPaymentAmount = {
   amountInMinor: 500n,
-  currency: DisplayCurrency.Usd,
+  currency: UsdDisplayCurrency,
   displayInMajor: "5.00",
 }
 

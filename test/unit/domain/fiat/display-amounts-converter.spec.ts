@@ -1,4 +1,4 @@
-import { DisplayAmountsConverter, DisplayCurrency } from "@domain/fiat"
+import { DisplayAmountsConverter, UsdDisplayCurrency } from "@domain/fiat"
 
 import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
 import { DisplayPriceRatio } from "@domain/payments"
@@ -54,7 +54,7 @@ describe("DisplayAmountsConverter", () => {
   }
 
   const expectedResultForUsd = () => {
-    const expectedResult = expectedResultForCurrency(DisplayCurrency.Usd)
+    const expectedResult = expectedResultForCurrency(UsdDisplayCurrency)
     return {
       ...expectedResult,
       displayAmount: {
@@ -103,7 +103,7 @@ describe("DisplayAmountsConverter", () => {
   })
 
   describe("usd display currency", () => {
-    const currency = DisplayCurrency.Usd
+    const currency = UsdDisplayCurrency
 
     const displayUsdPriceRatio = DisplayPriceRatio({
       displayAmount: { ...displayQuoteAmount, currency },

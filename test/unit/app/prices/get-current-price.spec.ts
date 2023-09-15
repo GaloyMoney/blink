@@ -1,5 +1,5 @@
 import { CacheKeys } from "@domain/cache"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 import { PriceNotAvailableError } from "@domain/price"
 
 import * as PriceServiceImpl from "@services/price"
@@ -33,7 +33,7 @@ describe("Prices", () => {
             Promise.resolve({
               timestamp: new Date(),
               price: 0.05,
-              currency: DisplayCurrency.Usd,
+              currency: UsdDisplayCurrency,
             }),
           listCurrencies: jest.fn(),
         }))
@@ -44,11 +44,11 @@ describe("Prices", () => {
           listCurrencies: jest.fn(),
         }))
 
-      let satPrice = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      let satPrice = await getCurrentSatPrice({ currency: UsdDisplayCurrency })
       if (satPrice instanceof Error) throw satPrice
       expect(satPrice.price).toEqual(0.05)
 
-      satPrice = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      satPrice = await getCurrentSatPrice({ currency: UsdDisplayCurrency })
       if (satPrice instanceof Error) throw satPrice
       expect(satPrice.price).toEqual(0.05)
     })
@@ -61,7 +61,7 @@ describe("Prices", () => {
         listCurrencies: jest.fn(),
       }))
 
-      const price = await getCurrentSatPrice({ currency: DisplayCurrency.Usd })
+      const price = await getCurrentSatPrice({ currency: UsdDisplayCurrency })
       expect(price).toBeInstanceOf(PriceNotAvailableError)
     })
   })

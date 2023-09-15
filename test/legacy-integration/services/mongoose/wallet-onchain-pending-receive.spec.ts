@@ -1,4 +1,4 @@
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import {
   CouldNotFindWalletOnChainPendingReceiveError,
@@ -39,18 +39,18 @@ describe("WalletOnChainPendingReceiveRepository", () => {
     settlementCurrency: WalletCurrency.Btc,
     settlementDisplayAmount: {
       amountInMinor: 100n,
-      currency: DisplayCurrency.Usd,
+      currency: UsdDisplayCurrency,
       displayInMajor: "1.00",
     },
     settlementDisplayFee: {
       amountInMinor: 2n,
-      currency: DisplayCurrency.Usd,
+      currency: UsdDisplayCurrency,
       displayInMajor: "0.02",
     },
     settlementDisplayPrice: {
       base: 27454545454n,
       offset: 12n,
-      displayCurrency: DisplayCurrency.Usd,
+      displayCurrency: UsdDisplayCurrency,
       walletCurrency: WalletCurrency.Btc,
     },
     createdAt: new Date(),

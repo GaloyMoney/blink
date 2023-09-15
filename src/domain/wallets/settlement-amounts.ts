@@ -1,9 +1,9 @@
 import { toSats } from "@domain/bitcoin"
 import {
-  DisplayCurrency,
   getCurrencyMajorExponent,
   displayAmountFromNumber,
   toCents,
+  UsdDisplayCurrency,
 } from "@domain/fiat"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 
@@ -22,7 +22,7 @@ export const SettlementAmounts = () => {
     // ======
 
     const { debit, credit, currency, displayCurrency: displayCurrencyRaw } = txn
-    const displayCurrency = displayCurrencyRaw || DisplayCurrency.Usd
+    const displayCurrency = displayCurrencyRaw || UsdDisplayCurrency
     const settlementAmount =
       currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
 

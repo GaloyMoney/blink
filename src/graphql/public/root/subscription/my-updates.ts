@@ -2,9 +2,9 @@ import { Prices } from "@app"
 
 import {
   majorToMinorUnit,
-  DisplayCurrency,
   SAT_PRICE_PRECISION_OFFSET,
   USD_PRICE_PRECISION_OFFSET,
+  UsdDisplayCurrency,
 } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
@@ -167,7 +167,7 @@ const MeSubscription = {
 
     // This will be deprecated but while we update the app must return only USD updates
     if (source.price) {
-      if (source.price.displayCurrency !== DisplayCurrency.Usd) {
+      if (source.price.displayCurrency !== UsdDisplayCurrency) {
         return {
           errors: [{ message: "Price is deprecated, please use realtimePrice event" }],
         }
@@ -269,7 +269,7 @@ const MeSubscription = {
         pricePerSat: pricePerSat.price,
         pricePerUsdCent: pricePerUsdCent.price,
       }
-      if (displayCurrency === DisplayCurrency.Usd) {
+      if (displayCurrency === UsdDisplayCurrency) {
         pubsub.publishDelayed({
           trigger: accountUpdatedTrigger,
           payload: { price: priceData },

@@ -1,4 +1,4 @@
-import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
+import { UsdDisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { AdminLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
@@ -33,7 +33,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>({
     walletId,
   } = txn
 
-  const displayCurrency = displayCurrencyRaw || DisplayCurrency.Usd
+  const displayCurrency = displayCurrencyRaw || UsdDisplayCurrency
 
   const isAdmin = Object.values(AdminLedgerTransactionType).includes(
     type as AdminLedgerTransactionType,

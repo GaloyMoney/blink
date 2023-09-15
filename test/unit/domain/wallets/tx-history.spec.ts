@@ -14,7 +14,7 @@ import {
   MEMO_SHARING_SATS_THRESHOLD,
 } from "@config"
 import { WalletCurrency } from "@domain/shared"
-import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
+import { UsdDisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 
 describe("translates ledger txs to wallet txs", () => {
   const timestamp = new Date()
@@ -30,7 +30,7 @@ describe("translates ledger txs to wallet txs", () => {
     satsFee,
     centsFee,
     displayFee,
-    displayCurrency: DisplayCurrency.Usd,
+    displayCurrency: UsdDisplayCurrency,
     pendingConfirmation: false,
     journalId: "journalId" as LedgerJournalId,
     timestamp,
@@ -128,7 +128,7 @@ describe("translates ledger txs to wallet txs", () => {
     centsAmount: UsdCents
     currency: WalletCurrency
   }): WalletTransaction[] => {
-    const displayCurrency = DisplayCurrency.Usd
+    const displayCurrency = UsdDisplayCurrency
 
     const settlementFee = currency === WalletCurrency.Btc ? satsFee : centsFee
     const settlementDisplayPrice = displayCurrencyPerBaseUnitFromAmounts({
@@ -346,7 +346,7 @@ describe("translates ledger txs to wallet txs", () => {
           settlementDisplayFee: "0.00",
           settlementDisplayPrice: priceAmountFromNumber({
             priceOfOneSatInMinorUnit: 0,
-            displayCurrency: DisplayCurrency.Usd,
+            displayCurrency: UsdDisplayCurrency,
             walletCurrency: tx.settlementCurrency,
           }),
           ...rest,

@@ -8,7 +8,7 @@ import {
   CouldNotFindAccountFromUuidError,
   RepositoryError,
 } from "@domain/errors"
-import { DisplayCurrency } from "@domain/fiat"
+import { UsdDisplayCurrency } from "@domain/fiat"
 
 import { Account } from "@services/mongoose/schema"
 
@@ -245,5 +245,5 @@ const translateToAccount = (result: AccountRecord): Account => ({
   })),
 
   kratosUserId: result.kratosUserId as UserId,
-  displayCurrency: (result.displayCurrency || DisplayCurrency.Usd) as DisplayCurrency,
+  displayCurrency: (result.displayCurrency || UsdDisplayCurrency) as DisplayCurrency,
 })

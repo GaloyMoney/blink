@@ -2,9 +2,9 @@ import { Prices } from "@app"
 
 import {
   majorToMinorUnit,
-  DisplayCurrency,
   USD_PRICE_PRECISION_OFFSET,
   SAT_PRICE_PRECISION_OFFSET,
+  UsdDisplayCurrency,
 } from "@domain/fiat"
 
 import { GT } from "@graphql/index"
@@ -18,7 +18,7 @@ const RealtimePriceQuery = GT.Field({
   args: {
     currency: {
       type: DisplayCurrencyGT,
-      defaultValue: DisplayCurrency.Usd,
+      defaultValue: UsdDisplayCurrency,
     },
   },
   resolve: async (_, args) => {

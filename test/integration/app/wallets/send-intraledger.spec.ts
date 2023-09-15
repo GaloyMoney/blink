@@ -3,7 +3,7 @@ import { Accounts, Payments } from "@app"
 import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { DisplayCurrency, toCents } from "@domain/fiat"
+import { UsdDisplayCurrency, toCents } from "@domain/fiat"
 import {
   InactiveAccountError,
   IntraledgerLimitsExceededError,
@@ -63,7 +63,7 @@ const receiveBankFee = {
 const receiveDisplayAmounts = {
   amountDisplayCurrency: Number(receiveAmounts.usd.amount) as DisplayCurrencyBaseAmount,
   feeDisplayCurrency: Number(receiveBankFee.usd.amount) as DisplayCurrencyBaseAmount,
-  displayCurrency: DisplayCurrency.Usd,
+  displayCurrency: UsdDisplayCurrency,
 }
 
 const receiveAboveLimitAmounts = {
@@ -75,7 +75,7 @@ const receiveAboveLimitDisplayAmounts = {
     receiveAboveLimitAmounts.usd.amount,
   ) as DisplayCurrencyBaseAmount,
   feeDisplayCurrency: Number(receiveBankFee.usd.amount) as DisplayCurrencyBaseAmount,
-  displayCurrency: DisplayCurrency.Usd,
+  displayCurrency: UsdDisplayCurrency,
 }
 
 const randomIntraLedgerMemo = () =>
