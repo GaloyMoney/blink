@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @ory/client from 1.2.5 to 1.2.6 (#3217)...'
-      sha: 6cfdf7e6e249d4d682b4a4e021cb9986a21925a7
+      commitTitle: 'refactor: cleanup kratos router method into testable pieces (#3102)...'
+      sha: 26aa18402bb6b5af997a06a560fcceba3d3c07de
       tags:
-      - 0.13.70-3-g6cfdf7e6e
+      - 0.13.70-5-g26aa18402
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @ory/client from 1.2.5 to 1.2.6 (#3217)...'
-      sha: 6cfdf7e6e249d4d682b4a4e021cb9986a21925a7
+      commitTitle: 'refactor: cleanup kratos router method into testable pieces (#3102)...'
+      sha: 26aa18402bb6b5af997a06a560fcceba3d3c07de
       tags:
-      - 0.13.70-3-g6cfdf7e6e
+      - 0.13.70-5-g26aa18402
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @ory/client from 1.2.5 to 1.2.6 (#3217)...'
-      sha: 6cfdf7e6e249d4d682b4a4e021cb9986a21925a7
+      commitTitle: 'refactor: cleanup kratos router method into testable pieces (#3102)...'
+      sha: 26aa18402bb6b5af997a06a560fcceba3d3c07de
       tags:
-      - 0.13.70-3-g6cfdf7e6e
+      - 0.13.70-5-g26aa18402
     path: ./
   path: ./graphql
 kind: LockConfig
