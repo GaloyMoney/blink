@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: update cron usd invoices handler (#3215)'
-      sha: 53a8e6c08761290bd9992f0639f7b22c9244caaa
+      commitTitle: 'refactor: simplify display currency hybrid (#3193)...'
+      sha: e399836a19dd16465f714e9a142760c8852602f8
       tags:
-      - 0.13.69-1-g53a8e6c08
+      - 0.13.70-1-ge399836a1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: update cron usd invoices handler (#3215)'
-      sha: 53a8e6c08761290bd9992f0639f7b22c9244caaa
+      commitTitle: 'refactor: simplify display currency hybrid (#3193)...'
+      sha: e399836a19dd16465f714e9a142760c8852602f8
       tags:
-      - 0.13.69-1-g53a8e6c08
+      - 0.13.70-1-ge399836a1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: update cron usd invoices handler (#3215)'
-      sha: 53a8e6c08761290bd9992f0639f7b22c9244caaa
+      commitTitle: 'refactor: simplify display currency hybrid (#3193)...'
+      sha: e399836a19dd16465f714e9a142760c8852602f8
       tags:
-      - 0.13.69-1-g53a8e6c08
+      - 0.13.70-1-ge399836a1
     path: ./
   path: ./graphql
 kind: LockConfig
