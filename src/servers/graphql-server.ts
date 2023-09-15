@@ -23,7 +23,7 @@ import jwksRsa from "jwks-rsa"
 import { parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 
 import authRouter from "./authorization"
-import kratosCallback from "./callback/kratos"
+import kratosCallback from "./event-handlers/kratos"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
 

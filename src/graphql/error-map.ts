@@ -627,11 +627,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUrlError":
     case "SvixEventError":
     case "UnknownSvixError":
-    case "MissingAuthZHeaderForAuthNError":
-    case "InvalidAuthZHeaderForAuthNError":
+    case "MissingSecretForAuthNCallbackError":
+    case "InvalidSecretForAuthNCallbackError":
     case "MissingRegistrationPayloadPropertiesError":
     case "UnsupportedSchemaTypeError":
-    case "AuthZHeaderForAuthNValidationError":
+    case "SecretForAuthNCallbackError":
     case "RegistrationPayloadValidationError":
     case "InvalidPhoneMetadataError":
     case "PhoneMetadataValidationError":

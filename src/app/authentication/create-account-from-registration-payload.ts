@@ -1,6 +1,6 @@
 import { KRATOS_CALLBACK_API_KEY, getDefaultAccountsConfig } from "@config"
 
-import { AuthenticationKeyValidator } from "@domain/authentication/key-validator"
+import { CallbackSecretValidator } from "@domain/authentication/secret-validator"
 import { RegistrationPayloadValidator } from "@domain/authentication/registration-payload-validator"
 import { ErrorLevel } from "@domain/shared"
 import { InvalidPhoneNumber, InvalidUserId } from "@domain/errors"
@@ -11,17 +11,17 @@ import { SchemaIdType } from "@services/kratos"
 import { createAccountWithPhoneIdentifier } from "@app/accounts"
 
 export const createAccountFromRegistrationPayload = async ({
-  key,
+  secret,
   body,
 }: {
-  key: string | undefined
+  secret: string | undefined
   body: {
     identity_id?: string
     phone?: string
     schema_id?: string
   }
 }): Promise<Account | ApplicationError> => {
-  const isValidKey = AuthenticationKeyValidator(KRATOS_CALLBACK_API_KEY).validate(key)
+  const isValidKey = CallbackSecretValidator(KRATOS_CALLBACK_API_KEY).authorize(secret)
   if (isValidKey instanceof Error) {
     return isValidKey
   }

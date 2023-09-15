@@ -6,13 +6,13 @@ import { baseLogger } from "@services/logger"
 
 import { createAccountFromRegistrationPayload } from "@app/authentication"
 import {
-  AuthZHeaderForAuthNValidationError,
+  SecretForAuthNCallbackError,
   RegistrationPayloadValidationError,
 } from "@domain/authentication/errors"
 
 const errorResponseMessages: { [key: string]: string } = {
-  MissingAuthZHeaderForAuthNError: "missing authorization header",
-  InvalidAuthZHeaderForAuthNError: "incorrect authorization header",
+  MissingSecretForAuthNCallbackError: "missing authorization header",
+  InvalidSecretForAuthNCallbackError: "incorrect authorization header",
   MissingRegistrationPayloadPropertiesError: "missing inputs",
   UnsupportedSchemaTypeError: "unsupported schema_id",
   InvalidUserId: "invalid userId",
@@ -29,18 +29,18 @@ kratosCallback.post(
   wrapAsyncToRunInSpan({
     namespace: "registration",
     fn: async (req: express.Request, res: express.Response) => {
-      const key = req.headers.authorization
+      const secret = req.headers.authorization
       const body = req.body
       baseLogger.info(
         { transient_payload: body.transient_payload },
         "transient_payload callback kratos router",
       )
 
-      const account = await createAccountFromRegistrationPayload({ key, body })
+      const account = await createAccountFromRegistrationPayload({ secret, body })
       if (account instanceof Error) {
         const message = errorResponseMessages[account.name] || "unknown error"
         switch (true) {
-          case account instanceof AuthZHeaderForAuthNValidationError:
+          case account instanceof SecretForAuthNCallbackError:
             baseLogger.error(message)
             res.status(401).send(message)
             return

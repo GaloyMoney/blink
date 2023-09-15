@@ -15,9 +15,9 @@ export class IdentifierNotFoundError extends AuthenticationError {}
 
 export class EmailValidationSubmittedTooOftenError extends AuthenticationError {}
 
-export class AuthZHeaderForAuthNValidationError extends ValidationError {}
-export class MissingAuthZHeaderForAuthNError extends AuthZHeaderForAuthNValidationError {}
-export class InvalidAuthZHeaderForAuthNError extends AuthZHeaderForAuthNValidationError {}
+export class SecretForAuthNCallbackError extends ValidationError {}
+export class MissingSecretForAuthNCallbackError extends SecretForAuthNCallbackError {}
+export class InvalidSecretForAuthNCallbackError extends SecretForAuthNCallbackError {}
 
 export class RegistrationPayloadValidationError extends ValidationError {}
 export class MissingRegistrationPayloadPropertiesError extends RegistrationPayloadValidationError {}
