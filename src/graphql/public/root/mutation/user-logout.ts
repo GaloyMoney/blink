@@ -4,12 +4,19 @@ import { logoutToken } from "@app/authentication"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import SuccessPayload from "@graphql/shared/types/payload/success-payload"
 
+const UserLogoutInput = GT.Input({
+  name: "UserLogoutInput",
+  fields: () => ({
+    deviceToken: { type: GT.String },
+  }),
+})
+
 const UserLogoutMutation = GT.Field<
   null,
   GraphQLPublicContextAuth,
   {
     input: {
-      authToken: AuthToken | InputValidationError
+      deviceToken: DeviceToken | undefined
     }
   }
 >({
@@ -17,8 +24,13 @@ const UserLogoutMutation = GT.Field<
     complexity: 120,
   },
   type: GT.NonNull(SuccessPayload),
-  resolve: async (_, __, { sessionId }) => {
-    const logoutResp = await logoutToken(sessionId)
+  args: {
+    input: { type: GT.NonNull(UserLogoutInput) },
+  },
+  resolve: async (_, args, { sessionId, user }) => {
+    const { deviceToken } = args.input
+
+    const logoutResp = await logoutToken({ sessionId, deviceToken, userId: user.id })
     if (logoutResp instanceof Error)
       return { errors: [mapAndParseErrorForGqlResponse(logoutResp)], success: false }
     return { errors: [], success: true }
