@@ -29,10 +29,11 @@ input AccountUpdateStatusInput {
 }
 
 input AdminPushNotificationSendInput {
-  accountId: String
-  body: String
+  accountId: String!
+  body: String!
   data: Object
-  title: String
+  pushNotificationType: PushNotificationType
+  title: String!
 }
 
 type AdminPushNotificationSendPayload {
@@ -302,6 +303,8 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
   formattedAmount: String! @deprecated(reason: "Deprecated please use `base / 10^offset`")
   offset: Int!
 }
+
+scalar PushNotificationType
 
 type Query {
   accountDetailsByAccountId(accountId: ID!): AuditedAccount!

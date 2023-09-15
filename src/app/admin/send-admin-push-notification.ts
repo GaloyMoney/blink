@@ -1,4 +1,5 @@
 import { checkedToAccountUuid } from "@domain/accounts"
+import { GaloyPushNotifications, checkedToPushNotificationType } from "@domain/notifications"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
 import { NotificationsService } from "@services/notifications"
@@ -8,12 +9,18 @@ export const sendAdminPushNotification = async ({
   title,
   body,
   data,
+  pushNotificationType,
 }: {
   accountId: string
   title: string
   body: string
   data?: { [key: string]: string }
+  pushNotificationType?: string
 }): Promise<true | ApplicationError> => {
+  const checkedPushNotificationType = pushNotificationType ? checkedToPushNotificationType(pushNotificationType) : GaloyPushNotifications.AdminPushNotification
+
+  if (checkedPushNotificationType instanceof Error) return checkedPushNotificationType
+
   const accountId = checkedToAccountUuid(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
@@ -26,14 +33,14 @@ export const sendAdminPushNotification = async ({
   const user = await usersRepo.findById(kratosUserId)
   if (user instanceof Error) return user
 
-  const success = await NotificationsService().adminPushNotificationSend({
+  const success = await NotificationsService().adminPushNotificationFilteredSend({
     deviceTokens: user.deviceTokens,
     title,
     body,
     data,
+    pushNotificationType: checkedPushNotificationType,
+    pushNotificationSettings: account.pushNotificationSettings,
   })
-
-  if (success instanceof Error) return success
 
   return success
 }

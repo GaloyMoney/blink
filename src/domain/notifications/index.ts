@@ -38,6 +38,7 @@ export const checkedToPushNotificationSettings = ({
 export const GaloyPushNotifications = {
   Payments: "Payments" as PushNotificationType,
   Balance: "Balance" as PushNotificationType,
+  AdminPushNotification: "AdminPushNotification" as PushNotificationType,
 } as const
 
 export const mapNotificationTypeToPushNotificationType = (
@@ -54,7 +55,7 @@ export const mapNotificationTypeToPushNotificationType = (
   }
 }
 
-const checkedToPushNotificationType = (
+export const checkedToPushNotificationType = (
   type: string,
 ): PushNotificationType | ValidationError => {
   // TODO: add validation
