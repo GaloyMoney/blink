@@ -920,7 +920,7 @@ type Mutation
   userEmailRegistrationValidate(input: UserEmailRegistrationValidateInput!): UserEmailRegistrationValidatePayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userLoginUpgrade(input: UserLoginUpgradeInput!): UpgradePayload!
-  userLogout(input: UserLogoutInput!): SuccessPayload!
+  userLogout: SuccessPayload!
   userPhoneDelete: UserPhoneDeletePayload!
   userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload!
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
@@ -1660,12 +1660,6 @@ input UserLoginUpgradeInput
 {
   code: OneTimeAuthCode!
   phone: Phone!
-}
-
-input UserLogoutInput
-  @join__type(graph: PUBLIC)
-{
-  authToken: AuthToken!
 }
 
 """Unique identifier of a user"""
