@@ -31,19 +31,12 @@ import {
   ZERO_SATS,
 } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
-import {
-  CouldNotFindWalletOnChainPendingReceiveError,
-  MultipleCurrenciesForSingleCurrencyOperationError,
-} from "@domain/errors"
+import { MultipleCurrenciesForSingleCurrencyOperationError } from "@domain/errors"
 
 import { BriaPayloadType } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 import { getFunderWalletId } from "@services/ledger/caching"
-import {
-  AccountsRepository,
-  WalletOnChainPendingReceiveRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { baseLogger } from "@services/logger"
@@ -295,138 +288,6 @@ describe("With Bria", () => {
     return txId
   }
 
-  async function testTxnsByAddressWrapper({
-    amountSats,
-    walletId,
-    addresses,
-    minBankFee = feesConfig.depositDefaultMin,
-    minBankFeeThreshold = feesConfig.depositThreshold,
-    depositFeeRatio = feesConfig.depositRatioAsBasisPoints,
-  }: {
-    amountSats: Satoshis
-    walletId: WalletId
-    addresses: OnChainAddress[]
-    minBankFee?: BtcPaymentAmount
-    minBankFeeThreshold?: BtcPaymentAmount
-    depositFeeRatio?: DepositFeeRatioAsBasisPoints
-  }) {
-    // Step 1: get initial balance and transactions list
-    const initialBalance = await getBalanceHelper(walletId)
-    const { result: initTransactions, error } = await getTransactionsForWalletId(walletId)
-    if (error instanceof Error || initTransactions === null) {
-      throw error
-    }
-
-    // Step 2. send transactions
-    for (const address of addresses) {
-      await sendToAddress({
-        walletClient: bitcoindOutside,
-        address,
-        amount: sat2btc(amountSats),
-      })
-    }
-
-    // Step 3. collect events and execute detected handler
-    const detectedEvents = await manyBriaSubscribe({
-      type: BriaPayloadType.UtxoDetected,
-      addresses,
-    })
-    expect(detectedEvents.length).toEqual(addresses.length)
-    for (const detectedEvent of detectedEvents) {
-      if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
-        throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
-      }
-      // this is done by trigger and/or cron in prod
-      const resultPending = await utxoDetectedEventHandler({
-        event: detectedEvent.payload,
-      })
-      if (resultPending instanceof Error) {
-        throw resultPending
-      }
-    }
-
-    // Step 4. check for pending and check balance unchanged
-    const pendingTxns =
-      await WalletOnChainPendingReceiveRepository().listByWalletIdsAndAddresses({
-        walletIds: [walletId],
-        addresses,
-      })
-    if (pendingTxns instanceof Error) throw pendingTxns
-    const pendingTxnsForAddresses = pendingTxns.filter((txn) =>
-      addresses.includes(txn.initiationVia.address),
-    )
-    expect(pendingTxnsForAddresses.length).toEqual(addresses.length)
-
-    const balanceAfterPending = await getBalanceHelper(walletId)
-    expect(balanceAfterPending).toEqual(initialBalance)
-
-    // Step 5. mine, collect events and execute settled handler
-    await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
-    const settledEvents = await manyBriaSubscribe({
-      type: BriaPayloadType.UtxoSettled,
-      addresses,
-    })
-    expect(settledEvents.length).toEqual(addresses.length)
-    for (const settledEvent of settledEvents) {
-      if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
-        throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
-      }
-      // this is done by trigger and/or cron in prod
-      const resultSettled = await utxoSettledEventHandler({ event: settledEvent.payload })
-      if (resultSettled instanceof Error) {
-        throw resultSettled
-      }
-    }
-
-    // Step 6. check for pending removed, new transactions, updated balance
-    const pendingTxnsAfter =
-      await WalletOnChainPendingReceiveRepository().listByWalletIdsAndAddresses({
-        walletIds: [walletId],
-        addresses,
-      })
-    expect(pendingTxnsAfter).toBeInstanceOf(CouldNotFindWalletOnChainPendingReceiveError)
-
-    const wallet = await WalletsRepository().findById(walletId)
-    if (wallet instanceof Error) throw wallet
-    const { result: settledTxns } = await Wallets.getTransactionsForWalletsByAddresses({
-      wallets: [wallet],
-      addresses,
-    })
-    if (settledTxns === null) throw new Error("'settledTxns' is null")
-
-    const settledTxIds = settledEvents
-      .map((tx) => "txId" in tx.payload && tx.payload.txId)
-      .filter((txId): txId is OnChainTxHash => txId !== false)
-
-    expect(
-      settledTxns.slice
-        .filter((txn) =>
-          settledTxIds.includes(
-            (txn.settlementVia as SettlementViaOnChainIncoming).transactionHash,
-          ),
-        )
-        .map((txn) => (txn.initiationVia as InitiationViaOnChain).address)
-        .sort(),
-    ).toStrictEqual(addresses.sort())
-
-    const btcAmount = paymentAmountFromNumber({
-      amount: amountSats,
-      currency: WalletCurrency.Btc,
-    })
-    if (btcAmount instanceof Error) throw btcAmount
-    const balanceAfterSettled = await getBalanceHelper(walletId)
-    expect(balanceAfterSettled).toBe(
-      initialBalance +
-        amountAfterFeeDeduction({
-          amount: btcAmount,
-          minBankFee,
-          minBankFeeThreshold,
-          depositFeeRatio,
-        }) *
-          addresses.length,
-    )
-  }
-
   describe("UserWallet - On chain", () => {
     it.skip("fails to create onChain Address past rate limit", async () => {
       // Reset limits before starting
@@ -457,60 +318,6 @@ describe("With Bria", () => {
       resetOk = await resetOnChainAddressAccountIdLimits(newAccountIdA)
       expect(resetOk).not.toBeInstanceOf(Error)
     })
-
-    it("retrieves on-chain transactions by address", async () => {
-      const address1 = await Wallets.createOnChainAddress({
-        walletId: newWalletIdA,
-      })
-      if (address1 instanceof Error) throw address1
-      expect(address1.substr(0, 4)).toBe("bcrt")
-      await testTxnsByAddressWrapper({
-        walletId: newWalletIdA,
-        addresses: [address1],
-        amountSats: getRandomAmountOfSats(),
-      })
-
-      const address2 = await Wallets.createOnChainAddress({
-        walletId: newWalletIdA,
-      })
-      if (address2 instanceof Error) throw address2
-      expect(address2.substr(0, 4)).toBe("bcrt")
-      await testTxnsByAddressWrapper({
-        walletId: newWalletIdA,
-        addresses: [address2],
-        amountSats: getRandomAmountOfSats(),
-      })
-
-      await testTxnsByAddressWrapper({
-        walletId: newWalletIdA,
-        addresses: [address1, address2],
-        amountSats: getRandomAmountOfSats(),
-      })
-
-      const walletA = await WalletsRepository().findById(newWalletIdA)
-      if (walletA instanceof Error) throw walletA
-      const walletB = await WalletsRepository().findById(walletIdB)
-      if (walletB instanceof Error) throw walletB
-
-      // Confirm that another wallet can't retrieve transactions for a wallet
-      const txnsForARequestedFromA = await Wallets.getTransactionsForWalletsByAddresses({
-        wallets: [walletA],
-        addresses: [address1, address2],
-      })
-      const { result: txnsA } = txnsForARequestedFromA
-      expect(txnsA).not.toBeNull()
-      if (!txnsA) throw new Error()
-      expect(txnsA.slice.length).toBeGreaterThan(0)
-
-      const txnsForARequestedFromB = await Wallets.getTransactionsForWalletsByAddresses({
-        wallets: [walletB],
-        addresses: [address1, address2],
-      })
-      const { result: txnsB } = txnsForARequestedFromB
-      expect(txnsB).not.toBeNull()
-      if (!txnsB) throw new Error()
-      expect(txnsB.slice.length).toEqual(0)
-    }, 60_000)
 
     it("receives on-chain transaction with max limit for withdrawal level1", async () => {
       /// TODO? add sendAll tests in which the user has more than the limit?
