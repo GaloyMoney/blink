@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.2 to 1.9.3 (#3210)...'
-      sha: 4231ba8975cc7eb48cbace737371b26d75f88e53
+      commitTitle: 'refactor: update cron usd invoices handler (#3215)'
+      sha: 53a8e6c08761290bd9992f0639f7b22c9244caaa
       tags:
-      - 0.13.68-1-g4231ba897
+      - 0.13.69-1-g53a8e6c08
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.2 to 1.9.3 (#3210)...'
-      sha: 4231ba8975cc7eb48cbace737371b26d75f88e53
+      commitTitle: 'refactor: update cron usd invoices handler (#3215)'
+      sha: 53a8e6c08761290bd9992f0639f7b22c9244caaa
       tags:
-      - 0.13.68-1-g4231ba897
+      - 0.13.69-1-g53a8e6c08
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @grpc/grpc-js from 1.9.2 to 1.9.3 (#3210)...'
-      sha: 4231ba8975cc7eb48cbace737371b26d75f88e53
+      commitTitle: 'refactor: update cron usd invoices handler (#3215)'
+      sha: 53a8e6c08761290bd9992f0639f7b22c9244caaa
       tags:
-      - 0.13.68-1-g4231ba897
+      - 0.13.69-1-g53a8e6c08
     path: ./
   path: ./graphql
 kind: LockConfig
