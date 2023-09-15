@@ -7,7 +7,7 @@ import SuccessPayload from "@graphql/shared/types/payload/success-payload"
 const UserLogoutInput = GT.Input({
   name: "UserLogoutInput",
   fields: () => ({
-    deviceToken: { type: GT.String },
+    deviceToken: { type: GT.NonNull(GT.String) },
   }),
 })
 
@@ -25,10 +25,10 @@ const UserLogoutMutation = GT.Field<
   },
   type: GT.NonNull(SuccessPayload),
   args: {
-    input: { type: GT.NonNull(UserLogoutInput) },
+    input: { type: UserLogoutInput },
   },
   resolve: async (_, args, { sessionId, user }) => {
-    const { deviceToken } = args.input
+    const deviceToken = args?.input?.deviceToken
 
     const logoutResp = await logoutToken({ sessionId, deviceToken, userId: user.id })
     if (logoutResp instanceof Error)

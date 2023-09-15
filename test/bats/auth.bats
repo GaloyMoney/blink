@@ -10,8 +10,16 @@ teardown_file() {
   stop_server
 }
 
-TOKEN_NAME="charlie"
-PHONE="+16505554354"
+randomPhone() {
+    local phone_number=""
+    phone_number=$((1 + RANDOM % 9))
+
+    for _ in {1..9}; do
+        phone_number+=${RANDOM:0:1}
+    done
+    echo "+1${phone_number}"
+}
+
 
 randomEmail() {
   local random_string
@@ -19,6 +27,9 @@ randomEmail() {
   random_string=$(openssl rand -hex 20)
   echo "${random_string}@galoy.io"
 }
+
+TOKEN_NAME="charlie"
+PHONE=$(randomPhone)
 
 getEmailCode() {
   local email="$1"
@@ -61,10 +72,29 @@ generateTotpCode() {
     "$CODE"
 
   exec_graphql 'charlie' 'identity'
-  [[ "$(graphql_output '.data.me.phone')" = "+16505554354" ]] || exit 1
+  [[ "$(graphql_output '.data.me.phone')" = "$PHONE" ]] || exit 1
+}
+
+@test "auth: logout user" {
+  exec_graphql 'charlie' 'identity'
+  id="$(graphql_output '.data.me.id')"
+
+  sessions_before_logout=$(curl -s http://127.0.0.1:4434/admin/identities/$id/sessions | jq '[.[] | select(.active == true)] | length')
+  [[ "$sessions_before_logout" -eq 1 ]] || exit 1
+
+  exec_graphql 'charlie' 'logout'
+  [[ "$(graphql_output '.data.userLogout.success')" = "true" ]] || exit 1
+
+  sessions_after_logout=$(curl -s http://127.0.0.1:4434/admin/identities/$id/sessions | jq '[.[] | select(.active == true)] | length')
+  [[ "$sessions_after_logout" -eq 0 ]] || exit 1
 }
 
 @test "auth: add email" {
+  login_user \
+    "$TOKEN_NAME" \
+    "$PHONE" \
+    "$CODE"
+
   email=$(randomEmail)
   cache_value "email" "$email"
 
