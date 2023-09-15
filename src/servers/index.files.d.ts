@@ -12,6 +12,7 @@ type GraphQLPublicContext = {
   user: User | undefined
   domainAccount: Account | undefined
   ip: IpAddress | undefined
+  sessionId: SessionId | undefined
 }
 
 type GraphQLPublicContextAuth = Omit<GraphQLPublicContext, "user" | "domainAccount"> & {

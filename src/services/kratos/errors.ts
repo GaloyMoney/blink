@@ -2,6 +2,11 @@ import { AuthenticationError } from "@domain/authentication/errors"
 import { ErrorLevel } from "@domain/shared"
 
 export class KratosError extends AuthenticationError {}
+
+export class MissingSessionIdError extends KratosError {
+  level = ErrorLevel.Critical
+}
+
 export class AuthenticationKratosError extends KratosError {}
 export class ExtendSessionKratosError extends KratosError {}
 export class InvalidIdentitySessionKratosError extends KratosError {}

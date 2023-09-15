@@ -643,6 +643,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       }${error.message ? ": " + error.message : ""})`
       return new UnexpectedClientError({ message, logger: baseLogger })
 
+    case "MissingSessionIdError":
     case "AuthTokenUserIdMismatchError":
       return new UnexpectedClientError({
         message,
