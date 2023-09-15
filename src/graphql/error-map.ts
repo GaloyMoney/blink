@@ -264,7 +264,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Amount sent was too low for recipient's usd wallet."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidPhoneMetadataError":
+    case "InvalidPhoneForRewardError":
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -531,9 +531,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CacheServiceError":
     case "CacheUndefinedError":
     case "PhoneProviderServiceError":
-    case "MissingPhoneMetadataError":
-    case "InvalidPhoneMetadataTypeError":
-    case "InvalidPhoneMetadataCountryError":
+    case "ExpectedPhoneMetadataMissingError":
+    case "PhoneMetadataCarrierTypeNotAllowedError":
+    case "PhoneCountryNotAllowedError":
     case "MissingIPMetadataError":
     case "UnauthorizedIPMetadataASNError":
     case "InvalidAccountStatusError":
@@ -627,6 +627,17 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUrlError":
     case "SvixEventError":
     case "UnknownSvixError":
+    case "MissingSecretForAuthNCallbackError":
+    case "InvalidSecretForAuthNCallbackError":
+    case "MissingRegistrationPayloadPropertiesError":
+    case "UnsupportedSchemaTypeError":
+    case "SecretForAuthNCallbackError":
+    case "RegistrationPayloadValidationError":
+    case "InvalidPhoneMetadataError":
+    case "PhoneMetadataValidationError":
+    case "InvalidCarrierForPhoneMetadataError":
+    case "InvalidCarrierTypeForPhoneMetadataError":
+    case "InvalidCountryCodeForPhoneMetadataError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

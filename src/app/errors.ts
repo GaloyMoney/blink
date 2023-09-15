@@ -18,6 +18,7 @@ import * as DealerPriceErrors from "@domain/dealer-price/errors"
 import * as PubSubErrors from "@domain/pubsub/errors"
 import * as CaptchaErrors from "@domain/captcha/errors"
 import * as AuthenticationErrors from "@domain/authentication/errors"
+import * as UserErrors from "@domain/users/errors"
 
 import * as LedgerFacadeErrors from "@services/ledger/domain/errors"
 import * as KratosErrors from "@services/kratos/errors"
@@ -45,6 +46,7 @@ export const ApplicationErrors = {
   ...PubSubErrors,
   ...CaptchaErrors,
   ...AuthenticationErrors,
+  ...UserErrors,
 
   ...KratosErrors,
   ...LedgerFacadeErrors,

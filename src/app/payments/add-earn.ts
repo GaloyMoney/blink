@@ -2,15 +2,15 @@ import { getRewardsConfig, OnboardingEarn } from "@config"
 import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
 import {
   InvalidIpMetadataError,
-  InvalidPhoneMetadataError,
   InvalidQuizQuestionIdError,
   MissingIPMetadataError,
   NoBtcWalletExistsForAccountError,
   UnauthorizedIPError,
   UnknownRepositoryError,
 } from "@domain/errors"
+import { InvalidPhoneForRewardError } from "@domain/users/errors"
 import { WalletCurrency } from "@domain/shared"
-import { PhoneMetadataAuthorizer } from "@domain/users/phone-metadata-authorizer"
+import { PhoneMetadataAuthorizer } from "@domain/users"
 import { getFunderWalletId } from "@services/ledger/caching"
 import {
   AccountsRepository,
@@ -53,8 +53,9 @@ export const addEarn = async ({
     rewardsConfig.phoneMetadataValidationSettings,
   ).authorize(user.phoneMetadata)
 
-  if (validatedPhoneMetadata instanceof Error)
-    return new InvalidPhoneMetadataError(validatedPhoneMetadata)
+  if (validatedPhoneMetadata instanceof Error) {
+    return new InvalidPhoneForRewardError(validatedPhoneMetadata.name)
+  }
 
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
   if (accountIP instanceof Error) return accountIP

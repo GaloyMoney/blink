@@ -111,16 +111,7 @@ export class NoContactForUsernameError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
 export class NoBtcWalletExistsForAccountError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
-export class MissingPhoneMetadataError extends ValidationError {}
 export class MissingIPMetadataError extends ValidationError {}
-
-export class InvalidPhoneMetadataTypeError extends AuthorizationError {}
-export class InvalidPhoneMetadataCountryError extends AuthorizationError {}
-export class InvalidPhoneMetadataForOnboardingError extends AuthorizationError {
-  level = ErrorLevel.Critical
-}
-export class InvalidPhoneForOnboardingError extends AuthorizationError {}
-export class InvalidPhoneMetadataError extends AuthorizationError {}
 
 export class InvalidIpMetadataError extends ValidationError {
   level = ErrorLevel.Critical
