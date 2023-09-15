@@ -68,17 +68,7 @@ export const utxoDetectedEventHandler = async ({
   event: UtxoDetected
 }): Promise<true | DomainError> => {
   const res = await Wallets.addPendingTransaction(event)
-  if (res instanceof AmountLessThanFeeError) {
-    return true
-  }
-  if (res instanceof LessThanDustThresholdError) {
-    return true
-  }
-  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
-    return true
-  }
-
-  return res
+  return handleIncomingUtxoHandlerResult(res)
 }
 
 export const utxoDroppedEventHandler = async ({
@@ -87,11 +77,7 @@ export const utxoDroppedEventHandler = async ({
   event: UtxoDropped
 }): Promise<true | DomainError> => {
   const res = await Wallets.removePendingTransaction(event)
-  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
-    return true
-  }
-
-  return res
+  return handleIncomingUtxoHandlerResult(res)
 }
 
 export const utxoSettledEventHandler = async ({
@@ -100,17 +86,7 @@ export const utxoSettledEventHandler = async ({
   event: UtxoSettled
 }): Promise<true | DomainError> => {
   const res = await Wallets.addSettledTransaction(event)
-  if (res instanceof AmountLessThanFeeError) {
-    return true
-  }
-  if (res instanceof LessThanDustThresholdError) {
-    return true
-  }
-  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
-    return true
-  }
-
-  return res
+  return handleIncomingUtxoHandlerResult(res)
 }
 
 export const payoutSubmittedEventHandler = async ({
@@ -147,11 +123,7 @@ export const payoutBroadcastEventHandler = async ({
     txId: event.txId,
     vout: event.vout,
   })
-  if (res instanceof NoTransactionToUpdateError) {
-    return true
-  }
-
-  return res
+  return handlePayoutHandlerResult(res)
 }
 
 export const payoutSettledEventHandler = async ({
@@ -160,6 +132,24 @@ export const payoutSettledEventHandler = async ({
   event: PayoutSettled
 }): Promise<true | ApplicationError> => {
   const res = await Wallets.settlePayout(event.id)
+  return handlePayoutHandlerResult(res)
+}
+
+const handleIncomingUtxoHandlerResult = (res: true | ApplicationError) => {
+  if (res instanceof AmountLessThanFeeError) {
+    return true
+  }
+  if (res instanceof LessThanDustThresholdError) {
+    return true
+  }
+  if (res instanceof CouldNotFindWalletFromOnChainAddressError) {
+    return true
+  }
+
+  return res
+}
+
+const handlePayoutHandlerResult = (res: true | ApplicationError) => {
   if (res instanceof NoTransactionToSettleError) {
     return true
   }
