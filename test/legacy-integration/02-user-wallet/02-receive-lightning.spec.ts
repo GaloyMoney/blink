@@ -1,6 +1,6 @@
 import { LightningError as LnError } from "lightning"
 
-import { MEMO_SHARING_SATS_THRESHOLD, ONE_DAY } from "@config"
+import { MEMO_SHARING_SATS_THRESHOLD, ONE_DAY, SECS_PER_10_MINS } from "@config"
 
 import { Lightning } from "@app"
 import { usdFromBtcMidPriceFn } from "@app/prices"
@@ -31,6 +31,8 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { sleep } from "@utils"
 
 import { parseLndErrorDetails } from "@services/lnd/config"
+
+import { WalletInvoice } from "@services/mongoose/schema"
 
 import {
   checkIsBalanced,
@@ -241,6 +243,12 @@ describe("UserWallet - Lightning", () => {
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice } = lnInvoice
+
+    // fake timestamp in wallet invoice to avoid the use of fake timers
+    await WalletInvoice.findOneAndUpdate(
+      { _id: lnInvoice.paymentHash },
+      { timestamp: new Date(Date.now() - SECS_PER_10_MINS * 1000) },
+    )
 
     const checker = await Lightning.PaymentStatusChecker(invoice)
     if (checker instanceof Error) throw checker
@@ -838,6 +846,46 @@ describe("Invoice handling from trigger", () => {
       subInvoices.removeAllListeners()
     })
 
+    it("should process held invoice when trigger comes back up", async () => {
+      // Create invoice for self
+      const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
+        walletId: walletIdUsdF,
+        amount: cents,
+      })
+      expect(lnInvoice).not.toBeInstanceOf(Error)
+      if (lnInvoice instanceof Error) throw lnInvoice
+
+      // Pay invoice promise
+      const startPay = async () => {
+        try {
+          return await pay({
+            lnd: lndOutside1,
+            request: lnInvoice.paymentRequest,
+          })
+        } catch (err) {
+          return parseLndErrorDetails(err)
+        }
+      }
+
+      // Listener promise
+      const delayedListener = async (subInvoices) => {
+        await sleep(500)
+        setupInvoiceSubscribe({
+          lnd: lnd1,
+          pubkey: process.env.LND1_PUBKEY as Pubkey,
+          subInvoices,
+        })
+      }
+
+      // Pay and then listen
+      const subInvoices = subscribeToInvoices({ lnd: lnd1 })
+      const [result] = await Promise.all([startPay(), delayedListener(subInvoices)])
+
+      // See successful payment
+      expect(result.is_confirmed).toBeTruthy()
+      subInvoices.removeAllListeners()
+    })
+
     it("should decline held invoice when trigger comes back up", async () => {
       // Create invoice for self
       const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
@@ -846,6 +894,12 @@ describe("Invoice handling from trigger", () => {
       })
       expect(lnInvoice).not.toBeInstanceOf(Error)
       if (lnInvoice instanceof Error) throw lnInvoice
+
+      // fake timestamp in wallet invoice to avoid the use of fake timers
+      await WalletInvoice.findOneAndUpdate(
+        { _id: lnInvoice.paymentHash },
+        { timestamp: new Date(Date.now() - SECS_PER_10_MINS * 1000) },
+      )
 
       // Pay invoice promise
       const startPay = async () => {

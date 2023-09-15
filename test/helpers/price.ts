@@ -1,5 +1,5 @@
 export const generateSatoshiPriceHistory = (months: number, initialBtcPrice: number) => {
-  const initDate = new Date(Date.now())
+  const initDate = new Date()
   initDate.setHours(0, 0, 0, 0)
   initDate.setMonth(initDate.getMonth() - months)
 

@@ -42,7 +42,7 @@ export const deleteExpiredWalletInvoice = async (): Promise<number> => {
   // this should be longer than the invoice validity time
   const delta = 90 // days
 
-  const date = new Date(Date.now())
+  const date = new Date()
   date.setDate(date.getDate() - delta)
 
   const result = await walletInvoicesRepo.deleteUnpaidOlderThan(date)

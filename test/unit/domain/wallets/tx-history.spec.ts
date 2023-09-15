@@ -17,7 +17,7 @@ import { WalletCurrency } from "@domain/shared"
 import { DisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
 
 describe("translates ledger txs to wallet txs", () => {
-  const timestamp = new Date(Date.now())
+  const timestamp = new Date()
 
   const satsAmount = toSats(100_000)
   const satsFee = toSats(2)

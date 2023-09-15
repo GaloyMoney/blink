@@ -111,7 +111,7 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
     expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
 
     // Run delete-payments cronjob again for all payments
-    const timestampNow = new Date(Date.now())
+    const timestampNow = new Date()
     expect(Number(timestampNow)).toBeGreaterThan(Number(retrievedPayment.createdAt))
     const deleteLnPayments = await Lightning.deleteLnPaymentsBefore(timestampNow)
     if (deleteLnPayments instanceof Error) throw deleteLnPayments

@@ -134,7 +134,7 @@ describe("lndUtils", () => {
     mockDate.setDate(mockDate.getDate() + delta)
     jest.spyOn(global.Date, "now").mockImplementation(() => new Date(mockDate).valueOf())
 
-    const queryDate = new Date(Date.now())
+    const queryDate = new Date()
     queryDate.setDate(queryDate.getDate() - delta)
 
     const invoicesCount = await WalletInvoice.countDocuments({

@@ -31,7 +31,7 @@ describe("Prices", () => {
           getUsdCentRealTimePrice: jest.fn(),
           getSatRealTimePrice: () =>
             Promise.resolve({
-              timestamp: new Date(Date.now()),
+              timestamp: new Date(),
               price: 0.05,
               currency: DisplayCurrency.Usd,
             }),
@@ -75,7 +75,7 @@ describe("Prices", () => {
           getSatRealTimePrice: jest.fn(),
           getUsdCentRealTimePrice: () =>
             Promise.resolve({
-              timestamp: new Date(Date.now()),
+              timestamp: new Date(),
               price: 0.93,
               currency: EUR,
             }),

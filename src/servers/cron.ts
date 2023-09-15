@@ -66,7 +66,7 @@ const swapOutJob = async () => {
 
 const main = async () => {
   console.log("cronjob started")
-  const start = new Date(Date.now())
+  const start = new Date()
   await checkAllLndHealth()
 
   const cronConfig = getCronConfig()
@@ -92,7 +92,7 @@ const main = async () => {
 
   const PROCESS_KILL_EVENTS = ["SIGTERM", "SIGINT"]
   for (const task of tasks) {
-    const taskStart = new Date(Date.now())
+    const taskStart = new Date()
 
     try {
       logger.info(`starting ${task.name}`)

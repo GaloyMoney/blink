@@ -71,7 +71,7 @@ export const PriceService = (): IPriceService => {
         const offset =
           displayCurrency === DisplayCurrency.Usd ? CENTS_PER_USD : SATS_PER_BTC
         return {
-          timestamp: new Date(Date.now()),
+          timestamp: new Date(),
           price: 1 / offset,
           currency: displayCurrency,
         }
@@ -90,7 +90,7 @@ export const PriceService = (): IPriceService => {
       }
 
       return {
-        timestamp: new Date(Date.now()),
+        timestamp: new Date(),
         price: displayCurrencyPrice,
         currency: displayCurrency,
       }

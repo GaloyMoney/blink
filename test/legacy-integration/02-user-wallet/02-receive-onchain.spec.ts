@@ -1208,7 +1208,7 @@ describe("With Lnd", () => {
     // Wait for subscription events
     const TIME_TO_WAIT = 1000
     const checkReceived = async () => {
-      const start = new Date(Date.now())
+      const start = new Date()
       while (addressesForReceivedTxns.length != addresses.length) {
         const elapsed = elapsedSinceTimestamp(start) * 1000
         if (elapsed > TIME_TO_WAIT) return new Error("Timed out")

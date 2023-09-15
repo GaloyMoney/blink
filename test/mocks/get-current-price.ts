@@ -11,19 +11,19 @@ export const getCurrentSatPrice = async ({
   switch (currency) {
     case "CRC":
       return {
-        timestamp: new Date(Date.now()),
+        timestamp: new Date(),
         price: USD * 550,
         currency: currency as DisplayCurrency,
       }
     case "EUR":
       return {
-        timestamp: new Date(Date.now()),
+        timestamp: new Date(),
         price: USD * 0.8,
         currency: currency as DisplayCurrency,
       }
     default:
       return {
-        timestamp: new Date(Date.now()),
+        timestamp: new Date(),
         price: USD,
         currency: currency as DisplayCurrency,
       }
@@ -36,7 +36,7 @@ export const getCurrentUsdCentPrice = async ({
   RealTimePrice<DisplayCurrency> | ApplicationError
 > => {
   return {
-    timestamp: new Date(Date.now()),
+    timestamp: new Date(),
     price: 21,
     currency: currency as DisplayCurrency,
   }

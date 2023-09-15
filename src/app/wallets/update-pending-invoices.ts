@@ -64,16 +64,15 @@ export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
         recipientWalletDescriptor.currency,
         createdAt,
       )
-
       if (
-        recipientWalletDescriptor.currency === WalletCurrency.Btc ||
-        expiresIn.getTime() <= Date.now()
+        recipientWalletDescriptor.currency === WalletCurrency.Usd &&
+        expiresIn.getTime() < Date.now()
       ) {
-        await updatePendingInvoice({ walletInvoice, logger })
+        await declineHeldInvoice({ pubkey, paymentHash, logger })
         return
       }
 
-      await declineHeldInvoice({ pubkey, paymentHash, logger })
+      await updatePendingInvoice({ walletInvoice, logger })
     },
   })
 

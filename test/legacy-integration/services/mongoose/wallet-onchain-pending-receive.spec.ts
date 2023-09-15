@@ -53,7 +53,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
       displayCurrency: DisplayCurrency.Usd,
       walletCurrency: WalletCurrency.Btc,
     },
-    createdAt: new Date(Date.now()),
+    createdAt: new Date(),
   }
 
   describe("persistNew", () => {
@@ -113,7 +113,7 @@ describe("WalletOnChainPendingReceiveRepository", () => {
           transactionHash: generateHash() as OnChainTxHash,
           vout: 2 as OnChainTxVout,
         },
-        createdAt: new Date(Date.now()),
+        createdAt: new Date(),
       }
 
       const result1 = await repo.persistNew(newPendingIncomingTransaction1)

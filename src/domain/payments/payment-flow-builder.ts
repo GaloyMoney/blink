@@ -283,7 +283,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
     hedgeSellUsd,
     mid,
   }: WithConversionArgs): LPFBWithConversion<S, R> | LPFBWithError => {
-    const stateWithCreatedAt = { ...state, createdAt: new Date(Date.now()) }
+    const stateWithCreatedAt = { ...state, createdAt: new Date() }
     const {
       btcPaymentAmount,
       usdPaymentAmount,

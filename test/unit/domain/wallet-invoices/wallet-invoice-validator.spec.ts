@@ -17,7 +17,7 @@ describe("WalletInvoiceValidator", () => {
       amount: BigInt(10),
     },
     paid: false,
-    createdAt: new Date(Date.now()),
+    createdAt: new Date(),
   }
   const fromWalletId = "fromWalletId" as WalletId
 
