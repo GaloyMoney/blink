@@ -37,7 +37,7 @@ const incomingTxns: IncomingOnChainTransaction[] = [
       ],
     },
     fee: toSats(0),
-    createdAt: new Date(Date.now()),
+    createdAt: new Date(),
     uniqueAddresses: () => [] as OnChainAddress[],
   },
 ]

@@ -124,7 +124,7 @@ export const addPendingTransaction = async ({
       settlementDisplayFee,
       settlementDisplayPrice,
 
-      createdAt: new Date(Date.now()),
+      createdAt: new Date(),
       initiationVia: {
         type: PaymentInitiationMethod.OnChain,
         address,

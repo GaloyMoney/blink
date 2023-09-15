@@ -38,7 +38,10 @@ import {
 } from "@domain/errors"
 import { SwapTriggerError } from "@domain/swap/errors"
 import { checkedToDisplayCurrency } from "@domain/fiat"
-import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
+import {
+  DEFAULT_EXPIRATIONS,
+  invoiceExpirationForCurrency,
+} from "@domain/bitcoin/lightning/invoice-expiration"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { BriaSubscriber } from "@services/bria"
@@ -297,7 +300,15 @@ const listenerExistingHodlInvoices = async ({
       if (walletInvoice instanceof Error) {
         continue
       }
-      if (walletInvoice.recipientWalletDescriptor.currency !== WalletCurrency.Btc) {
+
+      const expiresIn = invoiceExpirationForCurrency(
+        walletInvoice.recipientWalletDescriptor.currency,
+        walletInvoice.createdAt,
+      )
+      if (
+        walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Usd &&
+        expiresIn.getTime() < Date.now()
+      ) {
         Wallets.declineHeldInvoice(declineArgs)
         continue
       }

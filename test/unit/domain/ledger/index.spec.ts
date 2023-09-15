@@ -6,7 +6,7 @@ describe("LedgerService", () => {
   it("translates ILedgerTransaction to LedgerTransaction", () => {
     const sampleId = "62c7e689f846db3305b3b53b"
     const sampleJournalId = "62c7e689f846db3305b3b534"
-    const timestamp = new Date(Date.now())
+    const timestamp = new Date()
 
     const rawTx: ILedgerTransaction = {
       _id: toObjectId(sampleId),

@@ -606,7 +606,7 @@ export const recordLndEscrowCredit = async ({ paymentAmount }) => {
 
 export const recordLnRoutingRevenue = async ({ paymentAmount }) => {
   const amount = Number(paymentAmount.btc.amount)
-  const metadata = LedgerFacade.LnRoutingRevenue(new Date(Date.now()))
+  const metadata = LedgerFacade.LnRoutingRevenue(new Date())
 
   const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
 

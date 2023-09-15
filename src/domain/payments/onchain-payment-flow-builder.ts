@@ -160,7 +160,7 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
   }: WithConversionArgs): OPFBWithConversion<S, R> | OPFBWithError => {
     const stateWithCreatedAt = {
       ...state,
-      createdAt: new Date(Date.now()),
+      createdAt: new Date(),
       paymentSentAndPending: false,
     }
     const { btcProposedAmount, usdProposedAmount } = state

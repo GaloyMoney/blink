@@ -9,7 +9,7 @@ describe("SettlementAmounts", () => {
     journalId: "journalId" as LedgerJournalId,
     walletId: "walletId" as WalletId,
     type: "type" as LedgerTransactionType,
-    timestamp: new Date(Date.now()),
+    timestamp: new Date(),
     pendingConfirmation: false,
     feeKnownInAdvance: true,
 
