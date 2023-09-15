@@ -91,7 +91,7 @@ interface IAuthWithPhonePasswordlessService {
   loginCookie(args: {
     phone: PhoneNumber
   }): Promise<LoginWithPhoneCookieSchemaResponse | AuthenticationError>
-  logoutToken(args: { token: AuthToken }): Promise<void | AuthenticationError>
+  logoutToken(args: { sessionId: SessionId }): Promise<void | AuthenticationError>
   logoutCookie(args: { cookie: SessionCookie }): Promise<void | AuthenticationError>
   createIdentityWithSession(args: {
     phone: PhoneNumber

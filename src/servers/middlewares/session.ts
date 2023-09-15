@@ -80,5 +80,6 @@ export const sessionPublicContext = async ({
     user,
     domainAccount,
     ip,
+    sessionId,
   }
 }

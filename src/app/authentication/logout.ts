@@ -1,10 +1,12 @@
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { AuthWithPhonePasswordlessService, MissingSessionIdError } from "@services/kratos"
 
 export const logoutToken = async (
-  token: AuthToken,
+  sessionId: SessionId | undefined,
 ): Promise<boolean | ApplicationError> => {
+  if (!sessionId) return new MissingSessionIdError()
+
   const authService = AuthWithPhonePasswordlessService()
-  const kratosResult = await authService.logoutToken({ token })
+  const kratosResult = await authService.logoutToken({ sessionId })
   if (kratosResult instanceof Error) {
     return kratosResult
   }

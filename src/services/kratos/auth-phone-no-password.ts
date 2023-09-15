@@ -112,16 +112,12 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
   }
 
   const logoutToken = async ({
-    token,
+    sessionId,
   }: {
-    token: AuthToken
+    sessionId: SessionId
   }): Promise<void | KratosError> => {
     try {
-      await kratosPublic.performNativeLogout({
-        performNativeLogoutBody: {
-          session_token: token,
-        },
-      })
+      await kratosAdmin.disableSession({ id: sessionId })
     } catch (err) {
       return new UnknownKratosError(err)
     }
