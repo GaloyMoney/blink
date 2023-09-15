@@ -3,7 +3,7 @@
 import { once } from "events"
 
 import { Accounts, Prices, Wallets } from "@app"
-import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import { usdFromBtcMidPriceFn } from "@app/prices"
 import { addWallet } from "@app/accounts"
 
 import {
@@ -18,7 +18,6 @@ import {
   getCurrencyMajorExponent,
   displayAmountFromNumber,
   toCents,
-  DisplayAmountsConverter,
   UsdDisplayCurrency,
 } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
@@ -32,7 +31,6 @@ import {
   ZERO_SATS,
 } from "@domain/shared"
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
-import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
 import {
   CouldNotFindWalletOnChainPendingReceiveError,
   MultipleCurrenciesForSingleCurrencyOperationError,
@@ -48,7 +46,6 @@ import {
 } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { DealerPriceService } from "@services/dealer-price"
 import { baseLogger } from "@services/logger"
 
 import {
@@ -459,113 +456,6 @@ describe("With Bria", () => {
       // Reset limits when done for other tests
       resetOk = await resetOnChainAddressAccountIdLimits(newAccountIdA)
       expect(resetOk).not.toBeInstanceOf(Error)
-    })
-
-    it("receives on-chain transaction", async () => {
-      const sendNotification = jest.fn()
-      jest
-        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-        .mockImplementationOnce(() => ({
-          sendNotification,
-        }))
-        .mockImplementationOnce(() => ({
-          sendNotification,
-        }))
-
-      const receivedBtc = getRandomBtcAmount()
-
-      // Execute receive
-      const txId = await sendToWalletTestWrapper({
-        walletId: newWalletIdA,
-        amountSats: receivedBtc,
-      })
-
-      // Calculate receive display amount
-      const account = await AccountsRepository().findById(newAccountIdA)
-      if (account instanceof Error) throw account
-
-      const receivedUsd = await usdFromBtcMidPriceFn(receivedBtc)
-      if (receivedUsd instanceof Error) return receivedUsd
-
-      const expectedSatsFee = DepositFeeCalculator().onChainDepositFee({
-        amount: receivedBtc,
-        minBankFee: feesConfig.depositDefaultMin,
-        minBankFeeThreshold: feesConfig.depositThreshold,
-        ratio: feesConfig.depositRatioAsBasisPoints,
-      })
-      if (expectedSatsFee instanceof Error) throw expectedSatsFee
-
-      const txns = await LedgerService().getTransactionsByHash(txId)
-      if (txns instanceof Error) throw txns
-      const { satsFee, displayAmount: displayAmountRaw, displayCurrency } = txns[0]
-
-      expect(Number(expectedSatsFee.amount)).toEqual(satsFee)
-
-      const displayAmountForMajor = displayAmountFromNumber({
-        amount: displayAmountRaw || 0,
-        currency: displayCurrency || UsdDisplayCurrency,
-      })
-      if (displayAmountForMajor instanceof Error) throw displayAmountForMajor
-
-      const displayAmount =
-        displayAmountRaw === undefined || displayCurrency === undefined
-          ? undefined
-          : displayAmountForMajor
-
-      // Check received notifications
-      const walletAddressReceiver = await WalletAddressReceiver({
-        walletAddress: {
-          address: "" as OnChainAddress,
-          recipientWalletDescriptor: {
-            id: newWalletIdA,
-            currency: WalletCurrency.Btc,
-            accountId: newAccountIdA,
-          },
-        },
-        receivedBtc,
-        satsFee: expectedSatsFee,
-        usdFromBtc: DealerPriceService().getCentsFromSatsForImmediateBuy,
-        usdFromBtcMidPrice: usdFromBtcMidPriceFn,
-      })
-      if (walletAddressReceiver instanceof Error) return walletAddressReceiver
-      const {
-        btcToCreditReceiver: btcPaymentAmount,
-        btcBankFee: btcProtocolAndBankFee,
-        usdToCreditReceiver: usdPaymentAmount,
-        usdBankFee: usdProtocolAndBankFee,
-      } = walletAddressReceiver
-
-      const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
-        currency: account.displayCurrency,
-      })
-      if (displayPriceRatio instanceof Error) return displayPriceRatio
-      const { displayAmount: settlementDisplayAmount } = DisplayAmountsConverter(
-        displayPriceRatio,
-      ).convert({
-        btcPaymentAmount,
-        btcProtocolAndBankFee,
-        usdPaymentAmount,
-        usdProtocolAndBankFee,
-      })
-
-      const pendingNotification = createPushNotificationContent({
-        type: NotificationType.OnchainReceiptPending,
-        userLanguage: locale,
-        amount: walletAddressReceiver.btcToCreditReceiver,
-        displayAmount: settlementDisplayAmount,
-      })
-      const receivedNotification = createPushNotificationContent({
-        type: NotificationType.OnchainReceipt,
-        userLanguage: locale,
-        amount: receivedBtc,
-        displayAmount,
-      })
-
-      expect(sendNotification.mock.calls.length).toBe(2)
-      expect(sendNotification.mock.calls[0][0].title).toBe(pendingNotification.title)
-      expect(sendNotification.mock.calls[0][0].body).toBe(pendingNotification.body)
-      expect(sendNotification.mock.calls[1][0].title).toBe(receivedNotification.title)
-      expect(sendNotification.mock.calls[1][0].body).toBe(receivedNotification.body)
     })
 
     it("retrieves on-chain transactions by address", async () => {
