@@ -12,7 +12,7 @@ export const PushNotificationSettings = GT.Object<
       resolve: (source) => source.pushNotificationsEnabled,
     },
     disabledPushNotificationTypes: {
-      type: GT.NonNull(GT.List(PushNotificationType)),
+      type: GT.NonNull(GT.NonNullList(PushNotificationType)),
       resolve: (source) => source.disabledPushNotificationTypes,
     },
   }),

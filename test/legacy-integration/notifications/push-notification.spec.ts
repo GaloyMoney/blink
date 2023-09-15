@@ -19,7 +19,7 @@ describe("push notification", () => {
       pushNotificationSettings,
     })
 
-    expect(result).toBe({
+    expect(result).toEqual({
       status: SendFilteredPushNotificationStatus.Filtered,
     })
   })
