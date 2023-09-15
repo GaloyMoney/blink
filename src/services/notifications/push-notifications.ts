@@ -6,7 +6,6 @@ import {
   NotificationsServiceError,
   NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
-  shouldSendPushNotification,
 } from "@domain/notifications"
 import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
 import { baseLogger } from "@services/logger"
@@ -18,6 +17,8 @@ import {
 import { Messaging } from "firebase-admin/lib/messaging/messaging"
 
 import { GOOGLE_APPLICATION_CREDENTIALS } from "@config"
+
+import { shouldSendPushNotification } from "./push-notification-filtering"
 
 const logger = baseLogger.child({ module: "notifications" })
 
@@ -176,4 +177,4 @@ export const KnownNotificationErrorMessages = {
 export const SendFilteredPushNotificationStatus = {
   Sent: "Sent",
   Filtered: "Filtered",
-}
+} as const

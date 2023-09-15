@@ -21,8 +21,8 @@ const AdminPushNotificationSendInput = GT.Input({
       type: GT.Scalar(Object),
     },
     pushNotificationType: {
-      type: PushNotificationType
-    }
+      type: PushNotificationType,
+    },
   }),
 })
 
@@ -54,7 +54,7 @@ const AdminPushNotificationSendMutation = GT.Field<
       title,
       body,
       data,
-      pushNotificationType
+      pushNotificationType,
     })
 
     if (success instanceof Error) {

@@ -18,6 +18,7 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
 } from "@app/prices"
 import { WalletCurrency } from "@domain/shared"
+import { GaloyPushNotifications } from "@domain/notifications"
 
 let spy
 let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>
@@ -227,6 +228,9 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+            GaloyPushNotifications.Payments,
+          )
         }),
       )
     })
@@ -271,6 +275,9 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+            GaloyPushNotifications.Payments,
+          )
         }),
       )
     })
@@ -316,6 +323,9 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+            GaloyPushNotifications.Payments,
+          )
         }),
       )
     })
@@ -360,6 +370,9 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+            GaloyPushNotifications.Payments,
+          )
         }),
       )
     })
@@ -404,6 +417,9 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+            GaloyPushNotifications.Payments,
+          )
         }),
       )
     })

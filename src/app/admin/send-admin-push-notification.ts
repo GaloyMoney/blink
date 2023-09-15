@@ -1,5 +1,8 @@
 import { checkedToAccountUuid } from "@domain/accounts"
-import { GaloyPushNotifications, checkedToPushNotificationType } from "@domain/notifications"
+import {
+  GaloyPushNotifications,
+  checkedToPushNotificationType,
+} from "@domain/notifications"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
 import { NotificationsService } from "@services/notifications"
@@ -17,7 +20,9 @@ export const sendAdminPushNotification = async ({
   data?: { [key: string]: string }
   pushNotificationType?: string
 }): Promise<true | ApplicationError> => {
-  const checkedPushNotificationType = pushNotificationType ? checkedToPushNotificationType(pushNotificationType) : GaloyPushNotifications.AdminPushNotification
+  const checkedPushNotificationType = pushNotificationType
+    ? checkedToPushNotificationType(pushNotificationType)
+    : GaloyPushNotifications.AdminPushNotification
 
   if (checkedPushNotificationType instanceof Error) return checkedPushNotificationType
 
