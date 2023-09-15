@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: simplify display currency hybrid (#3193)...'
-      sha: e399836a19dd16465f714e9a142760c8852602f8
+      commitTitle: 'chore: bump @ory/client from 1.2.5 to 1.2.6 (#3217)...'
+      sha: 6cfdf7e6e249d4d682b4a4e021cb9986a21925a7
       tags:
-      - 0.13.70-1-ge399836a1
+      - 0.13.70-3-g6cfdf7e6e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: simplify display currency hybrid (#3193)...'
-      sha: e399836a19dd16465f714e9a142760c8852602f8
+      commitTitle: 'chore: bump @ory/client from 1.2.5 to 1.2.6 (#3217)...'
+      sha: 6cfdf7e6e249d4d682b4a4e021cb9986a21925a7
       tags:
-      - 0.13.70-1-ge399836a1
+      - 0.13.70-3-g6cfdf7e6e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: simplify display currency hybrid (#3193)...'
-      sha: e399836a19dd16465f714e9a142760c8852602f8
+      commitTitle: 'chore: bump @ory/client from 1.2.5 to 1.2.6 (#3217)...'
+      sha: 6cfdf7e6e249d4d682b4a4e021cb9986a21925a7
       tags:
-      - 0.13.70-1-ge399836a1
+      - 0.13.70-3-g6cfdf7e6e
     path: ./
   path: ./graphql
 kind: LockConfig
