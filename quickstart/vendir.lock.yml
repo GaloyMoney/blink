@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove the necessity to pass authToken to logout (#3221)...'
-      sha: 54fd91b9ba6b13855836bfb0d9ed2fc7b51f9cda
+      commitTitle: 'chore: bump bitcoinjs-lib from 6.1.3 to 6.1.4 (#3216)...'
+      sha: 252692d3ac30ede3c377f43d1f2c1d9be2d0330a
       tags:
-      - 0.13.71-1-g54fd91b9b
+      - 0.13.72-1-g252692d3a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove the necessity to pass authToken to logout (#3221)...'
-      sha: 54fd91b9ba6b13855836bfb0d9ed2fc7b51f9cda
+      commitTitle: 'chore: bump bitcoinjs-lib from 6.1.3 to 6.1.4 (#3216)...'
+      sha: 252692d3ac30ede3c377f43d1f2c1d9be2d0330a
       tags:
-      - 0.13.71-1-g54fd91b9b
+      - 0.13.72-1-g252692d3a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove the necessity to pass authToken to logout (#3221)...'
-      sha: 54fd91b9ba6b13855836bfb0d9ed2fc7b51f9cda
+      commitTitle: 'chore: bump bitcoinjs-lib from 6.1.3 to 6.1.4 (#3216)...'
+      sha: 252692d3ac30ede3c377f43d1f2c1d9be2d0330a
       tags:
-      - 0.13.71-1-g54fd91b9b
+      - 0.13.72-1-g252692d3a
     path: ./
   path: ./graphql
 kind: LockConfig
