@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump bitcoinjs-lib from 6.1.3 to 6.1.4 (#3216)...'
-      sha: 252692d3ac30ede3c377f43d1f2c1d9be2d0330a
+      commitTitle: 'chore: optionally pass a deviceToken argument when logging out
+        (#3222)...'
+      sha: a1deb405f5b4533ef1fe1056f85117845a7ff10e
       tags:
-      - 0.13.72-1-g252692d3a
+      - 0.13.73
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump bitcoinjs-lib from 6.1.3 to 6.1.4 (#3216)...'
-      sha: 252692d3ac30ede3c377f43d1f2c1d9be2d0330a
+      commitTitle: 'chore: optionally pass a deviceToken argument when logging out
+        (#3222)...'
+      sha: a1deb405f5b4533ef1fe1056f85117845a7ff10e
       tags:
-      - 0.13.72-1-g252692d3a
+      - 0.13.73
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump bitcoinjs-lib from 6.1.3 to 6.1.4 (#3216)...'
-      sha: 252692d3ac30ede3c377f43d1f2c1d9be2d0330a
+      commitTitle: 'chore: optionally pass a deviceToken argument when logging out
+        (#3222)...'
+      sha: a1deb405f5b4533ef1fe1056f85117845a7ff10e
       tags:
-      - 0.13.72-1-g252692d3a
+      - 0.13.73
     path: ./
   path: ./graphql
 kind: LockConfig
