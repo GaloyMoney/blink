@@ -1,3 +1,4 @@
+export * from "./create-account-from-registration-payload"
 export * from "./email"
 export * from "./extend-sessions"
 export * from "./get-supported-countries"

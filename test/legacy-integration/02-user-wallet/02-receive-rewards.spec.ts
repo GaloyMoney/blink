@@ -47,7 +47,7 @@ jest.mock("@domain/accounts-ips/ip-metadata-authorizer", () => ({
   }),
 }))
 
-jest.mock("@domain/users/phone-metadata-authorizer", () => ({
+jest.mock("@domain/users", () => ({
   PhoneMetadataAuthorizer: () => ({
     authorize: () => true,
   }),
