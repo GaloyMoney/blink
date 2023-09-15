@@ -24,6 +24,7 @@ export const NotificationsService = (): INotificationsService => {
     displayPaymentAmount,
     paymentHash,
     recipientDeviceTokens,
+    recipientPushNotificationSettings,
     recipientLanguage,
   }: LightningTxReceivedArgs): Promise<true | NotificationsServiceError> => {
     try {
@@ -54,18 +55,26 @@ export const NotificationsService = (): INotificationsService => {
       })
 
       if (recipientDeviceTokens && recipientDeviceTokens.length > 0) {
-        const { title, body } = createPushNotificationContent({
+        const { title, body, pushNotificationType } = createPushNotificationContent({
           type: NotificationType.LnInvoicePaid,
           userLanguage: recipientLanguage,
           amount: paymentAmount,
           displayAmount: displayPaymentAmount,
         })
 
-        return pushNotification.sendNotification({
+        const result = await pushNotification.sendFilteredNotification({
           deviceTokens: recipientDeviceTokens,
           title,
           body,
+          pushNotificationType,
+          pushNotificationSettings: recipientPushNotificationSettings,
         })
+
+        if (result instanceof NotificationsServiceError) {
+          return result
+        }
+
+        return true
       }
 
       return true
@@ -80,6 +89,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     recipientDeviceTokens,
+    recipientPushNotificationSettings,
     recipientLanguage,
   }: IntraLedgerTxReceivedArgs): Promise<true | NotificationsServiceError> => {
     try {
@@ -114,18 +124,26 @@ export const NotificationsService = (): INotificationsService => {
       })
 
       if (recipientDeviceTokens && recipientDeviceTokens.length > 0) {
-        const { title, body } = createPushNotificationContent({
+        const { title, body, pushNotificationType } = createPushNotificationContent({
           type: NotificationType.IntraLedgerReceipt,
           userLanguage: recipientLanguage,
           amount: paymentAmount,
           displayAmount: displayPaymentAmount,
         })
 
-        return pushNotification.sendNotification({
+        const result = await pushNotification.sendFilteredNotification({
           deviceTokens: recipientDeviceTokens,
           title,
           body,
+          pushNotificationType,
+          pushNotificationSettings: recipientPushNotificationSettings,
         })
+
+        if (result instanceof NotificationsServiceError) {
+          return result
+        }
+
+        return true
       }
 
       return true
@@ -141,6 +159,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     deviceTokens,
+    pushNotificationSettings,
     language,
     txHash,
   }: {
@@ -150,6 +169,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount: PaymentAmount<WalletCurrency>
     displayPaymentAmount?: DisplayAmount<DisplayCurrency>
     deviceTokens: DeviceToken[]
+    pushNotificationSettings: PushNotificationSettings
     language: UserLanguageOrEmpty
     txHash: OnChainTxHash
   }): Promise<true | NotificationsServiceError> => {
@@ -180,18 +200,26 @@ export const NotificationsService = (): INotificationsService => {
       })
 
       if (deviceTokens.length > 0) {
-        const { title, body } = createPushNotificationContent({
+        const { title, body, pushNotificationType } = createPushNotificationContent({
           type,
           userLanguage: language,
           amount: paymentAmount,
           displayAmount: displayPaymentAmount,
         })
 
-        return pushNotification.sendNotification({
+        const result = await pushNotification.sendFilteredNotification({
           deviceTokens,
           title,
           body,
+          pushNotificationType,
+          pushNotificationSettings,
         })
+
+        if (result instanceof NotificationsServiceError) {
+          return result
+        }
+
+        return true
       }
 
       return true
@@ -206,6 +234,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     recipientDeviceTokens,
+    recipientPushNotificationSettings,
     recipientLanguage,
     txHash,
   }: OnChainTxReceivedArgs) =>
@@ -216,6 +245,7 @@ export const NotificationsService = (): INotificationsService => {
       paymentAmount,
       displayPaymentAmount,
       deviceTokens: recipientDeviceTokens,
+      pushNotificationSettings: recipientPushNotificationSettings,
       language: recipientLanguage,
       txHash,
     })
@@ -226,6 +256,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     recipientDeviceTokens,
+    recipientPushNotificationSettings,
     recipientLanguage,
     txHash,
   }: OnChainTxReceivedPendingArgs) =>
@@ -236,6 +267,7 @@ export const NotificationsService = (): INotificationsService => {
       paymentAmount,
       displayPaymentAmount,
       deviceTokens: recipientDeviceTokens,
+      pushNotificationSettings: recipientPushNotificationSettings,
       language: recipientLanguage,
       txHash,
     })
@@ -246,6 +278,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     senderDeviceTokens,
+    senderPushNotificationSettings,
     senderLanguage,
     txHash,
   }: OnChainTxSentArgs) =>
@@ -256,6 +289,7 @@ export const NotificationsService = (): INotificationsService => {
       paymentAmount,
       displayPaymentAmount,
       deviceTokens: senderDeviceTokens,
+      pushNotificationSettings: senderPushNotificationSettings,
       language: senderLanguage,
       txHash,
     })
@@ -295,6 +329,7 @@ export const NotificationsService = (): INotificationsService => {
   const sendBalance = async ({
     balanceAmount,
     deviceTokens,
+    pushNotificationSettings,
     displayBalanceAmount,
     recipientLanguage,
   }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
@@ -302,18 +337,26 @@ export const NotificationsService = (): INotificationsService => {
     if (!hasDeviceTokens) return true
 
     try {
-      const { title, body } = createPushNotificationContent({
+      const { title, body, pushNotificationType } = createPushNotificationContent({
         type: "balance",
         userLanguage: recipientLanguage,
         amount: balanceAmount,
         displayAmount: displayBalanceAmount,
       })
 
-      return pushNotification.sendNotification({
+      const result = await pushNotification.sendFilteredNotification({
         deviceTokens,
         title,
         body,
+        pushNotificationType,
+        pushNotificationSettings,
       })
+
+      if (result instanceof NotificationsServiceError) {
+        return result
+      }
+
+      return true
     } catch (err) {
       return handleCommonNotificationErrors(err)
     }

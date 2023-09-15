@@ -64,6 +64,7 @@ export const sendDefaultWalletBalanceToAccounts = async () => {
         deviceTokens: user.deviceTokens,
         displayBalanceAmount: displayAmount,
         recipientLanguage: user.language,
+        pushNotificationSettings: account.pushNotificationSettings,
       })
 
       if (result instanceof DeviceTokensNotRegisteredNotificationsServiceError) {

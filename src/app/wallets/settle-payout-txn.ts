@@ -59,6 +59,7 @@ export const settlePayout = async (
     displayPaymentAmount,
     txHash,
     senderDeviceTokens: user.deviceTokens,
+    senderPushNotificationSettings: account.pushNotificationSettings,
     senderLanguage: user.language,
   })
 

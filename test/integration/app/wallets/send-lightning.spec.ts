@@ -745,12 +745,15 @@ describe("initiated via lightning", () => {
       lndServiceSpy.mockReset()
     })
 
-    it("calls sendNotification on successful intraledger send", async () => {
+    it("calls sendFilteredNotification on successful intraledger send", async () => {
       // Setup mocks
-      const sendNotification = jest.fn()
+      const sendFilteredNotification = jest.fn()
       const pushNotificationsServiceSpy = jest
         .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-        .mockImplementationOnce(() => ({ sendNotification }))
+        .mockImplementationOnce(() => ({
+          sendFilteredNotification,
+          sendNotification: jest.fn(),
+        }))
 
       const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
@@ -799,8 +802,8 @@ describe("initiated via lightning", () => {
       expect(paymentResult).toEqual(PaymentSendStatus.Success)
 
       // Expect sent notification
-      expect(sendNotification.mock.calls.length).toBe(1)
-      expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
+      expect(sendFilteredNotification.mock.calls.length).toBe(1)
+      expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
 
       // Restore system state
       pushNotificationsServiceSpy.mockRestore()

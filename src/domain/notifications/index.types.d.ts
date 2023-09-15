@@ -13,6 +13,7 @@ type TransactionReceivedNotificationBaseArgs = TransactionNotificationBaseArgs &
   recipientAccountId: AccountId
   recipientWalletId: WalletId
   recipientDeviceTokens: DeviceToken[]
+  recipientPushNotificationSettings: PushNotificationSettings
   recipientLanguage: UserLanguageOrEmpty
 }
 
@@ -20,6 +21,7 @@ type TransactionSentNotificationBaseArgs = TransactionNotificationBaseArgs & {
   senderAccountId: AccountId
   senderWalletId: WalletId
   senderDeviceTokens: DeviceToken[]
+  senderPushNotificationSettings: PushNotificationSettings
   senderLanguage: UserLanguageOrEmpty
 }
 
@@ -41,6 +43,7 @@ type OnChainTxSentArgs = TransactionSentNotificationBaseArgs & OnChainTxBaseArgs
 type SendBalanceArgs = {
   balanceAmount: BalanceAmount<WalletCurrency>
   deviceTokens: DeviceToken[]
+  pushNotificationSettings: PushNotificationSettings
   displayBalanceAmount?: DisplayAmount<DisplayCurrency>
   recipientLanguage: UserLanguageOrEmpty
 }
