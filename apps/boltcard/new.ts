@@ -23,19 +23,21 @@ function randomHex(): string {
 boltcardRouter.get(
   "/createboltcard",
   async (req: express.Request, res: express.Response) => {
-    const accountId = req.query.accountId
+    // should be pass with POST? not sure if this would be compatible
+    // with the wallet that can create cards
+    const token = req.query.token
 
-    if (!accountId) {
-      res.status(400).send({ status: "ERROR", reason: "accountId missing" })
+    if (!token) {
+      res.status(400).send({ status: "ERROR", reason: "token missing" })
       return
     }
 
-    if (typeof accountId !== "string") {
-      res.status(400).send({ status: "ERROR", reason: "accountId is not a string" })
+    if (typeof token !== "string") {
+      res.status(400).send({ status: "ERROR", reason: "token is not a string" })
       return
     }
 
-    // TODO: accountId uuid validation
+    // TODO: token validation?
 
     const oneTimeCode = randomHex()
     const k0AuthKey = "0c3b25d92b38ae443229dd59ad34b85d"
@@ -49,7 +51,7 @@ boltcardRouter.get(
       k2CmacKey,
       k3,
       k4,
-      accountId,
+      token,
     })
 
     if (result instanceof Error) {

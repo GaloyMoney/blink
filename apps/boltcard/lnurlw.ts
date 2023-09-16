@@ -99,10 +99,10 @@ boltcardRouter.get("/ln", async (req: express.Request, res: express.Response) =>
     const result = await maybeSetupCard({ uidRaw, ctrRawInverseBytes, ba_c })
 
     if (result) {
-      const { k0AuthKey, k2CmacKey, k3, k4, accountId } = result
+      const { k0AuthKey, k2CmacKey, k3, k4, token } = result
       await markCardInitAsUsed(k2CmacKey)
 
-      card = await createCard({ uid, k0AuthKey, k2CmacKey, k3, k4, ctr, accountId })
+      card = await createCard({ uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token })
     } else {
       res.status(400).send({ status: "ERROR", reason: "card not found" })
       return

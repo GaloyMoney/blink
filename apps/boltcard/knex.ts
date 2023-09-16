@@ -38,7 +38,8 @@ export async function createTable() {
 
         // if a card is resetted, the uid would stay the same
         table.string("uid").notNullable().index()
-        table.uuid("accountId").notNullable().index()
+        table.string("token").notNullable()
+
         table.integer("ctr").notNullable()
         table.boolean("enabled").notNullable().defaultTo(true)
 
@@ -59,7 +60,7 @@ export async function createTable() {
       table.string("oneTimeCode").notNullable().index().unique()
       table.timestamp("created_at").defaultTo(knex.fn.now())
       table.string("status").defaultTo("init") // init, fetched, used
-      table.uuid("accountId").notNullable()
+      table.string("token").notNullable()
 
       table.string("k0AuthKey").notNullable()
       table.string("k2CmacKey").notNullable().index().unique()
@@ -94,7 +95,7 @@ export async function fetchByCardId(cardId: string) {
 
 export interface CardInitInput {
   oneTimeCode: string
-  accountId: string
+  token: string
   k0AuthKey: string
   k2CmacKey: string
   k3: string
@@ -103,7 +104,7 @@ export interface CardInitInput {
 
 export async function createCardInit(cardData: CardInitInput) {
   try {
-    const { oneTimeCode, k0AuthKey, k2CmacKey, k3, k4, accountId } = cardData
+    const { oneTimeCode, k0AuthKey, k2CmacKey, k3, k4, token } = cardData
 
     const result = await knex("CardInit").insert({
       oneTimeCode,
@@ -111,7 +112,7 @@ export async function createCardInit(cardData: CardInitInput) {
       k2CmacKey,
       k3,
       k4,
-      accountId,
+      token,
     })
 
     return result
@@ -128,12 +129,12 @@ interface CardInput {
   k3: string
   k4: string
   ctr: number
-  accountId: string
+  token: string
 }
 
 export async function createCard(cardData: CardInput) {
   try {
-    const { uid, k0AuthKey, k2CmacKey, k3, k4, ctr, accountId } = cardData
+    const { uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token } = cardData
 
     const [result] = await knex("Card")
       .insert({
@@ -143,7 +144,7 @@ export async function createCard(cardData: CardInput) {
         k3,
         k4,
         ctr,
-        accountId,
+        token,
       })
       .returning("*")
 
