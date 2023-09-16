@@ -1,0 +1,18 @@
+{
+  "name": "boltcard",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "aes-cmac": "^2.0.0",
+    "aes-js": "^3.1.2",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "knex": "^2.5.1",
+    "node-aes-cmac": "^0.1.1",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.2"
+  }
+}

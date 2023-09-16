@@ -157,3 +157,6 @@ codegen:
 
 gen-test-jwt:
 	pnpm run gen-test-jwt
+
+boltcard:
+	bun run ./apps/boltcard/index.ts
