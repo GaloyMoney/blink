@@ -1,18 +1,33 @@
 {
-  "name": "boltcard",
-  "version": "0.0.1",
-  "main": "index.ts",
-  "license": "MIT",
+  "name": "boltcard-galoy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
-    "aes-cmac": "^2.0.0",
+    "@types/node": "20.6.2",
+    "@types/react": "18.2.21",
+    "@types/react-dom": "18.2.7",
     "aes-js": "^3.1.2",
+    "autoprefixer": "10.4.15",
     "body-parser": "^1.20.2",
-    "express": "^4.18.2",
+    "eslint": "8.49.0",
+    "eslint-config-next": "13.4.19",
     "graphql": "^16.8.0",
     "graphql-request": "^6.1.0",
     "knex": "^2.5.1",
+    "next": "13.4.19",
     "node-aes-cmac": "^0.1.1",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "postcss": "8.4.29",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwindcss": "3.3.3",
+    "typescript": "5.2.2"
   },
   "devDependencies": {
     "@types/pg": "^8.10.2"

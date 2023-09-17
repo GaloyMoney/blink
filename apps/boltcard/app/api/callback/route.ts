@@ -1,10 +1,9 @@
-import express from "express"
-
 import { gql, GraphQLClient } from "graphql-request"
 
-import { boltcardRouter } from "./router"
-import { fetchByCardId, fetchByK1 } from "./knex"
-import { apiUrl } from "./config"
+import { NextRequest, NextResponse } from "next/server"
+
+import { fetchByCardId, fetchByK1 } from "../../knex"
+import { coreUrl } from "../../config"
 
 type GetUsdWalletIdQuery = {
   readonly __typename: "Query"
@@ -71,28 +70,26 @@ const lnInvoicePaymentSendMutation = gql`
   }
 `
 
-boltcardRouter.get("/callback", async (req: express.Request, res: express.Response) => {
-  const k1 = req?.query?.k1
-  const pr = req?.query?.pr
-
-  console.log({ k1, pr })
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const k1 = searchParams.get("k1")
+  const pr = searchParams.get("pr")
 
   if (!k1 || !pr) {
-    res.status(400).send({ status: "ERROR", reason: "missing k1 or pr" })
-    return
-  }
-
-  if (typeof k1 !== "string" || typeof pr !== "string") {
-    res.status(400).send({ status: "ERROR", reason: "invalid k1 or pr" })
-    return
+    return NextResponse.json(
+      { status: "ERROR", reason: "missing k1 or pr" },
+      { status: 400 },
+    )
   }
 
   const payment = await fetchByK1(k1)
+  console.log({ payment, k1 })
+
   const { cardId } = payment
 
   const card = await fetchByCardId(cardId)
 
-  const graphQLClient = new GraphQLClient(apiUrl, {
+  const graphQLClient = new GraphQLClient(coreUrl, {
     headers: {
       authorization: `Bearer ${card.token}`,
     },
@@ -103,15 +100,19 @@ boltcardRouter.get("/callback", async (req: express.Request, res: express.Respon
     data = await graphQLClient.request<GetUsdWalletIdQuery>(getUsdWalletIdQuery)
   } catch (error) {
     console.error(error)
-    res.status(400).send({ status: "ERROR", reason: "issue fetching walletId" })
-    return
+    return NextResponse.json(
+      { status: "ERROR", reason: "issue fetching walletId" },
+      { status: 400 },
+    )
   }
 
   const wallets = data.me?.defaultAccount.wallets
 
   if (!wallets) {
-    res.status(400).send({ status: "ERROR", reason: "no wallets found" })
-    return
+    return NextResponse.json(
+      { status: "ERROR", reason: "no wallets found" },
+      { status: 400 },
+    )
   }
 
   const usdWallet = wallets.find((wallet) => wallet.walletCurrency === "USD")
@@ -120,8 +121,10 @@ boltcardRouter.get("/callback", async (req: express.Request, res: express.Respon
   console.log({ usdWallet, wallets })
 
   if (!usdWalletId) {
-    res.status(400).send({ status: "ERROR", reason: "no usd wallet found" })
-    return
+    return NextResponse.json(
+      { status: "ERROR", reason: "no usd wallet found" },
+      { status: 400 },
+    )
   }
 
   let result: LnInvoicePaymentSendMutation
@@ -132,19 +135,21 @@ boltcardRouter.get("/callback", async (req: express.Request, res: express.Respon
     })
   } catch (error) {
     console.error(error)
-    res.status(400).send({ status: "ERROR", reason: "payment failed" })
-    return
+    return NextResponse.json(
+      { status: "ERROR", reason: "payment failed" },
+      { status: 400 },
+    )
   }
 
   if (result.lnInvoicePaymentSend.status === "SUCCESS") {
-    res.json({ status: "OK" })
+    return NextResponse.json({ status: "OK" })
   } else {
-    res.status(400).send({
-      status: "ERROR",
-      reason: `payment failed: ${result.lnInvoicePaymentSend.errors[0].message}`,
-    })
+    return NextResponse.json(
+      {
+        status: "ERROR",
+        reason: `payment failed: ${result.lnInvoicePaymentSend.errors[0].message}`,
+      },
+      { status: 400 },
+    )
   }
-})
-
-const callback = "dummy"
-export { callback }
+}

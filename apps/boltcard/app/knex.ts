@@ -1,9 +1,11 @@
-const options = {
+import createKnex, { Knex } from "knex"
+
+export const knexConfig: Knex.Config = {
   client: "pg",
   connection: "postgres://dbuser:secret@localhost:5436/default?sslmode=disable",
 }
 
-const knex = require("knex")(options)
+const knex = createKnex(knexConfig)
 
 export async function createTable() {
   const hasPaymentTable = await knex.schema.hasTable("Payment")

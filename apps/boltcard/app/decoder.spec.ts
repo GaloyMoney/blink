@@ -1,4 +1,4 @@
-import { aesDecrypt, checkSignature } from "./aes"
+import { aesDecrypt, checkSignature } from "../boltcard-galoy/app/crypto/aes"
 import { decryptedPToUidCtr } from "./decoder"
 
 const aesjs = require("aes-js")

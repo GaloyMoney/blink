@@ -1,10 +1,11 @@
 import { randomBytes } from "crypto"
 
-import express from "express"
+import { NextRequest, NextResponse } from "next/server"
 
-import { aesDecrypt, checkSignature } from "./aes"
-import { aesDecryptKey, serverUrl } from "./config"
-import { decryptedPToUidCtr } from "./decoder"
+import { aesDecrypt, checkSignature } from "../../crypto/aes"
+
+import { aesDecryptKey, serverUrl } from "../../config"
+
 import {
   CardInitInput,
   createCard,
@@ -12,8 +13,9 @@ import {
   fetchByUid,
   insertk1,
   markCardInitAsUsed,
-} from "./knex"
-import { boltcardRouter } from "./router"
+} from "../../knex"
+
+import { decryptedPToUidCtr } from "../../decoder"
 
 function generateSecureRandomString(length: number): string {
   return randomBytes(Math.ceil(length / 2))
@@ -53,23 +55,23 @@ const maybeSetupCard = async ({
   return null
 }
 
-boltcardRouter.get("/ln", async (req: express.Request, res: express.Response) => {
-  const raw_p = req?.query?.p
-  const raw_c = req?.query?.c
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const raw_p = searchParams.get("p")
+  const raw_c = searchParams.get("c")
 
   if (!raw_p || !raw_c) {
-    res.status(400).send({ status: "ERROR", reason: "missing p or c" })
-    return
+    return NextResponse.json(
+      { status: "ERROR", reason: "missing p or c" },
+      { status: 400 },
+    )
   }
 
   if (raw_p?.length !== 32 || raw_c?.length !== 16) {
-    res.status(400).send({ status: "ERROR", reason: "invalid p or c" })
-    return
-  }
-
-  if (typeof raw_p !== "string" || typeof raw_c !== "string") {
-    res.status(400).send({ status: "ERROR", reason: "invalid p or c" })
-    return
+    return NextResponse.json(
+      { status: "ERROR", reason: "invalid p or c" },
+      { status: 400 },
+    )
   }
 
   const ba_p = Buffer.from(raw_p, "hex")
@@ -79,8 +81,10 @@ boltcardRouter.get("/ln", async (req: express.Request, res: express.Response) =>
 
   const decryptedP = aesDecrypt(aesDecryptKey, ba_p)
   if (decryptedP instanceof Error) {
-    res.status(400).send({ status: "ERROR", reason: "impossible to decrypt P" })
-    return
+    return NextResponse.json(
+      { status: "ERROR", reason: "impossible to decrypt P" },
+      { status: 400 },
+    )
   }
 
   // TODO error management
@@ -104,13 +108,17 @@ boltcardRouter.get("/ln", async (req: express.Request, res: express.Response) =>
 
       card = await createCard({ uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token })
     } else {
-      res.status(400).send({ status: "ERROR", reason: "card not found" })
-      return
+      return NextResponse.json(
+        { status: "ERROR", reason: "card not found" },
+        { status: 400 },
+      )
     }
   } else {
     if (!card.enabled) {
-      res.status(400).send({ status: "ERROR", reason: "card disabled" })
-      return
+      return NextResponse.json(
+        { status: "ERROR", reason: "card disabled" },
+        { status: 400 },
+      )
     }
   }
 
@@ -121,7 +129,7 @@ boltcardRouter.get("/ln", async (req: express.Request, res: express.Response) =>
 
   await insertk1({ k1, cardId: card.id })
 
-  res.json({
+  return NextResponse.json({
     tag: "withdrawRequest",
     callback: serverUrl + "/callback",
     k1,
@@ -129,7 +137,4 @@ boltcardRouter.get("/ln", async (req: express.Request, res: express.Response) =>
     minWithdrawable: 1000,
     maxWithdrawable: 100000000000,
   })
-})
-
-const lnurlw = "dummy"
-export { lnurlw }
+}

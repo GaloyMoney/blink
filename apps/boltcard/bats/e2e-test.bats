@@ -9,35 +9,34 @@ load "../../../test/bats/helpers/ln"
   echo "TOKEN_ALICE=$(read_value "alice")"
   export TOKEN_ALICE=$(read_value "alice")
 
-  RESPONSE=$(curl -s "http://localhost:3000/createboltcard?token=${TOKEN_ALICE}")
+  RESPONSE=$(curl -s "http://localhost:3000/api/createboltcard?token=${TOKEN_ALICE}")
   CALLBACK_URL=$(echo $RESPONSE | jq -r '.url')
 
   # Making the follow-up curl request
   RESPONSE=$(curl -s "${CALLBACK_URL}")
   echo "$RESPONSE"
-  [[ $(echo $RESPONSE | jq -r '.PROTOCOL_NAME') == "create_bolt_card_response" ]] || exit 1
+  [[ $(echo $RESPONSE | jq -r '.protocol_name') == "create_bolt_card_response" ]] || exit 1
 }
 
 @test "auth: create payment and follow up" {
   P_VALUE="4E2E289D945A66BB13377A728884E867"
   C_VALUE="E19CCB1FED8892CE"
 
-  RESPONSE=$(curl -s "http://localhost:3000/ln?p=${P_VALUE}&c=${C_VALUE}")
+  RESPONSE=$(curl -s "http://localhost:3000/api/ln?p=${P_VALUE}&c=${C_VALUE}")
   echo "$RESPONSE"
 
   CALLBACK_URL=$(echo $RESPONSE | jq -r '.callback')
   K1_VALUE=$(echo $RESPONSE | jq -r '.k1')
 
-  echo "CALLBACK_URL: $CALLBACK_URL"
   echo "K1_VALUE: $K1_VALUE"
-
   cache_value "k1" "$K1_VALUE"
-  cache_value "CALLBACK_URL" "$CALLBACK_URL"
+
+  exit 1
 }
 
 @test "callback" {
   K1_VALUE=$(read_value "k1")
-  CALLBACK_URL=$(read_value "CALLBACK_URL")
+  CALLBACK_URL=http://localhost:3000/api/callback
 
   invoice_response="$(lnd_outside_2_cli addinvoice --amt 1000)"
   payment_request=$(echo $invoice_response | jq -r '.payment_request')
@@ -50,5 +49,5 @@ load "../../../test/bats/helpers/ln"
 @test "wipecard" {
   "skip"
   id=""
-  curl -s http://localhost:3000/wipeboltcard
+  curl -s http://localhost:3000/api/wipeboltcard
 }
