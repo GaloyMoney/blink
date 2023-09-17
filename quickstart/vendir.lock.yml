@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: optionally pass a deviceToken argument when logging out
-        (#3222)...'
-      sha: a1deb405f5b4533ef1fe1056f85117845a7ff10e
+      commitTitle: 'chore: update invalid ip metadata error message (#3227)'
+      sha: 3bda3905c2c06f60fc5a40b516e848dbafb86261
       tags:
-      - 0.13.73
+      - 0.13.74-1-g3bda3905c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: optionally pass a deviceToken argument when logging out
-        (#3222)...'
-      sha: a1deb405f5b4533ef1fe1056f85117845a7ff10e
+      commitTitle: 'chore: update invalid ip metadata error message (#3227)'
+      sha: 3bda3905c2c06f60fc5a40b516e848dbafb86261
       tags:
-      - 0.13.73
+      - 0.13.74-1-g3bda3905c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: optionally pass a deviceToken argument when logging out
-        (#3222)...'
-      sha: a1deb405f5b4533ef1fe1056f85117845a7ff10e
+      commitTitle: 'chore: update invalid ip metadata error message (#3227)'
+      sha: 3bda3905c2c06f60fc5a40b516e848dbafb86261
       tags:
-      - 0.13.73
+      - 0.13.74-1-g3bda3905c
     path: ./
   path: ./graphql
 kind: LockConfig
