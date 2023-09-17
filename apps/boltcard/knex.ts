@@ -63,7 +63,7 @@ export async function createTable() {
       table.string("token").notNullable()
 
       table.string("k0AuthKey").notNullable()
-      table.string("k2CmacKey").notNullable().index().unique()
+      table.string("k2CmacKey").notNullable() // .index().unique() enforcing uniqueness would ensure there is no reusage of keys
       table.string("k3").notNullable()
       table.string("k4").notNullable()
     })

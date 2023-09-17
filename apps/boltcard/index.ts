@@ -9,11 +9,14 @@ import { boltcardRouter } from "./router"
 import { lnurlw } from "./lnurlw"
 import { callback } from "./callback"
 import { createboltcard } from "./new"
+import { wipe } from "./wipe"
+
 import { createTable } from "./knex"
 
 lnurlw
 callback
 createboltcard
+wipe
 
 await createTable()
 

@@ -98,7 +98,15 @@ boltcardRouter.get("/callback", async (req: express.Request, res: express.Respon
     },
   })
 
-  const data = await graphQLClient.request<GetUsdWalletIdQuery>(getUsdWalletIdQuery)
+  let data: GetUsdWalletIdQuery
+  try {
+    data = await graphQLClient.request<GetUsdWalletIdQuery>(getUsdWalletIdQuery)
+  } catch (error) {
+    console.error(error)
+    res.status(400).send({ status: "ERROR", reason: "issue fetching walletId" })
+    return
+  }
+
   const wallets = data.me?.defaultAccount.wallets
 
   if (!wallets) {
@@ -116,10 +124,17 @@ boltcardRouter.get("/callback", async (req: express.Request, res: express.Respon
     return
   }
 
-  const result = await graphQLClient.request<LnInvoicePaymentSendMutation>({
-    document: lnInvoicePaymentSendMutation,
-    variables: { input: { walletId: usdWalletId, paymentRequest: pr } },
-  })
+  let result: LnInvoicePaymentSendMutation
+  try {
+    result = await graphQLClient.request<LnInvoicePaymentSendMutation>({
+      document: lnInvoicePaymentSendMutation,
+      variables: { input: { walletId: usdWalletId, paymentRequest: pr } },
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(400).send({ status: "ERROR", reason: "payment failed" })
+    return
+  }
 
   if (result.lnInvoicePaymentSend.status === "SUCCESS") {
     res.json({ status: "OK" })

@@ -46,3 +46,9 @@ load "../../../test/bats/helpers/ln"
   result=$(curl -s "${CALLBACK_URL}?k1=${K1_VALUE}&pr=${payment_request}")
   [[ result.status == "OK" ]] || exit 1
 }
+
+@test "wipecard" {
+  "skip"
+  id=""
+  curl -s http://localhost:3000/wipeboltcard
+}

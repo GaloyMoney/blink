@@ -114,6 +114,9 @@ boltcardRouter.get("/ln", async (req: express.Request, res: express.Response) =>
     }
   }
 
+  // TODO: check walletId and fail if not found
+  // this would improve the experience of the POS
+
   const k1 = generateSecureRandomString(32)
 
   await insertk1({ k1, cardId: card.id })

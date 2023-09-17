@@ -1,0 +1,4 @@
+- rate limits
+- proper link of .gql (instead of copy)
+- Tilt setup
+- next-apisation?

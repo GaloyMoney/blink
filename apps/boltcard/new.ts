@@ -40,8 +40,8 @@ boltcardRouter.get(
     // TODO: token validation?
 
     const oneTimeCode = randomHex()
-    const k0AuthKey = "0c3b25d92b38ae443229dd59ad34b85d"
-    const k2CmacKey = "b45775776cb224c75bcde7ca3704e933"
+    const k0AuthKey = randomHex()
+    const k2CmacKey = randomHex()
     const k3 = randomHex()
     const k4 = randomHex()
 
@@ -71,13 +71,13 @@ interface NewCardResponse {
   PROTOCOL_NAME: string
   PROTOCOL_VERSION: number
   CARD_NAME: string
-  LNURLW_BASE: string
-  K0: string
-  K1: string
-  K2: string
-  K3: string
-  K4: string
-  UID_PRIVACY: string
+  lnurlw_base: string
+  k0: string
+  k1: string
+  k2: string
+  k3: string
+  k4: string
+  uid_privacy: string
 }
 
 boltcardRouter.get("/new", async (req: express.Request, res: express.Response) => {
@@ -113,19 +113,21 @@ boltcardRouter.get("/new", async (req: express.Request, res: express.Response) =
   }
 
   const lnurlwBase = `${serverUrl}/ln`
+    .replace("http://", "lnurlw://")
+    .replace("https://", "lnurlw://")
   const k1DecryptKey = aesDecryptKey.toString("hex")
 
   const response: NewCardResponse = {
     PROTOCOL_NAME: "create_bolt_card_response",
     PROTOCOL_VERSION: 2,
     CARD_NAME: "dummy",
-    LNURLW_BASE: lnurlwBase,
-    K0: cardInit.k0AuthKey,
-    K1: k1DecryptKey,
-    K2: cardInit.k2CmacKey,
-    K3: cardInit.k3,
-    K4: cardInit.k4,
-    UID_PRIVACY: "Y",
+    lnurlw_base: lnurlwBase,
+    k0: cardInit.k0AuthKey,
+    k1: k1DecryptKey,
+    k2: cardInit.k2CmacKey,
+    k3: cardInit.k3,
+    k4: cardInit.k4,
+    uid_privacy: "Y",
   }
 
   res.status(200).json(response)
