@@ -269,7 +269,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvalidIpMetadataError":
-      message = "Unsupported IP for rewards."
+      message = "Unsupported IP."
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "NoDealerPriceDataAvailableError":
