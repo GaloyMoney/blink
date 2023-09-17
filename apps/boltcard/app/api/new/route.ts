@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
   const lnurlwBase = `${serverUrl}/ln`
     .replace("http://", "lnurlw://")
     .replace("https://", "lnurlw://")
+
   const k1DecryptKey = aesDecryptKey.toString("hex")
 
   const response: NewCardResponse = {

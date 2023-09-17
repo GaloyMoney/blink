@@ -13,9 +13,7 @@ export async function createTable() {
   if (!hasPaymentTable) {
     await knex.schema.createTable("Payment", (table) => {
       table.string("k1", 255).notNullable().index()
-
-      // index on card.id?
-      table.string("cardId").notNullable()
+      table.string("cardId").notNullable().index()
       table.boolean("paid").notNullable().defaultTo(false)
       table.timestamp("created_at").defaultTo(knex.fn.now())
     })
@@ -28,28 +26,21 @@ export async function createTable() {
   const hasCardTable = await knex.schema.hasTable("Card")
 
   if (!hasCardTable) {
-    await knex.schema
-      .raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
-      .createTable("Card", (table) => {
-        table
-          .uuid("id")
-          .notNullable()
-          .index()
-          .unique()
-          .defaultTo(knex.raw("uuid_generate_v4()"))
+    await knex.schema.createTable("Card", (table) => {
+      table.string("id").notNullable().index().unique()
 
-        // if a card is resetted, the uid would stay the same
-        table.string("uid").notNullable().index()
-        table.string("token").notNullable()
+      // if a card is resetted, the uid would stay the same
+      table.string("uid").notNullable().index()
+      table.string("token").notNullable()
 
-        table.integer("ctr").notNullable()
-        table.boolean("enabled").notNullable().defaultTo(true)
+      table.integer("ctr").notNullable()
+      table.boolean("enabled").notNullable().defaultTo(true)
 
-        table.string("k0AuthKey").notNullable()
-        table.string("k2CmacKey").notNullable()
-        table.string("k3").notNullable()
-        table.string("k4").notNullable()
-      })
+      table.string("k0AuthKey").notNullable()
+      table.string("k2CmacKey").notNullable()
+      table.string("k3").notNullable()
+      table.string("k4").notNullable()
+    })
     console.log("Card table created successfully!")
   } else {
     console.log("Card table already exists, skipping table creation.")
@@ -125,6 +116,7 @@ export async function createCardInit(cardData: CardInitInput) {
 }
 
 interface CardInput {
+  id: string
   uid: string
   k0AuthKey: string
   k2CmacKey: string
@@ -136,10 +128,11 @@ interface CardInput {
 
 export async function createCard(cardData: CardInput) {
   try {
-    const { uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token } = cardData
+    const { id, uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token } = cardData
 
     const [result] = await knex("Card")
       .insert({
+        id,
         uid,
         k0AuthKey,
         k2CmacKey,

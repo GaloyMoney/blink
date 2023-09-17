@@ -15,7 +15,42 @@ import {
   markCardInitAsUsed,
 } from "../../knex"
 
-import { decryptedPToUidCtr } from "../../decoder"
+import { decodePToUidCtr } from "../../crypto/decoder"
+
+function generateReadableCode(numDigits: number): string {
+  const allowedNumbers = ["3", "4", "6", "7", "9"]
+  const allowedLetters = [
+    "A",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "J",
+    "K",
+    "M",
+    "N",
+    "P",
+    "Q",
+    "R",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+  ]
+
+  const allowedChars = [...allowedNumbers, ...allowedLetters]
+  let code = ""
+  for (let i = 0; i < numDigits; i++) {
+    const randomIndex = Math.floor(Math.random() * allowedChars.length)
+    code += allowedChars[randomIndex]
+  }
+
+  return code
+}
 
 function generateSecureRandomString(length: number): string {
   return randomBytes(Math.ceil(length / 2))
@@ -77,8 +112,6 @@ export async function GET(req: NextRequest) {
   const ba_p = Buffer.from(raw_p, "hex")
   const ba_c = Buffer.from(raw_c, "hex")
 
-  console.log({ ba_p, ba_c })
-
   const decryptedP = aesDecrypt(aesDecryptKey, ba_p)
   if (decryptedP instanceof Error) {
     return NextResponse.json(
@@ -88,16 +121,9 @@ export async function GET(req: NextRequest) {
   }
 
   // TODO error management
-  const { uidRaw, uid, ctrRawInverseBytes, ctr } = decryptedPToUidCtr(decryptedP)
-
-  console.log({
-    uid,
-    uidRaw,
-    ctrRawInverseBytes,
-  })
+  const { uidRaw, uid, ctrRawInverseBytes, ctr } = decodePToUidCtr(decryptedP)
 
   let card = await fetchByUid(uid)
-  console.log({ card }, "card")
 
   if (!card) {
     const result = await maybeSetupCard({ uidRaw, ctrRawInverseBytes, ba_c })
@@ -106,7 +132,8 @@ export async function GET(req: NextRequest) {
       const { k0AuthKey, k2CmacKey, k3, k4, token } = result
       await markCardInitAsUsed(k2CmacKey)
 
-      card = await createCard({ uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token })
+      const id = generateReadableCode(16)
+      card = await createCard({ id, uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token })
     } else {
       return NextResponse.json(
         { status: "ERROR", reason: "card not found" },
@@ -117,6 +144,13 @@ export async function GET(req: NextRequest) {
     if (!card.enabled) {
       return NextResponse.json(
         { status: "ERROR", reason: "card disabled" },
+        { status: 400 },
+      )
+    }
+
+    if (ctr <= card.ctr) {
+      return NextResponse.json(
+        { status: "ERROR", reason: "ctr has not gone up" },
         { status: 400 },
       )
     }

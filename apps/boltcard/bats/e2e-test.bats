@@ -16,26 +16,35 @@ load "../../../test/bats/helpers/ln"
   RESPONSE=$(curl -s "${CALLBACK_URL}")
   echo "$RESPONSE"
   [[ $(echo $RESPONSE | jq -r '.protocol_name') == "create_bolt_card_response" ]] || exit 1
+
+  K1_VALUE=$(echo $RESPONSE | jq -r '.k1')
+  K2_VALUE=$(echo $RESPONSE | jq -r '.k2')
+
+  cache_value "k1" "$K1_VALUE"
+  cache_value "k2" "$K2_VALUE"
 }
 
 @test "auth: create payment and follow up" {
-  P_VALUE="4E2E289D945A66BB13377A728884E867"
-  C_VALUE="E19CCB1FED8892CE"
+  K1=$(read_value "k1")
+  K2=$(read_value "k2")
+
+  RESPONSE=$(bun run debug/getpandc.ts $K1 $K2)
+
+  P_VALUE=$(echo $RESPONSE | jq -r '.p')
+  C_VALUE=$(echo $RESPONSE | jq -r '.c')
 
   RESPONSE=$(curl -s "http://localhost:3000/api/ln?p=${P_VALUE}&c=${C_VALUE}")
   echo "$RESPONSE"
 
   CALLBACK_URL=$(echo $RESPONSE | jq -r '.callback')
-  K1_VALUE=$(echo $RESPONSE | jq -r '.k1')
+  K1_CALLBACK=$(echo $RESPONSE | jq -r '.k1')
 
-  echo "K1_VALUE: $K1_VALUE"
-  cache_value "k1" "$K1_VALUE"
-
-  exit 1
+  echo "K1_CALLBACK: $K1_CALLBACK"
+  cache_value "k1_callback" "$K1_CALLBACK"
 }
 
 @test "callback" {
-  K1_VALUE=$(read_value "k1")
+  K1_VALUE=$(read_value "k1_callback")
   CALLBACK_URL=http://localhost:3000/api/callback
 
   invoice_response="$(lnd_outside_2_cli addinvoice --amt 1000)"
@@ -43,6 +52,7 @@ load "../../../test/bats/helpers/ln"
   echo $payment_request
 
   result=$(curl -s "${CALLBACK_URL}?k1=${K1_VALUE}&pr=${payment_request}")
+  echo "$result"
   [[ result.status == "OK" ]] || exit 1
 }
 

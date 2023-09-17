@@ -1,5 +1,6 @@
-import { aesDecrypt, checkSignature } from "../boltcard-galoy/app/crypto/aes"
-import { decryptedPToUidCtr } from "./decoder"
+import { aesDecrypt, aesEncrypt, checkSignature, getSunMAC } from "./aes"
+
+import { createSV2, decodePToUidCtr, encodeUidCtrToP } from "./decoder"
 
 const aesjs = require("aes-js")
 
@@ -12,6 +13,7 @@ const values = [
     decrypted_uid: "04996c6a926980",
     decrypted_ctr: "030000",
     decoded_ctr: 3,
+    sv2: new Buffer([60, 195, 0, 1, 0, 128, 4, 153, 108, 106, 146, 105, 128, 3, 0, 0]),
   },
   {
     p: aesjs.utils.hex.toBytes("00F48C4F8E386DED06BCDC78FA92E2FE"),
@@ -33,7 +35,7 @@ const values = [
   },
 ]
 
-describe("crypto", () => {
+describe("decoding", () => {
   values.forEach(
     ({
       p,
@@ -50,7 +52,7 @@ describe("crypto", () => {
           throw decryptedP
         }
 
-        const { uid, uidRaw, ctr, ctrRawInverseBytes } = decryptedPToUidCtr(decryptedP)
+        const { uid, uidRaw, ctr, ctrRawInverseBytes } = decodePToUidCtr(decryptedP)
 
         expect(uid).toEqual(decrypted_uid)
         expect(ctr).toEqual(decoded_ctr)
@@ -68,4 +70,48 @@ describe("crypto", () => {
       })
     },
   )
+})
+
+function uint8ArrayToHex(uint8Array: Uint8Array) {
+  return Array.from(uint8Array)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("")
+}
+
+describe("encoding", () => {
+  it("should encrypt uid and ctr", () => {
+    const value = values[0]
+
+    const uid = Buffer.from(value.decrypted_uid, "hex")
+    const ctr = Buffer.from(value.decrypted_ctr, "hex")
+
+    // create P
+    const p1 = encodeUidCtrToP(uid, ctr)
+    const p2 = Buffer.from(p1)
+
+    // encrypt P
+    const encryptP = aesEncrypt(value.aes_decrypt_key, p2)
+    if (encryptP instanceof Error) {
+      throw encryptP
+    }
+
+    expect(uint8ArrayToHex(encryptP)).toEqual(uint8ArrayToHex(value.p))
+  })
+
+  it("should sign P", () => {
+    const value = values[0]
+    const p = value.p
+    p
+
+    const uid = Buffer.from(value.decrypted_uid, "hex")
+    const ctr = Buffer.from(value.decrypted_ctr, "hex")
+
+    // create cv2
+    const cv2 = createSV2(uid, ctr)
+    expect(cv2).toEqual(value.sv2)
+
+    // create cmac
+    const cmac = getSunMAC(value.aes_cmac_key, cv2)
+    expect(cmac).toEqual(value.c)
+  })
 })
