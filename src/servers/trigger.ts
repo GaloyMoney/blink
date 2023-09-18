@@ -322,6 +322,20 @@ const listenerExistingHodlInvoices = async ({
   }
 }
 
+export const setupAndProcessInvoiceSubscribe = ({
+  lnd,
+  pubkey,
+  subInvoices,
+}: {
+  lnd: AuthenticatedLnd
+  pubkey: Pubkey
+  subInvoices: EventEmitter
+}) => {
+  setupInvoiceSubscribe({ lnd, pubkey, subInvoices })
+  // Update existing pending invoices
+  Wallets.handleHeldInvoices(logger)
+}
+
 export const setupInvoiceSubscribe = ({
   lnd,
   pubkey,
@@ -385,7 +399,7 @@ export const setupPaymentSubscribe = async ({
 
 const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
   const subInvoices = subscribeToInvoices({ lnd })
-  setupInvoiceSubscribe({ lnd, pubkey, subInvoices })
+  setupAndProcessInvoiceSubscribe({ lnd, pubkey, subInvoices })
 
   const subPayments = subscribeToPayments({ lnd })
   setupPaymentSubscribe({ subPayments })
