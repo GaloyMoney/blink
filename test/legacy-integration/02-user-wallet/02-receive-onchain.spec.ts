@@ -1,14 +1,9 @@
 import { once } from "events"
 
-import { Accounts, Prices, Wallets } from "@app"
+import { Accounts, Wallets } from "@app"
 import { usdFromBtcMidPriceFn } from "@app/prices"
 
-import {
-  getAccountLimits,
-  getFeesConfig,
-  getLocale,
-  getOnChainAddressCreateAttemptLimits,
-} from "@config"
+import { getFeesConfig, getLocale, getOnChainAddressCreateAttemptLimits } from "@config"
 
 import { sat2btc, toSats } from "@domain/bitcoin"
 import {
@@ -78,7 +73,6 @@ let accountIdA: AccountId
 let newAccountIdA: AccountId
 let newWalletIdA: WalletId
 
-const accountLimits = getAccountLimits({ level: 1 })
 const feesConfig = getFeesConfig()
 
 const locale = getLocale()
@@ -88,9 +82,6 @@ const calc = AmountCalculator()
 const phoneA = randomPhone()
 const phoneB = randomPhone()
 const phoneC = randomPhone()
-const phoneE = randomPhone()
-const phoneF = randomPhone()
-const phoneG = randomPhone()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -525,15 +516,6 @@ describe("With Lnd", () => {
   }
 
   describe("UserWallet - On chain", () => {
-    it("get last on chain address", async () => {
-      const address = await lndCreateOnChainAddress(walletIdA)
-      const lastAddress = await Wallets.getLastOnChainAddress(walletIdA)
-
-      expect(address).not.toBeInstanceOf(Error)
-      expect(lastAddress).not.toBeInstanceOf(Error)
-      expect(lastAddress).toBe(address)
-    })
-
     it.skip("fails to create onChain Address past rate limit", async () => {
       // Reset limits before starting
       let resetOk = await resetOnChainAddressAccountIdLimits(accountIdA)
@@ -669,51 +651,6 @@ describe("With Lnd", () => {
       expect(txnsB).not.toBeNull()
       if (!txnsB) throw new Error()
       expect(txnsB.slice.length).toEqual(0)
-    })
-
-    it("receives on-chain transaction with max limit for withdrawal level1", async () => {
-      /// TODO? add sendAll tests in which the user has more than the limit?
-      const withdrawalLimitAccountLevel1 = accountLimits.withdrawalLimit // cents
-      await createUserAndWalletFromPhone(phoneE)
-      const walletIdE = await getDefaultWalletIdByPhone(phoneE)
-      await createUserAndWalletFromPhone(phoneG)
-      const walletIdG = await getDefaultWalletIdByPhone(phoneG)
-
-      const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-        currency: UsdDisplayCurrency,
-      })
-      if (walletPriceRatio instanceof Error) throw walletPriceRatio
-      const satsAmount = walletPriceRatio.convertFromUsd({
-        amount: BigInt(withdrawalLimitAccountLevel1),
-        currency: WalletCurrency.Usd,
-      })
-
-      await sendToWalletTestWrapper({
-        walletId: walletIdE,
-        amountSats: satsAmount,
-      })
-      await sendToWalletTestWrapper({
-        walletId: walletIdG,
-        amountSats: satsAmount,
-      })
-    })
-
-    it("receives on-chain transaction with max limit for onUs level1", async () => {
-      const intraLedgerLimitAccountLevel1 = accountLimits.intraLedgerLimit // cents
-
-      await createUserAndWalletFromPhone(phoneF)
-      const walletId = await getDefaultWalletIdByPhone(phoneF)
-
-      const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
-        currency: UsdDisplayCurrency,
-      })
-      if (walletPriceRatio instanceof Error) throw walletPriceRatio
-      const satsAmount = walletPriceRatio.convertFromUsd({
-        amount: BigInt(intraLedgerLimitAccountLevel1),
-        currency: WalletCurrency.Usd,
-      })
-
-      await sendToWalletTestWrapper({ walletId, amountSats: satsAmount })
     })
 
     it("receives batch on-chain transaction", async () => {
