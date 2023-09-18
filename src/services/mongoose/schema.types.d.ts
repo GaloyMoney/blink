@@ -84,7 +84,7 @@ interface AccountRecord {
   onchain: OnChainObjectForUser[]
   defaultWalletId: WalletId
   displayCurrency?: string
-  pushNotificationSettings?: PushNotificationSettings
+  notificationSettings?: NotificationSettings
 
   // business:
   title?: string

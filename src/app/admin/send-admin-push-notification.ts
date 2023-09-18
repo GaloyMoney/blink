@@ -1,7 +1,7 @@
 import { checkedToAccountUuid } from "@domain/accounts"
 import {
-  GaloyPushNotifications,
-  checkedToPushNotificationType,
+  GaloyNotificationCategories,
+  checkedToNotificationCategory,
 } from "@domain/notifications"
 import { AccountsRepository } from "@services/mongoose/accounts"
 import { UsersRepository } from "@services/mongoose/users"
@@ -12,19 +12,19 @@ export const sendAdminPushNotification = async ({
   title,
   body,
   data,
-  pushNotificationType,
+  notificationCategory,
 }: {
   accountId: string
   title: string
   body: string
   data?: { [key: string]: string }
-  pushNotificationType?: string
+  notificationCategory?: string
 }): Promise<true | ApplicationError> => {
-  const checkedPushNotificationType = pushNotificationType
-    ? checkedToPushNotificationType(pushNotificationType)
-    : GaloyPushNotifications.AdminPushNotification
+  const checkedNotificationCategory = notificationCategory
+    ? checkedToNotificationCategory(notificationCategory)
+    : GaloyNotificationCategories.AdminPushNotification
 
-  if (checkedPushNotificationType instanceof Error) return checkedPushNotificationType
+  if (checkedNotificationCategory instanceof Error) return checkedNotificationCategory
 
   const accountId = checkedToAccountUuid(accountIdRaw)
   if (accountId instanceof Error) return accountId
@@ -43,8 +43,8 @@ export const sendAdminPushNotification = async ({
     title,
     body,
     data,
-    pushNotificationType: checkedPushNotificationType,
-    pushNotificationSettings: account.pushNotificationSettings,
+    notificationCategory: checkedNotificationCategory,
+    notificationSettings: account.notificationSettings,
   })
 
   return success

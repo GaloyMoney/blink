@@ -430,7 +430,7 @@ const executePaymentViaIntraledger = async <
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: recipientDisplayAmount,
       recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientPushNotificationSettings: recipientAccount.pushNotificationSettings,
+      recipientNotificationSettings: recipientAccount.notificationSettings,
       recipientLanguage: recipientUser.language,
     })
 

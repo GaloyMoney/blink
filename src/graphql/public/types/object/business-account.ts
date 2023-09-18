@@ -28,7 +28,7 @@ import AccountLevel from "../../../shared/types/scalar/account-level"
 import { TransactionConnection } from "../../../shared/types/object/transaction"
 
 import RealtimePrice from "./realtime-price"
-import { PushNotificationSettings } from "./push-notification-settings"
+import { NotificationSettings } from "./notification-settings"
 
 const BusinessAccount = GT.Object({
   name: "BusinessAccount",
@@ -160,9 +160,9 @@ const BusinessAccount = GT.Object({
         )
       },
     },
-    pushNotificationSettings: {
-      type: GT.NonNull(PushNotificationSettings),
-      resolve: (source) => source.pushNotificationSettings,
+    notificationSettings: {
+      type: GT.NonNull(NotificationSettings),
+      resolve: (source) => source.notificationSettings,
     },
   }),
 })

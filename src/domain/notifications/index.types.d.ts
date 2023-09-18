@@ -13,7 +13,7 @@ type TransactionReceivedNotificationBaseArgs = TransactionNotificationBaseArgs &
   recipientAccountId: AccountId
   recipientWalletId: WalletId
   recipientDeviceTokens: DeviceToken[]
-  recipientPushNotificationSettings: PushNotificationSettings
+  recipientNotificationSettings: NotificationSettings
   recipientLanguage: UserLanguageOrEmpty
 }
 
@@ -21,7 +21,7 @@ type TransactionSentNotificationBaseArgs = TransactionNotificationBaseArgs & {
   senderAccountId: AccountId
   senderWalletId: WalletId
   senderDeviceTokens: DeviceToken[]
-  senderPushNotificationSettings: PushNotificationSettings
+  senderNotificationSettings: NotificationSettings
   senderLanguage: UserLanguageOrEmpty
 }
 
@@ -43,7 +43,7 @@ type OnChainTxSentArgs = TransactionSentNotificationBaseArgs & OnChainTxBaseArgs
 type SendBalanceArgs = {
   balanceAmount: BalanceAmount<WalletCurrency>
   deviceTokens: DeviceToken[]
-  pushNotificationSettings: PushNotificationSettings
+  notificationSettings: NotificationSettings
   displayBalanceAmount?: DisplayAmount<DisplayCurrency>
   recipientLanguage: UserLanguageOrEmpty
 }
@@ -80,7 +80,12 @@ interface INotificationsService {
   ): Promise<true | NotificationsServiceError>
 }
 
-type PushNotificationSettings = {
-  pushNotificationsEnabled: boolean
-  disabledPushNotificationTypes: PushNotificationType[]
+type NotificationChannel =
+  (typeof import("./index").NotificationChannel)[keyof typeof import("./index").NotificationChannel]
+
+type NotificationSettings = Record<NotificationChannel, NotificationChannelSettings>
+
+type NotificationChannelSettings = {
+  enabled: boolean
+  disabledCategories: NotificationCategory[]
 }

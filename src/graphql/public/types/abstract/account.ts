@@ -11,7 +11,7 @@ import AccountLevel from "../../../shared/types/scalar/account-level"
 
 import Wallet from "../../../shared/types/abstract/wallet"
 import CallbackEndpoint from "../object/callback-endpoint"
-import { PushNotificationSettings } from "../object/push-notification-settings"
+import { NotificationSettings } from "../object/notification-settings"
 
 const IAccount = GT.Interface({
   name: "Account",
@@ -57,8 +57,8 @@ const IAccount = GT.Interface({
         },
       },
     },
-    pushNotificationSettings: {
-      type: GT.NonNull(PushNotificationSettings),
+    notificationSettings: {
+      type: GT.NonNull(NotificationSettings),
     },
 
     // FUTURE-PLAN: Support a `users: [User!]!` field here

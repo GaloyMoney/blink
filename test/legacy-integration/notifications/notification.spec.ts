@@ -18,7 +18,7 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
 } from "@app/prices"
 import { WalletCurrency } from "@domain/shared"
-import { GaloyPushNotifications } from "@domain/notifications"
+import { GaloyNotificationCategories } from "@domain/notifications"
 
 let spy
 let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>
@@ -44,9 +44,11 @@ const crcDisplayPaymentAmount = {
   displayInMajor: "3500.50",
 }
 
-const unfilteredPushNotificationSettings: PushNotificationSettings = {
-  pushNotificationsEnabled: true,
-  disabledPushNotificationTypes: [],
+const unfilteredNotificationSettings: NotificationSettings = {
+  push: {
+    enabled: true,
+    disabledCategories: [],
+  },
 }
 
 beforeAll(async () => {
@@ -221,7 +223,7 @@ describe("notification", () => {
             displayPaymentAmount: crcDisplayPaymentAmount,
             paymentHash,
             recipientDeviceTokens: deviceTokens,
-            recipientPushNotificationSettings: unfilteredPushNotificationSettings,
+            recipientNotificationSettings: unfilteredNotificationSettings,
             recipientLanguage: language,
           })
 
@@ -229,7 +231,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
           expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
-            GaloyPushNotifications.Payments,
+            GaloyNotificationCategories.Payments,
           )
         }),
       )
@@ -268,7 +270,7 @@ describe("notification", () => {
             recipientWalletId: walletId,
             displayPaymentAmount: crcDisplayPaymentAmount,
             recipientDeviceTokens: deviceTokens,
-            recipientPushNotificationSettings: unfilteredPushNotificationSettings,
+            recipientNotificationSettings: unfilteredNotificationSettings,
             recipientLanguage: language,
           })
 
@@ -276,7 +278,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
           expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
-            GaloyPushNotifications.Payments,
+            GaloyNotificationCategories.Payments,
           )
         }),
       )
@@ -316,7 +318,7 @@ describe("notification", () => {
             displayPaymentAmount: crcDisplayPaymentAmount,
             txHash,
             recipientDeviceTokens: deviceTokens,
-            recipientPushNotificationSettings: unfilteredPushNotificationSettings,
+            recipientNotificationSettings: unfilteredNotificationSettings,
             recipientLanguage: language,
           })
 
@@ -324,7 +326,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
           expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
-            GaloyPushNotifications.Payments,
+            GaloyNotificationCategories.Payments,
           )
         }),
       )
@@ -363,7 +365,7 @@ describe("notification", () => {
             txHash,
             displayPaymentAmount: crcDisplayPaymentAmount,
             recipientDeviceTokens: deviceTokens,
-            recipientPushNotificationSettings: unfilteredPushNotificationSettings,
+            recipientNotificationSettings: unfilteredNotificationSettings,
             recipientLanguage: language,
           })
 
@@ -371,7 +373,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
           expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
-            GaloyPushNotifications.Payments,
+            GaloyNotificationCategories.Payments,
           )
         }),
       )
@@ -410,7 +412,7 @@ describe("notification", () => {
             txHash,
             displayPaymentAmount: crcDisplayPaymentAmount,
             senderDeviceTokens: deviceTokens,
-            senderPushNotificationSettings: unfilteredPushNotificationSettings,
+            senderNotificationSettings: unfilteredNotificationSettings,
             senderLanguage: language,
           })
 
@@ -418,7 +420,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
           expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
-            GaloyPushNotifications.Payments,
+            GaloyNotificationCategories.Payments,
           )
         }),
       )

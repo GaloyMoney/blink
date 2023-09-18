@@ -10,8 +10,8 @@ type SendFilteredPushNotificationArgs = {
   title: string
   body: string
   data?: { [key: string]: string }
-  pushNotificationSettings: PushNotificationSettings
-  pushNotificationType: PushNotificationType
+  notificationSettings: NotificationSettings
+  notificationCategory: NotificationCategory
 }
 
 type SendFilteredPushNotificationStatus =

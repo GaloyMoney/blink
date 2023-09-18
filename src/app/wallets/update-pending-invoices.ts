@@ -309,7 +309,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       displayPaymentAmount,
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientPushNotificationSettings: recipientAccount.pushNotificationSettings,
+      recipientNotificationSettings: recipientAccount.notificationSettings,
       recipientLanguage: recipientUser.language,
     })
 

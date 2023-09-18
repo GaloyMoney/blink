@@ -2,7 +2,11 @@ import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { toCents, UsdDisplayCurrency } from "@domain/fiat"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
-import { NotificationsServiceError, NotificationType } from "@domain/notifications"
+import {
+  GaloyNotificationCategories,
+  NotificationsServiceError,
+  NotificationType,
+} from "@domain/notifications"
 
 import { PubSubService } from "@services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -24,7 +28,7 @@ export const NotificationsService = (): INotificationsService => {
     displayPaymentAmount,
     paymentHash,
     recipientDeviceTokens,
-    recipientPushNotificationSettings,
+    recipientNotificationSettings,
     recipientLanguage,
   }: LightningTxReceivedArgs): Promise<true | NotificationsServiceError> => {
     try {
@@ -55,7 +59,9 @@ export const NotificationsService = (): INotificationsService => {
       })
 
       if (recipientDeviceTokens && recipientDeviceTokens.length > 0) {
-        const { title, body, pushNotificationType } = createPushNotificationContent({
+        const notificationCategory = GaloyNotificationCategories.Payments
+
+        const { title, body } = createPushNotificationContent({
           type: NotificationType.LnInvoicePaid,
           userLanguage: recipientLanguage,
           amount: paymentAmount,
@@ -66,8 +72,8 @@ export const NotificationsService = (): INotificationsService => {
           deviceTokens: recipientDeviceTokens,
           title,
           body,
-          pushNotificationType,
-          pushNotificationSettings: recipientPushNotificationSettings,
+          notificationCategory,
+          notificationSettings: recipientNotificationSettings,
         })
 
         if (result instanceof NotificationsServiceError) {
@@ -89,7 +95,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     recipientDeviceTokens,
-    recipientPushNotificationSettings,
+    recipientNotificationSettings,
     recipientLanguage,
   }: IntraLedgerTxReceivedArgs): Promise<true | NotificationsServiceError> => {
     try {
@@ -124,7 +130,9 @@ export const NotificationsService = (): INotificationsService => {
       })
 
       if (recipientDeviceTokens && recipientDeviceTokens.length > 0) {
-        const { title, body, pushNotificationType } = createPushNotificationContent({
+        const notificationCategory = GaloyNotificationCategories.Payments
+
+        const { title, body } = createPushNotificationContent({
           type: NotificationType.IntraLedgerReceipt,
           userLanguage: recipientLanguage,
           amount: paymentAmount,
@@ -135,8 +143,8 @@ export const NotificationsService = (): INotificationsService => {
           deviceTokens: recipientDeviceTokens,
           title,
           body,
-          pushNotificationType,
-          pushNotificationSettings: recipientPushNotificationSettings,
+          notificationCategory,
+          notificationSettings: recipientNotificationSettings,
         })
 
         if (result instanceof NotificationsServiceError) {
@@ -159,7 +167,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     deviceTokens,
-    pushNotificationSettings,
+    notificationSettings,
     language,
     txHash,
   }: {
@@ -169,7 +177,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount: PaymentAmount<WalletCurrency>
     displayPaymentAmount?: DisplayAmount<DisplayCurrency>
     deviceTokens: DeviceToken[]
-    pushNotificationSettings: PushNotificationSettings
+    notificationSettings: NotificationSettings
     language: UserLanguageOrEmpty
     txHash: OnChainTxHash
   }): Promise<true | NotificationsServiceError> => {
@@ -200,7 +208,9 @@ export const NotificationsService = (): INotificationsService => {
       })
 
       if (deviceTokens.length > 0) {
-        const { title, body, pushNotificationType } = createPushNotificationContent({
+        const notificationCategory = GaloyNotificationCategories.Payments
+
+        const { title, body } = createPushNotificationContent({
           type,
           userLanguage: language,
           amount: paymentAmount,
@@ -211,8 +221,8 @@ export const NotificationsService = (): INotificationsService => {
           deviceTokens,
           title,
           body,
-          pushNotificationType,
-          pushNotificationSettings,
+          notificationCategory,
+          notificationSettings,
         })
 
         if (result instanceof NotificationsServiceError) {
@@ -234,7 +244,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     recipientDeviceTokens,
-    recipientPushNotificationSettings,
+    recipientNotificationSettings,
     recipientLanguage,
     txHash,
   }: OnChainTxReceivedArgs) =>
@@ -245,7 +255,7 @@ export const NotificationsService = (): INotificationsService => {
       paymentAmount,
       displayPaymentAmount,
       deviceTokens: recipientDeviceTokens,
-      pushNotificationSettings: recipientPushNotificationSettings,
+      notificationSettings: recipientNotificationSettings,
       language: recipientLanguage,
       txHash,
     })
@@ -256,7 +266,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     recipientDeviceTokens,
-    recipientPushNotificationSettings,
+    recipientNotificationSettings,
     recipientLanguage,
     txHash,
   }: OnChainTxReceivedPendingArgs) =>
@@ -267,7 +277,7 @@ export const NotificationsService = (): INotificationsService => {
       paymentAmount,
       displayPaymentAmount,
       deviceTokens: recipientDeviceTokens,
-      pushNotificationSettings: recipientPushNotificationSettings,
+      notificationSettings: recipientNotificationSettings,
       language: recipientLanguage,
       txHash,
     })
@@ -278,7 +288,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount,
     displayPaymentAmount,
     senderDeviceTokens,
-    senderPushNotificationSettings,
+    senderNotificationSettings,
     senderLanguage,
     txHash,
   }: OnChainTxSentArgs) =>
@@ -289,7 +299,7 @@ export const NotificationsService = (): INotificationsService => {
       paymentAmount,
       displayPaymentAmount,
       deviceTokens: senderDeviceTokens,
-      pushNotificationSettings: senderPushNotificationSettings,
+      notificationSettings: senderNotificationSettings,
       language: senderLanguage,
       txHash,
     })
@@ -329,7 +339,7 @@ export const NotificationsService = (): INotificationsService => {
   const sendBalance = async ({
     balanceAmount,
     deviceTokens,
-    pushNotificationSettings,
+    notificationSettings,
     displayBalanceAmount,
     recipientLanguage,
   }: SendBalanceArgs): Promise<true | NotificationsServiceError> => {
@@ -337,7 +347,9 @@ export const NotificationsService = (): INotificationsService => {
     if (!hasDeviceTokens) return true
 
     try {
-      const { title, body, pushNotificationType } = createPushNotificationContent({
+      const notificationCategory = GaloyNotificationCategories.Payments
+
+      const { title, body } = createPushNotificationContent({
         type: "balance",
         userLanguage: recipientLanguage,
         amount: balanceAmount,
@@ -348,8 +360,8 @@ export const NotificationsService = (): INotificationsService => {
         deviceTokens,
         title,
         body,
-        pushNotificationType,
-        pushNotificationSettings,
+        notificationCategory,
+        notificationSettings,
       })
 
       if (result instanceof NotificationsServiceError) {
@@ -388,8 +400,8 @@ export const NotificationsService = (): INotificationsService => {
     body,
     data,
     deviceTokens,
-    pushNotificationSettings,
-    pushNotificationType,
+    notificationSettings,
+    notificationCategory,
   }: SendFilteredPushNotificationArgs): Promise<true | NotificationsServiceError> => {
     const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return true
@@ -400,8 +412,8 @@ export const NotificationsService = (): INotificationsService => {
         title,
         body,
         data,
-        pushNotificationSettings,
-        pushNotificationType,
+        notificationSettings,
+        notificationCategory,
       })
 
       if (result instanceof NotificationsServiceError) {

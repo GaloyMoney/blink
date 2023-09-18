@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import AdminPushNotificationSendPayload from "@graphql/admin/types/payload/admin-push-notification-send"
 import { Admin } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import PushNotificationType from "@graphql/shared/types/scalar/push-notification-type"
+import NotificationCategory from "@graphql/shared/types/scalar/notification-category"
 
 const AdminPushNotificationSendInput = GT.Input({
   name: "AdminPushNotificationSendInput",
@@ -20,8 +20,8 @@ const AdminPushNotificationSendInput = GT.Input({
     data: {
       type: GT.Scalar(Object),
     },
-    pushNotificationType: {
-      type: PushNotificationType,
+    notificationCategory: {
+      type: NotificationCategory,
     },
   }),
 })
@@ -35,7 +35,7 @@ const AdminPushNotificationSendMutation = GT.Field<
       title: string
       body: string
       data?: { [key: string]: string }
-      pushNotificationType?: string
+      notificationCategory?: string
     }
   }
 >({
@@ -47,14 +47,14 @@ const AdminPushNotificationSendMutation = GT.Field<
     input: { type: GT.NonNull(AdminPushNotificationSendInput) },
   },
   resolve: async (_, args) => {
-    const { accountId, body, title, data, pushNotificationType } = args.input
+    const { accountId, body, title, data, notificationCategory } = args.input
 
     const success = await Admin.sendAdminPushNotification({
       accountId,
       title,
       body,
       data,
-      pushNotificationType,
+      notificationCategory,
     })
 
     if (success instanceof Error) {

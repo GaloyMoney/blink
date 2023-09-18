@@ -22,9 +22,11 @@ describe("PaymentInputValidator", () => {
       latitude: 0,
       longitude: 0,
     },
-    pushNotificationSettings: {
-      pushNotificationsEnabled: true,
-      disabledPushNotificationTypes: [],
+    notificationSettings: {
+      push: {
+        enabled: true,
+        disabledCategories: [],
+      },
     },
     contactEnabled: true,
     contacts: [],

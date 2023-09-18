@@ -77,7 +77,7 @@ type Account = {
   readonly isEditor: boolean
   readonly quizQuestions: UserQuizQuestion[] // deprecated
   readonly quiz: Quiz[]
-  pushNotificationSettings: PushNotificationSettings // QUESTION: should this be here or should the notification service have its own storage of notification settings?
+  notificationSettings: NotificationSettings
   kratosUserId: UserId
   displayCurrency: DisplayCurrency
   // temp

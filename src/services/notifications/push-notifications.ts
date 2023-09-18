@@ -3,9 +3,11 @@ import * as admin from "firebase-admin"
 import {
   DeviceTokensNotRegisteredNotificationsServiceError,
   InvalidDeviceNotificationsServiceError,
+  NotificationChannel,
   NotificationsServiceError,
   NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
+  shouldSendNotification,
 } from "@domain/notifications"
 import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
 import { baseLogger } from "@services/logger"
@@ -17,8 +19,6 @@ import {
 import { Messaging } from "firebase-admin/lib/messaging/messaging"
 
 import { GOOGLE_APPLICATION_CREDENTIALS } from "@config"
-
-import { shouldSendPushNotification } from "./push-notification-filtering"
 
 const logger = baseLogger.child({ module: "notifications" })
 
@@ -116,17 +116,14 @@ export const PushNotificationsService = (): IPushNotificationsService => {
   }
 
   const sendFilteredNotification = async (args: SendFilteredPushNotificationArgs) => {
-    const {
-      pushNotificationSettings,
-      pushNotificationType,
-      data,
-      ...sendNotificationArgs
-    } = args
+    const { notificationSettings, notificationCategory, data, ...sendNotificationArgs } =
+      args
 
     if (
-      !shouldSendPushNotification({
-        pushNotificationSettings,
-        pushNotificationType,
+      !shouldSendNotification({
+        notificationCategory,
+        notificationSettings,
+        notificationChannel: NotificationChannel.Push,
       })
     ) {
       return {
@@ -138,7 +135,7 @@ export const PushNotificationsService = (): IPushNotificationsService => {
       ...sendNotificationArgs,
       data: {
         ...data,
-        PushNotificationType: pushNotificationType,
+        NotificationCategory: notificationCategory,
       },
     })
 

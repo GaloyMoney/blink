@@ -32,7 +32,7 @@ input AdminPushNotificationSendInput {
   accountId: String!
   body: String!
   data: Object
-  pushNotificationType: PushNotificationType
+  notificationCategory: NotificationCategory
   title: String!
 }
 
@@ -253,6 +253,8 @@ type Mutation {
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
 
+scalar NotificationCategory
+
 scalar Object
 
 """An address for an on-chain bitcoin destination"""
@@ -303,8 +305,6 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
   formattedAmount: String! @deprecated(reason: "Deprecated please use `base / 10^offset`")
   offset: Int!
 }
-
-scalar PushNotificationType
 
 type Query {
   accountDetailsByAccountId(accountId: ID!): AuditedAccount!

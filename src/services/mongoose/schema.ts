@@ -259,16 +259,19 @@ const AccountSchema = new Schema<AccountRecord>(
         },
       ],
     },
-    pushNotificationSettings: {
+    notificationSettings: {
       type: {
-        pushNotificationsEnabled: {
-          type: Boolean,
-          default: true,
-        },
-        disabledPushNotificationTypes: {
-          type: [String],
-          required: true,
-          default: [],
+        push: {
+          type: {
+            enabled: {
+              type: Boolean,
+              default: true,
+            },
+            disabledCategories: {
+              type: [String],
+              default: [],
+            },
+          },
         },
       },
     },

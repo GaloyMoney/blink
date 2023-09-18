@@ -3,8 +3,8 @@ import { GT } from "@graphql/index"
 import IError from "../../../shared/types/abstract/error"
 import ConsumerAccount from "../object/consumer-account"
 
-const AccountUpdatePushNotificationSettingsPayload = GT.Object({
-  name: "AccountUpdatePushNotificationSettingsPayload",
+const AccountUpdateNotificationSettingsPayload = GT.Object({
+  name: "AccountUpdateNotificationSettingsPayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
@@ -15,4 +15,4 @@ const AccountUpdatePushNotificationSettingsPayload = GT.Object({
   }),
 })
 
-export default AccountUpdatePushNotificationSettingsPayload
+export default AccountUpdateNotificationSettingsPayload
