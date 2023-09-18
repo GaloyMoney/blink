@@ -30,6 +30,7 @@
     "typescript": "5.2.2"
   },
   "devDependencies": {
-    "@types/pg": "^8.10.2"
+    "@types/pg": "^8.10.2",
+    "encoding": "^0.1.13"
   }
 }

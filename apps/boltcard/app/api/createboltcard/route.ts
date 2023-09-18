@@ -2,20 +2,10 @@ import { randomBytes } from "crypto"
 
 import { NextRequest, NextResponse } from "next/server"
 
-import { serverUrl } from "../../config"
-import { createCardInit } from "../../knex"
+import { createCardInit } from "@/services/db/card-init"
+import { serverUrl } from "@/services/config"
 
-function randomHex(): string {
-  try {
-    const bytes: Buffer = randomBytes(16)
-    return bytes.toString("hex")
-  } catch (error) {
-    if (error instanceof Error) {
-      console.warn(error.message)
-      throw error
-    }
-  }
-}
+const randomHex = (): string => randomBytes(16).toString("hex")
 
 export async function GET(req: NextRequest) {
   // should be pass with POST? not sure if this would be compatible

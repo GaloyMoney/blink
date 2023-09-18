@@ -1,29 +1,24 @@
-import { gql, GraphQLClient } from "graphql-request"
+import { getCoreClient } from "@/services/core"
+import { fetchByCardId } from "@/services/db/card"
+import { fetchByK1 } from "@/services/db/payment"
+import { gql } from "graphql-request"
 
 import { NextRequest, NextResponse } from "next/server"
 
-import { fetchByCardId, fetchByK1 } from "../../knex"
-import { coreUrl } from "../../config"
-
 type GetUsdWalletIdQuery = {
-  readonly __typename: "Query"
   readonly me?: {
-    readonly __typename: "User"
     readonly defaultAccount: {
-      readonly __typename: "ConsumerAccount"
       readonly id: string
       readonly defaultWalletId: string
       readonly wallets: ReadonlyArray<
         | {
-            readonly __typename: "BTCWallet"
             readonly id: string
-            readonly walletCurrency: WalletCurrency
+            readonly walletCurrency: string
             readonly balance: number
           }
         | {
-            readonly __typename: "UsdWallet"
             readonly id: string
-            readonly walletCurrency: WalletCurrency
+            readonly walletCurrency: string
             readonly balance: number
           }
       >
@@ -83,21 +78,22 @@ export async function GET(req: NextRequest) {
   }
 
   const payment = await fetchByK1(k1)
-  console.log({ payment, k1 })
+  if (!payment) {
+    return NextResponse.json(
+      { status: "ERROR", reason: "payment not found" },
+      { status: 400 },
+    )
+  }
 
   const { cardId } = payment
 
   const card = await fetchByCardId(cardId)
 
-  const graphQLClient = new GraphQLClient(coreUrl, {
-    headers: {
-      authorization: `Bearer ${card.token}`,
-    },
-  })
+  const client = getCoreClient(card.token)
 
   let data: GetUsdWalletIdQuery
   try {
-    data = await graphQLClient.request<GetUsdWalletIdQuery>(getUsdWalletIdQuery)
+    data = await client.request<GetUsdWalletIdQuery>(getUsdWalletIdQuery)
   } catch (error) {
     console.error(error)
     return NextResponse.json(
@@ -129,7 +125,7 @@ export async function GET(req: NextRequest) {
 
   let result: LnInvoicePaymentSendMutation
   try {
-    result = await graphQLClient.request<LnInvoicePaymentSendMutation>({
+    result = await client.request<LnInvoicePaymentSendMutation>({
       document: lnInvoicePaymentSendMutation,
       variables: { input: { walletId: usdWalletId, paymentRequest: pr } },
     })

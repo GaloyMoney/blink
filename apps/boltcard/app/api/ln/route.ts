@@ -2,20 +2,18 @@ import { randomBytes } from "crypto"
 
 import { NextRequest, NextResponse } from "next/server"
 
-import { aesDecrypt, checkSignature } from "../../crypto/aes"
-
-import { aesDecryptKey, serverUrl } from "../../config"
-
+import { aesDecryptKey, serverUrl } from "@/services/config"
+import { getCoreClient } from "@/services/core"
+import { aesDecrypt, checkSignature } from "@/services/crypto/aes"
+import { decodePToUidCtr } from "@/services/crypto/decoder"
+import { createCard, fetchByUid } from "@/services/db/card"
 import {
   CardInitInput,
-  createCard,
   fetchAllWithStatusFetched,
-  fetchByUid,
-  insertk1,
   markCardInitAsUsed,
-} from "../../knex"
-
-import { decodePToUidCtr } from "../../crypto/decoder"
+} from "@/services/db/card-init"
+import { insertPayment } from "@/services/db/payment"
+import { gql } from "graphql-request"
 
 function generateReadableCode(numDigits: number): string {
   const allowedNumbers = ["3", "4", "6", "7", "9"]
@@ -90,6 +88,24 @@ const maybeSetupCard = async ({
   return null
 }
 
+type GetAccountIdQuery = {
+  readonly me?: {
+    readonly defaultAccount: {
+      readonly id: string
+    }
+  } | null
+}
+
+const getAccountId = gql`
+  query getAccountId {
+    me {
+      defaultAccount {
+        id
+      }
+    }
+  }
+`
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const raw_p = searchParams.get("p")
@@ -132,8 +148,29 @@ export async function GET(req: NextRequest) {
       const { k0AuthKey, k2CmacKey, k3, k4, token } = result
       await markCardInitAsUsed(k2CmacKey)
 
+      const client = getCoreClient(token)
+      const data = await client.request<GetAccountIdQuery>(getAccountId)
+      const accountId = data?.me?.defaultAccount?.id
+      if (!accountId) {
+        return NextResponse.json(
+          { status: "ERROR", reason: "account not found" },
+          { status: 400 },
+        )
+      }
+
       const id = generateReadableCode(16)
-      card = await createCard({ id, uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token })
+
+      card = await createCard({
+        id,
+        uid,
+        k0AuthKey,
+        k2CmacKey,
+        k3,
+        k4,
+        ctr,
+        token,
+        accountId,
+      })
     } else {
       return NextResponse.json(
         { status: "ERROR", reason: "card not found" },
@@ -161,7 +198,7 @@ export async function GET(req: NextRequest) {
 
   const k1 = generateSecureRandomString(32)
 
-  await insertk1({ k1, cardId: card.id })
+  await insertPayment({ k1, cardId: card.id })
 
   return NextResponse.json({
     tag: "withdrawRequest",
@@ -169,6 +206,6 @@ export async function GET(req: NextRequest) {
     k1,
     defaultDescription: "payment for a blink card",
     minWithdrawable: 1000,
-    maxWithdrawable: 100000000000,
+    maxWithdrawable: 1000000000000000,
   })
 }

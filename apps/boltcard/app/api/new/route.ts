@@ -1,7 +1,6 @@
+import { aesDecryptKey, serverUrl } from "@/services/config"
+import { fetchByOneTimeCode } from "@/services/db/card-init"
 import { NextRequest, NextResponse } from "next/server"
-
-import { aesDecryptKey, serverUrl } from "../../config"
-import { fetchByOneTimeCode } from "../../knex"
 
 interface NewCardResponse {
   protocol_name: string

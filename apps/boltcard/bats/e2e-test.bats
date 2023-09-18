@@ -28,7 +28,7 @@ load "../../../test/bats/helpers/ln"
   K1=$(read_value "k1")
   K2=$(read_value "k2")
 
-  RESPONSE=$(bun run debug/getpandc.ts $K1 $K2)
+  RESPONSE=$(bun run bats/script/getpandc.ts $K1 $K2)
 
   P_VALUE=$(echo $RESPONSE | jq -r '.p')
   C_VALUE=$(echo $RESPONSE | jq -r '.c')
@@ -38,6 +38,7 @@ load "../../../test/bats/helpers/ln"
 
   CALLBACK_URL=$(echo $RESPONSE | jq -r '.callback')
   K1_CALLBACK=$(echo $RESPONSE | jq -r '.k1')
+  [[ $(echo $K1_CALLBACK) != "null" ]] || exit 1
 
   echo "K1_CALLBACK: $K1_CALLBACK"
   cache_value "k1_callback" "$K1_CALLBACK"
@@ -46,6 +47,8 @@ load "../../../test/bats/helpers/ln"
 @test "callback" {
   K1_VALUE=$(read_value "k1_callback")
   CALLBACK_URL=http://localhost:3000/api/callback
+
+  echo "K1_VALUE: $K1_VALUE"
 
   invoice_response="$(lnd_outside_2_cli addinvoice --amt 1000)"
   payment_request=$(echo $invoice_response | jq -r '.payment_request')

@@ -1,9 +1,10 @@
-import { aesEncrypt, getSunMAC } from "@/app/crypto/aes"
-import { createSV2, encodeUidCtrToP } from "@/app/crypto/decoder"
+import { aesEncrypt, getSunMAC } from "@/services/crypto/aes"
+import { createSV2, encodeUidCtrToP } from "@/services/crypto/decoder"
+import { randomBytes } from "crypto"
 
 const aesjs = require("aes-js")
 
-const uidInit = "04996c6a926980"
+const uidInit = randomBytes(16).toString("hex")
 const ctrInit = "030000"
 
 export const main = (k1: string, k2: string) => {
