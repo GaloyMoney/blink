@@ -13,6 +13,7 @@ setup_file() {
   start_server
 
   login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+  login_user "$BOB_TOKEN_NAME" "$BOB_PHONE" "$CODE"
 }
 
 teardown_file() {
@@ -186,4 +187,66 @@ teardown() {
   retry 15 1 check_for_broadcast "$token_name" "$on_chain_address_created" 1
   bitcoin_cli -generate 2
   retry 15 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_address_created" 1
+}
+
+@test "onchain-receive: process received batch transaction" {
+  alice_token_name="$ALICE_TOKEN_NAME"
+  alice_btc_wallet_name="$alice_token_name.btc_wallet_id"
+  bob_token_name="$BOB_TOKEN_NAME"
+  bob_btc_wallet_name="$bob_token_name.btc_wallet_id"
+  amount="0.01"
+
+  # Create Alice addresses
+  alice_variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $alice_btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+
+  exec_graphql "$alice_token_name" 'on-chain-address-create' "$alice_variables"
+  alice_address_1="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${alice_address_1}" != "null" ]] || exit 1
+
+  exec_graphql "$alice_token_name" 'on-chain-address-create' "$alice_variables"
+  alice_address_2="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${alice_address_2}" != "null" ]] || exit 1
+
+  # Create Bob addresses
+  bob_variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+
+  exec_graphql "$bob_token_name" 'on-chain-address-create' "$bob_variables"
+  bob_address_1="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${bob_address_1}" != "null" ]] || exit 1
+
+  # Create psbt & broadcast transaction
+  psbt_outputs=$(
+    jq -c -n \
+    --arg alice_address_1 "$alice_address_1" \
+    --arg alice_address_2 "$alice_address_2" \
+    --arg bob_address_1 "$bob_address_1" \
+    --argjson amount "$amount" \
+    '{
+      ($alice_address_1): $amount,
+      ($alice_address_2): $amount,
+      ($bob_address_1): $amount
+    }'
+  )
+  unsigned_psbt=$(bitcoin_cli walletcreatefundedpsbt '[]' $psbt_outputs | jq -r '.psbt')
+  signed_psbt=$(bitcoin_cli walletprocesspsbt "$unsigned_psbt" | jq -r '.psbt')
+  tx_hex=$(bitcoin_cli finalizepsbt "$signed_psbt" | jq -r '.hex')
+  txid=$(bitcoin_cli sendrawtransaction "$tx_hex")
+
+  retry 15 1 check_for_broadcast "$alice_token_name" "$alice_address_1" 2
+  retry 3 1 check_for_broadcast "$alice_token_name" "$alice_address_2" 2
+  retry 3 1 check_for_broadcast "$bob_token_name" "$bob_address_1" 1
+
+  # Mine transactions
+  bitcoin_cli -generate 2
+  retry 15 1 check_for_onchain_initiated_settled "$alice_token_name" "$alice_address_1" 2
+  retry 3 1 check_for_onchain_initiated_settled "$alice_token_name" "$alice_address_2" 2
+  retry 3 1 check_for_onchain_initiated_settled "$bob_token_name" "$bob_address_1" 1
 }
