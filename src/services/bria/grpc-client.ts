@@ -9,6 +9,8 @@ import {
   EstimatePayoutFeeResponse,
   GetAddressRequest,
   GetAddressResponse,
+  GetBatchRequest,
+  GetBatchResponse,
   GetPayoutRequest,
   GetPayoutResponse,
   GetWalletBalanceSummaryRequest,
@@ -17,6 +19,8 @@ import {
   NewAddressResponse,
   SubmitPayoutRequest,
   SubmitPayoutResponse,
+  TriggerPayoutQueueRequest,
+  TriggerPayoutQueueResponse,
 } from "./proto/bria_pb"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
 
@@ -50,6 +54,16 @@ export const submitPayout = promisify<
   Metadata,
   SubmitPayoutResponse
 >(bitcoinBridgeClient.submitPayout.bind(bitcoinBridgeClient))
+
+export const triggerPayoutQueue = promisify<
+  TriggerPayoutQueueRequest,
+  Metadata,
+  TriggerPayoutQueueResponse
+>(bitcoinBridgeClient.triggerPayoutQueue.bind(bitcoinBridgeClient))
+
+export const getBatch = promisify<GetBatchRequest, Metadata, GetBatchResponse>(
+  bitcoinBridgeClient.getBatch.bind(bitcoinBridgeClient),
+)
 
 export const estimatePayoutFee = promisify<
   EstimatePayoutFeeRequest,

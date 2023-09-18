@@ -12,6 +12,7 @@ type OnChainTxHash = string & { readonly brand: unique symbol }
 type PayoutId = string & { readonly brand: unique symbol }
 type OnChainTxVout = number & { readonly brand: unique symbol }
 type ScanDepth = number & { readonly brand: unique symbol }
+type UnsignedPsbt = string & { readonly brand: unique symbol }
 type TxOut = {
   sats: Satoshis
   // OP_RETURN utxos don't have valid addresses associated with them
@@ -108,6 +109,9 @@ interface IOnChainService {
     args: QueuePayoutToAddressArgs,
   ): Promise<PayoutId | OnChainServiceError>
   rebalanceToColdWallet(amount: BtcPaymentAmount): Promise<PayoutId | OnChainServiceError>
+  rebalanceToHotWallet(
+    amount: BtcPaymentAmount,
+  ): Promise<UnsignedPsbt | OnChainServiceError>
   estimateFeeForPayout(
     args: EstimatePayoutFeeArgs,
   ): Promise<BtcPaymentAmount | OnChainServiceError>
