@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bats ttest: bats test for user logoutest for user logout
-        (#3223)...'
-      sha: b9d46d90f9050ccc2ec4a50294a4f3561f4ca597
+      commitTitle: 'chore: debugging concourse (#3233)...'
+      sha: 4dff1050788d68d94ca4b61a6e30758ae52e16c6
       tags:
-      - 0.13.75-1-gb9d46d90f
+      - 0.13.75-3-g4dff10507
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bats ttest: bats test for user logoutest for user logout
-        (#3223)...'
-      sha: b9d46d90f9050ccc2ec4a50294a4f3561f4ca597
+      commitTitle: 'chore: debugging concourse (#3233)...'
+      sha: 4dff1050788d68d94ca4b61a6e30758ae52e16c6
       tags:
-      - 0.13.75-1-gb9d46d90f
+      - 0.13.75-3-g4dff10507
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bats ttest: bats test for user logoutest for user logout
-        (#3223)...'
-      sha: b9d46d90f9050ccc2ec4a50294a4f3561f4ca597
+      commitTitle: 'chore: debugging concourse (#3233)...'
+      sha: 4dff1050788d68d94ca4b61a6e30758ae52e16c6
       tags:
-      - 0.13.75-1-gb9d46d90f
+      - 0.13.75-3-g4dff10507
     path: ./
   path: ./graphql
 kind: LockConfig
