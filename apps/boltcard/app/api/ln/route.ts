@@ -88,20 +88,62 @@ const maybeSetupCard = async ({
   return null
 }
 
-type GetAccountIdQuery = {
+type GetUsdWalletIdQuery = {
   readonly me?: {
     readonly defaultAccount: {
       readonly id: string
+      readonly defaultWalletId: string
+      readonly wallets: ReadonlyArray<
+        | {
+            readonly id: string
+            readonly walletCurrency: string
+            readonly balance: number
+          }
+        | {
+            readonly id: string
+            readonly walletCurrency: string
+            readonly balance: number
+          }
+      >
     }
   } | null
 }
 
-const getAccountId = gql`
-  query getAccountId {
+const getUsdWalletIdQuery = gql`
+  query getUsdWalletId {
     me {
       defaultAccount {
         id
+        defaultWalletId
+        wallets {
+          id
+          walletCurrency
+          balance
+        }
       }
+    }
+  }
+`
+
+type OnChainAddressCurrentMutation = {
+  readonly __typename: "Mutation"
+  readonly onChainAddressCurrent: {
+    readonly __typename: "OnChainAddressPayload"
+    readonly address?: string | null
+    readonly errors: ReadonlyArray<{
+      readonly __typename: "GraphQLApplicationError"
+      readonly message: string
+    }>
+  }
+}
+
+const onChainAddressCurrent = gql`
+  mutation onChainAddressCurrent($input: OnChainAddressCurrentInput!) {
+    onChainAddressCurrent(input: $input) {
+      errors {
+        message
+      }
+      address
     }
   }
 `
@@ -146,19 +188,66 @@ export async function GET(req: NextRequest) {
 
     if (result) {
       const { k0AuthKey, k2CmacKey, k3, k4, token } = result
-      await markCardInitAsUsed(k2CmacKey)
 
       const client = getCoreClient(token)
-      const data = await client.request<GetAccountIdQuery>(getAccountId)
+
+      let data: GetUsdWalletIdQuery
+      try {
+        data = await client.request<GetUsdWalletIdQuery>(getUsdWalletIdQuery)
+      } catch (error) {
+        console.error(error)
+        return NextResponse.json(
+          { status: "ERROR", reason: "issue fetching walletId" },
+          { status: 400 },
+        )
+      }
+
       const accountId = data?.me?.defaultAccount?.id
       if (!accountId) {
         return NextResponse.json(
-          { status: "ERROR", reason: "account not found" },
+          { status: "ERROR", reason: "no accountId found" },
+          { status: 400 },
+        )
+      }
+
+      const wallets = data.me?.defaultAccount.wallets
+
+      if (!wallets) {
+        return NextResponse.json(
+          { status: "ERROR", reason: "no wallets found" },
+          { status: 400 },
+        )
+      }
+
+      const usdWallet = wallets.find((wallet) => wallet.walletCurrency === "USD")
+      const walletId = usdWallet?.id
+
+      console.log({ usdWallet, wallets })
+
+      if (!walletId) {
+        return NextResponse.json(
+          { status: "ERROR", reason: "no usd wallet found" },
+          { status: 400 },
+        )
+      }
+
+      const dataOnchain = await client.request<OnChainAddressCurrentMutation>({
+        document: onChainAddressCurrent,
+        variables: { input: { walletId } },
+      })
+      const onchainAddress = dataOnchain?.onChainAddressCurrent?.address
+      if (!onchainAddress) {
+        console.log(dataOnchain.onChainAddressCurrent, "dataOnchain")
+        return NextResponse.json(
+          { status: "ERROR", reason: `onchain address not found` },
           { status: 400 },
         )
       }
 
       const id = generateReadableCode(16)
+      console.log({ id, onchainAddress }, "new card id")
+
+      await markCardInitAsUsed(k2CmacKey)
 
       card = await createCard({
         id,
@@ -170,6 +259,8 @@ export async function GET(req: NextRequest) {
         ctr,
         token,
         accountId,
+        onchainAddress,
+        walletId,
       })
     } else {
       return NextResponse.json(

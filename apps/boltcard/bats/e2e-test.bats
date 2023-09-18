@@ -28,7 +28,8 @@ load "../../../test/bats/helpers/ln"
   K1=$(read_value "k1")
   K2=$(read_value "k2")
 
-  RESPONSE=$(bun run bats/script/getpandc.ts $K1 $K2)
+  uid=$(openssl rand -hex 7)
+  RESPONSE=$(bun run bats/script/getpandc.ts $uid $K1 $K2)
 
   P_VALUE=$(echo $RESPONSE | jq -r '.p')
   C_VALUE=$(echo $RESPONSE | jq -r '.c')
@@ -42,6 +43,23 @@ load "../../../test/bats/helpers/ln"
 
   echo "K1_CALLBACK: $K1_CALLBACK"
   cache_value "k1_callback" "$K1_CALLBACK"
+  cache_value "uid" "$uid"
+}
+
+@test "onchain funding" {
+  uid=$(read_value "uid")
+  address=$(curl -s http://localhost:3000/api/card/uid/${uid} | jq -r '.onchainAddress')
+  cardId=$(curl -s http://localhost:3000/api/card/uid/${uid} | jq -r '.id')
+  cache_value "cardId" "$cardId"
+
+  amount="0.01"
+  token_name=$(read_value "alice")
+
+  bitcoin_cli sendtoaddress "$address" "$amount"
+  bitcoin_cli -generate 2
+
+  # retry 30 1 check_for_onchain_initiated_settled "$token_name" "$address"
+  sleep 1
 }
 
 @test "callback" {
@@ -56,11 +74,11 @@ load "../../../test/bats/helpers/ln"
 
   result=$(curl -s "${CALLBACK_URL}?k1=${K1_VALUE}&pr=${payment_request}")
   echo "$result"
-  [[ result.status == "OK" ]] || exit 1
+  [[ $(echo $result | jq -r '.status') == "OK" ]] || exit 1
 }
 
 @test "wipecard" {
-  "skip"
-  id=""
-  curl -s http://localhost:3000/api/wipeboltcard
+  cardId=$(read_value "cardId")
+  result=$(curl -s http://localhost:3000/api/wipe?cardId=${cardId})
+  [[ $(echo $result | jq -r '.k1') != "null" ]] || exit 1
 }

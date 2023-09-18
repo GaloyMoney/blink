@@ -20,11 +20,25 @@ interface CardInput {
   ctr: number
   token: string
   accountId: string
+  onchainAddress: string
+  walletId: string
 }
 
 export async function createCard(cardData: CardInput) {
   try {
-    const { id, uid, k0AuthKey, k2CmacKey, k3, k4, ctr, token, accountId } = cardData
+    const {
+      id,
+      uid,
+      k0AuthKey,
+      k2CmacKey,
+      k3,
+      k4,
+      ctr,
+      token,
+      accountId,
+      onchainAddress,
+      walletId,
+    } = cardData
 
     const [result] = await knex("Card")
       .insert({
@@ -37,6 +51,8 @@ export async function createCard(cardData: CardInput) {
         ctr,
         token,
         accountId,
+        onchainAddress,
+        walletId,
       })
       .returning("*")
 

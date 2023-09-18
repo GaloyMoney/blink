@@ -5,27 +5,6 @@ import { gql } from "graphql-request"
 
 import { NextRequest, NextResponse } from "next/server"
 
-type GetUsdWalletIdQuery = {
-  readonly me?: {
-    readonly defaultAccount: {
-      readonly id: string
-      readonly defaultWalletId: string
-      readonly wallets: ReadonlyArray<
-        | {
-            readonly id: string
-            readonly walletCurrency: string
-            readonly balance: number
-          }
-        | {
-            readonly id: string
-            readonly walletCurrency: string
-            readonly balance: number
-          }
-      >
-    }
-  } | null
-}
-
 type LnInvoicePaymentSendMutation = {
   readonly __typename: "Mutation"
   readonly lnInvoicePaymentSend: {
@@ -37,22 +16,6 @@ type LnInvoicePaymentSendMutation = {
     }>
   }
 }
-
-const getUsdWalletIdQuery = gql`
-  query getUsdWalletId {
-    me {
-      defaultAccount {
-        id
-        defaultWalletId
-        wallets {
-          id
-          walletCurrency
-          balance
-        }
-      }
-    }
-  }
-`
 
 const lnInvoicePaymentSendMutation = gql`
   mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
@@ -90,44 +53,13 @@ export async function GET(req: NextRequest) {
   const card = await fetchByCardId(cardId)
 
   const client = getCoreClient(card.token)
-
-  let data: GetUsdWalletIdQuery
-  try {
-    data = await client.request<GetUsdWalletIdQuery>(getUsdWalletIdQuery)
-  } catch (error) {
-    console.error(error)
-    return NextResponse.json(
-      { status: "ERROR", reason: "issue fetching walletId" },
-      { status: 400 },
-    )
-  }
-
-  const wallets = data.me?.defaultAccount.wallets
-
-  if (!wallets) {
-    return NextResponse.json(
-      { status: "ERROR", reason: "no wallets found" },
-      { status: 400 },
-    )
-  }
-
-  const usdWallet = wallets.find((wallet) => wallet.walletCurrency === "USD")
-  const usdWalletId = usdWallet?.id
-
-  console.log({ usdWallet, wallets })
-
-  if (!usdWalletId) {
-    return NextResponse.json(
-      { status: "ERROR", reason: "no usd wallet found" },
-      { status: 400 },
-    )
-  }
+  const { walletId } = card
 
   let result: LnInvoicePaymentSendMutation
   try {
     result = await client.request<LnInvoicePaymentSendMutation>({
       document: lnInvoicePaymentSendMutation,
-      variables: { input: { walletId: usdWalletId, paymentRequest: pr } },
+      variables: { input: { walletId, paymentRequest: pr } },
     })
   } catch (error) {
     console.error(error)

@@ -31,6 +31,12 @@ async function createTables() {
       // in case the token where to not be working anymore
       table.uuid("accountId").notNullable()
 
+      // store this locally so we always have the same address (for print)
+      table.string("onchainAddress").notNullable()
+
+      // store this locally even though it's also fetchable with the token
+      table.string("walletId").notNullable()
+
       table.integer("ctr").notNullable()
       table.boolean("enabled").notNullable().defaultTo(true)
 
