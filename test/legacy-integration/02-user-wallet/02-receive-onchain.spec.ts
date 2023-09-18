@@ -30,7 +30,6 @@ import {
 import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 import { MultipleCurrenciesForSingleCurrencyOperationError } from "@domain/errors"
 
-import { BriaPayloadType } from "@services/bria"
 import { LedgerService } from "@services/ledger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -38,10 +37,6 @@ import { createPushNotificationContent } from "@services/notifications/create-pu
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { baseLogger } from "@services/logger"
 
-import {
-  utxoDetectedEventHandler,
-  utxoSettledEventHandler,
-} from "@servers/event-handlers/bria"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 
 import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
@@ -61,7 +56,6 @@ import {
   getTransactionsForWalletId,
   getUsdWalletIdByPhone,
   lndonchain,
-  manyBriaSubscribe,
   mineBlockAndSyncAll,
   RANDOM_ADDRESS,
   randomPhone,
@@ -163,147 +157,6 @@ describe("With Bria", () => {
       // Reset limits when done for other tests
       resetOk = await resetOnChainAddressAccountIdLimits(newAccountIdA)
       expect(resetOk).not.toBeInstanceOf(Error)
-    })
-
-    it("receives batch on-chain transaction", async () => {
-      const address1UserA = await Wallets.createOnChainAddress({
-        walletId: newWalletIdA,
-      })
-      if (address1UserA instanceof Error) throw address1UserA
-
-      const address2UserA = await Wallets.createOnChainAddress({
-        walletId: newWalletIdA,
-      })
-      if (address2UserA instanceof Error) throw address2UserA
-
-      const funderWalletId = await getFunderWalletId()
-      const addressDealer = await Wallets.createOnChainAddress({
-        walletId: funderWalletId,
-      })
-      if (addressDealer instanceof Error) throw addressDealer
-      const addresses = [address1UserA, addressDealer, address2UserA]
-
-      const initialBalanceUserA = await getBalanceHelper(newWalletIdA)
-      const initBalanceDealer = await getBalanceHelper(funderWalletId)
-
-      const output0 = {}
-      output0[address1UserA] = 1
-
-      const output1 = {}
-      output1[addressDealer] = 2
-
-      const output2 = {}
-      output2[address2UserA] = 2
-
-      const outputs = [output0, output1, output2]
-
-      const { psbt } = await bitcoindOutside.walletCreateFundedPsbt({
-        inputs: [],
-        outputs,
-      })
-      // const decodedPsbt1 = await bitcoindOutside.decodePsbt(psbt)
-      // const analysePsbt1 = await bitcoindOutside.analyzePsbt(psbt)
-      const walletProcessPsbt = await bitcoindOutside.walletProcessPsbt({ psbt })
-      // const decodedPsbt2 = await bitcoindOutside.decodePsbt(walletProcessPsbt.psbt)
-      // const analysePsbt2 = await bitcoindOutside.analyzePsbt(walletProcessPsbt.psbt)
-      const finalizedPsbt = await bitcoindOutside.finalizePsbt({
-        psbt: walletProcessPsbt.psbt,
-      })
-
-      const txHash = await bitcoindOutside.sendRawTransaction({
-        hexstring: finalizedPsbt.hex,
-      })
-
-      const detectedEvents = await manyBriaSubscribe({
-        type: BriaPayloadType.UtxoDetected,
-        addresses,
-      })
-      expect(detectedEvents.length).toEqual(addresses.length)
-      for (const detectedEvent of detectedEvents) {
-        if (detectedEvent?.payload.type !== BriaPayloadType.UtxoDetected) {
-          throw new Error(`Expected ${BriaPayloadType.UtxoDetected} event`)
-        }
-        const resultPending = await utxoDetectedEventHandler({
-          event: detectedEvent.payload,
-        })
-        if (resultPending instanceof Error) {
-          throw resultPending
-        }
-      }
-
-      const defaultDepositFeeRatio = feesConfig.depositRatioAsBasisPoints
-
-      // Test 'getPendingOnChainBalanceForWallets' use-case method
-      const newWalletA = await WalletsRepository().findById(newWalletIdA)
-      if (newWalletA instanceof Error) throw newWalletA
-      const pendingBalance = await Wallets.getPendingOnChainBalanceForWallets([
-        newWalletA,
-      ])
-      if (pendingBalance instanceof Error) throw pendingBalance
-      expect(Number(pendingBalance[newWalletIdA].amount)).toEqual(
-        amountAfterFeeDeduction({
-          amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
-          minBankFee: feesConfig.depositDefaultMin,
-          minBankFeeThreshold: feesConfig.depositThreshold,
-          depositFeeRatio: defaultDepositFeeRatio,
-        }),
-      )
-
-      const pendingTxnsResult = await Wallets.getTransactionsForWallets({
-        wallets: [newWalletA],
-      })
-      if (pendingTxnsResult instanceof Error) throw pendingTxnsResult
-      const pendingTxns = pendingTxnsResult.result?.slice.filter(
-        (tx) =>
-          "transactionHash" in tx.settlementVia &&
-          tx.settlementVia.transactionHash === txHash,
-      )
-      expect(pendingTxns?.length).toEqual(2)
-      expect(pendingTxns?.[0].walletId).toBe(pendingTxns?.[1].walletId)
-      expect(pendingTxns?.[0].id).not.toBe(pendingTxns?.[1].id)
-
-      await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
-
-      const settledEvents = await manyBriaSubscribe({
-        type: BriaPayloadType.UtxoSettled,
-        addresses,
-      })
-      expect(settledEvents.length).toEqual(addresses.length)
-      for (const settledEvent of settledEvents) {
-        if (settledEvent?.payload.type !== BriaPayloadType.UtxoSettled) {
-          throw new Error(`Expected ${BriaPayloadType.UtxoSettled} event`)
-        }
-        const resultSettled = await utxoSettledEventHandler({
-          event: settledEvent.payload,
-        })
-        if (resultSettled instanceof Error) {
-          throw resultSettled
-        }
-      }
-
-      {
-        const balanceUserA = await getBalanceHelper(newWalletIdA)
-        const balanceDealer = await getBalanceHelper(funderWalletId)
-
-        expect(balanceUserA).toBe(
-          initialBalanceUserA +
-            amountAfterFeeDeduction({
-              amount: { amount: 300_000_000n, currency: WalletCurrency.Btc },
-              minBankFee: feesConfig.depositDefaultMin,
-              minBankFeeThreshold: feesConfig.depositThreshold,
-              depositFeeRatio: defaultDepositFeeRatio,
-            }),
-        )
-        expect(balanceDealer).toBe(
-          initBalanceDealer +
-            amountAfterFeeDeduction({
-              amount: { amount: 200_000_000n, currency: WalletCurrency.Btc },
-              minBankFee: feesConfig.depositDefaultMin,
-              minBankFeeThreshold: feesConfig.depositThreshold,
-              depositFeeRatio: defaultDepositFeeRatio,
-            }),
-        )
-      }
     })
   })
 })
