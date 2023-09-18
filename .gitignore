@@ -40,3 +40,5 @@ generated.gql
 .*_pid
 
 junit.xml
+
+.next

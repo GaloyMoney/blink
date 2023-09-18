@@ -79,16 +79,13 @@ generateTotpCode() {
   exec_graphql 'charlie' 'identity'
   id="$(graphql_output '.data.me.id')"
 
-  sessions_before_logout=$(curl -s http://127.0.0.1:4434/admin/identities/$id/sessions | jq '[.[] | select(.active == true)] | length')
-  curl -s http://127.0.0.1:4434/admin/identities/$id/sessions
-  echo $sessions_before_logout
-
+  sessions_before_logout=$(curl -s $KRATOS_ADMIN_API/admin/identities/$id/sessions | jq '[.[] | select(.active == true)] | length')
   [[ "$sessions_before_logout" -eq 1 ]] || exit 1
 
   exec_graphql 'charlie' 'logout'
   [[ "$(graphql_output '.data.userLogout.success')" = "true" ]] || exit 1
 
-  sessions_after_logout=$(curl -s http://127.0.0.1:4434/admin/identities/$id/sessions | jq '[.[] | select(.active == true)] | length')
+  sessions_after_logout=$(curl -s $KRATOS_ADMIN_API/admin/identities/$id/sessions | jq '[.[] | select(.active == true)] | length')
   [[ "$sessions_after_logout" -eq 0 ]] || exit 1
 }
 
