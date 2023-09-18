@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump deps...'
-      sha: 6ca3f3f357cb1a99add9d345c5d00bb8fce6957b
+      commitTitle: 'fix: trigger restart invoices issue (#3186)...'
+      sha: 8cc34161c5649c8f979f575219f6210fc20a6609
       tags:
-      - 0.13.76-1-g6ca3f3f35
+      - 0.13.77-1-g8cc34161c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump deps...'
-      sha: 6ca3f3f357cb1a99add9d345c5d00bb8fce6957b
+      commitTitle: 'fix: trigger restart invoices issue (#3186)...'
+      sha: 8cc34161c5649c8f979f575219f6210fc20a6609
       tags:
-      - 0.13.76-1-g6ca3f3f35
+      - 0.13.77-1-g8cc34161c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump deps...'
-      sha: 6ca3f3f357cb1a99add9d345c5d00bb8fce6957b
+      commitTitle: 'fix: trigger restart invoices issue (#3186)...'
+      sha: 8cc34161c5649c8f979f575219f6210fc20a6609
       tags:
-      - 0.13.76-1-g6ca3f3f35
+      - 0.13.77-1-g8cc34161c
     path: ./
   path: ./graphql
 kind: LockConfig
