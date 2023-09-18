@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update invalid ip metadata error message (#3227)'
-      sha: 3bda3905c2c06f60fc5a40b516e848dbafb86261
+      commitTitle: 'chore: bats ttest: bats test for user logoutest for user logout
+        (#3223)...'
+      sha: b9d46d90f9050ccc2ec4a50294a4f3561f4ca597
       tags:
-      - 0.13.74-1-g3bda3905c
+      - 0.13.75-1-gb9d46d90f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update invalid ip metadata error message (#3227)'
-      sha: 3bda3905c2c06f60fc5a40b516e848dbafb86261
+      commitTitle: 'chore: bats ttest: bats test for user logoutest for user logout
+        (#3223)...'
+      sha: b9d46d90f9050ccc2ec4a50294a4f3561f4ca597
       tags:
-      - 0.13.74-1-g3bda3905c
+      - 0.13.75-1-gb9d46d90f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: update invalid ip metadata error message (#3227)'
-      sha: 3bda3905c2c06f60fc5a40b516e848dbafb86261
+      commitTitle: 'chore: bats ttest: bats test for user logoutest for user logout
+        (#3223)...'
+      sha: b9d46d90f9050ccc2ec4a50294a4f3561f4ca597
       tags:
-      - 0.13.74-1-g3bda3905c
+      - 0.13.75-1-gb9d46d90f
     path: ./
   path: ./graphql
 kind: LockConfig
