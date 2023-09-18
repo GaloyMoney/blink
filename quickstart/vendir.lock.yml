@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: fix tests on concourse (#3234)...'
-      sha: 2cd65bc0fc46760b39e768b3b3fd3d71f69ad6d2
+      commitTitle: 'chore: bump deps...'
+      sha: 6ca3f3f357cb1a99add9d345c5d00bb8fce6957b
       tags:
-      - 0.13.75-5-g2cd65bc0f
+      - 0.13.76-1-g6ca3f3f35
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: fix tests on concourse (#3234)...'
-      sha: 2cd65bc0fc46760b39e768b3b3fd3d71f69ad6d2
+      commitTitle: 'chore: bump deps...'
+      sha: 6ca3f3f357cb1a99add9d345c5d00bb8fce6957b
       tags:
-      - 0.13.75-5-g2cd65bc0f
+      - 0.13.76-1-g6ca3f3f35
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: fix tests on concourse (#3234)...'
-      sha: 2cd65bc0fc46760b39e768b3b3fd3d71f69ad6d2
+      commitTitle: 'chore: bump deps...'
+      sha: 6ca3f3f357cb1a99add9d345c5d00bb8fce6957b
       tags:
-      - 0.13.75-5-g2cd65bc0f
+      - 0.13.76-1-g6ca3f3f35
     path: ./
   path: ./graphql
 kind: LockConfig
