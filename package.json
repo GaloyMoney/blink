@@ -156,7 +156,7 @@
     "@types/react": "^18.2.21",
     "@types/set-cookie-parser": "^2.4.2",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.2",
     "@xascode/tscpaths": "0.1.4",
     "axios-mock-adapter": "^1.22.0",
     "eslint": "^8.49.0",
