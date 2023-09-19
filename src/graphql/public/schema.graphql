@@ -30,18 +30,18 @@ type AccountDeletePayload {
   success: Boolean!
 }
 
-input AccountDisableNotificationCategoryForChannelInput {
+input AccountDisableNotificationCategoryInput {
   category: NotificationCategory!
-  channel: NotificationChannel!
+  channel: NotificationChannel
 }
 
 input AccountDisableNotificationChannelInput {
   channel: NotificationChannel!
 }
 
-input AccountEnableNotificationCategoryForChannelInput {
+input AccountEnableNotificationCategoryInput {
   category: NotificationCategory!
-  channel: NotificationChannel!
+  channel: NotificationChannel
 }
 
 input AccountEnableNotificationChannelInput {
@@ -645,9 +645,9 @@ type MobileVersions {
 
 type Mutation {
   accountDelete: AccountDeletePayload!
-  accountDisableNotificationCategoryForChannel(input: AccountDisableNotificationCategoryForChannelInput!): AccountUpdateNotificationSettingsPayload!
+  accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload!
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload!
-  accountEnableNotificationCategoryForChannel(input: AccountEnableNotificationCategoryForChannelInput!): AccountUpdateNotificationSettingsPayload!
+  accountEnableNotificationCategory(input: AccountEnableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload!
   accountEnableNotificationChannel(input: AccountEnableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload!
   accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload!
   accountUpdateDisplayCurrency(input: AccountUpdateDisplayCurrencyInput!): AccountUpdateDisplayCurrencyPayload!

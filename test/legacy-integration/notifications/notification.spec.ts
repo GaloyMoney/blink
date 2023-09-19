@@ -230,7 +230,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
-          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
             GaloyNotificationCategories.Payments,
           )
         }),
@@ -277,7 +277,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
-          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
             GaloyNotificationCategories.Payments,
           )
         }),
@@ -325,7 +325,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
-          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
             GaloyNotificationCategories.Payments,
           )
         }),
@@ -372,7 +372,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
-          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
             GaloyNotificationCategories.Payments,
           )
         }),
@@ -419,7 +419,7 @@ describe("notification", () => {
           expect(sendFilteredNotification.mock.calls.length).toBe(1)
           expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
           expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
-          expect(sendFilteredNotification.mock.calls[0][0].pushNotificationType).toBe(
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
             GaloyNotificationCategories.Payments,
           )
         }),

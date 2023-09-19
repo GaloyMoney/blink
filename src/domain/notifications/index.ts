@@ -57,54 +57,74 @@ export const setNotificationChannelIsEnabled = ({
   }
 }
 
-export const enableNotificationCategoryForChannel = ({
+export const enableNotificationCategory = ({
   notificationSettings,
   notificationChannel,
   notificationCategory,
 }: {
   notificationSettings: NotificationSettings
-  notificationChannel: NotificationChannel
+  notificationChannel?: NotificationChannel
   notificationCategory: NotificationCategory
 }): NotificationSettings => {
-  const notificationChannelSettings = notificationSettings[notificationChannel]
-  const disabledCategories = notificationChannelSettings.disabledCategories
+  const notificationChannelsToUpdate: NotificationChannel[] = notificationChannel
+    ? [notificationChannel]
+    : Object.values(NotificationChannel)
 
-  const newNotificationSettings = {
-    enabled: notificationChannelSettings.enabled,
-    disabledCategories: disabledCategories.filter(
-      (category) => category !== notificationCategory,
-    ),
+  let newNotificationSettings = notificationSettings
+
+  for (const notificationChannel of notificationChannelsToUpdate) {
+    const notificationChannelSettings = notificationSettings[notificationChannel]
+    const disabledCategories = notificationChannelSettings.disabledCategories
+
+    const newNotificationChannelSettings = {
+      enabled: notificationChannelSettings.enabled,
+      disabledCategories: disabledCategories.filter(
+        (category) => category !== notificationCategory,
+      ),
+    }
+
+    newNotificationSettings = {
+      ...notificationSettings,
+      [notificationChannel]: newNotificationChannelSettings,
+    }
   }
 
-  return {
-    ...notificationSettings,
-    [notificationChannel]: newNotificationSettings,
-  }
+  return newNotificationSettings
 }
 
-export const disableNotificationCategoryForChannel = ({
+export const disableNotificationCategory = ({
   notificationSettings,
   notificationChannel,
   notificationCategory,
 }: {
   notificationSettings: NotificationSettings
-  notificationChannel: NotificationChannel
+  notificationChannel?: NotificationChannel
   notificationCategory: NotificationCategory
 }): NotificationSettings => {
-  const notificationChannelSettings = notificationSettings[notificationChannel]
-  const disabledCategories = notificationChannelSettings.disabledCategories
-  disabledCategories.push(notificationCategory)
-  const uniqueDisabledCategories = [...new Set(disabledCategories)]
+  const notificationChannelsToUpdate: NotificationChannel[] = notificationChannel
+    ? [notificationChannel]
+    : Object.values(NotificationChannel)
 
-  const newNotificationSettings = {
-    enabled: notificationChannelSettings.enabled,
-    disabledCategories: uniqueDisabledCategories,
+  let newNotificationSettings = notificationSettings
+
+  for (const notificationChannel of notificationChannelsToUpdate) {
+    const notificationChannelSettings = notificationSettings[notificationChannel]
+    const disabledCategories = notificationChannelSettings.disabledCategories
+    disabledCategories.push(notificationCategory)
+    const uniqueDisabledCategories = [...new Set(disabledCategories)]
+
+    const newNotificationChannelSettings = {
+      enabled: notificationChannelSettings.enabled,
+      disabledCategories: uniqueDisabledCategories,
+    }
+
+    newNotificationSettings = {
+      ...notificationSettings,
+      [notificationChannel]: newNotificationChannelSettings,
+    }
   }
 
-  return {
-    ...notificationSettings,
-    [notificationChannel]: newNotificationSettings,
-  }
+  return newNotificationSettings
 }
 
 export const shouldSendNotification = ({

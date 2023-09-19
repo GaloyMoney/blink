@@ -6,11 +6,11 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import NotificationChannel from "@graphql/shared/types/scalar/notification-channel"
 import NotificationCategory from "@graphql/shared/types/scalar/notification-category"
 
-const AccountDisableNotificationCategoryForChannelInput = GT.Input({
-  name: "AccountDisableNotificationCategoryForChannelInput",
+const AccountDisableNotificationCategoryInput = GT.Input({
+  name: "AccountDisableNotificationCategoryInput",
   fields: () => ({
     channel: {
-      type: GT.NonNull(NotificationChannel),
+      type: NotificationChannel,
     },
     category: {
       type: GT.NonNull(NotificationCategory),
@@ -18,12 +18,12 @@ const AccountDisableNotificationCategoryForChannelInput = GT.Input({
   }),
 })
 
-const AccountDisableNotificationCategoryForChannelMutation = GT.Field<
+const AccountDisableNotificationCategoryMutation = GT.Field<
   null,
   GraphQLPublicContextAuth,
   {
     input: {
-      channel: NotificationChannel | Error
+      channel?: NotificationChannel | Error
       category: NotificationCategory
     }
   }
@@ -33,14 +33,14 @@ const AccountDisableNotificationCategoryForChannelMutation = GT.Field<
   },
   type: GT.NonNull(AccountUpdateNotificationSettingsPayload),
   args: {
-    input: { type: GT.NonNull(AccountDisableNotificationCategoryForChannelInput) },
+    input: { type: GT.NonNull(AccountDisableNotificationCategoryInput) },
   },
   resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
     const { channel, category } = args.input
 
     if (channel instanceof Error) return { errors: [{ message: channel.message }] }
 
-    const result = await Accounts.disableNotificationCategoryForChannel({
+    const result = await Accounts.disableNotificationCategory({
       accountId: domainAccount.id,
       notificationChannel: channel,
       notificationCategory: category,
@@ -57,4 +57,4 @@ const AccountDisableNotificationCategoryForChannelMutation = GT.Field<
   },
 })
 
-export default AccountDisableNotificationCategoryForChannelMutation
+export default AccountDisableNotificationCategoryMutation

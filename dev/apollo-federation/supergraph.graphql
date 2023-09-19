@@ -57,11 +57,11 @@ type AccountDeletePayload
   success: Boolean!
 }
 
-input AccountDisableNotificationCategoryForChannelInput
+input AccountDisableNotificationCategoryInput
   @join__type(graph: PUBLIC)
 {
   category: NotificationCategory!
-  channel: NotificationChannel!
+  channel: NotificationChannel
 }
 
 input AccountDisableNotificationChannelInput
@@ -70,11 +70,11 @@ input AccountDisableNotificationChannelInput
   channel: NotificationChannel!
 }
 
-input AccountEnableNotificationCategoryForChannelInput
+input AccountEnableNotificationCategoryInput
   @join__type(graph: PUBLIC)
 {
   category: NotificationCategory!
-  channel: NotificationChannel!
+  channel: NotificationChannel
 }
 
 input AccountEnableNotificationChannelInput
@@ -851,9 +851,9 @@ type Mutation
   @join__type(graph: PUBLIC)
 {
   accountDelete: AccountDeletePayload!
-  accountDisableNotificationCategoryForChannel(input: AccountDisableNotificationCategoryForChannelInput!): AccountUpdateNotificationSettingsPayload!
+  accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload!
   accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload!
-  accountEnableNotificationCategoryForChannel(input: AccountEnableNotificationCategoryForChannelInput!): AccountUpdateNotificationSettingsPayload!
+  accountEnableNotificationCategory(input: AccountEnableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload!
   accountEnableNotificationChannel(input: AccountEnableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload!
   accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload!
   accountUpdateDisplayCurrency(input: AccountUpdateDisplayCurrencyInput!): AccountUpdateDisplayCurrencyPayload!

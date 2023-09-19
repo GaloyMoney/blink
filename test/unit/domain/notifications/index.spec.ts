@@ -1,6 +1,6 @@
 import {
   NotificationChannel,
-  disableNotificationCategoryForChannel,
+  disableNotificationCategory,
   setNotificationChannelIsEnabled,
   shouldSendNotification,
 } from "@domain/notifications"
@@ -106,7 +106,7 @@ describe("Notifications - push notification filtering", () => {
 
       const notificationCategory = "transaction" as NotificationCategory
 
-      const result = disableNotificationCategoryForChannel({
+      const result = disableNotificationCategory({
         notificationSettings,
         notificationChannel,
         notificationCategory,
@@ -133,7 +133,7 @@ describe("Notifications - push notification filtering", () => {
 
     const notificationChannel = NotificationChannel.Push
 
-    const result = disableNotificationCategoryForChannel({
+    const result = disableNotificationCategory({
       notificationSettings,
       notificationChannel,
       notificationCategory,
