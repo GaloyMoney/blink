@@ -224,7 +224,7 @@ create_new_lnd_onchain_address() {
   alice_token_name="$ALICE_TOKEN_NAME"
   alice_btc_wallet_name="$alice_token_name.btc_wallet_id"
   bob_token_name="$BOB_TOKEN_NAME"
-  bob_btc_wallet_name="$bob_token_name.btc_wallet_id"
+  bob_usd_wallet_name="$bob_token_name.usd_wallet_id"
   amount="0.01"
 
   # Create Alice addresses
@@ -245,7 +245,7 @@ create_new_lnd_onchain_address() {
   # Create Bob addresses
   bob_variables=$(
     jq -n \
-    --arg wallet_id "$(read_value $bob_btc_wallet_name)" \
+    --arg wallet_id "$(read_value $bob_usd_wallet_name)" \
     '{input: {walletId: $wallet_id}}'
   )
 
@@ -274,6 +274,23 @@ create_new_lnd_onchain_address() {
   retry 15 1 check_for_broadcast "$alice_token_name" "$alice_address_1" 2
   retry 3 1 check_for_broadcast "$alice_token_name" "$alice_address_2" 2
   retry 3 1 check_for_broadcast "$bob_token_name" "$bob_address_1" 1
+
+  # Check 'pendingIncomingBalance' query
+  exec_graphql "$alice_token_name" 'wallets-for-account'
+  alice_btc_pending_incoming=$(graphql_output '
+    .data.me.defaultAccount.wallets[]
+    | select(.walletCurrency == "BTC")
+    .pendingIncomingBalance
+  ')
+  [[ "$alice_btc_pending_incoming" -gt 0 ]] || exit 1
+
+  exec_graphql "$bob_token_name" 'wallets-for-account'
+  bob_usd_pending_incoming=$(graphql_output '
+    .data.me.defaultAccount.wallets[]
+    | select(.walletCurrency == "USD")
+    .pendingIncomingBalance
+  ')
+  [[ "$bob_usd_pending_incoming" -gt 0 ]] || exit 1
 
   # Mine transactions
   bitcoin_cli -generate 2
