@@ -18,6 +18,10 @@ reset_redis() {
   redis_cli FLUSHALL
 }
 
+mongo_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-mongodb-1" mongosh --quiet mongodb://localhost:27017/galoy --eval $@
+}
+
 start_server() {
   stop_server > /dev/null 2>&1 || true
 

@@ -380,6 +380,127 @@ describe("onChainPay", () => {
       expect(res).toBeInstanceOf(SubOneCentSatAmountForUsdSelfSendError)
     })
 
+    it("fails if intraledger limit hit", async () => {
+      const newWalletDescriptor = await createRandomUserAndBtcWallet()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Create recipient address
+      const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
+      const address = await Wallets.createOnChainAddress({
+        walletId: recipientWalletDescriptor.id,
+      })
+      if (address instanceof Error) throw address
+
+      // Get remaining limit
+      const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+      if (timestamp1DayAgo instanceof Error) throw timestamp1DayAgo
+
+      const intraLedgerLimit = getAccountLimits({
+        level: newAccount.level,
+      }).intraLedgerLimit
+      const intraLedgerLimitUsdAmount = {
+        amount: BigInt(intraLedgerLimit),
+        currency: WalletCurrency.Usd,
+      }
+      const walletPriceRatio = await Prices.getCurrentPriceAsWalletPriceRatio({
+        currency: UsdDisplayCurrency,
+      })
+      if (walletPriceRatio instanceof Error) throw walletPriceRatio
+      const intraLedgerLimitBtcAmount = walletPriceRatio.convertFromUsd(
+        intraLedgerLimitUsdAmount,
+      )
+
+      // Fund wallet past remaining limit
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: {
+          usd: calc.mul(intraLedgerLimitUsdAmount, 2n),
+          btc: calc.mul(intraLedgerLimitBtcAmount, 2n),
+        },
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        address,
+        amount: Number(intraLedgerLimitBtcAmount.amount) + 10_000,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+
+      expect(result).toBeInstanceOf(LimitsExceededError)
+    })
+
+    it("fails if trade-intra-account limit hit", async () => {
+      const {
+        btcWalletDescriptor: newWalletDescriptor,
+        usdWalletDescriptor: recipientWalletDescriptor,
+      } = await createRandomUserAndWallets()
+      const newAccount = await AccountsRepository().findById(
+        newWalletDescriptor.accountId,
+      )
+      if (newAccount instanceof Error) throw newAccount
+
+      // Create recipient address
+      const address = await Wallets.createOnChainAddress({
+        walletId: recipientWalletDescriptor.id,
+      })
+      if (address instanceof Error) throw address
+
+      // Get remaining limit
+      const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+      if (timestamp1DayAgo instanceof Error) throw timestamp1DayAgo
+
+      const tradeIntraAccountLimit = getAccountLimits({
+        level: newAccount.level,
+      }).tradeIntraAccountLimit
+      const tradeIntraAccountLimitUsdAmount = {
+        amount: BigInt(tradeIntraAccountLimit),
+        currency: WalletCurrency.Usd,
+      }
+
+      const hedgeBuyUsdBtcFromUsd = DealerPriceService().getSatsFromCentsForImmediateBuy
+      const tradeIntraAccountLimitBtcAmount = await hedgeBuyUsdBtcFromUsd(
+        tradeIntraAccountLimitUsdAmount,
+      )
+      if (tradeIntraAccountLimitBtcAmount instanceof Error) {
+        throw tradeIntraAccountLimitBtcAmount
+      }
+
+      // Fund wallet past remaining limit
+      const receive = await recordReceiveLnPayment({
+        walletDescriptor: newWalletDescriptor,
+        paymentAmount: {
+          usd: calc.mul(tradeIntraAccountLimitUsdAmount, 2n),
+          btc: calc.mul(tradeIntraAccountLimitBtcAmount, 2n),
+        },
+        bankFee: receiveBankFee,
+        displayAmounts: receiveDisplayAmounts,
+        memo,
+      })
+      if (receive instanceof Error) throw receive
+
+      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+        senderWalletId: newWalletDescriptor.id,
+        senderAccount: newAccount,
+        address,
+        amount: Number(tradeIntraAccountLimitBtcAmount.amount) + 10_000,
+
+        speed: PayoutSpeed.Fast,
+        memo,
+      })
+
+      expect(result).toBeInstanceOf(LimitsExceededError)
+    })
+
     it("fails if recipient account is locked", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const newAccount = await AccountsRepository().findById(

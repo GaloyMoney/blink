@@ -49,7 +49,6 @@ check_for_onchain_initiated_settled() {
   local address=$2
   local first=${3:-"1"}
 
-  echo "first: $first"
   variables=$(
   jq -n \
   --argjson first "$first" \

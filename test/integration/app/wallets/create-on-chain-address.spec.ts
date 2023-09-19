@@ -1,9 +1,15 @@
 import { Accounts, Wallets } from "@app"
 
 import { AccountStatus } from "@domain/accounts"
+import { RateLimitConfig } from "@domain/rate-limit"
 import { InactiveAccountError } from "@domain/errors"
+import {
+  OnChainAddressCreateRateLimiterExceededError,
+  RateLimiterExceededError,
+} from "@domain/rate-limit/errors"
 
 import { AccountsRepository } from "@services/mongoose"
+import * as RateLimitImpl from "@services/rate-limit"
 
 import { createRandomUserAndBtcWallet } from "test/helpers"
 
@@ -52,5 +58,32 @@ describe("onChainAddress", () => {
       walletId: newWalletDescriptor.id,
     })
     expect(res).toBeInstanceOf(InactiveAccountError)
+  })
+
+  it("fails if rate limit is met", async () => {
+    const newWalletDescriptor = await createRandomUserAndBtcWallet()
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
+    if (newAccount instanceof Error) throw newAccount
+
+    // Setup limiter mock
+    const { RedisRateLimitService } = jest.requireActual("@services/rate-limit")
+    const rateLimitServiceSpy = jest
+      .spyOn(RateLimitImpl, "RedisRateLimitService")
+      .mockReturnValue({
+        ...RedisRateLimitService({
+          keyPrefix: RateLimitConfig.onChainAddressCreate.key,
+          limitOptions: RateLimitConfig.onChainAddressCreate.limits,
+        }),
+        consume: () => new RateLimiterExceededError(),
+      })
+
+    // Create address attempt
+    const res = await Wallets.createOnChainAddress({
+      walletId: newWalletDescriptor.id,
+    })
+    expect(res).toBeInstanceOf(OnChainAddressCreateRateLimiterExceededError)
+
+    // Restore system state
+    rateLimitServiceSpy.mockReset()
   })
 })
