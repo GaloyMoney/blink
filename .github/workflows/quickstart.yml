@@ -19,10 +19,10 @@ jobs:
       - name: Test quickstart
         run: |
           cd quickstart
-          ./bin/bump-galoy-git-ref.sh ${{ github.event.pull_request.head.sha }}
-          ./bin/bump-galoy-image-digest.sh local
-          ./bin/bump-mongodb-migrate-image-digest.sh local
-          make re-render
+          nix develop -c ./bin/bump-galoy-git-ref.sh ${{ github.event.pull_request.head.sha }}
+          nix develop -c./bin/bump-galoy-image-digest.sh local
+          nix develop -c ./bin/bump-mongodb-migrate-image-digest.sh local
+          nix develop -c make re-render
           source .envrc
           docker compose up -d
           ./bin/quickstart.sh
