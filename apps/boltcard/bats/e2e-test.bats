@@ -59,7 +59,7 @@ load "../../../test/bats/helpers/ln"
   bitcoin_cli -generate 2
 
   # retry 30 1 check_for_onchain_initiated_settled "$token_name" "$address"
-  sleep 1
+  sleep 2
 }
 
 @test "callback" {

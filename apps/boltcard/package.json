@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "codegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
+    "@apollo/client": "latest",
+    "@apollo/experimental-nextjs-app-support": "^0.4.2",
     "@types/node": "20.6.2",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
@@ -18,7 +21,6 @@
     "eslint": "8.49.0",
     "eslint-config-next": "13.4.19",
     "graphql": "^16.8.0",
-    "graphql-request": "^6.1.0",
     "knex": "^2.5.1",
     "next": "13.4.19",
     "node-aes-cmac": "^0.1.1",
@@ -31,6 +33,12 @@
   },
   "devDependencies": {
     "@types/pg": "^8.10.2",
-    "encoding": "^0.1.13"
+    "encoding": "^0.1.13",
+    "@graphql-codegen/add": "^5.0.0",
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/client-preset": "^4.1.0",
+    "@graphql-codegen/typescript": "^4.0.1",
+    "@graphql-codegen/typescript-operations": "^4.0.1",
+    "@graphql-codegen/typescript-react-apollo": "^3.3.7"
   }
 }

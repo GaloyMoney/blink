@@ -2,8 +2,9 @@ import { randomBytes } from "crypto"
 
 import { NextRequest, NextResponse } from "next/server"
 
+import { ApolloQueryResult, gql } from "@apollo/client"
+
 import { aesDecryptKey, serverUrl } from "@/services/config"
-import { getCoreClient } from "@/services/core"
 import { aesDecrypt, checkSignature } from "@/services/crypto/aes"
 import { decodePToUidCtr } from "@/services/crypto/decoder"
 import { createCard, fetchByUid } from "@/services/db/card"
@@ -13,9 +14,15 @@ import {
   markCardInitAsUsed,
 } from "@/services/db/card-init"
 import { insertPayment } from "@/services/db/payment"
-import { gql } from "graphql-request"
+import { apollo } from "@/services/core"
+import {
+  GetUsdWalletIdDocument,
+  GetUsdWalletIdQuery,
+  OnChainAddressCurrentDocument,
+  OnChainAddressCurrentMutation,
+} from "@/services/core/generated"
 
-function generateReadableCode(numDigits: number): string {
+function generateReadableCode(numDigits: number, separator: number = 4): string {
   const allowedNumbers = ["3", "4", "6", "7", "9"]
   const allowedLetters = [
     "A",
@@ -43,6 +50,9 @@ function generateReadableCode(numDigits: number): string {
   const allowedChars = [...allowedNumbers, ...allowedLetters]
   let code = ""
   for (let i = 0; i < numDigits; i++) {
+    if (i > 0 && i % separator === 0) {
+      code += "-"
+    }
     const randomIndex = Math.floor(Math.random() * allowedChars.length)
     code += allowedChars[randomIndex]
   }
@@ -88,28 +98,7 @@ const maybeSetupCard = async ({
   return null
 }
 
-type GetUsdWalletIdQuery = {
-  readonly me?: {
-    readonly defaultAccount: {
-      readonly id: string
-      readonly defaultWalletId: string
-      readonly wallets: ReadonlyArray<
-        | {
-            readonly id: string
-            readonly walletCurrency: string
-            readonly balance: number
-          }
-        | {
-            readonly id: string
-            readonly walletCurrency: string
-            readonly balance: number
-          }
-      >
-    }
-  } | null
-}
-
-const getUsdWalletIdQuery = gql`
+gql`
   query getUsdWalletId {
     me {
       defaultAccount {
@@ -123,21 +112,7 @@ const getUsdWalletIdQuery = gql`
       }
     }
   }
-`
 
-type OnChainAddressCurrentMutation = {
-  readonly __typename: "Mutation"
-  readonly onChainAddressCurrent: {
-    readonly __typename: "OnChainAddressPayload"
-    readonly address?: string | null
-    readonly errors: ReadonlyArray<{
-      readonly __typename: "GraphQLApplicationError"
-      readonly message: string
-    }>
-  }
-}
-
-const onChainAddressCurrent = gql`
   mutation onChainAddressCurrent($input: OnChainAddressCurrentInput!) {
     onChainAddressCurrent(input: $input) {
       errors {
@@ -189,11 +164,13 @@ export async function GET(req: NextRequest) {
     if (result) {
       const { k0AuthKey, k2CmacKey, k3, k4, token } = result
 
-      const client = getCoreClient(token)
+      const client = apollo(token).getClient()
 
-      let data: GetUsdWalletIdQuery
+      let data: ApolloQueryResult<GetUsdWalletIdQuery>
       try {
-        data = await client.request<GetUsdWalletIdQuery>(getUsdWalletIdQuery)
+        data = await client.query<GetUsdWalletIdQuery>({
+          query: GetUsdWalletIdDocument,
+        })
       } catch (error) {
         console.error(error)
         return NextResponse.json(
@@ -202,7 +179,7 @@ export async function GET(req: NextRequest) {
         )
       }
 
-      const accountId = data?.me?.defaultAccount?.id
+      const accountId = data.data?.me?.defaultAccount?.id
       if (!accountId) {
         return NextResponse.json(
           { status: "ERROR", reason: "no accountId found" },
@@ -210,7 +187,7 @@ export async function GET(req: NextRequest) {
         )
       }
 
-      const wallets = data.me?.defaultAccount.wallets
+      const wallets = data.data?.me?.defaultAccount.wallets
 
       if (!wallets) {
         return NextResponse.json(
@@ -231,20 +208,20 @@ export async function GET(req: NextRequest) {
         )
       }
 
-      const dataOnchain = await client.request<OnChainAddressCurrentMutation>({
-        document: onChainAddressCurrent,
+      const dataOnchain = await client.mutate<OnChainAddressCurrentMutation>({
+        mutation: OnChainAddressCurrentDocument,
         variables: { input: { walletId } },
       })
-      const onchainAddress = dataOnchain?.onChainAddressCurrent?.address
+      const onchainAddress = dataOnchain.data?.onChainAddressCurrent?.address
       if (!onchainAddress) {
-        console.log(dataOnchain.onChainAddressCurrent, "dataOnchain")
+        console.log(dataOnchain.data?.onChainAddressCurrent, "dataOnchain")
         return NextResponse.json(
           { status: "ERROR", reason: `onchain address not found` },
           { status: 400 },
         )
       }
 
-      const id = generateReadableCode(16)
+      const id = generateReadableCode(12)
       console.log({ id, onchainAddress }, "new card id")
 
       await markCardInitAsUsed(k2CmacKey)

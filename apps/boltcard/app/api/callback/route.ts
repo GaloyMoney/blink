@@ -1,23 +1,16 @@
-import { getCoreClient } from "@/services/core"
-import { fetchByCardId } from "@/services/db/card"
-import { fetchByK1 } from "@/services/db/payment"
-import { gql } from "graphql-request"
-
 import { NextRequest, NextResponse } from "next/server"
 
-type LnInvoicePaymentSendMutation = {
-  readonly __typename: "Mutation"
-  readonly lnInvoicePaymentSend: {
-    readonly __typename: "PaymentSendPayload"
-    readonly status?: string | null
-    readonly errors: ReadonlyArray<{
-      readonly __typename: "GraphQLApplicationError"
-      readonly message: string
-    }>
-  }
-}
+import { FetchResult, gql } from "@apollo/client"
 
-const lnInvoicePaymentSendMutation = gql`
+import { fetchByCardId } from "@/services/db/card"
+import { fetchByK1 } from "@/services/db/payment"
+import { apollo } from "@/services/core"
+import {
+  LnInvoicePaymentSendDocument,
+  LnInvoicePaymentSendMutation,
+} from "@/services/core/generated"
+
+gql`
   mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
     lnInvoicePaymentSend(input: $input) {
       errors {
@@ -52,13 +45,13 @@ export async function GET(req: NextRequest) {
 
   const card = await fetchByCardId(cardId)
 
-  const client = getCoreClient(card.token)
+  const client = apollo(card.token).getClient()
   const { walletId } = card
 
-  let result: LnInvoicePaymentSendMutation
+  let result: FetchResult<LnInvoicePaymentSendMutation>
   try {
-    result = await client.request<LnInvoicePaymentSendMutation>({
-      document: lnInvoicePaymentSendMutation,
+    result = await client.mutate<LnInvoicePaymentSendMutation>({
+      mutation: LnInvoicePaymentSendDocument,
       variables: { input: { walletId, paymentRequest: pr } },
     })
   } catch (error) {
@@ -69,13 +62,13 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  if (result.lnInvoicePaymentSend.status === "SUCCESS") {
+  if (result.data?.lnInvoicePaymentSend.status === "SUCCESS") {
     return NextResponse.json({ status: "OK" })
   } else {
     return NextResponse.json(
       {
         status: "ERROR",
-        reason: `payment failed: ${result.lnInvoicePaymentSend.errors[0].message}`,
+        reason: `payment failed: ${result.data?.lnInvoicePaymentSend.errors[0].message}`,
       },
       { status: 400 },
     )
