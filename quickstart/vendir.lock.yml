@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: continue cleaning up receive onchain integration tests (#3225)...'
-      sha: 4f497fc39fa1958eb433e09f4e063e410c5b44be
+      commitTitle: 'chore: improve error naming (#3246)...'
+      sha: 46216aab9254393cc626b289885a8b9fdb06177d
       tags:
-      - 0.13.78-1-g4f497fc39
+      - 0.13.79-1-g46216aab9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: continue cleaning up receive onchain integration tests (#3225)...'
-      sha: 4f497fc39fa1958eb433e09f4e063e410c5b44be
+      commitTitle: 'chore: improve error naming (#3246)...'
+      sha: 46216aab9254393cc626b289885a8b9fdb06177d
       tags:
-      - 0.13.78-1-g4f497fc39
+      - 0.13.79-1-g46216aab9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: continue cleaning up receive onchain integration tests (#3225)...'
-      sha: 4f497fc39fa1958eb433e09f4e063e410c5b44be
+      commitTitle: 'chore: improve error naming (#3246)...'
+      sha: 46216aab9254393cc626b289885a8b9fdb06177d
       tags:
-      - 0.13.78-1-g4f497fc39
+      - 0.13.79-1-g46216aab9
     path: ./
   path: ./graphql
 kind: LockConfig
