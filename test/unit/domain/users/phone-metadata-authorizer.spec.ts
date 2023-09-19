@@ -1,7 +1,7 @@
 import { getRewardsConfig, yamlConfig } from "@config"
 import {
   PhoneCountryNotAllowedError,
-  PhoneMetadataCarrierTypeNotAllowedError,
+  PhoneCarrierTypeNotAllowedError,
   ExpectedPhoneMetadataMissingError,
 } from "@domain/users/errors"
 import { PhoneMetadataAuthorizer } from "@domain/users"
@@ -172,6 +172,6 @@ describe("PhoneMetadataAuthorizer - validate", () => {
       },
       countryCode: "US",
     })
-    expect(validator).toBeInstanceOf(PhoneMetadataCarrierTypeNotAllowedError)
+    expect(validator).toBeInstanceOf(PhoneCarrierTypeNotAllowedError)
   })
 })

@@ -1,14 +1,14 @@
 import { AuthorizationError } from "@domain/errors"
 import { ValidationError, ErrorLevel } from "@domain/shared"
 
-export class InvalidPhoneMetadataError extends AuthorizationError {}
-export class ExpectedPhoneMetadataMissingError extends InvalidPhoneMetadataError {}
-export class PhoneMetadataCarrierTypeNotAllowedError extends InvalidPhoneMetadataError {}
-export class PhoneCountryNotAllowedError extends InvalidPhoneMetadataError {}
+export class UnauthorizedPhoneError extends AuthorizationError {}
+export class ExpectedPhoneMetadataMissingError extends UnauthorizedPhoneError {}
+export class PhoneCarrierTypeNotAllowedError extends UnauthorizedPhoneError {}
+export class PhoneCountryNotAllowedError extends UnauthorizedPhoneError {}
 
-export class InvalidPhoneForOnboardingError extends InvalidPhoneMetadataError {}
-export class InvalidPhoneForRewardError extends InvalidPhoneMetadataError {}
-export class InvalidPhoneMetadataForOnboardingError extends InvalidPhoneMetadataError {
+export class InvalidPhoneForOnboardingError extends UnauthorizedPhoneError {}
+export class InvalidPhoneForRewardError extends UnauthorizedPhoneError {}
+export class InvalidPhoneMetadataForOnboardingError extends UnauthorizedPhoneError {
   level = ErrorLevel.Critical
 }
 
