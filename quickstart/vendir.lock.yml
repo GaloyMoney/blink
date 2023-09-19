@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: trigger restart invoices issue (#3186)...'
-      sha: 8cc34161c5649c8f979f575219f6210fc20a6609
+      commitTitle: 'test: continue cleaning up receive onchain integration tests (#3225)...'
+      sha: 4f497fc39fa1958eb433e09f4e063e410c5b44be
       tags:
-      - 0.13.77-1-g8cc34161c
+      - 0.13.78-1-g4f497fc39
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: trigger restart invoices issue (#3186)...'
-      sha: 8cc34161c5649c8f979f575219f6210fc20a6609
+      commitTitle: 'test: continue cleaning up receive onchain integration tests (#3225)...'
+      sha: 4f497fc39fa1958eb433e09f4e063e410c5b44be
       tags:
-      - 0.13.77-1-g8cc34161c
+      - 0.13.78-1-g4f497fc39
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: trigger restart invoices issue (#3186)...'
-      sha: 8cc34161c5649c8f979f575219f6210fc20a6609
+      commitTitle: 'test: continue cleaning up receive onchain integration tests (#3225)...'
+      sha: 4f497fc39fa1958eb433e09f4e063e410c5b44be
       tags:
-      - 0.13.77-1-g8cc34161c
+      - 0.13.78-1-g4f497fc39
     path: ./
   path: ./graphql
 kind: LockConfig
