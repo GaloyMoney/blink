@@ -160,3 +160,13 @@ codegen:
 
 gen-test-jwt:
 	yarn gen-test-jwt
+
+test-quickstart-local:
+	cd quickstart
+	./bin/bump-galoy-git-ref.sh ${{ github.event.pull_request.head.sha }}
+	./bin/bump-galoy-image-digest.sh local
+	./bin/bump-mongodb-migrate-image-digest.sh local
+	make re-render
+	source .envrc
+	docker compose up -d
+	./bin/quickstart.sh
