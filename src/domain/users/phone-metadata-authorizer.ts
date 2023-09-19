@@ -1,6 +1,6 @@
 import {
   PhoneCountryNotAllowedError,
-  PhoneMetadataCarrierTypeNotAllowedError,
+  PhoneCarrierTypeNotAllowedError,
   ExpectedPhoneMetadataMissingError,
 } from "./errors"
 
@@ -17,7 +17,7 @@ export const PhoneMetadataAuthorizer = ({
     if (phoneMetadata === undefined) return new ExpectedPhoneMetadataMissingError()
 
     if (phoneMetadata.carrier.type === "voip")
-      return new PhoneMetadataCarrierTypeNotAllowedError()
+      return new PhoneCarrierTypeNotAllowedError()
 
     const countryCode = phoneMetadata.countryCode.toUpperCase()
     const allowed = allowCountries.length === 0 || allowCountries.includes(countryCode)

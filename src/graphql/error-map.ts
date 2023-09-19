@@ -532,7 +532,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CacheUndefinedError":
     case "PhoneProviderServiceError":
     case "ExpectedPhoneMetadataMissingError":
-    case "PhoneMetadataCarrierTypeNotAllowedError":
+    case "PhoneCarrierTypeNotAllowedError":
     case "PhoneCountryNotAllowedError":
     case "MissingIPMetadataError":
     case "UnauthorizedIPMetadataASNError":
@@ -633,7 +633,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnsupportedSchemaTypeError":
     case "SecretForAuthNCallbackError":
     case "RegistrationPayloadValidationError":
-    case "InvalidPhoneMetadataError":
+    case "UnauthorizedPhoneError":
     case "PhoneMetadataValidationError":
     case "InvalidCarrierForPhoneMetadataError":
     case "InvalidCarrierTypeForPhoneMetadataError":
