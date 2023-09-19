@@ -227,15 +227,14 @@ const translateToAccount = (result: AccountRecord): Account => ({
   ),
   withdrawFee: result.withdrawFee as Satoshis,
   isEditor: result.role === "editor",
-  notificationSettings:
-    result.notificationSettings ||
-    ({
-      push: {
-        enabled: true,
-        disabledCategories: [],
-      },
-    } as NotificationSettings),
-
+  notificationSettings: {
+    push: {
+      enabled: result.notificationSettings
+        ? result.notificationSettings.push.enabled
+        : true,
+      disabledCategories: result.notificationSettings?.push?.disabledCategories || [],
+    },
+  },
   // TODO: remove
   quizQuestions:
     result.earn?.map(
