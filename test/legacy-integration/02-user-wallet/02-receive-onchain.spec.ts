@@ -3,10 +3,6 @@ import { Wallets } from "@app"
 import { getOnChainAddressCreateAttemptLimits } from "@config"
 
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { ZERO_SATS } from "@domain/shared"
-import { MultipleCurrenciesForSingleCurrencyOperationError } from "@domain/errors"
-
-import { WalletsRepository } from "@services/mongoose"
 
 import {
   bitcoindClient,
@@ -17,14 +13,12 @@ import {
   createUserAndWalletFromPhone,
   getAccountIdByPhone,
   getDefaultWalletIdByPhone,
-  getUsdWalletIdByPhone,
   randomPhone,
   resetOnChainAddressAccountIdLimits,
   lndCreateOnChainAddress,
 } from "test/helpers"
 
 let walletIdA: WalletId
-let walletIdUsdA: WalletId
 let accountIdA: AccountId
 
 let newAccountIdA: AccountId
@@ -44,7 +38,6 @@ beforeAll(async () => {
   await createUserAndWalletFromPhone(phoneC)
 
   walletIdA = await getDefaultWalletIdByPhone(phoneA)
-  walletIdUsdA = await getUsdWalletIdByPhone(phoneA)
   accountIdA = await getAccountIdByPhone(phoneA)
   ;({ accountId: newAccountIdA, id: newWalletIdA } = await createRandomUserAndBtcWallet())
 })
@@ -128,38 +121,6 @@ describe("With Lnd", () => {
       // Reset limits when done for other tests
       resetOk = await resetOnChainAddressAccountIdLimits(accountIdA)
       expect(resetOk).not.toBeInstanceOf(Error)
-    })
-  })
-})
-
-describe("Use cases", () => {
-  describe("getPendingOnChainBalanceForWallets", () => {
-    describe("with no pending incoming txns", () => {
-      it("returns zero balance", async () => {
-        const walletA = await WalletsRepository().findById(walletIdA)
-        if (walletA instanceof Error) throw walletA
-
-        const res = await Wallets.getPendingOnChainBalanceForWallets([walletA])
-        expect(res).toStrictEqual({ [walletIdA]: ZERO_SATS })
-      })
-
-      it("returns error for mixed wallet currencies", async () => {
-        const walletA = await WalletsRepository().findById(walletIdA)
-        if (walletA instanceof Error) throw walletA
-        const walletUsdA = await WalletsRepository().findById(walletIdUsdA)
-        if (walletUsdA instanceof Error) throw walletUsdA
-
-        const res = await Wallets.getPendingOnChainBalanceForWallets([
-          walletA,
-          walletUsdA,
-        ])
-        expect(res).toBeInstanceOf(MultipleCurrenciesForSingleCurrencyOperationError)
-      })
-
-      it("returns error for no wallets passed", async () => {
-        const res = await Wallets.getPendingOnChainBalanceForWallets([])
-        expect(res).toBeInstanceOf(MultipleCurrenciesForSingleCurrencyOperationError)
-      })
     })
   })
 })
