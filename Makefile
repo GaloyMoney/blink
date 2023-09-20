@@ -10,22 +10,22 @@ update-price-history:
 	docker compose run price-history node servers/history/cron.js
 
 start-main:
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
 
 start-main-fast:
 	yarn run watch-main | yarn pino-pretty -c -l
 
 start-trigger:
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/trigger.ts | yarn pino-pretty -c -l
 
 start-cron: start-deps
-	. ./.envrc && yarn tsnd --files -r tsconfig-paths/register -r src/services/tracing.ts \
+	. ./.env && yarn tsnd --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/cron.ts | yarn pino-pretty -c -l
 
 start-ws:
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/ws-server.ts | yarn pino-pretty -c -l
 
 start-loopd:
@@ -44,7 +44,7 @@ start-ws-ci:
 	node lib/servers/ws-server.js
 
 exporter: start-deps
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/exporter.ts | yarn pino-pretty -c -l
 
 watch:
@@ -116,7 +116,7 @@ execute-integration-from-within-container:
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 unit-in-ci:
-	. ./.envrc && \
+	. ./.env && \
 		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/unit/jest.config.js --ci --bail --maxWorkers=50%
 
 check-implicit:
@@ -131,7 +131,7 @@ check-code: check-implicit
 	yarn madge-check
 
 create-tmp-env-ci:
-	. ./.envrc && \
+	. ./.env && \
 	envsubst < .env.ci > tmp.env.ci
 
 # 16 is exit code for critical https://classic.yarnpkg.com/lang/en/docs/cli/audit

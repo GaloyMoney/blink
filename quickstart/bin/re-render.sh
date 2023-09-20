@@ -14,7 +14,7 @@ vendir sync
 ytt -f ./docker-compose.tmpl.yml -f ${GALOY_ROOT_DIR}/docker-compose.yml -f ${GALOY_ROOT_DIR}/docker-compose.override.yml > docker-compose.yml
 
 pushd ${GALOY_ROOT_DIR}
-source .envrc
+source .env
 mkdir -p "${GALOY_ROOT_DIR}/../vendor/galoy-quickstart/env"
 
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-agent:4318
