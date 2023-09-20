@@ -1,4 +1,4 @@
-import { setNotificationChannelIsEnabled } from "@domain/notifications"
+import { enableNotificationChannel as domainEnableNotificationChannel } from "@domain/notifications"
 import { AccountsRepository } from "@services/mongoose"
 
 export const enableNotificationChannel = async ({
@@ -11,10 +11,9 @@ export const enableNotificationChannel = async ({
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
-  const newNotificationSettings = setNotificationChannelIsEnabled({
+  const newNotificationSettings = domainEnableNotificationChannel({
     notificationSettings: account.notificationSettings,
     notificationChannel,
-    enabled: true,
   })
 
   account.notificationSettings = newNotificationSettings

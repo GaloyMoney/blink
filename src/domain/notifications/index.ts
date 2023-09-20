@@ -22,17 +22,45 @@ export const GaloyNotificationCategories = {
 } as const
 
 export const checkedToNotificationCategory = (
-  type: string,
+  notificationCategory: string,
 ): NotificationCategory | ValidationError => {
   // TODO: add validation
-  if (!type) {
+  if (!notificationCategory) {
     return new InvalidNotificationSettingsError("Invalid notification category")
   }
 
-  return type as NotificationCategory
+  return notificationCategory as NotificationCategory
 }
 
-export const setNotificationChannelIsEnabled = ({
+export const enableNotificationChannel = ({
+  notificationSettings,
+  notificationChannel,
+}: {
+  notificationSettings: NotificationSettings
+  notificationChannel: NotificationChannel
+}): NotificationSettings => {
+  return setNotificationChannelIsEnabled({
+    notificationSettings,
+    notificationChannel,
+    enabled: true,
+  })
+}
+
+export const disableNotificationChannel = ({
+  notificationSettings,
+  notificationChannel,
+}: {
+  notificationSettings: NotificationSettings
+  notificationChannel: NotificationChannel
+}): NotificationSettings => {
+  return setNotificationChannelIsEnabled({
+    notificationSettings,
+    notificationChannel,
+    enabled: false,
+  })
+}
+
+const setNotificationChannelIsEnabled = ({
   notificationSettings,
   notificationChannel,
   enabled,

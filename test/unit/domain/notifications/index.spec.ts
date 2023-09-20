@@ -1,7 +1,8 @@
 import {
   NotificationChannel,
   disableNotificationCategory,
-  setNotificationChannelIsEnabled,
+  enableNotificationChannel,
+  disableNotificationChannel,
   shouldSendNotification,
 } from "@domain/notifications"
 
@@ -65,7 +66,7 @@ describe("Notifications - push notification filtering", () => {
     })
   })
 
-  describe("setNotificationChannelIsEnabled", () => {
+  describe("enableNotificationChannel", () => {
     it("clears disabled categories when enabling a channel", () => {
       const notificationSettings: NotificationSettings = {
         push: {
@@ -76,17 +77,39 @@ describe("Notifications - push notification filtering", () => {
 
       const notificationChannel = NotificationChannel.Push
 
-      const enabled = true
-
-      const result = setNotificationChannelIsEnabled({
+      const result = enableNotificationChannel({
         notificationSettings,
         notificationChannel,
-        enabled,
       })
 
       expect(result).toEqual({
         push: {
-          enabled,
+          enabled: true,
+          disabledCategories: [],
+        },
+      })
+    })
+  })
+
+  describe("disableNotificationChannel", () => {
+    it("clears disabled categories when disabling a channel", () => {
+      const notificationSettings: NotificationSettings = {
+        push: {
+          enabled: true,
+          disabledCategories: ["transaction" as NotificationCategory],
+        },
+      }
+
+      const notificationChannel = NotificationChannel.Push
+
+      const result = disableNotificationChannel({
+        notificationSettings,
+        notificationChannel,
+      })
+
+      expect(result).toEqual({
+        push: {
+          enabled: false,
           disabledCategories: [],
         },
       })
@@ -119,31 +142,31 @@ describe("Notifications - push notification filtering", () => {
         },
       })
     })
-  })
 
-  it("does not add a category to the disabled categories if it is already there", () => {
-    const notificationCategory = "transaction" as NotificationCategory
+    it("does not add a category to the disabled categories if it is already there", () => {
+      const notificationCategory = "transaction" as NotificationCategory
 
-    const notificationSettings: NotificationSettings = {
-      push: {
-        enabled: true,
-        disabledCategories: [notificationCategory],
-      },
-    }
+      const notificationSettings: NotificationSettings = {
+        push: {
+          enabled: true,
+          disabledCategories: [notificationCategory],
+        },
+      }
 
-    const notificationChannel = NotificationChannel.Push
+      const notificationChannel = NotificationChannel.Push
 
-    const result = disableNotificationCategory({
-      notificationSettings,
-      notificationChannel,
-      notificationCategory,
-    })
+      const result = disableNotificationCategory({
+        notificationSettings,
+        notificationChannel,
+        notificationCategory,
+      })
 
-    expect(result).toEqual({
-      push: {
-        enabled: true,
-        disabledCategories: [notificationCategory],
-      },
+      expect(result).toEqual({
+        push: {
+          enabled: true,
+          disabledCategories: [notificationCategory],
+        },
+      })
     })
   })
 })
