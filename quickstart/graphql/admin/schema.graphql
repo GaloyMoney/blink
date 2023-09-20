@@ -29,10 +29,11 @@ input AccountUpdateStatusInput {
 }
 
 input AdminPushNotificationSendInput {
-  accountId: String
-  body: String
+  accountId: String!
+  body: String!
   data: Object
-  title: String
+  notificationCategory: NotificationCategory
+  title: String!
 }
 
 type AdminPushNotificationSendPayload {
@@ -251,6 +252,8 @@ type Mutation {
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userUpdatePhone(input: UserUpdatePhoneInput!): AccountDetailPayload!
 }
+
+scalar NotificationCategory
 
 scalar Object
 

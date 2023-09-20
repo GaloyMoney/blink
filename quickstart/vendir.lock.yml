@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump request phone code ip rate limits (#3247)'
-      sha: da53b89579785fb383abbcc620d7cbd78a5cb7be
+      commitTitle: 'feat: add push notification filtering settings (#3207)...'
+      sha: 79bf33b22873d2459d4ea0e8456d78ae3f74e7f8
       tags:
-      - 0.13.83-2-gda53b8957
+      - 0.13.84-1-g79bf33b22
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump request phone code ip rate limits (#3247)'
-      sha: da53b89579785fb383abbcc620d7cbd78a5cb7be
+      commitTitle: 'feat: add push notification filtering settings (#3207)...'
+      sha: 79bf33b22873d2459d4ea0e8456d78ae3f74e7f8
       tags:
-      - 0.13.83-2-gda53b8957
+      - 0.13.84-1-g79bf33b22
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump request phone code ip rate limits (#3247)'
-      sha: da53b89579785fb383abbcc620d7cbd78a5cb7be
+      commitTitle: 'feat: add push notification filtering settings (#3207)...'
+      sha: 79bf33b22873d2459d4ea0e8456d78ae3f74e7f8
       tags:
-      - 0.13.83-2-gda53b8957
+      - 0.13.84-1-g79bf33b22
     path: ./
   path: ./graphql
 kind: LockConfig

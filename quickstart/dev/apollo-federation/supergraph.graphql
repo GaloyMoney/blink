@@ -31,6 +31,7 @@ interface Account
   id: ID!
   level: AccountLevel!
   limits: AccountLimits!
+  notificationSettings: NotificationSettings!
   realtimePrice: RealtimePrice!
   transactions(
     """Returns the items in the list that come after the specified cursor."""
@@ -54,6 +55,32 @@ type AccountDeletePayload
 {
   errors: [Error!]!
   success: Boolean!
+}
+
+input AccountDisableNotificationCategoryInput
+  @join__type(graph: PUBLIC)
+{
+  category: NotificationCategory!
+  channel: NotificationChannel
+}
+
+input AccountDisableNotificationChannelInput
+  @join__type(graph: PUBLIC)
+{
+  channel: NotificationChannel!
+}
+
+input AccountEnableNotificationCategoryInput
+  @join__type(graph: PUBLIC)
+{
+  category: NotificationCategory!
+  channel: NotificationChannel
+}
+
+input AccountEnableNotificationChannelInput
+  @join__type(graph: PUBLIC)
+{
+  channel: NotificationChannel!
 }
 
 enum AccountLevel
@@ -114,6 +141,13 @@ input AccountUpdateDisplayCurrencyInput
 }
 
 type AccountUpdateDisplayCurrencyPayload
+  @join__type(graph: PUBLIC)
+{
+  account: ConsumerAccount
+  errors: [Error!]!
+}
+
+type AccountUpdateNotificationSettingsPayload
   @join__type(graph: PUBLIC)
 {
   account: ConsumerAccount
@@ -267,6 +301,7 @@ type ConsumerAccount implements Account
   id: ID!
   level: AccountLevel!
   limits: AccountLimits!
+  notificationSettings: NotificationSettings!
 
   """List the quiz questions of the consumer account"""
   quiz: [Quiz!]!
@@ -816,6 +851,10 @@ type Mutation
   @join__type(graph: PUBLIC)
 {
   accountDelete: AccountDeletePayload!
+  accountDisableNotificationCategory(input: AccountDisableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload!
+  accountDisableNotificationChannel(input: AccountDisableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload!
+  accountEnableNotificationCategory(input: AccountEnableNotificationCategoryInput!): AccountUpdateNotificationSettingsPayload!
+  accountEnableNotificationChannel(input: AccountEnableNotificationChannelInput!): AccountUpdateNotificationSettingsPayload!
   accountUpdateDefaultWalletId(input: AccountUpdateDefaultWalletIdInput!): AccountUpdateDefaultWalletIdPayload!
   accountUpdateDisplayCurrency(input: AccountUpdateDisplayCurrencyInput!): AccountUpdateDisplayCurrencyPayload!
   callbackEndpointAdd(input: CallbackEndpointAddInput!): CallbackEndpointAddPayload!
@@ -947,6 +986,28 @@ enum Network
   regtest @join__enumValue(graph: PUBLIC)
   signet @join__enumValue(graph: PUBLIC)
   testnet @join__enumValue(graph: PUBLIC)
+}
+
+scalar NotificationCategory
+  @join__type(graph: PUBLIC)
+
+enum NotificationChannel
+  @join__type(graph: PUBLIC)
+{
+  PUSH @join__enumValue(graph: PUBLIC)
+}
+
+type NotificationChannelSettings
+  @join__type(graph: PUBLIC)
+{
+  disabledCategories: [NotificationCategory!]!
+  enabled: Boolean!
+}
+
+type NotificationSettings
+  @join__type(graph: PUBLIC)
+{
+  push: NotificationChannelSettings!
 }
 
 """An address for an on-chain bitcoin destination"""
