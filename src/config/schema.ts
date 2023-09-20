@@ -285,7 +285,7 @@ export const configSchema = {
           blockDuration: 10800,
         },
         requestCodePerIp: {
-          points: 8,
+          points: 16,
           duration: 3600,
           blockDuration: 86400,
         },
