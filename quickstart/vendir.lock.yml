@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add push notification filtering settings (#3207)...'
-      sha: 79bf33b22873d2459d4ea0e8456d78ae3f74e7f8
+      commitTitle: 'chore: debugging earn issue (#3252)...'
+      sha: fa390bbca755554c491d88c066b8ae3cba861266
       tags:
-      - 0.13.84-1-g79bf33b22
+      - 0.13.85-1-gfa390bbca
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add push notification filtering settings (#3207)...'
-      sha: 79bf33b22873d2459d4ea0e8456d78ae3f74e7f8
+      commitTitle: 'chore: debugging earn issue (#3252)...'
+      sha: fa390bbca755554c491d88c066b8ae3cba861266
       tags:
-      - 0.13.84-1-g79bf33b22
+      - 0.13.85-1-gfa390bbca
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add push notification filtering settings (#3207)...'
-      sha: 79bf33b22873d2459d4ea0e8456d78ae3f74e7f8
+      commitTitle: 'chore: debugging earn issue (#3252)...'
+      sha: fa390bbca755554c491d88c066b8ae3cba861266
       tags:
-      - 0.13.84-1-g79bf33b22
+      - 0.13.85-1-gfa390bbca
     path: ./
   path: ./graphql
 kind: LockConfig
