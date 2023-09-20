@@ -28,6 +28,7 @@ import AccountLevel from "../../../shared/types/scalar/account-level"
 import { TransactionConnection } from "../../../shared/types/object/transaction"
 
 import RealtimePrice from "./realtime-price"
+import { NotificationSettings } from "./notification-settings"
 
 const BusinessAccount = GT.Object({
   name: "BusinessAccount",
@@ -158,6 +159,10 @@ const BusinessAccount = GT.Object({
           paginationArgs,
         )
       },
+    },
+    notificationSettings: {
+      type: GT.NonNull(NotificationSettings),
+      resolve: (source) => source.notificationSettings,
     },
   }),
 })

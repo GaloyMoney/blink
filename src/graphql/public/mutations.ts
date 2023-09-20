@@ -49,6 +49,10 @@ import UserTotpDeleteMutation from "@graphql/public/root/mutation/user-totp-dele
 
 import CallbackEndpointAdd from "./root/mutation/callback-endpoint-add"
 import CallbackEndpointDelete from "./root/mutation/callback-endpoint-delete"
+import AccountEnableNotificationCategoryMutation from "./root/mutation/account-enable-notification-category-for-channel"
+import AccountDisableNotificationCategoryMutation from "./root/mutation/account-disable-notification-category-for-channel"
+import AccountEnableNotificationChannelMutation from "./root/mutation/account-enable-notification-channel"
+import AccountDisableNotificationChannelMutation from "./root/mutation/account-disable-notification-channel"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {
@@ -86,6 +90,11 @@ export const mutationFields = {
       userContactUpdateAlias: UserContactUpdateAliasMutation,
       accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
       accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
+      accountEnableNotificationCategory: AccountEnableNotificationCategoryMutation,
+      accountDisableNotificationCategory: AccountDisableNotificationCategoryMutation,
+      accountEnableNotificationChannel: AccountEnableNotificationChannelMutation,
+      accountDisableNotificationChannel: AccountDisableNotificationChannelMutation,
+
       accountDelete: AccountDeleteMutation,
       feedbackSubmit: FeedbackSubmitMutation,
 

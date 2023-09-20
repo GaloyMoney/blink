@@ -179,6 +179,7 @@ const addSettledTransactionBeforeFinally = async ({
       displayPaymentAmount: displayAmount,
       txHash,
       recipientDeviceTokens: user.deviceTokens,
+      recipientNotificationSettings: account.notificationSettings,
       recipientLanguage: user.language,
     })
 

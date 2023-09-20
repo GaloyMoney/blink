@@ -77,6 +77,7 @@ type Account = {
   readonly isEditor: boolean
   readonly quizQuestions: UserQuizQuestion[] // deprecated
   readonly quiz: Quiz[]
+  notificationSettings: NotificationSettings
   kratosUserId: UserId
   displayCurrency: DisplayCurrency
   // temp

@@ -22,12 +22,15 @@ afterEach(async () => {
 })
 
 describe("addPendingTransaction", () => {
-  it("calls sendNotification on pending onchain receive", async () => {
+  it("calls sendFilteredNotification on pending onchain receive", async () => {
     // Setup mocks
-    const sendNotification = jest.fn()
+    const sendFilteredNotification = jest.fn()
     const pushNotificationsServiceSpy = jest
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementationOnce(() => ({ sendNotification }))
+      .mockImplementationOnce(() => ({
+        sendFilteredNotification,
+        sendNotification: jest.fn(),
+      }))
 
     // Create user
     const { btcWalletDescriptor } = await createRandomUserAndWallets()
@@ -47,8 +50,8 @@ describe("addPendingTransaction", () => {
     })
 
     // Expect sent notification
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
+    expect(sendFilteredNotification.mock.calls.length).toBe(1)
+    expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
 
     // Restore system state
     pushNotificationsServiceSpy.mockRestore()

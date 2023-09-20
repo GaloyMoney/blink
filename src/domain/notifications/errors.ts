@@ -17,3 +17,5 @@ export class NotificationsServiceUnreachableServerError extends NotificationsSer
 export class UnknownNotificationsServiceError extends NotificationsError {
   level = ErrorLevel.Critical
 }
+
+export class InvalidPushNotificationSettingError extends NotificationsError {}

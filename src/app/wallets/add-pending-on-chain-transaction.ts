@@ -152,6 +152,7 @@ export const addPendingTransaction = async ({
       displayPaymentAmount: settlementDisplayAmount,
       txHash: txId,
       recipientDeviceTokens: recipientUser.deviceTokens,
+      recipientNotificationSettings: account.notificationSettings,
       recipientLanguage: recipientUser.language,
     })
 

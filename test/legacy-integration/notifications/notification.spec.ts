@@ -18,6 +18,7 @@ import {
   getCurrentPriceAsDisplayPriceRatio,
 } from "@app/prices"
 import { WalletCurrency } from "@domain/shared"
+import { GaloyNotificationCategories } from "@domain/notifications"
 
 let spy
 let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>
@@ -41,6 +42,13 @@ const crcDisplayPaymentAmount = {
   amountInMinor: 350050n,
   currency: "CRC" as DisplayCurrency,
   displayInMajor: "3500.50",
+}
+
+const unfilteredNotificationSettings: NotificationSettings = {
+  push: {
+    enabled: true,
+    disabledCategories: [],
+  },
 }
 
 beforeAll(async () => {
@@ -90,16 +98,19 @@ async function toArray<T>(gen: AsyncIterable<T>): Promise<T[]> {
 }
 
 describe("notification", () => {
-  describe("sendNotification", () => {
+  describe("sendFilteredNotification", () => {
     // FIXME
     // 1/ we don't use this code in production any more
     // 2/ this is a very convoluted test that relies on other tests as an artefact.
     // It's hard to debug. it's probably something we'll want to refactor with more cleaner/independant integration tests.
     it.skip("sends daily balance to active users", async () => {
-      const sendNotification = jest.fn()
+      const sendFilteredNotification = jest.fn()
       jest
         .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-        .mockImplementation(() => ({ sendNotification }))
+        .mockImplementation(() => ({
+          sendFilteredNotification,
+          sendNotification: jest.fn(),
+        }))
 
       await sendDefaultWalletBalanceToAccounts()
       const activeAccounts = getRecentlyActiveAccounts()
@@ -108,7 +119,7 @@ describe("notification", () => {
       const activeAccountsArray = await toArray(activeAccounts)
 
       expect(activeAccountsArray.length).toBeGreaterThan(0)
-      expect(sendNotification.mock.calls.length).toBeGreaterThan(0)
+      expect(sendFilteredNotification.mock.calls.length).toBeGreaterThan(0)
 
       let usersWithDeviceTokens = 0
       for (const { kratosUserId } of activeAccountsArray) {
@@ -118,10 +129,10 @@ describe("notification", () => {
         if (user.deviceTokens.length > 0) usersWithDeviceTokens++
       }
 
-      expect(sendNotification.mock.calls.length).toBe(usersWithDeviceTokens)
+      expect(sendFilteredNotification.mock.calls.length).toBe(usersWithDeviceTokens)
 
-      for (let i = 0; i < sendNotification.mock.calls.length; i++) {
-        const [call] = sendNotification.mock.calls[i]
+      for (let i = 0; i < sendFilteredNotification.mock.calls.length; i++) {
+        const [call] = sendFilteredNotification.mock.calls[i]
         const { defaultWalletId, kratosUserId } = activeAccountsArray[i]
 
         const user = await UsersRepository().findById(kratosUserId)
@@ -196,11 +207,12 @@ describe("notification", () => {
       ]
       tests.forEach(({ name, paymentAmount, title, body }) =>
         it(`${name}`, async () => {
-          const sendNotification = jest.fn()
+          const sendFilteredNotification = jest.fn()
           jest
             .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
             .mockImplementationOnce(() => ({
-              sendNotification,
+              sendFilteredNotification,
+              sendNotification: jest.fn(),
             }))
 
           await NotificationsService().lightningTxReceived({
@@ -211,12 +223,16 @@ describe("notification", () => {
             displayPaymentAmount: crcDisplayPaymentAmount,
             paymentHash,
             recipientDeviceTokens: deviceTokens,
+            recipientNotificationSettings: unfilteredNotificationSettings,
             recipientLanguage: language,
           })
 
-          expect(sendNotification.mock.calls.length).toBe(1)
-          expect(sendNotification.mock.calls[0][0].title).toBe(title)
-          expect(sendNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls.length).toBe(1)
+          expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
+          expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
+            GaloyNotificationCategories.Payments,
+          )
         }),
       )
     })
@@ -239,11 +255,12 @@ describe("notification", () => {
 
       tests.forEach(({ name, paymentAmount, title, body }) =>
         it(`${name}`, async () => {
-          const sendNotification = jest.fn()
+          const sendFilteredNotification = jest.fn()
           jest
             .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
             .mockImplementationOnce(() => ({
-              sendNotification,
+              sendFilteredNotification,
+              sendNotification: jest.fn(),
             }))
 
           await NotificationsService().intraLedgerTxReceived({
@@ -253,12 +270,16 @@ describe("notification", () => {
             recipientWalletId: walletId,
             displayPaymentAmount: crcDisplayPaymentAmount,
             recipientDeviceTokens: deviceTokens,
+            recipientNotificationSettings: unfilteredNotificationSettings,
             recipientLanguage: language,
           })
 
-          expect(sendNotification.mock.calls.length).toBe(1)
-          expect(sendNotification.mock.calls[0][0].title).toBe(title)
-          expect(sendNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls.length).toBe(1)
+          expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
+          expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
+            GaloyNotificationCategories.Payments,
+          )
         }),
       )
     })
@@ -281,11 +302,12 @@ describe("notification", () => {
 
       tests.forEach(({ name, paymentAmount, title, body }) =>
         it(`${name}`, async () => {
-          const sendNotification = jest.fn()
+          const sendFilteredNotification = jest.fn()
           jest
             .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
             .mockImplementationOnce(() => ({
-              sendNotification,
+              sendFilteredNotification,
+              sendNotification: jest.fn(),
             }))
 
           await NotificationsService().onChainTxReceived({
@@ -296,12 +318,16 @@ describe("notification", () => {
             displayPaymentAmount: crcDisplayPaymentAmount,
             txHash,
             recipientDeviceTokens: deviceTokens,
+            recipientNotificationSettings: unfilteredNotificationSettings,
             recipientLanguage: language,
           })
 
-          expect(sendNotification.mock.calls.length).toBe(1)
-          expect(sendNotification.mock.calls[0][0].title).toBe(title)
-          expect(sendNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls.length).toBe(1)
+          expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
+          expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
+            GaloyNotificationCategories.Payments,
+          )
         }),
       )
     })
@@ -324,11 +350,12 @@ describe("notification", () => {
 
       tests.forEach(({ name, paymentAmount, title, body }) =>
         it(`${name}`, async () => {
-          const sendNotification = jest.fn()
+          const sendFilteredNotification = jest.fn()
           jest
             .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
             .mockImplementationOnce(() => ({
-              sendNotification,
+              sendFilteredNotification,
+              sendNotification: jest.fn(),
             }))
 
           await NotificationsService().onChainTxReceivedPending({
@@ -338,12 +365,16 @@ describe("notification", () => {
             txHash,
             displayPaymentAmount: crcDisplayPaymentAmount,
             recipientDeviceTokens: deviceTokens,
+            recipientNotificationSettings: unfilteredNotificationSettings,
             recipientLanguage: language,
           })
 
-          expect(sendNotification.mock.calls.length).toBe(1)
-          expect(sendNotification.mock.calls[0][0].title).toBe(title)
-          expect(sendNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls.length).toBe(1)
+          expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
+          expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
+            GaloyNotificationCategories.Payments,
+          )
         }),
       )
     })
@@ -366,11 +397,12 @@ describe("notification", () => {
 
       tests.forEach(({ name, paymentAmount, title, body }) =>
         it(`${name}`, async () => {
-          const sendNotification = jest.fn()
+          const sendFilteredNotification = jest.fn()
           jest
             .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
             .mockImplementationOnce(() => ({
-              sendNotification,
+              sendFilteredNotification,
+              sendNotification: jest.fn(),
             }))
 
           await NotificationsService().onChainTxSent({
@@ -380,12 +412,16 @@ describe("notification", () => {
             txHash,
             displayPaymentAmount: crcDisplayPaymentAmount,
             senderDeviceTokens: deviceTokens,
+            senderNotificationSettings: unfilteredNotificationSettings,
             senderLanguage: language,
           })
 
-          expect(sendNotification.mock.calls.length).toBe(1)
-          expect(sendNotification.mock.calls[0][0].title).toBe(title)
-          expect(sendNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls.length).toBe(1)
+          expect(sendFilteredNotification.mock.calls[0][0].title).toBe(title)
+          expect(sendFilteredNotification.mock.calls[0][0].body).toBe(body)
+          expect(sendFilteredNotification.mock.calls[0][0].notificationCategory).toBe(
+            GaloyNotificationCategories.Payments,
+          )
         }),
       )
     })

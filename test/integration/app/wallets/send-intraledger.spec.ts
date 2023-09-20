@@ -256,12 +256,15 @@ describe("intraLedgerPay", () => {
     expect(paymentResult).toBeInstanceOf(IntraledgerLimitsExceededError)
   })
 
-  it("calls sendNotification on successful intraledger send", async () => {
+  it("calls sendFilteredNotification on successful intraledger send", async () => {
     // Setup mocks
-    const sendNotification = jest.fn()
+    const sendFilteredNotification = jest.fn()
     const pushNotificationsServiceSpy = jest
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementationOnce(() => ({ sendNotification }))
+      .mockImplementationOnce(() => ({
+        sendFilteredNotification,
+        sendNotification: jest.fn(),
+      }))
 
     // Create users
     const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
@@ -290,8 +293,8 @@ describe("intraLedgerPay", () => {
     expect(paymentResult).toEqual(PaymentSendStatus.Success)
 
     // Expect sent notification
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].title).toBeTruthy()
+    expect(sendFilteredNotification.mock.calls.length).toBe(1)
+    expect(sendFilteredNotification.mock.calls[0][0].title).toBeTruthy()
 
     // Restore system state
     pushNotificationsServiceSpy.mockReset()
