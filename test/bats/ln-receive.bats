@@ -50,10 +50,16 @@ usd_amount=50
 
 @test "ln-receive: settle via ln for BTC wallet, invoice with amount" {
   token_name="$ALICE_TOKEN_NAME"
-
-  # Generate invoice
   btc_wallet_name="$token_name.btc_wallet_id"
 
+  # Check callback events before
+  exec_graphql "$token_name" 'account-details'
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ "$account_id" != "null" ]] || exit 1
+
+  num_callback_events_before=$(cat .e2e-callback.log | grep "$account_id" | wc -l)
+
+  # Generate invoice
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
@@ -78,13 +84,9 @@ usd_amount=50
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
 
-  exec_graphql "$token_name" 'account-details'
-  account_id="$(graphql_output '.data.me.defaultAccount.id')"
-  [[ "$account_id" != "null" ]] || exit 1
-
   # Check for callback
-  cat .e2e-callback.log
-  cat .e2e-callback.log | grep "$account_id" || exit 1
+  num_callback_events_after=$(cat .e2e-callback.log | grep "$account_id" | wc -l)
+  [[ "$num_callback_events_after" -gt "$num_callback_events_before" ]] || exit 1
 }
 
 @test "ln-receive: settle via ln for USD wallet, invoice with amount" {
