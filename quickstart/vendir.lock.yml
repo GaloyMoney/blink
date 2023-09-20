@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/parser from 6.7.0 to 6.7.2 (#3240)...'
-      sha: 0c49fbcd1b30d9616481c02ade95ee2adafea3d8
+      commitTitle: 'refactor: refactor env files (#3249)...'
+      sha: 2b4d75a304af0a730251b674a8aed50c5be23626
       tags:
-      - 0.13.81-1-g0c49fbcd1
+      - 0.13.82-1-g2b4d75a30
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/parser from 6.7.0 to 6.7.2 (#3240)...'
-      sha: 0c49fbcd1b30d9616481c02ade95ee2adafea3d8
+      commitTitle: 'refactor: refactor env files (#3249)...'
+      sha: 2b4d75a304af0a730251b674a8aed50c5be23626
       tags:
-      - 0.13.81-1-g0c49fbcd1
+      - 0.13.82-1-g2b4d75a30
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump @typescript-eslint/parser from 6.7.0 to 6.7.2 (#3240)...'
-      sha: 0c49fbcd1b30d9616481c02ade95ee2adafea3d8
+      commitTitle: 'refactor: refactor env files (#3249)...'
+      sha: 2b4d75a304af0a730251b674a8aed50c5be23626
       tags:
-      - 0.13.81-1-g0c49fbcd1
+      - 0.13.82-1-g2b4d75a30
     path: ./
   path: ./graphql
 kind: LockConfig
