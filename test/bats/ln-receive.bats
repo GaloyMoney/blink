@@ -14,8 +14,10 @@ setup_file() {
   start_callback
 
   lnds_init
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+
+  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
   add_callback "$ALICE_TOKEN_NAME"
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
 
   subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
   sleep 3
