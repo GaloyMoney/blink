@@ -127,7 +127,7 @@ jobs:
             - name: image
           params:
             CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.env
+            BUILD_ARGS_FILE: repo/.build-args
           run:
             path: build
       - put: edge-image
@@ -152,7 +152,7 @@ jobs:
             - name: image
           params:
             CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.env
+            BUILD_ARGS_FILE: repo/.build-args
             DOCKERFILE: "repo/Dockerfile-debug"
           run:
             path: build
@@ -178,7 +178,7 @@ jobs:
             - name: image
           params:
             CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.env
+            BUILD_ARGS_FILE: repo/.build-args
             DOCKERFILE: "repo/Dockerfile-migrate"
           run:
             path: build
@@ -204,7 +204,7 @@ jobs:
             - name: image
           params:
             CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.env
+            BUILD_ARGS_FILE: repo/.build-args
             DOCKERFILE: "repo/Dockerfile-websocket"
           run:
             path: build
