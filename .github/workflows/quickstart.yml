@@ -16,11 +16,13 @@ jobs:
       - uses: cachix/install-nix-action@v22
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      # - uses: HatsuneMiku3939/direnv-action@v1
       - name: Test quickstart
         run: |
           nix-channel --add https://nixos.org/channels/nixpkgs-unstable
           nix-channel --update
-          nix-env -f '<nixpkgs>' -iA nix-direnv
+          nix profile install nixpkgs#direnv
+          nix profile install nixpkgs#nix-direnv
           source $HOME/.nix-profile/share/nix-direnv/direnvrc
           direnv allow
           cd quickstart
