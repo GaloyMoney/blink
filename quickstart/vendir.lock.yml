@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: improve error naming (#3246)...'
-      sha: 46216aab9254393cc626b289885a8b9fdb06177d
+      commitTitle: 'chore: bump @typescript-eslint/parser from 6.7.0 to 6.7.2 (#3240)...'
+      sha: 0c49fbcd1b30d9616481c02ade95ee2adafea3d8
       tags:
-      - 0.13.79-1-g46216aab9
+      - 0.13.81-1-g0c49fbcd1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: improve error naming (#3246)...'
-      sha: 46216aab9254393cc626b289885a8b9fdb06177d
+      commitTitle: 'chore: bump @typescript-eslint/parser from 6.7.0 to 6.7.2 (#3240)...'
+      sha: 0c49fbcd1b30d9616481c02ade95ee2adafea3d8
       tags:
-      - 0.13.79-1-g46216aab9
+      - 0.13.81-1-g0c49fbcd1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: improve error naming (#3246)...'
-      sha: 46216aab9254393cc626b289885a8b9fdb06177d
+      commitTitle: 'chore: bump @typescript-eslint/parser from 6.7.0 to 6.7.2 (#3240)...'
+      sha: 0c49fbcd1b30d9616481c02ade95ee2adafea3d8
       tags:
-      - 0.13.79-1-g46216aab9
+      - 0.13.81-1-g0c49fbcd1
     path: ./
   path: ./graphql
 kind: LockConfig
