@@ -33,6 +33,8 @@
         vendir
         jq
         ytt
+        direnv
+        nix-direnv
       ];
     in
       with pkgs; {
