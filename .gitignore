@@ -33,6 +33,7 @@ generated.gql
 .swc
 
 .envrc.secrets
+.envrc.local
 
 # bats e2e tests
 -

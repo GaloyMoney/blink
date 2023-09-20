@@ -22,4 +22,4 @@ jobs:
       - run: yarn install --frozen-lockfile
       - name: Run bats tests
         run: |
-          . ./.envrc && make reset-bats
+          . ./.env && make reset-bats

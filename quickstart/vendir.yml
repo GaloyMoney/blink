@@ -23,6 +23,7 @@ directories:
     - dev/**/*
     - test/bats/bitcoind_signer_descriptors.json
     - test/bats/gql/*
+    - .env
     - .envrc
     - .env.ci
     - docker-compose.yml
