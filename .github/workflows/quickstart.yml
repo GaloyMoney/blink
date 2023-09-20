@@ -18,6 +18,8 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Test quickstart
         run: |
+          nix-channel --add https://nixos.org/channels/nixpkgs-unstable
+          nix-channel --update
           nix-env -f '<nixpkgs>' -iA nix-direnv
           source $HOME/.nix-profile/share/nix-direnv/direnvrc
           direnv allow
