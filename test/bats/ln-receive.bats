@@ -14,9 +14,16 @@ setup_file() {
   start_callback
 
   lnds_init
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+  add_callback "$ALICE_TOKEN_NAME"
+
+  subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
+  sleep 3
 }
 
 teardown_file() {
+  remove_callbacks "$ALICE_TOKEN_NAME"
+
   stop_trigger
   stop_server
   stop_ws_server
@@ -38,28 +45,6 @@ teardown() {
 
 btc_amount=1000
 usd_amount=50
-
-@test "ln-receive: init" {
-  token_name="$ALICE_TOKEN_NAME"
-
-  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-
-  variables=$(
-    jq -n \
-    --arg url "$SVIX_CALLBACK_URL" \
-    '{input: {url: $url}}'
-  )
-
-  exec_graphql "$ALICE_TOKEN_NAME" 'callback-endpoint-add' "$variables"
-  result1="$(graphql_output '.data.callbackEndpointAdd.id')"
-  [[ "$result1" != "null" ]] || exit 1
-
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-
-  subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
-
-  sleep 3
-}
 
 @test "ln-receive: settle via ln for BTC wallet, invoice with amount" {
   token_name="$ALICE_TOKEN_NAME"
@@ -95,6 +80,7 @@ usd_amount=50
   account_id="$(graphql_output '.data.me.defaultAccount.id')"
   [[ "$account_id" != "null" ]] || exit 1
 
+  # Check for callback
   cat .e2e-callback.log
   cat .e2e-callback.log | grep "$account_id" || exit 1
 }

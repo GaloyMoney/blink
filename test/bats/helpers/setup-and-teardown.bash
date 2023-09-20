@@ -57,6 +57,32 @@ subscribe_to() {
   echo $! > $SUBSCRIBER_PID_FILE
 }
 
+add_callback() {
+  local token_name=$1
+
+  local variables=$(
+    jq -n \
+    --arg url "$SVIX_CALLBACK_URL" \
+    '{input: {url: $url}}'
+  )
+  exec_graphql "$token_name" 'callback-endpoint-add' "$variables"
+}
+
+remove_callbacks() {
+  local token_name=$1
+
+  exec_graphql "$token_name" 'callback-endpoints-list'
+  graphql_output '.data.me.defaultAccount.callbackEndpoints[].id' \
+  | while read -r id; do
+      variables=$(
+        jq -n \
+        --arg id "$id" \
+        '{input: {id: $id}}'
+      )
+      exec_graphql "$token_name" 'callback-endpoint-delete' "$variables"
+    done
+}
+
 start_ws_server() {
   stop_ws_server > /dev/null 2>&1 || true
 
