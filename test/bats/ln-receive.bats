@@ -14,9 +14,18 @@ setup_file() {
   start_callback
 
   lnds_init
+
+  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+  add_callback "$ALICE_TOKEN_NAME"
+  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
+
+  subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
+  sleep 3
 }
 
 teardown_file() {
+  remove_callbacks "$ALICE_TOKEN_NAME"
+
   stop_trigger
   stop_server
   stop_ws_server
@@ -39,34 +48,18 @@ teardown() {
 btc_amount=1000
 usd_amount=50
 
-@test "ln-receive: init" {
-  token_name="$ALICE_TOKEN_NAME"
-
-  login_user "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-
-  variables=$(
-    jq -n \
-    --arg url "$SVIX_CALLBACK_URL" \
-    '{input: {url: $url}}'
-  )
-
-  exec_graphql "$ALICE_TOKEN_NAME" 'callback-endpoint-add' "$variables"
-  result1="$(graphql_output '.data.callbackEndpointAdd.id')"
-  [[ "$result1" != "null" ]] || exit 1
-
-  initialize_user_from_onchain "$ALICE_TOKEN_NAME" "$ALICE_PHONE" "$CODE"
-
-  subscribe_to "$ALICE_TOKEN_NAME" my-updates-sub
-
-  sleep 3
-}
-
 @test "ln-receive: settle via ln for BTC wallet, invoice with amount" {
   token_name="$ALICE_TOKEN_NAME"
-
-  # Generate invoice
   btc_wallet_name="$token_name.btc_wallet_id"
 
+  # Check callback events before
+  exec_graphql "$token_name" 'account-details'
+  account_id="$(graphql_output '.data.me.defaultAccount.id')"
+  [[ "$account_id" != "null" ]] || exit 1
+
+  num_callback_events_before=$(cat .e2e-callback.log | grep "$account_id" | wc -l)
+
+  # Generate invoice
   variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
@@ -91,12 +84,9 @@ usd_amount=50
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
 
-  exec_graphql "$token_name" 'account-details'
-  account_id="$(graphql_output '.data.me.defaultAccount.id')"
-  [[ "$account_id" != "null" ]] || exit 1
-
-  cat .e2e-callback.log
-  cat .e2e-callback.log | grep "$account_id" || exit 1
+  # Check for callback
+  num_callback_events_after=$(cat .e2e-callback.log | grep "$account_id" | wc -l)
+  [[ "$num_callback_events_after" -gt "$num_callback_events_before" ]] || exit 1
 }
 
 @test "ln-receive: settle via ln for USD wallet, invoice with amount" {
