@@ -1,7 +1,7 @@
 import cors from "cors"
 import express from "express"
 
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 import { baseLogger } from "@services/logger"
 
 import { createAccountFromRegistrationPayload } from "@app/authentication"
@@ -31,10 +31,9 @@ kratosCallback.post(
     fn: async (req: express.Request, res: express.Response) => {
       const secret = req.headers.authorization
       const body = req.body
-      baseLogger.info(
-        { transient_payload: body.transient_payload },
-        "transient_payload callback kratos router",
-      )
+      addAttributesToCurrentSpan({
+        "registration.body": JSON.stringify(body),
+      })
 
       const account = await createAccountFromRegistrationPayload({ secret, body })
       if (account instanceof Error) {
