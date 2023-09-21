@@ -17,7 +17,7 @@ const main = async () => {
   for await (const user of users) {
     const phone = user.phone as PhoneNumber
     if (!phone) {
-      console.log(`user ${user.id} has no phone`)
+      console.log(`user ${user._id} has no phone`)
       continue
     }
 
@@ -28,11 +28,11 @@ const main = async () => {
     }
 
     const res = await User.updateOne(
-      { id: user.id },
+      { _id: user._id },
       { $set: { phoneMetadata: newPhoneMetadata } },
     )
     console.log(
-      `updated user ${user.id} with phoneMetadata: ${JSON.stringify(
+      `updated user ${user._id} with phoneMetadata: ${JSON.stringify(
         newPhoneMetadata,
       )}, res: ${JSON.stringify(res)}`,
     )
