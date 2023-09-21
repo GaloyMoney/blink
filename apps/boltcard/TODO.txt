@@ -6,3 +6,5 @@
 - open telemetry
 
 - add lnurl / lightning address / invoice
+- generate token from the app
+- type from db

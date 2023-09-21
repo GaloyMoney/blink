@@ -1,3 +1,5 @@
+import { lightningDomain } from "../config"
+
 import { knex } from "./connection"
 
 export async function fetchByUid(uid: string) {
@@ -23,7 +25,12 @@ export async function fetchPublicByCardId(cardId: string) {
     .where("id", cardId)
     .select("id", "uid", "onchainAddress", "enabled")
     .first()
-  return result
+
+  // TODO: refactor with a card service !== db
+  const username = `card_${result.id}`
+  const lightningAddress = `${username}@${lightningDomain}`
+
+  return { ...result, username, lightningAddress }
 }
 
 interface CardInput {

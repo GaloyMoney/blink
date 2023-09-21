@@ -28,6 +28,9 @@ export default async function Home({ params }: { params: { id: string } }) {
             <strong>Onchain Address:</strong> {cardInfo.onchainAddress}
           </li>
           <li>
+            <strong>Lightning address</strong> {cardInfo.lightningAddress}
+          </li>
+          <li>
             <strong>Enabled:</strong> {cardInfo.enabled ? "Yes" : "No"}
           </li>
         </ul>

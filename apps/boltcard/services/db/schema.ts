@@ -23,7 +23,7 @@ async function createTables() {
     await knex.schema.createTable("Card", (table) => {
       table.string("id").notNullable().index().unique()
 
-      // if a card is resetted, the uid would stay the same
+      // if a card is reset, the uid would stay the same
       table.string("uid").notNullable().index()
 
       table.string("token").notNullable()

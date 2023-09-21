@@ -1,8 +1,12 @@
 load "../../../test/bats/helpers/setup-and-teardown"
 load "../../../test/bats/helpers/ln"
 
+random_phone() {
+  printf "+1%010d\n" $(( ($RANDOM * 1000000) + ($RANDOM % 1000000) ))
+}
+
 @test "auth: create user" {
-  login_user "alice" "+16505554321" "000000"
+  login_user "alice" "$(random_phone)" "000000"
 }
 
 @test "auth: create card" {
@@ -59,7 +63,7 @@ load "../../../test/bats/helpers/ln"
   bitcoin_cli -generate 2
 
   # retry 30 1 check_for_onchain_initiated_settled "$token_name" "$address"
-  sleep 2
+  sleep 5
 }
 
 @test "callback" {

@@ -20,7 +20,49 @@ import {
   GetUsdWalletIdQuery,
   OnChainAddressCurrentDocument,
   OnChainAddressCurrentMutation,
+  UserUpdateUsernameDocument,
+  UserUpdateUsernameMutation,
 } from "@/services/core/generated"
+
+gql`
+  query getUsdWalletId {
+    me {
+      defaultAccount {
+        id
+        defaultWalletId
+        wallets {
+          id
+          walletCurrency
+          balance
+        }
+      }
+    }
+  }
+
+  mutation onChainAddressCurrent($input: OnChainAddressCurrentInput!) {
+    onChainAddressCurrent(input: $input) {
+      errors {
+        message
+      }
+      address
+    }
+  }
+
+  mutation userUpdateUsername($input: UserUpdateUsernameInput!) {
+    userUpdateUsername(input: $input) {
+      errors {
+        message
+        __typename
+      }
+      user {
+        id
+        username
+        __typename
+      }
+      __typename
+    }
+  }
+`
 
 function generateReadableCode(numDigits: number, separator: number = 4): string {
   const allowedNumbers = ["3", "4", "6", "7", "9"]
@@ -51,7 +93,7 @@ function generateReadableCode(numDigits: number, separator: number = 4): string 
   let code = ""
   for (let i = 0; i < numDigits; i++) {
     if (i > 0 && i % separator === 0) {
-      code += "-"
+      code += "_"
     }
     const randomIndex = Math.floor(Math.random() * allowedChars.length)
     code += allowedChars[randomIndex]
@@ -159,7 +201,7 @@ const setupCard = async ({
   })
   const onchainAddress = dataOnchain.data?.onChainAddressCurrent?.address
   if (!onchainAddress) {
-    console.log(dataOnchain.data?.onChainAddressCurrent, "dataOnchain")
+    console.dir(dataOnchain, "dataOnchain")
     return NextResponse.json(
       { status: "ERROR", reason: `onchain address not found` },
       { status: 400 },
@@ -167,7 +209,26 @@ const setupCard = async ({
   }
 
   const id = generateReadableCode(12)
-  console.log({ id, onchainAddress }, "new card id")
+  const username = `card_${id}`
+  console.log({ id, username }, "new card id")
+
+  const dataUsername = await client.mutate<UserUpdateUsernameMutation>({
+    mutation: UserUpdateUsernameDocument,
+    variables: { input: { username } },
+  })
+
+  // FIXME userUpdateUsername.user?.username is buggy
+  // const usernameResult = dataUsername.data?.userUpdateUsername.user?.username
+  const usernameError = dataUsername.data?.userUpdateUsername.errors.length !== 0
+  if (usernameError) {
+    console.dir(dataUsername, { depth: null })
+    return NextResponse.json(
+      { status: "ERROR", reason: `set username issue` },
+      { status: 400 },
+    )
+  }
+
+  console.log({ id, onchainAddress, username, uid }, "new card id")
 
   await markCardInitAsUsed(k2CmacKey)
 
@@ -187,31 +248,6 @@ const setupCard = async ({
 
   return card
 }
-
-gql`
-  query getUsdWalletId {
-    me {
-      defaultAccount {
-        id
-        defaultWalletId
-        wallets {
-          id
-          walletCurrency
-          balance
-        }
-      }
-    }
-  }
-
-  mutation onChainAddressCurrent($input: OnChainAddressCurrentInput!) {
-    onChainAddressCurrent(input: $input) {
-      errors {
-        message
-      }
-      address
-    }
-  }
-`
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)

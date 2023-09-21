@@ -39,7 +39,7 @@ export const encodeUidCtrToP = (uid: Buffer, ctr: Buffer): Uint8Array => {
     ctr[2],
 
     // those value can be random, but they are set as is so that
-    // tests pass for the simulation of the encryption fo the coldcard
+    // tests pass for the simulation of the encryption for the coldcard
     2,
     63,
     181,
