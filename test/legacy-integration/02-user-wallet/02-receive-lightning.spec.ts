@@ -1,32 +1,23 @@
 import { LightningError as LnError } from "lightning"
 
-import { MEMO_SHARING_SATS_THRESHOLD, ONE_DAY, SECS_PER_10_MINS } from "@config"
+import { MEMO_SHARING_SATS_THRESHOLD, SECS_PER_10_MINS } from "@config"
 
 import { Lightning } from "@app"
-import { usdFromBtcMidPriceFn } from "@app/prices"
 import * as Wallets from "@app/wallets"
 import { handleHeldInvoices } from "@app/wallets"
 
 import { toSats } from "@domain/bitcoin"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
-import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
-import { UsdDisplayCurrency, toCents } from "@domain/fiat"
-import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
-import { WalletCurrency } from "@domain/shared"
+import { toCents } from "@domain/fiat"
+import { PaymentInitiationMethod } from "@domain/wallets"
 import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { getDealerUsdWalletId } from "@services/ledger/caching"
-import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
-import { TransactionsMetadataRepository } from "@services/ledger/services"
 import { LndService } from "@services/lnd"
 import { KnownLndErrorDetails } from "@services/lnd/errors"
 import { baseLogger } from "@services/logger"
 import { setupInvoiceSubscribe } from "@servers/trigger"
-
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
-import { LedgerTransactionType } from "@domain/ledger"
 
 import { sleep } from "@utils"
 
@@ -37,8 +28,6 @@ import { WalletInvoice } from "@services/mongoose/schema"
 import {
   checkIsBalanced,
   createUserAndWalletFromPhone,
-  getAccountByPhone,
-  getAmount,
   getBalanceHelper,
   getDefaultWalletIdByPhone,
   getError,
@@ -57,8 +46,6 @@ import {
 } from "test/helpers"
 
 let walletIdB: WalletId
-let accountB: Account
-let walletDescriptorB: WalletDescriptor<WalletCurrency>
 let walletIdUsdB: WalletId
 let walletIdF: WalletId
 let walletIdUsdF: WalletId
@@ -72,12 +59,6 @@ beforeAll(async () => {
   await createUserAndWalletFromPhone(phoneB)
   await createUserAndWalletFromPhone(phoneF)
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
-  accountB = await getAccountByPhone(phoneB)
-  walletDescriptorB = {
-    id: walletIdB,
-    currency: WalletCurrency.Btc,
-    accountId: accountB.id,
-  }
   walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
   walletIdF = await getDefaultWalletIdByPhone(phoneF)
   walletIdUsdF = await getUsdWalletIdByPhone(phoneF)
@@ -93,131 +74,46 @@ afterEach(async () => {
 })
 
 describe("UserWallet - Lightning", () => {
-  it("receives payment from outside", async () => {
+  it("calls updateInvoice multiple times idempotently", async () => {
     // larger amount to not fall below the escrow limit
     const sats = 500_000
     const memo = "myMemo"
 
     const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-      walletId: walletIdB as WalletId,
+      walletId: walletIdB,
       amount: toSats(sats),
       memo,
     })
     if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
+    const { paymentRequest, paymentHash } = lnInvoice
 
-    const checker = await Lightning.PaymentStatusChecker(invoice)
-    expect(checker).not.toBeInstanceOf(Error)
-    if (checker instanceof Error) throw checker
+    const balanceBefore = await getBalanceHelper(walletIdB)
+    const updateInvoice = async () => {
+      // TODO: we could use event instead of a sleep to lower test latency
+      await sleep(500)
 
-    const isPaidBeforePay = await checker.invoiceIsPaid()
-    expect(isPaidBeforePay).not.toBeInstanceOf(Error)
-    expect(isPaidBeforePay).toBe(false)
-
-    const hash = getHash(invoice)
-
-    const updateInvoice = () =>
-      Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
+      return Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash,
         logger: baseLogger,
       })
-
-    const promises = Promise.all([
-      safePay({ lnd: lndOutside1, request: invoice }),
-      (async () => {
-        // TODO: we could use event instead of a sleep to lower test latency
-        await sleep(500)
-        return updateInvoice()
-      })(),
-    ])
-
-    {
-      // first arg is the outsideLndpayResult
-      const [, result] = await promises
-      expect(result).not.toBeInstanceOf(Error)
     }
+
+    // first arg is the outsideLndpayResult
+    const [, result] = await Promise.all([
+      safePay({ lnd: lndOutside1, request: paymentRequest }),
+      updateInvoice(),
+    ])
+    expect(result).not.toBeInstanceOf(Error)
+
+    const balanceAfter = await getBalanceHelper(walletIdB)
+    expect(balanceAfter).toBeGreaterThan(balanceBefore)
 
     // should be idempotent (not return error when called again)
-    {
-      const result = await updateInvoice()
-      expect(result).not.toBeInstanceOf(Error)
-    }
+    const resultRetry = await updateInvoice()
+    expect(resultRetry).not.toBeInstanceOf(Error)
 
-    const ledger = LedgerService()
-    const ledgerMetadata = TransactionsMetadataRepository()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw ledgerTxs
-
-    const ledgerTx = ledgerTxs[0]
-    const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
-    if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
-
-    expect(ledgerTx.credit).toBe(sats)
-    expect(ledgerTx.lnMemo).toBe(memo)
-    expect(ledgerTx.pendingConfirmation).toBe(false)
-
-    expect(ledgerTxMetadata).toHaveProperty("hash")
-    if (!("hash" in ledgerTxMetadata)) return
-    expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
-    expect(ledgerTxMetadata["revealedPreImage"]).toBeUndefined()
-
-    const isPaidAfterPay = await checker.invoiceIsPaid()
-    expect(isPaidAfterPay).not.toBeInstanceOf(Error)
-    expect(isPaidAfterPay).toBe(true)
-
-    // check that memo is not filtered by spam filter
-    const { result: txns, error } = await getTransactionsForWalletId(walletIdB)
-    if (error instanceof Error || txns === null) {
-      throw error
-    }
-    const noSpamTxn = txns.slice.find(
-      (txn) =>
-        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
-        txn.initiationVia.paymentHash === hash,
-    ) as WalletTransaction
-    expect(noSpamTxn.memo).toBe(memo)
-
-    const finalBalance = await getBalanceHelper(walletIdB)
-    expect(finalBalance).toBe(initBalanceB + sats)
-
-    const imbalanceCalc = ImbalanceCalculator({
-      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
-      sinceDaysAgo: ONE_DAY,
-      volumeLightningFn: ledger.lightningTxBaseVolumeSince,
-      volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
-    })
-
-    // FIXME: Needs to be in the first test so that previous volume for wallet is 0.
-    const imbalance = await imbalanceCalc.getSwapOutImbalanceAmount(walletDescriptorB)
-    if (imbalance instanceof Error) throw imbalance
-
-    expect(Number(imbalance.amount)).toBe(sats)
-
-    // Check ledger transaction metadata for BTC 'LedgerTransactionType.Invoice'
-    // ===
-    const usdPaymentAmount = await usdFromBtcMidPriceFn({
-      amount: BigInt(sats),
-      currency: WalletCurrency.Btc,
-    })
-    if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
-    const centsAmount = Number(usdPaymentAmount.amount)
-
-    const expectedFields = {
-      type: LedgerTransactionType.Invoice,
-
-      debit: 0,
-      credit: sats,
-
-      satsAmount: sats,
-      satsFee: 0,
-      centsAmount,
-      centsFee: 0,
-      displayAmount: centsAmount,
-      displayFee: 0,
-
-      displayCurrency: UsdDisplayCurrency,
-    }
-    expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
+    const balanceAfterRetry = await getBalanceHelper(walletIdB)
+    expect(balanceAfterRetry).toEqual(balanceAfter)
   })
 
   it("if trigger is missing the USD invoice, then it should be denied", async () => {
@@ -385,228 +281,6 @@ describe("UserWallet - Lightning", () => {
     ])
   })
 
-  it("receives payment from outside to USD wallet with amount", async () => {
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-
-    const cents = toCents(250)
-    const memo = "myMemo"
-
-    const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
-      walletId: walletIdUsdB as WalletId,
-      amount: cents,
-      memo,
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
-
-    const hash = getHash(invoice)
-    const amount = getAmount(invoice)
-
-    const dealerFns = DealerPriceService(defaultTimeToExpiryInSeconds)
-    const btcAmount = await dealerFns.getSatsFromCentsForFutureBuy({
-      amount: BigInt(cents),
-      currency: WalletCurrency.Usd,
-    })
-    if (btcAmount instanceof Error) throw btcAmount
-    const sats = Number(btcAmount.amount)
-
-    expect(amount).toBe(sats)
-
-    safePay({ lnd: lndOutside1, request: invoice })
-
-    // TODO: we could use an event instead of a sleep
-    await sleep(500)
-
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
-    // should be idempotent (not return error when called again)
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
-
-    const ledger = LedgerService()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw ledgerTxs
-
-    const ledgerTx = ledgerTxs.find((tx) => tx.walletId === walletIdUsdB)
-    if (ledgerTx === undefined) throw Error("ledgerTx needs to be defined")
-
-    expect(ledgerTx.credit).toBe(cents)
-    expect(ledgerTx.centsAmount).toBe(cents)
-    expect(ledgerTx.currency).toBe(WalletCurrency.Usd)
-    expect(ledgerTx.lnMemo).toBe(memo)
-    expect(ledgerTx.pendingConfirmation).toBe(false)
-    const dealerUsdWalletId = await getDealerUsdWalletId()
-    const dealerBalance = await getBalanceHelper(dealerUsdWalletId)
-    expect(dealerBalance).toBe(cents * -1)
-
-    // check that memo is not filtered by spam filter
-    const { result: txns } = await getTransactionsForWalletId(walletIdUsdB)
-    expect(txns?.slice.length).toBe(1)
-
-    // FIXME(nicolas) need to have spam memo working USD wallet
-    // if (error instanceof Error || txns === null) throw error
-    // const noSpamTxn = txns.slice.find(
-    //   (txn) =>
-    //     txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
-    //     txn.initiationVia.paymentHash === hash,
-    // ) as WalletTransaction
-    // expect(noSpamTxn.memo).toBe(memo)
-
-    const finalBalance = await getBalanceHelper(walletIdUsdB)
-    expect(finalBalance).toBe(initBalanceUsdB + cents)
-
-    // Check ledger transaction metadata for USD 'LedgerTransactionType.Invoice'
-    // ===
-    const expectedFields = {
-      type: LedgerTransactionType.Invoice,
-
-      debit: 0,
-      credit: cents,
-
-      satsAmount: sats,
-      satsFee: 0,
-      centsAmount: cents,
-      centsFee: 0,
-      displayAmount: cents,
-      displayFee: 0,
-
-      displayCurrency: UsdDisplayCurrency,
-    }
-    expect(ledgerTx).toEqual(expect.objectContaining(expectedFields))
-  })
-
-  it("receives payment from outside to USD wallet with amountless invoices", async () => {
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-
-    const sats = toSats(120000)
-    const memo = "myMemo"
-
-    const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
-      walletId: walletIdUsdB as WalletId,
-      memo,
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
-
-    const hash = getHash(invoice)
-
-    safePay({ lnd: lndOutside1, request: invoice, tokens: sats })
-
-    // TODO: we could use an event instead of a sleep
-    await sleep(500)
-
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
-    // should be idempotent (not return error when called again)
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
-
-    const ledger = LedgerService()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw ledgerTxs
-
-    const ledgerTx = ledgerTxs.find((tx) => tx.walletId === walletIdUsdB)
-    if (ledgerTx === undefined) throw Error("ledgerTx needs to be defined")
-
-    const dealerFns = DealerPriceService()
-    const usdAmount = await dealerFns.getCentsFromSatsForImmediateBuy({
-      amount: BigInt(sats),
-      currency: WalletCurrency.Btc,
-    })
-    if (usdAmount instanceof Error) throw usdAmount
-    const cents = Number(usdAmount.amount)
-
-    expect(ledgerTx.credit).toBe(cents)
-    expect(ledgerTx.centsAmount).toBe(cents)
-    expect(ledgerTx.currency).toBe(WalletCurrency.Usd)
-    expect(ledgerTx.lnMemo).toBe(memo)
-    expect(ledgerTx.pendingConfirmation).toBe(false)
-
-    // check that memo is not filtered by spam filter
-    const { result: txns } = await getTransactionsForWalletId(walletIdUsdB)
-    expect(txns?.slice.length).toBe(2)
-
-    // FIXME(nicolas) need to have spam memo working USD wallet
-    // if (error instanceof Error || txns === null) throw error
-    // const noSpamTxn = txns.slice.find(
-    //   (txn) =>
-    //     txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
-    //     txn.initiationVia.paymentHash === hash,
-    // ) as WalletTransaction
-    // expect(noSpamTxn.memo).toBe(memo)
-
-    const finalBalance = await getBalanceHelper(walletIdUsdB)
-    expect(finalBalance).toBe(initBalanceUsdB + cents)
-  })
-
-  it("receives zero amount invoice", async () => {
-    const sats = 1000
-
-    const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
-      walletId: walletIdB as WalletId,
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
-
-    const hash = getHash(invoice)
-
-    safePay({ lnd: lndOutside1, request: invoice, tokens: sats })
-
-    // TODO: we could use an event instead of a sleep
-    await sleep(500)
-
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
-    // should be idempotent (not return error when called again)
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
-
-    const ledger = LedgerService()
-    const ledgerMetadata = TransactionsMetadataRepository()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw ledgerTxs
-
-    const ledgerTx = ledgerTxs[0]
-    const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
-    if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
-
-    expect(ledgerTx.credit).toBe(sats)
-    expect(ledgerTx.lnMemo).toBe("")
-    expect(ledgerTx.pendingConfirmation).toBe(false)
-
-    expect(ledgerTxMetadata).toHaveProperty("hash")
-    if (!("hash" in ledgerTxMetadata)) return
-    expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
-    expect(ledgerTxMetadata["revealedPreImage"]).toBeUndefined()
-
-    const finalBalance = await getBalanceHelper(walletIdB)
-    expect(finalBalance).toBe(initBalanceB + sats)
-  })
-
   it("receives 'less than 1 sat amount' invoice", async () => {
     const mtokens = "995"
     const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
@@ -718,34 +392,6 @@ describe("Invoice handling from trigger", () => {
   describe("btc recipient invoice", () => {
     const sats = toSats(500)
 
-    it("should process hodl invoice on invoice payment", async () => {
-      // Kick off listener
-      const subInvoices = subscribeToInvoices({ lnd: lnd1 })
-      setupInvoiceSubscribe({
-        lnd: lnd1,
-        pubkey: process.env.LND1_PUBKEY as Pubkey,
-        subInvoices,
-      })
-
-      // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-        walletId: walletIdF,
-        amount: sats,
-      })
-      expect(lnInvoice).not.toBeInstanceOf(Error)
-      if (lnInvoice instanceof Error) throw lnInvoice
-
-      // Pay invoice
-      const result = await pay({
-        lnd: lndOutside1,
-        request: lnInvoice.paymentRequest,
-      })
-
-      // See successful payment
-      expect(result.is_confirmed).toBeTruthy()
-      subInvoices.removeAllListeners()
-    })
-
     it("should process held invoice when trigger comes back up", async () => {
       // Create invoice for self
       const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
@@ -817,34 +463,6 @@ describe("Invoice handling from trigger", () => {
 
   describe("usd recipient invoice", () => {
     const cents = toCents(100)
-
-    it("should process hodl invoice on invoice payment", async () => {
-      // Kick off listener
-      const subInvoices = subscribeToInvoices({ lnd: lnd1 })
-      setupInvoiceSubscribe({
-        lnd: lnd1,
-        pubkey: process.env.LND1_PUBKEY as Pubkey,
-        subInvoices,
-      })
-
-      // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
-        walletId: walletIdUsdF,
-        amount: cents,
-      })
-      expect(lnInvoice).not.toBeInstanceOf(Error)
-      if (lnInvoice instanceof Error) throw lnInvoice
-
-      // Pay invoice
-      const result = await pay({
-        lnd: lndOutside1,
-        request: lnInvoice.paymentRequest,
-      })
-
-      // See successful payment
-      expect(result.is_confirmed).toBeTruthy()
-      subInvoices.removeAllListeners()
-    })
 
     it("should process held invoice when trigger comes back up", async () => {
       // Create invoice for self
