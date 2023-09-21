@@ -288,7 +288,8 @@ get_from_transaction_by_ln_hash_and_status() {
       --arg payment_hash "$payment_hash" \
       --arg expected_status "$expected_status" \
       "$jq_query" \
-    | jq -r "$property_query"
+    | jq -r "$property_query" \
+    | head -n 1
 }
 
 check_for_ln_update() {
