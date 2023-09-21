@@ -1,4 +1,4 @@
-import { Wallets } from "@app/index"
+import { Wallets } from "@app"
 
 import { ZERO_SATS } from "@domain/shared"
 import { MultipleCurrenciesForSingleCurrencyOperationError } from "@domain/errors"

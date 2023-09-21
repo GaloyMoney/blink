@@ -45,3 +45,4 @@ junit.xml
 .next
 
 .direnv
+.env.local

@@ -5,7 +5,10 @@ import { RegistrationPayloadValidator } from "@domain/authentication/registratio
 import { ErrorLevel } from "@domain/shared"
 import { InvalidPhoneNumber, InvalidUserId } from "@domain/errors"
 
-import { recordExceptionInCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 import { SchemaIdType } from "@services/kratos"
 
 import { createAccountWithPhoneIdentifier } from "@app/accounts"
@@ -21,6 +24,10 @@ export const createAccountFromRegistrationPayload = async ({
     schema_id?: string
   }
 }): Promise<Account | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "registration.body": JSON.stringify(body),
+  })
+
   const isValidKey = CallbackSecretValidator(KRATOS_CALLBACK_API_KEY).authorize(secret)
   if (isValidKey instanceof Error) {
     return isValidKey
