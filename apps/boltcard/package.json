@@ -22,7 +22,7 @@
     "eslint-config-next": "13.4.19",
     "graphql": "^16.8.0",
     "knex": "^2.5.1",
-    "next": "13.4.19",
+    "next": "latest",
     "node-aes-cmac": "^0.1.1",
     "pg": "^8.11.3",
     "postcss": "8.4.29",

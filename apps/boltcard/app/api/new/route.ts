@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { aesDecryptKey, serverUrl } from "@/services/config"
+import { aesDecryptKey, serverApi } from "@/services/config"
 import { fetchByOneTimeCode } from "@/services/db/card-init"
 
 interface NewCardResponse {
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const lnurlwBase = `${serverUrl}/ln`
+  const lnurlwBase = `${serverApi}/ln`
     .replace("http://", "lnurlw://")
     .replace("https://", "lnurlw://")
 

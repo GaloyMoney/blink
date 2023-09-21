@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { ApolloQueryResult, gql } from "@apollo/client"
 
-import { aesDecryptKey, serverUrl } from "@/services/config"
+import { aesDecryptKey, serverApi } from "@/services/config"
 import { aesDecrypt, checkSignature } from "@/services/crypto/aes"
 import { decodePToUidCtr } from "@/services/crypto/decoder"
 import { createCard, fetchByUid } from "@/services/db/card"
@@ -98,6 +98,96 @@ const maybeSetupCard = async ({
   return null
 }
 
+const setupCard = async ({
+  cardInit,
+  uid,
+  ctr,
+}: {
+  cardInit: CardInitInput
+  uid: string
+  ctr: number
+}): Promise<NextResponse | undefined> => {
+  const { k0AuthKey, k2CmacKey, k3, k4, token } = cardInit
+
+  const client = apollo(token).getClient()
+
+  let data: ApolloQueryResult<GetUsdWalletIdQuery>
+  try {
+    data = await client.query<GetUsdWalletIdQuery>({
+      query: GetUsdWalletIdDocument,
+    })
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json(
+      { status: "ERROR", reason: "issue fetching walletId" },
+      { status: 400 },
+    )
+  }
+
+  const accountId = data.data?.me?.defaultAccount?.id
+  if (!accountId) {
+    return NextResponse.json(
+      { status: "ERROR", reason: "no accountId found" },
+      { status: 400 },
+    )
+  }
+
+  const wallets = data.data?.me?.defaultAccount.wallets
+
+  if (!wallets) {
+    return NextResponse.json(
+      { status: "ERROR", reason: "no wallets found" },
+      { status: 400 },
+    )
+  }
+
+  const usdWallet = wallets.find((wallet) => wallet.walletCurrency === "USD")
+  const walletId = usdWallet?.id
+
+  console.log({ usdWallet, wallets })
+
+  if (!walletId) {
+    return NextResponse.json(
+      { status: "ERROR", reason: "no usd wallet found" },
+      { status: 400 },
+    )
+  }
+
+  const dataOnchain = await client.mutate<OnChainAddressCurrentMutation>({
+    mutation: OnChainAddressCurrentDocument,
+    variables: { input: { walletId } },
+  })
+  const onchainAddress = dataOnchain.data?.onChainAddressCurrent?.address
+  if (!onchainAddress) {
+    console.log(dataOnchain.data?.onChainAddressCurrent, "dataOnchain")
+    return NextResponse.json(
+      { status: "ERROR", reason: `onchain address not found` },
+      { status: 400 },
+    )
+  }
+
+  const id = generateReadableCode(12)
+  console.log({ id, onchainAddress }, "new card id")
+
+  await markCardInitAsUsed(k2CmacKey)
+
+  const card = await createCard({
+    id,
+    uid,
+    k0AuthKey,
+    k2CmacKey,
+    k3,
+    k4,
+    ctr,
+    token,
+    accountId,
+    onchainAddress,
+    walletId,
+  })
+
+  return card
+}
+
 gql`
   query getUsdWalletId {
     me {
@@ -159,86 +249,14 @@ export async function GET(req: NextRequest) {
   let card = await fetchByUid(uid)
 
   if (!card) {
-    const result = await maybeSetupCard({ uidRaw, ctrRawInverseBytes, ba_c })
+    const cardInit = await maybeSetupCard({ uidRaw, ctrRawInverseBytes, ba_c })
 
-    if (result) {
-      const { k0AuthKey, k2CmacKey, k3, k4, token } = result
+    if (cardInit) {
+      card = await setupCard({ cardInit, uid, ctr })
 
-      const client = apollo(token).getClient()
-
-      let data: ApolloQueryResult<GetUsdWalletIdQuery>
-      try {
-        data = await client.query<GetUsdWalletIdQuery>({
-          query: GetUsdWalletIdDocument,
-        })
-      } catch (error) {
-        console.error(error)
-        return NextResponse.json(
-          { status: "ERROR", reason: "issue fetching walletId" },
-          { status: 400 },
-        )
+      if (card instanceof NextResponse) {
+        return card
       }
-
-      const accountId = data.data?.me?.defaultAccount?.id
-      if (!accountId) {
-        return NextResponse.json(
-          { status: "ERROR", reason: "no accountId found" },
-          { status: 400 },
-        )
-      }
-
-      const wallets = data.data?.me?.defaultAccount.wallets
-
-      if (!wallets) {
-        return NextResponse.json(
-          { status: "ERROR", reason: "no wallets found" },
-          { status: 400 },
-        )
-      }
-
-      const usdWallet = wallets.find((wallet) => wallet.walletCurrency === "USD")
-      const walletId = usdWallet?.id
-
-      console.log({ usdWallet, wallets })
-
-      if (!walletId) {
-        return NextResponse.json(
-          { status: "ERROR", reason: "no usd wallet found" },
-          { status: 400 },
-        )
-      }
-
-      const dataOnchain = await client.mutate<OnChainAddressCurrentMutation>({
-        mutation: OnChainAddressCurrentDocument,
-        variables: { input: { walletId } },
-      })
-      const onchainAddress = dataOnchain.data?.onChainAddressCurrent?.address
-      if (!onchainAddress) {
-        console.log(dataOnchain.data?.onChainAddressCurrent, "dataOnchain")
-        return NextResponse.json(
-          { status: "ERROR", reason: `onchain address not found` },
-          { status: 400 },
-        )
-      }
-
-      const id = generateReadableCode(12)
-      console.log({ id, onchainAddress }, "new card id")
-
-      await markCardInitAsUsed(k2CmacKey)
-
-      card = await createCard({
-        id,
-        uid,
-        k0AuthKey,
-        k2CmacKey,
-        k3,
-        k4,
-        ctr,
-        token,
-        accountId,
-        onchainAddress,
-        walletId,
-      })
     } else {
       return NextResponse.json(
         { status: "ERROR", reason: "card not found" },
@@ -270,7 +288,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     tag: "withdrawRequest",
-    callback: serverUrl + "/callback",
+    callback: serverApi + "/callback",
     k1,
     defaultDescription: "payment for a blink card",
     minWithdrawable: 1000,

@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { gql } from "@apollo/client"
 
-import { fetchByCardId } from "@/services/db/card"
 import { apollo } from "@/services/core"
 import { TransactionsDocument, TransactionsQuery } from "@/services/core/generated"
+import { fetchByCardId } from "@/services/db/card"
 
 gql`
   query transactions($first: Int, $after: String) {

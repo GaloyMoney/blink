@@ -1,4 +1,4 @@
-export const serverUrl = process.env.SERVER_URL ?? "http://localhost:3000/api"
+export const serverApi = process.env.SERVER_URL ?? "http://localhost:3000/api"
 
 export const coreUrl = process.env.CORE_URL ?? "http://localhost:4002/graphql"
 

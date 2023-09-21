@@ -10,6 +10,22 @@ export async function fetchByCardId(cardId: string) {
   return result
 }
 
+export async function fetchPublicByCardUid(uid: string) {
+  const result = await knex("Card")
+    .where("uid", uid)
+    .select("id", "uid", "onchainAddress", "enabled")
+    .first()
+  return result
+}
+
+export async function fetchPublicByCardId(cardId: string) {
+  const result = await knex("Card")
+    .where("id", cardId)
+    .select("id", "uid", "onchainAddress", "enabled")
+    .first()
+  return result
+}
+
 interface CardInput {
   id: string
   uid: string

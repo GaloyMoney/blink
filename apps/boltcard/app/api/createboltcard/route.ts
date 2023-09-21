@@ -3,7 +3,7 @@ import { randomBytes } from "crypto"
 import { NextRequest, NextResponse } from "next/server"
 
 import { createCardInit } from "@/services/db/card-init"
-import { serverUrl } from "@/services/config"
+import { serverApi } from "@/services/config"
 
 const randomHex = (): string => randomBytes(16).toString("hex")
 
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const url = `${serverUrl}/new?a=${oneTimeCode}`
+  const url = `${serverApi}/new?a=${oneTimeCode}`
   return NextResponse.json({
     status: "OK",
     url,
