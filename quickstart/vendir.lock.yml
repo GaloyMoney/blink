@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: debugging earn issue (#3252)...'
-      sha: fa390bbca755554c491d88c066b8ae3cba861266
+      commitTitle: 'test: remove and reduce legacy receive-ln integration tests (#3254)...'
+      sha: d4c87a45cc5a844796ee8cb80b00985de5fb7dab
       tags:
-      - 0.13.85-1-gfa390bbca
+      - 0.13.87-1-gd4c87a45c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: debugging earn issue (#3252)...'
-      sha: fa390bbca755554c491d88c066b8ae3cba861266
+      commitTitle: 'test: remove and reduce legacy receive-ln integration tests (#3254)...'
+      sha: d4c87a45cc5a844796ee8cb80b00985de5fb7dab
       tags:
-      - 0.13.85-1-gfa390bbca
+      - 0.13.87-1-gd4c87a45c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: debugging earn issue (#3252)...'
-      sha: fa390bbca755554c491d88c066b8ae3cba861266
+      commitTitle: 'test: remove and reduce legacy receive-ln integration tests (#3254)...'
+      sha: d4c87a45cc5a844796ee8cb80b00985de5fb7dab
       tags:
-      - 0.13.85-1-gfa390bbca
+      - 0.13.87-1-gd4c87a45c
     path: ./
   path: ./graphql
 kind: LockConfig
