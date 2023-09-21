@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: move less-than-1-sat to bats (#3253)'
-      sha: f225e1c7f136ca5087b7bfb3ca9914a6145424a0
+      commitTitle: 'chore: more debugging for transient_payload (#3255)...'
+      sha: a517ad6767a6a1055978f898ae8ff6bb63efd8e9
       tags:
-      - 0.13.88
+      - 0.13.89-1-ga517ad676
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: move less-than-1-sat to bats (#3253)'
-      sha: f225e1c7f136ca5087b7bfb3ca9914a6145424a0
+      commitTitle: 'chore: more debugging for transient_payload (#3255)...'
+      sha: a517ad6767a6a1055978f898ae8ff6bb63efd8e9
       tags:
-      - 0.13.88
+      - 0.13.89-1-ga517ad676
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: move less-than-1-sat to bats (#3253)'
-      sha: f225e1c7f136ca5087b7bfb3ca9914a6145424a0
+      commitTitle: 'chore: more debugging for transient_payload (#3255)...'
+      sha: a517ad6767a6a1055978f898ae8ff6bb63efd8e9
       tags:
-      - 0.13.88
+      - 0.13.89-1-ga517ad676
     path: ./
   path: ./graphql
 kind: LockConfig
