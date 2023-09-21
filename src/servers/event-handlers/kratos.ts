@@ -1,10 +1,11 @@
 import cors from "cors"
 import express from "express"
 
-import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 import { baseLogger } from "@services/logger"
 
-import { createAccountFromRegistrationPayload } from "@app/authentication"
+import { Authentication } from "@app"
+
 import {
   SecretForAuthNCallbackError,
   RegistrationPayloadValidationError,
@@ -31,11 +32,11 @@ kratosCallback.post(
     fn: async (req: express.Request, res: express.Response) => {
       const secret = req.headers.authorization
       const body = req.body
-      addAttributesToCurrentSpan({
-        "registration.body": JSON.stringify(body),
-      })
 
-      const account = await createAccountFromRegistrationPayload({ secret, body })
+      const account = await Authentication.createAccountFromRegistrationPayload({
+        secret,
+        body,
+      })
       if (account instanceof Error) {
         const message = errorResponseMessages[account.name] || "unknown error"
         switch (true) {
