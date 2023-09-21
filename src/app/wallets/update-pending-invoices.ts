@@ -185,12 +185,14 @@ const updatePendingInvoiceBeforeFinally = async ({
   return lockService.lockPaymentHash(paymentHash, async () => {
     // we're getting the invoice another time, now behind the lock, to avoid potential race condition
     const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(paymentHash)
+    console.log("HERE 10:", { invoiceToUpdate })
     if (invoiceToUpdate instanceof CouldNotFindError) {
       pendingInvoiceLogger.error({ paymentHash }, "WalletInvoice doesn't exist")
       return false
     }
     if (invoiceToUpdate instanceof Error) return invoiceToUpdate
     if (walletInvoice.paid) {
+      console.log("HERE 12:", "invoice has already been processed")
       pendingInvoiceLogger.info("invoice has already been processed")
       return true
     }
@@ -234,6 +236,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     }
 
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
+    console.log("HERE 11:", { invoicePaid })
     if (invoicePaid instanceof Error) return invoicePaid
 
     const recipientAccount = await AccountsRepository().findById(recipientAccountId)
@@ -296,6 +299,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       additionalCreditMetadata: creditAccountAdditionalMetadata,
       additionalInternalMetadata: internalAccountsAdditionalMetadata,
     })
+    console.log("(HERE 2) WROTE TXN TO LEDGER:", { result })
     if (result instanceof Error) return result
 
     // Prepare and send notification
@@ -337,6 +341,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       })
     }
 
+    console.log("(HERE 3) EXITING LOCK")
     return true
   })
 }
