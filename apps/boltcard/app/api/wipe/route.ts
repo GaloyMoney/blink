@@ -1,7 +1,8 @@
+import { NextRequest, NextResponse } from "next/server"
+
 import { AES_DECRYPT_KEY } from "@/services/config"
 import { fetchByCardId } from "@/services/db/card"
 import { fetchByOneTimeCode } from "@/services/db/card-init"
-import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
   // should be pass with POST? not sure if this would be compatible

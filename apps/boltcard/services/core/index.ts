@@ -21,6 +21,6 @@ export const apollo = (token: string) =>
     })
   })
 
-// Adds messages only in a dev environment
+// TODO: Adds messages only in a dev environment
 loadDevMessages()
 loadErrorMessages()

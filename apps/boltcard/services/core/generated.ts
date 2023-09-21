@@ -48,6 +48,7 @@ export type Scalars = {
   Memo: { input: string; output: string; }
   /** (Positive) amount of minutes */
   Minutes: { input: string; output: string; }
+  NotificationCategory: { input: string; output: string; }
   Object: { input: string; output: string; }
   /** An address for an on-chain bitcoin destination */
   OnChainAddress: { input: string; output: string; }
@@ -89,6 +90,7 @@ export type Account = {
   readonly id: Scalars['ID']['output'];
   readonly level: AccountLevel;
   readonly limits: AccountLimits;
+  readonly notificationSettings: NotificationSettings;
   readonly realtimePrice: RealtimePrice;
   readonly transactions?: Maybe<TransactionConnection>;
   readonly wallets: ReadonlyArray<Wallet>;
@@ -118,6 +120,24 @@ export type AccountDetailPayload = {
   readonly __typename: 'AccountDetailPayload';
   readonly accountDetails?: Maybe<AuditedAccount>;
   readonly errors: ReadonlyArray<Error>;
+};
+
+export type AccountDisableNotificationCategoryInput = {
+  readonly category: Scalars['NotificationCategory']['input'];
+  readonly channel?: InputMaybe<NotificationChannel>;
+};
+
+export type AccountDisableNotificationChannelInput = {
+  readonly channel: NotificationChannel;
+};
+
+export type AccountEnableNotificationCategoryInput = {
+  readonly category: Scalars['NotificationCategory']['input'];
+  readonly channel?: InputMaybe<NotificationChannel>;
+};
+
+export type AccountEnableNotificationChannelInput = {
+  readonly channel: NotificationChannel;
 };
 
 export const AccountLevel = {
@@ -180,6 +200,12 @@ export type AccountUpdateLevelInput = {
   readonly uid: Scalars['ID']['input'];
 };
 
+export type AccountUpdateNotificationSettingsPayload = {
+  readonly __typename: 'AccountUpdateNotificationSettingsPayload';
+  readonly account?: Maybe<ConsumerAccount>;
+  readonly errors: ReadonlyArray<Error>;
+};
+
 export type AccountUpdateStatusInput = {
   readonly comment?: InputMaybe<Scalars['String']['input']>;
   readonly status: AccountStatus;
@@ -187,10 +213,11 @@ export type AccountUpdateStatusInput = {
 };
 
 export type AdminPushNotificationSendInput = {
-  readonly accountId?: InputMaybe<Scalars['String']['input']>;
-  readonly body?: InputMaybe<Scalars['String']['input']>;
+  readonly accountId: Scalars['String']['input'];
+  readonly body: Scalars['String']['input'];
   readonly data?: InputMaybe<Scalars['Object']['input']>;
-  readonly title?: InputMaybe<Scalars['String']['input']>;
+  readonly notificationCategory?: InputMaybe<Scalars['NotificationCategory']['input']>;
+  readonly title: Scalars['String']['input'];
 };
 
 export type AdminPushNotificationSendPayload = {
@@ -342,6 +369,7 @@ export type ConsumerAccount = Account & {
   readonly id: Scalars['ID']['output'];
   readonly level: AccountLevel;
   readonly limits: AccountLimits;
+  readonly notificationSettings: NotificationSettings;
   /** List the quiz questions of the consumer account */
   readonly quiz: ReadonlyArray<Quiz>;
   readonly realtimePrice: RealtimePrice;
@@ -720,6 +748,10 @@ export type MobileVersions = {
 export type Mutation = {
   readonly __typename: 'Mutation';
   readonly accountDelete: AccountDeletePayload;
+  readonly accountDisableNotificationCategory: AccountUpdateNotificationSettingsPayload;
+  readonly accountDisableNotificationChannel: AccountUpdateNotificationSettingsPayload;
+  readonly accountEnableNotificationCategory: AccountUpdateNotificationSettingsPayload;
+  readonly accountEnableNotificationChannel: AccountUpdateNotificationSettingsPayload;
   readonly accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdPayload;
   readonly accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyPayload;
   readonly accountUpdateLevel: AccountDetailPayload;
@@ -832,6 +864,26 @@ export type Mutation = {
   readonly userUpdatePhone: AccountDetailPayload;
   /** @deprecated Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles */
   readonly userUpdateUsername: UserUpdateUsernamePayload;
+};
+
+
+export type MutationAccountDisableNotificationCategoryArgs = {
+  input: AccountDisableNotificationCategoryInput;
+};
+
+
+export type MutationAccountDisableNotificationChannelArgs = {
+  input: AccountDisableNotificationChannelInput;
+};
+
+
+export type MutationAccountEnableNotificationCategoryArgs = {
+  input: AccountEnableNotificationCategoryInput;
+};
+
+
+export type MutationAccountEnableNotificationChannelArgs = {
+  input: AccountEnableNotificationChannelInput;
 };
 
 
@@ -1094,6 +1146,22 @@ export const Network = {
 } as const;
 
 export type Network = typeof Network[keyof typeof Network];
+export const NotificationChannel = {
+  Push: 'PUSH'
+} as const;
+
+export type NotificationChannel = typeof NotificationChannel[keyof typeof NotificationChannel];
+export type NotificationChannelSettings = {
+  readonly __typename: 'NotificationChannelSettings';
+  readonly disabledCategories: ReadonlyArray<Scalars['NotificationCategory']['output']>;
+  readonly enabled: Scalars['Boolean']['output'];
+};
+
+export type NotificationSettings = {
+  readonly __typename: 'NotificationSettings';
+  readonly push: NotificationChannelSettings;
+};
+
 export type OnChainAddressCreateInput = {
   readonly walletId: Scalars['WalletId']['input'];
 };
@@ -1917,6 +1985,16 @@ export type LnInvoicePaymentSendMutationVariables = Exact<{
 
 export type LnInvoicePaymentSendMutation = { readonly __typename: 'Mutation', readonly lnInvoicePaymentSend: { readonly __typename: 'PaymentSendPayload', readonly status?: PaymentSendResult | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
 
+export type TransactionsQueryVariables = Exact<{
+  first?: InputMaybe<Scalars['Int']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type TransactionsQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly defaultAccount: { readonly __typename: 'ConsumerAccount', readonly defaultWalletId: string, readonly transactions?: { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly preImage?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null } } }> | null } | null } } | null };
+
+export type TransactionListFragment = { readonly __typename: 'TransactionConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly hasNextPage: boolean }, readonly edges?: ReadonlyArray<{ readonly __typename: 'TransactionEdge', readonly cursor: string, readonly node: { readonly __typename: 'Transaction', readonly id: string, readonly status: TxStatus, readonly direction: TxDirection, readonly memo?: string | null, readonly createdAt: number, readonly settlementAmount: number, readonly settlementFee: number, readonly settlementDisplayAmount: string, readonly settlementDisplayFee: string, readonly settlementDisplayCurrency: string, readonly settlementCurrency: WalletCurrency, readonly settlementPrice: { readonly __typename: 'PriceOfOneSettlementMinorUnitInDisplayMinorUnit', readonly base: number, readonly offset: number }, readonly initiationVia: { readonly __typename: 'InitiationViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'InitiationViaLn', readonly paymentHash: string } | { readonly __typename: 'InitiationViaOnChain', readonly address: string }, readonly settlementVia: { readonly __typename: 'SettlementViaIntraLedger', readonly counterPartyWalletId?: string | null, readonly counterPartyUsername?: string | null } | { readonly __typename: 'SettlementViaLn', readonly preImage?: string | null } | { readonly __typename: 'SettlementViaOnChain', readonly transactionHash?: string | null } } }> | null };
+
 export type GetUsdWalletIdQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1929,7 +2007,60 @@ export type OnChainAddressCurrentMutationVariables = Exact<{
 
 export type OnChainAddressCurrentMutation = { readonly __typename: 'Mutation', readonly onChainAddressCurrent: { readonly __typename: 'OnChainAddressPayload', readonly address?: string | null, readonly errors: ReadonlyArray<{ readonly __typename: 'GraphQLApplicationError', readonly message: string }> } };
 
-
+export const TransactionListFragmentDoc = gql`
+    fragment TransactionList on TransactionConnection {
+  pageInfo {
+    hasNextPage
+  }
+  edges {
+    cursor
+    node {
+      __typename
+      id
+      status
+      direction
+      memo
+      createdAt
+      settlementAmount
+      settlementFee
+      settlementDisplayAmount
+      settlementDisplayFee
+      settlementDisplayCurrency
+      settlementCurrency
+      settlementPrice {
+        base
+        offset
+      }
+      initiationVia {
+        __typename
+        ... on InitiationViaIntraLedger {
+          counterPartyWalletId
+          counterPartyUsername
+        }
+        ... on InitiationViaLn {
+          paymentHash
+        }
+        ... on InitiationViaOnChain {
+          address
+        }
+      }
+      settlementVia {
+        __typename
+        ... on SettlementViaIntraLedger {
+          counterPartyWalletId
+          counterPartyUsername
+        }
+        ... on SettlementViaLn {
+          preImage
+        }
+        ... on SettlementViaOnChain {
+          transactionHash
+        }
+      }
+    }
+  }
+}
+    `;
 export const LnInvoicePaymentSendDocument = gql`
     mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {
   lnInvoicePaymentSend(input: $input) {
@@ -1966,6 +2097,47 @@ export function useLnInvoicePaymentSendMutation(baseOptions?: Apollo.MutationHoo
 export type LnInvoicePaymentSendMutationHookResult = ReturnType<typeof useLnInvoicePaymentSendMutation>;
 export type LnInvoicePaymentSendMutationResult = Apollo.MutationResult<LnInvoicePaymentSendMutation>;
 export type LnInvoicePaymentSendMutationOptions = Apollo.BaseMutationOptions<LnInvoicePaymentSendMutation, LnInvoicePaymentSendMutationVariables>;
+export const TransactionsDocument = gql`
+    query transactions($first: Int, $after: String) {
+  me {
+    defaultAccount {
+      defaultWalletId
+      transactions(first: $first, after: $after) {
+        ...TransactionList
+      }
+    }
+  }
+}
+    ${TransactionListFragmentDoc}`;
+
+/**
+ * __useTransactionsQuery__
+ *
+ * To run a query within a React component, call `useTransactionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useTransactionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useTransactionsQuery({
+ *   variables: {
+ *      first: // value for 'first'
+ *      after: // value for 'after'
+ *   },
+ * });
+ */
+export function useTransactionsQuery(baseOptions?: Apollo.QueryHookOptions<TransactionsQuery, TransactionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<TransactionsQuery, TransactionsQueryVariables>(TransactionsDocument, options);
+      }
+export function useTransactionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TransactionsQuery, TransactionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<TransactionsQuery, TransactionsQueryVariables>(TransactionsDocument, options);
+        }
+export type TransactionsQueryHookResult = ReturnType<typeof useTransactionsQuery>;
+export type TransactionsLazyQueryHookResult = ReturnType<typeof useTransactionsLazyQuery>;
+export type TransactionsQueryResult = Apollo.QueryResult<TransactionsQuery, TransactionsQueryVariables>;
 export const GetUsdWalletIdDocument = gql`
     query getUsdWalletId {
   me {

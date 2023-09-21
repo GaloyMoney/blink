@@ -82,3 +82,13 @@ load "../../../test/bats/helpers/ln"
   result=$(curl -s http://localhost:3000/api/wipe?cardId=${cardId})
   [[ $(echo $result | jq -r '.k1') != "null" ]] || exit 1
 }
+
+@test "transactions" {
+  cardId=$(read_value "cardId")
+
+  response=$(curl -s http://localhost:3000/api/card/id/$cardId/transactions)
+
+  echo "$response"
+  count=$(echo "$response" | jq 'length')
+  [[ "$count" -ge 2 ]] || exit 1
+}
