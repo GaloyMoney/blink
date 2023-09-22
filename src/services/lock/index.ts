@@ -88,10 +88,9 @@ export const redlock = async <Signal extends RedlockAbortSignal, Ret>({
   }
 
   try {
-    return await redlockClient.using([path], ttl(), async (signal) => {
-      console.log("(HERE 1) ACQUIRED LOCK:", { path, signal })
-      return asyncFn(signal as Signal)
-    })
+    return await redlockClient.using([path], ttl(), async (signal) =>
+      asyncFn(signal as Signal),
+    )
   } catch (error) {
     if (error instanceof ExecutionError) {
       return new ResourceAttemptsLockServiceError()
