@@ -190,7 +190,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       return false
     }
     if (invoiceToUpdate instanceof Error) return invoiceToUpdate
-    if (walletInvoice.paid) {
+    if (invoiceToUpdate.paid) {
       pendingInvoiceLogger.info("invoice has already been processed")
       return true
     }

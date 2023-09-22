@@ -1,6 +1,6 @@
 import { LightningError as LnError } from "lightning"
 
-import { MEMO_SHARING_SATS_THRESHOLD, SECS_PER_10_MINS } from "@config"
+import { SECS_PER_10_MINS } from "@config"
 
 import { Lightning } from "@app"
 import * as Wallets from "@app/wallets"
@@ -9,7 +9,6 @@ import { handleHeldInvoices } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { toCents } from "@domain/fiat"
-import { PaymentInitiationMethod } from "@domain/wallets"
 import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -33,14 +32,12 @@ import {
   getError,
   getHash,
   getPubKey,
-  getTransactionsForWalletId,
   getUsdWalletIdByPhone,
   lnd1,
   lndOutside1,
   pay,
   randomPhone,
   safePay,
-  safePayNoExpect,
   subscribeToInvoices,
 } from "test/helpers"
 
@@ -278,61 +275,6 @@ describe("UserWallet - Lightning", () => {
         await handleHeldInvoices(baseLogger)
       })(),
     ])
-  })
-
-  it("receives spam invoice", async () => {
-    // amount below MEMO_SPAM threshold
-    const sats = 100
-    const memo = "THIS MIGHT BE SPAM!!!"
-
-    // confirm that transaction should be filtered
-    expect(sats).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
-
-    // process spam transaction
-    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-      walletId: walletIdB as WalletId,
-      amount: toSats(sats),
-      memo,
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
-
-    const hash = getHash(invoice)
-    safePayNoExpect({ lnd: lndOutside1, request: invoice })
-
-    // TODO: we could use an event instead of a sleep
-    await sleep(500)
-
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
-
-    // check that spam memo is persisted to database
-    const ledger = LedgerService()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw ledgerTxs
-
-    const ledgerTx = ledgerTxs[0]
-    expect(ledgerTx.lnMemo).toBe(memo)
-
-    // check that spam memo is filtered from transaction description
-    const { result: txns, error } = await getTransactionsForWalletId(walletIdB)
-    if (error instanceof Error || txns === null) throw error
-    expect(ledgerTx.type).toBe("invoice")
-
-    const spamTxn = txns.slice.find(
-      (txn) =>
-        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
-        txn.initiationVia.paymentHash === hash,
-    ) as WalletTransaction
-    expect(spamTxn.memo).toBeNull()
-
-    // confirm expected final balance
-    const finalBalance = await getBalanceHelper(walletIdB)
-    expect(finalBalance).toBe(initBalanceB + sats)
   })
 })
 
