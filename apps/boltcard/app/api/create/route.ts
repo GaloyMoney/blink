@@ -2,8 +2,8 @@ import { randomBytes } from "crypto"
 
 import { NextRequest, NextResponse } from "next/server"
 
-import { createCardInit } from "@/services/db/card-init"
-import { serverApi } from "@/services/config"
+import { createCardKeysSetup } from "@/services/db/card-init"
+import { serverUrl } from "@/services/config"
 
 const randomHex = (): string => randomBytes(16).toString("hex")
 
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   const k3 = randomHex()
   const k4 = randomHex()
 
-  const result = await createCardInit({
+  const result = await createCardKeysSetup({
     oneTimeCode,
     k0AuthKey,
     k2CmacKey,
@@ -45,9 +45,11 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const url = `${serverApi}/new?a=${oneTimeCode}`
+  const apiActivationUrl = `${serverUrl}/api/activate?a=${oneTimeCode}`
+  const uiActivationUrl = `${serverUrl}/card/activate?a=${oneTimeCode}`
   return NextResponse.json({
     status: "OK",
-    url,
+    apiActivationUrl,
+    uiActivationUrl,
   })
 }

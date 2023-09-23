@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   }
   // TODO authorization
 
-  // TODO may be both on CardInit and Card table
+  // TODO may be both on CardKeysSetup and Card table
   let card
   if (cardId) {
     card = await fetchByCardId(cardId)

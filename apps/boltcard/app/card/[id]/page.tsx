@@ -1,6 +1,6 @@
 import { serverApi } from "@/services/config"
 
-export default async function Home({ params }: { params: { id: string } }) {
+export default async function Card({ params }: { params: { id: string } }) {
   const { id } = params
 
   const cardApi = `${serverApi}/card/id/${id}`

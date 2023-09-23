@@ -1,4 +1,5 @@
-export const serverApi = process.env.SERVER_URL ?? "http://localhost:3000/api"
+export const serverUrl =
+  process.env.SERVER_URL ?? "https://2ee9-69-4-234-77.ngrok-free.app"
 
 export const coreUrl = process.env.CORE_URL ?? "http://localhost:4002/graphql"
 

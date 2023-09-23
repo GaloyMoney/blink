@@ -4,14 +4,14 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { ApolloQueryResult, gql } from "@apollo/client"
 
-import { aesDecryptKey, serverApi } from "@/services/config"
+import { aesDecryptKey, serverUrl } from "@/services/config"
 import { aesDecrypt, checkSignature } from "@/services/crypto/aes"
 import { decodePToUidCtr } from "@/services/crypto/decoder"
 import { createCard, fetchByUid } from "@/services/db/card"
 import {
-  CardInitInput,
+  CardKeysSetupInput,
   fetchAllWithStatusFetched,
-  markCardInitAsUsed,
+  markCardKeysSetupAsUsed,
 } from "@/services/db/card-init"
 import { insertPayment } from "@/services/db/payment"
 import { apollo } from "@/services/core"
@@ -116,12 +116,12 @@ const maybeSetupCard = async ({
   uidRaw: Uint8Array
   ctrRawInverseBytes: Uint8Array
   ba_c: Buffer
-}): Promise<CardInitInput | null> => {
-  const cardInits = await fetchAllWithStatusFetched()
+}): Promise<CardKeysSetupInput | null> => {
+  const cardKeysSetups = await fetchAllWithStatusFetched()
 
-  for (const cardInit of cardInits) {
-    console.log({ cardInit }, "cardInit")
-    const aesCmacKey = Buffer.from(cardInit.k2CmacKey, "hex")
+  for (const cardKeysSetup of cardKeysSetups) {
+    console.log({ cardKeysSetup }, "cardKeysSetup")
+    const aesCmacKey = Buffer.from(cardKeysSetup.k2CmacKey, "hex")
 
     const cmacVerified = await checkSignature(
       uidRaw,
@@ -133,7 +133,7 @@ const maybeSetupCard = async ({
     if (cmacVerified) {
       console.log("cmac verified")
       // associate card
-      return cardInit
+      return cardKeysSetup
     }
   }
 
@@ -141,15 +141,15 @@ const maybeSetupCard = async ({
 }
 
 const setupCard = async ({
-  cardInit,
+  cardKeysSetup,
   uid,
   ctr,
 }: {
-  cardInit: CardInitInput
+  cardKeysSetup: CardKeysSetupInput
   uid: string
   ctr: number
 }): Promise<NextResponse | undefined> => {
-  const { k0AuthKey, k2CmacKey, k3, k4, token } = cardInit
+  const { k0AuthKey, k2CmacKey, k3, k4, token } = cardKeysSetup
 
   const client = apollo(token).getClient()
 
@@ -210,7 +210,7 @@ const setupCard = async ({
 
   const id = generateReadableCode(12)
   const username = `card_${id}`
-  console.log({ id, username }, "new card id")
+  console.log({ id, username }, "activate card id")
 
   const dataUsername = await client.mutate<UserUpdateUsernameMutation>({
     mutation: UserUpdateUsernameDocument,
@@ -228,9 +228,9 @@ const setupCard = async ({
     )
   }
 
-  console.log({ id, onchainAddress, username, uid }, "new card id")
+  console.log({ id, onchainAddress, username, uid }, "activate card id")
 
-  await markCardInitAsUsed(k2CmacKey)
+  await markCardKeysSetupAsUsed(k2CmacKey)
 
   const card = await createCard({
     id,
@@ -263,7 +263,7 @@ export async function GET(req: NextRequest) {
 
   if (raw_p?.length !== 32 || raw_c?.length !== 16) {
     return NextResponse.json(
-      { status: "ERROR", reason: "invalid p or c" },
+      { status: "ERROR", reason: `invalid p: ${raw_p} or c: ${raw_c}` },
       { status: 400 },
     )
   }
@@ -285,10 +285,10 @@ export async function GET(req: NextRequest) {
   let card = await fetchByUid(uid)
 
   if (!card) {
-    const cardInit = await maybeSetupCard({ uidRaw, ctrRawInverseBytes, ba_c })
+    const cardKeysSetup = await maybeSetupCard({ uidRaw, ctrRawInverseBytes, ba_c })
 
-    if (cardInit) {
-      card = await setupCard({ cardInit, uid, ctr })
+    if (cardKeysSetup) {
+      card = await setupCard({ cardKeysSetup, uid, ctr })
 
       if (card instanceof NextResponse) {
         return card
@@ -324,7 +324,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     tag: "withdrawRequest",
-    callback: serverApi + "/callback",
+    callback: serverUrl + "/api/callback",
     k1,
     defaultDescription: "payment for a blink card",
     minWithdrawable: 1000,

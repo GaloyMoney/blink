@@ -51,10 +51,10 @@ async function createTables() {
     console.log("Card table already exists, skipping table creation.")
   }
 
-  const hasCardInitTable = await knex.schema.hasTable("CardInit")
+  const hasCardKeysSetupTable = await knex.schema.hasTable("CardKeysSetup")
 
-  if (!hasCardInitTable) {
-    await knex.schema.createTable("CardInit", (table) => {
+  if (!hasCardKeysSetupTable) {
+    await knex.schema.createTable("CardKeysSetup", (table) => {
       table.string("oneTimeCode").notNullable().index().unique()
       table.timestamp("created_at").defaultTo(knex.fn.now())
 
@@ -66,9 +66,9 @@ async function createTables() {
       table.string("k3").notNullable()
       table.string("k4").notNullable()
     })
-    console.log("CardInit table created successfully!")
+    console.log("CardKeysSetup table created successfully!")
   } else {
-    console.log("CardInit table already exists, skipping table creation.")
+    console.log("CardKeysSetup table already exists, skipping table creation.")
   }
 }
 

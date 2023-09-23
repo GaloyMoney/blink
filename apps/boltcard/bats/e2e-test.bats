@@ -9,12 +9,15 @@ random_phone() {
   login_user "alice" "$(random_phone)" "000000"
 }
 
-@test "auth: create card" {
+@test "auth: create and callback" {
   echo "TOKEN_ALICE=$(read_value "alice")"
   export TOKEN_ALICE=$(read_value "alice")
 
-  RESPONSE=$(curl -s "http://localhost:3000/api/createboltcard?token=${TOKEN_ALICE}")
-  CALLBACK_URL=$(echo $RESPONSE | jq -r '.url')
+  RESPONSE=$(curl -s "http://localhost:3000/api/create?token=${TOKEN_ALICE}")
+  CALLBACK_URL=$(echo $RESPONSE | jq -r '.apiActivationUrl')
+
+  # echo "CALLBACK_URL: $CALLBACK_URL"
+  # exit 1
 
   # Making the follow-up curl request
   RESPONSE=$(curl -s "${CALLBACK_URL}")
@@ -28,7 +31,7 @@ random_phone() {
   cache_value "k2" "$K2_VALUE"
 }
 
-@test "auth: create payment and follow up" {
+@test "payment: first ln call" {
   K1=$(read_value "k1")
   K2=$(read_value "k2")
 
@@ -49,6 +52,8 @@ random_phone() {
   cache_value "k1_callback" "$K1_CALLBACK"
   cache_value "uid" "$uid"
 }
+
+# todo: a second ln call; the paths are different
 
 @test "onchain funding" {
   uid=$(read_value "uid")
