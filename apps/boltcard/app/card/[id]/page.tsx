@@ -6,11 +6,11 @@ import { isAdmin, serverUrl } from "@/services/config"
 export default async function Card({ params }: { params: { id: string } }) {
   const { id } = params
 
-  const cardApi = `${serverUrl}/api/card/id/${id}`
+  const cardApi = `${serverUrl}/api/card/${id}`
   const cardResult = await fetch(cardApi, { cache: "no-store" })
   const cardInfo = await cardResult.json()
 
-  const transactionsApi = `${serverUrl}/api/card/id/${id}/transactions`
+  const transactionsApi = `${serverUrl}/api/card/${id}/transactions`
   const transactionsResult = await fetch(transactionsApi, { cache: "no-store" })
   const transactionsInfo = await transactionsResult.json()
 
@@ -26,7 +26,7 @@ export default async function Card({ params }: { params: { id: string } }) {
     lnurlQrCode = await QRCode.toDataURL(cardInfo.lnurlp, { width: 300 })
   }
 
-  const invoiceApi = `${serverUrl}/api/card/id/${id}/invoice`
+  const invoiceApi = `${serverUrl}/api/card/${id}/invoice`
   const invoiceResult = await fetch(invoiceApi, { cache: "no-store" })
   const invoiceInfo = await invoiceResult.json()
   const invoice = invoiceInfo?.data

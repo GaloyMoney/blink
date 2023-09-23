@@ -8,6 +8,7 @@ interface ActivateCardResponse {
   protocol_name: string
   protocol_version: number
   card_name: string
+  cardId: string
   lnurlw_base: string
   k0: string
   k1: string
@@ -54,6 +55,7 @@ export async function GET(req: NextRequest) {
     protocol_name: "create_bolt_card_response",
     protocol_version: 2,
     card_name: cardKeysSetup.cardId,
+    cardId: cardKeysSetup.cardId,
     lnurlw_base: lnurlwBase,
     k0: cardKeysSetup.k0AuthKey,
     k1: k1DecryptKey,

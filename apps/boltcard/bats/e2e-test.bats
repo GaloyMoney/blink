@@ -33,9 +33,11 @@ random_phone() {
 
   K1_VALUE=$(echo $RESPONSE | jq -r '.k1')
   K2_VALUE=$(echo $RESPONSE | jq -r '.k2')
+  cardId=$(echo $RESPONSE | jq -r '.cardId')
 
   cache_value "k1" "$K1_VALUE"
   cache_value "k2" "$K2_VALUE"
+  cache_value "cardId" "$cardId"
 }
 
 @test "payment: first ln call" {
@@ -57,16 +59,13 @@ random_phone() {
 
   echo "K1_CALLBACK: $K1_CALLBACK"
   cache_value "k1_callback" "$K1_CALLBACK"
-  cache_value "uid" "$uid"
 }
 
 # todo: a second ln call; the paths are different
 
 @test "onchain funding" {
-  uid=$(read_value "uid")
-  address=$(curl -s http://localhost:3000/api/card/uid/${uid} | jq -r '.onchainAddress')
-  cardId=$(curl -s http://localhost:3000/api/card/uid/${uid} | jq -r '.id')
-  cache_value "cardId" "$cardId"
+  cardId=$(read_value "cardId")
+  address=$(curl -s http://localhost:3000/api/card/${cardId} | jq -r '.onchainAddress')
 
   amount="0.001"
   token_name=$(read_value "alice")
@@ -108,7 +107,7 @@ random_phone() {
 @test "transactions" {
   cardId=$(read_value "cardId")
 
-  response=$(curl -s http://localhost:3000/api/card/id/$cardId/transactions)
+  response=$(curl -s http://localhost:3000/api/card/$cardId/transactions)
 
   echo "$response"
   count=$(echo "$response" | jq 'length')
