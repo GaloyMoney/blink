@@ -33,19 +33,19 @@ export default async function Card({ params }: { params: { id: string } }) {
         <h2>Card Information:</h2>
         <ul>
           <li>
-            <strong>ID:</strong> {cardInfo.id}
+            <strong>ID:</strong> {cardInfo?.id}
           </li>
           <li>
-            <strong>UID:</strong> {cardInfo.uid}
+            <strong>UID:</strong> {cardInfo?.uid}
           </li>
           <li>
-            <strong>Onchain Address:</strong> {cardInfo.onchainAddress}
+            <strong>Onchain Address:</strong> {cardInfo?.onchainAddress}
           </li>
           <li>
-            <strong>Lightning address</strong> {cardInfo.lightningAddress}
+            <strong>Lightning address</strong> {cardInfo?.lightningAddress}
           </li>
           <li>
-            <strong>Enabled:</strong> {cardInfo.enabled ? "Yes" : "No"}
+            <strong>Enabled:</strong> {cardInfo?.enabled ? "Yes" : "No"}
           </li>
         </ul>
       </section>

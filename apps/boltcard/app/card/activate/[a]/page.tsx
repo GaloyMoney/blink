@@ -6,7 +6,7 @@ import { serverUrl } from "@/services/config"
 export default async function ActivateCard({ params }: { params: { a: string } }) {
   const { a } = params
 
-  const url = `${serverUrl}/api/activate/?a=${a}`
+  const url = `${serverUrl}/api/activate?a=${a}`
   const res = await fetch(url, { cache: "no-store" })
   const activationParams = await res.json()
   const warning = activationParams.warning
@@ -17,6 +17,10 @@ export default async function ActivateCard({ params }: { params: { a: string } }
     <>
       <div>
         <h1>Activate Card</h1>
+        <p>
+          card page:{" "}
+          <a href={`/card/${activationParams.card_name}`}>{activationParams.card_name}</a>
+        </p>
         {warning && (
           <p>{"card should not be programmed twice with the same sets of keys"}</p>
         )}

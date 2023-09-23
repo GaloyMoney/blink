@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { AES_DECRYPT_KEY } from "@/services/config"
 import { fetchByCardId } from "@/services/db/card"
-import { fetchByOneTimeCode } from "@/services/db/card-init"
+import { fetchByCarksKeysSetupCardId } from "@/services/db/card-init"
 
 export async function GET(req: NextRequest) {
   // should be pass with POST? not sure if this would be compatible
@@ -10,9 +10,8 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const cardId = searchParams.get("cardId")
-  const oneTimeCode = searchParams.get("a")
 
-  if (!cardId && !oneTimeCode) {
+  if (!cardId) {
     return NextResponse.json(
       { status: "ERROR", reason: "cardId or a missing" },
       { status: 400 },
@@ -21,16 +20,10 @@ export async function GET(req: NextRequest) {
   // TODO authorization
 
   // TODO may be both on CardKeysSetup and Card table
-  let card
-  if (cardId) {
-    card = await fetchByCardId(cardId)
-  } else if (oneTimeCode) {
-    card = await fetchByOneTimeCode(oneTimeCode)
-  } else {
-    return NextResponse.json(
-      { status: "ERROR", reason: "cardId or a missing" },
-      { status: 400 },
-    )
+  let card = await fetchByCardId(cardId)
+
+  if (!card) {
+    card = await fetchByCarksKeysSetupCardId(cardId)
   }
 
   if (!card) {

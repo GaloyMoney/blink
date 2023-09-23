@@ -27,7 +27,7 @@ export async function fetchPublicByCardId(cardId: string) {
     .first()
 
   // TODO: refactor with a card service !== db
-  const username = `card_${result.id}`
+  const username = `card_${cardId}`
   const lightningAddress = `${username}@${lightningDomain}`
 
   return { ...result, username, lightningAddress }

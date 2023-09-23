@@ -43,6 +43,12 @@ export async function fetchByOneTimeCode(oneTimeCode: string) {
   return result
 }
 
+export async function fetchByCarksKeysSetupCardId(cardId: string) {
+  const result = await knex("CardKeysSetup").where("cardId", cardId).first()
+
+  return result
+}
+
 export async function markCardKeysSetupAsUsed(k2CmacKey: string) {
   await knex("CardKeysSetup").where("k2CmacKey", k2CmacKey).update({ status: "used" })
 }
