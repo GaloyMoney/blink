@@ -9,11 +9,11 @@ random_phone() {
   login_user "alice" "$(random_phone)" "000000"
 }
 
-@test "auth: create and callback" {
+@test "auth: initiate and callback" {
   echo "TOKEN_ALICE=$(read_value "alice")"
   export TOKEN_ALICE=$(read_value "alice")
 
-  RESPONSE=$(curl -s "http://localhost:3000/api/create?token=${TOKEN_ALICE}")
+  RESPONSE=$(curl -s "http://localhost:3000/api/initiate?token=${TOKEN_ALICE}")
   CALLBACK_API_URL=$(echo $RESPONSE | jq -r '.apiActivationUrl')
   CALLBACK_UI_URL=$(echo $RESPONSE | jq -r '.uiActivationUrl')
 

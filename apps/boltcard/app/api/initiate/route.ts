@@ -2,7 +2,7 @@ import { randomBytes } from "crypto"
 
 import { NextRequest, NextResponse } from "next/server"
 
-import { createCardKeysSetup } from "@/services/db/card-init"
+import { initiateCardKeysSetup } from "@/services/db/card-init"
 import { serverUrl } from "@/services/config"
 
 const randomHex = (): string => randomBytes(16).toString("hex")
@@ -47,7 +47,7 @@ function generateReadableCode(numDigits: number, separator: number = 4): string 
 
 export async function GET(req: NextRequest) {
   // should be pass with POST? not sure if this would be compatible
-  // with the wallet that can create cards
+  // with the wallet that can initiate cards
 
   const { searchParams } = new URL(req.url)
   const token = searchParams.get("token")
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
 
   const cardId = generateReadableCode(12)
 
-  const result = await createCardKeysSetup({
+  const result = await initiateCardKeysSetup({
     oneTimeCode,
     k0AuthKey,
     k2CmacKey,
@@ -81,13 +81,13 @@ export async function GET(req: NextRequest) {
 
   if (result instanceof Error) {
     return NextResponse.json(
-      { status: "ERROR", reason: "impossible to create card" },
+      { status: "ERROR", reason: "impossible to initiate card" },
       { status: 400 },
     )
   }
 
-  const apiActivationUrl = `${serverUrl}/api/activate?a=${oneTimeCode}`
-  const uiActivationUrl = `${serverUrl}/card/activate/${oneTimeCode}`
+  const apiActivationUrl = `${serverUrl}/api/program?a=${oneTimeCode}`
+  const uiActivationUrl = `${serverUrl}/card/program/${oneTimeCode}`
   return NextResponse.json({
     status: "OK",
     apiActivationUrl,

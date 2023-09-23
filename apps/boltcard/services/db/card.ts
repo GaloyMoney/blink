@@ -47,7 +47,7 @@ interface CardInput {
   walletId: string
 }
 
-export async function createCard(cardData: CardInput) {
+export async function initiateCard(cardData: CardInput) {
   try {
     const {
       id,

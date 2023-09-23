@@ -92,7 +92,7 @@ export default async function Card({ params }: { params: { id: string } }) {
         <p>
           <Image
             src={qrCode}
-            alt={"qr code to activate"}
+            alt={"qr code to program"}
             width={400}
             height={400}
             unoptimized

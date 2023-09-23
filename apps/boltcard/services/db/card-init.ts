@@ -10,7 +10,7 @@ export interface CardKeysSetupInput {
   cardId: string
 }
 
-export async function createCardKeysSetup(cardData: CardKeysSetupInput) {
+export async function initiateCardKeysSetup(cardData: CardKeysSetupInput) {
   try {
     const { oneTimeCode, k0AuthKey, k2CmacKey, k3, k4, token, cardId } = cardData
 

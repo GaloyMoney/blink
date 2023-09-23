@@ -6,7 +6,7 @@ import { serverUrl } from "@/services/config"
 export default async function ActivateCard({ params }: { params: { a: string } }) {
   const { a } = params
 
-  const url = `${serverUrl}/api/activate?a=${a}`
+  const url = `${serverUrl}/api/program?a=${a}`
   const res = await fetch(url, { cache: "no-store" })
   const activationParams = await res.json()
   const warning = activationParams.warning
@@ -26,7 +26,7 @@ export default async function ActivateCard({ params }: { params: { a: string } }
         )}
         <Image
           src={qrCode}
-          alt={"qr code to activate"}
+          alt={"qr code to program"}
           width={400}
           height={400}
           unoptimized

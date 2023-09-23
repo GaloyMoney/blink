@@ -7,7 +7,7 @@ import { ApolloQueryResult, gql } from "@apollo/client"
 import { aesDecryptKey, serverUrl } from "@/services/config"
 import { aesDecrypt, checkSignature } from "@/services/crypto/aes"
 import { decodePToUidCtr } from "@/services/crypto/decoder"
-import { createCard, fetchByUid } from "@/services/db/card"
+import { initiateCard, fetchByUid } from "@/services/db/card"
 import {
   CardKeysSetupInput,
   fetchAllWithStatusFetched,
@@ -172,7 +172,7 @@ const setupCard = async ({
 
   const id = cardKeysSetup.cardId
   const username = `card_${id}`
-  console.log({ id, username }, "activate card id")
+  console.log({ id, username }, "program card id")
 
   const dataUsername = await client.mutate<UserUpdateUsernameMutation>({
     mutation: UserUpdateUsernameDocument,
@@ -190,11 +190,11 @@ const setupCard = async ({
     )
   }
 
-  console.log({ id, onchainAddress, username, uid }, "activate card id")
+  console.log({ id, onchainAddress, username, uid }, "program card id")
 
   await markCardKeysSetupAsUsed(k2CmacKey)
 
-  const card = await createCard({
+  const card = await initiateCard({
     id,
     uid,
     k0AuthKey,

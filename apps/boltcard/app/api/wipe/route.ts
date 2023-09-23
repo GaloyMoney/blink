@@ -6,7 +6,7 @@ import { fetchByCarksKeysSetupCardId } from "@/services/db/card-init"
 
 export async function GET(req: NextRequest) {
   // should be pass with POST? not sure if this would be compatible
-  // with the wallet that can create cards
+  // with the wallet that can initiate cards
 
   const { searchParams } = new URL(req.url)
   const cardId = searchParams.get("cardId")
