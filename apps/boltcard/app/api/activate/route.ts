@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     warning: warningReusedCode,
     protocol_name: "create_bolt_card_response",
     protocol_version: 2,
-    card_name: "",
+    card_name: cardKeysSetup.cardId,
     lnurlw_base: lnurlwBase,
     k0: cardKeysSetup.k0AuthKey,
     k1: k1DecryptKey,

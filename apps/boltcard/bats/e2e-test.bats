@@ -17,6 +17,13 @@ random_phone() {
   CALLBACK_API_URL=$(echo $RESPONSE | jq -r '.apiActivationUrl')
   CALLBACK_UI_URL=$(echo $RESPONSE | jq -r '.uiActivationUrl')
 
+  echo "RESPONSE: $RESPONSE"
+  echo "CALLBACK_API_URL: $CALLBACK_API_URL"
+  echo "CALLBACK_UI_URL: $CALLBACK_UI_URL"
+
+  [[ $(echo $CALLBACK_API_URL) != "null" ]] || exit 1
+  [[ $(echo $CALLBACK_UI_URL) != "null" ]] || exit 1
+  
   # TODO: test CALLBACK_UI_URL
 
   # Making the follow-up curl request
@@ -61,7 +68,7 @@ random_phone() {
   cardId=$(curl -s http://localhost:3000/api/card/uid/${uid} | jq -r '.id')
   cache_value "cardId" "$cardId"
 
-  amount="0.01"
+  amount="0.001"
   token_name=$(read_value "alice")
 
   bitcoin_cli sendtoaddress "$address" "$amount"

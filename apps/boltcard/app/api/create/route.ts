@@ -7,6 +7,44 @@ import { serverUrl } from "@/services/config"
 
 const randomHex = (): string => randomBytes(16).toString("hex")
 
+function generateReadableCode(numDigits: number, separator: number = 4): string {
+  const allowedNumbers = ["3", "4", "6", "7", "9"]
+  const allowedLetters = [
+    "A",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "J",
+    "K",
+    "M",
+    "N",
+    "P",
+    "Q",
+    "R",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+  ]
+
+  const allowedChars = [...allowedNumbers, ...allowedLetters]
+  let code = ""
+  for (let i = 0; i < numDigits; i++) {
+    if (i > 0 && i % separator === 0) {
+      code += "_"
+    }
+    const randomIndex = Math.floor(Math.random() * allowedChars.length)
+    code += allowedChars[randomIndex]
+  }
+
+  return code
+}
+
 export async function GET(req: NextRequest) {
   // should be pass with POST? not sure if this would be compatible
   // with the wallet that can create cards
@@ -29,6 +67,8 @@ export async function GET(req: NextRequest) {
   const k3 = randomHex()
   const k4 = randomHex()
 
+  const cardId = generateReadableCode(12)
+
   const result = await createCardKeysSetup({
     oneTimeCode,
     k0AuthKey,
@@ -36,6 +76,7 @@ export async function GET(req: NextRequest) {
     k3,
     k4,
     token,
+    cardId,
   })
 
   if (result instanceof Error) {

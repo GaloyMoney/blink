@@ -7,11 +7,12 @@ export interface CardKeysSetupInput {
   k3: string
   k4: string
   token: string
+  cardId: string
 }
 
 export async function createCardKeysSetup(cardData: CardKeysSetupInput) {
   try {
-    const { oneTimeCode, k0AuthKey, k2CmacKey, k3, k4, token } = cardData
+    const { oneTimeCode, k0AuthKey, k2CmacKey, k3, k4, token, cardId } = cardData
 
     const result = await knex("CardKeysSetup").insert({
       oneTimeCode,
@@ -20,6 +21,7 @@ export async function createCardKeysSetup(cardData: CardKeysSetupInput) {
       k3,
       k4,
       token,
+      cardId,
     })
 
     return result

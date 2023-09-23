@@ -64,44 +64,6 @@ gql`
   }
 `
 
-function generateReadableCode(numDigits: number, separator: number = 4): string {
-  const allowedNumbers = ["3", "4", "6", "7", "9"]
-  const allowedLetters = [
-    "A",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "J",
-    "K",
-    "M",
-    "N",
-    "P",
-    "Q",
-    "R",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-  ]
-
-  const allowedChars = [...allowedNumbers, ...allowedLetters]
-  let code = ""
-  for (let i = 0; i < numDigits; i++) {
-    if (i > 0 && i % separator === 0) {
-      code += "_"
-    }
-    const randomIndex = Math.floor(Math.random() * allowedChars.length)
-    code += allowedChars[randomIndex]
-  }
-
-  return code
-}
-
 function generateSecureRandomString(length: number): string {
   return randomBytes(Math.ceil(length / 2))
     .toString("hex")
@@ -208,7 +170,7 @@ const setupCard = async ({
     )
   }
 
-  const id = generateReadableCode(12)
+  const id = cardKeysSetup.cardId
   const username = `card_${id}`
   console.log({ id, username }, "activate card id")
 

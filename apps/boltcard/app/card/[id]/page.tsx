@@ -86,8 +86,8 @@ export default async function Card({ params }: { params: { id: string } }) {
       <section className="my-4">
         <h2>Wipe Card:</h2>
         <p>
-          <strong>Warning:</strong> This will wipe the card and remove all funds. This
-          action cannot be undone.
+          <strong>Warning:</strong> This will wipe the card and reset it to factory
+          settings. Any remaining funds will be unaccessible.
         </p>
         <p>
           <Image
