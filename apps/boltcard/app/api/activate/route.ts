@@ -4,6 +4,7 @@ import { aesDecryptKey, serverUrl } from "@/services/config"
 import { fetchByOneTimeCode } from "@/services/db/card-init"
 
 interface ActivateCardResponse {
+  warning: boolean
   protocol_name: string
   protocol_version: number
   card_name: string
@@ -36,11 +37,10 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  let warningReusedCode = false
+
   if (cardKeysSetup.status !== "init") {
-    return NextResponse.json(
-      { status: "ERROR", reason: "code has already been used" },
-      { status: 400 },
-    )
+    warningReusedCode = true
   }
 
   const lnurlwBase = `${serverUrl}/api/ln`
@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
   const k1DecryptKey = aesDecryptKey.toString("hex")
 
   const response: ActivateCardResponse = {
+    warning: warningReusedCode,
     protocol_name: "create_bolt_card_response",
     protocol_version: 2,
     card_name: "",

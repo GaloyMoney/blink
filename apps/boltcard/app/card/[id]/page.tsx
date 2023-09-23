@@ -1,15 +1,29 @@
-import { serverApi } from "@/services/config"
+import QRCode from "qrcode"
+import Image from "next/image"
+
+import { isAdmin, serverUrl } from "@/services/config"
 
 export default async function Card({ params }: { params: { id: string } }) {
   const { id } = params
 
-  const cardApi = `${serverApi}/card/id/${id}`
+  const cardApi = `${serverUrl}/api/card/id/${id}`
   const cardResult = await fetch(cardApi, { cache: "no-store" })
   const cardInfo = await cardResult.json()
 
-  const transactionsApi = `${serverApi}/card/id/${id}/transactions`
-  const transactionsResult = await fetch(transactionsApi)
+  const transactionsApi = `${serverUrl}/api/card/id/${id}/transactions`
+  const transactionsResult = await fetch(transactionsApi, { cache: "no-store" })
   const transactionInfo = await transactionsResult.json()
+
+  let qrCode = ""
+
+  if (isAdmin) {
+    const wipeApi = `${serverUrl}/api/wipe?cardId=${id}`
+    const wipeResult = await fetch(wipeApi, { cache: "no-store" })
+    const wipeInfo = await wipeResult.json()
+
+    // generate QR code
+    qrCode = await QRCode.toDataURL(JSON.stringify(wipeInfo), { width: 400 })
+  }
 
   return (
     <main className="flex flex-col min-h-screen items-center justify-center">
@@ -63,11 +77,27 @@ export default async function Card({ params }: { params: { id: string } }) {
                   <strong>Fee:</strong> {tx.settlementDisplayFee}{" "}
                   {tx.settlementDisplayCurrency}
                 </li>
-                {/* Add more fields as required */}
               </ul>
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="my-4">
+        <h2>Wipe Card:</h2>
+        <p>
+          <strong>Warning:</strong> This will wipe the card and remove all funds. This
+          action cannot be undone.
+        </p>
+        <p>
+          <Image
+            src={qrCode}
+            alt={"qr code to activate"}
+            width={400}
+            height={400}
+            unoptimized
+          />
+        </p>
       </section>
     </main>
   )

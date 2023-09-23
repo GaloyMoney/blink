@@ -14,13 +14,13 @@ random_phone() {
   export TOKEN_ALICE=$(read_value "alice")
 
   RESPONSE=$(curl -s "http://localhost:3000/api/create?token=${TOKEN_ALICE}")
-  CALLBACK_URL=$(echo $RESPONSE | jq -r '.apiActivationUrl')
+  CALLBACK_API_URL=$(echo $RESPONSE | jq -r '.apiActivationUrl')
+  CALLBACK_UI_URL=$(echo $RESPONSE | jq -r '.uiActivationUrl')
 
-  # echo "CALLBACK_URL: $CALLBACK_URL"
-  # exit 1
+  # TODO: test CALLBACK_UI_URL
 
   # Making the follow-up curl request
-  RESPONSE=$(curl -s "${CALLBACK_URL}")
+  RESPONSE=$(curl -s "${CALLBACK_API_URL}")
   echo "$RESPONSE"
   [[ $(echo $RESPONSE | jq -r '.protocol_name') == "create_bolt_card_response" ]] || exit 1
 
@@ -84,6 +84,12 @@ random_phone() {
   result=$(curl -s "${CALLBACK_URL}?k1=${K1_VALUE}&pr=${payment_request}")
   echo "$result"
   [[ $(echo $result | jq -r '.status') == "OK" ]] || exit 1
+}
+
+@test "card ui" {
+  cardId=$(read_value "cardId")
+  http_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/card/${cardId})
+  [[ "$http_status" -eq 200 ]] || exit 1
 }
 
 @test "wipecard" {

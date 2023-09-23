@@ -9,3 +9,5 @@ export const AES_DECRYPT_KEY =
 export const aesDecryptKey = Buffer.from(AES_DECRYPT_KEY, "hex")
 
 export const lightningDomain = process.env.LIGHTNING_DOMAIN ?? "localhost"
+
+export const isAdmin = true
