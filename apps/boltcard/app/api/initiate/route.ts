@@ -61,7 +61,6 @@ export async function GET(req: NextRequest) {
 
   // TODO: token validation
 
-  const oneTimeCode = randomHex()
   const k0AuthKey = randomHex()
   const k2CmacKey = randomHex()
   const k3 = randomHex()
@@ -70,7 +69,6 @@ export async function GET(req: NextRequest) {
   const cardId = generateReadableCode(12)
 
   const result = await initiateCardKeysSetup({
-    oneTimeCode,
     k0AuthKey,
     k2CmacKey,
     k3,
@@ -86,8 +84,8 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const apiActivationUrl = `${serverUrl}/api/program?a=${oneTimeCode}`
-  const uiActivationUrl = `${serverUrl}/card/program/${oneTimeCode}`
+  const apiActivationUrl = `${serverUrl}/api/program?cardId=${cardId}`
+  const uiActivationUrl = `${serverUrl}/card/program/${cardId}`
   return NextResponse.json({
     status: "OK",
     apiActivationUrl,

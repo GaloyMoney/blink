@@ -55,14 +55,12 @@ async function createTables() {
 
   if (!hasCardKeysSetupTable) {
     await knex.schema.createTable("CardKeysSetup", (table) => {
-      table.string("oneTimeCode").notNullable().index().unique()
+      table.string("cardId").notNullable().index().unique()
 
       table.timestamp("created_at").defaultTo(knex.fn.now())
 
       table.string("status").defaultTo("init") // init, fetched, used
       table.string("token").notNullable()
-
-      table.string("cardId").notNullable().unique()
 
       table.string("k0AuthKey").notNullable()
       table.string("k2CmacKey").notNullable().unique()

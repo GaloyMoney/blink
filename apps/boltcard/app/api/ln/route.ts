@@ -212,6 +212,8 @@ const setupCard = async ({
 }
 
 export async function GET(req: NextRequest) {
+  console.log({ url: req.url }, "url12")
+
   const { searchParams } = new URL(req.url)
   const raw_p = searchParams.get("p")
   const raw_c = searchParams.get("c")
@@ -223,15 +225,20 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  if (raw_p?.length !== 32 || raw_c?.length !== 16) {
+  // BoltcardNFCProgrammer is adding nullbytes at the end of c, so we need to remove them
+  const raw_c_decoded = decodeURIComponent(raw_c)
+  // eslint-disable-next-line no-control-regex
+  const raw_c_nonullbytes = raw_c_decoded.replace(/\x00+$/, "")
+
+  if (raw_p?.length !== 32 || raw_c_nonullbytes?.length !== 16) {
     return NextResponse.json(
-      { status: "ERROR", reason: `invalid p: ${raw_p} or c: ${raw_c}` },
+      { status: "ERROR", reason: `invalid p: ${raw_p} or c: ${raw_c_nonullbytes}` },
       { status: 400 },
     )
   }
 
   const ba_p = Buffer.from(raw_p, "hex")
-  const ba_c = Buffer.from(raw_c, "hex")
+  const ba_c = Buffer.from(raw_c_nonullbytes, "hex")
 
   const decryptedP = aesDecrypt(aesDecryptKey, ba_p)
   if (decryptedP instanceof Error) {

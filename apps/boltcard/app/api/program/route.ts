@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { aesDecryptKey, serverUrl } from "@/services/config"
-import { fetchByOneTimeCode } from "@/services/db/card-init"
+import { fetchByCarksKeysSetupCardId } from "@/services/db/card-init"
 
 interface ActivateCardResponse {
   warning: boolean
@@ -19,16 +19,16 @@ interface ActivateCardResponse {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const oneTimeCode = searchParams.get("a")
+  const cardId = searchParams.get("cardId")
 
-  if (!oneTimeCode) {
+  if (!cardId) {
     return NextResponse.json(
       { status: "ERROR", reason: "value a is missing" },
       { status: 400 },
     )
   }
 
-  const cardKeysSetup = await fetchByOneTimeCode(oneTimeCode)
+  const cardKeysSetup = await fetchByCarksKeysSetupCardId(cardId)
 
   if (!cardKeysSetup) {
     return NextResponse.json(

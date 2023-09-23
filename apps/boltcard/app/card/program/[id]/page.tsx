@@ -3,12 +3,22 @@ import Image from "next/image"
 
 import { serverUrl } from "@/services/config"
 
-export default async function ActivateCard({ params }: { params: { a: string } }) {
-  const { a } = params
+export default async function ProgramCard({ params }: { params: { id: string } }) {
+  const { id } = params
 
-  const url = `${serverUrl}/api/program?a=${a}`
+  const url = `${serverUrl}/api/program?cardId=${id}`
   const res = await fetch(url, { cache: "no-store" })
   const activationParams = await res.json()
+
+  if (activationParams.status === "ERROR") {
+    return (
+      <>
+        <div>invalid activation params</div>
+        <div>{activationParams?.reason}</div>
+      </>
+    )
+  }
+
   const warning = activationParams.warning
 
   const qrCode = await QRCode.toDataURL(url, { width: 400 })
