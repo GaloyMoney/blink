@@ -1,4 +1,4 @@
-import { lightningDomain } from "../config"
+import { lightningDomain, serverUrl } from "../config"
 
 import { knex } from "./connection"
 
@@ -29,8 +29,11 @@ export async function fetchPublicByCardId(cardId: string) {
   // TODO: refactor with a card service !== db
   const username = `card_${cardId}`
   const lightningAddress = `${username}@${lightningDomain}`
+  const lnurlp = `${serverUrl}/.well-known/lnurlp/${username}`
+    .replace("http://", "lnurlp://")
+    .replace("https://", "lnurlp://")
 
-  return { ...result, username, lightningAddress }
+  return { ...result, username, lightningAddress, lnurlp }
 }
 
 interface CardInput {

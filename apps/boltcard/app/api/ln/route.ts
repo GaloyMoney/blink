@@ -293,7 +293,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     tag: "withdrawRequest",
-    callback: serverUrl + "/api/callback",
+    callback: serverUrl + "/api/payment",
     k1,
     defaultDescription: "payment for a blink card",
     minWithdrawable: 1000,

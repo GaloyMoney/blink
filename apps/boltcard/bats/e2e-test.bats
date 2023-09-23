@@ -80,7 +80,7 @@ random_phone() {
 
 @test "callback" {
   K1_VALUE=$(read_value "k1_callback")
-  CALLBACK_URL=http://localhost:3000/api/callback
+  CALLBACK_URL=http://localhost:3000/api/payment
 
   echo "K1_VALUE: $K1_VALUE"
 

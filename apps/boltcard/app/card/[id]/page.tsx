@@ -12,7 +12,29 @@ export default async function Card({ params }: { params: { id: string } }) {
 
   const transactionsApi = `${serverUrl}/api/card/id/${id}/transactions`
   const transactionsResult = await fetch(transactionsApi, { cache: "no-store" })
-  const transactionInfo = await transactionsResult.json()
+  const transactionsInfo = await transactionsResult.json()
+
+  let onchainQRCode = ""
+
+  if (cardInfo?.onchainAddress) {
+    onchainQRCode = await QRCode.toDataURL(cardInfo.onchainAddress, { width: 300 })
+  }
+
+  let lnurlQrCode = ""
+
+  if (cardInfo?.lnurlp) {
+    lnurlQrCode = await QRCode.toDataURL(cardInfo.lnurlp, { width: 300 })
+  }
+
+  const invoiceApi = `${serverUrl}/api/card/id/${id}/invoice`
+  const invoiceResult = await fetch(invoiceApi, { cache: "no-store" })
+  const invoiceInfo = await invoiceResult.json()
+  const invoice = invoiceInfo?.data
+  let invoiceQrCode = ""
+
+  if (invoice) {
+    invoiceQrCode = await QRCode.toDataURL(invoice, { width: 300 })
+  }
 
   let qrCode = ""
 
@@ -39,13 +61,52 @@ export default async function Card({ params }: { params: { id: string } }) {
             <strong>UID:</strong> {cardInfo?.uid}
           </li>
           <li>
-            <strong>Onchain Address:</strong> {cardInfo?.onchainAddress}
-          </li>
-          <li>
             <strong>Lightning address</strong> {cardInfo?.lightningAddress}
           </li>
           <li>
             <strong>Enabled:</strong> {cardInfo?.enabled ? "Yes" : "No"}
+          </li>
+          <li>
+            <strong>Onchain Address:</strong> {cardInfo?.onchainAddress}
+            {onchainQRCode && (
+              <div className="mt-2">
+                <Image
+                  src={onchainQRCode}
+                  alt={"QR code for onchain address"}
+                  width={300} // Adjust the size as needed
+                  height={300} // Adjust the size as needed
+                  unoptimized
+                />
+              </div>
+            )}
+          </li>
+          <li>
+            <strong>lnurlp:</strong> {cardInfo?.lnurlp}
+            {lnurlQrCode && (
+              <div className="mt-2">
+                <Image
+                  src={lnurlQrCode}
+                  alt={"QR code for lnurp payment"}
+                  width={300} // Adjust the size as needed
+                  height={300} // Adjust the size as needed
+                  unoptimized
+                />
+              </div>
+            )}
+          </li>
+          <li>
+            <strong>invoice:</strong> {invoice}
+            {invoiceQrCode && (
+              <div className="mt-2">
+                <Image
+                  src={invoiceQrCode}
+                  alt={"QR code for invoice"}
+                  width={300} // Adjust the size as needed
+                  height={300} // Adjust the size as needed
+                  unoptimized
+                />
+              </div>
+            )}
           </li>
         </ul>
       </section>
@@ -53,7 +114,7 @@ export default async function Card({ params }: { params: { id: string } }) {
       <section className="my-4">
         <h2>Transactions:</h2>
         <ul>
-          {transactionInfo.map((tx, index) => (
+          {transactionsInfo.map((tx, index) => (
             <li key={tx.id} className="mb-2">
               <strong>Transaction {index + 1}:</strong>
               <ul>
@@ -93,8 +154,8 @@ export default async function Card({ params }: { params: { id: string } }) {
           <Image
             src={qrCode}
             alt={"qr code to program"}
-            width={400}
-            height={400}
+            width={300}
+            height={300}
             unoptimized
           />
         </p>
