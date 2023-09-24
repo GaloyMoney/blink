@@ -4,6 +4,7 @@ const nextConfig = {
     // serverActions: true,
     instrumentationHook: true,
     serverComponentsExternalPackages: ['knex', 'pg'],
+    serverActions: true,
   },
 }
 

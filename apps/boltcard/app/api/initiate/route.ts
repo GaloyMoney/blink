@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
   }
 
   const apiActivationUrl = `${serverUrl}/api/program?cardId=${cardId}`
-  const uiActivationUrl = `${serverUrl}/card/program/${cardId}`
+  const uiActivationUrl = `${serverUrl}/card/${cardId}/program/`
   return NextResponse.json({
     status: "OK",
     apiActivationUrl,

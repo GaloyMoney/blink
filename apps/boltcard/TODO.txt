@@ -9,3 +9,4 @@
 - type from db
 
 - unify the response from the API
+- be consistent. either searchParams or [id]
