@@ -148,10 +148,6 @@ type WalletAddressReceiverArgs<S extends WalletCurrency> = {
   walletAddress: WalletAddress<S>
 }
 
-type WalletInvoiceValidator = {
-  validateToSend(fromWalletId: WalletId): true | ValidationError
-}
-
 type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt">
 
 interface IWalletInvoicesRepository {
