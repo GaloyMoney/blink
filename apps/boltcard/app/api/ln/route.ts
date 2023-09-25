@@ -73,11 +73,11 @@ function generateSecureRandomString(length: number): string {
 const maybeSetupCard = async ({
   uidRaw,
   ctrRawInverseBytes,
-  ba_c,
+  bufferC,
 }: {
   uidRaw: Uint8Array
   ctrRawInverseBytes: Uint8Array
-  ba_c: Buffer
+  bufferC: Buffer
 }): Promise<CardKeysSetupInput | null> => {
   const cardKeysSetups = await fetchAllWithStatusFetched()
 
@@ -89,7 +89,7 @@ const maybeSetupCard = async ({
       uidRaw,
       ctrRawInverseBytes,
       aesCmacKey,
-      ba_c,
+      bufferC,
     )
 
     if (cmacVerified) {
@@ -237,10 +237,10 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const ba_p = Buffer.from(raw_p, "hex")
-  const ba_c = Buffer.from(raw_c_nonullbytes, "hex")
+  const bufferP = Buffer.from(raw_p, "hex")
+  const bufferC = Buffer.from(raw_c_nonullbytes, "hex")
 
-  const decryptedP = aesDecrypt(aesDecryptKey, ba_p)
+  const decryptedP = aesDecrypt(aesDecryptKey, bufferP)
   if (decryptedP instanceof Error) {
     return NextResponse.json(
       { status: "ERROR", reason: "impossible to decrypt P" },
@@ -254,7 +254,7 @@ export async function GET(req: NextRequest) {
   let card = await fetchByUid(uid)
 
   if (!card) {
-    const cardKeysSetup = await maybeSetupCard({ uidRaw, ctrRawInverseBytes, ba_c })
+    const cardKeysSetup = await maybeSetupCard({ uidRaw, ctrRawInverseBytes, bufferC })
 
     if (cardKeysSetup) {
       card = await setupCard({ cardKeysSetup, uid, ctr })
