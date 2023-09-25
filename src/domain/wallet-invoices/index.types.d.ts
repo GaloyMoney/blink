@@ -2,6 +2,10 @@ type BtcFromUsdFn = (
   amount: UsdPaymentAmount,
 ) => Promise<BtcPaymentAmount | DealerPriceServiceError>
 
+type WalletInvoiceChecker = {
+  shouldDecline: () => boolean
+}
+
 type WalletInvoiceBuilderConfig = {
   dealerBtcFromUsd: BtcFromUsdFn
   lnRegisterInvoice: (

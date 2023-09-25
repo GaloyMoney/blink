@@ -1,1 +1,1 @@
-export * from "./wallet-invoice-validator"
+export * from "./wallet-invoice-checker"
