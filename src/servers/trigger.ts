@@ -137,18 +137,6 @@ export const onchainBlockEventHandler = async (height: number) => {
   logger.info(`finish block ${height} handler with ${txNumber} transactions`)
 }
 
-export const invoiceUpdateEventHandler = async (
-  invoice: SubscribeToInvoiceInvoiceUpdatedEvent | GetInvoiceResult,
-): Promise<boolean | ApplicationError> => {
-  logger.info({ invoice }, "invoiceUpdateEventHandler")
-  return invoice.is_held
-    ? WalletWithSpans.updatePendingInvoiceByPaymentHash({
-        paymentHash: invoice.id as PaymentHash,
-        logger,
-      })
-    : false
-}
-
 export const publishCurrentPrices = async () => {
   const currencies = await PricesWithSpans.listCurrencies()
   if (currencies instanceof Error) {
@@ -228,6 +216,22 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
   })
 }
 
+const invoiceUpdateHandler = wrapAsyncToRunInSpan({
+  root: true,
+  namespace: "servers.trigger",
+  fn: async (
+    invoice: SubscribeToInvoiceInvoiceUpdatedEvent | GetInvoiceResult,
+  ): Promise<boolean | ApplicationError> => {
+    logger.info({ invoice }, "invoiceUpdateEventHandler")
+    return invoice.is_held
+      ? WalletWithSpans.updatePendingInvoiceByPaymentHash({
+          paymentHash: invoice.id as PaymentHash,
+          logger,
+        })
+      : false
+  },
+})
+
 const listenerHodlInvoice = ({
   lnd,
   paymentHash,
@@ -236,21 +240,21 @@ const listenerHodlInvoice = ({
   paymentHash: PaymentHash
 }) => {
   const subInvoice = subscribeToInvoice({ lnd, id: paymentHash })
-  const invoiceUpdateHandler = wrapAsyncToRunInSpan({
-    root: true,
-    namespace: "servers.trigger",
-    fn: invoiceUpdateEventHandler,
-  })
+
   subInvoice.on(
     "invoice_updated",
-    async (invoice: SubscribeToInvoiceInvoiceUpdatedEvent) => {
+    async (
+      invoice: SubscribeToInvoiceInvoiceUpdatedEvent,
+    ): Promise<boolean | ApplicationError> => {
       if (invoice.is_confirmed || invoice.is_canceled) {
         subInvoice.removeAllListeners()
-      } else {
-        await invoiceUpdateHandler(invoice)
+        return true
       }
+
+      return invoiceUpdateHandler(invoice)
     },
   )
+
   subInvoice.on("error", (err) => {
     baseLogger.info({ err }, "error subChannels")
     recordExceptionInCurrentSpan({
