@@ -60,7 +60,6 @@ export const mutationFields = {
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
     captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
-    userLogout: UserLogoutMutation,
 
     lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
     lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
@@ -80,6 +79,7 @@ export const mutationFields = {
       userTotpRegistrationInitiate: UserTotpRegistrationInitiateMutation,
       userTotpRegistrationValidate: UserTotpRegistrationValidateMutation,
       userTotpDelete: UserTotpDeleteMutation,
+      userLogout: UserLogoutMutation,
 
       userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
       quizCompleted: QuizCompletedMutation,
