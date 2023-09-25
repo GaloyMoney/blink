@@ -43,18 +43,15 @@ router.get("/", csrfProtection, async (req, res, next) => {
 
       // Now it's time to grant the login request. You could also deny the request if something went terribly wrong
       // (e.g. your arch-enemy logging in...)
-      return hydraClient
-        .acceptOAuth2LoginRequest({
-          loginChallenge: challenge,
-          acceptOAuth2LoginRequest: {
-            // All we need to do is to confirm that we indeed want to log in the user.
-            subject: String(body.subject),
-          },
-        })
-        .then(({ data: body }) => {
-          // All we need to do now is to redirect the user back to hydra!
-          res.redirect(String(body.redirect_to))
-        })
+      const response = await hydraClient.acceptOAuth2LoginRequest({
+        loginChallenge: challenge,
+        acceptOAuth2LoginRequest: {
+          // All we need to do is to confirm that we indeed want to log in the user.
+          subject: String(body.subject),
+        },
+      })
+
+      res.redirect(String(response.data.redirect_to))
     }
 
     // If authentication can't be skipped we MUST show the login UI.
@@ -77,22 +74,20 @@ router.post("/", csrfProtection, async (req, res, next) => {
   // Let's see if the user decided to accept or reject the consent request..
   if (req.body.submit === "Deny access") {
     // Looks like the consent request was denied by the user
-    return (
-      hydraClient
-        .rejectOAuth2LoginRequest({
-          loginChallenge: challenge,
-          rejectOAuth2Request: {
-            error: "access_denied",
-            error_description: "The resource owner denied the request",
-          },
-        })
-        .then(({ data: body }) => {
-          // All we need to do now is to redirect the browser back to hydra!
-          res.redirect(String(body.redirect_to))
-        })
-        // This will handle any error that happens when making HTTP calls to hydra
-        .catch(next)
-    )
+    try {
+      const response = await hydraClient.rejectOAuth2LoginRequest({
+        loginChallenge: challenge,
+        rejectOAuth2Request: {
+          error: "access_denied",
+          error_description: "The resource owner denied the request",
+        },
+      })
+
+      res.redirect(String(response.data.redirect_to))
+    } catch (err) {
+      // This will handle any error that happens when making HTTP calls to hydra
+      next(err)
+    }
   }
 
   const email = req.body.email
@@ -158,43 +153,45 @@ router.post("/verification", csrfProtection, async (req, res, next) => {
 
   // Seems like the user authenticated! Let's tell hydra...
 
-  hydraClient
-    .getOAuth2LoginRequest({ loginChallenge: challenge })
-    .then(({ data: loginRequest }) =>
-      hydraClient
-        .acceptOAuth2LoginRequest({
-          loginChallenge: challenge,
-          acceptOAuth2LoginRequest: {
-            // Subject is an alias for user ID. A subject can be a random string, a UUID, an email address, ....
-            subject: userId,
+  const response = await hydraClient.getOAuth2LoginRequest({
+    loginChallenge: challenge,
+  })
 
-            // This tells hydra to remember the browser and automatically authenticate the user in future requests. This will
-            // set the "skip" parameter in the other route to true on subsequent requests!
-            remember: Boolean(req.body.remember),
+  const loginRequest = response.data
 
-            // When the session expires, in seconds. Set this to 0 so it will never expire.
-            remember_for: 3600,
+  try {
+    const response2 = await hydraClient.acceptOAuth2LoginRequest({
+      loginChallenge: challenge,
+      acceptOAuth2LoginRequest: {
+        // Subject is an alias for user ID. A subject can be a random string, a UUID, an email address, ....
+        subject: userId,
 
-            // Sets which "level" (e.g. 2-factor authentication) of authentication the user has. The value is really arbitrary
-            // and optional. In the context of OpenID Connect, a value of 0 indicates the lowest authorization level.
-            // acr: '0',
-            //
-            // If the environment variable CONFORMITY_FAKE_CLAIMS is set we are assuming that
-            // the app is built for the automated OpenID Connect Conformity Test Suite. You
-            // can peak inside the code for some ideas, but be aware that all data is fake
-            // and this only exists to fake a login system which works in accordance to OpenID Connect.
-            //
-            // If that variable is not set, the ACR value will be set to the default passed here ('0')
-            acr: oidcConformityMaybeFakeAcr(loginRequest, "0"),
-          },
-        })
-        .then(({ data: body }) => {
-          // All we need to do now is to redirect the user back to hydra!
-          res.redirect(String(body.redirect_to))
-        }),
-    )
-    // This will handle any error that happens when making HTTP calls to hydra
-    .catch(next)
+        // This tells hydra to remember the browser and automatically authenticate the user in future requests. This will
+        // set the "skip" parameter in the other route to true on subsequent requests!
+        remember: Boolean(req.body.remember),
+
+        // When the session expires, in seconds. Set this to 0 so it will never expire.
+        remember_for: 3600,
+
+        // Sets which "level" (e.g. 2-factor authentication) of authentication the user has. The value is really arbitrary
+        // and optional. In the context of OpenID Connect, a value of 0 indicates the lowest authorization level.
+        // acr: '0',
+        //
+        // If the environment variable CONFORMITY_FAKE_CLAIMS is set we are assuming that
+        // the app is built for the automated OpenID Connect Conformity Test Suite. You
+        // can peak inside the code for some ideas, but be aware that all data is fake
+        // and this only exists to fake a login system which works in accordance to OpenID Connect.
+        //
+        // If that variable is not set, the ACR value will be set to the default passed here ('0')
+        acr: oidcConformityMaybeFakeAcr(loginRequest, "0"),
+      },
+    })
+
+    // All we need to do now is to redirect the user back to hydra!
+    res.redirect(String(response2.data.redirect_to))
+  } catch (err) {
+    next(err)
+  }
 
   // You could also deny the login request which tells hydra that no one authenticated!
   // hydra.rejectLoginRequest(challenge, {
