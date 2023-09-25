@@ -3,10 +3,11 @@ log:
   format: json
 
 tracing:
-  provider: jaeger
+  provider: otel
   providers:
-    jaeger:
-      local_agent_address: otel-agent:6831
+    otlp:
+      server_url: otel-agent:4318
+      insecure: true
 
 authenticators:
   jwt:

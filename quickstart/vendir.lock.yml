@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: user logout should be a authed mutation (#3263)...'
-      sha: b2f7bb5476feaa03f3bc464e53362b16c650d73e
+      commitTitle: 'chore: use otel provider for oathkeeper tracing (#3264)'
+      sha: 9f181e187d8ec7e234de41eb6f02df25aa3ab3b5
       tags:
-      - 0.13.92-1-gb2f7bb547
+      - 0.13.93-1-g9f181e187
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: user logout should be a authed mutation (#3263)...'
-      sha: b2f7bb5476feaa03f3bc464e53362b16c650d73e
+      commitTitle: 'chore: use otel provider for oathkeeper tracing (#3264)'
+      sha: 9f181e187d8ec7e234de41eb6f02df25aa3ab3b5
       tags:
-      - 0.13.92-1-gb2f7bb547
+      - 0.13.93-1-g9f181e187
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: user logout should be a authed mutation (#3263)...'
-      sha: b2f7bb5476feaa03f3bc464e53362b16c650d73e
+      commitTitle: 'chore: use otel provider for oathkeeper tracing (#3264)'
+      sha: 9f181e187d8ec7e234de41eb6f02df25aa3ab3b5
       tags:
-      - 0.13.92-1-gb2f7bb547
+      - 0.13.93-1-g9f181e187
     path: ./
   path: ./graphql
 kind: LockConfig
