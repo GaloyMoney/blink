@@ -16,7 +16,7 @@
     }
   },
   "compileOnSave": true,
-  "include": ["src/**/*", "test/**/*", "apps/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "watchOptions": {
     "synchronousWatchDirectory": true
   }
