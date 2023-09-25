@@ -5,7 +5,7 @@ receivers:
       thrift_binary: # on port 6832
   otlp:
     protocols:
-      http:
+      http: # on port 4318
 
 processors:
   filter/ottl:
