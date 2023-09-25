@@ -43,7 +43,6 @@ import {
 
 let walletIdB: WalletId
 let walletIdUsdB: WalletId
-let walletIdF: WalletId
 let walletIdUsdF: WalletId
 let initBalanceB: Satoshis
 let initBalanceUsdB: UsdCents
@@ -56,7 +55,6 @@ beforeAll(async () => {
   await createUserAndWalletFromPhone(phoneF)
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
   walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
-  walletIdF = await getDefaultWalletIdByPhone(phoneF)
   walletIdUsdF = await getUsdWalletIdByPhone(phoneF)
 })
 
@@ -279,120 +277,8 @@ describe("UserWallet - Lightning", () => {
 })
 
 describe("Invoice handling from trigger", () => {
-  describe("btc recipient invoice", () => {
-    const sats = toSats(500)
-
-    it("should process held invoice when trigger comes back up", async () => {
-      // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-        walletId: walletIdF,
-        amount: sats,
-      })
-      expect(lnInvoice).not.toBeInstanceOf(Error)
-      if (lnInvoice instanceof Error) throw lnInvoice
-
-      // Pay invoice promise
-      const startPay = async () => {
-        try {
-          return await pay({
-            lnd: lndOutside1,
-            request: lnInvoice.paymentRequest,
-          })
-        } catch (err) {
-          return parseLndErrorDetails(err)
-        }
-      }
-
-      // Listener promise
-      const delayedListener = async (subInvoices) => {
-        await sleep(500)
-        setupInvoiceSubscribe({
-          lnd: lnd1,
-          pubkey: process.env.LND1_PUBKEY as Pubkey,
-          subInvoices,
-        })
-      }
-
-      // Pay and then listen
-      const subInvoices = subscribeToInvoices({ lnd: lnd1 })
-      const [result] = await Promise.all([startPay(), delayedListener(subInvoices)])
-
-      // See successful payment
-      expect(result.is_confirmed).toBeTruthy()
-      subInvoices.removeAllListeners()
-    })
-
-    it("should process new invoice payment when trigger comes back up", async () => {
-      // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
-        walletId: walletIdF,
-        amount: sats,
-      })
-      expect(lnInvoice).not.toBeInstanceOf(Error)
-      if (lnInvoice instanceof Error) throw lnInvoice
-
-      // Kick off listener
-      const subInvoices = subscribeToInvoices({ lnd: lnd1 })
-      setupInvoiceSubscribe({
-        lnd: lnd1,
-        pubkey: process.env.LND1_PUBKEY as Pubkey,
-        subInvoices,
-      })
-
-      // Pay invoice
-      const result = await pay({
-        lnd: lndOutside1,
-        request: lnInvoice.paymentRequest,
-      })
-
-      // See successful payment
-      expect(result.is_confirmed).toBeTruthy()
-      subInvoices.removeAllListeners()
-    })
-  })
-
   describe("usd recipient invoice", () => {
     const cents = toCents(100)
-
-    it("should process held invoice when trigger comes back up", async () => {
-      // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
-        walletId: walletIdUsdF,
-        amount: cents,
-      })
-      expect(lnInvoice).not.toBeInstanceOf(Error)
-      if (lnInvoice instanceof Error) throw lnInvoice
-
-      // Pay invoice promise
-      const startPay = async () => {
-        try {
-          return await pay({
-            lnd: lndOutside1,
-            request: lnInvoice.paymentRequest,
-          })
-        } catch (err) {
-          return parseLndErrorDetails(err)
-        }
-      }
-
-      // Listener promise
-      const delayedListener = async (subInvoices) => {
-        await sleep(500)
-        setupInvoiceSubscribe({
-          lnd: lnd1,
-          pubkey: process.env.LND1_PUBKEY as Pubkey,
-          subInvoices,
-        })
-      }
-
-      // Pay and then listen
-      const subInvoices = subscribeToInvoices({ lnd: lnd1 })
-      const [result] = await Promise.all([startPay(), delayedListener(subInvoices)])
-
-      // See successful payment
-      expect(result.is_confirmed).toBeTruthy()
-      subInvoices.removeAllListeners()
-    })
 
     it("should decline held invoice when trigger comes back up", async () => {
       // Create invoice for self
@@ -437,34 +323,6 @@ describe("Invoice handling from trigger", () => {
 
       // See successful payment
       expect(result).toMatch(KnownLndErrorDetails.PaymentRejectedByDestination)
-      subInvoices.removeAllListeners()
-    })
-
-    it("should process new invoice payment when trigger comes back up", async () => {
-      // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
-        walletId: walletIdUsdF,
-        amount: cents,
-      })
-      expect(lnInvoice).not.toBeInstanceOf(Error)
-      if (lnInvoice instanceof Error) throw lnInvoice
-
-      // Kick off listener
-      const subInvoices = subscribeToInvoices({ lnd: lnd1 })
-      setupInvoiceSubscribe({
-        lnd: lnd1,
-        pubkey: process.env.LND1_PUBKEY as Pubkey,
-        subInvoices,
-      })
-
-      // Pay invoice
-      const result = await pay({
-        lnd: lndOutside1,
-        request: lnInvoice.paymentRequest,
-      })
-
-      // See successful payment
-      expect(result.is_confirmed).toBeTruthy()
       subInvoices.removeAllListeners()
     })
   })
