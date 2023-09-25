@@ -1,13 +1,9 @@
-import { NextFunction, Request, Response } from "express"
-import { LockService } from "@services/lock"
 import { InvalidIdempotencyKeyError } from "@domain/errors"
-import { ExecutionError } from "redlock"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-} from "@services/tracing"
-import { ErrorLevel } from "@domain/shared"
+import { ResourceAttemptsTimelockServiceError } from "@domain/lock"
+import { LockService } from "@services/lock"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 import { json } from "body-parser"
+import { NextFunction, Request, Response } from "express"
 
 // Create lock service instance
 const lockService = LockService()
@@ -70,25 +66,17 @@ export const idempotencyMiddleware = async (
       const idempotencyKeyMaybeSuffix = (idempotencyKey +
         (isPersistedQueryWithExtension ? "-persisted" : "")) as IdempotencyKey
 
-      try {
-        await lockService.lockIdempotencyKey(idempotencyKeyMaybeSuffix)
-        addAttributesToCurrentSpan({ idempotencyKey })
+      const result = await lockService.lockIdempotencyKey(idempotencyKeyMaybeSuffix)
+      addAttributesToCurrentSpan({ idempotencyKey })
 
-        next()
-      } catch (error) {
-        recordExceptionInCurrentSpan({
-          error,
-          fallbackMsg: "Error locking idempotency key",
-          level: ErrorLevel.Critical,
-        })
-        if (error instanceof ExecutionError) {
-          return res.status(409).json({ error: "the idempotency key already exist" })
-        }
-        if (error instanceof Error) {
-          return res.status(500).json({ error: error.message })
-        }
-        return res.status(500).json({ error: "Unknown error in idempotency middleware" })
+      if (result instanceof ResourceAttemptsTimelockServiceError) {
+        return res.status(409).json({ error: "the idempotency key already exist" })
       }
+      if (result instanceof Error) {
+        return res.status(500).json({ error: result.message })
+      }
+
+      next()
     })
   } else {
     next()

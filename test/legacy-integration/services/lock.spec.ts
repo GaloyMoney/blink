@@ -1,9 +1,9 @@
 import { sleep } from "@utils"
 import { LockService, redlock } from "@services/lock"
-import { ResourceAttemptsLockServiceError } from "@domain/lock"
 
 import { redis } from "@services/redis"
 import { baseLogger } from "@services/logger"
+import { ResourceAttemptsRedlockServiceError } from "@domain/lock"
 
 describe("Lock", () => {
   describe("lockWalletId", () => {
@@ -21,7 +21,7 @@ describe("Lock", () => {
       })
 
       const result = await Promise.race([lock1, lock2])
-      expect(result).toBeInstanceOf(ResourceAttemptsLockServiceError)
+      expect(result).toBeInstanceOf(ResourceAttemptsRedlockServiceError)
     })
   })
 })
@@ -77,7 +77,7 @@ describe("Redlock", () => {
           })
         },
       }),
-    ).resolves.toBeInstanceOf(ResourceAttemptsLockServiceError)
+    ).resolves.toBeInstanceOf(ResourceAttemptsRedlockServiceError)
   })
 
   it("second loop start after first loop has ended", async () => {

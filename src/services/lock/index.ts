@@ -3,7 +3,8 @@ import Redlock, { ExecutionError } from "redlock"
 import { NETWORK } from "@config"
 
 import {
-  ResourceAttemptsLockServiceError,
+  ResourceAttemptsRedlockServiceError,
+  ResourceAttemptsTimelockServiceError,
   ResourceExpiredLockServiceError,
   UnknownLockServiceError,
 } from "@domain/lock"
@@ -93,7 +94,7 @@ export const redlock = async <Signal extends RedlockAbortSignal, Ret>({
     )
   } catch (error) {
     if (error instanceof ExecutionError) {
-      return new ResourceAttemptsLockServiceError()
+      return new ResourceAttemptsRedlockServiceError()
     }
 
     return new UnknownLockServiceError(parseErrorMessageFromUnknown(error))
@@ -152,10 +153,18 @@ export const LockService = (): ILockService => {
 
   const lockIdempotencyKey = async (
     idempotencyKey: IdempotencyKey,
-  ): Promise<void | ExecutionError> => {
+  ): Promise<void | LockServiceError> => {
     const path = getIdempotencyKeyLockResource(idempotencyKey)
 
-    await timelock({ resource: path, duration: durationLockIdempotencyKey })
+    try {
+      await timelock({ resource: path, duration: durationLockIdempotencyKey })
+    } catch (err) {
+      if (err instanceof ExecutionError) {
+        return new ResourceAttemptsTimelockServiceError()
+      }
+
+      return new UnknownLockServiceError(err)
+    }
   }
 
   return wrapAsyncFunctionsToRunInSpan({

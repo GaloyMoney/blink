@@ -499,7 +499,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindLnPaymentFromHashError":
     case "LockError":
     case "LockServiceError":
-    case "ResourceAttemptsLockServiceError":
+    case "ResourceAttemptsRedlockServiceError":
+    case "ResourceAttemptsTimelockServiceError":
     case "ResourceExpiredLockServiceError":
     case "PriceError":
     case "PriceServiceError":
