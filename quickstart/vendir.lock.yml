@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: use otel provider for oathkeeper tracing (#3264)'
-      sha: 9f181e187d8ec7e234de41eb6f02df25aa3ab3b5
+      commitTitle: 'chore: setting ResourceAttemptsTimelockServiceError to warn instead
+        o… (#3265)'
+      sha: fcd16d52cfb0882eb79d2cdd5fdb96424ca3cbc5
       tags:
-      - 0.13.93-1-g9f181e187
+      - 0.13.94-1-gfcd16d52c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: use otel provider for oathkeeper tracing (#3264)'
-      sha: 9f181e187d8ec7e234de41eb6f02df25aa3ab3b5
+      commitTitle: 'chore: setting ResourceAttemptsTimelockServiceError to warn instead
+        o… (#3265)'
+      sha: fcd16d52cfb0882eb79d2cdd5fdb96424ca3cbc5
       tags:
-      - 0.13.93-1-g9f181e187
+      - 0.13.94-1-gfcd16d52c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: use otel provider for oathkeeper tracing (#3264)'
-      sha: 9f181e187d8ec7e234de41eb6f02df25aa3ab3b5
+      commitTitle: 'chore: setting ResourceAttemptsTimelockServiceError to warn instead
+        o… (#3265)'
+      sha: fcd16d52cfb0882eb79d2cdd5fdb96424ca3cbc5
       tags:
-      - 0.13.93-1-g9f181e187
+      - 0.13.94-1-gfcd16d52c
     path: ./
   path: ./graphql
 kind: LockConfig
