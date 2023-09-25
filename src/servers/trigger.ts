@@ -32,17 +32,12 @@ import * as Wallets from "@app/wallets"
 
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
-import {
-  CouldNotFindWalletFromOnChainAddressError,
-  CouldNotFindWalletInvoiceError,
-} from "@domain/errors"
+import { CouldNotFindWalletFromOnChainAddressError } from "@domain/errors"
 import { SwapTriggerError } from "@domain/swap/errors"
 import { checkedToDisplayCurrency } from "@domain/fiat"
-import {
-  DEFAULT_EXPIRATIONS,
-  invoiceExpirationForCurrency,
-} from "@domain/bitcoin/lightning/invoice-expiration"
+import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { WalletInvoiceChecker } from "@domain/wallet-invoices"
 
 import { BriaSubscriber } from "@services/bria"
 import { RedisCacheService } from "@services/cache"
@@ -284,38 +279,25 @@ const listenerExistingHodlInvoices = async ({
   if (invoices instanceof Error) return invoices
 
   for (const lnInvoice of invoices) {
+    if (lnInvoice.isSettled || lnInvoice.isCanceled) {
+      continue
+    }
+
     if (lnInvoice.isHeld) {
       const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(
         lnInvoice.paymentHash,
       )
-      const declineArgs = {
-        pubkey,
-        paymentHash: lnInvoice.paymentHash,
-        logger: baseLogger,
-      }
-      if (walletInvoice instanceof CouldNotFindWalletInvoiceError) {
-        Wallets.declineHeldInvoice(declineArgs)
+      if (WalletInvoiceChecker(walletInvoice).shouldDecline()) {
+        Wallets.declineHeldInvoice({
+          pubkey,
+          paymentHash: lnInvoice.paymentHash,
+          logger: baseLogger,
+        })
         continue
       }
       if (walletInvoice instanceof Error) {
         continue
       }
-
-      const expiresIn = invoiceExpirationForCurrency(
-        walletInvoice.recipientWalletDescriptor.currency,
-        walletInvoice.createdAt,
-      )
-      if (
-        walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Usd &&
-        expiresIn.getTime() < Date.now()
-      ) {
-        Wallets.declineHeldInvoice(declineArgs)
-        continue
-      }
-    }
-
-    if (lnInvoice.isSettled || lnInvoice.isCanceled) {
-      continue
     }
 
     listenerHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })
