@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'test: continue cleaning up receive ln integration (#3257)...'
-      sha: 6906f1b317d2ba538e1da3ad100d6c21c8c50abe
+      commitTitle: 'chore: user logout should be a authed mutation (#3263)...'
+      sha: b2f7bb5476feaa03f3bc464e53362b16c650d73e
       tags:
-      - 0.13.91-1-g6906f1b31
+      - 0.13.92-1-gb2f7bb547
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'test: continue cleaning up receive ln integration (#3257)...'
-      sha: 6906f1b317d2ba538e1da3ad100d6c21c8c50abe
+      commitTitle: 'chore: user logout should be a authed mutation (#3263)...'
+      sha: b2f7bb5476feaa03f3bc464e53362b16c650d73e
       tags:
-      - 0.13.91-1-g6906f1b31
+      - 0.13.92-1-gb2f7bb547
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'test: continue cleaning up receive ln integration (#3257)...'
-      sha: 6906f1b317d2ba538e1da3ad100d6c21c8c50abe
+      commitTitle: 'chore: user logout should be a authed mutation (#3263)...'
+      sha: b2f7bb5476feaa03f3bc464e53362b16c650d73e
       tags:
-      - 0.13.91-1-g6906f1b31
+      - 0.13.92-1-gb2f7bb547
     path: ./
   path: ./graphql
 kind: LockConfig
