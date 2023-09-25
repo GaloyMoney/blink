@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express"
 import { LockService } from "@services/lock"
 import { InvalidIdempotencyKeyError } from "@domain/errors"
-import { ExecutionError } from "redlock"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import { ErrorLevel } from "@domain/shared"
 import { json } from "body-parser"
+import { ResourceAttemptsTimelockServiceError } from "@domain/lock"
 
 // Create lock service instance
 const lockService = LockService()
@@ -81,7 +81,7 @@ export const idempotencyMiddleware = async (
           fallbackMsg: "Error locking idempotency key",
           level: ErrorLevel.Critical,
         })
-        if (error instanceof ExecutionError) {
+        if (error instanceof ResourceAttemptsTimelockServiceError) {
           return res.status(409).json({ error: "the idempotency key already exist" })
         }
         if (error instanceof Error) {

@@ -3,7 +3,10 @@ import { DomainError, ErrorLevel } from "@domain/shared"
 export class LockError extends DomainError {}
 
 export class LockServiceError extends LockError {}
-export class ResourceAttemptsLockServiceError extends LockServiceError {
+export class ResourceAttemptsRedlockServiceError extends LockServiceError {
+  level = ErrorLevel.Warn
+}
+export class ResourceAttemptsTimelockServiceError extends LockServiceError {
   level = ErrorLevel.Warn
 }
 export class ResourceExpiredLockServiceError extends LockServiceError {

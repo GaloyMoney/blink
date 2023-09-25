@@ -1,5 +1,3 @@
-type ExecutionError = import("redlock").ExecutionError
-
 type RedlockAbortSignal = import("redlock").RedlockAbortSignal
 
 type LockServiceError = import("./errors").LockServiceError
@@ -26,7 +24,7 @@ interface ILockService {
     { txHash, vout }: { txHash: OnChainTxHash; vout: OnChainTxVout },
     f: (signal: OnChainTxAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError>
-  lockIdempotencyKey(idempotencyKey: IdempotencyKey): Promise<void | ExecutionError>
+  lockIdempotencyKey(idempotencyKey: IdempotencyKey): Promise<void | LockServiceError>
 }
 
 type RedlockArgs<Signal, Ret> = {
