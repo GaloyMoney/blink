@@ -23,10 +23,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@ory/hydra-client@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.npmjs.org/@ory/hydra-client/-/hydra-client-2.1.1.tgz"
-  integrity sha512-fL1Jna/wBJh9fAObklj+XZS2n3002+Wm3BkDk/BcwZ9ylsDlkdEZK0ZhxPocMkX2bhDZAeCVNe7CDCumSu9Kqw==
+"@ory/hydra-client@^2.2.0-rc.3":
+  version "2.2.0-rc.3"
+  resolved "https://registry.npmjs.org/@ory/hydra-client/-/hydra-client-2.2.0-rc.3.tgz#236be3ac395b35ba9ffec021701fac5438d3b24c"
+  integrity sha512-FEGhnEBmRlnrZyW5WPIH6Jmc00+kfZYRdFbSHBqqOfWJP7/Vj6z7q3MfA4osvQgGUfvdZsb1/HHCe6aoLaYZaQ==
   dependencies:
     axios "^0.21.4"
 

@@ -17,7 +17,7 @@
   },
   "prettier": "ory-prettier-styles",
   "dependencies": {
-    "@ory/hydra-client": "^2.1.1",
+    "@ory/hydra-client": "^2.2.0-rc.3",
     "@types/axios": "^0.14.0",
     "@types/cookie-parser": "^1.4.2",
     "@types/csurf": "^1.9.36",
