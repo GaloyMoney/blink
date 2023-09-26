@@ -47,7 +47,7 @@ services:
     extra_hosts: []
   otel-agent:
     ports: []
-    image: otel/opentelemetry-collector-contrib:0.79.0
+    image: otel/opentelemetry-collector-contrib:0.84.0
     command: ["--config=/etc/otel-agent-config.yaml"]
     environment:
       - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
