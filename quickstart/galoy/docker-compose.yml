@@ -47,7 +47,7 @@ services:
     extra_hosts: []
   otel-agent:
     ports: []
-    image: otel/opentelemetry-collector-contrib:0.79.0
+    image: otel/opentelemetry-collector-contrib:0.84.0
     command: ["--config=/etc/otel-agent-config.yaml"]
     environment:
       - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
@@ -360,7 +360,7 @@ services:
       timeout: 30s
       retries: 5
   oathkeeper:
-    image: oryd/oathkeeper:v0.40.4-distroless
+    image: oryd/oathkeeper:v0.40.6-distroless
     ports: []
     extra_hosts: []
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out

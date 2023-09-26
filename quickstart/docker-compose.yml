@@ -33,7 +33,7 @@ services:
     volumes:
     - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev:/repo/dev
   oathkeeper:
-    image: oryd/oathkeeper:v0.40.4-distroless
+    image: oryd/oathkeeper:v0.40.6-distroless
     ports:
     - 4002:4455
     - 4456:4456
@@ -64,7 +64,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=default
   galoy:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:c4a67a42edaa97432db45c12cf8964f6039b468d55368d5aa96764cb0007f6fa
+    image: us.gcr.io/galoy-org/galoy-app@sha256:182cf836f9284ce00968cfb60492d436d8089b233446e9b7b6de4b4e0423f526
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -86,7 +86,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:c4a67a42edaa97432db45c12cf8964f6039b468d55368d5aa96764cb0007f6fa
+    image: us.gcr.io/galoy-org/galoy-app@sha256:182cf836f9284ce00968cfb60492d436d8089b233446e9b7b6de4b4e0423f526
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -111,7 +111,7 @@ services:
     - MONGO_INITDB_DATABASE=galoy
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:3940b77622d5d2b6f5c6ad432232ca5da72e99efd96007eb6fc508cd2fa3ef45
+    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:a3a90cfec851a10a3666cebe8bda406d6487621c02ee00fcc4fb9daef954513f
     depends_on:
     - mongodb
     environment:
@@ -302,7 +302,7 @@ services:
   otel-agent:
     ports:
     - 4318:4318
-    image: otel/opentelemetry-collector-contrib:0.79.0
+    image: otel/opentelemetry-collector-contrib:0.84.0
     command:
     - --config=/etc/otel-agent-config.yaml
     environment:

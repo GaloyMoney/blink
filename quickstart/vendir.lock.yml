@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: setting ResourceAttemptsTimelockServiceError to warn instead
-        o… (#3265)'
-      sha: fcd16d52cfb0882eb79d2cdd5fdb96424ca3cbc5
+      commitTitle: 'chore: bump docker deps (#3269)...'
+      sha: 208654fae7704ed6998e70eeda84fd36fe6bc66f
       tags:
-      - 0.13.94-1-gfcd16d52c
+      - 0.13.95-1-g208654fae
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: setting ResourceAttemptsTimelockServiceError to warn instead
-        o… (#3265)'
-      sha: fcd16d52cfb0882eb79d2cdd5fdb96424ca3cbc5
+      commitTitle: 'chore: bump docker deps (#3269)...'
+      sha: 208654fae7704ed6998e70eeda84fd36fe6bc66f
       tags:
-      - 0.13.94-1-gfcd16d52c
+      - 0.13.95-1-g208654fae
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: setting ResourceAttemptsTimelockServiceError to warn instead
-        o… (#3265)'
-      sha: fcd16d52cfb0882eb79d2cdd5fdb96424ca3cbc5
+      commitTitle: 'chore: bump docker deps (#3269)...'
+      sha: 208654fae7704ed6998e70eeda84fd36fe6bc66f
       tags:
-      - 0.13.94-1-gfcd16d52c
+      - 0.13.95-1-g208654fae
     path: ./
   path: ./graphql
 kind: LockConfig
