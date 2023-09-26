@@ -412,7 +412,7 @@ const updatePendingInvoiceBeforeFinally = async ({
   })
 }
 
-const updatePendingInvoice = wrapAsyncToRunInSpan({
+export const updatePendingInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
   fnName: "updatePendingInvoice",
   fn: async ({

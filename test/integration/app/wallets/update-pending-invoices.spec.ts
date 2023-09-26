@@ -42,7 +42,8 @@ describe("update pending invoices", () => {
       if (persisted instanceof Error) throw persisted
 
       const usdDelayMs = DEFAULT_EXPIRATIONS.USD.delay * 1000
-      const pastCreatedAt = new Date(Date.now() - usdDelayMs)
+      const timeBuffer = 1000 // buffer for any time library discrepancies
+      const pastCreatedAt = new Date(Date.now() - (usdDelayMs + timeBuffer))
       await WalletInvoice.findOneAndUpdate(
         { _id: paymentHash },
         { timestamp: pastCreatedAt },
@@ -57,6 +58,59 @@ describe("update pending invoices", () => {
 
       // Restore system state
       declineHeldInvoiceSpy.mockRestore()
+    })
+
+    it("does not decline BTC invoice with expired 'createdAt'", async () => {
+      // Setup mocks
+      const declineHeldInvoiceMock = jest.fn()
+      const declineHeldInvoiceSpy = jest
+        .spyOn(UpdatePendingInvoicesImpl, "declineHeldInvoice")
+        .mockImplementation(declineHeldInvoiceMock)
+
+      const updatePendingInvoiceMock = jest.fn()
+      const updatePendingInvoiceSpy = jest
+        .spyOn(UpdatePendingInvoicesImpl, "updatePendingInvoice")
+        .mockImplementation(updatePendingInvoiceMock)
+
+      // Setup expired BTC wallet invoice
+      const { paymentHash } = getSecretAndPaymentHash()
+      const expiredBtcWalletInvoice = {
+        paymentHash,
+        secret: "secretPreImage" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: "pubkey" as Pubkey,
+        recipientWalletDescriptor: {
+          id: randomUUID() as WalletId,
+          currency: WalletCurrency.Btc,
+        },
+        paid: false,
+      }
+      const persisted = await WalletInvoicesRepository().persistNew(
+        expiredBtcWalletInvoice,
+      )
+      if (persisted instanceof Error) throw persisted
+
+      const btcDelayMs = DEFAULT_EXPIRATIONS.BTC.delay * 1000
+      const timeBuffer = 1000 // buffer for any time library discrepancies
+      const pastCreatedAt = new Date(Date.now() - (btcDelayMs + timeBuffer))
+      await WalletInvoice.findOneAndUpdate(
+        { _id: paymentHash },
+        { timestamp: pastCreatedAt },
+      )
+
+      // Handle invoices
+      await handleHeldInvoices(baseLogger)
+
+      // Expect declined invoice
+      expect(declineHeldInvoiceMock.mock.calls.length).toBe(0)
+      expect(updatePendingInvoiceMock.mock.calls.length).toBe(1)
+      expect(updatePendingInvoiceMock.mock.calls[0][0].walletInvoice.paymentHash).toBe(
+        paymentHash,
+      )
+
+      // Restore system state
+      declineHeldInvoiceSpy.mockRestore()
+      updatePendingInvoiceSpy.mockRestore()
     })
   })
 })
