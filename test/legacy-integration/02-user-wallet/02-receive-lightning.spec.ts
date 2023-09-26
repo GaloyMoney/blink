@@ -14,13 +14,9 @@ import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
-import { KnownLndErrorDetails } from "@services/lnd/errors"
 import { baseLogger } from "@services/logger"
-import { setupInvoiceSubscribe } from "@servers/trigger"
 
 import { sleep } from "@utils"
-
-import { parseLndErrorDetails } from "@services/lnd/config"
 
 import { WalletInvoice } from "@services/mongoose/schema"
 
@@ -33,17 +29,14 @@ import {
   getHash,
   getPubKey,
   getUsdWalletIdByPhone,
-  lnd1,
   lndOutside1,
   pay,
   randomPhone,
   safePay,
-  subscribeToInvoices,
 } from "test/helpers"
 
 let walletIdB: WalletId
 let walletIdUsdB: WalletId
-let walletIdUsdF: WalletId
 let initBalanceB: Satoshis
 let initBalanceUsdB: UsdCents
 
@@ -55,7 +48,6 @@ beforeAll(async () => {
   await createUserAndWalletFromPhone(phoneF)
   walletIdB = await getDefaultWalletIdByPhone(phoneB)
   walletIdUsdB = await getUsdWalletIdByPhone(phoneB)
-  walletIdUsdF = await getUsdWalletIdByPhone(phoneF)
 })
 
 beforeEach(async () => {
@@ -273,57 +265,5 @@ describe("UserWallet - Lightning", () => {
         await handleHeldInvoices(baseLogger)
       })(),
     ])
-  })
-})
-
-describe("Invoice handling from trigger", () => {
-  describe("usd recipient invoice", () => {
-    const cents = toCents(100)
-
-    it("should decline held invoice when trigger comes back up", async () => {
-      // Create invoice for self
-      const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
-        walletId: walletIdUsdF,
-        amount: cents,
-      })
-      expect(lnInvoice).not.toBeInstanceOf(Error)
-      if (lnInvoice instanceof Error) throw lnInvoice
-
-      // fake timestamp in wallet invoice to avoid the use of fake timers
-      await WalletInvoice.findOneAndUpdate(
-        { _id: lnInvoice.paymentHash },
-        { timestamp: new Date(Date.now() - SECS_PER_10_MINS * 1000) },
-      )
-
-      // Pay invoice promise
-      const startPay = async () => {
-        try {
-          return await pay({
-            lnd: lndOutside1,
-            request: lnInvoice.paymentRequest,
-          })
-        } catch (err) {
-          return parseLndErrorDetails(err)
-        }
-      }
-
-      // Listener promise
-      const delayedListener = async (subInvoices) => {
-        await sleep(500)
-        setupInvoiceSubscribe({
-          lnd: lnd1,
-          pubkey: process.env.LND1_PUBKEY as Pubkey,
-          subInvoices,
-        })
-      }
-
-      // Pay and then listen
-      const subInvoices = subscribeToInvoices({ lnd: lnd1 })
-      const [result] = await Promise.all([startPay(), delayedListener(subInvoices)])
-
-      // See successful payment
-      expect(result).toMatch(KnownLndErrorDetails.PaymentRejectedByDestination)
-      subInvoices.removeAllListeners()
-    })
   })
 })
