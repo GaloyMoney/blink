@@ -8,6 +8,7 @@ import csrf from "csurf"
 import { hydraClient } from "../config"
 import { oidcConformityMaybeFakeAcr } from "./stub/oidc-cert"
 import axios from "axios"
+import { OAuth2LoginRequest, OAuth2RedirectTo } from "@ory/hydra-client"
 
 // Sets up csrf protection
 const csrfProtection = csrf({
@@ -30,41 +31,53 @@ router.get("/", csrfProtection, async (req, res, next) => {
     return
   }
 
+  let body: OAuth2LoginRequest
+
   try {
-    const { data: body } = await hydraClient.getOAuth2LoginRequest({
+    const { data } = await hydraClient.getOAuth2LoginRequest({
       loginChallenge: challenge,
     })
+    body = data
+  } catch (err) {
+    // This will handle any error that happens when making HTTP calls to hydra
+    next(err)
+    return
+  }
 
-    // If hydra was already able to authenticate the user, skip will be true and we do not need to re-authenticate
-    // the user.
-    if (body.skip) {
-      // You can apply logic here, for example update the number of times the user logged in.
-      // ...
+  // If hydra was already able to authenticate the user, skip will be true and we do not need to re-authenticate
+  // the user.
+  if (body.skip) {
+    // You can apply logic here, for example update the number of times the user logged in.
+    // ...
 
-      // Now it's time to grant the login request. You could also deny the request if something went terribly wrong
-      // (e.g. your arch-enemy logging in...)
-      const response = await hydraClient.acceptOAuth2LoginRequest({
+    // Now it's time to grant the login request. You could also deny the request if something went terribly wrong
+    // (e.g. your arch-enemy logging in...)
+    let response: OAuth2RedirectTo
+    try {
+      const { data } = await hydraClient.acceptOAuth2LoginRequest({
         loginChallenge: challenge,
         acceptOAuth2LoginRequest: {
           // All we need to do is to confirm that we indeed want to log in the user.
           subject: String(body.subject),
         },
       })
-
-      res.redirect(String(response.data.redirect_to))
+      response = data
+    } catch (err) {
+      next(err)
+      return
     }
 
-    // If authentication can't be skipped we MUST show the login UI.
-    res.render("login", {
-      csrfToken: req.csrfToken(),
-      challenge: challenge,
-      action: urljoin(process.env.BASE_URL || "", "/login"),
-      hint: body.oidc_context?.login_hint || "",
-    })
-  } catch (err) {
-    // This will handle any error that happens when making HTTP calls to hydra
-    next(err)
+    res.redirect(String(response.redirect_to))
+    return
   }
+
+  // If authentication can't be skipped we MUST show the login UI.
+  res.render("login", {
+    csrfToken: req.csrfToken(),
+    challenge: challenge,
+    action: urljoin(process.env.BASE_URL || "", "/login"),
+    hint: body.oidc_context?.login_hint || "",
+  })
 })
 
 router.post("/", csrfProtection, async (req, res, next) => {
