@@ -346,3 +346,114 @@ teardown() {
   retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_usd_payment_send_address" 4
   retry 3 1 check_for_onchain_initiated_settled "$token_name" "$on_chain_payment_send_address" 4
 }
+
+@test "onchain-send: get fee for external address" {
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  # EXECUTE GQL FEE ESTIMATES
+  # ----------
+
+  address=$(bitcoin_cli getnewaddress)
+  [[ "${address}" != "null" ]] || exit 1
+
+  # mutation: onChainTxFee
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 12345 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql "$token_name" 'on-chain-tx-fee' "$variables"
+  amount="$(graphql_output '.data.onChainTxFee.amount')"
+  [[ "${amount}" -gt 0 ]] || exit 1
+
+  # mutation: onChainUsdTxFee
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 200 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql "$token_name" 'on-chain-usd-tx-fee' "$variables"
+  amount="$(graphql_output '.data.onChainUsdTxFee.amount')"
+  [[ "${amount}" -gt 0 ]] || exit 1
+
+  # mutation: onChainUsdTxFeeAsBtcDenominated
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 12345 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql "$token_name" 'on-chain-usd-tx-fee-as-btc-denominated' "$variables"
+  amount="$(graphql_output '.data.onChainUsdTxFeeAsBtcDenominated.amount')"
+  [[ "${amount}" -gt 0 ]] || exit 1
+}
+
+@test "onchain-send: get fee for internal address" {
+  token_name="$ALICE_TOKEN_NAME"
+  btc_wallet_name="$token_name.btc_wallet_id"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  # EXECUTE GQL FEE ESTIMATES
+  # ----------
+
+  recipient_token_name="user_$RANDOM"
+  recipient_phone="$(random_phone)"
+  login_user \
+    "$recipient_token_name" \
+    "$recipient_phone"  \
+    "$CODE"
+  user_update_username "$recipient_token_name"
+  btc_recipient_wallet_name="$recipient_token_name.btc_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_recipient_wallet_name)" \
+    '{input: {walletId: $wallet_id}}'
+  )
+  exec_graphql "$recipient_token_name" 'on-chain-address-create' "$variables"
+  address="$(graphql_output '.data.onChainAddressCreate.address')"
+  [[ "${address}" != "null" ]] || exit 1
+
+  # mutation: onChainTxFee
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 12345 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql "$token_name" 'on-chain-tx-fee' "$variables"
+  amount="$(graphql_output '.data.onChainTxFee.amount')"
+  [[ "${amount}" == 0 ]] || exit 1
+
+  # mutation: onChainUsdTxFee
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 200 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql "$token_name" 'on-chain-usd-tx-fee' "$variables"
+  amount="$(graphql_output '.data.onChainUsdTxFee.amount')"
+  [[ "${amount}" == 0 ]] || exit 1
+
+  # mutation: onChainUsdTxFeeAsBtcDenominated
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg address "$address" \
+    --arg amount 12345 \
+    '{walletId: $wallet_id, address: $address, amount: $amount}'
+  )
+  exec_graphql "$token_name" 'on-chain-usd-tx-fee-as-btc-denominated' "$variables"
+  amount="$(graphql_output '.data.onChainUsdTxFeeAsBtcDenominated.amount')"
+  [[ "${amount}" == 0 ]] || exit 1
+}
