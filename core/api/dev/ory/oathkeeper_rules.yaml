@@ -93,14 +93,7 @@
     url: "<(http|https)>://<.*><[0-9]+>/admin<.*>"
     methods: ["GET", "POST", "OPTIONS"]
   authenticators:
-    # - handler: oauth2_client_credentials
-    #   config:
-    #     token_url: http://hydra:4444/oauth2/token
-    #     required_scope:
-    #       - admin
-    #       - editor
-
-    - handler: cookie_session
+    - handler: oauth2_introspection
       config:
         check_session_url: http://host.docker.internal:3002/api/auth/session
         preserve_path: true
@@ -120,7 +113,6 @@
         preserve_query: true
         subject_from: identity.id
         extra_from: "@this"
-    - handler: anonymous
   authorizer:
     handler: allow
   mutators:
