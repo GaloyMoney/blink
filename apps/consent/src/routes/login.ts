@@ -107,12 +107,21 @@ router.post("/", csrfProtection, async (req, res, next) => {
 
   const url = `${authUrl}/auth/email/code`
 
-  const result = await axios.post(url, {
-    email,
-  })
+  let emailLoginId: string
+
+  try {
+    const result = await axios.post(url, {
+      email,
+    })
+    emailLoginId = result.data.result
+  } catch (err) {
+    // TODO: error layout
+    console.error(err)
+    return
+  }
+
   // TODO: manage error on ip rate limit
   // TODO: manage error when trying the same email too often
-  const emailLoginId = result.data.result
 
   if (emailLoginId) {
     console.log({ emailLoginId })
