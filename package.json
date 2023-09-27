@@ -125,7 +125,7 @@
     "@babel/preset-env": "^7.22.20",
     "@graphql-tools/jest-transform": "^2.0.0",
     "@jest/test-sequencer": "^29.7.0",
-    "@swc/core": "1.3.85",
+    "@swc/core": "1.3.90",
     "@swc/jest": "^0.2.29",
     "@types/babel__core": "^7.20.2",
     "@types/babel__preset-env": "^7.9.3",
