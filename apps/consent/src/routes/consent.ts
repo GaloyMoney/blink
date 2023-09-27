@@ -64,7 +64,9 @@ router.get("/", csrfProtection, async (req, res, next) => {
             // unless you limit who can introspect tokens.
             access_token: { card: "alice" },
             // This data will be available in the ID token.
-            id_token: { who: "bob" },
+
+            // TODO fetch email
+            id_token: { who: "bob", email: "" },
           },
         },
       })
@@ -127,9 +129,11 @@ router.post("/", csrfProtection, async (req, res, next) => {
   let session = {
     // This data will be available when introspecting the token. Try to avoid sensitive information here,
     // unless you limit who can introspect tokens.
-    access_token: { card: "alice" },
+
+    // TODO: pass email
+    access_token: { card: "alice", email: "" },
     // This data will be available in the ID token.
-    id_token: { card: "bob" },
+    id_token: { card: "bob", email: "" },
   }
 
   try {
