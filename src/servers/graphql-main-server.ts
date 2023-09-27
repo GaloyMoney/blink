@@ -15,6 +15,7 @@ import {
   ACCOUNT_USERNAME,
   SemanticAttributes,
   addAttributesToCurrentSpanAndPropagate,
+  recordExceptionInCurrentSpan,
 } from "@services/tracing"
 
 import { NextFunction, Request, Response } from "express"
@@ -44,6 +45,15 @@ const setGqlContext = async (
     tokenPayload,
     ip,
   })
+
+  if (gqlContext instanceof Error) {
+    recordExceptionInCurrentSpan({
+      error: gqlContext,
+      fallbackMsg: "error executing sessionPublicContext",
+    })
+    next(gqlContext)
+    return
+  }
 
   req.gqlContext = gqlContext
 

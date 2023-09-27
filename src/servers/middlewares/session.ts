@@ -4,8 +4,6 @@ import { Accounts, Transactions } from "@app"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 import jsonwebtoken from "jsonwebtoken"
 
-import { mapError } from "@graphql/error-map"
-
 import { maybeExtendSession } from "@app/authentication"
 import { checkedToUserId } from "@domain/accounts"
 import { ValidationError } from "@domain/shared"
@@ -18,7 +16,7 @@ export const sessionPublicContext = async ({
 }: {
   tokenPayload: jsonwebtoken.JwtPayload
   ip: IpAddress | undefined
-}): Promise<GraphQLPublicContext> => {
+}): Promise<GraphQLPublicContext | Error> => {
   const logger = baseLogger.child({ tokenPayload })
 
   let domainAccount: Account | undefined
@@ -35,7 +33,7 @@ export const sessionPublicContext = async ({
     const userId = maybeUserId
     const account = await Accounts.getAccountFromUserId(userId)
     if (account instanceof Error) {
-      throw mapError(account)
+      return account
     } else {
       domainAccount = account
       // not awaiting on purpose. just updating metadata
@@ -51,7 +49,7 @@ export const sessionPublicContext = async ({
       }
 
       const userRes = await UsersRepository().findById(account.kratosUserId)
-      if (userRes instanceof Error) throw mapError(userRes)
+      if (userRes instanceof Error) return userRes
       user = userRes
     }
   }

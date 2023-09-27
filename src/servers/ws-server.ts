@@ -82,10 +82,13 @@ const getContext = async (
           sub: kratosCookieRes.kratosUserId,
         }
 
-        return sessionPublicContext({
+        const context = await sessionPublicContext({
           tokenPayload,
           ip,
         })
+
+        if (context instanceof Error) throw context
+        return context
       }
 
       const kratosToken = authz?.slice(7) as AuthToken
@@ -106,10 +109,13 @@ const getContext = async (
         return false
       }
 
-      return sessionPublicContext({
+      const context = await sessionPublicContext({
         tokenPayload,
         ip,
       })
+
+      if (context instanceof Error) throw context
+      return context
     },
   })()
 }
