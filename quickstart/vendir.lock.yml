@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump docker deps (#3269)...'
-      sha: 208654fae7704ed6998e70eeda84fd36fe6bc66f
+      commitTitle: 'fix: crash on error in sessionPublicContext (#3271)...'
+      sha: 7496429b2c04818e2a6060442e4075e023ca7c70
       tags:
-      - 0.13.95-1-g208654fae
+      - 0.13.96-1-g7496429b2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump docker deps (#3269)...'
-      sha: 208654fae7704ed6998e70eeda84fd36fe6bc66f
+      commitTitle: 'fix: crash on error in sessionPublicContext (#3271)...'
+      sha: 7496429b2c04818e2a6060442e4075e023ca7c70
       tags:
-      - 0.13.95-1-g208654fae
+      - 0.13.96-1-g7496429b2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump docker deps (#3269)...'
-      sha: 208654fae7704ed6998e70eeda84fd36fe6bc66f
+      commitTitle: 'fix: crash on error in sessionPublicContext (#3271)...'
+      sha: 7496429b2c04818e2a6060442e4075e023ca7c70
       tags:
-      - 0.13.95-1-g208654fae
+      - 0.13.96-1-g7496429b2
     path: ./
   path: ./graphql
 kind: LockConfig
