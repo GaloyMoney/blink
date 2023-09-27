@@ -1,18 +1,40 @@
 import { randomUUID } from "crypto"
 
+import { MS_PER_DAY } from "@config"
+
 import { handleHeldInvoices } from "@app/wallets"
+import { updatePendingInvoice } from "@app/wallets/update-single-pending-invoice"
 import * as DeclinePendingInvoiceImpl from "@app/wallets/decline-single-pending-invoice"
 import * as UpdatePendingInvoiceImpl from "@app/wallets/update-single-pending-invoice"
 
+import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { getSecretAndPaymentHash } from "@domain/bitcoin/lightning"
 import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
 import { WalletCurrency } from "@domain/shared"
+
 import { baseLogger } from "@services/logger"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
-import { getSecretAndPaymentHash } from "@domain/bitcoin/lightning"
+import { Transaction, TransactionMetadata } from "@services/ledger/schema"
+import * as LndImpl from "@services/lnd"
+
+import {
+  createMandatoryUsers,
+  createRandomUserAndBtcWallet,
+  getBalanceHelper,
+} from "test/helpers"
+
+const DEFAULT_PUBKEY =
+  "03ca1907342d5d37744cb7038375e1867c24a87564c293157c95b2a9d38dcfb4c2" as Pubkey
+
+beforeAll(async () => {
+  await createMandatoryUsers()
+})
 
 afterEach(async () => {
   await WalletInvoice.deleteMany({})
+  await Transaction.deleteMany({})
+  await TransactionMetadata.deleteMany({})
 })
 
 describe("update pending invoices", () => {
@@ -114,6 +136,85 @@ describe("update pending invoices", () => {
       // Restore system state
       declineHeldInvoiceSpy.mockRestore()
       updatePendingInvoiceSpy.mockRestore()
+    })
+  })
+
+  describe("updatePendingInvoice", () => {
+    it("should be idempotent", async () => {
+      const invoiceAmount = toSats(1)
+      const { paymentHash } = getSecretAndPaymentHash()
+      const btcDelayMs = DEFAULT_EXPIRATIONS.BTC.delay * 1000
+      const timeBuffer = 1000 // buffer for any time library discrepancies
+      const pastCreatedAt = new Date(Date.now() - (btcDelayMs + timeBuffer))
+
+      const walletInvoices = WalletInvoicesRepository()
+
+      // Setup mocks
+      const lnInvoiceLookup: LnInvoiceLookup = {
+        paymentHash,
+        createdAt: pastCreatedAt,
+        confirmedAt: undefined,
+        isSettled: false,
+        isHeld: true,
+        heldAt: undefined,
+        roundedDownReceived: invoiceAmount,
+        milliSatsReceived: toMilliSatsFromNumber(1000),
+        secretPreImage: "secretPreImage" as SecretPreImage,
+        lnInvoice: {
+          description: "",
+          paymentRequest: undefined,
+          expiresAt: new Date(Date.now() + MS_PER_DAY),
+          roundedDownAmount: invoiceAmount,
+        },
+      }
+      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
+        ...LnServiceOrig(),
+        defaultPubkey: () => DEFAULT_PUBKEY,
+        lookupInvoice: () => lnInvoiceLookup,
+        settleInvoice: () => true,
+      })
+
+      // Setup BTC wallet and invoice
+      const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
+      const initialBalance = await getBalanceHelper(recipientWalletDescriptor.id)
+
+      const btcWalletInvoice = {
+        paymentHash,
+        secret: "secretPreImage" as SecretPreImage,
+        selfGenerated: true,
+        pubkey: "pubkey" as Pubkey,
+        recipientWalletDescriptor,
+        paid: false,
+      }
+      const persisted = await walletInvoices.persistNew(btcWalletInvoice)
+      if (persisted instanceof Error) throw persisted
+
+      await WalletInvoice.findOneAndUpdate(
+        { _id: paymentHash },
+        { timestamp: pastCreatedAt },
+      )
+
+      // Run invoice update multiple times
+      const walletInvoice = await walletInvoices.findByPaymentHash(paymentHash)
+      if (walletInvoice instanceof Error) throw walletInvoice
+      const args = { walletInvoice, logger: baseLogger }
+      const multipleCalls = [
+        updatePendingInvoice(args),
+        updatePendingInvoice(args),
+        updatePendingInvoice(args),
+      ]
+      const results = await Promise.all(multipleCalls)
+      const resultSet = new Set(results)
+      expect(resultSet.size).toEqual(1)
+      expect(resultSet).toContain(true)
+
+      // Check final balance
+      const finalBalance = await getBalanceHelper(recipientWalletDescriptor.id)
+      expect(finalBalance - initialBalance).toEqual(invoiceAmount)
+
+      // Restore system state
+      lndServiceSpy.mockRestore()
     })
   })
 })
