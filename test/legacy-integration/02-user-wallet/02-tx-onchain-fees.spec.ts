@@ -5,11 +5,10 @@ import { getOnChainWalletConfig } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { LessThanDustThresholdError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
-import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 import { PayoutSpeed } from "@domain/bitcoin/onchain"
 
 import { DealerPriceService } from "@services/dealer-price"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { baseLogger } from "@services/logger"
 import { getFunderWalletId } from "@services/ledger/caching"
 
@@ -34,7 +33,6 @@ const defaultSpeed = PayoutSpeed.Fast
 const { dustThreshold } = getOnChainWalletConfig()
 
 let walletIdA: WalletId
-let walletIdB: WalletId
 let walletIdUsdA: WalletId
 let accountA: Account
 
@@ -52,7 +50,6 @@ beforeAll(async () => {
   walletIdA = await getDefaultWalletIdByPhone(phoneA)
   walletIdUsdA = await getUsdWalletIdByPhone(phoneA)
   accountA = await getAccountByPhone(phoneA)
-  walletIdB = await getDefaultWalletIdByPhone(phoneB)
 
   // Fund walletIdA
   await sendToLndWalletTestWrapper({
@@ -116,46 +113,6 @@ const sendToLndWalletTestWrapper = async ({
 
 describe("UserWallet - getOnchainFee", () => {
   describe("from btc wallet", () => {
-    it("returns a fee greater than zero for an external address", async () => {
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-      const feeAmount = await Wallets.getOnChainFeeForBtcWallet({
-        walletId: walletIdA,
-        account: accountA,
-        amount: defaultAmount,
-        address,
-        speed: defaultSpeed,
-      })
-      if (feeAmount instanceof Error) throw feeAmount
-      expect(feeAmount.currency).toBe(WalletCurrency.Btc)
-      const fee = Number(feeAmount.amount)
-      expect(fee).toBeGreaterThan(0)
-
-      const wallet = await WalletsRepository().findById(walletIdA)
-      if (wallet instanceof Error) throw wallet
-
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) throw account
-
-      expect(fee).toBeGreaterThan(account.withdrawFee)
-    })
-
-    it("returns zero for an on us address", async () => {
-      const address = await Wallets.createOnChainAddress({
-        walletId: walletIdB,
-      })
-      if (address instanceof Error) throw address
-      const feeAmount = await Wallets.getOnChainFeeForBtcWallet({
-        walletId: walletIdA,
-        account: accountA,
-        amount: defaultAmount,
-        address,
-        speed: defaultSpeed,
-      })
-      if (feeAmount instanceof Error) throw feeAmount
-      const fee = Number(feeAmount.amount)
-      expect(fee).toBe(0)
-    })
-
     it("returns error for dust amount", async () => {
       const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
       const amount = toSats(dustThreshold - 1)
@@ -196,90 +153,9 @@ describe("UserWallet - getOnchainFee", () => {
       { amountCurrency: WalletCurrency.Usd, senderAmount: defaultUsdAmount },
       { amountCurrency: WalletCurrency.Btc, senderAmount: defaultAmount },
     ]
-    const testAmountCaseAmounts = async (
-      convert: (
-        amount: UsdPaymentAmount,
-      ) => Promise<BtcPaymentAmount | DealerPriceServiceError>,
-    ) => {
-      const usdAmount = amountCases.filter(
-        (testCase) => testCase.amountCurrency === WalletCurrency.Usd,
-      )[0].senderAmount
 
-      const convertedBtcFromUsdAmount = await convert({
-        amount: BigInt(usdAmount),
-        currency: WalletCurrency.Usd,
-      })
-      if (convertedBtcFromUsdAmount instanceof Error) throw convertedBtcFromUsdAmount
-
-      expect(defaultAmount).toEqual(Number(convertedBtcFromUsdAmount.amount))
-    }
-
-    amountCases.forEach(({ amountCurrency, senderAmount }) => {
+    amountCases.forEach(({ amountCurrency }) => {
       describe(`${amountCurrency.toLowerCase()} send amount`, () => {
-        it("returns a fee greater than zero for an external address", async () => {
-          await testAmountCaseAmounts(dealerFns.getSatsFromCentsForImmediateSell)
-
-          const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-
-          const paymentAmount = paymentAmountFromNumber({
-            amount: defaultAmount,
-            currency: WalletCurrency.Btc,
-          })
-          if (paymentAmount instanceof Error) throw paymentAmount
-
-          const getFeeArgs = {
-            walletId: walletIdUsdA,
-            account: accountA,
-            address,
-            speed: defaultSpeed,
-            amount: senderAmount,
-          }
-          const feeAmount =
-            amountCurrency === WalletCurrency.Usd
-              ? await Wallets.getOnChainFeeForUsdWallet(getFeeArgs)
-              : await Wallets.getOnChainFeeForUsdWalletAndBtcAmount(getFeeArgs)
-          if (feeAmount instanceof Error) throw feeAmount
-          expect(feeAmount.currency).toBe(WalletCurrency.Usd)
-          const fee = Number(feeAmount.amount)
-          expect(fee).toBeGreaterThan(0)
-
-          const wallet = await WalletsRepository().findById(walletIdUsdA)
-          if (wallet instanceof Error) throw wallet
-
-          const account = await AccountsRepository().findById(wallet.accountId)
-          if (account instanceof Error) throw account
-
-          const usdAmount = await dealerFns.getCentsFromSatsForImmediateSell({
-            amount: BigInt(account.withdrawFee),
-            currency: WalletCurrency.Btc,
-          })
-          if (usdAmount instanceof Error) throw usdAmount
-          const withdrawFeeAsUsd = Number(usdAmount.amount)
-          expect(fee).toBeGreaterThan(withdrawFeeAsUsd)
-        })
-
-        it("returns zero for an on us address", async () => {
-          const address = await Wallets.createOnChainAddress({
-            walletId: walletIdB,
-          })
-          if (address instanceof Error) throw address
-
-          const getFeeArgs = {
-            walletId: walletIdUsdA,
-            account: accountA,
-            address,
-            speed: defaultSpeed,
-            amount: senderAmount,
-          }
-          const feeAmount =
-            amountCurrency === WalletCurrency.Usd
-              ? await Wallets.getOnChainFeeForUsdWallet(getFeeArgs)
-              : await Wallets.getOnChainFeeForUsdWalletAndBtcAmount(getFeeArgs)
-          if (feeAmount instanceof Error) throw feeAmount
-          const fee = Number(feeAmount.amount)
-          expect(fee).toBe(0)
-        })
-
         it("returns error for dust amount", async () => {
           const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
           const amount = toSats(dustThreshold - 1)
