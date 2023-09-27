@@ -4,7 +4,6 @@ import { UpdateIdentityBody } from "@ory/client"
 
 import knex from "knex"
 
-import { createCookieLoginFlow } from "./cookie"
 import {
   CodeExpiredKratosError,
   EmailAlreadyExistsError,
@@ -236,37 +235,6 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
     }
   }
 
-  const loginCookie = async ({
-    email,
-  }: {
-    email: EmailAddress
-  }): Promise<LoginWithPhoneCookieSchemaResponse | KratosError> => {
-    const identifier = email
-    const method = "password"
-    try {
-      const cookieFlow = await createCookieLoginFlow()
-      if (cookieFlow instanceof Error) return cookieFlow
-      const result = await kratosPublic.updateLoginFlow({
-        flow: cookieFlow.flowId,
-        cookie: cookieFlow.cookie,
-        updateLoginFlowBody: {
-          identifier,
-          method,
-          password,
-          csrf_token: cookieFlow.csrf,
-        },
-      })
-      const cookiesToSendBackToClient: Array<SessionCookie> = result.headers["set-cookie"]
-
-      if (!result.data.session.identity) return new InvalidIdentitySessionKratosError()
-      // identity is only defined when identity has not enabled totp
-      const kratosUserId = result.data.session.identity.id as UserId | undefined
-      return { cookiesToSendBackToClient, kratosUserId }
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-  }
-
   const addUnverifiedEmailToIdentity = async ({
     kratosUserId,
     email,
@@ -488,7 +456,6 @@ export const AuthWithEmailPasswordlessService = (): IAuthWithEmailPasswordlessSe
       hasEmail,
       isEmailVerified,
       loginToken,
-      loginCookie,
     },
   })
 }
