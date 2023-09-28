@@ -19,6 +19,12 @@ export class InvalidCarrierForPhoneMetadataError extends ValidationError {
 export class InvalidCarrierTypeForPhoneMetadataError extends ValidationError {
   level = ErrorLevel.Critical
 }
+export class InvalidErrorCodeForPhoneMetadataError extends ValidationError {
+  level = ErrorLevel.Critical
+}
+export class InvalidMobileCountryCodeForPhoneMetadataError extends ValidationError {
+  level = ErrorLevel.Critical
+}
 export class InvalidCountryCodeForPhoneMetadataError extends ValidationError {
   level = ErrorLevel.Critical
 }
