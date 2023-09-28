@@ -39,19 +39,19 @@ describe("OnChainPaymentFlowBuilder", () => {
 
   const senderAsRecipientCommonArgs = {
     userId: "senderUserId" as UserId,
-    recipientWalletDescriptorsForAccount: [
-      senderBtcWalletDescriptor,
-      senderUsdWalletDescriptor,
-    ],
+    recipientWalletDescriptors: {
+      [WalletCurrency.Btc]: senderBtcWalletDescriptor,
+      [WalletCurrency.Usd]: senderUsdWalletDescriptor,
+    },
   }
   const senderBtcAsRecipientArgs = {
     ...senderAsRecipientCommonArgs,
-    recipientWalletDescriptor: senderBtcWalletDescriptor,
+    defaultWalletCurrency: WalletCurrency.Btc,
   }
 
   const senderUsdAsRecipientArgs = {
     ...senderAsRecipientCommonArgs,
-    recipientWalletDescriptor: senderUsdWalletDescriptor,
+    defaultWalletCurrency: WalletCurrency.Usd,
   }
 
   const senderAccount = { withdrawFee: toSats(100) } as Account
@@ -68,22 +68,22 @@ describe("OnChainPaymentFlowBuilder", () => {
   }
 
   const recipientCommonArgs = {
-    recipientWalletDescriptorsForAccount: [
-      recipientBtcWalletDescriptor,
-      recipientUsdWalletDescriptor,
-    ],
+    recipientWalletDescriptors: {
+      [WalletCurrency.Btc]: recipientBtcWalletDescriptor,
+      [WalletCurrency.Usd]: recipientUsdWalletDescriptor,
+    },
     username: "Username" as Username,
     userId: "recipientUserId" as UserId,
   }
 
   const recipientBtcArgs = {
     ...recipientCommonArgs,
-    recipientWalletDescriptor: recipientBtcWalletDescriptor,
+    defaultWalletCurrency: WalletCurrency.Btc,
   }
 
   const recipientUsdArgs = {
     ...recipientCommonArgs,
-    recipientWalletDescriptor: recipientUsdWalletDescriptor,
+    defaultWalletCurrency: WalletCurrency.Usd,
   }
 
   // 0.02 ratio (0.02 cents/sat, or $20,000 USD/BTC)

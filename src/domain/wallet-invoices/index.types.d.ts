@@ -131,8 +131,7 @@ type WalletInvoiceReceiverArgs = {
   satsFee?: BtcPaymentAmount
 
   walletInvoice: WalletInvoice
-  recipientAccountId: AccountId
-  recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
+  recipientWalletDescriptors: AccountWalletDescriptors
 }
 
 type WalletAddressReceiverArgs<S extends WalletCurrency> = {

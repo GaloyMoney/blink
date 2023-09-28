@@ -323,53 +323,6 @@ export const addNewWallet = async ({
   return wallet
 }
 
-export const createAndFundNewWallet = async <S extends WalletCurrency>({
-  accountId,
-  balanceAmount,
-}: {
-  accountId: AccountId
-  balanceAmount: PaymentAmount<S>
-}) => {
-  // Create new wallet
-  const wallet = await addNewWallet({
-    accountId,
-    currency: balanceAmount.currency,
-  })
-  if (wallet instanceof Error) throw wallet
-  // Fund new wallet if a non-zero balance is passed
-  if (balanceAmount.amount === 0n) return wallet
-  const addInvoiceFn =
-    wallet.currency === WalletCurrency.Btc
-      ? Wallets.addInvoiceForSelfForBtcWallet
-      : Wallets.addInvoiceForSelfForUsdWallet
-  const lnInvoice = await addInvoiceFn({
-    walletId: wallet.id,
-    amount: Number(balanceAmount.amount),
-    memo: `Fund new wallet ${wallet.id}`,
-  })
-  if (lnInvoice instanceof Error) throw lnInvoice
-  const { paymentRequest: invoice, paymentHash } = lnInvoice
-  const updateInvoice = () =>
-    Wallets.updatePendingInvoiceByPaymentHash({
-      paymentHash,
-      logger: baseLogger,
-    })
-  const promises = Promise.all([
-    safePay({ lnd: lndOutside1, request: invoice }),
-    (async () => {
-      // TODO: we could use event instead of a sleep to lower test latency
-      await sleep(500)
-      return updateInvoice()
-    })(),
-  ])
-  {
-    // first arg is the outsideLndpayResult
-    const [, result] = await promises
-    expect(result).not.toBeInstanceOf(Error)
-  }
-  return wallet
-}
-
 export const fundWallet = async ({
   walletId,
   balanceAmount,
@@ -404,7 +357,8 @@ export const fundWallet = async ({
     (async () => {
       // TODO: we could use event instead of a sleep to lower test latency
       await sleep(500)
-      return updateInvoice()
+      const res = await updateInvoice()
+      if (res instanceof Error) throw res
     })(),
   ])
   {

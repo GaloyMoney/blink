@@ -131,6 +131,21 @@ type OnChainPaymentFlow<
     bankFees(): PaymentAmountInAllCurrencies | ValidationError
   }
 
+type ConversionFns = {
+  usdFromBtc(
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+  btcFromUsd(
+    amount: UsdPaymentAmount,
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError>
+}
+
+type WithConversionArgs = {
+  hedgeBuyUsd: ConversionFns
+  hedgeSellUsd: ConversionFns
+  mid: ConversionFns
+}
+
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   withInvoice(invoice: LnInvoice): LPFBWithInvoice<S> | LPFBWithError
   withNoAmountInvoice({
@@ -149,29 +164,15 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   }): LPFBWithInvoice<S> | LPFBWithError
 }
 
-type OnChainPaymentFlowBuilder<S extends WalletCurrency> = {
-  withAddress(address: OnChainAddress): OPFBWithAddress<S> | OPFBWithError
-}
-
 type LPFBWithInvoice<S extends WalletCurrency> = {
   withSenderWallet(
     senderWallet: WalletDescriptor<S>,
   ): LPFBWithSenderWallet<S> | LPFBWithError
 }
 
-type OPFBWithAddress<S extends WalletCurrency> = {
-  withSenderWalletAndAccount({
-    wallet,
-    account,
-  }: {
-    wallet: WalletDescriptor<S>
-    account: Account
-  }): OPFBWithSenderWalletAndAccount<S> | OPFBWithError
-}
-
 type LPFBWithRecipientArgs<R extends WalletCurrency> = {
-  recipientWalletDescriptor: WalletDescriptor<R>
-  recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
+  defaultWalletCurrency: R
+  recipientWalletDescriptors: AccountWalletDescriptors
   userId: UserId
   pubkey?: Pubkey
   usdPaymentAmount?: UsdPaymentAmount
@@ -188,49 +189,8 @@ type LPFBWithSenderWallet<S extends WalletCurrency> = {
   ): LPFBWithRecipientWallet<S, R> | LPFBWithError
 }
 
-type ConversionFns = {
-  usdFromBtc(
-    amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount | DealerPriceServiceError>
-  btcFromUsd(
-    amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount | DealerPriceServiceError>
-}
-
-type WithConversionArgs = {
-  hedgeBuyUsd: ConversionFns
-  hedgeSellUsd: ConversionFns
-  mid: ConversionFns
-}
-
-type OPFBWithRecipientArgs<R extends WalletCurrency> = {
-  recipientWalletDescriptor: WalletDescriptor<R>
-  recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
-  userId: UserId
-  usdProposedAmount?: UsdPaymentAmount
-  username?: Username
-}
-
-type OPFBWithSenderWalletAndAccount<S extends WalletCurrency> = {
-  withoutRecipientWallet<R extends WalletCurrency>():
-    | OPFBWithRecipientWallet<S, R>
-    | OPFBWithError
-  withRecipientWallet<R extends WalletCurrency>(
-    args: OPFBWithRecipientArgs<R>,
-  ): OPFBWithRecipientWallet<S, R> | OPFBWithError
-  isIntraLedger(): Promise<boolean | DealerPriceServiceError>
-}
-
 type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
   withConversion(args: WithConversionArgs): LPFBWithConversion<S, R> | LPFBWithError
-}
-
-type OPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
-  withAmount(amount: PaymentAmount<WalletCurrency>): OPFBWithAmount<S, R> | OPFBWithError
-}
-
-type OPFBWithAmount<S extends WalletCurrency, R extends WalletCurrency> = {
-  withConversion(args: WithConversionArgs): OPFBWithConversion<S, R> | OPFBWithError
 }
 
 type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -251,32 +211,6 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   isTradeIntraAccount(): Promise<boolean | DealerPriceServiceError>
 }
 
-type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
-  withMinerFee(
-    minerFee: BtcPaymentAmount,
-  ): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
-  withoutMinerFee(): Promise<
-    OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
-  >
-
-  btcProposedAmount(): Promise<
-    BtcPaymentAmount | DealerPriceServiceError | ValidationError
-  >
-  usdProposedAmount(): Promise<
-    UsdPaymentAmount | DealerPriceServiceError | ValidationError
-  >
-  proposedAmounts(): Promise<
-    PaymentAmountInAllCurrencies | DealerPriceServiceError | ValidationError
-  >
-
-  addressForFlow(): Promise<OnChainAddress | DealerPriceServiceError>
-  senderWalletDescriptor(): Promise<WalletDescriptor<S> | DealerPriceServiceError>
-}
-
-type LPFBTest = {
-  withSenderWallet(): LPFBTest
-}
-
 type LPFBWithError = {
   withSenderWallet(): LPFBWithError
   withoutRecipientWallet(): LPFBWithError
@@ -291,57 +225,9 @@ type LPFBWithError = {
   isTradeIntraAccount(): Promise<ValidationError | DealerPriceServiceError>
 }
 
-type OPFBWithError = {
-  withSenderWalletAndAccount(): OPFBWithError
-  withAmount(): OPFBWithError
-  withoutRecipientWallet(): OPFBWithError
-  withRecipientWallet(): OPFBWithError
-  withConversion(): OPFBWithError
-  withMinerFee(): Promise<ValidationError | DealerPriceServiceError>
-  withoutMinerFee(): Promise<ValidationError | DealerPriceServiceError>
-  btcProposedAmount(): Promise<ValidationError | DealerPriceServiceError>
-  usdProposedAmount(): Promise<ValidationError | DealerPriceServiceError>
-  isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
-  proposedAmounts(): Promise<ValidationError | DealerPriceServiceError>
-  addressForFlow(): Promise<ValidationError | DealerPriceServiceError>
-  senderWalletDescriptor(): Promise<ValidationError | DealerPriceServiceError>
-}
-
-interface IPaymentFlowRepository {
-  persistNew<S extends WalletCurrency>(
-    payment: PaymentFlow<S, WalletCurrency>,
-  ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
-  findLightningPaymentFlow<S extends WalletCurrency, R extends WalletCurrency>(
-    paymentFlowIndex: PaymentFlowStateIndex,
-  ): Promise<PaymentFlow<S, R> | RepositoryError>
-  updateLightningPaymentFlow<S extends WalletCurrency>(
-    paymentFlow: PaymentFlow<S, WalletCurrency>,
-  ): Promise<true | RepositoryError>
-  markLightningPaymentFlowNotPending<S extends WalletCurrency>(
-    paymentFlowIndex: PaymentFlowStateIndex,
-  ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
-  deleteExpiredLightningPaymentFlows(): Promise<number | RepositoryError>
-}
-
-type UsdFromBtcMidPriceFn = (
-  amount: BtcPaymentAmount,
-) => Promise<UsdPaymentAmount | DealerPriceServiceError>
-
-type BtcFromUsdMidPriceFn = (
-  amount: UsdPaymentAmount,
-) => Promise<BtcPaymentAmount | DealerPriceServiceError>
-
 type LightningPaymentFlowBuilderConfig = {
   localNodeIds: Pubkey[]
   skipProbe: SkipFeeProbeConfig
-}
-
-type OnChainPaymentFlowBuilderConfig = {
-  volumeLightningFn: GetVolumeSinceFn
-  volumeOnChainFn: GetVolumeSinceFn
-  isExternalAddress: (state: { address: OnChainAddress }) => Promise<boolean>
-  sendAll: boolean
-  dustThreshold: number
 }
 
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
@@ -377,7 +263,7 @@ type LPFBWithRecipientWalletState<
   recipientUsername?: Username
   recipientUserId?: UserId
   recipientAccountId?: AccountId
-  recipientWalletDescriptorsForAccount?: WalletDescriptor<WalletCurrency>[]
+  recipientWalletDescriptors?: AccountWalletDescriptors
 }
 
 type LPFBWithConversionState<
@@ -390,6 +276,100 @@ type LPFBWithConversionState<
   | "usdProtocolAndBankFee"
   | "usdPaymentAmount"
 > & { createdAt: Date }
+
+type LPFBWithRouteState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = LPFBWithConversionState<S, R> & {
+  outgoingNodePubkey: Pubkey | undefined
+  checkedRoute: RawRoute | undefined
+}
+
+type OnChainPaymentFlowBuilder<S extends WalletCurrency> = {
+  withAddress(address: OnChainAddress): OPFBWithAddress<S> | OPFBWithError
+}
+
+type OPFBWithAddress<S extends WalletCurrency> = {
+  withSenderWalletAndAccount({
+    wallet,
+    account,
+  }: {
+    wallet: WalletDescriptor<S>
+    account: Account
+  }): OPFBWithSenderWalletAndAccount<S> | OPFBWithError
+}
+
+type OPFBWithRecipientArgs<R extends WalletCurrency> = {
+  defaultWalletCurrency: R
+  recipientWalletDescriptors: AccountWalletDescriptors
+  userId: UserId
+  usdProposedAmount?: UsdPaymentAmount
+  username?: Username
+}
+
+type OPFBWithSenderWalletAndAccount<S extends WalletCurrency> = {
+  withoutRecipientWallet<R extends WalletCurrency>():
+    | OPFBWithRecipientWallet<S, R>
+    | OPFBWithError
+  withRecipientWallet<R extends WalletCurrency>(
+    args: OPFBWithRecipientArgs<R>,
+  ): OPFBWithRecipientWallet<S, R> | OPFBWithError
+  isIntraLedger(): Promise<boolean | DealerPriceServiceError>
+}
+
+type OPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
+  withAmount(amount: PaymentAmount<WalletCurrency>): OPFBWithAmount<S, R> | OPFBWithError
+}
+
+type OPFBWithAmount<S extends WalletCurrency, R extends WalletCurrency> = {
+  withConversion(args: WithConversionArgs): OPFBWithConversion<S, R> | OPFBWithError
+}
+
+type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
+  withMinerFee(
+    minerFee: BtcPaymentAmount,
+  ): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+  withoutMinerFee(): Promise<
+    OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
+  >
+
+  btcProposedAmount(): Promise<
+    BtcPaymentAmount | DealerPriceServiceError | ValidationError
+  >
+  usdProposedAmount(): Promise<
+    UsdPaymentAmount | DealerPriceServiceError | ValidationError
+  >
+  proposedAmounts(): Promise<
+    PaymentAmountInAllCurrencies | DealerPriceServiceError | ValidationError
+  >
+
+  addressForFlow(): Promise<OnChainAddress | DealerPriceServiceError>
+  senderWalletDescriptor(): Promise<WalletDescriptor<S> | DealerPriceServiceError>
+}
+
+type OPFBWithError = {
+  withSenderWalletAndAccount(): OPFBWithError
+  withAmount(): OPFBWithError
+  withoutRecipientWallet(): OPFBWithError
+  withRecipientWallet(): OPFBWithError
+  withConversion(): OPFBWithError
+  withMinerFee(): Promise<ValidationError | DealerPriceServiceError>
+  withoutMinerFee(): Promise<ValidationError | DealerPriceServiceError>
+  btcProposedAmount(): Promise<ValidationError | DealerPriceServiceError>
+  usdProposedAmount(): Promise<ValidationError | DealerPriceServiceError>
+  isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
+  proposedAmounts(): Promise<ValidationError | DealerPriceServiceError>
+  addressForFlow(): Promise<ValidationError | DealerPriceServiceError>
+  senderWalletDescriptor(): Promise<ValidationError | DealerPriceServiceError>
+}
+
+type OnChainPaymentFlowBuilderConfig = {
+  volumeLightningFn: GetVolumeSinceFn
+  volumeOnChainFn: GetVolumeSinceFn
+  isExternalAddress: (state: { address: OnChainAddress }) => Promise<boolean>
+  sendAll: boolean
+  dustThreshold: number
+}
 
 type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {
   paymentInitiationMethod: PaymentInitiationMethod
@@ -415,7 +395,7 @@ type OPFBWithRecipientWalletState<
   recipientUsername?: Username
   recipientUserId?: UserId
   recipientAccountId?: AccountId
-  recipientWalletDescriptorsForAccount?: WalletDescriptor<WalletCurrency>[]
+  recipientWalletDescriptors?: AccountWalletDescriptors
 }
 
 type OPFBWithAmountState<
@@ -433,10 +413,18 @@ type OPFBWithConversionState<
   createdAt: Date
 }
 
-type LPFBWithRouteState<
-  S extends WalletCurrency,
-  R extends WalletCurrency,
-> = LPFBWithConversionState<S, R> & {
-  outgoingNodePubkey: Pubkey | undefined
-  checkedRoute: RawRoute | undefined
+interface IPaymentFlowRepository {
+  persistNew<S extends WalletCurrency>(
+    payment: PaymentFlow<S, WalletCurrency>,
+  ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
+  findLightningPaymentFlow<S extends WalletCurrency, R extends WalletCurrency>(
+    paymentFlowIndex: PaymentFlowStateIndex,
+  ): Promise<PaymentFlow<S, R> | RepositoryError>
+  updateLightningPaymentFlow<S extends WalletCurrency>(
+    paymentFlow: PaymentFlow<S, WalletCurrency>,
+  ): Promise<true | RepositoryError>
+  markLightningPaymentFlowNotPending<S extends WalletCurrency>(
+    paymentFlowIndex: PaymentFlowStateIndex,
+  ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
+  deleteExpiredLightningPaymentFlows(): Promise<number | RepositoryError>
 }

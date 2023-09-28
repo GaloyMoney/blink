@@ -24,7 +24,7 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = DealerPriceService()
 
-const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>({
+const getOnChainFee = async <S extends WalletCurrency>({
   walletId,
   account: senderAccount,
   amount,
@@ -93,14 +93,10 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
   if (await withSenderBuilder.isIntraLedger()) {
     if (recipientWallet instanceof CouldNotFindError) return recipientWallet
 
-    const recipientWalletDescriptor: WalletDescriptor<R> = {
-      id: recipientWallet.id,
-      currency: recipientWallet.currency as R,
-      accountId: recipientWallet.accountId,
-    }
-
-    const wallets = await WalletsRepository().listByAccountId(recipientWallet.accountId)
-    if (wallets instanceof Error) return wallets
+    const accountWallets = await WalletsRepository().findAccountWalletsByAccountId(
+      recipientWallet.accountId,
+    )
+    if (accountWallets instanceof Error) return accountWallets
 
     const recipientAccount = await AccountsRepository().findById(
       recipientWallet.accountId,
@@ -109,8 +105,8 @@ const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>
 
     const paymentFlow = await withSenderBuilder
       .withRecipientWallet({
-        recipientWalletDescriptor,
-        recipientWalletDescriptorsForAccount: wallets,
+        defaultWalletCurrency: recipientWallet.currency,
+        recipientWalletDescriptors: accountWallets,
         userId: recipientAccount.kratosUserId,
         username: recipientAccount.username,
       })

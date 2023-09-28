@@ -4,11 +4,12 @@ import { getDealerConfig } from "@config"
 
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
+import { SubOneCentSatAmountForUsdSelfSendError } from "@domain/payments"
 import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { baseLogger } from "@services/logger"
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
-import { createAccount, createAndFundNewWallet, getBalanceHelper } from "test/helpers"
+import { createAccount, fundWallet, getBalanceHelper } from "test/helpers"
 
 class ZeroAmountForUsdRecipientError extends Error {}
 
@@ -58,20 +59,23 @@ const usdFundingAmount = paymentAmountFromNumber({
 if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
 const newAccountAndWallets = async () => {
-  const initialWallets = [WalletCurrency.Btc]
+  const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
   const account: Account | RepositoryError = await createAccount({
     initialWallets,
   })
 
   const accountId = account.id
+  const accountWallets =
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
+  if (accountWallets instanceof Error) throw accountWallets
 
-  const newBtcWallet = await createAndFundNewWallet({
-    accountId,
+  const newBtcWallet = await fundWallet({
+    walletId: accountWallets[WalletCurrency.Btc].id,
     balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
   })
 
-  const newUsdWallet = await createAndFundNewWallet({
-    accountId,
+  const newUsdWallet = await fundWallet({
+    walletId: accountWallets[WalletCurrency.Usd].id,
     balanceAmount: usdFundingAmount,
   })
 
@@ -103,6 +107,9 @@ const getBtcEquivalentForIntraledgerSendToUsd = async ({
     amount: Number(btcPaymentAmount.amount),
     ...sendArgs,
   })
+  if (result instanceof SubOneCentSatAmountForUsdSelfSendError) {
+    return new ZeroAmountForUsdRecipientError()
+  }
   if (result instanceof Error) throw result
 
   const afterRecipientUsd = await getBalanceHelper(newUsdWallet.id)
@@ -195,6 +202,9 @@ const getBtcEquivalentForNoAmountInvoiceSendToUsd = async ({
     senderWalletId: newBtcWallet.id,
     senderAccount: newAccount,
   })
+  if (result instanceof SubOneCentSatAmountForUsdSelfSendError) {
+    return new ZeroAmountForUsdRecipientError()
+  }
   if (result instanceof Error) throw result
 
   const afterRecipientUsd = await getBalanceHelper(newUsdWallet.id)
@@ -228,10 +238,10 @@ const getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd = async ({
     uncheckedPaymentRequest: lnInvoice.paymentRequest,
     walletId: newBtcWallet.id,
   })
-  if (probe instanceof Error) {
-    if (!(probe instanceof ZeroAmountForUsdRecipientError)) throw probe
-    return probe
+  if (probe instanceof SubOneCentSatAmountForUsdSelfSendError) {
+    return new ZeroAmountForUsdRecipientError()
   }
+  if (probe instanceof Error) throw probe
 
   const result = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
     amount: Number(btcPaymentAmount.amount),
@@ -240,6 +250,9 @@ const getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd = async ({
     senderWalletId: newBtcWallet.id,
     senderAccount: newAccount,
   })
+  if (result instanceof SubOneCentSatAmountForUsdSelfSendError) {
+    return new ZeroAmountForUsdRecipientError()
+  }
   if (result instanceof Error) throw result
 
   const afterRecipientUsd = await getBalanceHelper(newUsdWallet.id)

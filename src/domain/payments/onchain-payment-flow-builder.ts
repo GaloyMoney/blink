@@ -7,15 +7,12 @@ import {
   WalletCurrency,
   ZERO_BANK_FEE,
 } from "@domain/shared"
-import {
-  CouldNotFindWalletFromAccountIdAndCurrencyError,
-  LessThanDustThresholdError,
-  SelfPaymentError,
-} from "@domain/errors"
+import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import {
+  InvalidLightningPaymentFlowBuilderStateError,
   InvalidOnChainPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
   SubOneCentSatAmountForUsdSelfSendError,
@@ -93,15 +90,13 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
   }
 
   const withRecipientWallet = <R extends WalletCurrency>({
-    recipientWalletDescriptor: {
-      id: recipientWalletId,
-      currency: recipientWalletCurrency,
-      accountId: recipientAccountId,
-    },
-    recipientWalletDescriptorsForAccount,
+    defaultWalletCurrency: recipientWalletCurrency,
+    recipientWalletDescriptors,
     username: recipientUsername,
     userId: recipientUserId,
   }: OPFBWithRecipientArgs<R>): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
+    const { id: recipientWalletId, accountId: recipientAccountId } =
+      recipientWalletDescriptors[recipientWalletCurrency]
     if (recipientWalletId === state.senderWalletId) {
       return OPFBWithError(new SelfPaymentError())
     }
@@ -113,7 +108,7 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
       recipientAccountId,
       recipientUserId,
       recipientUsername,
-      recipientWalletDescriptorsForAccount,
+      recipientWalletDescriptors,
     })
   }
 
@@ -322,11 +317,12 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
         }
 
         const recipientBtcWalletDescriptor =
-          state.recipientWalletDescriptorsForAccount?.find(
-            (wallet) => wallet.currency === WalletCurrency.Btc,
-          )
+          state.recipientWalletDescriptors?.[WalletCurrency.Btc]
+
         if (recipientBtcWalletDescriptor === undefined) {
-          return new CouldNotFindWalletFromAccountIdAndCurrencyError()
+          return new InvalidLightningPaymentFlowBuilderStateError(
+            "expected recipient BTC wallet missing",
+          )
         }
         if (recipientBtcWalletDescriptor.id === state.senderWalletId) {
           return new SubOneCentSatAmountForUsdSelfSendError()

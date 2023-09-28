@@ -1,4 +1,3 @@
-import { CouldNotFindWalletFromAccountIdAndCurrencyError } from "@domain/errors"
 import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
 import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
 
@@ -6,8 +5,7 @@ const calc = AmountCalculator()
 
 export const WalletInvoiceReceiver = ({
   walletInvoice,
-  recipientAccountId,
-  recipientWalletDescriptorsForAccount,
+  recipientWalletDescriptors,
   receivedBtc,
   satsFee = ZERO_BANK_FEE.btcBankFee,
 }: WalletInvoiceReceiverArgs): WalletInvoiceReceiver => {
@@ -18,7 +16,7 @@ export const WalletInvoiceReceiver = ({
 
   const recipientWalletDescriptor = {
     ...partialWalletDescriptor,
-    accountId: recipientAccountId,
+    accountId: recipientWalletDescriptors[WalletCurrency.Btc].accountId,
   }
 
   const withConversion = async ({
@@ -116,13 +114,7 @@ export const WalletInvoiceReceiver = ({
     const received = await receivedWalletInvoiceFromBtcAmountDealer()
     if (!(received instanceof InvalidZeroAmountPriceRatioInputError)) return received
 
-    const recipientBtcWalletDescriptor = recipientWalletDescriptorsForAccount?.find(
-      (wallet): wallet is WalletDescriptor<"BTC"> =>
-        wallet.currency === WalletCurrency.Btc,
-    )
-    if (recipientBtcWalletDescriptor === undefined) {
-      return new CouldNotFindWalletFromAccountIdAndCurrencyError()
-    }
+    const recipientBtcWalletDescriptor = recipientWalletDescriptors[WalletCurrency.Btc]
     return receivedWalletInvoiceFromBtcAmountMid(recipientBtcWalletDescriptor)
   }
 

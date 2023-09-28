@@ -27,7 +27,11 @@ import {
 } from "@domain/payments"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 import { WalletCurrency } from "@domain/shared"
-import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
+import {
+  PaymentInputValidator,
+  SettlementMethod,
+  toWalletDescriptor,
+} from "@domain/wallets"
 
 import * as LedgerFacade from "@services/ledger/facade"
 
@@ -50,7 +54,7 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = DealerPriceService()
 
-const payOnChainByWalletId = async <R extends WalletCurrency>({
+const payOnChainByWalletId = async ({
   senderAccount,
   senderWalletId,
   amount: amountRaw,
@@ -141,18 +145,16 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
   if (await withSenderBuilder.isIntraLedger()) {
     if (recipientWallet instanceof CouldNotFindError) return recipientWallet
 
-    const recipientWalletDescriptor: WalletDescriptor<R> = {
-      id: recipientWallet.id,
-      currency: recipientWallet.currency as R,
-      accountId: recipientWallet.accountId,
-    }
+    const recipientWalletDescriptor = toWalletDescriptor(recipientWallet)
 
     addAttributesToCurrentSpan({
       "payment.originalRecipient": JSON.stringify(recipientWalletDescriptor),
     })
 
-    const wallets = await WalletsRepository().listByAccountId(recipientWallet.accountId)
-    if (wallets instanceof Error) return wallets
+    const accountWallets = await WalletsRepository().findAccountWalletsByAccountId(
+      recipientWallet.accountId,
+    )
+    if (accountWallets instanceof Error) return accountWallets
 
     const recipientAccount = await AccountsRepository().findById(
       recipientWallet.accountId,
@@ -161,8 +163,8 @@ const payOnChainByWalletId = async <R extends WalletCurrency>({
 
     const builder = withSenderBuilder
       .withRecipientWallet({
-        recipientWalletDescriptor,
-        recipientWalletDescriptorsForAccount: wallets,
+        defaultWalletCurrency: recipientWallet.currency,
+        recipientWalletDescriptors: accountWallets,
         userId: recipientAccount.kratosUserId,
         username: recipientAccount.username,
       })

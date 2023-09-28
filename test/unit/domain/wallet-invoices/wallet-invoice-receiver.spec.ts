@@ -48,6 +48,11 @@ describe("WalletInvoiceReceiver", () => {
     accountId: recipientAccountId,
   }
 
+  const recipientWalletDescriptors = {
+    [WalletCurrency.Btc]: recipientBtcWalletDescriptor,
+    [WalletCurrency.Usd]: recipientUsdWalletDescriptor,
+  }
+
   describe("for btc invoice", () => {
     const btcInvoice: WalletInvoice = {
       paymentHash: "paymentHash" as PaymentHash,
@@ -64,11 +69,7 @@ describe("WalletInvoiceReceiver", () => {
       const walletInvoiceAmounts = await WalletInvoiceReceiver({
         walletInvoice: btcInvoice,
         receivedBtc,
-        recipientAccountId,
-        recipientWalletDescriptorsForAccount: [
-          recipientBtcWalletDescriptor,
-          recipientUsdWalletDescriptor,
-        ],
+        recipientWalletDescriptors,
       }).withConversion({
         mid: { usdFromBtc: usdFromBtcMidPrice },
         hedgeBuyUsd: { usdFromBtc },
@@ -108,11 +109,7 @@ describe("WalletInvoiceReceiver", () => {
         const walletInvoiceAmounts = await WalletInvoiceReceiver({
           walletInvoice: amountUsdInvoice,
           receivedBtc,
-          recipientAccountId,
-          recipientWalletDescriptorsForAccount: [
-            recipientBtcWalletDescriptor,
-            recipientUsdWalletDescriptor,
-          ],
+          recipientWalletDescriptors,
         }).withConversion({
           mid: { usdFromBtc: usdFromBtcMidPrice },
           hedgeBuyUsd: { usdFromBtc },
@@ -145,11 +142,7 @@ describe("WalletInvoiceReceiver", () => {
         const walletInvoiceAmounts = await WalletInvoiceReceiver({
           walletInvoice: noAmountUsdInvoice,
           receivedBtc,
-          recipientAccountId,
-          recipientWalletDescriptorsForAccount: [
-            recipientBtcWalletDescriptor,
-            recipientUsdWalletDescriptor,
-          ],
+          recipientWalletDescriptors,
         }).withConversion({
           mid: { usdFromBtc: usdFromBtcMidPrice },
           hedgeBuyUsd: { usdFromBtc },
@@ -174,11 +167,7 @@ describe("WalletInvoiceReceiver", () => {
         const walletInvoiceAmounts = await WalletInvoiceReceiver({
           walletInvoice: noAmountUsdInvoice,
           receivedBtc: BtcPaymentAmount(1n),
-          recipientAccountId,
-          recipientWalletDescriptorsForAccount: [
-            recipientBtcWalletDescriptor,
-            recipientUsdWalletDescriptor,
-          ],
+          recipientWalletDescriptors,
         }).withConversion({
           mid: { usdFromBtc: usdFromBtcMidPrice },
           hedgeBuyUsd: { usdFromBtc },

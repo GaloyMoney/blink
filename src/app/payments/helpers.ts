@@ -60,7 +60,9 @@ export const constructPaymentFlowBuilder = async <
 
     addAttributesToCurrentSpan({
       "payment.originalRecipient": JSON.stringify(
-        recipientDetails.recipientWalletDescriptor,
+        recipientDetails.recipientWalletDescriptors[
+          recipientDetails.defaultWalletCurrency
+        ],
       ),
     })
 
@@ -81,8 +83,8 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   invoice: LnInvoice,
 ): Promise<
   | {
-      recipientWalletDescriptor: WalletDescriptor<R>
-      recipientWalletDescriptorsForAccount: WalletDescriptor<WalletCurrency>[]
+      defaultWalletCurrency: R
+      recipientWalletDescriptors: AccountWalletDescriptors
       pubkey: Pubkey
       usdPaymentAmount: UsdPaymentAmount | undefined
       username: Username
@@ -109,20 +111,17 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   if (recipientWallet instanceof Error) return recipientWallet
   const { accountId } = recipientWallet
 
-  const wallets = await WalletsRepository().listByAccountId(accountId)
-  if (wallets instanceof Error) return wallets
+  const accountWallets =
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
+  if (accountWallets instanceof Error) return accountWallets
 
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
   const { username: recipientUsername, kratosUserId: recipientUserId } = recipientAccount
 
   return {
-    recipientWalletDescriptor: {
-      id: recipientWalletId,
-      currency: recipientsWalletCurrency as R,
-      accountId: recipientAccount.id,
-    },
-    recipientWalletDescriptorsForAccount: wallets,
+    defaultWalletCurrency: recipientsWalletCurrency as R,
+    recipientWalletDescriptors: accountWallets,
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,

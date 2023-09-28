@@ -1,16 +1,20 @@
+import { Types } from "mongoose"
+
+import { WalletCurrency } from "@domain/shared"
+import { toWalletDescriptor } from "@domain/wallets"
 import {
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
   CouldNotFindWalletFromIdError,
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletFromOnChainAddressesError,
   CouldNotListWalletsFromAccountIdError,
   CouldNotListWalletsFromWalletCurrencyError,
-  RepositoryError,
+  MultipleWalletsFoundForAccountIdAndCurrency,
 } from "@domain/errors"
-import { Types } from "mongoose"
 
-import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
-import { Wallet } from "./schema"
 import { AccountsRepository } from "./accounts"
+import { Wallet } from "./schema"
+import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
 
 export interface WalletRecord {
   id: string
@@ -71,6 +75,36 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
+  const findAccountWalletsByAccountId = async (
+    accountId: AccountId,
+  ): Promise<AccountWalletDescriptors | RepositoryError> => {
+    const wallets = await listByAccountId(accountId)
+    if (wallets instanceof Error) return wallets
+
+    const btcWallets = wallets.filter((wallet) => wallet.currency === WalletCurrency.Btc)
+    if (btcWallets.length === 0) {
+      return new CouldNotFindWalletFromAccountIdAndCurrencyError(WalletCurrency.Btc)
+    }
+    if (btcWallets.length > 1) {
+      return new MultipleWalletsFoundForAccountIdAndCurrency(WalletCurrency.Btc)
+    }
+    const btcWallet = btcWallets[0]
+
+    const usdWallets = wallets.filter((wallet) => wallet.currency === WalletCurrency.Usd)
+    if (usdWallets.length === 0) {
+      return new CouldNotFindWalletFromAccountIdAndCurrencyError(WalletCurrency.Usd)
+    }
+    if (usdWallets.length > 1) {
+      return new MultipleWalletsFoundForAccountIdAndCurrency(WalletCurrency.Usd)
+    }
+    const usdWallet = usdWallets[0]
+
+    return {
+      [WalletCurrency.Btc]: toWalletDescriptor(btcWallet),
+      [WalletCurrency.Usd]: toWalletDescriptor(usdWallet),
+    }
+  }
+
   const findByAddress = async (
     address: OnChainAddress,
   ): Promise<Wallet | RepositoryError> => {
@@ -121,6 +155,7 @@ export const WalletsRepository = (): IWalletsRepository => {
   return {
     findById,
     listByAccountId,
+    findAccountWalletsByAccountId,
     findByAddress,
     listByAddresses,
     persistNew,
