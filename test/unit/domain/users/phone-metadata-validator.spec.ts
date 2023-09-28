@@ -13,6 +13,24 @@ describe("PhoneMetadataValidator", () => {
     expect(phoneMetadata).not.toBeInstanceOf(Error)
   })
 
+  it("returns valid for incomplete object", async () => {
+    // sometimes we get incomplete information from twilio
+    // ie: https://www.twilio.com/docs/api/errors/60601
+    const partialPhoneMetadata = {
+      carrier: {
+        name: null,
+        type: null,
+        error_code: "60601",
+        mobile_country_code: "302",
+        mobile_network_code: null,
+      },
+      countryCode: "CA",
+    }
+
+    const phoneMetadata = PhoneMetadataValidator().validate(partialPhoneMetadata)
+    expect(phoneMetadata).not.toBeInstanceOf(Error)
+  })
+
   it("returns error for invalid carrier object", async () => {
     const invalidRawPhoneMetadata = { carrier: "mobile", countryCode: "US" }
 

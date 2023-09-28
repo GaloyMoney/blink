@@ -24,7 +24,7 @@ export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
     } = carrier
 
     const type = rawType as CarrierType
-    if (!Object.values(CarrierType).includes(type)) {
+    if (typeof rawType === "string" && !Object.values(CarrierType).includes(type)) {
       return new InvalidCarrierTypeForPhoneMetadataError(type)
     }
 

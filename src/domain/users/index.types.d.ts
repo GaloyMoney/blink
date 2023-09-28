@@ -24,9 +24,9 @@ type PhoneMetadata = {
   carrier: {
     error_code: string // check this is the right syntax
     mobile_country_code: string
-    mobile_network_code: string
-    name: string
-    type: CarrierType
+    mobile_network_code: string | null
+    name: string | null
+    type: CarrierType | null
   }
   countryCode: string
 }
@@ -37,7 +37,7 @@ type PhoneMetadataAuthorizer = {
 
 type PhoneMetadataValidator = {
   validate(
-    rawPhoneMetadata: Record<string, string | Record<string, string>>,
+    rawPhoneMetadata: Record<string, string | Record<string, string | null>>,
   ): PhoneMetadata | ValidationError
 }
 
