@@ -39,11 +39,6 @@ export const TxnGroups = {
   allTxBaseVolumeSince: Object.values(LedgerTransactionType),
 } as const
 
-const volumeFn =
-  (txnGroup: TxnGroup): GetVolumeSinceFn =>
-  async (args) =>
-    txVolumeSince({ ...args, txnGroup })
-
 const volumeAmountFn =
   (txnGroup: TxnGroup): GetVolumeAmountSinceFn =>
   async (args) => {
@@ -117,14 +112,6 @@ const txVolumeSince = async ({
 }
 
 export const volume = {
-  allPaymentVolumeSince: volumeFn("allPaymentVolumeSince"),
-  externalPaymentVolumeSince: volumeFn("externalPaymentVolumeSince"),
-  intraledgerTxBaseVolumeSince: volumeFn("intraledgerTxBaseVolumeSince"),
-  tradeIntraAccountTxBaseVolumeSince: volumeFn("tradeIntraAccountTxBaseVolumeSince"),
-  allTxBaseVolumeSince: volumeFn("allTxBaseVolumeSince"),
-  onChainTxBaseVolumeSince: volumeFn("onChainTxBaseVolumeSince"),
-  lightningTxBaseVolumeSince: volumeFn("lightningTxBaseVolumeSince"),
-
   allPaymentVolumeAmountSince: volumeAmountFn("allPaymentVolumeSince"),
   externalPaymentVolumeAmountSince: volumeAmountFn("externalPaymentVolumeSince"),
   intraledgerTxBaseVolumeAmountSince: volumeAmountFn("intraledgerTxBaseVolumeSince"),

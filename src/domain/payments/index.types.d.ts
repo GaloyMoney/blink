@@ -364,8 +364,8 @@ type OPFBWithError = {
 }
 
 type OnChainPaymentFlowBuilderConfig = {
-  volumeLightningFn: GetVolumeSinceFn
-  volumeOnChainFn: GetVolumeSinceFn
+  volumeAmountLightningFn: GetVolumeAmountSinceFn
+  volumeAmountOnChainFn: GetVolumeAmountSinceFn
   isExternalAddress: (state: { address: OnChainAddress }) => Promise<boolean>
   sendAll: boolean
   dustThreshold: number

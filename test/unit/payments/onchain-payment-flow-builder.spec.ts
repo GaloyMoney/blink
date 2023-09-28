@@ -8,6 +8,7 @@ import {
   WalletPriceRatio,
 } from "@domain/payments"
 import {
+  BtcPaymentAmount,
   ONE_CENT,
   paymentAmountFromNumber,
   ValidationError,
@@ -174,22 +175,22 @@ describe("OnChainPaymentFlowBuilder", () => {
     hedgeSellUsd,
   }
 
-  const volumeLightningFn = async () =>
+  const volumeAmountLightningFn = async <S extends WalletCurrency>() =>
     Promise.resolve({
-      outgoingBaseAmount: toSats(1000),
-      incomingBaseAmount: toSats(1000),
+      outgoingBaseAmount: BtcPaymentAmount(1000n) as PaymentAmount<S>,
+      incomingBaseAmount: BtcPaymentAmount(1000n) as PaymentAmount<S>,
     })
 
-  const volumeOnChainFn = async () =>
+  const volumeAmountOnChainFn = async <S extends WalletCurrency>() =>
     Promise.resolve({
-      outgoingBaseAmount: toSats(1000),
-      incomingBaseAmount: toSats(1000),
+      outgoingBaseAmount: BtcPaymentAmount(1000n) as PaymentAmount<S>,
+      incomingBaseAmount: BtcPaymentAmount(1000n) as PaymentAmount<S>,
     })
 
   describe("onchain initiated", () => {
     const onChainBuilder = OnChainPaymentFlowBuilder({
-      volumeLightningFn,
-      volumeOnChainFn,
+      volumeAmountLightningFn,
+      volumeAmountOnChainFn,
       isExternalAddress: async (state) =>
         /* eslint @typescript-eslint/ban-ts-comment: "off" */
         // @ts-ignore-next-line error
@@ -289,8 +290,8 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                 const imbalanceCalculator = ImbalanceCalculator({
                   method: feeConfig.withdrawMethod,
-                  volumeLightningFn,
-                  volumeOnChainFn,
+                  volumeAmountLightningFn,
+                  volumeAmountOnChainFn,
                   sinceDaysAgo: feeConfig.withdrawDaysLookback,
                 })
                 const imbalance = await imbalanceCalculator.getSwapOutImbalanceAmount(
@@ -793,8 +794,8 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                     const imbalanceCalculator = ImbalanceCalculator({
                       method: feeConfig.withdrawMethod,
-                      volumeLightningFn,
-                      volumeOnChainFn,
+                      volumeAmountLightningFn,
+                      volumeAmountOnChainFn,
                       sinceDaysAgo: feeConfig.withdrawDaysLookback,
                     })
                     const imbalanceForWallet =
@@ -1170,8 +1171,8 @@ describe("OnChainPaymentFlowBuilder", () => {
         const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
 
         const payment = await OnChainPaymentFlowBuilder({
-          volumeLightningFn,
-          volumeOnChainFn,
+          volumeAmountLightningFn,
+          volumeAmountOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
           sendAll: false,
           dustThreshold,
@@ -1193,8 +1194,8 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("no recipient wallet despite IntraLedger", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
         const payment = await OnChainPaymentFlowBuilder({
-          volumeLightningFn,
-          volumeOnChainFn,
+          volumeAmountLightningFn,
+          volumeAmountOnChainFn,
           isExternalAddress: async () => Promise.resolve(false),
           sendAll: false,
           dustThreshold,
@@ -1216,8 +1217,8 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("sender and recipient are identical", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await OnChainPaymentFlowBuilder({
-          volumeLightningFn,
-          volumeOnChainFn,
+          volumeAmountLightningFn,
+          volumeAmountOnChainFn,
           isExternalAddress: async () => Promise.resolve(false),
           sendAll: false,
           dustThreshold,
@@ -1239,8 +1240,8 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("btcProposedAmount below dust from withConversion builder", () => {
       it("returns LessThanDustThresholdError", async () => {
         const builder = await OnChainPaymentFlowBuilder({
-          volumeLightningFn,
-          volumeOnChainFn,
+          volumeAmountLightningFn,
+          volumeAmountOnChainFn,
           isExternalAddress: async () => Promise.resolve(true),
           sendAll: false,
           dustThreshold,
