@@ -6,6 +6,14 @@ import {
   InvalidCountryCodeForPhoneMetadataError,
 } from "./errors"
 
+const checkedToCarrierType = (rawCarrierType: string | undefined | null): CarrierType => {
+  if (rawCarrierType == null || rawCarrierType == undefined) {
+    return "" as CarrierType
+  }
+
+  return rawCarrierType as CarrierType
+}
+
 export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
   const validate = (
     rawPhoneMetadata: Record<string, string | Record<string, string>>,
@@ -23,8 +31,8 @@ export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
       type: rawType,
     } = carrier
 
-    const type = rawType as CarrierType
-    if (typeof rawType === "string" && !Object.values(CarrierType).includes(type)) {
+    const type = checkedToCarrierType(rawType)
+    if (type !== "" && !Object.values(CarrierType).includes(type)) {
       return new InvalidCarrierTypeForPhoneMetadataError(type)
     }
 

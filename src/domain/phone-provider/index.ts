@@ -15,6 +15,8 @@ export const CarrierType = {
   Pager: "pager",
   Unknown: "unknown",
 
+  Null: "",
+
   // legacy
   // those values may have been returned histortically
   // TODO: migration to remove those values
