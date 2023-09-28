@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: simplify with-recipient interface (#3201)...'
-      sha: 3c4a8b8110a84f993506e679e73a6778c5d9ea1b
+      commitTitle: 'chore: debugging some crash issues (#3275)...'
+      sha: 54caf08c67ff8033bc0de4eda1ef23e18aaa0ba8
       tags:
-      - 0.13.97-1-g3c4a8b811
+      - 0.13.97-3-g54caf08c6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: simplify with-recipient interface (#3201)...'
-      sha: 3c4a8b8110a84f993506e679e73a6778c5d9ea1b
+      commitTitle: 'chore: debugging some crash issues (#3275)...'
+      sha: 54caf08c67ff8033bc0de4eda1ef23e18aaa0ba8
       tags:
-      - 0.13.97-1-g3c4a8b811
+      - 0.13.97-3-g54caf08c6
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: simplify with-recipient interface (#3201)...'
-      sha: 3c4a8b8110a84f993506e679e73a6778c5d9ea1b
+      commitTitle: 'chore: debugging some crash issues (#3275)...'
+      sha: 54caf08c67ff8033bc0de4eda1ef23e18aaa0ba8
       tags:
-      - 0.13.97-1-g3c4a8b811
+      - 0.13.97-3-g54caf08c6
     path: ./
   path: ./graphql
 kind: LockConfig
