@@ -13,6 +13,12 @@ export class InvalidPhoneMetadataForOnboardingError extends UnauthorizedPhoneErr
 }
 
 export class PhoneMetadataValidationError extends ValidationError {}
-export class InvalidCarrierForPhoneMetadataError extends ValidationError {}
-export class InvalidCarrierTypeForPhoneMetadataError extends ValidationError {}
-export class InvalidCountryCodeForPhoneMetadataError extends ValidationError {}
+export class InvalidCarrierForPhoneMetadataError extends ValidationError {
+  level = ErrorLevel.Critical
+}
+export class InvalidCarrierTypeForPhoneMetadataError extends ValidationError {
+  level = ErrorLevel.Critical
+}
+export class InvalidCountryCodeForPhoneMetadataError extends ValidationError {
+  level = ErrorLevel.Critical
+}
