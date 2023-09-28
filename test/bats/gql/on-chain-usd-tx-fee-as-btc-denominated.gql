@@ -1,0 +1,13 @@
+query onChainUsdTxFeeAsBtcDenominated(
+  $walletId: WalletId!
+  $address: OnChainAddress!
+  $amount: SatAmount!
+) {
+  onChainUsdTxFeeAsBtcDenominated(
+    walletId: $walletId
+    address: $address
+    amount: $amount
+  ) {
+    amount
+  }
+}
