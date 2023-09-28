@@ -8,9 +8,15 @@ import {
   InvalidMobileCountryCodeForPhoneMetadataError,
 } from "./errors"
 
-const checkedToCarrierType = (rawCarrierType: string | undefined | null): CarrierType => {
-  if (rawCarrierType == null || rawCarrierType == undefined) {
-    return "" as CarrierType
+const checkedToCarrierType = (
+  rawCarrierType: string | undefined | null,
+): CarrierType | ValidationError => {
+  if (!rawCarrierType) {
+    return CarrierType.Null
+  }
+
+  if (!Object.values(CarrierType).includes(rawCarrierType as CarrierType)) {
+    return new InvalidCarrierTypeForPhoneMetadataError(rawCarrierType)
   }
 
   return rawCarrierType as CarrierType
@@ -34,9 +40,7 @@ export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
     } = carrier
 
     const type = checkedToCarrierType(rawType)
-    if (type !== "" && !Object.values(CarrierType).includes(type)) {
-      return new InvalidCarrierTypeForPhoneMetadataError(type)
-    }
+    if (type instanceof Error) return type
 
     if (typeof error_code !== "string") {
       return new InvalidErrorCodeForPhoneMetadataError(countryCode)
