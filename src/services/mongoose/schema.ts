@@ -8,6 +8,8 @@ import mongoose from "mongoose"
 
 import { Languages } from "@domain/users"
 
+import { CarrierType } from "@domain/phone-provider"
+
 import { WalletRecord } from "./wallets"
 
 // TODO migration:
@@ -354,13 +356,13 @@ const UserSchema = new Schema(
     phoneMetadata: {
       type: {
         carrier: {
-          error_code: String, // check this is the right syntax
+          error_code: String, // TODO: check as historical value may have number
           mobile_country_code: String,
           mobile_network_code: String,
           name: String,
           type: {
             types: String,
-            enum: ["landline", "voip", "mobile"],
+            enum: Object.values(CarrierType),
           },
         },
         countryCode: String,

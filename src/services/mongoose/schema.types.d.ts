@@ -18,7 +18,7 @@ type OnChainObjectForUser = {
 
 type TwilioObjectForUser = {
   carrier: {
-    error_code: string // check this is the right syntax
+    error_code: string // TODO: check as historical value may have number
     mobile_country_code: string
     mobile_network_code: string
     name: string

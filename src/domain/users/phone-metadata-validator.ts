@@ -4,11 +4,27 @@ import {
   InvalidCarrierForPhoneMetadataError,
   InvalidCarrierTypeForPhoneMetadataError,
   InvalidCountryCodeForPhoneMetadataError,
+  InvalidErrorCodeForPhoneMetadataError,
+  InvalidMobileCountryCodeForPhoneMetadataError,
 } from "./errors"
+
+const checkedToCarrierType = (
+  rawCarrierType: string | undefined | null,
+): CarrierType | ValidationError => {
+  if (!rawCarrierType) {
+    return CarrierType.Null
+  }
+
+  if (!Object.values(CarrierType).includes(rawCarrierType as CarrierType)) {
+    return new InvalidCarrierTypeForPhoneMetadataError(rawCarrierType)
+  }
+
+  return rawCarrierType as CarrierType
+}
 
 export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
   const validate = (
-    rawPhoneMetadata: Record<string, string | Record<string, string>>,
+    rawPhoneMetadata: Record<string, string | Record<string, string | null>>,
   ): PhoneMetadata | ValidationError => {
     const { carrier, countryCode } = rawPhoneMetadata
 
@@ -23,9 +39,15 @@ export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
       type: rawType,
     } = carrier
 
-    const type = rawType as CarrierType
-    if (!Object.values(CarrierType).includes(type)) {
-      return new InvalidCarrierTypeForPhoneMetadataError(type)
+    const type = checkedToCarrierType(rawType)
+    if (type instanceof Error) return type
+
+    if (typeof error_code !== "string") {
+      return new InvalidErrorCodeForPhoneMetadataError(countryCode)
+    }
+
+    if (typeof mobile_country_code !== "string") {
+      return new InvalidMobileCountryCodeForPhoneMetadataError(countryCode)
     }
 
     if (typeof countryCode !== "string") {

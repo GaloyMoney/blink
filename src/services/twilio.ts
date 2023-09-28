@@ -103,7 +103,7 @@ export const TwilioClient = (): IPhoneProviderService => {
 
       const phoneMetadata: PhoneMetadata = {
         carrier: {
-          error_code: result.carrier.error_code,
+          error_code: `${result.carrier.error_code}`,
           mobile_country_code: result.carrier.mobile_country_code,
           mobile_network_code: result.carrier.mobile_network_code,
           name: result.carrier.name,
