@@ -8,10 +8,7 @@ import {
 } from "@domain/errors"
 import { checkedToSats } from "@domain/bitcoin"
 import { DisplayAmountsConverter } from "@domain/fiat"
-import {
-  InvoiceNotFoundError,
-  invoiceExpirationForCurrency,
-} from "@domain/bitcoin/lightning"
+import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
 import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
@@ -39,12 +36,10 @@ import { AccountLevel } from "@domain/accounts"
 import { CallbackService } from "@services/svix"
 import { getCallbackServiceConfig } from "@config"
 import { toDisplayBaseAmount } from "@domain/payments"
+import { WalletInvoiceChecker } from "@domain/wallet-invoices"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
-  const invoicesRepo = WalletInvoicesRepository()
-
-  const pendingInvoices = invoicesRepo.yieldPending()
-
+  const pendingInvoices = WalletInvoicesRepository().yieldPending()
   if (pendingInvoices instanceof Error) {
     logger.error(
       { error: pendingInvoices },
@@ -59,20 +54,10 @@ export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
     processor: async (walletInvoice: WalletInvoice, index: number) => {
       logger.trace("updating pending invoices %s in worker %d", index)
 
-      const { pubkey, paymentHash, recipientWalletDescriptor, createdAt } = walletInvoice
-      const expiresIn = invoiceExpirationForCurrency(
-        recipientWalletDescriptor.currency,
-        createdAt,
-      )
-      if (
-        recipientWalletDescriptor.currency === WalletCurrency.Usd &&
-        expiresIn.getTime() < Date.now()
-      ) {
-        await declineHeldInvoice({ pubkey, paymentHash, logger })
-        return
-      }
-
-      await updatePendingInvoice({ walletInvoice, logger })
+      return updateOrDeclinePendingInvoice({
+        walletInvoice,
+        logger,
+      })
     },
   })
 
@@ -96,7 +81,93 @@ export const updatePendingInvoiceByPaymentHash = async ({
   return updatePendingInvoice({ walletInvoice, logger })
 }
 
-const dealer = DealerPriceService()
+export const declineHeldInvoice = wrapAsyncToRunInSpan({
+  namespace: "app.invoices",
+  fnName: "declineHeldInvoice",
+  fn: async ({
+    pubkey,
+    paymentHash,
+    logger,
+  }: {
+    pubkey: Pubkey
+    paymentHash: PaymentHash
+    logger: Logger
+  }): Promise<boolean | ApplicationError> => {
+    addAttributesToCurrentSpan({ paymentHash, pubkey })
+
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+
+    const walletInvoicesRepo = WalletInvoicesRepository()
+
+    const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
+
+    const pendingInvoiceLogger = logger.child({
+      hash: paymentHash,
+      pubkey,
+      lnInvoiceLookup,
+      topic: "payment",
+      protocol: "lightning",
+      transactionType: "receipt",
+      onUs: false,
+    })
+
+    if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
+      const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
+      if (isDeleted instanceof Error) {
+        pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
+        return isDeleted
+      }
+      return false
+    }
+    if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
+
+    if (lnInvoiceLookup.isSettled) {
+      return new InvalidNonHodlInvoiceError(
+        JSON.stringify({ paymentHash: lnInvoiceLookup.paymentHash }),
+      )
+    }
+
+    if (!lnInvoiceLookup.isHeld) {
+      pendingInvoiceLogger.info({ lnInvoiceLookup }, "invoice has not been paid yet")
+      return false
+    }
+
+    let heldForMsg = ""
+    if (lnInvoiceLookup.heldAt) {
+      heldForMsg = `for ${elapsedSinceTimestamp(lnInvoiceLookup.heldAt)}s `
+    }
+    pendingInvoiceLogger.error(
+      { lnInvoiceLookup },
+      `invoice has been held ${heldForMsg}and is now been cancelled`,
+    )
+
+    const invoiceSettled = await lndService.cancelInvoice({ pubkey, paymentHash })
+    if (invoiceSettled instanceof Error) return invoiceSettled
+
+    const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
+    if (isDeleted instanceof Error) {
+      pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
+    }
+
+    return true
+  },
+})
+
+const updateOrDeclinePendingInvoice = async ({
+  walletInvoice,
+  logger,
+}: {
+  walletInvoice: WalletInvoice
+  logger: Logger
+}): Promise<boolean | ApplicationError> =>
+  WalletInvoiceChecker(walletInvoice).shouldDecline()
+    ? declineHeldInvoice({
+        pubkey: walletInvoice.pubkey,
+        paymentHash: walletInvoice.paymentHash,
+        logger,
+      })
+    : updatePendingInvoice({ walletInvoice, logger })
 
 const updatePendingInvoiceBeforeFinally = async ({
   walletInvoice,
@@ -212,7 +283,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       recipientWalletDescriptors: accountWallets,
     }).withConversion({
       mid: { usdFromBtc: usdFromBtcMidPriceFn },
-      hedgeBuyUsd: { usdFromBtc: dealer.getCentsFromSatsForImmediateBuy },
+      hedgeBuyUsd: { usdFromBtc: DealerPriceService().getCentsFromSatsForImmediateBuy },
     })
     if (receivedWalletInvoice instanceof Error) return receivedWalletInvoice
 
@@ -341,7 +412,7 @@ const updatePendingInvoiceBeforeFinally = async ({
   })
 }
 
-const updatePendingInvoice = wrapAsyncToRunInSpan({
+export const updatePendingInvoice = wrapAsyncToRunInSpan({
   namespace: "app.invoices",
   fnName: "updatePendingInvoice",
   fn: async ({
@@ -368,78 +439,5 @@ const updatePendingInvoice = wrapAsyncToRunInSpan({
       }
     }
     return result
-  },
-})
-
-export const declineHeldInvoice = wrapAsyncToRunInSpan({
-  namespace: "app.invoices",
-  fnName: "declineHeldInvoice",
-  fn: async ({
-    pubkey,
-    paymentHash,
-    logger,
-  }: {
-    pubkey: Pubkey
-    paymentHash: PaymentHash
-    logger: Logger
-  }): Promise<boolean | ApplicationError> => {
-    addAttributesToCurrentSpan({ paymentHash, pubkey })
-
-    const lndService = LndService()
-    if (lndService instanceof Error) return lndService
-
-    const walletInvoicesRepo = WalletInvoicesRepository()
-
-    const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
-
-    const pendingInvoiceLogger = logger.child({
-      hash: paymentHash,
-      pubkey,
-      lnInvoiceLookup,
-      topic: "payment",
-      protocol: "lightning",
-      transactionType: "receipt",
-      onUs: false,
-    })
-
-    if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-      const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
-      if (isDeleted instanceof Error) {
-        pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
-        return isDeleted
-      }
-      return false
-    }
-    if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
-
-    if (lnInvoiceLookup.isSettled) {
-      return new InvalidNonHodlInvoiceError(
-        JSON.stringify({ paymentHash: lnInvoiceLookup.paymentHash }),
-      )
-    }
-
-    if (!lnInvoiceLookup.isHeld) {
-      pendingInvoiceLogger.info({ lnInvoiceLookup }, "invoice has not been paid yet")
-      return false
-    }
-
-    let heldForMsg = ""
-    if (lnInvoiceLookup.heldAt) {
-      heldForMsg = `for ${elapsedSinceTimestamp(lnInvoiceLookup.heldAt)}s `
-    }
-    pendingInvoiceLogger.error(
-      { lnInvoiceLookup },
-      `invoice has been held ${heldForMsg}and is now been cancelled`,
-    )
-
-    const invoiceSettled = await lndService.cancelInvoice({ pubkey, paymentHash })
-    if (invoiceSettled instanceof Error) return invoiceSettled
-
-    const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
-    if (isDeleted instanceof Error) {
-      pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
-    }
-
-    return true
   },
 })

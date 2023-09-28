@@ -32,17 +32,12 @@ import * as Wallets from "@app/wallets"
 
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { CacheKeys } from "@domain/cache"
-import {
-  CouldNotFindWalletFromOnChainAddressError,
-  CouldNotFindWalletInvoiceError,
-} from "@domain/errors"
+import { CouldNotFindWalletFromOnChainAddressError } from "@domain/errors"
 import { SwapTriggerError } from "@domain/swap/errors"
 import { checkedToDisplayCurrency } from "@domain/fiat"
-import {
-  DEFAULT_EXPIRATIONS,
-  invoiceExpirationForCurrency,
-} from "@domain/bitcoin/lightning/invoice-expiration"
+import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
 import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { WalletInvoiceChecker } from "@domain/wallet-invoices"
 
 import { BriaSubscriber } from "@services/bria"
 import { RedisCacheService } from "@services/cache"
@@ -142,18 +137,6 @@ export const onchainBlockEventHandler = async (height: number) => {
   logger.info(`finish block ${height} handler with ${txNumber} transactions`)
 }
 
-export const invoiceUpdateEventHandler = async (
-  invoice: SubscribeToInvoiceInvoiceUpdatedEvent | GetInvoiceResult,
-): Promise<boolean | ApplicationError> => {
-  logger.info({ invoice }, "invoiceUpdateEventHandler")
-  return invoice.is_held
-    ? WalletWithSpans.updatePendingInvoiceByPaymentHash({
-        paymentHash: invoice.id as PaymentHash,
-        logger,
-      })
-    : false
-}
-
 export const publishCurrentPrices = async () => {
   const currencies = await PricesWithSpans.listCurrencies()
   if (currencies instanceof Error) {
@@ -233,6 +216,22 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
   })
 }
 
+const invoiceUpdateHandler = wrapAsyncToRunInSpan({
+  root: true,
+  namespace: "servers.trigger",
+  fn: async (
+    invoice: SubscribeToInvoiceInvoiceUpdatedEvent | GetInvoiceResult,
+  ): Promise<boolean | ApplicationError> => {
+    logger.info({ invoice }, "invoiceUpdateEventHandler")
+    return invoice.is_held
+      ? WalletWithSpans.updatePendingInvoiceByPaymentHash({
+          paymentHash: invoice.id as PaymentHash,
+          logger,
+        })
+      : false
+  },
+})
+
 const listenerHodlInvoice = ({
   lnd,
   paymentHash,
@@ -241,21 +240,21 @@ const listenerHodlInvoice = ({
   paymentHash: PaymentHash
 }) => {
   const subInvoice = subscribeToInvoice({ lnd, id: paymentHash })
-  const invoiceUpdateHandler = wrapAsyncToRunInSpan({
-    root: true,
-    namespace: "servers.trigger",
-    fn: invoiceUpdateEventHandler,
-  })
+
   subInvoice.on(
     "invoice_updated",
-    async (invoice: SubscribeToInvoiceInvoiceUpdatedEvent) => {
+    async (
+      invoice: SubscribeToInvoiceInvoiceUpdatedEvent,
+    ): Promise<boolean | ApplicationError> => {
       if (invoice.is_confirmed || invoice.is_canceled) {
         subInvoice.removeAllListeners()
-      } else {
-        await invoiceUpdateHandler(invoice)
+        return true
       }
+
+      return invoiceUpdateHandler(invoice)
     },
   )
+
   subInvoice.on("error", (err) => {
     baseLogger.info({ err }, "error subChannels")
     recordExceptionInCurrentSpan({
@@ -284,38 +283,25 @@ const listenerExistingHodlInvoices = async ({
   if (invoices instanceof Error) return invoices
 
   for (const lnInvoice of invoices) {
+    if (lnInvoice.isSettled || lnInvoice.isCanceled) {
+      continue
+    }
+
     if (lnInvoice.isHeld) {
       const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(
         lnInvoice.paymentHash,
       )
-      const declineArgs = {
-        pubkey,
-        paymentHash: lnInvoice.paymentHash,
-        logger: baseLogger,
-      }
-      if (walletInvoice instanceof CouldNotFindWalletInvoiceError) {
-        Wallets.declineHeldInvoice(declineArgs)
+      if (WalletInvoiceChecker(walletInvoice).shouldDecline()) {
+        Wallets.declineHeldInvoice({
+          pubkey,
+          paymentHash: lnInvoice.paymentHash,
+          logger: baseLogger,
+        })
         continue
       }
       if (walletInvoice instanceof Error) {
         continue
       }
-
-      const expiresIn = invoiceExpirationForCurrency(
-        walletInvoice.recipientWalletDescriptor.currency,
-        walletInvoice.createdAt,
-      )
-      if (
-        walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Usd &&
-        expiresIn.getTime() < Date.now()
-      ) {
-        Wallets.declineHeldInvoice(declineArgs)
-        continue
-      }
-    }
-
-    if (lnInvoice.isSettled || lnInvoice.isCanceled) {
-      continue
     }
 
     listenerHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })

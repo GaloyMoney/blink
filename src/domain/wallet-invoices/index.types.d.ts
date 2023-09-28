@@ -2,6 +2,10 @@ type BtcFromUsdFn = (
   amount: UsdPaymentAmount,
 ) => Promise<BtcPaymentAmount | DealerPriceServiceError>
 
+type WalletInvoiceChecker = {
+  shouldDecline: () => boolean
+}
+
 type WalletInvoiceBuilderConfig = {
   dealerBtcFromUsd: BtcFromUsdFn
   lnRegisterInvoice: (
@@ -145,10 +149,6 @@ type WalletAddressReceiverArgs<S extends WalletCurrency> = {
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
 
   walletAddress: WalletAddress<S>
-}
-
-type WalletInvoiceValidator = {
-  validateToSend(fromWalletId: WalletId): true | ValidationError
 }
 
 type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt">
