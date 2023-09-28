@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: debugging some crash issues (#3275)...'
-      sha: 54caf08c67ff8033bc0de4eda1ef23e18aaa0ba8
+      commitTitle: 'fix: inconsistent state when twilio return partial information
+        (#3276)...'
+      sha: 157400ba6016c5080f087f8154282808e6ea74f1
       tags:
-      - 0.13.97-3-g54caf08c6
+      - 0.13.98-1-g157400ba6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: debugging some crash issues (#3275)...'
-      sha: 54caf08c67ff8033bc0de4eda1ef23e18aaa0ba8
+      commitTitle: 'fix: inconsistent state when twilio return partial information
+        (#3276)...'
+      sha: 157400ba6016c5080f087f8154282808e6ea74f1
       tags:
-      - 0.13.97-3-g54caf08c6
+      - 0.13.98-1-g157400ba6
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: debugging some crash issues (#3275)...'
-      sha: 54caf08c67ff8033bc0de4eda1ef23e18aaa0ba8
+      commitTitle: 'fix: inconsistent state when twilio return partial information
+        (#3276)...'
+      sha: 157400ba6016c5080f087f8154282808e6ea74f1
       tags:
-      - 0.13.97-3-g54caf08c6
+      - 0.13.98-1-g157400ba6
     path: ./
   path: ./graphql
 kind: LockConfig
