@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: crash on error in sessionPublicContext (#3271)...'
-      sha: 7496429b2c04818e2a6060442e4075e023ca7c70
+      commitTitle: 'refactor: simplify with-recipient interface (#3201)...'
+      sha: 3c4a8b8110a84f993506e679e73a6778c5d9ea1b
       tags:
-      - 0.13.96-1-g7496429b2
+      - 0.13.97-1-g3c4a8b811
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: crash on error in sessionPublicContext (#3271)...'
-      sha: 7496429b2c04818e2a6060442e4075e023ca7c70
+      commitTitle: 'refactor: simplify with-recipient interface (#3201)...'
+      sha: 3c4a8b8110a84f993506e679e73a6778c5d9ea1b
       tags:
-      - 0.13.96-1-g7496429b2
+      - 0.13.97-1-g3c4a8b811
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: crash on error in sessionPublicContext (#3271)...'
-      sha: 7496429b2c04818e2a6060442e4075e023ca7c70
+      commitTitle: 'refactor: simplify with-recipient interface (#3201)...'
+      sha: 3c4a8b8110a84f993506e679e73a6778c5d9ea1b
       tags:
-      - 0.13.96-1-g7496429b2
+      - 0.13.97-1-g3c4a8b811
     path: ./
   path: ./graphql
 kind: LockConfig
