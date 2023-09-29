@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove legacy volume types (#3277)...'
-      sha: 44dd07adbfb4a9332faad21389857ad7f9b9d032
+      commitTitle: 'chore: add record exception to registration endpoint (#3280)'
+      sha: a1b516636e64441188e682ce10356cb147380677
       tags:
-      - 0.13.99-1-g44dd07adb
+      - 0.13.100-1-ga1b516636
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove legacy volume types (#3277)...'
-      sha: 44dd07adbfb4a9332faad21389857ad7f9b9d032
+      commitTitle: 'chore: add record exception to registration endpoint (#3280)'
+      sha: a1b516636e64441188e682ce10356cb147380677
       tags:
-      - 0.13.99-1-g44dd07adb
+      - 0.13.100-1-ga1b516636
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove legacy volume types (#3277)...'
-      sha: 44dd07adbfb4a9332faad21389857ad7f9b9d032
+      commitTitle: 'chore: add record exception to registration endpoint (#3280)'
+      sha: a1b516636e64441188e682ce10356cb147380677
       tags:
-      - 0.13.99-1-g44dd07adb
+      - 0.13.100-1-ga1b516636
     path: ./
   path: ./graphql
 kind: LockConfig
