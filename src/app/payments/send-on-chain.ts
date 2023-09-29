@@ -1,17 +1,16 @@
 import { NETWORK, getOnChainWalletConfig } from "@config"
 
 import {
-  checkIntraledgerLimits,
-  checkTradeIntraAccountLimits,
-  checkWithdrawalLimits,
-} from "@app/payments"
-import { getPriceRatioForLimits } from "@app/payments/helpers"
-import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
 } from "@app/prices"
 import { removeDeviceTokens } from "@app/users/remove-device-tokens"
+import {
+  getMinerFeeAndPaymentFlow,
+  validateIsBtcWallet,
+  validateIsUsdWallet,
+} from "@app/wallets"
 
 import { AccountValidator } from "@domain/accounts"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -48,8 +47,12 @@ import {
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { getMinerFeeAndPaymentFlow } from "./get-on-chain-fee"
-import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
+import {
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
+  checkWithdrawalLimits,
+} from "./limits-check"
+import { getPriceRatioForLimits } from "./helpers"
 
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = DealerPriceService()

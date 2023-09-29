@@ -848,7 +848,7 @@ describe("Display properties on transactions", () => {
         })
         if (address instanceof Error) throw address
 
-        const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
+        const paid = await Payments.payOnChainByWalletIdForBtcWallet({
           senderAccount,
           senderWalletId,
           address,
@@ -921,7 +921,7 @@ describe("Display properties on transactions", () => {
         })
         if (address instanceof Error) throw address
 
-        const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
+        const paid = await Payments.payOnChainByWalletIdForBtcWallet({
           senderAccount,
           senderWalletId,
           address,
@@ -1013,7 +1013,7 @@ describe("Display properties on transactions", () => {
           lnd: lndOutside1,
         })
 
-        const paid = await Wallets.payOnChainByWalletIdForBtcWallet({
+        const paid = await Payments.payOnChainByWalletIdForBtcWallet({
           senderAccount,
           senderWalletId,
           address,

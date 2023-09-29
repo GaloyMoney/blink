@@ -9,7 +9,7 @@ import PayoutSpeed from "@graphql/public/types/scalar/payout-speed"
 import SatsAmount from "@graphql/shared/types/scalar/sat-amount"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
 
-import { Wallets } from "@app"
+import { Payments } from "@app"
 
 const OnChainUsdPaymentSendAsBtcDenominatedInput = GT.Input({
   name: "OnChainUsdPaymentSendAsBtcDenominatedInput",
@@ -64,7 +64,7 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       return { errors: [{ message: speed.message }] }
     }
 
-    const result = await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount({
+    const result = await Payments.payOnChainByWalletIdForUsdWalletAndBtcAmount({
       senderAccount: domainAccount,
       senderWalletId: walletId,
       amount,
