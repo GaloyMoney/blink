@@ -1,15 +1,16 @@
 import cors from "cors"
 import express from "express"
 
-import { wrapAsyncToRunInSpan } from "@services/tracing"
-import { baseLogger } from "@services/logger"
-
 import { Authentication } from "@app"
 
 import {
   SecretForAuthNCallbackError,
   RegistrationPayloadValidationError,
 } from "@domain/authentication/errors"
+import { ErrorLevel } from "@domain/shared"
+
+import { baseLogger } from "@services/logger"
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 const errorResponseMessages: { [key: string]: string } = {
   MissingSecretForAuthNCallbackError: "missing authorization header",
@@ -28,7 +29,9 @@ kratosCallback.use(express.json())
 kratosCallback.post(
   "/registration",
   wrapAsyncToRunInSpan({
-    namespace: "registration",
+    root: true,
+    namespace: "servers.kratos",
+    fnName: "registration",
     fn: async (req: express.Request, res: express.Response) => {
       const secret = req.headers.authorization
       const body = req.body
@@ -55,6 +58,8 @@ kratosCallback.post(
               { account, phone: body.phone },
               `error createAccountWithPhoneIdentifier`,
             )
+            recordExceptionInCurrentSpan({ error: account, level: ErrorLevel.Critical })
+
             res.status(500).send(`error createAccountWithPhoneIdentifier: ${account}`)
             return
         }
