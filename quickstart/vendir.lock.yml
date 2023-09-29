@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: inconsistent state when twilio return partial information
-        (#3276)...'
-      sha: 157400ba6016c5080f087f8154282808e6ea74f1
+      commitTitle: 'chore: remove legacy volume types (#3277)...'
+      sha: 44dd07adbfb4a9332faad21389857ad7f9b9d032
       tags:
-      - 0.13.98-1-g157400ba6
+      - 0.13.99-1-g44dd07adb
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: inconsistent state when twilio return partial information
-        (#3276)...'
-      sha: 157400ba6016c5080f087f8154282808e6ea74f1
+      commitTitle: 'chore: remove legacy volume types (#3277)...'
+      sha: 44dd07adbfb4a9332faad21389857ad7f9b9d032
       tags:
-      - 0.13.98-1-g157400ba6
+      - 0.13.99-1-g44dd07adb
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: inconsistent state when twilio return partial information
-        (#3276)...'
-      sha: 157400ba6016c5080f087f8154282808e6ea74f1
+      commitTitle: 'chore: remove legacy volume types (#3277)...'
+      sha: 44dd07adbfb4a9332faad21389857ad7f9b9d032
       tags:
-      - 0.13.98-1-g157400ba6
+      - 0.13.99-1-g44dd07adb
     path: ./
   path: ./graphql
 kind: LockConfig
