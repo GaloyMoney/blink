@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: 20
           cache: "yarn"
-      - run: yarn install --frozen-lockfile
+          cache-dependency-path: core/api/yarn.lock
+      - run: cd core/api && yarn install --frozen-lockfile
       - name: Run audit
-        run: make audit
+        run: cd core/api && make audit
