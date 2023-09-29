@@ -11,7 +11,7 @@ import {
 } from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
 
-import { LedgerService } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
 
 import { ModifiedSet, timestampDaysAgo } from "@utils"
 
@@ -36,7 +36,6 @@ import {
   recordLnTradeIntraAccountTxn,
 } from "test/helpers/ledger"
 
-const ledgerService = LedgerService()
 const calc = AmountCalculator()
 
 const FullLedgerTransactionType = {
@@ -494,7 +493,7 @@ describe("Volumes", () => {
         "LnIntraLedgerSend",
       ],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeAmountFn: ledgerService.allPaymentVolumeAmountSince,
+        volumeAmountFn: LedgerFacade.allPaymentVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
     })
@@ -504,7 +503,7 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes: ["Payment", "OnchainPayment"],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeAmountFn: ledgerService.externalPaymentVolumeAmountSince,
+        volumeAmountFn: LedgerFacade.externalPaymentVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
     })
@@ -514,7 +513,7 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes: ["IntraLedgerSend", "OnchainIntraLedgerSend", "LnIntraLedgerSend"],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeAmountFn: ledgerService.intraledgerTxBaseVolumeAmountSince,
+        volumeAmountFn: LedgerFacade.intraledgerTxBaseVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
     })
@@ -529,7 +528,7 @@ describe("Volumes", () => {
         "LnTradeIntraAccountOut",
       ],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeAmountFn: ledgerService.tradeIntraAccountTxBaseVolumeAmountSince,
+        volumeAmountFn: LedgerFacade.tradeIntraAccountTxBaseVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
     })
@@ -543,7 +542,7 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes,
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeAmountFn: ledgerService.allTxBaseVolumeAmountSince,
+        volumeAmountFn: LedgerFacade.allTxBaseVolumeAmountSince,
         volumeType: VolumeType.NetOut,
       }),
     })
@@ -553,7 +552,7 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes: ["OnchainPayment", "OnchainReceipt"],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeAmountFn: ledgerService.onChainTxBaseVolumeAmountSince,
+        volumeAmountFn: LedgerFacade.onChainTxBaseVolumeAmountSince,
         volumeType: VolumeType.NetOut,
       }),
     })
@@ -563,7 +562,7 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes: ["Payment", "Invoice", "LnFeeReimbursement"],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeAmountFn: ledgerService.lightningTxBaseVolumeAmountSince,
+        volumeAmountFn: LedgerFacade.lightningTxBaseVolumeAmountSince,
         volumeType: VolumeType.NetOut,
       }),
     })

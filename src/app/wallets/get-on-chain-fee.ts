@@ -14,6 +14,7 @@ import { checkedToWalletId } from "@domain/wallets"
 
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
@@ -62,8 +63,8 @@ const getOnChainFee = async <S extends WalletCurrency>({
   const isExternalAddress = async () => recipientWallet instanceof CouldNotFindError
 
   const withSenderBuilder = OnChainPaymentFlowBuilder<S>({
-    volumeAmountLightningFn: LedgerService().lightningTxBaseVolumeAmountSince,
-    volumeAmountOnChainFn: LedgerService().onChainTxBaseVolumeAmountSince,
+    volumeAmountLightningFn: LedgerFacade.lightningTxBaseVolumeAmountSince,
+    volumeAmountOnChainFn: LedgerFacade.onChainTxBaseVolumeAmountSince,
     isExternalAddress,
     sendAll: false,
     dustThreshold,

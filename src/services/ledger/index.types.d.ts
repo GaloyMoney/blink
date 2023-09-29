@@ -1,6 +1,3 @@
-type TxnGroup = keyof typeof import("./volume").TxnGroups
-type TxnTypes = (typeof import("./volume").TxnGroups)[TxnGroup]
-
 type RecordSendArgs = {
   description: string
   senderWalletDescriptor: WalletDescriptor<WalletCurrency>

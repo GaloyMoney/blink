@@ -278,20 +278,6 @@ interface ILedgerService {
     walletDescriptor: WalletDescriptor<S>,
   ): Promise<BalanceAmount<S> | LedgerServiceError>
 
-  allPaymentVolumeAmountSince: GetVolumeAmountSinceFn
-
-  externalPaymentVolumeAmountSince: GetVolumeAmountSinceFn
-
-  intraledgerTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
-  tradeIntraAccountTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
-  allTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
-  lightningTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
-  onChainTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
   isOnChainReceiptTxRecordedForWallet({
     walletId,
     txHash,
