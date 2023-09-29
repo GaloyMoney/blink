@@ -261,38 +261,21 @@ describe("Volumes", () => {
 
   // Used to construct the 'fetchVolumeAmount' fn for a specific volume type
   const getFetchVolumeAmountFn = <S extends WalletCurrency>({
-    volumeFn,
     volumeAmountFn,
     volumeType,
   }: {
-    volumeFn: GetVolumeSinceFn
     volumeAmountFn: GetVolumeAmountSinceFn
     volumeType
   }): fetchVolumeAmountType<S> => {
     const fetchVolumeAmountFn: fetchVolumeAmountType<S> = async (
       walletDescriptor: WalletDescriptor<S>,
     ): Promise<PaymentAmount<S>> => {
-      const walletVolume = await volumeFn({
-        walletId: walletDescriptor.id,
-        timestamp: timestamp1DayAgo,
-      })
-      expect(walletVolume).not.toBeInstanceOf(Error)
-      if (walletVolume instanceof Error) throw walletVolume
-
       const walletVolumeAmount = await volumeAmountFn({
         walletDescriptor,
         timestamp: timestamp1DayAgo,
       })
       expect(walletVolumeAmount).not.toBeInstanceOf(Error)
       if (walletVolumeAmount instanceof Error) throw walletVolumeAmount
-
-      const { outgoingBaseAmount: outgoingBase } = walletVolume
-      const { outgoingBaseAmount } = walletVolumeAmount
-      expect(outgoingBase).toEqual(Number(outgoingBaseAmount.amount))
-
-      const { incomingBaseAmount: incomingBase } = walletVolume
-      const { incomingBaseAmount } = walletVolumeAmount
-      expect(incomingBase).toEqual(Number(incomingBaseAmount.amount))
 
       // FIXME: change in code to couple this method to actual implementation
       // return calc.sub(outgoingBaseAmount, incomingBaseAmount)
@@ -511,7 +494,6 @@ describe("Volumes", () => {
         "LnIntraLedgerSend",
       ],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeFn: ledgerService.allPaymentVolumeSince,
         volumeAmountFn: ledgerService.allPaymentVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
@@ -522,7 +504,6 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes: ["Payment", "OnchainPayment"],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeFn: ledgerService.externalPaymentVolumeSince,
         volumeAmountFn: ledgerService.externalPaymentVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
@@ -533,7 +514,6 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes: ["IntraLedgerSend", "OnchainIntraLedgerSend", "LnIntraLedgerSend"],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeFn: ledgerService.intraledgerTxBaseVolumeSince,
         volumeAmountFn: ledgerService.intraledgerTxBaseVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
@@ -549,7 +529,6 @@ describe("Volumes", () => {
         "LnTradeIntraAccountOut",
       ],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeFn: ledgerService.tradeIntraAccountTxBaseVolumeSince,
         volumeAmountFn: ledgerService.tradeIntraAccountTxBaseVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
@@ -564,7 +543,6 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes,
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeFn: ledgerService.allTxBaseVolumeSince,
         volumeAmountFn: ledgerService.allTxBaseVolumeAmountSince,
         volumeType: VolumeType.NetOut,
       }),
@@ -575,7 +553,6 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes: ["OnchainPayment", "OnchainReceipt"],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeFn: ledgerService.onChainTxBaseVolumeSince,
         volumeAmountFn: ledgerService.onChainTxBaseVolumeAmountSince,
         volumeType: VolumeType.NetOut,
       }),
@@ -586,7 +563,6 @@ describe("Volumes", () => {
     executeVolumeTests({
       includedTxTypes: ["Payment", "Invoice", "LnFeeReimbursement"],
       fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeFn: ledgerService.lightningTxBaseVolumeSince,
         volumeAmountFn: ledgerService.lightningTxBaseVolumeAmountSince,
         volumeType: VolumeType.NetOut,
       }),

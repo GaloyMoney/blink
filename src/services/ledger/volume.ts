@@ -39,99 +39,100 @@ export const TxnGroups = {
   allTxBaseVolumeSince: Object.values(LedgerTransactionType),
 } as const
 
-const volumeFn =
-  (txnGroup: TxnGroup): GetVolumeSinceFn =>
-  async (args) =>
-    txVolumeSince({ ...args, txnGroup })
+const TxVolumeAmountSinceFactory = () => {
+  const txVolumeSince = async ({
+    walletId,
+    timestamp,
+    txnGroup,
+  }: {
+    walletId: WalletId
+    timestamp: Date
+    txnGroup: TxnGroup
+  }): Promise<TxBaseVolume | LedgerServiceError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
-const volumeAmountFn =
-  (txnGroup: TxnGroup): GetVolumeAmountSinceFn =>
-  async (args) => {
-    const {
-      walletDescriptor: { id: walletId, currency: walletCurrency },
-      timestamp,
-    } = args
-    const volume = await txVolumeSince({ walletId, timestamp, txnGroup })
-    if (volume instanceof Error) return volume
+    const txnTypes: TxnTypes = TxnGroups[txnGroup]
+    const txnTypesObj = txnTypes.map((txnType) => ({
+      type: txnType,
+    }))
 
-    const outgoingBaseAmount = paymentAmountFromNumber({
-      amount: volume.outgoingBaseAmount,
-      currency: walletCurrency,
-    })
-    if (outgoingBaseAmount instanceof Error) return outgoingBaseAmount
+    try {
+      const [result]: (TxBaseVolume & { _id: null })[] = await Transaction.aggregate([
+        {
+          $match: {
+            accounts: liabilitiesWalletId,
+            $or: txnTypesObj,
+            $and: [{ timestamp: { $gte: timestamp } }],
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            outgoingBaseAmount: { $sum: "$debit" },
+            incomingBaseAmount: { $sum: "$credit" },
+          },
+        },
+      ])
 
-    const incomingBaseAmount = paymentAmountFromNumber({
-      amount: volume.incomingBaseAmount,
-      currency: walletCurrency,
-    })
-    if (incomingBaseAmount instanceof Error) return incomingBaseAmount
-
-    return { outgoingBaseAmount, incomingBaseAmount }
+      const outgoingBaseAmount = result?.outgoingBaseAmount ?? (0 as CurrencyBaseAmount)
+      const incomingBaseAmount = result?.incomingBaseAmount ?? (0 as CurrencyBaseAmount)
+      addAttributesToCurrentSpan({
+        "txVolume.function": txnGroup,
+        "txVolume.outgoing": outgoingBaseAmount.toString(),
+        "txVolume.incoming": incomingBaseAmount.toString(),
+      })
+      return { outgoingBaseAmount, incomingBaseAmount }
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
   }
 
-const txVolumeSince = async ({
-  walletId,
-  timestamp,
-  txnGroup,
-}: {
-  walletId: WalletId
-  timestamp: Date
-  txnGroup: TxnGroup
-}): Promise<TxBaseVolume | LedgerServiceError> => {
-  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+  const create =
+    (txnGroup: TxnGroup): GetVolumeAmountSinceFn =>
+    async (args) => {
+      const {
+        walletDescriptor: { id: walletId, currency: walletCurrency },
+        timestamp,
+      } = args
+      const volume = await txVolumeSince({ walletId, timestamp, txnGroup })
+      if (volume instanceof Error) return volume
 
-  const txnTypes: TxnTypes = TxnGroups[txnGroup]
-  const txnTypesObj = txnTypes.map((txnType) => ({
-    type: txnType,
-  }))
+      const outgoingBaseAmount = paymentAmountFromNumber({
+        amount: volume.outgoingBaseAmount,
+        currency: walletCurrency,
+      })
+      if (outgoingBaseAmount instanceof Error) return outgoingBaseAmount
 
-  try {
-    const [result]: (TxBaseVolume & { _id: null })[] = await Transaction.aggregate([
-      {
-        $match: {
-          accounts: liabilitiesWalletId,
-          $or: txnTypesObj,
-          $and: [{ timestamp: { $gte: timestamp } }],
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          outgoingBaseAmount: { $sum: "$debit" },
-          incomingBaseAmount: { $sum: "$credit" },
-        },
-      },
-    ])
+      const incomingBaseAmount = paymentAmountFromNumber({
+        amount: volume.incomingBaseAmount,
+        currency: walletCurrency,
+      })
+      if (incomingBaseAmount instanceof Error) return incomingBaseAmount
 
-    const outgoingBaseAmount = result?.outgoingBaseAmount ?? (0 as CurrencyBaseAmount)
-    const incomingBaseAmount = result?.incomingBaseAmount ?? (0 as CurrencyBaseAmount)
-    addAttributesToCurrentSpan({
-      "txVolume.function": txnGroup,
-      "txVolume.outgoing": outgoingBaseAmount.toString(),
-      "txVolume.incoming": incomingBaseAmount.toString(),
-    })
-    return { outgoingBaseAmount, incomingBaseAmount }
-  } catch (err) {
-    return new UnknownLedgerError(err)
-  }
+      return { outgoingBaseAmount, incomingBaseAmount }
+    }
+
+  return { create }
 }
 
-export const volume = {
-  allPaymentVolumeSince: volumeFn("allPaymentVolumeSince"),
-  externalPaymentVolumeSince: volumeFn("externalPaymentVolumeSince"),
-  intraledgerTxBaseVolumeSince: volumeFn("intraledgerTxBaseVolumeSince"),
-  tradeIntraAccountTxBaseVolumeSince: volumeFn("tradeIntraAccountTxBaseVolumeSince"),
-  allTxBaseVolumeSince: volumeFn("allTxBaseVolumeSince"),
-  onChainTxBaseVolumeSince: volumeFn("onChainTxBaseVolumeSince"),
-  lightningTxBaseVolumeSince: volumeFn("lightningTxBaseVolumeSince"),
+const txVolumeAmountFactory = TxVolumeAmountSinceFactory()
 
-  allPaymentVolumeAmountSince: volumeAmountFn("allPaymentVolumeSince"),
-  externalPaymentVolumeAmountSince: volumeAmountFn("externalPaymentVolumeSince"),
-  intraledgerTxBaseVolumeAmountSince: volumeAmountFn("intraledgerTxBaseVolumeSince"),
-  tradeIntraAccountTxBaseVolumeAmountSince: volumeAmountFn(
+export const volume = {
+  allPaymentVolumeAmountSince: txVolumeAmountFactory.create("allPaymentVolumeSince"),
+  externalPaymentVolumeAmountSince: txVolumeAmountFactory.create(
+    "externalPaymentVolumeSince",
+  ),
+  intraledgerTxBaseVolumeAmountSince: txVolumeAmountFactory.create(
+    "intraledgerTxBaseVolumeSince",
+  ),
+  tradeIntraAccountTxBaseVolumeAmountSince: txVolumeAmountFactory.create(
     "tradeIntraAccountTxBaseVolumeSince",
   ),
-  allTxBaseVolumeAmountSince: volumeAmountFn("allTxBaseVolumeSince"),
-  onChainTxBaseVolumeAmountSince: volumeAmountFn("onChainTxBaseVolumeSince"),
-  lightningTxBaseVolumeAmountSince: volumeAmountFn("lightningTxBaseVolumeSince"),
+  allTxBaseVolumeAmountSince: txVolumeAmountFactory.create("allTxBaseVolumeSince"),
+  onChainTxBaseVolumeAmountSince: txVolumeAmountFactory.create(
+    "onChainTxBaseVolumeSince",
+  ),
+  lightningTxBaseVolumeAmountSince: txVolumeAmountFactory.create(
+    "lightningTxBaseVolumeSince",
+  ),
 }

@@ -206,9 +206,6 @@ interface IGetVolumeAmountArgs<T extends WalletCurrency> {
   timestamp: Date
 }
 
-type VolumeResult = Promise<TxBaseVolume | LedgerServiceError>
-type GetVolumeSinceFn = (args: IGetVolumeArgs) => VolumeResult
-
 type VolumeAmountResult<S extends WalletCurrency> = Promise<
   TxBaseVolumeAmount<S> | LedgerServiceError
 >
@@ -274,20 +271,6 @@ interface ILedgerService {
   getWalletBalanceAmount<S extends WalletCurrency>(
     walletDescriptor: WalletDescriptor<S>,
   ): Promise<BalanceAmount<S> | LedgerServiceError>
-
-  allPaymentVolumeSince: GetVolumeSinceFn
-
-  externalPaymentVolumeSince: GetVolumeSinceFn
-
-  intraledgerTxBaseVolumeSince: GetVolumeSinceFn
-
-  tradeIntraAccountTxBaseVolumeSince: GetVolumeSinceFn
-
-  allTxBaseVolumeSince: GetVolumeSinceFn
-
-  lightningTxBaseVolumeSince: GetVolumeSinceFn
-
-  onChainTxBaseVolumeSince: GetVolumeSinceFn
 
   allPaymentVolumeAmountSince: GetVolumeAmountSinceFn
 
@@ -355,8 +338,8 @@ type ActivityChecker = {
 }
 
 type ImbalanceCalculatorConfig = {
-  volumeLightningFn: GetVolumeSinceFn
-  volumeOnChainFn: GetVolumeSinceFn
+  volumeAmountLightningFn: GetVolumeAmountSinceFn
+  volumeAmountOnChainFn: GetVolumeAmountSinceFn
   sinceDaysAgo: Days
   method: WithdrawalFeePriceMethod
 }
