@@ -19,6 +19,7 @@ jobs:
       - run: cd core/api && yarn install --frozen-lockfile
       - name: Run integration tests
         run: |
-          cd core/api/ && make integration-in-ci
+          cd core/api/
+          make integration-in-ci
           container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-integration-tests-")
           exit $(docker inspect $container_id --format='{{.State.ExitCode}}')

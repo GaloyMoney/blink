@@ -26,6 +26,7 @@
         buck2
         pnpm
         python3
+        envsubst
         nodejs
         tilt
         yarn
