@@ -17,12 +17,11 @@ import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
 import { PartialResult } from "../partial-result"
 
 import {
-  constructPaymentFlowBuilder,
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
-  getPriceRatioForLimits,
-} from "./helpers"
+} from "./limits-check"
+import { constructPaymentFlowBuilder, getPriceRatioForLimits } from "./helpers"
 
 const getLightningFeeEstimation = async ({
   walletId,

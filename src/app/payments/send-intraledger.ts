@@ -40,12 +40,8 @@ import { CallbackService } from "@services/svix"
 
 import { CallbackEventType } from "@domain/callback"
 
-import {
-  getPriceRatioForLimits,
-  checkIntraledgerLimits,
-  checkTradeIntraAccountLimits,
-  addContactsAfterSend,
-} from "./helpers"
+import { checkIntraledgerLimits, checkTradeIntraAccountLimits } from "./limits-check"
+import { addContactsAfterSend, getPriceRatioForLimits } from "./helpers"
 
 const dealer = DealerPriceService()
 

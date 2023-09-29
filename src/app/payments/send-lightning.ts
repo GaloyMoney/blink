@@ -62,11 +62,13 @@ import { getCallbackServiceConfig } from "@config"
 import { CallbackEventType } from "@domain/callback"
 
 import {
-  constructPaymentFlowBuilder,
-  getPriceRatioForLimits,
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
+} from "./limits-check"
+import {
+  constructPaymentFlowBuilder,
+  getPriceRatioForLimits,
   addContactsAfterSend,
 } from "./helpers"
 

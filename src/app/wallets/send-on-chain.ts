@@ -4,8 +4,8 @@ import {
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
-  getPriceRatioForLimits,
-} from "@app/payments/helpers"
+} from "@app/payments"
+import { getPriceRatioForLimits } from "@app/payments/helpers"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
