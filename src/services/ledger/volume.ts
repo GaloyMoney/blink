@@ -39,7 +39,7 @@ export const TxnGroups = {
   allTxBaseVolumeSince: Object.values(LedgerTransactionType),
 } as const
 
-const TxVolumeAmountSinceFactory = () => {
+export const TxVolumeAmountSinceFactory = () => {
   const txVolumeSince = async ({
     walletId,
     timestamp,

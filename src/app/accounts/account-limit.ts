@@ -1,10 +1,13 @@
-import { volumesForAccountId } from "@app/payments/helpers"
 import { getMidPriceRatio } from "@app/prices"
+
 import { getAccountLimits, getDealerConfig, ONE_DAY } from "@config"
+
 import { AccountLimitsType } from "@domain/accounts"
 import { AccountLimitsVolumes } from "@domain/accounts/limits-volume"
 import { InvalidAccountLimitTypeError } from "@domain/errors"
-import { LedgerService } from "@services/ledger"
+
+import * as LedgerFacade from "@services/ledger/facade"
+import { WalletsRepository } from "@services/mongoose"
 
 export const remainingLimit = async ({
   account,
@@ -23,31 +26,31 @@ export const remainingLimit = async ({
   const accountVolumes = AccountLimitsVolumes({ accountLimits, priceRatio })
   if (accountVolumes instanceof Error) return accountVolumes
 
-  const ledger = LedgerService()
-
   let limitsVolumeFn: LimitsVolumesFn
-  let getVolumeFn: GetVolumeAmountSinceFn
+  let getVolumeFn: GetVolumeAmountForAccountSinceFn
   switch (limitType) {
     case AccountLimitsType.IntraLedger:
       limitsVolumeFn = accountVolumes.volumesIntraledger
-      getVolumeFn = ledger.intraledgerTxBaseVolumeAmountSince
+      getVolumeFn = LedgerFacade.intraledgerTxBaseVolumeAmountForAccountSince
       break
     case AccountLimitsType.Withdrawal:
       limitsVolumeFn = accountVolumes.volumesWithdrawal
-      getVolumeFn = ledger.externalPaymentVolumeAmountSince
+      getVolumeFn = LedgerFacade.externalPaymentVolumeAmountForAccountSince
       break
     case AccountLimitsType.SelfTrade:
       limitsVolumeFn = accountVolumes.volumesTradeIntraAccount
-      getVolumeFn = ledger.tradeIntraAccountTxBaseVolumeAmountSince
+      getVolumeFn = LedgerFacade.tradeIntraAccountTxBaseVolumeAmountForAccountSince
       break
     default:
       return new InvalidAccountLimitTypeError(limitType)
   }
 
-  const walletVolumes = await volumesForAccountId({
-    accountId: account.id,
+  const accountWalletDescriptors =
+    await WalletsRepository().findAccountWalletsByAccountId(account.id)
+  if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
+  const walletVolumes = await getVolumeFn({
+    accountWalletDescriptors,
     period: ONE_DAY,
-    volumeAmountSinceFn: getVolumeFn,
   })
   if (walletVolumes instanceof Error) return walletVolumes
 

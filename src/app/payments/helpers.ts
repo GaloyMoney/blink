@@ -10,7 +10,7 @@ import { AccountLimitsChecker } from "@domain/accounts"
 import { AlreadyPaidError } from "@domain/errors"
 import { LightningPaymentFlowBuilder, WalletPriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
-import { LedgerService } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
 import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
@@ -18,9 +18,6 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
-import { timestampDaysAgo } from "@utils"
-
-const ledger = LedgerService()
 
 export const constructPaymentFlowBuilder = async <
   S extends WalletCurrency,
@@ -129,63 +126,6 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   }
 }
 
-export const volumesForAccountId = async ({
-  accountId,
-  period,
-  volumeAmountSinceFn,
-}: {
-  accountId: AccountId
-  period: Days
-  volumeAmountSinceFn: GetVolumeAmountSinceFn
-}): Promise<TxBaseVolumeAmount<WalletCurrency>[] | ApplicationError> => {
-  const timestamp1Day = timestampDaysAgo(period)
-  if (timestamp1Day instanceof Error) return timestamp1Day
-
-  const wallets = await WalletsRepository().listByAccountId(accountId)
-  if (wallets instanceof Error) return wallets
-
-  const walletVolumesWithErrors = await Promise.all(
-    wallets.map((wallet) =>
-      volumeAmountSinceFn({
-        walletDescriptor: wallet,
-        timestamp: timestamp1Day,
-      }),
-    ),
-  )
-  const walletVolError = walletVolumesWithErrors.find((vol) => vol instanceof Error)
-  if (walletVolError instanceof Error) return walletVolError
-
-  // To satisfy type-checker
-  const walletVolumes = walletVolumesWithErrors.filter(
-    (vol): vol is TxBaseVolumeAmount<WalletCurrency> => true,
-  )
-
-  return walletVolumes
-}
-
-const volumesAndLimitsForAccountId = async ({
-  accountId,
-  volumeAmountSinceFn,
-}: {
-  accountId: AccountId
-  volumeAmountSinceFn: GetVolumeAmountSinceFn
-}) => {
-  const account = await AccountsRepository().findById(accountId)
-  if (account instanceof Error) return account
-
-  const walletVolumes = await volumesForAccountId({
-    accountId,
-    period: ONE_DAY,
-    volumeAmountSinceFn,
-  })
-  if (walletVolumes instanceof Error) return walletVolumes
-
-  return {
-    accountLimits: getAccountLimits({ level: account.level }),
-    walletVolumes,
-  }
-}
-
 export const checkIntraledgerLimits = async ({
   amount,
   accountId,
@@ -195,12 +135,19 @@ export const checkIntraledgerLimits = async ({
   accountId: AccountId
   priceRatio: WalletPriceRatio
 }) => {
-  const volumesAndLimits = await volumesAndLimitsForAccountId({
-    accountId,
-    volumeAmountSinceFn: ledger.intraledgerTxBaseVolumeAmountSince,
+  const accountWalletDescriptors =
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
+  if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
+
+  const walletVolumes = await LedgerFacade.intraledgerTxBaseVolumeAmountForAccountSince({
+    accountWalletDescriptors,
+    period: ONE_DAY,
   })
-  if (volumesAndLimits instanceof Error) return volumesAndLimits
-  const { walletVolumes, accountLimits } = volumesAndLimits
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
 
   return AccountLimitsChecker({
     accountLimits,
@@ -220,12 +167,20 @@ export const checkTradeIntraAccountLimits = async ({
   accountId: AccountId
   priceRatio: WalletPriceRatio
 }) => {
-  const volumesAndLimits = await volumesAndLimitsForAccountId({
-    accountId,
-    volumeAmountSinceFn: ledger.tradeIntraAccountTxBaseVolumeAmountSince,
-  })
-  if (volumesAndLimits instanceof Error) return volumesAndLimits
-  const { walletVolumes, accountLimits } = volumesAndLimits
+  const accountWalletDescriptors =
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
+  if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
+
+  const walletVolumes =
+    await LedgerFacade.tradeIntraAccountTxBaseVolumeAmountForAccountSince({
+      accountWalletDescriptors,
+      period: ONE_DAY,
+    })
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
 
   return AccountLimitsChecker({
     accountLimits,
@@ -245,12 +200,19 @@ export const checkWithdrawalLimits = async ({
   accountId: AccountId
   priceRatio: WalletPriceRatio
 }) => {
-  const volumesAndLimits = await volumesAndLimitsForAccountId({
-    accountId,
-    volumeAmountSinceFn: ledger.externalPaymentVolumeAmountSince,
+  const accountWalletDescriptors =
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
+  if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
+
+  const walletVolumes = await LedgerFacade.externalPaymentVolumeAmountForAccountSince({
+    accountWalletDescriptors,
+    period: ONE_DAY,
   })
-  if (volumesAndLimits instanceof Error) return volumesAndLimits
-  const { walletVolumes, accountLimits } = volumesAndLimits
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
 
   return AccountLimitsChecker({
     accountLimits,
