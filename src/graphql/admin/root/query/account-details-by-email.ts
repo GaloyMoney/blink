@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import GraphQLAccount from "@graphql/admin/types/object/account"
+import AuditedAccount from "@graphql/admin/types/object/account"
 import { mapError } from "@graphql/error-map"
 
 import { Admin } from "@app"
@@ -14,7 +14,7 @@ const AccountDetailsByUserEmailQuery = GT.Field<
     email: EmailAddress | ValidationError
   }
 >({
-  type: GT.NonNull(GraphQLAccount),
+  type: GT.NonNull(AuditedAccount),
   args: {
     email: { type: GT.NonNull(EmailAddress) },
   },
