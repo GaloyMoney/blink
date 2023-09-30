@@ -178,6 +178,30 @@ usd_amount=50
   retry 15 1 check_ln_payment_settled "$payment_request"
 }
 
+@test "public-ln-receive: receive via invoice - can receive on usd invoice, sats denominated" {
+  token_name="$ALICE_TOKEN_NAME"
+  usd_wallet_name="$token_name.usd_wallet_id"
+
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $usd_wallet_name)" \
+    --arg amount "$btc_amount" \
+    '{input: {recipientWalletId: $wallet_id, amount: $amount}}'
+  )
+  exec_graphql 'anon' 'ln-usd-invoice-btc-denominated-create-on-behalf-of-recipient' "$variables"
+  invoice="$(graphql_output '.data.lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient.invoice')"
+
+  payment_request="$(echo $invoice | jq -r '.paymentRequest')"
+  [[ "${payment_request}" != "null" ]] || exit 1
+
+  # Receive payment
+  lnd_outside_cli payinvoice -f \
+    --pay_req "$payment_request" \
+
+  # Check for settled with query
+  retry 15 1 check_ln_payment_settled "$payment_request"
+}
+
 @test "public-ln-receive: receive via invoice - can receive on btc amountless invoice" {
   token_name="$ALICE_TOKEN_NAME"
   btc_wallet_name="$token_name.btc_wallet_id"
@@ -238,6 +262,9 @@ usd_amount=50
   exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
   error_msg="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
   [[ "$error_msg" == "Invalid value for WalletId" ]] || exit 1
+  exec_graphql 'anon' 'ln-usd-invoice-btc-denominated-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "Invalid value for WalletId" ]] || exit 1
 
   exec_graphql \
     'anon' \
@@ -261,6 +288,9 @@ usd_amount=50
   [[ "$error_msg" == *CouldNotFindWalletFromIdError* ]] || exit 1
   exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
   error_msg="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == *CouldNotFindWalletFromIdError* ]] || exit 1
+  exec_graphql 'anon' 'ln-usd-invoice-btc-denominated-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient.errors[0].message')"
   [[ "$error_msg" == *CouldNotFindWalletFromIdError* ]] || exit 1
 
   variables=$(
@@ -300,6 +330,9 @@ usd_amount=50
   exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
   error_msg="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
   [[ "$error_msg" == "Invalid value for CentAmount" ]] || exit 1
+  exec_graphql 'anon' 'ln-usd-invoice-btc-denominated-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "Invalid value for SatAmount" ]] || exit 1
 }
 
 @test "public-ln-receive: fail to create invoice - zero amount" {
@@ -326,5 +359,7 @@ usd_amount=50
   exec_graphql 'anon' 'ln-usd-invoice-create-on-behalf-of-recipient' "$variables"
   error_msg="$(graphql_output '.data.lnUsdInvoiceCreateOnBehalfOfRecipient.errors[0].message')"
   [[ "$error_msg" == "A valid usd amount is required" ]] || exit 1
-
+  exec_graphql 'anon' 'ln-usd-invoice-btc-denominated-create-on-behalf-of-recipient' "$variables"
+  error_msg="$(graphql_output '.data.lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient.errors[0].message')"
+  [[ "$error_msg" == "A valid satoshi amount is required" ]] || exit 1
 }
