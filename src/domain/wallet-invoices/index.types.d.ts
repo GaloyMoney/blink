@@ -2,12 +2,17 @@ type BtcFromUsdFn = (
   amount: UsdPaymentAmount,
 ) => Promise<BtcPaymentAmount | DealerPriceServiceError>
 
+type UsdFromBtcFn = (
+  amount: BtcPaymentAmount,
+) => Promise<UsdPaymentAmount | DealerPriceServiceError>
+
 type WalletInvoiceChecker = {
   shouldDecline: () => boolean
 }
 
 type WalletInvoiceBuilderConfig = {
   dealerBtcFromUsd: BtcFromUsdFn
+  dealerUsdFromBtc: UsdFromBtcFn
   lnRegisterInvoice: (
     args: NewRegisterInvoiceArgs,
   ) => Promise<RegisteredInvoice | LightningServiceError>
@@ -57,7 +62,7 @@ type WIBWithExpirationState = WIBWithRecipientState & {
 
 type WIBWithExpiration = {
   withAmount: (
-    uncheckedAmount: number,
+    amount: PaymentAmount<WalletCurrency>,
   ) => Promise<WIBWithAmount | ValidationError | DealerPriceServiceError>
   withoutAmount: () => Promise<WIBWithAmount>
 }
