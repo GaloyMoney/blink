@@ -585,6 +585,23 @@ type LnUpdate {
   walletId: WalletId!
 }
 
+input LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput {
+  """Amount in satoshis."""
+  amount: SatAmount!
+  descriptionHash: Hex32Bytes
+
+  """Optional invoice expiration time in minutes."""
+  expiresIn: Minutes
+
+  """
+  Optional memo for the lightning invoice. Acts as a note to the recipient.
+  """
+  memo: Memo
+
+  """Wallet ID for a USD wallet which belongs to the account of any user."""
+  recipientWalletId: WalletId!
+}
+
 input LnUsdInvoiceCreateInput {
   """Amount in USD cents."""
   amount: CentAmount!
@@ -723,6 +740,14 @@ type Mutation {
   Returns payment status (success, failed, pending, already_paid).
   """
   lnNoAmountUsdInvoicePaymentSend(input: LnNoAmountUsdInvoicePaymentInput!): PaymentSendPayload!
+
+  """
+  Returns a lightning invoice denominated in satoshis for an associated wallet.
+  When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
+  Expires after 'expiresIn' or 5 minutes (short expiry time because there is a USD/BTC exchange rate
+    associated with the amount).
+  """
+  lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient(input: LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput!): LnInvoicePayload!
 
   """
   Returns a lightning invoice denominated in satoshis for an associated wallet.
