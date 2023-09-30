@@ -27,6 +27,8 @@ router.get("/", csrfProtection, async (req, res, next) => {
     return
   }
 
+  // TODO: add rate limits
+
   // This section processes consent requests and either shows the consent UI or
   // accepts the consent request right away if the user has given consent to this
   // app before
