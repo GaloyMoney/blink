@@ -265,6 +265,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "SubOneCentSatAmountForUsdSelfSendError":
+    case "SubOneCentSatAmountForUsdReceiveError":
       message = "Amount sent was too low for recipient's usd wallet."
       return new ValidationInternalError({ message, logger: baseLogger })
 

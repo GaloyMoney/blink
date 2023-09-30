@@ -5,7 +5,10 @@ import {
 import { WalletCurrency, ZERO_SATS } from "@domain/shared"
 import { toSeconds } from "@domain/primitives"
 
-import { InvalidWalletInvoiceBuilderStateError } from "./errors"
+import {
+  InvalidWalletInvoiceBuilderStateError,
+  SubOneCentSatAmountForUsdReceiveError,
+} from "./errors"
 
 export const WalletInvoiceBuilder = (
   config: WalletInvoiceBuilderConfig,
@@ -84,6 +87,11 @@ export const WIBWithExpiration = (state: WIBWithExpirationState): WIBWithExpirat
       const btcAmount = amount as BtcPaymentAmount
       const usdAmount = await state.dealerUsdFromBtc(btcAmount)
       if (usdAmount instanceof Error) return usdAmount
+      if (usdAmount.amount === 0n) {
+        return new SubOneCentSatAmountForUsdReceiveError(
+          `${Number(btcAmount.amount)} sats`,
+        )
+      }
       return WIBWithAmount({
         ...state,
         hasAmount: true,

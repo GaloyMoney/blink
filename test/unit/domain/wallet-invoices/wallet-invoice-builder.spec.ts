@@ -8,7 +8,10 @@ import {
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
 } from "@domain/shared"
-import { InvalidWalletInvoiceBuilderStateError } from "@domain/wallet-invoices/errors"
+import {
+  InvalidWalletInvoiceBuilderStateError,
+  SubOneCentSatAmountForUsdReceiveError,
+} from "@domain/wallet-invoices/errors"
 import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
 
 describe("WalletInvoiceBuilder", () => {
@@ -28,13 +31,13 @@ describe("WalletInvoiceBuilder", () => {
   const dealerPriceRatio = 2n
   const btcFromUsd = async (amount: UsdPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount / dealerPriceRatio,
+      amount: amount.amount * dealerPriceRatio,
       currency: WalletCurrency.Btc,
     })
   }
   const usdFromBtc = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount * dealerPriceRatio,
+      amount: amount.amount / dealerPriceRatio,
       currency: WalletCurrency.Usd,
     })
   }
@@ -217,7 +220,7 @@ describe("WalletInvoiceBuilder", () => {
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
           const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
-            const convertedAmount = BigInt(uncheckedAmount) / dealerPriceRatio
+            const convertedAmount = BigInt(uncheckedAmount) * dealerPriceRatio
             expect(lnInvoice).toEqual(
               expect.objectContaining({
                 amount: Number(convertedAmount) as Satoshis,
@@ -262,7 +265,7 @@ describe("WalletInvoiceBuilder", () => {
               }),
             )
 
-            const convertedAmount = BigInt(uncheckedAmount) * dealerPriceRatio
+            const convertedAmount = BigInt(uncheckedAmount) / dealerPriceRatio
             expect(walletInvoice).toEqual(
               expect.objectContaining({
                 usdAmount: UsdPaymentAmount(convertedAmount),
@@ -280,6 +283,17 @@ describe("WalletInvoiceBuilder", () => {
           checkCreator(invoices)
           checkRecipientWallet(invoices)
           checkExpiration(invoices)
+        })
+
+        it("fails to register and persist invoice with conversion for sub-1-cent amount", async () => {
+          const uncheckedAmount = 1
+          const btcCheckedAmount = checkedToBtcPaymentAmount(uncheckedAmount)
+          if (btcCheckedAmount instanceof Error) throw btcCheckedAmount
+          const WIBWithAmount =
+            await WIBWithRecipient.withExpiration(expirationInMinutes).withAmount(
+              btcCheckedAmount,
+            )
+          expect(WIBWithAmount).toBeInstanceOf(SubOneCentSatAmountForUsdReceiveError)
         })
       })
 
