@@ -31,8 +31,6 @@ import { checkedToUserId } from "@domain/accounts"
 
 import { AccountsRepository } from "@services/mongoose"
 
-import { z } from "zod"
-
 import { isAuthenticated, startApolloServer } from "./graphql-server"
 
 export const isEditor = rule({ cache: "contextual" })((
@@ -90,22 +88,18 @@ const setGqlAdminContext = async (
 
   // TODO: should be using casbin instead of account
   if (auditorId !== "anon") {
-    const EmailSchema = z.string().email()
-    let isEmail = false
-    try {
-      EmailSchema.parse(auditorId)
-      isEmail = true
-    } catch (err) {}
+    const emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/i
+    const isEmail = auditorId.match(emailFormat)
 
     if (isEmail) {
       isEditor = true
     } else {
       // TODO: remove branch once migration is completed to Oauth2
       const userId = checkedToUserId(auditorId)
-      if (userId instanceof Error) throw userId // need to throw otherwise the request hangs
+      if (userId instanceof Error) return next(userId)
 
       const account = await AccountsRepository().findByUserId(userId)
-      if (account instanceof Error) throw account // need to throw otherwise the request hangs
+      if (account instanceof Error) return next(account)
       isEditor = account.isEditor
     }
   }
