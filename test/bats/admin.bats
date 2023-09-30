@@ -43,11 +43,15 @@ TESTER_PHONE="+19876543210"
     --arg phone "$TESTER_PHONE" \
     '{phone: $phone}'
   )
+
   exec_admin_graphql "$admin_token" 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
-  [[ "$id" != "null" ]] || exit 1
+  [[ "$id" != "null" && "$id" != "" ]] || exit 1
   uuid="$(graphql_output '.data.accountDetailsByUserPhone.uuid')"
-  [[ "$uuid" != "null" ]] || exit 1
+  [[ "$uuid" != "null" && "$uuid" != "" ]] || exit 1
+
+  echo "id: $id"
+  echo "uuid: $uuid"
 
   new_phone="$(random_phone)"
   variables=$(
