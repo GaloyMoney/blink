@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import GraphQLAccount from "@graphql/admin/types/object/account"
+import AuditedAccount from "@graphql/admin/types/object/account"
 import Phone from "@graphql/shared/types/scalar/phone"
 import { mapError } from "@graphql/error-map"
 
@@ -14,7 +14,7 @@ const AccountDetailsByUserPhoneQuery = GT.Field<
     phone: PhoneNumber | ValidationError
   }
 >({
-  type: GT.NonNull(GraphQLAccount),
+  type: GT.NonNull(AuditedAccount),
   args: {
     phone: { type: GT.NonNull(Phone) },
   },

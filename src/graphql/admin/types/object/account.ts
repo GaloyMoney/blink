@@ -13,7 +13,7 @@ import AccountStatus from "../scalar/account-status"
 
 import GraphQLUser from "./user"
 
-const Account: GraphQLObjectType<Account> = GT.Object<Account>({
+const AuditedAccount: GraphQLObjectType<Account> = GT.Object<Account>({
   name: "AuditedAccount",
   description:
     "Accounts are core to the Galoy architecture. they have users, and own wallets",
@@ -61,4 +61,4 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
   }),
 })
 
-export default Account
+export default AuditedAccount

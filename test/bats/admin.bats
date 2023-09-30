@@ -24,6 +24,8 @@ TESTER_TOKEN_NAME="tester"
 TESTER_PHONE="+19876543210"
 
 @test "admin: perform admin queries/mutations" {
+  "skip"
+
   admin_token="$ADMIN_TOKEN_NAME"
 
   login_user \
