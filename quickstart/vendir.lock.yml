@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add record exception to registration endpoint (#3280)'
-      sha: a1b516636e64441188e682ce10356cb147380677
+      commitTitle: 'chore: make it possible to use Oauth2 with admin api (#3281)...'
+      sha: fd36325e874f4d0d88b383290c2f6390080d40f2
       tags:
-      - 0.13.100-1-ga1b516636
+      - 0.13.101-1-gfd36325e8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add record exception to registration endpoint (#3280)'
-      sha: a1b516636e64441188e682ce10356cb147380677
+      commitTitle: 'chore: make it possible to use Oauth2 with admin api (#3281)...'
+      sha: fd36325e874f4d0d88b383290c2f6390080d40f2
       tags:
-      - 0.13.100-1-ga1b516636
+      - 0.13.101-1-gfd36325e8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add record exception to registration endpoint (#3280)'
-      sha: a1b516636e64441188e682ce10356cb147380677
+      commitTitle: 'chore: make it possible to use Oauth2 with admin api (#3281)...'
+      sha: fd36325e874f4d0d88b383290c2f6390080d40f2
       tags:
-      - 0.13.100-1-ga1b516636
+      - 0.13.101-1-gfd36325e8
     path: ./
   path: ./graphql
 kind: LockConfig
