@@ -182,6 +182,30 @@ export const addInvoiceForRecipientForUsdWallet = async (
   })
 }
 
+export const addInvoiceForRecipientForUsdWalletAndBtcAmount = async (
+  args: AddInvoiceForRecipientForUsdWalletArgs,
+): Promise<LnInvoice | ApplicationError> => {
+  const recipientWalletId = checkedToWalletId(args.recipientWalletId)
+  if (recipientWalletId instanceof Error) return recipientWalletId
+
+  const expiresIn = checkedToMinutes(args.expiresIn || defaultUsdExpiration)
+  if (expiresIn instanceof Error) return expiresIn
+
+  const validated = await validateIsUsdWallet(recipientWalletId)
+  if (validated instanceof Error) return validated
+
+  const walletAmount = checkedToBtcPaymentAmount(args.amount)
+  if (walletAmount instanceof Error) return walletAmount
+
+  return addInvoiceForRecipient({
+    recipientWalletId,
+    walletAmount,
+    expiresIn,
+    descriptionHash: args.descriptionHash,
+    memo: args.memo,
+  })
+}
+
 export const addInvoiceNoAmountForRecipient = async ({
   recipientWalletId,
   memo = "",
