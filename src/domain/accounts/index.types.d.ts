@@ -118,36 +118,6 @@ type BusinessMapMarker = {
   mapInfo: BusinessMapInfo
 }
 
-type LimiterCheckInputs = {
-  amount: UsdPaymentAmount
-  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
-}
-
-type LimitsCheckerFn = (args: LimiterCheckInputs) => Promise<true | LimitsExceededError>
-
-type LimitsVolumesFn = (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) => Promise<
-  | {
-      volumeTotalLimit: UsdPaymentAmount
-      volumeUsed: UsdPaymentAmount
-      volumeRemaining: UsdPaymentAmount
-    }
-  | ValidationError
->
-
-type AccountLimitsChecker = {
-  checkIntraledger: LimitsCheckerFn
-  checkWithdrawal: LimitsCheckerFn
-  checkTradeIntraAccount: LimitsCheckerFn
-}
-
-type AccountLimitsVolumes =
-  | {
-      volumesIntraledger: LimitsVolumesFn
-      volumesWithdrawal: LimitsVolumesFn
-      volumesTradeIntraAccount: LimitsVolumesFn
-    }
-  | ValidationError
-
 type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }

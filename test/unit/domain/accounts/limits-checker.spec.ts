@@ -1,6 +1,14 @@
 import { getAccountLimits } from "@config"
-import { AccountLimitsChecker } from "@domain/accounts"
-import { LimitsExceededError } from "@domain/errors"
+import {
+  checkIntraledger,
+  checkTradeIntraAccount,
+  checkWithdrawal,
+} from "@domain/accounts"
+import {
+  IntraledgerLimitsExceededError,
+  TradeIntraAccountLimitsExceededError,
+  WithdrawalLimitsExceededError,
+} from "@domain/errors"
 import { WalletPriceRatio } from "@domain/payments"
 import {
   AmountCalculator,
@@ -10,10 +18,11 @@ import {
 } from "@domain/shared"
 
 let usdPaymentAmount: UsdPaymentAmount
-let limitsChecker: AccountLimitsChecker
+let priceRatio: WalletPriceRatio
+let accountLimits: IAccountLimits
 let walletVolumeIntraledger: TxBaseVolumeAmount<WalletCurrency>
 let walletVolumeWithdrawal: TxBaseVolumeAmount<WalletCurrency>
-let priceRatio: WalletPriceRatio
+let walletVolumeTradeIntraAccount: TxBaseVolumeAmount<WalletCurrency>
 
 const calc = AmountCalculator()
 
@@ -27,24 +36,20 @@ beforeAll(async () => {
   if (priceRatioResult instanceof Error) throw priceRatioResult
   priceRatio = priceRatioResult
 
-  const level: AccountLevel = 1
-  const accountLimits = getAccountLimits({ level })
+  accountLimits = getAccountLimits({ level: 1 })
 
   usdPaymentAmount = {
     amount: 10_000n,
     currency: WalletCurrency.Usd,
   }
 
-  limitsChecker = AccountLimitsChecker({
-    accountLimits,
-    priceRatio,
-  })
-
   const intraLedgerOutgoingBaseAmount = paymentAmountFromNumber({
     amount: accountLimits.intraLedgerLimit - Number(usdPaymentAmount.amount),
     currency: WalletCurrency.Usd,
   })
-  if (intraLedgerOutgoingBaseAmount instanceof Error) throw intraLedgerOutgoingBaseAmount
+  if (intraLedgerOutgoingBaseAmount instanceof Error) {
+    throw intraLedgerOutgoingBaseAmount
+  }
   walletVolumeIntraledger = {
     outgoingBaseAmount: intraLedgerOutgoingBaseAmount,
     incomingBaseAmount: ZERO_CENTS,
@@ -54,55 +59,109 @@ beforeAll(async () => {
     amount: accountLimits.withdrawalLimit - Number(usdPaymentAmount.amount),
     currency: WalletCurrency.Usd,
   })
-  if (withdrawalOutgoingBaseAmount instanceof Error) throw withdrawalOutgoingBaseAmount
+  if (withdrawalOutgoingBaseAmount instanceof Error) {
+    throw withdrawalOutgoingBaseAmount
+  }
   walletVolumeWithdrawal = {
     outgoingBaseAmount: withdrawalOutgoingBaseAmount,
+    incomingBaseAmount: ZERO_CENTS,
+  }
+
+  const tradeIntraAccountOutgoingBaseAmount = paymentAmountFromNumber({
+    amount: accountLimits.tradeIntraAccountLimit - Number(usdPaymentAmount.amount),
+    currency: WalletCurrency.Usd,
+  })
+  if (tradeIntraAccountOutgoingBaseAmount instanceof Error) {
+    throw tradeIntraAccountOutgoingBaseAmount
+  }
+  walletVolumeTradeIntraAccount = {
+    outgoingBaseAmount: tradeIntraAccountOutgoingBaseAmount,
     incomingBaseAmount: ZERO_CENTS,
   }
 })
 
 describe("LimitsChecker", () => {
   it("passes for exact limit amount", async () => {
-    const intraledgerLimitCheck = await limitsChecker.checkIntraledger({
+    const intraledgerLimitCheck = await checkIntraledger({
+      accountLimits,
+      priceRatio,
       amount: usdPaymentAmount,
       walletVolumes: [walletVolumeIntraledger],
     })
     expect(intraledgerLimitCheck).not.toBeInstanceOf(Error)
 
-    const withdrawalLimitCheck = await limitsChecker.checkWithdrawal({
+    const withdrawalLimitCheck = await checkWithdrawal({
+      accountLimits,
+      priceRatio,
       amount: usdPaymentAmount,
       walletVolumes: [walletVolumeWithdrawal],
     })
     expect(withdrawalLimitCheck).not.toBeInstanceOf(Error)
+
+    const tradeIntraAccountLimitCheck = await checkTradeIntraAccount({
+      accountLimits,
+      priceRatio,
+      amount: usdPaymentAmount,
+      walletVolumes: [walletVolumeTradeIntraAccount],
+    })
+    expect(tradeIntraAccountLimitCheck).not.toBeInstanceOf(Error)
   })
 
   it("passes for amount below limit", async () => {
-    const intraledgerLimitCheck = await limitsChecker.checkIntraledger({
+    const intraledgerLimitCheck = await checkIntraledger({
+      accountLimits,
+      priceRatio,
       amount: calc.sub(usdPaymentAmount, ONE_CENT),
       walletVolumes: [walletVolumeIntraledger],
     })
     expect(intraledgerLimitCheck).not.toBeInstanceOf(Error)
 
-    const withdrawalLimitCheck = await limitsChecker.checkWithdrawal({
+    const withdrawalLimitCheck = await checkWithdrawal({
+      accountLimits,
+      priceRatio,
       amount: calc.sub(usdPaymentAmount, ONE_CENT),
       walletVolumes: [walletVolumeWithdrawal],
     })
     expect(withdrawalLimitCheck).not.toBeInstanceOf(Error)
+
+    const tradeIntraAccountLimitCheck = await checkTradeIntraAccount({
+      accountLimits,
+      priceRatio,
+      amount: calc.sub(usdPaymentAmount, ONE_CENT),
+      walletVolumes: [walletVolumeTradeIntraAccount],
+    })
+    expect(tradeIntraAccountLimitCheck).not.toBeInstanceOf(Error)
   })
 
   it("returns an error for exceeded intraledger amount", async () => {
-    const intraledgerLimitCheck = await limitsChecker.checkIntraledger({
+    const intraledgerLimitCheck = await checkIntraledger({
+      accountLimits,
+      priceRatio,
       amount: calc.add(usdPaymentAmount, ONE_CENT),
       walletVolumes: [walletVolumeIntraledger],
     })
-    expect(intraledgerLimitCheck).toBeInstanceOf(LimitsExceededError)
+    expect(intraledgerLimitCheck).toBeInstanceOf(IntraledgerLimitsExceededError)
   })
 
   it("returns an error for exceeded withdrawal amount", async () => {
-    const withdrawalLimitCheck = await limitsChecker.checkWithdrawal({
+    const withdrawalLimitCheck = await checkWithdrawal({
+      accountLimits,
+      priceRatio,
       amount: calc.add(usdPaymentAmount, ONE_CENT),
       walletVolumes: [walletVolumeWithdrawal],
     })
-    expect(withdrawalLimitCheck).toBeInstanceOf(LimitsExceededError)
+    expect(withdrawalLimitCheck).toBeInstanceOf(WithdrawalLimitsExceededError)
+  })
+
+  it("returns an error for exceeded trade-intra-account amount", async () => {
+    const tradeIntraAccountLimitCheck = await checkTradeIntraAccount({
+      accountLimits,
+      priceRatio,
+      amount: calc.add(usdPaymentAmount, ONE_CENT),
+      walletVolumes: [walletVolumeTradeIntraAccount],
+    })
+    expect(tradeIntraAccountLimitCheck).toBeInstanceOf(
+      TradeIntraAccountLimitsExceededError,
+    )
   })
 })

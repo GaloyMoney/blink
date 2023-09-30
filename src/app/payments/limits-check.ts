@@ -1,6 +1,10 @@
 import { getAccountLimits, ONE_DAY } from "@config"
 
-import { AccountLimitsChecker } from "@domain/accounts"
+import {
+  checkIntraledger,
+  checkTradeIntraAccount,
+  checkWithdrawal,
+} from "@domain/accounts"
 
 import * as LedgerFacade from "@services/ledger/facade"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -28,10 +32,9 @@ export const checkIntraledgerLimits = async ({
   if (account instanceof Error) return account
   const accountLimits = getAccountLimits({ level: account.level })
 
-  return AccountLimitsChecker({
+  return checkIntraledger({
     accountLimits,
     priceRatio,
-  }).checkIntraledger({
     amount,
     walletVolumes,
   })
@@ -61,10 +64,9 @@ export const checkTradeIntraAccountLimits = async ({
   if (account instanceof Error) return account
   const accountLimits = getAccountLimits({ level: account.level })
 
-  return AccountLimitsChecker({
+  return checkTradeIntraAccount({
     accountLimits,
     priceRatio,
-  }).checkTradeIntraAccount({
     amount,
     walletVolumes,
   })
@@ -93,10 +95,9 @@ export const checkWithdrawalLimits = async ({
   if (account instanceof Error) return account
   const accountLimits = getAccountLimits({ level: account.level })
 
-  return AccountLimitsChecker({
+  return checkWithdrawal({
     accountLimits,
     priceRatio,
-  }).checkWithdrawal({
     amount,
     walletVolumes,
   })
