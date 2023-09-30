@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: make it possible to use Oauth2 with admin api (#3281)...'
-      sha: fd36325e874f4d0d88b383290c2f6390080d40f2
+      commitTitle: 'fix: app may hang (#3283)...'
+      sha: 538ed3cd29ccfa74b19722061bb6bcacd7d428ba
       tags:
-      - 0.13.101-1-gfd36325e8
+      - 0.13.102-1-g538ed3cd2
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: make it possible to use Oauth2 with admin api (#3281)...'
-      sha: fd36325e874f4d0d88b383290c2f6390080d40f2
+      commitTitle: 'fix: app may hang (#3283)...'
+      sha: 538ed3cd29ccfa74b19722061bb6bcacd7d428ba
       tags:
-      - 0.13.101-1-gfd36325e8
+      - 0.13.102-1-g538ed3cd2
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: make it possible to use Oauth2 with admin api (#3281)...'
-      sha: fd36325e874f4d0d88b383290c2f6390080d40f2
+      commitTitle: 'fix: app may hang (#3283)...'
+      sha: 538ed3cd29ccfa74b19722061bb6bcacd7d428ba
       tags:
-      - 0.13.101-1-gfd36325e8
+      - 0.13.102-1-g538ed3cd2
     path: ./
   path: ./graphql
 kind: LockConfig
