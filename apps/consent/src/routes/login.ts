@@ -31,6 +31,8 @@ router.get("/", csrfProtection, async (req, res, next) => {
     return
   }
 
+  // TODO: add rate limits
+
   let body: OAuth2LoginRequest
 
   try {
