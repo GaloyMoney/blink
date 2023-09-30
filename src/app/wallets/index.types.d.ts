@@ -1,6 +1,6 @@
 type AddInvoiceForSelfArgs = {
   walletId: WalletId
-  amount: number
+  walletAmount: PaymentAmount<WalletCurrency>
   memo?: string
   expiresIn: Minutes
 }
@@ -22,7 +22,7 @@ type AddInvoiceNoAmountForSelfArgs = {
 
 type AddInvoiceForRecipientArgs = {
   recipientWalletId: WalletId
-  amount: number
+  walletAmount: PaymentAmount<WalletCurrency>
   memo?: string
   descriptionHash?: string
   expiresIn: Minutes
