@@ -2,20 +2,27 @@ import { getAccountLimits } from "@config"
 import { AccountTxVolumeRemaining } from "@domain/accounts"
 import { WalletPriceRatio } from "@domain/payments"
 import {
+  AmountCalculator,
   ONE_CENT,
   WalletCurrency,
   ZERO_CENTS,
+  ZERO_SATS,
   paymentAmountFromNumber,
 } from "@domain/shared"
+
+const calc = AmountCalculator()
 
 let volumeRemainingCalc: IAccountTxVolumeRemaining
 let priceRatio: WalletPriceRatio
 let accountLimits: IAccountLimits
 
 let usdPaymentAmountRemaining: UsdPaymentAmount
-let walletVolumeIntraLedger: TxBaseVolumeAmount<WalletCurrency>
-let walletVolumeWithdrawal: TxBaseVolumeAmount<WalletCurrency>
-let walletVolumeTradeIntraAccount: TxBaseVolumeAmount<WalletCurrency>
+let usdWalletVolumeIntraLedger: TxBaseVolumeAmount<"USD">
+let btcWalletVolumeIntraLedger: TxBaseVolumeAmount<"BTC">
+let usdWalletVolumeWithdrawal: TxBaseVolumeAmount<"USD">
+let btcWalletVolumeWithdrawal: TxBaseVolumeAmount<"BTC">
+let usdWalletVolumeTradeIntraAccount: TxBaseVolumeAmount<"USD">
+let btcWalletVolumeTradeIntraAccount: TxBaseVolumeAmount<"BTC">
 
 beforeAll(() => {
   accountLimits = getAccountLimits({ level: 1 })
@@ -33,37 +40,59 @@ beforeAll(() => {
     currency: WalletCurrency.Usd,
   }
 
-  const intraLedgerOutgoingBaseAmount = paymentAmountFromNumber({
+  const totalIntraLedgerOutgoingBaseAmount = paymentAmountFromNumber({
     amount: accountLimits.intraLedgerLimit - Number(usdPaymentAmountRemaining.amount),
     currency: WalletCurrency.Usd,
   })
-  if (intraLedgerOutgoingBaseAmount instanceof Error) throw intraLedgerOutgoingBaseAmount
-  walletVolumeIntraLedger = {
-    outgoingBaseAmount: intraLedgerOutgoingBaseAmount,
+  if (totalIntraLedgerOutgoingBaseAmount instanceof Error) {
+    throw totalIntraLedgerOutgoingBaseAmount
+  }
+  usdWalletVolumeIntraLedger = {
+    outgoingBaseAmount: calc.divRound(totalIntraLedgerOutgoingBaseAmount, 2n),
     incomingBaseAmount: ZERO_CENTS,
   }
+  btcWalletVolumeIntraLedger = {
+    outgoingBaseAmount: priceRatio.convertFromUsd(
+      calc.divRound(totalIntraLedgerOutgoingBaseAmount, 2n),
+    ),
+    incomingBaseAmount: ZERO_SATS,
+  }
 
-  const withdrawalOutgoingBaseAmount = paymentAmountFromNumber({
+  const totalWithdrawalOutgoingBaseAmount = paymentAmountFromNumber({
     amount: accountLimits.withdrawalLimit - Number(usdPaymentAmountRemaining.amount),
     currency: WalletCurrency.Usd,
   })
-  if (withdrawalOutgoingBaseAmount instanceof Error) throw withdrawalOutgoingBaseAmount
-  walletVolumeWithdrawal = {
-    outgoingBaseAmount: withdrawalOutgoingBaseAmount,
+  if (totalWithdrawalOutgoingBaseAmount instanceof Error) {
+    throw totalWithdrawalOutgoingBaseAmount
+  }
+  usdWalletVolumeWithdrawal = {
+    outgoingBaseAmount: calc.divRound(totalWithdrawalOutgoingBaseAmount, 2n),
     incomingBaseAmount: ZERO_CENTS,
   }
+  btcWalletVolumeWithdrawal = {
+    outgoingBaseAmount: priceRatio.convertFromUsd(
+      calc.divRound(totalWithdrawalOutgoingBaseAmount, 2n),
+    ),
+    incomingBaseAmount: ZERO_SATS,
+  }
 
-  const tradeIntraAccountOutgoingBaseAmount = paymentAmountFromNumber({
+  const totalTradeIntraAccountOutgoingBaseAmount = paymentAmountFromNumber({
     amount:
       accountLimits.tradeIntraAccountLimit - Number(usdPaymentAmountRemaining.amount),
     currency: WalletCurrency.Usd,
   })
-  if (tradeIntraAccountOutgoingBaseAmount instanceof Error) {
-    throw tradeIntraAccountOutgoingBaseAmount
+  if (totalTradeIntraAccountOutgoingBaseAmount instanceof Error) {
+    throw totalTradeIntraAccountOutgoingBaseAmount
   }
-  walletVolumeTradeIntraAccount = {
-    outgoingBaseAmount: tradeIntraAccountOutgoingBaseAmount,
+  usdWalletVolumeTradeIntraAccount = {
+    outgoingBaseAmount: calc.divRound(totalTradeIntraAccountOutgoingBaseAmount, 2n),
     incomingBaseAmount: ZERO_CENTS,
+  }
+  btcWalletVolumeTradeIntraAccount = {
+    outgoingBaseAmount: priceRatio.convertFromUsd(
+      calc.divRound(totalTradeIntraAccountOutgoingBaseAmount, 2n),
+    ),
+    incomingBaseAmount: ZERO_SATS,
   }
 })
 
@@ -72,7 +101,7 @@ describe("LimitsChecker", () => {
     it("intraLedger", async () => {
       const remaining = await volumeRemainingCalc.intraLedger({
         priceRatio,
-        walletVolumes: [walletVolumeIntraLedger],
+        walletVolumes: [usdWalletVolumeIntraLedger, btcWalletVolumeIntraLedger],
       })
       if (remaining instanceof Error) throw remaining
       expect(remaining.amount).toEqual(usdPaymentAmountRemaining.amount)
@@ -81,7 +110,7 @@ describe("LimitsChecker", () => {
     it("withdrawal", async () => {
       const remaining = await volumeRemainingCalc.withdrawal({
         priceRatio,
-        walletVolumes: [walletVolumeWithdrawal],
+        walletVolumes: [usdWalletVolumeWithdrawal, btcWalletVolumeWithdrawal],
       })
       if (remaining instanceof Error) throw remaining
       expect(remaining.amount).toEqual(usdPaymentAmountRemaining.amount)
@@ -90,7 +119,10 @@ describe("LimitsChecker", () => {
     it("tradeIntraAccount", async () => {
       const remaining = await volumeRemainingCalc.tradeIntraAccount({
         priceRatio,
-        walletVolumes: [walletVolumeTradeIntraAccount],
+        walletVolumes: [
+          usdWalletVolumeTradeIntraAccount,
+          btcWalletVolumeTradeIntraAccount,
+        ],
       })
       if (remaining instanceof Error) throw remaining
       expect(remaining.amount).toEqual(usdPaymentAmountRemaining.amount)
@@ -103,7 +135,7 @@ describe("LimitsChecker", () => {
         priceRatio,
         walletVolumes: [
           {
-            ...walletVolumeIntraLedger,
+            ...usdWalletVolumeIntraLedger,
             outgoingBaseAmount: {
               amount: BigInt(accountLimits.intraLedgerLimit + 1),
               currency: WalletCurrency.Usd,
@@ -120,7 +152,7 @@ describe("LimitsChecker", () => {
         priceRatio,
         walletVolumes: [
           {
-            ...walletVolumeWithdrawal,
+            ...usdWalletVolumeWithdrawal,
             outgoingBaseAmount: {
               amount: BigInt(accountLimits.withdrawalLimit + 1),
               currency: WalletCurrency.Usd,
@@ -137,7 +169,7 @@ describe("LimitsChecker", () => {
         priceRatio,
         walletVolumes: [
           {
-            ...walletVolumeWithdrawal,
+            ...usdWalletVolumeWithdrawal,
             outgoingBaseAmount: {
               amount: BigInt(accountLimits.tradeIntraAccountLimit + 1),
               currency: WalletCurrency.Usd,
