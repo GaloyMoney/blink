@@ -7,8 +7,9 @@ import { normalizePaymentAmount } from "@graphql/shared/root/mutation"
 
 import { Accounts } from "@app"
 import { AccountLimitsRange, AccountLimitsType } from "@domain/accounts"
-import { SECS_PER_DAY } from "@config"
+import { SECS_PER_DAY, getDealerConfig } from "@config"
 import { InvalidAccountLimitTypeError } from "@domain/errors"
+import { getMidPriceRatio } from "@app/prices"
 
 const OneDayAccountLimit = GT.Object<{
   account: Account
@@ -40,22 +41,35 @@ const OneDayAccountLimit = GT.Object<{
       resolve: async (source) => {
         const { account, limitType } = source
 
+        const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
+        const priceRatio = await getMidPriceRatio(usdHedgeEnabled)
+        if (priceRatio instanceof Error) throw mapError(priceRatio)
+
         let volumeRemaining: UsdPaymentAmount | ApplicationError
         switch (limitType) {
           case AccountLimitsType.IntraLedger:
-            volumeRemaining = await Accounts.remainingIntraLedgerLimit(account)
+            volumeRemaining = await Accounts.remainingIntraLedgerLimit({
+              accountId: account.id,
+              priceRatio,
+            })
             if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
 
             return normalizePaymentAmount(volumeRemaining).amount
 
           case AccountLimitsType.Withdrawal:
-            volumeRemaining = await Accounts.remainingWithdrawalLimit(account)
+            volumeRemaining = await Accounts.remainingWithdrawalLimit({
+              accountId: account.id,
+              priceRatio,
+            })
             if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
 
             return normalizePaymentAmount(volumeRemaining).amount
 
           case AccountLimitsType.SelfTrade:
-            volumeRemaining = await Accounts.remainingTradeIntraAccountLimit(account)
+            volumeRemaining = await Accounts.remainingTradeIntraAccountLimit({
+              accountId: account.id,
+              priceRatio,
+            })
             if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
 
             return normalizePaymentAmount(volumeRemaining).amount

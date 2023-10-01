@@ -1,77 +1,131 @@
-import { getMidPriceRatio } from "@app/prices"
+import { getAccountLimits, ONE_DAY } from "@config"
 
-import { getAccountLimits, getDealerConfig, ONE_DAY } from "@config"
-
-import { AccountLimitsType } from "@domain/accounts"
 import {
-  intraledgerVolumeRemaining,
-  tradeIntraAccountVolumeRemaining,
-  withdrawalVolumeRemaining,
-} from "@domain/accounts/limits-volume"
+  AccountLimitsType,
+  AccountTxVolumeLimitChecker,
+  AccountTxVolumeRemaining,
+} from "@domain/accounts"
 import { InvalidAccountLimitTypeError } from "@domain/errors"
 
 import * as LedgerFacade from "@services/ledger/facade"
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
-export const remainingIntraLedgerLimit = async (account: Account) => {
+export const remainingIntraLedgerLimit = async ({
+  accountId,
+  priceRatio,
+}: {
+  accountId: AccountId
+  priceRatio: WalletPriceRatio
+}) => {
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
+  const accountVolumeRemaining = AccountTxVolumeRemaining(accountLimits)
+
   const accountWalletDescriptors =
-    await WalletsRepository().findAccountWalletsByAccountId(account.id)
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
   if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
 
   const walletVolumes = await LedgerFacade.intraledgerTxBaseVolumeAmountForAccountSince({
     accountWalletDescriptors,
     period: ONE_DAY,
   })
-
   if (walletVolumes instanceof Error) return walletVolumes
 
-  const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
-  const priceRatio = await getMidPriceRatio(usdHedgeEnabled)
-  if (priceRatio instanceof Error) return priceRatio
-
-  const accountLimits = getAccountLimits({ level: account.level })
-
-  const limitVolumes = await intraledgerVolumeRemaining({
-    accountLimits,
+  return accountVolumeRemaining.intraLedger({
     priceRatio,
     walletVolumes,
   })
-  if (limitVolumes instanceof Error) return limitVolumes
-
-  return limitVolumes
 }
 
-export const remainingWithdrawalLimit = async (account: Account) => {
+export const checkIntraledgerLimits = async ({
+  amount,
+  accountId,
+  priceRatio,
+}: {
+  amount: UsdPaymentAmount
+  accountId: AccountId
+  priceRatio: WalletPriceRatio
+}) => {
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
+  const accountLimitsChecker = AccountTxVolumeLimitChecker(accountLimits)
+
+  const volumeRemaining = await remainingIntraLedgerLimit({ accountId, priceRatio })
+  if (volumeRemaining instanceof Error) return volumeRemaining
+
+  return accountLimitsChecker.checkIntraledger({
+    amount,
+    volumeRemaining,
+  })
+}
+
+export const remainingWithdrawalLimit = async ({
+  accountId,
+  priceRatio,
+}: {
+  accountId: AccountId
+  priceRatio: WalletPriceRatio
+}) => {
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
+  const accountVolumeRemaining = AccountTxVolumeRemaining(accountLimits)
+
   const accountWalletDescriptors =
-    await WalletsRepository().findAccountWalletsByAccountId(account.id)
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
   if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
 
   const walletVolumes = await LedgerFacade.externalPaymentVolumeAmountForAccountSince({
     accountWalletDescriptors,
     period: ONE_DAY,
   })
-
   if (walletVolumes instanceof Error) return walletVolumes
 
-  const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
-  const priceRatio = await getMidPriceRatio(usdHedgeEnabled)
-  if (priceRatio instanceof Error) return priceRatio
-
-  const accountLimits = getAccountLimits({ level: account.level })
-
-  const limitVolumes = await withdrawalVolumeRemaining({
-    accountLimits,
+  return accountVolumeRemaining.withdrawal({
     priceRatio,
     walletVolumes,
   })
-  if (limitVolumes instanceof Error) return limitVolumes
-
-  return limitVolumes
 }
 
-export const remainingTradeIntraAccountLimit = async (account: Account) => {
+export const checkWithdrawalLimits = async ({
+  amount,
+  accountId,
+  priceRatio,
+}: {
+  amount: UsdPaymentAmount
+  accountId: AccountId
+  priceRatio: WalletPriceRatio
+}) => {
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
+  const accountLimitsChecker = AccountTxVolumeLimitChecker(accountLimits)
+
+  const volumeRemaining = await remainingWithdrawalLimit({ accountId, priceRatio })
+  if (volumeRemaining instanceof Error) return volumeRemaining
+
+  return accountLimitsChecker.checkWithdrawal({
+    amount,
+    volumeRemaining,
+  })
+}
+
+export const remainingTradeIntraAccountLimit = async ({
+  accountId,
+  priceRatio,
+}: {
+  accountId: AccountId
+  priceRatio: WalletPriceRatio
+}) => {
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
+  const accountVolumeRemaining = AccountTxVolumeRemaining(accountLimits)
+
   const accountWalletDescriptors =
-    await WalletsRepository().findAccountWalletsByAccountId(account.id)
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
   if (accountWalletDescriptors instanceof Error) return accountWalletDescriptors
 
   const walletVolumes =
@@ -79,23 +133,35 @@ export const remainingTradeIntraAccountLimit = async (account: Account) => {
       accountWalletDescriptors,
       period: ONE_DAY,
     })
-
   if (walletVolumes instanceof Error) return walletVolumes
 
-  const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
-  const priceRatio = await getMidPriceRatio(usdHedgeEnabled)
-  if (priceRatio instanceof Error) return priceRatio
-
-  const accountLimits = getAccountLimits({ level: account.level })
-
-  const limitVolumes = await tradeIntraAccountVolumeRemaining({
-    accountLimits,
+  return accountVolumeRemaining.tradeIntraAccount({
     priceRatio,
     walletVolumes,
   })
-  if (limitVolumes instanceof Error) return limitVolumes
+}
 
-  return limitVolumes
+export const checkTradeIntraAccountLimits = async ({
+  amount,
+  accountId,
+  priceRatio,
+}: {
+  amount: UsdPaymentAmount
+  accountId: AccountId
+  priceRatio: WalletPriceRatio
+}) => {
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
+  const accountLimitsChecker = AccountTxVolumeLimitChecker(accountLimits)
+
+  const volumeRemaining = await remainingTradeIntraAccountLimit({ accountId, priceRatio })
+  if (volumeRemaining instanceof Error) return volumeRemaining
+
+  return accountLimitsChecker.checkTradeIntraAccount({
+    amount,
+    volumeRemaining,
+  })
 }
 
 export const totalLimit = async ({

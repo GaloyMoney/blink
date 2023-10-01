@@ -1,4 +1,3 @@
-import { WalletCurrency } from "@domain/shared"
 import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
 import {
@@ -13,14 +12,14 @@ import { DealerPriceService } from "@services/dealer-price"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
-
-import { PartialResult } from "../partial-result"
-
 import {
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
-} from "./limits-check"
+} from "@app/accounts"
+
+import { PartialResult } from "../partial-result"
+
 import { constructPaymentFlowBuilder, getPriceRatioForLimits } from "./helpers"
 
 const getLightningFeeEstimation = async ({

@@ -50,6 +50,11 @@ import {
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 
+import {
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
+  checkWithdrawalLimits,
+} from "@app/accounts"
 import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
 import { removeDeviceTokens } from "@app/users/remove-device-tokens"
 import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
@@ -61,11 +66,6 @@ import { CallbackService } from "@services/svix"
 import { getCallbackServiceConfig } from "@config"
 import { CallbackEventType } from "@domain/callback"
 
-import {
-  checkIntraledgerLimits,
-  checkTradeIntraAccountLimits,
-  checkWithdrawalLimits,
-} from "./limits-check"
 import {
   constructPaymentFlowBuilder,
   getPriceRatioForLimits,

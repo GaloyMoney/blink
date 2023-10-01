@@ -210,15 +210,6 @@ type GetVolumeAmountSinceFn = <S extends WalletCurrency>(
   args: IGetVolumeAmountArgs<S>,
 ) => Promise<TxBaseVolumeAmount<S> | LedgerServiceError>
 
-interface IGetVolumeAmountForAccountArgs {
-  accountWalletDescriptors: AccountWalletDescriptors
-  period: Days
-}
-
-type GetVolumeAmountForAccountSinceFn = (
-  args: IGetVolumeAmountForAccountArgs,
-) => Promise<TxBaseVolumeAmount<WalletCurrency>[] | LedgerServiceError>
-
 type RevertLightningPaymentArgs = {
   journalId: LedgerJournalId
   paymentHash: PaymentHash
