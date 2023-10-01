@@ -8,11 +8,11 @@ directories:
       url: https://github.com/GaloyMoney/galoy.git
       ref: ee4198efbf59e0abf2724db789d3c59d9eb695ad
     includePaths:
-    - core/api/dev/**/*
+    - dev/**/*
     excludePaths:
-    - core/api/dev/bin/**/*
-    - core/api/dev/.gitignore
-    newRootPath: core/api/dev
+    - dev/bin/**/*
+    - dev/.gitignore
+    newRootPath: dev
 - path: ./galoy
   contents:
   - path: ./
@@ -20,16 +20,16 @@ directories:
       url: https://github.com/GaloyMoney/galoy.git
       ref: ee4198efbf59e0abf2724db789d3c59d9eb695ad
     includePaths:
-    - core/api/dev/**/*
-    - core/api/test/bats/bitcoind_signer_descriptors.json
-    - core/api/test/bats/gql/*
-    - core/api/.env
-    - core/api/.envrc
-    - core/api/.env.ci
-    - core/api/docker-compose.yml
-    - core/api/docker-compose.override.yml
+    - dev/**/*
+    - test/bats/bitcoind_signer_descriptors.json
+    - test/bats/gql/*
+    - .env
+    - .envrc
+    - .env.ci
+    - docker-compose.yml
+    - docker-compose.override.yml
     excludePaths:
-    - core/api/dev/bin/**/*
+    - dev/bin/**/*
 - path: ./graphql
   contents:
   - path: ./
@@ -37,6 +37,6 @@ directories:
       url: https://github.com/GaloyMoney/galoy.git
       ref: ee4198efbf59e0abf2724db789d3c59d9eb695ad
     includePaths:
-    - core/api/src/graphql/public/schema.graphql
-    - core/api/src/graphql/admin/schema.graphql
-    newRootPath: core/api/src/graphql
+    - src/graphql/public/schema.graphql
+    - src/graphql/admin/schema.graphql
+    newRootPath: src/graphql

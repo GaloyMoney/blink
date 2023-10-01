@@ -293,7 +293,7 @@ services:
     command: ["make", "execute-bats-from-within-container"]
     working_dir: /repo
     env_file:
-      - ${TMP_ENV_CI:-.env.ci}
+      - ${TMP_ENV_CI:-../../.env.ci}
     environment:
       - GALOY_ENDPOINT=oathkeeper:4455
       - OATHKEEPER_ENDPOINT=http://${OATHKEEPER_HOST:-oathkeeper}:${OATHKEEPER_PORT:-4456}/decisions/
@@ -309,7 +309,7 @@ services:
     command: ["make", "execute-integration-from-within-container"]
     working_dir: /repo
     env_file:
-      - ${TMP_ENV_CI:-.env.ci}
+      - ${TMP_ENV_CI:-../../.env.ci}
     volumes:
       - ./:/repo
   stablesats:
