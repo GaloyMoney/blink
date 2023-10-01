@@ -1,6 +1,6 @@
 import { applyMiddleware } from "graphql-middleware"
-import { and, rule, shield } from "graphql-shield"
-import { RuleAnd } from "graphql-shield/typings/rules"
+import { rule, shield } from "graphql-shield"
+import { Rule } from "graphql-shield/typings/rules"
 
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
@@ -27,19 +27,7 @@ import { Transactions } from "@app"
 
 import { AuthorizationError } from "@graphql/error"
 
-import { checkedToUserId } from "@domain/accounts"
-
-import { AccountsRepository } from "@services/mongoose"
-
-import { isAuthenticated, startApolloServer } from "./graphql-server"
-
-export const isEditor = rule({ cache: "contextual" })((
-  parent,
-  args,
-  ctx: GraphQLAdminContext,
-) => {
-  return ctx.isEditor ? true : new AuthorizationError({ logger: baseLogger })
-})
+import { startApolloServer } from "./graphql-server"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -80,33 +68,9 @@ const setGqlAdminContext = async (
     }),
   }
 
-  // can be anon.
-  // TODO: refactor to remove auth endpoint and make context always carry a uuid v4 .sub/UserId
-  const auditorId = tokenPayload.sub as UserId
+  const auditorId = tokenPayload.sub as AuditorId
 
-  let isEditor = false
-
-  // TODO: should be using casbin instead of account
-  if (auditorId !== "anon") {
-    const emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/i
-    const isEmail = auditorId.match(emailFormat)
-
-    if (isEmail) {
-      isEditor = true
-    } else if (tokenPayload.scope.includes("editor")) {
-      isEditor = true
-    } else {
-      // TODO: remove branch once migration is completed to Oauth2
-      const userId = checkedToUserId(auditorId)
-      if (userId instanceof Error) return next(userId)
-
-      const account = await AccountsRepository().findByUserId(userId)
-      if (account instanceof Error) return next(account)
-      isEditor = account.isEditor
-    }
-  }
-
-  req.gqlContext = { ip, loaders, auditorId, logger, isEditor }
+  req.gqlContext = { ip, loaders, auditorId, logger }
 
   addAttributesToCurrentSpanAndPropagate(
     {
@@ -118,15 +82,23 @@ const setGqlAdminContext = async (
   )
 }
 
+const isAuthenticated = rule({ cache: "contextual" })(async (
+  parent,
+  args,
+  ctx: GraphQLAdminContext,
+) => {
+  return ctx.auditorId !== null && ctx.auditorId !== undefined && ctx.auditorId !== ""
+})
+
 export async function startApolloServerForAdminSchema() {
-  const authedQueryFields: { [key: string]: RuleAnd } = {}
+  const authedQueryFields: { [key: string]: Rule } = {}
   for (const key of Object.keys(adminQueryFields.authed)) {
-    authedQueryFields[key] = and(isAuthenticated, isEditor)
+    authedQueryFields[key] = isAuthenticated
   }
 
-  const authedMutationFields: { [key: string]: RuleAnd } = {}
+  const authedMutationFields: { [key: string]: Rule } = {}
   for (const key of Object.keys(adminMutationFields.authed)) {
-    authedMutationFields[key] = and(isAuthenticated, isEditor)
+    authedMutationFields[key] = isAuthenticated
   }
 
   const permissions = shield(

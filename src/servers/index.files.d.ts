@@ -23,8 +23,7 @@ type GraphQLPublicContextAuth = Omit<GraphQLPublicContext, "user" | "domainAccou
 type GraphQLAdminContext = {
   logger: Logger
   loaders: Loaders
-  auditorId: UserId
-  isEditor: boolean
+  auditorId: AuditorId
   ip: IpAddress
 }
 

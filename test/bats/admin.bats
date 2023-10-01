@@ -55,7 +55,6 @@ gql_admin_file() {
     -H 'Content-Type: application/json' \
     -d '{
           "grant_types": ["client_credentials"],
-          "scope": "editor"
         }')
 
   client_id=$(echo $client | jq -r '.client_id')
@@ -65,7 +64,7 @@ gql_admin_file() {
   admin_token=$(curl -s -X POST $HYDRA_PUBLIC_API/oauth2/token \
   -H 'Content-Type: application/x-www-form-urlencoded' \
   -u "$client_id:$client_secret" \
-  -d "grant_type=client_credentials&scope=editor" | jq -r '.access_token'
+  -d "grant_type=client_credentials" | jq -r '.access_token'
   ) 
 
   echo $admin_token

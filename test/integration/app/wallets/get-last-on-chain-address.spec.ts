@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import { Accounts, Wallets } from "@app"
 
 import { AccountStatus } from "@domain/accounts"
@@ -6,6 +8,8 @@ import { InactiveAccountError } from "@domain/errors"
 import { AccountsRepository } from "@services/mongoose"
 
 import { createRandomUserAndBtcWallet } from "test/helpers"
+
+const updatedByAuditorId = randomUUID() as AuditorId
 
 describe("onChainAddress", () => {
   it("fails if account is locked", async () => {
@@ -17,7 +21,7 @@ describe("onChainAddress", () => {
     const updatedAccount = await Accounts.updateAccountStatus({
       id: newAccount.id,
       status: AccountStatus.Locked,
-      updatedByUserId: newAccount.kratosUserId,
+      updatedByAuditorId,
     })
     if (updatedAccount instanceof Error) throw updatedAccount
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)

@@ -159,10 +159,10 @@ const AccountSchema = new Schema<AccountRecord>(
     role: {
       type: String,
       // FIXME: role is a mix between 2 things here
-      // there can be many users and editors
+      // there can be many users
       // there can be only one dealer, bankowner and funder
       // so we may want different property to differentiate those
-      enum: ["user", "editor", "dealer", "bankowner", "funder"],
+      enum: ["user", "dealer", "bankowner", "funder"],
       required: true,
       default: "user",
       // TODO : enforce the fact there can be only one dealer/bankowner/funder
@@ -244,7 +244,13 @@ const AccountSchema = new Schema<AccountRecord>(
             default: Date.now,
             required: true,
           },
+
+          // TODO: rename to updatedByAuditorId
           updatedByUserId: {
+            type: String,
+            required: false,
+          },
+          updatedByAuditorId: {
             type: String,
             required: false,
           },

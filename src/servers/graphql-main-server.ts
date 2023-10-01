@@ -9,7 +9,7 @@ import { bootstrap } from "@app/bootstrap"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
-import { shield } from "graphql-shield"
+import { rule, shield } from "graphql-shield"
 import { Rule } from "graphql-shield/typings/rules"
 import {
   ACCOUNT_USERNAME,
@@ -23,10 +23,18 @@ import { NextFunction, Request, Response } from "express"
 import { parseIps } from "@domain/accounts-ips"
 
 import { startApolloServerForAdminSchema } from "./graphql-admin-server"
-import { isAuthenticated, startApolloServer } from "./graphql-server"
+import { startApolloServer } from "./graphql-server"
 import { walletIdMiddleware } from "./middlewares/wallet-id"
 
 import { sessionPublicContext } from "./middlewares/session"
+
+export const isAuthenticated = rule({ cache: "contextual" })((
+  parent,
+  args,
+  ctx: GraphQLPublicContext,
+) => {
+  return "domainAccount" in ctx && !!ctx.domainAccount
+})
 
 const setGqlContext = async (
   req: Request,

@@ -226,7 +226,6 @@ const translateToAccount = (result: AccountRecord): Account => ({
     [],
   ),
   withdrawFee: result.withdrawFee as Satoshis,
-  isEditor: result.role === "editor",
   notificationSettings: {
     push: {
       enabled: result.notificationSettings

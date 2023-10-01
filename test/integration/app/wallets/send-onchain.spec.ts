@@ -1,10 +1,11 @@
-import { Accounts, Prices, Wallets, Payments } from "@app"
+import { randomUUID } from "crypto"
+
+import { Accounts, Payments, Prices, Wallets } from "@app"
 
 import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@config"
 
 import { AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
-import { toCents, UsdDisplayCurrency } from "@domain/fiat"
 import {
   InactiveAccountError,
   InsufficientBalanceError,
@@ -12,20 +13,21 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
+import { toCents, UsdDisplayCurrency } from "@domain/fiat"
 import { SubOneCentSatAmountForUsdSelfSendError } from "@domain/payments"
 import {
   AmountCalculator,
-  WalletCurrency,
   InvalidBtcPaymentAmountError,
+  WalletCurrency,
 } from "@domain/shared"
 
-import { PayoutSpeed } from "@domain/bitcoin/onchain"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { PayoutSpeed } from "@domain/bitcoin/onchain"
 
-import { AccountsRepository } from "@services/mongoose"
-import { Transaction, TransactionMetadata } from "@services/ledger/schema"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { DealerPriceService } from "@services/dealer-price"
+import { Transaction, TransactionMetadata } from "@services/ledger/schema"
+import { AccountsRepository } from "@services/mongoose"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
 import { timestampDaysAgo } from "@utils"
 
@@ -85,6 +87,8 @@ const receiveDisplayAmounts = {
 }
 
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
+
+const updatedByAuditorId = randomUUID() as AuditorId
 
 const randomOnChainMemo = () =>
   "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
@@ -278,7 +282,7 @@ describe("onChainPay", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: newAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: newAccount.kratosUserId,
+        updatedByAuditorId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)
@@ -533,7 +537,7 @@ describe("onChainPay", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: recipientAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: recipientAccount.kratosUserId,
+        updatedByAuditorId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)

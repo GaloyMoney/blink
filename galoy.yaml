@@ -45,8 +45,6 @@ admin_accounts:
     phone: "+16505554325"
   - role: bankowner
     phone: "+16505554334"
-  - role: editor
-    phone: "+16505554336"
 test_accounts: []
 rateLimits:
   requestCodePerLoginIdentifier:
