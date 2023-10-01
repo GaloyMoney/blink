@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: integrate hydra for admin api (#3284)...'
-      sha: c46a6939ee102f391d65a55133f9f1b99b4dc849
+      commitTitle: 'fix: build - issue with hydra dns (#3286)...'
+      sha: 80bb62d1b4923ae3754c9875d1d0f7bb91145852
       tags:
-      - 0.13.103-1-gc46a6939e
+      - 0.13.103-3-g80bb62d1b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: integrate hydra for admin api (#3284)...'
-      sha: c46a6939ee102f391d65a55133f9f1b99b4dc849
+      commitTitle: 'fix: build - issue with hydra dns (#3286)...'
+      sha: 80bb62d1b4923ae3754c9875d1d0f7bb91145852
       tags:
-      - 0.13.103-1-gc46a6939e
+      - 0.13.103-3-g80bb62d1b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: integrate hydra for admin api (#3284)...'
-      sha: c46a6939ee102f391d65a55133f9f1b99b4dc849
+      commitTitle: 'fix: build - issue with hydra dns (#3286)...'
+      sha: 80bb62d1b4923ae3754c9875d1d0f7bb91145852
       tags:
-      - 0.13.103-1-gc46a6939e
+      - 0.13.103-3-g80bb62d1b
     path: ./
   path: ./graphql
 kind: LockConfig
