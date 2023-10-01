@@ -13,6 +13,8 @@ import * as RateLimitImpl from "@/services/rate-limit"
 
 import { createRandomUserAndBtcWallet } from "test/helpers"
 
+const updatedByAuditorId = randomUUID() as AuditorId
+
 describe("onChainAddress", () => {
   it("can apply requestId as idempotency key when creating new address", async () => {
     const newWalletDescriptor = await createRandomUserAndBtcWallet()
@@ -48,7 +50,7 @@ describe("onChainAddress", () => {
     const updatedAccount = await Accounts.updateAccountStatus({
       id: newAccount.id,
       status: AccountStatus.Locked,
-      updatedByUserId: newAccount.kratosUserId,
+      updatedByAuditorId,
     })
     if (updatedAccount instanceof Error) throw updatedAccount
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)

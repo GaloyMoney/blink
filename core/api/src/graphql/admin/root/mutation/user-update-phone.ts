@@ -44,7 +44,7 @@ const UserUpdatePhoneMutation = GT.Field<
     const account = await Admin.updateUserPhone({
       accountUuid,
       phone,
-      updatedByUserId: auditorId,
+      updatedByAuditorId: auditorId,
     })
     if (account instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(account)] }

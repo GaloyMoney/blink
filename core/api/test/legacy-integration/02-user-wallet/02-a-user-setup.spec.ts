@@ -161,12 +161,12 @@ describe("UserWallet", () => {
     it("sets account status (with history) for given user id", async () => {
       let account
 
-      const updatedByUserId = randomUUID() as UserId
+      const updatedByAuditorId = randomUUID() as AuditorId
 
       account = await Accounts.updateAccountStatus({
         id: accountIdC,
         status: "pending",
-        updatedByUserId,
+        updatedByAuditorId,
       })
       if (account instanceof Error) {
         throw account
@@ -176,7 +176,7 @@ describe("UserWallet", () => {
       account = await Accounts.updateAccountStatus({
         id: account.id,
         status: "locked",
-        updatedByUserId,
+        updatedByAuditorId,
         comment: "Looks spammy",
       })
       if (account instanceof Error) {
@@ -184,7 +184,7 @@ describe("UserWallet", () => {
       }
       expect(account.statusHistory.slice(-1)[0]).toMatchObject({
         status: "locked",
-        updatedByUserId,
+        updatedByAuditorId,
         comment: "Looks spammy",
       })
       expect(account.status).toEqual("locked")
@@ -192,7 +192,7 @@ describe("UserWallet", () => {
       account = await Accounts.updateAccountStatus({
         id: account.id,
         status: "active",
-        updatedByUserId,
+        updatedByAuditorId,
       })
       if (account instanceof Error) {
         throw account

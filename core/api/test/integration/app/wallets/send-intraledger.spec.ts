@@ -81,6 +81,8 @@ const receiveAboveLimitDisplayAmounts = {
 const randomIntraLedgerMemo = () =>
   "this is my intraledger memo #" + (Math.random() * 1_000_000).toFixed()
 
+const updatedByAuditorId = randomUUID() as AuditorId
+
 describe("intraLedgerPay", () => {
   it("fails if sender account is locked", async () => {
     const senderWalletDescriptor = await createRandomUserAndBtcWallet()
@@ -109,7 +111,7 @@ describe("intraLedgerPay", () => {
     const updatedAccount = await Accounts.updateAccountStatus({
       id: senderAccount.id,
       status: AccountStatus.Locked,
-      updatedByUserId: senderAccount.kratosUserId,
+      updatedByAuditorId,
     })
     if (updatedAccount instanceof Error) throw updatedAccount
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)
@@ -143,7 +145,7 @@ describe("intraLedgerPay", () => {
     const updatedAccount = await Accounts.updateAccountStatus({
       id: recipientAccount.id,
       status: AccountStatus.Locked,
-      updatedByUserId: recipientAccount.kratosUserId,
+      updatedByAuditorId,
     })
     if (updatedAccount instanceof Error) throw updatedAccount
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)

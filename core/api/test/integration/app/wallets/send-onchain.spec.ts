@@ -15,7 +15,6 @@ import {
 import { SubOneCentSatAmountForUsdSelfSendError } from "@/domain/payments"
 import {
   AmountCalculator,
-  WalletCurrency,
   InvalidBtcPaymentAmountError,
 } from "@/domain/shared"
 
@@ -85,6 +84,8 @@ const receiveDisplayAmounts = {
 }
 
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
+
+const updatedByAuditorId = randomUUID() as AuditorId
 
 const randomOnChainMemo = () =>
   "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
@@ -278,7 +279,7 @@ describe("onChainPay", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: newAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: newAccount.kratosUserId,
+        updatedByAuditorId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)
@@ -533,7 +534,7 @@ describe("onChainPay", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: recipientAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: recipientAccount.kratosUserId,
+        updatedByAuditorId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)

@@ -12,7 +12,6 @@ const AccountDeleteMutation = GT.Field({
   resolve: async (_, _args, { domainAccount }: { domainAccount: Account }) => {
     const result = await Accounts.markAccountForDeletion({
       accountId: domainAccount.id,
-      updatedByUserId: domainAccount.kratosUserId,
     })
 
     if (result instanceof Error) {

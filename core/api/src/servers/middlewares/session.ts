@@ -17,7 +17,7 @@ export const sessionPublicContext = async ({
 }: {
   tokenPayload: jsonwebtoken.JwtPayload
   ip: IpAddress | undefined
-}): Promise<GraphQLPublicContext | Error> => {
+}): Promise<GraphQLPublicContext | GraphQLPublicContextAuth | Error> => {
   const logger = baseLogger.child({ tokenPayload })
 
   let domainAccount: Account | undefined

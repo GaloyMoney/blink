@@ -236,10 +236,6 @@ export const configSchema = {
           role: "bankowner",
           phone: "+16505554334",
         },
-        {
-          role: "editor",
-          phone: "+16505554336",
-        },
       ],
       uniqueItems: true,
     },

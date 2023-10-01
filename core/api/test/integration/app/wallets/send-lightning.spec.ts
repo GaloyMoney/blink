@@ -121,6 +121,8 @@ const receiveAboveLimitDisplayAmounts = {
   displayCurrency: UsdDisplayCurrency,
 }
 
+const updatedByAuditorId = randomUUID() as AuditorId
+
 const randomLightningMemo = () =>
   "this is my lightning memo #" + (Math.random() * 1_000_000).toFixed()
 
@@ -187,7 +189,7 @@ describe("initiated via lightning", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: newAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: newAccount.kratosUserId,
+        updatedByAuditorId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)
@@ -515,7 +517,7 @@ describe("initiated via lightning", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: recipientAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: recipientAccount.kratosUserId,
+        updatedByAuditorId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)

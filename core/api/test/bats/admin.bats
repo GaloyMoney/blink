@@ -51,7 +51,9 @@ gql_admin_file() {
 @test "admin: perform admin queries/mutations" {
   client=$(curl -L -s -X POST $HYDRA_ADMIN_API/admin/clients \
     -H 'Content-Type: application/json' \
-    -d '{ "grant_types": ["client_credentials"], "scope": "editor" }')
+    -d '{
+          "grant_types": ["client_credentials"]
+        }')
 
   client_id=$(echo $client | jq -r '.client_id')
   client_secret=$(echo $client | jq -r '.client_secret')
@@ -60,10 +62,10 @@ gql_admin_file() {
   admin_token=$(curl -s -X POST $HYDRA_PUBLIC_API/oauth2/token \
   -H 'Content-Type: application/x-www-form-urlencoded' \
   -u "$client_id:$client_secret" \
-  -d "grant_type=client_credentials&scope=editor" | jq -r '.access_token'
+  -d "grant_type=client_credentials" | jq -r '.access_token'
   ) 
 
-  echo $admin_token
+  echo "admin_token: $admin_token"
 
   login_user \
     "$TESTER_TOKEN_NAME" \

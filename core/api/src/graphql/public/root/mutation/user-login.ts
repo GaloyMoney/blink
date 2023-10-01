@@ -20,7 +20,7 @@ const UserLoginInput = GT.Input({
 
 const UserLoginMutation = GT.Field<
   null,
-  GraphQLPublicContext | GraphQLAdminContext,
+  GraphQLPublicContext,
   {
     input: {
       phone: PhoneNumber | InputValidationError
