@@ -1,12 +1,12 @@
 BASH_SOURCE=${BASH_SOURCE:-test/bats/helpers/.}
 source $(dirname "$BASH_SOURCE")/onchain.bash
 
-SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_server_pid
-WS_SERVER_PID_FILE=$REPO_ROOT/test/bats/.galoy_ws_server_pid
-TRIGGER_PID_FILE=$REPO_ROOT/test/bats/.galoy_trigger_pid
-EXPORTER_PID_FILE=$REPO_ROOT/test/bats/.galoy_exporter_pid
-SUBSCRIBER_PID_FILE=$REPO_ROOT/test/bats/.gql_subscriber_pid
-CALLBACK_PID_FILE=$REPO_ROOT/test/bats/.callback_pid
+SERVER_PID_FILE=$CORE_ROOT/test/bats/.galoy_server_pid
+WS_SERVER_PID_FILE=$CORE_ROOT/test/bats/.galoy_ws_server_pid
+TRIGGER_PID_FILE=$CORE_ROOT/test/bats/.galoy_trigger_pid
+EXPORTER_PID_FILE=$CORE_ROOT/test/bats/.galoy_exporter_pid
+SUBSCRIBER_PID_FILE=$CORE_ROOT/test/bats/.gql_subscriber_pid
+CALLBACK_PID_FILE=$CORE_ROOT/test/bats/.callback_pid
 
 METRICS_ENDPOINT="localhost:3000/metrics"
 
@@ -48,7 +48,7 @@ subscribe_to() {
   variables=$3
 
   background \
-    ${REPO_ROOT}/node_modules/.bin/ts-node "${REPO_ROOT}/test/helpers/servers/gql-subscribe.ts" \
+    ${CORE_ROOT}/node_modules/.bin/ts-node "${CORE_ROOT}/test/helpers/servers/gql-subscribe.ts" \
     "ws://${GALOY_ENDPOINT}/graphqlws" \
     "$(gql_file $gql_filename)" \
     "$token" \

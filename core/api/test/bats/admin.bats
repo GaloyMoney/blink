@@ -46,7 +46,7 @@ gql_admin_query() {
 }
 
 gql_admin_file() {
-  echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/admin-gql/$1.gql"
+  echo "${BATS_TEST_DIRNAME:-${CORE_ROOT}/test/bats}/admin-gql/$1.gql"
 }
 
 

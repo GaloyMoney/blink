@@ -6,7 +6,7 @@ bitcoind_init() {
   bitcoin_cli -generate 200 > /dev/null 2>&1
 
   bitcoin_signer_cli createwallet "dev" || true
-  bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ${REPO_ROOT}/test/bats/bitcoind_signer_descriptors.json)"
+  bitcoin_signer_cli -rpcwallet=dev importdescriptors "$(cat ${CORE_ROOT}/test/bats/bitcoind_signer_descriptors.json)"
 }
 
 bitcoin_signer_cli() {

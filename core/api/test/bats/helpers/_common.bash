@@ -1,5 +1,6 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
-COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${REPO_ROOT##*/}}"
+CORE_ROOT=${REPO_ROOT}/core/api
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${CORE_ROOT##*/}}"
 
 CACHE_DIR=${BATS_TMPDIR:-tmp/bats}/galoy-bats-cache
 mkdir -p $CACHE_DIR
@@ -100,7 +101,7 @@ gql_query() {
 }
 
 gql_file() {
-  echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql"
+  echo "${BATS_TEST_DIRNAME:-${CORE_ROOT}/test/bats}/gql/$1.gql"
 }
 
 new_idempotency_key() {
