@@ -98,14 +98,6 @@
         introspection_url: http://hydra:4445/admin/oauth2/introspect
         token_from:
           header: Oauth2-Token
-    - handler: bearer_token
-      config:
-        check_session_url: http://kratos:4433/sessions/whoami
-        preserve_path: true
-        preserve_query: true
-        subject_from: identity.id
-        extra_from: "@this"
-    - handler: anonymous
   authorizer:
     handler: allow
   mutators:
