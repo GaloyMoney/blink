@@ -155,6 +155,9 @@ kill-graphql:
 redis-cli:
 	docker-compose exec redis redis-cli
 
+redis-flush:
+	docker-compose exec redis redis-cli FLUSHDB
+
 codegen:
 	yarn write-sdl
 

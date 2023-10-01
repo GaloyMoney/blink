@@ -93,6 +93,11 @@
         subject_from: user.email
         extra_from: "@this"
         force_method: "GET"
+    - handler: oauth2_introspection
+      config:
+        introspection_url: http://hydra:4445/admin/oauth2/introspect
+        token_from:
+          header: Oauth2-Token
     - handler: bearer_token
       config:
         check_session_url: http://kratos:4433/sessions/whoami
@@ -106,4 +111,4 @@
   mutators:
     - handler: id_token
       config:
-        claims: '{"sub": "{{ print .Subject }}"}'
+        claims: '{"sub": "{{ print .Subject }}", "scope": "{{ print .Extra.scope }}" }'
