@@ -96,3 +96,7 @@ services:
       - "8071:8071"
     extra_hosts:
       - "bats-tests:host-gateway"
+  hydra:
+    ports:
+      - "4444:4444" #! Public port
+      - "4445:4445" #! Admin port

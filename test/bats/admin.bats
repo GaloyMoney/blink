@@ -2,31 +2,73 @@
 
 load "helpers/setup-and-teardown"
 
-username="user1"
-
 setup_file() {
   start_server
-
-  login_user \
-    "$ADMIN_TOKEN_NAME" \
-    "$ADMIN_PHONE" \
-    "$CODE"
 }
 
 teardown_file() {
   stop_server
 }
 
-ADMIN_TOKEN_NAME="editor"
-ADMIN_PHONE="+16505554336"
-
 TESTER_TOKEN_NAME="tester"
 TESTER_PHONE="+19876543210"
+username="user1"
+
+exec_admin_graphql() {
+  local token=$1
+  local query_name=$2
+  local variables=${3:-"{}"}
+  echo "GQL query -  token: ${token} -  query: ${query_name} -  vars: ${variables}"
+  echo "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}"
+
+  AUTH_HEADER="Oauth2-Token: $token"
+
+  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
+    run_cmd="run"
+  else
+    run_cmd=""
+  fi
+
+  gql_route="admin/graphql"
+
+  ${run_cmd} curl -s \
+    -X POST \
+    ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}" \
+    "${GALOY_ENDPOINT}/${gql_route}"
+
+  echo "GQL output: '$output'"
+}
+
+gql_admin_query() {
+  cat "$(gql_admin_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
+}
+
+gql_admin_file() {
+  echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/admin-gql/$1.gql"
+}
+
 
 @test "admin: perform admin queries/mutations" {
-  "skip"
+  client=$(curl -L -s -X POST http://127.0.0.1:4445/admin/clients \
+    -H 'Content-Type: application/json' \
+    -d '{
+          "grant_types": ["client_credentials"],
+          "scope": "editor"
+        }')
 
-  admin_token="$ADMIN_TOKEN_NAME"
+  client_id=$(echo $client | jq -r '.client_id')
+  client_secret=$(echo $client | jq -r '.client_secret')
+
+  # get token from client_id and client_secret
+  admin_token=$(curl -s -X POST http://127.0.0.1:4444/oauth2/token \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -u "$client_id:$client_secret" \
+  -d "grant_type=client_credentials&scope=editor" | jq -r '.access_token'
+  ) 
+
+  echo $admin_token
 
   login_user \
     "$TESTER_TOKEN_NAME" \
@@ -46,7 +88,7 @@ TESTER_PHONE="+19876543210"
     '{phone: $phone}'
   )
 
-  exec_admin_graphql "$admin_token" 'account-details-by-user-phone' "$variables"
+  exec_admin_graphql $admin_token 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$id" != "null" && "$id" != "" ]] || exit 1
   uuid="$(graphql_output '.data.accountDetailsByUserPhone.uuid')"

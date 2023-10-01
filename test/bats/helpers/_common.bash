@@ -103,14 +103,6 @@ gql_file() {
   echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/gql/$1.gql"
 }
 
-gql_admin_query() {
-  cat "$(gql_admin_file $1)" | tr '\n' ' ' | sed 's/"/\\"/g'
-}
-
-gql_admin_file() {
-  echo "${BATS_TEST_DIRNAME:-${REPO_ROOT}/test/bats}/admin-gql/$1.gql"
-}
-
 new_idempotency_key() {
   random_uuid
 }
@@ -142,37 +134,6 @@ exec_graphql() {
     -H "Content-Type: application/json" \
     -H "X-Idempotency-Key: $(new_idempotency_key)" \
     -d "{\"query\": \"$(gql_query $query_name)\", \"variables\": $variables}" \
-    "${GALOY_ENDPOINT}/${gql_route}"
-
-  echo "GQL output: '$output'"
-}
-
-exec_admin_graphql() {
-  local token_name=$1
-  local query_name=$2
-  local variables=${3:-"{}"}
-  echo "GQL query -  user: ${token_name} -  query: ${query_name} -  vars: ${variables}"
-  echo "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}"
-
-  if [[ ${token_name} == "anon" ]]; then
-    AUTH_HEADER=""
-  else
-    AUTH_HEADER="Authorization: Bearer $(read_value ${token_name})"
-  fi
-
-  if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
-    run_cmd="run"
-  else
-    run_cmd=""
-  fi
-
-  gql_route="admin/graphql"
-
-  ${run_cmd} curl -s \
-    -X POST \
-    ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
-    -H "Content-Type: application/json" \
-    -d "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}" \
     "${GALOY_ENDPOINT}/${gql_route}"
 
   echo "GQL output: '$output'"
