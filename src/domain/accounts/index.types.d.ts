@@ -46,6 +46,23 @@ interface IAccountLimits {
 
 type IAccountLimitAmounts = { [key in keyof IAccountLimits]: UsdPaymentAmount }
 
+interface IAccountTxVolumeLimitChecker {
+  checkIntraledger: (args: {
+    amount: UsdPaymentAmount
+    volumeRemaining: UsdPaymentAmount
+  }) => Promise<true | IntraledgerLimitsExceededError>
+
+  checkWithdrawal: (args: {
+    amount: UsdPaymentAmount
+    volumeRemaining: UsdPaymentAmount
+  }) => Promise<true | WithdrawalLimitsExceededError>
+
+  checkTradeIntraAccount: (args: {
+    amount: UsdPaymentAmount
+    volumeRemaining: UsdPaymentAmount
+  }) => Promise<true | TradeIntraAccountLimitsExceededError>
+}
+
 interface IAccountTxVolumeRemaining {
   intraLedger: (args: {
     priceRatio: WalletPriceRatio
