@@ -31,6 +31,13 @@ authenticators:
       subject_from: identity.id
       extra_from: identity.traits
 
+  oauth2_introspection:
+    enabled: true
+    config:
+      introspection_url: http://hydra:4445/admin/oauth2/introspect
+      token_from:
+        header: Oauth2-Token
+
   anonymous:
     enabled: true
     config:

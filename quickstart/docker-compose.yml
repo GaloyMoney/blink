@@ -64,7 +64,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=default
   galoy:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:7b243db20b1a45cc89fe8f2c401488ba0736aa77020c71ffe37baa08f21b0b34
+    image: us.gcr.io/galoy-org/galoy-app@sha256:43bc53998e16b166e7987c8a4069e78e0e36418767fb9cea68e8e39ccf61b57b
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -86,7 +86,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:7b243db20b1a45cc89fe8f2c401488ba0736aa77020c71ffe37baa08f21b0b34
+    image: us.gcr.io/galoy-org/galoy-app@sha256:43bc53998e16b166e7987c8a4069e78e0e36418767fb9cea68e8e39ccf61b57b
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -111,7 +111,7 @@ services:
     - MONGO_INITDB_DATABASE=galoy
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:1fbbbd3d3829908ad3be79e2fd6c1dbdb7de5828ce4c7cb924551488d078d29a
+    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:6ecc5a3878ff447f861a4e1ed503e2cb2ccceb6d021eaabd3a13ad3278e4eab8
     depends_on:
     - mongodb
     environment:

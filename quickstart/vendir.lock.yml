@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: app may hang (#3283)...'
-      sha: 538ed3cd29ccfa74b19722061bb6bcacd7d428ba
+      commitTitle: 'feat: integrate hydra for admin api (#3284)...'
+      sha: c46a6939ee102f391d65a55133f9f1b99b4dc849
       tags:
-      - 0.13.102-1-g538ed3cd2
+      - 0.13.103-1-gc46a6939e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: app may hang (#3283)...'
-      sha: 538ed3cd29ccfa74b19722061bb6bcacd7d428ba
+      commitTitle: 'feat: integrate hydra for admin api (#3284)...'
+      sha: c46a6939ee102f391d65a55133f9f1b99b4dc849
       tags:
-      - 0.13.102-1-g538ed3cd2
+      - 0.13.103-1-gc46a6939e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: app may hang (#3283)...'
-      sha: 538ed3cd29ccfa74b19722061bb6bcacd7d428ba
+      commitTitle: 'feat: integrate hydra for admin api (#3284)...'
+      sha: c46a6939ee102f391d65a55133f9f1b99b4dc849
       tags:
-      - 0.13.102-1-g538ed3cd2
+      - 0.13.103-1-gc46a6939e
     path: ./
   path: ./graphql
 kind: LockConfig

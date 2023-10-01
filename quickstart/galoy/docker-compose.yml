@@ -20,6 +20,8 @@ services:
       - lnd-outside-1
       - svix
       - lnd-outside-2
+      - hydra
+      - mailslurper
     restart: on-failure:10
   integration-deps:
     image: busybox
@@ -422,3 +424,35 @@ services:
     image: postgres:14.1
     environment:
       POSTGRES_PASSWORD: postgres
+  hydra:
+    image: oryd/hydra:v2.1.2
+    command: serve -c /home/ory/hydra.yml all --dev
+    volumes:
+      - type: bind
+        source: dev/ory
+        target: /home/ory
+    environment:
+      - DSN=postgres://hydra:secret@postgresdhydra:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    restart: unless-stopped
+    depends_on:
+      - hydra-migrate
+      - postgresdhydra
+    ports: []
+  hydra-migrate:
+    image: oryd/hydra:v2.1.2
+    environment:
+      - DSN=postgres://hydra:secret@postgresdhydra:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: migrate -c /home/ory/hydra.yml sql -e --yes
+    volumes:
+      - type: bind
+        source: dev/ory
+        target: /home/ory
+    restart: on-failure
+    depends_on:
+      - postgresdhydra
+  postgresdhydra:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=hydra
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=hydra
