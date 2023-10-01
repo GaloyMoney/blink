@@ -35,92 +35,96 @@ const WalletVolumesAggregator = ({
   return { outgoingUsdAmount }
 }
 
-export const intraledgerVolumeRemaining = async ({
-  accountLimits,
-  priceRatio,
-  walletVolumes,
-}: {
-  accountLimits: IAccountLimits
-  priceRatio: WalletPriceRatio
-  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
-}): Promise<UsdPaymentAmount | ValidationError> => {
-  const outgoingUsdVolumeAmount = WalletVolumesAggregator({
-    walletVolumes,
+export const AccountTxVolumeRemaining = (
+  accountLimits: IAccountLimits,
+): IAccountTxVolumeRemaining => {
+  const intraLedger = async ({
     priceRatio,
-  }).outgoingUsdAmount()
-
-  const { intraLedgerLimit: limit } = accountLimits
-  const limitAmount = paymentAmountFromNumber({
-    amount: limit,
-    currency: WalletCurrency.Usd,
-  })
-  if (limitAmount instanceof Error) return limitAmount
-
-  addAttributesToCurrentSpan({
-    "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
-    "txVolume.threshold": `${limitAmount.amount}`,
-    "txVolume.limitCheck": AccountLimitsType.IntraLedger,
-  })
-
-  return calc.sub(limitAmount, outgoingUsdVolumeAmount)
-}
-
-export const withdrawalVolumeRemaining = async ({
-  accountLimits,
-  priceRatio,
-  walletVolumes,
-}: {
-  accountLimits: IAccountLimits
-  priceRatio: WalletPriceRatio
-  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
-}): Promise<UsdPaymentAmount | ValidationError> => {
-  const outgoingUsdVolumeAmount = WalletVolumesAggregator({
     walletVolumes,
+  }: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }): Promise<UsdPaymentAmount | ValidationError> => {
+    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
+      walletVolumes,
+      priceRatio,
+    }).outgoingUsdAmount()
+
+    const { intraLedgerLimit: limit } = accountLimits
+    const limitAmount = paymentAmountFromNumber({
+      amount: limit,
+      currency: WalletCurrency.Usd,
+    })
+    if (limitAmount instanceof Error) return limitAmount
+
+    addAttributesToCurrentSpan({
+      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.threshold": `${limitAmount.amount}`,
+      "txVolume.limitCheck": AccountLimitsType.IntraLedger,
+    })
+
+    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+  }
+
+  const withdrawal = async ({
     priceRatio,
-  }).outgoingUsdAmount()
-
-  const { withdrawalLimit: limit } = accountLimits
-  const limitAmount = paymentAmountFromNumber({
-    amount: limit,
-    currency: WalletCurrency.Usd,
-  })
-  if (limitAmount instanceof Error) return limitAmount
-
-  addAttributesToCurrentSpan({
-    "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
-    "txVolume.threshold": `${limitAmount.amount}`,
-    "txVolume.limitCheck": AccountLimitsType.Withdrawal,
-  })
-
-  return calc.sub(limitAmount, outgoingUsdVolumeAmount)
-}
-
-export const tradeIntraAccountVolumeRemaining = async ({
-  accountLimits,
-  priceRatio,
-  walletVolumes,
-}: {
-  accountLimits: IAccountLimits
-  priceRatio: WalletPriceRatio
-  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
-}): Promise<UsdPaymentAmount | ValidationError> => {
-  const outgoingUsdVolumeAmount = WalletVolumesAggregator({
     walletVolumes,
+  }: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }): Promise<UsdPaymentAmount | ValidationError> => {
+    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
+      walletVolumes,
+      priceRatio,
+    }).outgoingUsdAmount()
+
+    const { withdrawalLimit: limit } = accountLimits
+    const limitAmount = paymentAmountFromNumber({
+      amount: limit,
+      currency: WalletCurrency.Usd,
+    })
+    if (limitAmount instanceof Error) return limitAmount
+
+    addAttributesToCurrentSpan({
+      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.threshold": `${limitAmount.amount}`,
+      "txVolume.limitCheck": AccountLimitsType.Withdrawal,
+    })
+
+    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+  }
+
+  const tradeIntraAccount = async ({
     priceRatio,
-  }).outgoingUsdAmount()
+    walletVolumes,
+  }: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }): Promise<UsdPaymentAmount | ValidationError> => {
+    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
+      walletVolumes,
+      priceRatio,
+    }).outgoingUsdAmount()
 
-  const { tradeIntraAccountLimit: limit } = accountLimits
-  const limitAmount = paymentAmountFromNumber({
-    amount: limit,
-    currency: WalletCurrency.Usd,
-  })
-  if (limitAmount instanceof Error) return limitAmount
+    const { tradeIntraAccountLimit: limit } = accountLimits
+    const limitAmount = paymentAmountFromNumber({
+      amount: limit,
+      currency: WalletCurrency.Usd,
+    })
+    if (limitAmount instanceof Error) return limitAmount
 
-  addAttributesToCurrentSpan({
-    "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
-    "txVolume.threshold": `${limitAmount.amount}`,
-    "txVolume.limitCheck": AccountLimitsType.SelfTrade,
-  })
+    addAttributesToCurrentSpan({
+      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.threshold": `${limitAmount.amount}`,
+      "txVolume.limitCheck": AccountLimitsType.SelfTrade,
+    })
 
-  return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+  }
+
+  return {
+    intraLedger,
+    withdrawal,
+    tradeIntraAccount,
+  }
 }

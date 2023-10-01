@@ -46,6 +46,23 @@ interface IAccountLimits {
 
 type IAccountLimitAmounts = { [key in keyof IAccountLimits]: UsdPaymentAmount }
 
+interface IAccountTxVolumeRemaining {
+  intraLedger: (args: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }) => Promise<UsdPaymentAmount | ValidationError>
+
+  withdrawal: (args: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }) => Promise<UsdPaymentAmount | ValidationError>
+
+  tradeIntraAccount: (args: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }) => Promise<UsdPaymentAmount | ValidationError>
+}
+
 type AccountContact = {
   readonly id: Username
   readonly username: Username
