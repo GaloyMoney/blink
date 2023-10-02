@@ -1,5 +1,11 @@
-REPO_ROOT=$(git rev-parse --show-toplevel)
-CORE_ROOT=${REPO_ROOT}/core/api
+if git rev-parse --is-inside-work-tree &> /dev/null; then
+    REPO_ROOT=$(git rev-parse --show-toplevel)
+    CORE_ROOT=${REPO_ROOT}/core/api
+else
+    REPO_ROOT=$(pwd)
+    CORE_ROOT=$(pwd)
+fi
+
 COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-${CORE_ROOT##*/}}"
 
 CACHE_DIR=${BATS_TMPDIR:-tmp/bats}/galoy-bats-cache
