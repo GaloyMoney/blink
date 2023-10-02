@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add new usd-invoice-sats-denominated mutation (#3282)...'
-      sha: ee4198efbf59e0abf2724db789d3c59d9eb695ad
+      commitTitle: 'refactor: clean up account limits abstractions & unit test (#3290)...'
+      sha: fc57df941aca2e2bb1e2d4a15459befbf4f79111
       tags:
-      - 0.13.104-2-gee4198efb
+      - 0.13.105-1-gfc57df941
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add new usd-invoice-sats-denominated mutation (#3282)...'
-      sha: ee4198efbf59e0abf2724db789d3c59d9eb695ad
+      commitTitle: 'refactor: clean up account limits abstractions & unit test (#3290)...'
+      sha: fc57df941aca2e2bb1e2d4a15459befbf4f79111
       tags:
-      - 0.13.104-2-gee4198efb
+      - 0.13.105-1-gfc57df941
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add new usd-invoice-sats-denominated mutation (#3282)...'
-      sha: ee4198efbf59e0abf2724db789d3c59d9eb695ad
+      commitTitle: 'refactor: clean up account limits abstractions & unit test (#3290)...'
+      sha: fc57df941aca2e2bb1e2d4a15459befbf4f79111
       tags:
-      - 0.13.104-2-gee4198efb
+      - 0.13.105-1-gfc57df941
     path: ./
   path: ./graphql
 kind: LockConfig
