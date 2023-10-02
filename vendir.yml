@@ -1,0 +1,15 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+
+directories:
+  - path: prelude
+    contents:
+      - path: .
+        git:
+          url: https://github.com/facebook/buck2.git
+          # Need to update to $BUCK2_VERSION when new buck2 gets updated via `nix flake update`
+          ref: '2023-10-01'
+        includePaths:
+          - prelude/**/*
+        newRootPath: prelude
+
