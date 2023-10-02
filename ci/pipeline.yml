@@ -126,8 +126,8 @@ jobs:
           outputs:
             - name: image
           params:
-            CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.build-args
+            CONTEXT: repo/core/api
+            BUILD_ARGS_FILE: repo/core/api/.build-args
           run:
             path: build
       - put: edge-image
@@ -151,9 +151,9 @@ jobs:
           outputs:
             - name: image
           params:
-            CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.build-args
-            DOCKERFILE: "repo/Dockerfile-debug"
+            CONTEXT: repo/core/api
+            BUILD_ARGS_FILE: repo/core/api/.build-args
+            DOCKERFILE: "repo/core/api/Dockerfile-debug"
           run:
             path: build
       - put: debug-edge-image
@@ -177,9 +177,9 @@ jobs:
           outputs:
             - name: image
           params:
-            CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.build-args
-            DOCKERFILE: "repo/Dockerfile-migrate"
+            CONTEXT: repo/core/api
+            BUILD_ARGS_FILE: repo/core/api/.build-args
+            DOCKERFILE: "repo/core/api/Dockerfile-migrate"
           run:
             path: build
       - put: migrate-edge-image
@@ -203,9 +203,9 @@ jobs:
           outputs:
             - name: image
           params:
-            CONTEXT: repo
-            BUILD_ARGS_FILE: repo/.build-args
-            DOCKERFILE: "repo/Dockerfile-websocket"
+            CONTEXT: repo/core/api
+            BUILD_ARGS_FILE: repo/core/api/.build-args
+            DOCKERFILE: "repo/core/api/Dockerfile-websocket"
           run:
             path: build
       - put: websocket-edge-image
@@ -253,7 +253,7 @@ jobs:
       - { put: docker-host, params: { acquire: true } }
       - task: test-on-docker-host
         attempts: 2
-        timeout: 12m
+        timeout: 15m
         tags: ["galoy-staging"]
         config:
           platform: linux

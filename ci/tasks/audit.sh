@@ -2,6 +2,6 @@
 
 set -eu
 
-pushd repo
+pushd repo/core/api
 
 make audit

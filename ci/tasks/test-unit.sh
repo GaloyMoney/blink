@@ -6,6 +6,6 @@ set -eu
 
 unpack_deps
 
-pushd repo
+pushd repo/core/api
 
 make unit-in-ci
