@@ -42,10 +42,12 @@
         jq
         ytt
       ];
+      buck2Version = pkgs.buck2.version;
     in
       with pkgs; {
         devShells.default = mkShell {
           inherit nativeBuildInputs;
+          BUCK2_VERSION = buck2Version;
         };
 
         formatter = alejandra;
