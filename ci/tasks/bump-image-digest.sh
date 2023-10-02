@@ -9,7 +9,7 @@ export ref=$(cat ./repo/.git/short_ref)
 export app_version=$(cat version/version)
 
 mkdir -p charts-repo/charts/galoy/apollo-router
-cp ./repo/dev/apollo-federation/supergraph.graphql ./charts-repo/charts/galoy/apollo-router/supergraph.graphql
+cp ./repo/core/api/dev/apollo-federation/supergraph.graphql ./charts-repo/charts/galoy/apollo-router/supergraph.graphql
 
 pushd charts-repo
 
