@@ -4,7 +4,7 @@ set -eu
 
 export REPO_PATH=repo/core/api
 
-. pipeline-tasks/ci/vendor/tasks/helpers.sh
+. pipeline-tasks/ci/tasks/helpers.sh
 
 unpack_deps
 

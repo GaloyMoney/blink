@@ -1,3 +1,13 @@
+#!/bin/bash
+
+
+if [[ -z $(git config --global user.email) ]]; then
+  git config --global user.email "bot@galoy.io"
+fi
+if [[ -z $(git config --global user.name) ]]; then
+  git config --global user.name "CI Bot"
+fi
+
 function unpack_deps() {
 
   echo "Unpacking deps... "
