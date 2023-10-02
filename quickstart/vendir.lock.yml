@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: fix hydra endpoint in concourse'
-      sha: 6cc17a96eb79e69f0e5ea8ab21a09f57b1b581f9
+      commitTitle: 'chore: fix case when scope is missing (#3293)...'
+      sha: 00f0b126a5d805b57ac70304aa7e787ae8259a72
       tags:
-      - 0.13.106-13-g6cc17a96e
+      - 0.13.107-2-g00f0b126a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: fix hydra endpoint in concourse'
-      sha: 6cc17a96eb79e69f0e5ea8ab21a09f57b1b581f9
+      commitTitle: 'chore: fix case when scope is missing (#3293)...'
+      sha: 00f0b126a5d805b57ac70304aa7e787ae8259a72
       tags:
-      - 0.13.106-13-g6cc17a96e
+      - 0.13.107-2-g00f0b126a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: fix hydra endpoint in concourse'
-      sha: 6cc17a96eb79e69f0e5ea8ab21a09f57b1b581f9
+      commitTitle: 'chore: fix case when scope is missing (#3293)...'
+      sha: 00f0b126a5d805b57ac70304aa7e787ae8259a72
       tags:
-      - 0.13.106-13-g6cc17a96e
+      - 0.13.107-2-g00f0b126a
     path: ./
   path: ./graphql
 kind: LockConfig
