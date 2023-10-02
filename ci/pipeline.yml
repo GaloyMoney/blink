@@ -767,7 +767,14 @@ resources:
       private_key: #@ data.values.github_private_key
   -  #@ pipeline_tasks_resource()
 
-  -  #@ nodejs_deps_resource(True)
+  - name: deps
+    type: git
+    source:
+      paths: [core/api/yarn.lock]
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key
+    webhook_token: ((webhook.secret))
   -  #@ deps_version_resource()
   -  #@ bundled_deps_resource()
   -  #@ slack_resource()
