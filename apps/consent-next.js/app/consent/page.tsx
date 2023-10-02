@@ -2,6 +2,11 @@ import { redirect } from "next/navigation"
 import React from "react"
 import { hydraClient } from "../hydra-config"
 import { oidcConformityMaybeFakeSession } from "../oidc-cert"
+import MainContent from "../components/main-container"
+import Card from "../components/card"
+import Logo from "../components/logo"
+import ScopeItem from "../components/scope-item/scope-item"
+import ButtonComponent from "../components/button-component"
 
 interface ConsentProps {
   consent_challenge: string
@@ -23,46 +28,37 @@ const submitForm = async (form: FormData) => {
   if (submitValue === "Deny access") {
     console.log("User denied access")
     let response
-    try {
-      response = await hydraClient.rejectOAuth2ConsentRequest({
-        consentChallenge: consent_challenge,
-        rejectOAuth2Request: {
-          error: "access_denied",
-          error_description: "The resource owner denied the request",
-        },
-      })
-    } catch (err) {
-      console.error("error in rejectOAuth2ConsentRequest", err)
-      return
-    }
+    response = await hydraClient.rejectOAuth2ConsentRequest({
+      consentChallenge: consent_challenge,
+      rejectOAuth2Request: {
+        error: "access_denied",
+        error_description: "The resource owner denied the request",
+      },
+    })
+
     redirect(response.data.redirect_to)
   }
 
   let responseConfirm
-  try {
-    let session = {
-      // TODO: pass email
-      access_token: { card: "alice", email: "" },
-      id_token: { card: "bob", email: "" },
-    }
-    const responseInit = await hydraClient.getOAuth2ConsentRequest({
-      consentChallenge: consent_challenge,
-    })
-    const body = responseInit.data
-    responseConfirm = await hydraClient.acceptOAuth2ConsentRequest({
-      consentChallenge: consent_challenge,
-      acceptOAuth2ConsentRequest: {
-        grant_scope: grantScope,
-        session: oidcConformityMaybeFakeSession(grantScope, body, session),
-        grant_access_token_audience: body.requested_access_token_audience,
-        remember: remember,
-        remember_for: 3600,
-      },
-    })
-  } catch (err) {
-    console.error("error in getOAuth2ConsentRequest, acceptOAuth2ConsentRequest", err)
-    return
+  let session = {
+    // TODO: pass email
+    access_token: { card: "alice", email: "" },
+    id_token: { card: "bob", email: "" },
   }
+  const responseInit = await hydraClient.getOAuth2ConsentRequest({
+    consentChallenge: consent_challenge,
+  })
+  const body = responseInit.data
+  responseConfirm = await hydraClient.acceptOAuth2ConsentRequest({
+    consentChallenge: consent_challenge,
+    acceptOAuth2ConsentRequest: {
+      grant_scope: grantScope,
+      session: oidcConformityMaybeFakeSession(grantScope, body, session),
+      grant_access_token_audience: body.requested_access_token_audience,
+      remember: remember,
+      remember_for: 3600,
+    },
+  })
 
   redirect(responseConfirm.data.redirect_to)
 }
@@ -70,7 +66,7 @@ const submitForm = async (form: FormData) => {
 const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
   const { consent_challenge } = searchParams
   if (!consent_challenge) {
-    return <p>INVALID REQUEST</p>
+    throw new Error("Invalid Request")
   }
 
   const data = await hydraClient.getOAuth2ConsentRequest({
@@ -80,23 +76,18 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
   const body = data.data
   if (body.client?.skip_consent) {
     let response
-    try {
-      response = await hydraClient.acceptOAuth2ConsentRequest({
-        consentChallenge: consent_challenge,
-        acceptOAuth2ConsentRequest: {
-          grant_scope: body.requested_scope,
-          grant_access_token_audience: body.requested_access_token_audience,
-          session: {
-            access_token: { card: "alice" },
-            // TODO fetch email
-            id_token: { who: "bob", email: "" },
-          },
+    response = await hydraClient.acceptOAuth2ConsentRequest({
+      consentChallenge: consent_challenge,
+      acceptOAuth2ConsentRequest: {
+        grant_scope: body.requested_scope,
+        grant_access_token_audience: body.requested_access_token_audience,
+        session: {
+          access_token: { card: "alice" },
+          // TODO fetch email
+          id_token: { who: "bob", email: "" },
         },
-      })
-    } catch (err) {
-      console.log("error in: acceptOAuth2ConsentRequest ", err)
-      return <p>INTERNAL SERVER ERROR</p>
-    }
+      },
+    })
     redirect(String(response.data.redirect_to))
   }
 
@@ -108,34 +99,27 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-10 rounded-lg shadow-lg w-1/3">
-        <h1 className="text-2xl font-bold mb-4 text-center">
-          An application requests access to your data!
-        </h1>
+    <MainContent>
+      <Card>
+        <Logo />
+
+        <div className="flex items-center justify-center">
+          <p className="text-center mb-4 text-xl w-60 font-semibold">
+            An application requests access to your data!
+          </p>
+        </div>
+
         <form action={submitForm} className="flex flex-col">
           <input type="hidden" name="consent_challenge" value={consent_challenge} />
 
-          <p className="mb-4 text-gray-700">
-            Hi {user}, application{" "}
-            <strong>{client.client_name || client.client_id}</strong> wants access
-            resources on your behalf and to:
+          <p className="mb-4 text-gray-700 text-center  font-semibold">Hi {user} </p>
+          <p className="mb-4 text-gray-700 ">
+            Application <strong>{client.client_name || client.client_id}</strong> wants
+            access resources on your behalf and to:
           </p>
 
           {requested_scope.map((scope) => (
-            <div key={scope} className="flex items-center mb-2">
-              <input
-                type="checkbox"
-                className="grant_scope mr-2"
-                id={scope}
-                value={scope}
-                name="grant_scope"
-                defaultChecked
-              />
-              <label htmlFor={scope} className="text-gray-700">
-                {scope}
-              </label>
-            </div>
+            <ScopeItem scope={scope} key={scope} />
           ))}
 
           <p className="mb-4 text-gray-700">
@@ -174,29 +158,30 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
               Do not ask me again
             </label>
           </p>
-          <div className="flex flex-col w-full">
-            <button
-              type="submit"
-              id="accept"
-              name="submit"
-              value="Allow access"
-              className="mb-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-700 w-full"
-            >
-              Allow access
-            </button>
+          <div className="flex flex-col md:flex-row w-full gap-2">
             <button
               type="submit"
               id="reject"
               name="submit"
               value="Deny access"
-              className="bg-red-500 text-white p-2 rounded hover:bg-red-700 w-full"
+              className="flex-1 bg-red-500 text-white  p-2 rounded-lg hover:bg-red-700 mb-2 md:mb-0"
             >
-              Deny access
+              Deny
             </button>
+
+            <ButtonComponent
+              type="submit"
+              id="accept"
+              name="submit"
+              value="Allow access"
+              className="flex-1 bg-blue-500 text-white  p-2 rounded-lg hover:bg-blue-700"
+            >
+              Allow
+            </ButtonComponent>
           </div>
         </form>
-      </div>
-    </main>
+      </Card>
+    </MainContent>
   )
 }
 export default Consent
