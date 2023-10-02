@@ -46,6 +46,40 @@ interface IAccountLimits {
 
 type IAccountLimitAmounts = { [key in keyof IAccountLimits]: UsdPaymentAmount }
 
+interface IAccountTxVolumeLimitChecker {
+  checkIntraledger: (args: {
+    amount: UsdPaymentAmount
+    volumeRemaining: UsdPaymentAmount
+  }) => Promise<true | IntraledgerLimitsExceededError>
+
+  checkWithdrawal: (args: {
+    amount: UsdPaymentAmount
+    volumeRemaining: UsdPaymentAmount
+  }) => Promise<true | WithdrawalLimitsExceededError>
+
+  checkTradeIntraAccount: (args: {
+    amount: UsdPaymentAmount
+    volumeRemaining: UsdPaymentAmount
+  }) => Promise<true | TradeIntraAccountLimitsExceededError>
+}
+
+interface IAccountTxVolumeRemaining {
+  intraLedger: (args: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }) => Promise<UsdPaymentAmount | ValidationError>
+
+  withdrawal: (args: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }) => Promise<UsdPaymentAmount | ValidationError>
+
+  tradeIntraAccount: (args: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }) => Promise<UsdPaymentAmount | ValidationError>
+}
+
 type AccountContact = {
   readonly id: Username
   readonly username: Username
@@ -117,36 +151,6 @@ type BusinessMapMarker = {
   username: Username
   mapInfo: BusinessMapInfo
 }
-
-type LimiterCheckInputs = {
-  amount: UsdPaymentAmount
-  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
-}
-
-type LimitsCheckerFn = (args: LimiterCheckInputs) => Promise<true | LimitsExceededError>
-
-type LimitsVolumesFn = (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) => Promise<
-  | {
-      volumeTotalLimit: UsdPaymentAmount
-      volumeUsed: UsdPaymentAmount
-      volumeRemaining: UsdPaymentAmount
-    }
-  | ValidationError
->
-
-type AccountLimitsChecker = {
-  checkIntraledger: LimitsCheckerFn
-  checkWithdrawal: LimitsCheckerFn
-  checkTradeIntraAccount: LimitsCheckerFn
-}
-
-type AccountLimitsVolumes =
-  | {
-      volumesIntraledger: LimitsVolumesFn
-      volumesWithdrawal: LimitsVolumesFn
-      volumesTradeIntraAccount: LimitsVolumesFn
-    }
-  | ValidationError
 
 type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError

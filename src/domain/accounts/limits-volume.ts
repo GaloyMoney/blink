@@ -1,6 +1,7 @@
 import {
   AmountCalculator,
   paymentAmountFromNumber,
+  UsdPaymentAmount,
   WalletCurrency,
   ZERO_CENTS,
 } from "@domain/shared"
@@ -10,99 +11,120 @@ import { AccountLimitsType } from "./primitives"
 
 const calc = AmountCalculator()
 
-export const calculateLimitsInUsd = async ({
-  limitName,
-  limitAmount,
-  priceRatio,
-
+const WalletVolumesAggregator = ({
   walletVolumes,
+  priceRatio,
 }: {
-  limitName: AccountLimitsType
-  limitAmount: UsdPaymentAmount
-  priceRatio: WalletPriceRatio
   walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
-}): Promise<{
-  volumeTotalLimit: UsdPaymentAmount
-  volumeUsed: UsdPaymentAmount
-  volumeRemaining: UsdPaymentAmount
-}> => {
-  let volumeInUsdAmount = ZERO_CENTS
-  for (const walletVolume of walletVolumes) {
-    const outgoingUsdAmount =
-      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await priceRatio.convertFromBtc(
-            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-          )
-        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
+  priceRatio: WalletPriceRatio
+}) => {
+  const outgoingUsdAmount = (): UsdPaymentAmount => {
+    let volumeInUsdAmount = ZERO_CENTS
+    for (const walletVolume of walletVolumes) {
+      const outgoingUsdAmount =
+        walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
+          ? priceRatio.convertFromBtc(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
+          : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
 
-    volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
+      volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
+    }
+
+    return volumeInUsdAmount
   }
 
-  addAttributesToCurrentSpan({
-    "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
-    "txVolume.threshold": `${limitAmount.amount}`,
-    "txVolume.limitCheck": limitName,
-  })
-
-  return {
-    volumeTotalLimit: limitAmount,
-    volumeUsed: volumeInUsdAmount,
-    volumeRemaining: calc.sub(limitAmount, volumeInUsdAmount),
-  }
+  return { outgoingUsdAmount }
 }
 
-const volumesForLimit =
-  ({
-    limitName,
-    limitAmount,
+export const AccountTxVolumeRemaining = (
+  accountLimits: IAccountLimits,
+): IAccountTxVolumeRemaining => {
+  const intraLedger = async ({
     priceRatio,
+    walletVolumes,
   }: {
-    limitName: AccountLimitsType
-    limitAmount: UsdPaymentAmount
     priceRatio: WalletPriceRatio
-  }) =>
-  async (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) =>
-    calculateLimitsInUsd({
-      limitName,
-      limitAmount,
-      priceRatio,
-
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }): Promise<UsdPaymentAmount | ValidationError> => {
+    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
       walletVolumes,
-    })
+      priceRatio,
+    }).outgoingUsdAmount()
 
-export const AccountLimitsVolumes = ({
-  accountLimits,
-  priceRatio,
-}: {
-  accountLimits: IAccountLimits
-  priceRatio: WalletPriceRatio
-}): AccountLimitsVolumes => {
-  const accountLimitAmounts = {} as IAccountLimitAmounts
-  for (const rawKey of Object.keys(accountLimits)) {
-    const key = rawKey as keyof IAccountLimits
+    const { intraLedgerLimit: limit } = accountLimits
     const limitAmount = paymentAmountFromNumber({
-      amount: accountLimits[key],
+      amount: limit,
       currency: WalletCurrency.Usd,
     })
     if (limitAmount instanceof Error) return limitAmount
-    accountLimitAmounts[key] = limitAmount
+
+    addAttributesToCurrentSpan({
+      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.threshold": `${limitAmount.amount}`,
+      "txVolume.limitCheck": AccountLimitsType.IntraLedger,
+    })
+
+    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+  }
+
+  const withdrawal = async ({
+    priceRatio,
+    walletVolumes,
+  }: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }): Promise<UsdPaymentAmount | ValidationError> => {
+    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
+      walletVolumes,
+      priceRatio,
+    }).outgoingUsdAmount()
+
+    const { withdrawalLimit: limit } = accountLimits
+    const limitAmount = paymentAmountFromNumber({
+      amount: limit,
+      currency: WalletCurrency.Usd,
+    })
+    if (limitAmount instanceof Error) return limitAmount
+
+    addAttributesToCurrentSpan({
+      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.threshold": `${limitAmount.amount}`,
+      "txVolume.limitCheck": AccountLimitsType.Withdrawal,
+    })
+
+    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
+  }
+
+  const tradeIntraAccount = async ({
+    priceRatio,
+    walletVolumes,
+  }: {
+    priceRatio: WalletPriceRatio
+    walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  }): Promise<UsdPaymentAmount | ValidationError> => {
+    const outgoingUsdVolumeAmount = WalletVolumesAggregator({
+      walletVolumes,
+      priceRatio,
+    }).outgoingUsdAmount()
+
+    const { tradeIntraAccountLimit: limit } = accountLimits
+    const limitAmount = paymentAmountFromNumber({
+      amount: limit,
+      currency: WalletCurrency.Usd,
+    })
+    if (limitAmount instanceof Error) return limitAmount
+
+    addAttributesToCurrentSpan({
+      "txVolume.outgoingInBase": `${outgoingUsdVolumeAmount.amount}`,
+      "txVolume.threshold": `${limitAmount.amount}`,
+      "txVolume.limitCheck": AccountLimitsType.SelfTrade,
+    })
+
+    return calc.sub(limitAmount, outgoingUsdVolumeAmount)
   }
 
   return {
-    volumesIntraledger: volumesForLimit({
-      limitName: AccountLimitsType.IntraLedger,
-      limitAmount: accountLimitAmounts.intraLedgerLimit,
-      priceRatio,
-    }),
-    volumesWithdrawal: volumesForLimit({
-      limitName: AccountLimitsType.Withdrawal,
-      limitAmount: accountLimitAmounts.withdrawalLimit,
-      priceRatio,
-    }),
-    volumesTradeIntraAccount: volumesForLimit({
-      limitName: AccountLimitsType.SelfTrade,
-      limitAmount: accountLimitAmounts.tradeIntraAccountLimit,
-      priceRatio,
-    }),
+    intraLedger,
+    withdrawal,
+    tradeIntraAccount,
   }
 }

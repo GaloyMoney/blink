@@ -123,7 +123,7 @@ const TxVolumeAmountSinceFactory = () => {
 
 const VolumesForAccountWalletsFactory = () => {
   const create =
-    (txnGroup: TxnGroup) =>
+    (txnGroup: TxnGroup): VolumeAmountForAccountSinceFn =>
     async ({
       accountWalletDescriptors,
       period,

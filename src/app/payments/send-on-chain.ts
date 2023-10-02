@@ -1,6 +1,11 @@
 import { NETWORK, getOnChainWalletConfig } from "@config"
 
 import {
+  checkIntraledgerLimits,
+  checkTradeIntraAccountLimits,
+  checkWithdrawalLimits,
+} from "@app/accounts"
+import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
@@ -47,11 +52,6 @@ import {
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import {
-  checkIntraledgerLimits,
-  checkTradeIntraAccountLimits,
-  checkWithdrawalLimits,
-} from "./limits-check"
 import { getPriceRatioForLimits } from "./helpers"
 
 const { dustThreshold } = getOnChainWalletConfig()

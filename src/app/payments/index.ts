@@ -1,6 +1,5 @@
 export * from "./add-earn"
 export * from "./get-protocol-fee"
-export * from "./limits-check"
 export * from "./reimburse-fee"
 export * from "./send-intraledger"
 export * from "./send-lightning"

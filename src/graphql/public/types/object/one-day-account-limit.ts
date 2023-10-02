@@ -6,8 +6,10 @@ import Seconds from "@graphql/public/types/scalar/seconds"
 import { normalizePaymentAmount } from "@graphql/shared/root/mutation"
 
 import { Accounts } from "@app"
-import { AccountLimitsRange } from "@domain/accounts"
-import { SECS_PER_DAY } from "@config"
+import { AccountLimitsRange, AccountLimitsType } from "@domain/accounts"
+import { SECS_PER_DAY, getDealerConfig } from "@config"
+import { InvalidAccountLimitTypeError } from "@domain/errors"
+import { getMidPriceRatio } from "@app/prices"
 
 const OneDayAccountLimit = GT.Object<{
   account: Account
@@ -38,13 +40,43 @@ const OneDayAccountLimit = GT.Object<{
       description: `The amount of cents remaining below the limit for the current 24 hour period.`,
       resolve: async (source) => {
         const { account, limitType } = source
-        const volumeRemaining = await Accounts.remainingLimit({
-          account,
-          limitType,
-        })
-        if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
 
-        return normalizePaymentAmount(volumeRemaining).amount
+        const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
+        const priceRatio = await getMidPriceRatio(usdHedgeEnabled)
+        if (priceRatio instanceof Error) throw mapError(priceRatio)
+
+        let volumeRemaining: UsdPaymentAmount | ApplicationError
+        switch (limitType) {
+          case AccountLimitsType.IntraLedger:
+            volumeRemaining = await Accounts.remainingIntraLedgerLimit({
+              accountId: account.id,
+              priceRatio,
+            })
+            if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
+
+            return normalizePaymentAmount(volumeRemaining).amount
+
+          case AccountLimitsType.Withdrawal:
+            volumeRemaining = await Accounts.remainingWithdrawalLimit({
+              accountId: account.id,
+              priceRatio,
+            })
+            if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
+
+            return normalizePaymentAmount(volumeRemaining).amount
+
+          case AccountLimitsType.SelfTrade:
+            volumeRemaining = await Accounts.remainingTradeIntraAccountLimit({
+              accountId: account.id,
+              priceRatio,
+            })
+            if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
+
+            return normalizePaymentAmount(volumeRemaining).amount
+
+          default:
+            throw new InvalidAccountLimitTypeError(limitType)
+        }
       },
     },
     interval: {

@@ -1,5 +1,6 @@
 import { getCallbackServiceConfig, getValuesToSkipProbe } from "@config"
 
+import { checkIntraledgerLimits, checkTradeIntraAccountLimits } from "@app/accounts"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
@@ -40,7 +41,6 @@ import { CallbackService } from "@services/svix"
 
 import { CallbackEventType } from "@domain/callback"
 
-import { checkIntraledgerLimits, checkTradeIntraAccountLimits } from "./limits-check"
 import { addContactsAfterSend, getPriceRatioForLimits } from "./helpers"
 
 const dealer = DealerPriceService()
