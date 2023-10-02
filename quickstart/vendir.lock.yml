@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: clean up account limits abstractions & unit test (#3290)...'
-      sha: fc57df941aca2e2bb1e2d4a15459befbf4f79111
+      commitTitle: 'refactor: move root -> core/api (#3278)...'
+      sha: 76c1828cf925fb06c49d4cd13e0191256ea7bd3b
       tags:
-      - 0.13.105-1-gfc57df941
+      - 0.13.106-1-g76c1828cf
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: clean up account limits abstractions & unit test (#3290)...'
-      sha: fc57df941aca2e2bb1e2d4a15459befbf4f79111
+      commitTitle: 'refactor: move root -> core/api (#3278)...'
+      sha: 76c1828cf925fb06c49d4cd13e0191256ea7bd3b
       tags:
-      - 0.13.105-1-gfc57df941
+      - 0.13.106-1-g76c1828cf
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: clean up account limits abstractions & unit test (#3290)...'
-      sha: fc57df941aca2e2bb1e2d4a15459befbf4f79111
+      commitTitle: 'refactor: move root -> core/api (#3278)...'
+      sha: 76c1828cf925fb06c49d4cd13e0191256ea7bd3b
       tags:
-      - 0.13.105-1-gfc57df941
+      - 0.13.106-1-g76c1828cf
     path: ./
   path: ./graphql
 kind: LockConfig
