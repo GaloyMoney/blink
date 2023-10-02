@@ -72,7 +72,25 @@ groups:
 jobs:
   - #@ install_yarn_deps()
   - #@ nodejs_check_code()
-  - #@ nodejs_audit()
+  - name: audit
+    serial: true
+    plan:
+    - in_parallel:
+      - { get: repo, trigger: true }
+      - { get: pipeline-tasks }
+    - task: audit
+      config:
+        platform: linux
+        image_resource: #@ nodejs_task_image_config()
+        inputs:
+        - name: pipeline-tasks
+        - name: repo
+        params:
+          LEVEL: high
+          REPO_ROOT: repo/core/api
+        run:
+          path: pipeline-tasks/ci/vendor/tasks/nodejs-audit.sh
+    on_failure: #@ slack_failure_notification()
 
   - #@ test_on_docker_host("integration-tests")
   - #@ test_on_docker_host("bats-tests")
