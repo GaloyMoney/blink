@@ -19,7 +19,8 @@ jobs:
         with:
           node-version: 20
           cache: "yarn"
-      - run: yarn install --frozen-lockfile
+          cache-dependency-path: core/api/yarn.lock
+      - run: cd core/api && yarn install --frozen-lockfile
       - name: Run bats tests
         run: |
-          . ./.env && make reset-bats
+          . ./.env && cd core/api && make reset-bats

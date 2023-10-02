@@ -3,7 +3,6 @@
 set -e
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
-GALOY_DEV_DIR=${REPO_ROOT}/quickstart/dev
 GALOY_ROOT_DIR=${REPO_ROOT}/quickstart/galoy
 
 pushd ${REPO_ROOT}/quickstart

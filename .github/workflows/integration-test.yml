@@ -15,9 +15,11 @@ jobs:
         with:
           node-version: 20
           cache: "yarn"
-      - run: yarn install --frozen-lockfile
+          cache-dependency-path: core/api/yarn.lock
+      - run: cd core/api && yarn install --frozen-lockfile
       - name: Run integration tests
         run: |
+          cd core/api/
           make integration-in-ci
           container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-integration-tests-")
           exit $(docker inspect $container_id --format='{{.State.ExitCode}}')

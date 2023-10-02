@@ -15,6 +15,7 @@
       overlays = [
         (self: super: {
           nodejs = super.nodejs_20;
+          pnpm = super.nodePackages.pnpm;
           yarn = super.yarn.override {
             nodejs = super.nodejs_20;
           };
@@ -22,9 +23,16 @@
       ];
       pkgs = import nixpkgs {inherit overlays system;};
       nativeBuildInputs = with pkgs; [
+        buck2
+        pnpm
+        python3
+        envsubst
         nodejs
         tilt
         yarn
+        typescript
+        bats
+        postgresql
         alejandra
         gnumake
         docker-compose
