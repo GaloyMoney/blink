@@ -206,12 +206,18 @@ interface IGetVolumeAmountArgs<T extends WalletCurrency> {
   timestamp: Date
 }
 
-type VolumeAmountResult<S extends WalletCurrency> = Promise<
-  TxBaseVolumeAmount<S> | LedgerServiceError
->
 type GetVolumeAmountSinceFn = <S extends WalletCurrency>(
   args: IGetVolumeAmountArgs<S>,
-) => VolumeAmountResult<S>
+) => Promise<TxBaseVolumeAmount<S> | LedgerServiceError>
+
+interface IGetVolumeAmountForAccountArgs {
+  accountWalletDescriptors: AccountWalletDescriptors
+  period: Days
+}
+
+type GetVolumeAmountForAccountSinceFn = (
+  args: IGetVolumeAmountForAccountArgs,
+) => Promise<TxBaseVolumeAmount<WalletCurrency>[] | LedgerServiceError>
 
 type RevertLightningPaymentArgs = {
   journalId: LedgerJournalId
@@ -272,20 +278,6 @@ interface ILedgerService {
     walletDescriptor: WalletDescriptor<S>,
   ): Promise<BalanceAmount<S> | LedgerServiceError>
 
-  allPaymentVolumeAmountSince: GetVolumeAmountSinceFn
-
-  externalPaymentVolumeAmountSince: GetVolumeAmountSinceFn
-
-  intraledgerTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
-  tradeIntraAccountTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
-  allTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
-  lightningTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
-  onChainTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
-
   isOnChainReceiptTxRecordedForWallet({
     walletId,
     txHash,
@@ -325,7 +317,7 @@ interface ILedgerService {
 
 type GetVolumeAmountFn = <S extends WalletCurrency>(
   args: IGetVolumeAmountArgs<S>,
-) => VolumeAmountResult<S>
+) => Promise<TxBaseVolumeAmount<S> | LedgerServiceError>
 
 type ActivityCheckerConfig = {
   monthlyVolumeThreshold: UsdCents

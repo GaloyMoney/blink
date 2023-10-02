@@ -37,7 +37,6 @@ import { paginatedLedger } from "./paginated-ledger"
 import * as caching from "./caching"
 import { TransactionsMetadataRepository } from "./services"
 import { send } from "./send"
-import { volume } from "./volume"
 
 export { getNonEndUserWalletIds } from "./caching"
 export { translateToLedgerJournal } from "./helpers"
@@ -424,7 +423,6 @@ export const LedgerService = (): ILedgerService => {
       getWalletIdByTransactionHash,
       listWalletIdsWithPendingPayments,
       ...admin,
-      ...volume,
       ...send,
     },
   })

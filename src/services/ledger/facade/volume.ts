@@ -1,9 +1,15 @@
-import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
-import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
+import {
+  LedgerTransactionType,
+  UnknownLedgerError,
+  toLiabilitiesWalletId,
+} from "@domain/ledger"
+
+import { timestampDaysAgo } from "@utils"
+
 import { paymentAmountFromNumber } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { Transaction } from "./books"
+import { Transaction } from "../books"
 
 export const TxnGroups = {
   allPaymentVolumeSince: [
@@ -115,24 +121,67 @@ const TxVolumeAmountSinceFactory = () => {
   return { create }
 }
 
+const VolumesForAccountWalletsFactory = () => {
+  const create =
+    (txnGroup: TxnGroup) =>
+    async ({
+      accountWalletDescriptors,
+      period,
+    }: {
+      accountWalletDescriptors: AccountWalletDescriptors
+      period: Days
+    }): Promise<TxBaseVolumeAmount<WalletCurrency>[] | ApplicationError> => {
+      const timestamp1Day = timestampDaysAgo(period)
+      if (timestamp1Day instanceof Error) return timestamp1Day
+
+      const volumeAmountSince = TxVolumeAmountSinceFactory().create(txnGroup)
+
+      const btcWalletVolumeAmount = await volumeAmountSince({
+        walletDescriptor: accountWalletDescriptors.BTC,
+        timestamp: timestamp1Day,
+      })
+      if (btcWalletVolumeAmount instanceof Error) return btcWalletVolumeAmount
+
+      const usdWalletVolumeAmount = await volumeAmountSince({
+        walletDescriptor: accountWalletDescriptors.USD,
+        timestamp: timestamp1Day,
+      })
+      if (usdWalletVolumeAmount instanceof Error) return usdWalletVolumeAmount
+
+      return [btcWalletVolumeAmount, usdWalletVolumeAmount]
+    }
+
+  return { create }
+}
+
+const volumeAmountForAccountFactory = VolumesForAccountWalletsFactory()
 const txVolumeAmountFactory = TxVolumeAmountSinceFactory()
 
-export const volume = {
-  allPaymentVolumeAmountSince: txVolumeAmountFactory.create("allPaymentVolumeSince"),
-  externalPaymentVolumeAmountSince: txVolumeAmountFactory.create(
-    "externalPaymentVolumeSince",
-  ),
-  intraledgerTxBaseVolumeAmountSince: txVolumeAmountFactory.create(
-    "intraledgerTxBaseVolumeSince",
-  ),
-  tradeIntraAccountTxBaseVolumeAmountSince: txVolumeAmountFactory.create(
-    "tradeIntraAccountTxBaseVolumeSince",
-  ),
-  allTxBaseVolumeAmountSince: txVolumeAmountFactory.create("allTxBaseVolumeSince"),
-  onChainTxBaseVolumeAmountSince: txVolumeAmountFactory.create(
-    "onChainTxBaseVolumeSince",
-  ),
-  lightningTxBaseVolumeAmountSince: txVolumeAmountFactory.create(
-    "lightningTxBaseVolumeSince",
-  ),
-}
+export const externalPaymentVolumeAmountForAccountSince =
+  volumeAmountForAccountFactory.create("externalPaymentVolumeSince")
+export const externalPaymentVolumeAmountSince = txVolumeAmountFactory.create(
+  "externalPaymentVolumeSince",
+)
+
+export const intraledgerTxBaseVolumeAmountForAccountSince =
+  volumeAmountForAccountFactory.create("intraledgerTxBaseVolumeSince")
+export const intraledgerTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
+  "intraledgerTxBaseVolumeSince",
+)
+export const tradeIntraAccountTxBaseVolumeAmountForAccountSince =
+  volumeAmountForAccountFactory.create("tradeIntraAccountTxBaseVolumeSince")
+export const tradeIntraAccountTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
+  "tradeIntraAccountTxBaseVolumeSince",
+)
+
+export const allPaymentVolumeAmountSince = txVolumeAmountFactory.create(
+  "allPaymentVolumeSince",
+)
+export const allTxBaseVolumeAmountSince =
+  txVolumeAmountFactory.create("allTxBaseVolumeSince")
+export const onChainTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
+  "onChainTxBaseVolumeSince",
+)
+export const lightningTxBaseVolumeAmountSince = txVolumeAmountFactory.create(
+  "lightningTxBaseVolumeSince",
+)

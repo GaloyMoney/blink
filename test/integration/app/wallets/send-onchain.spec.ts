@@ -1,4 +1,4 @@
-import { Accounts, Prices, Wallets } from "@app"
+import { Accounts, Prices, Wallets, Payments } from "@app"
 
 import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@config"
 
@@ -99,7 +99,7 @@ describe("onChainPay", () => {
       if (newAccount instanceof Error) throw newAccount
 
       // Execute use-case
-      const res = await Wallets.payAllOnChainByWalletId({
+      const res = await Payments.payAllOnChainByWalletId({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address: outsideAddress,
@@ -129,7 +129,7 @@ describe("onChainPay", () => {
       })
       if (receive instanceof Error) throw receive
 
-      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const result = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address: outsideAddress,
@@ -160,7 +160,7 @@ describe("onChainPay", () => {
       })
       if (receive instanceof Error) throw receive
 
-      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const result = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address: outsideAddress,
@@ -211,7 +211,7 @@ describe("onChainPay", () => {
       })
       if (receive instanceof Error) throw receive
 
-      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const result = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address: outsideAddress,
@@ -243,7 +243,7 @@ describe("onChainPay", () => {
 
       const balance = await getBalanceHelper(newWalletDescriptor.id)
 
-      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const result = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address: outsideAddress,
@@ -284,7 +284,7 @@ describe("onChainPay", () => {
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)
 
       // Attempt send payment
-      const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const res = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         amount,
@@ -320,7 +320,7 @@ describe("onChainPay", () => {
       })
       if (newWalletIdAddress instanceof Error) throw newWalletIdAddress
 
-      const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const res = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         amount,
@@ -368,7 +368,7 @@ describe("onChainPay", () => {
       const btcSendAmountInUsd = Number(usdAmount.amount)
       expect(btcSendAmountInUsd).toBe(0)
 
-      const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const res = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address: recipientUsdWalletIdAddress,
@@ -426,7 +426,7 @@ describe("onChainPay", () => {
       })
       if (receive instanceof Error) throw receive
 
-      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const result = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address,
@@ -488,7 +488,7 @@ describe("onChainPay", () => {
       })
       if (receive instanceof Error) throw receive
 
-      const result = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const result = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         address,
@@ -539,7 +539,7 @@ describe("onChainPay", () => {
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)
 
       // Attempt payment
-      const res = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const res = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         amount,
@@ -585,7 +585,7 @@ describe("onChainPay", () => {
       if (recipientWalletIdAddress instanceof Error) throw recipientWalletIdAddress
 
       // Execute payment
-      const paymentResult = await Wallets.payOnChainByWalletIdForBtcWallet({
+      const paymentResult = await Payments.payOnChainByWalletIdForBtcWallet({
         senderWalletId: newWalletDescriptor.id,
         senderAccount: newAccount,
         amount,

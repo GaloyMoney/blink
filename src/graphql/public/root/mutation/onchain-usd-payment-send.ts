@@ -9,7 +9,7 @@ import PaymentSendPayload from "@graphql/public/types/payload/payment-send"
 import PayoutSpeed from "@graphql/public/types/scalar/payout-speed"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
 
-import { Wallets } from "@app"
+import { Payments } from "@app"
 
 const OnChainUsdPaymentSendInput = GT.Input({
   name: "OnChainUsdPaymentSendInput",
@@ -64,7 +64,7 @@ const OnChainUsdPaymentSendMutation = GT.Field<
       return { errors: [{ message: speed.message }] }
     }
 
-    const result = await Wallets.payOnChainByWalletIdForUsdWallet({
+    const result = await Payments.payOnChainByWalletIdForUsdWallet({
       senderAccount: domainAccount,
       senderWalletId: walletId,
       amount,

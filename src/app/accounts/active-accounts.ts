@@ -5,7 +5,7 @@ import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
 import { ErrorLevel } from "@domain/shared"
 import { ActivityChecker } from "@domain/ledger"
 
-import { LedgerService } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 import { WalletsRepository, AccountsRepository } from "@services/mongoose"
 import { UsdDisplayCurrency } from "@domain/fiat"
@@ -21,9 +21,8 @@ export const getRecentlyActiveAccounts = async function* ():
   })
   if (walletPriceRatio instanceof Error) return walletPriceRatio
 
-  const ledger = LedgerService()
   const activityChecker = ActivityChecker({
-    getVolumeAmountFn: ledger.allTxBaseVolumeAmountSince,
+    getVolumeAmountFn: LedgerFacade.allTxBaseVolumeAmountSince,
     priceRatio: walletPriceRatio,
     monthlyVolumeThreshold: USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
   })
