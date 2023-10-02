@@ -93,7 +93,7 @@ const setGqlAdminContext = async (
 
     if (isEmail) {
       isEditor = true
-    } else if (tokenPayload.scope.includes("editor")) {
+    } else if (tokenPayload.scope?.includes("editor")) {
       isEditor = true
     } else {
       // TODO: remove branch once migration is completed to Oauth2
