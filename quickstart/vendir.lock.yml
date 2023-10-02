@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fix case when scope is missing (#3293)...'
-      sha: 00f0b126a5d805b57ac70304aa7e787ae8259a72
+      commitTitle: 'fix: not hanging on missing ip (#3295)...'
+      sha: 52b5bc9504784783bfb08827dec604a2030a1e31
       tags:
-      - 0.13.107-2-g00f0b126a
+      - 0.13.107-4-g52b5bc950
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fix case when scope is missing (#3293)...'
-      sha: 00f0b126a5d805b57ac70304aa7e787ae8259a72
+      commitTitle: 'fix: not hanging on missing ip (#3295)...'
+      sha: 52b5bc9504784783bfb08827dec604a2030a1e31
       tags:
-      - 0.13.107-2-g00f0b126a
+      - 0.13.107-4-g52b5bc950
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: fix case when scope is missing (#3293)...'
-      sha: 00f0b126a5d805b57ac70304aa7e787ae8259a72
+      commitTitle: 'fix: not hanging on missing ip (#3295)...'
+      sha: 52b5bc9504784783bfb08827dec604a2030a1e31
       tags:
-      - 0.13.107-2-g00f0b126a
+      - 0.13.107-4-g52b5bc950
     path: ./
   path: ./graphql
 kind: LockConfig
