@@ -51,15 +51,17 @@ const setGqlAdminContext = async (
   const logger = baseLogger
   const tokenPayload = req.token
 
+  // TODO: delete once migration to Oauth2 is completed
   const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT
     ? req.ip
     : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
 
-  const ip = parseIps(ipString)
+  let ip = parseIps(ipString)
   if (!ip) {
     logger.error("ip missing")
-    return
+    ip = "127.0.0.1" as IpAddress // dummy ip
   }
+  // end TODO
 
   // TODO: loaders probably not needed for the admin panel
   const loaders = {
