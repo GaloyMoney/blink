@@ -1,0 +1,11 @@
+load("@toolchains//simple-pnpm:macros.bzl", "build_node_modules")
+
+export_file(
+  name = "pnpm-lock.yaml"
+)
+
+build_node_modules(
+  name = "node_modules",
+  visibility = ["PUBLIC"],
+  pnpm_lock = ":pnpm-lock.yaml",
+)
