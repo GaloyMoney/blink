@@ -8,6 +8,6 @@ export REPO_PATH=repo/core/api
 
 unpack_deps
 
-pushd repo
+pushd repo/core/api
 
 make check-code
