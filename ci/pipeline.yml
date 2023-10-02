@@ -2,6 +2,7 @@
 
 #@ load("vendor/pipeline-fragments.lib.yml",
 #@   "nodejs_task_image_config",
+#@   "rust_task_image_config",
 #@   "nodejs_concourse_image",
 #@   "slack_failure_notification",
 #@   "install_yarn_deps",
@@ -130,8 +131,82 @@ jobs:
           path: pipeline-tasks/ci/vendor/tasks/nodejs-audit.sh
     on_failure: #@ slack_failure_notification()
 
-  - #@ test_on_docker_host("integration-tests")
-  - #@ test_on_docker_host("bats-tests")
+  - name: integration-tests
+    #@ container = "integration-tests"
+    #@ params = {}
+    #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container + "/core/api"
+    #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
+    #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
+    #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
+    #@ params["TEST_CONTAINER"] = container
+    #@ params["JEST_TIMEOUT"] = 90000
+    serial: true
+    plan:
+    - { put: docker-host, params: { acquire: true } }
+    - in_parallel:
+      - { get: repo, trigger: true }
+      - { get: pipeline-tasks }
+    - task: #@ container
+      attempts: 2
+      timeout: 12m
+      tags: ["galoy-staging"]
+      config:
+        platform: linux
+        image_resource: #@ rust_task_image_config()
+        inputs:
+        - name: pipeline-tasks
+        - name: docker-host
+        - name: repo
+          path: #@ data.values.gh_repository + "-" + container
+        caches:
+        - path: cargo-home
+        - path: cargo-target-dir
+        params: #@ params
+        run:
+          path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+      ensure:
+        put: docker-host
+        params:
+          release: docker-host
+    on_failure: #@ slack_failure_notification()
+  - name: bats-tests
+    #@ container = "bats-tests"
+    #@ params = {}
+    #@ params["REPO_PATH"] = data.values.gh_repository + "-" + container + "/core/api"
+    #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
+    #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
+    #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
+    #@ params["TEST_CONTAINER"] = container
+    #@ params["JEST_TIMEOUT"] = 90000
+    serial: true
+    plan:
+    - { put: docker-host, params: { acquire: true } }
+    - in_parallel:
+      - { get: repo, trigger: true }
+      - { get: pipeline-tasks }
+    - task: #@ container
+      attempts: 2
+      timeout: 12m
+      tags: ["galoy-staging"]
+      config:
+        platform: linux
+        image_resource: #@ rust_task_image_config()
+        inputs:
+        - name: pipeline-tasks
+        - name: docker-host
+        - name: repo
+          path: #@ data.values.gh_repository + "-" + container
+        caches:
+        - path: cargo-home
+        - path: cargo-target-dir
+        params: #@ params
+        run:
+          path: pipeline-tasks/ci/vendor/tasks/test-on-docker-host.sh
+      ensure:
+        put: docker-host
+        params:
+          release: docker-host
+    on_failure: #@ slack_failure_notification()
 
   - name: test-unit
     serial: true
@@ -193,7 +268,20 @@ jobs:
   - name: build-debug-edge-image
     serial: true
     plan:
-      - { get: repo, trigger: true }
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+      - task: prepare-docker-build
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          outputs:
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
         privileged: true
         config:
@@ -219,7 +307,20 @@ jobs:
   - name: build-migrate-edge-image
     serial: true
     plan:
-      - { get: repo, trigger: true }
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+      - task: prepare-docker-build
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          outputs:
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
         privileged: true
         config:
@@ -245,7 +346,20 @@ jobs:
   - name: build-websocket-edge-image
     serial: true
     plan:
-      - { get: repo, trigger: true }
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+      - task: prepare-docker-build
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          outputs:
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
         privileged: true
         config:
