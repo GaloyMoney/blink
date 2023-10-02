@@ -4,7 +4,7 @@ function unpack_deps() {
 
   pushd ${REPO_PATH:-repo} > /dev/null
 
-  tar -zxvf ../bundled-deps/bundled-deps-*.tgz ./node_modules/ ./yarn.lock > /dev/null
+  tar -zxvf ../bundled-deps/bundled-deps-*.tgz core/api/node_modules/ core/api/yarn.lock > /dev/null
 
   if [[ "$(git status -s -uno)" != "" ]]; then
     echo "Extracting deps has created a diff - deps are not in sync"
