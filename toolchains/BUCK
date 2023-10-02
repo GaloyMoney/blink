@@ -1,0 +1,22 @@
+load(
+  "@prelude//toolchains:python.bzl",
+  "system_python_bootstrap_toolchain",
+  "system_python_toolchain"
+)
+
+load("@toolchains//simple-pnpm:toolchain.bzl", "simple_pnpm_toolchain")
+
+system_python_bootstrap_toolchain(
+    name = "python_bootstrap",
+    visibility = ["PUBLIC"],
+)
+
+system_python_toolchain(
+    name = "python",
+    visibility = ["PUBLIC"],
+)
+
+simple_pnpm_toolchain(
+  name = "simple_pnpm",
+  visibility = ["PUBLIC"],
+)
