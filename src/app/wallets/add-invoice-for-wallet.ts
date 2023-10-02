@@ -6,6 +6,7 @@ import { checkedToMinutes } from "@domain/primitives"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
 import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
+import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/shared"
 
 import { LndService } from "@services/lnd"
 import { consumeLimiter } from "@services/rate-limit"
@@ -23,7 +24,7 @@ const defaultUsdExpiration = DEFAULT_EXPIRATIONS["USD"].delayMinutes
 
 const addInvoiceForSelf = async ({
   walletId,
-  amount,
+  walletAmount,
   memo = "",
   expiresIn,
 }: AddInvoiceForSelfArgs): Promise<LnInvoice | ApplicationError> =>
@@ -39,7 +40,7 @@ const addInvoiceForSelf = async ({
         .generatedForSelf()
         .withRecipientWallet(recipientWalletDescriptor)
         .withExpiration(expiresIn)
-        .withAmount(amount),
+        .withAmount(walletAmount),
   })
 
 export const addInvoiceForSelfForBtcWallet = async (
@@ -53,7 +54,11 @@ export const addInvoiceForSelfForBtcWallet = async (
 
   const validated = await validateIsBtcWallet(walletId)
   if (validated instanceof Error) return validated
-  return addInvoiceForSelf({ ...args, walletId, expiresIn })
+
+  const walletAmount = checkedToBtcPaymentAmount(args.amount)
+  if (walletAmount instanceof Error) return walletAmount
+
+  return addInvoiceForSelf({ walletId, walletAmount, expiresIn, memo: args.memo })
 }
 
 export const addInvoiceForSelfForUsdWallet = async (
@@ -67,7 +72,11 @@ export const addInvoiceForSelfForUsdWallet = async (
 
   const validated = await validateIsUsdWallet(walletId)
   if (validated instanceof Error) return validated
-  return addInvoiceForSelf({ ...args, walletId, expiresIn })
+
+  const walletAmount = checkedToUsdPaymentAmount(args.amount)
+  if (walletAmount instanceof Error) return walletAmount
+
+  return addInvoiceForSelf({ walletId, walletAmount, expiresIn, memo: args.memo })
 }
 
 export const addInvoiceNoAmountForSelf = async ({
@@ -105,7 +114,7 @@ export const addInvoiceNoAmountForSelf = async ({
 
 const addInvoiceForRecipient = async ({
   recipientWalletId,
-  amount,
+  walletAmount,
   memo = "",
   descriptionHash,
   expiresIn,
@@ -122,7 +131,7 @@ const addInvoiceForRecipient = async ({
         .generatedForRecipient()
         .withRecipientWallet(recipientWalletDescriptor)
         .withExpiration(expiresIn)
-        .withAmount(amount),
+        .withAmount(walletAmount),
   })
 
 export const addInvoiceForRecipientForBtcWallet = async (
@@ -136,7 +145,17 @@ export const addInvoiceForRecipientForBtcWallet = async (
 
   const validated = await validateIsBtcWallet(recipientWalletId)
   if (validated instanceof Error) return validated
-  return addInvoiceForRecipient({ ...args, recipientWalletId, expiresIn })
+
+  const walletAmount = checkedToBtcPaymentAmount(args.amount)
+  if (walletAmount instanceof Error) return walletAmount
+
+  return addInvoiceForRecipient({
+    recipientWalletId,
+    walletAmount,
+    expiresIn,
+    descriptionHash: args.descriptionHash,
+    memo: args.memo,
+  })
 }
 
 export const addInvoiceForRecipientForUsdWallet = async (
@@ -150,7 +169,41 @@ export const addInvoiceForRecipientForUsdWallet = async (
 
   const validated = await validateIsUsdWallet(recipientWalletId)
   if (validated instanceof Error) return validated
-  return addInvoiceForRecipient({ ...args, recipientWalletId, expiresIn })
+
+  const walletAmount = checkedToUsdPaymentAmount(args.amount)
+  if (walletAmount instanceof Error) return walletAmount
+
+  return addInvoiceForRecipient({
+    recipientWalletId,
+    walletAmount,
+    expiresIn,
+    descriptionHash: args.descriptionHash,
+    memo: args.memo,
+  })
+}
+
+export const addInvoiceForRecipientForUsdWalletAndBtcAmount = async (
+  args: AddInvoiceForRecipientForUsdWalletArgs,
+): Promise<LnInvoice | ApplicationError> => {
+  const recipientWalletId = checkedToWalletId(args.recipientWalletId)
+  if (recipientWalletId instanceof Error) return recipientWalletId
+
+  const expiresIn = checkedToMinutes(args.expiresIn || defaultUsdExpiration)
+  if (expiresIn instanceof Error) return expiresIn
+
+  const validated = await validateIsUsdWallet(recipientWalletId)
+  if (validated instanceof Error) return validated
+
+  const walletAmount = checkedToBtcPaymentAmount(args.amount)
+  if (walletAmount instanceof Error) return walletAmount
+
+  return addInvoiceForRecipient({
+    recipientWalletId,
+    walletAmount,
+    expiresIn,
+    descriptionHash: args.descriptionHash,
+    memo: args.memo,
+  })
 }
 
 export const addInvoiceNoAmountForRecipient = async ({
@@ -208,6 +261,7 @@ const addInvoice = async ({
   const dealer = DealerPriceService()
   const walletInvoiceBuilder = WalletInvoiceBuilder({
     dealerBtcFromUsd: dealer.getSatsFromCentsForFutureBuy,
+    dealerUsdFromBtc: dealer.getCentsFromSatsForFutureBuy,
     lnRegisterInvoice: (args) =>
       lndService.registerInvoice({ ...args, sats: toSats(args.btcPaymentAmount.amount) }),
   })

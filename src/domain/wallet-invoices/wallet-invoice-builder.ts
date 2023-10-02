@@ -2,15 +2,13 @@ import {
   getSecretAndPaymentHash,
   invoiceExpirationForCurrency,
 } from "@domain/bitcoin/lightning"
-import {
-  WalletCurrency,
-  ZERO_SATS,
-  checkedToBtcPaymentAmount,
-  checkedToUsdPaymentAmount,
-} from "@domain/shared"
+import { WalletCurrency, ZERO_SATS } from "@domain/shared"
 import { toSeconds } from "@domain/primitives"
 
-import { InvalidWalletInvoiceBuilderStateError } from "./errors"
+import {
+  InvalidWalletInvoiceBuilderStateError,
+  SubOneCentSatAmountForUsdReceiveError,
+} from "./errors"
 
 export const WalletInvoiceBuilder = (
   config: WalletInvoiceBuilderConfig,
@@ -72,13 +70,28 @@ export const WIBWithRecipient = (state: WIBWithRecipientState): WIBWithRecipient
 }
 
 export const WIBWithExpiration = (state: WIBWithExpirationState): WIBWithExpiration => {
-  const withAmount = async (uncheckedAmount: number) => {
+  const withAmount = async (amount: PaymentAmount<WalletCurrency>) => {
     if (state.recipientWalletDescriptor.currency === WalletCurrency.Usd) {
-      const usdAmount = checkedToUsdPaymentAmount(uncheckedAmount)
-      if (usdAmount instanceof Error) return usdAmount
-      const btcAmount = await state.dealerBtcFromUsd(usdAmount)
-      if (btcAmount instanceof Error) return btcAmount
+      if (amount.currency === WalletCurrency.Usd) {
+        const usdAmount = amount as UsdPaymentAmount
+        const btcAmount = await state.dealerBtcFromUsd(usdAmount)
+        if (btcAmount instanceof Error) return btcAmount
+        return WIBWithAmount({
+          ...state,
+          hasAmount: true,
+          btcAmount,
+          usdAmount,
+        })
+      }
 
+      const btcAmount = amount as BtcPaymentAmount
+      const usdAmount = await state.dealerUsdFromBtc(btcAmount)
+      if (usdAmount instanceof Error) return usdAmount
+      if (usdAmount.amount === 0n) {
+        return new SubOneCentSatAmountForUsdReceiveError(
+          `${Number(btcAmount.amount)} sats`,
+        )
+      }
       return WIBWithAmount({
         ...state,
         hasAmount: true,
@@ -86,8 +99,16 @@ export const WIBWithExpiration = (state: WIBWithExpirationState): WIBWithExpirat
         usdAmount,
       })
     }
-    const btcAmount = checkedToBtcPaymentAmount(uncheckedAmount)
 
+    if (amount.currency !== WalletCurrency.Btc) {
+      return new InvalidWalletInvoiceBuilderStateError(
+        JSON.stringify({
+          recipientAmount: { amount: Number(amount.amount), currency: amount.currency },
+          recipientWalletDescriptor: state.recipientWalletDescriptor,
+        }),
+      )
+    }
+    const btcAmount = amount as BtcPaymentAmount
     if (btcAmount instanceof Error) return btcAmount
 
     return WIBWithAmount({ ...state, hasAmount: true, btcAmount })

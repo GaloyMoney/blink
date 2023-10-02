@@ -265,6 +265,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "SubOneCentSatAmountForUsdSelfSendError":
+    case "SubOneCentSatAmountForUsdReceiveError":
       message = "Amount sent was too low for recipient's usd wallet."
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -571,6 +572,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUserId":
     case "InvalidLightningPaymentFlowBuilderStateError":
     case "InvalidOnChainPaymentFlowBuilderStateError":
+    case "InvalidWalletInvoiceBuilderStateError":
     case "NonLnPaymentTransactionForPaymentFlowError":
     case "MissingPropsInTransactionForPaymentFlowError":
     case "InvalidZeroAmountPriceRatioInputError":

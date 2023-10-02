@@ -7,6 +7,7 @@ import LnInvoiceCreateMutation from "@graphql/public/root/mutation/ln-invoice-cr
 import LnUsdInvoiceCreateMutation from "@graphql/public/root/mutation/ln-usd-invoice-create"
 import LnInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/public/root/mutation/ln-invoice-create-on-behalf-of-recipient"
 import LnUsdInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/public/root/mutation/ln-usd-invoice-create-on-behalf-of-recipient"
+import LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientMutation from "@graphql/public/root/mutation/ln-usd-invoice-btc-denominated-create-on-behalf-of-recipient"
 import LnInvoiceFeeProbeMutation from "@graphql/public/root/mutation/ln-invoice-fee-probe"
 import LnUsdInvoiceFeeProbeMutation from "@graphql/public/root/mutation/ln-usd-invoice-fee-probe"
 import LnInvoicePaymentSendMutation from "@graphql/public/root/mutation/ln-invoice-payment-send"
@@ -63,6 +64,8 @@ export const mutationFields = {
 
     lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
     lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
+    lnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipient:
+      LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientMutation,
     lnNoAmountInvoiceCreateOnBehalfOfRecipient:
       LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
   },
