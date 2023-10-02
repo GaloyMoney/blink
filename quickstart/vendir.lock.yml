@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: fix bats in concourse'
-      sha: 9b9946ed7dd6178c314d7a56394c5636a3aeab3c
+      commitTitle: 'ci: fix hydra endpoint in concourse'
+      sha: 6cc17a96eb79e69f0e5ea8ab21a09f57b1b581f9
       tags:
-      - 0.13.106-10-g9b9946ed7
+      - 0.13.106-13-g6cc17a96e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: fix bats in concourse'
-      sha: 9b9946ed7dd6178c314d7a56394c5636a3aeab3c
+      commitTitle: 'ci: fix hydra endpoint in concourse'
+      sha: 6cc17a96eb79e69f0e5ea8ab21a09f57b1b581f9
       tags:
-      - 0.13.106-10-g9b9946ed7
+      - 0.13.106-13-g6cc17a96e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: fix bats in concourse'
-      sha: 9b9946ed7dd6178c314d7a56394c5636a3aeab3c
+      commitTitle: 'ci: fix hydra endpoint in concourse'
+      sha: 6cc17a96eb79e69f0e5ea8ab21a09f57b1b581f9
       tags:
-      - 0.13.106-10-g9b9946ed7
+      - 0.13.106-13-g6cc17a96e
     path: ./
   path: ./graphql
 kind: LockConfig
