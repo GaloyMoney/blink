@@ -1,0 +1,4 @@
+export_file(
+  name = "build_node_modules.py",
+  visibility = ["PUBLIC"],
+)
