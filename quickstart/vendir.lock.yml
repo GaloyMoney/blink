@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: build - issue with hydra dns (#3286)...'
-      sha: 80bb62d1b4923ae3754c9875d1d0f7bb91145852
+      commitTitle: 'feat: add new usd-invoice-sats-denominated mutation (#3282)...'
+      sha: ee4198efbf59e0abf2724db789d3c59d9eb695ad
       tags:
-      - 0.13.103-3-g80bb62d1b
+      - 0.13.104-2-gee4198efb
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: build - issue with hydra dns (#3286)...'
-      sha: 80bb62d1b4923ae3754c9875d1d0f7bb91145852
+      commitTitle: 'feat: add new usd-invoice-sats-denominated mutation (#3282)...'
+      sha: ee4198efbf59e0abf2724db789d3c59d9eb695ad
       tags:
-      - 0.13.103-3-g80bb62d1b
+      - 0.13.104-2-gee4198efb
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: build - issue with hydra dns (#3286)...'
-      sha: 80bb62d1b4923ae3754c9875d1d0f7bb91145852
+      commitTitle: 'feat: add new usd-invoice-sats-denominated mutation (#3282)...'
+      sha: ee4198efbf59e0abf2724db789d3c59d9eb695ad
       tags:
-      - 0.13.103-3-g80bb62d1b
+      - 0.13.104-2-gee4198efb
     path: ./
   path: ./graphql
 kind: LockConfig
