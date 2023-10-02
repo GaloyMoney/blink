@@ -70,8 +70,46 @@ groups:
       - sync-bria-api-proto
 
 jobs:
-  - #@ install_yarn_deps()
-  - #@ nodejs_check_code()
+  - name: install-deps
+    plan:
+    - in_parallel:
+      - {get: deps, trigger: true}
+      - {get: pipeline-tasks}
+      - {put: deps-version, params: {bump: patch}}
+    - task: install-deps
+      config:
+        platform: linux
+        image_resource: #@ nodejs_task_image_config()
+        inputs:
+        - name: pipeline-tasks
+        - name: deps
+        - name: deps-version
+        outputs:
+        - name: bundled-deps
+        run:
+          path: pipeline-tasks/ci/tasks/install-deps.sh
+    - put: bundled-deps
+      params:
+        file: bundled-deps/bundled-deps-*.tgz
+    on_failure: #@ slack_failure_notification()
+  - name: check-code
+    serial: true
+    plan:
+    - in_parallel:
+      - { get: repo, trigger: true }
+      - { get: pipeline-tasks }
+      - { get: bundled-deps, trigger: true}
+    - task: check-code
+      config:
+        platform: linux
+        image_resource: #@ nodejs_task_image_config()
+        inputs:
+        - name: bundled-deps
+        - name: pipeline-tasks
+        - name: repo
+        run:
+          path: pipeline-tasks/ci/tasks/check-code.sh
+    on_failure: #@ slack_failure_notification()
   - name: audit
     serial: true
     plan:
