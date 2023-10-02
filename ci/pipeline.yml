@@ -148,7 +148,7 @@ jobs:
       - { get: pipeline-tasks }
     - task: #@ container
       attempts: 2
-      timeout: 12m
+      timeout: 15m
       tags: ["galoy-staging"]
       config:
         platform: linux
@@ -186,7 +186,7 @@ jobs:
       - { get: pipeline-tasks }
     - task: #@ container
       attempts: 2
-      timeout: 12m
+      timeout: 15m
       tags: ["galoy-staging"]
       config:
         platform: linux
