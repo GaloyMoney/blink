@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import { Accounts, Prices, Wallets, Payments } from "@/app"
 
 import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@/config"
@@ -16,6 +18,7 @@ import { SubOneCentSatAmountForUsdSelfSendError } from "@/domain/payments"
 import {
   AmountCalculator,
   InvalidBtcPaymentAmountError,
+  WalletCurrency,
 } from "@/domain/shared"
 
 import { PayoutSpeed } from "@/domain/bitcoin/onchain"

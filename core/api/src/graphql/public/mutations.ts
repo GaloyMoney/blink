@@ -31,7 +31,7 @@ import LnUsdInvoiceCreateOnBehalfOfRecipientMutation from "@/graphql/public/root
 import LnUsdInvoiceFeeProbeMutation from "@/graphql/public/root/mutation/ln-usd-invoice-fee-probe"
 import OnChainAddressCreateMutation from "@/graphql/public/root/mutation/on-chain-address-create"
 import OnChainAddressCurrentMutation from "@/graphql/public/root/mutation/on-chain-address-current"
-import UserLoginMutation from "@/graphql/shared/root/mutation/user-login"
+import UserLoginMutation from "@/graphql/public/root/mutation/user-login"
 
 import AccountDeleteMutation from "@/graphql/public/root/mutation/account-delete"
 import AccountUpdateDefaultWalletIdMutation from "@/graphql/public/root/mutation/account-update-default-wallet-id"
@@ -57,8 +57,8 @@ import UserTotpRegistrationInitiateMutation from "@/graphql/public/root/mutation
 import UserTotpRegistrationValidateMutation from "@/graphql/public/root/mutation/user-totp-registration-validate"
 import UserUpdateLanguageMutation from "@/graphql/public/root/mutation/user-update-language"
 import UserUpdateUsernameMutation from "@/graphql/public/root/mutation/user-update-username"
-import CaptchaCreateChallengeMutation from "@/graphql/shared/root/mutation/captcha-create-challenge"
-import CaptchaRequestAuthCodeMutation from "@/graphql/shared/root/mutation/captcha-request-auth-code"
+import CaptchaCreateChallengeMutation from "@/graphql/public/root/mutation/captcha-create-challenge"
+import CaptchaRequestAuthCodeMutation from "@/graphql/public/root/mutation/captcha-request-auth-code"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLPublicContext> }
 export const mutationFields = {

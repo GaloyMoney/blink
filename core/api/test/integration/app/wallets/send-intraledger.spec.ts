@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import { Accounts, Payments } from "@/app"
 
 import { AccountStatus } from "@/domain/accounts"

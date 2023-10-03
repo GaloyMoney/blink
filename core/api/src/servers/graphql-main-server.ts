@@ -70,7 +70,7 @@ const setGqlContext = async (
 
   req.gqlContext = gqlContext
 
-  const username = "domainAccount" in gqlContext && gqlContext.domainAccount.username
+  const username = "domainAccount" in gqlContext && gqlContext.domainAccount?.username
 
   return addAttributesToCurrentSpanAndPropagate(
     {

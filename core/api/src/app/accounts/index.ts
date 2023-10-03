@@ -56,7 +56,7 @@ export const getBusinessMapMarkers = async () => {
 
 export const getUsernameFromWalletId = async (
   walletId: WalletId,
-): Promise<Username | ApplicationError> => {
+): Promise<Username | undefined | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
 
