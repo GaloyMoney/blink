@@ -1,4 +1,3 @@
-// MainContent.tsx
 import React, { ReactNode } from "react"
 
 interface MainContentProps {

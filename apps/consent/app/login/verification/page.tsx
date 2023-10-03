@@ -1,68 +1,113 @@
-"use client"
-import MainContent from "@/app/components/main-container"
-import Card from "@/app/components/card"
-import Logo from "@/app/components/logo"
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line no-implicit-any error
-import { experimental_useFormState as useFormState } from "react-dom"
-import InputComponent from "@/app/components/input-component"
-import { submitForm } from "./verification-action"
-import ButtonComponent from "@/app/components/button-component"
+"use server";
+import MainContent from "@/app/components/main-container";
+import Card from "@/app/components/card";
+import Logo from "@/app/components/logo";
+import { redirect } from "next/navigation";
+import { hydraClient } from "@/app/hydra-config";
+import { oidcConformityMaybeFakeAcr } from "@/app/oidc-cert";
+import VerificationForm from "./verification-form";
+import { cookies } from "next/headers";
+import axios from "axios";
+import { env } from "@/env";
+
 interface VerificationProps {
-  login_challenge: string
-  email: string
-  emailLoginId: string
-  remember: string
+  login_challenge: string;
+  email: string;
+  emailLoginId: string;
+  remember: string;
 }
 
-const Verification = ({ searchParams }: { searchParams: VerificationProps }) => {
-  const { login_challenge, email, emailLoginId, remember } = searchParams
-  if (!login_challenge || !email || !emailLoginId) {
-    throw new Error("Invalid Request")
+export const submitForm = async (_prevState: unknown, form: FormData) => {
+  const login_challenge = form.get("login_challenge");
+  const code = form.get("code");
+  const remember = form.get("remember") === "true";
+  const emailLoginId = form.get("emailLoginId");
+  // TODO add check from email code.
+
+  if (
+    !login_challenge ||
+    !code ||
+    typeof login_challenge !== "string" ||
+    typeof code !== "string"
+  ) {
+    console.error("Invalid Params");
+    return;
   }
 
-  const [state, formAction] = useFormState(submitForm, {
-    message: null,
-  })
+  let authToken;
+  let totpRequired;
+  let userId;
+  const res2 = await axios.post(`${env.AUTH_URL}/auth/email/login`, {
+    code,
+    emailLoginId,
+  });
+  authToken = res2.data.result.authToken;
+  totpRequired = res2.data.result.totpRequired;
+  userId = res2.data.result.id;
+
+  if (!authToken) {
+    return {
+      message: "Invalid code",
+    };
+  }
+
+  // TODO: me query to get userId
+  let response2;
+  const response = await hydraClient.getOAuth2LoginRequest({
+    loginChallenge: login_challenge,
+  });
+  const loginRequest = response.data;
+
+  response2 = await hydraClient.acceptOAuth2LoginRequest({
+    loginChallenge: login_challenge,
+    acceptOAuth2LoginRequest: {
+      subject: userId,
+      remember: remember,
+      remember_for: 3600,
+      acr: oidcConformityMaybeFakeAcr(loginRequest, "0"),
+    },
+  });
+
+  redirect(response2.data.redirect_to);
+};
+
+const Verification = ({
+  searchParams,
+}: {
+  searchParams: VerificationProps;
+}) => {
+  const { login_challenge } = searchParams;
+  const cookieStore = cookies().get(login_challenge);
+
+  if (!cookieStore) {
+    throw new Error("Cannot find cookies");
+  }
+
+  const { email, remember, emailLoginId } = JSON.parse(cookieStore.value);
+  if (!login_challenge || !email || !emailLoginId) {
+    throw new Error("Invalid Request");
+  }
 
   return (
     <MainContent>
       <Card>
         <Logo />
-        <h1 id="verification-title" className="text-center mb-4 text-xl font-semibold">
+        <h1
+          id="verification-title"
+          className="text-center mb-4 text-xl font-semibold"
+        >
           Enter Verification Code
         </h1>
-        <form action={formAction} className="flex flex-col">
-          <input type="hidden" name="login_challenge" value={login_challenge} />
-          <input type="hidden" name="emailLoginId" value={emailLoginId} />
-          <input type="hidden" name="remember" value={remember} />
-
-          <div className="flex flex-col items-center mb-4">
-            <p className="text-center text-sm w-60 mb-1">
-              The code was sent to your email{" "}
-            </p>
-            <span className="font-semibold">{email}</span>
-          </div>
-
-          {state?.message ? (
-            <>
-              <p className="mb-4 text-red-700 text-center">
-                <span className="font-semibold">{state?.message}</span>.
-              </p>
-            </>
-          ) : null}
-
-          <InputComponent
-            type="text"
-            id="code"
-            name="code"
-            placeholder="Enter code here"
-          />
-          <ButtonComponent type="submit">Submit</ButtonComponent>
-        </form>
+        <VerificationForm
+          login_challenge={login_challenge}
+          emailLoginId={emailLoginId}
+          email={email}
+          remember={remember}
+          submitForm={submitForm}
+        />
       </Card>
     </MainContent>
-  )
-}
+  );
+};
 
-export default Verification
+export default Verification;

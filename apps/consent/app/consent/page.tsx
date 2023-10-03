@@ -1,54 +1,63 @@
-import { redirect } from "next/navigation"
-import React from "react"
-import { hydraClient } from "../hydra-config"
-import { oidcConformityMaybeFakeSession } from "../oidc-cert"
-import MainContent from "../components/main-container"
-import Card from "../components/card"
-import Logo from "../components/logo"
-import ScopeItem from "../components/scope-item/scope-item"
-import ButtonComponent from "../components/button-component"
+import { redirect } from "next/navigation";
+import React from "react";
+import { hydraClient } from "../hydra-config";
+import { oidcConformityMaybeFakeSession } from "../oidc-cert";
+import MainContent from "../components/main-container";
+import Card from "../components/card";
+import Logo from "../components/logo";
+import ScopeItem from "../components/scope-item/scope-item";
+import ButtonComponent from "../components/button-component";
+import { cookies } from "next/headers";
 
 interface ConsentProps {
-  consent_challenge: string
+  consent_challenge: string;
 }
 
 const submitForm = async (form: FormData) => {
-  "use server"
-  const consent_challenge = form.get("consent_challenge")
-  const submitValue = form.get("submit")
-  const remember = form.get("remember") === "1"
-  const grantScope = form.getAll("grant_scope").map((value) => value.toString())
-  // TODO add check from email code.
+  "use server";
+  const consent_challenge = form.get("consent_challenge");
+  const submitValue = form.get("submit");
+  const email = form.get("email");
+  const remember = form.get("remember") === "1";
+  const grantScope = form
+    .getAll("grant_scope")
+    .map((value) => value.toString());
 
-  if (!consent_challenge || typeof consent_challenge !== "string") {
-    console.error("INVALID PARAMS")
-    return
+  if (
+    !consent_challenge ||
+    !email ||
+    typeof consent_challenge !== "string" ||
+    typeof email !== "string"
+  ) {
+    console.error("INVALID PARAMS");
+    return;
   }
 
   if (submitValue === "Deny access") {
-    console.log("User denied access")
-    let response
+    console.log("User denied access");
+    let response;
     response = await hydraClient.rejectOAuth2ConsentRequest({
       consentChallenge: consent_challenge,
       rejectOAuth2Request: {
         error: "access_denied",
         error_description: "The resource owner denied the request",
       },
-    })
-
-    redirect(response.data.redirect_to)
+    });
+    redirect(response.data.redirect_to);
   }
 
-  let responseConfirm
+  let responseConfirm;
   let session = {
-    // TODO: pass email
-    access_token: { card: "alice", email: "" },
-    id_token: { card: "bob", email: "" },
-  }
+    // need more context on this
+    access_token: { card: "alice", email },
+    id_token: { card: "bob", email },
+  };
+
   const responseInit = await hydraClient.getOAuth2ConsentRequest({
     consentChallenge: consent_challenge,
-  })
-  const body = responseInit.data
+  });
+
+  const body = responseInit.data;
   responseConfirm = await hydraClient.acceptOAuth2ConsentRequest({
     consentChallenge: consent_challenge,
     acceptOAuth2ConsentRequest: {
@@ -58,44 +67,62 @@ const submitForm = async (form: FormData) => {
       remember: remember,
       remember_for: 3600,
     },
-  })
-
-  redirect(responseConfirm.data.redirect_to)
-}
+  });
+  redirect(responseConfirm.data.redirect_to);
+};
 
 const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
-  const { consent_challenge } = searchParams
+  const { consent_challenge } = searchParams;
+
   if (!consent_challenge) {
-    throw new Error("Invalid Request")
+    throw new Error("Invalid Request");
   }
 
   const data = await hydraClient.getOAuth2ConsentRequest({
     consentChallenge: consent_challenge,
-  })
+  });
 
-  const body = data.data
+  const body = data.data;
+  const login_challenge = data.data.login_challenge;
+
+  if (!login_challenge) {
+    throw new Error("Login Challenge Not Found");
+  }
+
+  const cookieStore = cookies().get(login_challenge);
+
+  if (!cookieStore) {
+    throw new Error("Cannot find cookies");
+  }
+
+  const { email } = JSON.parse(cookieStore.value);
+
+  if (!email) {
+    throw new Error("Email Not Found");
+  }
+
   if (body.client?.skip_consent) {
-    let response
+    let response;
     response = await hydraClient.acceptOAuth2ConsentRequest({
       consentChallenge: consent_challenge,
       acceptOAuth2ConsentRequest: {
         grant_scope: body.requested_scope,
         grant_access_token_audience: body.requested_access_token_audience,
         session: {
-          access_token: { card: "alice" },
-          // TODO fetch email
-          id_token: { who: "bob", email: "" },
+          //  need more context on this
+          access_token: { card: "alice", email },
+          id_token: { who: "bob", email },
         },
       },
-    })
-    redirect(String(response.data.redirect_to))
+    });
+    redirect(String(response.data.redirect_to));
   }
 
-  const user = body.subject
-  const { client, requested_scope } = body
+  const user = body.subject;
+  const { client, requested_scope } = body;
 
   if (!user || !client || !requested_scope) {
-    return <p>INTERNAL SERVER ERROR</p>
+    return <p>INTERNAL SERVER ERROR</p>;
   }
 
   return (
@@ -110,11 +137,19 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
         </div>
 
         <form action={submitForm} className="flex flex-col">
-          <input type="hidden" name="consent_challenge" value={consent_challenge} />
+          <input type="hidden" name="email" value={email} />
+          <input
+            type="hidden"
+            name="consent_challenge"
+            value={consent_challenge}
+          />
 
-          <p className="mb-4 text-gray-700 text-center  font-semibold">Hi {user} </p>
+          <p className="mb-4 text-gray-700 text-center  font-semibold">
+            Hi {user}{" "}
+          </p>
           <p className="mb-4 text-gray-700 ">
-            Application <strong>{client.client_name || client.client_id}</strong> wants
+            Application{" "}
+            <strong>{client.client_name || client.client_id}</strong> wants
             access resources on your behalf and to:
           </p>
 
@@ -123,24 +158,30 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
           ))}
 
           <p className="mb-4 text-gray-700">
-            Do you want to be asked next time when this application wants to access your
-            data?
+            Do you want to be asked next time when this application wants to
+            access your data?
           </p>
           <p className="mb-4 text-gray-700">
-            The application will not be able to ask for more permissions without your
-            consent.
+            The application will not be able to ask for more permissions without
+            your consent.
           </p>
           <ul className="mb-4">
             {client.policy_uri && (
               <li className="mb-2">
-                <a href={client.policy_uri} className="text-blue-500 hover:underline">
+                <a
+                  href={client.policy_uri}
+                  className="text-blue-500 hover:underline"
+                >
                   Policy
                 </a>
               </li>
             )}
             {client.tos_uri && (
               <li className="mb-2">
-                <a href={client.tos_uri} className="text-blue-500 hover:underline">
+                <a
+                  href={client.tos_uri}
+                  className="text-blue-500 hover:underline"
+                >
                   Terms of Service
                 </a>
               </li>
@@ -182,6 +223,6 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
         </form>
       </Card>
     </MainContent>
-  )
-}
-export default Consent
+  );
+};
+export default Consent;

@@ -1,52 +1,53 @@
-import { OAuth2LoginRequest, OAuth2RedirectTo } from "@ory/hydra-client"
-import { redirect } from "next/navigation"
-import React from "react"
-import { hydraClient } from "../hydra-config"
-import axios from "axios"
-import { env } from "@/env"
-import InputComponent from "../components/input-component"
-import Card from "../components/card"
-import MainContent from "../components/main-container"
-import Logo from "../components/logo"
-import ButtonComponent from "../components/button-component"
+import { OAuth2LoginRequest, OAuth2RedirectTo } from "@ory/hydra-client";
+import { redirect } from "next/navigation";
+import React from "react";
+import { hydraClient } from "../hydra-config";
+import axios from "axios";
+import { env } from "@/env";
+import InputComponent from "../components/input-component";
+import Card from "../components/card";
+import MainContent from "../components/main-container";
+import Logo from "../components/logo";
+import ButtonComponent from "../components/button-component";
+import { cookies } from "next/headers";
 
 interface LoginProps {
-  login_challenge: string
+  login_challenge: string;
 }
 
 async function submitForm(formData: FormData) {
-  "use server"
-  const login_challenge = formData.get("login_challenge")
-  const submitValue = formData.get("submit")
-  const email = formData.get("email")
-  const remember = String(formData.get("remember") === "1")
+  "use server";
+  const login_challenge = formData.get("login_challenge");
+  const submitValue = formData.get("submit");
+  const email = formData.get("email");
+  const remember = String(formData.get("remember") === "1");
   if (
     !login_challenge ||
     !submitValue ||
     typeof login_challenge !== "string" ||
     typeof submitValue !== "string"
   ) {
-    console.error("Invalid Values")
-    return
+    console.error("Invalid Values");
+    return;
   }
   if (submitValue === "Deny access") {
-    console.log("User denied access")
+    console.log("User denied access");
     const response = await hydraClient.rejectOAuth2LoginRequest({
       loginChallenge: login_challenge,
       rejectOAuth2Request: {
         error: "access_denied",
         error_description: "The resource owner denied the request",
       },
-    })
-    redirect(response.data.redirect_to)
+    });
+    redirect(response.data.redirect_to);
   }
 
   if (!email || typeof email !== "string") {
-    console.error("Invalid Values")
-    return
+    console.error("Invalid Values");
+    return;
   }
 
-  let emailLoginId = null
+  let emailLoginId;
   const result = await axios.post(`${env.AUTH_URL}/auth/email/code`, {
     email,
   });
@@ -55,47 +56,55 @@ async function submitForm(formData: FormData) {
   // TODO: manage error on ip rate limit
   // TODO: manage error when trying the same email too often
 
-  let params = new URLSearchParams({
-    remember,
+  cookies().set(
     login_challenge,
-    email,
-    emailLoginId,
-  })
-  redirect(`/login/verification?${params}`)
+    JSON.stringify({
+      email,
+      remember,
+      emailLoginId,
+    }),
+    { secure: true }
+  );
+
+  let params = new URLSearchParams({
+    login_challenge,
+  });
+
+  redirect(`/login/verification?${params}`);
 }
 
 const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
-  let body: OAuth2LoginRequest
-  const { login_challenge } = searchParams
+  let body: OAuth2LoginRequest;
+  const { login_challenge } = searchParams;
 
   if (!login_challenge) {
-    throw new Error("Invalid Request")
+    throw new Error("Invalid Request");
   }
-
-  // TODO: add rate limits
 
   const { data } = await hydraClient.getOAuth2LoginRequest({
     loginChallenge: login_challenge,
-  })
+  });
 
-  body = data
+  body = data;
   if (body.skip) {
-    let response: OAuth2RedirectTo
+    let response: OAuth2RedirectTo;
     const { data } = await hydraClient.acceptOAuth2LoginRequest({
       loginChallenge: login_challenge,
       acceptOAuth2LoginRequest: {
         subject: String(body.subject),
       },
-    })
-    response = data
-    redirect(String(response.redirect_to))
+    });
+    response = data;
+    redirect(String(response.redirect_to));
   }
 
   return (
     <MainContent>
       <Card>
         <Logo />
-        <h1 className="text-center mb-4 text-xl font-semibold">Sign In with Blink</h1>
+        <h1 className="text-center mb-4 text-xl font-semibold">
+          Sign In with Blink
+        </h1>
 
         <div className="flex justify-center mb-4">
           <div className="text-center text-sm w-60">
@@ -150,6 +159,6 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
         </form>
       </Card>
     </MainContent>
-  )
-}
-export default Login
+  );
+};
+export default Login;
