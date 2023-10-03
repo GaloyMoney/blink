@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: not hanging on missing ip (#3295)...'
-      sha: 52b5bc9504784783bfb08827dec604a2030a1e31
+      commitTitle: 'chore: bump graphql from 16.8.0 to 16.8.1 in /core/api (#3291)...'
+      sha: 0be599cfb0a95169c49b33d17a1000be2f23ee38
       tags:
-      - 0.13.107-4-g52b5bc950
+      - 0.13.108-1-g0be599cfb
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: not hanging on missing ip (#3295)...'
-      sha: 52b5bc9504784783bfb08827dec604a2030a1e31
+      commitTitle: 'chore: bump graphql from 16.8.0 to 16.8.1 in /core/api (#3291)...'
+      sha: 0be599cfb0a95169c49b33d17a1000be2f23ee38
       tags:
-      - 0.13.107-4-g52b5bc950
+      - 0.13.108-1-g0be599cfb
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: not hanging on missing ip (#3295)...'
-      sha: 52b5bc9504784783bfb08827dec604a2030a1e31
+      commitTitle: 'chore: bump graphql from 16.8.0 to 16.8.1 in /core/api (#3291)...'
+      sha: 0be599cfb0a95169c49b33d17a1000be2f23ee38
       tags:
-      - 0.13.107-4-g52b5bc950
+      - 0.13.108-1-g0be599cfb
     path: ./
   path: ./graphql
 kind: LockConfig
