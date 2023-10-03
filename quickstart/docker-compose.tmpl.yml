@@ -27,6 +27,7 @@ services:
       - stablesats
       - svix
       - svix-pg
+      - hydra
     restart: on-failure:10
 
   #! Proxies
@@ -36,6 +37,10 @@ services:
   #! Authentication
   kratos: #@ data.values.services["kratos"]
   kratos-pg: #@ data.values.services["kratos-pg"]
+
+  hydra: #@ data.values.services["hydra"]
+  hydra-migrate: #@ data.values.services["hydra-migrate"]
+  postgresdhydra: #@ data.values.services["postgresdhydra"]
 
   galoy:
 #@ if galoy_image_digest == "local":
@@ -140,7 +145,7 @@ services:
     #@overlay/match when=1
     volumes:
     #@overlay/match by=overlay.all, expects="0+"
-    #@overlay/replace via=lambda left, right: left.replace("HOST_PROJECT_PATH:-.}", "HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}")
+    #@overlay/replace via=lambda left, right: str(left).replace("HOST_PROJECT_PATH:-.}", "HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}")
     - REPLACED
 
 #@overlay/match by=overlay.all

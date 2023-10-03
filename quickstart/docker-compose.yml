@@ -22,6 +22,7 @@ services:
     - stablesats
     - svix
     - svix-pg
+    - hydra
     restart: on-failure:10
   apollo-router:
     image: ghcr.io/apollographql/router:v1.25.0
@@ -63,6 +64,36 @@ services:
     - POSTGRES_USER=dbuser
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=default
+  hydra:
+    image: oryd/hydra:v2.1.2
+    command: serve -c /home/ory/hydra.yml all --dev
+    volumes:
+    - yamlfragment(*yamlmeta.Map)
+    environment:
+    - DSN=postgres://hydra:secret@postgresdhydra:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    restart: unless-stopped
+    depends_on:
+    - hydra-migrate
+    - postgresdhydra
+    ports:
+    - 4444:4444
+    - 4445:4445
+  hydra-migrate:
+    image: oryd/hydra:v2.1.2
+    environment:
+    - DSN=postgres://hydra:secret@postgresdhydra:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: migrate -c /home/ory/hydra.yml sql -e --yes
+    volumes:
+    - yamlfragment(*yamlmeta.Map)
+    restart: on-failure
+    depends_on:
+    - postgresdhydra
+  postgresdhydra:
+    image: postgres:14.1
+    environment:
+    - POSTGRES_USER=hydra
+    - POSTGRES_PASSWORD=secret
+    - POSTGRES_DB=hydra
   galoy:
     image: us.gcr.io/galoy-org/galoy-app@sha256:e40668b0abae303d278182946bebfb9001caee6003867fedfb89b40fdd6b704d
     command:

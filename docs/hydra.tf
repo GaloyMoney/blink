@@ -18,21 +18,19 @@ resource "hydra_oauth2_client" "example" {
   token_endpoint_auth_method = "none"
 }
 
-output "example_client_id" {
-  description = "The client ID of the example OAuth2 client."
-  value       = hydra_oauth2_client.example.client_id
+output "blink_app_client_id" {
+  value = hydra_oauth2_client.example.client_id
 }
 
-output "example_client_secret" {
-  description = "The client secret of the example OAuth2 client."
-  value       = hydra_oauth2_client.example.client_secret
-  sensitive   = true
+output "blink_app_client_secret" {
+  value     = hydra_oauth2_client.example.client_secret
+  sensitive = true
 }
 
-resource "hydra_oauth2_client" "example2" {
-  client_name                = "example2"
+resource "hydra_oauth2_client" "blink_app" {
+  client_name                = "blink_app"
   grant_types                = ["client_credentials"]
-  redirect_uris              = ["http://localhost:8080/callback"]
   response_types             = ["token"]
   token_endpoint_auth_method = "client_secret_basic"
+  scopes                     = ["editor"]
 }
