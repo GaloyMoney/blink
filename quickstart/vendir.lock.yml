@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump graphql from 16.8.0 to 16.8.1 in /core/api (#3291)...'
-      sha: 0be599cfb0a95169c49b33d17a1000be2f23ee38
+      commitTitle: 'doc: update to new repo (#3296)...'
+      sha: 9814c20551ab6ef3a946272cb7f29f7d0b7fe70e
       tags:
-      - 0.13.108-1-g0be599cfb
+      - 0.13.109-1-g9814c2055
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump graphql from 16.8.0 to 16.8.1 in /core/api (#3291)...'
-      sha: 0be599cfb0a95169c49b33d17a1000be2f23ee38
+      commitTitle: 'doc: update to new repo (#3296)...'
+      sha: 9814c20551ab6ef3a946272cb7f29f7d0b7fe70e
       tags:
-      - 0.13.108-1-g0be599cfb
+      - 0.13.109-1-g9814c2055
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump graphql from 16.8.0 to 16.8.1 in /core/api (#3291)...'
-      sha: 0be599cfb0a95169c49b33d17a1000be2f23ee38
+      commitTitle: 'doc: update to new repo (#3296)...'
+      sha: 9814c20551ab6ef3a946272cb7f29f7d0b7fe70e
       tags:
-      - 0.13.108-1-g0be599cfb
+      - 0.13.109-1-g9814c2055
     path: ./
   path: ./graphql
 kind: LockConfig
