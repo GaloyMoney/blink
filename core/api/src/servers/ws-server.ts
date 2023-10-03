@@ -10,6 +10,8 @@ import jsonwebtoken from "jsonwebtoken"
 
 import jwksRsa from "jwks-rsa"
 
+import { sessionPublicContext } from "./middlewares/session"
+
 import { baseLogger } from "@/services/logger"
 import { setupMongoConnection } from "@/services/mongodb"
 import { sendOathkeeperRequestGraphql } from "@/services/oathkeeper"
@@ -20,7 +22,6 @@ import {
   wrapAsyncToRunInSpan,
 } from "@/services/tracing"
 
-import { sessionPublicContext } from "./middlewares/session"
 import { getJwksArgs, UNSECURE_IP_FROM_REQUEST_OBJECT, WEBSOCKET_PORT } from "@/config"
 import { parseIps } from "@/domain/accounts-ips"
 import { ErrorLevel } from "@/domain/shared"

@@ -5,8 +5,6 @@ import basicAuth from "basic-auth"
 
 import bodyParser from "body-parser"
 
-import cookieParser from "cookie-parser"
-
 import { Authentication } from "@/app"
 
 import { mapError } from "@/graphql/error-map"
