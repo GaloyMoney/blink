@@ -29,8 +29,8 @@ For an overview of all relevant repository checkout [awesome-galoy](https://gith
 
 - GraphqlAPI:
   - Public API following industry best practices
-  - For [end clients](./src/graphql/public/schema.graphql). [Documentation](https://galoymoney.github.io/galoy/)
-  - For [admin activities](./src/graphql/admin/schema.graphql)
+  - For [end clients](./core/api/src/graphql/public/schema.graphql). [Documentation](https://galoymoney.github.io/galoy/)
+  - For [admin activities](./core/api/src/graphql/admin/schema.graphql)
 - Authentication:
   - Code is sent via twillio to end users phone number which can be exchanged for jwt auth token
   - OAuth integration (in progress)
