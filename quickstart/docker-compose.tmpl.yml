@@ -27,6 +27,7 @@ services:
       - stablesats
       - svix
       - svix-pg
+      - hydra
     restart: on-failure:10
 
   #! Proxies
@@ -36,6 +37,8 @@ services:
   #! Authentication
   kratos: #@ data.values.services["kratos"]
   kratos-pg: #@ data.values.services["kratos-pg"]
+
+  hydra: #@ data.values.services["hydra"]
 
   galoy:
 #@ if galoy_image_digest == "local":

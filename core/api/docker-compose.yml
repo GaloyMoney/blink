@@ -424,32 +424,33 @@ services:
     image: postgres:14.1
     environment:
       POSTGRES_PASSWORD: postgres
+
   hydra:
     image: oryd/hydra:v2.1.2
+    ports: []
+    extra_hosts: []
     command: serve -c /home/ory/hydra.yml all --dev
     volumes:
-      - type: bind
-        source: dev/ory
-        target: /home/ory
+      - ${HOST_PROJECT_PATH:-.}/dev/ory:/home/ory
     environment:
       - DSN=postgres://hydra:secret@postgresdhydra:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     restart: unless-stopped
     depends_on:
       - hydra-migrate
       - postgresdhydra
-    ports: []
+
   hydra-migrate:
     image: oryd/hydra:v2.1.2
     environment:
       - DSN=postgres://hydra:secret@postgresdhydra:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     command: migrate -c /home/ory/hydra.yml sql -e --yes
     volumes:
-      - type: bind
-        source: dev/ory
-        target: /home/ory
+      - ${HOST_PROJECT_PATH:-.}/dev/ory:/home/ory
+
     restart: on-failure
     depends_on:
       - postgresdhydra
+
   postgresdhydra:
     image: postgres:14.1
     environment:
