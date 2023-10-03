@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'doc: update to new repo (#3296)...'
-      sha: 9814c20551ab6ef3a946272cb7f29f7d0b7fe70e
+      commitTitle: 'chore: adding hydra to quickstart (#3297)...'
+      sha: b8d62c219afda7dff655714eb8a52ed4b69d3444
       tags:
-      - 0.13.109-1-g9814c2055
+      - 0.13.110-1-gb8d62c219
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'doc: update to new repo (#3296)...'
-      sha: 9814c20551ab6ef3a946272cb7f29f7d0b7fe70e
+      commitTitle: 'chore: adding hydra to quickstart (#3297)...'
+      sha: b8d62c219afda7dff655714eb8a52ed4b69d3444
       tags:
-      - 0.13.109-1-g9814c2055
+      - 0.13.110-1-gb8d62c219
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'doc: update to new repo (#3296)...'
-      sha: 9814c20551ab6ef3a946272cb7f29f7d0b7fe70e
+      commitTitle: 'chore: adding hydra to quickstart (#3297)...'
+      sha: b8d62c219afda7dff655714eb8a52ed4b69d3444
       tags:
-      - 0.13.109-1-g9814c2055
+      - 0.13.110-1-gb8d62c219
     path: ./
   path: ./graphql
 kind: LockConfig

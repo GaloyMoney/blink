@@ -66,25 +66,25 @@ services:
     - POSTGRES_DB=default
   hydra:
     image: oryd/hydra:v2.1.2
+    ports:
+    - 4444:4444
+    - 4445:4445
     command: serve -c /home/ory/hydra.yml all --dev
     volumes:
-    - yamlfragment(*yamlmeta.Map)
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/ory:/home/ory
     environment:
     - DSN=postgres://hydra:secret@postgresdhydra:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     restart: unless-stopped
     depends_on:
     - hydra-migrate
     - postgresdhydra
-    ports:
-    - 4444:4444
-    - 4445:4445
   hydra-migrate:
     image: oryd/hydra:v2.1.2
     environment:
     - DSN=postgres://hydra:secret@postgresdhydra:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
     command: migrate -c /home/ory/hydra.yml sql -e --yes
     volumes:
-    - yamlfragment(*yamlmeta.Map)
+    - ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/dev/ory:/home/ory
     restart: on-failure
     depends_on:
     - postgresdhydra
@@ -95,7 +95,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:e40668b0abae303d278182946bebfb9001caee6003867fedfb89b40fdd6b704d
+    image: us.gcr.io/galoy-org/galoy-app@sha256:6dd6444a7e543d05b7b4fc6cad5101b764be7028fb2f7dec5a5afa03118601c9
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -117,7 +117,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-app@sha256:e40668b0abae303d278182946bebfb9001caee6003867fedfb89b40fdd6b704d
+    image: us.gcr.io/galoy-org/galoy-app@sha256:6dd6444a7e543d05b7b4fc6cad5101b764be7028fb2f7dec5a5afa03118601c9
     command:
     - -r
     - /app/lib/services/tracing.js
@@ -142,7 +142,7 @@ services:
     - MONGO_INITDB_DATABASE=galoy
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:7c803440a5334080f004e3ff3f68bd33bbafd73e59cf1da5160bce21eda70c84
+    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:80f108e3b3c23f1ee07927231e59bb425bbd5f5438087e4ee77806449e2d036c
     depends_on:
     - mongodb
     environment:
