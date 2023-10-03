@@ -5,7 +5,7 @@ import {
   AcceptOAuth2ConsentRequestSession,
   OAuth2ConsentRequest,
   OAuth2LoginRequest,
-} from "@ory/hydra-client"
+} from "@ory/hydra-client";
 
 // This file contains logic which is used when running this application as part of the
 // OpenID Connect Conformance test suite. You can use it for inspiration, but please
@@ -13,10 +13,10 @@ import {
 
 export const oidcConformityMaybeFakeAcr = (
   request: OAuth2LoginRequest,
-  fallback: string,
+  fallback: string
 ) => {
   if (process.env.CONFORMITY_FAKE_CLAIMS !== "1") {
-    return fallback
+    return fallback;
   }
 
   return request.oidc_context?.acr_values &&
@@ -24,50 +24,50 @@ export const oidcConformityMaybeFakeAcr = (
     ? request.oidc_context.acr_values[
         request.oidc_context.acr_values.length - 1
       ]
-    : fallback
-}
+    : fallback;
+};
 
 export const oidcConformityMaybeFakeSession = (
   grantScope: string[],
   request: OAuth2ConsentRequest,
-  session: AcceptOAuth2ConsentRequestSession,
+  session: AcceptOAuth2ConsentRequestSession
 ): AcceptOAuth2ConsentRequestSession => {
   if (process.env.CONFORMITY_FAKE_CLAIMS !== "1") {
-    return session
+    return session;
   }
 
-  const idToken: { [key: string]: any } = {}
+  const idToken: { [key: string]: any } = {};
 
   // If the email scope was granted, fake the email claims.
   if (grantScope.indexOf("email") > -1) {
     // But only do so if the email was requested!
-    idToken.email = "foo@bar.com"
-    idToken.email_verified = true
+    idToken.email = "foo@bar.com";
+    idToken.email_verified = true;
   }
 
   // If the phone scope was granted, fake the phone claims.
   if (grantScope.indexOf("phone") > -1) {
-    idToken.phone_number = "1337133713371337"
-    idToken.phone_number_verified = true
+    idToken.phone_number = "1337133713371337";
+    idToken.phone_number_verified = true;
   }
 
   // If the profile scope was granted, fake the profile claims.
   if (grantScope.indexOf("profile") > -1) {
-    idToken.name = "Foo Bar"
-    idToken.given_name = "Foo"
-    idToken.family_name = "Bar"
-    idToken.website = "https://www.ory.sh"
-    idToken.zoneinfo = "Europe/Belrin"
-    idToken.birthdate = "1.1.2014"
-    idToken.gender = "robot"
-    idToken.profile = "https://www.ory.sh"
-    idToken.preferred_username = "robot"
-    idToken.middle_name = "Baz"
-    idToken.locale = "en-US"
+    idToken.name = "Foo Bar";
+    idToken.given_name = "Foo";
+    idToken.family_name = "Bar";
+    idToken.website = "https://www.ory.sh";
+    idToken.zoneinfo = "Europe/Belrin";
+    idToken.birthdate = "1.1.2014";
+    idToken.gender = "robot";
+    idToken.profile = "https://www.ory.sh";
+    idToken.preferred_username = "robot";
+    idToken.middle_name = "Baz";
+    idToken.locale = "en-US";
     idToken.picture =
-      "https://raw.githubusercontent.com/ory/web/master/static/images/favico.png"
-    idToken.updated_at = 1604416603
-    idToken.nickname = "foobot"
+      "https://raw.githubusercontent.com/ory/web/master/static/images/favico.png";
+    idToken.updated_at = 1604416603;
+    idToken.nickname = "foobot";
   }
 
   // If the address scope was granted, fake the address claims.
@@ -76,7 +76,7 @@ export const oidcConformityMaybeFakeSession = (
       country: "Localhost",
       region: "Intranet",
       street_address: "Local Street 1337",
-    }
+    };
   }
 
   return {
@@ -85,5 +85,5 @@ export const oidcConformityMaybeFakeSession = (
       ...idToken,
       ...session.id_token,
     },
-  }
-}
+  };
+};
