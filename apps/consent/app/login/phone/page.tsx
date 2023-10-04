@@ -1,14 +1,14 @@
 import { OAuth2LoginRequest, OAuth2RedirectTo } from "@ory/hydra-client";
 import { redirect } from "next/navigation";
 import React from "react";
-import { hydraClient } from "../hydra-config";
+import { hydraClient } from "@/app/hydra-config";
 import axios from "axios";
 import { env } from "@/env";
-import InputComponent from "../components/input-component";
-import Card from "../components/card";
-import MainContent from "../components/main-container";
-import Logo from "../components/logo";
-import ButtonComponent from "../components/button-component";
+import InputComponent from "@/app/components/input-component";
+import Card from "@/app/components/card";
+import MainContent from "@/app/components/main-container";
+import Logo from "@/app/components/logo";
+import ButtonComponent from "@/app/components/button-component";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
@@ -20,7 +20,7 @@ async function submitForm(formData: FormData) {
   "use server";
   const login_challenge = formData.get("login_challenge");
   const submitValue = formData.get("submit");
-  const email = formData.get("email");
+  const phone = formData.get("phone");
   const remember = String(formData.get("remember") === "1");
   if (
     !login_challenge ||
@@ -43,27 +43,27 @@ async function submitForm(formData: FormData) {
     redirect(response.data.redirect_to);
   }
 
-  if (!email || typeof email !== "string") {
+  if (!phone || typeof phone !== "string") {
     console.error("Invalid Values");
     return;
   }
 
-  let emailLoginId = "email";
-  const result = await axios.post(`${env.AUTH_URL}/auth/phone/code`, {
-    email,
-  });
-  emailLoginId = result.data.result;
+  let phoneLoginId = "phone";
+  // const result = await axios.post(`${env.AUTH_URL}/auth/phone/code`, {
+  //   phone,
+  // });
+  // phoneLoginId = result.data.result;
 
   // TODO: manage error on ip rate limit
-  // TODO: manage error when trying the same email too often
+  // TODO: manage error when trying the same phone too often
 
   cookies().set(
     login_challenge,
     JSON.stringify({
-      loginType: "email",
-      value: email,
+      loginType: "phone",
+      value: phone,
       remember,
-      loginId: emailLoginId,
+      loginId :  phoneLoginId,
     }),
     { secure: true }
   );
@@ -110,21 +110,20 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
 
         <div className="flex justify-center mb-4">
           <div className="text-center text-sm w-60">
-            Enter your Blink Account ID to sign in to this application.
+            Enter your Phone Number to sign in to this Application.
           </div>
         </div>
 
         <form action={submitForm} className="flex flex-col">
           <input type="hidden" name="login_challenge" value={login_challenge} />
           <InputComponent
-            label="Email"
-            type="email"
-            id="email"
-            name="email"
+            label="Phone"
+            type="tel"
+            id="phone"
+            name="phone"
             required
-            placeholder="Email Id"
+            placeholder="Phone Number"
           />
-
           <div className="flex items-center mb-4">
             <label className="text-gray-700 text-sm flex items-center">
               <input
@@ -153,12 +152,9 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
 
           <div className="flex justify-center mb-4">
             <div className="text-center text-sm w-60">
-              <Link
-                href={`/login/phone?login_challenge=${login_challenge}`}
-                replace
-              >
+              <Link href={`/login?login_challenge=${login_challenge}`} replace>
                 <p className="underline font-semibold text-sm">
-                  Sign in with phone number
+                  Sign in with Email
                 </p>
               </Link>
             </div>

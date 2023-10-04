@@ -9,11 +9,12 @@ import VerificationForm from "./verification-form";
 import { cookies } from "next/headers";
 import axios from "axios";
 import { env } from "@/env";
+import { CaptchaChallenge } from "@/app/components/captcha-challenge/indext";
 
 interface VerificationProps {
   login_challenge: string;
   email: string;
-  emailLoginId: string;
+  loginId: string;
   remember: string;
 }
 
@@ -21,8 +22,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
   const login_challenge = form.get("login_challenge");
   const code = form.get("code");
   const remember = form.get("remember") === "true";
-  const emailLoginId = form.get("emailLoginId");
-  // TODO add check from email code.
+  const loginId = form.get("loginId");
 
   if (
     !login_challenge ||
@@ -39,7 +39,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
   let userId;
   const res2 = await axios.post(`${env.AUTH_URL}/auth/email/login`, {
     code,
-    emailLoginId,
+    loginId,
   });
   authToken = res2.data.result.authToken;
   totpRequired = res2.data.result.totpRequired;
@@ -51,7 +51,6 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
     };
   }
 
-  // TODO: me query to get userId
   let response2;
   const response = await hydraClient.getOAuth2LoginRequest({
     loginChallenge: login_challenge,
@@ -83,13 +82,15 @@ const Verification = ({
     throw new Error("Cannot find cookies");
   }
 
-  const { email, remember, emailLoginId } = JSON.parse(cookieStore.value);
-  if (!login_challenge || !email || !emailLoginId) {
+  const { loginType, value, remember, loginId } = JSON.parse(cookieStore.value);
+  if (!login_challenge || !value || !loginId || !loginType) {
     throw new Error("Invalid Request");
   }
 
   return (
     <MainContent>
+      {/* <div id="captcha"></div> */}
+      {/* <CaptchaChallenge phoneNumber="+918319306878"></CaptchaChallenge> */}
       <Card>
         <Logo />
         <h1
@@ -100,8 +101,9 @@ const Verification = ({
         </h1>
         <VerificationForm
           login_challenge={login_challenge}
-          emailLoginId={emailLoginId}
-          email={email}
+          loginId={loginId}
+          loginType={loginType}
+          value={value}
           remember={remember}
           submitForm={submitForm}
         />
