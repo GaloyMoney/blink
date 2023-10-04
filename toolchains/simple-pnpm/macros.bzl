@@ -22,7 +22,7 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
 
     return [DefaultInfo(default_output = out)]
 
-build_node_modules = rule(
+_build_node_modules = rule(
     impl = build_node_modules_impl,
     attrs = {
         "pnpm_lock": attrs.source(
@@ -38,6 +38,14 @@ build_node_modules = rule(
         ),
     },
 )
+
+def build_node_modules(
+        pnpm_lock = ":pnpm-lock.yaml",
+        **kwargs):
+    _build_node_modules(
+        pnpm_lock = pnpm_lock,
+        **kwargs,
+    )
 
 def npm_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo, TemplatePlaceholderInfo]]:
     bin_name = ctx.attrs.bin_name or ctx.attrs.name
@@ -93,11 +101,9 @@ _npm_bin = rule(
 )
 
 def npm_bin(
-        visibility = ["PUBLIC"],
         node_modules = ":node_modules",
         **kwargs):
     _npm_bin(
         node_modules = node_modules,
-        visibility = visibility,
         **kwargs,
     )
