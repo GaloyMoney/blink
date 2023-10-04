@@ -6,10 +6,9 @@ export_file(
 
 build_node_modules(
   name = "node_modules",
-  visibility = ["PUBLIC"],
-  pnpm_lock = ":pnpm-lock.yaml",
 )
 
 npm_bin(
-  name = "turbo"
+  name = "turbo",
+  visibility = ["PUBLIC"],
 )
