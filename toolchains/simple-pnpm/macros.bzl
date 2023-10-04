@@ -39,3 +39,65 @@ build_node_modules = rule(
     },
 )
 
+def npm_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo, TemplatePlaceholderInfo]]:
+    bin_name = ctx.attrs.bin_name or ctx.attrs.name
+
+    exe = ctx.actions.declare_output(bin_name)
+
+    simple_pnpm_toolchain = ctx.attrs._simple_pnpm_toolchain[SimplePnpmToolchainInfo]
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        simple_pnpm_toolchain.build_npm_bin[DefaultInfo].default_outputs,
+        "--bin-out-path",
+        exe.as_output(),
+    )
+
+    cmd.add([
+        ctx.attrs.node_modules,
+        bin_name,
+    ])
+
+    ctx.actions.run(cmd, category = "build_npm_bin", identifier = bin_name)
+
+    return [
+        DefaultInfo(default_output = exe),
+        RunInfo(exe),
+        TemplatePlaceholderInfo(
+            keyed_variables = {
+                "exe": exe,
+            },
+        ),
+    ]
+
+_npm_bin = rule(
+    impl = npm_bin_impl,
+    attrs = {
+        "bin_name": attrs.option(
+            attrs.string(),
+            default = None,
+            doc = """Node module bin name (default: attrs.name).""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds `node_modules`.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_simple_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:simple_pnpm",
+            providers = [SimplePnpmToolchainInfo],
+        ),
+    },
+)
+
+def npm_bin(
+        visibility = ["PUBLIC"],
+        node_modules = ":node_modules",
+        **kwargs):
+    _npm_bin(
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
