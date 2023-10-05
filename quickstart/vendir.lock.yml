@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: adding hydra to quickstart (#3297)...'
-      sha: b8d62c219afda7dff655714eb8a52ed4b69d3444
+      commitTitle: 'chore: remove mongoose resolution (#3302)...'
+      sha: 31d9bfc34f1193ef61c71866881a3517012065bb
       tags:
-      - 0.13.110-1-gb8d62c219
+      - 0.13.111-1-g31d9bfc34
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: adding hydra to quickstart (#3297)...'
-      sha: b8d62c219afda7dff655714eb8a52ed4b69d3444
+      commitTitle: 'chore: remove mongoose resolution (#3302)...'
+      sha: 31d9bfc34f1193ef61c71866881a3517012065bb
       tags:
-      - 0.13.110-1-gb8d62c219
+      - 0.13.111-1-g31d9bfc34
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: adding hydra to quickstart (#3297)...'
-      sha: b8d62c219afda7dff655714eb8a52ed4b69d3444
+      commitTitle: 'chore: remove mongoose resolution (#3302)...'
+      sha: 31d9bfc34f1193ef61c71866881a3517012065bb
       tags:
-      - 0.13.110-1-gb8d62c219
+      - 0.13.111-1-g31d9bfc34
     path: ./
   path: ./graphql
 kind: LockConfig
