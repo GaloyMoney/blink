@@ -1,0 +1,63 @@
+root = true
+
+[*]
+charset = utf-8
+tab_width = 4
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.nix]
+indent_style = space
+indent_size = 2
+tab_width = 2
+max_line_length = 80
+
+[*.rs]
+indent_style = space
+tab_width = 4
+insert_final_newline = true
+end_of_line = lf
+
+[*.sh]
+indent_style = space
+indent_size = 2
+max_line_length = 80
+binary_next_line = true
+switch_case_indent = true
+
+[*.py]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 80
+
+[BUCK]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 100
+
+[*.bzl]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 100
+
+[*.bxl]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 100
+
+[Tiltfile]
+indent_style = space
+indent_size = 4
+tab_width = 4
+max_line_length = 100
+
+[Dockerfile]
+indent_style = space
+indent_size = 4
+max_line_length = 80
+
