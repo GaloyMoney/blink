@@ -193,8 +193,7 @@
   "resolutions": {
     "protobufjs": "7.2.5",
     "http-cache-semantics": "4.1.1",
-    "import-in-the-middle": "1.4.2",
-    "**/**/mongoose": "~7.5.1"
+    "import-in-the-middle": "1.4.2"
   },
   "private": true
 }
