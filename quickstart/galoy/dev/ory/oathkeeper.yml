@@ -13,9 +13,9 @@ authenticators:
     enabled: true
     config:
       trusted_issuers:
-        - https://firebaseappcheck.googleapis.com/72279297366
+        - https://firebaseappcheck.googleapis.com/806646140435
       target_audience:
-        - projects/72279297366
+        - projects/806646140435
       jwks_urls:
         - https://firebaseappcheck.googleapis.com/v1beta/jwks
         - file:///home/ory/jwks.json # ONLY FOR DEV, DO NOT USE IN PRODUCTION

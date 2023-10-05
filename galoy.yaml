@@ -1,7 +1,7 @@
-lightningAddressDomain: pay.domain.com
+lightningAddressDomain: pay.api-development.flashapp.me
 lightningAddressDomainAliases:
-  - pay1.domain.com
-  - pay2.domain.com
+  - pay1.api-development.flashapp.me
+  - pay2.api-development.flashapp.me
 locale: en
 displayCurrency:
   code: USD
@@ -19,7 +19,7 @@ buildVersion:
     minBuildNumber: 362
     lastBuildNumber: 362
 rewards:
-  enableIpProxyCheck: true
+  enableIpProxyCheck: false
   allowPhoneCountries: []
   denyPhoneCountries: []
   allowIPCountries: []

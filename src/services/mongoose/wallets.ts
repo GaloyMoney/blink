@@ -8,6 +8,11 @@ import {
 } from "@domain/errors"
 import { Types } from "mongoose"
 
+// FLASH FORK: import IBEX routes and helper
+import { IbexRoutes } from "@services/IbexHelper/Routes"
+
+import { requestIBexPlugin } from "../../services/IbexHelper/IbexHelper"
+
 import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
 import { Wallet } from "./schema"
 import { AccountsRepository } from "./accounts"
@@ -29,10 +34,34 @@ export const WalletsRepository = (): IWalletsRepository => {
     const account = await AccountsRepository().findById(accountId)
     // verify that the account exist
     if (account instanceof Error) return account
-
     try {
+      // FLASH FORK: create IBEX account if currency is USD
+      let ibexAccountId = ""
+      if (currency === "USD") {
+        const IbexAccountCreationResponse = await requestIBexPlugin(
+          "POST",
+          IbexRoutes.API_CreateAccount,
+          {},
+          {
+            name: accountId,
+            currencyId: 3,
+          },
+        )
+        console.log("IbexAccountCreationResponse", IbexAccountCreationResponse)
+        if (
+          !IbexAccountCreationResponse ||
+          !IbexAccountCreationResponse.data ||
+          !IbexAccountCreationResponse.data["data"]["id"]
+        ) {
+          console.error({ error: "unable to get IbexAccountCreationResponse" })
+        } else {
+          ibexAccountId = IbexAccountCreationResponse.data["data"]["id"]
+        }
+      }
+
       const wallet = new Wallet({
         _accountId: toObjectId<AccountId>(accountId),
+        id: currency === "USD" ? ibexAccountId : crypto.randomUUID(),
         type,
         currency,
       })

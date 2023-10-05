@@ -35,8 +35,8 @@ const initializeCreatedAccount = async ({
     enabledWallets[currency] = wallet
   }
 
-  // Set default wallet as 1st element in walletsEnabledConfig array.
-  const defaultWalletId = enabledWallets[walletsEnabledConfig[0]]?.id
+  // FLASH FORK: Set default wallet as 2nd element in walletsEnabledConfig array.
+  const defaultWalletId = enabledWallets[walletsEnabledConfig[1]]?.id
 
   if (defaultWalletId === undefined) {
     return new ConfigError("NoWalletsEnabledInConfigError")

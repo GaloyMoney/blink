@@ -19,7 +19,11 @@ import {
   requestEmailCode,
 } from "@app/authentication"
 import { parseIps } from "@domain/accounts-ips"
-import { checkedToEmailAddress, checkedToPhoneNumber } from "@domain/users"
+import {
+  checkedToEmailAddress,
+  checkedToPhoneNumber,
+  checkedToDeviceId,
+} from "@domain/users"
 import bodyParser from "body-parser"
 
 import cookieParser from "cookie-parser"
@@ -189,14 +193,19 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
 
   const username = user.name
   const password = user.pass
-  const deviceId = username
+  const deviceIdRaw: string = username
+
+  const deviceId = checkedToDeviceId(deviceIdRaw)
+  if (deviceId instanceof Error) {
+    return res.status(422).send({ error: `Device ID error, ${deviceId.message}` })
+  }
 
   try {
     const authToken = await Authentication.loginWithDevice({
       username,
       password,
       ip,
-      deviceId,
+      deviceId: deviceIdRaw,
     })
     if (authToken instanceof Error) {
       recordExceptionInCurrentSpan({ error: authToken })
