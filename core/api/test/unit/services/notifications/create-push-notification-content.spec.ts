@@ -1,12 +1,12 @@
-import { getLocale } from "@config"
-import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
-
 import {
   btcTransactions,
   usdTransactions,
   btcTransactionsWithDisplayCurrency,
   usdTransactionsWithDisplayCurrency,
 } from "./transactions"
+
+import { getLocale } from "@/config"
+import { createPushNotificationContent } from "@/services/notifications/create-push-notification-content"
 
 const userLanguage = getLocale()
 

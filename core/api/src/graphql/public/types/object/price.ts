@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-
 import SafeInt from "../../../shared/types/scalar/safe-int"
+
+import { GT } from "@/graphql/index"
 
 const Price = GT.Object({
   name: "Price",

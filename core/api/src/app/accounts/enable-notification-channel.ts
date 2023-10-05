@@ -1,5 +1,5 @@
-import { enableNotificationChannel as domainEnableNotificationChannel } from "@domain/notifications"
-import { AccountsRepository } from "@services/mongoose"
+import { enableNotificationChannel as domainEnableNotificationChannel } from "@/domain/notifications"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const enableNotificationChannel = async ({
   accountId,

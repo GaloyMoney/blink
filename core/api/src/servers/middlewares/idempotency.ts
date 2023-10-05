@@ -1,9 +1,11 @@
-import { InvalidIdempotencyKeyError } from "@domain/errors"
-import { ResourceAttemptsTimelockServiceError } from "@domain/lock"
-import { LockService } from "@services/lock"
-import { addAttributesToCurrentSpan } from "@services/tracing"
 import { json } from "body-parser"
+
 import { NextFunction, Request, Response } from "express"
+
+import { InvalidIdempotencyKeyError } from "@/domain/errors"
+import { ResourceAttemptsTimelockServiceError } from "@/domain/lock"
+import { LockService } from "@/services/lock"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 // Create lock service instance
 const lockService = LockService()

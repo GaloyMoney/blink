@@ -1,5 +1,5 @@
-import { TxDecoder, TransactionDecodeError } from "@domain/bitcoin/onchain"
-import { toSats } from "@domain/bitcoin"
+import { TxDecoder, TransactionDecodeError } from "@/domain/bitcoin/onchain"
+import { toSats } from "@/domain/bitcoin"
 
 describe("decodeOnChainTransaction", () => {
   it("decodes a tx hex", () => {

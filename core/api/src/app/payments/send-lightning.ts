@@ -1,13 +1,21 @@
-import { AccountLevel, AccountValidator } from "@domain/accounts"
+import {
+  constructPaymentFlowBuilder,
+  getPriceRatioForLimits,
+  addContactsAfterSend,
+} from "./helpers"
+
+import { reimburseFee } from "./reimburse-fee"
+
+import { AccountLevel, AccountValidator } from "@/domain/accounts"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
   LnAlreadyPaidError,
   LnPaymentPendingError,
   PaymentSendStatus,
-} from "@domain/bitcoin/lightning"
-import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
-import { DisplayAmountsConverter } from "@domain/fiat"
+} from "@/domain/bitcoin/lightning"
+import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@/domain/errors"
+import { DisplayAmountsConverter } from "@/domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   LnFees,
@@ -16,20 +24,20 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
   WalletPriceRatio,
   toDisplayBaseAmount,
-} from "@domain/payments"
+} from "@/domain/payments"
 import {
   WalletCurrency,
   ErrorLevel,
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
-} from "@domain/shared"
+} from "@/domain/shared"
 import {
   checkedToWalletId,
   PaymentInitiationMethod,
   SettlementMethod,
-} from "@domain/wallets"
+} from "@/domain/wallets"
 
-import { LndService } from "@services/lnd"
+import { LndService } from "@/services/lnd"
 import {
   LnPaymentsRepository,
   PaymentFlowStateRepository,
@@ -37,42 +45,34 @@ import {
   WalletsRepository,
   UsersRepository,
   AccountsRepository,
-} from "@services/mongoose"
+} from "@/services/mongoose"
 
-import { DealerPriceService } from "@services/dealer-price"
-import { LedgerService } from "@services/ledger"
-import { LockService } from "@services/lock"
-import { NotificationsService } from "@services/notifications"
+import { DealerPriceService } from "@/services/dealer-price"
+import { LedgerService } from "@/services/ledger"
+import { LockService } from "@/services/lock"
+import { NotificationsService } from "@/services/notifications"
 
-import * as LedgerFacade from "@services/ledger/facade"
+import * as LedgerFacade from "@/services/ledger/facade"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 
 import {
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
-} from "@app/accounts"
-import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
-import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
+} from "@/app/accounts"
+import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
+import { validateIsBtcWallet, validateIsUsdWallet } from "@/app/wallets"
 
-import { ResourceExpiredLockServiceError } from "@domain/lock"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+import { ResourceExpiredLockServiceError } from "@/domain/lock"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
-import { CallbackService } from "@services/svix"
-import { getCallbackServiceConfig } from "@config"
-import { CallbackEventType } from "@domain/callback"
-
-import {
-  constructPaymentFlowBuilder,
-  getPriceRatioForLimits,
-  addContactsAfterSend,
-} from "./helpers"
-
-import { reimburseFee } from "./reimburse-fee"
+import { CallbackService } from "@/services/svix"
+import { getCallbackServiceConfig } from "@/config"
+import { CallbackEventType } from "@/domain/callback"
 
 const dealer = DealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)

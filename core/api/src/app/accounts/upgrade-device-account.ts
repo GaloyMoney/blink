@@ -1,5 +1,5 @@
-import { AccountLevel } from "@domain/accounts"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { AccountLevel } from "@/domain/accounts"
+import { AccountsRepository, UsersRepository } from "@/services/mongoose"
 
 export const upgradeAccountFromDeviceToPhone = async ({
   userId,

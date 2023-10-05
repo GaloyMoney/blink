@@ -1,5 +1,5 @@
-import { checkedCoordinates, checkedMapTitle, checkedToUsername } from "@domain/accounts"
-import { AccountsRepository } from "@services/mongoose/accounts"
+import { checkedCoordinates, checkedMapTitle, checkedToUsername } from "@/domain/accounts"
+import { AccountsRepository } from "@/services/mongoose/accounts"
 
 export const updateBusinessMapInfo = async ({
   username,

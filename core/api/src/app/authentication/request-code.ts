@@ -3,17 +3,17 @@ import {
   UNSECURE_DEFAULT_LOGIN_CODE,
   getGeetestConfig,
   getTestAccounts,
-} from "@config"
-import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { PhoneAlreadyExistsError } from "@domain/authentication/errors"
-import { NotImplementedError } from "@domain/errors"
-import { RateLimitConfig } from "@domain/rate-limit"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import Geetest from "@services/geetest"
-import { AuthWithEmailPasswordlessService } from "@services/kratos"
-import { baseLogger } from "@services/logger"
-import { consumeLimiter } from "@services/rate-limit"
-import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@services/twilio"
+} from "@/config"
+import { TestAccountsChecker } from "@/domain/accounts/test-accounts-checker"
+import { PhoneAlreadyExistsError } from "@/domain/authentication/errors"
+import { NotImplementedError } from "@/domain/errors"
+import { RateLimitConfig } from "@/domain/rate-limit"
+import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
+import Geetest from "@/services/geetest"
+import { AuthWithEmailPasswordlessService } from "@/services/kratos"
+import { baseLogger } from "@/services/logger"
+import { consumeLimiter } from "@/services/rate-limit"
+import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@/services/twilio"
 
 export const requestPhoneCodeWithCaptcha = async ({
   phone,

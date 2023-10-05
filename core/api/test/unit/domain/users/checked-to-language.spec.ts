@@ -1,5 +1,5 @@
-import { InvalidLanguageError } from "@domain/errors"
-import { checkedToLanguage } from "@domain/users"
+import { InvalidLanguageError } from "@/domain/errors"
+import { checkedToLanguage } from "@/domain/users"
 
 describe("language-check", () => {
   it("Passes with valid languages", () => {

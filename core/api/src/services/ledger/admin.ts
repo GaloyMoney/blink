@@ -1,15 +1,5 @@
-import {
-  CouldNotFindTransactionMetadataError,
-  LedgerTransactionType,
-  toLiabilitiesWalletId,
-  UnknownLedgerError,
-} from "@domain/ledger"
-import { WalletCurrency } from "@domain/shared"
-import { DuplicateError } from "@domain/errors"
-import { SwapProvider } from "@domain/swap"
-import { sha256 } from "@domain/bitcoin/lightning"
-
 import { MainBook, Transaction } from "./books"
+
 import { getBankOwnerWalletId } from "./caching"
 
 import { TransactionsMetadataRepository } from "./services"
@@ -17,6 +7,17 @@ import { TransactionsMetadataRepository } from "./services"
 import { coldStorageAccountId, lndLedgerAccountId } from "./domain/accounts"
 
 import { translateToLedgerJournal } from "./helpers"
+
+import {
+  CouldNotFindTransactionMetadataError,
+  LedgerTransactionType,
+  toLiabilitiesWalletId,
+  UnknownLedgerError,
+} from "@/domain/ledger"
+import { WalletCurrency } from "@/domain/shared"
+import { DuplicateError } from "@/domain/errors"
+import { SwapProvider } from "@/domain/swap"
+import { sha256 } from "@/domain/bitcoin/lightning"
 
 const txMetadataRepo = TransactionsMetadataRepository()
 

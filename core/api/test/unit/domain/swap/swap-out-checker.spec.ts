@@ -1,5 +1,5 @@
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
-import { SwapOutChecker } from "@domain/swap"
+import { WalletCurrency, ZERO_SATS } from "@/domain/shared"
+import { SwapOutChecker } from "@/domain/swap"
 
 describe("SwapOutChecker", () => {
   it("returns the amount that should be swapped", () => {

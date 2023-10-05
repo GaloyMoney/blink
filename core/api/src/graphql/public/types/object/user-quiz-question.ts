@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-
 import QuizQuestion from "./quiz-question"
+
+import { GT } from "@/graphql/index"
 
 // deprecated // TODO: remove
 const UserQuizQuestion = GT.Object({

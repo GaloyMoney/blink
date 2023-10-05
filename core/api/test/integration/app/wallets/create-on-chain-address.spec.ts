@@ -1,15 +1,15 @@
-import { Accounts, Wallets } from "@app"
+import { Accounts, Wallets } from "@/app"
 
-import { AccountStatus } from "@domain/accounts"
-import { RateLimitConfig } from "@domain/rate-limit"
-import { InactiveAccountError } from "@domain/errors"
+import { AccountStatus } from "@/domain/accounts"
+import { RateLimitConfig } from "@/domain/rate-limit"
+import { InactiveAccountError } from "@/domain/errors"
 import {
   OnChainAddressCreateRateLimiterExceededError,
   RateLimiterExceededError,
-} from "@domain/rate-limit/errors"
+} from "@/domain/rate-limit/errors"
 
-import { AccountsRepository } from "@services/mongoose"
-import * as RateLimitImpl from "@services/rate-limit"
+import { AccountsRepository } from "@/services/mongoose"
+import * as RateLimitImpl from "@/services/rate-limit"
 
 import { createRandomUserAndBtcWallet } from "test/helpers"
 
@@ -66,7 +66,7 @@ describe("onChainAddress", () => {
     if (newAccount instanceof Error) throw newAccount
 
     // Setup limiter mock
-    const { RedisRateLimitService } = jest.requireActual("@services/rate-limit")
+    const { RedisRateLimitService } = jest.requireActual("@/services/rate-limit")
     const rateLimitServiceSpy = jest
       .spyOn(RateLimitImpl, "RedisRateLimitService")
       .mockReturnValue({

@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getOnChainWalletConfig } from "@config"
+import { getOnChainWalletConfig } from "@/config"
 
 import {
   addPendingTransaction,
@@ -8,23 +8,23 @@ import {
   addSettledTransaction,
   getLastOnChainAddress,
   registerBroadcastedPayout,
-} from "@app/wallets"
+} from "@/app/wallets"
 
-import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@domain/shared"
-import { UnknownLedgerError, toLiabilitiesWalletId } from "@domain/ledger"
-import { DisplayPriceRatio, WalletPriceRatio } from "@domain/payments"
+import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@/domain/shared"
+import { UnknownLedgerError, toLiabilitiesWalletId } from "@/domain/ledger"
+import { DisplayPriceRatio, WalletPriceRatio } from "@/domain/payments"
 import {
   DisplayAmountsConverter,
   UsdDisplayCurrency,
   displayAmountFromNumber,
-} from "@domain/fiat"
+} from "@/domain/fiat"
 
-import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
-import { Transaction } from "@services/ledger/schema"
-import * as LedgerFacade from "@services/ledger/facade"
-import { getBankOwnerWalletId } from "@services/ledger/caching"
+import { WalletOnChainPendingReceive } from "@/services/mongoose/schema"
+import { Transaction } from "@/services/ledger/schema"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { getBankOwnerWalletId } from "@/services/ledger/caching"
 
-import { LessThanDustThresholdError } from "@domain/errors"
+import { LessThanDustThresholdError } from "@/domain/errors"
 
 import { generateHash, createRandomUserAndBtcWallet } from "test/helpers"
 

@@ -1,14 +1,5 @@
 import { authenticatedBitcoind, createWallet, importDescriptors } from "bitcoin-cli-ts"
 
-import { LedgerService } from "@services/ledger"
-
-import { toSats } from "@domain/bitcoin"
-import { parseErrorMessageFromUnknown } from "@domain/shared"
-
-import { updateLegacyOnChainReceipt } from "@app/wallets"
-
-import { baseLogger } from "@services/logger"
-
 import {
   BitcoindClient,
   bitcoindDefaultClient,
@@ -16,9 +7,21 @@ import {
   BitcoindWalletClient,
   getBitcoinCoreSignerRPCConfig,
 } from "./bitcoind"
+
 import { descriptors as signerDescriptors } from "./signer-wallet"
+
 import { lndCreateOnChainAddress } from "./wallet"
+
 import { waitUntilBlockHeight } from "./lightning"
+
+import { LedgerService } from "@/services/ledger"
+
+import { toSats } from "@/domain/bitcoin"
+import { parseErrorMessageFromUnknown } from "@/domain/shared"
+
+import { updateLegacyOnChainReceipt } from "@/app/wallets"
+
+import { baseLogger } from "@/services/logger"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet

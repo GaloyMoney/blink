@@ -1,8 +1,8 @@
-import { CouldNotFindUserFromPhoneError, RepositoryError } from "@domain/errors"
-
 import { User } from "./schema"
 
 import { parseRepositoryError } from "./utils"
+
+import { CouldNotFindUserFromPhoneError, RepositoryError } from "@/domain/errors"
 
 export const translateToUser = (user: UserRecord): User => {
   const language = (user?.language ?? "") as UserLanguageOrEmpty

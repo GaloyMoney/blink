@@ -1,4 +1,4 @@
-import { DomainError } from "@domain/shared"
+import { DomainError } from "@/domain/shared"
 
 export class AccountError extends DomainError {}
 

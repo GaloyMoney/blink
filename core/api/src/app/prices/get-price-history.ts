@@ -1,8 +1,8 @@
-import { CacheKeys } from "@domain/cache"
-import { toSeconds } from "@domain/primitives"
-import { PriceService } from "@services/price"
-import { PriceHistoryNotAvailableError } from "@domain/price"
-import { LocalCacheService } from "@services/cache/local-cache"
+import { CacheKeys } from "@/domain/cache"
+import { toSeconds } from "@/domain/primitives"
+import { PriceService } from "@/services/price"
+import { PriceHistoryNotAvailableError } from "@/domain/price"
+import { LocalCacheService } from "@/services/cache/local-cache"
 
 export const getPriceHistory = async ({
   range,

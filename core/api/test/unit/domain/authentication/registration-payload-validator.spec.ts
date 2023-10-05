@@ -1,11 +1,11 @@
 import {
   MissingRegistrationPayloadPropertiesError,
   UnsupportedSchemaTypeError,
-} from "@domain/authentication/errors"
-import { RegistrationPayloadValidator } from "@domain/authentication/registration-payload-validator"
-import { InvalidPhoneNumber, InvalidUserId } from "@domain/errors"
+} from "@/domain/authentication/errors"
+import { RegistrationPayloadValidator } from "@/domain/authentication/registration-payload-validator"
+import { InvalidPhoneNumber, InvalidUserId } from "@/domain/errors"
 
-import { SchemaIdType } from "@services/kratos"
+import { SchemaIdType } from "@/services/kratos"
 
 import { randomPhone, randomUserId } from "test/helpers/random"
 

@@ -1,8 +1,12 @@
-import { AccountIps } from "@services/mongoose/schema"
-
-import { CouldNotFindAccountIpError, PersistError, RepositoryError } from "@domain/errors"
-
 import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
+
+import { AccountIps } from "@/services/mongoose/schema"
+
+import {
+  CouldNotFindAccountIpError,
+  PersistError,
+  RepositoryError,
+} from "@/domain/errors"
 
 type UpdateQuery = {
   $set: {

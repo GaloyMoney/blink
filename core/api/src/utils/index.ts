@@ -1,5 +1,5 @@
-import { MS_PER_DAY, MS_PER_SEC } from "@config"
-import { NonIntegerError } from "@domain/errors"
+import { MS_PER_DAY, MS_PER_SEC } from "@/config"
+import { NonIntegerError } from "@/domain/errors"
 
 export * as GrpcStreamClient from "./grpc-stream-client"
 

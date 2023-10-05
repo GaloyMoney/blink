@@ -1,9 +1,9 @@
-import { getBalanceForWallet, listWalletsByAccountId } from "@app/wallets"
-import { AccountStatus } from "@domain/accounts"
-import { AccountHasPositiveBalanceError } from "@domain/authentication/errors"
-import { IdentityRepository } from "@services/kratos"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
-import { addEventToCurrentSpan } from "@services/tracing"
+import { getBalanceForWallet, listWalletsByAccountId } from "@/app/wallets"
+import { AccountStatus } from "@/domain/accounts"
+import { AccountHasPositiveBalanceError } from "@/domain/authentication/errors"
+import { IdentityRepository } from "@/services/kratos"
+import { AccountsRepository, UsersRepository } from "@/services/mongoose"
+import { addEventToCurrentSpan } from "@/services/tracing"
 
 export const markAccountForDeletion = async ({
   accountId,

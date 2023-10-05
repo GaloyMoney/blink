@@ -1,24 +1,25 @@
 import util from "util"
 
 import { credentials } from "@grpc/grpc-js"
+
+import { baseLogger } from "../logger"
+
+import { PriceHistoryProtoDescriptor, PriceProtoDescriptor } from "./grpc"
+
 import {
   PriceServiceError,
   UnknownPriceServiceError,
   PriceNotAvailableError,
   PriceCurrenciesNotAvailableError,
-} from "@domain/price"
+} from "@/domain/price"
 
-import { SATS_PER_BTC } from "@domain/bitcoin"
+import { SATS_PER_BTC } from "@/domain/bitcoin"
 
-import { WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@/domain/shared"
 
-import { CENTS_PER_USD, UsdDisplayCurrency } from "@domain/fiat"
+import { CENTS_PER_USD, UsdDisplayCurrency } from "@/domain/fiat"
 
-import { PRICE_HISTORY_HOST, PRICE_HISTORY_PORT, PRICE_HOST, PRICE_PORT } from "@config"
-
-import { baseLogger } from "../logger"
-
-import { PriceHistoryProtoDescriptor, PriceProtoDescriptor } from "./grpc"
+import { PRICE_HISTORY_HOST, PRICE_HISTORY_PORT, PRICE_HOST, PRICE_PORT } from "@/config"
 
 const priceUrl = PRICE_HOST
 const pricePort = PRICE_PORT

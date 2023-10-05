@@ -1,4 +1,4 @@
-import { TransactionsMetadataRepository } from "@services/ledger/services"
+import { TransactionsMetadataRepository } from "@/services/ledger/services"
 
 export const getTransactionsMetadataByIds = async (
   ids: LedgerTransactionId[],

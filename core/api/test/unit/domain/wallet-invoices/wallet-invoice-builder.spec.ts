@@ -1,18 +1,18 @@
-import { toSats } from "@domain/bitcoin"
-import { sha256 } from "@domain/bitcoin/lightning"
-import { checkedToMinutes } from "@domain/primitives"
+import { toSats } from "@/domain/bitcoin"
+import { sha256 } from "@/domain/bitcoin/lightning"
+import { checkedToMinutes } from "@/domain/primitives"
 import {
   BtcPaymentAmount,
   UsdPaymentAmount,
   WalletCurrency,
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
-} from "@domain/shared"
+} from "@/domain/shared"
 import {
   InvalidWalletInvoiceBuilderStateError,
   SubOneCentSatAmountForUsdReceiveError,
-} from "@domain/wallet-invoices/errors"
-import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
+} from "@/domain/wallet-invoices/errors"
+import { WalletInvoiceBuilder } from "@/domain/wallet-invoices/wallet-invoice-builder"
 
 describe("WalletInvoiceBuilder", () => {
   const recipientBtcWallet = {

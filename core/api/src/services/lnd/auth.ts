@@ -1,4 +1,5 @@
 import { authenticatedLndGrpc, unauthenticatedLndGrpc } from "lightning"
+
 import {
   LND1_DNS,
   LND1_MACAROON,
@@ -15,7 +16,7 @@ import {
   LND2_TLS,
   LND2_TYPE,
   LND_PRIORITY,
-} from "@config"
+} from "@/config"
 
 const addProps = (array: LndParams[]) => {
   const result: LndConnect[] = array.map((input) => {

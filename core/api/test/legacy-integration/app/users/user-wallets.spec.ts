@@ -1,5 +1,5 @@
-import { WalletCurrency } from "@domain/shared"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { WalletCurrency } from "@/domain/shared"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
 import { createAccount } from "test/helpers"
 

@@ -1,9 +1,9 @@
-import { Wallets } from "@app"
+import { Wallets } from "@/app"
 
-import { ZERO_SATS } from "@domain/shared"
-import { MultipleCurrenciesForSingleCurrencyOperationError } from "@domain/errors"
+import { ZERO_SATS } from "@/domain/shared"
+import { MultipleCurrenciesForSingleCurrencyOperationError } from "@/domain/errors"
 
-import { WalletsRepository } from "@services/mongoose"
+import { WalletsRepository } from "@/services/mongoose"
 
 import { createRandomUserAndBtcWallet, createRandomUserAndWallets } from "test/helpers"
 

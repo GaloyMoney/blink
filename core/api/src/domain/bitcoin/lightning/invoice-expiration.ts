@@ -1,4 +1,4 @@
-import { toSeconds } from "@domain/primitives"
+import { toSeconds } from "@/domain/primitives"
 
 const SECS_PER_MIN = toSeconds(60)
 const SECS_PER_5_MINS = toSeconds(60 * 5)

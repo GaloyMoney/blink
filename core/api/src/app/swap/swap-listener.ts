@@ -1,8 +1,8 @@
-import { admin as LedgerAdmin } from "@services/ledger/admin"
-import { WalletCurrency } from "@domain/shared"
-import { SwapState, SwapType } from "@domain/swap"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-import { DuplicateError } from "@domain/errors"
+import { admin as LedgerAdmin } from "@/services/ledger/admin"
+import { WalletCurrency } from "@/domain/shared"
+import { SwapState, SwapType } from "@/domain/swap"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
+import { DuplicateError } from "@/domain/errors"
 
 export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper) => {
   if (swapStatus.parsedSwapData) {

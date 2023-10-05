@@ -1,4 +1,4 @@
-import { DomainError, ErrorLevel, ValidationError } from "@domain/shared"
+import { DomainError, ErrorLevel, ValidationError } from "@/domain/shared"
 
 export class PriceError extends DomainError {}
 

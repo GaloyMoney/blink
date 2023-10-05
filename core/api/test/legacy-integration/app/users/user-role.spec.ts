@@ -1,4 +1,4 @@
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@/services/mongoose"
 
 import { createUserAndWalletFromPhone, getUserIdByPhone } from "test/helpers"
 

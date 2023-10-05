@@ -1,15 +1,15 @@
-import { AccountValidator } from "@domain/accounts"
-import { OnChainAddressNotFoundError } from "@domain/bitcoin/onchain"
-import { RateLimitConfig } from "@domain/rate-limit"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { AccountValidator } from "@/domain/accounts"
+import { OnChainAddressNotFoundError } from "@/domain/bitcoin/onchain"
+import { RateLimitConfig } from "@/domain/rate-limit"
+import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
 
-import { OnChainService } from "@services/bria"
+import { OnChainService } from "@/services/bria"
 import {
   AccountsRepository,
   WalletOnChainAddressesRepository,
   WalletsRepository,
-} from "@services/mongoose"
-import { consumeLimiter } from "@services/rate-limit"
+} from "@/services/mongoose"
+import { consumeLimiter } from "@/services/rate-limit"
 
 export const createOnChainAddress = async ({
   walletId,

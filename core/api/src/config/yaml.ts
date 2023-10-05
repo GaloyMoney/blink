@@ -6,23 +6,24 @@ import Ajv from "ajv"
 import yaml from "js-yaml"
 import { I18n } from "i18n"
 
-import { baseLogger } from "@services/logger"
-import { checkedToScanDepth } from "@domain/bitcoin/onchain"
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
-
-import { WithdrawalFeePriceMethod } from "@domain/wallets"
-
-import { toDays, toSeconds } from "@domain/primitives"
-
-import { WalletCurrency } from "@domain/shared"
-
-import { AccountLevel } from "@domain/accounts"
-
 import mergeWith from "lodash.mergewith"
 
 import { configSchema } from "./schema"
+
 import { ConfigError } from "./error"
+
+import { baseLogger } from "@/services/logger"
+import { checkedToScanDepth } from "@/domain/bitcoin/onchain"
+import { toSats } from "@/domain/bitcoin"
+import { toCents } from "@/domain/fiat"
+
+import { WithdrawalFeePriceMethod } from "@/domain/wallets"
+
+import { toDays, toSeconds } from "@/domain/primitives"
+
+import { WalletCurrency } from "@/domain/shared"
+
+import { AccountLevel } from "@/domain/accounts"
 
 const merge = (defaultConfig: unknown, customConfig: unknown) =>
   mergeWith(defaultConfig, customConfig, (a, b) => (Array.isArray(b) ? b : undefined))

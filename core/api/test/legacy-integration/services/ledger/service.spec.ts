@@ -1,19 +1,19 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testInternalTx", "testExternalTx"] }] */
 import crypto from "crypto"
 
-import { ONE_DAY } from "@config"
+import { ONE_DAY } from "@/config"
 
 import {
   AmountCalculator,
   BtcWalletDescriptor,
   UsdWalletDescriptor,
   WalletCurrency,
-} from "@domain/shared"
-import { LedgerTransactionType } from "@domain/ledger"
+} from "@/domain/shared"
+import { LedgerTransactionType } from "@/domain/ledger"
 
-import * as LedgerFacade from "@services/ledger/facade"
+import * as LedgerFacade from "@/services/ledger/facade"
 
-import { ModifiedSet, timestampDaysAgo } from "@utils"
+import { ModifiedSet, timestampDaysAgo } from "@/utils"
 
 import {
   recordLnIntraLedgerPayment,

@@ -1,26 +1,26 @@
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
+import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
 
-import { getOnChainWalletConfig, NETWORK } from "@config"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@/app/prices"
 
-import { checkedToOnChainAddress, PayoutSpeed } from "@domain/bitcoin/onchain"
-import { CouldNotFindError } from "@domain/errors"
-import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
+import { getOnChainWalletConfig, NETWORK } from "@/config"
+
+import { checkedToOnChainAddress, PayoutSpeed } from "@/domain/bitcoin/onchain"
+import { CouldNotFindError } from "@/domain/errors"
+import { OnChainPaymentFlowBuilder } from "@/domain/payments/onchain-payment-flow-builder"
 import {
   WalletCurrency,
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
-} from "@domain/shared"
-import { checkedToWalletId } from "@domain/wallets"
+} from "@/domain/shared"
+import { checkedToWalletId } from "@/domain/wallets"
 
-import { DealerPriceService } from "@services/dealer-price"
-import { LedgerService } from "@services/ledger"
-import * as LedgerFacade from "@services/ledger/facade"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import { DealerPriceService } from "@/services/dealer-price"
+import { LedgerService } from "@/services/ledger"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
-import { OnChainService } from "@services/bria"
-
-import { validateIsBtcWallet, validateIsUsdWallet } from "./validate"
+import { OnChainService } from "@/services/bria"
 
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = DealerPriceService()

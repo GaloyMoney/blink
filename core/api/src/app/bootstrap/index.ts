@@ -1,20 +1,20 @@
 import { randomUUID } from "crypto"
 
-import { createAccountWithPhoneIdentifier } from "@app/accounts"
+import { createAccountWithPhoneIdentifier } from "@/app/accounts"
 
-import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@config"
+import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
-import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@domain/errors"
-import { WalletCurrency } from "@domain/shared"
+import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
+import { WalletCurrency } from "@/domain/shared"
 
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
-} from "@services/mongoose"
-import { Account } from "@services/mongoose/schema"
-import { toObjectId } from "@services/mongoose/utils"
-import { initialStaticAccountIds } from "@services/ledger/facade"
+} from "@/services/mongoose"
+import { Account } from "@/services/mongoose/schema"
+import { toObjectId } from "@/services/mongoose/utils"
+import { initialStaticAccountIds } from "@/services/ledger/facade"
 
 export const randomUserId = () => randomUUID() as UserId
 

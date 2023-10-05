@@ -1,8 +1,8 @@
-import { memoSharingConfig } from "@config"
-import { WalletTransactionHistory } from "@domain/wallets"
-import { checkedToLedgerTransactionId } from "@domain/ledger"
+import { memoSharingConfig } from "@/config"
+import { WalletTransactionHistory } from "@/domain/wallets"
+import { checkedToLedgerTransactionId } from "@/domain/ledger"
 
-import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
+import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
 
 export const getTransactionById = async (
   id: string,

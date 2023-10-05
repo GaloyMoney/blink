@@ -1,17 +1,17 @@
-import { getDealerConfig } from "@config"
+import { getCurrentPriceAsWalletPriceRatio } from "./get-current-price"
 
-import { UsdDisplayCurrency } from "@domain/fiat"
-import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
+import { getDealerConfig } from "@/config"
+
+import { UsdDisplayCurrency } from "@/domain/fiat"
+import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@/domain/shared"
 
 import {
   addAttributesToCurrentSpan,
   asyncRunInSpan,
   recordExceptionInCurrentSpan,
   SemanticAttributes,
-} from "@services/tracing"
-import { DealerPriceService } from "@services/dealer-price"
-
-import { getCurrentPriceAsWalletPriceRatio } from "./get-current-price"
+} from "@/services/tracing"
+import { DealerPriceService } from "@/services/dealer-price"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 const dealer = DealerPriceService()

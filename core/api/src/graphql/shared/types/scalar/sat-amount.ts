@@ -1,7 +1,7 @@
-import { ErrorLevel, MAX_SATS } from "@domain/shared"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
+import { ErrorLevel, MAX_SATS } from "@/domain/shared"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 const SatAmount = GT.Scalar({
   name: "SatAmount",

@@ -1,9 +1,9 @@
-import { Accounts, Wallets } from "@app"
+import { Accounts, Wallets } from "@/app"
 
-import { AccountStatus } from "@domain/accounts"
-import { InactiveAccountError } from "@domain/errors"
+import { AccountStatus } from "@/domain/accounts"
+import { InactiveAccountError } from "@/domain/errors"
 
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@/services/mongoose"
 
 import { createRandomUserAndBtcWallet } from "test/helpers"
 

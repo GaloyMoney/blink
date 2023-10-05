@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-
 import Coordinates from "../../../shared/types/object/coordinates"
+
+import { GT } from "@/graphql/index"
 
 const MapInfo = GT.Object({
   name: "MapInfo",

@@ -1,11 +1,11 @@
-import { ZERO_BANK_FEE } from "@domain/shared"
-
 import { MainBook } from "../books"
 
 import { EntryBuilder, toLedgerAccountDescriptor } from "../domain"
 import { persistAndReturnEntry } from "../helpers"
 
 import { staticAccountIds } from "./static-account-ids"
+
+import { ZERO_BANK_FEE } from "@/domain/shared"
 
 export const recordIntraledger = async ({
   description,

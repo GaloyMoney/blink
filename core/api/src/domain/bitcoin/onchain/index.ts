@@ -1,4 +1,4 @@
-import { InvalidOnChainAddress, InvalidScanDepthAmount } from "@domain/errors"
+import { InvalidOnChainAddress, InvalidScanDepthAmount } from "@/domain/errors"
 
 export * from "./errors"
 export * from "./tx-filter"

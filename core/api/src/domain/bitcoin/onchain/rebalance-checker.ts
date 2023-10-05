@@ -1,4 +1,4 @@
-import { toSats } from "@domain/bitcoin"
+import { toSats } from "@/domain/bitcoin"
 
 export const RebalanceChecker = ({
   minOnChainHotWalletBalance,

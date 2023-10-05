@@ -1,5 +1,5 @@
-import { InvalidWalletId } from "@domain/errors"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { InvalidWalletId } from "@/domain/errors"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
 export const updateDefaultWalletId = async ({
   accountId,

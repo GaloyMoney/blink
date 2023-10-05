@@ -1,14 +1,14 @@
 import {
-  getSecretAndPaymentHash,
-  invoiceExpirationForCurrency,
-} from "@domain/bitcoin/lightning"
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
-import { toSeconds } from "@domain/primitives"
-
-import {
   InvalidWalletInvoiceBuilderStateError,
   SubOneCentSatAmountForUsdReceiveError,
 } from "./errors"
+
+import {
+  getSecretAndPaymentHash,
+  invoiceExpirationForCurrency,
+} from "@/domain/bitcoin/lightning"
+import { WalletCurrency, ZERO_SATS } from "@/domain/shared"
+import { toSeconds } from "@/domain/primitives"
 
 export const WalletInvoiceBuilder = (
   config: WalletInvoiceBuilderConfig,

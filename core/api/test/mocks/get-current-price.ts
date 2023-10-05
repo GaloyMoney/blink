@@ -1,5 +1,5 @@
-import { getCurrencyMajorExponent } from "@domain/fiat"
-import { toDisplayPriceRatio, toWalletPriceRatio } from "@domain/payments"
+import { getCurrencyMajorExponent } from "@/domain/fiat"
+import { toDisplayPriceRatio, toWalletPriceRatio } from "@/domain/payments"
 
 export const getCurrentSatPrice = async ({
   currency,

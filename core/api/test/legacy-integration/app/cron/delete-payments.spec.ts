@@ -1,15 +1,15 @@
-import { Lightning, Payments } from "@app"
+import { Lightning, Payments } from "@/app"
 
-import { TWO_MONTHS_IN_MS } from "@config"
+import { TWO_MONTHS_IN_MS } from "@/config"
 
-import { toSats } from "@domain/bitcoin"
+import { toSats } from "@/domain/bitcoin"
 import {
   PaymentNotFoundError,
   PaymentSendStatus,
   PaymentStatus,
-} from "@domain/bitcoin/lightning"
+} from "@/domain/bitcoin/lightning"
 
-import { LndService } from "@services/lnd"
+import { LndService } from "@/services/lnd"
 
 import {
   bitcoindClient,

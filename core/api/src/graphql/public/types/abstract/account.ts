@@ -1,17 +1,19 @@
-import { GT } from "@graphql/index"
-import { connectionArgs } from "@graphql/connections"
-
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import AccountLimits from "@graphql/public/types/object/account-limits"
-import RealtimePrice from "@graphql/public/types/object/realtime-price"
-import DisplayCurrency from "@graphql/shared/types/scalar/display-currency"
-import { TransactionConnection } from "@graphql/shared/types/object/transaction"
-
 import AccountLevel from "../../../shared/types/scalar/account-level"
 
 import Wallet from "../../../shared/types/abstract/wallet"
+
 import CallbackEndpoint from "../object/callback-endpoint"
+
 import { NotificationSettings } from "../object/notification-settings"
+
+import { GT } from "@/graphql/index"
+import { connectionArgs } from "@/graphql/connections"
+
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import AccountLimits from "@/graphql/public/types/object/account-limits"
+import RealtimePrice from "@/graphql/public/types/object/realtime-price"
+import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
+import { TransactionConnection } from "@/graphql/shared/types/object/transaction"
 
 const IAccount = GT.Interface({
   name: "Account",

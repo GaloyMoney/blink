@@ -1,10 +1,10 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import AccountUpdateNotificationSettingsPayload from "@graphql/public/types/payload/account-update-notification-settings"
-import { Accounts } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import NotificationChannel from "@graphql/shared/types/scalar/notification-channel"
-import NotificationCategory from "@graphql/shared/types/scalar/notification-category"
+import AccountUpdateNotificationSettingsPayload from "@/graphql/public/types/payload/account-update-notification-settings"
+import { Accounts } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import NotificationChannel from "@/graphql/shared/types/scalar/notification-channel"
+import NotificationCategory from "@/graphql/shared/types/scalar/notification-category"
 
 const AccountDisableNotificationCategoryInput = GT.Input({
   name: "AccountDisableNotificationCategoryInput",

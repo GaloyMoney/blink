@@ -1,8 +1,9 @@
-import { getCallbackServiceConfig } from "@config"
-import { InvalidUrlError } from "@domain/callback/errors"
-import { CallbackService } from "@services/svix"
-import { UnknownSvixError } from "@services/svix/errors"
 import { z } from "zod"
+
+import { getCallbackServiceConfig } from "@/config"
+import { InvalidUrlError } from "@/domain/callback/errors"
+import { CallbackService } from "@/services/svix"
+import { UnknownSvixError } from "@/services/svix/errors"
 
 export const addEndpoint = async ({
   accountUuid,

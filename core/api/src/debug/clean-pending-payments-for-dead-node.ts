@@ -7,18 +7,18 @@
  *		src/debug/clean-pending-payments-for-dead-node.ts <pubkey>
  */
 
-import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
+import { LedgerTransactionType, UnknownLedgerError } from "@/domain/ledger"
 
-import { isUp } from "@services/lnd/health"
-import { lndsConnect } from "@services/lnd/auth"
+import { isUp } from "@/services/lnd/health"
+import { lndsConnect } from "@/services/lnd/auth"
 
-import { setupMongoConnection } from "@services/mongodb"
-import { LedgerService, translateToLedgerTx } from "@services/ledger"
-import * as LedgerFacade from "@services/ledger/facade"
-import { LockService } from "@services/lock"
-import { baseLogger } from "@services/logger"
+import { setupMongoConnection } from "@/services/mongodb"
+import { LedgerService, translateToLedgerTx } from "@/services/ledger"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { LockService } from "@/services/lock"
+import { baseLogger } from "@/services/logger"
 
-import { MainBook } from "@services/ledger/books"
+import { MainBook } from "@/services/ledger/books"
 
 const PUBKEY = process.argv[2]
 

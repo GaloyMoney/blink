@@ -1,10 +1,10 @@
-import { checkedToUserId } from "@domain/accounts"
-import { checkedToPhoneNumber, PhoneMetadataValidator } from "@domain/users"
-
 import {
   MissingRegistrationPayloadPropertiesError,
   UnsupportedSchemaTypeError,
 } from "./errors"
+
+import { checkedToUserId } from "@/domain/accounts"
+import { checkedToPhoneNumber, PhoneMetadataValidator } from "@/domain/users"
 
 export const RegistrationPayloadValidator = (
   schemaId: SchemaId,

@@ -1,11 +1,11 @@
 import { createHash, randomBytes } from "crypto"
 
-import { SECS_PER_10_MINS } from "@config"
+import { SECS_PER_10_MINS } from "@/config"
 
-import { toSats } from "@domain/bitcoin"
-import { uniqueAddressesForTxn } from "@domain/bitcoin/onchain"
+import { toSats } from "@/domain/bitcoin"
+import { uniqueAddressesForTxn } from "@/domain/bitcoin/onchain"
 
-import { RedisCacheService } from "@services/cache"
+import { RedisCacheService } from "@/services/cache"
 
 const randomString = (length) => {
   const sha256 = (buffer: Buffer) => createHash("sha256").update(buffer).digest("hex")

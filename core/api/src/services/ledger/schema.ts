@@ -1,6 +1,8 @@
 import mongoose from "mongoose"
-import { LedgerTransactionType } from "@domain/ledger"
+
 import { setTransactionSchema } from "medici"
+
+import { LedgerTransactionType } from "@/domain/ledger"
 
 // TODO migration:
 // rename type: on_us to intraledger

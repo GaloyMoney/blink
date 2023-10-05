@@ -1,5 +1,5 @@
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const isNumber = (value: string) => /^-?(\d+|\d*\.\d+)$/.test(value)
 

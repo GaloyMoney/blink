@@ -1,5 +1,5 @@
-import { DepositFeeCalculator } from "@domain/wallets"
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { DepositFeeCalculator } from "@/domain/wallets"
+import { WalletCurrency, ZERO_SATS } from "@/domain/shared"
 
 describe("DepositFeeCalculator", () => {
   const calculator = DepositFeeCalculator()

@@ -5,10 +5,11 @@
  */
 
 import mongoose from "mongoose"
-import { updateAccountWithdrawFee } from "@app/accounts/update-account-withdraw-fee"
-import { setupMongoConnection } from "@services/mongodb"
 
-import { AccountsRepository } from "@services/mongoose"
+import { updateAccountWithdrawFee } from "@/app/accounts/update-account-withdraw-fee"
+import { setupMongoConnection } from "@/services/mongodb"
+
+import { AccountsRepository } from "@/services/mongoose"
 
 const updateFee = async (fee: number) => {
   await setupMongoConnection()

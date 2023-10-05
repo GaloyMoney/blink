@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import QuizQuestion from "@graphql/public/types/object/quiz-question"
-import { OnboardingEarn } from "@config"
+import QuizQuestion from "@/graphql/public/types/object/quiz-question"
+import { OnboardingEarn } from "@/config"
 
 const QuizQuestionsQuery = GT.Field({
   deprecationReason:

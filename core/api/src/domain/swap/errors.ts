@@ -1,4 +1,4 @@
-import { DomainError, ErrorLevel } from "@domain/shared"
+import { DomainError, ErrorLevel } from "@/domain/shared"
 
 export class SwapError extends DomainError {}
 export class NoOutboundLiquidityForSwapError extends DomainError {}

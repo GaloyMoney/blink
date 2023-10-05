@@ -1,14 +1,4 @@
 import {
-  getFailedLoginAttemptPerIpLimits,
-  getFailedLoginAttemptPerLoginIdentifierLimits,
-  getInvoiceCreateAttemptLimits,
-  getInvoiceCreateForRecipientAttemptLimits,
-  getOnChainAddressCreateAttemptLimits,
-  getRequestCodePerIpLimits,
-  getRequestCodePerLoginIdentifierLimits,
-} from "@config"
-
-import {
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
   OnChainAddressCreateRateLimiterExceededError,
@@ -17,6 +7,16 @@ import {
   UserCodeAttemptIpRateLimiterExceededError,
   UserCodeAttemptIdentifierRateLimiterExceededError,
 } from "./errors"
+
+import {
+  getFailedLoginAttemptPerIpLimits,
+  getFailedLoginAttemptPerLoginIdentifierLimits,
+  getInvoiceCreateAttemptLimits,
+  getInvoiceCreateForRecipientAttemptLimits,
+  getOnChainAddressCreateAttemptLimits,
+  getRequestCodePerIpLimits,
+  getRequestCodePerLoginIdentifierLimits,
+} from "@/config"
 
 export const RateLimitPrefix = {
   requestCodeAttemptPerLoginIdentifier: "request_code_attempt_id",

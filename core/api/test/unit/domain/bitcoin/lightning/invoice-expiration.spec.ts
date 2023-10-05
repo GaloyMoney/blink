@@ -1,8 +1,8 @@
-import { SECS_PER_10_MINS, SECS_PER_DAY } from "@config"
+import { SECS_PER_10_MINS, SECS_PER_DAY } from "@/config"
 
-import { toSeconds } from "@domain/primitives"
-import { WalletCurrency } from "@domain/shared"
-import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
+import { toSeconds } from "@/domain/primitives"
+import { WalletCurrency } from "@/domain/shared"
+import { invoiceExpirationForCurrency } from "@/domain/bitcoin/lightning"
 
 describe("invoiceExpirationForCurrency", () => {
   const BTC = WalletCurrency.Btc

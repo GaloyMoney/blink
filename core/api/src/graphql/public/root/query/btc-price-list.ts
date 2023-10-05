@@ -1,16 +1,16 @@
-import { Prices } from "@app"
+import { Prices } from "@/app"
 
-import { SATS_PER_BTC } from "@domain/bitcoin"
-import { BTC_PRICE_PRECISION_OFFSET, UsdDisplayCurrency } from "@domain/fiat"
-import { PriceInterval, PriceRange } from "@domain/price"
+import { SATS_PER_BTC } from "@/domain/bitcoin"
+import { BTC_PRICE_PRECISION_OFFSET, UsdDisplayCurrency } from "@/domain/fiat"
+import { PriceInterval, PriceRange } from "@/domain/price"
 
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
 import PriceGraphRange, {
   priceRangeValues,
-} from "@graphql/public/types/scalar/price-graph-range"
-import { InputValidationError } from "@graphql/error"
-import PricePoint from "@graphql/public/types/object/price-point"
+} from "@/graphql/public/types/scalar/price-graph-range"
+import { InputValidationError } from "@/graphql/error"
+import PricePoint from "@/graphql/public/types/object/price-point"
 
 const parseRange: (
   string: (typeof priceRangeValues)[number],

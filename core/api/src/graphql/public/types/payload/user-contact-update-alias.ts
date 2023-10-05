@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import IError from "../../../shared/types/abstract/error"
 import AccountContact from "../object/account-contact"
+
+import { GT } from "@/graphql/index"
 
 const AccountContactUpdateAliasPayload = GT.Object({
   name: "UserContactUpdateAliasPayload",

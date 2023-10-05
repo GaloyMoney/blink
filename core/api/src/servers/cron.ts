@@ -1,28 +1,28 @@
-import { OnChain, Lightning, Wallets, Payments, Swap } from "@app"
+import { OnChain, Lightning, Wallets, Payments, Swap } from "@/app"
 
-import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
+import { getCronConfig, TWO_MONTHS_IN_MS } from "@/config"
 
-import { ErrorLevel } from "@domain/shared"
-import { OperationInterruptedError } from "@domain/errors"
+import { ErrorLevel } from "@/domain/shared"
+import { OperationInterruptedError } from "@/domain/errors"
 
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
   wrapAsyncToRunInSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 import {
   deleteExpiredLightningPaymentFlows,
   deleteExpiredWalletInvoice,
   deleteFailedPaymentsAttemptAllLnds,
   updateEscrows,
   updateRoutingRevenues,
-} from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
-import { setupMongoConnection } from "@services/mongodb"
-import { activateLndHealthCheck, checkAllLndHealth } from "@services/lnd/health"
+} from "@/services/lnd/utils"
+import { baseLogger } from "@/services/logger"
+import { setupMongoConnection } from "@/services/mongodb"
+import { activateLndHealthCheck, checkAllLndHealth } from "@/services/lnd/health"
 
-import { elapsedSinceTimestamp, sleep } from "@utils"
-import { rebalancingInternalChannels } from "@services/lnd/rebalancing"
+import { elapsedSinceTimestamp, sleep } from "@/utils"
+import { rebalancingInternalChannels } from "@/services/lnd/rebalancing"
 
 const logger = baseLogger.child({ module: "cron" })
 

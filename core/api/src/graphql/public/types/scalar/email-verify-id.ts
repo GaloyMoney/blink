@@ -1,5 +1,5 @@
-import { GT } from "@graphql/index"
-import { checkedToEmailRegistrationId } from "@services/kratos"
+import { GT } from "@/graphql/index"
+import { checkedToEmailRegistrationId } from "@/services/kratos"
 
 const EmailRegistrationId = GT.Scalar({
   name: "EmailRegistrationId",

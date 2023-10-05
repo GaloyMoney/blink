@@ -1,9 +1,10 @@
 import { EventEmitter } from "events"
 
 import { getWalletStatus } from "lightning"
-import { baseLogger } from "@services/logger"
 
 import { lndsConnect } from "./auth"
+
+import { baseLogger } from "@/services/logger"
 
 /*
 	Check the status of the wallet and emit current state

@@ -1,23 +1,25 @@
-import { GT } from "@graphql/index"
-import { normalizePaymentAmount } from "@graphql/shared/root/mutation"
+import IWallet from "../abstract/wallet"
+
+import SignedAmount from "../scalar/signed-amount"
+
+import WalletCurrency from "../scalar/wallet-currency"
+
+import OnChainAddress from "../scalar/on-chain-address"
+
+import { TransactionConnection } from "./transaction"
+
+import { GT } from "@/graphql/index"
+import { normalizePaymentAmount } from "@/graphql/shared/root/mutation"
 import {
   connectionArgs,
   connectionFromPaginatedArray,
   checkedConnectionArgs,
-} from "@graphql/connections"
-import { mapError } from "@graphql/error-map"
+} from "@/graphql/connections"
+import { mapError } from "@/graphql/error-map"
 
-import { Wallets } from "@app"
+import { Wallets } from "@/app"
 
-import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
-
-import IWallet from "../abstract/wallet"
-
-import SignedAmount from "../scalar/signed-amount"
-import WalletCurrency from "../scalar/wallet-currency"
-import OnChainAddress from "../scalar/on-chain-address"
-
-import { TransactionConnection } from "./transaction"
+import { WalletCurrency as WalletCurrencyDomain } from "@/domain/shared"
 
 const BtcWallet = GT.Object<Wallet>({
   name: "BTCWallet",

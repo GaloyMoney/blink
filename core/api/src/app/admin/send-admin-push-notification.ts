@@ -1,11 +1,11 @@
-import { checkedToAccountUuid } from "@domain/accounts"
+import { checkedToAccountUuid } from "@/domain/accounts"
 import {
   GaloyNotificationCategories,
   checkedToNotificationCategory,
-} from "@domain/notifications"
-import { AccountsRepository } from "@services/mongoose/accounts"
-import { UsersRepository } from "@services/mongoose/users"
-import { NotificationsService } from "@services/notifications"
+} from "@/domain/notifications"
+import { AccountsRepository } from "@/services/mongoose/accounts"
+import { UsersRepository } from "@/services/mongoose/users"
+import { NotificationsService } from "@/services/notifications"
 
 export const sendAdminPushNotification = async ({
   accountId: accountIdRaw,

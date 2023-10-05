@@ -1,6 +1,6 @@
-import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
-import { baseLogger } from "@services/logger"
-import { setupMongoConnection } from "@services/mongodb"
+import { sendDefaultWalletBalanceToAccounts } from "@/app/accounts/send-default-wallet-balance-to-users"
+import { baseLogger } from "@/services/logger"
+import { setupMongoConnection } from "@/services/mongodb"
 
 const main = async () => {
   const mongoose = await setupMongoConnection()

@@ -2,15 +2,15 @@
 
 import { Entry, IJournal } from "medici"
 
-import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@domain/shared"
+import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@/domain/shared"
 
 import {
   lndLedgerAccountId,
   EntryBuilder,
   onChainLedgerAccountId,
-} from "@services/ledger/domain"
-import { MainBook } from "@services/ledger/books"
-import { UsdDisplayCurrency } from "@domain/fiat"
+} from "@/services/ledger/domain"
+import { MainBook } from "@/services/ledger/books"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
 const createEntry = () => MainBook.entry("")
 

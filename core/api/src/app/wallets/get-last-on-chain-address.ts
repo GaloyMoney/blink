@@ -1,12 +1,12 @@
-import { AccountValidator } from "@domain/accounts"
-import { CouldNotFindError } from "@domain/errors"
+import { createOnChainAddress } from "./create-on-chain-address"
+
+import { AccountValidator } from "@/domain/accounts"
+import { CouldNotFindError } from "@/domain/errors"
 import {
   AccountsRepository,
   WalletOnChainAddressesRepository,
   WalletsRepository,
-} from "@services/mongoose"
-
-import { createOnChainAddress } from "./create-on-chain-address"
+} from "@/services/mongoose"
 
 export const getLastOnChainAddress = async (
   walletId: WalletId,

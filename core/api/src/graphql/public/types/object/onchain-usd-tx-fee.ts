@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-
 import CentAmount from "../scalar/cent-amount"
+
+import { GT } from "@/graphql/index"
 
 const OnChainUsdTxFee = GT.Object({
   name: "OnChainUsdTxFee",

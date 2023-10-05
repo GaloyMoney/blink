@@ -1,9 +1,9 @@
-import { Callback } from "@app"
+import { Callback } from "@/app"
 
-import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import EndpointUrl from "@graphql/public/types/scalar/endpoint-url"
-import CallbackEndpointAddPayload from "@graphql/public/types/payload/callback-endpoint-add"
+import { GT } from "@/graphql/index"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import EndpointUrl from "@/graphql/public/types/scalar/endpoint-url"
+import CallbackEndpointAddPayload from "@/graphql/public/types/payload/callback-endpoint-add"
 
 const CallbackEndpointAddInput = GT.Input({
   name: "CallbackEndpointAddInput",

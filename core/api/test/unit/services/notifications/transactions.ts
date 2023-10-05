@@ -1,6 +1,6 @@
-import { NotificationType } from "@domain/notifications"
-import { WalletCurrency } from "@domain/shared"
-import { UsdDisplayCurrency } from "@domain/fiat"
+import { NotificationType } from "@/domain/notifications"
+import { WalletCurrency } from "@/domain/shared"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
 const usdDisplayPaymentAmount = {
   amountInMinor: 500n,

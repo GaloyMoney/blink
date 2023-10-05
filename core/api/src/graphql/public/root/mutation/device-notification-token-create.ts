@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import SuccessPayload from "@graphql/shared/types/payload/success-payload"
+import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
 
-import { Users } from "@app"
-import { parseErrorMessageFromUnknown } from "@domain/shared"
+import { Users } from "@/app"
+import { parseErrorMessageFromUnknown } from "@/domain/shared"
 
 const DeviceNotificationTokenCreateInput = GT.Input({
   name: "DeviceNotificationTokenCreateInput",

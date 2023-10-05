@@ -1,15 +1,15 @@
+import { Transaction } from "../books"
+
 import {
   LedgerTransactionType,
   UnknownLedgerError,
   toLiabilitiesWalletId,
-} from "@domain/ledger"
+} from "@/domain/ledger"
 
-import { timestampDaysAgo } from "@utils"
+import { timestampDaysAgo } from "@/utils"
 
-import { paymentAmountFromNumber } from "@domain/shared"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
-import { Transaction } from "../books"
+import { paymentAmountFromNumber } from "@/domain/shared"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 export const TxnGroups = {
   allPaymentVolumeSince: [

@@ -1,9 +1,6 @@
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 import { UiNodeTextAttributes } from "@ory/client"
 
 import { isAxiosError } from "axios"
-
-import { KRATOS_MASTER_USER_PASSWORD } from "@config"
 
 import {
   AuthenticationKratosError,
@@ -12,6 +9,9 @@ import {
   UnknownKratosError,
 } from "./errors"
 import { kratosPublic } from "./private"
+
+import { KRATOS_MASTER_USER_PASSWORD } from "@/config"
+import { LikelyNoUserWithThisPhoneExistError } from "@/domain/authentication/errors"
 
 export const kratosInitiateTotp = async (token: AuthToken) => {
   try {

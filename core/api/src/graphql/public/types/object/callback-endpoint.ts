@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import EndpointId from "../scalar/endpoint-id"
 import EndpointUrl from "../scalar/endpoint-url"
+
+import { GT } from "@/graphql/index"
 
 const CallbackEndpoint = GT.Object({
   name: "CallbackEndpoint",

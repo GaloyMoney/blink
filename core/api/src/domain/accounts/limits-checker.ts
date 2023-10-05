@@ -2,7 +2,7 @@ import {
   IntraledgerLimitsExceededError,
   TradeIntraAccountLimitsExceededError,
   WithdrawalLimitsExceededError,
-} from "@domain/errors"
+} from "@/domain/errors"
 
 export const AccountTxVolumeLimitChecker = (
   accountLimits: IAccountLimits,

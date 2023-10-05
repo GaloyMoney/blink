@@ -1,8 +1,8 @@
-import { PubSubServiceError, UnknownPubSubError } from "@domain/pubsub"
-
-import { sleep } from "@utils"
-
 import { redisPubSub } from "./redis"
+
+import { PubSubServiceError, UnknownPubSubError } from "@/domain/pubsub"
+
+import { sleep } from "@/utils"
 
 export const PubSubService = (): IPubSubService => {
   const createAsyncIterator = <T>({

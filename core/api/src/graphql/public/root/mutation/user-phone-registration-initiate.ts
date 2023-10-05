@@ -1,12 +1,12 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import Phone from "@graphql/shared/types/scalar/phone"
-import SuccessPayload from "@graphql/shared/types/payload/success-payload"
-import { ChannelType } from "@domain/phone-provider"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import Phone from "@/graphql/shared/types/scalar/phone"
+import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
+import { ChannelType } from "@/domain/phone-provider"
 
-import PhoneCodeChannelType from "@graphql/shared/types/scalar/phone-code-channel-type"
+import PhoneCodeChannelType from "@/graphql/shared/types/scalar/phone-code-channel-type"
 
 const UserPhoneRegistrationInitiateInput = GT.Input({
   name: "UserPhoneRegistrationInitiateInput",

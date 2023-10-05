@@ -5,8 +5,8 @@ import {
   deleteForwardingReputations,
 } from "lightning"
 
-import { WalletCurrency } from "@domain/shared"
-import { toSats } from "@domain/bitcoin"
+import { WalletCurrency } from "@/domain/shared"
+import { toSats } from "@/domain/bitcoin"
 import {
   LnAlreadyPaidError,
   PaymentNotFoundError,
@@ -14,12 +14,12 @@ import {
   PaymentStatus,
   RouteNotFoundError,
   decodeInvoice,
-} from "@domain/bitcoin/lightning"
-import { LnFees } from "@domain/payments"
+} from "@/domain/bitcoin/lightning"
+import { LnFees } from "@/domain/payments"
 
-import { LndService } from "@services/lnd"
+import { LndService } from "@/services/lnd"
 
-import { sleep } from "@utils"
+import { sleep } from "@/utils"
 
 import {
   bitcoindClient,

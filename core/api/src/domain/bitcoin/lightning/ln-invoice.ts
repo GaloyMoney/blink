@@ -1,5 +1,3 @@
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
 
 import {
@@ -8,6 +6,9 @@ import {
   LnInvoiceMissingPaymentSecretError,
   UnknownLnInvoiceDecodeError,
 } from "./errors"
+
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
+import { toMilliSatsFromNumber, toSats } from "@/domain/bitcoin"
 
 export const decodeInvoice = (
   uncheckedBolt11EncodedInvoice: string,

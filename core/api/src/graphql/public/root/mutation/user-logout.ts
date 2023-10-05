@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { logoutToken } from "@app/authentication"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import SuccessPayload from "@graphql/shared/types/payload/success-payload"
+import { logoutToken } from "@/app/authentication"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
 
 const UserLogoutInput = GT.Input({
   name: "UserLogoutInput",

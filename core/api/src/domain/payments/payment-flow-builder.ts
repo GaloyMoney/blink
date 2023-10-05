@@ -1,31 +1,34 @@
 import {
-  ValidationError,
-  WalletCurrency,
-  checkedToUsdPaymentAmount,
-  checkedToBtcPaymentAmount,
-} from "@domain/shared"
-import { SelfPaymentError } from "@domain/errors"
-import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
-
-import { generateIntraLedgerHash } from "@domain/payments/get-intraledger-hash"
-import {
-  parseFinalChanIdFromInvoice,
-  parseFinalHopsFromInvoice,
-} from "@domain/bitcoin/lightning"
-
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
-import { ModifiedSet } from "@utils"
-
-import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidLightningPaymentFlowStateError,
   InvalidZeroAmountPriceRatioInputError,
   SubOneCentSatAmountForUsdSelfSendError,
 } from "./errors"
+
 import { LnFees } from "./ln-fees"
+
 import { WalletPriceRatio } from "./price-ratio"
+
 import { PaymentFlow } from "./payment-flow"
+
+import {
+  ValidationError,
+  WalletCurrency,
+  checkedToUsdPaymentAmount,
+  checkedToBtcPaymentAmount,
+} from "@/domain/shared"
+import { SelfPaymentError } from "@/domain/errors"
+import { PaymentInitiationMethod, SettlementMethod } from "@/domain/wallets"
+
+import { generateIntraLedgerHash } from "@/domain/payments/get-intraledger-hash"
+import {
+  parseFinalChanIdFromInvoice,
+  parseFinalHopsFromInvoice,
+} from "@/domain/bitcoin/lightning"
+
+import { addAttributesToCurrentSpan } from "@/services/tracing"
+
+import { ModifiedSet } from "@/utils"
 
 export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
   config: LightningPaymentFlowBuilderConfig,

@@ -1,18 +1,20 @@
-import { Accounts } from "@app"
-import { checkedToUsername } from "@domain/accounts"
-import { GT } from "@graphql/index"
 import dedent from "dedent"
+
+import ContactAlias from "../scalar/contact-alias"
+
+import Username from "../../../shared/types/scalar/username"
+
+import { TransactionConnection } from "../../../shared/types/object/transaction"
+
+import { Accounts } from "@/app"
+import { checkedToUsername } from "@/domain/accounts"
+import { GT } from "@/graphql/index"
 import {
   checkedConnectionArgs,
   connectionArgs,
   connectionFromPaginatedArray,
-} from "@graphql/connections"
-import { mapError } from "@graphql/error-map"
-
-import ContactAlias from "../scalar/contact-alias"
-import Username from "../../../shared/types/scalar/username"
-
-import { TransactionConnection } from "../../../shared/types/object/transaction"
+} from "@/graphql/connections"
+import { mapError } from "@/graphql/error-map"
 
 const AccountContact = GT.Object<AccountRecord, GraphQLPublicContextAuth>({
   name: "UserContact",

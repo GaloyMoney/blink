@@ -1,15 +1,15 @@
-import { Lightning } from "@app"
+import { Lightning } from "@/app"
 
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 
-import { PubSubService } from "@services/pubsub"
-import { baseLogger } from "@services/logger"
+import { PubSubService } from "@/services/pubsub"
+import { baseLogger } from "@/services/logger"
 
-import { GT } from "@graphql/index"
-import LnInvoicePaymentStatusPayload from "@graphql/public/types/payload/ln-invoice-payment-status"
-import LnInvoicePaymentStatusInput from "@graphql/public/types/object/ln-invoice-payment-status-input"
-import { UnknownClientError } from "@graphql/error"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { GT } from "@/graphql/index"
+import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-invoice-payment-status"
+import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
+import { UnknownClientError } from "@/graphql/error"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 
 const pubsub = PubSubService()
 

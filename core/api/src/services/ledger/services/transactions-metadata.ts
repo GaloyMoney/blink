@@ -1,15 +1,15 @@
-import { NoTransactionToUpdateError, UnknownRepositoryError } from "@domain/errors"
+import { TransactionMetadata } from "../schema"
+
+import { NoTransactionToUpdateError, UnknownRepositoryError } from "@/domain/errors"
 import {
   CouldNotFindExpectedTransactionMetadataError,
   CouldNotFindTransactionMetadataError,
   MismatchedResultForTransactionMetadataQuery,
-} from "@domain/ledger"
-import { ErrorLevel } from "@domain/shared"
-import { fromObjectId, toObjectId, parseRepositoryError } from "@services/mongoose/utils"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
-import { ModifiedSet } from "@utils"
-
-import { TransactionMetadata } from "../schema"
+} from "@/domain/ledger"
+import { ErrorLevel } from "@/domain/shared"
+import { fromObjectId, toObjectId, parseRepositoryError } from "@/services/mongoose/utils"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
+import { ModifiedSet } from "@/utils"
 
 export const TransactionsMetadataRepository = (): ITransactionsMetadataRepository => {
   const updateByHash = async (

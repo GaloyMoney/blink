@@ -1,5 +1,5 @@
-import { DuplicateKeyForPersistError } from "@domain/errors"
-import { UsersRepository } from "@services/mongoose"
+import { DuplicateKeyForPersistError } from "@/domain/errors"
+import { UsersRepository } from "@/services/mongoose"
 
 import { randomUserId, randomPhone } from "test/helpers"
 

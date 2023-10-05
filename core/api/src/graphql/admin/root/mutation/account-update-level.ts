@@ -1,8 +1,8 @@
-import { Accounts } from "@app"
-import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
-import AccountLevel from "@graphql/shared/types/scalar/account-level"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
+import { Accounts } from "@/app"
+import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
+import AccountLevel from "@/graphql/shared/types/scalar/account-level"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
 
 const AccountUpdateLevelInput = GT.Input({
   name: "AccountUpdateLevelInput",

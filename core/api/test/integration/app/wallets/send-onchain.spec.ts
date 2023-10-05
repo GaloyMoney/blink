@@ -1,33 +1,33 @@
-import { Accounts, Prices, Wallets, Payments } from "@app"
+import { Accounts, Prices, Wallets, Payments } from "@/app"
 
-import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@config"
+import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@/config"
 
-import { AccountStatus } from "@domain/accounts"
-import { toSats } from "@domain/bitcoin"
-import { toCents, UsdDisplayCurrency } from "@domain/fiat"
+import { AccountStatus } from "@/domain/accounts"
+import { toSats } from "@/domain/bitcoin"
+import { toCents, UsdDisplayCurrency } from "@/domain/fiat"
 import {
   InactiveAccountError,
   InsufficientBalanceError,
   LessThanDustThresholdError,
   LimitsExceededError,
   SelfPaymentError,
-} from "@domain/errors"
-import { SubOneCentSatAmountForUsdSelfSendError } from "@domain/payments"
+} from "@/domain/errors"
+import { SubOneCentSatAmountForUsdSelfSendError } from "@/domain/payments"
 import {
   AmountCalculator,
   WalletCurrency,
   InvalidBtcPaymentAmountError,
-} from "@domain/shared"
+} from "@/domain/shared"
 
-import { PayoutSpeed } from "@domain/bitcoin/onchain"
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { PayoutSpeed } from "@/domain/bitcoin/onchain"
+import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
 
-import { AccountsRepository } from "@services/mongoose"
-import { Transaction, TransactionMetadata } from "@services/ledger/schema"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { DealerPriceService } from "@services/dealer-price"
+import { AccountsRepository } from "@/services/mongoose"
+import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
+import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
+import { DealerPriceService } from "@/services/dealer-price"
 
-import { timestampDaysAgo } from "@utils"
+import { timestampDaysAgo } from "@/utils"
 
 import {
   createMandatoryUsers,

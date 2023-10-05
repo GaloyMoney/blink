@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-import { Lightning } from "@app"
-import PaymentHash from "@graphql/shared/types/scalar/payment-hash"
-import LightningInvoice from "@graphql/admin/types/object/lightning-invoice"
-import { mapError } from "@graphql/error-map"
+import { GT } from "@/graphql/index"
+import { Lightning } from "@/app"
+import PaymentHash from "@/graphql/shared/types/scalar/payment-hash"
+import LightningInvoice from "@/graphql/admin/types/object/lightning-invoice"
+import { mapError } from "@/graphql/error-map"
 
 const LightningInvoiceQuery = GT.Field({
   type: GT.NonNull(LightningInvoice),

@@ -3,8 +3,8 @@ import {
   MissingIPMetadataError,
   UnauthorizedIPMetadataCountryError,
   UnauthorizedIPMetadataProxyError,
-} from "@domain/errors"
-import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
+} from "@/domain/errors"
+import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authorizer"
 
 const defaultConfig = {
   denyCountries: [],

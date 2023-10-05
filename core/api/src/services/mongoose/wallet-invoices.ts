@@ -1,12 +1,13 @@
+import { WalletInvoice } from "./schema"
+
+import { parseRepositoryError } from "./utils"
+
 import {
   CouldNotFindWalletInvoiceError,
   RepositoryError,
   UnknownRepositoryError,
-} from "@domain/errors"
-import { UsdPaymentAmount } from "@domain/shared"
-
-import { WalletInvoice } from "./schema"
-import { parseRepositoryError } from "./utils"
+} from "@/domain/errors"
+import { UsdPaymentAmount } from "@/domain/shared"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   const persistNew = async ({

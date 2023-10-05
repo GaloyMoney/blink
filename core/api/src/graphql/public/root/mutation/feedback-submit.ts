@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import SuccessPayload from "@graphql/shared/types/payload/success-payload"
-import Feedback from "@graphql/public/types/scalar/feedback"
-import { Comm } from "@app"
+import { GT } from "@/graphql/index"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
+import Feedback from "@/graphql/public/types/scalar/feedback"
+import { Comm } from "@/app"
 
 const FeedbackSubmitInput = GT.Input({
   name: "FeedbackSubmitInput",

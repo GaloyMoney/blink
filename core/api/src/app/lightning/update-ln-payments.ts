@@ -1,12 +1,12 @@
-import { UnknownLightningServiceError } from "@domain/bitcoin/lightning"
-import { LndService } from "@services/lnd"
-import { baseLogger } from "@services/logger"
-import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
+import { UnknownLightningServiceError } from "@/domain/bitcoin/lightning"
+import { LndService } from "@/services/lnd"
+import { baseLogger } from "@/services/logger"
+import { LnPaymentsRepository } from "@/services/mongoose/ln-payments"
 import {
   addAttributesToCurrentSpan,
   asyncRunInSpan,
   SemanticAttributes,
-} from "@services/tracing"
+} from "@/services/tracing"
 
 export const updateLnPayments = async (): Promise<true | ApplicationError> => {
   let processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []

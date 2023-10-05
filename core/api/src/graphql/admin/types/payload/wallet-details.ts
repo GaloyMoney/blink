@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-import IError from "@graphql/shared/types/abstract/error"
-import Wallet from "@graphql/shared/types/abstract/wallet"
+import { GT } from "@/graphql/index"
+import IError from "@/graphql/shared/types/abstract/error"
+import Wallet from "@/graphql/shared/types/abstract/wallet"
 
 const WalletDetailsPayload = GT.Object({
   name: "WalletDetailsPayload",

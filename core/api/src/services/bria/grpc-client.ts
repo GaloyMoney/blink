@@ -2,8 +2,6 @@ import { promisify } from "util"
 
 import { credentials, Metadata } from "@grpc/grpc-js"
 
-import { BRIA_HOST, BRIA_PORT } from "@config"
-
 import {
   EstimatePayoutFeeRequest,
   EstimatePayoutFeeResponse,
@@ -19,6 +17,8 @@ import {
   SubmitPayoutResponse,
 } from "./proto/bria_pb"
 import { BriaServiceClient } from "./proto/bria_grpc_pb"
+
+import { BRIA_HOST, BRIA_PORT } from "@/config"
 
 const briaEndpoint = `${BRIA_HOST}:${BRIA_PORT}`
 

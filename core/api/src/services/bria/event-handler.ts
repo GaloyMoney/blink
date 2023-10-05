@@ -1,11 +1,3 @@
-import { ErrorLevel, WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
-
-import { baseLogger } from "@services/logger"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-} from "@services/tracing"
-
 import {
   EventAugmentationMissingError,
   ExpectedAddressInfoMissingInEventError,
@@ -19,8 +11,18 @@ import {
   NoPayloadFoundError,
   UnknownPayloadTypeReceivedError,
 } from "./errors"
+
 import { BriaEventRepo } from "./event-repository"
+
 import { BriaEvent as RawBriaEvent, SubscribeAllRequest } from "./proto/bria_pb"
+
+import { ErrorLevel, WalletCurrency, paymentAmountFromNumber } from "@/domain/shared"
+
+import { baseLogger } from "@/services/logger"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@/services/tracing"
 
 export const BriaPayloadType = {
   UtxoDetected: "utxo_detected",

@@ -4,14 +4,14 @@ import {
   getGaloyBuildInformation,
   getLightningAddressDomain,
   getLightningAddressDomainAliases,
-} from "@config"
+} from "@/config"
 
-import { Lightning } from "@app"
+import { Lightning } from "@/app"
 
-import { getSupportedCountries } from "@app/authentication/get-supported-countries"
+import { getSupportedCountries } from "@/app/authentication/get-supported-countries"
 
-import { GT } from "@graphql/index"
-import Globals from "@graphql/public/types/object/globals"
+import { GT } from "@/graphql/index"
+import Globals from "@/graphql/public/types/object/globals"
 
 const feesConfig = getFeesConfig()
 

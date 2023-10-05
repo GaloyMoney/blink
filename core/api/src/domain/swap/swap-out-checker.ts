@@ -1,4 +1,4 @@
-import { ZERO_SATS } from "@domain/shared"
+import { ZERO_SATS } from "@/domain/shared"
 
 export const SwapOutChecker = ({
   loopOutWhenHotWalletLessThanConfig,

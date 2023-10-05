@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-import { Wallets } from "@app"
-import OnChainAddressPayload from "@graphql/public/types/payload/on-chain-address"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { GT } from "@/graphql/index"
+import { Wallets } from "@/app"
+import OnChainAddressPayload from "@/graphql/public/types/payload/on-chain-address"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 
 const OnChainAddressCreateInput = GT.Input({
   name: "OnChainAddressCreateInput",

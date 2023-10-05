@@ -1,8 +1,8 @@
-import { AmountLessThanFeeError } from "@domain/errors"
-import { WalletPriceRatio } from "@domain/payments"
-import { AmountCalculator, BtcPaymentAmount, WalletCurrency } from "@domain/shared"
+import { AmountLessThanFeeError } from "@/domain/errors"
+import { WalletPriceRatio } from "@/domain/payments"
+import { AmountCalculator, BtcPaymentAmount, WalletCurrency } from "@/domain/shared"
 
-import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
+import { WalletAddressReceiver } from "@/domain/wallet-on-chain/wallet-address-receiver"
 
 const calc = AmountCalculator()
 

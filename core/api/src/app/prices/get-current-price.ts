@@ -1,13 +1,13 @@
-import { SECS_PER_10_MINS } from "@config"
+import { SECS_PER_10_MINS } from "@/config"
 
-import { CacheKeys } from "@domain/cache"
-import { WalletCurrency } from "@domain/shared"
-import { PriceNotAvailableError } from "@domain/price"
-import { checkedToDisplayCurrency, getCurrencyMajorExponent } from "@domain/fiat"
-import { toDisplayPriceRatio, toWalletPriceRatio } from "@domain/payments"
+import { CacheKeys } from "@/domain/cache"
+import { WalletCurrency } from "@/domain/shared"
+import { PriceNotAvailableError } from "@/domain/price"
+import { checkedToDisplayCurrency, getCurrencyMajorExponent } from "@/domain/fiat"
+import { toDisplayPriceRatio, toWalletPriceRatio } from "@/domain/payments"
 
-import { PriceService } from "@services/price"
-import { LocalCacheService } from "@services/cache/local-cache"
+import { PriceService } from "@/services/price"
+import { LocalCacheService } from "@/services/cache/local-cache"
 
 export const getCurrentSatPrice = ({
   currency,

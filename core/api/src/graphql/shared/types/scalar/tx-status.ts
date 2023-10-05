@@ -1,5 +1,5 @@
-import { GT } from "@graphql/index"
-import { TxStatus as DomainTxStatus } from "@domain/wallets"
+import { GT } from "@/graphql/index"
+import { TxStatus as DomainTxStatus } from "@/domain/wallets"
 
 const TxStatus = GT.Enum({
   name: "TxStatus",

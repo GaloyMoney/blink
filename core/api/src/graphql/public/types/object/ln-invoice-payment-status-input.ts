@@ -1,5 +1,5 @@
-import { GT } from "@graphql/index"
-import LnPaymentRequest from "@graphql/shared/types/scalar/ln-payment-request"
+import { GT } from "@/graphql/index"
+import LnPaymentRequest from "@/graphql/shared/types/scalar/ln-payment-request"
 
 const LnInvoicePaymentStatusInput = GT.Input({
   name: "LnInvoicePaymentStatusInput",

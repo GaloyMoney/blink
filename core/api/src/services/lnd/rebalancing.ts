@@ -1,7 +1,3 @@
-import { baseLogger } from "@services/logger"
-
-import { delayWhile } from "@utils"
-
 import {
   GetChannelsResult,
   createInvoice,
@@ -12,6 +8,10 @@ import {
 import { getLnds } from "./config"
 
 import { LndService } from "."
+
+import { delayWhile } from "@/utils"
+
+import { baseLogger } from "@/services/logger"
 
 export const rebalancingInternalChannels = async () => {
   const lndService = LndService()

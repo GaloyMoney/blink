@@ -1,6 +1,6 @@
-import { UnknownRepositoryError } from "@domain/errors"
-
 import { BriaEventModel } from "./schema"
+
+import { UnknownRepositoryError } from "@/domain/errors"
 
 export const BriaEventRepo = () => {
   const persistEvent = async (event: BriaEvent): Promise<true | RepositoryError> => {

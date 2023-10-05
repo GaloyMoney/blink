@@ -1,19 +1,19 @@
-import { Wallets } from "@app"
-import { addWallet } from "@app/accounts/add-wallet"
+import { Wallets } from "@/app"
+import { addWallet } from "@/app/accounts/add-wallet"
 import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
-} from "@config"
-import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { toCents } from "@domain/fiat"
+} from "@/config"
+import { decodeInvoice } from "@/domain/bitcoin/lightning"
+import { toCents } from "@/domain/fiat"
 import {
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
-} from "@domain/rate-limit/errors"
-import { WalletCurrency } from "@domain/shared"
-import { WalletType } from "@domain/wallets"
-import { DealerPriceService } from "@services/dealer-price"
-import { WalletInvoicesRepository } from "@services/mongoose"
+} from "@/domain/rate-limit/errors"
+import { WalletCurrency } from "@/domain/shared"
+import { WalletType } from "@/domain/wallets"
+import { DealerPriceService } from "@/services/dealer-price"
+import { WalletInvoicesRepository } from "@/services/mongoose"
 
 import {
   createUserAndWalletFromPhone,

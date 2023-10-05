@@ -33,8 +33,8 @@ import {
   UnauthorizedIPError,
   UnauthorizedIPMetadataProxyError,
   UnauthorizedIPMetadataCountryError,
-} from "@graphql/error"
-import { baseLogger } from "@services/logger"
+} from "@/graphql/error"
+import { baseLogger } from "@/services/logger"
 
 const assertUnreachable = (x: never): never => {
   throw new Error(`This should never compile with ${x}`)

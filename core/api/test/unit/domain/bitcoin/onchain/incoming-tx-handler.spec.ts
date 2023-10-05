@@ -1,6 +1,6 @@
-import { toSats } from "@domain/bitcoin"
-import { IncomingOnChainTxHandler } from "@domain/bitcoin/onchain/incoming-tx-handler"
-import { WalletCurrency } from "@domain/shared"
+import { toSats } from "@/domain/bitcoin"
+import { IncomingOnChainTxHandler } from "@/domain/bitcoin/onchain/incoming-tx-handler"
+import { WalletCurrency } from "@/domain/shared"
 
 describe("handleIncomingOnChainTransactions", () => {
   const balancesByKey = (amountsByKey: {

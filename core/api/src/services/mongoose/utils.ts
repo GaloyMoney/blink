@@ -1,13 +1,13 @@
+import { Types } from "mongoose"
+
 import {
   CannotConnectToDbError,
   DbConnectionClosedError,
   DuplicateKeyForPersistError,
   InvalidDocumentIdForDbError,
   UnknownRepositoryError,
-} from "@domain/errors"
-import { parseErrorMessageFromUnknown } from "@domain/shared"
-
-import { Types } from "mongoose"
+} from "@/domain/errors"
+import { parseErrorMessageFromUnknown } from "@/domain/shared"
 
 export const isValidObjectId = <T extends string>(id: T): boolean => {
   return Types.ObjectId.isValid(id)

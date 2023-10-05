@@ -1,11 +1,11 @@
-import { MultipleCurrenciesForSingleCurrencyOperationError } from "@domain/errors"
+import { MultipleCurrenciesForSingleCurrencyOperationError } from "@/domain/errors"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
   WalletCurrency,
   ZERO_CENTS,
   ZERO_SATS,
-} from "@domain/shared"
+} from "@/domain/shared"
 
 const calc = AmountCalculator()
 

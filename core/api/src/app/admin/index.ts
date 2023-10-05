@@ -1,9 +1,9 @@
 export * from "./update-user-phone"
 export * from "./send-admin-push-notification"
 
-import { checkedToAccountUuid, checkedToUsername } from "@domain/accounts"
-import { IdentityRepository } from "@services/kratos"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { checkedToAccountUuid, checkedToUsername } from "@/domain/accounts"
+import { IdentityRepository } from "@/services/kratos"
+import { AccountsRepository, UsersRepository } from "@/services/mongoose"
 
 export const getAccountByUsername = async (username: string) => {
   const usernameValid = checkedToUsername(username)

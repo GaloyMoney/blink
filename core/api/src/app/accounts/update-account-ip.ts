@@ -1,14 +1,14 @@
-import { getIpConfig } from "@config"
-import { isPrivateIp } from "@domain/accounts-ips"
-import { CouldNotFindAccountIpError, RepositoryError } from "@domain/errors"
-import { IpFetcherServiceError } from "@domain/ipfetcher"
-import { ErrorLevel } from "@domain/shared"
-import { IpFetcher } from "@services/ipfetcher"
-import { AccountsIpsRepository } from "@services/mongoose/accounts-ips"
+import { getIpConfig } from "@/config"
+import { isPrivateIp } from "@/domain/accounts-ips"
+import { CouldNotFindAccountIpError, RepositoryError } from "@/domain/errors"
+import { IpFetcherServiceError } from "@/domain/ipfetcher"
+import { ErrorLevel } from "@/domain/shared"
+import { IpFetcher } from "@/services/ipfetcher"
+import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 
 const accountsIps = AccountsIpsRepository()
 

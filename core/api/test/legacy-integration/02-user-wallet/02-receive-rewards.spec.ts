@@ -1,9 +1,11 @@
-import { Payments } from "@app"
-import { MEMO_SHARING_SATS_THRESHOLD, OnboardingEarn } from "@config"
-import { getFunderWalletId } from "@services/ledger/caching"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import difference from "lodash.difference"
+
 import find from "lodash.find"
+
+import { Payments } from "@/app"
+import { MEMO_SHARING_SATS_THRESHOLD, OnboardingEarn } from "@/config"
+import { getFunderWalletId } from "@/services/ledger/caching"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
 import {
   checkIsBalanced,
@@ -28,8 +30,8 @@ const onBoardingEarnAmt: number = Object.keys(OnboardingEarn)
   .filter((k) => find(onBoardingEarnIds, (o) => o === k))
   .reduce((p, k) => p + OnboardingEarn[k], 0)
 
-jest.mock("@config", () => {
-  const config = jest.requireActual("@config")
+jest.mock("@/config", () => {
+  const config = jest.requireActual("@/config")
   config.yamlConfig.rewards = {
     denyPhoneCountries: [],
     allowPhoneCountries: ["US"],
@@ -41,13 +43,13 @@ jest.mock("@config", () => {
   return config
 })
 
-jest.mock("@domain/accounts-ips/ip-metadata-authorizer", () => ({
+jest.mock("@/domain/accounts-ips/ip-metadata-authorizer", () => ({
   IPMetadataAuthorizer: () => ({
     authorize: () => true,
   }),
 }))
 
-jest.mock("@domain/users", () => ({
+jest.mock("@/domain/users", () => ({
   PhoneMetadataAuthorizer: () => ({
     authorize: () => true,
   }),

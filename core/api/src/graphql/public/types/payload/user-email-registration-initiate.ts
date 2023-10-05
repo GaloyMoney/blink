@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-
 import IError from "../../../shared/types/abstract/error"
 import EmailRegistrationId from "../scalar/email-verify-id"
 import GraphQLUser from "../object/user"
+
+import { GT } from "@/graphql/index"
 
 const UserEmailRegistrationInitiatePayload = GT.Object({
   name: "UserEmailRegistrationInitiatePayload",

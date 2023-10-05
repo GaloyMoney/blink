@@ -1,7 +1,7 @@
-import { NETWORK } from "@config"
-import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { NETWORK } from "@/config"
+import { checkedToOnChainAddress } from "@/domain/bitcoin/onchain"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const OnChainAddress = GT.Scalar({
   name: "OnChainAddress",

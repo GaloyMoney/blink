@@ -1,22 +1,22 @@
-import { getFeesConfig, getOnChainWalletConfig } from "@config"
+import { getFeesConfig, getOnChainWalletConfig } from "@/config"
 
-import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@domain/wallets"
-import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
+import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@/domain/wallets"
+import { LessThanDustThresholdError, SelfPaymentError } from "@/domain/errors"
 import {
   InvalidOnChainPaymentFlowBuilderStateError,
   SubOneCentSatAmountForUsdSelfSendError,
   WalletPriceRatio,
-} from "@domain/payments"
+} from "@/domain/payments"
 import {
   BtcPaymentAmount,
   ONE_CENT,
   paymentAmountFromNumber,
   ValidationError,
   WalletCurrency,
-} from "@domain/shared"
-import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
-import { toSats } from "@domain/bitcoin"
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+} from "@/domain/shared"
+import { OnChainPaymentFlowBuilder } from "@/domain/payments/onchain-payment-flow-builder"
+import { toSats } from "@/domain/bitcoin"
+import { ImbalanceCalculator } from "@/domain/ledger/imbalance-calculator"
 
 const feeConfig = getFeesConfig()
 const { dustThreshold } = getOnChainWalletConfig()

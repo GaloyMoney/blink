@@ -1,8 +1,8 @@
 import {
   checkedToNotificationCategory,
   disableNotificationCategory as domainDisableNotificationCategory,
-} from "@domain/notifications"
-import { AccountsRepository } from "@services/mongoose"
+} from "@/domain/notifications"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const disableNotificationCategory = async ({
   accountId,

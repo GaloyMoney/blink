@@ -1,16 +1,17 @@
 import crypto from "crypto"
 
-import { getDefaultAccountsConfig, getFeesConfig, Levels } from "@config"
-import { AccountStatus, UsernameRegex } from "@domain/accounts"
-import { WalletIdRegex, WalletType } from "@domain/wallets"
-import { WalletCurrency } from "@domain/shared"
 import mongoose from "mongoose"
 
-import { Languages } from "@domain/users"
-
-import { CarrierType } from "@domain/phone-provider"
-
 import { WalletRecord } from "./wallets"
+
+import { getDefaultAccountsConfig, getFeesConfig, Levels } from "@/config"
+import { AccountStatus, UsernameRegex } from "@/domain/accounts"
+import { WalletIdRegex, WalletType } from "@/domain/wallets"
+import { WalletCurrency } from "@/domain/shared"
+
+import { Languages } from "@/domain/users"
+
+import { CarrierType } from "@/domain/phone-provider"
 
 // TODO migration:
 // rename InvoiceUser collection to walletInvoice

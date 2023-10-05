@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import GraphQLUser from "@graphql/public/types/object/user"
+import GraphQLUser from "@/graphql/public/types/object/user"
 
 const MeQuery = GT.Field<null, GraphQLPublicContextAuth>({
   type: GraphQLUser,

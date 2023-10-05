@@ -1,6 +1,3 @@
-import { BriaSubscriber, OnChainService } from "@services/bria"
-import { baseLogger } from "@services/logger"
-
 import {
   RANDOM_ADDRESS,
   bitcoindClient,
@@ -10,6 +7,9 @@ import {
 } from "./bitcoin-core"
 
 import { waitFor, waitForNoErrorWithCount } from "./shared"
+
+import { BriaSubscriber, OnChainService } from "@/services/bria"
+import { baseLogger } from "@/services/logger"
 
 export const getBriaBalance = async (): Promise<Satoshis> => {
   const service = OnChainService()

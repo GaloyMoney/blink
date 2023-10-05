@@ -1,6 +1,6 @@
-import { checkedToPubkey } from "@domain/bitcoin/lightning"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { checkedToPubkey } from "@/domain/bitcoin/lightning"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const LnPubkey = GT.Scalar({
   name: "LnPubkey",

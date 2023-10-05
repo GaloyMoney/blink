@@ -1,30 +1,30 @@
-import { addWallet, createAccountWithPhoneIdentifier } from "@app/accounts"
-import { addWalletIfNonexistent } from "@app/accounts/add-wallet"
-import { getAdminAccounts, getDefaultAccountsConfig } from "@config"
+import { lndOutside1, safePay } from "./lightning"
 
-import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@domain/errors"
-import { WalletCurrency } from "@domain/shared"
-import { WalletType } from "@domain/wallets"
+import { randomPhone, randomUserId } from "."
+
+import { addWallet, createAccountWithPhoneIdentifier } from "@/app/accounts"
+import { addWalletIfNonexistent } from "@/app/accounts/add-wallet"
+import { getAdminAccounts, getDefaultAccountsConfig } from "@/config"
+
+import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
+import { WalletCurrency } from "@/domain/shared"
+import { WalletType } from "@/domain/wallets"
 
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
-} from "@services/mongoose"
-import { AccountsIpsRepository } from "@services/mongoose/accounts-ips"
-import { Account } from "@services/mongoose/schema"
+} from "@/services/mongoose"
+import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
+import { Account } from "@/services/mongoose/schema"
 
-import { baseLogger } from "@services/logger"
+import { baseLogger } from "@/services/logger"
 
-import { Accounts, Wallets } from "@app"
+import { Accounts, Wallets } from "@/app"
 
-import { sleep } from "@utils"
+import { sleep } from "@/utils"
 
-import { AccountLevel, AccountStatus } from "@domain/accounts"
-
-import { lndOutside1, safePay } from "./lightning"
-
-import { randomPhone, randomUserId } from "."
+import { AccountLevel, AccountStatus } from "@/domain/accounts"
 
 const accounts = AccountsRepository()
 

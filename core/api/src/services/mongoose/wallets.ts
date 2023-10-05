@@ -1,7 +1,13 @@
 import { Types } from "mongoose"
 
-import { WalletCurrency } from "@domain/shared"
-import { toWalletDescriptor } from "@domain/wallets"
+import { AccountsRepository } from "./accounts"
+
+import { Wallet } from "./schema"
+
+import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
+
+import { WalletCurrency } from "@/domain/shared"
+import { toWalletDescriptor } from "@/domain/wallets"
 import {
   CouldNotFindWalletFromAccountIdAndCurrencyError,
   CouldNotFindWalletFromIdError,
@@ -10,11 +16,7 @@ import {
   CouldNotListWalletsFromAccountIdError,
   CouldNotListWalletsFromWalletCurrencyError,
   MultipleWalletsFoundForAccountIdAndCurrency,
-} from "@domain/errors"
-
-import { AccountsRepository } from "./accounts"
-import { Wallet } from "./schema"
-import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
+} from "@/domain/errors"
 
 export interface WalletRecord {
   id: string

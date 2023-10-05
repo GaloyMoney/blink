@@ -1,5 +1,3 @@
-import { wrapAsyncToRunInSpan } from "@services/tracing"
-
 import * as AccountsMod from "./accounts"
 import * as AuthenticationMod from "./authentication"
 import * as AdminMod from "./admin"
@@ -13,6 +11,8 @@ import * as UsersMod from "./users"
 import * as WalletsMod from "./wallets"
 import * as PaymentsMod from "./payments"
 import * as SwapMod from "./swap"
+
+import { wrapAsyncToRunInSpan } from "@/services/tracing"
 
 const allFunctions = {
   Accounts: { ...AccountsMod },

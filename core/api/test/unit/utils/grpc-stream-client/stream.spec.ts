@@ -1,7 +1,7 @@
 import { Metadata, ServiceError } from "@grpc/grpc-js"
 import { Empty } from "google-protobuf/google/protobuf/empty_pb"
 
-import { GrpcStreamClient } from "@utils"
+import { GrpcStreamClient } from "@/utils"
 
 const { Stream, StreamEvents } = GrpcStreamClient
 

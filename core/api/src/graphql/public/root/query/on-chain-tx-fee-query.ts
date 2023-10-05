@@ -1,18 +1,18 @@
-import { Wallets } from "@app"
-
-import { PayoutSpeed as DomainPayoutSpeed } from "@domain/bitcoin/onchain"
-
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-
-import OnChainAddress from "@graphql/shared/types/scalar/on-chain-address"
-import PayoutSpeed from "@graphql/public/types/scalar/payout-speed"
-import SatAmount from "@graphql/shared/types/scalar/sat-amount"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-
-import OnChainTxFee from "@graphql/public/types/object/onchain-tx-fee"
-
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
+
+import { Wallets } from "@/app"
+
+import { PayoutSpeed as DomainPayoutSpeed } from "@/domain/bitcoin/onchain"
+
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+
+import OnChainAddress from "@/graphql/shared/types/scalar/on-chain-address"
+import PayoutSpeed from "@/graphql/public/types/scalar/payout-speed"
+import SatAmount from "@/graphql/shared/types/scalar/sat-amount"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+
+import OnChainTxFee from "@/graphql/public/types/object/onchain-tx-fee"
 
 const OnChainTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
   type: GT.NonNull(OnChainTxFee),

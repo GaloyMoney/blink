@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import IError from "@graphql/shared/types/abstract/error"
+import IError from "@/graphql/shared/types/abstract/error"
 
 const CaptchaCreateChallengeResult = GT.Object({
   name: "CaptchaCreateChallengeResult",

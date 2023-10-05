@@ -1,24 +1,24 @@
-import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
-import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
+import { getRecentlyActiveAccounts } from "@/app/accounts/active-accounts"
+import { sendDefaultWalletBalanceToAccounts } from "@/app/accounts/send-default-wallet-balance-to-users"
 
-import { toSats } from "@domain/bitcoin"
-import { UsdDisplayCurrency } from "@domain/fiat"
-import { LedgerService } from "@services/ledger"
-import * as serviceLedger from "@services/ledger"
+import { toSats } from "@/domain/bitcoin"
+import { UsdDisplayCurrency } from "@/domain/fiat"
+import { LedgerService } from "@/services/ledger"
+import * as serviceLedger from "@/services/ledger"
 import {
   WalletsRepository,
   UsersRepository,
   AccountsRepository,
-} from "@services/mongoose"
-import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { NotificationsService } from "@services/notifications"
+} from "@/services/mongoose"
+import { createPushNotificationContent } from "@/services/notifications/create-push-notification-content"
+import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
+import { NotificationsService } from "@/services/notifications"
 import {
   getCurrentPriceAsWalletPriceRatio,
   getCurrentPriceAsDisplayPriceRatio,
-} from "@app/prices"
-import { WalletCurrency } from "@domain/shared"
-import { GaloyNotificationCategories } from "@domain/notifications"
+} from "@/app/prices"
+import { WalletCurrency } from "@/domain/shared"
+import { GaloyNotificationCategories } from "@/domain/notifications"
 
 let spy
 let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>

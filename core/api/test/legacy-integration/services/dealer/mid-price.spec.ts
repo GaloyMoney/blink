@@ -1,7 +1,7 @@
-import { getCurrentPriceAsWalletPriceRatio, getMidPriceRatio } from "@app/prices"
-import { UsdDisplayCurrency } from "@domain/fiat"
+import { getCurrentPriceAsWalletPriceRatio, getMidPriceRatio } from "@/app/prices"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
-import { DealerPriceService } from "@services/dealer-price"
+import { DealerPriceService } from "@/services/dealer-price"
 
 describe("getMidPriceRatio", () => {
   const fetchPrices = async () => {

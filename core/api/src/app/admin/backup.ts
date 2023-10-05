@@ -1,3 +1,7 @@
+import { Storage } from "@google-cloud/storage"
+
+import axios from "axios"
+
 import {
   DROPBOX_ACCESS_TOKEN,
   GCS_APPLICATION_CREDENTIALS_PATH,
@@ -6,17 +10,15 @@ import {
   NEXTCLOUD_PASSWORD,
   NEXTCLOUD_URL,
   NEXTCLOUD_USER,
-} from "@config"
-import { ErrorLevel } from "@domain/shared"
-import { Storage } from "@google-cloud/storage"
+} from "@/config"
+import { ErrorLevel } from "@/domain/shared"
 import {
   SemanticAttributes,
   addAttributesToCurrentSpan,
   addEventToCurrentSpan,
   asyncRunInSpan,
   recordExceptionInCurrentSpan,
-} from "@services/tracing"
-import axios from "axios"
+} from "@/services/tracing"
 
 export const uploadBackup =
   (logger: Logger) =>

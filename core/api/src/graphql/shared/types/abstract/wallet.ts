@@ -1,12 +1,12 @@
 import dedent from "dedent"
 
-import { GT } from "@graphql/index"
-import { connectionArgs } from "@graphql/connections"
-
 import { TransactionConnection } from "../object/transaction"
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 import OnChainAddress from "../scalar/on-chain-address"
+
+import { connectionArgs } from "@/graphql/connections"
+import { GT } from "@/graphql/index"
 
 const IWallet = GT.Interface({
   name: "Wallet",

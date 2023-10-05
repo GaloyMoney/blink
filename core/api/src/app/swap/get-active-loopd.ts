@@ -1,6 +1,6 @@
-import { NETWORK, getLoopConfig, getSwapConfig } from "@config"
-import { SwapErrorNoActiveLoopdNode } from "@domain/swap/errors"
-import { getActiveLnd } from "@services/lnd/config"
+import { NETWORK, getLoopConfig, getSwapConfig } from "@/config"
+import { SwapErrorNoActiveLoopdNode } from "@/domain/swap/errors"
+import { getActiveLnd } from "@/services/lnd/config"
 
 export const getActiveLoopd = (): LoopdConfig => {
   const activeOffChainNode = getActiveLnd()

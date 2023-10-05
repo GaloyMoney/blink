@@ -1,32 +1,37 @@
 import { applyMiddleware } from "graphql-middleware"
 
-import { GALOY_API_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
-
-import { AuthorizationError } from "@graphql/error"
-import { gqlMainSchema, mutationFields, queryFields } from "@graphql/public"
-
-import { bootstrap } from "@app/bootstrap"
-import { activateLndHealthCheck } from "@services/lnd/health"
-import { baseLogger } from "@services/logger"
-import { setupMongoConnection } from "@services/mongodb"
 import { shield } from "graphql-shield"
+
 import { Rule } from "graphql-shield/typings/rules"
+
+import { NextFunction, Request, Response } from "express"
+
+import { startApolloServerForAdminSchema } from "./graphql-admin-server"
+
+import { isAuthenticated, startApolloServer } from "./graphql-server"
+
+import { walletIdMiddleware } from "./middlewares/wallet-id"
+
+import { sessionPublicContext } from "./middlewares/session"
+
+import { GALOY_API_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
+
+import { AuthorizationError } from "@/graphql/error"
+import { gqlMainSchema, mutationFields, queryFields } from "@/graphql/public"
+
+import { bootstrap } from "@/app/bootstrap"
+import { activateLndHealthCheck } from "@/services/lnd/health"
+import { baseLogger } from "@/services/logger"
+import { setupMongoConnection } from "@/services/mongodb"
+
 import {
   ACCOUNT_USERNAME,
   SemanticAttributes,
   addAttributesToCurrentSpanAndPropagate,
   recordExceptionInCurrentSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 
-import { NextFunction, Request, Response } from "express"
-
-import { parseIps } from "@domain/accounts-ips"
-
-import { startApolloServerForAdminSchema } from "./graphql-admin-server"
-import { isAuthenticated, startApolloServer } from "./graphql-server"
-import { walletIdMiddleware } from "./middlewares/wallet-id"
-
-import { sessionPublicContext } from "./middlewares/session"
+import { parseIps } from "@/domain/accounts-ips"
 
 const setGqlContext = async (
   req: Request,

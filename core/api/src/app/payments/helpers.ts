@@ -1,16 +1,16 @@
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/prices"
-import { addNewContact } from "@app/accounts/add-new-contact"
-import { getValuesToSkipProbe, MIN_SATS_FOR_PRICE_RATIO_PRECISION } from "@config"
-import { AlreadyPaidError } from "@domain/errors"
-import { LightningPaymentFlowBuilder, WalletPriceRatio } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
-import { LndService } from "@services/lnd"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@/app/prices"
+import { addNewContact } from "@/app/accounts/add-new-contact"
+import { getValuesToSkipProbe, MIN_SATS_FOR_PRICE_RATIO_PRECISION } from "@/config"
+import { AlreadyPaidError } from "@/domain/errors"
+import { LightningPaymentFlowBuilder, WalletPriceRatio } from "@/domain/payments"
+import { WalletCurrency } from "@/domain/shared"
+import { LndService } from "@/services/lnd"
 import {
   AccountsRepository,
   WalletInvoicesRepository,
   WalletsRepository,
-} from "@services/mongoose"
-import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+} from "@/services/mongoose"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 
 export const constructPaymentFlowBuilder = async <
   S extends WalletCurrency,

@@ -1,10 +1,10 @@
-import { Accounts } from "@app"
-import { UsernameIsImmutableError } from "@domain/accounts"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
+import { Accounts } from "@/app"
+import { UsernameIsImmutableError } from "@/domain/accounts"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
 
-import UserUpdateUsernamePayload from "@graphql/public/types/payload/user-update-username"
-import Username from "@graphql/shared/types/scalar/username"
+import UserUpdateUsernamePayload from "@/graphql/public/types/payload/user-update-username"
+import Username from "@/graphql/shared/types/scalar/username"
 
 const UserUpdateUsernameInput = GT.Input({
   name: "UserUpdateUsernameInput",

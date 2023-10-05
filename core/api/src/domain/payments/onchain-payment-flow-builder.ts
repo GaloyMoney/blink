@@ -1,4 +1,15 @@
-import { getFeesConfig } from "@config"
+import {
+  InvalidLightningPaymentFlowBuilderStateError,
+  InvalidOnChainPaymentFlowBuilderStateError,
+  InvalidZeroAmountPriceRatioInputError,
+  SubOneCentSatAmountForUsdSelfSendError,
+} from "./errors"
+
+import { WalletPriceRatio } from "./price-ratio"
+
+import { OnChainPaymentFlow } from "./payment-flow"
+
+import { getFeesConfig } from "@/config"
 import {
   AmountCalculator,
   ONE_CENT,
@@ -6,19 +17,10 @@ import {
   ValidationError,
   WalletCurrency,
   ZERO_BANK_FEE,
-} from "@domain/shared"
-import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
-import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
-
-import {
-  InvalidLightningPaymentFlowBuilderStateError,
-  InvalidOnChainPaymentFlowBuilderStateError,
-  InvalidZeroAmountPriceRatioInputError,
-  SubOneCentSatAmountForUsdSelfSendError,
-} from "./errors"
-import { WalletPriceRatio } from "./price-ratio"
-import { OnChainPaymentFlow } from "./payment-flow"
+} from "@/domain/shared"
+import { LessThanDustThresholdError, SelfPaymentError } from "@/domain/errors"
+import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@/domain/wallets"
+import { ImbalanceCalculator } from "@/domain/ledger/imbalance-calculator"
 
 const calc = AmountCalculator()
 const feeConfig = getFeesConfig()

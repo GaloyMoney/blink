@@ -1,15 +1,6 @@
 import dedent from "dedent"
 import getUuidByString from "uuid-by-string"
 
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-import { connectionDefinitions } from "@graphql/connections"
-import { normalizeDisplayPrice } from "@graphql/shared/root/mutation"
-
-import { TxStatus as DomainTxStatus } from "@domain/wallets"
-import { checkedToDisplayCurrency } from "@domain/fiat"
-import { parseErrorFromUnknown } from "@domain/shared"
-
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
 
@@ -23,6 +14,14 @@ import SignedDisplayMajorAmount from "../scalar/signed-display-amount"
 import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 
 import PriceOfOneSettlementMinorUnitInDisplayMinorUnit from "./price-of-one-settlement-minor-unit-in-display-minor-unit"
+
+import { parseErrorFromUnknown } from "@/domain/shared"
+import { TxStatus as DomainTxStatus } from "@/domain/wallets"
+import { checkedToDisplayCurrency } from "@/domain/fiat"
+import { normalizeDisplayPrice } from "@/graphql/shared/root/mutation"
+import { connectionDefinitions } from "@/graphql/connections"
+import { mapError } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
 
 const Transaction = GT.Object<WalletTransaction>({
   name: "Transaction",

@@ -1,8 +1,8 @@
-import { RewardAlreadyPresentError, UnknownRepositoryError } from "@domain/errors"
-
 import { Account } from "./schema"
 
 import { toObjectId } from "./utils"
+
+import { RewardAlreadyPresentError, UnknownRepositoryError } from "@/domain/errors"
 
 // FIXME: improve boundary
 export const RewardsRepository = (accountId: AccountId) => {

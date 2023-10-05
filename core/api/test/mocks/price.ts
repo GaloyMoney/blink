@@ -1,4 +1,4 @@
-import { NotImplementedError } from "@domain/errors"
+import { NotImplementedError } from "@/domain/errors"
 
 export const PriceService = (): IPriceService => {
   return {

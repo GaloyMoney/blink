@@ -1,16 +1,16 @@
-import { getFeesConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getFeesConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@/config"
 
-import { Wallets } from "@app"
+import { Wallets } from "@/app"
 
-import { TxStatus } from "@domain/wallets"
-import { sat2btc, toSats } from "@domain/bitcoin"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { TxStatus } from "@/domain/wallets"
+import { sat2btc, toSats } from "@/domain/bitcoin"
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
 
-import { onchainBlockEventHandler } from "@servers/trigger"
+import { onchainBlockEventHandler } from "@/servers/trigger"
 
-import { baseLogger } from "@services/logger"
+import { baseLogger } from "@/services/logger"
 
-import { sleep } from "@utils"
+import { sleep } from "@/utils"
 
 import {
   amountAfterFeeDeduction,

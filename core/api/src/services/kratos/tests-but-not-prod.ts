@@ -1,9 +1,9 @@
 import { IdentityState } from "@ory/client"
 
-import { baseLogger } from "@services/logger"
-
 import { UnknownKratosError } from "./errors"
 import { kratosAdmin } from "./private"
+
+import { baseLogger } from "@/services/logger"
 
 export const activateUser = async (kratosUserId: UserId): Promise<void | KratosError> => {
   let identity: KratosIdentity

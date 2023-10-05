@@ -1,16 +1,16 @@
 import cors from "cors"
 import express from "express"
 
-import { Authentication } from "@app"
+import { Authentication } from "@/app"
 
 import {
   SecretForAuthNCallbackError,
   RegistrationPayloadValidationError,
-} from "@domain/authentication/errors"
-import { ErrorLevel } from "@domain/shared"
+} from "@/domain/authentication/errors"
+import { ErrorLevel } from "@/domain/shared"
 
-import { baseLogger } from "@services/logger"
-import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+import { baseLogger } from "@/services/logger"
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 
 const errorResponseMessages: { [key: string]: string } = {
   MissingSecretForAuthNCallbackError: "missing authorization header",

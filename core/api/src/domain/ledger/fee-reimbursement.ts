@@ -1,6 +1,6 @@
-import { WalletCurrency } from "@domain/shared"
-
 import { FeeDifferenceError } from "./errors"
+
+import { WalletCurrency } from "@/domain/shared"
 
 export const FeeReimbursement = ({
   prepaidFeeAmount,

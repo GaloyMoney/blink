@@ -1,11 +1,11 @@
 import crypto from "crypto"
 
-import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@domain/shared"
-import { LedgerTransactionType } from "@domain/ledger"
-import { UsdDisplayCurrency } from "@domain/fiat"
-import { CouldNotFindError } from "@domain/errors"
+import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@/domain/shared"
+import { LedgerTransactionType } from "@/domain/ledger"
+import { UsdDisplayCurrency } from "@/domain/fiat"
+import { CouldNotFindError } from "@/domain/errors"
 
-import { LedgerService } from "@services/ledger"
+import { LedgerService } from "@/services/ledger"
 
 import { createMandatoryUsers } from "test/helpers"
 import {

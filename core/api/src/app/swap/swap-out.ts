@@ -1,15 +1,15 @@
-import { getSwapConfig } from "@config"
-import { NoOutboundLiquidityForSwapError, SwapServiceError } from "@domain/swap/errors"
-import { OnChainService } from "@services/bria"
-import { SwapOutChecker } from "@domain/swap"
-import { baseLogger } from "@services/logger"
-import { LoopService } from "@services/loopd"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-import { LndService } from "@services/lnd"
-
-import { WalletCurrency } from "@domain/shared"
-
 import { getActiveLoopd } from "./get-active-loopd"
+
+import { getSwapConfig } from "@/config"
+import { NoOutboundLiquidityForSwapError, SwapServiceError } from "@/domain/swap/errors"
+import { OnChainService } from "@/services/bria"
+import { SwapOutChecker } from "@/domain/swap"
+import { baseLogger } from "@/services/logger"
+import { LoopService } from "@/services/loopd"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
+import { LndService } from "@/services/lnd"
+
+import { WalletCurrency } from "@/domain/shared"
 
 const logger = baseLogger.child({ module: "swap" })
 

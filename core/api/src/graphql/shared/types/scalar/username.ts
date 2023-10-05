@@ -1,6 +1,6 @@
-import { UsernameRegex } from "@domain/accounts"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { UsernameRegex } from "@/domain/accounts"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const Username = GT.Scalar({
   name: "Username",

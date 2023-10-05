@@ -1,6 +1,6 @@
-import { toSats } from "@domain/bitcoin"
-import { UsdDisplayCurrency, toCents } from "@domain/fiat"
-import { LedgerTransactionType } from "@domain/ledger"
+import { toSats } from "@/domain/bitcoin"
+import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
+import { LedgerTransactionType } from "@/domain/ledger"
 
 const displayArgsFromArgs = ({
   senderAmountDisplayCurrency,

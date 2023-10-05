@@ -3,7 +3,7 @@ import {
   UnauthorizedIPMetadataASNError,
   UnauthorizedIPMetadataCountryError,
   UnauthorizedIPMetadataProxyError,
-} from "@domain/errors"
+} from "@/domain/errors"
 
 export const IPMetadataAuthorizer = ({
   denyCountries,

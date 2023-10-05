@@ -2,36 +2,36 @@ import { applyMiddleware } from "graphql-middleware"
 import { and, rule, shield } from "graphql-shield"
 import { RuleAnd } from "graphql-shield/typings/rules"
 
-import { baseLogger } from "@services/logger"
-import { setupMongoConnection } from "@services/mongodb"
-
-import { activateLndHealthCheck } from "@services/lnd/health"
-
-import { adminMutationFields, adminQueryFields, gqlAdminSchema } from "@graphql/admin"
-
-import { GALOY_ADMIN_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
-
 import { NextFunction, Request, Response } from "express"
+
+import DataLoader from "dataloader"
+
+import { isAuthenticated, startApolloServer } from "./graphql-server"
+
+import { baseLogger } from "@/services/logger"
+import { setupMongoConnection } from "@/services/mongodb"
+
+import { activateLndHealthCheck } from "@/services/lnd/health"
+
+import { adminMutationFields, adminQueryFields, gqlAdminSchema } from "@/graphql/admin"
+
+import { GALOY_ADMIN_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
 import {
   SemanticAttributes,
   addAttributesToCurrentSpanAndPropagate,
   recordExceptionInCurrentSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 
-import { parseIps } from "@domain/accounts-ips"
+import { parseIps } from "@/domain/accounts-ips"
 
-import DataLoader from "dataloader"
+import { Transactions } from "@/app"
 
-import { Transactions } from "@app"
+import { AuthorizationError } from "@/graphql/error"
 
-import { AuthorizationError } from "@graphql/error"
+import { checkedToUserId } from "@/domain/accounts"
 
-import { checkedToUserId } from "@domain/accounts"
-
-import { AccountsRepository } from "@services/mongoose"
-
-import { isAuthenticated, startApolloServer } from "./graphql-server"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const isEditor = rule({ cache: "contextual" })((
   parent,

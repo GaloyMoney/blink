@@ -1,11 +1,11 @@
-import { GT } from "@graphql/index"
-
-import { PaymentInitiationMethod } from "@domain/wallets"
-
 import WalletId from "../scalar/wallet-id"
 import Username from "../scalar/username"
 import OnChainAddress from "../scalar/on-chain-address"
 import PaymentHash from "../scalar/payment-hash"
+
+import { PaymentInitiationMethod } from "@/domain/wallets"
+
+import { GT } from "@/graphql/index"
 
 const InitiationViaIntraLedger = GT.Object({
   name: "InitiationViaIntraLedger",

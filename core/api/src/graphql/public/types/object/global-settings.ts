@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-
 import WalletCurrency from "../../../shared/types/scalar/wallet-currency"
+
+import { GT } from "@/graphql/index"
 
 const GlobalSettings = GT.Object({
   name: "GlobalSettings",

@@ -1,4 +1,4 @@
-import { checkedToPhoneNumber } from "@domain/users"
+import { checkedToPhoneNumber } from "@/domain/users"
 
 describe("phonenumber-check", () => {
   it("Fail just prefix", () => {

@@ -1,11 +1,11 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import AuthToken from "@graphql/shared/types/scalar/auth-token"
-import TotpCode from "@graphql/public/types/scalar/totp-code"
-import TotpRegistrationId from "@graphql/public/types/scalar/totp-verify-id"
-import UserTotpRegistrationValidatePayload from "@graphql/public/types/payload/user-totp-registration-validate"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import AuthToken from "@/graphql/shared/types/scalar/auth-token"
+import TotpCode from "@/graphql/public/types/scalar/totp-code"
+import TotpRegistrationId from "@/graphql/public/types/scalar/totp-verify-id"
+import UserTotpRegistrationValidatePayload from "@/graphql/public/types/payload/user-totp-registration-validate"
 
 const UserTotpRegistrationValidateInput = GT.Input({
   name: "UserTotpRegistrationValidateInput",

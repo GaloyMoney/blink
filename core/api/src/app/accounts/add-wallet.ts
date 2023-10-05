@@ -1,4 +1,4 @@
-import { WalletsRepository } from "@services/mongoose"
+import { WalletsRepository } from "@/services/mongoose"
 
 export const addWallet = async ({
   accountId,

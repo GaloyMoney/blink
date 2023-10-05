@@ -1,14 +1,14 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import PriceSubscription from "@graphql/public/root/subscription/price"
-import MyUpdatesSubscription from "@graphql/public/root/subscription/my-updates"
-import RealtimePriceSubscription from "@graphql/public/root/subscription/realtime-price"
-import LnInvoicePaymentStatusSubscription from "@graphql/public/root/subscription/ln-invoice-payment-status"
+import PriceSubscription from "@/graphql/public/root/subscription/price"
+import MyUpdatesSubscription from "@/graphql/public/root/subscription/my-updates"
+import RealtimePriceSubscription from "@/graphql/public/root/subscription/realtime-price"
+import LnInvoicePaymentStatusSubscription from "@/graphql/public/root/subscription/ln-invoice-payment-status"
 import {
   ACCOUNT_USERNAME,
   addAttributesToCurrentSpan,
   SemanticAttributes,
-} from "@services/tracing"
+} from "@/services/tracing"
 
 const fields = {
   myUpdates: MyUpdatesSubscription,

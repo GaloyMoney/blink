@@ -1,34 +1,34 @@
 import express from "express"
 import client, { register } from "prom-client"
 
-import { EXPORTER_PORT, SECS_PER_5_MINS } from "@config"
+import healthzHandler from "./middlewares/healthz"
 
-import { Lightning, OnChain } from "@app"
+import { EXPORTER_PORT, SECS_PER_5_MINS } from "@/config"
 
-import { toSeconds } from "@domain/primitives"
+import { Lightning, OnChain } from "@/app"
+
+import { toSeconds } from "@/domain/primitives"
 
 import {
   asyncRunInSpan,
   addAttributesToCurrentSpan,
   wrapAsyncToRunInSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 import {
   getBankOwnerWalletId,
   getDealerBtcWalletId,
   getDealerUsdWalletId,
   getFunderWalletId,
-} from "@services/ledger/caching"
-import { LndService } from "@services/lnd"
-import { baseLogger } from "@services/logger"
-import { LedgerService } from "@services/ledger"
-import { Account } from "@services/mongoose/schema"
-import { LocalCacheService } from "@services/cache"
-import { activateLndHealthCheck } from "@services/lnd/health"
-import { ledgerAdmin, setupMongoConnection } from "@services/mongodb"
+} from "@/services/ledger/caching"
+import { LndService } from "@/services/lnd"
+import { baseLogger } from "@/services/logger"
+import { LedgerService } from "@/services/ledger"
+import { Account } from "@/services/mongoose/schema"
+import { LocalCacheService } from "@/services/cache"
+import { activateLndHealthCheck } from "@/services/lnd/health"
+import { ledgerAdmin, setupMongoConnection } from "@/services/mongodb"
 
-import { timeoutWithCancel } from "@utils"
-
-import healthzHandler from "./middlewares/healthz"
+import { timeoutWithCancel } from "@/utils"
 
 const TIMEOUT_WALLET_BALANCE = 30000
 

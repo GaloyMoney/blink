@@ -1,5 +1,5 @@
-import { AuthenticationError } from "@domain/authentication/errors"
-import { ErrorLevel } from "@domain/shared"
+import { AuthenticationError } from "@/domain/authentication/errors"
+import { ErrorLevel } from "@/domain/shared"
 
 export class KratosError extends AuthenticationError {}
 

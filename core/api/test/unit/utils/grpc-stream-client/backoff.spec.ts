@@ -1,4 +1,4 @@
-import { GrpcStreamClient } from "@utils"
+import { GrpcStreamClient } from "@/utils"
 
 const { FibonacciBackoff } = GrpcStreamClient
 

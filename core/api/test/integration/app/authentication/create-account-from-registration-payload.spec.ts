@@ -1,9 +1,9 @@
-import { createAccountFromRegistrationPayload } from "@app/authentication"
-import { KRATOS_CALLBACK_API_KEY } from "@config"
+import { createAccountFromRegistrationPayload } from "@/app/authentication"
+import { KRATOS_CALLBACK_API_KEY } from "@/config"
 import {
   SecretForAuthNCallbackError,
   RegistrationPayloadValidationError,
-} from "@domain/authentication/errors"
+} from "@/domain/authentication/errors"
 
 describe("createAccountFromRegistrationPayload", () => {
   it("fails with bad auth key", async () => {

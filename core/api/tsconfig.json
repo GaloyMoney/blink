@@ -11,15 +11,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "paths": {
-      "@config": ["src/config/index"],
-      "@core/*": ["src/core/*"],
-      "@app/*": ["src/app/*"],
-      "@app": ["src/app/index"],
-      "@domain/*": ["src/domain/*"],
-      "@services/*": ["src/services/*"],
-      "@utils": ["src/utils/index"],
-      "@graphql/*": ["src/graphql/*"],
-      "@servers/*": ["src/servers/*"]
+      "@/*": [
+        "src/*"
+      ]
     }
   },
   "compileOnSave": true,

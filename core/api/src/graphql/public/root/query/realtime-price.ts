@@ -1,16 +1,16 @@
-import { Prices } from "@app"
+import { Prices } from "@/app"
 
 import {
   majorToMinorUnit,
   USD_PRICE_PRECISION_OFFSET,
   SAT_PRICE_PRECISION_OFFSET,
   UsdDisplayCurrency,
-} from "@domain/fiat"
+} from "@/domain/fiat"
 
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-import RealtimePrice from "@graphql/public/types/object/realtime-price"
-import DisplayCurrencyGT from "@graphql/shared/types/scalar/display-currency"
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import RealtimePrice from "@/graphql/public/types/object/realtime-price"
+import DisplayCurrencyGT from "@/graphql/shared/types/scalar/display-currency"
 
 const RealtimePriceQuery = GT.Field({
   type: GT.NonNull(RealtimePrice),

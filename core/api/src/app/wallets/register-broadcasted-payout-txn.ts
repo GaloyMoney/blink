@@ -1,4 +1,4 @@
-import * as LedgerFacade from "@services/ledger/facade"
+import * as LedgerFacade from "@/services/ledger/facade"
 
 export const registerBroadcastedPayout = async ({
   payoutId,

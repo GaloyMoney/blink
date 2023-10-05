@@ -1,10 +1,10 @@
-import * as Wallets from "@app/wallets"
+import * as Wallets from "@/app/wallets"
 
-import { toSats } from "@domain/bitcoin"
+import { toSats } from "@/domain/bitcoin"
 
-import { baseLogger } from "@services/logger"
+import { baseLogger } from "@/services/logger"
 
-import { sleep } from "@utils"
+import { sleep } from "@/utils"
 
 import {
   checkIsBalanced,

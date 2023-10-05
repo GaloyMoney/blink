@@ -1,4 +1,4 @@
-import { NoContactForUsernameError } from "@domain/errors"
+import { NoContactForUsernameError } from "@/domain/errors"
 
 export const getContactByUsername = async ({
   account,

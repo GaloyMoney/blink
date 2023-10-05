@@ -1,6 +1,6 @@
-import { LndService } from "@services/lnd"
-import { WalletInvoicesRepository } from "@services/mongoose"
-import { RepositoryError } from "@domain/errors"
+import { LndService } from "@/services/lnd"
+import { WalletInvoicesRepository } from "@/services/mongoose"
+import { RepositoryError } from "@/domain/errors"
 
 export const lookupInvoiceByHash = async (
   paymentHash: PaymentHash,

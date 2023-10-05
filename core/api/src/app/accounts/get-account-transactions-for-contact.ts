@@ -1,9 +1,9 @@
-import { memoSharingConfig } from "@config"
-import { LedgerError } from "@domain/ledger"
-import { WalletTransactionHistory } from "@domain/wallets"
+import { memoSharingConfig } from "@/config"
+import { LedgerError } from "@/domain/ledger"
+import { WalletTransactionHistory } from "@/domain/wallets"
 
-import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
-import { WalletsRepository } from "@services/mongoose"
+import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
+import { WalletsRepository } from "@/services/mongoose"
 
 export const getAccountTransactionsForContact = async ({
   account,

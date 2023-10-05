@@ -1,6 +1,6 @@
-import { validOneTimeAuthCodeValue } from "@domain/authentication"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { validOneTimeAuthCodeValue } from "@/domain/authentication"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const OneTimeAuthCode = GT.Scalar({
   name: "OneTimeAuthCode",

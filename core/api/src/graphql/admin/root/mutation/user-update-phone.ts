@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
-import { Admin } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import Phone from "@graphql/shared/types/scalar/phone"
+import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
+import { Admin } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import Phone from "@/graphql/shared/types/scalar/phone"
 
 const UserUpdatePhoneInput = GT.Input({
   name: "UserUpdatePhoneInput",

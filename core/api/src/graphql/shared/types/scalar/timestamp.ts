@@ -1,5 +1,5 @@
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 type InternalDate = Date
 type ExternalDate = number | InputValidationError

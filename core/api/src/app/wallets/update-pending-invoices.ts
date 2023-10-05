@@ -1,42 +1,42 @@
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
-import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
+import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
 
 import {
   CouldNotFindError,
   CouldNotFindWalletInvoiceError,
   InvalidNonHodlInvoiceError,
-} from "@domain/errors"
-import { checkedToSats } from "@domain/bitcoin"
-import { DisplayAmountsConverter } from "@domain/fiat"
-import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+} from "@/domain/errors"
+import { checkedToSats } from "@/domain/bitcoin"
+import { DisplayAmountsConverter } from "@/domain/fiat"
+import { InvoiceNotFoundError } from "@/domain/bitcoin/lightning"
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
+import { WalletInvoiceReceiver } from "@/domain/wallet-invoices/wallet-invoice-receiver"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
   wrapAsyncToRunInSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 import {
   AccountsRepository,
   WalletInvoicesRepository,
   WalletsRepository,
   UsersRepository,
-} from "@services/mongoose"
-import { LndService } from "@services/lnd"
-import { LockService } from "@services/lock"
-import * as LedgerFacade from "@services/ledger/facade"
-import { DealerPriceService } from "@services/dealer-price"
-import { NotificationsService } from "@services/notifications"
+} from "@/services/mongoose"
+import { LndService } from "@/services/lnd"
+import { LockService } from "@/services/lock"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { DealerPriceService } from "@/services/dealer-price"
+import { NotificationsService } from "@/services/notifications"
 
-import { elapsedSinceTimestamp, runInParallel } from "@utils"
-import { CallbackEventType } from "@domain/callback"
-import { AccountLevel } from "@domain/accounts"
-import { CallbackService } from "@services/svix"
-import { getCallbackServiceConfig } from "@config"
-import { toDisplayBaseAmount } from "@domain/payments"
-import { WalletInvoiceChecker } from "@domain/wallet-invoices"
+import { elapsedSinceTimestamp, runInParallel } from "@/utils"
+import { CallbackEventType } from "@/domain/callback"
+import { AccountLevel } from "@/domain/accounts"
+import { CallbackService } from "@/services/svix"
+import { getCallbackServiceConfig } from "@/config"
+import { toDisplayBaseAmount } from "@/domain/payments"
+import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const pendingInvoices = WalletInvoicesRepository().yieldPending()

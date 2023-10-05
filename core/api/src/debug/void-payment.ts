@@ -7,14 +7,14 @@
  * <payment hash>: payment hash to void.
  * <validateLnd>: true if hash needs to be validated against lnd. Must be the last param
  */
-import { PaymentStatus } from "@domain/bitcoin/lightning"
+import { PaymentStatus } from "@/domain/bitcoin/lightning"
 
-import { LndService } from "@services/lnd"
-import { isUp } from "@services/lnd/health"
-import { lndsConnect } from "@services/lnd/auth"
-import { LedgerService } from "@services/ledger"
-import * as LedgerFacade from "@services/ledger/facade"
-import { setupMongoConnection } from "@services/mongodb"
+import { LndService } from "@/services/lnd"
+import { isUp } from "@/services/lnd/health"
+import { lndsConnect } from "@/services/lnd/auth"
+import { LedgerService } from "@/services/ledger"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { setupMongoConnection } from "@/services/mongodb"
 
 const voidPayment = async ({
   journalId,

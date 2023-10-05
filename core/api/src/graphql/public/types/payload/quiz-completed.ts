@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import IError from "../../../shared/types/abstract/error"
 import Quiz from "../object/quiz"
+
+import { GT } from "@/graphql/index"
 
 const QuizCompletedPayload = GT.Object({
   name: "QuizCompletedPayload",

@@ -1,6 +1,6 @@
-import { checkedToWalletId } from "@domain/wallets"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { checkedToWalletId } from "@/domain/wallets"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const WalletId = GT.Scalar<WalletId | InputValidationError>({
   name: "WalletId",

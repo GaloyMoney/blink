@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import IError from "../../../shared/types/abstract/error"
 import EndpointId from "../scalar/endpoint-id"
+
+import { GT } from "@/graphql/index"
 
 const CallbackEndpointAddPayload = GT.Object({
   name: "CallbackEndpointAddPayload",

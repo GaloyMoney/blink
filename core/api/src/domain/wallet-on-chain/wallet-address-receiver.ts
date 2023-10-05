@@ -1,6 +1,6 @@
-import { AmountLessThanFeeError } from "@domain/errors"
-import { WalletPriceRatio } from "@domain/payments"
-import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
+import { AmountLessThanFeeError } from "@/domain/errors"
+import { WalletPriceRatio } from "@/domain/payments"
+import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@/domain/shared"
 
 const calc = AmountCalculator()
 

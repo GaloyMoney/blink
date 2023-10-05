@@ -1,13 +1,13 @@
-import { AuthTokenUserIdMismatchError } from "@domain/authentication/errors"
+import { AuthTokenUserIdMismatchError } from "@/domain/authentication/errors"
 import {
   validateKratosToken,
   kratosValidateTotp,
   kratosInitiateTotp,
   kratosElevatingSessionWithTotp,
   kratosRemoveTotp,
-} from "@services/kratos"
+} from "@/services/kratos"
 
-import { UsersRepository } from "@services/mongoose"
+import { UsersRepository } from "@/services/mongoose"
 
 export const initiateTotpRegistration = async ({
   authToken,

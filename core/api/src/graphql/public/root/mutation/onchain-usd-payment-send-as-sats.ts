@@ -1,15 +1,15 @@
-import { PayoutSpeed as DomainPayoutSpeed } from "@domain/bitcoin/onchain"
+import { PayoutSpeed as DomainPayoutSpeed } from "@/domain/bitcoin/onchain"
 
-import { GT } from "@graphql/index"
-import Memo from "@graphql/shared/types/scalar/memo"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import OnChainAddress from "@graphql/shared/types/scalar/on-chain-address"
-import PaymentSendPayload from "@graphql/public/types/payload/payment-send"
-import PayoutSpeed from "@graphql/public/types/scalar/payout-speed"
-import SatsAmount from "@graphql/shared/types/scalar/sat-amount"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
+import { GT } from "@/graphql/index"
+import Memo from "@/graphql/shared/types/scalar/memo"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import OnChainAddress from "@/graphql/shared/types/scalar/on-chain-address"
+import PaymentSendPayload from "@/graphql/public/types/payload/payment-send"
+import PayoutSpeed from "@/graphql/public/types/scalar/payout-speed"
+import SatsAmount from "@/graphql/shared/types/scalar/sat-amount"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 
-import { Payments } from "@app"
+import { Payments } from "@/app"
 
 const OnChainUsdPaymentSendAsBtcDenominatedInput = GT.Input({
   name: "OnChainUsdPaymentSendAsBtcDenominatedInput",

@@ -1,4 +1,4 @@
-import { LndService } from "@services/lnd"
+import { LndService } from "@/services/lnd"
 
 export const listNodesPubkeys = async (): Promise<Pubkey[] | ApplicationError> => {
   const offChainService = LndService()

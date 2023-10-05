@@ -1,7 +1,9 @@
 import RedisCache from "ioredis-cache"
 import { RedisPubSub } from "graphql-redis-subscriptions"
-import { baseLogger } from "@services/logger"
+
 import Redis from "ioredis"
+
+import { baseLogger } from "@/services/logger"
 import {
   REDIS_0_DNS,
   REDIS_0_PORT,
@@ -12,7 +14,7 @@ import {
   REDIS_MASTER_NAME,
   REDIS_PASSWORD,
   REDIS_TYPE,
-} from "@config"
+} from "@/config"
 
 let connectionObj = {}
 

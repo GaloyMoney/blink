@@ -1,11 +1,11 @@
-import { Prices } from "@app"
+import { Prices } from "@/app"
 
-import { SAT_PRICE_PRECISION_OFFSET, UsdDisplayCurrency } from "@domain/fiat"
+import { SAT_PRICE_PRECISION_OFFSET, UsdDisplayCurrency } from "@/domain/fiat"
 
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-import Price from "@graphql/public/types/object/price"
-import DisplayCurrencyGT from "@graphql/shared/types/scalar/display-currency"
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import Price from "@/graphql/public/types/object/price"
+import DisplayCurrencyGT from "@/graphql/shared/types/scalar/display-currency"
 
 const BtcPriceQuery = GT.Field({
   deprecationReason: "Deprecated in favor of realtimePrice",

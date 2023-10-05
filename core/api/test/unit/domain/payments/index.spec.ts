@@ -8,7 +8,7 @@ import {
   checkedToUsdPaymentAmount,
   InvalidBtcPaymentAmountError,
   InvalidUsdPaymentAmountError,
-} from "@domain/shared"
+} from "@/domain/shared"
 
 describe("checkedToBtcPaymentAmount", () => {
   it("errors on null", () => {

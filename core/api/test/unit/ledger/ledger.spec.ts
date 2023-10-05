@@ -1,6 +1,10 @@
 import crypto from "crypto"
 
-import { liabilitiesMainAccount, toLiabilitiesWalletId, toWalletId } from "@domain/ledger"
+import {
+  liabilitiesMainAccount,
+  toLiabilitiesWalletId,
+  toWalletId,
+} from "@/domain/ledger"
 
 describe("ledger.ts", () => {
   describe("resolveWalletId", () => {

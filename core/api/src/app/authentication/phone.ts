@@ -1,17 +1,17 @@
-import { PhoneAlreadyExistsError } from "@domain/authentication/errors"
-
-import { isPhoneCodeValid } from "@services/twilio"
-
-import { UsersRepository } from "@services/mongoose"
-
-import { AuthWithEmailPasswordlessService } from "@services/kratos"
-
 import {
   checkFailedLoginAttemptPerIpLimits,
   checkFailedLoginAttemptPerLoginIdentifierLimits,
   rewardFailedLoginAttemptPerIpLimits,
   rewardFailedLoginAttemptPerLoginIdentifierLimits,
 } from "./ratelimits"
+
+import { PhoneAlreadyExistsError } from "@/domain/authentication/errors"
+
+import { isPhoneCodeValid } from "@/services/twilio"
+
+import { UsersRepository } from "@/services/mongoose"
+
+import { AuthWithEmailPasswordlessService } from "@/services/kratos"
 
 export const verifyPhone = async ({
   userId,

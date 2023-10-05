@@ -1,6 +1,7 @@
 import axios from "axios"
 import MockAdapter from "axios-mock-adapter"
-import { IpFetcher } from "@services/ipfetcher"
+
+import { IpFetcher } from "@/services/ipfetcher"
 
 let mock
 

@@ -1,13 +1,13 @@
-import { Payments, Wallets } from "@app"
-import { getMidPriceRatio } from "@app/prices"
+import { Payments, Wallets } from "@/app"
+import { getMidPriceRatio } from "@/app/prices"
 
-import { getDealerConfig } from "@config"
+import { getDealerConfig } from "@/config"
 
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { LimitsExceededError } from "@domain/errors"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
+import { LimitsExceededError } from "@/domain/errors"
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
 
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@/services/mongoose"
 
 import {
   addNewWallet,
@@ -29,8 +29,8 @@ const accountLimits: IAccountLimits = {
   tradeIntraAccountLimit: MOCKED_LIMIT,
 }
 
-jest.mock("@config", () => {
-  const config = jest.requireActual("@config")
+jest.mock("@/config", () => {
+  const config = jest.requireActual("@/config")
   return {
     ...config,
     getDealerConfig: jest.fn().mockReturnValue({

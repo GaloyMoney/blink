@@ -1,6 +1,6 @@
-import { DuplicateError } from "@domain/errors"
-import { SwapState, SwapType } from "@domain/swap"
-import { admin as LedgerAdmin } from "@services/ledger/admin"
+import { DuplicateError } from "@/domain/errors"
+import { SwapState, SwapType } from "@/domain/swap"
+import { admin as LedgerAdmin } from "@/services/ledger/admin"
 
 describe("Swap Record ledger Fee", () => {
   let entryId: LedgerTransactionId[] = []

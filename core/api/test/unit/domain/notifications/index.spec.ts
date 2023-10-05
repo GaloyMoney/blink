@@ -4,7 +4,7 @@ import {
   enableNotificationChannel,
   disableNotificationChannel,
   shouldSendNotification,
-} from "@domain/notifications"
+} from "@/domain/notifications"
 
 describe("Notifications - push notification filtering", () => {
   describe("shouldSendPushNotification", () => {

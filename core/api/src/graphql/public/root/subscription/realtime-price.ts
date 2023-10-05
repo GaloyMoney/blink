@@ -1,24 +1,24 @@
 import crypto from "crypto"
 
-import { Prices } from "@app"
+import { Prices } from "@/app"
 
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 import {
   checkedToDisplayCurrency,
   majorToMinorUnit,
   SAT_PRICE_PRECISION_OFFSET,
   USD_PRICE_PRECISION_OFFSET,
   UsdDisplayCurrency,
-} from "@domain/fiat"
+} from "@/domain/fiat"
 
-import { GT } from "@graphql/index"
-import { UnknownClientError } from "@graphql/error"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import DisplayCurrencyGT from "@graphql/shared/types/scalar/display-currency"
-import RealtimePricePayload from "@graphql/public/types/payload/realtime-price"
+import { GT } from "@/graphql/index"
+import { UnknownClientError } from "@/graphql/error"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import DisplayCurrencyGT from "@/graphql/shared/types/scalar/display-currency"
+import RealtimePricePayload from "@/graphql/public/types/payload/realtime-price"
 
-import { PubSubService } from "@services/pubsub"
-import { baseLogger } from "@services/logger"
+import { PubSubService } from "@/services/pubsub"
+import { baseLogger } from "@/services/logger"
 
 const pubsub = PubSubService()
 

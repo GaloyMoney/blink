@@ -1,9 +1,9 @@
-import { markAccountForDeletion } from "@app/accounts"
-import { checkedToAccountUuid } from "@domain/accounts"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
-import { AccountsRepository } from "@services/mongoose/accounts"
-import { UsersRepository } from "@services/mongoose/users"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import { markAccountForDeletion } from "@/app/accounts"
+import { checkedToAccountUuid } from "@/domain/accounts"
+import { AuthWithPhonePasswordlessService } from "@/services/kratos"
+import { AccountsRepository } from "@/services/mongoose/accounts"
+import { UsersRepository } from "@/services/mongoose/users"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 export const updateUserPhone = async ({
   accountUuid: accountUuidRaw,

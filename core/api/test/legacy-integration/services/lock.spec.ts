@@ -1,9 +1,9 @@
-import { sleep } from "@utils"
-import { LockService, redlock } from "@services/lock"
+import { sleep } from "@/utils"
+import { LockService, redlock } from "@/services/lock"
 
-import { redis } from "@services/redis"
-import { baseLogger } from "@services/logger"
-import { ResourceAttemptsRedlockServiceError } from "@domain/lock"
+import { redis } from "@/services/redis"
+import { baseLogger } from "@/services/logger"
+import { ResourceAttemptsRedlockServiceError } from "@/domain/lock"
 
 describe("Lock", () => {
   describe("lockWalletId", () => {

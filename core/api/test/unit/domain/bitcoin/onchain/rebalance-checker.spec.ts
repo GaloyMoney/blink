@@ -1,5 +1,5 @@
-import { toSats } from "@domain/bitcoin"
-import { RebalanceChecker } from "@domain/bitcoin/onchain"
+import { toSats } from "@/domain/bitcoin"
+import { RebalanceChecker } from "@/domain/bitcoin/onchain"
 
 describe("RebalanceChecker", () => {
   it("returns the amount that should be rebalanced", async () => {

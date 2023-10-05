@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-
 import IError from "../../../shared/types/abstract/error"
 
 import PaymentSendResult from "../scalar/payment-send-result"
+
+import { GT } from "@/graphql/index"
 
 const PaymentSendPayload = GT.Object({
   name: "PaymentSendPayload",

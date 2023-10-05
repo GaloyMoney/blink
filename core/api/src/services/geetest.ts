@@ -3,11 +3,12 @@
 // https://docs.geetest.com/captcha/apirefer/api/server
 // doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verification process."
 
-import { CaptchaUserFailToPassError, UnknownCaptchaError } from "@domain/captcha/errors"
 import axios from "axios"
 import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
 
 import { addEventToCurrentSpan, recordExceptionInCurrentSpan } from "./tracing"
+
+import { CaptchaUserFailToPassError, UnknownCaptchaError } from "@/domain/captcha/errors"
 
 const sendRequest = async (params: { gt: string }) => {
   const requestUrl = "https://bypass.geetest.com/v1/bypass_status.php"

@@ -1,12 +1,12 @@
-import { UnknownLightningServiceError } from "@domain/bitcoin/lightning"
-import { CouldNotFindLnPaymentFromHashError } from "@domain/errors"
-import { LndService } from "@services/lnd"
-import { LnPaymentsRepository } from "@services/mongoose"
+import { UnknownLightningServiceError } from "@/domain/bitcoin/lightning"
+import { CouldNotFindLnPaymentFromHashError } from "@/domain/errors"
+import { LndService } from "@/services/lnd"
+import { LnPaymentsRepository } from "@/services/mongoose"
 import {
   addAttributesToCurrentSpan,
   asyncRunInSpan,
   SemanticAttributes,
-} from "@services/tracing"
+} from "@/services/tracing"
 
 export const deleteLnPaymentsBefore = async (
   timestamp: Date,

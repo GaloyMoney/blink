@@ -1,31 +1,11 @@
 import util from "util"
 
-import { PRICE_SERVER_HOST, PRICE_SERVER_PORT } from "@config"
-
 import { credentials } from "@grpc/grpc-js"
-
-import {
-  parseErrorMessageFromUnknown,
-  paymentAmountFromNumber,
-  WalletCurrency,
-} from "@domain/shared"
-
-import {
-  DealerStalePriceError,
-  NoConnectionToDealerError,
-  NoDealerPriceDataAvailableError,
-  UnknownDealerPriceServiceError,
-} from "@domain/dealer-price"
-
-import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
-
-import { toWalletPriceRatio } from "@domain/payments"
-
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { baseLogger } from "../logger"
 
 import { PriceServiceClient } from "./proto/services/price/v1/price_service_grpc_pb"
+
 import {
   GetCentsFromSatsForFutureBuyRequest,
   GetCentsFromSatsForFutureBuyResponse,
@@ -46,6 +26,27 @@ import {
   GetSatsFromCentsForImmediateSellRequest,
   GetSatsFromCentsForImmediateSellResponse,
 } from "./proto/services/price/v1/price_service_pb"
+
+import { PRICE_SERVER_HOST, PRICE_SERVER_PORT } from "@/config"
+
+import {
+  parseErrorMessageFromUnknown,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@/domain/shared"
+
+import {
+  DealerStalePriceError,
+  NoConnectionToDealerError,
+  NoDealerPriceDataAvailableError,
+  UnknownDealerPriceServiceError,
+} from "@/domain/dealer-price"
+
+import { defaultTimeToExpiryInSeconds } from "@/domain/bitcoin/lightning"
+
+import { toWalletPriceRatio } from "@/domain/payments"
+
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 const client = new PriceServiceClient(
   `${PRICE_SERVER_HOST}:${PRICE_SERVER_PORT}`,

@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-
 import IError from "../../../shared/types/abstract/error"
 
 import LnInvoice from "../object/ln-invoice"
+
+import { GT } from "@/graphql/index"
 
 const LnInvoicePayload = GT.Object({
   name: "LnInvoicePayload",

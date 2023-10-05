@@ -1,10 +1,10 @@
-import { MS_PER_DAY, ONE_DAY } from "@config"
-import { deleteExpiredWalletInvoice, updateRoutingRevenues } from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
-import { ledgerAdmin } from "@services/mongodb"
-import { DbMetadata, WalletInvoice } from "@services/mongoose/schema"
+import { MS_PER_DAY, ONE_DAY } from "@/config"
+import { deleteExpiredWalletInvoice, updateRoutingRevenues } from "@/services/lnd/utils"
+import { baseLogger } from "@/services/logger"
+import { ledgerAdmin } from "@/services/mongodb"
+import { DbMetadata, WalletInvoice } from "@/services/mongoose/schema"
 
-import { sleep, timestampDaysAgo } from "@utils"
+import { sleep, timestampDaysAgo } from "@/utils"
 
 import {
   cancelHodlInvoice,

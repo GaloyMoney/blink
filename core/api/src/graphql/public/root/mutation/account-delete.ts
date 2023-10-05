@@ -1,8 +1,8 @@
-import { Accounts } from "@app"
+import { Accounts } from "@/app"
 
-import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import AccountDeletePayload from "@graphql/public/types/payload/account-delete"
+import { GT } from "@/graphql/index"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import AccountDeletePayload from "@/graphql/public/types/payload/account-delete"
 
 const AccountDeleteMutation = GT.Field({
   extensions: {

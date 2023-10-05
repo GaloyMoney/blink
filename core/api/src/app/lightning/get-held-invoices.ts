@@ -1,8 +1,8 @@
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
-import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
+import { ErrorLevel, WalletCurrency } from "@/domain/shared"
+import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
 
-import { LndService } from "@services/lnd"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
+import { LndService } from "@/services/lnd"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const getHeldInvoicesCount = async (): Promise<number | ApplicationError> => {
   const offChainService = LndService()

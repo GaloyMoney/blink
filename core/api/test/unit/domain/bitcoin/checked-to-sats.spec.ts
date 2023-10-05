@@ -1,5 +1,5 @@
-import { checkedToSats } from "@domain/bitcoin"
-import { MAX_SATS } from "@domain/shared"
+import { checkedToSats } from "@/domain/bitcoin"
+import { MAX_SATS } from "@/domain/shared"
 
 describe("sats-amount-check", () => {
   it("Positive amount value for satoshis passes", () => {

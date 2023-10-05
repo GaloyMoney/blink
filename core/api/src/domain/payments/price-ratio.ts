@@ -1,9 +1,9 @@
-import { RATIO_PRECISION } from "@config"
-
-import { getCurrencyMajorExponent } from "@domain/fiat"
-import { AmountCalculator, safeBigInt, WalletCurrency } from "@domain/shared"
-
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
+
+import { RATIO_PRECISION } from "@/config"
+
+import { getCurrencyMajorExponent } from "@/domain/fiat"
+import { AmountCalculator, safeBigInt, WalletCurrency } from "@/domain/shared"
 
 const calc = AmountCalculator()
 

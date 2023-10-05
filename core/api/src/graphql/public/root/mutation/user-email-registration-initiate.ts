@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import EmailAddress from "@graphql/shared/types/scalar/email-address"
-import UserEmailRegistrationInitiatePayload from "@graphql/public/types/payload/user-email-registration-initiate"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import EmailAddress from "@/graphql/shared/types/scalar/email-address"
+import UserEmailRegistrationInitiatePayload from "@/graphql/public/types/payload/user-email-registration-initiate"
 
 const UserEmailRegistrationInitiateInput = GT.Input({
   name: "UserEmailRegistrationInitiateInput",

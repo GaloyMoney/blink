@@ -1,7 +1,7 @@
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
 import { UnknownKratosError } from "./errors"
 import { kratosAdmin } from "./private"
+
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 export const extendSession = async (
   sessionId: SessionId,

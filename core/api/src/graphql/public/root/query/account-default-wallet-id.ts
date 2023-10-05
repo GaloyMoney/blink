@@ -1,8 +1,8 @@
-import { mapError } from "@graphql/error-map"
-import { GT } from "@graphql/index"
-import Username from "@graphql/shared/types/scalar/username"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import { AccountsRepository } from "@services/mongoose"
+import { mapError } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
+import Username from "@/graphql/shared/types/scalar/username"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import { AccountsRepository } from "@/services/mongoose"
 
 const AccountDefaultWalletIdQuery = GT.Field({
   deprecationReason: "will be migrated to AccountDefaultWalletId",

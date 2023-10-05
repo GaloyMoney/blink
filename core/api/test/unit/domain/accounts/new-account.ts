@@ -1,5 +1,5 @@
-import { Account } from "@services/mongoose/schema"
-import { getDefaultAccountsConfig } from "@config"
+import { Account } from "@/services/mongoose/schema"
+import { getDefaultAccountsConfig } from "@/config"
 
 describe("New Account", () => {
   it("uses the default account status", async () => {

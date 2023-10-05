@@ -1,5 +1,8 @@
-import { InvalidCurrencyBaseAmountError, InvalidSatoshiAmountError } from "@domain/errors"
-import { MAX_SATS, BtcAmountTooLargeError } from "@domain/shared"
+import {
+  InvalidCurrencyBaseAmountError,
+  InvalidSatoshiAmountError,
+} from "@/domain/errors"
+import { MAX_SATS, BtcAmountTooLargeError } from "@/domain/shared"
 
 export const SATS_PER_BTC = 10 ** 8
 

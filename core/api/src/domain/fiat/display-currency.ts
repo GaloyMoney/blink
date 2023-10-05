@@ -1,4 +1,4 @@
-import { safeBigInt, WalletCurrency } from "@domain/shared"
+import { safeBigInt, WalletCurrency } from "@/domain/shared"
 
 export const CENTS_PER_USD = 100
 

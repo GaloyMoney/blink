@@ -1,21 +1,21 @@
-import { Accounts, Payments } from "@app"
+import { Accounts, Payments } from "@/app"
 
-import { AccountStatus } from "@domain/accounts"
-import { toSats } from "@domain/bitcoin"
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { UsdDisplayCurrency, toCents } from "@domain/fiat"
+import { AccountStatus } from "@/domain/accounts"
+import { toSats } from "@/domain/bitcoin"
+import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
+import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
 import {
   InactiveAccountError,
   IntraledgerLimitsExceededError,
   SelfPaymentError,
   TradeIntraAccountLimitsExceededError,
-} from "@domain/errors"
+} from "@/domain/errors"
 
-import { AccountsRepository } from "@services/mongoose"
-import { Transaction } from "@services/ledger/schema"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { AccountsRepository } from "@/services/mongoose"
+import { Transaction } from "@/services/ledger/schema"
+import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
 
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 
 import {
   createMandatoryUsers,

@@ -1,6 +1,6 @@
-import { MAX_BYTES_FOR_MEMO } from "@config"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { MAX_BYTES_FOR_MEMO } from "@/config"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const Memo = GT.Scalar({
   name: "Memo",

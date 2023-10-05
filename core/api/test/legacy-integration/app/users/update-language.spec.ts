@@ -1,6 +1,6 @@
-import { Users } from "@app"
-import { InvalidLanguageError } from "@domain/errors"
-import { UsersRepository } from "@services/mongoose"
+import { Users } from "@/app"
+import { InvalidLanguageError } from "@/domain/errors"
+import { UsersRepository } from "@/services/mongoose"
 
 import { createUserAndWalletFromPhone, getUserIdByPhone, randomPhone } from "test/helpers"
 

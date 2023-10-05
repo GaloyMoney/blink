@@ -1,8 +1,8 @@
-import { Payments } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
+import { Payments } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
 
-import UserQuizQuestionUpdateCompletedPayload from "@graphql/public/types/payload/user-quiz-question-update-completed"
+import UserQuizQuestionUpdateCompletedPayload from "@/graphql/public/types/payload/user-quiz-question-update-completed"
 
 const UserQuizQuestionUpdateCompletedInput = GT.Input({
   name: "UserQuizQuestionUpdateCompletedInput",

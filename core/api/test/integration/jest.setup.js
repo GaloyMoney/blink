@@ -1,16 +1,16 @@
-const { disconnectAll } = require("@services/redis")
-const { setupMongoConnection } = require("@services/mongodb")
+const { disconnectAll } = require("@/services/redis")
+const { setupMongoConnection } = require("@/services/mongodb")
 
 let mongoose
 
-jest.mock("@services/lnd/auth", () => {
-  const module = jest.requireActual("@services/lnd/auth")
+jest.mock("@/services/lnd/auth", () => {
+  const module = jest.requireActual("@/services/lnd/auth")
   const lndsConnect = module.lndsConnect.map((p) => ({ ...p, active: true }))
   return { ...module, lndsConnect }
 })
 
 // Mock prices
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+jest.mock("@/app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 beforeAll(async () => {
   mongoose = await setupMongoConnection(true)

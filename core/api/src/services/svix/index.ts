@@ -1,13 +1,13 @@
 import { ApplicationIn, Svix } from "svix"
 
-import { baseLogger } from "@services/logger"
+import { SvixError, UnknownSvixError } from "./errors"
+
+import { baseLogger } from "@/services/logger"
 
 import {
   addAttributesToCurrentSpan,
   wrapAsyncFunctionsToRunInSpan,
-} from "@services/tracing"
-
-import { SvixError, UnknownSvixError } from "./errors"
+} from "@/services/tracing"
 
 function prefixObjectKeys(
   obj: Record<string, string>,

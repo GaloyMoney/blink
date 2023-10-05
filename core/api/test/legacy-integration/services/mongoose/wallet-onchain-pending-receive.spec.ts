@@ -1,12 +1,12 @@
-import { UsdDisplayCurrency } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
+import { UsdDisplayCurrency } from "@/domain/fiat"
+import { WalletCurrency } from "@/domain/shared"
 import {
   CouldNotFindWalletOnChainPendingReceiveError,
   UnknownRepositoryError,
-} from "@domain/errors"
+} from "@/domain/errors"
 
-import { WalletOnChainPendingReceiveRepository } from "@services/mongoose"
-import { WalletOnChainPendingReceive } from "@services/mongoose/schema"
+import { WalletOnChainPendingReceiveRepository } from "@/services/mongoose"
+import { WalletOnChainPendingReceive } from "@/services/mongoose/schema"
 
 import { generateHash } from "test/helpers"
 

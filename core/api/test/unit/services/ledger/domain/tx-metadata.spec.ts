@@ -1,7 +1,7 @@
-import { toSats } from "@domain/bitcoin"
-import { UsdDisplayCurrency, toCents } from "@domain/fiat"
-import { LedgerTransactionType } from "@domain/ledger"
-import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
+import { toSats } from "@/domain/bitcoin"
+import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
+import { LedgerTransactionType } from "@/domain/ledger"
+import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
 import {
   LnIntraledgerLedgerMetadata,
   LnTradeIntraAccountLedgerMetadata,
@@ -15,7 +15,7 @@ import {
   LnReceiveLedgerMetadata,
   LnFeeReimbursementReceiveLedgerMetadata,
   LnFailedPaymentReceiveLedgerMetadata,
-} from "@services/ledger/facade"
+} from "@/services/ledger/facade"
 
 describe("Tx metadata", () => {
   const senderUsername = "sender" as Username

@@ -4,8 +4,8 @@ import {
   InvalidCountryCodeForPhoneMetadataError,
   InvalidErrorCodeForPhoneMetadataError,
   InvalidMobileCountryCodeForPhoneMetadataError,
-} from "@domain/users/errors"
-import { PhoneMetadataValidator } from "@domain/users"
+} from "@/domain/users/errors"
+import { PhoneMetadataValidator } from "@/domain/users"
 
 describe("PhoneMetadataValidator", () => {
   it("returns valid PhoneMetadata object", async () => {

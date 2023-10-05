@@ -1,10 +1,10 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectEntryToEqual", "expectJournalToBeBalanced"] }] */
 
-import { WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@/domain/shared"
 
-import { onChainLedgerAccountId } from "@services/ledger/domain"
-import { MainBook } from "@services/ledger/books"
-import { FeeOnlyEntryBuilder } from "@services/ledger/domain/fee-only-entry-builder"
+import { onChainLedgerAccountId } from "@/services/ledger/domain"
+import { MainBook } from "@/services/ledger/books"
+import { FeeOnlyEntryBuilder } from "@/services/ledger/domain/fee-only-entry-builder"
 
 const createEntry = () => MainBook.entry("")
 

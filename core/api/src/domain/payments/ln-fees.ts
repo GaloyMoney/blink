@@ -1,5 +1,5 @@
-import { FEECAP_BASIS_POINTS } from "@domain/bitcoin"
-import { MaxFeeTooLargeForRoutelessPaymentError } from "@domain/bitcoin/lightning"
+import { FEECAP_BASIS_POINTS } from "@/domain/bitcoin"
+import { MaxFeeTooLargeForRoutelessPaymentError } from "@/domain/bitcoin/lightning"
 import {
   WalletCurrency,
   ZERO_SATS,
@@ -7,7 +7,7 @@ import {
   paymentAmountFromNumber,
   AmountCalculator,
   ONE_CENT,
-} from "@domain/shared"
+} from "@/domain/shared"
 
 const calc = AmountCalculator()
 
