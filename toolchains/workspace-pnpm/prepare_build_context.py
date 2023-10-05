@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
         # Copy node_modules prunned tree into tempdir
         shutil.copytree(
-            args.package_node_modules_path,
+            args.node_modules_path,
             root_dir,
             symlinks=True,
         )
