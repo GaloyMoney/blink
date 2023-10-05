@@ -1,0 +1,23 @@
+load("@toolchains//simple-pnpm:macros.bzl", "build_node_modules", "npm_bin")
+
+build_node_modules(
+  name = "node_modules",
+)
+
+npm_bin(
+  name = "tsc_bin",
+  bin_name = "tsc",
+  visibility = ["PUBLIC"],
+)
+
+# // install deps
+# // ^^ simple toolchain
+# // compile via tsc
+# // ^^ tsc_bin
+# // ^^ tsc_compile
+# // run via node
+# // ^^ exec via pnpm toolchain?
+
+# npm_bin(
+#   name = "api"
+# )

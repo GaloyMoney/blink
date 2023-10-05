@@ -1,0 +1,7 @@
+api_target = "//core/api:api"
+local_resource(
+    "api",
+    labels = ["frontend"],
+    cmd = "buck2 build {}".format(api_target),
+    serve_cmd = "buck2 run {}".format(api_target),
+)
