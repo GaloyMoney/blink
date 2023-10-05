@@ -2,6 +2,17 @@ load("@prelude//python:toolchain.bzl", "PythonToolchainInfo",)
 
 load(":toolchain.bzl", "SimplePnpmToolchainInfo",)
 
+def build_node_modules(**kwargs):
+    pnpm_lock = "pnpm-lock.yaml"
+    if not rule_exists(pnpm_lock):
+        native.export_file(
+            name = "pnpm-lock.yaml"
+        )
+    _build_node_modules(
+        pnpm_lock = ":{}".format(pnpm_lock),
+        **kwargs,
+    )
+
 def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     out = ctx.actions.declare_output("root", dir = True)
 
@@ -38,14 +49,6 @@ _build_node_modules = rule(
         ),
     },
 )
-
-def build_node_modules(
-        pnpm_lock = ":pnpm-lock.yaml",
-        **kwargs):
-    _build_node_modules(
-        pnpm_lock = pnpm_lock,
-        **kwargs,
-    )
 
 def npm_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo, TemplatePlaceholderInfo]]:
     bin_name = ctx.attrs.bin_name or ctx.attrs.name
