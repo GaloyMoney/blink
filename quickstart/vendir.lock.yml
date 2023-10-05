@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove mongoose resolution (#3302)...'
-      sha: 31d9bfc34f1193ef61c71866881a3517012065bb
+      commitTitle: 'chore: simply bats test (#3303)...'
+      sha: b3d982f7a2c538524277d4e757d792870232ea56
       tags:
-      - 0.13.111-1-g31d9bfc34
+      - 0.13.112-1-gb3d982f7a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove mongoose resolution (#3302)...'
-      sha: 31d9bfc34f1193ef61c71866881a3517012065bb
+      commitTitle: 'chore: simply bats test (#3303)...'
+      sha: b3d982f7a2c538524277d4e757d792870232ea56
       tags:
-      - 0.13.111-1-g31d9bfc34
+      - 0.13.112-1-gb3d982f7a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove mongoose resolution (#3302)...'
-      sha: 31d9bfc34f1193ef61c71866881a3517012065bb
+      commitTitle: 'chore: simply bats test (#3303)...'
+      sha: b3d982f7a2c538524277d4e757d792870232ea56
       tags:
-      - 0.13.111-1-g31d9bfc34
+      - 0.13.112-1-gb3d982f7a
     path: ./
   path: ./graphql
 kind: LockConfig
