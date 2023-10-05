@@ -135,7 +135,7 @@ services:
     - ALLOW_EMPTY_PASSWORD=yes
     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
   mongodb:
-    image: mongo:${MONGODB_VERSION:-6.0.5}
+    image: mongo:${MONGODB_VERSION:-7.0.2}
     ports:
     - 27017:27017
     environment:
