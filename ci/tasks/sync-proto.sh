@@ -6,7 +6,7 @@ export ref=$(cat ./src-repo/.git/short_ref)
 
 cp -R src-repo/${PROTO_FILES_SRC_PATH}/* repo/${PROTO_FILES_DEST_PATH}
 
-pushd repo
+pushd repo/core/api
 
 if [[ -n "${BUF_CONFIG_PATH:-}" ]]; then
   yarn install
