@@ -9,6 +9,7 @@ build_node_modules(
 )
 
 npm_bin(
-  name = "turbo",
+  name = "turbo_bin",
+  bin_name = "turbo",
   visibility = ["PUBLIC"],
 )
