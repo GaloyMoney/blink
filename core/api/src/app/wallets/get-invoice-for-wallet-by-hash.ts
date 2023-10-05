@@ -18,6 +18,7 @@ export const getInvoiceForWalletByHash = async ({
 
   if (walletInvoice instanceof Error) return walletInvoice
 
+  // QUESTION: Should we make the walletId part of the repository method or do this check here?
   if (walletInvoice.recipientWalletDescriptor.id !== walletId) {
     return new CouldNotFindWalletInvoiceError()
   }

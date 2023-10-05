@@ -72,6 +72,17 @@ usd_amount=50
   payment_hash="$(echo $invoice | jq -r '.paymentHash')"
   [[ "${payment_hash}" != "null" ]] || exit 1
 
+  # Get invoice by hash
+  invoice_for_wallet_by_hash_variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_hash "$payment_hash" \
+    '{walletId: $wallet_id, paymentHash: $payment_hash}'
+  )
+  exec_graphql "$token_name" 'invoice-for-wallet-by-hash' "$invoice_for_wallet_by_hash_variables"
+  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.invoiceByHash.paymentHash')"
+  [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
+
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request"
