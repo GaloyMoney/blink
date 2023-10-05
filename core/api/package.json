@@ -116,7 +116,7 @@
     "twilio": "^4.17.0",
     "uuid-by-string": "^4.0.0",
     "ws": "^8.14.1",
-    "zod": "^3.22.2"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "@apollo/client": "3.8.3",
