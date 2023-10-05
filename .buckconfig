@@ -14,5 +14,8 @@ buck = none
 target_platform_detector_spec = target:root//...->prelude//platforms:default
 
 [project]
-ignore = .git
+ignore = \
+  .git, \
+  core/**/node_modules, \
+  shim/custom-third-party/node/**/node_modules
 
