@@ -1,3 +1,4 @@
+export * from "./bankowner"
 export * from "./intraledger"
 export * from "./offchain-receive"
 export * from "./offchain-send"
