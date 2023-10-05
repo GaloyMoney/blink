@@ -21,8 +21,6 @@ exec_admin_graphql() {
   echo "GQL query -  token: ${token} -  query: ${query_name} -  vars: ${variables}"
   echo "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}"
 
-  AUTH_HEADER="Oauth2-Token: $token"
-
   if [[ "${BATS_TEST_DIRNAME}" != "" ]]; then
     run_cmd="run"
   else
@@ -33,7 +31,7 @@ exec_admin_graphql() {
 
   ${run_cmd} curl -s \
     -X POST \
-    ${AUTH_HEADER:+ -H "$AUTH_HEADER"} \
+    -H "Oauth2-Token: $token" \
     -H "Content-Type: application/json" \
     -d "{\"query\": \"$(gql_admin_query $query_name)\", \"variables\": $variables}" \
     "${GALOY_ENDPOINT}/${gql_route}"
