@@ -1,4 +1,5 @@
 load("@toolchains//simple-pnpm:macros.bzl", "build_node_modules", "npm_bin")
+load("@toolchains//workspace-pnpm:macros.bzl", "tsc_build")
 
 build_node_modules(
   name = "node_modules",
@@ -8,6 +9,20 @@ npm_bin(
   name = "tsc_bin",
   bin_name = "tsc",
   visibility = ["PUBLIC"],
+)
+
+filegroup(
+    name = "src",
+    srcs = glob([
+        "src/**",
+        "tsconfig.json",
+        "tsconfig-build.json",
+    ]),
+)
+
+tsc_build(
+  name = "api",
+  srcs = [":src"],
 )
 
 # // install deps
