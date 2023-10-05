@@ -167,20 +167,30 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
           paginationArgs,
         })
 
+        const transactions = result?.slice
+          ? connectionFromPaginatedArray<WalletTransaction>(
+              result.slice,
+              result.total,
+              paginationArgs,
+            )
+          : undefined
+
         if (error instanceof Error) {
-          throw mapError(error)
+          const mappedErr = mapError(error)
+          if (transactions !== undefined) {
+            mappedErr.extensions = {
+              ...mappedErr.extensions,
+              partialData: { ...mappedErr.extensions.partialData, transactions },
+            }
+          }
+          throw mappedErr
         }
 
-        if (!result?.slice) {
-          const nullError = new CouldNotFindTransactionsForAccountError()
-          throw mapError(nullError)
+        if (transactions === undefined) {
+          throw mapError(new CouldNotFindTransactionsForAccountError())
         }
 
-        return connectionFromPaginatedArray<WalletTransaction>(
-          result.slice,
-          result.total,
-          paginationArgs,
-        )
+        return transactions
       },
     },
 

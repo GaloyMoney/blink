@@ -19,3 +19,15 @@ export const normalizeDisplayPrice = <
   base: Number(displayPrice.base),
   offset: Number(displayPrice.offset),
 })
+
+export const normalizeWalletTransaction = (edge: { node: WalletTransaction }) => ({
+  ...edge,
+  node: {
+    ...edge.node,
+    settlementDisplayPrice: {
+      ...edge.node.settlementDisplayPrice,
+      base: Number(edge.node.settlementDisplayPrice.base),
+      offset: Number(edge.node.settlementDisplayPrice.offset),
+    },
+  },
+})

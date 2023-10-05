@@ -4,7 +4,8 @@ import express, { NextFunction, Request, Response } from "express"
 
 import { getJwksArgs } from "@config"
 import { baseLogger } from "@services/logger"
-import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
+import { ApolloServerPlugin } from "apollo-server-plugin-base"
+import { ApolloServerPluginDrainHttpServer, GraphQLResponse } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
 import { GraphQLError, GraphQLSchema } from "graphql"
@@ -12,6 +13,7 @@ import { rule } from "graphql-shield"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 
+import { normalizeWalletTransaction } from "@graphql/shared/root/mutation"
 import { mapError } from "@graphql/error-map"
 
 import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
@@ -59,6 +61,82 @@ export const startApolloServer = async ({
   const app = express()
   const httpServer = createServer(app)
 
+  const partialTransactionsFromQueryPlugin: ApolloServerPlugin = {
+    requestDidStart: async () => {
+      const getValue = ({
+        obj,
+        path,
+      }: {
+        obj: GraphQLResponse["data"]
+        path: (string | number)[]
+      }): GraphQLResponse["data"] => {
+        if (!obj) return obj
+
+        if (!path.length) return obj
+
+        const [head, ...tail] = path
+        if (!(head in obj)) return undefined
+
+        return getValue({ obj: obj[head], path: tail })
+      }
+
+      const selections: "transactions"[] = []
+      const parentPaths: (string | number)[][] = []
+      const transactionsFromExtensions: { edges: { node: WalletTransaction }[] }[] = []
+      return {
+        didEncounterErrors: async (rc) => {
+          for (const error of rc.errors) {
+            const { path, extensions } = error
+
+            const selection = path?.[path.length - 1]
+            const parentPath = path?.slice(0, path.length - 1)
+            if (parentPath === undefined || selection !== "transactions") return
+
+            const partialData = extensions?.partialData as
+              | Record<"transactions", { edges: { node: WalletTransaction }[] }>
+              | undefined
+            if (partialData?.[selection]) {
+              selections.push(selection)
+              parentPaths.push(parentPath)
+              transactionsFromExtensions.push(partialData[selection])
+            }
+          }
+        },
+
+        willSendResponse: async (rc) => {
+          if (
+            !(
+              selections.length &&
+              selections.length === parentPaths.length &&
+              selections.length === transactionsFromExtensions.length
+            )
+          ) {
+            return
+          }
+
+          const { data } = rc.response
+          for (const [i, selection] of selections.entries()) {
+            const parentPath = parentPaths[i]
+            const transactionsFromExtension = transactionsFromExtensions[i]
+
+            const parentObject = getValue({ obj: data, path: parentPath })
+            if (!(parentObject && selection in parentObject)) {
+              return
+            }
+
+            // Add partial transactions if they exist
+            if (transactionsFromExtension) {
+              parentObject[selection] = {
+                ...transactionsFromExtension,
+                edges: transactionsFromExtension.edges.map(normalizeWalletTransaction),
+              }
+            }
+          }
+        },
+      }
+    },
+  }
+
   const apolloPlugins = [
     createComplexityPlugin({
       schema,
@@ -70,6 +148,7 @@ export const startApolloServer = async ({
       },
     }),
     ApolloServerPluginDrainHttpServer({ httpServer }),
+    partialTransactionsFromQueryPlugin,
   ]
 
   const apolloServer = new ApolloServer({

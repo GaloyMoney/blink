@@ -56,6 +56,7 @@
     "apollo-server-core": "^3.12.1",
     "apollo-server-errors": "^3.3.1",
     "apollo-server-express": "^3.12.1",
+    "apollo-server-plugin-base": "^3.7.2",
     "axios": "^1.5.0",
     "basic-auth": "^2.0.1",
     "bip32": "^4.0.0",
