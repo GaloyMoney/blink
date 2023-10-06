@@ -1,5 +1,5 @@
-load "../../../test/bats/helpers/setup-and-teardown"
-load "../../../test/bats/helpers/ln"
+load "../../../core/api/test/bats/helpers/setup-and-teardown"
+load "../../../core/api/test/bats/helpers/ln"
 
 random_phone() {
   printf "+1%010d\n" $(( ($RANDOM * 1000000) + ($RANDOM % 1000000) ))

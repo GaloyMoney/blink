@@ -1,16 +1,53 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
 ## Getting Started
 
 First, run the development server:
 
+shell 1:
+
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+core/api % yarn install
+core/api % make reset-deps
+core/api % bats -t test/bats/ln-receive.bats
+core/api % make start
 ```
+
+shell 2:
+```bash
+apps/boltcard % bun install
+apps/boltcard % make reset-deps
+apps/boltcard % bun next
+```
+
+shell 3:
+```bash
+apps/boltcard % ngrok http 3000
+```
+
+update SERVER_URL in config.ts with Forwarding address
+
+shell 4:
+```bash
+apps/boltcard % bats -t bats/e2e-test.bats
+```
+
+for burning the card, need to only do some of the bats tests. we can do that by exiting early
+```diff
+diff --git a/apps/boltcard/bats/e2e-test.bats b/apps/boltcard/bats/e2e-test.bats
+index ad1822e54..5a36a3a87 100644
+--- a/apps/boltcard/bats/e2e-test.bats
++++ b/apps/boltcard/bats/e2e-test.bats
+@@ -24,6 +24,8 @@ random_phone() {
+   [[ $(echo $CALLBACK_API_URL) != "null" ]] || exit 1
+   [[ $(echo $CALLBACK_UI_URL) != "null" ]] || exit 1
+   
++  exit 1
++
+   # TODO: test CALLBACK_UI_URL
+ 
+   # Making the follow-up curl request
+
+```
+
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
