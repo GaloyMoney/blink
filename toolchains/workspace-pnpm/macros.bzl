@@ -74,21 +74,33 @@ def pnpm_workspace_impl(ctx: AnalysisContext) -> list[[DefaultInfo, ArtifactGrou
 
     return [
         DefaultInfo(default_output = output),
-        ArtifactGroupInfo(artifacts = [ctx.attrs.root_package] + ctx.attrs.child_packages),
+        ArtifactGroupInfo(artifacts = [
+            ctx.attrs.root_package,
+            ctx.attrs.pnpm_lock,
+            ctx.attrs.workspace_def,
+        ] + ctx.attrs.child_packages),
     ]
 
 def pnpm_workspace(**kwargs):
     pnpm_lock = "pnpm-lock.yaml"
+    if not rule_exists(pnpm_lock):
+        native.export_file(
+            name = pnpm_lock
+        )
     root_package = "package.json"
     if not rule_exists(root_package):
         native.export_file(
             name = root_package
         )
     workspace_def = "pnpm-workspace.yaml"
+    if not rule_exists(workspace_def):
+        native.export_file(
+            name = workspace_def
+        )
     _pnpm_workspace(
+        pnpm_lock = ":{}".format(pnpm_lock),
         root_package = ":{}".format(root_package),
-        workspace_def = workspace_def,
-        pnpm_lock = pnpm_lock,
+        workspace_def = ":{}".format(workspace_def),
         **kwargs,
     )
 

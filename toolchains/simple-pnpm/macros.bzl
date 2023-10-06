@@ -8,8 +8,14 @@ def build_node_modules(**kwargs):
         native.export_file(
             name = "pnpm-lock.yaml"
         )
+    package_json = "package.json"
+    if not rule_exists(package_json):
+        native.export_file(
+            name = "package.json"
+        )
     _build_node_modules(
         pnpm_lock = ":{}".format(pnpm_lock),
+        package_json = ":{}".format(package_json),
         **kwargs,
     )
 
@@ -27,7 +33,7 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     cmd.add(package_dir)
 
     cmd.add(out.as_output())
-    cmd.hidden([ctx.attrs.pnpm_lock])
+    cmd.hidden([ctx.attrs.pnpm_lock, ctx.attrs.package_json])
 
     ctx.actions.run(cmd, category = "pnpm", identifier = "install")
 
@@ -38,6 +44,9 @@ _build_node_modules = rule(
     attrs = {
         "pnpm_lock": attrs.source(
             doc = """Pnpm lock file""",
+        ),
+        "package_json": attrs.source(
+            doc = """Package json file""",
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",
