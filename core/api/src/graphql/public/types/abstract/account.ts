@@ -62,7 +62,14 @@ const IAccount = GT.Interface({
     notificationSettings: {
       type: GT.NonNull(NotificationSettings),
     },
-
+    walletById: {
+      type: GT.NonNull(Wallet),
+      args: {
+        walletId: {
+          type: GT.NonNull(WalletId),
+        },
+      },
+    },
     // FUTURE-PLAN: Support a `users: [User!]!` field here
   }),
 })

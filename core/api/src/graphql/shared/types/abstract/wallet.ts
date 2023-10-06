@@ -4,9 +4,11 @@ import { TransactionConnection } from "../object/transaction"
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 import OnChainAddress from "../scalar/on-chain-address"
+import PaymentHash from "../scalar/payment-hash"
 
 import { connectionArgs } from "@/graphql/connections"
 import { GT } from "@/graphql/index"
+import LnInvoice from "@/graphql/public/types/object/ln-invoice"
 
 const IWallet = GT.Interface({
   name: "Wallet",
@@ -42,6 +44,14 @@ const IWallet = GT.Interface({
         address: {
           type: GT.NonNull(OnChainAddress),
           description: "Returns the items that include this address.",
+        },
+      },
+    },
+    invoiceByHash: {
+      type: GT.NonNull(LnInvoice),
+      args: {
+        paymentHash: {
+          type: GT.NonNull(PaymentHash),
         },
       },
     },

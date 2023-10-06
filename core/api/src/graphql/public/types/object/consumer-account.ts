@@ -62,6 +62,26 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
       },
     },
 
+    walletById: {
+      type: GT.NonNull(Wallet),
+      args: {
+        walletId: {
+          type: GT.NonNull(WalletId),
+        },
+      },
+      resolve: async (source, args) => {
+        const { walletId } = args
+        const wallet = await Wallets.getWalletForAccountById({
+          walletId,
+          accountId: source.id,
+        })
+        if (wallet instanceof Error) {
+          throw mapError(wallet)
+        }
+        return wallet
+      },
+    },
+
     defaultWalletId: {
       type: GT.NonNull(WalletId),
       resolve: (source) => source.defaultWalletId,

@@ -6,6 +6,8 @@ import WalletCurrency from "../scalar/wallet-currency"
 
 import OnChainAddress from "../scalar/on-chain-address"
 
+import PaymentHash from "../scalar/payment-hash"
+
 import { TransactionConnection } from "./transaction"
 
 import { GT } from "@/graphql/index"
@@ -20,6 +22,7 @@ import { mapError } from "@/graphql/error-map"
 import { Wallets } from "@/app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@/domain/shared"
+import LnInvoice from "@/graphql/public/types/object/ln-invoice"
 
 const BtcWallet = GT.Object<Wallet>({
   name: "BTCWallet",
@@ -123,6 +126,29 @@ const BtcWallet = GT.Object<Wallet>({
           result.total,
           paginationArgs,
         )
+      },
+    },
+    invoiceByHash: {
+      type: GT.NonNull(LnInvoice),
+      args: {
+        paymentHash: {
+          type: GT.NonNull(PaymentHash),
+        },
+      },
+      resolve: async (source, args) => {
+        const { paymentHash } = args
+        if (paymentHash instanceof Error) throw paymentHash
+
+        const invoice = await Wallets.getInvoiceForWalletByHash({
+          walletId: source.id,
+          paymentHash,
+        })
+
+        if (invoice instanceof Error) {
+          throw mapError(invoice)
+        }
+
+        return invoice
       },
     },
   }),

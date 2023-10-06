@@ -47,6 +47,7 @@ interface Account
     last: Int
     walletIds: [WalletId]
   ): TransactionConnection
+  walletById(walletId: WalletId!): Wallet!
   wallets: [Wallet!]!
 }
 
@@ -178,6 +179,7 @@ type BTCWallet implements Wallet
   """A balance stored in BTC."""
   balance: SignedAmount!
   id: ID!
+  invoiceByHash(paymentHash: PaymentHash!): LnInvoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
@@ -324,6 +326,7 @@ type ConsumerAccount implements Account
     last: Int
     walletIds: [WalletId]
   ): TransactionConnection
+  walletById(walletId: WalletId!): Wallet!
   wallets: [Wallet!]!
 }
 
@@ -1580,6 +1583,7 @@ type UsdWallet implements Wallet
   accountId: ID!
   balance: SignedAmount!
   id: ID!
+  invoiceByHash(paymentHash: PaymentHash!): LnInvoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
@@ -1879,6 +1883,7 @@ interface Wallet
   accountId: ID!
   balance: SignedAmount!
   id: ID!
+  invoiceByHash(paymentHash: PaymentHash!): LnInvoice!
   pendingIncomingBalance: SignedAmount!
 
   """
