@@ -34,20 +34,6 @@
   mutators:
     - handler: noop
 
-- id: galoy-ws
-  upstream:
-    url: "http://bats-tests:4000/graphql"
-    strip_path: /graphqlws # ONLY FOR DEV, in prod should resolve to /graphql, like ws.blink.sv/graphql
-  match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphqlws" # ONLY FOR DEV, in prod should resolve to /graphql
-    methods: ["POST", "GET"]
-  authenticators:
-    - handler: noop
-  authorizer:
-    handler: allow
-  mutators:
-    - handler: noop
-
 - id: galoy-backend
   upstream:
     url: "http://apollo-router:4004"
