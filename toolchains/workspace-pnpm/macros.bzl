@@ -24,7 +24,7 @@ def npm_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo, TemplatePl
         bin_name
     )
 
-    ctx.actions.run(cmd, category = "build_npm_bin", identifier = bin_name)
+    ctx.actions.run(cmd, category = "build_npm_bin", identifier = ctx.label.package + " " + bin_name)
 
     return [
         DefaultInfo(default_output = exe),
@@ -197,7 +197,7 @@ def tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         cmd_args(out.as_output()),
     )
 
-    ctx.actions.run(cmd, category = "tsc")
+    ctx.actions.run(cmd, category = "tsc", identifier = ctx.label.package)
 
     return [
         DefaultInfo(default_output = out),
@@ -289,7 +289,7 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
     #     cmd.add(cmd_args(src, format = name + "={}"))
     cmd.add(workspace_root.as_output())
 
-    ctx.actions.run(cmd, category = "prepare_build_context")
+    ctx.actions.run(cmd, category = "prepare_build_context", identifier = ctx.label.package)
 
     return BuildContext(
         workspace_root = workspace_root,
