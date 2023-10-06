@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: simply bats test (#3303)...'
-      sha: b3d982f7a2c538524277d4e757d792870232ea56
+      commitTitle: 'build: try to use @/ paths (#3308)'
+      sha: cda8b2dbdbdb2b7e4609964709a2b06bde956f77
       tags:
-      - 0.13.112-1-gb3d982f7a
+      - 0.13.113-3-gcda8b2dbd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: simply bats test (#3303)...'
-      sha: b3d982f7a2c538524277d4e757d792870232ea56
+      commitTitle: 'build: try to use @/ paths (#3308)'
+      sha: cda8b2dbdbdb2b7e4609964709a2b06bde956f77
       tags:
-      - 0.13.112-1-gb3d982f7a
+      - 0.13.113-3-gcda8b2dbd
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: simply bats test (#3303)...'
-      sha: b3d982f7a2c538524277d4e757d792870232ea56
+      commitTitle: 'build: try to use @/ paths (#3308)'
+      sha: cda8b2dbdbdb2b7e4609964709a2b06bde956f77
       tags:
-      - 0.13.112-1-gb3d982f7a
+      - 0.13.113-3-gcda8b2dbd
     path: ./
   path: ./graphql
 kind: LockConfig
