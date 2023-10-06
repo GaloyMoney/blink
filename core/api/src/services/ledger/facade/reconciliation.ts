@@ -12,10 +12,10 @@ import { persistAndReturnEntry } from "../helpers"
 
 import { staticAccountIds } from "./static-account-ids"
 
-export const recordSettleBankownerDebt = async ({
+export const recordBankownerReconciliation = async ({
   description,
   amount,
-}: RecordBankownerDebtArgs) => {
+}: RecordBankownerReconciliationArgs) => {
   const accountIds = await staticAccountIds()
   if (accountIds instanceof Error) return accountIds
 
@@ -24,7 +24,7 @@ export const recordSettleBankownerDebt = async ({
     currency: WalletCurrency.Btc,
   }
   const metadata = {
-    type: LedgerTransactionType.BankOwnerDebt,
+    type: LedgerTransactionType.Reconciliation,
     currency: WalletCurrency.Btc,
     pending: false,
     satsAmount: toSats(amount.btc.amount),

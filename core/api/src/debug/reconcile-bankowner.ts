@@ -1,7 +1,7 @@
 /**
  * how to run:
  *
- * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/settle-bankowner-debt.ts <amount>
+ * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/reconcile-bankowner.ts <amount>
  *
  * <amount>: amount to deduct from bankowner.
  */
@@ -11,12 +11,10 @@ import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
 import { WalletCurrency } from "@domain/shared"
 import { UsdDisplayCurrency } from "@domain/fiat"
 
-import { isUp } from "@services/lnd/health"
-import { lndsConnect } from "@services/lnd/auth"
 import * as LedgerFacade from "@services/ledger/facade"
 import { setupMongoConnection } from "@services/mongodb"
 
-const settleDebt = async ({ amount }: { amount: bigint }) => {
+const reconcile = async ({ amount }: { amount: bigint }) => {
   const btcAmount = { amount, currency: WalletCurrency.Btc }
 
   const walletPriceRatio = await getCurrentPriceAsWalletPriceRatio({
@@ -25,8 +23,8 @@ const settleDebt = async ({ amount }: { amount: bigint }) => {
   if (walletPriceRatio instanceof Error) return walletPriceRatio
 
   const usdAmount = walletPriceRatio.convertFromBtc(btcAmount)
-  const settled = await LedgerFacade.recordSettleBankownerDebt({
-    description: "Settle bankowner debt",
+  const settled = await LedgerFacade.recordBankownerReconciliation({
+    description: "Bankowner reconciliation",
     amount: {
       btc: btcAmount,
       usd: usdAmount,
@@ -40,7 +38,7 @@ const main = async () => {
   const params = {
     amount: BigInt(args[0]),
   }
-  const result = await settleDebt(params)
+  const result = await reconcile(params)
   if (result instanceof Error) {
     console.error("Error:", result)
     return
@@ -50,7 +48,6 @@ const main = async () => {
 
 setupMongoConnection()
   .then(async (mongoose) => {
-    await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     if (mongoose) await mongoose.connection.close()
   })

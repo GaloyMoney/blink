@@ -31,7 +31,7 @@ type RecordReceiveArgs = {
   }
 }
 
-type RecordBankownerDebtArgs = {
+type RecordBankownerReconciliationArgs = {
   description: string
   amount: {
     usd: UsdPaymentAmount
