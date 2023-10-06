@@ -1,4 +1,14 @@
 export_file(
+  name = "build_node_modules.py",
+  visibility = ["PUBLIC"],
+)
+
+export_file(
+  name = "build_npm_bin.py",
+  visibility = ["PUBLIC"],
+)
+
+export_file(
   name = "prepare_build_context.py",
   visibility = ["PUBLIC"],
 )

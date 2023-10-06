@@ -62,12 +62,9 @@ def npm_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo, TemplatePl
         simple_pnpm_toolchain.build_npm_bin[DefaultInfo].default_outputs,
         "--bin-out-path",
         exe.as_output(),
-    )
-
-    cmd.add([
         ctx.attrs.node_modules,
         bin_name,
-    ])
+    )
 
     ctx.actions.run(cmd, category = "build_npm_bin", identifier = bin_name)
 
