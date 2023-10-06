@@ -2,3 +2,8 @@ export_file(
   name = "prepare_build_context.py",
   visibility = ["PUBLIC"],
 )
+
+export_file(
+  name = "compile_typescript.py",
+  visibility = ["PUBLIC"],
+)

@@ -22,6 +22,7 @@ filegroup(
 
 tsc_build(
   name = "api",
+  tsconfig = "tsconfig-build.json",
   srcs = [":src"],
 )
 
