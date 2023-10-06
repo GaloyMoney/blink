@@ -1,8 +1,169 @@
-# move to workspace toolchain
-load("@toolchains//simple-pnpm:macros.bzl", "npm_bin")
+load(
+    "@prelude//:artifacts.bzl",
+    "ArtifactGroupInfo",
+)
 
 load("@prelude//python:toolchain.bzl", "PythonToolchainInfo",)
 load(":toolchain.bzl", "WorkspacePnpmToolchainInfo",)
+
+def npm_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo, TemplatePlaceholderInfo]]:
+    bin_name = ctx.attrs.bin_name or ctx.attrs.name
+
+    exe = ctx.actions.declare_output(bin_name)
+
+    workspace_pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        workspace_pnpm_toolchain.build_npm_bin[DefaultInfo].default_outputs,
+        "--bin-out-path",
+        exe.as_output(),
+        "--package-dir",
+        ctx.label.package,
+        ctx.attrs.node_modules,
+        bin_name
+    )
+
+    ctx.actions.run(cmd, category = "build_npm_bin", identifier = bin_name)
+
+    return [
+        DefaultInfo(default_output = exe),
+        RunInfo(exe),
+        TemplatePlaceholderInfo(
+            keyed_variables = {
+                "exe": exe,
+            },
+        ),
+    ]
+
+_npm_bin = rule(
+    impl = npm_bin_impl,
+    attrs = {
+        "bin_name": attrs.option(
+            attrs.string(),
+            default = None,
+            doc = """Node module bin name (default: attrs.name).""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds `node_modules`.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def npm_bin(
+        node_modules = ":node_modules",
+        **kwargs):
+    _npm_bin(
+        node_modules = node_modules,
+        **kwargs,
+    )
+
+def pnpm_workspace_impl(ctx: AnalysisContext) -> list[[DefaultInfo, ArtifactGroupInfo]]:
+    out = ctx.actions.declare_output("pnpm-lock.yaml")
+
+    output = ctx.actions.copy_file(out, ctx.attrs.pnpm_lock)
+    ctx.actions.write_json("member-packages.json", ctx.attrs.child_packages)
+
+    return [
+        DefaultInfo(default_output = output),
+        ArtifactGroupInfo(artifacts = [ctx.attrs.root_package] + ctx.attrs.child_packages),
+    ]
+
+def pnpm_workspace(**kwargs):
+    pnpm_lock = "pnpm-lock.yaml"
+    root_package = "package.json"
+    if not rule_exists(root_package):
+        native.export_file(
+            name = root_package
+        )
+    workspace_def = "pnpm-workspace.yaml"
+    _pnpm_workspace(
+        root_package = ":{}".format(root_package),
+        workspace_def = workspace_def,
+        pnpm_lock = pnpm_lock,
+        **kwargs,
+    )
+
+_pnpm_workspace = rule(
+    impl = pnpm_workspace_impl,
+    attrs = {
+        "workspace_def": attrs.source(
+            doc = """pnpm-workspace.yaml source.""",
+        ),
+        "root_package": attrs.source(
+            doc = """Workspace root package.json source.""",
+        ),
+        "pnpm_lock": attrs.source(
+            doc = """Pnpm lock file.""",
+        ),
+        "child_packages": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package.json files to track.""",
+        ),
+    },
+)
+
+def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
+    out = ctx.actions.declare_output("root", dir = True)
+
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+    package_dir = cmd_args(ctx.label.package).relative_to(ctx.label.cell_root)
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.build_node_modules[DefaultInfo].default_outputs,
+        "--turbo-bin",
+        ctx.attrs.turbo_bin[RunInfo],
+    )
+
+    cmd.add("--package-dir")
+    cmd.add(package_dir)
+
+    if ctx.attrs.prod_only:
+        cmd.add("--prod-only")
+
+    cmd.add(out.as_output())
+    cmd.hidden([ctx.attrs.workspace])
+
+    ctx.actions.run(cmd, category = "pnpm", identifier = "install " + ctx.label.package)
+
+    return [DefaultInfo(default_output = out)]
+
+build_node_modules = rule(
+    impl = build_node_modules_impl,
+    attrs = {
+        "turbo_bin": attrs.dep(
+            providers = [RunInfo],
+            default = "//shim/custom-third-party/node/turbo:turbo_bin",
+            doc = """Turbo dependency.""",
+        ),
+        "workspace": attrs.source(
+            default = "//:workspace",
+            doc = """Workspace root files""",
+        ),
+        "prod_only": attrs.bool(
+            default = False,
+            doc = "Only install production dependencies"
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
 
 def tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     build_context = prepare_build_context(ctx)

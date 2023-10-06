@@ -1,14 +1,12 @@
-load("@toolchains//simple-pnpm:macros.bzl", "build_node_modules", "npm_bin")
-load("@toolchains//workspace-pnpm:macros.bzl", "tsc_build")
+load("@toolchains//workspace-pnpm:macros.bzl", "build_node_modules", "tsc_build")
+
+export_file(
+  name = "package.json",
+  visibility = ["PUBLIC"],
+)
 
 build_node_modules(
   name = "node_modules",
-)
-
-npm_bin(
-  name = "tsc_bin",
-  bin_name = "tsc",
-  visibility = ["PUBLIC"],
 )
 
 filegroup(
