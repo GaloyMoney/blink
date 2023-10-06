@@ -38,6 +38,12 @@ processors:
       - key: code.function.params.totpCode
         action: update
         value: "<redacted>"
+      - key: graphql.variables.input.totpCode
+        action: update
+        value: "<redacted>"
+      - key: graphql.variables.input.authToken
+        action: update
+        value: "<redacted>"
 
 exporters:
   logging:

@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: try to use @/ paths (#3308)'
-      sha: cda8b2dbdbdb2b7e4609964709a2b06bde956f77
+      commitTitle: 'chore: redacting 2fa values (#3307)...'
+      sha: 8d252d5642aacfc05bc31c8f155d132bba5dffd6
       tags:
-      - 0.13.113-3-gcda8b2dbd
+      - 0.13.115-1-g8d252d564
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: try to use @/ paths (#3308)'
-      sha: cda8b2dbdbdb2b7e4609964709a2b06bde956f77
+      commitTitle: 'chore: redacting 2fa values (#3307)...'
+      sha: 8d252d5642aacfc05bc31c8f155d132bba5dffd6
       tags:
-      - 0.13.113-3-gcda8b2dbd
+      - 0.13.115-1-g8d252d564
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: try to use @/ paths (#3308)'
-      sha: cda8b2dbdbdb2b7e4609964709a2b06bde956f77
+      commitTitle: 'chore: redacting 2fa values (#3307)...'
+      sha: 8d252d5642aacfc05bc31c8f155d132bba5dffd6
       tags:
-      - 0.13.113-3-gcda8b2dbd
+      - 0.13.115-1-g8d252d564
     path: ./
   path: ./graphql
 kind: LockConfig
