@@ -1,5 +1,5 @@
 {
-  "name": "galoy",
+  "name": "api",
   "scripts": {
     "tsc-check-noimplicitany": "tsc --noEmit -p tsconfig.no-implicit-any.json",
     "tsc-check": "tsc --noEmit -p tsconfig.d.json && tsc --noEmit",

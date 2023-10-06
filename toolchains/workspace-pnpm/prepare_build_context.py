@@ -38,10 +38,7 @@ if __name__ == "__main__":
         # Copy node_modules prunned tree into tempdir
         shutil.copytree(
             args.node_modules_path,
-            # Move to root dir when we add the pnpm-workspace.yml to root and
-            # build from there
-            # root_dir,
-            package_dir,
+            root_dir,
             symlinks=True,
         )
 
