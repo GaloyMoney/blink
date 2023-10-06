@@ -564,6 +564,8 @@ export const recordReceiveOnChainFeeReconciliation = async ({
 // Non-LedgerFacade helpers from legacy admin service
 // ======
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 export const recordLnChannelOpenOrClosingFee = async ({ paymentAmount }) => {
   const amount = Number(paymentAmount.btc.amount)
   const metadata = LedgerFacade.LnChannelOpenOrClosingFee({
@@ -580,6 +582,7 @@ export const recordLnChannelOpenOrClosingFee = async ({ paymentAmount }) => {
   return translateToLedgerJournal(savedEntry)
 }
 
+// @ts-ignore-next-line no-implicit-any error
 export const recordLndEscrowDebit = async ({ paymentAmount }) => {
   const amount = Number(paymentAmount.btc.amount)
   const metadata = LedgerFacade.Escrow()
@@ -592,6 +595,7 @@ export const recordLndEscrowDebit = async ({ paymentAmount }) => {
   return translateToLedgerJournal(savedEntry)
 }
 
+// @ts-ignore-next-line no-implicit-any error
 export const recordLndEscrowCredit = async ({ paymentAmount }) => {
   const amount = Number(paymentAmount.btc.amount)
   const metadata = LedgerFacade.Escrow()
@@ -604,6 +608,7 @@ export const recordLndEscrowCredit = async ({ paymentAmount }) => {
   return translateToLedgerJournal(savedEntry)
 }
 
+// @ts-ignore-next-line no-implicit-any error
 export const recordLnRoutingRevenue = async ({ paymentAmount }) => {
   const amount = Number(paymentAmount.btc.amount)
   const metadata = LedgerFacade.LnRoutingRevenue(new Date())

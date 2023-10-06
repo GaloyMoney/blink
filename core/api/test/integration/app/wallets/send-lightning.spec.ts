@@ -43,7 +43,7 @@ import {
 let lnInvoice: LnInvoice
 let noAmountLnInvoice: LnInvoice
 let largeWithAmountLnInvoice: LnInvoice
-let memo
+let memo: string
 
 const calc = AmountCalculator()
 

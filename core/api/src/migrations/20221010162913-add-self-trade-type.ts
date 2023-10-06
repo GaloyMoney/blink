@@ -42,6 +42,8 @@ const getNonUserWalletIds = async ({ usersCollection, walletsCollection }) => {
 }
 
 module.exports = {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   async up(db) {
     const usersCollection = db.collection("users")
     const walletsCollection = db.collection("wallets")

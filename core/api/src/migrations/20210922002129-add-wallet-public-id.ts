@@ -2,6 +2,8 @@
 const { randomUUID } = require("crypto")
 
 module.exports = {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   async up(db) {
     console.log("Begin to add wallet public id to users collection")
     const users = db
@@ -24,12 +26,15 @@ module.exports = {
     console.log("Finish to add wallet public id to users collection")
   },
 
+  // @ts-ignore-next-line no-implicit-any error
   async down(db) {
     await removeAttributes(db.collection("users"), ["walletPublicId"])
   },
 }
 
+// @ts-ignore-next-line no-implicit-any error
 const removeAttributes = (collection, attrs) => {
+  // @ts-ignore-next-line no-implicit-any error
   const unsets = attrs.reduce((obj, key) => {
     return { ...obj, [key]: 1 }
   }, {})

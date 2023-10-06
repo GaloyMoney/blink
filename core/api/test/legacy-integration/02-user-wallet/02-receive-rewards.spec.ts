@@ -28,6 +28,8 @@ const onBoardingEarnIds = [
 ]
 const onBoardingEarnAmt: number = Object.keys(OnboardingEarn)
   .filter((k) => find(onBoardingEarnIds, (o) => o === k))
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   .reduce((p, k) => p + OnboardingEarn[k], 0)
 
 jest.mock("@/config", () => {
@@ -116,6 +118,7 @@ describe("UserWallet - addEarn", () => {
     }
     expect(txCheck).toBeUndefined()
 
+    // @ts-ignore-next-line no-implicit-any error
     const amount = OnboardingEarn[OnboardingEarnId]
     expect(amount).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
 

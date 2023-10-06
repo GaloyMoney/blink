@@ -27,7 +27,10 @@ describe("EntryBuilder", () => {
     return entry
   }
 
-  const expectEntryToEqual = (entry: ILedgerTransaction, amount) => {
+  const expectEntryToEqual = (
+    entry: ILedgerTransaction,
+    amount: Amount<WalletCurrency>,
+  ) => {
     expect(entry.debit + entry.credit).toEqual(Number(amount.amount))
     expect(entry.currency).toEqual(amount.currency)
   }

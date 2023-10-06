@@ -38,7 +38,7 @@ import {
 import { getBalanceHelper } from "test/helpers/wallet"
 
 let outsideAddress: OnChainAddress
-let memo
+let memo: string
 
 const dealerFns = DealerPriceService()
 

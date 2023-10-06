@@ -24,7 +24,7 @@ import {
   recordReceiveLnPayment,
 } from "test/helpers"
 
-let memo
+let memo: string
 
 const calc = AmountCalculator()
 

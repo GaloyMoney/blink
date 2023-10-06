@@ -33,6 +33,9 @@ export const onceBriaSubscribe = async ({
   const bria = BriaSubscriber()
 
   let eventToReturn: BriaEvent | undefined = undefined
+
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   const eventHandler = ({ resolve, timeoutId }) => {
     return async (event: BriaEvent): Promise<true | ApplicationError> => {
       setTimeout(() => {
@@ -62,6 +65,7 @@ export const onceBriaSubscribe = async ({
   const res = await promise
   if (res instanceof Error) throw res
 
+  // @ts-ignore-next-line no-implicit-any error
   wrapper.cancel()
   return eventToReturn
 }
@@ -76,6 +80,8 @@ export const manyBriaSubscribe = async ({
   const bria = BriaSubscriber()
 
   const eventsToReturn: BriaEvent[] = []
+
+  // @ts-ignore-next-line no-implicit-any error
   const eventHandler = ({ resolve, timeoutId }) => {
     return async (event: BriaEvent): Promise<true | ApplicationError> => {
       setTimeout(() => {
@@ -108,6 +114,7 @@ export const manyBriaSubscribe = async ({
   const res = await promise
   if (res instanceof Error) throw res
 
+  // @ts-ignore-next-line no-implicit-any error
   wrapper.cancel()
   return eventsToReturn
 }
@@ -150,6 +157,7 @@ const waitUntilBriaZeroBalance = async () => {
 }
 
 export const waitUntilBriaConnected = async () => {
+  // @ts-ignore-next-line no-implicit-any error
   const balance = await waitForNoErrorWithCount(OnChainService().getHotBalance, 60)
   if (balance instanceof Error) throw balance
 }

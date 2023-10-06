@@ -12,6 +12,9 @@ import { generateHash } from "test/helpers"
 
 // TODO: Remove this when we unify amounts in PartialBaseWalletTransaction and
 // BaseWalletTransaction types
+
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const translatePendingToSettledTx = (pendingTx) => ({
   ...pendingTx,
   settlementAmount: Number(pendingTx.settlementAmount.amount),

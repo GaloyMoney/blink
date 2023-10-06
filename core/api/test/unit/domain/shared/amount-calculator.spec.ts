@@ -77,7 +77,7 @@ describe("AmountCalculator", () => {
         down: "up",
       },
     ]
-    const itCases = ({ up, down }) => [
+    const itCases = ({ up, down }: { up: string; down: string }) => [
       {
         title: `no rounding if remainder is 0`,
         amount: pivot,
@@ -139,6 +139,9 @@ describe("AmountCalculator", () => {
         const { up, down } = describeGroup
         for (const testCase of itCases({ up, down })) {
           const { title, amount } = testCase
+
+          /* eslint @typescript-eslint/ban-ts-comment: "off" */
+          // @ts-ignore-next-line no-implicit-any error
           const expectedResult = testCase.result[describeGroup.type]
 
           it(`${title}`, () => {

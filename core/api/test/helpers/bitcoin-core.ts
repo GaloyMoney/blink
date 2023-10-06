@@ -146,6 +146,9 @@ export const createSignerWallet = async (walletName: string) => {
     bitcoind: bitcoindSignerWallet,
     requests: signerDescriptors,
   })
+
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   if (result.some((d) => !d.success)) throw new Error("Invalid descriptors")
 
   return wallet

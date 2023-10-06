@@ -18,7 +18,9 @@ const getRandomInvalidPhone = () => {
 const defaultWallet = { __v: 0, type: "checking", onchain: [] }
 
 module.exports = {
-  async up(db /*, client */) {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
+  async up(db) {
     for (const userMeta of adminUsers) {
       const role = userMeta.role
       let user = await db.collection("users").findOne({ role })

@@ -11,7 +11,7 @@ import { toObjectId } from "@/services/mongoose/utils"
 const wallets = WalletsRepository()
 const accountId = "00112233445566778899aabb" as AccountId
 
-const newWallet = async (currency) => {
+const newWallet = async (currency: string) => {
   const wallet = new Wallet({
     _accountId: toObjectId<AccountId>(accountId),
     type: "checking",

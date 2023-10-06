@@ -16,6 +16,17 @@ const skippedPubkey =
 const skippedChanId = "1x0x0" as ChanId
 const skipProbe = { pubkey: [skippedPubkey], chanId: [skippedChanId] }
 
+interface ConversionBtc {
+  sats: number
+  spread: number
+  round: (x: number) => number
+}
+interface ConversionUsd {
+  cents: number
+  spread: number
+  round: (x: number) => number
+}
+
 describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
     "lnbc210u1p32zq9xpp5dpzhj6e7y6d4ggs6awh7m4eupuemas0gq06pqjgy9tq35740jlfsdqqcqzpgxqyz5vqsp58t3zalj5sc563g0xpcgx9lfkeqrx7m7xw53v2txc2pr60jcwn0vq9qyyssqkatadajwt0n285teummg4urul9t3shddnf05cfxzsfykvscxm4zqz37j87sahvz3kul0lzgz2svltdm933yr96du84zpyn8rx6fst4sp43jh32" as EncodedPaymentRequest
@@ -104,16 +115,16 @@ describe("LightningPaymentFlowBuilder", () => {
   const immediateSpread = 0.001 // 0.10 %
   // const futureSpread = 0.0012 // 0.12%
 
-  const centsFromSatsForMid = ({ sats, spread, round }): bigint => {
+  const centsFromSatsForMid = ({ sats, spread, round }: ConversionBtc): bigint => {
     if (Number(sats) === 0) return 0n
 
     const result = BigInt(round(sats * midPriceRatio * spread))
     return result || 1n
   }
 
-  const centsFromSats = ({ sats, spread, round }): bigint =>
+  const centsFromSats = ({ sats, spread, round }: ConversionBtc): bigint =>
     BigInt(round(sats * midPriceRatio * spread))
-  const satsFromCents = ({ cents, spread, round }): bigint =>
+  const satsFromCents = ({ cents, spread, round }: ConversionUsd): bigint =>
     BigInt(round((cents / midPriceRatio) * spread))
 
   const usdFromBtcMid = async (amount: BtcPaymentAmount) => {
@@ -193,6 +204,9 @@ describe("LightningPaymentFlowBuilder", () => {
       localNodeIds: [],
       skipProbe,
     })
+
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // @ts-ignore-next-line no-implicit-any error
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
         expect.objectContaining({
@@ -210,6 +224,7 @@ describe("LightningPaymentFlowBuilder", () => {
       const withSkippedChanIdAmountBuilder = lightningBuilder.withInvoice(
         skippedChanIdInvoiceWithAmount,
       )
+      // @ts-ignore-next-line no-implicit-any error
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -232,6 +247,7 @@ describe("LightningPaymentFlowBuilder", () => {
           .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -345,6 +361,7 @@ describe("LightningPaymentFlowBuilder", () => {
           .withSenderWallet(senderUsdWalletDescriptor)
           .withoutRecipientWallet()
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -436,6 +453,7 @@ describe("LightningPaymentFlowBuilder", () => {
         invoice: invoiceWithNoAmount,
         uncheckedAmount: Number(uncheckedAmount),
       })
+      // @ts-ignore-next-line no-implicit-any error
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -450,6 +468,7 @@ describe("LightningPaymentFlowBuilder", () => {
           .withSenderWallet(senderBtcWalletDescriptor)
           .withoutRecipientWallet()
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -513,6 +532,7 @@ describe("LightningPaymentFlowBuilder", () => {
           .withSenderWallet(senderUsdWalletDescriptor)
           .withoutRecipientWallet()
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -562,6 +582,8 @@ describe("LightningPaymentFlowBuilder", () => {
       localNodeIds: [invoiceWithAmount.destination, invoiceWithNoAmount.destination],
       skipProbe,
     })
+
+    // @ts-ignore-next-line no-implicit-any error
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
         expect.objectContaining({
@@ -574,6 +596,8 @@ describe("LightningPaymentFlowBuilder", () => {
     }
     describe("invoice with amount", () => {
       const withAmountBuilder = intraledgerBuilder.withInvoice(invoiceWithAmount)
+
+      // @ts-ignore-next-line no-implicit-any error
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -587,6 +611,7 @@ describe("LightningPaymentFlowBuilder", () => {
           senderBtcWalletDescriptor,
         )
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -599,6 +624,8 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
             withBtcWalletBuilder.withRecipientWallet(recipientBtcArgs)
+
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -651,6 +678,8 @@ describe("LightningPaymentFlowBuilder", () => {
             ...recipientUsdArgs,
             usdPaymentAmount,
           })
+
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -693,6 +722,7 @@ describe("LightningPaymentFlowBuilder", () => {
           senderUsdWalletDescriptor,
         )
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -705,6 +735,8 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
             withUsdWalletBuilder.withRecipientWallet(recipientBtcArgs)
+
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -757,6 +789,8 @@ describe("LightningPaymentFlowBuilder", () => {
             ...recipientUsdArgs,
             usdPaymentAmount,
           })
+
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -809,6 +843,7 @@ describe("LightningPaymentFlowBuilder", () => {
         uncheckedAmount: Number(lessThan1CentAmount),
       })
 
+      // @ts-ignore-next-line no-implicit-any error
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -824,6 +859,7 @@ describe("LightningPaymentFlowBuilder", () => {
         const lessThan1CentWithBtcWalletBuilder =
           lessThan1CentWithAmountBuilder.withSenderWallet(senderBtcWalletDescriptor)
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -843,6 +879,7 @@ describe("LightningPaymentFlowBuilder", () => {
           const lessThan1CentWithBtcRecipientBuilder =
             lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientBtcArgs)
 
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -927,6 +964,7 @@ describe("LightningPaymentFlowBuilder", () => {
               senderUsdAsRecipientArgs,
             )
 
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -1023,6 +1061,7 @@ describe("LightningPaymentFlowBuilder", () => {
           senderUsdWalletDescriptor,
         )
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -1039,6 +1078,8 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
             withUsdWalletBuilder.withRecipientWallet(recipientBtcArgs)
+
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -1086,6 +1127,8 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
             withUsdWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -1140,6 +1183,8 @@ describe("LightningPaymentFlowBuilder", () => {
       localNodeIds: [],
       skipProbe,
     })
+
+    // @ts-ignore-next-line no-implicit-any error
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
         expect.objectContaining({
@@ -1163,6 +1208,7 @@ describe("LightningPaymentFlowBuilder", () => {
         description: "",
       })
 
+      // @ts-ignore-next-line no-implicit-any error
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -1178,6 +1224,7 @@ describe("LightningPaymentFlowBuilder", () => {
         const lessThan1CentWithBtcWalletBuilder =
           lessThan1CentWithAmountBuilder.withSenderWallet(senderBtcWalletDescriptor)
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -1198,6 +1245,7 @@ describe("LightningPaymentFlowBuilder", () => {
           const lessThan1CentWithBtcRecipientBuilder =
             lessThan1CentWithBtcWalletBuilder.withRecipientWallet(recipientBtcArgs)
 
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -1282,6 +1330,7 @@ describe("LightningPaymentFlowBuilder", () => {
               senderUsdAsRecipientArgs,
             )
 
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -1378,6 +1427,7 @@ describe("LightningPaymentFlowBuilder", () => {
           senderUsdWalletDescriptor,
         )
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -1394,6 +1444,8 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with btc recipient", () => {
           const withBtcRecipientBuilder =
             withUsdWalletBuilder.withRecipientWallet(recipientBtcArgs)
+
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -1441,6 +1493,8 @@ describe("LightningPaymentFlowBuilder", () => {
         describe("with usd recipient", () => {
           const withUsdRecipientBuilder =
             withUsdWalletBuilder.withRecipientWallet(recipientUsdArgs)
+
+          // @ts-ignore-next-line no-implicit-any error
           const checkRecipientWallet = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({

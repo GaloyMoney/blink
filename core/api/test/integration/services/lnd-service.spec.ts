@@ -39,7 +39,7 @@ const btcPaymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurren
 const ROUTE_PPM_RATE = 10_000
 const ROUTE_PPM_PERCENT = ROUTE_PPM_RATE / 1_000_000
 
-const loadBitcoindWallet = async (walletName) => {
+const loadBitcoindWallet = async (walletName: string) => {
   const wallets = await bitcoindClient.listWallets()
   if (!wallets.includes(walletName)) {
     try {
@@ -72,6 +72,8 @@ const fundOnChainWallets = async () => {
   await fundLnd(lnd1, btc)
 }
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const getChannelWithRetry = async ({ lnd, id }) => {
   const countMax = 9
 
@@ -91,6 +93,7 @@ const getChannelWithRetry = async ({ lnd, id }) => {
   if (!(count < countMax && errMsg !== "FullChannelDetailsNotFound")) {
     throw new Error("Could find updated channel details")
   }
+  // @ts-ignore-next-line no-implicit-any error
   if (!(channel.policies && channel.policies.length)) {
     throw new Error("No channel policies found")
   }
@@ -98,6 +101,7 @@ const getChannelWithRetry = async ({ lnd, id }) => {
   return channel
 }
 
+// @ts-ignore-next-line no-implicit-any error
 const setFeesOnChannel = async ({ localLnd, partnerLnd, base, rate }) => {
   const countMax = 9
 
@@ -115,6 +119,7 @@ const setFeesOnChannel = async ({ localLnd, partnerLnd, base, rate }) => {
 
     setOnChannel = await setChannelFees({
       lnd: localLnd,
+      // @ts-ignore-next-line no-implicit-any error
       channel,
       base,
       rate,
@@ -125,6 +130,7 @@ const setFeesOnChannel = async ({ localLnd, partnerLnd, base, rate }) => {
   }
 
   // Verify policy change
+  // @ts-ignore-next-line no-implicit-any error
   const { policies } = await getChannelWithRetry({ id: channel.id, lnd: localLnd })
   const { base_fee_mtokens, fee_rate } = policies[0]
   if (!(base_fee_mtokens === `${base * 1000}` && fee_rate === rate)) {

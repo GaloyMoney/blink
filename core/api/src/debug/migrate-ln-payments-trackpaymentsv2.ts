@@ -24,6 +24,8 @@ import {
 } from "@/services/tracing"
 import { setupMongoConnection } from "@/services/mongodb"
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 let lndService
 
 export const main = async (): Promise<true> => {
@@ -73,7 +75,9 @@ const migrateLnPayment = async (
       }
 
       // Fetch payment from lnd
+      // @ts-ignore-next-line no-implicit-any error
       const payment = await lndService.lookupPayment({
+        // @ts-ignore-next-line no-implicit-any error
         pubkey: lndService.defaultPubkey(),
         paymentHash,
       })
@@ -90,6 +94,7 @@ const migrateLnPayment = async (
       const partialLnPayment = {
         paymentHash,
         paymentRequest: undefined,
+        // @ts-ignore-next-line no-implicit-any error
         sentFromPubkey: lndService.defaultPubkey(),
         createdAt: undefined,
       }

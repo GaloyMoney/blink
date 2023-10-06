@@ -28,8 +28,11 @@ describe("Lock", () => {
 
 const walletId = "1234"
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const checkLockExist = (client) =>
   new Promise((resolve) =>
+    // @ts-ignore-next-line no-implicit-any error
     client.get(walletId, (err, res) => {
       resolve(!!res)
     }),

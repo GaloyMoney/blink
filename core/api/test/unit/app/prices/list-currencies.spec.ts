@@ -5,6 +5,8 @@ import { PriceCurrenciesNotAvailableError } from "@/domain/price"
 import { listCurrencies } from "@/app/prices"
 
 jest.mock("@/services/tracing", () => ({
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
 }))
 
