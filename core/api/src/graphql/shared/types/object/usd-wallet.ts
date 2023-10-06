@@ -22,7 +22,7 @@ import { mapError } from "@/graphql/error-map"
 import { Wallets } from "@/app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@/domain/shared"
-import LnInvoice from "@/graphql/public/types/object/ln-invoice"
+import LnInvoice from "@/graphql/shared/types/object/ln-invoice"
 
 const UsdWallet = GT.Object<Wallet>({
   name: "UsdWallet",

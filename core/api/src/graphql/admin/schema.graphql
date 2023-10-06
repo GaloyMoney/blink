@@ -81,6 +81,10 @@ type BTCWallet implements Wallet {
   """A balance stored in BTC."""
   balance: SignedAmount!
   id: ID!
+
+  """
+  The lightning invoice with the matching paymentHash belonging to this wallet.
+  """
   invoiceByHash(paymentHash: PaymentHash!): LnInvoice!
 
   """An unconfirmed incoming onchain balance."""

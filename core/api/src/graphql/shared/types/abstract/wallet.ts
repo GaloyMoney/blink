@@ -8,7 +8,7 @@ import PaymentHash from "../scalar/payment-hash"
 
 import { connectionArgs } from "@/graphql/connections"
 import { GT } from "@/graphql/index"
-import LnInvoice from "@/graphql/public/types/object/ln-invoice"
+import LnInvoice from "@/graphql/shared/types/object/ln-invoice"
 
 const IWallet = GT.Interface({
   name: "Wallet",

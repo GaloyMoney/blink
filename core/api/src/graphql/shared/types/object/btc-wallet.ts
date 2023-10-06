@@ -22,7 +22,7 @@ import { mapError } from "@/graphql/error-map"
 import { Wallets } from "@/app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@/domain/shared"
-import LnInvoice from "@/graphql/public/types/object/ln-invoice"
+import LnInvoice from "@/graphql/shared/types/object/ln-invoice"
 
 const BtcWallet = GT.Object<Wallet>({
   name: "BTCWallet",
@@ -135,6 +135,8 @@ const BtcWallet = GT.Object<Wallet>({
           type: GT.NonNull(PaymentHash),
         },
       },
+      description:
+        "The lightning invoice with the matching paymentHash belonging to this wallet.",
       resolve: async (source, args) => {
         const { paymentHash } = args
         if (paymentHash instanceof Error) throw paymentHash
