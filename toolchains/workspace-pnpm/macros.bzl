@@ -1,17 +1,53 @@
+# move to workspace toolchain
+load("@toolchains//simple-pnpm:macros.bzl", "npm_bin")
+
 load("@prelude//python:toolchain.bzl", "PythonToolchainInfo",)
 load(":toolchain.bzl", "WorkspacePnpmToolchainInfo",)
 
-def tsc_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+def tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     build_context = prepare_build_context(ctx)
+
+    out = ctx.actions.declare_output("dist", dir = True)
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.compile_typescript[DefaultInfo].default_outputs,
+        "--package-dir",
+        cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
+        "--tsc-bin",
+        cmd_args(ctx.attrs.tsc[RunInfo]),
+        "--tsconfig",
+        cmd_args(ctx.attrs.tsconfig),
+        "--tscpaths-bin",
+        cmd_args(ctx.attrs.tscpaths[RunInfo]),
+        cmd_args(out.as_output()),
+    )
+
+    ctx.actions.run(cmd, category = "tsc")
+
     return [
-        DefaultInfo(build_context.workspace_root),
-        RunInfo("dummy"),
+        DefaultInfo(default_output = out),
     ]
 
 def tsc_build(
     node_modules = ":node_modules",
     **kwargs):
+    tsc_bin = "tsc_bin"
+    if not rule_exists(tsc_bin):
+        npm_bin(
+            name = tsc_bin,
+            bin_name = "tsc",
+        )
+    tscpaths_bin = "tscpaths_bin"
+    if not rule_exists(tscpaths_bin):
+        npm_bin(
+            name = tscpaths_bin,
+            bin_name = "tscpaths",
+        )
     _tsc_build(
+        tsc = ":{}".format(tsc_bin),
+        tscpaths = ":{}".format(tscpaths_bin),
         node_modules = node_modules,
         **kwargs,
     )
@@ -19,6 +55,17 @@ def tsc_build(
 _tsc_build = rule(
     impl = tsc_build_impl,
     attrs = {
+        "tsc": attrs.dep(
+            providers = [RunInfo],
+            doc = """TypeScript compiler dependency.""",
+        ),
+        "tsconfig": attrs.string(
+            doc = """Target which builds `tsconfig.json`.""",
+        ),
+        "tscpaths": attrs.dep(
+            providers = [RunInfo],
+            doc = """tscpaths dependency.""",
+        ),
         "srcs": attrs.list(
             attrs.source(),
             default = [],
@@ -44,7 +91,7 @@ BuildContext = record(
 
 
 def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
-    workspace_root = ctx.actions.declare_output("__workspace")
+    workspace_root = ctx.actions.declare_output("__workspace", dir = True)
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
     package_dir = cmd_args(ctx.label.package).relative_to(ctx.label.cell_root)
