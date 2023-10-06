@@ -1,6 +1,6 @@
 import dedent from "dedent"
 
-import { Wallets } from "@app"
+// import { Wallets } from "@app"
 
 import { GT } from "@graphql/index"
 import Memo from "@graphql/shared/types/scalar/memo"
@@ -9,6 +9,16 @@ import WalletId from "@graphql/shared/types/scalar/wallet-id"
 import CentAmount from "@graphql/public/types/scalar/cent-amount"
 import LnInvoicePayload from "@graphql/public/types/payload/ln-invoice"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+
+// FLASH FORK: import ibex dependencies
+import bolt11 from "bolt11"
+import { toSats } from "@domain/bitcoin"
+import { checkedToPubkey } from "@domain/bitcoin/lightning"
+import { InputValidationError } from "@graphql/error"
+
+import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
+
+import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
 
 const LnUsdInvoiceCreateInput = GT.Input({
   name: "LnUsdInvoiceCreateInput",
@@ -47,20 +57,83 @@ const LnUsdInvoiceCreateMutation = GT.Field({
       }
     }
 
-    const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
-      walletId,
-      amount,
-      memo,
-      expiresIn,
-    })
+    // FLASH FORK: create IBEX invoice instead of Galoy invoice
+    //
+    // const lnInvoice = await Wallets.addInvoiceForSelfForUsdWallet({
+    //   walletId,
+    //   amount,
+    //   memo,
+    //   expiresIn,
+    // })
 
-    if (lnInvoice instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
-    }
+    let lnInvoice: LnInvoice
+    const CreateLightningInvoice = await requestIBexPlugin(
+      "POST",
+      IbexRoutes.LightningInvoice,
+      {},
+      {
+        amount,
+        accountId: walletId,
+        memo,
+        expiration: expiresIn,
+      },
+    )
+    const DecodeLightningInvoice = await requestIBexPlugin(
+      "GET",
+      IbexRoutes.LightningInvoice,
+      {},
+      {
+        invoice: CreateLightningInvoice.data?.["data"]?.["invoice"]?.["bolt11"],
+      },
+    )
+    console.log(
+      "CreateLightningInvoice from IBEX",
+      JSON.stringify(CreateLightningInvoice, null, 2),
+    )
 
-    return {
-      errors: [],
-      invoice: lnInvoice,
+    if (
+      CreateLightningInvoice &&
+      CreateLightningInvoice.data &&
+      CreateLightningInvoice.data["data"]["invoice"] &&
+      DecodeLightningInvoice &&
+      DecodeLightningInvoice.data &&
+      DecodeLightningInvoice.data["data"]["paymentSecret"]
+    ) {
+      const invoiceString = CreateLightningInvoice.data["data"]["invoice"]["bolt11"]
+      const decodedInvoice = bolt11.decode(invoiceString)
+      const pubKey = checkedToPubkey(decodedInvoice.payeeNodeKey || "")
+      const paymentSecret = DecodeLightningInvoice.data["data"]["paymentSecret"]
+      const cltvDelta = DecodeLightningInvoice.data["data"]["minFinalCLTVExpiry"]
+      if (pubKey instanceof Error) {
+        return new InputValidationError({ message: "Invalid value for LnPubkey" })
+      } else {
+        lnInvoice = {
+          destination: pubKey,
+          paymentHash: CreateLightningInvoice.data["data"]["invoice"]["paymentHash"],
+          paymentRequest: CreateLightningInvoice.data["data"]["invoice"]["bolt11"],
+          paymentSecret,
+          milliSatsAmount: CreateLightningInvoice.data["data"]["invoice"]["amountMsat"],
+          description: CreateLightningInvoice.data["data"]["invoice"]["memo"],
+          cltvDelta,
+          amount: toSats(CreateLightningInvoice.data["data"]["amount"] / 1000),
+          paymentAmount: null,
+          routeHints: [],
+          features: [],
+          expiresAt: CreateLightningInvoice.data["data"]["invoice"]["expiryDateUtc"],
+          isExpired:
+            CreateLightningInvoice.data["data"]["invoice"]["state"]["id"] == 2
+              ? true
+              : false,
+        }
+        if (lnInvoice instanceof Error) {
+          return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
+        }
+
+        return {
+          errors: [],
+          invoice: lnInvoice,
+        }
+      }
     }
   },
 })

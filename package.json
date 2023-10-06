@@ -62,6 +62,7 @@
     "bitcoin-cli-ts": "^24.0.3",
     "bitcoinjs-lib": "^6.1.4",
     "body-parser": "^1.20.1",
+    "bolt11": "^1.4.1",
     "cookie": "^0.5.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
