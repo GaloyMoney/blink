@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: redacting 2fa values (#3307)...'
-      sha: 8d252d5642aacfc05bc31c8f155d132bba5dffd6
+      commitTitle: 'fix: added all auth url in oathkeeper (#3299)...'
+      sha: dad1529b69dd6ea063d851e690522f0dfc069f14
       tags:
-      - 0.13.115-1-g8d252d564
+      - 0.13.116-1-gdad1529b6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: redacting 2fa values (#3307)...'
-      sha: 8d252d5642aacfc05bc31c8f155d132bba5dffd6
+      commitTitle: 'fix: added all auth url in oathkeeper (#3299)...'
+      sha: dad1529b69dd6ea063d851e690522f0dfc069f14
       tags:
-      - 0.13.115-1-g8d252d564
+      - 0.13.116-1-gdad1529b6
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: redacting 2fa values (#3307)...'
-      sha: 8d252d5642aacfc05bc31c8f155d132bba5dffd6
+      commitTitle: 'fix: added all auth url in oathkeeper (#3299)...'
+      sha: dad1529b69dd6ea063d851e690522f0dfc069f14
       tags:
-      - 0.13.115-1-g8d252d564
+      - 0.13.116-1-gdad1529b6
     path: ./
   path: ./graphql
 kind: LockConfig
