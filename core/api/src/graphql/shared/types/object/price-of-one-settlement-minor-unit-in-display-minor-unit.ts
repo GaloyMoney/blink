@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import IPrice from "../abstract/price"
 import SafeInt from "../scalar/safe-int"
+
+import { GT } from "@/graphql/index"
 
 const PriceOfOneSettlementMinorUnitInDisplayMinorUnit = GT.Object({
   name: "PriceOfOneSettlementMinorUnitInDisplayMinorUnit",

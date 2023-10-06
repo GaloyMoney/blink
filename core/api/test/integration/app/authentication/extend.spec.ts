@@ -1,7 +1,7 @@
-import { maybeExtendSession } from "@app/authentication"
-import { extendSession } from "@services/kratos"
+import { maybeExtendSession } from "@/app/authentication"
+import { extendSession } from "@/services/kratos"
 
-jest.mock("@services/kratos", () => {
+jest.mock("@/services/kratos", () => {
   return {
     extendSession: jest.fn(),
   }

@@ -1,5 +1,5 @@
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const Hex32Bytes = GT.Scalar({
   name: "Hex32Bytes",

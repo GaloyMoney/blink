@@ -1,8 +1,8 @@
 import { ApolloError } from "apollo-server-errors"
 
-import { getOnChainWalletConfig } from "@config"
+import { getOnChainWalletConfig } from "@/config"
 
-import { baseLogger } from "@services/logger"
+import { baseLogger } from "@/services/logger"
 
 const onChainWalletConfig = getOnChainWalletConfig()
 

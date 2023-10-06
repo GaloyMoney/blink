@@ -1,6 +1,6 @@
-import { MAX_LENGTH_FOR_FEEDBACK } from "@config"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { MAX_LENGTH_FOR_FEEDBACK } from "@/config"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const Feedback = GT.Scalar({
   name: "Feedback",

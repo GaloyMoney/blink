@@ -1,9 +1,10 @@
 import { createChainAddress } from "lightning"
-import { PartialResult } from "@app/partial-result"
-import { getBalanceForWallet, getTransactionsForWallets } from "@app/wallets"
-import { RepositoryError } from "@domain/errors"
-import { WalletsRepository, WalletOnChainAddressesRepository } from "@services/mongoose"
-import { getActiveLnd } from "@services/lnd/config"
+
+import { PartialResult } from "@/app/partial-result"
+import { getBalanceForWallet, getTransactionsForWallets } from "@/app/wallets"
+import { RepositoryError } from "@/domain/errors"
+import { WalletsRepository, WalletOnChainAddressesRepository } from "@/services/mongoose"
+import { getActiveLnd } from "@/services/lnd/config"
 
 export const getBalanceHelper = async (
   walletId: WalletId,

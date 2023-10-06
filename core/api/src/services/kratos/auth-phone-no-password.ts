@@ -2,15 +2,6 @@ import { CreateIdentityBody, UpdateIdentityBody } from "@ory/client"
 import libCookie from "cookie"
 import setCookie from "set-cookie-parser"
 
-import { KRATOS_MASTER_USER_PASSWORD } from "@config"
-
-import {
-  LikelyNoUserWithThisPhoneExistError,
-  LikelyUserAlreadyExistError,
-} from "@domain/authentication/errors"
-
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
-
 import {
   AuthenticationKratosError,
   IncompatibleSchemaUpgradeError,
@@ -18,8 +9,19 @@ import {
   KratosError,
   UnknownKratosError,
 } from "./errors"
+
 import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
+
 import { SchemaIdType } from "./schema"
+
+import { KRATOS_MASTER_USER_PASSWORD } from "@/config"
+
+import {
+  LikelyNoUserWithThisPhoneExistError,
+  LikelyUserAlreadyExistError,
+} from "@/domain/authentication/errors"
+
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 // login with phone
 

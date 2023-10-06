@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-import Username from "@graphql/shared/types/scalar/username"
-import { mapError } from "@graphql/error-map"
+import { GT } from "@/graphql/index"
+import Username from "@/graphql/shared/types/scalar/username"
+import { mapError } from "@/graphql/error-map"
 
-import { Accounts } from "@app"
+import { Accounts } from "@/app"
 
 const UsernameAvailableQuery = GT.Field({
   type: GT.Boolean,

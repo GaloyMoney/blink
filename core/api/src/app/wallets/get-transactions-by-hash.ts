@@ -1,7 +1,7 @@
-import { memoSharingConfig } from "@config"
-import { WalletTransactionHistory } from "@domain/wallets"
+import { memoSharingConfig } from "@/config"
+import { WalletTransactionHistory } from "@/domain/wallets"
 
-import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
+import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
 
 export const getTransactionsByHash = async (
   hash: PaymentHash | OnChainTxHash,

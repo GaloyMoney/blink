@@ -1,5 +1,5 @@
-import { disableNotificationChannel as domainDisableNotificationChannel } from "@domain/notifications"
-import { AccountsRepository } from "@services/mongoose"
+import { disableNotificationChannel as domainDisableNotificationChannel } from "@/domain/notifications"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const disableNotificationChannel = async ({
   accountId,

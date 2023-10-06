@@ -1,12 +1,13 @@
-import { Accounts, Payments } from "@app"
-import { checkedToWalletId } from "@domain/wallets"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
-import PaymentSendPayload from "@graphql/public/types/payload/payment-send"
-import Memo from "@graphql/shared/types/scalar/memo"
-import SatAmount from "@graphql/shared/types/scalar/sat-amount"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
 import dedent from "dedent"
+
+import { Accounts, Payments } from "@/app"
+import { checkedToWalletId } from "@/domain/wallets"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
+import PaymentSendPayload from "@/graphql/public/types/payload/payment-send"
+import Memo from "@/graphql/shared/types/scalar/memo"
+import SatAmount from "@/graphql/shared/types/scalar/sat-amount"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 
 const IntraLedgerPaymentSendInput = GT.Input({
   name: "IntraLedgerPaymentSendInput",

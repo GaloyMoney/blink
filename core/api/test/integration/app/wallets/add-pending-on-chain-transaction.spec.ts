@@ -1,10 +1,10 @@
-import { addPendingTransaction } from "@app/wallets"
+import { addPendingTransaction } from "@/app/wallets"
 
-import { WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@/domain/shared"
 
-import { WalletOnChainAddressesRepository } from "@services/mongoose"
-import { Wallet, WalletOnChainPendingReceive } from "@services/mongoose/schema"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { WalletOnChainAddressesRepository } from "@/services/mongoose"
+import { Wallet, WalletOnChainPendingReceive } from "@/services/mongoose/schema"
+import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
 
 import { createRandomUserAndWallets } from "test/helpers"
 

@@ -1,4 +1,4 @@
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const updateAccountLevel = async ({
   id,

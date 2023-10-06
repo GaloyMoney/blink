@@ -1,21 +1,22 @@
-import { toSats } from "@domain/bitcoin"
-import { WalletCurrency } from "@domain/shared"
-import { toCents, UsdDisplayCurrency } from "@domain/fiat"
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
-import {
-  GaloyNotificationCategories,
-  NotificationsServiceError,
-  NotificationType,
-} from "@domain/notifications"
-
-import { PubSubService } from "@services/pubsub"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
-
 import {
   handleCommonNotificationErrors,
   PushNotificationsService,
 } from "./push-notifications"
+
 import { createPushNotificationContent } from "./create-push-notification-content"
+
+import { toSats } from "@/domain/bitcoin"
+import { WalletCurrency } from "@/domain/shared"
+import { toCents, UsdDisplayCurrency } from "@/domain/fiat"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
+import {
+  GaloyNotificationCategories,
+  NotificationsServiceError,
+  NotificationType,
+} from "@/domain/notifications"
+
+import { PubSubService } from "@/services/pubsub"
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()

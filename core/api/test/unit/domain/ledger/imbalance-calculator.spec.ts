@@ -1,7 +1,7 @@
-import { ONE_DAY } from "@config"
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
-import { BtcPaymentAmount, WalletCurrency, ZERO_SATS } from "@domain/shared"
-import { WithdrawalFeePriceMethod } from "@domain/wallets"
+import { ONE_DAY } from "@/config"
+import { ImbalanceCalculator } from "@/domain/ledger/imbalance-calculator"
+import { BtcPaymentAmount, WalletCurrency, ZERO_SATS } from "@/domain/shared"
+import { WithdrawalFeePriceMethod } from "@/domain/wallets"
 
 const btcWallet: Wallet = {
   id: "walletId" as WalletId,

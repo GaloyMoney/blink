@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-
 import { NotificationChannelSettings } from "./notification-channel-settings"
+
+import { GT } from "@/graphql/index"
 
 export const NotificationSettings = GT.Object<
   NotificationSettings,

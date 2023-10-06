@@ -1,12 +1,12 @@
-import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { getActiveLnd, parseLndErrorDetails } from "@services/lnd/config"
-
 import {
   createInvoice,
   payViaPaymentDetails,
   payViaRoutes,
   LightningError as LnError,
 } from "lightning"
+
+import { decodeInvoice } from "@/domain/bitcoin/lightning"
+import { getActiveLnd, parseLndErrorDetails } from "@/services/lnd/config"
 
 import { getError, lndOutside1 } from "test/helpers"
 

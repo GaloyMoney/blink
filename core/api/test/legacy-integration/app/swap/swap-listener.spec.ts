@@ -1,9 +1,9 @@
 /* eslint-disable jest/no-conditional-expect */
-import { handleSwapOutCompleted } from "@app/swap"
-import { lnd1LoopConfig } from "@app/swap/get-active-loopd"
-import { WalletCurrency } from "@domain/shared"
-import { LoopService } from "@services/loopd"
-import { sleep } from "@utils"
+import { handleSwapOutCompleted } from "@/app/swap"
+import { lnd1LoopConfig } from "@/app/swap/get-active-loopd"
+import { WalletCurrency } from "@/domain/shared"
+import { LoopService } from "@/services/loopd"
+import { sleep } from "@/utils"
 
 import { mineBlockAndSyncAll } from "test/helpers"
 

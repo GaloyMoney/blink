@@ -1,6 +1,6 @@
-import { BtcNetwork } from "@domain/bitcoin"
-import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
-import { InvalidOnChainAddress } from "@domain/errors"
+import { BtcNetwork } from "@/domain/bitcoin"
+import { checkedToOnChainAddress } from "@/domain/bitcoin/onchain"
+import { InvalidOnChainAddress } from "@/domain/errors"
 
 const addresses = [
   { network: "mainnet", address: "17sELMebjQNf1k1CRucF67QAtegNsTjXUn" },

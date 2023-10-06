@@ -1,9 +1,9 @@
-import { Callback } from "@app"
+import { Callback } from "@/app"
 
-import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import EndpointId from "@graphql/public/types/scalar/endpoint-id"
-import SuccessPayload from "@graphql/shared/types/payload/success-payload"
+import { GT } from "@/graphql/index"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import EndpointId from "@/graphql/public/types/scalar/endpoint-id"
+import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
 
 const CallbackEndpointDeleteInput = GT.Input({
   name: "CallbackEndpointDeleteInput",

@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import AccountUpdateNotificationSettingsPayload from "@graphql/public/types/payload/account-update-notification-settings"
-import { Accounts } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import NotificationChannel from "@graphql/shared/types/scalar/notification-channel"
+import AccountUpdateNotificationSettingsPayload from "@/graphql/public/types/payload/account-update-notification-settings"
+import { Accounts } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import NotificationChannel from "@/graphql/shared/types/scalar/notification-channel"
 
 const AccountEnableNotificationChannelInput = GT.Input({
   name: "AccountEnableNotificationChannelInput",

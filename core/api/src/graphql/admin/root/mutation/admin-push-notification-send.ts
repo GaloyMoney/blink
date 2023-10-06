@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import AdminPushNotificationSendPayload from "@graphql/admin/types/payload/admin-push-notification-send"
-import { Admin } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import NotificationCategory from "@graphql/shared/types/scalar/notification-category"
+import AdminPushNotificationSendPayload from "@/graphql/admin/types/payload/admin-push-notification-send"
+import { Admin } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import NotificationCategory from "@/graphql/shared/types/scalar/notification-category"
 
 const AdminPushNotificationSendInput = GT.Input({
   name: "AdminPushNotificationSendInput",

@@ -1,10 +1,10 @@
 import { GraphQLResolveInfo, GraphQLFieldResolver } from "graphql"
 
-import { Accounts } from "@app"
-import { mapError } from "@graphql/error-map"
-import { mutationFields, queryFields } from "@graphql/public"
-import { InvalidAccountError, InvalidWalletForAccountError } from "@domain/accounts"
-import { InvalidWalletId } from "@domain/errors"
+import { Accounts } from "@/app"
+import { mapError } from "@/graphql/error-map"
+import { mutationFields, queryFields } from "@/graphql/public"
+import { InvalidAccountError, InvalidWalletForAccountError } from "@/domain/accounts"
+import { InvalidWalletId } from "@/domain/errors"
 
 type InputArgs = Record<"input", Record<string, unknown>>
 

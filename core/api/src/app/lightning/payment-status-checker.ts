@@ -1,6 +1,6 @@
-import { RepositoryError } from "@domain/errors"
-import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { LedgerService } from "@services/ledger"
+import { RepositoryError } from "@/domain/errors"
+import { decodeInvoice } from "@/domain/bitcoin/lightning"
+import { LedgerService } from "@/services/ledger"
 
 export const PaymentStatusChecker = async (uncheckedPaymentRequest: string) => {
   const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)

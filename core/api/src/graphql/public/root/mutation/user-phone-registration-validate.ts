@@ -1,11 +1,11 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import Phone from "@graphql/shared/types/scalar/phone"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import Phone from "@/graphql/shared/types/scalar/phone"
 
-import OneTimeAuthCode from "@graphql/shared/types/scalar/one-time-auth-code"
-import UserPhoneRegistrationValidatePayload from "@graphql/public/types/payload/user-phone-registration-validate"
+import OneTimeAuthCode from "@/graphql/shared/types/scalar/one-time-auth-code"
+import UserPhoneRegistrationValidatePayload from "@/graphql/public/types/payload/user-phone-registration-validate"
 
 const UserPhoneRegistrationValidateInput = GT.Input({
   name: "UserPhoneRegistrationValidateInput",

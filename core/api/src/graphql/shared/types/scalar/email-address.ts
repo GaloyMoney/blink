@@ -1,6 +1,6 @@
-import { checkedToEmailAddress } from "@domain/users"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { checkedToEmailAddress } from "@/domain/users"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const EmailAddress = GT.Scalar({
   name: "EmailAddress",

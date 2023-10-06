@@ -1,13 +1,14 @@
-import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import Memo from "@graphql/shared/types/scalar/memo"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import { Payments } from "@app"
-import PaymentSendPayload from "@graphql/public/types/payload/payment-send"
-import LnIPaymentRequest from "@graphql/shared/types/scalar/ln-payment-request"
-import { InputValidationError } from "@graphql/error"
-import CentAmount from "@graphql/public/types/scalar/cent-amount"
 import dedent from "dedent"
+
+import { GT } from "@/graphql/index"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import Memo from "@/graphql/shared/types/scalar/memo"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import { Payments } from "@/app"
+import PaymentSendPayload from "@/graphql/public/types/payload/payment-send"
+import LnIPaymentRequest from "@/graphql/shared/types/scalar/ln-payment-request"
+import { InputValidationError } from "@/graphql/error"
+import CentAmount from "@/graphql/public/types/scalar/cent-amount"
 
 const LnNoAmountUsdInvoicePaymentInput = GT.Input({
   name: "LnNoAmountUsdInvoicePaymentInput",

@@ -1,3 +1,5 @@
+import { Languages } from "./languages"
+
 import {
   InvalidDeviceId,
   InvalidDeviceTokenError,
@@ -6,9 +8,7 @@ import {
   InvalidIdentityUsername,
   InvalidLanguageError,
   InvalidPhoneNumber,
-} from "@domain/errors"
-
-import { Languages } from "./languages"
+} from "@/domain/errors"
 
 export * from "./phone-metadata-authorizer"
 export * from "./phone-metadata-validator"

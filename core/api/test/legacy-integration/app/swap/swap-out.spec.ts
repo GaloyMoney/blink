@@ -1,22 +1,22 @@
 /* eslint-disable jest/no-conditional-expect */
-import { swapOut } from "@app/swap"
+import { swapOut } from "@/app/swap"
 import {
   getActiveLoopd,
   lnd1LoopConfig,
   lnd2LoopConfig,
-} from "@app/swap/get-active-loopd"
-import { OnChainService } from "@services/bria"
+} from "@/app/swap/get-active-loopd"
+import { OnChainService } from "@/services/bria"
 
 import {
   SwapClientNotResponding,
   SwapErrorChannelBalanceTooLow,
-} from "@domain/swap/errors"
-import { SwapOutChecker } from "@domain/swap"
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
+} from "@/domain/swap/errors"
+import { SwapOutChecker } from "@/domain/swap"
+import { WalletCurrency, ZERO_SATS } from "@/domain/shared"
 
-import { baseLogger } from "@services/logger"
-import { LoopService } from "@services/loopd"
-import { lndsBalances } from "@services/lnd/utils"
+import { baseLogger } from "@/services/logger"
+import { LoopService } from "@/services/loopd"
+import { lndsBalances } from "@/services/lnd/utils"
 
 describe("Swap", () => {
   const activeLoopd = getActiveLoopd()

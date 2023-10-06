@@ -1,12 +1,15 @@
-import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
+
 import { ObjMap } from "graphql/jsutils/ObjMap"
-import { AccountsRepository } from "@services/mongoose"
-import { getCurrencyMajorExponent, priceAmountFromNumber } from "@domain/fiat"
-import { DepositFeeCalculator } from "@domain/wallets"
-import { AmountCalculator } from "@domain/shared"
 
 import { randomUserId } from "./random"
+
+import { gqlAdminSchema } from "@/graphql/admin"
+
+import { AccountsRepository } from "@/services/mongoose"
+import { getCurrencyMajorExponent, priceAmountFromNumber } from "@/domain/fiat"
+import { DepositFeeCalculator } from "@/domain/wallets"
+import { AmountCalculator } from "@/domain/shared"
 
 export * from "./bitcoin-core"
 export * from "./bria"

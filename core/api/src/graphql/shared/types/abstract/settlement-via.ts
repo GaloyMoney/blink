@@ -1,17 +1,18 @@
 import dedent from "dedent"
 
-import { GT } from "@graphql/index"
-
-import { SettlementMethod } from "@domain/wallets"
-
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-
-import Username from "@graphql/shared/types/scalar/username"
-
-import LnPaymentPreImage from "@graphql/shared/types/scalar/ln-payment-preimage"
-
 import OnChainTxHash from "../scalar/onchain-tx-hash"
+
 import LnPaymentSecret from "../scalar/ln-payment-secret"
+
+import { GT } from "@/graphql/index"
+
+import { SettlementMethod } from "@/domain/wallets"
+
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+
+import Username from "@/graphql/shared/types/scalar/username"
+
+import LnPaymentPreImage from "@/graphql/shared/types/scalar/ln-payment-preimage"
 
 const SettlementViaIntraLedger = GT.Object({
   name: "SettlementViaIntraLedger",

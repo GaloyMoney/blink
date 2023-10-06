@@ -1,6 +1,6 @@
-import { OnChainService } from "@services/bria"
-import { redis } from "@services/redis"
-import { Account } from "@services/mongoose/schema"
+import { OnChainService } from "@/services/bria"
+import { redis } from "@/services/redis"
+import { Account } from "@/services/mongoose/schema"
 
 import {
   lnd1,

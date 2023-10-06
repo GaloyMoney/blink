@@ -1,10 +1,10 @@
-import { CouldNotFindBtcWalletForAccountError } from "@domain/errors"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { CouldNotFindBtcWalletForAccountError } from "@/domain/errors"
+import { ErrorLevel, WalletCurrency } from "@/domain/shared"
 
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import * as LedgerFacade from "@services/ledger/facade"
-import { MissingExpectedDisplayAmountsForTransactionError } from "@domain/ledger"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { MissingExpectedDisplayAmountsForTransactionError } from "@/domain/ledger"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const reimburseFailedUsdPayment = async <
   S extends WalletCurrency,

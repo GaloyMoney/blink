@@ -1,5 +1,3 @@
-import { CarrierType } from "@domain/phone-provider"
-
 import {
   InvalidCarrierForPhoneMetadataError,
   InvalidCarrierTypeForPhoneMetadataError,
@@ -7,6 +5,8 @@ import {
   InvalidErrorCodeForPhoneMetadataError,
   InvalidMobileCountryCodeForPhoneMetadataError,
 } from "./errors"
+
+import { CarrierType } from "@/domain/phone-provider"
 
 const checkedToCarrierType = (
   rawCarrierType: string | undefined | null,

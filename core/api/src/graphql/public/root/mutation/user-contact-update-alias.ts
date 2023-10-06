@@ -1,10 +1,10 @@
-import { GT } from "@graphql/index"
-import UserContactUpdateAliasPayload from "@graphql/public/types/payload/user-contact-update-alias"
-import ContactAlias from "@graphql/public/types/scalar/contact-alias"
-import Username from "@graphql/shared/types/scalar/username"
-import { Accounts } from "@app"
-import { InputValidationError } from "@graphql/error"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { GT } from "@/graphql/index"
+import UserContactUpdateAliasPayload from "@/graphql/public/types/payload/user-contact-update-alias"
+import ContactAlias from "@/graphql/public/types/scalar/contact-alias"
+import Username from "@/graphql/shared/types/scalar/username"
+import { Accounts } from "@/app"
+import { InputValidationError } from "@/graphql/error"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 
 const UserContactUpdateAliasInput = GT.Input({
   name: "UserContactUpdateAliasInput",

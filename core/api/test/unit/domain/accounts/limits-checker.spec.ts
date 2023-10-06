@@ -1,11 +1,11 @@
-import { getAccountLimits } from "@config"
-import { AccountTxVolumeLimitChecker } from "@domain/accounts"
+import { getAccountLimits } from "@/config"
+import { AccountTxVolumeLimitChecker } from "@/domain/accounts"
 import {
   IntraledgerLimitsExceededError,
   TradeIntraAccountLimitsExceededError,
   WithdrawalLimitsExceededError,
-} from "@domain/errors"
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+} from "@/domain/errors"
+import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 
 let usdPaymentAmount: UsdPaymentAmount
 let accountLimits: IAccountLimits

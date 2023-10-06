@@ -1,18 +1,18 @@
-import { OnboardingEarn } from "@config"
+import { fromObjectId, parseRepositoryError, toObjectId } from "./utils"
 
-import { AccountStatus } from "@domain/accounts"
+import { OnboardingEarn } from "@/config"
+
+import { AccountStatus } from "@/domain/accounts"
 import {
   CouldNotFindAccountError,
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
   CouldNotFindAccountFromUuidError,
   RepositoryError,
-} from "@domain/errors"
-import { UsdDisplayCurrency } from "@domain/fiat"
+} from "@/domain/errors"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
-import { Account } from "@services/mongoose/schema"
-
-import { fromObjectId, parseRepositoryError, toObjectId } from "./utils"
+import { Account } from "@/services/mongoose/schema"
 
 const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")

@@ -13,12 +13,13 @@
  */
 
 import mongoose from "mongoose"
-import { updateAccountWithdrawFee } from "@app/accounts/update-account-withdraw-fee"
-import { setupMongoConnection } from "@services/mongodb"
-import { WalletsRepository } from "@services/mongoose"
-import { checkedToWalletId } from "@domain/wallets"
 
 import { feeUpdateOperations } from "./fee-update-operations.json"
+
+import { updateAccountWithdrawFee } from "@/app/accounts/update-account-withdraw-fee"
+import { setupMongoConnection } from "@/services/mongodb"
+import { WalletsRepository } from "@/services/mongoose"
+import { checkedToWalletId } from "@/domain/wallets"
 
 type feeUpdateOperation = {
   walletId: string

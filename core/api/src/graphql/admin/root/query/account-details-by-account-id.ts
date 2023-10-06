@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import AuditedAccount from "@graphql/admin/types/object/account"
-import { mapError } from "@graphql/error-map"
+import AuditedAccount from "@/graphql/admin/types/object/account"
+import { mapError } from "@/graphql/error-map"
 
-import { Admin } from "@app"
+import { Admin } from "@/app"
 
 const AccountDetailsByAccountId = GT.Field({
   args: {

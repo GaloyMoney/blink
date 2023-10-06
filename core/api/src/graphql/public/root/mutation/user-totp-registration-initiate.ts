@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import AuthToken from "@graphql/shared/types/scalar/auth-token"
-import UserTotpRegistrationInitiatePayload from "@graphql/public/types/payload/user-totp-registration-initiate"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import AuthToken from "@/graphql/shared/types/scalar/auth-token"
+import UserTotpRegistrationInitiatePayload from "@/graphql/public/types/payload/user-totp-registration-initiate"
 
 const UserTotpRegistrationInitiateInput = GT.Input({
   name: "UserTotpRegistrationInitiateInput",

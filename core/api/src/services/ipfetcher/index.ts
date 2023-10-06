@@ -1,10 +1,11 @@
 import axios from "axios"
-import { UnknownIpFetcherServiceError } from "@domain/ipfetcher"
-import { PROXY_CHECK_APIKEY } from "@config"
+
+import { UnknownIpFetcherServiceError } from "@/domain/ipfetcher"
+import { PROXY_CHECK_APIKEY } from "@/config"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 
 type Params = {
   vpn: string

@@ -1,15 +1,20 @@
 import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
 
-import { Authentication } from "@app"
 import basicAuth from "basic-auth"
 
-import { mapError } from "@graphql/error-map"
+import bodyParser from "body-parser"
+
+import cookieParser from "cookie-parser"
+
+import { Authentication } from "@/app"
+
+import { mapError } from "@/graphql/error-map"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
   tracer,
-} from "@services/tracing"
+} from "@/services/tracing"
 
 import {
   elevatingSessionWithTotp,
@@ -17,36 +22,33 @@ import {
   loginWithEmailToken,
   logoutCookie,
   requestEmailCode,
-} from "@app/authentication"
-import { parseIps } from "@domain/accounts-ips"
-import { checkedToEmailAddress, checkedToPhoneNumber } from "@domain/users"
-import bodyParser from "body-parser"
-
-import cookieParser from "cookie-parser"
+} from "@/app/authentication"
+import { parseIps } from "@/domain/accounts-ips"
+import { checkedToEmailAddress, checkedToPhoneNumber } from "@/domain/users"
 
 import {
   checkedToAuthToken,
   checkedToEmailLoginId,
   checkedToTotpCode,
   validateKratosCookie,
-} from "@services/kratos"
+} from "@/services/kratos"
 
-import { KratosCookie, parseKratosCookies } from "@services/kratos/cookie"
+import { KratosCookie, parseKratosCookies } from "@/services/kratos/cookie"
 
-import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@config"
+import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
-import { parseErrorMessageFromUnknown } from "@domain/shared"
+import { parseErrorMessageFromUnknown } from "@/domain/shared"
 
-import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@domain/authentication"
+import { checkedToEmailCode, validOneTimeAuthCodeValue } from "@/domain/authentication"
 
 import {
   EmailCodeInvalidError,
   EmailValidationSubmittedTooOftenError,
-} from "@domain/authentication/errors"
+} from "@/domain/authentication/errors"
 
-import { UserLoginIpRateLimiterExceededError } from "@domain/rate-limit/errors"
+import { UserLoginIpRateLimiterExceededError } from "@/domain/rate-limit/errors"
 
-import { registerCaptchaGeetest } from "@app/captcha"
+import { registerCaptchaGeetest } from "@/app/captcha"
 
 const authRouter = express.Router({ caseSensitive: true })
 

@@ -1,6 +1,6 @@
 type PhoneProviderServiceError = import("./errors").PhoneProviderServiceError
 type UnknownPhoneProviderServiceError =
-  import("@domain/phone-provider").UnknownPhoneProviderServiceError
+  import("@/domain/phone-provider").UnknownPhoneProviderServiceError
 type PhoneCodeInvalidError = import("./errors").PhoneCodeInvalidError
 
 interface IPhoneProviderService {

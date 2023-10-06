@@ -1,5 +1,5 @@
-import { getGeetestConfig } from "@config"
-import Geetest from "@services/geetest"
+import { getGeetestConfig } from "@/config"
+import Geetest from "@/services/geetest"
 
 export const registerCaptchaGeetest = async () => {
   const geeTestConfig = getGeetestConfig()

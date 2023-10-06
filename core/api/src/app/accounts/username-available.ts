@@ -1,6 +1,6 @@
-import { checkedToUsername } from "@domain/accounts"
-import { CouldNotFindError } from "@domain/errors"
-import { AccountsRepository } from "@services/mongoose"
+import { checkedToUsername } from "@/domain/accounts"
+import { CouldNotFindError } from "@/domain/errors"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const usernameAvailable = async (
   username: Username,

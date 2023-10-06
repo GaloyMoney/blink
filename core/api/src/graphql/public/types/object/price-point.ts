@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-
 import Timestamp from "../../../shared/types/scalar/timestamp"
 
 import Price from "./price"
+
+import { GT } from "@/graphql/index"
 
 const PricePoint = GT.Object({
   name: "PricePoint",

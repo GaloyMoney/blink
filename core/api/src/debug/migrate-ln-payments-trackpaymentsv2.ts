@@ -8,21 +8,21 @@
  *      2>&1 | tee migration.logs
  */
 
-import { isUp } from "@services/lnd/health"
-import { lndsConnect } from "@services/lnd/auth"
-import { PaymentNotFoundError, PaymentStatus } from "@domain/bitcoin/lightning"
-import { CouldNotFindError } from "@domain/errors"
-import { LedgerService } from "@services/ledger"
-import { LndService } from "@services/lnd"
-import { baseLogger } from "@services/logger"
-import { LnPaymentsRepository } from "@services/mongoose"
+import { isUp } from "@/services/lnd/health"
+import { lndsConnect } from "@/services/lnd/auth"
+import { PaymentNotFoundError, PaymentStatus } from "@/domain/bitcoin/lightning"
+import { CouldNotFindError } from "@/domain/errors"
+import { LedgerService } from "@/services/ledger"
+import { LndService } from "@/services/lnd"
+import { baseLogger } from "@/services/logger"
+import { LnPaymentsRepository } from "@/services/mongoose"
 import {
   addAttributesToCurrentSpan,
   addEventToCurrentSpan,
   asyncRunInSpan,
   SemanticAttributes,
-} from "@services/tracing"
-import { setupMongoConnection } from "@services/mongodb"
+} from "@/services/tracing"
+import { setupMongoConnection } from "@/services/mongodb"
 
 let lndService
 

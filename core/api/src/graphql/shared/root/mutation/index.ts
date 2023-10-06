@@ -1,4 +1,4 @@
-import { ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
+import { ExchangeCurrencyUnit, WalletCurrency } from "@/domain/shared"
 
 export const normalizePaymentAmount = (
   paymentAmount: PaymentAmount<WalletCurrency>,

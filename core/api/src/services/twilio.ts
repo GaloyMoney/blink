@@ -1,12 +1,16 @@
 import twilio from "twilio"
 
+import { isAxiosError } from "axios"
+
+import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
+
 import {
   TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN,
   TWILIO_VERIFY_SERVICE_ID,
   UNSECURE_DEFAULT_LOGIN_CODE,
   getTestAccounts,
-} from "@config"
+} from "@/config"
 import {
   ExpiredOrNonExistentPhoneNumberError,
   InvalidOrApprovedVerificationError,
@@ -19,16 +23,12 @@ import {
   RestrictedRegionPhoneProviderError,
   UnknownPhoneProviderServiceError,
   UnsubscribedRecipientPhoneProviderError,
-} from "@domain/phone-provider"
-import { baseLogger } from "@services/logger"
+} from "@/domain/phone-provider"
+import { baseLogger } from "@/services/logger"
 
-import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { NotImplementedError } from "@domain/errors"
-import { parseErrorMessageFromUnknown } from "@domain/shared"
-
-import { isAxiosError } from "axios"
-
-import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
+import { TestAccountsChecker } from "@/domain/accounts/test-accounts-checker"
+import { NotImplementedError } from "@/domain/errors"
+import { parseErrorMessageFromUnknown } from "@/domain/shared"
 
 export const TWILIO_ACCOUNT_TEST = "AC_twilio_id"
 

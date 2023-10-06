@@ -1,5 +1,5 @@
-import { AuthorizationError } from "@domain/errors"
-import { ValidationError, ErrorLevel } from "@domain/shared"
+import { AuthorizationError } from "@/domain/errors"
+import { ValidationError, ErrorLevel } from "@/domain/shared"
 
 export class UnauthorizedPhoneError extends AuthorizationError {}
 export class ExpectedPhoneMetadataMissingError extends UnauthorizedPhoneError {}

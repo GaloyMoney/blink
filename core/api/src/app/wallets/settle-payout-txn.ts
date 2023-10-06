@@ -1,17 +1,17 @@
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 
-import { displayAmountFromNumber } from "@domain/fiat"
-import { InvalidLedgerTransactionStateError } from "@domain/errors"
-import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+import { displayAmountFromNumber } from "@/domain/fiat"
+import { InvalidLedgerTransactionStateError } from "@/domain/errors"
+import { WalletCurrency, paymentAmountFromNumber } from "@/domain/shared"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
-import * as LedgerFacade from "@services/ledger/facade"
+import * as LedgerFacade from "@/services/ledger/facade"
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
-} from "@services/mongoose"
-import { NotificationsService } from "@services/notifications"
+} from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 
 export const settlePayout = async (
   payoutId: PayoutId,

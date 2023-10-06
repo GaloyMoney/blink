@@ -1,9 +1,9 @@
-import { Accounts } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
+import { Accounts } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
 
-import AccountUpdateDefaultWalletIdPayload from "@graphql/public/types/payload/account-update-default-wallet-id"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
+import AccountUpdateDefaultWalletIdPayload from "@/graphql/public/types/payload/account-update-default-wallet-id"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
 
 const AccountUpdateDefaultWalletIdInput = GT.Input({
   name: "AccountUpdateDefaultWalletIdInput",

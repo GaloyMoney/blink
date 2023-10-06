@@ -1,22 +1,3 @@
-import { Accounts, Prices, Wallets } from "@app"
-
-import {
-  majorToMinorUnit,
-  SAT_PRICE_PRECISION_OFFSET,
-  USD_PRICE_PRECISION_OFFSET,
-} from "@domain/fiat"
-import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
-
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-import {
-  connectionArgs,
-  connectionFromPaginatedArray,
-  checkedConnectionArgs,
-} from "@graphql/connections"
-
-import { WalletsRepository } from "@services/mongoose"
-
 import IAccount from "../abstract/account"
 import Wallet from "../../../shared/types/abstract/wallet"
 
@@ -29,6 +10,23 @@ import { TransactionConnection } from "../../../shared/types/object/transaction"
 
 import RealtimePrice from "./realtime-price"
 import { NotificationSettings } from "./notification-settings"
+
+import { WalletsRepository } from "@/services/mongoose"
+
+import {
+  connectionArgs,
+  connectionFromPaginatedArray,
+  checkedConnectionArgs,
+} from "@/graphql/connections"
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import {
+  majorToMinorUnit,
+  SAT_PRICE_PRECISION_OFFSET,
+  USD_PRICE_PRECISION_OFFSET,
+} from "@/domain/fiat"
+import { CouldNotFindTransactionsForAccountError } from "@/domain/errors"
+import { Accounts, Prices, Wallets } from "@/app"
 
 const BusinessAccount = GT.Object({
   name: "BusinessAccount",

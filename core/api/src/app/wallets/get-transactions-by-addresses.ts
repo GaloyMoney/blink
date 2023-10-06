@@ -1,12 +1,12 @@
-import { memoSharingConfig } from "@config"
-import { PartialResult } from "@app/partial-result"
+import { memoSharingConfig } from "@/config"
+import { PartialResult } from "@/app/partial-result"
 
-import { LedgerError } from "@domain/ledger"
-import { WalletTransactionHistory } from "@domain/wallets"
-import { CouldNotFindError } from "@domain/errors"
+import { LedgerError } from "@/domain/ledger"
+import { WalletTransactionHistory } from "@/domain/wallets"
+import { CouldNotFindError } from "@/domain/errors"
 
-import { getNonEndUserWalletIds, LedgerService } from "@services/ledger"
-import { WalletOnChainPendingReceiveRepository } from "@services/mongoose"
+import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
+import { WalletOnChainPendingReceiveRepository } from "@/services/mongoose"
 
 export const getTransactionsForWalletsByAddresses = async ({
   wallets,

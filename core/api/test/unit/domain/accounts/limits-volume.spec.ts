@@ -1,6 +1,6 @@
-import { getAccountLimits } from "@config"
-import { AccountTxVolumeRemaining } from "@domain/accounts"
-import { WalletPriceRatio } from "@domain/payments"
+import { getAccountLimits } from "@/config"
+import { AccountTxVolumeRemaining } from "@/domain/accounts"
+import { WalletPriceRatio } from "@/domain/payments"
 import {
   AmountCalculator,
   ONE_CENT,
@@ -8,7 +8,7 @@ import {
   ZERO_CENTS,
   ZERO_SATS,
   paymentAmountFromNumber,
-} from "@domain/shared"
+} from "@/domain/shared"
 
 const calc = AmountCalculator()
 

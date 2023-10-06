@@ -1,4 +1,4 @@
-import { LndService } from "@services/lnd"
+import { LndService } from "@/services/lnd"
 
 export const lookupPaymentByHash = async (
   paymentHash: PaymentHash,

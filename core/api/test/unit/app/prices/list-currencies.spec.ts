@@ -1,10 +1,10 @@
-import { CacheKeys } from "@domain/cache"
-import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache/local-cache"
-import { PriceCurrenciesNotAvailableError } from "@domain/price"
-import { listCurrencies } from "@app/prices"
+import { CacheKeys } from "@/domain/cache"
+import * as PriceServiceImpl from "@/services/price"
+import { LocalCacheService } from "@/services/cache/local-cache"
+import { PriceCurrenciesNotAvailableError } from "@/domain/price"
+import { listCurrencies } from "@/app/prices"
 
-jest.mock("@services/tracing", () => ({
+jest.mock("@/services/tracing", () => ({
   wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
 }))
 

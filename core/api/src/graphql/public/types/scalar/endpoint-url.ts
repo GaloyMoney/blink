@@ -1,4 +1,4 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
 const EndpointUrl = GT.Scalar({
   name: "EndpointUrl",

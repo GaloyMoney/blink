@@ -18,43 +18,45 @@ import {
 } from "lightning"
 import debounce from "lodash.debounce"
 
-import { getSwapConfig, NETWORK, ONCHAIN_MIN_CONFIRMATIONS, TRIGGER_PORT } from "@config"
+import { SubscriptionInterruptedError } from "./errors"
+
+import { briaEventHandler } from "./event-handlers/bria"
+
+import healthzHandler from "./middlewares/healthz"
+
+import { getSwapConfig, NETWORK, ONCHAIN_MIN_CONFIRMATIONS, TRIGGER_PORT } from "@/config"
 
 import {
   Payments,
   Prices as PricesWithSpans,
   Swap as SwapWithSpans,
   Wallets as WalletWithSpans,
-} from "@app"
-import { uploadBackup } from "@app/admin/backup"
-import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
-import * as Wallets from "@app/wallets"
+} from "@/app"
+import { uploadBackup } from "@/app/admin/backup"
+import { lnd1LoopConfig, lnd2LoopConfig } from "@/app/swap/get-active-loopd"
+import * as Wallets from "@/app/wallets"
 
-import { TxDecoder } from "@domain/bitcoin/onchain"
-import { CacheKeys } from "@domain/cache"
-import { CouldNotFindWalletFromOnChainAddressError } from "@domain/errors"
-import { SwapTriggerError } from "@domain/swap/errors"
-import { checkedToDisplayCurrency } from "@domain/fiat"
-import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
-import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { WalletInvoiceChecker } from "@domain/wallet-invoices"
+import { TxDecoder } from "@/domain/bitcoin/onchain"
+import { CacheKeys } from "@/domain/cache"
+import { CouldNotFindWalletFromOnChainAddressError } from "@/domain/errors"
+import { SwapTriggerError } from "@/domain/swap/errors"
+import { checkedToDisplayCurrency } from "@/domain/fiat"
+import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
+import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
+import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
 
-import { BriaSubscriber } from "@services/bria"
-import { RedisCacheService } from "@services/cache"
-import { LedgerService } from "@services/ledger"
-import { LndService } from "@services/lnd"
-import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
-import { onChannelUpdated } from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
-import { LoopService } from "@services/loopd"
-import { setupMongoConnection } from "@services/mongodb"
-import { WalletInvoicesRepository } from "@services/mongoose"
-import { NotificationsService } from "@services/notifications"
-import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
-
-import { SubscriptionInterruptedError } from "./errors"
-import { briaEventHandler } from "./event-handlers/bria"
-import healthzHandler from "./middlewares/healthz"
+import { BriaSubscriber } from "@/services/bria"
+import { RedisCacheService } from "@/services/cache"
+import { LedgerService } from "@/services/ledger"
+import { LndService } from "@/services/lnd"
+import { activateLndHealthCheck, lndStatusEvent } from "@/services/lnd/health"
+import { onChannelUpdated } from "@/services/lnd/utils"
+import { baseLogger } from "@/services/logger"
+import { LoopService } from "@/services/loopd"
+import { setupMongoConnection } from "@/services/mongodb"
+import { WalletInvoicesRepository } from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })

@@ -1,6 +1,6 @@
-import { UnknownLedgerError } from "@domain/ledger"
-import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@domain/shared"
-import { LedgerService } from "@services/ledger"
+import { UnknownLedgerError } from "@/domain/ledger"
+import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@/domain/shared"
+import { LedgerService } from "@/services/ledger"
 
 import { createMandatoryUsers, recordWalletIdIntraLedgerPayment } from "test/helpers"
 

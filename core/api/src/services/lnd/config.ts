@@ -1,11 +1,11 @@
+import { lndsConnect } from "./auth"
+
 import {
   NoValidNodeForPubkeyError,
   OffChainServiceUnavailableError,
-} from "@domain/bitcoin/lightning"
+} from "@/domain/bitcoin/lightning"
 
-import { OnChainServiceUnavailableError } from "@domain/bitcoin/onchain"
-
-import { lndsConnect } from "./auth"
+import { OnChainServiceUnavailableError } from "@/domain/bitcoin/onchain"
 
 export const getLnds = ({
   type,

@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
-
 import Username from "../../../shared/types/scalar/username"
 
 import MapInfo from "./map-info"
+
+import { GT } from "@/graphql/index"
 
 const MapMarker = GT.Object({
   name: "MapMarker",

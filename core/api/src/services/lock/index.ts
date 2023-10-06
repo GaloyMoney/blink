@@ -1,17 +1,17 @@
 import Redlock, { ExecutionError } from "redlock"
 
-import { NETWORK } from "@config"
+import { NETWORK } from "@/config"
 
 import {
   ResourceAttemptsRedlockServiceError,
   ResourceAttemptsTimelockServiceError,
   ResourceExpiredLockServiceError,
   UnknownLockServiceError,
-} from "@domain/lock"
-import { parseErrorMessageFromUnknown } from "@domain/shared"
+} from "@/domain/lock"
+import { parseErrorMessageFromUnknown } from "@/domain/shared"
 
-import { redis } from "@services/redis"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+import { redis } from "@/services/redis"
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 const durationLockIdempotencyKey = (1000 * 60 * 60) as MilliSeconds // 1 hour
 

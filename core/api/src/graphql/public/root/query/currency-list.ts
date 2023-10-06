@@ -1,8 +1,8 @@
-import { Prices } from "@app"
+import { Prices } from "@/app"
 
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-import Currency from "@graphql/public/types/object/currency"
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import Currency from "@/graphql/public/types/object/currency"
 
 const CurrencyListQuery = GT.Field({
   type: GT.NonNullList(Currency),

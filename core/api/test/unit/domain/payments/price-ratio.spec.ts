@@ -1,4 +1,4 @@
-import { WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@/domain/shared"
 import {
   DisplayPriceRatio,
   InvalidZeroAmountPriceRatioInputError,
@@ -6,8 +6,8 @@ import {
   toDisplayPriceRatio,
   toWalletPriceRatio,
   WalletPriceRatio,
-} from "@domain/payments"
-import { UsdDisplayCurrency } from "@domain/fiat"
+} from "@/domain/payments"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
 describe("PriceRatio", () => {
   const otherQuoteAmount = 100n

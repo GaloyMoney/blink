@@ -1,5 +1,7 @@
-import { getRewardsConfig, OnboardingEarn } from "@config"
-import { IPMetadataAuthorizer } from "@domain/accounts-ips/ip-metadata-authorizer"
+import { intraledgerPaymentSendWalletIdForBtcWallet } from "./send-intraledger"
+
+import { getRewardsConfig, OnboardingEarn } from "@/config"
+import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authorizer"
 import {
   InvalidIpMetadataError,
   InvalidQuizQuestionIdError,
@@ -7,20 +9,18 @@ import {
   NoBtcWalletExistsForAccountError,
   UnauthorizedIPError,
   UnknownRepositoryError,
-} from "@domain/errors"
-import { InvalidPhoneForRewardError } from "@domain/users/errors"
-import { WalletCurrency } from "@domain/shared"
-import { PhoneMetadataAuthorizer } from "@domain/users"
-import { getFunderWalletId } from "@services/ledger/caching"
+} from "@/domain/errors"
+import { InvalidPhoneForRewardError } from "@/domain/users/errors"
+import { WalletCurrency } from "@/domain/shared"
+import { PhoneMetadataAuthorizer } from "@/domain/users"
+import { getFunderWalletId } from "@/services/ledger/caching"
 import {
   AccountsRepository,
   RewardsRepository,
   WalletsRepository,
   UsersRepository,
-} from "@services/mongoose"
-import { AccountsIpsRepository } from "@services/mongoose/accounts-ips"
-
-import { intraledgerPaymentSendWalletIdForBtcWallet } from "./send-intraledger"
+} from "@/services/mongoose"
+import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
 
 export const addEarn = async ({
   quizQuestionId: quizQuestionIdString,

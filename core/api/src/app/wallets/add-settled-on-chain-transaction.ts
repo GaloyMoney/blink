@@ -1,32 +1,33 @@
 import crypto from "crypto"
 
-import { getFeesConfig, getOnChainWalletConfig } from "@config"
+import { getLastOnChainAddress } from "./get-last-on-chain-address"
 
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
-import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import { createOnChainAddress } from "./create-on-chain-address"
 
-import { DepositFeeCalculator } from "@domain/wallets"
-import { DisplayAmountsConverter } from "@domain/fiat"
-import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
-import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
-import { toDisplayBaseAmount } from "@domain/payments"
+import { getFeesConfig, getOnChainWalletConfig } from "@/config"
+
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
+import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
+
+import { DepositFeeCalculator } from "@/domain/wallets"
+import { DisplayAmountsConverter } from "@/domain/fiat"
+import { CouldNotFindError, LessThanDustThresholdError } from "@/domain/errors"
+import { WalletAddressReceiver } from "@/domain/wallet-on-chain/wallet-address-receiver"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
+import { toDisplayBaseAmount } from "@/domain/payments"
 
 import {
   AccountsRepository,
   UsersRepository,
   WalletOnChainPendingReceiveRepository,
   WalletsRepository,
-} from "@services/mongoose"
-import { LockService } from "@services/lock"
-import { baseLogger } from "@services/logger"
-import { LedgerService } from "@services/ledger"
-import * as LedgerFacade from "@services/ledger/facade"
-import { DealerPriceService } from "@services/dealer-price"
-import { NotificationsService } from "@services/notifications"
-
-import { getLastOnChainAddress } from "./get-last-on-chain-address"
-import { createOnChainAddress } from "./create-on-chain-address"
+} from "@/services/mongoose"
+import { LockService } from "@/services/lock"
+import { baseLogger } from "@/services/logger"
+import { LedgerService } from "@/services/ledger"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { DealerPriceService } from "@/services/dealer-price"
+import { NotificationsService } from "@/services/notifications"
 
 const ledger = LedgerService()
 const dealer = DealerPriceService()

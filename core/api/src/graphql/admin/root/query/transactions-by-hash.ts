@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Wallets } from "@app"
-import Transaction from "@graphql/shared/types/object/transaction"
-import PaymentHash from "@graphql/shared/types/scalar/payment-hash"
-import { mapError } from "@graphql/error-map"
+import { Wallets } from "@/app"
+import Transaction from "@/graphql/shared/types/object/transaction"
+import PaymentHash from "@/graphql/shared/types/scalar/payment-hash"
+import { mapError } from "@/graphql/error-map"
 
 const TransactionsByHashQuery = GT.Field({
   type: GT.List(Transaction),

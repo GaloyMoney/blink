@@ -1,13 +1,13 @@
-import { Accounts } from "@app"
+import { Accounts } from "@/app"
 
-import { toSats } from "@domain/bitcoin"
-import { UsdDisplayCurrency, toCents } from "@domain/fiat"
-import { InvalidWalletId } from "@domain/errors"
+import { toSats } from "@/domain/bitcoin"
+import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
+import { InvalidWalletId } from "@/domain/errors"
 
-import { AccountsRepository } from "@services/mongoose"
-import { Transaction } from "@services/ledger/schema"
+import { AccountsRepository } from "@/services/mongoose"
+import { Transaction } from "@/services/ledger/schema"
 
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 
 import {
   createMandatoryUsers,

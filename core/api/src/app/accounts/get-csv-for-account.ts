@@ -1,5 +1,5 @@
-import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
-import { WalletsRepository } from "@services/mongoose"
+import { CsvWalletsExport } from "@/services/ledger/csv-wallet-export"
+import { WalletsRepository } from "@/services/mongoose"
 
 export const getCSVForAccount = async (
   accountId: AccountId,

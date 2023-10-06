@@ -1,15 +1,15 @@
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-import IAccountLimit from "@graphql/public/types/abstract/account-limit"
-import CentAmount from "@graphql/public/types/scalar/cent-amount"
-import Seconds from "@graphql/public/types/scalar/seconds"
-import { normalizePaymentAmount } from "@graphql/shared/root/mutation"
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import IAccountLimit from "@/graphql/public/types/abstract/account-limit"
+import CentAmount from "@/graphql/public/types/scalar/cent-amount"
+import Seconds from "@/graphql/public/types/scalar/seconds"
+import { normalizePaymentAmount } from "@/graphql/shared/root/mutation"
 
-import { Accounts } from "@app"
-import { AccountLimitsRange, AccountLimitsType } from "@domain/accounts"
-import { SECS_PER_DAY, getDealerConfig } from "@config"
-import { InvalidAccountLimitTypeError } from "@domain/errors"
-import { getMidPriceRatio } from "@app/prices"
+import { Accounts } from "@/app"
+import { AccountLimitsRange, AccountLimitsType } from "@/domain/accounts"
+import { SECS_PER_DAY, getDealerConfig } from "@/config"
+import { InvalidAccountLimitTypeError } from "@/domain/errors"
+import { getMidPriceRatio } from "@/app/prices"
 
 const OneDayAccountLimit = GT.Object<{
   account: Account

@@ -1,10 +1,10 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import AuditedAccount from "@graphql/admin/types/object/account"
-import Phone from "@graphql/shared/types/scalar/phone"
-import { mapError } from "@graphql/error-map"
+import AuditedAccount from "@/graphql/admin/types/object/account"
+import Phone from "@/graphql/shared/types/scalar/phone"
+import { mapError } from "@/graphql/error-map"
 
-import { Admin } from "@app"
+import { Admin } from "@/app"
 
 const AccountDetailsByUserPhoneQuery = GT.Field<
   null,

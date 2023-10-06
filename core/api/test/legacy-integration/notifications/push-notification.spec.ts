@@ -1,7 +1,7 @@
 import {
   PushNotificationsService,
   SendFilteredPushNotificationStatus,
-} from "@services/notifications/push-notifications"
+} from "@/services/notifications/push-notifications"
 
 describe("push notification", () => {
   it("should filter a notification", async () => {

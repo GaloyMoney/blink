@@ -1,11 +1,11 @@
-import { Wallets } from "@app"
+import { Wallets } from "@/app"
 
-import { sat2btc, toSats } from "@domain/bitcoin"
-import { UnknownRepositoryError } from "@domain/errors"
-import { utxoSettledEventHandler } from "@servers/event-handlers/bria"
+import { sat2btc, toSats } from "@/domain/bitcoin"
+import { UnknownRepositoryError } from "@/domain/errors"
+import { utxoSettledEventHandler } from "@/servers/event-handlers/bria"
 
-import { BriaSubscriber, BriaPayloadType } from "@services/bria"
-import { GrpcStreamClient, timeoutWithCancel } from "@utils"
+import { BriaSubscriber, BriaPayloadType } from "@/services/bria"
+import { GrpcStreamClient, timeoutWithCancel } from "@/utils"
 
 import {
   bitcoindClient,

@@ -1,6 +1,6 @@
-import { toMilliSatsFromNumber } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
-import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
+import { toMilliSatsFromNumber } from "@/domain/bitcoin"
+import { toCents } from "@/domain/fiat"
+import { CachedRouteLookupKeyFactory } from "@/domain/routes/key-factory"
 
 describe("cached route key generator", () => {
   it("generated a valid key for msats", () => {

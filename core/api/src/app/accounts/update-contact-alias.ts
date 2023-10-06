@@ -1,6 +1,6 @@
-import { checkedToContactAlias } from "@domain/accounts"
-import { ContactNotExistentError } from "@domain/errors"
-import { AccountsRepository } from "@services/mongoose"
+import { checkedToContactAlias } from "@/domain/accounts"
+import { ContactNotExistentError } from "@/domain/errors"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const updateContactAlias = async ({
   accountId,

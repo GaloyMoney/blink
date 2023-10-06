@@ -1,4 +1,4 @@
-import { ValidationError, ErrorLevel } from "@domain/shared"
+import { ValidationError, ErrorLevel } from "@/domain/shared"
 
 export class InvalidZeroAmountPriceRatioInputError extends ValidationError {}
 export class SubOneCentSatAmountForUsdSelfSendError extends ValidationError {}

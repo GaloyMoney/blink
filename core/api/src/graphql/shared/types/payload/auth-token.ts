@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-import AuthToken from "@graphql/shared/types/scalar/auth-token"
-
 import IError from "../abstract/error"
+
+import { GT } from "@/graphql/index"
+import AuthToken from "@/graphql/shared/types/scalar/auth-token"
 
 const AuthTokenPayload = GT.Object({
   name: "AuthTokenPayload",

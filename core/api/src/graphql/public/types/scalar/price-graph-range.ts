@@ -1,6 +1,6 @@
 import { GraphQLEnumValueConfigMap } from "graphql"
 
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
 export const priceRangeValues = [
   "ONE_DAY",

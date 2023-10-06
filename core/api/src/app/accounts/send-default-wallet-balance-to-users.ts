@@ -1,19 +1,19 @@
+import { getRecentlyActiveAccounts } from "./active-accounts"
+
 import {
   getCurrentPriceAsDisplayPriceRatio,
   getCurrentPriceAsWalletPriceRatio,
-} from "@app/prices"
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
+} from "@/app/prices"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 
-import { UsdDisplayCurrency } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+import { UsdDisplayCurrency } from "@/domain/fiat"
+import { WalletCurrency } from "@/domain/shared"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
-import { LedgerService } from "@services/ledger"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
-import { NotificationsService } from "@services/notifications"
-import { WalletsRepository, UsersRepository } from "@services/mongoose"
-
-import { getRecentlyActiveAccounts } from "./active-accounts"
+import { LedgerService } from "@/services/ledger"
+import { wrapAsyncToRunInSpan } from "@/services/tracing"
+import { NotificationsService } from "@/services/notifications"
+import { WalletsRepository, UsersRepository } from "@/services/mongoose"
 
 export const sendDefaultWalletBalanceToAccounts = async () => {
   const accounts = getRecentlyActiveAccounts()

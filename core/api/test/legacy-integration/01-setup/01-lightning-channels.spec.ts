@@ -1,6 +1,6 @@
-import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
-import { ledgerAdmin } from "@services/mongodb"
-import { sleep } from "@utils"
+import { onChannelUpdated, updateEscrows } from "@/services/lnd/utils"
+import { ledgerAdmin } from "@/services/mongodb"
+import { sleep } from "@/utils"
 
 import {
   checkIsBalanced,

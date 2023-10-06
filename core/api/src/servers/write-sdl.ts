@@ -3,19 +3,19 @@ import path from "path"
 
 import { GraphQLSchema, lexicographicSortSchema, printSchema } from "graphql"
 
-import { QueryType as QueryTypeAdmin } from "@graphql/admin/queries"
-import { MutationType as MutationTypeAdmin } from "@graphql/admin/mutations"
-import { ALL_INTERFACE_TYPES as ALL_INTERFACE_TYPES_ADMIN } from "@graphql/admin/types"
+import { QueryType as QueryTypeAdmin } from "@/graphql/admin/queries"
+import { MutationType as MutationTypeAdmin } from "@/graphql/admin/mutations"
+import { ALL_INTERFACE_TYPES as ALL_INTERFACE_TYPES_ADMIN } from "@/graphql/admin/types"
 
-import { ALL_INTERFACE_TYPES } from "@graphql/public/types"
+import { ALL_INTERFACE_TYPES } from "@/graphql/public/types"
 
-import { QueryType } from "@graphql/public/queries"
+import { QueryType } from "@/graphql/public/queries"
 
-import { MutationType } from "@graphql/public/mutations"
-import { SubscriptionType } from "@graphql/public/subscriptions"
+import { MutationType } from "@/graphql/public/mutations"
+import { SubscriptionType } from "@/graphql/public/subscriptions"
 
-export { queryFields } from "@graphql/public/queries"
-export { mutationFields } from "@graphql/public/mutations"
+export { queryFields } from "@/graphql/public/queries"
+export { mutationFields } from "@/graphql/public/mutations"
 
 export const gqlAdminSchema = new GraphQLSchema({
   query: QueryTypeAdmin,

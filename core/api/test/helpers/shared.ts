@@ -1,4 +1,4 @@
-import { sleep } from "@utils"
+import { sleep } from "@/utils"
 
 export const waitFor = async (f) => {
   let res

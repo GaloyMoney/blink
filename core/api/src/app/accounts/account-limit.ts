@@ -1,14 +1,14 @@
-import { getAccountLimits, ONE_DAY } from "@config"
+import { getAccountLimits, ONE_DAY } from "@/config"
 
 import {
   AccountLimitsType,
   AccountTxVolumeLimitChecker,
   AccountTxVolumeRemaining,
-} from "@domain/accounts"
-import { InvalidAccountLimitTypeError } from "@domain/errors"
+} from "@/domain/accounts"
+import { InvalidAccountLimitTypeError } from "@/domain/errors"
 
-import * as LedgerFacade from "@services/ledger/facade"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
 export const remainingIntraLedgerLimit = async ({
   accountId,

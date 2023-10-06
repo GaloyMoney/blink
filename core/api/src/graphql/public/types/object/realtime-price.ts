@@ -1,13 +1,13 @@
 import getUuidByString from "uuid-by-string"
 
-import { GT } from "@graphql/index"
-
 import Timestamp from "../../../shared/types/scalar/timestamp"
 
 import DisplayCurrencyGT from "../../../shared/types/scalar/display-currency"
 
 import PriceOfOneSatInMinorUnit from "./price-of-one-sat-in-minor-unit"
 import PriceOfOneUsdCentInMinorUnit from "./price-of-one-usd-cent-in-minor-unit"
+
+import { GT } from "@/graphql/index"
 
 const RealtimePrice = GT.Object({
   name: "RealtimePrice",

@@ -1,5 +1,5 @@
-import { getTestAccounts } from "@config"
-import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+import { getTestAccounts } from "@/config"
+import { TestAccountsChecker } from "@/domain/accounts/test-accounts-checker"
 
 describe("test-accounts", () => {
   const testAccounts = getTestAccounts()

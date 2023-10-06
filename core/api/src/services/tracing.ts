@@ -26,11 +26,13 @@ import {
   Context,
   AttributeValue,
 } from "@opentelemetry/api"
-import { ErrorLevel, RankedErrorLevel, parseErrorFromUnknown } from "@domain/shared"
+
 import { NetInstrumentation } from "@opentelemetry/instrumentation-net"
 
 import type * as graphqlTypes from "graphql"
 import { Resource } from "@opentelemetry/resources"
+
+import { ErrorLevel, RankedErrorLevel, parseErrorFromUnknown } from "@/domain/shared"
 type ExtendedException = Exclude<Exception, string> & {
   level?: ErrorLevel
 }

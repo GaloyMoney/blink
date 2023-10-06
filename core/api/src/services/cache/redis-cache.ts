@@ -2,9 +2,9 @@ import {
   CacheNotAvailableError,
   CacheUndefinedError,
   UnknownCacheServiceError,
-} from "@domain/cache"
-import { redisCache } from "@services/redis"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+} from "@/domain/cache"
+import { redisCache } from "@/services/redis"
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 export const RedisCacheService = (): ICacheService => {
   const set = async <T>({

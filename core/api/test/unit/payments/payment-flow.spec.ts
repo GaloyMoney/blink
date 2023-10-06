@@ -1,10 +1,10 @@
-import { toSats } from "@domain/bitcoin"
-import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@domain/errors"
-import { toCents } from "@domain/fiat"
-import { inputAmountFromLedgerTransaction } from "@domain/ledger"
-import { OnChainPaymentFlow, PaymentFlow } from "@domain/payments"
-import { WalletCurrency, safeBigInt, AmountCalculator } from "@domain/shared"
-import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
+import { toSats } from "@/domain/bitcoin"
+import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@/domain/errors"
+import { toCents } from "@/domain/fiat"
+import { inputAmountFromLedgerTransaction } from "@/domain/ledger"
+import { OnChainPaymentFlow, PaymentFlow } from "@/domain/payments"
+import { WalletCurrency, safeBigInt, AmountCalculator } from "@/domain/shared"
+import { PaymentInitiationMethod, SettlementMethod } from "@/domain/wallets"
 
 const calc = AmountCalculator()
 

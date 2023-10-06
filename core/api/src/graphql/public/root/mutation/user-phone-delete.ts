@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import UserPhoneDeletePayload from "@graphql/public/types/payload/user-phone-delete"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import UserPhoneDeletePayload from "@/graphql/public/types/payload/user-phone-delete"
 
 const UserPhoneDeleteMutation = GT.Field<null, GraphQLPublicContextAuth>({
   extensions: {

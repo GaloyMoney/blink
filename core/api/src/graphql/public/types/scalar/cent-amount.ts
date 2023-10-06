@@ -1,6 +1,6 @@
-import { MAX_CENTS } from "@domain/shared"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { MAX_CENTS } from "@/domain/shared"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const CentAmount = GT.Scalar({
   name: "CentAmount",

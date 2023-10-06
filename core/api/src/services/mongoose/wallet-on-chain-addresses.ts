@@ -1,8 +1,8 @@
-import { CouldNotFindError, PersistError, RepositoryError } from "@domain/errors"
-import { baseLogger } from "@services/logger"
-import { Wallet } from "@services/mongoose/schema"
-
 import { parseRepositoryError } from "./utils"
+
+import { CouldNotFindError, PersistError, RepositoryError } from "@/domain/errors"
+import { baseLogger } from "@/services/logger"
+import { Wallet } from "@/services/mongoose/schema"
 
 export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepository => {
   const persistNew = async ({

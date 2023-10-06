@@ -1,14 +1,14 @@
 import { randomUUID } from "crypto"
 
-import { handleHeldInvoices } from "@app/wallets"
-import * as UpdatePendingInvoicesImpl from "@app/wallets/update-pending-invoices"
+import { handleHeldInvoices } from "@/app/wallets"
+import * as UpdatePendingInvoicesImpl from "@/app/wallets/update-pending-invoices"
 
-import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
-import { WalletCurrency } from "@domain/shared"
-import { baseLogger } from "@services/logger"
-import { WalletInvoicesRepository } from "@services/mongoose"
-import { WalletInvoice } from "@services/mongoose/schema"
-import { getSecretAndPaymentHash } from "@domain/bitcoin/lightning"
+import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
+import { WalletCurrency } from "@/domain/shared"
+import { baseLogger } from "@/services/logger"
+import { WalletInvoicesRepository } from "@/services/mongoose"
+import { WalletInvoice } from "@/services/mongoose/schema"
+import { getSecretAndPaymentHash } from "@/domain/bitcoin/lightning"
 
 afterEach(async () => {
   await WalletInvoice.deleteMany({})

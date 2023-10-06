@@ -1,4 +1,4 @@
-import { InvalidMinutesError } from "@domain/errors"
+import { InvalidMinutesError } from "@/domain/errors"
 
 export const toSeconds = (seconds: number): Seconds => {
   return seconds as Seconds

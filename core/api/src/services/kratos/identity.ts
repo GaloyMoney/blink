@@ -1,9 +1,9 @@
 import { Identity as KratosIdentity } from "@ory/client"
 
-import { IdentifierNotFoundError } from "@domain/authentication/errors"
-
 import { KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentity } from "./private"
+
+import { IdentifierNotFoundError } from "@/domain/authentication/errors"
 
 export const getNextPage = (link: string): number | undefined => {
   const links = link.split(",")

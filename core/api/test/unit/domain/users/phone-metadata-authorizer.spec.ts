@@ -1,10 +1,10 @@
-import { getRewardsConfig, yamlConfig } from "@config"
+import { getRewardsConfig, yamlConfig } from "@/config"
 import {
   PhoneCountryNotAllowedError,
   PhoneCarrierTypeNotAllowedError,
   ExpectedPhoneMetadataMissingError,
-} from "@domain/users/errors"
-import { PhoneMetadataAuthorizer } from "@domain/users"
+} from "@/domain/users/errors"
+import { PhoneMetadataAuthorizer } from "@/domain/users"
 
 beforeEach(async () => {
   yamlConfig.rewards = {

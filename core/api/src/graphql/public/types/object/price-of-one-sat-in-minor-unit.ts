@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import IPrice from "../../../shared/types/abstract/price"
 import SafeInt from "../../../shared/types/scalar/safe-int"
+
+import { GT } from "@/graphql/index"
 
 const PriceOfOneSatInMinorUnit = GT.Object({
   name: "PriceOfOneSatInMinorUnit",

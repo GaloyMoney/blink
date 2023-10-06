@@ -1,5 +1,5 @@
-import { checkedToLanguage } from "@domain/users"
-import { UsersRepository } from "@services/mongoose"
+import { checkedToLanguage } from "@/domain/users"
+import { UsersRepository } from "@/services/mongoose"
 
 export const updateLanguage = async ({
   userId,

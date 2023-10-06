@@ -1,10 +1,10 @@
 import libCookie from "cookie"
 import setCookie, { Cookie } from "set-cookie-parser"
 
-import { ICookieOptions } from "@domain/authentication/cookie"
-
 import { kratosPublic } from "./private"
 import { KratosError } from "./errors"
+
+import { ICookieOptions } from "@/domain/authentication/cookie"
 
 export const createCookieLoginFlow = async (): Promise<
   | {

@@ -1,13 +1,13 @@
-import { toSats } from "@domain/bitcoin"
+import { toSats } from "@/domain/bitcoin"
 import {
   getCurrencyMajorExponent,
   displayAmountFromNumber,
   toCents,
   UsdDisplayCurrency,
-} from "@domain/fiat"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+} from "@/domain/fiat"
+import { ErrorLevel, WalletCurrency } from "@/domain/shared"
 
-import { recordExceptionInCurrentSpan } from "@services/tracing"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const SettlementAmounts = () => {
   const fromTxn = <S extends WalletCurrency>(

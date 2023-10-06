@@ -1,5 +1,5 @@
-import { AccountStatus } from "@domain/accounts/primitives"
-import { WalletCurrency } from "@domain/shared"
+import { AccountStatus } from "@/domain/accounts/primitives"
+import { WalletCurrency } from "@/domain/shared"
 
 const displayCurrencyConfigSchema = {
   type: "object",

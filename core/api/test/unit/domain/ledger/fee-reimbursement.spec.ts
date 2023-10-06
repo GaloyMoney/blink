@@ -1,7 +1,7 @@
-import { FeeDifferenceError } from "@domain/ledger"
-import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
-import { WalletPriceRatio } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
+import { FeeDifferenceError } from "@/domain/ledger"
+import { FeeReimbursement } from "@/domain/ledger/fee-reimbursement"
+import { WalletPriceRatio } from "@/domain/payments"
+import { WalletCurrency } from "@/domain/shared"
 
 describe("FeeReimbursement", () => {
   it("returns a fee difference for reimbursement", () => {

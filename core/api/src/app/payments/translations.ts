@@ -1,11 +1,11 @@
-import { LedgerTransactionType } from "@domain/ledger"
+import { LedgerTransactionType } from "@/domain/ledger"
 import {
   MissingPropsInTransactionForPaymentFlowError,
   NonLnPaymentTransactionForPaymentFlowError,
   PaymentFlow,
-} from "@domain/payments"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
+} from "@/domain/payments"
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
+import { PaymentInitiationMethod, SettlementMethod } from "@/domain/wallets"
 
 export const PaymentFlowFromLedgerTransaction = <
   S extends WalletCurrency,

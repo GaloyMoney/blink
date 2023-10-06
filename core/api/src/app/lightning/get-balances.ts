@@ -1,12 +1,12 @@
-import { SECS_PER_MIN } from "@config"
+import { SECS_PER_MIN } from "@/config"
 
-import { toSats } from "@domain/bitcoin"
-import { CacheKeys } from "@domain/cache"
-import { ErrorLevel } from "@domain/shared"
+import { toSats } from "@/domain/bitcoin"
+import { CacheKeys } from "@/domain/cache"
+import { ErrorLevel } from "@/domain/shared"
 
-import { LndService } from "@services/lnd"
-import { RedisCacheService } from "@services/cache"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
+import { LndService } from "@/services/lnd"
+import { RedisCacheService } from "@/services/cache"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 const cache = RedisCacheService()
 

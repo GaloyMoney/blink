@@ -1,4 +1,4 @@
-import { LedgerService } from "@services/ledger"
+import { LedgerService } from "@/services/ledger"
 
 export const getBalanceForWallet = async ({
   walletId,

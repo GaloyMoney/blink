@@ -1,9 +1,9 @@
-import { listCurrencies } from "@app/prices"
+import { listCurrencies } from "@/app/prices"
 
-import { checkedToDisplayCurrency } from "@domain/fiat"
-import { InvalidPriceCurrencyError } from "@domain/price"
+import { checkedToDisplayCurrency } from "@/domain/fiat"
+import { InvalidPriceCurrencyError } from "@/domain/price"
 
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const updateDisplayCurrency = async ({
   accountId,

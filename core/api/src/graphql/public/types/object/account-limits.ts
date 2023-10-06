@@ -1,7 +1,7 @@
-import { AccountLimitsRange, AccountLimitsType } from "@domain/accounts"
-import { GT } from "@graphql/index"
+import { AccountLimitsRange, AccountLimitsType } from "@/domain/accounts"
+import { GT } from "@/graphql/index"
 
-import AccountLimit from "@graphql/public/types/abstract/account-limit"
+import AccountLimit from "@/graphql/public/types/abstract/account-limit"
 
 const AccountLimits = GT.Object({
   name: "AccountLimits",

@@ -1,5 +1,5 @@
-import { RateLimitConfig } from "@domain/rate-limit"
-import { resetLimiter } from "@services/rate-limit"
+import { RateLimitConfig } from "@/domain/rate-limit"
+import { resetLimiter } from "@/services/rate-limit"
 
 export const resetSelfAccountIdLimits = async (
   accountId: AccountId,

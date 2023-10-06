@@ -1,4 +1,4 @@
-import { AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
+import { AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
 
 const calc = AmountCalculator()
 

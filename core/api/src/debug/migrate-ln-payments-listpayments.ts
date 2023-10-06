@@ -8,26 +8,27 @@
  */
 
 import { getPayments } from "lightning"
-import { isUp } from "@services/lnd/health"
-import { lndsConnect } from "@services/lnd/auth"
+
+import { isUp } from "@/services/lnd/health"
+import { lndsConnect } from "@/services/lnd/auth"
 
 import {
   CorruptLndDbError,
   PaymentStatus,
   UnknownLightningServiceError,
-} from "@domain/bitcoin/lightning"
-import { CouldNotFindError } from "@domain/errors"
-import { LndService } from "@services/lnd"
-import { baseLogger } from "@services/logger"
-import { LnPaymentsRepository } from "@services/mongoose"
+} from "@/domain/bitcoin/lightning"
+import { CouldNotFindError } from "@/domain/errors"
+import { LndService } from "@/services/lnd"
+import { baseLogger } from "@/services/logger"
+import { LnPaymentsRepository } from "@/services/mongoose"
 import {
   addAttributesToCurrentSpan,
   addEventToCurrentSpan,
   asyncRunInSpan,
   SemanticAttributes,
-} from "@services/tracing"
-import { setupMongoConnection } from "@services/mongodb"
-import { getLndFromPubkey } from "@services/lnd/config"
+} from "@/services/tracing"
+import { setupMongoConnection } from "@/services/mongodb"
+import { getLndFromPubkey } from "@/services/lnd/config"
 
 const indexRegex = /{"offset":(\d+),"limit":\d+}/
 

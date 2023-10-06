@@ -1,7 +1,7 @@
-import { toSats } from "@domain/bitcoin"
-import { LedgerService } from "@services/ledger"
-import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
-import { UsdDisplayCurrency } from "@domain/fiat"
+import { toSats } from "@/domain/bitcoin"
+import { LedgerService } from "@/services/ledger"
+import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
 export const recordHotToColdTransfer = async ({
   satoshis,

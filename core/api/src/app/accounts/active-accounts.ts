@@ -1,14 +1,14 @@
-import { USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config"
+import { USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@/config"
 
-import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
+import { getCurrentPriceAsWalletPriceRatio } from "@/app/prices"
 
-import { ErrorLevel } from "@domain/shared"
-import { ActivityChecker } from "@domain/ledger"
+import { ErrorLevel } from "@/domain/shared"
+import { ActivityChecker } from "@/domain/ledger"
 
-import * as LedgerFacade from "@services/ledger/facade"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
-import { WalletsRepository, AccountsRepository } from "@services/mongoose"
-import { UsdDisplayCurrency } from "@domain/fiat"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
+import { WalletsRepository, AccountsRepository } from "@/services/mongoose"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
 export const getRecentlyActiveAccounts = async function* ():
   | AsyncGenerator<Account>

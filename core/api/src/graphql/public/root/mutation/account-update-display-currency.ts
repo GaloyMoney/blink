@@ -1,9 +1,9 @@
-import { Accounts } from "@app"
+import { Accounts } from "@/app"
 
-import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import DisplayCurrency from "@graphql/shared/types/scalar/display-currency"
-import AccountUpdateDisplayCurrencyPayload from "@graphql/public/types/payload/account-update-display-currency"
+import { GT } from "@/graphql/index"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
+import AccountUpdateDisplayCurrencyPayload from "@/graphql/public/types/payload/account-update-display-currency"
 
 const AccountUpdateDisplayCurrencyInput = GT.Input({
   name: "AccountUpdateDisplayCurrencyInput",

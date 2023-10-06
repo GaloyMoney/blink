@@ -1,12 +1,12 @@
 import {
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerLoginIdentifierLimits,
-} from "@config"
+} from "@/config"
 
-import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { RateLimitConfig, RateLimitPrefix } from "@/domain/rate-limit"
+import { RateLimiterExceededError } from "@/domain/rate-limit/errors"
 
-import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
+import { RedisRateLimitService, consumeLimiter } from "@/services/rate-limit"
 
 export const checkFailedLoginAttemptPerIpLimits = async (
   ip: IpAddress,

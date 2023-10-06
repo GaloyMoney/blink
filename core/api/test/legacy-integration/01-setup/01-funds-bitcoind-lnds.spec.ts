@@ -1,5 +1,5 @@
-import { btc2sat, sat2btc } from "@domain/bitcoin"
-import { getFunderWalletId } from "@services/ledger/caching"
+import { btc2sat, sat2btc } from "@/domain/bitcoin"
+import { getFunderWalletId } from "@/services/ledger/caching"
 
 import {
   bitcoindClient,

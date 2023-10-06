@@ -1,5 +1,5 @@
-import { checkedToDeviceToken } from "@domain/users"
-import { UsersRepository } from "@services/mongoose"
+import { checkedToDeviceToken } from "@/domain/users"
+import { UsersRepository } from "@/services/mongoose"
 
 export const addDeviceToken = async ({
   userId,

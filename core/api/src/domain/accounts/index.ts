@@ -1,4 +1,8 @@
-import { toSats } from "@domain/bitcoin"
+import { InvalidAccountIdError } from "./errors"
+
+import { AccountLevel, AccountStatus } from "./primitives"
+
+import { toSats } from "@/domain/bitcoin"
 import {
   InvalidCoordinatesError,
   InvalidBusinessTitleLengthError,
@@ -8,11 +12,7 @@ import {
   InvalidWithdrawFeeError,
   InvalidUserId,
   InvalidAccountLevelError,
-} from "@domain/errors"
-
-import { InvalidAccountIdError } from "./errors"
-
-import { AccountLevel, AccountStatus } from "./primitives"
+} from "@/domain/errors"
 
 export * from "./errors"
 export * from "./limits-checker"

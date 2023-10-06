@@ -1,12 +1,12 @@
-import { CacheKeys } from "@domain/cache"
-import { UsdDisplayCurrency } from "@domain/fiat"
-import { PriceNotAvailableError } from "@domain/price"
+import { CacheKeys } from "@/domain/cache"
+import { UsdDisplayCurrency } from "@/domain/fiat"
+import { PriceNotAvailableError } from "@/domain/price"
 
-import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache/local-cache"
-import { getCurrentSatPrice, getCurrentUsdCentPrice } from "@app/prices"
+import * as PriceServiceImpl from "@/services/price"
+import { LocalCacheService } from "@/services/cache/local-cache"
+import { getCurrentSatPrice, getCurrentUsdCentPrice } from "@/app/prices"
 
-jest.mock("@services/tracing", () => ({
+jest.mock("@/services/tracing", () => ({
   wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
 }))
 

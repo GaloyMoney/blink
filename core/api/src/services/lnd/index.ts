@@ -29,9 +29,21 @@ import {
 } from "lightning"
 import lnService from "ln-service"
 
-import { NETWORK, SECS_PER_5_MINS } from "@config"
+import sumBy from "lodash.sumby"
 
-import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
+import { KnownLndErrorDetails } from "./errors"
+
+import {
+  getActiveLnd,
+  getActiveOnchainLnd,
+  getLndFromPubkey,
+  getLnds,
+  parseLndErrorDetails,
+} from "./config"
+
+import { NETWORK, SECS_PER_5_MINS } from "@/config"
+
+import { toMilliSatsFromString, toSats } from "@/domain/bitcoin"
 import {
   BadPaymentDataError,
   CorruptLndDbError,
@@ -62,31 +74,20 @@ import {
   UnknownNextPeerError,
   UnknownRouteNotFoundError,
   decodeInvoice,
-} from "@domain/bitcoin/lightning"
-import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
-import { CacheKeys } from "@domain/cache"
-import { LnFees } from "@domain/payments"
+} from "@/domain/bitcoin/lightning"
+import { IncomingOnChainTransaction } from "@/domain/bitcoin/onchain"
+import { CacheKeys } from "@/domain/cache"
+import { LnFees } from "@/domain/payments"
 import {
   WalletCurrency,
   parseErrorMessageFromUnknown,
   paymentAmountFromNumber,
-} from "@domain/shared"
+} from "@/domain/shared"
 
-import { LocalCacheService } from "@services/cache"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+import { LocalCacheService } from "@/services/cache"
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
-import { timeoutWithCancel } from "@utils"
-
-import sumBy from "lodash.sumby"
-
-import { KnownLndErrorDetails } from "./errors"
-import {
-  getActiveLnd,
-  getActiveOnchainLnd,
-  getLndFromPubkey,
-  getLnds,
-  parseLndErrorDetails,
-} from "./config"
+import { timeoutWithCancel } from "@/utils"
 
 const TIMEOUT_PAYMENT = NETWORK !== "regtest" ? 45000 : 3000
 

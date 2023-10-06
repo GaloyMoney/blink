@@ -1,7 +1,7 @@
-import { toSats } from "@domain/bitcoin"
-import { UsdDisplayCurrency, displayAmountFromNumber, toCents } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
-import { SettlementAmounts } from "@domain/wallets/settlement-amounts"
+import { toSats } from "@/domain/bitcoin"
+import { UsdDisplayCurrency, displayAmountFromNumber, toCents } from "@/domain/fiat"
+import { WalletCurrency } from "@/domain/shared"
+import { SettlementAmounts } from "@/domain/wallets/settlement-amounts"
 
 describe("SettlementAmounts", () => {
   const txnCommon = {

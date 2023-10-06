@@ -1,5 +1,6 @@
 import { Types } from "mongoose"
-import { toObjectId, fromObjectId } from "@services/mongoose/utils"
+
+import { toObjectId, fromObjectId } from "@/services/mongoose/utils"
 
 describe("toObjectId / fromObjectId", () => {
   it("presevers identity", () => {

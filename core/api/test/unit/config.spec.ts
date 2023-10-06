@@ -1,11 +1,12 @@
 import fs from "fs"
 
-import { configSchema, getAccountLimits, yamlConfig } from "@config"
-import { toCents } from "@domain/fiat"
 import Ajv from "ajv"
 import yaml from "js-yaml"
 
 import mergeWith from "lodash.mergewith"
+
+import { toCents } from "@/domain/fiat"
+import { configSchema, getAccountLimits, yamlConfig } from "@/config"
 
 const ajv = new Ajv()
 let validate

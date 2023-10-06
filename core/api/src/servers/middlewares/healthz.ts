@@ -1,8 +1,9 @@
 import express from "express"
 import mongoose from "mongoose"
-import { redis } from "@services/redis"
-import { lndStatusEvent } from "@services/lnd/health"
-import { OnChainService } from "@services/bria"
+
+import { redis } from "@/services/redis"
+import { lndStatusEvent } from "@/services/lnd/health"
+import { OnChainService } from "@/services/bria"
 
 type HealthzArgs = {
   checkDbConnectionStatus: boolean

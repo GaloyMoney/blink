@@ -1,8 +1,8 @@
-import { Accounts } from "@app"
-import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
-import Username from "@graphql/shared/types/scalar/username"
+import { Accounts } from "@/app"
+import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
+import Username from "@/graphql/shared/types/scalar/username"
 
 const BusinessDeleteMapInfoInput = GT.Input({
   name: "BusinessDeleteMapInfoInput",

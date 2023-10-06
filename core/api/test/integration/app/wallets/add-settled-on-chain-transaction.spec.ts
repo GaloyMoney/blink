@@ -1,11 +1,11 @@
-import { addSettledTransaction } from "@app/wallets"
+import { addSettledTransaction } from "@/app/wallets"
 
-import { WalletCurrency } from "@domain/shared"
-import { Transaction, TransactionMetadata } from "@services/ledger/schema"
+import { WalletCurrency } from "@/domain/shared"
+import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
 
-import { WalletOnChainAddressesRepository } from "@services/mongoose"
-import { Wallet } from "@services/mongoose/schema"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { WalletOnChainAddressesRepository } from "@/services/mongoose"
+import { Wallet } from "@/services/mongoose/schema"
+import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
 
 import { createMandatoryUsers, createRandomUserAndWallets } from "test/helpers"
 

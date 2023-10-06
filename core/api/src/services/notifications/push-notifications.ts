@@ -1,5 +1,7 @@
 import * as admin from "firebase-admin"
 
+import { Messaging } from "firebase-admin/lib/messaging/messaging"
+
 import {
   DeviceTokensNotRegisteredNotificationsServiceError,
   InvalidDeviceNotificationsServiceError,
@@ -8,17 +10,16 @@ import {
   NotificationsServiceUnreachableServerError,
   UnknownNotificationsServiceError,
   shouldSendNotification,
-} from "@domain/notifications"
-import { ErrorLevel, parseErrorMessageFromUnknown } from "@domain/shared"
-import { baseLogger } from "@services/logger"
+} from "@/domain/notifications"
+import { ErrorLevel, parseErrorMessageFromUnknown } from "@/domain/shared"
+import { baseLogger } from "@/services/logger"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
   wrapAsyncToRunInSpan,
-} from "@services/tracing"
-import { Messaging } from "firebase-admin/lib/messaging/messaging"
+} from "@/services/tracing"
 
-import { GOOGLE_APPLICATION_CREDENTIALS } from "@config"
+import { GOOGLE_APPLICATION_CREDENTIALS } from "@/config"
 
 const logger = baseLogger.child({ module: "notifications" })
 

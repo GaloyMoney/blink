@@ -1,7 +1,7 @@
-import { DisplayAmountsConverter, UsdDisplayCurrency } from "@domain/fiat"
+import { DisplayAmountsConverter, UsdDisplayCurrency } from "@/domain/fiat"
 
-import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
-import { DisplayPriceRatio } from "@domain/payments"
+import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
+import { DisplayPriceRatio } from "@/domain/payments"
 
 describe("DisplayAmountsConverter", () => {
   const amounts: AmountsAndFees = {

@@ -1,38 +1,41 @@
-import { Accounts, Prices, Wallets } from "@app"
-
-import {
-  majorToMinorUnit,
-  SAT_PRICE_PRECISION_OFFSET,
-  USD_PRICE_PRECISION_OFFSET,
-} from "@domain/fiat"
-import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
-
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-import {
-  connectionArgs,
-  connectionFromPaginatedArray,
-  checkedConnectionArgs,
-} from "@graphql/connections"
-
-import Wallet from "@graphql/shared/types/abstract/wallet"
-import IAccount from "@graphql/public/types/abstract/account"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import RealtimePrice from "@graphql/public/types/object/realtime-price"
-import DisplayCurrency from "@graphql/shared/types/scalar/display-currency"
-
-import { WalletsRepository } from "@services/mongoose"
-
-import { listEndpoints } from "@app/callback"
-
 import AccountLevel from "../../../shared/types/scalar/account-level"
 
 import { TransactionConnection } from "../../../shared/types/object/transaction"
 
 import AccountLimits from "./account-limits"
+
 import Quiz from "./quiz"
+
 import CallbackEndpoint from "./callback-endpoint"
+
 import { NotificationSettings } from "./notification-settings"
+
+import { Accounts, Prices, Wallets } from "@/app"
+
+import {
+  majorToMinorUnit,
+  SAT_PRICE_PRECISION_OFFSET,
+  USD_PRICE_PRECISION_OFFSET,
+} from "@/domain/fiat"
+import { CouldNotFindTransactionsForAccountError } from "@/domain/errors"
+
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import {
+  connectionArgs,
+  connectionFromPaginatedArray,
+  checkedConnectionArgs,
+} from "@/graphql/connections"
+
+import Wallet from "@/graphql/shared/types/abstract/wallet"
+import IAccount from "@/graphql/public/types/abstract/account"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import RealtimePrice from "@/graphql/public/types/object/realtime-price"
+import DisplayCurrency from "@/graphql/shared/types/scalar/display-currency"
+
+import { WalletsRepository } from "@/services/mongoose"
+
+import { listEndpoints } from "@/app/callback"
 
 const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   name: "ConsumerAccount",

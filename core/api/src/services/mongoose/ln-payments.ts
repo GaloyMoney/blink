@@ -1,8 +1,8 @@
-import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
-import { CouldNotFindLnPaymentFromHashError } from "@domain/errors"
-import { LnPayment } from "@services/lnd/schema"
-
 import { parseRepositoryError } from "./utils"
+
+import { toMilliSatsFromNumber, toSats } from "@/domain/bitcoin"
+import { CouldNotFindLnPaymentFromHashError } from "@/domain/errors"
+import { LnPayment } from "@/services/lnd/schema"
 
 export const LnPaymentsRepository = (): ILnPaymentsRepository => {
   const findByPaymentHash = async (

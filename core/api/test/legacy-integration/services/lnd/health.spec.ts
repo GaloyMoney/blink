@@ -1,6 +1,6 @@
-import { isUp, lndStatusEvent } from "@services/lnd/health"
+import { isUp, lndStatusEvent } from "@/services/lnd/health"
 
-import { lndsConnect } from "@services/lnd/auth"
+import { lndsConnect } from "@/services/lnd/auth"
 
 import { clearAccountLocks } from "test/helpers/redis"
 

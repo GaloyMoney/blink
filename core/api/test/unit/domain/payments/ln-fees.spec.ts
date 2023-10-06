@@ -1,6 +1,6 @@
-import { AmountCalculator, ONE_CENT, ONE_SAT, WalletCurrency } from "@domain/shared"
-import { LnFees, WalletPriceRatio } from "@domain/payments"
-import { MaxFeeTooLargeForRoutelessPaymentError } from "@domain/bitcoin/lightning"
+import { AmountCalculator, ONE_CENT, ONE_SAT, WalletCurrency } from "@/domain/shared"
+import { LnFees, WalletPriceRatio } from "@/domain/payments"
+import { MaxFeeTooLargeForRoutelessPaymentError } from "@/domain/bitcoin/lightning"
 
 const calc = AmountCalculator()
 

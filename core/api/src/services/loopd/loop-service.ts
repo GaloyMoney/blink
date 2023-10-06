@@ -2,22 +2,11 @@
 import util from "util"
 
 import * as grpc from "@grpc/grpc-js"
-import {
-  SwapClientNotResponding,
-  SwapServiceError,
-  UnknownSwapServiceError,
-  SwapErrorChannelBalanceTooLow,
-} from "@domain/swap/errors"
-import { SwapType as DomainSwapType } from "@domain/swap"
+
 import { ServiceClient } from "@grpc/grpc-js/build/src/make-client"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
-import { BtcNetwork } from "@domain/bitcoin"
-
-import { SwapState as DomainSwapState } from "@domain/swap/index"
-
-import { WalletCurrency } from "@domain/shared"
 
 import { SwapClientClient } from "./protos/loop_grpc_pb"
+
 import {
   FailureReason,
   QuoteRequest,
@@ -32,6 +21,20 @@ import {
   TermsRequest,
   OutTermsResponse,
 } from "./protos/loop_pb"
+
+import {
+  SwapClientNotResponding,
+  SwapServiceError,
+  UnknownSwapServiceError,
+  SwapErrorChannelBalanceTooLow,
+} from "@/domain/swap/errors"
+import { SwapType as DomainSwapType } from "@/domain/swap"
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
+import { BtcNetwork } from "@/domain/bitcoin"
+
+import { SwapState as DomainSwapState } from "@/domain/swap/index"
+
+import { WalletCurrency } from "@/domain/shared"
 
 export const LoopService = ({
   macaroon,

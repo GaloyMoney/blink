@@ -1,17 +1,17 @@
-import { KRATOS_CALLBACK_API_KEY, getDefaultAccountsConfig } from "@config"
+import { KRATOS_CALLBACK_API_KEY, getDefaultAccountsConfig } from "@/config"
 
-import { CallbackSecretValidator } from "@domain/authentication/secret-validator"
-import { RegistrationPayloadValidator } from "@domain/authentication/registration-payload-validator"
-import { ErrorLevel } from "@domain/shared"
-import { InvalidPhoneNumber, InvalidUserId } from "@domain/errors"
+import { CallbackSecretValidator } from "@/domain/authentication/secret-validator"
+import { RegistrationPayloadValidator } from "@/domain/authentication/registration-payload-validator"
+import { ErrorLevel } from "@/domain/shared"
+import { InvalidPhoneNumber, InvalidUserId } from "@/domain/errors"
 
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
-} from "@services/tracing"
-import { SchemaIdType } from "@services/kratos"
+} from "@/services/tracing"
+import { SchemaIdType } from "@/services/kratos"
 
-import { createAccountWithPhoneIdentifier } from "@app/accounts"
+import { createAccountWithPhoneIdentifier } from "@/app/accounts"
 
 export const createAccountFromRegistrationPayload = async ({
   secret,

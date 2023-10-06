@@ -1,7 +1,7 @@
-import { InvalidFlowId, InvalidTotpCode } from "@domain/errors"
-
 import { AuthenticationKratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainSession } from "./private"
+
+import { InvalidFlowId, InvalidTotpCode } from "@/domain/errors"
 
 export * from "./auth-phone-no-password"
 export * from "./auth-email-no-password"

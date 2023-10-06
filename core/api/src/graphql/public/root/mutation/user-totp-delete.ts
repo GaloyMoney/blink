@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import UserTotpDeletePayload from "@graphql/public/types/payload/user-totp-delete"
-import AuthToken from "@graphql/shared/types/scalar/auth-token"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import UserTotpDeletePayload from "@/graphql/public/types/payload/user-totp-delete"
+import AuthToken from "@/graphql/shared/types/scalar/auth-token"
 
 const UserTotpDeleteInput = GT.Input({
   name: "UserTotpDeleteInput",

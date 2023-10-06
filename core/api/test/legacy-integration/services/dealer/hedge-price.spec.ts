@@ -1,20 +1,24 @@
-import { Payments, Wallets } from "@app"
-import { getMidPriceRatio } from "@app/prices"
-import { getDealerConfig } from "@config"
+import { Payments, Wallets } from "@/app"
+import { getMidPriceRatio } from "@/app/prices"
+import { getDealerConfig } from "@/config"
 
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
-import { SubOneCentSatAmountForUsdSelfSendError } from "@domain/payments"
-import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { baseLogger } from "@services/logger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { toSats } from "@/domain/bitcoin"
+import { toCents } from "@/domain/fiat"
+import { SubOneCentSatAmountForUsdSelfSendError } from "@/domain/payments"
+import {
+  AmountCalculator,
+  paymentAmountFromNumber,
+  WalletCurrency,
+} from "@/domain/shared"
+import { baseLogger } from "@/services/logger"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
 import { createAccount, fundWallet, getBalanceHelper } from "test/helpers"
 
 class ZeroAmountForUsdRecipientError extends Error {}
 
-jest.mock("@config", () => {
-  const config = jest.requireActual("@config")
+jest.mock("@/config", () => {
+  const config = jest.requireActual("@/config")
   return {
     ...config,
     getInvoiceCreateAttemptLimits: jest.fn().mockReturnValue({

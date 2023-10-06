@@ -1,4 +1,4 @@
-import { AmountCalculator, WalletCurrency, ZERO_CENTS } from "@domain/shared"
+import { AmountCalculator, WalletCurrency, ZERO_CENTS } from "@/domain/shared"
 
 const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
 const MS_PER_DAY = (24 * MS_PER_HOUR) as MilliSeconds

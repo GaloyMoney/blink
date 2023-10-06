@@ -1,5 +1,8 @@
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
-import { AuthWithPhonePasswordlessService, MissingSessionIdError } from "@services/kratos"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
+import {
+  AuthWithPhonePasswordlessService,
+  MissingSessionIdError,
+} from "@/services/kratos"
 
 export const logoutToken = async ({
   userId,

@@ -1,14 +1,14 @@
-import { Accounts, Payments } from "@app"
+import { Accounts, Payments } from "@/app"
 
-import { AccountStatus } from "@domain/accounts"
-import { toSats } from "@domain/bitcoin"
+import { AccountStatus } from "@/domain/accounts"
+import { toSats } from "@/domain/bitcoin"
 import {
   MaxFeeTooLargeForRoutelessPaymentError,
   PaymentSendStatus,
   decodeInvoice,
-} from "@domain/bitcoin/lightning"
-import { UsdDisplayCurrency, toCents } from "@domain/fiat"
-import { LnPaymentRequestNonZeroAmountRequiredError } from "@domain/payments"
+} from "@/domain/bitcoin/lightning"
+import { UsdDisplayCurrency, toCents } from "@/domain/fiat"
+import { LnPaymentRequestNonZeroAmountRequiredError } from "@/domain/payments"
 import {
   InactiveAccountError,
   InsufficientBalanceError,
@@ -16,21 +16,21 @@ import {
   SelfPaymentError,
   TradeIntraAccountLimitsExceededError,
   WithdrawalLimitsExceededError,
-} from "@domain/errors"
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
-import * as LnFeesImpl from "@domain/payments"
+} from "@/domain/errors"
+import { AmountCalculator, WalletCurrency } from "@/domain/shared"
+import * as LnFeesImpl from "@/domain/payments"
 
 import {
   AccountsRepository,
   LnPaymentsRepository,
   WalletInvoicesRepository,
-} from "@services/mongoose"
-import { LedgerService } from "@services/ledger"
-import { Transaction, TransactionMetadata } from "@services/ledger/schema"
-import { WalletInvoice } from "@services/mongoose/schema"
-import { LnPayment } from "@services/lnd/schema"
-import * as LndImpl from "@services/lnd"
-import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+} from "@/services/mongoose"
+import { LedgerService } from "@/services/ledger"
+import { Transaction, TransactionMetadata } from "@/services/ledger/schema"
+import { WalletInvoice } from "@/services/mongoose/schema"
+import { LnPayment } from "@/services/lnd/schema"
+import * as LndImpl from "@/services/lnd"
+import * as PushNotificationsServiceImpl from "@/services/notifications/push-notifications"
 
 import {
   createMandatoryUsers,
@@ -160,7 +160,7 @@ describe("initiated via lightning", () => {
   describe("settles via lightning", () => {
     it("fails if sender account is locked", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [],
@@ -208,7 +208,7 @@ describe("initiated via lightning", () => {
 
     it("fails when user has insufficient balance", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [],
@@ -236,7 +236,7 @@ describe("initiated via lightning", () => {
 
     it("fails to pay zero amount invoice without separate amount", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [],
@@ -264,7 +264,7 @@ describe("initiated via lightning", () => {
 
     it("fails if user sends balance amount without accounting for fee", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [],
@@ -346,14 +346,14 @@ describe("initiated via lightning", () => {
 
     it("pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [],
         defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
       })
 
-      const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments")
+      const { LnFees: LnFeesOrig } = jest.requireActual("@/domain/payments")
       const lndFeesSpy = jest.spyOn(LnFeesImpl, "LnFees").mockReturnValue({
         ...LnFeesOrig(),
         verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
@@ -415,7 +415,7 @@ describe("initiated via lightning", () => {
 
     it("persists ln-payment on successful ln send", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         defaultPubkey: (): Pubkey => DEFAULT_PUBKEY,
@@ -471,7 +471,7 @@ describe("initiated via lightning", () => {
       const { paymentHash, destination } = lnInvoice
 
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [destination],
@@ -536,7 +536,7 @@ describe("initiated via lightning", () => {
 
     it("fails if sends to self", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [lnInvoice.destination],
@@ -585,7 +585,7 @@ describe("initiated via lightning", () => {
 
     it("fails if amount greater than trade-intra-account limit", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [
@@ -669,7 +669,7 @@ describe("initiated via lightning", () => {
 
     it("fails if amount greater than intraledger limit", async () => {
       // Setup mocks
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [
@@ -755,7 +755,7 @@ describe("initiated via lightning", () => {
           sendNotification: jest.fn(),
         }))
 
-      const { LndService: LnServiceOrig } = jest.requireActual("@services/lnd")
+      const { LndService: LnServiceOrig } = jest.requireActual("@/services/lnd")
       const lndServiceSpy = jest.spyOn(LndImpl, "LndService").mockReturnValue({
         ...LnServiceOrig(),
         listAllPubkeys: () => [noAmountLnInvoice.destination],

@@ -1,16 +1,6 @@
 import dedent from "dedent"
 
-import { GT } from "@graphql/index"
-
-import { Accounts } from "@app"
-
-import { mapError } from "@graphql/error-map"
-import { UnknownClientError } from "@graphql/error"
-
-import { baseLogger } from "@services/logger"
-
 // FIXME should not use service
-import { IdentityRepository } from "@services/kratos"
 
 import Account from "../abstract/account"
 
@@ -24,6 +14,13 @@ import GraphQLEmail from "../../../shared/types/object/email"
 
 import AccountContact from "./account-contact"
 import UserQuizQuestion from "./user-quiz-question"
+
+import { IdentityRepository } from "@/services/kratos"
+import { UnknownClientError } from "@/graphql/error"
+import { baseLogger } from "@/services/logger"
+import { Accounts } from "@/app"
+import { mapError } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
 
 const GraphQLUser = GT.Object<User, GraphQLPublicContextAuth>({
   name: "User",

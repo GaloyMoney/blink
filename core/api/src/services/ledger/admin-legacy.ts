@@ -1,11 +1,3 @@
-import {
-  LedgerTransactionType,
-  liabilitiesMainAccount,
-  toLiabilitiesWalletId,
-  UnknownLedgerError,
-} from "@domain/ledger"
-import { WalletCurrency } from "@domain/shared"
-
 import { MainBook } from "./books"
 import { getBankOwnerWalletId } from "./caching"
 import {
@@ -15,6 +7,14 @@ import {
   lndLedgerAccountId,
   onChainLedgerAccountId,
 } from "./domain/accounts"
+
+import { WalletCurrency } from "@/domain/shared"
+import {
+  LedgerTransactionType,
+  liabilitiesMainAccount,
+  toLiabilitiesWalletId,
+  UnknownLedgerError,
+} from "@/domain/ledger"
 
 const getWalletBalance = async (account: string, query = {}) => {
   const params = { account, currency: "BTC", ...query }

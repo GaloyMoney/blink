@@ -1,11 +1,11 @@
 import {
   CouldNotFindError,
   MultipleCurrenciesForSingleCurrencyOperationError,
-} from "@domain/errors"
+} from "@/domain/errors"
 
-import { WalletOnChainPendingReceiveRepository } from "@services/mongoose"
-import { IncomingOnChainTxHandler } from "@domain/bitcoin/onchain/incoming-tx-handler"
-import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
+import { WalletOnChainPendingReceiveRepository } from "@/services/mongoose"
+import { IncomingOnChainTxHandler } from "@/domain/bitcoin/onchain/incoming-tx-handler"
+import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
 
 export const getPendingOnChainBalanceForWallets = async <S extends WalletCurrency>(
   wallets: Wallet[],

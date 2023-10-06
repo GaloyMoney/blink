@@ -1,9 +1,9 @@
-import { GT } from "@graphql/index"
-
 import LnPaymentRequest from "../../../shared/types/scalar/ln-payment-request"
 import PaymentHash from "../../../shared/types/scalar/payment-hash"
 import LnPaymentSecret from "../../../shared/types/scalar/ln-payment-secret"
 import SatAmount from "../../../shared/types/scalar/sat-amount"
+
+import { GT } from "@/graphql/index"
 
 const LnInvoice = GT.Object({
   name: "LnInvoice",

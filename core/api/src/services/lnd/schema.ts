@@ -1,5 +1,6 @@
-import { PaymentStatus } from "@domain/bitcoin/lightning"
 import mongoose from "mongoose"
+
+import { PaymentStatus } from "@/domain/bitcoin/lightning"
 
 const Schema = mongoose.Schema
 

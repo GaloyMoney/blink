@@ -1,20 +1,20 @@
 import crypto from "crypto"
 
-import { LedgerTransactionType } from "@domain/ledger"
-import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
+import { LedgerTransactionType } from "@/domain/ledger"
+import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@/domain/wallets"
 import {
   displayCurrencyPerBaseUnitFromAmounts,
   translateMemo,
   WalletTransactionHistory,
-} from "@domain/wallets/tx-history"
-import { toSats } from "@domain/bitcoin"
+} from "@/domain/wallets/tx-history"
+import { toSats } from "@/domain/bitcoin"
 import {
   memoSharingConfig,
   MEMO_SHARING_CENTS_THRESHOLD,
   MEMO_SHARING_SATS_THRESHOLD,
-} from "@config"
-import { WalletCurrency } from "@domain/shared"
-import { UsdDisplayCurrency, priceAmountFromNumber, toCents } from "@domain/fiat"
+} from "@/config"
+import { WalletCurrency } from "@/domain/shared"
+import { UsdDisplayCurrency, priceAmountFromNumber, toCents } from "@/domain/fiat"
 
 describe("translates ledger txs to wallet txs", () => {
   const timestamp = new Date()

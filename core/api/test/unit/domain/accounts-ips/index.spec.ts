@@ -1,4 +1,4 @@
-import { isPrivateIp } from "@domain/accounts-ips"
+import { isPrivateIp } from "@/domain/accounts-ips"
 
 describe("isPrivateIp", () => {
   it("check ipv6 private address validation", () => {

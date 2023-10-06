@@ -1,7 +1,7 @@
-import { UnknownLedgerError } from "@domain/ledger"
-
 import * as caching from "../caching"
 import { toLedgerAccountId } from "../domain"
+
+import { UnknownLedgerError } from "@/domain/ledger"
 
 export const staticAccountIds = async () => {
   try {

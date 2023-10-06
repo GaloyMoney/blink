@@ -5,10 +5,10 @@
  *
  * <wallet id>: Wallet id. Must be the last param
  */
-import { lndsConnect } from "@services/lnd/auth"
-import { setupMongoConnection } from "@services/mongodb"
-import { LedgerService } from "@services/ledger"
-import { isUp } from "@services/lnd/health"
+import { lndsConnect } from "@/services/lnd/auth"
+import { setupMongoConnection } from "@/services/mongodb"
+import { LedgerService } from "@/services/ledger"
+import { isUp } from "@/services/lnd/health"
 
 const getWalletBalance = async (walletId: WalletId) => {
   return LedgerService().getWalletBalance(walletId)

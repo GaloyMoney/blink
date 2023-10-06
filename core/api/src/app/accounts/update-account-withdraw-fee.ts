@@ -1,5 +1,5 @@
-import { sanityCheckedDefaultAccountWithdrawFee } from "@domain/accounts"
-import { AccountsRepository } from "@services/mongoose"
+import { sanityCheckedDefaultAccountWithdrawFee } from "@/domain/accounts"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const updateAccountWithdrawFee = async ({
   id,

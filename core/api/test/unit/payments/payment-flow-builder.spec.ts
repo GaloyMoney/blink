@@ -1,15 +1,15 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkSettlementMethod", "checkInvoice", "checkSenderWallet", "checkRecipientWallet"] }] */
-import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
-import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { SelfPaymentError } from "@domain/errors"
+import { SettlementMethod, PaymentInitiationMethod } from "@/domain/wallets"
+import { decodeInvoice } from "@/domain/bitcoin/lightning"
+import { SelfPaymentError } from "@/domain/errors"
 import {
   LightningPaymentFlowBuilder,
   LnFees,
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
   SubOneCentSatAmountForUsdSelfSendError,
-} from "@domain/payments"
-import { ONE_CENT, ValidationError, WalletCurrency } from "@domain/shared"
+} from "@/domain/payments"
+import { ONE_CENT, ValidationError, WalletCurrency } from "@/domain/shared"
 
 const skippedPubkey =
   "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6" as Pubkey

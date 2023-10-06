@@ -1,6 +1,6 @@
-import { Languages } from "@domain/users"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { Languages } from "@/domain/users"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 type InternalLang = UserLanguage | ""
 type ExternalLang = UserLanguage

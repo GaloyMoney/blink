@@ -1,5 +1,5 @@
-import { checkedToUsername } from "@domain/accounts"
-import { AccountsRepository } from "@services/mongoose/accounts"
+import { checkedToUsername } from "@/domain/accounts"
+import { AccountsRepository } from "@/services/mongoose/accounts"
 
 export const deleteBusinessMapInfo = async ({
   username,

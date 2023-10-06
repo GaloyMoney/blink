@@ -1,47 +1,47 @@
-import { getCallbackServiceConfig, getValuesToSkipProbe } from "@config"
+import { addContactsAfterSend, getPriceRatioForLimits } from "./helpers"
 
-import { checkIntraledgerLimits, checkTradeIntraAccountLimits } from "@app/accounts"
+import { getCallbackServiceConfig, getValuesToSkipProbe } from "@/config"
+
+import { checkIntraledgerLimits, checkTradeIntraAccountLimits } from "@/app/accounts"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
-} from "@app/prices"
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
-import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
+} from "@/app/prices"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
+import { validateIsBtcWallet, validateIsUsdWallet } from "@/app/wallets"
 
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   LightningPaymentFlowBuilder,
   toDisplayBaseAmount,
-} from "@domain/payments"
-import { AccountLevel, AccountValidator } from "@domain/accounts"
-import { DisplayAmountsConverter } from "@domain/fiat"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { ResourceExpiredLockServiceError } from "@domain/lock"
-import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+} from "@/domain/payments"
+import { AccountLevel, AccountValidator } from "@/domain/accounts"
+import { DisplayAmountsConverter } from "@/domain/fiat"
+import { ErrorLevel, WalletCurrency } from "@/domain/shared"
+import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
+import { ResourceExpiredLockServiceError } from "@/domain/lock"
+import { checkedToWalletId, SettlementMethod } from "@/domain/wallets"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
-import { LockService } from "@services/lock"
-import { LedgerService } from "@services/ledger"
-import * as LedgerFacade from "@services/ledger/facade"
-import { DealerPriceService } from "@services/dealer-price"
+import { LockService } from "@/services/lock"
+import { LedgerService } from "@/services/ledger"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { DealerPriceService } from "@/services/dealer-price"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
-} from "@services/tracing"
+} from "@/services/tracing"
 import {
   AccountsRepository,
   WalletsRepository,
   UsersRepository,
-} from "@services/mongoose"
-import { NotificationsService } from "@services/notifications"
+} from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
 
-import { CallbackService } from "@services/svix"
+import { CallbackService } from "@/services/svix"
 
-import { CallbackEventType } from "@domain/callback"
-
-import { addContactsAfterSend, getPriceRatioForLimits } from "./helpers"
+import { CallbackEventType } from "@/domain/callback"
 
 const dealer = DealerPriceService()
 

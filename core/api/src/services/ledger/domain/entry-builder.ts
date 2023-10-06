@@ -1,10 +1,10 @@
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
-
 import {
   coldStorageAccountDescriptor,
   lndLedgerAccountDescriptor,
   onChainLedgerAccountDescriptor,
 } from "./accounts"
+
+import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 
 const calc = AmountCalculator()
 

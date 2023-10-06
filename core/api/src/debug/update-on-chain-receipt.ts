@@ -3,11 +3,11 @@
  * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/update-on-chain-receipt.ts
  */
 
-import { Wallets } from "@app"
-import { baseLogger as logger } from "@services/logger"
-import { checkedToScanDepth } from "@domain/bitcoin/onchain"
-import { redis } from "@services/redis"
-import { setupMongoConnection } from "@services/mongodb"
+import { Wallets } from "@/app"
+import { baseLogger as logger } from "@/services/logger"
+import { checkedToScanDepth } from "@/domain/bitcoin/onchain"
+import { redis } from "@/services/redis"
+import { setupMongoConnection } from "@/services/mongodb"
 
 const updateLegacyOnChainReceipt = async () => {
   const scanDepth = checkedToScanDepth(2160) // ~15 days

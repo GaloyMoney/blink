@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import IError from "../../../shared/types/abstract/error"
 import ConsumerAccount from "../object/consumer-account"
+
+import { GT } from "@/graphql/index"
 
 const AccountUpdateNotificationSettingsPayload = GT.Object({
   name: "AccountUpdateNotificationSettingsPayload",

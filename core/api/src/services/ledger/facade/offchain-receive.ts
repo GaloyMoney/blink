@@ -1,11 +1,11 @@
-import { AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
-
 import { MainBook } from "../books"
 
 import { EntryBuilder, toLedgerAccountDescriptor } from "../domain"
 import { persistAndReturnEntry } from "../helpers"
 
 import { staticAccountIds } from "./static-account-ids"
+
+import { AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
 
 const calc = AmountCalculator()
 

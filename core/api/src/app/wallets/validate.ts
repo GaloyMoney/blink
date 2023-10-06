@@ -1,7 +1,7 @@
-import { WalletCurrency } from "@domain/shared"
-import { MismatchedCurrencyForWalletError } from "@domain/errors"
+import { WalletCurrency } from "@/domain/shared"
+import { MismatchedCurrencyForWalletError } from "@/domain/errors"
 
-import { WalletsRepository } from "@services/mongoose"
+import { WalletsRepository } from "@/services/mongoose"
 
 export const validateIsBtcWallet = async (
   walletId: WalletId,

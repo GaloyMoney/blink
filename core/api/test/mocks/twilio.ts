@@ -1,4 +1,4 @@
-import { yamlConfig } from "@config"
+import { yamlConfig } from "@/config"
 
 export const TwilioClient = () => {
   const initiateVerify = async () => {

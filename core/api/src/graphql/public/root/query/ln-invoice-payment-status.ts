@@ -1,9 +1,9 @@
-import { Lightning } from "@app"
+import { Lightning } from "@/app"
 
-import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
-import LnInvoicePaymentStatusPayload from "@graphql/public/types/payload/ln-invoice-payment-status"
-import LnInvoicePaymentStatusInput from "@graphql/public/types/object/ln-invoice-payment-status-input"
+import { GT } from "@/graphql/index"
+import { mapError } from "@/graphql/error-map"
+import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-invoice-payment-status"
+import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
 
 const LnInvoicePaymentStatusQuery = GT.Field({
   type: GT.NonNull(LnInvoicePaymentStatusPayload),

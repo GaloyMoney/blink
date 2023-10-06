@@ -1,29 +1,29 @@
-import { getFeesConfig, getOnChainWalletConfig } from "@config"
+import { getFeesConfig, getOnChainWalletConfig } from "@/config"
 
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
-import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@app/prices"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
+import { getCurrentPriceAsDisplayPriceRatio, usdFromBtcMidPriceFn } from "@/app/prices"
 
 import {
   DepositFeeCalculator,
   PaymentInitiationMethod,
   SettlementMethod,
-} from "@domain/wallets"
-import { WalletAddressReceiver } from "@domain/wallet-on-chain/wallet-address-receiver"
-import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@domain/errors"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+} from "@/domain/wallets"
+import { WalletAddressReceiver } from "@/domain/wallet-on-chain/wallet-address-receiver"
+import { DuplicateKeyForPersistError, LessThanDustThresholdError } from "@/domain/errors"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 
 import {
   AccountsRepository,
   UsersRepository,
   WalletOnChainPendingReceiveRepository,
   WalletsRepository,
-} from "@services/mongoose"
-import { LockService } from "@services/lock"
-import { baseLogger } from "@services/logger"
-import { LedgerService } from "@services/ledger"
-import { DealerPriceService } from "@services/dealer-price"
-import { NotificationsService } from "@services/notifications"
-import { DisplayAmountsConverter } from "@domain/fiat/display-amounts-converter"
+} from "@/services/mongoose"
+import { LockService } from "@/services/lock"
+import { baseLogger } from "@/services/logger"
+import { LedgerService } from "@/services/ledger"
+import { DealerPriceService } from "@/services/dealer-price"
+import { NotificationsService } from "@/services/notifications"
+import { DisplayAmountsConverter } from "@/domain/fiat/display-amounts-converter"
 
 const dealer = DealerPriceService()
 const { dustThreshold } = getOnChainWalletConfig()

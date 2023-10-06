@@ -1,29 +1,29 @@
+import { addSettledTransaction } from "./add-settled-on-chain-transaction"
+
 import {
   NETWORK,
   ONCHAIN_MIN_CONFIRMATIONS,
   ONCHAIN_SCAN_DEPTH,
   SECS_PER_10_MINS,
-} from "@config"
+} from "@/config"
 
-import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
+import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
 
-import { TxDecoder } from "@domain/bitcoin/onchain"
-import { CacheKeys } from "@domain/cache"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { TxDecoder } from "@/domain/bitcoin/onchain"
+import { CacheKeys } from "@/domain/cache"
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
 import {
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletFromOnChainAddressesError,
-} from "@domain/errors"
-import { UsdDisplayCurrency } from "@domain/fiat"
+} from "@/domain/errors"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
-import { LockService } from "@services/lock"
-import { LedgerService } from "@services/ledger"
-import { RedisCacheService } from "@services/cache"
-import { WalletsRepository } from "@services/mongoose"
-import { LndService } from "@services/lnd"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
-
-import { addSettledTransaction } from "./add-settled-on-chain-transaction"
+import { LockService } from "@/services/lock"
+import { LedgerService } from "@/services/ledger"
+import { RedisCacheService } from "@/services/cache"
+import { WalletsRepository } from "@/services/mongoose"
+import { LndService } from "@/services/lnd"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 const redisCache = RedisCacheService()
 

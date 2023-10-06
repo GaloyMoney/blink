@@ -1,14 +1,14 @@
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
-import { LedgerTransactionType } from "@domain/ledger"
+import { toSats } from "@/domain/bitcoin"
+import { toCents } from "@/domain/fiat"
+import { LedgerTransactionType } from "@/domain/ledger"
 import {
   MissingPropsInTransactionForPaymentFlowError,
   NonLnPaymentTransactionForPaymentFlowError,
-} from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
-import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
+} from "@/domain/payments"
+import { WalletCurrency } from "@/domain/shared"
+import { PaymentInitiationMethod, SettlementMethod } from "@/domain/wallets"
 
-import { PaymentFlowFromLedgerTransaction } from "@app/payments/translations"
+import { PaymentFlowFromLedgerTransaction } from "@/app/payments/translations"
 
 describe("PaymentFlowFromLedgerTransaction", () => {
   const satsAmount = toSats(20_000)

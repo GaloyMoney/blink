@@ -1,4 +1,4 @@
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, WalletCurrency } from "@/domain/shared"
 
 describe("AmountCalculator", () => {
   const calc = AmountCalculator()

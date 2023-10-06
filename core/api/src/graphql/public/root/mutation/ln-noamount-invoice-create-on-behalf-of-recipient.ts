@@ -1,13 +1,13 @@
 import dedent from "dedent"
 
-import { Wallets } from "@app"
+import { Wallets } from "@/app"
 
-import { GT } from "@graphql/index"
-import Memo from "@graphql/shared/types/scalar/memo"
-import Minutes from "@graphql/public/types/scalar/minutes"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import LnNoAmountInvoicePayload from "@graphql/public/types/payload/ln-noamount-invoice"
+import { GT } from "@/graphql/index"
+import Memo from "@/graphql/shared/types/scalar/memo"
+import Minutes from "@/graphql/public/types/scalar/minutes"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import LnNoAmountInvoicePayload from "@/graphql/public/types/payload/ln-noamount-invoice"
 
 const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
   name: "LnNoAmountInvoiceCreateOnBehalfOfRecipientInput",

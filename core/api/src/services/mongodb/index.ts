@@ -1,5 +1,9 @@
 import mongoose from "mongoose"
 
+import { baseLogger } from "../logger"
+
+import { Account } from "../mongoose/schema"
+
 import {
   MONGODB_CON,
   MissingBankOwnerAccountConfigError,
@@ -8,14 +12,11 @@ import {
   MissingFunderAccountConfigError,
   MissingUsdDealerWalletConfigError,
   UnknownConfigError,
-} from "@config"
-import { WalletCurrency } from "@domain/shared"
-import { lazyLoadLedgerAdmin } from "@services/ledger"
-import { WalletsRepository } from "@services/mongoose"
-import { fromObjectId } from "@services/mongoose/utils"
-
-import { baseLogger } from "../logger"
-import { Account } from "../mongoose/schema"
+} from "@/config"
+import { WalletCurrency } from "@/domain/shared"
+import { lazyLoadLedgerAdmin } from "@/services/ledger"
+import { WalletsRepository } from "@/services/mongoose"
+import { fromObjectId } from "@/services/mongoose/utils"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {

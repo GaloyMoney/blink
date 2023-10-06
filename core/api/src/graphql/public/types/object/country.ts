@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import CountryCode from "../scalar/country-code"
 import PhoneCodeChannelType from "../../../shared/types/scalar/phone-code-channel-type"
+
+import { GT } from "@/graphql/index"
 
 const Country = GT.Object<Country>({
   name: "Country",

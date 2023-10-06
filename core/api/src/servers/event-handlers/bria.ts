@@ -1,18 +1,18 @@
-import { Wallets, OnChain } from "@app"
+import { Wallets, OnChain } from "@/app"
 
 import {
   AmountLessThanFeeError,
   CouldNotFindWalletFromOnChainAddressError,
   LessThanDustThresholdError,
   NoTransactionToUpdateError,
-} from "@domain/errors"
+} from "@/domain/errors"
 
-import { NoTransactionToSettleError } from "@services/ledger/domain/errors"
-import * as LedgerFacade from "@services/ledger/facade"
-import { baseLogger } from "@services/logger"
-import { BriaPayloadType } from "@services/bria"
-import { EventAugmentationMissingError } from "@services/bria/errors"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import { NoTransactionToSettleError } from "@/services/ledger/domain/errors"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { baseLogger } from "@/services/logger"
+import { BriaPayloadType } from "@/services/bria"
+import { EventAugmentationMissingError } from "@/services/bria/errors"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainError> => {
   baseLogger.info(

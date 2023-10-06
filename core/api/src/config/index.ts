@@ -1,5 +1,3 @@
-import { toDays } from "@domain/primitives"
-
 import {
   getBriaPartialConfigFromYaml,
   MEMO_SHARING_CENTS_THRESHOLD,
@@ -11,6 +9,10 @@ import { env } from "./env"
 export * from "./error"
 export * from "./yaml"
 export * from "./schema"
+
+import { ConfigError } from "./error"
+
+import { toDays } from "@/domain/primitives"
 
 export const MS_PER_SEC = 1000 as MilliSeconds
 export const MS_PER_HOUR = (60 * 60 * MS_PER_SEC) as MilliSeconds
@@ -48,8 +50,6 @@ export const getJwksArgs = () => {
     jwksUri: urlJkws,
   }
 }
-
-import { ConfigError } from "./error"
 
 export const getGeetestConfig = () => {
   const id = GEETEST_ID

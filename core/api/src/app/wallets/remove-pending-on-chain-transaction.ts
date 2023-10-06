@@ -1,8 +1,8 @@
-import { CouldNotFindWalletOnChainPendingReceiveError } from "@domain/errors"
+import { CouldNotFindWalletOnChainPendingReceiveError } from "@/domain/errors"
 import {
   WalletOnChainPendingReceiveRepository,
   WalletsRepository,
-} from "@services/mongoose"
+} from "@/services/mongoose"
 
 export const removePendingTransaction = async ({
   txId,

@@ -1,58 +1,58 @@
-import { NETWORK, getOnChainWalletConfig } from "@config"
+import { getPriceRatioForLimits } from "./helpers"
+
+import { NETWORK, getOnChainWalletConfig } from "@/config"
 
 import {
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
-} from "@app/accounts"
+} from "@/app/accounts"
 import {
   btcFromUsdMidPriceFn,
   getCurrentPriceAsDisplayPriceRatio,
   usdFromBtcMidPriceFn,
-} from "@app/prices"
-import { removeDeviceTokens } from "@app/users/remove-device-tokens"
+} from "@/app/prices"
+import { removeDeviceTokens } from "@/app/users/remove-device-tokens"
 import {
   getMinerFeeAndPaymentFlow,
   validateIsBtcWallet,
   validateIsUsdWallet,
-} from "@app/wallets"
+} from "@/app/wallets"
 
-import { AccountValidator } from "@domain/accounts"
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
-import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
-import { DisplayAmountsConverter } from "@domain/fiat"
-import { ResourceExpiredLockServiceError } from "@domain/lock"
-import { DeviceTokensNotRegisteredNotificationsServiceError } from "@domain/notifications"
+import { AccountValidator } from "@/domain/accounts"
+import { PaymentSendStatus } from "@/domain/bitcoin/lightning"
+import { checkedToOnChainAddress } from "@/domain/bitcoin/onchain"
+import { CouldNotFindError, InsufficientBalanceError } from "@/domain/errors"
+import { DisplayAmountsConverter } from "@/domain/fiat"
+import { ResourceExpiredLockServiceError } from "@/domain/lock"
+import { DeviceTokensNotRegisteredNotificationsServiceError } from "@/domain/notifications"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   WalletPriceRatio,
   toDisplayBaseAmount,
-} from "@domain/payments"
-import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
-import { WalletCurrency } from "@domain/shared"
+} from "@/domain/payments"
+import { OnChainPaymentFlowBuilder } from "@/domain/payments/onchain-payment-flow-builder"
+import { WalletCurrency } from "@/domain/shared"
 import {
   PaymentInputValidator,
   SettlementMethod,
   toWalletDescriptor,
-} from "@domain/wallets"
+} from "@/domain/wallets"
 
-import * as LedgerFacade from "@services/ledger/facade"
+import * as LedgerFacade from "@/services/ledger/facade"
 
-import { OnChainService } from "@services/bria"
-import { DealerPriceService } from "@services/dealer-price"
-import { LedgerService } from "@services/ledger"
-import { LockService } from "@services/lock"
-import { baseLogger } from "@services/logger"
+import { OnChainService } from "@/services/bria"
+import { DealerPriceService } from "@/services/dealer-price"
+import { LedgerService } from "@/services/ledger"
+import { LockService } from "@/services/lock"
+import { baseLogger } from "@/services/logger"
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
-} from "@services/mongoose"
-import { NotificationsService } from "@services/notifications"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
-import { getPriceRatioForLimits } from "./helpers"
+} from "@/services/mongoose"
+import { NotificationsService } from "@/services/notifications"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = DealerPriceService()

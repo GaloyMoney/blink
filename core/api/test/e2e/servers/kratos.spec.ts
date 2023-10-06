@@ -1,9 +1,11 @@
+import { authenticator } from "otplib"
+
 import {
   AuthenticationError,
   EmailCodeInvalidError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
-} from "@domain/authentication/errors"
+} from "@/domain/authentication/errors"
 import {
   AuthWithPhonePasswordlessService,
   AuthWithUsernamePasswordDeviceIdService,
@@ -21,16 +23,15 @@ import {
   kratosElevatingSessionWithTotp,
   SchemaIdType,
   kratosRemoveTotp,
-} from "@services/kratos"
-import { kratosAdmin, kratosPublic } from "@services/kratos/private"
+} from "@/services/kratos"
+import { kratosAdmin, kratosPublic } from "@/services/kratos/private"
 import {
   activateUser,
   deactivateUser,
   revokeSessions,
-} from "@services/kratos/tests-but-not-prod"
-import { authenticator } from "otplib"
+} from "@/services/kratos/tests-but-not-prod"
 
-import { sleep } from "@utils"
+import { sleep } from "@/utils"
 
 import { getError, randomEmail, randomPhone } from "test/helpers"
 

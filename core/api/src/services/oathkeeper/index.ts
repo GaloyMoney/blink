@@ -1,12 +1,13 @@
-import { OATHKEEPER_DECISION_ENDPOINT } from "@config"
+import axios, { isAxiosError } from "axios"
+
+import { OATHKEEPER_DECISION_ENDPOINT } from "@/config"
 import {
   OathkeeperError,
   OathkeeperForbiddenServiceError,
   OathkeeperMissingAuthorizationHeaderError,
   OathkeeperUnauthorizedServiceError,
   UnknownOathkeeperServiceError,
-} from "@domain/oathkeeper/errors"
-import axios, { isAxiosError } from "axios"
+} from "@/domain/oathkeeper/errors"
 
 export const sendOathkeeperRequestGraphql = async (
   token: AuthToken | undefined,

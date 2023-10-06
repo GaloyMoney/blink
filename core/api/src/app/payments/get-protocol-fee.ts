@@ -1,26 +1,26 @@
-import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
-import { checkedToWalletId } from "@domain/wallets"
+import { PartialResult } from "../partial-result"
+
+import { constructPaymentFlowBuilder, getPriceRatioForLimits } from "./helpers"
+
+import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@/domain/bitcoin/lightning"
+import { checkedToWalletId } from "@/domain/wallets"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
   SkipProbeForPubkeyError,
-} from "@domain/payments"
-import { LndService } from "@services/lnd"
+} from "@/domain/payments"
+import { LndService } from "@/services/lnd"
 
-import { WalletsRepository, PaymentFlowStateRepository } from "@services/mongoose"
-import { DealerPriceService } from "@services/dealer-price"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import { WalletsRepository, PaymentFlowStateRepository } from "@/services/mongoose"
+import { DealerPriceService } from "@/services/dealer-price"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
-import { validateIsBtcWallet, validateIsUsdWallet } from "@app/wallets"
+import { validateIsBtcWallet, validateIsUsdWallet } from "@/app/wallets"
 import {
   checkIntraledgerLimits,
   checkTradeIntraAccountLimits,
   checkWithdrawalLimits,
-} from "@app/accounts"
-
-import { PartialResult } from "../partial-result"
-
-import { constructPaymentFlowBuilder, getPriceRatioForLimits } from "./helpers"
+} from "@/app/accounts"
 
 const getLightningFeeEstimation = async ({
   walletId,

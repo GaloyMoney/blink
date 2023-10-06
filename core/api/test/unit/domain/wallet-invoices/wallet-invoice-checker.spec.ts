@@ -1,7 +1,7 @@
-import { DEFAULT_EXPIRATIONS } from "@domain/bitcoin/lightning/invoice-expiration"
-import { CouldNotFindWalletInvoiceError, RepositoryError } from "@domain/errors"
-import { WalletCurrency } from "@domain/shared"
-import { WalletInvoiceChecker } from "@domain/wallet-invoices"
+import { DEFAULT_EXPIRATIONS } from "@/domain/bitcoin/lightning/invoice-expiration"
+import { CouldNotFindWalletInvoiceError, RepositoryError } from "@/domain/errors"
+import { WalletCurrency } from "@/domain/shared"
+import { WalletInvoiceChecker } from "@/domain/wallet-invoices"
 
 const goodWalletInvoice = {
   paymentHash: "paymentHash" as PaymentHash,

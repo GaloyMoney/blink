@@ -3,7 +3,7 @@ import {
   InvalidNegativeAmountError,
   InvalidUsdCents,
   NonIntegerError,
-} from "@domain/errors"
+} from "@/domain/errors"
 
 export * from "./display-currency"
 export * from "./display-amounts-converter"

@@ -1,8 +1,8 @@
 import {
   InvalidSecretForAuthNCallbackError,
   MissingSecretForAuthNCallbackError,
-} from "@domain/authentication/errors"
-import { CallbackSecretValidator } from "@domain/authentication/secret-validator"
+} from "@/domain/authentication/errors"
+import { CallbackSecretValidator } from "@/domain/authentication/secret-validator"
 
 const DUMMY_CALLBACK_API_KEY = "dummy-callback-api-key"
 

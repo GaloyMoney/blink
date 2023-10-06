@@ -1,7 +1,7 @@
-import { GT } from "@graphql/index"
-
 import IError from "../../../shared/types/abstract/error"
 import RealtimePrice from "../object/realtime-price"
+
+import { GT } from "@/graphql/index"
 
 const RealtimePricePayload = GT.Object({
   name: "RealtimePricePayload",

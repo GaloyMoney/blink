@@ -1,6 +1,6 @@
-import { checkedToPhoneNumber } from "@domain/users"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { checkedToPhoneNumber } from "@/domain/users"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const Phone = GT.Scalar({
   name: "Phone",

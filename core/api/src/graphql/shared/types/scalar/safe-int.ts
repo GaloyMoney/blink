@@ -1,6 +1,6 @@
-import { ValidationInternalError } from "@graphql/error"
-import { GT } from "@graphql/index"
-import { baseLogger } from "@services/logger"
+import { ValidationInternalError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
+import { baseLogger } from "@/services/logger"
 
 const MAX_INT = Number.MAX_SAFE_INTEGER
 const MIN_INT = Number.MIN_SAFE_INTEGER

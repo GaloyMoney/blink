@@ -1,11 +1,11 @@
-import { Wallets } from "@app"
-import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@domain/errors"
-import { mapError } from "@graphql/error-map"
-import { GT } from "@graphql/index"
-import Username from "@graphql/shared/types/scalar/username"
-import WalletCurrency from "@graphql/shared/types/scalar/wallet-currency"
-import PublicWallet from "@graphql/public/types/abstract/public-wallet"
-import { AccountsRepository } from "@services/mongoose"
+import { Wallets } from "@/app"
+import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@/domain/errors"
+import { mapError } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
+import Username from "@/graphql/shared/types/scalar/username"
+import WalletCurrency from "@/graphql/shared/types/scalar/wallet-currency"
+import PublicWallet from "@/graphql/public/types/abstract/public-wallet"
+import { AccountsRepository } from "@/services/mongoose"
 
 const AccountDefaultWalletQuery = GT.Field({
   type: GT.NonNull(PublicWallet),

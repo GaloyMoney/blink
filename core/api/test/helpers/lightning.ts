@@ -1,14 +1,5 @@
 import { once } from "events"
 
-import { Wallets } from "@app"
-
-import { WalletCurrency } from "@domain/shared"
-import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
-import { WalletsRepository } from "@services/mongoose"
-
-import { sleep } from "@utils"
-
 import {
   authenticatedLndGrpc,
   closeChannel,
@@ -29,8 +20,6 @@ import {
 
 import { parsePaymentRequest } from "invoices"
 
-import { offchainLnds, onchainLnds } from "@services/lnd/config"
-
 import {
   bitcoindClient,
   bitcoindOutside,
@@ -39,6 +28,17 @@ import {
 } from "./bitcoin-core"
 
 import { waitFor } from "./shared"
+
+import { Wallets } from "@/app"
+
+import { WalletCurrency } from "@/domain/shared"
+import { onChannelUpdated, updateEscrows } from "@/services/lnd/utils"
+import { baseLogger } from "@/services/logger"
+import { WalletsRepository } from "@/services/mongoose"
+
+import { sleep } from "@/utils"
+
+import { offchainLnds, onchainLnds } from "@/services/lnd/config"
 
 export * from "lightning"
 

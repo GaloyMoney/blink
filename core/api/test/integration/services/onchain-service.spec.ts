@@ -1,6 +1,6 @@
-import { OnChainAddressAlreadyCreatedForRequestIdError } from "@domain/bitcoin/onchain"
-import { WalletCurrency } from "@domain/shared"
-import { OnChainService } from "@services/bria"
+import { OnChainAddressAlreadyCreatedForRequestIdError } from "@/domain/bitcoin/onchain"
+import { WalletCurrency } from "@/domain/shared"
+import { OnChainService } from "@/services/bria"
 
 const onchain = OnChainService()
 

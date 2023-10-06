@@ -1,5 +1,6 @@
-import { KRATOS_PG_CON } from "@config"
 import knex from "knex"
+
+import { KRATOS_PG_CON } from "@/config"
 
 const getKratosKnex = () =>
   knex({

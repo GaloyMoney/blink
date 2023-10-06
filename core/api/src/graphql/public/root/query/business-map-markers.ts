@@ -1,8 +1,8 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import MapMarker from "@graphql/public/types/object/map-marker"
-import { mapError } from "@graphql/error-map"
-import { Accounts } from "@app"
+import MapMarker from "@/graphql/public/types/object/map-marker"
+import { mapError } from "@/graphql/error-map"
+import { Accounts } from "@/app"
 
 const BusinessMapMarkersQuery = GT.Field({
   type: GT.List(MapMarker),

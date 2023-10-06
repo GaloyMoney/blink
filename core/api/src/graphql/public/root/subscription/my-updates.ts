@@ -1,28 +1,28 @@
-import { Prices } from "@app"
+import { Prices } from "@/app"
 
 import {
   majorToMinorUnit,
   SAT_PRICE_PRECISION_OFFSET,
   USD_PRICE_PRECISION_OFFSET,
   UsdDisplayCurrency,
-} from "@domain/fiat"
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+} from "@/domain/fiat"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@/domain/pubsub"
 
-import { GT } from "@graphql/index"
-import Price from "@graphql/public/types/object/price"
-import IError from "@graphql/shared/types/abstract/error"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import SatAmount from "@graphql/shared/types/scalar/sat-amount"
-import GraphQLUser from "@graphql/public/types/object/user"
-import PaymentHash from "@graphql/shared/types/scalar/payment-hash"
-import RealtimePrice from "@graphql/public/types/object/realtime-price"
-import OnChainTxHash from "@graphql/shared/types/scalar/onchain-tx-hash"
-import { AuthenticationError, UnknownClientError } from "@graphql/error"
-import TxNotificationType from "@graphql/public/types/scalar/tx-notification-type"
-import InvoicePaymentStatus from "@graphql/public/types/scalar/invoice-payment-status"
+import { GT } from "@/graphql/index"
+import Price from "@/graphql/public/types/object/price"
+import IError from "@/graphql/shared/types/abstract/error"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import SatAmount from "@/graphql/shared/types/scalar/sat-amount"
+import GraphQLUser from "@/graphql/public/types/object/user"
+import PaymentHash from "@/graphql/shared/types/scalar/payment-hash"
+import RealtimePrice from "@/graphql/public/types/object/realtime-price"
+import OnChainTxHash from "@/graphql/shared/types/scalar/onchain-tx-hash"
+import { AuthenticationError, UnknownClientError } from "@/graphql/error"
+import TxNotificationType from "@/graphql/public/types/scalar/tx-notification-type"
+import InvoicePaymentStatus from "@/graphql/public/types/scalar/invoice-payment-status"
 
-import { baseLogger } from "@services/logger"
-import { PubSubService } from "@services/pubsub"
+import { baseLogger } from "@/services/logger"
+import { PubSubService } from "@/services/pubsub"
 
 const pubsub = PubSubService()
 

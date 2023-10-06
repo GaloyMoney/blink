@@ -1,7 +1,7 @@
 // an accounting reminder:
 // https://en.wikipedia.org/wiki/Double-entry_bookkeeping
 
-import { WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@/domain/shared"
 
 // assets:
 export const assetsMainAccount = "Assets"

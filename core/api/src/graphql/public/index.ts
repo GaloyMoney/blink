@@ -1,10 +1,10 @@
 import { GraphQLSchema } from "graphql"
 
-import { ALL_INTERFACE_TYPES } from "@graphql/public/types"
-
 import { QueryType } from "./queries"
 import { MutationType } from "./mutations"
 import { SubscriptionType } from "./subscriptions"
+
+import { ALL_INTERFACE_TYPES } from "@/graphql/public/types"
 
 export { queryFields } from "./queries"
 export { mutationFields } from "./mutations"

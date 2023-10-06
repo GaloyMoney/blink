@@ -1,15 +1,15 @@
-import { InvalidFeeProbeStateError } from "@domain/bitcoin/lightning"
-
-import { Payments } from "@app"
-
-import { GT } from "@graphql/index"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import CentAmount from "@graphql/public/types/scalar/cent-amount"
-import CentAmountPayload from "@graphql/public/types/payload/cent-amount"
-import LnPaymentRequest from "@graphql/shared/types/scalar/ln-payment-request"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
+
+import { InvalidFeeProbeStateError } from "@/domain/bitcoin/lightning"
+
+import { Payments } from "@/app"
+
+import { GT } from "@/graphql/index"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import CentAmount from "@/graphql/public/types/scalar/cent-amount"
+import CentAmountPayload from "@/graphql/public/types/payload/cent-amount"
+import LnPaymentRequest from "@/graphql/shared/types/scalar/ln-payment-request"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 
 const LnNoAmountUsdInvoiceFeeProbeInput = GT.Input({
   name: "LnNoAmountUsdInvoiceFeeProbeInput",

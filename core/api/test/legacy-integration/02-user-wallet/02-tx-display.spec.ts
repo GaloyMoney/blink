@@ -1,35 +1,35 @@
-import { Payments, Wallets } from "@app"
-import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
+import { Payments, Wallets } from "@/app"
+import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
 
 import {
   MaxFeeTooLargeForRoutelessPaymentError,
   PaymentSendStatus,
-} from "@domain/bitcoin/lightning"
-import { sat2btc, toSats } from "@domain/bitcoin"
-import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
-import * as LnFeesImpl from "@domain/payments"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-import { TxStatus } from "@domain/wallets"
-import { UsdDisplayCurrency, displayAmountFromNumber } from "@domain/fiat"
+} from "@/domain/bitcoin/lightning"
+import { sat2btc, toSats } from "@/domain/bitcoin"
+import { LedgerTransactionType, UnknownLedgerError } from "@/domain/ledger"
+import * as LnFeesImpl from "@/domain/payments"
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
+import { TxStatus } from "@/domain/wallets"
+import { UsdDisplayCurrency, displayAmountFromNumber } from "@/domain/fiat"
 
-import { updateDisplayCurrency } from "@app/accounts"
+import { updateDisplayCurrency } from "@/app/accounts"
 
-import { PayoutSpeed } from "@domain/bitcoin/onchain"
+import { PayoutSpeed } from "@/domain/bitcoin/onchain"
 
-import { translateToLedgerTx } from "@services/ledger"
-import { MainBook, Transaction } from "@services/ledger/books"
-import * as BriaImpl from "@services/bria"
-import { BriaPayloadType } from "@services/bria"
-import { AccountsRepository } from "@services/mongoose"
-import { toObjectId } from "@services/mongoose/utils"
-import { baseLogger } from "@services/logger"
+import { translateToLedgerTx } from "@/services/ledger"
+import { MainBook, Transaction } from "@/services/ledger/books"
+import * as BriaImpl from "@/services/bria"
+import { BriaPayloadType } from "@/services/bria"
+import { AccountsRepository } from "@/services/mongoose"
+import { toObjectId } from "@/services/mongoose/utils"
+import { baseLogger } from "@/services/logger"
 
 import {
   utxoDetectedEventHandler,
   utxoSettledEventHandler,
-} from "@servers/event-handlers/bria"
+} from "@/servers/event-handlers/bria"
 
-import { sleep } from "@utils"
+import { sleep } from "@/utils"
 
 import {
   bitcoindClient,
@@ -570,7 +570,7 @@ describe("Display properties on transactions", () => {
       it("(LnFailedPaymentReceiveLedgerMetadata) pay zero amount invoice & revert txn when verifyMaxFee fails", async () => {
         // TxMetadata:
         // - LnFailedPaymentReceiveLedgerMetadata
-        const { LnFees: LnFeesOrig } = jest.requireActual("@domain/payments")
+        const { LnFees: LnFeesOrig } = jest.requireActual("@/domain/payments")
         const lndFeesSpy = jest.spyOn(LnFeesImpl, "LnFees").mockReturnValue({
           ...LnFeesOrig(),
           verifyMaxFee: () => new MaxFeeTooLargeForRoutelessPaymentError(),
@@ -994,7 +994,7 @@ describe("Display properties on transactions", () => {
         // - OnChainSendLedgerMetadata
 
         const { OnChainService: OnChainServiceOrig } =
-          jest.requireActual("@services/bria")
+          jest.requireActual("@/services/bria")
         const briaSpy = jest.spyOn(BriaImpl, "OnChainService").mockReturnValue({
           ...OnChainServiceOrig(),
           queuePayoutToAddress: async () => "payoutId" as PayoutId,

@@ -1,7 +1,7 @@
-import { ErrorLevel } from "@domain/shared"
+import { ErrorLevel } from "@/domain/shared"
 
-import { LndService } from "@services/lnd"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
+import { LndService } from "@/services/lnd"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const getTotalPendingHtlcCount = async (): Promise<number | ApplicationError> => {
   const offChainService = LndService()

@@ -1,4 +1,4 @@
-import { UsersRepository } from "@services/mongoose"
+import { UsersRepository } from "@/services/mongoose"
 
 export const removeDeviceTokens = async ({
   userId,

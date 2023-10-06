@@ -1,6 +1,6 @@
-import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
-import { CouldNotFindWalletInvoiceError } from "@domain/errors"
-import { WalletCurrency } from "@domain/shared"
+import { invoiceExpirationForCurrency } from "@/domain/bitcoin/lightning"
+import { CouldNotFindWalletInvoiceError } from "@/domain/errors"
+import { WalletCurrency } from "@/domain/shared"
 
 export const WalletInvoiceChecker = (
   walletInvoice: WalletInvoice | RepositoryError,

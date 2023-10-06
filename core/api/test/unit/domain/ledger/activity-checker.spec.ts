@@ -1,7 +1,7 @@
-import { toCents } from "@domain/fiat"
-import { ActivityChecker } from "@domain/ledger/activity-checker"
-import { WalletPriceRatio } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
+import { toCents } from "@/domain/fiat"
+import { ActivityChecker } from "@/domain/ledger/activity-checker"
+import { WalletPriceRatio } from "@/domain/payments"
+import { WalletCurrency } from "@/domain/shared"
 
 let btcWallet: Wallet, usdWallet: Wallet
 

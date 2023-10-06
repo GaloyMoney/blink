@@ -2,11 +2,11 @@ import {
   CouldNotFindWalletFromAccountIdAndCurrencyError,
   MultipleWalletsFoundForAccountIdAndCurrency,
   RepositoryError,
-} from "@domain/errors"
-import { WalletCurrency } from "@domain/shared"
-import { WalletsRepository } from "@services/mongoose"
-import { Wallet } from "@services/mongoose/schema"
-import { toObjectId } from "@services/mongoose/utils"
+} from "@/domain/errors"
+import { WalletCurrency } from "@/domain/shared"
+import { WalletsRepository } from "@/services/mongoose"
+import { Wallet } from "@/services/mongoose/schema"
+import { toObjectId } from "@/services/mongoose/utils"
 
 const wallets = WalletsRepository()
 const accountId = "00112233445566778899aabb" as AccountId

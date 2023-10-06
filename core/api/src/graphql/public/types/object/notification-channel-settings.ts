@@ -1,5 +1,5 @@
-import { GT } from "@graphql/index"
-import NotificationCategory from "@graphql/shared/types/scalar/notification-category"
+import { GT } from "@/graphql/index"
+import NotificationCategory from "@/graphql/shared/types/scalar/notification-category"
 
 export const NotificationChannelSettings = GT.Object<
   NotificationChannelSettings,

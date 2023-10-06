@@ -1,11 +1,12 @@
 import dedent from "dedent"
-import { GT } from "@graphql/index"
 
 import Network from "../scalar/network"
 
 import Country from "./country"
 import FeesInformation from "./fees-information"
 import BuildInformation from "./build-information"
+
+import { GT } from "@/graphql/index"
 
 const Globals = GT.Object({
   name: "Globals",

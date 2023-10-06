@@ -4,9 +4,9 @@ import {
   WalletCurrency,
   ZERO_CENTS,
   ZERO_SATS,
-} from "@domain/shared"
+} from "@/domain/shared"
 
-import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
+import { WalletInvoiceReceiver } from "@/domain/wallet-invoices/wallet-invoice-receiver"
 
 describe("WalletInvoiceReceiver", () => {
   const midPriceRatio = 2n

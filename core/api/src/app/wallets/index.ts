@@ -17,7 +17,7 @@ export * from "./update-legacy-on-chain-receipt"
 export * from "./update-pending-invoices"
 export * from "./validate"
 
-import { WalletsRepository } from "@services/mongoose"
+import { WalletsRepository } from "@/services/mongoose"
 
 export const getWallet = async (walletId: WalletId) => {
   const wallets = WalletsRepository()

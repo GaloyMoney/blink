@@ -1,5 +1,5 @@
-import { checkedAccountStatus, checkedToAccountId } from "@domain/accounts"
-import { AccountsRepository } from "@services/mongoose"
+import { checkedAccountStatus, checkedToAccountId } from "@/domain/accounts"
+import { AccountsRepository } from "@/services/mongoose"
 
 export const updateAccountStatus = async ({
   id: idRaw,

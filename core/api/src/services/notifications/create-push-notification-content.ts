@@ -1,8 +1,8 @@
-import { getI18nInstance } from "@config"
+import { getI18nInstance } from "@/config"
 
-import { getCurrencyMajorExponent, MajorExponent } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
-import { getLanguageOrDefault } from "@domain/locale"
+import { getCurrencyMajorExponent, MajorExponent } from "@/domain/fiat"
+import { WalletCurrency } from "@/domain/shared"
+import { getLanguageOrDefault } from "@/domain/locale"
 
 const i18n = getI18nInstance()
 

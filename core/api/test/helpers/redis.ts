@@ -1,5 +1,5 @@
-import { RateLimitPrefix } from "@domain/rate-limit"
-import { redis } from "@services/redis"
+import { RateLimitPrefix } from "@/domain/rate-limit"
+import { redis } from "@/services/redis"
 
 export const clearKeys = async (prefix: string) => {
   const keys = await redis.keys(`${prefix}:*`)

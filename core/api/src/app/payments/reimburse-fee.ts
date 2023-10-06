@@ -1,19 +1,19 @@
-import { DisplayAmountsConverter, displayAmountFromNumber } from "@domain/fiat"
-import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
+import { DisplayAmountsConverter, displayAmountFromNumber } from "@/domain/fiat"
+import { FeeReimbursement } from "@/domain/ledger/fee-reimbursement"
 import {
   DisplayPriceRatio,
   WalletPriceRatio,
   toDisplayBaseAmount,
-} from "@domain/payments"
+} from "@/domain/payments"
 import {
   paymentAmountFromNumber,
   WalletCurrency,
   ZERO_CENTS,
   ZERO_SATS,
-} from "@domain/shared"
+} from "@/domain/shared"
 
-import * as LedgerFacade from "@services/ledger/facade"
-import { baseLogger } from "@services/logger"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { baseLogger } from "@/services/logger"
 
 export const reimburseFee = async <S extends WalletCurrency, R extends WalletCurrency>({
   paymentFlow,

@@ -1,9 +1,10 @@
-import { AccountValidator } from "@domain/accounts"
-import { RepositoryError } from "@domain/errors"
-import { WalletsRepository } from "@services/mongoose"
-
 import { getTransactionsForWallets } from "../wallets"
+
 import { PartialResult } from "../partial-result"
+
+import { AccountValidator } from "@/domain/accounts"
+import { RepositoryError } from "@/domain/errors"
+import { WalletsRepository } from "@/services/mongoose"
 
 export const getTransactionsForAccountByWalletIds = async ({
   account,

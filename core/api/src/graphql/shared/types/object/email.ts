@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-
 import EmailAddress from "../scalar/email-address"
+
+import { GT } from "@/graphql/index"
 
 const GraphQLEmail = GT.Object({
   name: "Email",

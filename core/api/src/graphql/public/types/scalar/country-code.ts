@@ -1,5 +1,5 @@
-import { GT } from "@graphql/index"
-import { InputValidationError } from "@graphql/error"
+import { GT } from "@/graphql/index"
+import { InputValidationError } from "@/graphql/error"
 
 const CountryCode = GT.Scalar<string | InputValidationError>({
   name: "CountryCode",

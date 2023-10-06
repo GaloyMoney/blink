@@ -1,15 +1,15 @@
 import dedent from "dedent"
 
-import { Wallets } from "@app"
+import { Wallets } from "@/app"
 
-import { GT } from "@graphql/index"
-import Memo from "@graphql/shared/types/scalar/memo"
-import Minutes from "@graphql/public/types/scalar/minutes"
-import WalletId from "@graphql/shared/types/scalar/wallet-id"
-import Hex32Bytes from "@graphql/public/types/scalar/hex32bytes"
-import SatAmount from "@graphql/shared/types/scalar/sat-amount"
-import LnInvoicePayload from "@graphql/public/types/payload/ln-invoice"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { GT } from "@/graphql/index"
+import Memo from "@/graphql/shared/types/scalar/memo"
+import Minutes from "@/graphql/public/types/scalar/minutes"
+import WalletId from "@/graphql/shared/types/scalar/wallet-id"
+import Hex32Bytes from "@/graphql/public/types/scalar/hex32bytes"
+import SatAmount from "@/graphql/shared/types/scalar/sat-amount"
+import LnInvoicePayload from "@/graphql/public/types/payload/ln-invoice"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 
 const LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput = GT.Input({
   name: "LnUsdInvoiceBtcDenominatedCreateOnBehalfOfRecipientInput",

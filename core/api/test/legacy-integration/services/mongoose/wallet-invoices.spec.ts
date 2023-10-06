@@ -1,8 +1,8 @@
 import crypto from "crypto"
 
-import { WalletCurrency } from "@domain/shared"
-import { getSecretAndPaymentHash } from "@domain/bitcoin/lightning"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { WalletCurrency } from "@/domain/shared"
+import { getSecretAndPaymentHash } from "@/domain/bitcoin/lightning"
+import { WalletInvoicesRepository } from "@/services/mongoose"
 
 import { createUserAndWalletFromPhone, randomPhone } from "test/helpers"
 

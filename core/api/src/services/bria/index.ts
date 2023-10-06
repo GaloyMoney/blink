@@ -1,29 +1,12 @@
 import { Metadata, status } from "@grpc/grpc-js"
 import { ListValue, Struct, Value } from "google-protobuf/google/protobuf/struct_pb"
 
-import { BRIA_API_KEY, getBriaConfig } from "@config"
-
-import {
-  OnChainAddressAlreadyCreatedForRequestIdError,
-  OnChainAddressNotFoundError,
-  PayoutDestinationBlocked,
-  PayoutNotFoundError,
-  UnknownOnChainServiceError,
-} from "@domain/bitcoin/onchain"
-import {
-  WalletCurrency,
-  parseErrorMessageFromUnknown,
-  paymentAmountFromNumber,
-} from "@domain/shared"
-
-import { baseLogger } from "@services/logger"
-import { wrapAsyncFunctionsToRunInSpan, wrapAsyncToRunInSpan } from "@services/tracing"
-
-import { GrpcStreamClient } from "@utils"
-
 import { UnknownBriaEventError } from "./errors"
+
 import { eventDataHandler } from "./event-handler"
+
 import { BriaEventRepo } from "./event-repository"
+
 import {
   estimatePayoutFee,
   getAddress,
@@ -33,6 +16,7 @@ import {
   submitPayout,
   subscribeAll,
 } from "./grpc-client"
+
 import {
   EstimatePayoutFeeRequest,
   GetAddressRequest,
@@ -43,6 +27,27 @@ import {
   SubmitPayoutRequest,
   SubscribeAllRequest,
 } from "./proto/bria_pb"
+
+import { BRIA_API_KEY, getBriaConfig } from "@/config"
+
+import {
+  OnChainAddressAlreadyCreatedForRequestIdError,
+  OnChainAddressNotFoundError,
+  PayoutDestinationBlocked,
+  PayoutNotFoundError,
+  UnknownOnChainServiceError,
+} from "@/domain/bitcoin/onchain"
+import {
+  WalletCurrency,
+  parseErrorMessageFromUnknown,
+  paymentAmountFromNumber,
+} from "@/domain/shared"
+
+import { baseLogger } from "@/services/logger"
+import { wrapAsyncFunctionsToRunInSpan, wrapAsyncToRunInSpan } from "@/services/tracing"
+
+import { GrpcStreamClient } from "@/utils"
+
 export { BriaPayloadType } from "./event-handler"
 
 const briaConfig = getBriaConfig()

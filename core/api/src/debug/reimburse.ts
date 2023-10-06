@@ -12,15 +12,15 @@
  * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
  */
 
-import { Payments } from "@app"
-import { checkedToSats } from "@domain/bitcoin"
-import { WalletCurrency } from "@domain/shared"
-import { checkedToWalletId } from "@domain/wallets"
-import { getBankOwnerWalletId } from "@services/ledger/caching"
-import { setupMongoConnection } from "@services/mongodb"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-
 import { reimbursements } from "./reimbursements.json"
+
+import { Payments } from "@/app"
+import { checkedToSats } from "@/domain/bitcoin"
+import { WalletCurrency } from "@/domain/shared"
+import { checkedToWalletId } from "@/domain/wallets"
+import { getBankOwnerWalletId } from "@/services/ledger/caching"
+import { setupMongoConnection } from "@/services/mongodb"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
 type reimbursement = {
   recipientWalletId: string

@@ -1,12 +1,12 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import Phone from "@graphql/shared/types/scalar/phone"
-import SuccessPayload from "@graphql/shared/types/payload/success-payload"
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { ChannelType } from "@domain/phone-provider"
-import PhoneCodeChannelType from "@graphql/shared/types/scalar/phone-code-channel-type"
-import { InputValidationError } from "@graphql/error"
+import Phone from "@/graphql/shared/types/scalar/phone"
+import SuccessPayload from "@/graphql/shared/types/payload/success-payload"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { ChannelType } from "@/domain/phone-provider"
+import PhoneCodeChannelType from "@/graphql/shared/types/scalar/phone-code-channel-type"
+import { InputValidationError } from "@/graphql/error"
 
 const CaptchaRequestAuthCodeInput = GT.Input({
   name: "CaptchaRequestAuthCodeInput",

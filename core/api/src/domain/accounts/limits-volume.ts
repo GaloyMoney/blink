@@ -1,13 +1,13 @@
+import { AccountLimitsType } from "./primitives"
+
 import {
   AmountCalculator,
   paymentAmountFromNumber,
   UsdPaymentAmount,
   WalletCurrency,
   ZERO_CENTS,
-} from "@domain/shared"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
-import { AccountLimitsType } from "./primitives"
+} from "@/domain/shared"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 const calc = AmountCalculator()
 

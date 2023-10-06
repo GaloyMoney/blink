@@ -1,9 +1,9 @@
-import { Users } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
+import { Users } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
 
-import UserUpdateLanguagePayload from "@graphql/public/types/payload/user-update-language"
-import Language from "@graphql/shared/types/scalar/language"
+import UserUpdateLanguagePayload from "@/graphql/public/types/payload/user-update-language"
+import Language from "@/graphql/shared/types/scalar/language"
 
 const UserUpdateLanguageInput = GT.Input({
   name: "UserUpdateLanguageInput",

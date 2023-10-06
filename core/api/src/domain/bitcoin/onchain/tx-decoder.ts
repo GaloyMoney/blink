@@ -1,5 +1,6 @@
-import { toSats } from "@domain/bitcoin"
 import { Transaction, networks, address, Network, TxOutput } from "bitcoinjs-lib"
+
+import { toSats } from "@/domain/bitcoin"
 
 export const TxDecoder = (networkName: BtcNetwork): TxDecoder => {
   const mapping: { [input in BtcNetwork]: keyof typeof networks } = {

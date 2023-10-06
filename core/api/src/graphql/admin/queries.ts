@@ -1,5 +1,3 @@
-import { GT } from "@graphql/index"
-
 import AllLevelsQuery from "./root/query/all-levels"
 import LightningInvoiceQuery from "./root/query/lightning-invoice"
 import LightningPaymentQuery from "./root/query/lightning-payment"
@@ -11,6 +9,8 @@ import AccountDetailsByUserEmailQuery from "./root/query/account-details-by-emai
 import ListWalletIdsQuery from "./root/query/all-walletids"
 import WalletQuery from "./root/query/wallet"
 import AccountDetailsByAccountId from "./root/query/account-details-by-account-id"
+
+import { GT } from "@/graphql/index"
 
 export const queryFields = {
   unauthed: {},

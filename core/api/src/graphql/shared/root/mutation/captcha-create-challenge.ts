@@ -1,8 +1,8 @@
-import { registerCaptchaGeetest } from "@app/captcha"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { GT } from "@graphql/index"
+import { registerCaptchaGeetest } from "@/app/captcha"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
 
-import CaptchaCreateChallengePayload from "@graphql/shared/types/payload/captcha-create-challenge"
+import CaptchaCreateChallengePayload from "@/graphql/shared/types/payload/captcha-create-challenge"
 
 const CaptchaCreateChallengeMutation = GT.Field({
   extensions: {

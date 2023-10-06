@@ -1,9 +1,9 @@
 import {
   InvalidLedgerTransactionId,
   InvalidLedgerTransactionStateError,
-} from "@domain/errors"
-import { WalletCurrency } from "@domain/shared"
-import { safeBigInt } from "@domain/shared/safe"
+} from "@/domain/errors"
+import { WalletCurrency } from "@/domain/shared"
+import { safeBigInt } from "@/domain/shared/safe"
 
 export * from "./errors"
 export * from "./activity-checker"

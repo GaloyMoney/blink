@@ -1,8 +1,9 @@
-import { ConfigError, MATTERMOST_WEBHOOK_URL } from "@config"
-import { MattermostError } from "@domain/comm/errors"
-import { ErrorLevel } from "@domain/shared"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
 import axios from "axios"
+
+import { ConfigError, MATTERMOST_WEBHOOK_URL } from "@/config"
+import { MattermostError } from "@/domain/comm/errors"
+import { ErrorLevel } from "@/domain/shared"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const submitFeedback = async ({
   feedback,

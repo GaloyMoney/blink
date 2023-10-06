@@ -1,4 +1,4 @@
-import { ValidationError } from "@domain/shared"
+import { ValidationError } from "@/domain/shared"
 
 import {
   CouldNotFindError,
@@ -6,7 +6,7 @@ import {
   UnknownRepositoryError,
   InvalidSatoshiAmountError,
   InvalidWalletId,
-} from "@domain/errors"
+} from "@/domain/errors"
 
 describe("errors.ts", () => {
   it("validate that repository errors are valid errors", () => {

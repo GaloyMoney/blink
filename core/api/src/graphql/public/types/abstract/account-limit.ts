@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-import CentAmount from "@graphql/public/types/scalar/cent-amount"
-import Seconds from "@graphql/public/types/scalar/seconds"
+import { GT } from "@/graphql/index"
+import CentAmount from "@/graphql/public/types/scalar/cent-amount"
+import Seconds from "@/graphql/public/types/scalar/seconds"
 
 const IAccountLimit = GT.Interface({
   name: "AccountLimit",

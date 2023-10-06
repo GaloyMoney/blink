@@ -1,10 +1,10 @@
-import { GT } from "@graphql/index"
-import OneTimeAuthCode from "@graphql/shared/types/scalar/one-time-auth-code"
+import { GT } from "@/graphql/index"
+import OneTimeAuthCode from "@/graphql/shared/types/scalar/one-time-auth-code"
 
-import Phone from "@graphql/shared/types/scalar/phone"
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import UpgradePayload from "@graphql/public/types/payload/upgrade-payload"
+import Phone from "@/graphql/shared/types/scalar/phone"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import UpgradePayload from "@/graphql/public/types/payload/upgrade-payload"
 
 const UserLoginUpgradeInput = GT.Input({
   name: "UserLoginUpgradeInput",

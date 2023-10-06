@@ -3,13 +3,13 @@
  * yarn ts-node --files -r tsconfig-paths/register src/debug/create-usd-wallets.ts
  */
 
-import { Accounts as AccountsWithSpans } from "@app"
-import { WalletCurrency } from "@domain/shared"
-import { WalletType } from "@domain/wallets"
-import { isUp } from "@services/lnd/health"
-import { lndsConnect } from "@services/lnd/auth"
-import { setupMongoConnection } from "@services/mongodb"
-import { AccountsRepository } from "@services/mongoose"
+import { Accounts as AccountsWithSpans } from "@/app"
+import { WalletCurrency } from "@/domain/shared"
+import { WalletType } from "@/domain/wallets"
+import { isUp } from "@/services/lnd/health"
+import { lndsConnect } from "@/services/lnd/auth"
+import { setupMongoConnection } from "@/services/mongodb"
+import { AccountsRepository } from "@/services/mongoose"
 
 const createUsdWallets = async () => {
   await setupMongoConnection()

@@ -1,5 +1,5 @@
-import { OnChainFees } from "@domain/wallets"
-import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { OnChainFees } from "@/domain/wallets"
+import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@/domain/shared"
 
 const thresholdImbalance = {
   amount: BigInt(1_000_000),

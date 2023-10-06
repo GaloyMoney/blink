@@ -1,15 +1,16 @@
-import { updatePendingPayments } from "@app/payments"
-import { handleHeldInvoices, updateLegacyOnChainReceipt } from "@app/wallets"
-import { baseLogger } from "@services/logger"
-
-import { ledgerAdmin } from "@services/mongodb"
-import { lndsBalances } from "@services/lnd/utils"
-
 import {
   waitUntilChannelBalanceSyncE2e,
   waitUntilChannelBalanceSyncIntegration,
 } from "./lightning"
+
 import { getBriaBalance } from "./bria"
+
+import { updatePendingPayments } from "@/app/payments"
+import { handleHeldInvoices, updateLegacyOnChainReceipt } from "@/app/wallets"
+import { baseLogger } from "@/services/logger"
+
+import { ledgerAdmin } from "@/services/mongodb"
+import { lndsBalances } from "@/services/lnd/utils"
 
 const logger = baseLogger.child({ module: "test" })
 

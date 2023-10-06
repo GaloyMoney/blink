@@ -1,17 +1,17 @@
-import { getColdStorageConfig } from "@config"
-
-import { getCurrentPriceAsDisplayPriceRatio } from "@app/prices"
-
-import { toSats } from "@domain/bitcoin"
-import { UsdDisplayCurrency } from "@domain/fiat"
-import { RebalanceChecker } from "@domain/bitcoin/onchain"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
-
-import { LndService } from "@services/lnd"
-import { OnChainService } from "@services/bria"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
 import { getOffChainBalance } from "../lightning/get-balances"
+
+import { getColdStorageConfig } from "@/config"
+
+import { getCurrentPriceAsDisplayPriceRatio } from "@/app/prices"
+
+import { toSats } from "@/domain/bitcoin"
+import { UsdDisplayCurrency } from "@/domain/fiat"
+import { RebalanceChecker } from "@/domain/bitcoin/onchain"
+import { paymentAmountFromNumber, WalletCurrency } from "@/domain/shared"
+
+import { LndService } from "@/services/lnd"
+import { OnChainService } from "@/services/bria"
+import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationError> => {
   const coldStorageConfig = getColdStorageConfig()

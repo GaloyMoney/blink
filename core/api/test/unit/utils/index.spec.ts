@@ -1,5 +1,5 @@
-import { btc2sat, sat2btc } from "@domain/bitcoin"
-import { elapsedSinceTimestamp } from "@utils"
+import { btc2sat, sat2btc } from "@/domain/bitcoin"
+import { elapsedSinceTimestamp } from "@/utils"
 
 describe("utils", () => {
   describe("btc2sat", () => {

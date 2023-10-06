@@ -1,4 +1,4 @@
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 
 export * from "./account-limit"
 export * from "./add-new-contact"

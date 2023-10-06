@@ -1,5 +1,5 @@
-import { GT } from "@graphql/index"
-import { checkedToAuthToken } from "@services/kratos"
+import { GT } from "@/graphql/index"
+import { checkedToAuthToken } from "@/services/kratos"
 
 const AuthToken = GT.Scalar({
   name: "AuthToken",

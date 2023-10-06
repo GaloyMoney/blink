@@ -1,19 +1,6 @@
-import { KRATOS_MASTER_USER_PASSWORD, KRATOS_PG_CON } from "@config"
-
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
-
 import { isAxiosError } from "axios"
 
-import {
-  EmailCodeInvalidError,
-  EmailUnverifiedError,
-  EmailValidationSubmittedTooOftenError,
-  LikelyUserAlreadyExistError,
-} from "@domain/authentication/errors"
-
 import { UpdateIdentityBody } from "@ory/client"
-
-import { checkedToEmailAddress } from "@domain/users"
 
 import knex from "knex"
 
@@ -28,6 +15,16 @@ import {
 } from "./errors"
 import { kratosAdmin, kratosPublic, toDomainIdentityEmailPhone } from "./private"
 import { SchemaIdType } from "./schema"
+
+import { checkedToEmailAddress } from "@/domain/users"
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
+import {
+  EmailCodeInvalidError,
+  EmailUnverifiedError,
+  EmailValidationSubmittedTooOftenError,
+  LikelyUserAlreadyExistError,
+} from "@/domain/authentication/errors"
+import { KRATOS_MASTER_USER_PASSWORD, KRATOS_PG_CON } from "@/config"
 
 const getKratosKnex = () =>
   knex({

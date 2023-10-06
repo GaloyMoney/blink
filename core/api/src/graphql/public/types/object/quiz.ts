@@ -1,6 +1,6 @@
-import { GT } from "@graphql/index"
-
 import SatAmount from "../../../shared/types/scalar/sat-amount"
+
+import { GT } from "@/graphql/index"
 
 const Quiz = GT.Object({
   name: "Quiz",

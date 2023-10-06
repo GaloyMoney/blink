@@ -1,5 +1,8 @@
-import { InvalidZeroAmountPriceRatioInputError, WalletPriceRatio } from "@domain/payments"
-import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
+import {
+  InvalidZeroAmountPriceRatioInputError,
+  WalletPriceRatio,
+} from "@/domain/payments"
+import { AmountCalculator, WalletCurrency, ZERO_BANK_FEE } from "@/domain/shared"
 
 const calc = AmountCalculator()
 

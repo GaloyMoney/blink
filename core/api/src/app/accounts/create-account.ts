@@ -1,13 +1,13 @@
-import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@config"
+import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/config"
 
-import { WalletType } from "@domain/wallets"
-import { AccountLevel } from "@domain/accounts"
+import { WalletType } from "@/domain/wallets"
+import { AccountLevel } from "@/domain/accounts"
 
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
-} from "@services/mongoose"
+} from "@/services/mongoose"
 
 const initializeCreatedAccount = async ({
   account,

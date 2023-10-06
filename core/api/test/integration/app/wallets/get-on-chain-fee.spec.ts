@@ -1,11 +1,11 @@
-import { Wallets } from "@app"
+import { Wallets } from "@/app"
 
-import { getOnChainWalletConfig } from "@config"
+import { getOnChainWalletConfig } from "@/config"
 
-import { PayoutSpeed } from "@domain/bitcoin/onchain"
-import { LessThanDustThresholdError } from "@domain/errors"
+import { PayoutSpeed } from "@/domain/bitcoin/onchain"
+import { LessThanDustThresholdError } from "@/domain/errors"
 
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@/services/mongoose"
 
 import { createRandomUserAndWallets } from "test/helpers"
 

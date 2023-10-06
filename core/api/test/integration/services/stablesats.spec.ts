@@ -9,8 +9,8 @@
 // can change the mocked rates without breaking tests), and we find some other way to
 // communicate how the different stablesats methods work.
 
-import { WalletCurrency } from "@domain/shared"
-import { DealerPriceService } from "@services/dealer-price"
+import { WalletCurrency } from "@/domain/shared"
+import { DealerPriceService } from "@/services/dealer-price"
 
 const dealerFns = DealerPriceService()
 

@@ -1,4 +1,4 @@
-import { BadAmountForRouteError } from "@domain/errors"
+import { BadAmountForRouteError } from "@/domain/errors"
 
 export const RouteValidator = (rawRoute: RawRoute): RouteValidator => {
   const validate = (btcPaymentAmount: BtcPaymentAmount): true | ApplicationError => {

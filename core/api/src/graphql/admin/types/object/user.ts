@@ -1,12 +1,12 @@
-import { mapError } from "@graphql/error-map"
-import { GT } from "@graphql/index"
-import GraphQLEmail from "@graphql/shared/types/object/email"
-import Language from "@graphql/shared/types/scalar/language"
-import Phone from "@graphql/shared/types/scalar/phone"
-import Timestamp from "@graphql/shared/types/scalar/timestamp"
+import { mapError } from "@/graphql/error-map"
+import { GT } from "@/graphql/index"
+import GraphQLEmail from "@/graphql/shared/types/object/email"
+import Language from "@/graphql/shared/types/scalar/language"
+import Phone from "@/graphql/shared/types/scalar/phone"
+import Timestamp from "@/graphql/shared/types/scalar/timestamp"
 
 // FIXME should not use service
-import { IdentityRepository } from "@services/kratos"
+import { IdentityRepository } from "@/services/kratos"
 
 const User = GT.Object<User>({
   name: "AuditedUser",

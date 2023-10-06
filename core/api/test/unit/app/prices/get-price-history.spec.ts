@@ -3,12 +3,12 @@ import {
   PriceInterval,
   PriceRange,
   UnknownPriceServiceError,
-} from "@domain/price"
-import { CacheKeys } from "@domain/cache"
-import * as PriceServiceImpl from "@services/price"
-import { LocalCacheService } from "@services/cache/local-cache"
+} from "@/domain/price"
+import { CacheKeys } from "@/domain/cache"
+import * as PriceServiceImpl from "@/services/price"
+import { LocalCacheService } from "@/services/cache/local-cache"
 
-import { getPriceHistory } from "@app/prices"
+import { getPriceHistory } from "@/app/prices"
 
 import { generateSatoshiPriceHistory } from "test/helpers/price"
 
@@ -18,7 +18,7 @@ beforeEach(async () => {
   })
 })
 
-jest.mock("@services/tracing", () => ({
+jest.mock("@/services/tracing", () => ({
   wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
 }))
 

@@ -1,7 +1,3 @@
-import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@domain/errors"
-import { AmountCalculator, ErrorLevel, WalletCurrency } from "@domain/shared"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
-
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   IntraLedgerHashPresentInLnFlowError,
@@ -10,6 +6,10 @@ import {
 } from "./errors"
 
 import { RouteValidator } from "./route-validator"
+
+import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@/domain/errors"
+import { AmountCalculator, ErrorLevel, WalletCurrency } from "@/domain/shared"
+import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurrency>(
   state: PaymentFlowCommonState<S, R>,

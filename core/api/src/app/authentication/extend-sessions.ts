@@ -1,4 +1,4 @@
-import { extendSession } from "@services/kratos"
+import { extendSession } from "@/services/kratos"
 
 export const maybeExtendSession = async ({
   sessionId,

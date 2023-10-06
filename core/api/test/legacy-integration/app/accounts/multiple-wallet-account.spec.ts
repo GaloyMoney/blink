@@ -1,9 +1,10 @@
-import { Accounts } from "@app"
-import { getDefaultAccountsConfig } from "@config"
-import { WalletCurrency } from "@domain/shared"
-import { WalletType } from "@domain/wallets"
-import { WalletsRepository } from "@services/mongoose"
 import mongoose from "mongoose"
+
+import { Accounts } from "@/app"
+import { getDefaultAccountsConfig } from "@/config"
+import { WalletCurrency } from "@/domain/shared"
+import { WalletType } from "@/domain/wallets"
+import { WalletsRepository } from "@/services/mongoose"
 
 import {
   createUserAndWalletFromPhone,

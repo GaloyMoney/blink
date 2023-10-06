@@ -1,10 +1,10 @@
-import { GT } from "@graphql/index"
+import { GT } from "@/graphql/index"
 
-import { Authentication } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import EmailRegistrationId from "@graphql/public/types/scalar/email-verify-id"
-import OneTimeAuthCode from "@graphql/shared/types/scalar/one-time-auth-code"
-import UserEmailRegistrationValidatePayload from "@graphql/public/types/payload/user-email-registration-validate"
+import { Authentication } from "@/app"
+import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import EmailRegistrationId from "@/graphql/public/types/scalar/email-verify-id"
+import OneTimeAuthCode from "@/graphql/shared/types/scalar/one-time-auth-code"
+import UserEmailRegistrationValidatePayload from "@/graphql/public/types/payload/user-email-registration-validate"
 
 const UserEmailRegistrationValidateInput = GT.Input({
   name: "UserEmailRegistrationValidateInput",

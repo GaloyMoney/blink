@@ -1,6 +1,6 @@
-import { isSha256Hash } from "@domain/bitcoin"
-import { InputValidationError } from "@graphql/error"
-import { GT } from "@graphql/index"
+import { isSha256Hash } from "@/domain/bitcoin"
+import { InputValidationError } from "@/graphql/error"
+import { GT } from "@/graphql/index"
 
 const LnPaymentPreImage = GT.Scalar({
   name: "LnPaymentPreImage",

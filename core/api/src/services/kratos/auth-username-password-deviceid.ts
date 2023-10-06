@@ -1,7 +1,5 @@
 import { CreateIdentityBody } from "@ory/client"
 
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
-
 import { isAxiosError } from "axios"
 
 import {
@@ -11,6 +9,8 @@ import {
 } from "./errors"
 import { kratosAdmin, kratosPublic } from "./private"
 import { AuthWithPhonePasswordlessService } from "./auth-phone-no-password"
+
+import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
 
 export const AuthWithUsernamePasswordDeviceIdService =
   (): IAuthWithUsernamePasswordDeviceIdService => {

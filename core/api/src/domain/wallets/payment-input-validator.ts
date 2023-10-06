@@ -1,13 +1,13 @@
-import { AccountStatus } from "@domain/accounts"
-import { InactiveAccountError, InvalidWalletId, SelfPaymentError } from "@domain/errors"
+import { checkedToWalletId } from "./validation"
+
+import { AccountStatus } from "@/domain/accounts"
+import { InactiveAccountError, InvalidWalletId, SelfPaymentError } from "@/domain/errors"
 
 import {
   WalletCurrency,
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
-} from "@domain/shared"
-
-import { checkedToWalletId } from "./validation"
+} from "@/domain/shared"
 
 export const PaymentInputValidator = (
   getWalletFn: PaymentInputValidatorConfig,

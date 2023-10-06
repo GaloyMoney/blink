@@ -1,10 +1,10 @@
 import { getNamedType, resolveObjMapThunk } from "graphql"
 import { ConnectionConfig, GraphQLConnectionDefinitions } from "graphql-relay"
 
-import { InputValidationError } from "@graphql/error"
-import { DEFAULT_MAX_CONNECTION_LIMIT } from "@services/ledger/paginated-ledger"
-
 import { GT } from "."
+
+import { InputValidationError } from "@/graphql/error"
+import { DEFAULT_MAX_CONNECTION_LIMIT } from "@/services/ledger/paginated-ledger"
 
 const CURSOR_REGEX = /^[A-Fa-f0-9]{24}$/
 

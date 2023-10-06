@@ -7,10 +7,10 @@
 import { Types } from "mongoose"
 import { parseFilterQuery } from "medici/build/helper/parse/parseFilterQuery"
 
-import { InvalidPaginationArgumentsError } from "@domain/ledger"
-import { Transaction } from "@services/ledger/schema"
-
 import { MainBook } from "./books"
+
+import { InvalidPaginationArgumentsError } from "@/domain/ledger"
+import { Transaction } from "@/services/ledger/schema"
 
 export const DEFAULT_MAX_CONNECTION_LIMIT = 100
 
