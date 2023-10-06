@@ -424,23 +424,24 @@ authRouter.post("/email/login/cookie", async (req: Request, res: Response) => {
 
 authRouter.post("/phone/captcha", async (req: Request, res: Response) => {
   const result = await registerCaptchaGeetest()
-  if (result instanceof Error) return res.json({ error: "error creating challenge" })
+  if (result instanceof Error) {
+    return res.status(500).send({ error: "error creating challenge" })
+  }
 
   const { success, gt, challenge, newCaptcha } = result
 
-  return {
+  return res.send({
     result: {
       id: gt,
       challengeCode: challenge,
       newCaptcha,
       failbackMode: success === 0,
     },
-  }
+  })
 })
 
 authRouter.post("/phone/code", async (req: Request, res: Response) => {
   const ip = req.originalIp
-
   const phoneRaw = req.body.phone
   const challengeCodeRaw = req.body.challengeCode
   const validationCodeRaw = req.body.validationCode
@@ -451,7 +452,7 @@ authRouter.post("/phone/code", async (req: Request, res: Response) => {
     return res.status(400).send({ error: "missing inputs" })
 
   const phone = checkedToPhoneNumber(phoneRaw)
-  if (phone instanceof Error) return res.status(400).send("invalid phone")
+  if (phone instanceof Error) return res.status(400).send({ error: "invalid phone" })
 
   const geetestChallenge = challengeCodeRaw
   const geetestValidate = validationCodeRaw
@@ -466,25 +467,24 @@ authRouter.post("/phone/code", async (req: Request, res: Response) => {
     channel,
   })
 
-  if (result instanceof Error) return res.status(400).json({ error: result })
+  if (result instanceof Error) return res.status(400).send({ error: result })
 
-  return res.json({
+  return res.send({
     success: true,
   })
 })
 
 authRouter.post("/phone/login", async (req: Request, res: Response) => {
   const ip = req.originalIp
-
   const codeRaw = req.body.code
   const phoneRaw = req.body.phone
   if (!codeRaw || !phoneRaw) {
     return res.status(400).send({ error: "missing inputs" })
   }
   const code = validOneTimeAuthCodeValue(codeRaw)
-  if (code instanceof Error) return res.status(400).send("invalid code")
+  if (code instanceof Error) return res.status(400).send({ error: "invalid code" })
   const phone = checkedToPhoneNumber(phoneRaw)
-  if (phone instanceof Error) return res.status(400).send("invalid phone")
+  if (phone instanceof Error) return res.status(400).send({ error: "invalid phone" })
 
   const loginResp = await Authentication.loginWithPhoneToken({
     phone,
