@@ -11,10 +11,7 @@ import LnInvoicePayload from "@graphql/public/types/payload/ln-invoice"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 // FLASH FORK: import ibex dependencies
-import bolt11 from "bolt11"
-import { toSats } from "@domain/bitcoin"
-import { checkedToPubkey } from "@domain/bitcoin/lightning"
-import { InputValidationError } from "@graphql/error"
+import { decodeInvoice } from "@domain/bitcoin/lightning"
 
 import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
 
@@ -65,74 +62,66 @@ const LnUsdInvoiceCreateMutation = GT.Field({
     //   memo,
     //   expiresIn,
     // })
-
-    let lnInvoice: LnInvoice
     const CreateLightningInvoice = await requestIBexPlugin(
       "POST",
       IbexRoutes.LightningInvoice,
       {},
       {
-        amount,
+        amount: amount / 100,
         accountId: walletId,
         memo,
         expiration: expiresIn,
       },
     )
-    const DecodeLightningInvoice = await requestIBexPlugin(
-      "GET",
-      IbexRoutes.LightningInvoice,
-      {},
-      {
-        invoice: CreateLightningInvoice.data?.["data"]?.["invoice"]?.["bolt11"],
-      },
-    )
+    // FLASH FORK DEBUGGING -----------------------------------------------
     console.log(
-      "CreateLightningInvoice from IBEX",
+      "DEBUGGING: CreateLightningInvoice from IBEX",
       JSON.stringify(CreateLightningInvoice, null, 2),
     )
+    // FLASH FORK DEBUGGING -----------------------------------------------
 
     if (
       CreateLightningInvoice &&
       CreateLightningInvoice.data &&
-      CreateLightningInvoice.data["data"]["invoice"] &&
-      DecodeLightningInvoice &&
-      DecodeLightningInvoice.data &&
-      DecodeLightningInvoice.data["data"]["paymentSecret"]
+      CreateLightningInvoice.data["data"]["invoice"]
     ) {
-      const invoiceString = CreateLightningInvoice.data["data"]["invoice"]["bolt11"]
-      const decodedInvoice = bolt11.decode(invoiceString)
-      const pubKey = checkedToPubkey(decodedInvoice.payeeNodeKey || "")
-      const paymentSecret = DecodeLightningInvoice.data["data"]["paymentSecret"]
-      const cltvDelta = DecodeLightningInvoice.data["data"]["minFinalCLTVExpiry"]
-      if (pubKey instanceof Error) {
-        return new InputValidationError({ message: "Invalid value for LnPubkey" })
-      } else {
-        lnInvoice = {
-          destination: pubKey,
-          paymentHash: CreateLightningInvoice.data["data"]["invoice"]["paymentHash"],
-          paymentRequest: CreateLightningInvoice.data["data"]["invoice"]["bolt11"],
-          paymentSecret,
-          milliSatsAmount: CreateLightningInvoice.data["data"]["invoice"]["amountMsat"],
-          description: CreateLightningInvoice.data["data"]["invoice"]["memo"],
-          cltvDelta,
-          amount: toSats(CreateLightningInvoice.data["data"]["amount"] / 1000),
-          paymentAmount: null,
-          routeHints: [],
-          features: [],
-          expiresAt: CreateLightningInvoice.data["data"]["invoice"]["expiryDateUtc"],
-          isExpired:
-            CreateLightningInvoice.data["data"]["invoice"]["state"]["id"] == 2
-              ? true
-              : false,
-        }
-        if (lnInvoice instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
-        }
+      // FLASH FORK DEBUGGING -----------------------------------------------
+      console.log("DEBUGGING: Starting formatting of CreateLightningInvoice.data")
+      // FLASH FORK DEBUGGING -----------------------------------------------
 
-        return {
-          errors: [],
-          invoice: lnInvoice,
-        }
+      const invoiceString = CreateLightningInvoice.data["data"]["invoice"]["bolt11"]
+      const decodedInvoice = decodeInvoice(invoiceString)
+      if (decodedInvoice instanceof Error) {
+        console.log("DEBUGGING: decodedInvoice instanceof Error", decodedInvoice)
+        return { errors: [mapAndParseErrorForGqlResponse(decodedInvoice)] }
+      }
+      const lnInvoice = {
+        destination: decodedInvoice.destination,
+        paymentHash: decodedInvoice.paymentHash,
+        paymentRequest: decodedInvoice.paymentRequest,
+        paymentSecret: decodedInvoice.paymentSecret,
+        milliSatsAmount: decodedInvoice.milliSatsAmount,
+        description: decodedInvoice.description,
+        cltvDelta: decodedInvoice.cltvDelta,
+        amount: null,
+        paymentAmount: null,
+        routeHints: decodedInvoice.routeHints,
+        features: decodedInvoice.features,
+        expiresAt: decodedInvoice.expiresAt,
+        isExpired: decodedInvoice.isExpired,
+      }
+
+      // FLASH FORK DEBUGGING -----------------------------------------------
+      console.log("DEBUGGING: lnInvoice", JSON.stringify(lnInvoice, null, 2))
+      // FLASH FORK DEBUGGING -----------------------------------------------
+
+      if (lnInvoice instanceof Error) {
+        console.log("DEBUGGING: lnInvoice instanceof Error", lnInvoice)
+        return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
+      }
+      return {
+        errors: [],
+        invoice: lnInvoice,
       }
     }
   },

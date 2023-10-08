@@ -1,6 +1,6 @@
 import dedent from "dedent"
 
-import { Wallets } from "@app"
+// import { Wallets } from "@app"
 
 import { GT } from "@graphql/index"
 import Memo from "@graphql/shared/types/scalar/memo"
@@ -8,6 +8,13 @@ import Minutes from "@graphql/public/types/scalar/minutes"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import LnNoAmountInvoicePayload from "@graphql/public/types/payload/ln-noamount-invoice"
+
+// FLASH FORK: import ibex dependencies
+import { decodeInvoice } from "@domain/bitcoin/lightning"
+
+import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
+
+import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
 
 const LnNoAmountInvoiceCreateInput = GT.Input({
   name: "LnNoAmountInvoiceCreateInput",
@@ -45,19 +52,59 @@ const LnNoAmountInvoiceCreateMutation = GT.Field({
       }
     }
 
-    const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
-      walletId,
-      memo,
-      expiresIn,
-    })
+    // FLASH FORK: create IBEX invoice instead of Galoy invoice
+    // const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+    //   walletId,
+    //   memo,
+    //   expiresIn,
+    // })
 
-    if (lnInvoice instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
-    }
+    const CreateLightningInvoice = await requestIBexPlugin(
+      "POST",
+      IbexRoutes.LightningInvoice,
+      {},
+      {
+        amount: 0,
+        accountId: walletId,
+        memo,
+        expiration: expiresIn,
+      },
+    )
+    if (
+      CreateLightningInvoice &&
+      CreateLightningInvoice.data &&
+      CreateLightningInvoice.data["data"]["invoice"]
+    ) {
+      const invoiceString = CreateLightningInvoice.data["data"]["invoice"]["bolt11"]
+      const decodedInvoice = decodeInvoice(invoiceString)
+      if (decodedInvoice instanceof Error) {
+        console.log("DEBUGGING: decodedInvoice instanceof Error", decodedInvoice)
+        return { errors: [mapAndParseErrorForGqlResponse(decodedInvoice)] }
+      }
+      const lnInvoice = {
+        destination: decodedInvoice.destination,
+        paymentHash: decodedInvoice.paymentHash,
+        paymentRequest: decodedInvoice.paymentRequest,
+        paymentSecret: decodedInvoice.paymentSecret,
+        milliSatsAmount: decodedInvoice.milliSatsAmount,
+        description: decodedInvoice.description,
+        cltvDelta: decodedInvoice.cltvDelta,
+        amount: null,
+        paymentAmount: null,
+        routeHints: decodedInvoice.routeHints,
+        features: decodedInvoice.features,
+        expiresAt: decodedInvoice.expiresAt,
+        isExpired: decodedInvoice.isExpired,
+      }
 
-    return {
-      errors: [],
-      invoice: lnInvoice,
+      if (lnInvoice instanceof Error) {
+        return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
+      }
+
+      return {
+        errors: [],
+        invoice: lnInvoice,
+      }
     }
   },
 })

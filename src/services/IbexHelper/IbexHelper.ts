@@ -47,6 +47,7 @@ export async function requestIBexPlugin(
       if (axiosError.response) {
         result.status = axiosError.response.status
         result.error = axiosError.message
+        console.log("Full error response:", axiosError.response)
       }
     }
   }
