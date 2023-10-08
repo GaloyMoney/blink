@@ -40,6 +40,10 @@ export const kratosValidateTotp = async ({
   totpCode: string
   totpRegistrationId: string
 }) => {
+  // TODO: instead of refreshing, we could ask the user to re-authenticate
+  const res = await refreshToken(authToken)
+  if (res instanceof Error) return res
+
   try {
     await kratosPublic.updateSettingsFlow({
       flow,
