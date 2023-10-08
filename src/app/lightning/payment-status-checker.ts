@@ -6,6 +6,13 @@ export const PaymentStatusChecker = async (uncheckedPaymentRequest: string) => {
   const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
 
+  // FLASH FORK DEBUGGING -----------------------------------------------
+  console.log(
+    "DEBUGGING: decodedInvoice for payment status checker",
+    JSON.stringify(decodedInvoice, null, 2),
+  )
+  // FLASH FORK DEBUGGING -----------------------------------------------
+
   const { paymentHash, expiresAt, isExpired } = decodedInvoice
 
   return {

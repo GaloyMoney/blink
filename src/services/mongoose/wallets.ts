@@ -61,7 +61,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 
       const wallet = new Wallet({
         _accountId: toObjectId<AccountId>(accountId),
-        id: currency === "USD" ? ibexAccountId : crypto.randomUUID(),
+        id: currency === "USD" && !!ibexAccountId ? ibexAccountId : crypto.randomUUID(),
         type,
         currency,
       })
