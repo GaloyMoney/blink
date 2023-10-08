@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: added all auth url in oathkeeper (#3299)...'
-      sha: dad1529b69dd6ea063d851e690522f0dfc069f14
+      commitTitle: 'chore: update mongodb version (#3301)...'
+      sha: e28f432506cd682755a8743beeef19d3f8eb01f2
       tags:
-      - 0.13.116-1-gdad1529b6
+      - 0.13.117-1-ge28f43250
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: added all auth url in oathkeeper (#3299)...'
-      sha: dad1529b69dd6ea063d851e690522f0dfc069f14
+      commitTitle: 'chore: update mongodb version (#3301)...'
+      sha: e28f432506cd682755a8743beeef19d3f8eb01f2
       tags:
-      - 0.13.116-1-gdad1529b6
+      - 0.13.117-1-ge28f43250
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: added all auth url in oathkeeper (#3299)...'
-      sha: dad1529b69dd6ea063d851e690522f0dfc069f14
+      commitTitle: 'chore: update mongodb version (#3301)...'
+      sha: e28f432506cd682755a8743beeef19d3f8eb01f2
       tags:
-      - 0.13.116-1-gdad1529b6
+      - 0.13.117-1-ge28f43250
     path: ./
   path: ./graphql
 kind: LockConfig

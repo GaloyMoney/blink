@@ -102,7 +102,7 @@ services:
     environment:
       - MONGODB_ADDRESS=mongodb
   mongodb:
-    image: mongo:${MONGODB_VERSION:-6.0.5}
+    image: mongo:${MONGODB_VERSION:-7.0.2}
     ports: []
     environment:
       - MONGO_INITDB_DATABASE=galoy
