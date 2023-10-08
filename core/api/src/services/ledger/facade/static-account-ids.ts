@@ -1,45 +1,51 @@
 import * as caching from "../caching"
-import { toLedgerAccountId } from "../domain"
+import { toLedgerAccountUuid } from "../domain"
 
 import { UnknownLedgerError } from "@/domain/ledger"
 
-export const staticAccountIds = async () => {
+export const staticAccountUuids = async () => {
   try {
     return {
-      bankOwnerAccountId: toLedgerAccountId(await caching.getBankOwnerWalletId()),
-      dealerBtcAccountId: toLedgerAccountId(await caching.getDealerBtcWalletId()),
-      dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
+      bankOwnerAccountUuid: toLedgerAccountUuid(await caching.getBankOwnerWalletId()),
+      dealerBtcAccountUuid: toLedgerAccountUuid(await caching.getDealerBtcWalletId()),
+      dealerUsdAccountUuid: toLedgerAccountUuid(await caching.getDealerUsdWalletId()),
     }
   } catch (err) {
     return new UnknownLedgerError(err)
   }
 }
 
-export const initialStaticAccountIds = async () => {
-  const result = {} as InitialStaticAccountIds
+export const initialStaticAccountUuids = async () => {
+  const result = {} as InitialStaticAccountUuids
 
   try {
-    result["bankOwnerAccountId"] = toLedgerAccountId(await caching.getBankOwnerWalletId())
+    result["bankOwnerAccountUuid"] = toLedgerAccountUuid(
+      await caching.getBankOwnerWalletId(),
+    )
   } catch (err) {
-    result["bankOwnerAccountId"] = err as Error
+    result["bankOwnerAccountUuid"] = err as Error
   }
 
   try {
-    result["dealerBtcAccountId"] = toLedgerAccountId(await caching.getDealerBtcWalletId())
+    result["dealerBtcAccountUuid"] = toLedgerAccountUuid(
+      await caching.getDealerBtcWalletId(),
+    )
   } catch (err) {
-    result["dealerBtcAccountId"] = err as Error
+    result["dealerBtcAccountUuid"] = err as Error
   }
 
   try {
-    result["dealerUsdAccountId"] = toLedgerAccountId(await caching.getDealerUsdWalletId())
+    result["dealerUsdAccountUuid"] = toLedgerAccountUuid(
+      await caching.getDealerUsdWalletId(),
+    )
   } catch (err) {
-    result["dealerUsdAccountId"] = err as Error
+    result["dealerUsdAccountUuid"] = err as Error
   }
 
   try {
-    result["funderAccountId"] = toLedgerAccountId(await caching.getFunderWalletId())
+    result["funderAccountUuid"] = toLedgerAccountUuid(await caching.getFunderWalletId())
   } catch (err) {
-    result["funderAccountId"] = err as Error
+    result["funderAccountUuid"] = err as Error
   }
 
   return result

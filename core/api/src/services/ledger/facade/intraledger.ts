@@ -3,7 +3,7 @@ import { MainBook } from "../books"
 import { EntryBuilder, toLedgerAccountDescriptor } from "../domain"
 import { persistAndReturnEntry } from "../helpers"
 
-import { staticAccountIds } from "./static-account-ids"
+import { staticAccountUuids } from "./static-account-ids"
 
 import { ZERO_BANK_FEE } from "@/domain/shared"
 
@@ -17,12 +17,12 @@ export const recordIntraledger = async ({
   additionalCreditMetadata,
   additionalInternalMetadata,
 }: RecordIntraledgerArgs) => {
-  const accountIds = await staticAccountIds()
+  const accountIds = await staticAccountUuids()
   if (accountIds instanceof Error) return accountIds
 
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
-    staticAccountIds: accountIds,
+    staticAccountUuids: accountIds,
     entry,
     metadata,
     additionalInternalMetadata,

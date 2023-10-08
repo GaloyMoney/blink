@@ -62,14 +62,14 @@ const OPFBWithAddress = <S extends WalletCurrency>(
     const {
       id: senderWalletId,
       currency: senderWalletCurrency,
-      accountId: senderAccountId,
+      accountUuid: senderAccountUuid,
     } = wallet
     const { withdrawFee: senderWithdrawFee } = account
     return OPFBWithSenderWalletAndAccount({
       ...state,
       senderWalletId,
       senderWalletCurrency,
-      senderAccountId,
+      senderAccountUuid,
       senderWithdrawFee,
     })
   }
@@ -97,7 +97,7 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
     username: recipientUsername,
     userId: recipientUserId,
   }: OPFBWithRecipientArgs<R>): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
-    const { id: recipientWalletId, accountId: recipientAccountId } =
+    const { id: recipientWalletId, accountUuid: recipientAccountUuid } =
       recipientWalletDescriptors[recipientWalletCurrency]
     if (recipientWalletId === state.senderWalletId) {
       return OPFBWithError(new SelfPaymentError())
@@ -107,7 +107,7 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
       settlementMethod: SettlementMethod.IntraLedger,
       recipientWalletId,
       recipientWalletCurrency,
-      recipientAccountId,
+      recipientAccountUuid,
       recipientUserId,
       recipientUsername,
       recipientWalletDescriptors,
@@ -456,7 +456,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     const imbalanceForWallet = await imbalanceCalculator.getSwapOutImbalanceAmount<S>({
       id: state.senderWalletId,
       currency: state.senderWalletCurrency,
-      accountId: state.senderAccountId,
+      accountUuid: state.senderAccountUuid,
     })
     if (imbalanceForWallet instanceof Error) return imbalanceForWallet
 
@@ -547,7 +547,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     return {
       id: state.senderWalletId,
       currency: state.senderWalletCurrency,
-      accountId: state.senderAccountId,
+      accountUuid: state.senderAccountUuid,
     }
   }
 

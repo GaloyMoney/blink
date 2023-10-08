@@ -116,7 +116,7 @@ type AuthTokenPayload {
 A wallet belonging to an account which contains a BTC balance and a list of transactions.
 """
 type BTCWallet implements Wallet {
-  accountId: ID!
+  accountUuid: ID!
 
   """A balance stored in BTC."""
   balance: SignedAmount!
@@ -1240,7 +1240,7 @@ type UpgradePayload {
 A wallet belonging to an account which contains a USD balance and a list of transactions.
 """
 type UsdWallet implements Wallet {
-  accountId: ID!
+  accountUuid: ID!
   balance: SignedAmount!
   id: ID!
 
@@ -1484,7 +1484,7 @@ scalar Username
 A generic wallet which stores value in one of our supported currencies.
 """
 interface Wallet {
-  accountId: ID!
+  accountUuid: ID!
   balance: SignedAmount!
   id: ID!
   pendingIncomingBalance: SignedAmount!

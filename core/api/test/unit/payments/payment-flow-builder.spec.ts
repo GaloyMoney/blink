@@ -51,13 +51,13 @@ describe("LightningPaymentFlowBuilder", () => {
   const senderBtcWalletDescriptor = {
     id: "senderBtcWalletId" as WalletId,
     currency: WalletCurrency.Btc,
-    accountId: "senderAccountId" as AccountId,
+    accountUuid: "senderAccountUuid" as AccountUuid,
   }
 
   const senderUsdWalletDescriptor = {
     id: "senderUsdWalletId" as WalletId,
     currency: WalletCurrency.Usd,
-    accountId: "senderAccountId" as AccountId,
+    accountUuid: "senderAccountUuid" as AccountUuid,
   }
 
   const senderAsRecipientCommonArgs = {
@@ -80,12 +80,12 @@ describe("LightningPaymentFlowBuilder", () => {
   const recipientBtcWalletDescriptor = {
     id: "recipientBtcWalletId" as WalletId,
     currency: WalletCurrency.Btc,
-    accountId: "recipientAccountId" as AccountId,
+    accountUuid: "recipientAccountUuid" as AccountUuid,
   }
   const recipientUsdWalletDescriptor = {
     id: "recipientUsdWalletId" as WalletId,
     currency: WalletCurrency.Usd,
-    accountId: "recipientAccountId" as AccountId,
+    accountUuid: "recipientAccountUuid" as AccountUuid,
   }
 
   const recipientCommonArgs = {

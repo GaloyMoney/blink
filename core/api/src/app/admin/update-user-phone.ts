@@ -33,7 +33,7 @@ export const updateUserPhone = async ({
     if (newAccount instanceof Error) return newAccount
 
     const result = await markAccountForDeletion({
-      accountId: newAccount.id,
+      accountUuid: newAccount.uuid,
       cancelIfPositiveBalance: true,
       updatedByPrivilegedClientId,
     })

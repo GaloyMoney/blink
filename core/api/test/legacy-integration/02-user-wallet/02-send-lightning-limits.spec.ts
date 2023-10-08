@@ -52,22 +52,22 @@ const centsToUsdString = (cents: UsdCents) => `$${(cents / 100).toFixed(2)}`
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-let otherAccountId: AccountId
+let otherAccountUuid: AccountUuid
 let otherBtcWallet: Wallet
 let otherUsdWallet: Wallet // eslint-disable-line @typescript-eslint/no-unused-vars
 
 beforeAll(async () => {
-  otherAccountId = (await randomAccount()).id
+  otherAccountUuid = (await randomAccount()).uuid
 
   const btcWallet = await addNewWallet({
-    accountId: otherAccountId,
+    accountUuid: otherAccountUuid,
     currency: WalletCurrency.Btc,
   })
   if (btcWallet instanceof Error) throw btcWallet
   otherBtcWallet = btcWallet
 
   const usdWallet = await addNewWallet({
-    accountId: otherAccountId,
+    accountUuid: otherAccountUuid,
     currency: WalletCurrency.Usd,
   })
   if (usdWallet instanceof Error) throw usdWallet
@@ -111,8 +111,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
         accountLimits.withdrawalLimit + AMOUNT_ABOVE_THRESHOLD
       const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
-      const senderAccount = await AccountsRepository().findById(
-        btcWalletDescriptor.accountId,
+      const senderAccount = await AccountsRepository().findByUuid(
+        btcWalletDescriptor.accountUuid,
       )
       if (senderAccount instanceof Error) throw senderAccount
 
@@ -148,8 +148,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
         accountLimits.intraLedgerLimit + AMOUNT_ABOVE_THRESHOLD
       const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
-      const senderAccount = await AccountsRepository().findById(
-        btcWalletDescriptor.accountId,
+      const senderAccount = await AccountsRepository().findByUuid(
+        btcWalletDescriptor.accountUuid,
       )
       if (senderAccount instanceof Error) throw senderAccount
 
@@ -193,8 +193,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
         balanceAmount: usdFundingAmount,
       })
 
-      const senderAccount = await AccountsRepository().findById(
-        btcWalletDescriptor.accountId,
+      const senderAccount = await AccountsRepository().findByUuid(
+        btcWalletDescriptor.accountUuid,
       )
       if (senderAccount instanceof Error) throw senderAccount
 
@@ -301,8 +301,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
         balanceAmount: usdFundingAmount,
       })
 
-      const senderAccount = await AccountsRepository().findById(
-        btcWalletDescriptor.accountId,
+      const senderAccount = await AccountsRepository().findByUuid(
+        btcWalletDescriptor.accountUuid,
       )
       if (senderAccount instanceof Error) throw senderAccount
 
@@ -431,8 +431,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
         balanceAmount: usdFundingAmount,
       })
 
-      const senderAccount = await AccountsRepository().findById(
-        btcWalletDescriptor.accountId,
+      const senderAccount = await AccountsRepository().findByUuid(
+        btcWalletDescriptor.accountUuid,
       )
       if (senderAccount instanceof Error) throw senderAccount
 
@@ -588,8 +588,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
         balanceAmount: usdFundingAmount,
       })
 
-      const senderAccount = await AccountsRepository().findById(
-        btcWalletDescriptor.accountId,
+      const senderAccount = await AccountsRepository().findByUuid(
+        btcWalletDescriptor.accountUuid,
       )
       if (senderAccount instanceof Error) throw senderAccount
 

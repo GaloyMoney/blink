@@ -10,15 +10,15 @@ import { AccountsRepository, WalletsRepository } from "@/services/mongoose"
 import {
   checkIsBalanced,
   createUserAndWalletFromPhone,
-  getAccountIdByPhone,
+  getAccountUuidByPhone,
   getDefaultWalletIdByPhone,
   getAccountRecordByPhone,
   randomPhone,
 } from "test/helpers"
-import { resetSelfAccountIdLimits } from "test/helpers/rate-limit"
+import { resetSelfAccountUuidLimits } from "test/helpers/rate-limit"
 import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 
-let accountIdB: AccountId
+let accountIdB: AccountUuid
 let walletIdB: WalletId
 
 const onBoardingEarnIds = [
@@ -62,7 +62,7 @@ const phone = randomPhone()
 beforeAll(async () => {
   await createUserAndWalletFromPhone(phone)
 
-  accountIdB = await getAccountIdByPhone(phone)
+  accountIdB = await getAccountUuidByPhone(phone)
   walletIdB = await getDefaultWalletIdByPhone(phone)
 })
 
@@ -72,7 +72,7 @@ afterAll(async () => {
 
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
-    const resetOk = await resetSelfAccountIdLimits(accountIdB)
+    const resetOk = await resetSelfAccountUuidLimits(accountIdB)
     if (resetOk instanceof Error) throw resetOk
 
     const initialBalance = await getBalanceHelper(walletIdB)
@@ -83,7 +83,7 @@ describe("UserWallet - addEarn", () => {
       for (const onBoardingEarnId of onBoardingEarnIds) {
         await Payments.addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
-          accountId: accountIdB,
+          accountUuid: accountIdB,
         })
       }
       const finalBalance = await getBalanceHelper(walletIdB)
@@ -125,7 +125,7 @@ describe("UserWallet - addEarn", () => {
     const funderWalletId = await getFunderWalletId()
     const funderWallet = await WalletsRepository().findById(funderWalletId)
     if (funderWallet instanceof Error) throw funderWallet
-    const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
+    const funderAccount = await AccountsRepository().findByUuid(funderWallet.accountUuid)
     if (funderAccount instanceof Error) throw funderAccount
     const payment = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
       senderWalletId: funderWalletId,

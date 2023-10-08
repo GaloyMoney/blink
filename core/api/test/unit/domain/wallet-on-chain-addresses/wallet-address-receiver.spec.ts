@@ -28,12 +28,12 @@ describe("WalletAddressReceiver", () => {
   const recipientBtcWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Btc,
-    accountId: "recipientAccountId" as AccountId,
+    accountUuid: "recipientAccountUuid" as AccountUuid,
   }
   const recipientUsdWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Usd,
-    accountId: "recipientAccountId" as AccountId,
+    accountUuid: "recipientAccountUuid" as AccountUuid,
   }
 
   describe("for btc wallet", () => {

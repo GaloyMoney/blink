@@ -20,7 +20,7 @@ const initializeCreatedAccount = async ({
 }): Promise<Account | ApplicationError> => {
   const newWallet = (currency: WalletCurrency) =>
     WalletsRepository().persistNew({
-      accountId: account.id,
+      accountUuid: account.uuid,
       type: WalletType.Checking,
       currency,
     })

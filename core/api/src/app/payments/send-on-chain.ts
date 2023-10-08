@@ -67,7 +67,7 @@ const payOnChainByWalletId = async ({
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PayOnChainByWalletIdResult | ApplicationError> => {
-  const latestAccountState = await AccountsRepository().findById(senderAccount.id)
+  const latestAccountState = await AccountsRepository().findByUuid(senderAccount.uuid)
   if (latestAccountState instanceof Error) return latestAccountState
   const accountValidator = AccountValidator(latestAccountState)
   if (accountValidator instanceof Error) return accountValidator
@@ -154,13 +154,13 @@ const payOnChainByWalletId = async ({
       "payment.originalRecipient": JSON.stringify(recipientWalletDescriptor),
     })
 
-    const accountWallets = await WalletsRepository().findAccountWalletsByAccountId(
-      recipientWallet.accountId,
+    const accountWallets = await WalletsRepository().findAccountWalletsByAccountUuid(
+      recipientWallet.accountUuid,
     )
     if (accountWallets instanceof Error) return accountWallets
 
-    const recipientAccount = await AccountsRepository().findById(
-      recipientWallet.accountId,
+    const recipientAccount = await AccountsRepository().findByUuid(
+      recipientWallet.accountUuid,
     )
     if (recipientAccount instanceof Error) return recipientAccount
 
@@ -285,7 +285,9 @@ const executePaymentViaIntraledger = async <
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
+  const recipientAccount = await AccountsRepository().findByUuid(
+    recipientWallet.accountUuid,
+  )
   if (recipientAccount instanceof Error) return recipientAccount
 
   const accountValidator = AccountValidator(recipientAccount)
@@ -296,12 +298,12 @@ const executePaymentViaIntraledger = async <
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const checkLimits =
-    senderWallet.accountId === recipientWallet.accountId
+    senderWallet.accountUuid === recipientWallet.accountUuid
       ? checkTradeIntraAccountLimits
       : checkIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
-    accountId: senderWallet.accountId,
+    accountUuid: senderWallet.accountUuid,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
@@ -362,7 +364,7 @@ const executePaymentViaIntraledger = async <
       [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
     } = {}
 
-    if (senderWallet.accountId === recipientWallet.accountId) {
+    if (senderWallet.accountUuid === recipientWallet.accountUuid) {
       ;({
         metadata,
         debitAccountAdditionalMetadata: additionalDebitMetadata,
@@ -430,7 +432,7 @@ const executePaymentViaIntraledger = async <
 
     // Send 'received'-side intraledger notification
     const result = await NotificationsService().intraLedgerTxReceived({
-      recipientAccountId: recipientWallet.accountId,
+      recipientAccountUuid: recipientWallet.accountUuid,
       recipientWalletId: recipientWallet.id,
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: recipientDisplayAmount,
@@ -479,7 +481,7 @@ const executePaymentViaOnChain = async <
 
   const limitCheck = await checkWithdrawalLimits({
     amount: proposedAmounts.usd,
-    accountId: senderWalletDescriptor.accountId,
+    accountUuid: senderWalletDescriptor.accountUuid,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck

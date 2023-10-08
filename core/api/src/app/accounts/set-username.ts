@@ -1,6 +1,7 @@
 import { usernameAvailable } from "./username-available"
 
 import {
+  checkedToAccountUuid,
   checkedToUsername,
   UsernameIsImmutableError,
   UsernameNotAvailableError,
@@ -8,17 +9,20 @@ import {
 import { AccountsRepository } from "@/services/mongoose"
 
 export const setUsername = async ({
-  id,
+  accountUuid: accountUuidRaw,
   username,
 }: {
-  id: string
+  accountUuid: string
   username: string
 }): Promise<Account | ApplicationError> => {
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername
 
+  const accountUuid = checkedToAccountUuid(accountUuidRaw)
+  if (accountUuid instanceof Error) return accountUuid
+
   const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findById(id as AccountId)
+  const account = await accountsRepo.findByUuid(accountUuid)
   if (account instanceof Error) return account
   if (account.username) return new UsernameIsImmutableError()
 

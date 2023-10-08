@@ -78,7 +78,7 @@ const addSettledTransactionBeforeFinally = async ({
       }
     }
 
-    const account = await AccountsRepository().findById(wallet.accountId)
+    const account = await AccountsRepository().findByUuid(wallet.accountUuid)
     if (account instanceof Error) return account
     const { displayCurrency } = account
 
@@ -174,7 +174,7 @@ const addSettledTransactionBeforeFinally = async ({
     if (user instanceof Error) return user
 
     const notificationResult = await NotificationsService().onChainTxReceived({
-      recipientAccountId: wallet.accountId,
+      recipientAccountUuid: wallet.accountUuid,
       recipientWalletId: wallet.id,
       paymentAmount: amount,
       displayPaymentAmount: displayAmount,

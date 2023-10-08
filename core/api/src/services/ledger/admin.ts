@@ -4,7 +4,7 @@ import { getBankOwnerWalletId } from "./caching"
 
 import { TransactionsMetadataRepository } from "./services"
 
-import { coldStorageAccountId, lndLedgerAccountId } from "./domain/accounts"
+import { coldStorageAccountUuid, lndLedgerAccountUuid } from "./domain/accounts"
 
 import { translateToLedgerJournal } from "./helpers"
 
@@ -61,9 +61,9 @@ export const admin = {
       const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
       const entry = MainBook.entry(description)
-        .credit(lndLedgerAccountId, sats + fee, metadata)
+        .credit(lndLedgerAccountUuid, sats + fee, metadata)
         .debit(bankOwnerPath, fee, metadata)
-        .debit(coldStorageAccountId, sats, metadata)
+        .debit(coldStorageAccountUuid, sats, metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -97,9 +97,9 @@ export const admin = {
       const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
       const entry = MainBook.entry(description)
-        .credit(coldStorageAccountId, sats + fee, metadata)
+        .credit(coldStorageAccountUuid, sats + fee, metadata)
         .debit(bankOwnerPath, fee, metadata)
-        .debit(lndLedgerAccountId, sats, metadata)
+        .debit(lndLedgerAccountUuid, sats, metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -135,7 +135,7 @@ export const admin = {
         const bankOwnerWalletId = await getBankOwnerWalletId()
         const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
         const entry = MainBook.entry(description)
-          .credit(lndLedgerAccountId, Number(totalSwapFee), {
+          .credit(lndLedgerAccountUuid, Number(totalSwapFee), {
             currency: WalletCurrency.Btc,
             pending: false,
             type: LedgerTransactionType.Fee,

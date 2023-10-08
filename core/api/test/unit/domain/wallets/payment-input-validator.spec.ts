@@ -8,7 +8,6 @@ import { WalletCurrency, InvalidBtcPaymentAmountError } from "@/domain/shared"
 
 describe("PaymentInputValidator", () => {
   const dummyAccount: Account = {
-    id: crypto.randomUUID() as AccountId,
     uuid: crypto.randomUUID() as AccountUuid,
     createdAt: new Date(),
     username: "username" as Username,
@@ -38,7 +37,7 @@ describe("PaymentInputValidator", () => {
 
   const dummySenderWallet: Wallet = {
     id: crypto.randomUUID() as WalletId,
-    accountId: dummyAccount.id,
+    accountUuid: dummyAccount.uuid,
     type: WalletType.Checking,
     currency: WalletCurrency.Btc,
     onChainAddressIdentifiers: [],
@@ -47,7 +46,7 @@ describe("PaymentInputValidator", () => {
 
   const dummyRecipientWallet: Wallet = {
     id: crypto.randomUUID() as WalletId,
-    accountId: crypto.randomUUID() as AccountId,
+    accountUuid: crypto.randomUUID() as AccountUuid,
     type: WalletType.Checking,
     currency: WalletCurrency.Btc,
     onChainAddressIdentifiers: [],

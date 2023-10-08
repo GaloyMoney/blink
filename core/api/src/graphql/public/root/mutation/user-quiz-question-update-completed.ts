@@ -29,7 +29,7 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field<
 
     const question = await Payments.addEarn({
       quizQuestionId: id,
-      accountId: domainAccount.id,
+      accountUuid: domainAccount.uuid,
     })
     if (question instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(question)] }

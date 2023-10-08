@@ -1,10 +1,10 @@
 import { AccountsRepository } from "@/services/mongoose"
 
 export const addNewContact = async ({
-  accountId,
+  accountUuid,
   contactUsername,
 }: {
-  accountId: AccountId
+  accountUuid: AccountUuid
   contactUsername: Username
 }): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()
@@ -12,7 +12,7 @@ export const addNewContact = async ({
   const contactAccount = await accountsRepo.findByUsername(contactUsername)
   if (contactAccount instanceof Error) return contactAccount
 
-  const account = await accountsRepo.findById(accountId)
+  const account = await accountsRepo.findByUuid(accountUuid)
   if (account instanceof Error) return account
 
   const idx = account.contacts.findIndex(

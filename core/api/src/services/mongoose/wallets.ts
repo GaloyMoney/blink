@@ -1,26 +1,24 @@
-import { Types } from "mongoose"
-
 import { AccountsRepository } from "./accounts"
 
 import { Wallet } from "./schema"
 
-import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
+import { parseRepositoryError } from "./utils"
 
 import { WalletCurrency } from "@/domain/shared"
 import { toWalletDescriptor } from "@/domain/wallets"
 import {
-  CouldNotFindWalletFromAccountIdAndCurrencyError,
+  CouldNotFindWalletFromAccountUuidAndCurrencyError,
   CouldNotFindWalletFromIdError,
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletFromOnChainAddressesError,
-  CouldNotListWalletsFromAccountIdError,
+  CouldNotListWalletsFromAccountUuidError,
   CouldNotListWalletsFromWalletCurrencyError,
-  MultipleWalletsFoundForAccountIdAndCurrency,
+  MultipleWalletsFoundForAccountUuidAndCurrency,
 } from "@/domain/errors"
 
 export interface WalletRecord {
   id: string
-  _accountId: Types.ObjectId
+  accountUuid: string
   type: string
   currency: string
   onchain: OnChainMongooseType[]
@@ -28,17 +26,17 @@ export interface WalletRecord {
 
 export const WalletsRepository = (): IWalletsRepository => {
   const persistNew = async ({
-    accountId,
+    accountUuid,
     type,
     currency,
   }: NewWalletInfo): Promise<Wallet | RepositoryError> => {
-    const account = await AccountsRepository().findById(accountId)
+    const account = await AccountsRepository().findByUuid(accountUuid)
     // verify that the account exist
     if (account instanceof Error) return account
 
     try {
       const wallet = new Wallet({
-        _accountId: toObjectId<AccountId>(accountId),
+        accountUuid,
         type,
         currency,
       })
@@ -61,15 +59,15 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
-  const listByAccountId = async (
-    accountId: AccountId,
+  const listByAccountUuid = async (
+    accountUuid: AccountUuid,
   ): Promise<Wallet[] | RepositoryError> => {
     try {
       const result: WalletRecord[] = await Wallet.find({
-        _accountId: toObjectId<AccountId>(accountId),
+        accountUuid: accountUuid,
       })
       if (!result || result.length === 0) {
-        return new CouldNotListWalletsFromAccountIdError(`accountId: ${accountId}}`)
+        return new CouldNotListWalletsFromAccountUuidError(`accountUuid: ${accountUuid}}`)
       }
       return result.map(resultToWallet)
     } catch (err) {
@@ -77,27 +75,27 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
-  const findAccountWalletsByAccountId = async (
-    accountId: AccountId,
+  const findAccountWalletsByAccountUuid = async (
+    accountUuid: AccountUuid,
   ): Promise<AccountWalletDescriptors | RepositoryError> => {
-    const wallets = await listByAccountId(accountId)
+    const wallets = await listByAccountUuid(accountUuid)
     if (wallets instanceof Error) return wallets
 
     const btcWallets = wallets.filter((wallet) => wallet.currency === WalletCurrency.Btc)
     if (btcWallets.length === 0) {
-      return new CouldNotFindWalletFromAccountIdAndCurrencyError(WalletCurrency.Btc)
+      return new CouldNotFindWalletFromAccountUuidAndCurrencyError(WalletCurrency.Btc)
     }
     if (btcWallets.length > 1) {
-      return new MultipleWalletsFoundForAccountIdAndCurrency(WalletCurrency.Btc)
+      return new MultipleWalletsFoundForAccountUuidAndCurrency(WalletCurrency.Btc)
     }
     const btcWallet = btcWallets[0]
 
     const usdWallets = wallets.filter((wallet) => wallet.currency === WalletCurrency.Usd)
     if (usdWallets.length === 0) {
-      return new CouldNotFindWalletFromAccountIdAndCurrencyError(WalletCurrency.Usd)
+      return new CouldNotFindWalletFromAccountUuidAndCurrencyError(WalletCurrency.Usd)
     }
     if (usdWallets.length > 1) {
-      return new MultipleWalletsFoundForAccountIdAndCurrency(WalletCurrency.Usd)
+      return new MultipleWalletsFoundForAccountUuidAndCurrency(WalletCurrency.Usd)
     }
     const usdWallet = usdWallets[0]
 
@@ -156,8 +154,8 @@ export const WalletsRepository = (): IWalletsRepository => {
 
   return {
     findById,
-    listByAccountId,
-    findAccountWalletsByAccountId,
+    listByAccountUuid,
+    findAccountWalletsByAccountUuid,
     findByAddress,
     listByAddresses,
     persistNew,
@@ -167,7 +165,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 
 const resultToWallet = (result: WalletRecord): Wallet => {
   const id = result.id as WalletId
-  const accountId = fromObjectId<AccountId>(result._accountId)
+  const accountUuid = result.accountUuid as AccountUuid
   const type = result.type as WalletType
   const currency = result.currency as WalletCurrency
   const onChain = result.onchain || []
@@ -181,7 +179,7 @@ const resultToWallet = (result: WalletRecord): Wallet => {
 
   return {
     id,
-    accountId,
+    accountUuid,
     type,
     onChainAddressIdentifiers,
     onChainAddresses,

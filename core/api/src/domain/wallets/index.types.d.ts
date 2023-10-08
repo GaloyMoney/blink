@@ -155,7 +155,7 @@ type WalletTransactionHistoryWithPending = {
 }
 
 type NewWalletInfo = {
-  readonly accountId: AccountId
+  readonly accountUuid: AccountUuid
   readonly type: WalletType
   readonly currency: WalletCurrency
 }
@@ -173,14 +173,14 @@ type AccountWalletDescriptors = {
 
 interface IWalletsRepository {
   persistNew({
-    accountId,
+    accountUuid,
     type,
     currency,
   }: NewWalletInfo): Promise<Wallet | RepositoryError>
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
-  listByAccountId(accountId: AccountId): Promise<Wallet[] | RepositoryError>
-  findAccountWalletsByAccountId(
-    accountId: AccountId,
+  listByAccountUuid(accountUuid: AccountUuid): Promise<Wallet[] | RepositoryError>
+  findAccountWalletsByAccountUuid(
+    AccountUuid: AccountUuid,
   ): Promise<AccountWalletDescriptors | RepositoryError>
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: OnChainAddress[]): Promise<Wallet[] | RepositoryError>

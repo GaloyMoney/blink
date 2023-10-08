@@ -3,7 +3,7 @@ import { MainBook } from "../books"
 import { EntryBuilder, toLedgerAccountDescriptor } from "../domain"
 import { persistAndReturnEntry } from "../helpers"
 
-import { staticAccountIds } from "./static-account-ids"
+import { staticAccountUuids } from "./static-account-ids"
 
 import { AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
 
@@ -20,12 +20,12 @@ export const recordReceiveOffChain = async ({
   additionalInternalMetadata,
 }: RecordReceiveArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
-  const accountIds = await staticAccountIds()
+  const accountIds = await staticAccountUuids()
   if (accountIds instanceof Error) return accountIds
 
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
-    staticAccountIds: accountIds,
+    staticAccountUuids: accountIds,
     entry,
     metadata,
     additionalInternalMetadata,

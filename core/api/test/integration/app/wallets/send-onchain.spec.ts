@@ -97,8 +97,8 @@ describe("onChainPay", () => {
   describe("common", () => {
     it("fails to send all from empty wallet", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -118,8 +118,8 @@ describe("onChainPay", () => {
       const amount = -1000
 
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -149,8 +149,8 @@ describe("onChainPay", () => {
   describe("settles onchain", () => {
     it("fails if builder 'withConversion' step fails", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -178,8 +178,8 @@ describe("onChainPay", () => {
 
     it("fails if withdrawal limit hit", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -230,8 +230,8 @@ describe("onChainPay", () => {
 
     it("fails if has insufficient balance for fee", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -263,8 +263,8 @@ describe("onChainPay", () => {
 
     it("fails if sender account is locked", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -280,7 +280,7 @@ describe("onChainPay", () => {
 
       // Lock sender account
       const updatedAccount = await Accounts.updateAccountStatus({
-        id: newAccount.id,
+        accountUuid: newAccount.uuid,
         status: AccountStatus.Locked,
         updatedByPrivilegedClientId,
       })
@@ -304,8 +304,8 @@ describe("onChainPay", () => {
   describe("settles intraledger", () => {
     it("fails if builder 'withRecipient' step fails", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -341,8 +341,8 @@ describe("onChainPay", () => {
         btcWalletDescriptor: newWalletDescriptor,
         usdWalletDescriptor: recipientUsdWalletDescriptor,
       } = await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -386,8 +386,8 @@ describe("onChainPay", () => {
 
     it("fails if intraledger limit hit", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -448,8 +448,8 @@ describe("onChainPay", () => {
         btcWalletDescriptor: newWalletDescriptor,
         usdWalletDescriptor: recipientWalletDescriptor,
       } = await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -507,14 +507,14 @@ describe("onChainPay", () => {
 
     it("fails if recipient account is locked", async () => {
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
       const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
-      const recipientAccount = await AccountsRepository().findById(
-        recipientWalletDescriptor.accountId,
+      const recipientAccount = await AccountsRepository().findByUuid(
+        recipientWalletDescriptor.accountUuid,
       )
       if (recipientAccount instanceof Error) throw recipientAccount
 
@@ -535,7 +535,7 @@ describe("onChainPay", () => {
 
       // Lock recipient account
       const updatedAccount = await Accounts.updateAccountStatus({
-        id: recipientAccount.id,
+        accountUuid: recipientAccount.uuid,
         status: AccountStatus.Locked,
         updatedByPrivilegedClientId,
       })
@@ -568,8 +568,8 @@ describe("onChainPay", () => {
       // Create users
       const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
         await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 

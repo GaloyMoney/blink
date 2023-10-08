@@ -488,10 +488,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "NoExpiredLightningPaymentFlowsError":
     case "CouldNotUpdateLightningPaymentFlowError":
     case "CouldNotFindWalletFromIdError":
-    case "CouldNotListWalletsFromAccountIdError":
+    case "CouldNotListWalletsFromAccountUuidError":
     case "CouldNotFindWalletFromUsernameError":
     case "CouldNotFindWalletFromUsernameAndCurrencyError":
-    case "CouldNotFindWalletFromAccountIdAndCurrencyError":
+    case "CouldNotFindWalletFromAccountUuidAndCurrencyError":
     case "CouldNotFindWalletFromOnChainAddressError":
     case "CouldNotFindWalletFromOnChainAddressesError":
     case "CouldNotFindBtcWalletForAccountError":
@@ -595,7 +595,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CaptchaError":
     case "InvalidNonHodlInvoiceError":
     case "InvalidAccountError":
-    case "InvalidAccountIdError":
+    case "InvalidAccountUuidError":
     case "InvalidMinutesError":
     case "InvalidWalletForAccountError":
     case "AuthenticationError":
@@ -647,7 +647,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidErrorCodeForPhoneMetadataError":
     case "InvalidMobileCountryCodeForPhoneMetadataError":
     case "InvalidCountryCodeForPhoneMetadataError":
-    case "MultipleWalletsFoundForAccountIdAndCurrency":
+    case "MultipleWalletsFoundForAccountUuidAndCurrency":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

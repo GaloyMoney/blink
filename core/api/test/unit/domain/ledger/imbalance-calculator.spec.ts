@@ -7,7 +7,7 @@ const btcWallet: Wallet = {
   id: "walletId" as WalletId,
   type: "checking",
   currency: WalletCurrency.Btc,
-  accountId: "a1" as AccountId,
+  accountUuid: "a1" as AccountUuid,
   onChainAddressIdentifiers: [],
   onChainAddresses: () => [],
 }

@@ -3,7 +3,7 @@ import { onChainLedgerAccountDescriptor } from "./accounts"
 export const FeeOnlyEntryBuilder = <M extends MediciEntry>({
   entry,
   metadata,
-  staticAccountIds,
+  staticAccountUuids,
   btcFee,
 }: FeeOnlyEntryBuilderConfig<M>): FeeOnlyEntryBuilderDebit<M> => {
   const debitAccount = <T extends WalletCurrency>({
@@ -21,13 +21,13 @@ export const FeeOnlyEntryBuilder = <M extends MediciEntry>({
       entry,
       metadata,
       btcFee,
-      staticAccountIds,
+      staticAccountUuids,
     }) as FeeOnlyEntryBuilderCredit<M>
   }
 
   const debitBankOwner = (): FeeOnlyEntryBuilderCredit<M> => {
     const bankOwnerAccountDescriptor = {
-      id: staticAccountIds.bankOwnerAccountId,
+      id: staticAccountUuids.bankOwnerAccountUuid,
       currency: btcFee.currency,
     } as LedgerAccountDescriptor<"BTC">
 
@@ -52,7 +52,7 @@ const EntryBuilderCredit = <M extends MediciEntry>({
   entry,
   metadata,
   btcFee,
-  staticAccountIds,
+  staticAccountUuids,
 }: FeeOnlyEntryBuilderConfig<M>): FeeOnlyEntryBuilderCredit<M> => {
   const creditAccount = ({
     accountDescriptor,
@@ -70,7 +70,7 @@ const EntryBuilderCredit = <M extends MediciEntry>({
 
   const creditBankOwner = () => {
     const bankOwnerAccountDescriptor = {
-      id: staticAccountIds.bankOwnerAccountId,
+      id: staticAccountUuids.bankOwnerAccountUuid,
       currency: btcFee.currency,
     } as LedgerAccountDescriptor<"BTC">
 

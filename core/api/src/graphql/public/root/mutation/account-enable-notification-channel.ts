@@ -36,7 +36,7 @@ const AccountEnableNotificationChannelMutation = GT.Field<
     if (channel instanceof Error) return { errors: [{ message: channel.message }] }
 
     const result = await Accounts.enableNotificationChannel({
-      accountId: domainAccount.id,
+      accountUuid: domainAccount.uuid,
       notificationChannel: channel,
     })
 

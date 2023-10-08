@@ -7,11 +7,11 @@ import { recordExceptionInCurrentSpan } from "@/services/tracing"
 
 export const submitFeedback = async ({
   feedback,
-  accountId,
+  accountUuid,
   username,
 }: {
   feedback: Feedback
-  accountId: AccountId
+  accountUuid: AccountUuid
   username?: Username
 }) => {
   if (!MATTERMOST_WEBHOOK_URL) {
@@ -22,7 +22,7 @@ export const submitFeedback = async ({
     return new ConfigError("missing MATTERMOST_WEBHOOK_URL")
   }
 
-  const text = `Feedback from ${accountId}${
+  const text = `Feedback from ${accountUuid}${
     username ? ` - ${username}` : ""
   }:\n\n${feedback}`
 

@@ -2,9 +2,9 @@ import { CsvWalletsExport } from "@/services/ledger/csv-wallet-export"
 import { WalletsRepository } from "@/services/mongoose"
 
 export const getCSVForAccount = async (
-  accountId: AccountId,
+  accountUuid: AccountUuid,
 ): Promise<string | ApplicationError> => {
-  const wallets = await WalletsRepository().listByAccountId(accountId)
+  const wallets = await WalletsRepository().listByAccountUuid(accountUuid)
   if (wallets instanceof Error) return wallets
 
   const csv = new CsvWalletsExport()

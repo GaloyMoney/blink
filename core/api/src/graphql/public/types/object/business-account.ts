@@ -41,7 +41,7 @@ const BusinessAccount = GT.Object({
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: async (source: Account) => {
-        return Wallets.listWalletsByAccountId(source.id)
+        return Wallets.listWalletsByAccountUuid(source.uuid)
       },
     },
 
@@ -108,7 +108,7 @@ const BusinessAccount = GT.Object({
         },
       },
       resolve: async (source) => {
-        return Accounts.getCSVForAccount(source.id)
+        return Accounts.getCSVForAccount(source.uuid)
       },
     },
     transactions: {
@@ -130,7 +130,7 @@ const BusinessAccount = GT.Object({
         let { walletIds } = args
 
         if (!walletIds) {
-          const wallets = await WalletsRepository().listByAccountId(source.id)
+          const wallets = await WalletsRepository().listByAccountUuid(source.uuid)
           if (wallets instanceof Error) {
             throw mapError(wallets)
           }

@@ -26,7 +26,7 @@ export class CannotConnectToDbError extends RepositoryError {
 export class DbConnectionClosedError extends RepositoryError {
   level = ErrorLevel.Critical
 }
-export class MultipleWalletsFoundForAccountIdAndCurrency extends RepositoryError {}
+export class MultipleWalletsFoundForAccountUuidAndCurrency extends RepositoryError {}
 
 export class CouldNotUnsetPhoneFromUserError extends CouldNotUpdateError {}
 
@@ -40,10 +40,10 @@ export class CouldNotFindUserFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindUserFromEmailError extends CouldNotFindError {}
 export class CouldNotFindUserFromWalletIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromIdError extends CouldNotFindError {}
-export class CouldNotListWalletsFromAccountIdError extends CouldNotFindError {}
+export class CouldNotListWalletsFromAccountUuidError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameAndCurrencyError extends CouldNotFindError {}
-export class CouldNotFindWalletFromAccountIdAndCurrencyError extends CouldNotFindError {}
+export class CouldNotFindWalletFromAccountUuidAndCurrencyError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
 export class CouldNotListWalletsFromWalletCurrencyError extends CouldNotFindError {}

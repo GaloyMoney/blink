@@ -15,7 +15,7 @@ beforeAll(() => {
     id: "walletId" as WalletId,
     type: "checking",
     currency: WalletCurrency.Btc,
-    accountId: "a1" as AccountId,
+    accountUuid: "a1" as AccountUuid,
     onChainAddressIdentifiers: [],
     onChainAddresses: () => [],
   }
@@ -24,7 +24,7 @@ beforeAll(() => {
     id: "walletId" as WalletId,
     type: "checking",
     currency: WalletCurrency.Usd,
-    accountId: "a1" as AccountId,
+    accountUuid: "a1" as AccountUuid,
     onChainAddressIdentifiers: [],
     onChainAddresses: () => [],
   }

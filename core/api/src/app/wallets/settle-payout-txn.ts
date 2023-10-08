@@ -25,7 +25,7 @@ export const settlePayout = async (
   if (ledgerTxn.walletId === undefined) return new InvalidLedgerTransactionStateError()
   const wallet = await WalletsRepository().findById(ledgerTxn.walletId)
   if (wallet instanceof Error) return wallet
-  const account = await AccountsRepository().findById(wallet.accountId)
+  const account = await AccountsRepository().findByUuid(wallet.accountUuid)
   if (account instanceof Error) return account
   const user = await UsersRepository().findById(account.kratosUserId)
   if (user instanceof Error) return user
@@ -53,7 +53,7 @@ export const settlePayout = async (
   if (txHash === undefined) return new InvalidLedgerTransactionStateError()
 
   const result = await NotificationsService().onChainTxSent({
-    senderAccountId: wallet.accountId,
+    senderAccountUuid: wallet.accountUuid,
     senderWalletId: wallet.id,
     paymentAmount,
     displayPaymentAmount,

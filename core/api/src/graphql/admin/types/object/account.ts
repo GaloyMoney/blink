@@ -28,7 +28,7 @@ const AuditedAccount: GraphQLObjectType<Account> = GT.Object<Account>({
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: async (source) => {
-        const result = await Wallets.listWalletsByAccountId(source.id)
+        const result = await Wallets.listWalletsByAccountUuid(source.uuid)
         if (result instanceof Error) throw mapError(result)
         return result
       },

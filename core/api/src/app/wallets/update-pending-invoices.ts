@@ -271,10 +271,10 @@ const updatePendingInvoiceBeforeFinally = async ({
       recipientInvoiceWalletDescriptor.id,
     )
     if (recipientInvoiceWallet instanceof Error) return recipientInvoiceWallet
-    const { accountId: recipientAccountId } = recipientInvoiceWallet
+    const { accountUuid: recipientAccountUuid } = recipientInvoiceWallet
 
     const accountWallets =
-      await WalletsRepository().findAccountWalletsByAccountId(recipientAccountId)
+      await WalletsRepository().findAccountWalletsByAccountUuid(recipientAccountUuid)
     if (accountWallets instanceof Error) return accountWallets
 
     const receivedWalletInvoice = await WalletInvoiceReceiver({
@@ -307,7 +307,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
 
-    const recipientAccount = await AccountsRepository().findById(recipientAccountId)
+    const recipientAccount = await AccountsRepository().findByUuid(recipientAccountUuid)
     if (recipientAccount instanceof Error) return recipientAccount
     const { displayCurrency: recipientDisplayCurrency } = recipientAccount
     const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
@@ -374,7 +374,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     if (recipientUser instanceof Error) return recipientUser
 
     const notificationResult = await NotificationsService().lightningTxReceived({
-      recipientAccountId,
+      recipientAccountUuid,
       recipientWalletId: recipientWalletDescriptor.id,
       paymentAmount: receivedWalletInvoice.receivedAmount(),
       displayPaymentAmount,

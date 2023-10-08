@@ -27,7 +27,7 @@ const AccountDefaultWalletQuery = GT.Field({
       throw mapError(account)
     }
 
-    const wallets = await Wallets.listWalletsByAccountId(account.id)
+    const wallets = await Wallets.listWalletsByAccountUuid(account.uuid)
     if (wallets instanceof Error) {
       throw mapError(wallets)
     }

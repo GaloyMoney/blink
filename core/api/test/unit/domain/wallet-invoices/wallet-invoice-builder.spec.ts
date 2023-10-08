@@ -18,13 +18,13 @@ describe("WalletInvoiceBuilder", () => {
   const recipientBtcWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Btc,
-    accountId: "recipientAccountId" as AccountId,
+    accountUuid: "recipientAccountUuid" as AccountUuid,
     username: "Username" as Username,
   }
   const recipientUsdWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Usd,
-    accountId: "recipientAccountId" as AccountId,
+    accountUuid: "recipientAccountUuid" as AccountUuid,
     username: "Username" as Username,
   }
   const uncheckedAmount = 100

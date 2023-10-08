@@ -43,7 +43,7 @@ type PartialWalletDescriptor<T extends WalletCurrency> = {
   currency: T
 }
 type WalletDescriptor<T extends WalletCurrency> = PartialWalletDescriptor<T> & {
-  accountId: AccountId
+  accountUuid: AccountUuid
 }
 
 type BtcPaymentAmount = PaymentAmount<"BTC">

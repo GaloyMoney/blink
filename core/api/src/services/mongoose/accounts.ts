@@ -1,4 +1,4 @@
-import { fromObjectId, parseRepositoryError, toObjectId } from "./utils"
+import { parseRepositoryError } from "./utils"
 
 import { OnboardingEarn } from "@/config"
 
@@ -36,24 +36,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
-    try {
-      const result = await Account.findOne({
-        _id: toObjectId<AccountId>(accountId),
-      })
-      if (!result) return new CouldNotFindAccountError()
-      return translateToAccount(result)
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   const findByUuid = async (
     accountUuid: AccountUuid,
   ): Promise<Account | RepositoryError> => {
     try {
       const result = await Account.findOne({
-        id: accountUuid,
+        uuid: accountUuid,
       })
       if (!result) return new CouldNotFindAccountFromUuidError(accountUuid)
       return translateToAccount(result)
@@ -106,7 +94,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 
   const update = async ({
-    id,
+    uuid,
     level,
     statusHistory,
     coordinates,
@@ -124,7 +112,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await Account.findOneAndUpdate(
-        { _id: toObjectId<AccountId>(id) },
+        { uuid },
         {
           level,
           statusHistory,
@@ -191,7 +179,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     persistNew,
     findByUserId,
     listUnlockedAccounts,
-    findById,
     findByUuid,
     findByUsername,
     listBusinessesForMap,
@@ -200,8 +187,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 }
 
 const translateToAccount = (result: AccountRecord): Account => ({
-  id: fromObjectId<AccountId>(result._id),
-  uuid: result.id as AccountUuid,
+  uuid: result.uuid as AccountUuid,
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,

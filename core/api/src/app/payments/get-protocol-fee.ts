@@ -175,7 +175,7 @@ const estimateLightningFee = async ({
   if (await builder.isTradeIntraAccount()) {
     const limitCheck = await checkTradeIntraAccountLimits({
       amount: usdPaymentAmount,
-      accountId: senderWallet.accountId,
+      accountUuid: senderWallet.accountUuid,
       priceRatio: priceRatioForLimits,
     })
     if (limitCheck instanceof Error) return PartialResult.err(limitCheck)
@@ -184,7 +184,7 @@ const estimateLightningFee = async ({
   } else if (await builder.isIntraLedger()) {
     const limitCheck = await checkIntraledgerLimits({
       amount: usdPaymentAmount,
-      accountId: senderWallet.accountId,
+      accountUuid: senderWallet.accountUuid,
       priceRatio: priceRatioForLimits,
     })
     if (limitCheck instanceof Error) return PartialResult.err(limitCheck)
@@ -193,7 +193,7 @@ const estimateLightningFee = async ({
   } else {
     const limitCheck = await checkWithdrawalLimits({
       amount: usdPaymentAmount,
-      accountId: senderWallet.accountId,
+      accountUuid: senderWallet.accountUuid,
       priceRatio: priceRatioForLimits,
     })
     if (limitCheck instanceof Error) return PartialResult.err(limitCheck)

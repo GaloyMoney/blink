@@ -2,7 +2,7 @@
 
 import { WalletCurrency } from "@/domain/shared"
 
-import { onChainLedgerAccountId } from "@/services/ledger/domain"
+import { onChainLedgerAccountUuid } from "@/services/ledger/domain"
 import { MainBook } from "@/services/ledger/books"
 import { FeeOnlyEntryBuilder } from "@/services/ledger/domain/fee-only-entry-builder"
 
@@ -53,8 +53,8 @@ describe("FeeOnlyEntryBuilder", () => {
     expect(zeroAmounts.length).toBe(0)
   }
 
-  const staticAccountIds = {
-    bankOwnerAccountId: "bankOwnerAccountId" as LedgerAccountId,
+  const staticAccountUuids = {
+    bankOwnerAccountUuid: "bankOwnerAccountUuid" as LedgerAccountUuid,
   }
 
   const btcFee = { amount: 1000n, currency: WalletCurrency.Btc }
@@ -67,7 +67,7 @@ describe("FeeOnlyEntryBuilder", () => {
   it("overestimated fee, credit back bank owner", () => {
     const entry = createEntry()
     const builder = FeeOnlyEntryBuilder({
-      staticAccountIds,
+      staticAccountUuids,
       entry,
       metadata,
       btcFee,
@@ -79,19 +79,19 @@ describe("FeeOnlyEntryBuilder", () => {
 
     expectJournalToBeBalanced(result)
 
-    expectEntryToEqual(findEntry(credits, onChainLedgerAccountId), btcFee)
+    expectEntryToEqual(findEntry(credits, onChainLedgerAccountUuid), btcFee)
     expect(
-      credits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
+      credits.find((tx) => tx.accounts === staticAccountUuids.bankOwnerAccountUuid),
     ).toBeUndefined()
 
-    expectEntryToEqual(findEntry(debits, staticAccountIds.bankOwnerAccountId), btcFee)
-    expect(debits.find((tx) => tx.accounts === onChainLedgerAccountId)).toBeUndefined()
+    expectEntryToEqual(findEntry(debits, staticAccountUuids.bankOwnerAccountUuid), btcFee)
+    expect(debits.find((tx) => tx.accounts === onChainLedgerAccountUuid)).toBeUndefined()
   })
 
   it("underestimated fee, debit from bank owner", () => {
     const entry = createEntry()
     const builder = FeeOnlyEntryBuilder({
-      staticAccountIds,
+      staticAccountUuids,
       entry,
       metadata,
       btcFee,
@@ -103,12 +103,15 @@ describe("FeeOnlyEntryBuilder", () => {
 
     expectJournalToBeBalanced(result)
 
-    expectEntryToEqual(findEntry(credits, staticAccountIds.bankOwnerAccountId), btcFee)
-    expect(credits.find((tx) => tx.accounts === onChainLedgerAccountId)).toBeUndefined()
+    expectEntryToEqual(
+      findEntry(credits, staticAccountUuids.bankOwnerAccountUuid),
+      btcFee,
+    )
+    expect(credits.find((tx) => tx.accounts === onChainLedgerAccountUuid)).toBeUndefined()
 
-    expectEntryToEqual(findEntry(debits, onChainLedgerAccountId), btcFee)
+    expectEntryToEqual(findEntry(debits, onChainLedgerAccountUuid), btcFee)
     expect(
-      debits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
+      debits.find((tx) => tx.accounts === staticAccountUuids.bankOwnerAccountUuid),
     ).toBeUndefined()
   })
 })

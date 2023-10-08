@@ -19,7 +19,7 @@ export const WalletInvoiceReceiver = ({
 
   const recipientWalletDescriptor = {
     ...partialWalletDescriptor,
-    accountId: recipientWalletDescriptors[WalletCurrency.Btc].accountId,
+    accountUuid: recipientWalletDescriptors[WalletCurrency.Btc].accountUuid,
   }
 
   const withConversion = async ({

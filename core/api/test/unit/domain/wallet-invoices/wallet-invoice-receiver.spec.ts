@@ -28,7 +28,7 @@ describe("WalletInvoiceReceiver", () => {
 
   const receivedBtc = BtcPaymentAmount(1200n)
 
-  const recipientAccountId = "recipientAccountId" as AccountId
+  const recipientAccountUuid = "recipientAccountUuid" as AccountUuid
 
   const partialRecipientBtcWalletDescriptor = {
     id: "recipientBtcWalletId" as WalletId,
@@ -36,7 +36,7 @@ describe("WalletInvoiceReceiver", () => {
   }
   const recipientBtcWalletDescriptor = {
     ...partialRecipientBtcWalletDescriptor,
-    accountId: recipientAccountId,
+    accountUuid: recipientAccountUuid,
   }
 
   const partialRecipientUsdWalletDescriptor = {
@@ -45,7 +45,7 @@ describe("WalletInvoiceReceiver", () => {
   }
   const recipientUsdWalletDescriptor = {
     ...partialRecipientUsdWalletDescriptor,
-    accountId: recipientAccountId,
+    accountUuid: recipientAccountUuid,
   }
 
   const recipientWalletDescriptors = {

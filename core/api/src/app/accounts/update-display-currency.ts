@@ -6,10 +6,10 @@ import { InvalidPriceCurrencyError } from "@/domain/price"
 import { AccountsRepository } from "@/services/mongoose"
 
 export const updateDisplayCurrency = async ({
-  accountId,
+  accountUuid,
   currency,
 }: {
-  accountId: AccountId
+  accountUuid: AccountUuid
   currency: string
 }): Promise<Account | ApplicationError> => {
   const checkedDisplayCurrency = checkedToDisplayCurrency(currency)
@@ -21,7 +21,7 @@ export const updateDisplayCurrency = async ({
   const exists = currencies.find((c) => c.code.toUpperCase() === checkedDisplayCurrency)
   if (!exists) return new InvalidPriceCurrencyError()
 
-  const account = await AccountsRepository().findById(accountId)
+  const account = await AccountsRepository().findByUuid(accountUuid)
   if (account instanceof Error) return account
 
   account.displayCurrency = checkedDisplayCurrency

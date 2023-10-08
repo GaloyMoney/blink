@@ -5,24 +5,25 @@ import { WalletCurrency } from "@/domain/shared"
 
 // assets:
 export const assetsMainAccount = "Assets"
-export const lndLedgerAccountId =
-  `${assetsMainAccount}:Reserve:Lightning` as LedgerAccountId // TODO: rename to Assets:Lnd
-export const onChainLedgerAccountId = `${assetsMainAccount}:OnChain` as LedgerAccountId
+export const lndLedgerAccountUuid =
+  `${assetsMainAccount}:Reserve:Lightning` as LedgerAccountUuid // TODO: rename to Assets:Lnd
+export const onChainLedgerAccountUuid =
+  `${assetsMainAccount}:OnChain` as LedgerAccountUuid
 
-export const coldStorageAccountId = `${assetsMainAccount}:Reserve:Bitcoind`
-export const escrowAccountId = `${assetsMainAccount}:Reserve:Escrow` // TODO: rename to Assets:Lnd:Escrow
+export const coldStorageAccountUuid = `${assetsMainAccount}:Reserve:Bitcoind`
+export const escrowAccountUuid = `${assetsMainAccount}:Reserve:Escrow` // TODO: rename to Assets:Lnd:Escrow
 
 export const lndLedgerAccountDescriptor = {
-  id: lndLedgerAccountId,
+  id: lndLedgerAccountUuid,
   currency: WalletCurrency.Btc,
 } as LedgerAccountDescriptor<"BTC">
 
 export const onChainLedgerAccountDescriptor = {
-  id: onChainLedgerAccountId,
+  id: onChainLedgerAccountUuid,
   currency: WalletCurrency.Btc,
 } as LedgerAccountDescriptor<"BTC">
 
 export const coldStorageAccountDescriptor = {
-  id: coldStorageAccountId,
+  id: coldStorageAccountUuid,
   currency: WalletCurrency.Btc,
 } as LedgerAccountDescriptor<"BTC">

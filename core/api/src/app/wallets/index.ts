@@ -24,10 +24,10 @@ export const getWallet = async (walletId: WalletId) => {
   return wallets.findById(walletId)
 }
 
-export const listWalletsByAccountId = async (
-  accountId: AccountId,
+export const listWalletsByAccountUuid = async (
+  accountUuid: AccountUuid,
 ): Promise<Wallet[] | RepositoryError> => {
-  return WalletsRepository().listByAccountId(accountId)
+  return WalletsRepository().listByAccountUuid(accountUuid)
 }
 
 export const listWalletIds = async (

@@ -1,4 +1,4 @@
-import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
+import { parseRepositoryError } from "./utils"
 
 import { AccountIps } from "@/services/mongoose/schema"
 
@@ -31,7 +31,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
 
     try {
       const result = await AccountIps.updateOne(
-        { _accountId: toObjectId<AccountId>(accountIp.accountId), ip: accountIp.ip },
+        { accountUuid: accountIp.accountUuid, ip: accountIp.ip },
         updateQuery,
         { upsert: true },
       )
@@ -46,17 +46,17 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
     }
   }
 
-  const findByAccountIdAndIp = async ({
-    accountId,
+  const findByAccountUuidAndIp = async ({
+    accountUuid,
     ip,
-  }: FindByAccountIdAndIpArgs): Promise<AccountIP | RepositoryError> => {
+  }: FindByAccountUuidAndIpArgs): Promise<AccountIP | RepositoryError> => {
     try {
       const result = await AccountIps.findOne({
-        _accountId: toObjectId<AccountId>(accountId),
+        accountUuid,
         ip,
       })
       if (!result) {
-        return new CouldNotFindAccountIpError(accountId)
+        return new CouldNotFindAccountIpError(accountUuid)
       }
 
       return accountIPFromRaw(result)
@@ -65,16 +65,16 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
     }
   }
 
-  const findLastByAccountId = async (
-    accountId: AccountId,
+  const findLastByAccountUuid = async (
+    accountUuid: AccountUuid,
   ): Promise<AccountIP | RepositoryError> => {
     try {
       const result = await AccountIps.findOne({
-        _accountId: toObjectId<AccountId>(accountId),
+        accountUuid,
       }).sort({ lastConnection: -1 })
 
       if (!result) {
-        return new CouldNotFindAccountIpError(accountId)
+        return new CouldNotFindAccountIpError(accountUuid)
       }
 
       return accountIPFromRaw(result)
@@ -85,14 +85,14 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
 
   return {
     update,
-    findLastByAccountId,
-    findByAccountIdAndIp,
+    findLastByAccountUuid,
+    findByAccountUuidAndIp,
   }
 }
 
 const accountIPFromRaw = (result: AccountIpsRecord): AccountIP => {
   return {
-    accountId: fromObjectId<AccountId>(result._accountId),
+    accountUuid: result.accountUuid as AccountUuid,
     ip: result.ip as IpAddress,
     metadata: result.metadata as IPType,
   }

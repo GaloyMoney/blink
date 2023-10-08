@@ -214,7 +214,7 @@ const validateInvoicePaymentInputs = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
+  const senderAccount = await AccountsRepository().findByUuid(senderWallet.accountUuid)
   if (senderAccount instanceof Error) return senderAccount
 
   const accountValidator = AccountValidator(senderAccount)
@@ -384,19 +384,21 @@ const executePaymentViaIntraledger = async <
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
+  const recipientAccount = await AccountsRepository().findByUuid(
+    recipientWallet.accountUuid,
+  )
   if (recipientAccount instanceof Error) return recipientAccount
 
   const accountValidator = AccountValidator(recipientAccount)
   if (accountValidator instanceof Error) return accountValidator
 
   const checkLimits =
-    senderWallet.accountId === recipientWallet.accountId
+    senderWallet.accountUuid === recipientWallet.accountUuid
       ? checkTradeIntraAccountLimits
       : checkIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
-    accountId: senderWallet.accountId,
+    accountUuid: senderWallet.accountUuid,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
@@ -449,7 +451,7 @@ const executePaymentViaIntraledger = async <
     let additionalInternalMetadata: {
       [key: string]: DisplayCurrencyBaseAmount | DisplayCurrency | undefined
     } = {}
-    if (senderWallet.accountId === recipientWallet.accountId) {
+    if (senderWallet.accountUuid === recipientWallet.accountUuid) {
       ;({
         metadata,
         debitAccountAdditionalMetadata: additionalDebitMetadata,
@@ -527,7 +529,7 @@ const executePaymentViaIntraledger = async <
     }
 
     const result = await NotificationsService().lightningTxReceived({
-      recipientAccountId: recipientWallet.accountId,
+      recipientAccountUuid: recipientWallet.accountUuid,
       recipientWalletId,
       paymentAmount: { amount, currency: recipientWalletCurrency },
       displayPaymentAmount: recipientDisplayAmount,
@@ -557,7 +559,7 @@ const executePaymentViaIntraledger = async <
       })
     }
 
-    if (senderAccount.id !== recipientAccount.id) {
+    if (senderAccount.uuid !== recipientAccount.uuid) {
       const addContactResult = await addContactsAfterSend({
         senderAccount,
         recipientAccount,
@@ -593,7 +595,7 @@ const executePaymentViaLn = async ({
 
   const limitCheck = await checkWithdrawalLimits({
     amount: paymentFlow.usdPaymentAmount,
-    accountId: senderWallet.accountId,
+    accountUuid: senderWallet.accountUuid,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck

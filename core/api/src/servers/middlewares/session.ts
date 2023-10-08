@@ -40,7 +40,7 @@ export const sessionPublicContext = async ({
       // not awaiting on purpose. just updating metadata
       // TODO: look if this can be a source of memory leaks
       Accounts.updateAccountIPsInfo({
-        accountId: account.id,
+        accountUuid: account.uuid,
         ip,
         logger,
       })

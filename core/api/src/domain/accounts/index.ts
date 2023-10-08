@@ -1,4 +1,4 @@
-import { InvalidAccountIdError } from "./errors"
+import { InvalidAccountUuidError } from "./errors"
 
 import { AccountLevel, AccountStatus } from "./primitives"
 
@@ -98,24 +98,14 @@ export const sanityCheckedDefaultAccountWithdrawFee = (
   return toSats(fee)
 }
 
-export const checkedToAccountId = (
-  accountId: string,
-): AccountId | InvalidAccountIdError => {
-  if (accountId.length !== 24) {
-    // TODO: move to a uuid-v4
-    return new InvalidAccountIdError(accountId)
-  }
-  return accountId as AccountId
-}
-
 export const checkedToAccountUuid = (
   accountUuid: string,
-): AccountUuid | InvalidAccountIdError => {
+): AccountUuid | InvalidAccountUuidError => {
   if (accountUuid.match(AccountUuidRegex)) {
     return accountUuid as AccountUuid
   }
   // InvalidAccountUuidError
-  return new InvalidAccountIdError(accountUuid)
+  return new InvalidAccountUuidError(accountUuid)
 }
 
 export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {

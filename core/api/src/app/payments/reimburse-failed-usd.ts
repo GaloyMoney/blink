@@ -41,7 +41,7 @@ export const reimburseFailedUsdPayment = async <
   if (displayCurrency === undefined) {
     const wallet = await WalletsRepository().findById(walletId)
     if (wallet instanceof Error) return wallet
-    const account = await AccountsRepository().findById(wallet.accountId)
+    const account = await AccountsRepository().findByUuid(wallet.accountUuid)
     if (account instanceof Error) return account
     displayCurrency = account.displayCurrency
   }
@@ -74,7 +74,9 @@ export const reimburseFailedUsdPayment = async <
   let recipientBtcWallet =
     recipientWallet.currency === WalletCurrency.Btc ? recipientWallet : undefined
   if (recipientBtcWallet === undefined) {
-    const recipientWallets = await walletsRepo.listByAccountId(recipientWallet.accountId)
+    const recipientWallets = await walletsRepo.listByAccountUuid(
+      recipientWallet.accountUuid,
+    )
     if (recipientWallets instanceof Error) return recipientWallets
 
     recipientBtcWallet = recipientWallets.find(
@@ -82,14 +84,14 @@ export const reimburseFailedUsdPayment = async <
     )
     if (recipientBtcWallet === undefined) {
       return new CouldNotFindBtcWalletForAccountError(
-        JSON.stringify({ accountId: recipientWallet.accountId }),
+        JSON.stringify({ accountUuid: recipientWallet.accountUuid }),
       )
     }
   }
   const btcWalletDescriptor = {
     id: recipientBtcWallet.id,
     currency: recipientBtcWallet.currency,
-    accountId: recipientBtcWallet.accountId,
+    accountUuid: recipientBtcWallet.accountUuid,
   }
 
   const result = await LedgerFacade.recordReceiveOffChain({

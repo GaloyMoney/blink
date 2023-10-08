@@ -98,7 +98,7 @@ module.exports = {
       if (txns[0].currency === txns[1].currency) return false
 
       // Compare accountIds to see if self-trade
-      const accountIdsSet = new Set(txns.map((txn) => txn.accountId))
+      const accountIdsSet = new Set(txns.map((txn) => txn.accountUuid))
       if (accountIdsSet.size > 1) return false
 
       // RETURN SELF-TRADE TYPE

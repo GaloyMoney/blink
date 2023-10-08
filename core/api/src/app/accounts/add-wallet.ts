@@ -1,16 +1,16 @@
 import { WalletsRepository } from "@/services/mongoose"
 
 export const addWallet = async ({
-  accountId,
+  accountUuid,
   type,
   currency,
 }: {
-  accountId: AccountId
+  accountUuid: AccountUuid
   type: WalletType
   currency: WalletCurrency
 }): Promise<Wallet | ApplicationError> => {
   const wallet = await WalletsRepository().persistNew({
-    accountId,
+    accountUuid,
     type,
     currency,
   })
@@ -20,15 +20,15 @@ export const addWallet = async ({
 }
 
 export const addWalletIfNonexistent = async ({
-  accountId,
+  accountUuid,
   type,
   currency,
 }: {
-  accountId: AccountId
+  accountUuid: AccountUuid
   type: WalletType
   currency: WalletCurrency
 }): Promise<Wallet | ApplicationError> => {
-  const wallets = await WalletsRepository().listByAccountId(accountId)
+  const wallets = await WalletsRepository().listByAccountUuid(accountUuid)
   if (wallets instanceof Error) return wallets
 
   const walletOfTypeAndCurrency = wallets.find(
@@ -37,7 +37,7 @@ export const addWalletIfNonexistent = async ({
   if (walletOfTypeAndCurrency) return walletOfTypeAndCurrency
 
   return WalletsRepository().persistNew({
-    accountId,
+    accountUuid,
     type,
     currency,
   })

@@ -74,7 +74,7 @@ const getOnChainFee = async <S extends WalletCurrency>({
       wallet: {
         id: senderWallet.id,
         currency: senderWallet.currency as S,
-        accountId: senderWallet.accountId,
+        accountUuid: senderWallet.accountUuid,
       },
       account: senderAccount,
     })
@@ -94,13 +94,13 @@ const getOnChainFee = async <S extends WalletCurrency>({
   if (await withSenderBuilder.isIntraLedger()) {
     if (recipientWallet instanceof CouldNotFindError) return recipientWallet
 
-    const accountWallets = await WalletsRepository().findAccountWalletsByAccountId(
-      recipientWallet.accountId,
+    const accountWallets = await WalletsRepository().findAccountWalletsByAccountUuid(
+      recipientWallet.accountUuid,
     )
     if (accountWallets instanceof Error) return accountWallets
 
-    const recipientAccount = await AccountsRepository().findById(
-      recipientWallet.accountId,
+    const recipientAccount = await AccountsRepository().findByUuid(
+      recipientWallet.accountUuid,
     )
     if (recipientAccount instanceof Error) return recipientAccount
 
@@ -130,7 +130,7 @@ const getOnChainFee = async <S extends WalletCurrency>({
   const balance = await LedgerService().getWalletBalanceAmount<S>({
     id: senderWallet.id,
     currency: senderWallet.currency as S,
-    accountId: senderWallet.accountId,
+    accountUuid: senderWallet.accountUuid,
   })
   if (balance instanceof Error) return balance
 

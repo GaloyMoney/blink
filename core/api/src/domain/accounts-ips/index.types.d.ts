@@ -1,11 +1,11 @@
 type AccountIP = {
-  accountId: AccountId
+  accountUuid: AccountUuid
   ip: IpAddress
   metadata: IPType
 }
 
 type AccountIPNew = {
-  accountId: AccountId
+  accountUuid: AccountUuid
   ip: IpAddress
   metadata?: IPType
 }
@@ -22,15 +22,15 @@ type IPMetadataAuthorizer = {
   authorize(ipMetadata?: IPType): true | ValidationError
 }
 
-type FindByAccountIdAndIpArgs = {
-  accountId: AccountId
+type FindByAccountUuidAndIpArgs = {
+  accountUuid: AccountUuid
   ip: IpAddress
 }
 
 interface IAccountsIPsRepository {
   update(accountIp: AccountIP | AccountIPNew): Promise<true | RepositoryError>
-  findByAccountIdAndIp(
-    input: FindByAccountIdAndIpArgs,
+  findByAccountUuidAndIp(
+    input: FindByAccountUuidAndIpArgs,
   ): Promise<AccountIP | RepositoryError>
-  findLastByAccountId(accountId: AccountId): Promise<AccountIP | RepositoryError>
+  findLastByAccountUuid(accountUuid: AccountUuid): Promise<AccountIP | RepositoryError>
 }

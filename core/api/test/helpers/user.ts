@@ -42,9 +42,9 @@ export const getUserIdByPhone = async (phone: PhoneNumber) => {
   return user.id
 }
 
-export const getAccountIdByPhone = async (phone: PhoneNumber) => {
+export const getAccountUuidByPhone = async (phone: PhoneNumber) => {
   const account = await getAccountByPhone(phone)
-  return account.id
+  return account.uuid
 }
 
 export const getDefaultWalletIdByPhone = async (ref: PhoneNumber) => {
@@ -57,13 +57,13 @@ export const getBtcWalletDescriptorByPhone = async (
 ): Promise<WalletDescriptor<"BTC">> => {
   const account = await getAccountByPhone(ref)
 
-  const wallets = await WalletsRepository().listByAccountId(account.id)
+  const wallets = await WalletsRepository().listByAccountUuid(account.uuid)
   if (wallets instanceof Error) throw wallets
 
   const wallet = wallets.find((w) => w.currency === WalletCurrency.Btc)
   if (wallet === undefined) throw Error("no BTC wallet")
 
-  return { id: wallet.id, currency: WalletCurrency.Btc, accountId: wallet.accountId }
+  return { id: wallet.id, currency: WalletCurrency.Btc, accountUuid: wallet.accountUuid }
 }
 
 export const getUsdWalletDescriptorByPhone = async (
@@ -71,20 +71,20 @@ export const getUsdWalletDescriptorByPhone = async (
 ): Promise<WalletDescriptor<"USD">> => {
   const account = await getAccountByPhone(ref)
 
-  const wallets = await WalletsRepository().listByAccountId(account.id)
+  const wallets = await WalletsRepository().listByAccountUuid(account.uuid)
   if (wallets instanceof Error) throw wallets
 
   const wallet = wallets.find((w) => w.currency === WalletCurrency.Usd)
   if (wallet === undefined) throw Error("no USD wallet")
 
-  return { id: wallet.id, currency: WalletCurrency.Usd, accountId: wallet.accountId }
+  return { id: wallet.id, currency: WalletCurrency.Usd, accountUuid: wallet.accountUuid }
 }
 
 export const getUsdWalletIdByPhone = async (phone: PhoneNumber) => {
   const account = await getAccountByPhone(phone)
 
   const walletsRepo = WalletsRepository()
-  const wallets = await walletsRepo.listByAccountId(account.id)
+  const wallets = await walletsRepo.listByAccountUuid(account.uuid)
   if (wallets instanceof Error) throw wallets
 
   const wallet = wallets.find((w) => w.currency === WalletCurrency.Usd)
@@ -149,7 +149,7 @@ export const createUserAndWalletFromPhone = async (
     }
 
     const accountIp: AccountIP = {
-      accountId: account.id,
+      accountUuid: account.uuid,
       metadata,
       ip: "89.187.173.251" as IpAddress,
     }
@@ -160,7 +160,7 @@ export const createUserAndWalletFromPhone = async (
 
     await addWalletIfNonexistent({
       currency: WalletCurrency.Usd,
-      accountId: account.id,
+      accountUuid: account.uuid,
       type: WalletType.Checking,
     })
   }
@@ -174,7 +174,7 @@ export const createUserAndWalletFromPhone = async (
   }
 
   return {
-    accountId: account.id,
+    accountUuid: account.uuid,
     id: account.defaultWalletId,
     currency: wallet.currency,
   }
@@ -218,7 +218,7 @@ export const createRandomUserAndWallets = async (): Promise<{
 
   const usdWallet = await addWalletIfNonexistent({
     currency: WalletCurrency.Usd,
-    accountId: btcWalletDescriptor.accountId,
+    accountUuid: btcWalletDescriptor.accountUuid,
     type: WalletType.Checking,
   })
   if (usdWallet instanceof Error) throw usdWallet
@@ -228,7 +228,7 @@ export const createRandomUserAndWallets = async (): Promise<{
     usdWalletDescriptor: {
       id: usdWallet.id,
       currency: WalletCurrency.Usd,
-      accountId: usdWallet.accountId,
+      accountUuid: usdWallet.accountUuid,
     },
   }
 }
@@ -274,7 +274,7 @@ export const createUserAndWallet = async (
     }
 
     const accountIp: AccountIP = {
-      accountId: account.id,
+      accountUuid: account.uuid,
       metadata,
       ip: "89.187.173.251" as IpAddress,
     }
@@ -285,7 +285,7 @@ export const createUserAndWallet = async (
 
     await addWalletIfNonexistent({
       currency: WalletCurrency.Usd,
-      accountId: account.id,
+      accountUuid: account.uuid,
       type: WalletType.Checking,
     })
   }
@@ -299,23 +299,23 @@ export const createUserAndWallet = async (
   }
 
   return {
-    accountId: account.id,
+    accountUuid: account.uuid,
     id: account.defaultWalletId,
     currency: wallet.currency,
   }
 }
 
 export const addNewWallet = async ({
-  accountId,
+  accountUuid,
   currency,
 }: {
-  accountId: AccountId
+  accountUuid: AccountUuid
   currency: WalletCurrency
 }): Promise<Wallet> => {
   // Create wallet for account (phone number)
   const wallet = await addWallet({
     currency,
-    accountId,
+    accountUuid,
     type: WalletType.Checking,
   })
   if (wallet instanceof Error) throw wallet

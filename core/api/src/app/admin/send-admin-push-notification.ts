@@ -8,13 +8,13 @@ import { UsersRepository } from "@/services/mongoose/users"
 import { NotificationsService } from "@/services/notifications"
 
 export const sendAdminPushNotification = async ({
-  accountId: accountIdRaw,
+  accountUuid: accountUuidRaw,
   title,
   body,
   data,
   notificationCategory,
 }: {
-  accountId: string
+  accountUuid: string
   title: string
   body: string
   data?: { [key: string]: string }
@@ -26,11 +26,11 @@ export const sendAdminPushNotification = async ({
 
   if (checkedNotificationCategory instanceof Error) return checkedNotificationCategory
 
-  const accountId = checkedToAccountUuid(accountIdRaw)
-  if (accountId instanceof Error) return accountId
+  const accountUuid = checkedToAccountUuid(accountUuidRaw)
+  if (accountUuid instanceof Error) return accountUuid
 
   const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findByUuid(accountId)
+  const account = await accountsRepo.findByUuid(accountUuid)
   if (account instanceof Error) return account
   const kratosUserId = account.kratosUserId
 

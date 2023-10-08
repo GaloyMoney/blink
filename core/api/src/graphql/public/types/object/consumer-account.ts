@@ -58,7 +58,7 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: async (source) => {
-        return Wallets.listWalletsByAccountId(source.id)
+        return Wallets.listWalletsByAccountUuid(source.uuid)
       },
     },
 
@@ -123,7 +123,7 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         },
       },
       resolve: async (source) => {
-        return Accounts.getCSVForAccount(source.id)
+        return Accounts.getCSVForAccount(source.uuid)
       },
     },
 
@@ -157,7 +157,7 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         let { walletIds } = args
 
         if (!walletIds) {
-          const wallets = await WalletsRepository().listByAccountId(source.id)
+          const wallets = await WalletsRepository().listByAccountUuid(source.uuid)
           if (wallets instanceof Error) {
             throw mapError(wallets)
           }

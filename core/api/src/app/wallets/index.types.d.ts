@@ -51,7 +51,7 @@ type BuildWIBWithAmountFnArgs = {
 
 type AddInvoiceArgs = {
   walletId: WalletId
-  limitCheckFn: (accountId: AccountId) => Promise<true | RateLimitServiceError>
+  limitCheckFn: (accountUuid: AccountUuid) => Promise<true | RateLimitServiceError>
   buildWIBWithAmountFn: (
     buildWIBWithAmountFnArgs: BuildWIBWithAmountFnArgs,
   ) => Promise<ValidationError | DealerPriceServiceError | WIBWithAmount>

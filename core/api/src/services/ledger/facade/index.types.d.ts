@@ -6,9 +6,9 @@ type VolumeAmountForAccountSinceFn = (args: {
   period: Days
 }) => Promise<TxBaseVolumeAmount<WalletCurrency>[] | ApplicationError>
 
-type InitialStaticAccountIds = {
-  bankOwnerAccountId: LedgerAccountId | Error
-  dealerBtcAccountId: LedgerAccountId | Error
-  dealerUsdAccountId: LedgerAccountId | Error
-  funderAccountId: LedgerAccountId | Error
+type InitialStaticAccountUuids = {
+  bankOwnerAccountUuid: LedgerAccountUuid | Error
+  dealerBtcAccountUuid: LedgerAccountUuid | Error
+  dealerUsdAccountUuid: LedgerAccountUuid | Error
+  funderAccountUuid: LedgerAccountUuid | Error
 }

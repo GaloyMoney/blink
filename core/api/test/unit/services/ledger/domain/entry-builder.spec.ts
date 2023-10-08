@@ -5,9 +5,9 @@ import { Entry, IJournal } from "medici"
 import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@/domain/shared"
 
 import {
-  lndLedgerAccountId,
+  lndLedgerAccountUuid,
   EntryBuilder,
-  onChainLedgerAccountId,
+  onChainLedgerAccountUuid,
 } from "@/services/ledger/domain"
 import { MainBook } from "@/services/ledger/books"
 import { UsdDisplayCurrency } from "@/domain/fiat"
@@ -45,7 +45,7 @@ describe("EntryBuilder", () => {
   ) => {
     const { transactions } = entry
     const internalEntries = transactions.filter(({ accounts }) =>
-      Object.values(staticAccountIds).includes(accounts as LedgerAccountId),
+      Object.values(staticAccountUuids).includes(accounts as LedgerAccountUuid),
     )
     for (const entry of internalEntries) {
       expect(entry).toEqual(expect.objectContaining(displayAmounts.walletAmounts))
@@ -53,7 +53,7 @@ describe("EntryBuilder", () => {
 
     const userEntries = transactions.filter(
       ({ accounts }) =>
-        !Object.values(staticAccountIds).includes(accounts as LedgerAccountId),
+        !Object.values(staticAccountUuids).includes(accounts as LedgerAccountUuid),
     )
     expect(userEntries.length).toBeGreaterThanOrEqual(0)
     expect(userEntries.length).toBeLessThanOrEqual(2)
@@ -104,33 +104,33 @@ describe("EntryBuilder", () => {
   }
 
   const calc = AmountCalculator()
-  const staticAccountIds = {
-    bankOwnerAccountId: "bankOwnerAccountId" as LedgerAccountId,
-    dealerBtcAccountId: "dealerBtcAccountId" as LedgerAccountId,
-    dealerUsdAccountId: "dealerUsdAccountId" as LedgerAccountId,
-    lightningAccountId: "Assets:Reserve:Lightning" as LedgerAccountId,
-    onchainAccountId: "Assets:OnChain" as LedgerAccountId,
+  const staticAccountUuids = {
+    bankOwnerAccountUuid: "bankOwnerAccountUuid" as LedgerAccountUuid,
+    dealerBtcAccountUuid: "dealerBtcAccountUuid" as LedgerAccountUuid,
+    dealerUsdAccountUuid: "dealerUsdAccountUuid" as LedgerAccountUuid,
+    lightningAccountUuid: "Assets:Reserve:Lightning" as LedgerAccountUuid,
+    onchainAccountUuid: "Assets:OnChain" as LedgerAccountUuid,
   }
-  const debitorAccountId = "debitorAccountId" as LedgerAccountId
+  const debitorAccountUuid = "debitorAccountUuid" as LedgerAccountUuid
   const btcDebitorAccountDescriptor = {
-    id: debitorAccountId,
+    id: debitorAccountUuid,
     currency: WalletCurrency.Btc,
   } as LedgerAccountDescriptor<"BTC">
 
   const usdDebitorAccountDescriptor = {
-    id: debitorAccountId,
+    id: debitorAccountUuid,
     currency: WalletCurrency.Usd,
   } as LedgerAccountDescriptor<"USD">
 
-  const creditorAccountId = "creditorAccountId" as LedgerAccountId
+  const creditorAccountUuid = "creditorAccountUuid" as LedgerAccountUuid
 
   const btcCreditorAccountDescriptor = {
-    id: creditorAccountId,
+    id: creditorAccountUuid,
     currency: WalletCurrency.Btc,
   } as LedgerAccountDescriptor<"BTC">
 
   const usdCreditorAccountDescriptor = {
-    id: creditorAccountId,
+    id: creditorAccountUuid,
     currency: WalletCurrency.Usd,
   } as LedgerAccountDescriptor<"USD">
 
@@ -193,7 +193,7 @@ describe("EntryBuilder", () => {
         it("without fee", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -216,17 +216,17 @@ describe("EntryBuilder", () => {
             senderAmounts: additionalUserUsdMetadata,
             recipientAmounts: additionalUserEurMetadata,
           })
-          expectEntryToEqual(findEntry(credits, lndLedgerAccountId), btcAmount)
-          expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+          expectEntryToEqual(findEntry(credits, lndLedgerAccountUuid), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountUuid), btcAmount)
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.bankOwnerAccountUuid),
           ).toBeUndefined()
         })
 
         it("with fee", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -250,21 +250,21 @@ describe("EntryBuilder", () => {
             recipientAmounts: additionalUserEurMetadata,
           })
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.bankOwnerAccountId),
+            findEntry(credits, staticAccountUuids.bankOwnerAccountUuid),
             btcFee,
           )
           expectEntryToEqual(
-            findEntry(credits, lndLedgerAccountId),
+            findEntry(credits, lndLedgerAccountUuid),
             calc.sub(btcAmount, btcFee),
           )
-          expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountUuid), btcAmount)
         })
       })
       describe("onchain", () => {
         it("without fee", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -287,17 +287,17 @@ describe("EntryBuilder", () => {
             senderAmounts: additionalUserUsdMetadata,
             recipientAmounts: additionalUserEurMetadata,
           })
-          expectEntryToEqual(findEntry(credits, onChainLedgerAccountId), btcAmount)
-          expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+          expectEntryToEqual(findEntry(credits, onChainLedgerAccountUuid), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountUuid), btcAmount)
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.bankOwnerAccountUuid),
           ).toBeUndefined()
         })
 
         it("with fee", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -321,14 +321,14 @@ describe("EntryBuilder", () => {
             recipientAmounts: additionalUserEurMetadata,
           })
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.bankOwnerAccountId),
+            findEntry(credits, staticAccountUuids.bankOwnerAccountUuid),
             btcFee,
           )
           expectEntryToEqual(
-            findEntry(credits, onChainLedgerAccountId),
+            findEntry(credits, onChainLedgerAccountUuid),
             calc.sub(btcAmount, btcFee),
           )
-          expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountUuid), btcAmount)
         })
       })
     })
@@ -337,7 +337,7 @@ describe("EntryBuilder", () => {
       it("without fee", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
-          staticAccountIds,
+          staticAccountUuids,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -360,14 +360,14 @@ describe("EntryBuilder", () => {
           senderAmounts: additionalUserUsdMetadata,
           recipientAmounts: additionalUserEurMetadata,
         })
-        expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
-        expectEntryToEqual(findEntry(credits, creditorAccountId), btcAmount)
+        expectEntryToEqual(findEntry(debits, lndLedgerAccountUuid), btcAmount)
+        expectEntryToEqual(findEntry(credits, creditorAccountUuid), btcAmount)
       })
 
       it("with fee", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
-          staticAccountIds,
+          staticAccountUuids,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -389,12 +389,12 @@ describe("EntryBuilder", () => {
           senderAmounts: additionalUserUsdMetadata,
           recipientAmounts: additionalUserEurMetadata,
         })
-        expect(findEntry(credits, staticAccountIds.bankOwnerAccountId).credit).toEqual(
-          Number(btcFee.amount),
-        )
-        expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
+        expect(
+          findEntry(credits, staticAccountUuids.bankOwnerAccountUuid).credit,
+        ).toEqual(Number(btcFee.amount))
+        expectEntryToEqual(findEntry(debits, lndLedgerAccountUuid), btcAmount)
         expectEntryToEqual(
-          findEntry(credits, creditorAccountId),
+          findEntry(credits, creditorAccountUuid),
           calc.sub(btcAmount, btcFee),
         )
       })
@@ -407,7 +407,7 @@ describe("EntryBuilder", () => {
         it("without fee", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -430,28 +430,28 @@ describe("EntryBuilder", () => {
             senderAmounts: additionalUserUsdMetadata,
             recipientAmounts: additionalUserEurMetadata,
           })
-          expectEntryToEqual(findEntry(credits, lndLedgerAccountId), btcAmount)
-          expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+          expectEntryToEqual(findEntry(credits, lndLedgerAccountUuid), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountUuid), usdAmount)
           expectEntryToEqual(
-            findEntry(debits, staticAccountIds.dealerBtcAccountId),
+            findEntry(debits, staticAccountUuids.dealerBtcAccountUuid),
             btcAmount,
           )
           expect(
-            credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+            credits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
           ).toBeUndefined()
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.dealerUsdAccountId),
+            findEntry(credits, staticAccountUuids.dealerUsdAccountUuid),
             usdAmount,
           )
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
           ).toBeUndefined()
         })
 
         it("with fee", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -481,27 +481,27 @@ describe("EntryBuilder", () => {
             recipientAmounts: additionalUserEurMetadata,
           })
           expectEntryToEqual(
-            findEntry(credits, lndLedgerAccountId),
+            findEntry(credits, lndLedgerAccountUuid),
             calc.sub(btcAmount, btcFee),
           )
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.bankOwnerAccountId),
+            findEntry(credits, staticAccountUuids.bankOwnerAccountUuid),
             btcFee,
           )
-          expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountUuid), usdAmount)
           expectEntryToEqual(
-            findEntry(debits, staticAccountIds.dealerBtcAccountId),
+            findEntry(debits, staticAccountUuids.dealerBtcAccountUuid),
             btcAmount,
           )
           expect(
-            credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+            credits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
           ).toBeUndefined()
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.dealerUsdAccountId),
+            findEntry(credits, staticAccountUuids.dealerUsdAccountUuid),
             usdAmount,
           )
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
           ).toBeUndefined()
         })
       })
@@ -509,7 +509,7 @@ describe("EntryBuilder", () => {
         it("without fee", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -532,28 +532,28 @@ describe("EntryBuilder", () => {
             senderAmounts: additionalUserUsdMetadata,
             recipientAmounts: additionalUserEurMetadata,
           })
-          expectEntryToEqual(findEntry(credits, onChainLedgerAccountId), btcAmount)
-          expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+          expectEntryToEqual(findEntry(credits, onChainLedgerAccountUuid), btcAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountUuid), usdAmount)
           expectEntryToEqual(
-            findEntry(debits, staticAccountIds.dealerBtcAccountId),
+            findEntry(debits, staticAccountUuids.dealerBtcAccountUuid),
             btcAmount,
           )
           expect(
-            credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+            credits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
           ).toBeUndefined()
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.dealerUsdAccountId),
+            findEntry(credits, staticAccountUuids.dealerUsdAccountUuid),
             usdAmount,
           )
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
           ).toBeUndefined()
         })
 
         it("with fee", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -583,27 +583,27 @@ describe("EntryBuilder", () => {
             recipientAmounts: additionalUserEurMetadata,
           })
           expectEntryToEqual(
-            findEntry(credits, onChainLedgerAccountId),
+            findEntry(credits, onChainLedgerAccountUuid),
             calc.sub(btcAmount, btcFee),
           )
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.bankOwnerAccountId),
+            findEntry(credits, staticAccountUuids.bankOwnerAccountUuid),
             btcFee,
           )
-          expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+          expectEntryToEqual(findEntry(debits, debitorAccountUuid), usdAmount)
           expectEntryToEqual(
-            findEntry(debits, staticAccountIds.dealerBtcAccountId),
+            findEntry(debits, staticAccountUuids.dealerBtcAccountUuid),
             btcAmount,
           )
           expect(
-            credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+            credits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
           ).toBeUndefined()
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.dealerUsdAccountId),
+            findEntry(credits, staticAccountUuids.dealerUsdAccountUuid),
             usdAmount,
           )
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
           ).toBeUndefined()
         })
       })
@@ -614,7 +614,7 @@ describe("EntryBuilder", () => {
         it("handles txn with btc amount & usd amount", () => {
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -638,21 +638,21 @@ describe("EntryBuilder", () => {
             senderAmounts: additionalUserUsdMetadata,
             recipientAmounts: additionalUserEurMetadata,
           })
-          expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
-          expectEntryToEqual(findEntry(credits, creditorAccountId), usdAmount)
+          expectEntryToEqual(findEntry(debits, lndLedgerAccountUuid), btcAmount)
+          expectEntryToEqual(findEntry(credits, creditorAccountUuid), usdAmount)
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.dealerBtcAccountId),
+            findEntry(credits, staticAccountUuids.dealerBtcAccountUuid),
             btcAmount,
           )
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
           ).toBeUndefined()
           expectEntryToEqual(
-            findEntry(debits, staticAccountIds.dealerUsdAccountId),
+            findEntry(debits, staticAccountUuids.dealerUsdAccountUuid),
             usdAmount,
           )
           expect(
-            credits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+            credits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
           ).toBeUndefined()
         })
 
@@ -674,7 +674,7 @@ describe("EntryBuilder", () => {
 
           const entry = createEntry()
           const builder = EntryBuilder({
-            staticAccountIds,
+            staticAccountUuids,
             entry,
             metadata,
             additionalInternalMetadata,
@@ -697,20 +697,22 @@ describe("EntryBuilder", () => {
             senderAmounts: additionalUserUsdMetadata,
             recipientAmounts: additionalUserEurMetadata,
           })
-          expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
-          expect(credits.find((tx) => tx.accounts === creditorAccountId)).toBeUndefined()
+          expectEntryToEqual(findEntry(debits, lndLedgerAccountUuid), btcAmount)
+          expect(
+            credits.find((tx) => tx.accounts === creditorAccountUuid),
+          ).toBeUndefined()
           expectEntryToEqual(
-            findEntry(credits, staticAccountIds.dealerBtcAccountId),
+            findEntry(credits, staticAccountUuids.dealerBtcAccountUuid),
             btcAmount,
           )
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
           ).toBeUndefined()
           expect(
-            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+            debits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
           ).toBeUndefined()
           expect(
-            credits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+            credits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
           ).toBeUndefined()
         })
       })
@@ -718,7 +720,7 @@ describe("EntryBuilder", () => {
       it("with fee", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
-          staticAccountIds,
+          staticAccountUuids,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -741,24 +743,24 @@ describe("EntryBuilder", () => {
           senderAmounts: additionalUserUsdMetadata,
           recipientAmounts: additionalUserEurMetadata,
         })
-        expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
+        expectEntryToEqual(findEntry(debits, lndLedgerAccountUuid), btcAmount)
         expectEntryToEqual(
-          findEntry(credits, creditorAccountId),
+          findEntry(credits, creditorAccountUuid),
           calc.sub(usdAmount, usdFee),
         )
         expectEntryToEqual(
-          findEntry(credits, staticAccountIds.dealerBtcAccountId),
+          findEntry(credits, staticAccountUuids.dealerBtcAccountUuid),
           calc.sub(btcAmount, btcFee),
         )
         expect(
-          debits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          debits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
         ).toBeUndefined()
         expectEntryToEqual(
-          findEntry(debits, staticAccountIds.dealerUsdAccountId),
+          findEntry(debits, staticAccountUuids.dealerUsdAccountUuid),
           calc.sub(usdAmount, usdFee),
         )
         expect(
-          credits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          credits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
         ).toBeUndefined()
       })
     })
@@ -769,7 +771,7 @@ describe("EntryBuilder", () => {
       it("to btc", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
-          staticAccountIds,
+          staticAccountUuids,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -788,14 +790,14 @@ describe("EntryBuilder", () => {
 
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
-        expectEntryToEqual(findEntry(credits, creditorAccountId), btcAmount)
-        expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+        expectEntryToEqual(findEntry(credits, creditorAccountUuid), btcAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountUuid), btcAmount)
       })
 
       it("to usd", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
-          staticAccountIds,
+          staticAccountUuids,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -821,21 +823,21 @@ describe("EntryBuilder", () => {
           senderAmounts: additionalUserUsdMetadata,
           recipientAmounts: additionalUserEurMetadata,
         })
-        expectEntryToEqual(findEntry(credits, creditorAccountId), usdAmount)
-        expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+        expectEntryToEqual(findEntry(credits, creditorAccountUuid), usdAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountUuid), btcAmount)
         expectEntryToEqual(
-          findEntry(credits, staticAccountIds.dealerBtcAccountId),
+          findEntry(credits, staticAccountUuids.dealerBtcAccountUuid),
           btcAmount,
         )
         expect(
-          debits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          debits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
         ).toBeUndefined()
         expectEntryToEqual(
-          findEntry(debits, staticAccountIds.dealerUsdAccountId),
+          findEntry(debits, staticAccountUuids.dealerUsdAccountUuid),
           usdAmount,
         )
         expect(
-          credits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          credits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
         ).toBeUndefined()
       })
     })
@@ -843,7 +845,7 @@ describe("EntryBuilder", () => {
       it("to btc", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
-          staticAccountIds,
+          staticAccountUuids,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -869,28 +871,28 @@ describe("EntryBuilder", () => {
           senderAmounts: additionalUserUsdMetadata,
           recipientAmounts: additionalUserEurMetadata,
         })
-        expectEntryToEqual(findEntry(credits, creditorAccountId), btcAmount)
-        expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+        expectEntryToEqual(findEntry(credits, creditorAccountUuid), btcAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountUuid), usdAmount)
         expectEntryToEqual(
-          findEntry(debits, staticAccountIds.dealerBtcAccountId),
+          findEntry(debits, staticAccountUuids.dealerBtcAccountUuid),
           btcAmount,
         )
         expect(
-          credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          credits.find((tx) => tx.accounts === staticAccountUuids.dealerBtcAccountUuid),
         ).toBeUndefined()
         expectEntryToEqual(
-          findEntry(credits, staticAccountIds.dealerUsdAccountId),
+          findEntry(credits, staticAccountUuids.dealerUsdAccountUuid),
           usdAmount,
         )
         expect(
-          debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          debits.find((tx) => tx.accounts === staticAccountUuids.dealerUsdAccountUuid),
         ).toBeUndefined()
       })
 
       it("to usd", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
-          staticAccountIds,
+          staticAccountUuids,
           entry,
           metadata,
           additionalInternalMetadata,
@@ -916,8 +918,8 @@ describe("EntryBuilder", () => {
           senderAmounts: additionalUserUsdMetadata,
           recipientAmounts: additionalUserEurMetadata,
         })
-        expectEntryToEqual(findEntry(credits, creditorAccountId), usdAmount)
-        expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+        expectEntryToEqual(findEntry(credits, creditorAccountUuid), usdAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountUuid), usdAmount)
       })
     })
   })
@@ -926,7 +928,7 @@ describe("EntryBuilder", () => {
     describe("offchain", () => {
       const entry = createEntry()
       const builder = EntryBuilder({
-        staticAccountIds,
+        staticAccountUuids,
         entry,
         metadata,
         additionalInternalMetadata,
@@ -952,7 +954,7 @@ describe("EntryBuilder", () => {
         recipientAmounts: additionalUserEurMetadata,
       })
 
-      const resultEntry = findEntry(debits, debitorAccountId)
+      const resultEntry = findEntry(debits, debitorAccountUuid)
 
       it("debitor can take additional metadata", () => {
         expect(resultEntry.currency).toEqual(WalletCurrency.Btc)
@@ -977,7 +979,7 @@ describe("EntryBuilder", () => {
     describe("onchain", () => {
       const entry = createEntry()
       const builder = EntryBuilder({
-        staticAccountIds,
+        staticAccountUuids,
         entry,
         metadata,
         additionalInternalMetadata,
@@ -1003,7 +1005,7 @@ describe("EntryBuilder", () => {
         recipientAmounts: additionalUserEurMetadata,
       })
 
-      const resultEntry = findEntry(debits, debitorAccountId)
+      const resultEntry = findEntry(debits, debitorAccountUuid)
 
       it("debitor can take additional metadata", () => {
         expect(resultEntry.currency).toEqual(WalletCurrency.Btc)

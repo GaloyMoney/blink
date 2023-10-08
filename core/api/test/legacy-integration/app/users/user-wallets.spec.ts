@@ -13,7 +13,7 @@ describe("Users - wallets", () => {
       })
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(account.id)
+      const wallets = await WalletsRepository().listByAccountUuid(account.uuid)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(2)
@@ -21,7 +21,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findByUuid(wallets[0].accountUuid)
       if (account instanceof Error) throw account
 
       const btcWallet = wallets.filter(
@@ -41,7 +41,7 @@ describe("Users - wallets", () => {
       })
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(account.id)
+      const wallets = await WalletsRepository().listByAccountUuid(account.uuid)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(1)
@@ -49,7 +49,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).not.toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findByUuid(wallets[0].accountUuid)
       if (account instanceof Error) throw account
 
       const btcWallet = wallets.filter(
@@ -69,7 +69,7 @@ describe("Users - wallets", () => {
       })
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(account.id)
+      const wallets = await WalletsRepository().listByAccountUuid(account.uuid)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(1)
@@ -77,7 +77,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findByUuid(wallets[0].accountUuid)
       if (account instanceof Error) throw account
 
       const usdWallet = wallets.filter(

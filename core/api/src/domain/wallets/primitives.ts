@@ -10,5 +10,5 @@ export const toWalletDescriptor = <S extends WalletCurrency>(
 ): WalletDescriptor<S> => ({
   id: wallet.id,
   currency: wallet.currency as S,
-  accountId: wallet.accountId,
+  accountUuid: wallet.accountUuid,
 })

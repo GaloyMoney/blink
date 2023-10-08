@@ -252,10 +252,10 @@ const MeSubscription = {
         logger: baseLogger,
       })
     }
-    const { id, displayCurrency } = ctx.domainAccount
+    const { uuid, displayCurrency } = ctx.domainAccount
     const accountUpdatedTrigger = customPubSubTrigger({
       event: PubSubDefaultTriggers.AccountUpdate,
-      suffix: id,
+      suffix: uuid,
     })
 
     const pricePerSat = await Prices.getCurrentSatPrice({ currency: displayCurrency })

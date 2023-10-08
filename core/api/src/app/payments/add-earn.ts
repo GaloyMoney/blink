@@ -21,14 +21,18 @@ import {
   UsersRepository,
 } from "@/services/mongoose"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
+import { checkedToAccountUuid } from "@/domain/accounts"
 
 export const addEarn = async ({
   quizQuestionId: quizQuestionIdString,
-  accountId,
+  accountUuid: accountUuidRaw,
 }: {
   quizQuestionId: string
-  accountId: AccountId /* AccountId: aid validation */
+  accountUuid: string
 }): Promise<QuizQuestion | ApplicationError> => {
+  const accountUuid = checkedToAccountUuid(accountUuidRaw)
+  if (accountUuid instanceof Error) return accountUuid
+
   const rewardsConfig = getRewardsConfig()
 
   // TODO: quizQuestionId checkedFor
@@ -40,10 +44,10 @@ export const addEarn = async ({
   const funderWalletId = await getFunderWalletId()
   const funderWallet = await WalletsRepository().findById(funderWalletId)
   if (funderWallet instanceof Error) return funderWallet
-  const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
+  const funderAccount = await AccountsRepository().findByUuid(funderWallet.accountUuid)
   if (funderAccount instanceof Error) return funderAccount
 
-  const recipientAccount = await AccountsRepository().findById(accountId)
+  const recipientAccount = await AccountsRepository().findByUuid(accountUuid)
   if (recipientAccount instanceof Error) return recipientAccount
 
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
@@ -57,7 +61,9 @@ export const addEarn = async ({
     return new InvalidPhoneForRewardError(validatedPhoneMetadata.name)
   }
 
-  const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
+  const accountIP = await AccountsIpsRepository().findLastByAccountUuid(
+    recipientAccount.uuid,
+  )
   if (accountIP instanceof Error) return accountIP
 
   const validatedIPMetadata = IPMetadataAuthorizer(
@@ -72,7 +78,7 @@ export const addEarn = async ({
     return new UnknownRepositoryError("add earn error")
   }
 
-  const recipientWallets = await WalletsRepository().listByAccountId(accountId)
+  const recipientWallets = await WalletsRepository().listByAccountUuid(accountUuid)
   if (recipientWallets instanceof Error) return recipientWallets
 
   const recipientBtcWallet = recipientWallets.find(
@@ -81,7 +87,7 @@ export const addEarn = async ({
   if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
   const recipientWalletId = recipientBtcWallet.id
 
-  const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
+  const shouldGiveReward = await RewardsRepository(accountUuid).add(quizQuestionId)
   if (shouldGiveReward instanceof Error) return shouldGiveReward
 
   const payment = await intraledgerPaymentSendWalletIdForBtcWallet({

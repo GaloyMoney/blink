@@ -31,7 +31,7 @@ const BtcWallet = GT.Object<Wallet>({
     id: {
       type: GT.NonNullID,
     },
-    accountId: {
+    accountUuid: {
       type: GT.NonNullID,
     },
     walletCurrency: {

@@ -68,9 +68,9 @@ const newAccountAndWallets = async () => {
     initialWallets,
   })
 
-  const accountId = account.id
+  const accountId = account.uuid
   const accountWallets =
-    await WalletsRepository().findAccountWalletsByAccountId(accountId)
+    await WalletsRepository().findAccountWalletsByAccountUuid(accountId)
   if (accountWallets instanceof Error) throw accountWallets
 
   const newBtcWallet = await fundWallet({
@@ -83,7 +83,7 @@ const newAccountAndWallets = async () => {
     balanceAmount: usdFundingAmount,
   })
 
-  const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
+  const newAccount = await AccountsRepository().findByUuid(newBtcWallet.accountUuid)
   if (newAccount instanceof Error) throw newAccount
 
   return { newBtcWallet, newUsdWallet, newAccount }

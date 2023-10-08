@@ -133,8 +133,8 @@ describe("initiated via lightning", () => {
     it("fails if amount greater than limit", async () => {
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -172,8 +172,8 @@ describe("initiated via lightning", () => {
 
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -189,7 +189,7 @@ describe("initiated via lightning", () => {
 
       // Lock sender account
       const updatedAccount = await Accounts.updateAccountStatus({
-        id: newAccount.id,
+        accountUuid: newAccount.uuid,
         status: AccountStatus.Locked,
         updatedByPrivilegedClientId,
       })
@@ -220,8 +220,8 @@ describe("initiated via lightning", () => {
 
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -248,8 +248,8 @@ describe("initiated via lightning", () => {
 
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -276,8 +276,8 @@ describe("initiated via lightning", () => {
 
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -309,8 +309,8 @@ describe("initiated via lightning", () => {
     it("fails if amount greater than limit", async () => {
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -365,8 +365,8 @@ describe("initiated via lightning", () => {
 
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -433,8 +433,8 @@ describe("initiated via lightning", () => {
 
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -483,14 +483,14 @@ describe("initiated via lightning", () => {
 
       // Setup users and wallets
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
       const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
-      const recipientAccount = await AccountsRepository().findById(
-        recipientWalletDescriptor.accountId,
+      const recipientAccount = await AccountsRepository().findByUuid(
+        recipientWalletDescriptor.accountUuid,
       )
       if (recipientAccount instanceof Error) throw recipientAccount
 
@@ -517,7 +517,7 @@ describe("initiated via lightning", () => {
 
       // Lock recipient account
       const updatedAccount = await Accounts.updateAccountStatus({
-        id: recipientAccount.id,
+        accountUuid: recipientAccount.uuid,
         status: AccountStatus.Locked,
         updatedByPrivilegedClientId,
       })
@@ -548,8 +548,8 @@ describe("initiated via lightning", () => {
 
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -601,8 +601,8 @@ describe("initiated via lightning", () => {
       // Create users
       const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
         await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -685,8 +685,8 @@ describe("initiated via lightning", () => {
       // Create users
       const newWalletDescriptor = await createRandomUserAndBtcWallet()
       const otherWalletDescriptor = await createRandomUserAndBtcWallet()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 
@@ -769,8 +769,8 @@ describe("initiated via lightning", () => {
       // Create users
       const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
         await createRandomUserAndWallets()
-      const newAccount = await AccountsRepository().findById(
-        newWalletDescriptor.accountId,
+      const newAccount = await AccountsRepository().findByUuid(
+        newWalletDescriptor.accountUuid,
       )
       if (newAccount instanceof Error) throw newAccount
 

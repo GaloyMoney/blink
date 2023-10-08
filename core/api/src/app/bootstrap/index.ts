@@ -7,39 +7,38 @@ import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/confi
 import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
 
+import { initialStaticAccountUuids } from "@/services/ledger/facade"
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
 } from "@/services/mongoose"
 import { Account } from "@/services/mongoose/schema"
-import { toObjectId } from "@/services/mongoose/utils"
-import { initialStaticAccountIds } from "@/services/ledger/facade"
 
 export const randomUserId = () => randomUUID() as UserId
 
 const adminUsers = getAdminAccounts()
 
 export const bootstrap = async () => {
-  const adminAccountIds = await initialStaticAccountIds()
+  const adminAccountUuids = await initialStaticAccountUuids()
 
-  for (const accountNameString of Object.keys(adminAccountIds)) {
-    const accountName = accountNameString as keyof InitialStaticAccountIds
-    const accountId = adminAccountIds[accountName]
+  for (const accountNameString of Object.keys(adminAccountUuids)) {
+    const accountName = accountNameString as keyof InitialStaticAccountUuids
+    const accountId = adminAccountUuids[accountName]
     if (!(accountId instanceof Error)) continue
 
     let adminConfig: AdminAccount | undefined = undefined
     switch (accountName) {
-      case "bankOwnerAccountId":
+      case "bankOwnerAccountUuid":
         adminConfig = adminUsers.find((val) => val.role === "bankowner")
         break
 
-      case "dealerBtcAccountId":
-      case "dealerUsdAccountId":
+      case "dealerBtcAccountUuid":
+      case "dealerUsdAccountUuid":
         adminConfig = adminUsers.find((val) => val.role === "dealer")
         break
 
-      case "funderAccountId":
+      case "funderAccountUuid":
         adminConfig = adminUsers.find((val) => val.role === "funder")
         break
     }
@@ -76,7 +75,7 @@ export const bootstrap = async () => {
     if (account instanceof Error) return account
 
     await Account.findOneAndUpdate(
-      { _id: toObjectId<AccountId>(account.id) },
+      { uuid: account.uuid },
       { role, contactEnabled: false },
     )
 

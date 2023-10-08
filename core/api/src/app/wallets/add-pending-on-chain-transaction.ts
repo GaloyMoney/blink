@@ -47,7 +47,7 @@ export const addPendingTransaction = async ({
   const wallet = await WalletsRepository().findByAddress(address)
   if (wallet instanceof Error) return wallet
 
-  const account = await AccountsRepository().findById(wallet.accountId)
+  const account = await AccountsRepository().findByUuid(wallet.accountUuid)
   if (account instanceof Error) return account
 
   const satsFee = DepositFeeCalculator().onChainDepositFee({
@@ -146,7 +146,7 @@ export const addPendingTransaction = async ({
     if (recipientUser instanceof Error) return recipientUser
 
     const result = await NotificationsService().onChainTxReceivedPending({
-      recipientAccountId: wallet.accountId,
+      recipientAccountUuid: wallet.accountUuid,
       recipientWalletId: wallet.id,
       paymentAmount: settlementAmount,
       displayPaymentAmount: settlementDisplayAmount,
