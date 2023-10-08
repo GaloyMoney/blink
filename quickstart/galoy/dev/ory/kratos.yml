@@ -60,7 +60,9 @@ selfservice:
 
     settings:
       ui_url: http://127.0.0.1:4002/settings
-      privileged_session_max_age: 15m
+
+      # very short time frame because this has impact in the totp flow
+      privileged_session_max_age: 1s
 
       # to enforce the user to paste his 2fa to deactivate it, this could be set to highest_available
       required_aal: aal1

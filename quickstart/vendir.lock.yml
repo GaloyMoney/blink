@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update mongodb version (#3301)...'
-      sha: e28f432506cd682755a8743beeef19d3f8eb01f2
+      commitTitle: 'fix: #3311 (#3315)'
+      sha: 0d444f1e6ad415421eb1e97bc51700de13c7f528
       tags:
-      - 0.13.117-1-ge28f43250
+      - 0.13.118-1-g0d444f1e6
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update mongodb version (#3301)...'
-      sha: e28f432506cd682755a8743beeef19d3f8eb01f2
+      commitTitle: 'fix: #3311 (#3315)'
+      sha: 0d444f1e6ad415421eb1e97bc51700de13c7f528
       tags:
-      - 0.13.117-1-ge28f43250
+      - 0.13.118-1-g0d444f1e6
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: update mongodb version (#3301)...'
-      sha: e28f432506cd682755a8743beeef19d3f8eb01f2
+      commitTitle: 'fix: #3311 (#3315)'
+      sha: 0d444f1e6ad415421eb1e97bc51700de13c7f528
       tags:
-      - 0.13.117-1-ge28f43250
+      - 0.13.118-1-g0d444f1e6
     path: ./
   path: ./graphql
 kind: LockConfig
