@@ -190,6 +190,8 @@ generateTotpCode() {
 @test "auth: adding totp" {
   authToken=$(read_value "$TOKEN_NAME")
 
+  sleep 2
+
   # Initiate TOTP Registration
   variables="{\"input\": {\"authToken\": \"$authToken\"}}"
   exec_graphql 'charlie' 'user-totp-registration-initiate' "$variables"
