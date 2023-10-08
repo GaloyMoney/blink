@@ -2,7 +2,7 @@ import axios, { isAxiosError, AxiosError, AxiosRequestConfig } from "axios"
 
 // import IBEX_TOKEN from .env file
 const IBEX_TOKEN = process.env.IBEX_TOKEN
-const IBexPluginBaseURL = "http://api-development.flashapp.me:8760/api/v1"
+const IBexPluginBaseURL = process.env.IBEX_PLUGIN_BASE_URL
 const token = IBEX_TOKEN
 
 const defaultHeaders: AxiosRequestConfig["headers"] = {
@@ -28,14 +28,27 @@ export async function requestIBexPlugin(
       headers: defaultHeaders,
     }
 
-    if (methodType === "GET") {
-      response = await axios.get(`${IBexPluginBaseURL}${endpoint}`, requestOptions)
-    } else if (methodType === "PUT") {
-      response = await axios.put(`${IBexPluginBaseURL}${endpoint}`, body, requestOptions)
-    } else if (methodType === "POST") {
-      response = await axios.post(`${IBexPluginBaseURL}${endpoint}`, body, requestOptions)
-    } else if (methodType === "DELETE") {
-      response = await axios.delete(`${IBexPluginBaseURL}${endpoint}`, requestOptions)
+    switch (methodType) {
+      case "GET":
+        response = await axios.get(`${IBexPluginBaseURL}${endpoint}`, requestOptions)
+        break
+      case "PUT":
+        response = await axios.put(
+          `${IBexPluginBaseURL}${endpoint}`,
+          body,
+          requestOptions,
+        )
+        break
+      case "POST":
+        response = await axios.post(
+          `${IBexPluginBaseURL}${endpoint}`,
+          body,
+          requestOptions,
+        )
+        break
+      case "DELETE":
+        response = await axios.delete(`${IBexPluginBaseURL}${endpoint}`, requestOptions)
+        break
     }
 
     result.status = response.status
@@ -47,7 +60,6 @@ export async function requestIBexPlugin(
       if (axiosError.response) {
         result.status = axiosError.response.status
         result.error = axiosError.message
-        console.log("Full error response:", axiosError.response)
       }
     }
   }

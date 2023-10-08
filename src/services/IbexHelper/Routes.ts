@@ -1,19 +1,19 @@
 /* eslint-disable prettier/prettier */
 export const IbexRoutes = {
-  API_CreateAccount: "/account",
-  API_UpdateAccount: "/account/",
-  API_GetAccounts: "/account",
-  API_DeleteAccount: "",
-  API_GetAccount: "/account/",
+	API_CreateAccount: "/account",
+	API_UpdateAccount: "/account/",
+	API_GetAccounts: "/account",
+	API_DeleteAccount: "",
+	API_GetAccount: "/account/",
 
-  LightningAddress: "/lightningAddress/",
-  LightningDecode: "/lightningPayment/decode/",
-  LightningInvoice: "/lightningInvoice/",
+	LightningAddress: "/lightningAddress/",
 
-  Fee: "/lightningPayment/",
-  PaymentInfo: "/paymentInfo/",
+	LightningInvoice: "/lightningInvoice/",
 
-  OnChain: "/onchain/",
-  OnChainPayment: "/onchain/sendToAddress/",
-  OnChainFee: "/onchain/fee",
+	Fee: "/lightningPayment/",
+	PaymentInfo: "/paymentInfo/",
+
+	OnChain: "/onchain/",
+	OnChainPayment: "/onchain/sendToAddress/",
+	OnChainFee: "/onchain/fee"
 }

@@ -47,7 +47,7 @@ export const WalletsRepository = (): IWalletsRepository => {
             currencyId: 3,
           },
         )
-        console.log("IbexAccountCreationResponse", IbexAccountCreationResponse)
+
         if (
           !IbexAccountCreationResponse ||
           !IbexAccountCreationResponse.data ||
