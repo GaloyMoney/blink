@@ -319,7 +319,7 @@ _runnable_tsc_build = rule(
 )
 
 def runnable_tsc_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    bin_name = "run"
+    bin_name = ctx.attrs.bin_out_path + "/run"
     out = ctx.actions.declare_output(bin_name)
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
@@ -342,10 +342,7 @@ def runnable_tsc_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunI
 
     ctx.actions.run(cmd, category = "runnable_tsc_build_bin", identifier = ctx.label.package + " " + bin_name)
 
-    bin = paths.join("bin", paths.basename(ctx.label.package))
-    run_cmd = cmd_args(
-        cmd_args([out, bin], delimiter = "/"),
-    )
+    run_cmd = cmd_args(out)
 
     return [
         DefaultInfo(default_output = out),
@@ -364,6 +361,11 @@ _runnable_tsc_build_bin = rule(
             attrs.string(),
             default = None,
             doc = """File name and relative path for node executable (default: None).""",
+        ),
+        "bin_out_path": attrs.option(
+            attrs.string(),
+            default = None,
+            doc = """File relative path for produced binary (default: None).""",
         ),
         "runnable_tsc_build": attrs.source(
             doc = """Target which builds `runnable dist`.""",

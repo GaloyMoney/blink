@@ -43,6 +43,7 @@ runnable_tsc_build_bin(
   name = "api",
   preload_file = "services/tracing.js",
   run_file = "servers/graphql-main-server.js",
+  bin_out_path = "graphql_main_server",
 )
 
 # // install deps
