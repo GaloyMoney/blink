@@ -2,7 +2,7 @@
 
 import { WalletCurrency } from "@/domain/shared"
 
-import { onChainLedgerAccountUuid } from "@/services/ledger/domain"
+import { onChainLedgerAccountId } from "@/services/ledger/domain"
 import { MainBook } from "@/services/ledger/books"
 import { FeeOnlyEntryBuilder } from "@/services/ledger/domain/fee-only-entry-builder"
 
@@ -54,7 +54,7 @@ describe("FeeOnlyEntryBuilder", () => {
   }
 
   const staticAccountUuids = {
-    bankOwnerAccountUuid: "bankOwnerAccountUuid" as LedgerAccountUuid,
+    bankOwnerAccountUuid: "bankOwnerAccountUuid" as LedgerAccountId,
   }
 
   const btcFee = { amount: 1000n, currency: WalletCurrency.Btc }
@@ -79,13 +79,13 @@ describe("FeeOnlyEntryBuilder", () => {
 
     expectJournalToBeBalanced(result)
 
-    expectEntryToEqual(findEntry(credits, onChainLedgerAccountUuid), btcFee)
+    expectEntryToEqual(findEntry(credits, onChainLedgerAccountId), btcFee)
     expect(
       credits.find((tx) => tx.accounts === staticAccountUuids.bankOwnerAccountUuid),
     ).toBeUndefined()
 
     expectEntryToEqual(findEntry(debits, staticAccountUuids.bankOwnerAccountUuid), btcFee)
-    expect(debits.find((tx) => tx.accounts === onChainLedgerAccountUuid)).toBeUndefined()
+    expect(debits.find((tx) => tx.accounts === onChainLedgerAccountId)).toBeUndefined()
   })
 
   it("underestimated fee, debit from bank owner", () => {
@@ -107,9 +107,9 @@ describe("FeeOnlyEntryBuilder", () => {
       findEntry(credits, staticAccountUuids.bankOwnerAccountUuid),
       btcFee,
     )
-    expect(credits.find((tx) => tx.accounts === onChainLedgerAccountUuid)).toBeUndefined()
+    expect(credits.find((tx) => tx.accounts === onChainLedgerAccountId)).toBeUndefined()
 
-    expectEntryToEqual(findEntry(debits, onChainLedgerAccountUuid), btcFee)
+    expectEntryToEqual(findEntry(debits, onChainLedgerAccountId), btcFee)
     expect(
       debits.find((tx) => tx.accounts === staticAccountUuids.bankOwnerAccountUuid),
     ).toBeUndefined()

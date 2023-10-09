@@ -1,5 +1,5 @@
 declare const ledgerAccountUuid: unique symbol
-type LedgerAccountUuid = string & { [ledgerAccountUuid]: never }
+type LedgerAccountId = string & { [ledgerAccountUuid]: never }
 
 type TxMetadata = Record<
   string,
@@ -16,16 +16,16 @@ type TxMetadata = Record<
 >
 
 type LedgerAccountDescriptor<T extends WalletCurrency> = {
-  id: LedgerAccountUuid
+  id: LedgerAccountId
   currency: T
 }
 
 type MediciEntry = import("../books").MediciEntryFromPackage<ILedgerTransaction>
 
 type StaticAccountUuids = {
-  bankOwnerAccountUuid: LedgerAccountUuid
-  dealerBtcAccountUuid: LedgerAccountUuid
-  dealerUsdAccountUuid: LedgerAccountUuid
+  bankOwnerAccountUuid: LedgerAccountId
+  dealerBtcAccountUuid: LedgerAccountId
+  dealerUsdAccountUuid: LedgerAccountId
 }
 
 type EntryBuilderConfig<M extends MediciEntry> = {
@@ -98,8 +98,8 @@ type EntryBuilderCreditState<M extends MediciEntry> = {
     btcBankFee: BtcPaymentAmount
   }
   staticAccountUuids: {
-    dealerBtcAccountUuid: LedgerAccountUuid
-    dealerUsdAccountUuid: LedgerAccountUuid
+    dealerBtcAccountUuid: LedgerAccountId
+    dealerUsdAccountUuid: LedgerAccountId
   }
 }
 
@@ -120,7 +120,7 @@ type FeeOnlyEntryBuilderConfig<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
   staticAccountUuids: {
-    bankOwnerAccountUuid: LedgerAccountUuid
+    bankOwnerAccountUuid: LedgerAccountId
   }
   btcFee: BtcPaymentAmount
 }

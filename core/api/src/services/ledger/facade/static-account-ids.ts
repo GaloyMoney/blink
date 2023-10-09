@@ -1,14 +1,14 @@
 import * as caching from "../caching"
-import { toLedgerAccountUuid } from "../domain"
+import { toLedgerAccountId } from "../domain"
 
 import { UnknownLedgerError } from "@/domain/ledger"
 
 export const staticAccountUuids = async () => {
   try {
     return {
-      bankOwnerAccountUuid: toLedgerAccountUuid(await caching.getBankOwnerWalletId()),
-      dealerBtcAccountUuid: toLedgerAccountUuid(await caching.getDealerBtcWalletId()),
-      dealerUsdAccountUuid: toLedgerAccountUuid(await caching.getDealerUsdWalletId()),
+      bankOwnerAccountUuid: toLedgerAccountId(await caching.getBankOwnerWalletId()),
+      dealerBtcAccountUuid: toLedgerAccountId(await caching.getDealerBtcWalletId()),
+      dealerUsdAccountUuid: toLedgerAccountId(await caching.getDealerUsdWalletId()),
     }
   } catch (err) {
     return new UnknownLedgerError(err)
@@ -19,7 +19,7 @@ export const initialStaticAccountUuids = async () => {
   const result = {} as InitialStaticAccountUuids
 
   try {
-    result["bankOwnerAccountUuid"] = toLedgerAccountUuid(
+    result["bankOwnerAccountUuid"] = toLedgerAccountId(
       await caching.getBankOwnerWalletId(),
     )
   } catch (err) {
@@ -27,7 +27,7 @@ export const initialStaticAccountUuids = async () => {
   }
 
   try {
-    result["dealerBtcAccountUuid"] = toLedgerAccountUuid(
+    result["dealerBtcAccountUuid"] = toLedgerAccountId(
       await caching.getDealerBtcWalletId(),
     )
   } catch (err) {
@@ -35,7 +35,7 @@ export const initialStaticAccountUuids = async () => {
   }
 
   try {
-    result["dealerUsdAccountUuid"] = toLedgerAccountUuid(
+    result["dealerUsdAccountUuid"] = toLedgerAccountId(
       await caching.getDealerUsdWalletId(),
     )
   } catch (err) {
@@ -43,7 +43,7 @@ export const initialStaticAccountUuids = async () => {
   }
 
   try {
-    result["funderAccountUuid"] = toLedgerAccountUuid(await caching.getFunderWalletId())
+    result["funderAccountUuid"] = toLedgerAccountId(await caching.getFunderWalletId())
   } catch (err) {
     result["funderAccountUuid"] = err as Error
   }
