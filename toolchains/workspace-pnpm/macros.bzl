@@ -140,13 +140,15 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     cmd.add("--package-dir")
     cmd.add(package_dir)
 
+    identifier = "install "
     if ctx.attrs.prod_only:
         cmd.add("--prod-only")
+        identifier += "--prod "
 
     cmd.add(out.as_output())
     cmd.hidden([ctx.attrs.workspace])
 
-    ctx.actions.run(cmd, category = "pnpm", identifier = "install " + ctx.label.package)
+    ctx.actions.run(cmd, category = "pnpm", identifier = identifier + ctx.label.package)
 
     return [DefaultInfo(default_output = out)]
 
@@ -256,6 +258,60 @@ _tsc_build = rule(
             providers = [WorkspacePnpmToolchainInfo],
         ),
     },
+)
+
+def runnable_tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
+    out = ctx.actions.declare_output("runnable_tsc_dist", dir = True)
+
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+    package_dir = cmd_args(ctx.label.package).relative_to(ctx.label.cell_root)
+
+    dist_path = ctx.attrs.tsc_build[DefaultInfo].default_outputs[0]
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.package_runnable_tsc_build[DefaultInfo].default_outputs,
+        "--package-dir",
+        package_dir,
+        "--node-modules-path",
+        ctx.attrs.node_modules_prod[DefaultInfo].default_outputs[0],
+        "--dist-path",
+        dist_path,
+        out.as_output()
+    )
+
+    ctx.actions.run(cmd, category = "runnable_tsc_build")
+
+    return [DefaultInfo(default_output = out)]
+
+def runnable_tsc_build(
+        tsc_build = ":build",
+        node_modules_prod = ":node_modules_prod",
+        **kwargs):
+    _runnable_tsc_build(
+        tsc_build = tsc_build,
+        node_modules_prod = node_modules_prod,
+        **kwargs,
+    )
+
+_runnable_tsc_build = rule(
+    impl = runnable_tsc_build_impl,
+    attrs = {
+        "tsc_build": attrs.dep(
+            doc = """Target which builds the Typescript dist artifact.""",
+        ),
+        "node_modules_prod": attrs.dep(
+            doc = """Target which builds package `node_modules` with prod-only modules.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    }
 )
 
 BuildContext = record(
