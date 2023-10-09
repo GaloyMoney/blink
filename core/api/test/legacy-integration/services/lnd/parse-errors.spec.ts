@@ -110,9 +110,15 @@ describe("'lightning' library error handling", () => {
 
     const nestedFailureErr = err[2].failures[0]
     expect(nestedFailureErr).toHaveLength(3)
+
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // @ts-ignore-next-line no-implicit-any error
     expect(nestedFailureErr[0]).toEqual(err[0])
+
+    // @ts-ignore-next-line no-implicit-any error
     expect(nestedFailureErr[1]).toBe(err[1])
 
+    // @ts-ignore-next-line no-implicit-any error
     const nestedErrObj = nestedFailureErr[2].err
     expect(nestedErrObj).toBeInstanceOf(Error)
     expect(nestedErrObj).toHaveProperty("code")

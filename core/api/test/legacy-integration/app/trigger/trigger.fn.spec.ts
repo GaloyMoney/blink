@@ -114,13 +114,13 @@ describe("onchainBlockEventHandler", () => {
     const address = await lndCreateOnChainAddress(walletIdA)
     if (address instanceof Error) throw address
 
-    const output0 = {}
+    const output0: Record<string, number> = {}
     output0[address] = sat2btc(amount)
 
     const address2 = await lndCreateOnChainAddress(walletIdD)
     if (address2 instanceof Error) throw address2
 
-    const output1 = {}
+    const output1: Record<string, number> = {}
     output1[address2] = sat2btc(amount2)
 
     const addressBria = await Wallets.createOnChainAddress({
@@ -147,6 +147,8 @@ describe("onchainBlockEventHandler", () => {
       address: RANDOM_ADDRESS,
     })
 
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // @ts-ignore-next-line no-implicit-any error
     await Promise.all([waitFor(() => isFinalBlock), waitUntilSyncAll()])
 
     // this sleep seems necessary on the CI server. otherwise all the events may not have propagated

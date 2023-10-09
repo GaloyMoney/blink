@@ -281,7 +281,7 @@ describe("Wallet - rate limiting test", () => {
       promises.push(lnInvoicePromise)
     }
     const lnInvoices = await Promise.all(promises)
-    const isNotError = (item) => !(item instanceof Error)
+    const isNotError = (item: unknown) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
     return testPastSelfInvoiceLimits({ walletId: walletIdBtc, accountId: accountIdB })
@@ -303,7 +303,7 @@ describe("Wallet - rate limiting test", () => {
       promises.push(lnInvoicePromise)
     }
     const lnInvoices = await Promise.all(promises)
-    const isNotError = (item) => !(item instanceof Error)
+    const isNotError = (item: unknown) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
     return testPastSelfInvoiceLimits({ walletId: walletIdBtc, accountId: accountIdB })
@@ -326,7 +326,7 @@ describe("Wallet - rate limiting test", () => {
       promises.push(lnInvoicePromise)
     }
     const lnInvoices = await Promise.all(promises)
-    const isNotError = (item) => !(item instanceof Error)
+    const isNotError = (item: unknown) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
     return testPastRecipientInvoiceLimits({
@@ -351,7 +351,7 @@ describe("Wallet - rate limiting test", () => {
       promises.push(lnInvoicePromise)
     }
     const lnInvoices = await Promise.all(promises)
-    const isNotError = (item) => !(item instanceof Error)
+    const isNotError = (item: unknown) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
     return testPastRecipientInvoiceLimits({

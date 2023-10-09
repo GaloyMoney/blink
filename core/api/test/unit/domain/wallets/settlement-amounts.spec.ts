@@ -64,7 +64,7 @@ describe("SettlementAmounts", () => {
       cents: centsAmount - centsFee,
       display: displayAmount - displayFee,
     },
-  }
+  } as const
 
   describe("Check all possible BTC entries", () => {
     const txnForBtcWallet = {
@@ -74,8 +74,10 @@ describe("SettlementAmounts", () => {
     }
 
     describe("debit", () => {
-      for (const testCase of Object.keys(debitCreditScenarios)) {
-        it(`${testCase}`, () => {
+      for (const testCaseString of Object.keys(debitCreditScenarios)) {
+        it(`${testCaseString}`, () => {
+          const testCase = testCaseString as keyof typeof debitCreditScenarios
+
           const testValues = debitCreditScenarios[testCase]
           const debit = testValues.sats
 
@@ -109,8 +111,10 @@ describe("SettlementAmounts", () => {
     })
 
     describe("credit", () => {
-      for (const testCase of Object.keys(debitCreditScenarios)) {
-        it(`${testCase}`, () => {
+      for (const testCaseString of Object.keys(debitCreditScenarios)) {
+        it(`${testCaseString}`, () => {
+          const testCase = testCaseString as keyof typeof debitCreditScenarios
+
           const testValues = debitCreditScenarios[testCase]
           const credit = testValues.sats
 
@@ -152,8 +156,10 @@ describe("SettlementAmounts", () => {
     }
 
     describe("debit", () => {
-      for (const testCase of Object.keys(debitCreditScenarios)) {
-        it(`${testCase}`, () => {
+      for (const testCaseString of Object.keys(debitCreditScenarios)) {
+        it(`${testCaseString}`, () => {
+          const testCase = testCaseString as keyof typeof debitCreditScenarios
+
           const testValues = debitCreditScenarios[testCase]
           const debit = testValues.cents
 
@@ -187,8 +193,10 @@ describe("SettlementAmounts", () => {
     })
 
     describe("credit", () => {
-      for (const testCase of Object.keys(debitCreditScenarios)) {
-        it(`${testCase}`, () => {
+      for (const testCaseString of Object.keys(debitCreditScenarios)) {
+        it(`${testCaseString}`, () => {
+          const testCase = testCaseString as keyof typeof debitCreditScenarios
+
           const testValues = debitCreditScenarios[testCase]
           const credit = testValues.cents
 

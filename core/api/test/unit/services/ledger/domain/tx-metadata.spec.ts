@@ -100,14 +100,19 @@ describe("Tx metadata", () => {
             pubkey: Pubkey
           }
         | undefined
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
       expectedCommonMetadata
+      // @ts-ignore-next-line no-implicit-any error
       expectedAdditionalDebitMetadata
       crossAccount: {
+        // @ts-ignore-next-line no-implicit-any error
         MetadataFn
         title: string
         type: LedgerTransactionType
       }
       selfTrade: {
+        // @ts-ignore-next-line no-implicit-any error
         MetadataFn
         title: string
         type: LedgerTransactionType

@@ -1,4 +1,6 @@
 module.exports = {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   async up(db) {
     try {
       let result = await db.collection("users").dropIndex("phone_1")

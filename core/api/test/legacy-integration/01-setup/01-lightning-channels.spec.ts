@@ -49,7 +49,9 @@ describe("Lightning channels", () => {
     const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
 
+    // @ts-ignore-next-line no-implicit-any error
     await setChannelFees({ lnd: lnd1, channel, base: 0, rate: 0 })
+    // @ts-ignore-next-line no-implicit-any error
     await setChannelFees({ lnd: lnd2, channel, base: 0, rate: 0 })
   })
 
@@ -70,7 +72,9 @@ describe("Lightning channels", () => {
     const finalFeeInLedger = await ledgerAdmin.getBankOwnerBalance()
     expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 
+    // @ts-ignore-next-line no-implicit-any error
     await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })
+    // @ts-ignore-next-line no-implicit-any error
     await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
   })
 
@@ -86,7 +90,9 @@ describe("Lightning channels", () => {
     const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
 
+    // @ts-ignore-next-line no-implicit-any error
     await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })
+    // @ts-ignore-next-line no-implicit-any error
     await setChannelFees({ lnd: lndOutside1, channel, base: 1, rate: 0 })
   })
 
@@ -114,6 +120,7 @@ describe("Lightning channels", () => {
 
       setOnLndOutside1 = await setChannelFees({
         lnd: lndOutside1,
+        // @ts-ignore-next-line no-implicit-any error
         channel,
         base: 0,
         rate: 5000,
@@ -132,6 +139,8 @@ describe("Lightning channels", () => {
       count++
       await sleep(250)
       try {
+        /* eslint @typescript-eslint/ban-ts-comment: "off" */
+        // @ts-ignore-next-line no-implicit-any error
         ;({ policies } = await getChannel({ id: channel.id, lnd: lndOutside1 }))
         errMsg = undefined
       } catch (err) {
@@ -143,6 +152,7 @@ describe("Lightning channels", () => {
     expect(errMsg).not.toBe("FullChannelDetailsNotFound")
     expect(policies && policies.length).toBeGreaterThan(0)
 
+    // @ts-ignore-next-line no-implicit-any error
     const { base_fee_mtokens, fee_rate } = policies[0]
     expect(base_fee_mtokens).toBe("0")
     expect(fee_rate).toEqual(5000)
@@ -159,6 +169,7 @@ describe("Lightning channels", () => {
     const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
 
+    // @ts-ignore-next-line no-implicit-any error
     let closedChannel
     const sub = subscribeToChannels({ lnd: lnd1 })
     sub.on("channel_closed", async (channel) => {
@@ -168,6 +179,7 @@ describe("Lightning channels", () => {
 
     await closeChannel({ lnd: lnd1, id: channels[channels.length - 1].id })
 
+    // @ts-ignore-next-line no-implicit-any error
     await Promise.all([waitFor(() => closedChannel), mineBlockAndSync({ lnds })])
 
     // FIXME

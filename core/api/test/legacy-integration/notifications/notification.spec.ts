@@ -20,6 +20,7 @@ import {
 import { WalletCurrency } from "@/domain/shared"
 import { GaloyNotificationCategories } from "@/domain/notifications"
 
+// @ts-ignore-next-line no-implicit-any error
 let spy
 let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>
 
@@ -85,6 +86,8 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   spy.mockClear()
   // jest.restoreAllMocks()
 })

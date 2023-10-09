@@ -1,4 +1,6 @@
 module.exports = {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   async up(db) {
     const collection = db.collection("medici_transactions")
     const newUsd = {

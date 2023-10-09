@@ -275,6 +275,7 @@ const getMaxBtcAmountToEarn = async ({
 }: {
   startingBtcAmount: BtcPaymentAmount
   accountAndWallets: AccountAndWallets
+  // @ts-ignore-next-line no-implicit-any error
   sentAmountFn
 }): Promise<BtcPaymentAmount> => {
   // 3 steps here to:
@@ -325,6 +326,8 @@ const getMinBtcAmountToSpend = async ({
 }: {
   startingBtcAmount: BtcPaymentAmount
   accountAndWallets: AccountAndWallets
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   sentAmountFn
 }): Promise<BtcPaymentAmount> => {
   let minBtcAmountToSpend = startingBtcAmount

@@ -7,7 +7,7 @@ import { uniqueAddressesForTxn } from "@/domain/bitcoin/onchain"
 
 import { RedisCacheService } from "@/services/cache"
 
-const randomString = (length) => {
+const randomString = (length: number) => {
   const sha256 = (buffer: Buffer) => createHash("sha256").update(buffer).digest("hex")
   return sha256(randomBytes(32)).slice(0, length)
 }
@@ -42,7 +42,7 @@ const incomingTxns: IncomingOnChainTransaction[] = [
   },
 ]
 
-const getOnChainTxs = async (key): Promise<IncomingOnChainTransaction[]> =>
+const getOnChainTxs = async (key: string): Promise<IncomingOnChainTransaction[]> =>
   redis.getOrSet({
     key,
     ttlSecs: SECS_PER_10_MINS,

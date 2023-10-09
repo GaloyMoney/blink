@@ -21,6 +21,17 @@ import { ImbalanceCalculator } from "@/domain/ledger/imbalance-calculator"
 const feeConfig = getFeesConfig()
 const { dustThreshold } = getOnChainWalletConfig()
 
+interface ConversionBtc {
+  sats: number
+  spread: number
+  round: (x: number) => number
+}
+interface ConversionUsd {
+  cents: number
+  spread: number
+  round: (x: number) => number
+}
+
 describe("OnChainPaymentFlowBuilder", () => {
   const address = "address" as OnChainAddress
   const uncheckedAmount = 10000
@@ -92,9 +103,9 @@ describe("OnChainPaymentFlowBuilder", () => {
   const immediateSpread = 0.001 // 0.10 %
   // const futureSpread = 0.0012 // 0.12%
 
-  const centsFromSats = ({ sats, spread, round }): bigint =>
+  const centsFromSats = ({ sats, spread, round }: ConversionBtc): bigint =>
     BigInt(round(sats * midPriceRatio * spread))
-  const satsFromCents = ({ cents, spread, round }): bigint =>
+  const satsFromCents = ({ cents, spread, round }: ConversionUsd): bigint =>
     BigInt(round((cents / midPriceRatio) * spread))
 
   const usdFromBtcMid = async (amount: BtcPaymentAmount) => {
@@ -201,6 +212,9 @@ describe("OnChainPaymentFlowBuilder", () => {
 
     describe("with address", () => {
       const withAddressBuilder = onChainBuilder.withAddress(address)
+
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
       const checkAddress = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -215,6 +229,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           account: senderAccount,
         })
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -238,6 +253,7 @@ describe("OnChainPaymentFlowBuilder", () => {
 
         const amountCurrency = WalletCurrency.Btc
         describe("onchain settled", () => {
+          // @ts-ignore-next-line no-implicit-any error
           const checkSettlementMethod = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -253,6 +269,8 @@ describe("OnChainPaymentFlowBuilder", () => {
               const withAmountBuilder = withBtcWalletBuilder
                 .withoutRecipientWallet()
                 .withAmount({ amount: BigInt(uncheckedAmount), currency: amountCurrency })
+
+              // @ts-ignore-next-line no-implicit-any error
               const checkInputAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -365,6 +383,7 @@ describe("OnChainPaymentFlowBuilder", () => {
         })
 
         describe("intraledger settled", () => {
+          // @ts-ignore-next-line no-implicit-any error
           const checkSettlementMethod = (payment) => {
             expect(payment).toEqual(
               expect.objectContaining({
@@ -379,6 +398,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           describe("with btc recipient wallet", () => {
             const convertForBtcWalletToBtcWallet = mid
 
+            // @ts-ignore-next-line no-implicit-any error
             const checkRecipientWallet = (payment) => {
               expect(payment).toEqual(
                 expect.objectContaining({
@@ -399,6 +419,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                 currency: amountCurrency,
               })
 
+              // @ts-ignore-next-line no-implicit-any error
               const checkInputAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -441,6 +462,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                 currency: amountCurrency,
               })
 
+              // @ts-ignore-next-line no-implicit-any error
               const checkInputAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -483,6 +505,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                 currency: amountCurrency,
               })
 
+              // @ts-ignore-next-line no-implicit-any error
               const checkInputAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -522,6 +545,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           describe("with usd recipient wallet", () => {
             const convertForBtcWalletToUsdWallet = hedgeBuyUsd
 
+            // @ts-ignore-next-line no-implicit-any error
             const checkRecipientWallet = (payment) => {
               expect(payment).toEqual(
                 expect.objectContaining({
@@ -547,6 +571,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                 amount: BigInt(amount),
                 currency: amountCurrency,
               })
+
+              // @ts-ignore-next-line no-implicit-any error
               const checkInputAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -588,6 +614,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                 amount: BigInt(amount),
                 currency: amountCurrency,
               })
+
+              // @ts-ignore-next-line no-implicit-any error
               const checkInputAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -629,6 +657,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                 amount: BigInt(amount),
                 currency: amountCurrency,
               })
+
+              // @ts-ignore-next-line no-implicit-any error
               const checkInputAmount = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -703,6 +733,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           account: senderAccount,
         })
 
+        // @ts-ignore-next-line no-implicit-any error
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -731,6 +762,7 @@ describe("OnChainPaymentFlowBuilder", () => {
         for (const { amountCurrency, uncheckedAmount } of amountCurrencyCases) {
           describe(`${amountCurrency.toLowerCase()} send amount`, () => {
             describe("onchain settled", () => {
+              // @ts-ignore-next-line no-implicit-any error
               const checkSettlementMethod = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -751,6 +783,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                       amount: BigInt(uncheckedAmount),
                       currency: amountCurrency,
                     })
+
+                  // @ts-ignore-next-line no-implicit-any error
                   const checkInputAmount = (payment) => {
                     expect(payment).toEqual(
                       expect.objectContaining({
@@ -891,6 +925,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             })
 
             describe("intraledger settled", () => {
+              // @ts-ignore-next-line no-implicit-any error
               const checkSettlementMethod = (payment) => {
                 expect(payment).toEqual(
                   expect.objectContaining({
@@ -905,6 +940,7 @@ describe("OnChainPaymentFlowBuilder", () => {
               describe("with btc recipient wallet", () => {
                 const convertForUsdWalletToBtcWallet = hedgeSellUsd
 
+                // @ts-ignore-next-line no-implicit-any error
                 const checkRecipientWallet = (payment) => {
                   expect(payment).toEqual(
                     expect.objectContaining({
@@ -924,6 +960,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                     amount: BigInt(amount),
                     currency: amountCurrency,
                   })
+
+                  // @ts-ignore-next-line no-implicit-any error
                   const checkInputAmount = (payment) => {
                     expect(payment).toEqual(
                       expect.objectContaining({
@@ -978,6 +1016,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                     amount: BigInt(amount),
                     currency: amountCurrency,
                   })
+
+                  // @ts-ignore-next-line no-implicit-any error
                   const checkInputAmount = (payment) => {
                     expect(payment).toEqual(
                       expect.objectContaining({
@@ -1030,6 +1070,7 @@ describe("OnChainPaymentFlowBuilder", () => {
               describe("with usd recipient wallet", () => {
                 const convertForUsdWalletToUsdWallet = mid
 
+                // @ts-ignore-next-line no-implicit-any error
                 const checkRecipientWallet = (payment) => {
                   expect(payment).toEqual(
                     expect.objectContaining({
@@ -1049,6 +1090,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                     amount: BigInt(amount),
                     currency: amountCurrency,
                   })
+
+                  // @ts-ignore-next-line no-implicit-any error
                   const checkInputAmount = (payment) => {
                     expect(payment).toEqual(
                       expect.objectContaining({
@@ -1105,6 +1148,8 @@ describe("OnChainPaymentFlowBuilder", () => {
                     amount: BigInt(amount),
                     currency: amountCurrency,
                   })
+
+                  // @ts-ignore-next-line no-implicit-any error
                   const checkInputAmount = (payment) => {
                     expect(payment).toEqual(
                       expect.objectContaining({

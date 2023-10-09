@@ -68,6 +68,8 @@ describe("lndUtils", () => {
       isCanceled = invoice.is_canceled
     })
 
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // @ts-ignore-next-line no-implicit-any error
     await waitFor(() => isCanceled)
 
     sub.removeAllListeners()

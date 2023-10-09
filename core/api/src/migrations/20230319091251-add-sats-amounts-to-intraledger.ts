@@ -1,4 +1,6 @@
 module.exports = {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   async up(db) {
     const txTypes = ["on_us", "onchain_on_us"]
 
@@ -65,6 +67,7 @@ module.exports = {
     }
   },
 
+  // @ts-ignore-next-line no-implicit-any error
   async down(db) {
     const txTypes = ["on_us", "onchain_on_us"]
 

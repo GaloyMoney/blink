@@ -71,6 +71,8 @@ export const getBitcoinCoreSignerRPCConfig = () => {
 export class BitcoindClient {
   readonly bitcoind
 
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   constructor(connection_obj) {
     const { host, username, password, port, timeout } = connection_obj
     this.bitcoind = authenticatedBitcoind({

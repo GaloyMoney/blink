@@ -19,6 +19,8 @@ beforeEach(async () => {
 })
 
 jest.mock("@/services/tracing", () => ({
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   wrapAsyncFunctionsToRunInSpan: ({ fns }) => fns,
 }))
 

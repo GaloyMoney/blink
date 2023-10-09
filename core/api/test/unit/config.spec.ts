@@ -9,6 +9,9 @@ import { toCents } from "@/domain/fiat"
 import { configSchema, getAccountLimits, yamlConfig } from "@/config"
 
 const ajv = new Ajv()
+
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 let validate
 
 const merge = (defaultConfig: unknown, customConfig: unknown) =>
@@ -42,6 +45,7 @@ describe("config.ts", () => {
     })
 
     it("passes validation with valid config", () => {
+      // @ts-ignore-next-line no-implicit-any error
       const valid = validate(yamlConfig)
       expect(valid).toBeTruthy()
 
@@ -70,6 +74,8 @@ describe("config.ts", () => {
       }
 
       const updatedYamlConfig = merge(freshYamlConfig, customYamlConfig)
+
+      // @ts-ignore-next-line no-implicit-any error
       const valid = validate(updatedYamlConfig)
       expect(valid).toBeTruthy()
     })
@@ -85,6 +91,8 @@ describe("config.ts", () => {
       }
 
       const updatedYamlConfig = merge(freshYamlConfig, customYamlConfig)
+
+      // @ts-ignore-next-line no-implicit-any error
       const valid = validate(updatedYamlConfig)
       expect(valid).toBeFalsy()
     })
@@ -92,6 +100,8 @@ describe("config.ts", () => {
     it("fails validation missing required property", () => {
       const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
       delete clonedConfig.buildVersion
+
+      // @ts-ignore-next-line no-implicit-any error
       const valid = validate(clonedConfig)
       expect(valid).toBeFalsy()
     })
@@ -101,6 +111,7 @@ describe("config.ts", () => {
       clonedConfig.cronConfig.swapEnabled = true
       delete clonedConfig.cronConfig.swapEnabled
 
+      // @ts-ignore-next-line no-implicit-any error
       const valid = validate(clonedConfig)
       expect(valid).toBeFalsy()
     })
@@ -108,6 +119,8 @@ describe("config.ts", () => {
     it("fails validation with additional property", () => {
       const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
       clonedConfig.newProperty = "NEW PROPERTY"
+
+      // @ts-ignore-next-line no-implicit-any error
       const valid = validate(clonedConfig)
       expect(valid).toBeFalsy()
     })
@@ -115,6 +128,8 @@ describe("config.ts", () => {
     it("fails validation with wrong type", () => {
       const clonedConfig = JSON.parse(JSON.stringify(yamlConfig))
       clonedConfig.buildVersion.android.minBuildNumber = "WRONG TYPE"
+
+      // @ts-ignore-next-line no-implicit-any error
       const valid = validate(clonedConfig)
       expect(valid).toBeFalsy()
     })

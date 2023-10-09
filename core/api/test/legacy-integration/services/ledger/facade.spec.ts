@@ -1,4 +1,3 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testInternalTx", "testExternalTx"] }] */
 import crypto from "crypto"
 
 import { ONE_DAY } from "@/config"
@@ -130,6 +129,8 @@ describe("Volumes", () => {
       calcFn,
     }: {
       recordTx: RecordExternalTxTestFn
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
       calcFn: <S extends WalletCurrency>(a, b) => PaymentAmount<S>
     }) => {
       const currentVolumeAmount = await fetchVolumeAmount(
@@ -160,6 +161,7 @@ describe("Volumes", () => {
       recordTx: RecordInternalTxTestFn
       sender: WalletDescriptor<S>
       recipient: WalletDescriptor<R>
+      // @ts-ignore-next-line no-implicit-any error
       calcFn: <S extends WalletCurrency>(a, b) => PaymentAmount<S>
     }) => {
       const currentVolumeAmount = await fetchVolumeAmount(
@@ -182,16 +184,20 @@ describe("Volumes", () => {
 
     const sendVolumeCalc = calc.add
     const receiveVolumeCalc = calc.sub
+    // @ts-ignore-next-line no-implicit-any error
     const noVolumeCalc = (a) => a
 
     return {
       withVolumeEffect: {
+        // @ts-ignore-next-line no-implicit-any error
         testExternalTxSendWLE: (args) =>
           it(`${args.recordTx.name}`, async () =>
             testExternalTx({ ...args, calcFn: sendVolumeCalc })),
+        // @ts-ignore-next-line no-implicit-any error
         testExternalTxReceiveWLE: (args) =>
           it(`${args.recordTx.name}`, async () =>
             testExternalTx({ ...args, calcFn: receiveVolumeCalc })),
+        // @ts-ignore-next-line no-implicit-any error
         testInternalTxSendWLE: (args) =>
           it(`send ${args.recordTx.name}`, async () =>
             testInternalTx({
@@ -200,6 +206,7 @@ describe("Volumes", () => {
               recipient: walletDescriptorOther,
               calcFn: sendVolumeCalc,
             })),
+        // @ts-ignore-next-line no-implicit-any error
         testInternalTxReceiveWLE: (args) =>
           it(`receive ${args.recordTx.name}`, async () =>
             testInternalTx({
@@ -210,9 +217,11 @@ describe("Volumes", () => {
             })),
       },
       noVolumeEffect: {
+        // @ts-ignore-next-line no-implicit-any error
         testExternalTxNLE: (args) =>
           it(`${args.recordTx.name}`, async () =>
             testExternalTx({ ...args, calcFn: noVolumeCalc })),
+        // @ts-ignore-next-line no-implicit-any error
         testInternalTxSendNLE: (args) =>
           it(`send ${args.recordTx.name}`, async () =>
             testInternalTx({
@@ -221,6 +230,7 @@ describe("Volumes", () => {
               recipient: walletDescriptorOther,
               calcFn: noVolumeCalc,
             })),
+        // @ts-ignore-next-line no-implicit-any error
         testInternalTxReceiveNLE: (args) =>
           it(`receive ${args.recordTx.name}`, async () =>
             testInternalTx({
@@ -264,6 +274,7 @@ describe("Volumes", () => {
     volumeType,
   }: {
     volumeAmountFn: GetVolumeAmountSinceFn
+    // @ts-ignore-next-line no-implicit-any error
     volumeType
   }): fetchVolumeAmountType<S> => {
     const fetchVolumeAmountFn: fetchVolumeAmountType<S> = async (

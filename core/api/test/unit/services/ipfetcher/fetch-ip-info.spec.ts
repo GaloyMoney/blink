@@ -3,6 +3,8 @@ import MockAdapter from "axios-mock-adapter"
 
 import { IpFetcher } from "@/services/ipfetcher"
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 let mock
 
 beforeAll(() => {
@@ -10,12 +12,14 @@ beforeAll(() => {
 })
 
 afterEach(() => {
+  // @ts-ignore-next-line no-implicit-any error
   mock.reset()
 })
 
 describe("IpFetcher - fetchIPInfo", () => {
   it("returns proxy false when proxy is no", async () => {
     const ip = "152.231.190.229" as IpAddress
+    // @ts-ignore-next-line no-implicit-any error
     mock.onGet(new RegExp(`${ip}`)).reply(200, getIpInfo(ip))
 
     const ipInfo = await IpFetcher().fetchIPInfo(ip)
@@ -30,8 +34,10 @@ describe("IpFetcher - fetchIPInfo", () => {
   it("returns proxy true when proxy is yes", async () => {
     const ip = "152.231.190.229" as IpAddress
     const data = getIpInfo(ip)
+    // @ts-ignore-next-line no-implicit-any error
     data[ip]["proxy"] = "yes"
 
+    // @ts-ignore-next-line no-implicit-any error
     mock.onGet(new RegExp(`${ip}`)).reply(200, data)
 
     const ipInfo = await IpFetcher().fetchIPInfo(ip)
@@ -46,8 +52,11 @@ describe("IpFetcher - fetchIPInfo", () => {
   it("returns proxy false when proxy is undefined", async () => {
     const ip = "152.231.190.229" as IpAddress
     const data = getIpInfo(ip)
+
+    // @ts-ignore-next-line no-implicit-any error
     delete data[ip]["proxy"]
 
+    // @ts-ignore-next-line no-implicit-any error
     mock.onGet(new RegExp(`${ip}`)).reply(200, data)
 
     const ipInfo = await IpFetcher().fetchIPInfo(ip)

@@ -66,6 +66,8 @@ describe("BriaSubscriber", () => {
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 2
       let recording = false
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
       const testEventHandler = (resolve) => {
         return async (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
@@ -110,6 +112,7 @@ describe("BriaSubscriber", () => {
       }
       expect(receivedEvents[0].payload.txId).toEqual(expectedTxId)
 
+      // @ts-ignore-next-line no-implicit-any error
       wrapper.cancel()
     })
 
@@ -133,6 +136,7 @@ describe("BriaSubscriber", () => {
       let recording = false
       const receivedEvents: BriaEvent[] = []
       const nExpectedEvents = 3
+      // @ts-ignore-next-line no-implicit-any error
       const testEventHandler = (resolve) => {
         return async (event: BriaEvent): Promise<true | ApplicationError> => {
           if (
@@ -182,6 +186,7 @@ describe("BriaSubscriber", () => {
 
       expect(receivedEvents[1]).toEqual(receivedEvents[2])
 
+      // @ts-ignore-next-line no-implicit-any error
       wrapper.cancel()
     })
   })

@@ -1,3 +1,5 @@
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 async function* getAccounts(db) {
   const cursor = db.collection("accounts").find()
 
@@ -8,6 +10,7 @@ async function* getAccounts(db) {
 }
 
 module.exports = {
+  // @ts-ignore-next-line no-implicit-any error
   async up(db) {
     console.log("Begin AccountSchema to AccountIpsSchema migration")
 

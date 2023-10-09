@@ -32,6 +32,8 @@ async function migrateAccounts(db, batchSize = 100) {
 }
 
 module.exports = {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   async up(db) {
     console.log("Begin migration to add UUIDs to Accounts Schema")
     await migrateAccounts(db)

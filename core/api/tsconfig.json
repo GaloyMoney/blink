@@ -5,7 +5,6 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
-    "noImplicitAny": false,
     "esModuleInterop": true,
     "baseUrl": "./",
     "moduleResolution": "node",
