@@ -1,8 +1,24 @@
 import { memoSharingConfig } from "@/config"
 import { WalletTransactionHistory } from "@/domain/wallets"
-import { checkedToLedgerTransactionId } from "@/domain/ledger"
+import {
+  checkedToLedgerTransactionId,
+  CouldNotFindTransactionError,
+} from "@/domain/ledger"
 
 import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
+
+export const getTransactionForWalletById = async ({
+  walletId,
+  transactionId: uncheckedTransactionId,
+}: {
+  walletId: WalletId
+  transactionId: string
+}): Promise<WalletTransaction | ApplicationError> => {
+  const transaction = await getTransactionById(uncheckedTransactionId)
+  if (transaction instanceof Error) return transaction
+  if (transaction.walletId !== walletId) return new CouldNotFindTransactionError()
+  return transaction
+}
 
 export const getTransactionById = async (
   id: string,

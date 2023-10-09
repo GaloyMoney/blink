@@ -1,9 +1,10 @@
 query transactionForWalletById($walletId: WalletId!, $transactionId: ID!) {
   me {
     defaultAccount {
+      id
       displayCurrency
       walletById(walletId: $walletId) {
-        transactionById(id: $transactionId) {
+        transactionById(transactionId: $transactionId) {
           __typename
           id
           status

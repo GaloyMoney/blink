@@ -187,6 +187,8 @@ type BTCWallet implements Wallet
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
+  transactionByHash(hash: PaymentHash!): Transaction!
+  transactionById(transactionId: ID!): Transaction!
 
   """A list of BTC transactions associated with this wallet."""
   transactions(
@@ -1591,6 +1593,8 @@ type UsdWallet implements Wallet
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
+  transactionByHash(hash: PaymentHash!): Transaction!
+  transactionById(transactionId: ID!): Transaction!
   transactions(
     """Returns the items in the list that come after the specified cursor."""
     after: String
@@ -1889,6 +1893,8 @@ interface Wallet
   id: ID!
   invoiceByHash(paymentHash: PaymentHash!): LnInvoice!
   pendingIncomingBalance: SignedAmount!
+  transactionByHash(hash: PaymentHash!): Transaction!
+  transactionById(transactionId: ID!): Transaction!
 
   """
   Transactions are ordered anti-chronologically,

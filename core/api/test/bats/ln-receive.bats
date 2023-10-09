@@ -98,7 +98,7 @@ usd_amount=50
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     --arg payment_hash "$payment_hash" \
-    '{walletId: $wallet_id, paymentHash: $payment_hash}'
+    '{walletId: $wallet_id, hash: $payment_hash}'
   )
 
   exec_graphql "$token_name" 'transaction-for-wallet-by-hash' "$variables"

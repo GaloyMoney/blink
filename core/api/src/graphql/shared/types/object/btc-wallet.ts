@@ -8,7 +8,7 @@ import OnChainAddress from "../scalar/on-chain-address"
 
 import PaymentHash from "../scalar/payment-hash"
 
-import { TransactionConnection } from "./transaction"
+import Transaction, { TransactionConnection } from "./transaction"
 
 import { GT } from "@/graphql/index"
 import { normalizePaymentAmount } from "@/graphql/shared/root/mutation"
@@ -151,6 +151,52 @@ const BtcWallet = GT.Object<Wallet>({
         }
 
         return invoice
+      },
+    },
+    transactionByHash: {
+      type: GT.NonNull(Transaction),
+      args: {
+        hash: {
+          type: GT.NonNull(PaymentHash) || GT.NonNull(OnChainAddress),
+        },
+      },
+      resolve: async (source, args) => {
+        const { hash } = args
+        if (hash instanceof Error) throw hash
+
+        const transaction = await Wallets.getTransactionForWalletByHash({
+          walletId: source.id,
+          hash,
+        })
+
+        if (transaction instanceof Error) {
+          throw mapError(transaction)
+        }
+
+        return transaction
+      },
+    },
+    transactionById: {
+      type: GT.NonNull(Transaction),
+      args: {
+        transactionId: {
+          type: GT.NonNullID,
+        },
+      },
+      resolve: async (source, args) => {
+        const { transactionId } = args
+        if (transactionId instanceof Error) throw transactionId
+
+        const transaction = await Wallets.getTransactionForWalletById({
+          walletId: source.id,
+          transactionId,
+        })
+
+        if (transaction instanceof Error) {
+          throw mapError(transaction)
+        }
+
+        return transaction
       },
     },
   }),

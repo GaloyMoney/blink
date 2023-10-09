@@ -1,8 +1,9 @@
-query transactionForWalletByHash($walletId: WalletId!, $hash: PaymentHash! | OnChainTxHash!) {
+query transactionForWalletByHash($walletId: WalletId!, $hash: PaymentHash!) {
   me {
     defaultAccount {
       displayCurrency
       walletById(walletId: $walletId) {
+        id
         transactionByHash(hash: $hash) {
           __typename
           id

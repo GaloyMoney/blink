@@ -1,6 +1,6 @@
 import dedent from "dedent"
 
-import { TransactionConnection } from "../object/transaction"
+import Transaction, { TransactionConnection } from "../object/transaction"
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 import OnChainAddress from "../scalar/on-chain-address"
@@ -52,6 +52,22 @@ const IWallet = GT.Interface({
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),
+        },
+      },
+    },
+    transactionByHash: {
+      type: GT.NonNull(Transaction),
+      args: {
+        hash: {
+          type: GT.NonNull(PaymentHash) || GT.NonNull(OnChainAddress),
+        },
+      },
+    },
+    transactionById: {
+      type: GT.NonNull(Transaction),
+      args: {
+        transactionId: {
+          type: GT.NonNullID,
         },
       },
     },
