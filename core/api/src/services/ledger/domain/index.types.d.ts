@@ -1,5 +1,5 @@
-declare const ledgerAccountUuid: unique symbol
-type LedgerAccountId = string & { [ledgerAccountUuid]: never }
+declare const ledgerAccountId: unique symbol
+type LedgerAccountId = string & { [ledgerAccountId]: never }
 
 type TxMetadata = Record<
   string,
@@ -22,15 +22,15 @@ type LedgerAccountDescriptor<T extends WalletCurrency> = {
 
 type MediciEntry = import("../books").MediciEntryFromPackage<ILedgerTransaction>
 
-type StaticAccountUuids = {
-  bankOwnerAccountUuid: LedgerAccountId
-  dealerBtcAccountUuid: LedgerAccountId
-  dealerUsdAccountUuid: LedgerAccountId
+type StaticAccountIds = {
+  bankOwnerAccountId: LedgerAccountId
+  dealerBtcAccountId: LedgerAccountId
+  dealerUsdAccountId: LedgerAccountId
 }
 
 type EntryBuilderConfig<M extends MediciEntry> = {
   entry: M
-  staticAccountUuids: StaticAccountUuids
+  staticAccountIds: StaticAccountIds
   metadata: TxMetadata
   additionalInternalMetadata: TxMetadata
 }
@@ -39,7 +39,7 @@ type EntryBuilderFeeState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
   additionalInternalMetadata: TxMetadata
-  staticAccountUuids: StaticAccountUuids
+  staticAccountIds: StaticAccountIds
   amountWithFees: {
     usdWithFees: UsdPaymentAmount
     btcWithFees: BtcPaymentAmount
@@ -60,7 +60,7 @@ type EntryBuilderDebitState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
   additionalInternalMetadata: TxMetadata
-  staticAccountUuids: StaticAccountUuids
+  staticAccountIds: StaticAccountIds
   amountWithFees: {
     usdWithFees: UsdPaymentAmount
     btcWithFees: BtcPaymentAmount
@@ -97,9 +97,9 @@ type EntryBuilderCreditState<M extends MediciEntry> = {
     usdBankFee: UsdPaymentAmount
     btcBankFee: BtcPaymentAmount
   }
-  staticAccountUuids: {
-    dealerBtcAccountUuid: LedgerAccountId
-    dealerUsdAccountUuid: LedgerAccountId
+  staticAccountIds: {
+    dealerBtcAccountId: LedgerAccountId
+    dealerUsdAccountId: LedgerAccountId
   }
 }
 
@@ -119,8 +119,8 @@ type EntryBuilderCredit<M extends MediciEntry> = {
 type FeeOnlyEntryBuilderConfig<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
-  staticAccountUuids: {
-    bankOwnerAccountUuid: LedgerAccountId
+  staticAccountIds: {
+    bankOwnerAccountId: LedgerAccountId
   }
   btcFee: BtcPaymentAmount
 }

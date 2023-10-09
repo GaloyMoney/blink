@@ -88,14 +88,14 @@ const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
 describe("intraLedgerPay", () => {
   it("fails if sender account is locked", async () => {
     const senderWalletDescriptor = await createRandomUserAndBtcWallet()
-    const senderAccount = await AccountsRepository().findByUuid(
-      senderWalletDescriptor.accountUuid,
+    const senderAccount = await AccountsRepository().findById(
+      senderWalletDescriptor.accountId,
     )
     if (senderAccount instanceof Error) throw senderAccount
 
     const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
-    const recipientAccount = await AccountsRepository().findByUuid(
-      recipientWalletDescriptor.accountUuid,
+    const recipientAccount = await AccountsRepository().findById(
+      recipientWalletDescriptor.accountId,
     )
     if (recipientAccount instanceof Error) throw recipientAccount
 
@@ -111,7 +111,7 @@ describe("intraLedgerPay", () => {
 
     // Lock sender account
     const updatedAccount = await Accounts.updateAccountStatus({
-      accountUuid: senderAccount.uuid,
+      accountId: senderAccount.id,
       status: AccountStatus.Locked,
       updatedByPrivilegedClientId,
     })
@@ -132,20 +132,20 @@ describe("intraLedgerPay", () => {
 
   it("fails if recipient account is locked", async () => {
     const senderWalletDescriptor = await createRandomUserAndBtcWallet()
-    const senderAccount = await AccountsRepository().findByUuid(
-      senderWalletDescriptor.accountUuid,
+    const senderAccount = await AccountsRepository().findById(
+      senderWalletDescriptor.accountId,
     )
     if (senderAccount instanceof Error) throw senderAccount
 
     const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
-    const recipientAccount = await AccountsRepository().findByUuid(
-      recipientWalletDescriptor.accountUuid,
+    const recipientAccount = await AccountsRepository().findById(
+      recipientWalletDescriptor.accountId,
     )
     if (recipientAccount instanceof Error) throw recipientAccount
 
     // Lock recipient account
     const updatedAccount = await Accounts.updateAccountStatus({
-      accountUuid: recipientAccount.uuid,
+      accountId: recipientAccount.id,
       status: AccountStatus.Locked,
       updatedByPrivilegedClientId,
     })
@@ -176,9 +176,7 @@ describe("intraLedgerPay", () => {
   it("fails if sends to self", async () => {
     // Create users
     const newWalletDescriptor = await createRandomUserAndBtcWallet()
-    const newAccount = await AccountsRepository().findByUuid(
-      newWalletDescriptor.accountUuid,
-    )
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
 
     // Fund balance for send
@@ -206,9 +204,7 @@ describe("intraLedgerPay", () => {
     // Create users
     const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
       await createRandomUserAndWallets()
-    const newAccount = await AccountsRepository().findByUuid(
-      newWalletDescriptor.accountUuid,
-    )
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
 
     // Fund balance for send
@@ -238,9 +234,7 @@ describe("intraLedgerPay", () => {
     // Create users
     const newWalletDescriptor = await createRandomUserAndBtcWallet()
     const recipientWalletDescriptor = await createRandomUserAndBtcWallet()
-    const newAccount = await AccountsRepository().findByUuid(
-      newWalletDescriptor.accountUuid,
-    )
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
 
     // Fund balance for send
@@ -279,9 +273,7 @@ describe("intraLedgerPay", () => {
     // Create users
     const { btcWalletDescriptor: newWalletDescriptor, usdWalletDescriptor } =
       await createRandomUserAndWallets()
-    const newAccount = await AccountsRepository().findByUuid(
-      newWalletDescriptor.accountUuid,
-    )
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
 
     // Fund balance for send

@@ -28,7 +28,7 @@ const AccountUpdateDisplayCurrencyMutation = GT.Field({
     }
 
     const result = await Accounts.updateDisplayCurrency({
-      accountUuid: domainAccount.uuid,
+      accountId: domainAccount.id,
       currency,
     })
 

@@ -13,11 +13,11 @@ import {
 const accountsIps = AccountsIpsRepository()
 
 export const updateAccountIPsInfo = async ({
-  accountUuid,
+  accountId,
   ip,
   logger,
 }: {
-  accountUuid: AccountUuid
+  accountId: AccountId
   ip?: IpAddress
   logger: Logger
 }): Promise<void | RepositoryError> => {
@@ -38,10 +38,10 @@ export const updateAccountIPsInfo = async ({
 
   let newAccountIP: AccountIPNew | undefined
 
-  const existingAccountIP = await accountsIps.findByAccountUuidAndIp({ accountUuid, ip })
+  const existingAccountIP = await accountsIps.findByAccountIdAndIp({ accountId, ip })
   if (existingAccountIP instanceof CouldNotFindAccountIpError) {
     newAccountIP = {
-      accountUuid,
+      accountId,
       ip,
       metadata: undefined,
     }
@@ -59,11 +59,11 @@ export const updateAccountIPsInfo = async ({
         level: ErrorLevel.Warn,
         attributes: {
           ip,
-          accountUuid,
+          accountId,
         },
       })
 
-      logger.error({ accountUuid, ip }, "impossible to get ip detail")
+      logger.error({ accountId, ip }, "impossible to get ip detail")
       return ipFetcherInfo
     }
 
@@ -88,7 +88,7 @@ export const updateAccountIPsInfo = async ({
         level: ErrorLevel.Warn,
         attributes: {
           ip,
-          accountUuid,
+          accountId,
         },
       })
     } else {
@@ -98,7 +98,7 @@ export const updateAccountIPsInfo = async ({
   const result = await accountsIps.update(accountIP)
 
   if (result instanceof Error) {
-    logger.error({ result, accountUuid, ip }, "impossible to update ip")
+    logger.error({ result, accountId, ip }, "impossible to update ip")
     return result
   }
 }

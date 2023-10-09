@@ -95,7 +95,7 @@ type AccountStatusHistory = Array<{
 }>
 
 type Account = {
-  readonly uuid: AccountUuid
+  readonly id: AccountId
   readonly createdAt: Date
   username: Username
   defaultWalletId: WalletId
@@ -157,7 +157,7 @@ type AccountValidator = {
 interface IAccountsRepository {
   listUnlockedAccounts(): AsyncGenerator<Account> | RepositoryError
   findByUserId(kratosUserId: UserId): Promise<Account | RepositoryError>
-  findByUuid(accountUuid: AccountUuid): Promise<Account | RepositoryError>
+  findById(accountId: AccountId): Promise<Account | RepositoryError>
 
   persistNew(kratosUserId: UserId): Promise<Account | RepositoryError>
 

@@ -1,14 +1,14 @@
 import {
-  checkedToAccountUuid,
+  checkedToAccountId,
   sanityCheckedDefaultAccountWithdrawFee,
 } from "@/domain/accounts"
 import { AccountsRepository } from "@/services/mongoose"
 
 export const updateAccountWithdrawFee = async ({
-  accountUuid: accountUuidRaw,
+  accountId: AccountIdRaw,
   fee,
 }: {
-  accountUuid: AccountUuid
+  accountId: AccountId
   fee: number
 }): Promise<Account | ApplicationError> => {
   const checkedFee = sanityCheckedDefaultAccountWithdrawFee(fee)
@@ -16,10 +16,10 @@ export const updateAccountWithdrawFee = async ({
 
   const accountsRepo = AccountsRepository()
 
-  const accountUuid = checkedToAccountUuid(accountUuidRaw)
-  if (accountUuid instanceof Error) return accountUuid
+  const accountId = checkedToAccountId(AccountIdRaw)
+  if (accountId instanceof Error) return accountId
 
-  const account = await accountsRepo.findByUuid(accountUuid)
+  const account = await accountsRepo.findById(accountId)
   if (account instanceof Error) return account
 
   account.withdrawFee = checkedFee

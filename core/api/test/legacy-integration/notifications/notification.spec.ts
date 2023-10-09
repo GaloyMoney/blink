@@ -24,7 +24,7 @@ import { GaloyNotificationCategories } from "@/domain/notifications"
 let spy
 let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>
 
-const accountId = "accountUuid" as AccountUuid
+const accountId = "AccountId" as AccountId
 const walletId = "walletId" as WalletId
 const paymentHash = "paymentHash" as PaymentHash
 const txHash = "txHash" as OnChainTxHash
@@ -150,7 +150,7 @@ describe("notification", () => {
           // need to make integration tests independent the one to the others
         }
 
-        const account = await AccountsRepository().findByUuid(wallet.accountUuid)
+        const account = await AccountsRepository().findById(wallet.accountId)
         if (account instanceof Error) throw account
         const { displayCurrency } = account
         const displayPriceRatio = displayPriceRatios[displayCurrency]
@@ -221,7 +221,7 @@ describe("notification", () => {
           await NotificationsService().lightningTxReceived({
             paymentAmount,
 
-            recipientAccountUuid: accountId,
+            recipientAccountId: accountId,
             recipientWalletId: walletId,
             displayPaymentAmount: crcDisplayPaymentAmount,
             paymentHash,
@@ -269,7 +269,7 @@ describe("notification", () => {
           await NotificationsService().intraLedgerTxReceived({
             paymentAmount,
 
-            recipientAccountUuid: accountId,
+            recipientAccountId: accountId,
             recipientWalletId: walletId,
             displayPaymentAmount: crcDisplayPaymentAmount,
             recipientDeviceTokens: deviceTokens,
@@ -316,7 +316,7 @@ describe("notification", () => {
           await NotificationsService().onChainTxReceived({
             paymentAmount,
 
-            recipientAccountUuid: accountId,
+            recipientAccountId: accountId,
             recipientWalletId: walletId,
             displayPaymentAmount: crcDisplayPaymentAmount,
             txHash,
@@ -362,7 +362,7 @@ describe("notification", () => {
             }))
 
           await NotificationsService().onChainTxReceivedPending({
-            recipientAccountUuid: accountId,
+            recipientAccountId: accountId,
             recipientWalletId: walletId,
             paymentAmount,
             txHash,
@@ -409,7 +409,7 @@ describe("notification", () => {
             }))
 
           await NotificationsService().onChainTxSent({
-            senderAccountUuid: accountId,
+            senderAccountId: accountId,
             senderWalletId: walletId,
             paymentAmount,
             txHash,

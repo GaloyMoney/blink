@@ -5,17 +5,17 @@ import { mapError } from "@/graphql/error-map"
 
 import { Admin } from "@/app"
 
-const AccountDetailsByAccountUuid = GT.Field({
+const AccountDetailsByAccountId = GT.Field({
   args: {
-    accountUuid: { type: GT.NonNullID },
+    accountId: { type: GT.NonNullID },
   },
   type: GT.NonNull(AuditedAccount),
-  resolve: async (_, { accountUuid }) => {
-    if (accountUuid instanceof Error) {
-      throw accountUuid
+  resolve: async (_, { accountId }) => {
+    if (accountId instanceof Error) {
+      throw accountId
     }
 
-    const account = await Admin.getAccountByAccountUuid(accountUuid)
+    const account = await Admin.getAccountByAccountId(accountId)
     if (account instanceof Error) {
       throw mapError(account)
     }
@@ -24,4 +24,4 @@ const AccountDetailsByAccountUuid = GT.Field({
   },
 })
 
-export default AccountDetailsByAccountUuid
+export default AccountDetailsByAccountId

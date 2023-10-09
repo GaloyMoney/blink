@@ -12,16 +12,14 @@ import { createRandomUserAndBtcWallet } from "test/helpers"
 describe("addInvoice", () => {
   it("fails for self if account is locked", async () => {
     const newWalletDescriptor = await createRandomUserAndBtcWallet()
-    const newAccount = await AccountsRepository().findByUuid(
-      newWalletDescriptor.accountUuid,
-    )
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
 
     const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
 
     // Lock account
     const updatedAccount = await Accounts.updateAccountStatus({
-      accountUuid: newAccount.uuid,
+      accountId: newAccount.id,
       status: AccountStatus.Locked,
       updatedByPrivilegedClientId,
     })

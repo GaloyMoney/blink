@@ -88,18 +88,18 @@ gql_admin_file() {
   exec_admin_graphql $admin_token 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$id" != "null" && "$id" != "" ]] || exit 1
-  uuid="$(graphql_output '.data.accountDetailsByUserPhone.uuid')"
-  [[ "$uuid" != "null" && "$uuid" != "" ]] || exit 1
+  id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
+  [[ "$id" != "null" && "$id" != "" ]] || exit 1
 
   echo "id: $id"
-  echo "uuid: $uuid"
+  echo "id: $id"
 
   new_phone="$(random_phone)"
   variables=$(
     jq -n \
     --arg phone "$new_phone" \
-    --arg accountUuid "$uuid" \
-    '{input: {phone: $phone, accountUuid: $accountUuid}}'
+    --arg AccountId "$id" \
+    '{input: {phone: $phone, accountId:$AccountId}}'
   )
 
   exec_admin_graphql $admin_token 'user-update-phone' "$variables"
@@ -155,13 +155,13 @@ gql_admin_file() {
 
   variables=$(
     jq -n \
-    --arg accountId "$uuid" \
+    --arg accountId "$id" \
     '{accountId: $accountId}'
   )
 
   exec_admin_graphql "$admin_token" 'account-details-by-account-id' "$variables"
-  returnedId="$(graphql_output '.data.accountDetailsByAccountId.uuid')"
-  [[ "$returnedId" == "$uuid" ]] || exit 1
+  returnedId="$(graphql_output '.data.accountDetailsByAccountId.id')"
+  [[ "$returnedId" == "$id" ]] || exit 1
 
   # TODO: add check by email
   

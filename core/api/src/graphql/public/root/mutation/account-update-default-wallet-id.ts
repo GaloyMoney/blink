@@ -29,7 +29,7 @@ const AccountUpdateDefaultWalletIdMutation = GT.Field({
 
     const result = await Accounts.updateDefaultWalletId({
       walletId,
-      accountUuid: domainAccount.uuid,
+      accountId: domainAccount.id,
     })
 
     if (result instanceof Error) {

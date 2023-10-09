@@ -20,7 +20,7 @@ export const PaymentInputValidator = (
     recipientWalletId: uncheckedRecipientWalletId,
   }: ValidatePaymentInputArgs<T>) => {
     if (senderAccount.status !== AccountStatus.Active) {
-      return new InactiveAccountError(senderAccount.uuid)
+      return new InactiveAccountError(senderAccount.id)
     }
 
     const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
@@ -29,7 +29,7 @@ export const PaymentInputValidator = (
     const senderWallet = await getWalletFn(senderWalletId)
     if (senderWallet instanceof Error) return senderWallet
 
-    if (senderWallet.accountUuid !== senderAccount.uuid) return new InvalidWalletId()
+    if (senderWallet.accountId !== senderAccount.id) return new InvalidWalletId()
 
     const amountCurrency = amountCurrencyRaw || senderWallet.currency
     const validAmount =

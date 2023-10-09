@@ -19,8 +19,8 @@ jwt="eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiOTdiMjIxLWNhMDgtNGViMi05ZDA5LWE1NzcwZmNjZWI
 @test "device-account: create" {
   token_name="$DEVICE_NAME"
 
-  username="$(random_uuid)"
-  password="$(random_uuid)"
+  username="$(random_id)"
+  password="$(random_id)"
 
   if [[ "$(uname)" == "Linux" ]]; then
       basic_token="$(echo -n $username:$password | base64 -w 0)"

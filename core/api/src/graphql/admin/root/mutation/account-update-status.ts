@@ -44,7 +44,7 @@ const AccountUpdateStatusMutation = GT.Field<
     if (status instanceof Error) return { errors: [{ message: status.message }] }
 
     const account = await Accounts.updateAccountStatus({
-      accountUuid: uid,
+      accountId: uid,
       status,
       updatedByPrivilegedClientId: privilegedClientId,
       comment,

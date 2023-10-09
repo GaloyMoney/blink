@@ -20,7 +20,6 @@ const AuditedAccount: GraphQLObjectType<Account> = GT.Object<Account>({
     "Accounts are core to the Galoy architecture. they have users, and own wallets",
   fields: () => ({
     id: { type: GT.NonNullID },
-    uuid: { type: GT.NonNull(GT.String) },
     username: { type: Username },
     level: { type: GT.NonNull(AccountLevel) },
     status: { type: GT.NonNull(AccountStatus) },
@@ -28,7 +27,7 @@ const AuditedAccount: GraphQLObjectType<Account> = GT.Object<Account>({
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: async (source) => {
-        const result = await Wallets.listWalletsByAccountUuid(source.uuid)
+        const result = await Wallets.listWalletsByAccountId(source.id)
         if (result instanceof Error) throw mapError(result)
         return result
       },

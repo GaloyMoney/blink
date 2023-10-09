@@ -45,20 +45,20 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   fields: () => ({
     id: {
       type: GT.NonNullID,
-      resolve: (source) => source.uuid,
+      resolve: (source) => source.id,
     },
 
     callbackEndpoints: {
       type: GT.NonNullList(CallbackEndpoint),
       resolve: async (source, args, { domainAccount }) => {
-        return listEndpoints(domainAccount.uuid)
+        return listEndpoints(domainAccount.id)
       },
     },
 
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: async (source) => {
-        return Wallets.listWalletsByAccountUuid(source.uuid)
+        return Wallets.listWalletsByAccountId(source.id)
       },
     },
 
@@ -123,7 +123,7 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         },
       },
       resolve: async (source) => {
-        return Accounts.getCSVForAccount(source.uuid)
+        return Accounts.getCSVForAccount(source.id)
       },
     },
 
@@ -157,7 +157,7 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
         let { walletIds } = args
 
         if (!walletIds) {
-          const wallets = await WalletsRepository().listByAccountUuid(source.uuid)
+          const wallets = await WalletsRepository().listByAccountId(source.id)
           if (wallets instanceof Error) {
             throw mapError(wallets)
           }

@@ -148,8 +148,8 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
   const withSenderWallet = (senderWallet: WalletDescriptor<S>) => {
     const {
       id: senderWalletId,
-      accountUuid: senderAccountUuid,
-    }: { id: WalletId; accountUuid: AccountUuid } = senderWallet
+      accountId: senderAccountId,
+    }: { id: WalletId; accountId: AccountId } = senderWallet
     const senderWalletCurrency = senderWallet.currency as S
 
     if (state.uncheckedAmount !== undefined) {
@@ -162,7 +162,7 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
           ...state,
           senderWalletId,
           senderWalletCurrency,
-          senderAccountUuid,
+          senderAccountId,
           btcPaymentAmount: paymentAmount,
           inputAmount: paymentAmount.amount,
           btcProtocolAndBankFee:
@@ -177,7 +177,7 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
           ...state,
           senderWalletId,
           senderWalletCurrency,
-          senderAccountUuid,
+          senderAccountId,
           usdPaymentAmount: paymentAmount,
           inputAmount: paymentAmount.amount,
           usdProtocolAndBankFee:
@@ -193,7 +193,7 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
         ...state,
         senderWalletId,
         senderWalletCurrency,
-        senderAccountUuid,
+        senderAccountId,
         btcPaymentAmount,
         btcProtocolAndBankFee:
           state.btcProtocolAndBankFee || LnFees().maxProtocolAndBankFee(btcPaymentAmount),
@@ -233,7 +233,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     username: recipientUsername,
     userId: recipientUserId,
   }: LPFBWithRecipientArgs<R>): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
-    const { id: recipientWalletId, accountUuid: recipientAccountUuid } =
+    const { id: recipientWalletId, accountId: recipientAccountId } =
       recipientWalletDescriptors[recipientWalletCurrency]
     if (recipientWalletId === state.senderWalletId) {
       return LPFBWithError(new SelfPaymentError())
@@ -256,7 +256,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
       recipientWalletId,
       recipientWalletCurrency,
       recipientPubkey,
-      recipientAccountUuid,
+      recipientAccountId,
       recipientUsername,
       recipientUserId,
       recipientWalletDescriptors,
@@ -542,10 +542,10 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
 
       senderWalletId: state.senderWalletId,
       senderWalletCurrency: state.senderWalletCurrency,
-      senderAccountUuid: state.senderAccountUuid,
+      senderAccountId: state.senderAccountId,
       recipientWalletId: state.recipientWalletId,
       recipientWalletCurrency: state.recipientWalletCurrency,
-      recipientAccountUuid: state.recipientAccountUuid,
+      recipientAccountId: state.recipientAccountId,
       recipientPubkey: state.recipientPubkey,
       recipientUsername: state.recipientUsername,
       recipientUserId: state.recipientUserId,
@@ -642,7 +642,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     if (state instanceof Error) return state
 
     return (
-      state.senderAccountUuid === state.recipientAccountUuid &&
+      state.senderAccountId === state.recipientAccountId &&
       state.senderWalletCurrency !==
         (state.recipientWalletCurrency as unknown as S | undefined)
     )

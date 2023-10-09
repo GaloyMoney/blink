@@ -84,8 +84,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
-    case "CouldNotFindAccountFromUuidError":
-      message = `Account does not exist for uuid ${error.message}`
+    case "CouldNotFindAccountFromIdError":
+      message = `Account does not exist for id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "CouldNotFindAccountFromUsernameError":
@@ -488,10 +488,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "NoExpiredLightningPaymentFlowsError":
     case "CouldNotUpdateLightningPaymentFlowError":
     case "CouldNotFindWalletFromIdError":
-    case "CouldNotListWalletsFromAccountUuidError":
+    case "CouldNotListWalletsFromAccountIdError":
     case "CouldNotFindWalletFromUsernameError":
     case "CouldNotFindWalletFromUsernameAndCurrencyError":
-    case "CouldNotFindWalletFromAccountUuidAndCurrencyError":
+    case "CouldNotFindWalletFromAccountIdAndCurrencyError":
     case "CouldNotFindWalletFromOnChainAddressError":
     case "CouldNotFindWalletFromOnChainAddressesError":
     case "CouldNotFindBtcWalletForAccountError":
@@ -595,7 +595,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CaptchaError":
     case "InvalidNonHodlInvoiceError":
     case "InvalidAccountError":
-    case "InvalidAccountUuidError":
+    case "InvalidAccountIdError":
     case "InvalidMinutesError":
     case "InvalidWalletForAccountError":
     case "AuthenticationError":
@@ -647,7 +647,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidErrorCodeForPhoneMetadataError":
     case "InvalidMobileCountryCodeForPhoneMetadataError":
     case "InvalidCountryCodeForPhoneMetadataError":
-    case "MultipleWalletsFoundForAccountUuidAndCurrency":
+    case "MultipleWalletsFoundForAccountIdAndCurrency":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

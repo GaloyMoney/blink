@@ -271,10 +271,10 @@ const updatePendingInvoiceBeforeFinally = async ({
       recipientInvoiceWalletDescriptor.id,
     )
     if (recipientInvoiceWallet instanceof Error) return recipientInvoiceWallet
-    const { accountUuid: recipientAccountUuid } = recipientInvoiceWallet
+    const { accountId: recipientAccountId } = recipientInvoiceWallet
 
     const accountWallets =
-      await WalletsRepository().findAccountWalletsByAccountUuid(recipientAccountUuid)
+      await WalletsRepository().findAccountWalletsByAccountId(recipientAccountId)
     if (accountWallets instanceof Error) return accountWallets
 
     const receivedWalletInvoice = await WalletInvoiceReceiver({
@@ -307,7 +307,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
 
-    const recipientAccount = await AccountsRepository().findByUuid(recipientAccountUuid)
+    const recipientAccount = await AccountsRepository().findById(recipientAccountId)
     if (recipientAccount instanceof Error) return recipientAccount
     const { displayCurrency: recipientDisplayCurrency } = recipientAccount
     const displayPriceRatio = await getCurrentPriceAsDisplayPriceRatio({
@@ -374,7 +374,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     if (recipientUser instanceof Error) return recipientUser
 
     const notificationResult = await NotificationsService().lightningTxReceived({
-      recipientAccountUuid,
+      recipientAccountId,
       recipientWalletId: recipientWalletDescriptor.id,
       paymentAmount: receivedWalletInvoice.receivedAmount(),
       displayPaymentAmount,
@@ -399,7 +399,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     ) {
       const callbackService = CallbackService(getCallbackServiceConfig())
       callbackService.sendMessage({
-        accountUuid: recipientAccount.uuid,
+        accountId: recipientAccount.id,
         eventType: CallbackEventType.ReceiveLightning,
         payload: {
           // FIXME: [0] might not be correct

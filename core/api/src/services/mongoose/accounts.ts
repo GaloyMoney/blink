@@ -7,7 +7,7 @@ import {
   CouldNotFindAccountError,
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
-  CouldNotFindAccountFromUuidError,
+  CouldNotFindAccountFromIdError,
   RepositoryError,
 } from "@/domain/errors"
 import { UsdDisplayCurrency } from "@/domain/fiat"
@@ -36,14 +36,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const findByUuid = async (
-    accountUuid: AccountUuid,
-  ): Promise<Account | RepositoryError> => {
+  const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
       const result = await Account.findOne({
-        uuid: accountUuid,
+        id: accountId,
       })
-      if (!result) return new CouldNotFindAccountFromUuidError(accountUuid)
+      if (!result) return new CouldNotFindAccountFromIdError(accountId)
       return translateToAccount(result)
     } catch (err) {
       return parseRepositoryError(err)
@@ -94,7 +92,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 
   const update = async ({
-    uuid,
+    id,
     level,
     statusHistory,
     coordinates,
@@ -112,7 +110,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await Account.findOneAndUpdate(
-        { uuid },
+        { id },
         {
           level,
           statusHistory,
@@ -179,7 +177,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     persistNew,
     findByUserId,
     listUnlockedAccounts,
-    findByUuid,
+    findById,
     findByUsername,
     listBusinessesForMap,
     update,
@@ -187,7 +185,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 }
 
 const translateToAccount = (result: AccountRecord): Account => ({
-  uuid: result.uuid as AccountUuid,
+  id: result.id as AccountId,
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,

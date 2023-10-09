@@ -44,9 +44,9 @@ const updateFee = async (operations: Array<feeUpdateOperation>) => {
       continue
     }
 
-    const { accountUuid } = wallet
+    const { accountId } = wallet
 
-    const updateResult = await updateAccountWithdrawFee({ accountUuid, fee })
+    const updateResult = await updateAccountWithdrawFee({ accountId, fee })
     if (updateResult instanceof Error) {
       console.error(`Could not set fee for walletId: ${walletId}`, { updateResult })
       continue

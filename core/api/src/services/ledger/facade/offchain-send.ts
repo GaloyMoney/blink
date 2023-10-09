@@ -7,7 +7,7 @@ import { persistAndReturnEntry } from "../helpers"
 
 import { translateToLedgerJournal } from ".."
 
-import { staticAccountUuids } from "./static-account-ids"
+import { staticAccountIds } from "./static-account-ids"
 
 import { UnknownLedgerError } from "@/domain/ledger"
 import { ZERO_CENTS, ZERO_SATS } from "@/domain/shared"
@@ -22,12 +22,12 @@ export const recordSendOffChain = async ({
   additionalInternalMetadata,
 }: RecordSendArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
-  const accountIds = await staticAccountUuids()
+  const accountIds = await staticAccountIds()
   if (accountIds instanceof Error) return accountIds
 
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
-    staticAccountUuids: accountIds,
+    staticAccountIds: accountIds,
     entry,
     metadata,
     additionalInternalMetadata,

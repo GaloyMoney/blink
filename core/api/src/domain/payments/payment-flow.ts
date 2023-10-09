@@ -63,13 +63,11 @@ export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurr
     recipientUserId: UserId | undefined
   } => ({
     walletDescriptor:
-      state.recipientWalletId &&
-      state.recipientWalletCurrency &&
-      state.recipientAccountUuid
+      state.recipientWalletId && state.recipientWalletCurrency && state.recipientAccountId
         ? {
             id: state.recipientWalletId,
             currency: state.recipientWalletCurrency,
-            accountUuid: state.recipientAccountUuid,
+            accountId: state.recipientAccountId,
           }
         : undefined,
     recipientPubkey: state.recipientPubkey,
@@ -80,15 +78,15 @@ export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurr
   const senderWalletDescriptor = (): WalletDescriptor<S> => ({
     id: state.senderWalletId,
     currency: state.senderWalletCurrency,
-    accountUuid: state.senderAccountUuid,
+    accountId: state.senderAccountId,
   })
 
   const recipientWalletDescriptor = (): WalletDescriptor<R> | undefined =>
-    state.recipientWalletId && state.recipientWalletCurrency && state.recipientAccountUuid
+    state.recipientWalletId && state.recipientWalletCurrency && state.recipientAccountId
       ? {
           id: state.recipientWalletId,
           currency: state.recipientWalletCurrency,
-          accountUuid: state.recipientAccountUuid,
+          accountId: state.recipientAccountId,
         }
       : undefined
 

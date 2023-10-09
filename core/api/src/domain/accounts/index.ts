@@ -1,4 +1,4 @@
-import { InvalidAccountUuidError } from "./errors"
+import { InvalidAccountIdError } from "./errors"
 
 import { AccountLevel, AccountStatus } from "./primitives"
 
@@ -24,7 +24,7 @@ const UUIDV4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 const KratosUserIdRegex = UUIDV4
-const AccountUuidRegex = UUIDV4
+const AccountIdRegex = UUIDV4
 
 // device id format from AppCheck: 1:72279297366:android:35666807ae916c5aa75af7
 const DeviceIdRegex = /^[0-9]+:[0-9]+:[a-z]+:[0-9a-z]+$/i
@@ -98,14 +98,14 @@ export const sanityCheckedDefaultAccountWithdrawFee = (
   return toSats(fee)
 }
 
-export const checkedToAccountUuid = (
-  accountUuid: string,
-): AccountUuid | InvalidAccountUuidError => {
-  if (accountUuid.match(AccountUuidRegex)) {
-    return accountUuid as AccountUuid
+export const checkedToAccountId = (
+  accountId: string,
+): AccountId | InvalidAccountIdError => {
+  if (accountId.match(AccountIdRegex)) {
+    return accountId as AccountId
   }
-  // InvalidAccountUuidError
-  return new InvalidAccountUuidError(accountUuid)
+  // InvalidAccountIdError
+  return new InvalidAccountIdError(accountId)
 }
 
 export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {

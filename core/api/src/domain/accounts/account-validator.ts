@@ -6,17 +6,17 @@ export const AccountValidator = (
   account: Account,
 ): AccountValidator | ValidationError => {
   if (account.status !== AccountStatus.Active) {
-    return new InactiveAccountError(account.uuid)
+    return new InactiveAccountError(account.id)
   }
 
   const validateWalletForAccount = <S extends WalletCurrency>(
     wallet: WalletDescriptor<S>,
   ): true | ValidationError => {
-    if (wallet.accountUuid !== account.uuid)
+    if (wallet.accountId !== account.id)
       return new InvalidWalletId(
         JSON.stringify({
-          accountUuid: account.uuid,
-          accountUuidFromWallet: wallet.accountUuid,
+          accountId: account.id,
+          AccountIdFromWallet: wallet.accountId,
         }),
       )
 

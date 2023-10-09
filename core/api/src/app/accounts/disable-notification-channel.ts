@@ -2,13 +2,13 @@ import { disableNotificationChannel as domainDisableNotificationChannel } from "
 import { AccountsRepository } from "@/services/mongoose"
 
 export const disableNotificationChannel = async ({
-  accountUuid,
+  accountId,
   notificationChannel,
 }: {
-  accountUuid: AccountUuid
+  accountId: AccountId
   notificationChannel: NotificationChannel
 }): Promise<Account | ApplicationError> => {
-  const account = await AccountsRepository().findByUuid(accountUuid)
+  const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
   const newNotificationSettings = domainDisableNotificationChannel({

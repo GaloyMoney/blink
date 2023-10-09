@@ -10,11 +10,11 @@ import { addAttributesToCurrentSpan } from "@/services/tracing"
 // Create lock service instance
 const lockService = LockService()
 
-const UuidRegex =
+const IdRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 const checkedToIdempotencyKey = (input: string) => {
-  if (!input.match(UuidRegex)) {
+  if (!input.match(IdRegex)) {
     return new InvalidIdempotencyKeyError(input)
   }
   return input as IdempotencyKey

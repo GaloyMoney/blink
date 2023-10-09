@@ -53,8 +53,8 @@ describe("FeeOnlyEntryBuilder", () => {
     expect(zeroAmounts.length).toBe(0)
   }
 
-  const staticAccountUuids = {
-    bankOwnerAccountUuid: "bankOwnerAccountUuid" as LedgerAccountId,
+  const staticAccountIds = {
+    bankOwnerAccountId: "bankOwnerAccountId" as LedgerAccountId,
   }
 
   const btcFee = { amount: 1000n, currency: WalletCurrency.Btc }
@@ -67,7 +67,7 @@ describe("FeeOnlyEntryBuilder", () => {
   it("overestimated fee, credit back bank owner", () => {
     const entry = createEntry()
     const builder = FeeOnlyEntryBuilder({
-      staticAccountUuids,
+      staticAccountIds,
       entry,
       metadata,
       btcFee,
@@ -81,17 +81,17 @@ describe("FeeOnlyEntryBuilder", () => {
 
     expectEntryToEqual(findEntry(credits, onChainLedgerAccountId), btcFee)
     expect(
-      credits.find((tx) => tx.accounts === staticAccountUuids.bankOwnerAccountUuid),
+      credits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
     ).toBeUndefined()
 
-    expectEntryToEqual(findEntry(debits, staticAccountUuids.bankOwnerAccountUuid), btcFee)
+    expectEntryToEqual(findEntry(debits, staticAccountIds.bankOwnerAccountId), btcFee)
     expect(debits.find((tx) => tx.accounts === onChainLedgerAccountId)).toBeUndefined()
   })
 
   it("underestimated fee, debit from bank owner", () => {
     const entry = createEntry()
     const builder = FeeOnlyEntryBuilder({
-      staticAccountUuids,
+      staticAccountIds,
       entry,
       metadata,
       btcFee,
@@ -103,15 +103,12 @@ describe("FeeOnlyEntryBuilder", () => {
 
     expectJournalToBeBalanced(result)
 
-    expectEntryToEqual(
-      findEntry(credits, staticAccountUuids.bankOwnerAccountUuid),
-      btcFee,
-    )
+    expectEntryToEqual(findEntry(credits, staticAccountIds.bankOwnerAccountId), btcFee)
     expect(credits.find((tx) => tx.accounts === onChainLedgerAccountId)).toBeUndefined()
 
     expectEntryToEqual(findEntry(debits, onChainLedgerAccountId), btcFee)
     expect(
-      debits.find((tx) => tx.accounts === staticAccountUuids.bankOwnerAccountUuid),
+      debits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
     ).toBeUndefined()
   })
 })

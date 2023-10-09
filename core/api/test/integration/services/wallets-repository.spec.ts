@@ -1,21 +1,20 @@
 import { randomUUID } from "crypto"
 
 import {
-  CouldNotFindWalletFromAccountUuidAndCurrencyError,
-  MultipleWalletsFoundForAccountUuidAndCurrency,
+  CouldNotFindWalletFromAccountIdAndCurrencyError,
+  MultipleWalletsFoundForAccountIdAndCurrency,
   RepositoryError,
 } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
 import { WalletsRepository } from "@/services/mongoose"
 import { Wallet } from "@/services/mongoose/schema"
-import { toObjectId } from "@/services/mongoose/utils"
 
 const wallets = WalletsRepository()
-const accountUuid = randomUUID() as AccountUuid
+const accountId = randomUUID() as AccountId
 
 const newWallet = async (currency: string) => {
   const wallet = new Wallet({
-    accountUuid,
+    accountId,
     type: "checking",
     currency,
   })
@@ -23,16 +22,16 @@ const newWallet = async (currency: string) => {
 }
 
 afterEach(async () => {
-  await Wallet.deleteMany({ accountUuid })
+  await Wallet.deleteMany({ accountId })
 })
 
 describe("WalletsRepository", () => {
-  describe("findAccountWalletsByAccountUuid", () => {
+  describe("findAccountWalletsByAccountId", () => {
     it("fetches AccountWallets", async () => {
       await newWallet(WalletCurrency.Btc)
       await newWallet(WalletCurrency.Usd)
 
-      const accountWallets = await wallets.findAccountWalletsByAccountUuid(accountUuid)
+      const accountWallets = await wallets.findAccountWalletsByAccountId(accountId)
       if (accountWallets instanceof Error) throw accountWallets
 
       expect(accountWallets).toEqual(
@@ -46,9 +45,9 @@ describe("WalletsRepository", () => {
     it("fails if btc wallet missing", async () => {
       await newWallet(WalletCurrency.Usd)
 
-      const accountWallets = await wallets.findAccountWalletsByAccountUuid(accountUuid)
+      const accountWallets = await wallets.findAccountWalletsByAccountId(accountId)
       expect(accountWallets).toBeInstanceOf(
-        CouldNotFindWalletFromAccountUuidAndCurrencyError,
+        CouldNotFindWalletFromAccountIdAndCurrencyError,
       )
       expect((accountWallets as RepositoryError).message).toBe(WalletCurrency.Btc)
     })
@@ -56,9 +55,9 @@ describe("WalletsRepository", () => {
     it("fails if usd wallet missing", async () => {
       await newWallet(WalletCurrency.Btc)
 
-      const accountWallets = await wallets.findAccountWalletsByAccountUuid(accountUuid)
+      const accountWallets = await wallets.findAccountWalletsByAccountId(accountId)
       expect(accountWallets).toBeInstanceOf(
-        CouldNotFindWalletFromAccountUuidAndCurrencyError,
+        CouldNotFindWalletFromAccountIdAndCurrencyError,
       )
       expect((accountWallets as RepositoryError).message).toBe(WalletCurrency.Usd)
     })
@@ -68,8 +67,8 @@ describe("WalletsRepository", () => {
       await newWallet(WalletCurrency.Btc)
       await newWallet(WalletCurrency.Usd)
 
-      const accountWallets = await wallets.findAccountWalletsByAccountUuid(accountUuid)
-      expect(accountWallets).toBeInstanceOf(MultipleWalletsFoundForAccountUuidAndCurrency)
+      const accountWallets = await wallets.findAccountWalletsByAccountId(accountId)
+      expect(accountWallets).toBeInstanceOf(MultipleWalletsFoundForAccountIdAndCurrency)
       expect((accountWallets as RepositoryError).message).toBe(WalletCurrency.Btc)
     })
 
@@ -78,8 +77,8 @@ describe("WalletsRepository", () => {
       await newWallet(WalletCurrency.Usd)
       await newWallet(WalletCurrency.Usd)
 
-      const accountWallets = await wallets.findAccountWalletsByAccountUuid(accountUuid)
-      expect(accountWallets).toBeInstanceOf(MultipleWalletsFoundForAccountUuidAndCurrency)
+      const accountWallets = await wallets.findAccountWalletsByAccountId(accountId)
+      expect(accountWallets).toBeInstanceOf(MultipleWalletsFoundForAccountIdAndCurrency)
       expect((accountWallets as RepositoryError).message).toBe(WalletCurrency.Usd)
     })
   })

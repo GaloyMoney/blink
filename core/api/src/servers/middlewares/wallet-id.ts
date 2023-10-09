@@ -24,7 +24,7 @@ const validateWalletId = async (
   }
 
   const hasPermissions = await Accounts.hasPermissions(
-    context.domainAccount.uuid,
+    context.domainAccount.id,
     walletId as WalletId,
   )
   if (hasPermissions instanceof Error) {

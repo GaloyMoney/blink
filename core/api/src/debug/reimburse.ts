@@ -34,9 +34,7 @@ const reimburse = async (reimbursements: Array<reimbursement>) => {
   const bankOwnerWalletId = await getBankOwnerWalletId()
   const bankOwnerWallet = await WalletsRepository().findById(bankOwnerWalletId)
   if (bankOwnerWallet instanceof Error) throw bankOwnerWallet
-  const bankOwnerAccount = await AccountsRepository().findByUuid(
-    bankOwnerWallet.accountUuid,
-  )
+  const bankOwnerAccount = await AccountsRepository().findById(bankOwnerWallet.accountId)
   if (bankOwnerAccount instanceof Error) throw bankOwnerAccount
 
   for (const reimbursement of reimbursements) {

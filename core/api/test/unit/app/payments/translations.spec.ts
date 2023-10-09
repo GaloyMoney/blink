@@ -18,7 +18,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
 
   const timestamp = new Date()
 
-  const senderAccountUuid = "accountUuid" as AccountUuid
+  const senderAccountId = "AccountId" as AccountId
 
   const ledgerTxnBase = {
     walletId: "walletId" as WalletId,
@@ -65,7 +65,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       ...ledgerTxnBase,
       currency: WalletCurrency.Btc,
     } as LedgerTransaction<WalletCurrency>
-    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountUuid })
+    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountId })
     expect(paymentFlow).not.toBeInstanceOf(Error)
 
     const expectedPaymentFlowState = {
@@ -81,7 +81,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       ...ledgerTxnBase,
       currency: WalletCurrency.Usd,
     } as LedgerTransaction<WalletCurrency>
-    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountUuid })
+    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountId })
     expect(paymentFlow).not.toBeInstanceOf(Error)
 
     const expectedPaymentFlowState = {
@@ -99,7 +99,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       satsFee: toSats(0),
       centsFee: toCents(0),
     } as LedgerTransaction<WalletCurrency>
-    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountUuid })
+    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountId })
     expect(paymentFlow).not.toBeInstanceOf(Error)
 
     const expectedPaymentFlowState = {
@@ -125,7 +125,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       satsFee: toSats(0),
       centsFee: toCents(0),
     } as LedgerTransaction<WalletCurrency>
-    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountUuid })
+    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountId })
     expect(paymentFlow).not.toBeInstanceOf(Error)
 
     const expectedPaymentFlowState = {
@@ -149,7 +149,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       ...ledgerTxnBase,
       walletId: undefined,
     } as LedgerTransaction<WalletCurrency>
-    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountUuid })
+    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountId })
     expect(paymentFlow).toBeInstanceOf(MissingPropsInTransactionForPaymentFlowError)
   })
 
@@ -158,7 +158,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       ...ledgerTxnBase,
       type: LedgerTransactionType.LnIntraLedger,
     } as LedgerTransaction<WalletCurrency>
-    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountUuid })
+    const paymentFlow = PaymentFlowFromLedgerTransaction({ ledgerTxn, senderAccountId })
     expect(paymentFlow).toBeInstanceOf(NonLnPaymentTransactionForPaymentFlowError)
   })
 })

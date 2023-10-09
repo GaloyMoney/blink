@@ -13,7 +13,7 @@ export const getLastOnChainAddress = async (
 ): Promise<OnChainAddress | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
-  const account = await AccountsRepository().findByUuid(wallet.accountUuid)
+  const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
   const accountValidator = AccountValidator(account)
   if (accountValidator instanceof Error) return accountValidator

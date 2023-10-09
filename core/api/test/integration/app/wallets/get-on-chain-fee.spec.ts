@@ -22,9 +22,7 @@ describe("onChainPay", () => {
     it("fails to fetch fee for dust amount", async () => {
       const { btcWalletDescriptor, usdWalletDescriptor } =
         await createRandomUserAndWallets()
-      const account = await AccountsRepository().findByUuid(
-        btcWalletDescriptor.accountUuid,
-      )
+      const account = await AccountsRepository().findById(btcWalletDescriptor.accountId)
       if (account instanceof Error) throw account
 
       const resultBtcWallet = await Wallets.getOnChainFeeForBtcWallet({

@@ -12,10 +12,10 @@ export const PaymentFlowFromLedgerTransaction = <
   R extends WalletCurrency,
 >({
   ledgerTxn,
-  senderAccountUuid,
+  senderAccountId,
 }: {
   ledgerTxn: LedgerTransaction<S>
-  senderAccountUuid: AccountUuid
+  senderAccountId: AccountId
 }): PaymentFlow<S, R> | ValidationError => {
   if (ledgerTxn.type !== LedgerTransactionType.Payment) {
     return new NonLnPaymentTransactionForPaymentFlowError()
@@ -73,7 +73,7 @@ export const PaymentFlowFromLedgerTransaction = <
   return PaymentFlow({
     senderWalletId,
     senderWalletCurrency,
-    senderAccountUuid,
+    senderAccountId,
     settlementMethod,
     paymentInitiationMethod,
 

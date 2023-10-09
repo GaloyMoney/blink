@@ -66,7 +66,7 @@ interface WalletInvoiceRecord {
 }
 
 interface AccountRecord {
-  uuid: string
+  id: string
   kratosUserId: string
 
   username: string | null
@@ -107,7 +107,7 @@ interface AccountIpsRecord {
   }
   firstConnection: Date
   lastConnection: Date
-  accountUuid: string
+  accountId: string
 }
 
 interface UserRecord {
@@ -132,7 +132,7 @@ type PaymentFlowStateRecordPartial = XOR<
 > & {
   senderWalletId: string
   senderWalletCurrency: string
-  senderAccountUuid: string
+  senderAccountId: string
   settlementMethod: string
   paymentInitiationMethod: string
   createdAt: Date
@@ -149,7 +149,7 @@ type PaymentFlowStateRecordPartial = XOR<
 
   recipientWalletId?: string
   recipientWalletCurrency?: string
-  recipientAccountUuid?: string
+  recipientAccountId?: string
   recipientPubkey?: string
   recipientUsername?: string
   recipientUserId?: string

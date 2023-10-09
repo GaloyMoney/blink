@@ -3,12 +3,12 @@ import { Account } from "./schema"
 import { RewardAlreadyPresentError, UnknownRepositoryError } from "@/domain/errors"
 
 // FIXME: improve boundary
-export const RewardsRepository = (accountUuid: AccountUuid) => {
+export const RewardsRepository = (accountId: AccountId) => {
   const add = async (quizQuestionId: QuizQuestionId) => {
     try {
       // by default, mongodb return the previous state before the update
       const oldState = await Account.findOneAndUpdate(
-        { uuid: accountUuid },
+        { id: accountId },
         { $push: { earn: quizQuestionId } },
         // { upsert: true },
       )

@@ -1,4 +1,4 @@
-import { getBalanceForWallet, listWalletsByAccountUuid } from "@/app/wallets"
+import { getBalanceForWallet, listWalletsByAccountId } from "@/app/wallets"
 import { AccountStatus } from "@/domain/accounts"
 import { AccountHasPositiveBalanceError } from "@/domain/authentication/errors"
 import { IdentityRepository } from "@/services/kratos"
@@ -6,19 +6,19 @@ import { AccountsRepository, UsersRepository } from "@/services/mongoose"
 import { addEventToCurrentSpan } from "@/services/tracing"
 
 export const markAccountForDeletion = async ({
-  accountUuid,
+  accountId,
   cancelIfPositiveBalance = false,
   updatedByPrivilegedClientId,
 }: {
-  accountUuid: AccountUuid
+  accountId: AccountId
   cancelIfPositiveBalance?: boolean
   updatedByPrivilegedClientId?: PrivilegedClientId
 }): Promise<true | ApplicationError> => {
   const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findByUuid(accountUuid)
+  const account = await accountsRepo.findById(accountId)
   if (account instanceof Error) return account
 
-  const wallets = await listWalletsByAccountUuid(account.uuid)
+  const wallets = await listWalletsByAccountId(account.id)
   if (wallets instanceof Error) return wallets
 
   for (const wallet of wallets) {
@@ -26,7 +26,7 @@ export const markAccountForDeletion = async ({
     if (balance instanceof Error) return balance
     if (balance > 0 && cancelIfPositiveBalance) {
       return new AccountHasPositiveBalanceError(
-        `The new phone is associated with an account with a non empty wallet. walletId: ${wallet.id}, balance: ${balance}, accountUuid: ${account.uuid}, cancelIfPositiveBalance: ${cancelIfPositiveBalance}`,
+        `The new phone is associated with an account with a non empty wallet. walletId: ${wallet.id}, balance: ${balance}, accountId: ${account.id}, cancelIfPositiveBalance: ${cancelIfPositiveBalance}`,
       )
     }
     addEventToCurrentSpan(`deleting_wallet`, {

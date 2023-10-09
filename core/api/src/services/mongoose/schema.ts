@@ -98,7 +98,7 @@ const WalletSchema = new Schema<WalletRecord>({
     required: true,
     default: () => crypto.randomUUID(),
   },
-  accountUuid: {
+  accountId: {
     type: String,
     ref: "Account",
     index: true,
@@ -135,7 +135,7 @@ export const Wallet = mongoose.model<WalletRecord>("Wallet", WalletSchema)
 
 const AccountSchema = new Schema<AccountRecord>(
   {
-    uuid: {
+    id: {
       type: String,
       index: true,
       unique: true,
@@ -325,7 +325,7 @@ const AccountIpsSchema = new Schema<AccountIpsRecord>({
     default: Date.now,
   },
   lastConnection: Date,
-  accountUuid: {
+  accountId: {
     type: String,
     ref: "Account",
     index: true,
@@ -336,7 +336,7 @@ const AccountIpsSchema = new Schema<AccountIpsRecord>({
 export const AccountIps = mongoose.model<AccountIpsRecord>("AccountIp", AccountIpsSchema)
 
 AccountIpsSchema.index({
-  _accountUuid: 1,
+  _AccountId: 1,
   ip: 1,
 })
 
@@ -401,7 +401,7 @@ const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
   {
     senderWalletId: { type: String, required: true },
     senderWalletCurrency: { type: String, required: true },
-    senderAccountUuid: { type: String, required: true },
+    senderAccountId: { type: String, required: true },
     settlementMethod: { type: String, required: true },
     paymentInitiationMethod: { type: String, required: true },
     paymentHash: String,
@@ -419,7 +419,7 @@ const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
 
     recipientWalletId: String,
     recipientWalletCurrency: String,
-    recipientAccountUuid: String,
+    recipientAccountId: String,
     recipientPubkey: String,
     recipientUsername: String,
     recipientUserId: String,

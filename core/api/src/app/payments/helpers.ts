@@ -99,13 +99,13 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
 
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
-  const { accountUuid } = recipientWallet
+  const { accountId } = recipientWallet
 
   const accountWallets =
-    await WalletsRepository().findAccountWalletsByAccountUuid(accountUuid)
+    await WalletsRepository().findAccountWalletsByAccountId(accountId)
   if (accountWallets instanceof Error) return accountWallets
 
-  const recipientAccount = await AccountsRepository().findByUuid(accountUuid)
+  const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
   const { username: recipientUsername, kratosUserId: recipientUserId } = recipientAccount
 
@@ -158,7 +158,7 @@ export const addContactsAfterSend = async ({
 
   if (recipientAccount.username) {
     const addContactToPayerResult = await addNewContact({
-      accountUuid: senderAccount.uuid,
+      accountId: senderAccount.id,
       contactUsername: recipientAccount.username,
     })
     if (addContactToPayerResult instanceof Error) return addContactToPayerResult
@@ -166,7 +166,7 @@ export const addContactsAfterSend = async ({
 
   if (senderAccount.username) {
     const addContactToPayeeResult = await addNewContact({
-      accountUuid: recipientAccount.uuid,
+      accountId: recipientAccount.id,
       contactUsername: senderAccount.username,
     })
     if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult

@@ -12,11 +12,11 @@ teardown_file() {
 
 OATHKEEPER_ENDPOINT=${OATHKEEPER_ENDPOINT:-"http://127.0.0.1:4456/decisions/"}
 
-check_is_uuid() {
-  uuid_string=$1
+check_is_id() {
+  id_string=$1
 
-  uuid_regex='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
-  echo $uuid_string | grep -Eq "$uuid_regex"
+  id_regex='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+  echo $id_string | grep -Eq "$id_regex"
 }
 
 decode_jwt() {
@@ -116,5 +116,5 @@ oathkeeper_jwt() {
   cache_value 'alice.oath' $jwt
 
   subject=$(decode_jwt "$jwt" 'payload' | jq -r '.sub')
-  check_is_uuid "$subject" || exit 1
+  check_is_id "$subject" || exit 1
 }

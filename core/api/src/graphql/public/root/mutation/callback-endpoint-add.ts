@@ -28,7 +28,7 @@ const CallbackEndpointAdd = GT.Field<
     const { url } = args.input
 
     const result = await Callback.addEndpoint({
-      accountUuid: domainAccount.uuid,
+      accountId: domainAccount.id,
       url,
     })
 

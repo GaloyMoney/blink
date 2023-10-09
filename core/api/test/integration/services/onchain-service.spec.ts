@@ -9,7 +9,7 @@ describe("onChainAddress", () => {
     const walletDescriptor: WalletDescriptor<"BTC"> = {
       id: "walletId" as WalletId,
       currency: WalletCurrency.Btc,
-      accountUuid: "accountUuid" as AccountUuid,
+      accountId: "AccountId" as AccountId,
     }
     const args = {
       walletDescriptor,

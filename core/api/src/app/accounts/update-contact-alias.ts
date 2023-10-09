@@ -1,25 +1,25 @@
-import { checkedToAccountUuid, checkedToContactAlias } from "@/domain/accounts"
+import { checkedToAccountId, checkedToContactAlias } from "@/domain/accounts"
 import { ContactNotExistentError } from "@/domain/errors"
 import { AccountsRepository } from "@/services/mongoose"
 
 export const updateContactAlias = async ({
-  accountUuid: accountUuidRaw,
+  accountId: AccountIdRaw,
   username,
   alias,
 }: {
-  accountUuid: string
+  accountId: string
   username: string
   alias: string
 }): Promise<AccountContact | ApplicationError> => {
-  const accountUuid = checkedToAccountUuid(accountUuidRaw)
-  if (accountUuid instanceof Error) return accountUuid
+  const accountId = checkedToAccountId(AccountIdRaw)
+  if (accountId instanceof Error) return accountId
 
   const repo = AccountsRepository()
 
   const aliasChecked = checkedToContactAlias(alias)
   if (aliasChecked instanceof Error) return aliasChecked
 
-  const account = await repo.findByUuid(accountUuid)
+  const account = await repo.findById(accountId)
   if (account instanceof Error) {
     return account
   }

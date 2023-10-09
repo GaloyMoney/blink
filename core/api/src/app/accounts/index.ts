@@ -29,9 +29,9 @@ export * from "./disable-notification-channel"
 const accounts = AccountsRepository()
 
 export const getAccount = async (
-  accountUuid: AccountUuid,
+  accountId: AccountId,
 ): Promise<Account | RepositoryError> => {
-  return accounts.findByUuid(accountUuid)
+  return accounts.findById(accountId)
 }
 
 export const getAccountFromUserId = async (
@@ -41,13 +41,13 @@ export const getAccountFromUserId = async (
 }
 
 export const hasPermissions = async (
-  accountUuid: AccountUuid,
+  accountId: AccountId,
   walletId: WalletId,
 ): Promise<boolean | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  return accountUuid === wallet.accountUuid
+  return accountId === wallet.accountId
 }
 
 export const getBusinessMapMarkers = async () => {
@@ -60,7 +60,7 @@ export const getUsernameFromWalletId = async (
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  const account = await accounts.findByUuid(wallet.accountUuid)
+  const account = await accounts.findById(wallet.accountId)
   if (account instanceof Error) return account
   return account.username
 }

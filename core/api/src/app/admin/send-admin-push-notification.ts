@@ -1,4 +1,4 @@
-import { checkedToAccountUuid } from "@/domain/accounts"
+import { checkedToAccountId } from "@/domain/accounts"
 import {
   GaloyNotificationCategories,
   checkedToNotificationCategory,
@@ -8,13 +8,13 @@ import { UsersRepository } from "@/services/mongoose/users"
 import { NotificationsService } from "@/services/notifications"
 
 export const sendAdminPushNotification = async ({
-  accountUuid: accountUuidRaw,
+  accountId: AccountIdRaw,
   title,
   body,
   data,
   notificationCategory,
 }: {
-  accountUuid: string
+  accountId: string
   title: string
   body: string
   data?: { [key: string]: string }
@@ -26,11 +26,11 @@ export const sendAdminPushNotification = async ({
 
   if (checkedNotificationCategory instanceof Error) return checkedNotificationCategory
 
-  const accountUuid = checkedToAccountUuid(accountUuidRaw)
-  if (accountUuid instanceof Error) return accountUuid
+  const accountId = checkedToAccountId(AccountIdRaw)
+  if (accountId instanceof Error) return accountId
 
   const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findByUuid(accountUuid)
+  const account = await accountsRepo.findById(accountId)
   if (account instanceof Error) return account
   const kratosUserId = account.kratosUserId
 

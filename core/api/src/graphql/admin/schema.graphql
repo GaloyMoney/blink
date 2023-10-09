@@ -3,6 +3,9 @@ type AccountDetailPayload {
   errors: [Error!]!
 }
 
+"""Unique identifier of an account"""
+scalar AccountId
+
 enum AccountLevel {
   ONE
   TWO
@@ -18,7 +21,7 @@ enum AccountStatus {
 }
 
 input AccountUpdateLevelInput {
-  accountUuid: AccountUuid!
+  accountId: AccountId!
   level: AccountLevel!
 }
 
@@ -28,11 +31,8 @@ input AccountUpdateStatusInput {
   uid: ID!
 }
 
-"""Unique identifier of an account"""
-scalar AccountUuid
-
 input AdminPushNotificationSendInput {
-  accountUuid: String!
+  accountId: String!
   body: String!
   data: Object
   notificationCategory: NotificationCategory
@@ -59,7 +59,6 @@ type AuditedAccount {
   status: AccountStatus!
   title: String
   username: Username
-  uuid: String!
   wallets: [Wallet!]!
 }
 
@@ -77,7 +76,7 @@ type AuditedUser {
 A wallet belonging to an account which contains a BTC balance and a list of transactions.
 """
 type BTCWallet implements Wallet {
-  accountUuid: ID!
+  accountId: ID!
 
   """A balance stored in BTC."""
   balance: SignedAmount!
@@ -270,7 +269,7 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
 }
 
 type Query {
-  accountDetailsByAccountUuid(accountUuid: ID!): AuditedAccount!
+  accountDetailsByAccountId(accountId: ID!): AuditedAccount!
   accountDetailsByEmail(email: EmailAddress!): AuditedAccount!
   accountDetailsByUserPhone(phone: Phone!): AuditedAccount!
   accountDetailsByUsername(username: Username!): AuditedAccount!
@@ -391,7 +390,7 @@ enum TxStatus {
 A wallet belonging to an account which contains a USD balance and a list of transactions.
 """
 type UsdWallet implements Wallet {
-  accountUuid: ID!
+  accountId: ID!
   balance: SignedAmount!
   id: ID!
 
@@ -430,7 +429,7 @@ type UsdWallet implements Wallet {
 }
 
 input UserUpdatePhoneInput {
-  accountUuid: ID!
+  accountId: ID!
   phone: Phone!
 }
 
@@ -441,7 +440,7 @@ scalar Username
 A generic wallet which stores value in one of our supported currencies.
 """
 interface Wallet {
-  accountUuid: ID!
+  accountId: ID!
   balance: SignedAmount!
   id: ID!
   pendingIncomingBalance: SignedAmount!

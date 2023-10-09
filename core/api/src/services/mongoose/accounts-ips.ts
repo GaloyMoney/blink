@@ -31,7 +31,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
 
     try {
       const result = await AccountIps.updateOne(
-        { accountUuid: accountIp.accountUuid, ip: accountIp.ip },
+        { accountId: accountIp.accountId, ip: accountIp.ip },
         updateQuery,
         { upsert: true },
       )
@@ -46,17 +46,17 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
     }
   }
 
-  const findByAccountUuidAndIp = async ({
-    accountUuid,
+  const findByAccountIdAndIp = async ({
+    accountId,
     ip,
-  }: FindByAccountUuidAndIpArgs): Promise<AccountIP | RepositoryError> => {
+  }: FindByAccountIdAndIpArgs): Promise<AccountIP | RepositoryError> => {
     try {
       const result = await AccountIps.findOne({
-        accountUuid,
+        accountId,
         ip,
       })
       if (!result) {
-        return new CouldNotFindAccountIpError(accountUuid)
+        return new CouldNotFindAccountIpError(accountId)
       }
 
       return accountIPFromRaw(result)
@@ -65,16 +65,16 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
     }
   }
 
-  const findLastByAccountUuid = async (
-    accountUuid: AccountUuid,
+  const findLastByAccountId = async (
+    accountId: AccountId,
   ): Promise<AccountIP | RepositoryError> => {
     try {
       const result = await AccountIps.findOne({
-        accountUuid,
+        accountId,
       }).sort({ lastConnection: -1 })
 
       if (!result) {
-        return new CouldNotFindAccountIpError(accountUuid)
+        return new CouldNotFindAccountIpError(accountId)
       }
 
       return accountIPFromRaw(result)
@@ -85,14 +85,14 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
 
   return {
     update,
-    findLastByAccountUuid,
-    findByAccountUuidAndIp,
+    findLastByAccountId,
+    findByAccountIdAndIp,
   }
 }
 
 const accountIPFromRaw = (result: AccountIpsRecord): AccountIP => {
   return {
-    accountUuid: result.accountUuid as AccountUuid,
+    accountId: result.accountId as AccountId,
     ip: result.ip as IpAddress,
     metadata: result.metadata as IPType,
   }

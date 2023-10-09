@@ -8,7 +8,7 @@ import NotificationCategory from "@/graphql/shared/types/scalar/notification-cat
 const AdminPushNotificationSendInput = GT.Input({
   name: "AdminPushNotificationSendInput",
   fields: () => ({
-    accountUuid: {
+    accountId: {
       type: GT.NonNull(GT.String),
     },
     title: {
@@ -31,7 +31,7 @@ const AdminPushNotificationSendMutation = GT.Field<
   GraphQLAdminContext,
   {
     input: {
-      accountUuid: string
+      accountId: string
       title: string
       body: string
       data?: { [key: string]: string }
@@ -47,10 +47,10 @@ const AdminPushNotificationSendMutation = GT.Field<
     input: { type: GT.NonNull(AdminPushNotificationSendInput) },
   },
   resolve: async (_, args) => {
-    const { accountUuid, body, title, data, notificationCategory } = args.input
+    const { accountId, body, title, data, notificationCategory } = args.input
 
     const success = await Admin.sendAdminPushNotification({
-      accountUuid,
+      accountId,
       title,
       body,
       data,

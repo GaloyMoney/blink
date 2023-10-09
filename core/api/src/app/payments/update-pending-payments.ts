@@ -304,7 +304,7 @@ const reconstructPendingPaymentFlow = async <
   if (!senderWalletId) return new MissingPropsInTransactionForPaymentFlowError()
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
-  const senderAccount = await AccountsRepository().findByUuid(senderWallet.accountUuid)
+  const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
   if (senderAccount instanceof Error) return senderAccount
 
   const filteredPayments = payments.filter((tx) =>
@@ -326,6 +326,6 @@ const reconstructPendingPaymentFlow = async <
 
   return PaymentFlowFromLedgerTransaction({
     ledgerTxn: payment,
-    senderAccountUuid: senderAccount.uuid,
+    senderAccountId: senderAccount.id,
   })
 }

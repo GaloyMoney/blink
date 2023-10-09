@@ -7,7 +7,7 @@ import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/confi
 import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
 
-import { initialStaticAccountUuids } from "@/services/ledger/facade"
+import { initialStaticAccountIds } from "@/services/ledger/facade"
 import {
   AccountsRepository,
   UsersRepository,
@@ -20,25 +20,25 @@ export const randomUserId = () => randomUUID() as UserId
 const adminUsers = getAdminAccounts()
 
 export const bootstrap = async () => {
-  const adminAccountUuids = await initialStaticAccountUuids()
+  const adminAccountIds = await initialStaticAccountIds()
 
-  for (const accountNameString of Object.keys(adminAccountUuids)) {
-    const accountName = accountNameString as keyof InitialStaticAccountUuids
-    const accountId = adminAccountUuids[accountName]
+  for (const accountNameString of Object.keys(adminAccountIds)) {
+    const accountName = accountNameString as keyof InitialStaticAccountIds
+    const accountId = adminAccountIds[accountName]
     if (!(accountId instanceof Error)) continue
 
     let adminConfig: AdminAccount | undefined = undefined
     switch (accountName) {
-      case "bankOwnerAccountUuid":
+      case "bankOwnerAccountId":
         adminConfig = adminUsers.find((val) => val.role === "bankowner")
         break
 
-      case "dealerBtcAccountUuid":
-      case "dealerUsdAccountUuid":
+      case "dealerBtcAccountId":
+      case "dealerUsdAccountId":
         adminConfig = adminUsers.find((val) => val.role === "dealer")
         break
 
-      case "funderAccountUuid":
+      case "funderAccountId":
         adminConfig = adminUsers.find((val) => val.role === "funder")
         break
     }
@@ -74,10 +74,7 @@ export const bootstrap = async () => {
     }
     if (account instanceof Error) return account
 
-    await Account.findOneAndUpdate(
-      { uuid: account.uuid },
-      { role, contactEnabled: false },
-    )
+    await Account.findOneAndUpdate({ id: account.id }, { role, contactEnabled: false })
 
     const wallet = await WalletsRepository().findById(account.defaultWalletId)
     if (wallet instanceof Error) return wallet

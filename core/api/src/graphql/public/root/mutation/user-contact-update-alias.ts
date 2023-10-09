@@ -43,10 +43,10 @@ const UserContactUpdateAliasMutation = GT.Field<
       return { errors: [{ message: alias.message }] }
     }
 
-    const accountUuid = domainAccount.uuid
+    const accountId = domainAccount.id
 
     const contact = await Accounts.updateContactAlias({
-      accountUuid,
+      accountId,
       username,
       alias,
     })

@@ -36,11 +36,11 @@ const { dustThreshold } = getOnChainWalletConfig()
 
 let walletId: WalletId
 let bankOwnerWalletId: WalletId
-let accountUuid: AccountUuid
+let accountId: AccountId
 let address: OnChainAddress
 
 beforeAll(async () => {
-  ;({ id: walletId, accountUuid } = await createRandomUserAndBtcWallet())
+  ;({ id: walletId, accountId } = await createRandomUserAndBtcWallet())
 
   const addressResult = await getLastOnChainAddress(walletId)
   if (addressResult instanceof Error) throw addressResult
@@ -460,7 +460,7 @@ describe("Bria Event Handlers", () => {
         senderWalletDescriptor: {
           id: walletId,
           currency: WalletCurrency.Btc,
-          accountUuid,
+          accountId,
         },
         metadata,
         additionalDebitMetadata: debitAccountAdditionalMetadata,

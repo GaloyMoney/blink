@@ -74,25 +74,25 @@ beforeAll(async () => {
 
   // Update account display currencies
   const updatedAccountB = await updateDisplayCurrency({
-    accountUuid: accountB.uuid,
+    accountId: accountB.id,
     currency: "EUR",
   })
   if (updatedAccountB instanceof Error) throw updatedAccountB
 
   const updatedAccountC = await updateDisplayCurrency({
-    accountUuid: accountC.uuid,
+    accountId: accountC.id,
     currency: "CRC",
   })
   if (updatedAccountC instanceof Error) throw updatedAccountC
 
-  const accountBRaw = await AccountsRepository().findByUuid(accountB.uuid)
+  const accountBRaw = await AccountsRepository().findById(accountB.id)
   if (accountBRaw instanceof Error) throw accountBRaw
   accountB = accountBRaw
   if (accountB.displayCurrency !== "EUR") {
     throw new Error("Error changing display currency for accountB")
   }
 
-  const accountCRaw = await AccountsRepository().findByUuid(accountC.uuid)
+  const accountCRaw = await AccountsRepository().findById(accountC.id)
   if (accountCRaw instanceof Error) throw accountCRaw
   accountC = accountCRaw
   if (accountC.displayCurrency !== "CRC") {

@@ -15,7 +15,7 @@ const IWallet = GT.Interface({
     id: {
       type: GT.NonNullID,
     },
-    accountUuid: {
+    accountId: {
       type: GT.NonNullID,
     },
     walletCurrency: {

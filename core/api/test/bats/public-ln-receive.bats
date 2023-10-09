@@ -275,7 +275,7 @@ usd_amount=50
 }
 
 @test "public-ln-receive: fail to create invoice - nonexistent wallet-id" {
-  non_existent_wallet_id="$(random_uuid)"
+  non_existent_wallet_id="$(random_id)"
 
   variables=$(
     jq -n \

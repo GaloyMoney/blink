@@ -41,7 +41,7 @@ const AccountEnableNotificationCategoryMutation = GT.Field<
     if (channel instanceof Error) return { errors: [{ message: channel.message }] }
 
     const result = await Accounts.enableNotificationCategory({
-      accountUuid: domainAccount.uuid,
+      accountId: domainAccount.id,
       notificationChannel: channel,
       notificationCategory: category,
     })

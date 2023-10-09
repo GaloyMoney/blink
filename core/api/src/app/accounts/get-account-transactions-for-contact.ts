@@ -16,7 +16,7 @@ export const getAccountTransactionsForContact = async ({
 }): Promise<PaginatedArray<WalletTransaction> | ApplicationError> => {
   const ledger = LedgerService()
 
-  const wallets = await WalletsRepository().listByAccountUuid(account.uuid)
+  const wallets = await WalletsRepository().listByAccountId(account.id)
   if (wallets instanceof Error) return wallets
 
   const resp = await ledger.getTransactionsByWalletIdAndContactUsername({

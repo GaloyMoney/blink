@@ -246,13 +246,13 @@ const addInvoice = async ({
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
-  const account = await AccountsRepository().findByUuid(wallet.accountUuid)
+  const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
 
   const accountValidator = AccountValidator(account)
   if (accountValidator instanceof Error) return accountValidator
 
-  const limitOk = await limitCheckFn(wallet.accountUuid)
+  const limitOk = await limitCheckFn(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
   const lndService = LndService()
@@ -284,17 +284,17 @@ const addInvoice = async ({
 }
 
 const checkSelfWalletIdRateLimits = async (
-  accountUuid: AccountUuid,
+  accountId: AccountId,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
     rateLimitConfig: RateLimitConfig.invoiceCreate,
-    keyToConsume: accountUuid,
+    keyToConsume: accountId,
   })
 
 const checkRecipientWalletIdRateLimits = async (
-  accountUuid: AccountUuid,
+  accountId: AccountId,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
     rateLimitConfig: RateLimitConfig.invoiceCreateForRecipient,
-    keyToConsume: accountUuid,
+    keyToConsume: accountId,
   })

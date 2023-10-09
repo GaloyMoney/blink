@@ -19,7 +19,7 @@ const createUsdWallets = async () => {
   let progress = 0
   for await (const account of accounts) {
     await AccountsWithSpans.addWalletIfNonexistent({
-      accountUuid: account.uuid,
+      accountId: account.id,
       type: WalletType.Checking,
       currency: WalletCurrency.Usd,
     })

@@ -23,7 +23,7 @@ export const NotificationsService = (): INotificationsService => {
   const pushNotification = PushNotificationsService()
 
   const lightningTxReceived = async ({
-    recipientAccountUuid,
+    recipientAccountId,
     recipientWalletId,
     paymentAmount,
     displayPaymentAmount,
@@ -46,7 +46,7 @@ export const NotificationsService = (): INotificationsService => {
       // Notify the recipient (via GraphQL subscription if any)
       const accountUpdatedTrigger = customPubSubTrigger({
         event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: recipientAccountUuid,
+        suffix: recipientAccountId,
       })
       pubsub.publish({
         trigger: accountUpdatedTrigger,
@@ -91,7 +91,7 @@ export const NotificationsService = (): INotificationsService => {
   }
 
   const intraLedgerTxReceived = async ({
-    recipientAccountUuid,
+    recipientAccountId,
     recipientWalletId,
     paymentAmount,
     displayPaymentAmount,
@@ -103,7 +103,7 @@ export const NotificationsService = (): INotificationsService => {
       // Notify the recipient (via GraphQL subscription if any)
       const accountUpdatedTrigger = customPubSubTrigger({
         event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: recipientAccountUuid,
+        suffix: recipientAccountId,
       })
       const data: NotificationsDataObject = {
         walletId: recipientWalletId,
@@ -163,7 +163,7 @@ export const NotificationsService = (): INotificationsService => {
 
   const sendOnChainNotification = async ({
     type,
-    accountUuid,
+    accountId,
     walletId,
     paymentAmount,
     displayPaymentAmount,
@@ -173,7 +173,7 @@ export const NotificationsService = (): INotificationsService => {
     txHash,
   }: {
     type: NotificationType
-    accountUuid: AccountUuid
+    accountId: AccountId
     walletId: WalletId
     paymentAmount: PaymentAmount<WalletCurrency>
     displayPaymentAmount?: DisplayAmount<DisplayCurrency>
@@ -186,7 +186,7 @@ export const NotificationsService = (): INotificationsService => {
       // Notify the recipient (via GraphQL subscription if any)
       const accountUpdatedTrigger = customPubSubTrigger({
         event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: accountUuid,
+        suffix: accountId,
       })
       const data: NotificationsDataObject = {
         walletId,
@@ -240,7 +240,7 @@ export const NotificationsService = (): INotificationsService => {
   }
 
   const onChainTxReceived = async ({
-    recipientAccountUuid,
+    recipientAccountId,
     recipientWalletId,
     paymentAmount,
     displayPaymentAmount,
@@ -251,7 +251,7 @@ export const NotificationsService = (): INotificationsService => {
   }: OnChainTxReceivedArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceipt,
-      accountUuid: recipientAccountUuid,
+      accountId: recipientAccountId,
       walletId: recipientWalletId,
       paymentAmount,
       displayPaymentAmount,
@@ -262,7 +262,7 @@ export const NotificationsService = (): INotificationsService => {
     })
 
   const onChainTxReceivedPending = async ({
-    recipientAccountUuid,
+    recipientAccountId,
     recipientWalletId,
     paymentAmount,
     displayPaymentAmount,
@@ -273,7 +273,7 @@ export const NotificationsService = (): INotificationsService => {
   }: OnChainTxReceivedPendingArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceiptPending,
-      accountUuid: recipientAccountUuid,
+      accountId: recipientAccountId,
       walletId: recipientWalletId,
       paymentAmount,
       displayPaymentAmount,
@@ -284,7 +284,7 @@ export const NotificationsService = (): INotificationsService => {
     })
 
   const onChainTxSent = async ({
-    senderAccountUuid,
+    senderAccountId,
     senderWalletId,
     paymentAmount,
     displayPaymentAmount,
@@ -295,7 +295,7 @@ export const NotificationsService = (): INotificationsService => {
   }: OnChainTxSentArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainPayment,
-      accountUuid: senderAccountUuid,
+      accountId: senderAccountId,
       walletId: senderWalletId,
       paymentAmount,
       displayPaymentAmount,

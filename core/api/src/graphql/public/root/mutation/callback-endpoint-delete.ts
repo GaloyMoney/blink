@@ -28,7 +28,7 @@ const CallbackEndpointDelete = GT.Field<
     const { id } = args.input
 
     const result = await Callback.deleteEndpoint({
-      accountUuid: domainAccount.uuid,
+      accountId: domainAccount.id,
       id,
     })
 

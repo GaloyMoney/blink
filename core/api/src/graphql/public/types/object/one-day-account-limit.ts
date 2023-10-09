@@ -49,7 +49,7 @@ const OneDayAccountLimit = GT.Object<{
         switch (limitType) {
           case AccountLimitsType.IntraLedger:
             volumeRemaining = await Accounts.remainingIntraLedgerLimit({
-              accountUuid: account.uuid,
+              accountId: account.id,
               priceRatio,
             })
             if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
@@ -58,7 +58,7 @@ const OneDayAccountLimit = GT.Object<{
 
           case AccountLimitsType.Withdrawal:
             volumeRemaining = await Accounts.remainingWithdrawalLimit({
-              accountUuid: account.uuid,
+              accountId: account.id,
               priceRatio,
             })
             if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
@@ -67,7 +67,7 @@ const OneDayAccountLimit = GT.Object<{
 
           case AccountLimitsType.SelfTrade:
             volumeRemaining = await Accounts.remainingTradeIntraAccountLimit({
-              accountUuid: account.uuid,
+              accountId: account.id,
               priceRatio,
             })
             if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)

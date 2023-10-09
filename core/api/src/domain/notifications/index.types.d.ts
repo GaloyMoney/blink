@@ -10,7 +10,7 @@ type TransactionNotificationBaseArgs = {
 }
 
 type TransactionReceivedNotificationBaseArgs = TransactionNotificationBaseArgs & {
-  recipientAccountUuid: AccountUuid
+  recipientAccountId: AccountId
   recipientWalletId: WalletId
   recipientDeviceTokens: DeviceToken[]
   recipientNotificationSettings: NotificationSettings
@@ -18,7 +18,7 @@ type TransactionReceivedNotificationBaseArgs = TransactionNotificationBaseArgs &
 }
 
 type TransactionSentNotificationBaseArgs = TransactionNotificationBaseArgs & {
-  senderAccountUuid: AccountUuid
+  senderAccountId: AccountId
   senderWalletId: WalletId
   senderDeviceTokens: DeviceToken[]
   senderNotificationSettings: NotificationSettings

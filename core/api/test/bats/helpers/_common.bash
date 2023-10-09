@@ -111,7 +111,7 @@ gql_file() {
 }
 
 new_idempotency_key() {
-  random_uuid
+  random_id
 }
 
 exec_graphql() {
@@ -150,11 +150,11 @@ graphql_output() {
   echo $output | jq -r "$@"
 }
 
-random_uuid() {
-  if [[ -e /proc/sys/kernel/random/uuid ]]; then
-    cat /proc/sys/kernel/random/uuid
+random_id() {
+  if [[ -e /proc/sys/kernel/random/id ]]; then
+    cat /proc/sys/kernel/random/id
   else
-    uuidgen
+    idgen
   fi
 }
 

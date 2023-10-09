@@ -5,18 +5,18 @@ import {
 import { AccountsRepository } from "@/services/mongoose"
 
 export const disableNotificationCategory = async ({
-  accountUuid,
+  accountId,
   notificationChannel,
   notificationCategory,
 }: {
-  accountUuid: AccountUuid
+  accountId: AccountId
   notificationChannel?: NotificationChannel
   notificationCategory: string
 }): Promise<Account | ApplicationError> => {
   const checkedNotificationCategory = checkedToNotificationCategory(notificationCategory)
   if (checkedNotificationCategory instanceof Error) return checkedNotificationCategory
 
-  const account = await AccountsRepository().findByUuid(accountUuid)
+  const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
   const newNotificationSettings = domainDisableNotificationCategory({

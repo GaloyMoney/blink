@@ -14,14 +14,12 @@ const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
 describe("onChainAddress", () => {
   it("fails if account is locked", async () => {
     const newWalletDescriptor = await createRandomUserAndBtcWallet()
-    const newAccount = await AccountsRepository().findByUuid(
-      newWalletDescriptor.accountUuid,
-    )
+    const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
 
     // Lock account
     const updatedAccount = await Accounts.updateAccountStatus({
-      accountUuid: newAccount.uuid,
+      accountId: newAccount.id,
       status: AccountStatus.Locked,
       updatedByPrivilegedClientId,
     })

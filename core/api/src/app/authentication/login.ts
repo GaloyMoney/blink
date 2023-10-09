@@ -304,7 +304,7 @@ export const loginDeviceUpgradeWithPhone = async ({
 
   // Complex path - Phone account already exists
   // is there still txns left over on the device account?
-  const deviceWallets = await WalletsRepository().listByAccountUuid(account.uuid)
+  const deviceWallets = await WalletsRepository().listByAccountId(account.id)
   if (deviceWallets instanceof Error) return deviceWallets
   const ledger = LedgerService()
   let deviceAccountHasBalance = false

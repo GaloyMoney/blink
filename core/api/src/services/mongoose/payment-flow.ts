@@ -227,7 +227,7 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
 
     senderWalletId: paymentFlowState.senderWalletId as WalletId,
     senderWalletCurrency: paymentFlowState.senderWalletCurrency as S,
-    senderAccountUuid: paymentFlowState.senderAccountUuid as AccountUuid,
+    senderAccountId: paymentFlowState.senderAccountId as AccountId,
     settlementMethod: paymentFlowState.settlementMethod as SettlementMethod,
     paymentInitiationMethod:
       paymentFlowState.paymentInitiationMethod as PaymentInitiationMethod,
@@ -245,8 +245,7 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
 
     recipientWalletId: (paymentFlowState.recipientWalletId as WalletId) || undefined,
     recipientWalletCurrency: (paymentFlowState.recipientWalletCurrency as R) || undefined,
-    recipientAccountUuid:
-      (paymentFlowState.recipientAccountUuid as AccountUuid) || undefined,
+    recipientAccountId: (paymentFlowState.recipientAccountId as AccountId) || undefined,
     recipientPubkey: (paymentFlowState.recipientPubkey as Pubkey) || undefined,
     recipientUsername: (paymentFlowState.recipientUsername as Username) || undefined,
     recipientUserId: (paymentFlowState.recipientUserId as UserId) || undefined,
@@ -274,7 +273,7 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
 
     senderWalletId: paymentFlow.senderWalletId,
     senderWalletCurrency: paymentFlow.senderWalletCurrency,
-    senderAccountUuid: paymentFlow.senderAccountUuid,
+    senderAccountId: paymentFlow.senderAccountId,
     settlementMethod: paymentFlow.settlementMethod,
     paymentInitiationMethod: paymentFlow.paymentInitiationMethod,
     descriptionFromInvoice: paymentFlow.descriptionFromInvoice,
@@ -291,7 +290,7 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
 
     recipientWalletId: paymentFlow.recipientWalletId,
     recipientWalletCurrency: paymentFlow.recipientWalletCurrency,
-    recipientAccountUuid: paymentFlow.recipientAccountUuid,
+    recipientAccountId: paymentFlow.recipientAccountId,
     recipientPubkey: paymentFlow.recipientPubkey,
     recipientUsername: paymentFlow.recipientUsername,
     recipientUserId: paymentFlow.recipientUserId,

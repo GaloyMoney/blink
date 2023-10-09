@@ -36,7 +36,7 @@ const FeedbackSubmitMutation = GT.Field<
 
     const success = await Comm.submitFeedback({
       feedback,
-      accountUuid: domainAccount.uuid,
+      accountId: domainAccount.id,
       username: domainAccount.username,
     })
 

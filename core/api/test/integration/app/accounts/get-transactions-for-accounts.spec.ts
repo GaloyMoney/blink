@@ -53,8 +53,8 @@ describe("getTransactionsForAccountByWalletIds", () => {
     const memo = randomMemo()
 
     const senderWalletDescriptor = await createRandomUserAndBtcWallet()
-    const senderAccount = await AccountsRepository().findByUuid(
-      senderWalletDescriptor.accountUuid,
+    const senderAccount = await AccountsRepository().findById(
+      senderWalletDescriptor.accountId,
     )
     if (senderAccount instanceof Error) throw senderAccount
 

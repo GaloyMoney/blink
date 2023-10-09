@@ -53,7 +53,7 @@ type PaymentFlowCommonState<
 > = AmountsAndFees & {
   senderWalletId: WalletId
   senderWalletCurrency: S
-  senderAccountUuid: AccountUuid
+  senderAccountId: AccountId
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
   createdAt: Date
@@ -63,7 +63,7 @@ type PaymentFlowCommonState<
 
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
-  recipientAccountUuid?: AccountUuid
+  recipientAccountId?: AccountId
   recipientPubkey?: Pubkey
   recipientUsername?: Username
   recipientUserId?: UserId
@@ -249,7 +249,7 @@ type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
 > & {
   senderWalletId: WalletId
   senderWalletCurrency: S
-  senderAccountUuid: AccountUuid
+  senderAccountId: AccountId
   usdPaymentAmount?: UsdPaymentAmount
 }
 
@@ -262,7 +262,7 @@ type LPFBWithRecipientWalletState<
   recipientPubkey?: Pubkey
   recipientUsername?: Username
   recipientUserId?: UserId
-  recipientAccountUuid?: AccountUuid
+  recipientAccountId?: AccountId
   recipientWalletDescriptors?: AccountWalletDescriptors
 }
 
@@ -380,7 +380,7 @@ type OPFBWithSenderWalletAndAccountState<S extends WalletCurrency> =
   OPFBWithAddressState & {
     senderWalletId: WalletId
     senderWalletCurrency: S
-    senderAccountUuid: AccountUuid
+    senderAccountId: AccountId
     senderWithdrawFee: Satoshis
   }
 
@@ -394,7 +394,7 @@ type OPFBWithRecipientWalletState<
   recipientWalletCurrency?: R
   recipientUsername?: Username
   recipientUserId?: UserId
-  recipientAccountUuid?: AccountUuid
+  recipientAccountId?: AccountId
   recipientWalletDescriptors?: AccountWalletDescriptors
 }
 

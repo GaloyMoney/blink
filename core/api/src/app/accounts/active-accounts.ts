@@ -31,12 +31,12 @@ export const getRecentlyActiveAccounts = async function* ():
     // a mongodb query would be able to get the wallet in aggregate directly
     // from medici_transactions instead
 
-    const wallets = await WalletsRepository().listByAccountUuid(account.uuid)
+    const wallets = await WalletsRepository().listByAccountId(account.id)
     if (wallets instanceof Error) {
       recordExceptionInCurrentSpan({
         error: wallets,
         level: ErrorLevel.Critical,
-        attributes: { account: account.uuid },
+        attributes: { account: account.id },
       })
       continue
     }
@@ -46,7 +46,7 @@ export const getRecentlyActiveAccounts = async function* ():
       recordExceptionInCurrentSpan({
         error: isActive,
         level: ErrorLevel.Critical,
-        attributes: { account: account.uuid, wallets: JSON.stringify(wallets) },
+        attributes: { account: account.id, wallets: JSON.stringify(wallets) },
       })
       continue
     }

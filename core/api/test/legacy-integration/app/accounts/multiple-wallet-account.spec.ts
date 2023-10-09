@@ -25,17 +25,17 @@ it("change default walletId of account", async () => {
   })
   if (account instanceof Error) throw account
 
-  const accountUuid = account.uuid
+  const accountId = account.id
 
   const newWallet = await WalletsRepository().persistNew({
-    accountUuid,
+    accountId,
     type: WalletType.Checking,
     currency: WalletCurrency.Btc,
   })
   if (newWallet instanceof Error) throw newWallet
 
   const newAccount = await Accounts.updateDefaultWalletId({
-    accountUuid,
+    accountId,
     walletId: newWallet.id,
   })
 
@@ -48,7 +48,7 @@ it("fail to create an invalid account", async () => {
   const id = new mongoose.Types.ObjectId()
 
   const newWallet = await WalletsRepository().persistNew({
-    accountUuid: id as unknown as AccountUuid,
+    accountId: id as unknown as AccountId,
     type: WalletType.Checking,
     currency: WalletCurrency.Btc,
   })
@@ -65,7 +65,7 @@ it("does not add a usd wallet if one exists", async () => {
   expect(usdWalletId).toBeDefined()
 
   const newWallet = await Accounts.addWalletIfNonexistent({
-    accountUuid: account.uuid,
+    accountId: account.id,
     type: WalletType.Checking,
     currency: WalletCurrency.Usd,
   })

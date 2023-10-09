@@ -20,7 +20,7 @@ export const createOnChainAddress = async ({
 }) => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
-  const account = await AccountsRepository().findByUuid(wallet.accountUuid)
+  const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
 
   const accountValidator = AccountValidator(account)
@@ -44,14 +44,14 @@ export const createOnChainAddress = async ({
   }
 
   if (onChainAddress === undefined) {
-    const limitOk = await checkOnChainAddressAccountUuidLimits(wallet.accountUuid)
+    const limitOk = await checkOnChainAddressAccountIdLimits(wallet.accountId)
     if (limitOk instanceof Error) return limitOk
 
     const newOnChainAddress = await onChain.getAddressForWallet({
       walletDescriptor: {
         id: wallet.id,
         currency: wallet.currency,
-        accountUuid: wallet.accountUuid,
+        accountId: wallet.accountId,
       },
       requestId,
     })
@@ -78,10 +78,10 @@ export const createOnChainAddress = async ({
   return onChainAddress.address
 }
 
-const checkOnChainAddressAccountUuidLimits = async (
-  accountUuid: AccountUuid,
+const checkOnChainAddressAccountIdLimits = async (
+  accountId: AccountId,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
     rateLimitConfig: RateLimitConfig.onChainAddressCreate,
-    keyToConsume: accountUuid,
+    keyToConsume: accountId,
   })

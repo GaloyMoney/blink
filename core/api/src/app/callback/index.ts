@@ -6,10 +6,10 @@ import { CallbackService } from "@/services/svix"
 import { UnknownSvixError } from "@/services/svix/errors"
 
 export const addEndpoint = async ({
-  accountUuid,
+  accountId,
   url,
 }: {
-  accountUuid: AccountUuid
+  accountId: AccountId
   url: string
 }) => {
   const validationResult = z.string().url().safeParse(url)
@@ -18,7 +18,7 @@ export const addEndpoint = async ({
   }
 
   const callbackService = CallbackService(getCallbackServiceConfig())
-  const res = await callbackService.addEndpoint({ accountUuid, url })
+  const res = await callbackService.addEndpoint({ accountId, url })
 
   if (res instanceof Error) return res
   if (!res) throw new UnknownSvixError("CallbackService not configured")
@@ -26,23 +26,23 @@ export const addEndpoint = async ({
   return { id: res.id }
 }
 
-export const listEndpoints = async (accountUuid: AccountUuid) => {
+export const listEndpoints = async (accountId: AccountId) => {
   const callbackService = CallbackService(getCallbackServiceConfig())
-  const res = await callbackService.listEndpoints(accountUuid)
+  const res = await callbackService.listEndpoints(accountId)
 
   if (res instanceof Error) return res
   return res
 }
 
 export const deleteEndpoint = async ({
-  accountUuid,
+  accountId,
   id,
 }: {
-  accountUuid: AccountUuid
+  accountId: AccountId
   id: string
 }) => {
   const callbackService = CallbackService(getCallbackServiceConfig())
-  const success = await callbackService.deleteEndpoint({ accountUuid, endpointId: id })
+  const success = await callbackService.deleteEndpoint({ accountId, endpointId: id })
 
   if (success instanceof Error) return success
   return success

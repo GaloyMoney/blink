@@ -1,19 +1,19 @@
-import { checkedToAccountUuid } from "@/domain/accounts"
+import { checkedToAccountId } from "@/domain/accounts"
 import { AccountsRepository } from "@/services/mongoose"
 
 export const updateAccountLevel = async ({
-  accountUuid: accountUuidRaw,
+  accountId: AccountIdRaw,
   level,
 }: {
-  accountUuid: string
+  accountId: string
   level: AccountLevel
 }): Promise<Account | ApplicationError> => {
-  const accountUuid = checkedToAccountUuid(accountUuidRaw)
-  if (accountUuid instanceof Error) return accountUuid
+  const accountId = checkedToAccountId(AccountIdRaw)
+  if (accountId instanceof Error) return accountId
 
   const accountsRepo = AccountsRepository()
 
-  const account = await accountsRepo.findByUuid(accountUuid)
+  const account = await accountsRepo.findById(accountId)
   if (account instanceof Error) return account
 
   account.level = level
