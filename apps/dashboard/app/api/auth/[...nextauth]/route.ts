@@ -1,6 +1,4 @@
 import NextAuth from "next-auth"
-import GithubProvider from "next-auth/providers/auth0"
-import { ProviderType } from "next-auth/providers/index"
 
 const type = "oauth" as const // as ProviderType
 

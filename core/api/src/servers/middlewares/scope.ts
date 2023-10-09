@@ -1,4 +1,4 @@
-import { ScopesOauth2 } from "@domain/authorization"
+import { ScopesOauth2 } from "../../../../../src/domain/authorization"
 import { AuthorizationError } from "@domain/errors"
 import { mapError } from "@graphql/error-map"
 import { mutationFields } from "@graphql/public"

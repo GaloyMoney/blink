@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import React from "react";
-import { hydraClient } from "../hydra-config";
-import { oidcConformityMaybeFakeSession } from "../oidc-cert";
+import { hydraClient } from "../../services/hydra";
 import MainContent from "../components/main-container";
 import Card from "../components/card";
 import Logo from "../components/logo";
 import ScopeItem from "../components/scope-item/scope-item";
-import ButtonComponent from "../components/button-component";
+import PrimaryButton from "../components/button/primary-button-component";
+import SecondaryButton from "../components/button/secondary-button-component";
 import { cookies } from "next/headers";
 
 interface ConsentProps {
@@ -17,18 +17,12 @@ const submitForm = async (form: FormData) => {
   "use server";
   const consent_challenge = form.get("consent_challenge");
   const submitValue = form.get("submit");
-  const email = form.get("email");
   const remember = form.get("remember") === "1";
   const grantScope = form
     .getAll("grant_scope")
     .map((value) => value.toString());
 
-  if (
-    !consent_challenge ||
-    !email ||
-    typeof consent_challenge !== "string" ||
-    typeof email !== "string"
-  ) {
+  if (!consent_challenge || typeof consent_challenge !== "string") {
     console.error("INVALID PARAMS");
     return;
   }
@@ -47,12 +41,6 @@ const submitForm = async (form: FormData) => {
   }
 
   let responseConfirm;
-  let session = {
-    // need more context on this
-    access_token: { card: "alice", email },
-    id_token: { card: "bob", email },
-  };
-
   const responseInit = await hydraClient.getOAuth2ConsentRequest({
     consentChallenge: consent_challenge,
   });
@@ -62,7 +50,6 @@ const submitForm = async (form: FormData) => {
     consentChallenge: consent_challenge,
     acceptOAuth2ConsentRequest: {
       grant_scope: grantScope,
-      session: oidcConformityMaybeFakeSession(grantScope, body, session),
       grant_access_token_audience: body.requested_access_token_audience,
       remember: remember,
       remember_for: 3600,
@@ -95,12 +82,6 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
     throw new Error("Cannot find cookies");
   }
 
-  const { email } = JSON.parse(cookieStore.value);
-
-  if (!email) {
-    throw new Error("Email Not Found");
-  }
-
   if (body.client?.skip_consent) {
     let response;
     response = await hydraClient.acceptOAuth2ConsentRequest({
@@ -108,11 +89,6 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
       acceptOAuth2ConsentRequest: {
         grant_scope: body.requested_scope,
         grant_access_token_audience: body.requested_access_token_audience,
-        session: {
-          //  need more context on this
-          access_token: { card: "alice", email },
-          id_token: { who: "bob", email },
-        },
       },
     });
     redirect(String(response.data.redirect_to));
@@ -122,7 +98,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
   const { client, requested_scope } = body;
 
   if (!user || !client || !requested_scope) {
-    return <p>INTERNAL SERVER ERROR</p>;
+   throw new Error("Invalid Request ")
   }
 
   return (
@@ -137,7 +113,6 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
         </div>
 
         <form action={submitForm} className="flex flex-col">
-          <input type="hidden" name="email" value={email} />
           <input
             type="hidden"
             name="consent_challenge"
@@ -200,25 +175,23 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
             </label>
           </p>
           <div className="flex flex-col md:flex-row w-full gap-2">
-            <button
+            <SecondaryButton
               type="submit"
               id="reject"
               name="submit"
               value="Deny access"
-              className="flex-1 bg-red-500 text-white  p-2 rounded-lg hover:bg-red-700 mb-2 md:mb-0"
             >
               Deny
-            </button>
+            </SecondaryButton>
 
-            <ButtonComponent
+            <PrimaryButton
               type="submit"
               id="accept"
               name="submit"
               value="Allow access"
-              className="flex-1 bg-blue-500 text-white  p-2 rounded-lg hover:bg-blue-700"
             >
               Allow
-            </ButtonComponent>
+            </PrimaryButton>
           </div>
         </form>
       </Card>

@@ -1,22 +1,30 @@
 import { OAuth2LoginRequest, OAuth2RedirectTo } from "@ory/hydra-client";
 import { redirect } from "next/navigation";
 import React from "react";
-import { hydraClient } from "../hydra-config";
-import axios from "axios";
-import { env } from "@/env";
+import { hydraClient } from "../../services/hydra";
 import InputComponent from "../components/input-component";
 import Card from "../components/card";
 import MainContent from "../components/main-container";
 import Logo from "../components/logo";
-import ButtonComponent from "../components/button-component";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import authApi from "@/services/galoy-auth";
+import Heading from "../components/heading";
+import SubHeading from "../components/sub-heading";
+import FormComponent from "../components/form-component";
+import Separator from "../components/separator";
+import PrimaryButton from "../components/button/primary-button-component";
+import SecondaryButton from "../components/button/secondary-button-component";
+import { LoginType } from "../index.types";
+import { LoginEmailResponse } from "./email-login.types";
 
 interface LoginProps {
   login_challenge: string;
 }
 
-async function submitForm(formData: FormData) {
+async function submitForm(
+  formData: FormData
+): Promise<LoginEmailResponse | void> {
   "use server";
   const login_challenge = formData.get("login_challenge");
   const submitValue = formData.get("submit");
@@ -25,12 +33,13 @@ async function submitForm(formData: FormData) {
   if (
     !login_challenge ||
     !submitValue ||
+    !remember ||
     typeof login_challenge !== "string" ||
     typeof submitValue !== "string"
   ) {
-    console.error("Invalid Values");
-    return;
+    throw new Error("Invalid Value");
   }
+
   if (submitValue === "Deny access") {
     console.log("User denied access");
     const response = await hydraClient.rejectOAuth2LoginRequest({
@@ -44,26 +53,21 @@ async function submitForm(formData: FormData) {
   }
 
   if (!email || typeof email !== "string") {
-    console.error("Invalid Values");
-    return;
+    console.error("Invalid Values for email");
+    throw new Error("Invalid Email Value");
   }
 
-  let emailLoginId = "email";
-  const result = await axios.post(`${env.AUTH_URL}/auth/phone/code`, {
-    email,
-  });
-  emailLoginId = result.data.result;
-
+  const emailCodeRequest = await authApi.requestEmailCode(email);
   // TODO: manage error on ip rate limit
   // TODO: manage error when trying the same email too often
 
   cookies().set(
     login_challenge,
     JSON.stringify({
-      loginType: "email",
+      loginType: LoginType.email,
+      loginId: emailCodeRequest,
       value: email,
       remember,
-      loginId: emailLoginId,
     }),
     { secure: true }
   );
@@ -71,13 +75,12 @@ async function submitForm(formData: FormData) {
   let params = new URLSearchParams({
     login_challenge,
   });
-
   redirect(`/login/verification?${params}`);
 }
 
 const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
-  let body: OAuth2LoginRequest;
   const { login_challenge } = searchParams;
+  let body: OAuth2LoginRequest;
 
   if (!login_challenge) {
     throw new Error("Invalid Request");
@@ -104,17 +107,11 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
     <MainContent>
       <Card>
         <Logo />
-        <h1 className="text-center mb-4 text-xl font-semibold">
-          Sign In with Blink
-        </h1>
-
-        <div className="flex justify-center mb-4">
-          <div className="text-center text-sm w-60">
-            Enter your Blink Account ID to sign in to this application.
-          </div>
-        </div>
-
-        <form action={submitForm} className="flex flex-col">
+        <Heading>Sign In with Blink</Heading>
+        <SubHeading>
+          Enter your Blink Account ID to sign in to this application.
+        </SubHeading>
+        <FormComponent action={submitForm}>
           <input type="hidden" name="login_challenge" value={login_challenge} />
           <InputComponent
             label="Email"
@@ -124,7 +121,6 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
             required
             placeholder="Email Id"
           />
-
           <div className="flex items-center mb-4">
             <label className="text-gray-700 text-sm flex items-center">
               <input
@@ -138,53 +134,36 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
               Remember me
             </label>
           </div>
-
-          <div className="relative flex items-center justify-center mb-4">
-            <div className="absolute inset-y-0 left-0 flex items-center justify-center w-1/2">
-              <div className="h-px bg-gray-300 w-full"></div>
-            </div>
-            <span className="relative z-10 bg-white px-2 text-gray-500 text-sm ">
-              or
-            </span>
-            <div className="absolute inset-y-0 right-0 flex items-center justify-center w-1/2">
-              <div className="h-px bg-gray-300 w-full"></div>
-            </div>
-          </div>
-
+          <Separator>or</Separator>
           <div className="flex justify-center mb-4">
             <div className="text-center text-sm w-60">
               <Link
                 href={`/login/phone?login_challenge=${login_challenge}`}
                 replace
               >
-                <p className="underline font-semibold text-sm">
-                  Sign in with phone number
-                </p>
+                <p className="font-semibold text-sm">Sign in with phone</p>
               </Link>
             </div>
           </div>
-
           <div className="flex flex-col md:flex-row w-full gap-2">
-            <button
+            <SecondaryButton
               type="submit"
               id="reject"
               name="submit"
               value="Deny access"
-              className="flex-1 bg-red-500 text-white p-2 rounded-lg hover:bg-red-700 mb-2 md:mb-0"
             >
               Cancel
-            </button>
-            <ButtonComponent
+            </SecondaryButton>
+            <PrimaryButton
               type="submit"
               id="accept"
               name="submit"
               value="Log in"
-              className="flex-1 bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-700"
             >
               Next
-            </ButtonComponent>
+            </PrimaryButton>
           </div>
-        </form>
+        </FormComponent>
       </Card>
     </MainContent>
   );

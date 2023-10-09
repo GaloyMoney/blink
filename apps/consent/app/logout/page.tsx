@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import React from "react";
-import { hydraClient } from "../hydra-config";
+import { hydraClient } from "../../services/hydra";
 
 interface logOutProps {
   logout_challenge: string;
