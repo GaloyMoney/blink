@@ -77,7 +77,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
       recipientWalletDescriptors: AccountWalletDescriptors
       pubkey: Pubkey
       usdPaymentAmount: UsdPaymentAmount | undefined
-      username: Username | undefined
+      username: Username
       userId: UserId
     }
   | ApplicationError
