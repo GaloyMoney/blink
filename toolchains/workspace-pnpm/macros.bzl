@@ -195,13 +195,17 @@ def tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
         "--package-dir",
         cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
         "--tsc-bin",
-        cmd_args(ctx.attrs.tsc[RunInfo]),
+        ctx.attrs.tsc[RunInfo],
         "--tsconfig",
-        cmd_args(ctx.attrs.tsconfig),
+        ctx.attrs.tsconfig,
         "--tscpaths-bin",
-        cmd_args(ctx.attrs.tscpaths[RunInfo]),
-        cmd_args(out.as_output()),
+        ctx.attrs.tscpaths[RunInfo],
     )
+    for src in ctx.attrs.additional_dist_files:
+        cmd.add("--add-to-dist")
+        cmd.add(src)
+
+    cmd.add(out.as_output())
 
     ctx.actions.run(cmd, category = "tsc", identifier = ctx.label.package)
 
@@ -248,7 +252,12 @@ _tsc_build = rule(
         "srcs": attrs.list(
             attrs.source(),
             default = [],
-            doc = """List of package source files to track.""",
+            doc = """List of source files to build.""",
+        ),
+        "additional_dist_files": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of additional files to copy to the dist output.""",
         ),
         "node_modules": attrs.source(
             doc = """Target which builds package `node_modules`.""",
