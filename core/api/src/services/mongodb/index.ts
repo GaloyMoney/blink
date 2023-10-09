@@ -26,7 +26,7 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
   dealerBtcWalletResolver: async () => {
     const account: AccountRecord | null = await Account.findOne(
       { role: "dealer" },
-      { id: 1 },
+      { uuid: 1 },
     )
     if (!account) throw new MissingDealerAccountConfigError()
     const wallets = await WalletsRepository().listByAccountUuid(
@@ -34,7 +34,7 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     )
     if (wallets instanceof Error) {
       baseLogger.error({ err: wallets }, "Error while listing wallets for dealer")
-      throw new UnknownConfigError("Couldn't load dealer wallets")
+      throw new UnknownConfigError("Couldn't load btc dealer wallets")
     }
     const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Btc)
     if (wallet === undefined) throw new MissingBtcDealerWalletConfigError()
@@ -43,7 +43,7 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
   dealerUsdWalletResolver: async () => {
     const account: AccountRecord | null = await Account.findOne(
       { role: "dealer" },
-      { id: 1 },
+      { uuid: 1 },
     )
     if (!account) throw new MissingDealerAccountConfigError()
     const wallets = await WalletsRepository().listByAccountUuid(
@@ -51,7 +51,7 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     )
     if (wallets instanceof Error) {
       baseLogger.error({ err: wallets }, "Error while listing wallets for dealer")
-      throw new UnknownConfigError("Couldn't load dealer wallets")
+      throw new UnknownConfigError("Couldn't load usd dealer wallets")
     }
     const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Usd)
     if (wallet === undefined) throw new MissingUsdDealerWalletConfigError()
