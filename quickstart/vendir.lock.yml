@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: #3311 (#3315)'
-      sha: 0d444f1e6ad415421eb1e97bc51700de13c7f528
+      commitTitle: 'chore: silencing current implicit any in test (#3314)...'
+      sha: 9176bd88302e1ff26b9abc419f5f2eb24e7bd9d9
       tags:
-      - 0.13.118-1-g0d444f1e6
+      - 0.13.119-1-g9176bd883
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: #3311 (#3315)'
-      sha: 0d444f1e6ad415421eb1e97bc51700de13c7f528
+      commitTitle: 'chore: silencing current implicit any in test (#3314)...'
+      sha: 9176bd88302e1ff26b9abc419f5f2eb24e7bd9d9
       tags:
-      - 0.13.118-1-g0d444f1e6
+      - 0.13.119-1-g9176bd883
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: #3311 (#3315)'
-      sha: 0d444f1e6ad415421eb1e97bc51700de13c7f528
+      commitTitle: 'chore: silencing current implicit any in test (#3314)...'
+      sha: 9176bd88302e1ff26b9abc419f5f2eb24e7bd9d9
       tags:
-      - 0.13.118-1-g0d444f1e6
+      - 0.13.119-1-g9176bd883
     path: ./
   path: ./graphql
 kind: LockConfig
