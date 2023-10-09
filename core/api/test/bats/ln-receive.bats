@@ -24,8 +24,6 @@ setup_file() {
 }
 
 teardown_file() {
-  remove_callbacks "$ALICE_TOKEN_NAME"
-
   stop_trigger
   stop_server
   stop_ws_server

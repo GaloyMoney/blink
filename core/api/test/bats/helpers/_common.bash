@@ -47,7 +47,7 @@ read_value() {
 
 is_number() {
   if ! [[ $1 =~ ^-?[0-9]+$ ]]; then
-    echo "Error: Input is not a number"
+    echo "Error: $2 input is not a number: $1"
     exit 1
   fi
 }

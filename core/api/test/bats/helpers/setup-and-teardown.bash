@@ -68,21 +68,6 @@ add_callback() {
   exec_graphql "$token_name" 'callback-endpoint-add' "$variables"
 }
 
-remove_callbacks() {
-  local token_name=$1
-
-  exec_graphql "$token_name" 'callback-endpoints-list'
-  graphql_output '.data.me.defaultAccount.callbackEndpoints[].id' \
-  | while read -r id; do
-      variables=$(
-        jq -n \
-        --arg id "$id" \
-        '{input: {id: $id}}'
-      )
-      exec_graphql "$token_name" 'callback-endpoint-delete' "$variables"
-    done
-}
-
 start_ws_server() {
   stop_ws_server > /dev/null 2>&1 || true
 
@@ -154,11 +139,11 @@ balance_for_check() {
   }
 
   lnd_balance_sync=$(get_metric "galoy_lndBalanceSync")
-  is_number "$lnd_balance_sync"
+  is_number "$lnd_balance_sync" "lnd_balance_sync"
   abs_lnd_balance_sync=$(abs $lnd_balance_sync)
 
   assets_eq_liabilities=$(get_metric "galoy_assetsEqLiabilities")
-  is_number "$assets_eq_liabilities"
+  is_number "$assets_eq_liabilities" "assets_eq_liabilities"
   abs_assets_eq_liabilities=$(abs $assets_eq_liabilities)
 
   echo $(( $abs_lnd_balance_sync + $abs_assets_eq_liabilities ))

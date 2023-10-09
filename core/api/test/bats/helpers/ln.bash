@@ -284,7 +284,6 @@ get_from_transaction_by_ln_hash_and_status() {
     | select(.node.status == $expected_status)
     .node'
 
-  echo "get_from_transaction_by_ln_hash_and_status"
   echo $output \
     | jq -r \
       --arg payment_hash "$payment_hash" \
