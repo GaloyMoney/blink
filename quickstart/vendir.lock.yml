@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: silencing current implicit any in test (#3314)...'
-      sha: 9176bd88302e1ff26b9abc419f5f2eb24e7bd9d9
+      commitTitle: 'chore: removing legacy login admin panel (#3292)...'
+      sha: be54143fcf6fc395b34359c3d85072c5bed8e943
       tags:
-      - 0.13.119-1-g9176bd883
+      - 0.13.120-1-gbe54143fc
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: silencing current implicit any in test (#3314)...'
-      sha: 9176bd88302e1ff26b9abc419f5f2eb24e7bd9d9
+      commitTitle: 'chore: removing legacy login admin panel (#3292)...'
+      sha: be54143fcf6fc395b34359c3d85072c5bed8e943
       tags:
-      - 0.13.119-1-g9176bd883
+      - 0.13.120-1-gbe54143fc
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: silencing current implicit any in test (#3314)...'
-      sha: 9176bd88302e1ff26b9abc419f5f2eb24e7bd9d9
+      commitTitle: 'chore: removing legacy login admin panel (#3292)...'
+      sha: be54143fcf6fc395b34359c3d85072c5bed8e943
       tags:
-      - 0.13.119-1-g9176bd883
+      - 0.13.120-1-gbe54143fc
     path: ./
   path: ./graphql
 kind: LockConfig
