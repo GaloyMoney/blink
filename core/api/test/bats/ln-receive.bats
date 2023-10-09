@@ -73,13 +73,13 @@ usd_amount=50
   [[ "${payment_hash}" != "null" ]] || exit 1
 
   # Get invoice by hash
-  invoice_for_wallet_by_hash_variables=$(
+  variables=$(
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     --arg payment_hash "$payment_hash" \
     '{walletId: $wallet_id, paymentHash: $payment_hash}'
   )
-  exec_graphql "$token_name" 'invoice-for-wallet-by-hash' "$invoice_for_wallet_by_hash_variables"
+  exec_graphql "$token_name" 'invoice-for-wallet-by-hash' "$variables"
   query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.invoiceByHash.paymentHash')"
   [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
 
@@ -92,6 +92,31 @@ usd_amount=50
 
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
+
+  # Get transaction by hash
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_hash "$payment_hash" \
+    '{walletId: $wallet_id, paymentHash: $payment_hash}'
+  )
+
+  exec_graphql "$token_name" 'transaction-for-wallet-by-hash' "$variables"
+  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.transactionByHash.initiationVia.paymentHash')"
+  [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
+  transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionByHash.id')"
+
+  # Get invoice by tx id
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg transaction_id "$transaction_id" \
+    '{walletId: $wallet_id, transactionId: $transaction_id}'
+  )
+  exec_graphql "$token_name" 'transaction-for-wallet-by-id' "$variables"
+  query_transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionById.id')"
+  [[ "${query_transaction_id}" == "${transaction_id}" ]] || exit 1
+
 
   # Check for callback
   num_callback_events_after=$(cat .e2e-callback.log | grep "$account_id" | wc -l)
