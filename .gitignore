@@ -48,3 +48,4 @@ junit.xml
 .env.local
 
 buck-out
+.buckconfig.local

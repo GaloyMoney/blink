@@ -6,16 +6,22 @@ def build_node_modules(**kwargs):
     pnpm_lock = "pnpm-lock.yaml"
     if not rule_exists(pnpm_lock):
         native.export_file(
-            name = "pnpm-lock.yaml"
+            name = pnpm_lock
         )
     package_json = "package.json"
     if not rule_exists(package_json):
         native.export_file(
-            name = "package.json"
+            name = package_json
+        )
+    workspace_override = "pnpm-workspace.yaml"
+    if not rule_exists(workspace_override):
+        native.export_file(
+            name = workspace_override
         )
     _build_node_modules(
         pnpm_lock = ":{}".format(pnpm_lock),
         package_json = ":{}".format(package_json),
+        workspace_override = ":{}".format(workspace_override),
         **kwargs,
     )
 
@@ -28,12 +34,14 @@ def build_node_modules_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
     cmd = cmd_args(
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         simple_pnpm_toolchain.build_node_modules[DefaultInfo].default_outputs,
+        "--pnpm-lock",
+        ctx.attrs.pnpm_lock,
+        "--package-json",
+        ctx.attrs.package_json,
+        "--workspace-override",
+        ctx.attrs.workspace_override,
+        out.as_output()
     )
-    cmd.add("--root-dir")
-    cmd.add(package_dir)
-
-    cmd.add(out.as_output())
-    cmd.hidden([ctx.attrs.pnpm_lock, ctx.attrs.package_json])
 
     ctx.actions.run(cmd, category = "pnpm", identifier = "install")
 
@@ -47,6 +55,9 @@ _build_node_modules = rule(
         ),
         "package_json": attrs.source(
             doc = """Package json file""",
+        ),
+        "workspace_override": attrs.source(
+            doc = """Pnpm workspace override file""",
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",

@@ -1,0 +1,15 @@
+[buck]
+hash_all_commands = true
+materializations = deferred
+restarter = true
+
+digest_algorithms = SHA256
+
+[buck2_re_client]
+engine_address = remote.buildbuddy.io
+action_cache_address = remote.buildbuddy.io
+cas_address = remote.buildbuddy.io
+http_headers = x-buildbuddy-api-key:<redacted>
+
+[build]
+execution_platforms = root//platforms:platforms
