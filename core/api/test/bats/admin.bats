@@ -88,18 +88,15 @@ gql_admin_file() {
   exec_admin_graphql $admin_token 'account-details-by-user-phone' "$variables"
   id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
   [[ "$id" != "null" && "$id" != "" ]] || exit 1
-  id="$(graphql_output '.data.accountDetailsByUserPhone.id')"
-  [[ "$id" != "null" && "$id" != "" ]] || exit 1
 
-  echo "id: $id"
   echo "id: $id"
 
   new_phone="$(random_phone)"
   variables=$(
     jq -n \
     --arg phone "$new_phone" \
-    --arg AccountId "$id" \
-    '{input: {phone: $phone, accountId:$AccountId}}'
+    --arg accountId "$id" \
+    '{input: {phone: $phone, accountId:$accountId}}'
   )
 
   exec_admin_graphql $admin_token 'user-update-phone' "$variables"

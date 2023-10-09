@@ -19,7 +19,7 @@ const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
 
 const EmailAddressRegex = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/i
 
-const IdRegex =
+const UuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 export const checkedToPhoneNumber = (
@@ -74,7 +74,7 @@ export const checkedToDeviceId = (
 export const checkedToIdentityUsername = (
   username: string,
 ): IdentityUsername | ValidationError => {
-  if (!username.match(IdRegex)) {
+  if (!username.match(UuidRegex)) {
     return new InvalidIdentityUsername(username)
   }
   return username as IdentityUsername
@@ -83,7 +83,7 @@ export const checkedToIdentityUsername = (
 export const checkedToIdentityPassword = (
   password: string,
 ): IdentityPassword | ValidationError => {
-  if (!password.match(IdRegex)) {
+  if (!password.match(UuidRegex)) {
     return new InvalidIdentityPassword(password)
   }
   return password as IdentityPassword

@@ -3,9 +3,6 @@ type AccountDetailPayload {
   errors: [Error!]!
 }
 
-"""Unique identifier of an account"""
-scalar AccountId
-
 enum AccountLevel {
   ONE
   TWO
@@ -21,8 +18,8 @@ enum AccountStatus {
 }
 
 input AccountUpdateLevelInput {
-  accountId: AccountId!
   level: AccountLevel!
+  uid: ID!
 }
 
 input AccountUpdateStatusInput {

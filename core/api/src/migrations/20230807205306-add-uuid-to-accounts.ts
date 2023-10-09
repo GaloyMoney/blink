@@ -1,7 +1,7 @@
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
 // @ts-nocheck
 /* eslint @typescript-eslint/no-var-requires: "off" */
-const getUuidByString = require("id-by-string")
+const getUuidByString = require("uuid-by-string")
 
 async function migrateAccounts(db, batchSize = 100) {
   const cursor = db.collection("accounts").find()
@@ -11,11 +11,11 @@ async function migrateAccounts(db, batchSize = 100) {
     const batchUpdates = []
     for (let i = 0; i < batchSize && (await cursor.hasNext()); i++) {
       const account = await cursor.next()
-      const id = account.id || getUuidByString(account._id.toString())
+      const id = account.uuid || getUuidByString(account._id.toString())
       batchUpdates.push({
         updateOne: {
           filter: { _id: account._id },
-          update: { $set: { id }, $unset: { id: 1 } },
+          update: { $set: { id }, $unset: { uuid: 1 } },
         },
       })
     }
@@ -41,6 +41,6 @@ module.exports = {
   },
 
   async down() {
-    console.log(`Rollback of add id to Account Schema migration not needed`)
+    console.log(`Rollback of add uuid to Account Schema migration not needed`)
   },
 }

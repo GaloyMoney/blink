@@ -85,7 +85,7 @@ export const CallbackService = (config: SvixConfig) => {
       const prefixedPayload = prefixObjectKeys(payload, "callback.payload.")
       addAttributesToCurrentSpan({
         ...prefixedPayload,
-        ["callback.AccountId"]: accountId,
+        ["callback.accountId"]: accountId,
         ["callback.eventType"]: eventType,
       })
       baseLogger.info({ res }, `message sent successfully to ${accountCallbackId}`)

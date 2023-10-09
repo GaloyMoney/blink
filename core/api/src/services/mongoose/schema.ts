@@ -336,7 +336,7 @@ const AccountIpsSchema = new Schema<AccountIpsRecord>({
 export const AccountIps = mongoose.model<AccountIpsRecord>("AccountIp", AccountIpsSchema)
 
 AccountIpsSchema.index({
-  _AccountId: 1,
+  accountId: 1,
   ip: 1,
 })
 

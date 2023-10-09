@@ -3,13 +3,13 @@ import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
 import AccountLevel from "@/graphql/shared/types/scalar/account-level"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
-import AccountId from "@/graphql/shared/types/scalar/account-id"
 
 const AccountUpdateLevelInput = GT.Input({
   name: "AccountUpdateLevelInput",
   fields: () => ({
-    accountId: {
-      type: GT.NonNull(AccountId),
+    // FIXME: should be account id
+    uid: {
+      type: GT.NonNullID,
     },
     level: {
       type: GT.NonNull(AccountLevel),
@@ -22,7 +22,7 @@ const AccountUpdateLevelMutation = GT.Field<
   GraphQLAdminContext,
   {
     input: {
-      accountId: AccountId | Error
+      uid: string | Error
       level: AccountLevel | Error
     }
   }
@@ -35,12 +35,12 @@ const AccountUpdateLevelMutation = GT.Field<
     input: { type: GT.NonNull(AccountUpdateLevelInput) },
   },
   resolve: async (_, args) => {
-    const { accountId, level } = args.input
+    const { uid, level } = args.input
 
     if (level instanceof Error) return { errors: [{ message: level.message }] }
-    if (accountId instanceof Error) return { errors: [{ message: accountId.message }] }
+    if (uid instanceof Error) return { errors: [{ message: uid.message }] }
 
-    const account = await Accounts.updateAccountLevel({ accountId, level })
+    const account = await Accounts.updateAccountLevel({ accountId: uid, level })
 
     if (account instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(account)] }
