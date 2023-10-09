@@ -1,6 +1,6 @@
 import dedent from "dedent"
 
-import { Accounts, Payments } from "@/app"
+import { Payments } from "@/app"
 import { checkedToWalletId } from "@/domain/wallets"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import { GT } from "@/graphql/index"
@@ -46,14 +46,6 @@ const IntraLedgerPaymentSendMutation = GT.Field<null, GraphQLPublicContextAuth>(
     const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
     if (recipientWalletIdChecked instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(recipientWalletIdChecked)] }
-    }
-
-    // TODO: confirm whether we need to check for username here
-    const recipientUsername = await Accounts.getUsernameFromWalletId(
-      recipientWalletIdChecked,
-    )
-    if (recipientUsername instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(recipientUsername)] }
     }
 
     const status = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
