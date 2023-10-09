@@ -8,11 +8,11 @@ import { addAttributesToCurrentSpan } from "@/services/tracing"
 export const updateUserPhone = async ({
   accountUuid: accountUuidRaw,
   phone,
-  updatedByUserId,
+  updatedByPrivilegedClientId,
 }: {
   accountUuid: string
   phone: PhoneNumber
-  updatedByUserId: UserId
+  updatedByPrivilegedClientId: PrivilegedClientId
 }): Promise<Account | ApplicationError> => {
   const accountUuid = checkedToAccountUuid(accountUuidRaw)
   if (accountUuid instanceof Error) return accountUuid
@@ -35,7 +35,7 @@ export const updateUserPhone = async ({
     const result = await markAccountForDeletion({
       accountId: newAccount.id,
       cancelIfPositiveBalance: true,
-      updatedByUserId,
+      updatedByPrivilegedClientId,
     })
     if (result instanceof Error) return result
   }

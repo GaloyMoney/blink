@@ -3,8 +3,8 @@ import OneTimeAuthCode from "@/graphql/shared/types/scalar/one-time-auth-code"
 
 import Phone from "@/graphql/shared/types/scalar/phone"
 import AuthTokenPayload from "@/graphql/shared/types/payload/auth-token"
-import { Authentication } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { Authentication } from "@/app"
 
 const UserLoginInput = GT.Input({
   name: "UserLoginInput",
@@ -20,7 +20,7 @@ const UserLoginInput = GT.Input({
 
 const UserLoginMutation = GT.Field<
   null,
-  GraphQLPublicContext | GraphQLAdminContext,
+  GraphQLPublicContext,
   {
     input: {
       phone: PhoneNumber | InputValidationError

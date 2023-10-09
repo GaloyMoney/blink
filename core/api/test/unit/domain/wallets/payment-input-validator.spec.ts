@@ -30,7 +30,6 @@ describe("PaymentInputValidator", () => {
     },
     contactEnabled: true,
     contacts: [],
-    isEditor: false,
     quizQuestions: [],
     quiz: [],
     kratosUserId: "kratosUserId" as UserId,

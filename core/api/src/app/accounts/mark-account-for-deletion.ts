@@ -8,11 +8,11 @@ import { addEventToCurrentSpan } from "@/services/tracing"
 export const markAccountForDeletion = async ({
   accountId,
   cancelIfPositiveBalance = false,
-  updatedByUserId,
+  updatedByPrivilegedClientId,
 }: {
   accountId: AccountId
   cancelIfPositiveBalance?: boolean
-  updatedByUserId: UserId
+  updatedByPrivilegedClientId?: PrivilegedClientId
 }): Promise<true | ApplicationError> => {
   const accountsRepo = AccountsRepository()
   const account = await accountsRepo.findById(accountId)
@@ -56,7 +56,7 @@ export const markAccountForDeletion = async ({
 
   account.statusHistory = (account.statusHistory ?? []).concat({
     status: AccountStatus.Closed,
-    updatedByUserId,
+    updatedByPrivilegedClientId,
   })
   account.title = null
   account.coordinates = null

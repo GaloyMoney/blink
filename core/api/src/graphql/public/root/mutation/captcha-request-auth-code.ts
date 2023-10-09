@@ -21,7 +21,7 @@ const CaptchaRequestAuthCodeInput = GT.Input({
 
 const CaptchaRequestAuthCodeMutation = GT.Field<
   null,
-  GraphQLPublicContext | GraphQLAdminContext,
+  GraphQLPublicContext,
   {
     input: {
       phone: PhoneNumber | InputValidationError

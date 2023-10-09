@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import { Accounts, Prices, Wallets, Payments } from "@/app"
 
 import { getAccountLimits, getOnChainWalletConfig, ONE_DAY } from "@/config"
@@ -15,8 +17,8 @@ import {
 import { SubOneCentSatAmountForUsdSelfSendError } from "@/domain/payments"
 import {
   AmountCalculator,
-  WalletCurrency,
   InvalidBtcPaymentAmountError,
+  WalletCurrency,
 } from "@/domain/shared"
 
 import { PayoutSpeed } from "@/domain/bitcoin/onchain"
@@ -85,6 +87,8 @@ const receiveDisplayAmounts = {
 }
 
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
+
+const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
 
 const randomOnChainMemo = () =>
   "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
@@ -278,7 +282,7 @@ describe("onChainPay", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: newAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: newAccount.kratosUserId,
+        updatedByPrivilegedClientId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)
@@ -533,7 +537,7 @@ describe("onChainPay", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: recipientAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: recipientAccount.kratosUserId,
+        updatedByPrivilegedClientId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)

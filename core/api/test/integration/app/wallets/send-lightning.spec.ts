@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import { Accounts, Payments } from "@/app"
 
 import { AccountStatus } from "@/domain/accounts"
@@ -121,6 +123,8 @@ const receiveAboveLimitDisplayAmounts = {
   displayCurrency: UsdDisplayCurrency,
 }
 
+const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
+
 const randomLightningMemo = () =>
   "this is my lightning memo #" + (Math.random() * 1_000_000).toFixed()
 
@@ -187,7 +191,7 @@ describe("initiated via lightning", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: newAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: newAccount.kratosUserId,
+        updatedByPrivilegedClientId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)
@@ -515,7 +519,7 @@ describe("initiated via lightning", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: recipientAccount.id,
         status: AccountStatus.Locked,
-        updatedByUserId: recipientAccount.kratosUserId,
+        updatedByPrivilegedClientId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)

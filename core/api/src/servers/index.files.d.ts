@@ -9,13 +9,11 @@ interface Loaders {
 type GraphQLPublicContext = {
   logger: Logger
   loaders: Loaders
-  user: User | undefined
-  domainAccount: Account | undefined
   ip: IpAddress | undefined
   sessionId: SessionId | undefined
 }
 
-type GraphQLPublicContextAuth = Omit<GraphQLPublicContext, "user" | "domainAccount"> & {
+type GraphQLPublicContextAuth = GraphQLPublicContext & {
   user: User
   domainAccount: Account
 }
@@ -23,9 +21,7 @@ type GraphQLPublicContextAuth = Omit<GraphQLPublicContext, "user" | "domainAccou
 type GraphQLAdminContext = {
   logger: Logger
   loaders: Loaders
-  auditorId: UserId
-  isEditor: boolean
-  ip: IpAddress
+  privilegedClientId: PrivilegedClientId
 }
 
 // globally used types

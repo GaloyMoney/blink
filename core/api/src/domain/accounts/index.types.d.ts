@@ -90,7 +90,7 @@ type AccountContact = {
 type AccountStatusHistory = Array<{
   status: AccountStatus
   updatedAt?: Date
-  updatedByUserId?: UserId
+  updatedByPrivilegedClientId?: PrivilegedClientId
   comment?: string
 }>
 
@@ -108,7 +108,6 @@ type Account = {
   coordinates: Coordinates | null
   contactEnabled: boolean
   readonly contacts: AccountContact[]
-  readonly isEditor: boolean
   readonly quizQuestions: UserQuizQuestion[] // deprecated
   readonly quiz: Quiz[]
   notificationSettings: NotificationSettings
@@ -169,7 +168,7 @@ interface IAccountsRepository {
   update(account: Account): Promise<Account | RepositoryError>
 }
 
-type AdminRole = "dealer" | "funder" | "bankowner" | "editor"
+type AdminRole = "dealer" | "funder" | "bankowner"
 type AdminAccount = {
   role: AdminRole
   phone: PhoneNumber

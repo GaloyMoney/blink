@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import { Accounts, Payments } from "@/app"
 
 import { AccountStatus } from "@/domain/accounts"
@@ -81,6 +83,8 @@ const receiveAboveLimitDisplayAmounts = {
 const randomIntraLedgerMemo = () =>
   "this is my intraledger memo #" + (Math.random() * 1_000_000).toFixed()
 
+const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
+
 describe("intraLedgerPay", () => {
   it("fails if sender account is locked", async () => {
     const senderWalletDescriptor = await createRandomUserAndBtcWallet()
@@ -109,7 +113,7 @@ describe("intraLedgerPay", () => {
     const updatedAccount = await Accounts.updateAccountStatus({
       id: senderAccount.id,
       status: AccountStatus.Locked,
-      updatedByUserId: senderAccount.kratosUserId,
+      updatedByPrivilegedClientId,
     })
     if (updatedAccount instanceof Error) throw updatedAccount
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)
@@ -143,7 +147,7 @@ describe("intraLedgerPay", () => {
     const updatedAccount = await Accounts.updateAccountStatus({
       id: recipientAccount.id,
       status: AccountStatus.Locked,
-      updatedByUserId: recipientAccount.kratosUserId,
+      updatedByPrivilegedClientId,
     })
     if (updatedAccount instanceof Error) throw updatedAccount
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)

@@ -1,6 +1,6 @@
 import { applyMiddleware } from "graphql-middleware"
 
-import { shield } from "graphql-shield"
+import { rule, shield } from "graphql-shield"
 
 import { Rule } from "graphql-shield/typings/rules"
 
@@ -8,7 +8,7 @@ import { NextFunction, Request, Response } from "express"
 
 import { startApolloServerForAdminSchema } from "./graphql-admin-server"
 
-import { isAuthenticated, startApolloServer } from "./graphql-server"
+import { startApolloServer } from "./graphql-server"
 
 import { walletIdMiddleware } from "./middlewares/wallet-id"
 
@@ -32,6 +32,14 @@ import {
 } from "@/services/tracing"
 
 import { parseIps } from "@/domain/accounts-ips"
+
+export const isAuthenticated = rule({ cache: "contextual" })((
+  parent,
+  args,
+  ctx: GraphQLPublicContext,
+) => {
+  return "domainAccount" in ctx && !!ctx.domainAccount
+})
 
 const setGqlContext = async (
   req: Request,
@@ -62,6 +70,8 @@ const setGqlContext = async (
 
   req.gqlContext = gqlContext
 
+  const username = "domainAccount" in gqlContext && gqlContext.domainAccount?.username
+
   return addAttributesToCurrentSpanAndPropagate(
     {
       "token.iss": tokenPayload?.iss,
@@ -69,7 +79,7 @@ const setGqlContext = async (
       "token.expires_at": tokenPayload?.expires_at,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
-      [ACCOUNT_USERNAME]: gqlContext?.domainAccount?.username,
+      [ACCOUNT_USERNAME]: username,
       [SemanticAttributes.ENDUSER_ID]: tokenPayload?.sub,
     },
     next,

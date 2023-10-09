@@ -6,7 +6,6 @@ import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
 import { GraphQLError, GraphQLSchema } from "graphql"
-import { rule } from "graphql-shield"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 
@@ -28,18 +27,6 @@ import { getJwksArgs } from "@/config"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
-})
-
-export const isAuthenticated = rule({ cache: "contextual" })((
-  parent,
-  args,
-  ctx: GraphQLPublicContext & GraphQLAdminContext,
-) => {
-  return (
-    // TODO: remove !== "anon" when auth endpoints have been removed from admin graphql
-    !!("auditorId" in ctx && ctx.auditorId !== ("anon" as UserId)) || // admin API
-    ("domainAccount" in ctx && !!ctx.domainAccount)
-  )
 })
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
