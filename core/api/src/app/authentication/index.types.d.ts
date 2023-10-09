@@ -21,13 +21,13 @@ type AddEmailToIdentityResult = {
 type LoginWithEmailResult = {
   authToken: AuthToken
   totpRequired: boolean
-  id?: UserId 
+  id?: UserId
 }
 
 type LoginWithPhoneResult = {
   authToken: AuthToken
   totpRequired: boolean
-  id?: UserId 
+  id?: UserId
 }
 
 type LoginWithEmailCookieResult = {
