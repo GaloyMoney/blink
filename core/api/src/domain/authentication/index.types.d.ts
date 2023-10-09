@@ -6,7 +6,7 @@ type IdentityUsername = string & { readonly brand: unique symbol }
 type IdentityPassword = string & { readonly brand: unique symbol }
 
 type UserId = string & { readonly brand: unique symbol }
-type AuditorId = string & { readonly brand: unique symbol }
+type PrivilegedClientId = string & { readonly brand: unique symbol }
 type AuthToken = string & { readonly brand: unique symbol }
 type SessionCookie = string & { readonly brand: unique symbol }
 

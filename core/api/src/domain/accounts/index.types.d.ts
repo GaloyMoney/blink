@@ -90,7 +90,7 @@ type AccountContact = {
 type AccountStatusHistory = Array<{
   status: AccountStatus
   updatedAt?: Date
-  updatedByAuditorId?: AuditorId
+  updatedByPrivilegedClientId?: PrivilegedClientId
   comment?: string
 }>
 

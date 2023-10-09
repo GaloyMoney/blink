@@ -27,14 +27,6 @@ import { Transactions } from "@/app"
 
 import { AuthorizationError } from "@/graphql/error"
 
-export const isEditor = rule({ cache: "contextual" })((
-  parent,
-  args,
-  ctx: GraphQLAdminContext,
-) => {
-  return ctx.auditorId ? true : new AuthorizationError({ logger: baseLogger })
-})
-
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
 const setGqlAdminContext = async (
@@ -64,9 +56,9 @@ const setGqlAdminContext = async (
     }),
   }
 
-  const auditorId = tokenPayload.sub as AuditorId
+  const privilegedClientId = tokenPayload.sub as PrivilegedClientId
 
-  req.gqlContext = { loaders, auditorId, logger }
+  req.gqlContext = { loaders, privilegedClientId, logger }
 
   addAttributesToCurrentSpanAndPropagate(
     {
@@ -82,7 +74,11 @@ const isAuthenticated = rule({ cache: "contextual" })(async (
   args,
   ctx: GraphQLAdminContext,
 ) => {
-  return ctx.auditorId !== null && ctx.auditorId !== undefined && ctx.auditorId !== ""
+  return (
+    ctx.privilegedClientId !== null &&
+    ctx.privilegedClientId !== undefined &&
+    ctx.privilegedClientId !== ""
+  )
 })
 
 export async function startApolloServerForAdminSchema() {

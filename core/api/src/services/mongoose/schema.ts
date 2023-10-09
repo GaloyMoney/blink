@@ -246,12 +246,12 @@ const AccountSchema = new Schema<AccountRecord>(
             required: true,
           },
 
-          // TODO: rename to updatedByAuditorId
+          // TODO: rename to updatedByPrivilegedClientId
           updatedByUserId: {
             type: String,
             required: false,
           },
-          updatedByAuditorId: {
+          updatedByPrivilegedClientId: {
             type: String,
             required: false,
           },

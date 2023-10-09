@@ -88,7 +88,7 @@ const receiveDisplayAmounts = {
 
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 
-const updatedByAuditorId = randomUUID() as AuditorId
+const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
 
 const randomOnChainMemo = () =>
   "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
@@ -282,7 +282,7 @@ describe("onChainPay", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: newAccount.id,
         status: AccountStatus.Locked,
-        updatedByAuditorId,
+        updatedByPrivilegedClientId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)
@@ -537,7 +537,7 @@ describe("onChainPay", () => {
       const updatedAccount = await Accounts.updateAccountStatus({
         id: recipientAccount.id,
         status: AccountStatus.Locked,
-        updatedByAuditorId,
+        updatedByPrivilegedClientId,
       })
       if (updatedAccount instanceof Error) throw updatedAccount
       expect(updatedAccount.status).toEqual(AccountStatus.Locked)

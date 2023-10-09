@@ -21,7 +21,7 @@ type GraphQLPublicContextAuth = GraphQLPublicContext & {
 type GraphQLAdminContext = {
   logger: Logger
   loaders: Loaders
-  auditorId: AuditorId
+  privilegedClientId: PrivilegedClientId
 }
 
 // globally used types

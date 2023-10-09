@@ -15,13 +15,13 @@ describe("addInvoice", () => {
     const newAccount = await AccountsRepository().findById(newWalletDescriptor.accountId)
     if (newAccount instanceof Error) throw newAccount
 
-    const updatedByAuditorId = randomUUID() as AuditorId
+    const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
 
     // Lock account
     const updatedAccount = await Accounts.updateAccountStatus({
       id: newAccount.id,
       status: AccountStatus.Locked,
-      updatedByAuditorId,
+      updatedByPrivilegedClientId,
     })
     if (updatedAccount instanceof Error) throw updatedAccount
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)

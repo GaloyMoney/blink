@@ -9,7 +9,7 @@ import { AccountsRepository } from "@/services/mongoose"
 
 import { createRandomUserAndBtcWallet } from "test/helpers"
 
-const updatedByAuditorId = randomUUID() as AuditorId
+const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
 
 describe("onChainAddress", () => {
   it("fails if account is locked", async () => {
@@ -21,7 +21,7 @@ describe("onChainAddress", () => {
     const updatedAccount = await Accounts.updateAccountStatus({
       id: newAccount.id,
       status: AccountStatus.Locked,
-      updatedByAuditorId,
+      updatedByPrivilegedClientId,
     })
     if (updatedAccount instanceof Error) throw updatedAccount
     expect(updatedAccount.status).toEqual(AccountStatus.Locked)
