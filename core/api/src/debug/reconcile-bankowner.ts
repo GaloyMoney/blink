@@ -6,13 +6,13 @@
  * <amount>: amount to deduct from bankowner.
  */
 
-import { getCurrentPriceAsWalletPriceRatio } from "@app/prices"
+import { getCurrentPriceAsWalletPriceRatio } from "@/app/prices"
 
-import { WalletCurrency } from "@domain/shared"
-import { UsdDisplayCurrency } from "@domain/fiat"
+import { WalletCurrency } from "@/domain/shared"
+import { UsdDisplayCurrency } from "@/domain/fiat"
 
-import * as LedgerFacade from "@services/ledger/facade"
-import { setupMongoConnection } from "@services/mongodb"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { setupMongoConnection } from "@/services/mongodb"
 
 const reconcile = async ({ amount }: { amount: bigint }) => {
   const btcAmount = { amount, currency: WalletCurrency.Btc }
