@@ -2,7 +2,8 @@ load(
   "@toolchains//workspace-pnpm:macros.bzl",
   "build_node_modules",
   "tsc_build",
-  "runnable_tsc_build"
+  "runnable_tsc_build",
+  "runnable_tsc_build_bin",
 )
 
 export_file(
@@ -38,11 +39,11 @@ runnable_tsc_build(
   name = "runnable_build",
 )
 
-# runnable_tsc_build_bin(
-#   name = "api",
-#   preload_file = "services/tracing.js"
-#   run_file = "servers/graphql-main-server.js"
-# )
+runnable_tsc_build_bin(
+  name = "api",
+  preload_file = "services/tracing.js",
+  run_file = "servers/graphql-main-server.js",
+)
 
 # // install deps
 # // ^^ simple toolchain

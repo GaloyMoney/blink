@@ -2,6 +2,10 @@ load(
     "@prelude//:artifacts.bzl",
     "ArtifactGroupInfo",
 )
+load(
+    "@prelude//:paths.bzl",
+    "paths",
+)
 
 load("@prelude//python:toolchain.bzl", "PythonToolchainInfo",)
 load(":toolchain.bzl", "WorkspacePnpmToolchainInfo",)
@@ -313,6 +317,76 @@ _runnable_tsc_build = rule(
         ),
     }
 )
+
+def runnable_tsc_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+    bin_name = "run"
+    out = ctx.actions.declare_output(bin_name)
+
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+    package_dir = cmd_args(ctx.label.package).relative_to(ctx.label.cell_root)
+
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.package_runnable_tsc_build_bin[DefaultInfo].default_outputs,
+        "--package-dir",
+        package_dir,
+        "--runnable-dist-path",
+        ctx.attrs.runnable_tsc_build,
+        "--preload-file",
+        ctx.attrs.preload_file,
+        "--run-file",
+        ctx.attrs.run_file,
+        cmd_args(out.as_output()),
+    )
+
+    ctx.actions.run(cmd, category = "runnable_tsc_build_bin", identifier = ctx.label.package + " " + bin_name)
+
+    bin = paths.join("bin", paths.basename(ctx.label.package))
+    run_cmd = cmd_args(
+        cmd_args([out, bin], delimiter = "/"),
+    )
+
+    return [
+        DefaultInfo(default_output = out),
+        RunInfo(run_cmd),
+    ]
+
+_runnable_tsc_build_bin = rule(
+    impl = runnable_tsc_build_bin_impl,
+    attrs = {
+        "preload_file": attrs.option(
+            attrs.string(),
+            default = None,
+            doc = """File name and path for node preload step (default: None).""",
+        ),
+        "run_file": attrs.option(
+            attrs.string(),
+            default = None,
+            doc = """File name and relative path for node executable (default: None).""",
+        ),
+        "runnable_tsc_build": attrs.source(
+            doc = """Target which builds `runnable dist`.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def runnable_tsc_build_bin(
+        runnable_tsc_build = ":runnable_build",
+        **kwargs):
+    _runnable_tsc_build_bin(
+        runnable_tsc_build = runnable_tsc_build,
+        **kwargs,
+    )
+
 
 BuildContext = record(
     workspace_root = field(Artifact),

@@ -22,3 +22,8 @@ export_file(
   name = "package_runnable_tsc_build.py",
   visibility = ["PUBLIC"],
 )
+
+export_file(
+  name = "package_runnable_tsc_build_bin.py",
+  visibility = ["PUBLIC"],
+)

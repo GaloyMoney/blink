@@ -4,6 +4,7 @@ WorkspacePnpmToolchainInfo = provider(fields = [
   "prepare_build_context",
   "compile_typescript",
   "package_runnable_tsc_build",
+  "package_runnable_tsc_build_bin",
 ])
 
 def workspace_pnpm_toolchain_impl(ctx) -> list[[DefaultInfo, WorkspacePnpmToolchainInfo]]:
@@ -18,6 +19,7 @@ def workspace_pnpm_toolchain_impl(ctx) -> list[[DefaultInfo, WorkspacePnpmToolch
             prepare_build_context = ctx.attrs._prepare_build_context,
             compile_typescript = ctx.attrs._compile_typescript,
             package_runnable_tsc_build = ctx.attrs._package_runnable_tsc_build,
+            package_runnable_tsc_build_bin = ctx.attrs._package_runnable_tsc_build_bin,
         )
     ]
 
@@ -38,6 +40,9 @@ workspace_pnpm_toolchain = rule(
         ),
         "_package_runnable_tsc_build": attrs.dep(
             default = "toolchains//workspace-pnpm:package_runnable_tsc_build.py",
+        ),
+        "_package_runnable_tsc_build_bin": attrs.dep(
+            default = "toolchains//workspace-pnpm:package_runnable_tsc_build_bin.py",
         ),
     },
     is_toolchain_rule = True,
