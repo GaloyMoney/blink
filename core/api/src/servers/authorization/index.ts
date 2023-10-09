@@ -285,9 +285,9 @@ authRouter.post("/email/login", async (req: Request, res: Response) => {
       recordExceptionInCurrentSpan({ error: result })
       return res.status(500).send({ error: result.message })
     }
-    const { authToken, totpRequired } = result
+    const { authToken, totpRequired, id } = result
     return res.status(200).send({
-      result: { authToken, totpRequired },
+      result: { authToken, totpRequired, id },
     })
   } catch (err) {
     recordExceptionInCurrentSpan({ error: err })
@@ -495,11 +495,12 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
     return res.status(500).send({ error: mapError(loginResp).message })
   }
 
-  const { authToken, totpRequired } = loginResp
+  const { authToken, totpRequired, id } = loginResp
 
   return res.send({
     authToken,
     totpRequired,
+    id,
   })
 })
 
