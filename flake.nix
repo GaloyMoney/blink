@@ -60,6 +60,7 @@
 
         name = pkgName;
         buck2_target = "//${pathPrefix}/${pkgName}";
+        __impure = true;
         src = ./.;
         nativeBuildInputs = buck2NativeBuildInputs;
         postPatch = with pkgs; ''
