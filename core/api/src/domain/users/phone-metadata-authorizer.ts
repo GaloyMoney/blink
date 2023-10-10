@@ -14,9 +14,9 @@ export const PhoneMetadataAuthorizer = ({
   const authorize = (
     phoneMetadata: PhoneMetadata | undefined,
   ): true | AuthorizationError => {
-    if (phoneMetadata === undefined) return new ExpectedPhoneMetadataMissingError()
+    if (!phoneMetadata) return new ExpectedPhoneMetadataMissingError()
 
-    if (phoneMetadata.carrier.type === "voip")
+    if (phoneMetadata.carrier && phoneMetadata.carrier.type === "voip")
       return new PhoneCarrierTypeNotAllowedError()
 
     const countryCode = phoneMetadata.countryCode.toUpperCase()
