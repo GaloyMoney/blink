@@ -9,7 +9,7 @@ import {
 import { AccountsRepository } from "@/services/mongoose"
 
 export const setUsername = async ({
-  accountId: AccountIdRaw,
+  accountId: accountIdRaw,
   username,
 }: {
   accountId: string
@@ -18,7 +18,7 @@ export const setUsername = async ({
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername
 
-  const accountId = checkedToAccountId(AccountIdRaw)
+  const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
   const accountsRepo = AccountsRepository()

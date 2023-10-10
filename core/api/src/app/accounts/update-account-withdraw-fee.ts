@@ -5,7 +5,7 @@ import {
 import { AccountsRepository } from "@/services/mongoose"
 
 export const updateAccountWithdrawFee = async ({
-  accountId: AccountIdRaw,
+  accountId: accountIdRaw,
   fee,
 }: {
   accountId: string
@@ -16,7 +16,7 @@ export const updateAccountWithdrawFee = async ({
 
   const accountsRepo = AccountsRepository()
 
-  const accountId = checkedToAccountId(AccountIdRaw)
+  const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
   const account = await accountsRepo.findById(accountId)

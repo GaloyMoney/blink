@@ -6,7 +6,7 @@ import { UsersRepository } from "@/services/mongoose/users"
 import { addAttributesToCurrentSpan } from "@/services/tracing"
 
 export const updateUserPhone = async ({
-  accountId: AccountIdRaw,
+  accountId: accountIdRaw,
   phone,
   updatedByPrivilegedClientId,
 }: {
@@ -14,7 +14,7 @@ export const updateUserPhone = async ({
   phone: PhoneNumber
   updatedByPrivilegedClientId: PrivilegedClientId
 }): Promise<Account | ApplicationError> => {
-  const accountId = checkedToAccountId(AccountIdRaw)
+  const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
   const accountsRepo = AccountsRepository()

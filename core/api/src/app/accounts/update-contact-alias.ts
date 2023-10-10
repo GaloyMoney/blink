@@ -3,7 +3,7 @@ import { ContactNotExistentError } from "@/domain/errors"
 import { AccountsRepository } from "@/services/mongoose"
 
 export const updateContactAlias = async ({
-  accountId: AccountIdRaw,
+  accountId: accountIdRaw,
   username,
   alias,
 }: {
@@ -11,7 +11,7 @@ export const updateContactAlias = async ({
   username: string
   alias: string
 }): Promise<AccountContact | ApplicationError> => {
-  const accountId = checkedToAccountId(AccountIdRaw)
+  const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
   const repo = AccountsRepository()

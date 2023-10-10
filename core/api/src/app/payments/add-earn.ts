@@ -25,12 +25,12 @@ import { checkedToAccountId } from "@/domain/accounts"
 
 export const addEarn = async ({
   quizQuestionId: quizQuestionIdString,
-  accountId: AccountIdRaw,
+  accountId: accountIdRaw,
 }: {
   quizQuestionId: string
   accountId: string
 }): Promise<QuizQuestion | ApplicationError> => {
-  const accountId = checkedToAccountId(AccountIdRaw)
+  const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
   const rewardsConfig = getRewardsConfig()
