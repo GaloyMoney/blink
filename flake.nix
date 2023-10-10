@@ -85,18 +85,30 @@
             deps_result=$(buck2 build --show-simple-output "$buck2_target:runnable_build" 2> /dev/null)
             bin_result=$(buck2 build --show-simple-output "$buck2_target:api" 2> /dev/null)
 
-            mkdir -p build/$name-$system
+            mkdir -p build/$name-$system/bin
+
+            echo $deps_result > build/$name-$system/bin/buck2-deps-path
 
             cp -rpv $deps_result build/$name-$system/lib
-            cp -rpv $bin_result build/$name-$system/bin
+            cp -rpv $bin_result build/$name-$system/bin/
           '';
 
        installPhase =
          ''
            mkdir -pv "$out"
-           cp -rpv "build/$name-$system" "$out/"
+           cp -rpv "build/$name-$system/lib" "$out/"
+           cp -rpv "build/$name-$system/bin" "$out/"
+
+           mv -v "$out/bin/run" "$out/bin/.run"
+
+           substituteInPlace "$out/bin/.run" \
+             --replace "#!${pkgs.coreutils}/bin/env sh" "#!${pkgs.bash}/bin/sh" \
+             --replace "$(cat build/$name-$system/buck2-deps-path)" "$out/lib/" \
+             --replace "exec node" "exec ${pkgs.nodejs}/bin/node"
          '';
 
+         ## just for testing
+         fixupPhase = '''';
       };
     in
       with pkgs; {
