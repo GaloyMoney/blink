@@ -8,7 +8,7 @@ export const updateAccountWithdrawFee = async ({
   accountId: AccountIdRaw,
   fee,
 }: {
-  accountId: AccountId
+  accountId: string
   fee: number
 }): Promise<Account | ApplicationError> => {
   const checkedFee = sanityCheckedDefaultAccountWithdrawFee(fee)

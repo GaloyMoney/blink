@@ -4,18 +4,22 @@ import { getCallbackServiceConfig } from "@/config"
 import { InvalidUrlError } from "@/domain/callback/errors"
 import { CallbackService } from "@/services/svix"
 import { UnknownSvixError } from "@/services/svix/errors"
+import { checkedToAccountId } from "@/domain/accounts"
 
 export const addEndpoint = async ({
-  accountId,
+  accountId: accountIdRaw,
   url,
 }: {
-  accountId: AccountId
+  accountId: string
   url: string
 }) => {
   const validationResult = z.string().url().safeParse(url)
   if (!validationResult.success) {
     return new InvalidUrlError(`${url} is invalid`)
   }
+
+  const accountId = checkedToAccountId(accountIdRaw)
+  if (accountId instanceof Error) return accountId
 
   const callbackService = CallbackService(getCallbackServiceConfig())
   const res = await callbackService.addEndpoint({ accountId, url })
@@ -26,7 +30,10 @@ export const addEndpoint = async ({
   return { id: res.id }
 }
 
-export const listEndpoints = async (accountId: AccountId) => {
+export const listEndpoints = async (accountIdRaw: string) => {
+  const accountId = checkedToAccountId(accountIdRaw)
+  if (accountId instanceof Error) return accountId
+
   const callbackService = CallbackService(getCallbackServiceConfig())
   const res = await callbackService.listEndpoints(accountId)
 

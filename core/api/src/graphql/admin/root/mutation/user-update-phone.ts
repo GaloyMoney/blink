@@ -4,12 +4,13 @@ import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
 import { Admin } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import Phone from "@/graphql/shared/types/scalar/phone"
+import AccountId from "@/graphql/shared/types/scalar/account-id"
 
 const UserUpdatePhoneInput = GT.Input({
   name: "UserUpdatePhoneInput",
   fields: () => ({
     accountId: {
-      type: GT.NonNullID,
+      type: GT.NonNull(AccountId),
     },
     phone: {
       type: GT.NonNull(Phone),

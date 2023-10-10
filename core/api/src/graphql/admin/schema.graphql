@@ -3,6 +3,9 @@ type AccountDetailPayload {
   errors: [Error!]!
 }
 
+"""Unique identifier of an account"""
+scalar AccountId
+
 enum AccountLevel {
   ONE
   TWO
@@ -426,7 +429,7 @@ type UsdWallet implements Wallet {
 }
 
 input UserUpdatePhoneInput {
-  accountId: ID!
+  accountId: AccountId!
   phone: Phone!
 }
 
