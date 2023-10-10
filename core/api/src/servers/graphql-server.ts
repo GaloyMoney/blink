@@ -15,10 +15,10 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import authRouter from "./authorization"
 import kratosCallback from "./event-handlers/kratos"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
+import authRouter from "./authorization"
 
 import { parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
 import { mapError } from "@/graphql/error-map"

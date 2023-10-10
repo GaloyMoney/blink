@@ -285,9 +285,9 @@ authRouter.post("/email/login", async (req: Request, res: Response) => {
       recordExceptionInCurrentSpan({ error: result })
       return res.status(500).send({ error: result.message })
     }
-    const { authToken, totpRequired } = result
+    const { authToken, totpRequired, id } = result
     return res.status(200).send({
-      result: { authToken, totpRequired },
+      result: { authToken, totpRequired, id },
     })
   } catch (err) {
     recordExceptionInCurrentSpan({ error: err })
@@ -424,9 +424,8 @@ authRouter.post("/email/login/cookie", async (req: Request, res: Response) => {
 
 authRouter.post("/phone/captcha", async (req: Request, res: Response) => {
   const result = await registerCaptchaGeetest()
-  if (result instanceof Error) {
-    return res.status(500).send({ error: "error creating challenge" })
-  }
+  if (result instanceof Error)
+    return res.status(500).json({ error: "error creating challenge" })
 
   const { success, gt, challenge, newCaptcha } = result
 
@@ -467,9 +466,9 @@ authRouter.post("/phone/code", async (req: Request, res: Response) => {
     channel,
   })
 
-  if (result instanceof Error) return res.status(400).send({ error: result })
+  if (result instanceof Error) return res.status(400).json({ error: result })
 
-  return res.send({
+  return res.json({
     success: true,
   })
 })
@@ -482,9 +481,9 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
     return res.status(400).send({ error: "missing inputs" })
   }
   const code = validOneTimeAuthCodeValue(codeRaw)
-  if (code instanceof Error) return res.status(400).send({ error: "invalid code" })
+  if (code instanceof Error) return res.status(400).json({ error: "invalid code" })
   const phone = checkedToPhoneNumber(phoneRaw)
-  if (phone instanceof Error) return res.status(400).send({ error: "invalid phone" })
+  if (phone instanceof Error) return res.status(400).json({ error: "invalid phone" })
 
   const loginResp = await Authentication.loginWithPhoneToken({
     phone,
@@ -495,11 +494,12 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
     return res.status(500).send({ error: mapError(loginResp).message })
   }
 
-  const { authToken, totpRequired } = loginResp
+  const { authToken, totpRequired, id } = loginResp
 
   return res.send({
     authToken,
     totpRequired,
+    id,
   })
 })
 

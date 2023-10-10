@@ -14,6 +14,8 @@ import { walletIdMiddleware } from "./middlewares/wallet-id"
 
 import { sessionPublicContext } from "./middlewares/session"
 
+import { scopeMiddleware } from "./middlewares/scope"
+
 import { GALOY_API_PORT, UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
 import { AuthorizationError } from "@/graphql/error"
@@ -77,6 +79,8 @@ const setGqlContext = async (
       "token.iss": tokenPayload?.iss,
       "token.session_id": tokenPayload?.session_id,
       "token.expires_at": tokenPayload?.expires_at,
+      "token.scope": tokenPayload?.scope,
+      "token.appId": tokenPayload?.appId,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       [SemanticAttributes.HTTP_USER_AGENT]: req.headers["user-agent"],
       [ACCOUNT_USERNAME]: username,
@@ -114,7 +118,13 @@ export async function startApolloServerForCoreSchema() {
     },
   )
 
-  const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
+  const schema = applyMiddleware(
+    gqlMainSchema,
+    permissions,
+    walletIdMiddleware,
+    scopeMiddleware,
+  )
+
   return startApolloServer({
     schema,
     port: GALOY_API_PORT,
