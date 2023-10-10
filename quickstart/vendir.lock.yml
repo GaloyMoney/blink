@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removing legacy login admin panel (#3292)...'
-      sha: be54143fcf6fc395b34359c3d85072c5bed8e943
+      commitTitle: 'refactor!: only exposing the account uuid (#3316)...'
+      sha: f1f00b28c5f06a0c468298aa1bc0b9b37cb6bb07
       tags:
-      - 0.13.120-1-gbe54143fc
+      - 0.13.121-1-gf1f00b28c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removing legacy login admin panel (#3292)...'
-      sha: be54143fcf6fc395b34359c3d85072c5bed8e943
+      commitTitle: 'refactor!: only exposing the account uuid (#3316)...'
+      sha: f1f00b28c5f06a0c468298aa1bc0b9b37cb6bb07
       tags:
-      - 0.13.120-1-gbe54143fc
+      - 0.13.121-1-gf1f00b28c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: removing legacy login admin panel (#3292)...'
-      sha: be54143fcf6fc395b34359c3d85072c5bed8e943
+      commitTitle: 'refactor!: only exposing the account uuid (#3316)...'
+      sha: f1f00b28c5f06a0c468298aa1bc0b9b37cb6bb07
       tags:
-      - 0.13.120-1-gbe54143fc
+      - 0.13.121-1-gf1f00b28c
     path: ./
   path: ./graphql
 kind: LockConfig
