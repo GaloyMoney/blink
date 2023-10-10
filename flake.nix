@@ -87,7 +87,7 @@
 
             mkdir -p build/$name-$system/bin
 
-            echo $deps_result > build/$name-$system/bin/buck2-deps-path
+            echo "$(pwd)/$deps_result" > build/$name-$system/buck2-deps-path
 
             cp -rpv $deps_result build/$name-$system/lib
             cp -rpv $bin_result build/$name-$system/bin/
@@ -103,12 +103,9 @@
 
            substituteInPlace "$out/bin/.run" \
              --replace "#!${pkgs.coreutils}/bin/env sh" "#!${pkgs.bash}/bin/sh" \
-             --replace "$(cat build/$name-$system/buck2-deps-path)" "$out/lib/" \
+             --replace "$(cat build/$name-$system/buck2-deps-path)" "$out/lib" \
              --replace "exec node" "exec ${pkgs.nodejs}/bin/node"
          '';
-
-         ## just for testing
-         fixupPhase = '''';
       };
     in
       with pkgs; {
