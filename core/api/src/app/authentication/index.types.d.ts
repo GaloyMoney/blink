@@ -21,9 +21,11 @@ type AddEmailToIdentityResult = {
 type LoginWithEmailResult = {
   authToken: AuthToken
   totpRequired: boolean
+  id?: UserId
 }
 
-type LoginWithPhoneResult = {
+type LoginWithPhoneTokenResult = {
   authToken: AuthToken
   totpRequired: boolean
+  id?: UserId
 }
