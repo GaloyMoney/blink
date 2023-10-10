@@ -223,7 +223,7 @@ importers:
         specifier: ^6.2.0
         version: 6.2.0
       mongoose:
-        specifier: ~7.5.1
+        specifier: ~7.5.4
         version: 7.5.4
       node-cache:
         specifier: ^5.1.2
@@ -365,7 +365,7 @@ importers:
         specifier: ^4.6.6
         version: 4.6.7
       '@types/migrate-mongo':
-        specifier: ^10.0.0
+        specifier: ^10.0.2
         version: 10.0.2
       '@types/node':
         specifier: ^20.6.2
@@ -440,8 +440,8 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0(typescript@5.2.2)
       migrate-mongo:
-        specifier: ^10.0.0
-        version: 10.0.0(mongodb@5.8.1)
+        specifier: ^11.0.0
+        version: 11.0.0(mongodb@6.1.0)
       node-jose:
         specifier: ^2.2.0
         version: 2.2.0
@@ -5020,6 +5020,7 @@ packages:
   /bson@5.5.0:
     resolution: {integrity: sha512-B+QB4YmDx9RStKv8LLSl/aVIEV3nYJc3cJNNTK2Cd1TL+7P+cNpw9mAPeCgc5K+j01Dv6sxUzcITXDx7ZU3F0w==}
     engines: {node: '>=14.20.1'}
+    dev: false
 
   /bson@6.1.0:
     resolution: {integrity: sha512-yiQ3KxvpVoRpx1oD1uPz4Jit9tAVTJgjdmjDKtUErkOoL9VNoF8Dd58qtAOL5E40exx2jvAT9sqdRSK/r+SHlA==}
@@ -8237,6 +8238,7 @@ packages:
 
   /ip@2.0.0:
     resolution: {integrity: sha512-WKa+XuLG1A1R0UWhl2+1XQSi+fZWMsYKffMZTTYsiZaUD8k2yDAj5atimTUD2TZkyCkNEeYE5NhFZmupOGtjYQ==}
+    dev: false
 
   /ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -9849,12 +9851,12 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /migrate-mongo@10.0.0(mongodb@5.8.1):
-    resolution: {integrity: sha512-QA/bBKNMq/FmuK3fDbgwfNoW2riiU1wLDWGXv/tGhUItPLGqcciPPmu29SrnYAzRKMOVaGEXxzmrBs1zp5cQ7Q==}
+  /migrate-mongo@11.0.0(mongodb@6.1.0):
+    resolution: {integrity: sha512-GB/gHzUwp/fL1w6ksNGihTyb+cSrm6NbVLlz1OSkQKaLlzAXMwH7iKK2ZS7W5v+I8vXiY2rL58WTUZSAL6QR+A==}
     engines: {node: '>=8'}
     hasBin: true
     peerDependencies:
-      mongodb: ^4.4.1 || ^5.0.0
+      mongodb: ^4.4.1 || ^5.0.0 || ^6.0.0
     dependencies:
       cli-table3: 0.6.3
       commander: 9.5.0
@@ -9862,7 +9864,7 @@ packages:
       fn-args: 5.0.0
       fs-extra: 10.1.0
       lodash: 4.17.21
-      mongodb: 5.8.1
+      mongodb: 6.1.0
       p-each-series: 2.2.0
     dev: true
 
@@ -10022,6 +10024,7 @@ packages:
       socks: 2.7.1
     optionalDependencies:
       '@mongodb-js/saslprep': 1.1.0
+    dev: false
 
   /mongodb@6.1.0:
     resolution: {integrity: sha512-AvzNY0zMkpothZ5mJAaIo2bGDjlJQqqAbn9fvtVgwIIUPEfdrqGxqNjjbuKyrgQxg2EvCmfWdjq+4uj96c0YPw==}
@@ -11867,6 +11870,7 @@ packages:
   /smart-buffer@4.2.0:
     resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
     engines: {node: '>= 6.0.0', npm: '>= 3.0.0'}
+    dev: false
 
   /socks@2.7.1:
     resolution: {integrity: sha512-7maUZy1N7uo6+WVEX6psASxtNlKaNVMlGQKkG/63nEDdLOWNbiUMoLK7X4uYoLhQstau72mLgfEWcXcwsaHbYQ==}
@@ -11874,6 +11878,7 @@ packages:
     dependencies:
       ip: 2.0.0
       smart-buffer: 4.2.0
+    dev: false
 
   /sonic-boom@3.6.0:
     resolution: {integrity: sha512-5Rs7m4IO/mW1WHouC6q6PGJsXO6hSAduwB3ltTsKaDU0Bd7sc5QEUK/jF0YL583g3BG7QV0Dg0rQNZrwZhY6Xg==}
