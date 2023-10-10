@@ -79,28 +79,6 @@ export const validateKratosToken = async (
   }
 }
 
-export const validateKratosCookie = async (
-  cookie: string,
-): Promise<ValidateKratosTokenResult | KratosError> => {
-  let session: Session
-
-  try {
-    const { data } = await kratosPublic.toSession({ cookie })
-    session = toDomainSession(data)
-  } catch (err) {
-    if (err instanceof Error && err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err.message)
-    }
-    return new UnknownKratosError(err)
-  }
-
-  // TODO: should return aal level also
-  return {
-    kratosUserId: session.identity.id,
-    session,
-  }
-}
-
 export const listSessions = async (userId: UserId): Promise<Session[] | KratosError> => {
   try {
     const res = await kratosAdmin.listIdentitySessions({ id: userId })

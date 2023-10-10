@@ -117,60 +117,6 @@ export const loginWithPhoneToken = async ({
   return { authToken: kratosResult.authToken, totpRequired }
 }
 
-export const loginWithPhoneCookie = async ({
-  phone,
-  code,
-  ip,
-}: {
-  phone: PhoneNumber
-  code: PhoneCode
-  ip: IpAddress
-}): Promise<LoginWithPhoneCookieSchemaResponse | ApplicationError> => {
-  {
-    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
-    if (limitOk instanceof Error) return limitOk
-  }
-
-  {
-    const limitOk = await checkFailedLoginAttemptPerLoginIdentifierLimits(phone)
-    if (limitOk instanceof Error) return limitOk
-  }
-
-  // TODO:
-  // add fibonachi on failed login
-  // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
-
-  const validCode = await isPhoneCodeValid({ phone, code })
-  if (validCode instanceof Error) return validCode
-
-  await Promise.all([
-    rewardFailedLoginAttemptPerIpLimits(ip),
-    rewardFailedLoginAttemptPerLoginIdentifierLimits(phone),
-  ])
-
-  const authService = AuthWithPhonePasswordlessService()
-
-  const identities = IdentityRepository()
-  const userId = await identities.getUserIdFromIdentifier(phone)
-
-  if (userId instanceof IdentifierNotFoundError) {
-    // user is a new user
-    // this branch exists because we currently make no difference between a registration and login
-    addAttributesToCurrentSpan({ "login.newAccount": true })
-
-    const kratosResult = await authService.createIdentityWithCookie({ phone })
-    if (kratosResult instanceof Error) return kratosResult
-
-    return kratosResult
-  }
-
-  if (userId instanceof Error) return userId
-
-  const kratosResult = await authService.loginCookie({ phone })
-  if (kratosResult instanceof Error) return kratosResult
-  return kratosResult
-}
-
 export const loginWithEmailToken = async ({
   emailFlowId,
   code: codeRaw,
@@ -208,45 +154,6 @@ export const loginWithEmailToken = async ({
   const res = await authServiceEmail.loginToken({ email })
   if (res instanceof Error) return res
   return { authToken: res.authToken, totpRequired }
-}
-
-export const loginWithEmailCookie = async ({
-  emailFlowId,
-  code: codeRaw,
-  ip,
-}: {
-  emailFlowId: EmailFlowId
-  code: EmailCode
-  ip: IpAddress
-}): Promise<LoginWithEmailCookieResult | ApplicationError> => {
-  {
-    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
-    if (limitOk instanceof Error) return limitOk
-  }
-
-  const code = checkedToEmailCode(codeRaw)
-  if (code instanceof Error) return code
-
-  const authServiceEmail = AuthWithEmailPasswordlessService()
-
-  const validateCodeRes = await authServiceEmail.validateCode({
-    code,
-    emailFlowId,
-  })
-  if (validateCodeRes instanceof Error) return validateCodeRes
-
-  const email = validateCodeRes.email
-  const totpRequired = validateCodeRes.totpRequired
-
-  const isEmailVerified = await authServiceEmail.isEmailVerified({ email })
-  if (isEmailVerified instanceof Error) return isEmailVerified
-  if (isEmailVerified === false) return new EmailUnverifiedError()
-
-  await rewardFailedLoginAttemptPerIpLimits(ip)
-
-  const kratosResult = await authServiceEmail.loginCookie({ email })
-  if (kratosResult instanceof Error) return kratosResult
-  return { ...kratosResult, totpRequired }
 }
 
 export const loginDeviceUpgradeWithPhone = async ({
@@ -327,13 +234,13 @@ export const loginDeviceUpgradeWithPhone = async ({
 export const loginWithDevice = async ({
   username: usernameRaw,
   password: passwordRaw,
-  ip,
   deviceId: deviceIdRaw,
+  ip,
 }: {
-  ip: IpAddress
   username: string
   password: string
   deviceId: string
+  ip: IpAddress
 }): Promise<AuthToken | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)

@@ -1,11 +1,8 @@
 import { CreateIdentityBody, UpdateIdentityBody } from "@ory/client"
-import libCookie from "cookie"
-import setCookie from "set-cookie-parser"
 
 import {
   AuthenticationKratosError,
   IncompatibleSchemaUpgradeError,
-  InvalidIdentitySessionKratosError,
   KratosError,
   UnknownKratosError,
 } from "./errors"
@@ -65,54 +62,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     }
   }
 
-  const loginCookie = async ({
-    phone,
-  }: {
-    phone: PhoneNumber
-  }): Promise<LoginWithPhoneCookieSchemaResponse | KratosError> => {
-    const identifier = phone
-    const method = "password"
-    try {
-      const flow = await kratosPublic.createBrowserLoginFlow()
-      const parsedCookies = setCookie.parse(flow.headers["set-cookie"])
-      const csrfCookie = parsedCookies?.find((c) => c.name.includes("csrf"))
-      if (!csrfCookie) return new KratosError("Could not find csrf cookie")
-
-      const cookie = libCookie.serialize(csrfCookie.name, csrfCookie.value, {
-        expires: csrfCookie.expires,
-        maxAge: csrfCookie.maxAge,
-        sameSite: "none",
-        secure: csrfCookie.secure,
-        httpOnly: csrfCookie.httpOnly,
-        path: csrfCookie.path,
-      })
-      const result = await kratosPublic.updateLoginFlow({
-        flow: flow.data.id,
-        cookie: decodeURIComponent(cookie),
-        updateLoginFlowBody: {
-          identifier,
-          method,
-          password,
-          csrf_token: csrfCookie.value,
-        },
-      })
-      const cookiesToSendBackToClient: Array<SessionCookie> = result.headers["set-cookie"]
-
-      if (!result.data.session.identity) return new InvalidIdentitySessionKratosError()
-      // note: this only works when whoami: required_aal = aal1
-      const kratosUserId = result.data.session.identity.id as UserId
-      return { cookiesToSendBackToClient, kratosUserId }
-    } catch (err) {
-      if (err instanceof Error && err.message === "Request failed with status code 400") {
-        return new LikelyNoUserWithThisPhoneExistError(err.message || err)
-      }
-      if (err instanceof Error && err.message === "Request failed with status code 401") {
-        return new AuthenticationKratosError(err.message || err)
-      }
-      return new UnknownKratosError(err)
-    }
-  }
-
   const logoutToken = async ({
     sessionId,
   }: {
@@ -120,25 +69,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
   }): Promise<void | KratosError> => {
     try {
       await kratosAdmin.disableSession({ id: sessionId })
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-  }
-
-  const logoutCookie = async ({
-    cookie,
-  }: {
-    cookie: SessionCookie
-  }): Promise<void | KratosError> => {
-    try {
-      const flow = await kratosPublic.createBrowserLogoutFlow({
-        cookie,
-      })
-      const logoutToken = flow.data.logout_token
-      await kratosPublic.updateLogoutFlow({
-        token: logoutToken,
-        cookie,
-      })
     } catch (err) {
       return new UnknownKratosError(err)
     }
@@ -220,49 +150,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     }
   }
 
-  const createIdentityWithCookie = async ({
-    phone,
-  }: {
-    phone: PhoneNumber
-  }): Promise<CreateKratosUserForPhoneNoPasswordSchemaCookieResponse | KratosError> => {
-    const traits = { phone }
-    const method = "password"
-
-    try {
-      const flow = await kratosPublic.createBrowserRegistrationFlow()
-      const headers = flow.headers["set-cookie"]
-      const parsedCookies = setCookie.parse(headers)
-      const csrfCookie = parsedCookies?.find((c) => c.name.includes("csrf"))
-      if (!csrfCookie) return new KratosError("Could not find csrf cookie")
-      const cookie = libCookie.serialize(csrfCookie.name, csrfCookie.value, {
-        expires: csrfCookie.expires,
-        maxAge: csrfCookie.maxAge,
-        sameSite: "none",
-        secure: csrfCookie.secure,
-        httpOnly: csrfCookie.httpOnly,
-        path: csrfCookie.path,
-      })
-      const result = await kratosPublic.updateRegistrationFlow({
-        flow: flow.data.id,
-        cookie: decodeURIComponent(cookie),
-        updateRegistrationFlowBody: {
-          traits,
-          method,
-          password,
-          csrf_token: csrfCookie.value,
-        },
-      })
-      const cookiesToSendBackToClient: Array<SessionCookie> = result.headers["set-cookie"]
-      const kratosUserId = result.data.identity.id as UserId
-      return { cookiesToSendBackToClient, kratosUserId }
-    } catch (err) {
-      if (err instanceof Error && err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err.message || err)
-      }
-      return new UnknownKratosError(err)
-    }
-  }
-
   const createIdentityNoSession = async ({
     phone,
   }: {
@@ -331,12 +218,9 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     namespace: "services.kratos.auth-phone-no-password",
     fns: {
       loginToken,
-      loginCookie,
       logoutToken,
-      logoutCookie,
       createIdentityWithSession,
       updateIdentityFromDeviceAccount,
-      createIdentityWithCookie,
       createIdentityNoSession,
       updatePhone,
     },

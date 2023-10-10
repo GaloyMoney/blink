@@ -5,8 +5,6 @@ import basicAuth from "basic-auth"
 
 import bodyParser from "body-parser"
 
-import cookieParser from "cookie-parser"
-
 import { Authentication } from "@/app"
 
 import { mapError } from "@/graphql/error-map"
@@ -18,9 +16,7 @@ import {
 
 import {
   elevatingSessionWithTotp,
-  loginWithEmailCookie,
   loginWithEmailToken,
-  logoutCookie,
   requestEmailCode,
 } from "@/app/authentication"
 import { parseIps } from "@/domain/accounts-ips"
@@ -30,10 +26,7 @@ import {
   checkedToAuthToken,
   checkedToEmailLoginId,
   checkedToTotpCode,
-  validateKratosCookie,
 } from "@/services/kratos"
-
-import { KratosCookie, parseKratosCookies } from "@/services/kratos/cookie"
 
 import { UNSECURE_IP_FROM_REQUEST_OBJECT } from "@/config"
 
@@ -52,12 +45,9 @@ import { registerCaptchaGeetest } from "@/app/captcha"
 
 const authRouter = express.Router({ caseSensitive: true })
 
-// FIXME: those directive should only apply if you select a cookie-related route
-
 authRouter.use(cors({ origin: true, credentials: true }))
 authRouter.use(bodyParser.urlencoded({ extended: true }))
 authRouter.use(bodyParser.json())
-authRouter.use(cookieParser())
 
 authRouter.use((req: Request, res: Response, next: NextFunction) => {
   const ipString = UNSECURE_IP_FROM_REQUEST_OBJECT ? req?.ip : req?.headers["x-real-ip"]
@@ -82,103 +72,6 @@ authRouter.use((req: Request, res: Response, next: NextFunction) => {
   })
 
   next()
-})
-
-authRouter.post("/login", async (req: Request, res: Response) => {
-  const ip = req.originalIp
-  const code = req.body.authCode
-  const phone = checkedToPhoneNumber(req.body.phoneNumber)
-  if (phone instanceof Error) return res.status(400).send("invalid phone")
-  const loginResp = await Authentication.loginWithPhoneCookie({
-    phone,
-    code,
-    ip,
-  })
-  if (loginResp instanceof Error) {
-    return res.status(500).send({ error: mapError(loginResp).message })
-  }
-
-  try {
-    const kratosCookies = parseKratosCookies(loginResp.cookiesToSendBackToClient)
-    const kratosUserId: UserId | undefined = loginResp.kratosUserId
-    const csrfCookie = kratosCookies.csrf()
-    const kratosSessionCookie = kratosCookies.kratosSession()
-    if (!csrfCookie || !kratosSessionCookie) {
-      return res.status(500).send({ error: "Missing csrf or ory_kratos_session cookie" })
-    }
-    const kratosCookieStr = kratosCookies.kratosSessionAsString()
-    const result = await validateKratosCookie(kratosCookieStr)
-    if (result instanceof Error) {
-      return res.status(500).send({ error: result.message })
-    }
-    res.cookie(
-      kratosSessionCookie.name,
-      kratosSessionCookie.value,
-      kratosCookies.formatCookieOptions(kratosSessionCookie),
-    )
-    res.cookie(
-      csrfCookie.name,
-      csrfCookie.value,
-      kratosCookies.formatCookieOptions(csrfCookie),
-    )
-    return res.send({
-      identity: {
-        id: kratosUserId,
-        uid: kratosUserId,
-        phoneNumber: phone,
-      },
-    })
-  } catch (error) {
-    recordExceptionInCurrentSpan({ error })
-    return res.status(500).send({ result: "Error parsing cookies" })
-  }
-})
-
-// Logout flow
-// 1. Client app (web wallet/admin etc...) sends an HTTP GET
-//    to http://localhost:4002/auth/logout with credentials: 'include'
-// 2. The backend project logs the user out via kratos and
-//    revokes the session via kratosAdmin
-// 3. All the cookies are deleted via res.clearCookie
-//    from the backend
-// 4. The cookies should be magically deleted on the client
-authRouter.get("/logout", async (req: Request, res: Response) => {
-  let reqCookie = req.headers?.cookie
-  if (!reqCookie) {
-    return res.status(500).send({ error: "Missing csrf or ory_kratos_session cookie" })
-  }
-  try {
-    reqCookie = decodeURIComponent(reqCookie)
-    const logoutResp = await logoutCookie(reqCookie as SessionCookie)
-    if (logoutResp instanceof Error)
-      return res.status(500).send({ error: logoutResp.message })
-    // manually clear all cookies for the client
-    for (const cookieName of Object.keys(req.cookies)) {
-      res.clearCookie(cookieName)
-    }
-    return res.status(200).send({
-      result: "logout successful",
-    })
-  } catch (error) {
-    recordExceptionInCurrentSpan({ error })
-    return res.status(500).send({ error: "Error logging out" })
-  }
-})
-
-// Helper endpoint to clear any lingering cookies like csrf
-authRouter.get("/clearCookies", async (req, res) => {
-  try {
-    if (req.cookies) {
-      for (const cookieName of Object.keys(req.cookies)) {
-        res.clearCookie(cookieName)
-      }
-      return res.status(200).send({
-        result: "Cookies cleared successfully",
-      })
-    }
-  } catch (err) {
-    return res.status(500).send({ result: "Error clearing cookies" })
-  }
 })
 
 authRouter.post("/create/device-account", async (req: Request, res: Response) => {
@@ -343,83 +236,6 @@ authRouter.post("/totp/validate", async (req: Request, res: Response) => {
     recordExceptionInCurrentSpan({ error: err })
     return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
   }
-})
-
-authRouter.post("/email/login/cookie", async (req: Request, res: Response) => {
-  const ip = req.originalIp
-
-  const emailLoginIdRaw = req.body.emailLoginId
-  if (!emailLoginIdRaw) {
-    return res.status(422).send({ error: "Missing input" })
-  }
-
-  const emailLoginId = checkedToEmailLoginId(emailLoginIdRaw)
-  if (emailLoginId instanceof Error) {
-    return res.status(422).send({ error: emailLoginId.message })
-  }
-
-  const codeRaw = req.body.code
-  if (!codeRaw) {
-    return res.status(422).send({ error: "Missing input" })
-  }
-
-  const code = checkedToEmailCode(codeRaw)
-  if (code instanceof Error) {
-    return res.status(422).send({ error: code.message })
-  }
-
-  let loginResult: LoginWithEmailCookieResult | ApplicationError
-  try {
-    loginResult = await loginWithEmailCookie({ ip, emailFlowId: emailLoginId, code })
-    if (loginResult instanceof EmailCodeInvalidError) {
-      recordExceptionInCurrentSpan({ error: loginResult })
-      return res.status(401).send({ error: "invalid code" })
-    }
-    if (
-      loginResult instanceof EmailValidationSubmittedTooOftenError ||
-      loginResult instanceof UserLoginIpRateLimiterExceededError
-    ) {
-      recordExceptionInCurrentSpan({ error: loginResult })
-      return res.status(429).send({ error: "too many requests" })
-    }
-    if (loginResult instanceof Error) {
-      recordExceptionInCurrentSpan({ error: loginResult })
-      return res.status(500).send({ error: loginResult.message })
-    }
-  } catch (err) {
-    recordExceptionInCurrentSpan({ error: err })
-    return res.status(500).send({ error: parseErrorMessageFromUnknown(err) })
-  }
-
-  const { cookiesToSendBackToClient, kratosUserId, totpRequired } = loginResult
-  let kratosCookies: KratosCookie
-  try {
-    kratosCookies = parseKratosCookies(cookiesToSendBackToClient)
-  } catch (error) {
-    recordExceptionInCurrentSpan({ error })
-    return res.status(500).send({ result: "Error parsing cookies" })
-  }
-  const csrfCookie = kratosCookies.csrf()
-  const kratosSessionCookie = kratosCookies.kratosSession()
-  if (!csrfCookie || !kratosSessionCookie) {
-    return res.status(500).send({ error: "Missing csrf or ory_kratos_session cookie" })
-  }
-  res.cookie(
-    kratosSessionCookie.name,
-    kratosSessionCookie.value,
-    kratosCookies.formatCookieOptions(kratosSessionCookie),
-  )
-  res.cookie(
-    csrfCookie.name,
-    csrfCookie.value,
-    kratosCookies.formatCookieOptions(csrfCookie),
-  )
-  return res.status(200).send({
-    identity: {
-      kratosUserId,
-      totpRequired,
-    },
-  })
 })
 
 authRouter.post("/phone/captcha", async (req: Request, res: Response) => {

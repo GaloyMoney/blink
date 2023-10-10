@@ -27,9 +27,3 @@ type LoginWithPhoneResult = {
   authToken: AuthToken
   totpRequired: boolean
 }
-
-type LoginWithEmailCookieResult = {
-  cookiesToSendBackToClient: Array<SessionCookie>
-  kratosUserId?: UserId
-  totpRequired: boolean
-}

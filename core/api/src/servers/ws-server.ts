@@ -10,18 +10,8 @@ import jsonwebtoken from "jsonwebtoken"
 
 import jwksRsa from "jwks-rsa"
 
-import cookie from "cookie"
-
 import { sessionPublicContext } from "./middlewares/session"
 
-import { gqlMainSchema } from "@/graphql/public"
-
-import { getJwksArgs, UNSECURE_IP_FROM_REQUEST_OBJECT, WEBSOCKET_PORT } from "@/config"
-
-import { parseIps } from "@/domain/accounts-ips"
-import { ErrorLevel } from "@/domain/shared"
-
-import { validateKratosCookie } from "@/services/kratos"
 import { baseLogger } from "@/services/logger"
 import { setupMongoConnection } from "@/services/mongodb"
 import { sendOathkeeperRequestGraphql } from "@/services/oathkeeper"
@@ -31,6 +21,11 @@ import {
   recordExceptionInCurrentSpan,
   wrapAsyncToRunInSpan,
 } from "@/services/tracing"
+
+import { getJwksArgs, UNSECURE_IP_FROM_REQUEST_OBJECT, WEBSOCKET_PORT } from "@/config"
+import { parseIps } from "@/domain/accounts-ips"
+import { ErrorLevel } from "@/domain/shared"
+import { gqlMainSchema } from "@/graphql/public"
 
 const schema = gqlMainSchema
 
@@ -75,26 +70,6 @@ const getContext = async (
       const ip = parseIps(ipString)
 
       const authz = connectionParams?.Authorization as string | undefined
-
-      const cookies = ctx.extra?.request?.headers?.cookie ?? undefined
-      addAttributesToCurrentSpan({ "ws.hasCookies": cookies ? true : false })
-      if (cookies?.includes("ory_kratos_session")) {
-        addAttributesToCurrentSpan({ "ws.hasKratosCookies": true })
-        const kratosCookieRes = await validateKratosCookie(cookies)
-        if (kratosCookieRes instanceof Error) return kratosCookieRes
-        const tokenPayload = {
-          sub: kratosCookieRes.kratosUserId,
-        }
-
-        const context = await sessionPublicContext({
-          tokenPayload,
-          ip,
-        })
-
-        if (context instanceof Error) throw context
-        return context
-      }
-
       const kratosToken = authz?.slice(7) as AuthToken
 
       // make request to oathkeeper
@@ -186,41 +161,14 @@ const server = () =>
             addEventToCurrentSpan("Websocket connected")
             addAttributesToCurrentSpan({ "ws.connected": "true" })
 
-            const cookies = cookie.parse(ctx.extra.request.headers.cookie || "")
-            const hasCookies = typeof cookies !== "string" ? true : false
-            addAttributesToCurrentSpan({ "ws.hasCookies": hasCookies })
-            const kratosSessionCookie = hasCookies
-              ? cookies?.ory_kratos_session
-              : undefined
-
-            if (
-              typeof ctx.connectionParams?.Authorization !== "string" &&
-              !kratosSessionCookie
-            ) {
-              return true // anon connection ?
-            }
-
             const context = await getContext(ctx)
             if (typeof ctx.connectionParams?.Authorization === "string") {
               authorizedContexts[ctx.connectionParams.Authorization] = context
-            }
-            if (kratosSessionCookie) {
-              authorizedContexts[kratosSessionCookie] = context
             }
 
             return true
           },
           context: async (ctx) => {
-            const cookies = cookie.parse(ctx.extra.request.headers.cookie || "")
-            const hasCookies = typeof cookies !== "string" ? true : false
-            const kratosSessionCookie = hasCookies
-              ? cookies?.ory_kratos_session
-              : undefined
-            // cookie auth
-            if (kratosSessionCookie) {
-              addAttributesToCurrentSpan({ "ws.authType": "cookie" })
-              return authorizedContexts[kratosSessionCookie]
-            }
             // bearer auth
             if (typeof ctx.connectionParams?.Authorization === "string") {
               addAttributesToCurrentSpan({ "ws.authType": "bearer" })

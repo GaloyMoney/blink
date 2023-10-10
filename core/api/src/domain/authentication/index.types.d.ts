@@ -8,7 +8,6 @@ type IdentityPassword = string & { readonly brand: unique symbol }
 type UserId = string & { readonly brand: unique symbol }
 type PrivilegedClientId = string & { readonly brand: unique symbol }
 type AuthToken = string & { readonly brand: unique symbol }
-type SessionCookie = string & { readonly brand: unique symbol }
 
 type TotpSecret = string & { readonly brand: unique symbol }
 type TotpCode = string & { readonly brand: unique symbol }
@@ -51,21 +50,11 @@ type WithSessionResponse = {
   kratosUserId: UserId
 }
 
-type WithCookieResponse = {
-  cookiesToSendBackToClient: Array<SessionCookie>
-  kratosUserId: UserId
-}
-
 type LoginWithPhoneNoPasswordSchemaResponse = {
   authToken: AuthToken
   kratosUserId?: UserId
 }
-type LoginWithPhoneCookieSchemaResponse = {
-  cookiesToSendBackToClient: Array<SessionCookie>
-  kratosUserId?: UserId
-}
 type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
-type CreateKratosUserForPhoneNoPasswordSchemaCookieResponse = WithCookieResponse
 
 type CallbackSecretValidator = {
   authorize(secret: string | undefined): true | ValidationError
@@ -89,11 +78,7 @@ interface IAuthWithPhonePasswordlessService {
   loginToken(args: {
     phone: PhoneNumber
   }): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
-  loginCookie(args: {
-    phone: PhoneNumber
-  }): Promise<LoginWithPhoneCookieSchemaResponse | AuthenticationError>
   logoutToken(args: { sessionId: SessionId }): Promise<void | AuthenticationError>
-  logoutCookie(args: { cookie: SessionCookie }): Promise<void | AuthenticationError>
   createIdentityWithSession(args: {
     phone: PhoneNumber
     phoneMetadata?: PhoneMetadata
@@ -102,11 +87,6 @@ interface IAuthWithPhonePasswordlessService {
     phone: PhoneNumber
     userId: UserId
   }): Promise<IdentityPhone | AuthenticationError>
-  createIdentityWithCookie(args: {
-    phone: PhoneNumber
-  }): Promise<
-    CreateKratosUserForPhoneNoPasswordSchemaCookieResponse | AuthenticationError
-  >
   createIdentityNoSession(args: {
     phone: PhoneNumber
   }): Promise<UserId | AuthenticationError>
@@ -147,9 +127,6 @@ interface IAuthWithEmailPasswordlessService {
   loginToken(args: {
     email: EmailAddress
   }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError>
-  loginCookie(args: {
-    email: EmailAddress
-  }): Promise<LoginWithPhoneCookieSchemaResponse | KratosError>
 }
 
 type CreateIdentityWithSessionResult = WithSessionResponse & {
