@@ -74,7 +74,7 @@ type WIBWithAmountState = WIBWithExpirationState & {
 }
 
 type LnAndWalletInvoice = {
-  walletInvoice: WalletInvoice
+  walletInvoice: WalletInvoice & { paymentRequest: EncodedPaymentRequest }
   lnInvoice: LnInvoice
 }
 
@@ -91,6 +91,7 @@ type WalletInvoice = {
   recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
   paid: boolean
   createdAt: Date
+  paymentRequest?: EncodedPaymentRequest
 }
 
 type WalletAddress<S extends WalletCurrency> = {
@@ -156,7 +157,9 @@ type WalletAddressReceiverArgs<S extends WalletCurrency> = {
   walletAddress: WalletAddress<S>
 }
 
-type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt">
+type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt"> & {
+  paymentRequest: EncodedPaymentRequest
+}
 
 interface IWalletInvoicesRepository {
   persistNew: (

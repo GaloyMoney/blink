@@ -12,7 +12,7 @@ beforeAll(async () => {
   await createUserAndWalletFromPhone(phoneB)
 })
 
-const createTestWalletInvoice = (): WalletInvoice => {
+const createTestWalletInvoice = () => {
   return {
     ...getSecretAndPaymentHash(),
     selfGenerated: false,
@@ -27,6 +27,7 @@ const createTestWalletInvoice = (): WalletInvoice => {
       amount: 10n,
     },
     createdAt: new Date(),
+    paymentRequest: "paymentRequest" as EncodedPaymentRequest,
   }
 }
 

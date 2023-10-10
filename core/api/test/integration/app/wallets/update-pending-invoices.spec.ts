@@ -35,6 +35,7 @@ describe("update pending invoices", () => {
           currency: WalletCurrency.Usd,
         },
         paid: false,
+        paymentRequest: "paymentRequest" as EncodedPaymentRequest,
       }
       const persisted = await WalletInvoicesRepository().persistNew(
         expiredUsdWalletInvoice,
@@ -84,6 +85,7 @@ describe("update pending invoices", () => {
           currency: WalletCurrency.Btc,
         },
         paid: false,
+        paymentRequest: "paymentRequest" as EncodedPaymentRequest,
       }
       const persisted = await WalletInvoicesRepository().persistNew(
         expiredBtcWalletInvoice,
