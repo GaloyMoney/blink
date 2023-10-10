@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor!: only exposing the account uuid (#3316)...'
-      sha: f1f00b28c5f06a0c468298aa1bc0b9b37cb6bb07
+      commitTitle: 'chore: fixing migration script (#3319)...'
+      sha: a9fff5e738ca406aee6ec7d11fb19044748e83d0
       tags:
-      - 0.13.121-1-gf1f00b28c
+      - 0.14.0-1-ga9fff5e73
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor!: only exposing the account uuid (#3316)...'
-      sha: f1f00b28c5f06a0c468298aa1bc0b9b37cb6bb07
+      commitTitle: 'chore: fixing migration script (#3319)...'
+      sha: a9fff5e738ca406aee6ec7d11fb19044748e83d0
       tags:
-      - 0.13.121-1-gf1f00b28c
+      - 0.14.0-1-ga9fff5e73
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor!: only exposing the account uuid (#3316)...'
-      sha: f1f00b28c5f06a0c468298aa1bc0b9b37cb6bb07
+      commitTitle: 'chore: fixing migration script (#3319)...'
+      sha: a9fff5e738ca406aee6ec7d11fb19044748e83d0
       tags:
-      - 0.13.121-1-gf1f00b28c
+      - 0.14.0-1-ga9fff5e73
     path: ./
   path: ./graphql
 kind: LockConfig
