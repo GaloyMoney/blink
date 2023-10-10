@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fixing migration script (#3319)...'
-      sha: a9fff5e738ca406aee6ec7d11fb19044748e83d0
+      commitTitle: 'chore: removing use of cookie from kratos (#3274)...'
+      sha: 49ab68187785b708610c37d1abd7c95c287c4488
       tags:
-      - 0.14.0-1-ga9fff5e73
+      - 0.14.1-1-g49ab68187
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fixing migration script (#3319)...'
-      sha: a9fff5e738ca406aee6ec7d11fb19044748e83d0
+      commitTitle: 'chore: removing use of cookie from kratos (#3274)...'
+      sha: 49ab68187785b708610c37d1abd7c95c287c4488
       tags:
-      - 0.14.0-1-ga9fff5e73
+      - 0.14.1-1-g49ab68187
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: fixing migration script (#3319)...'
-      sha: a9fff5e738ca406aee6ec7d11fb19044748e83d0
+      commitTitle: 'chore: removing use of cookie from kratos (#3274)...'
+      sha: 49ab68187785b708610c37d1abd7c95c287c4488
       tags:
-      - 0.14.0-1-ga9fff5e73
+      - 0.14.1-1-g49ab68187
     path: ./
   path: ./graphql
 kind: LockConfig

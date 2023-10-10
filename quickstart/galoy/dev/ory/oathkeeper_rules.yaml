@@ -55,13 +55,6 @@
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/graphql"
     methods: ["POST", "GET", "OPTIONS"]
   authenticators:
-    - handler: cookie_session
-      config:
-        check_session_url: http://kratos:4433/sessions/whoami
-        preserve_path: true
-        preserve_query: true
-        subject_from: identity.id
-        extra_from: "@this"
     - handler: bearer_token
       config:
         check_session_url: http://kratos:4433/sessions/whoami
