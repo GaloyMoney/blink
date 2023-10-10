@@ -10,7 +10,7 @@ async function migrateAccounts(db, batchSize = 100) {
     for (let i = 0; i < batchSize && (await cursor.hasNext()); i++) {
       const account = await cursor.next()
       batchWalletUpdates.push({
-        updateOne: {
+        updateMany: {
           filter: { _accountId: account._id },
           update: { $set: { accountId: account.id } },
         },
@@ -27,7 +27,7 @@ async function migrateAccounts(db, batchSize = 100) {
 
     if (batchWalletUpdates.length > 0) {
       await db.collection("wallets").bulkWrite(batchWalletUpdates)
-      await db.collection("accountsIp").bulkWrite(accountIpsUpdates)
+      await db.collection("accountsips").bulkWrite(accountIpsUpdates)
       console.log(`Processed ${batchCount} accounts`)
     }
   }
