@@ -50,7 +50,7 @@ describe("onChainAddress", () => {
 
     // Lock account
     const updatedAccount = await Accounts.updateAccountStatus({
-      id: newAccount.id,
+      accountId: newAccount.id,
       status: AccountStatus.Locked,
       updatedByPrivilegedClientId,
     })

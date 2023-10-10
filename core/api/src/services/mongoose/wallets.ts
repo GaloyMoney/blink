@@ -1,10 +1,8 @@
-import { Types } from "mongoose"
-
 import { AccountsRepository } from "./accounts"
 
 import { Wallet } from "./schema"
 
-import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
+import { parseRepositoryError } from "./utils"
 
 import { WalletCurrency } from "@/domain/shared"
 import { toWalletDescriptor } from "@/domain/wallets"
@@ -20,7 +18,7 @@ import {
 
 export interface WalletRecord {
   id: string
-  _accountId: Types.ObjectId
+  accountId: string
   type: string
   currency: string
   onchain: OnChainMongooseType[]
@@ -38,7 +36,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 
     try {
       const wallet = new Wallet({
-        _accountId: toObjectId<AccountId>(accountId),
+        accountId,
         type,
         currency,
       })
@@ -66,10 +64,10 @@ export const WalletsRepository = (): IWalletsRepository => {
   ): Promise<Wallet[] | RepositoryError> => {
     try {
       const result: WalletRecord[] = await Wallet.find({
-        _accountId: toObjectId<AccountId>(accountId),
+        accountId,
       })
       if (!result || result.length === 0) {
-        return new CouldNotListWalletsFromAccountIdError(`accountId: ${accountId}}`)
+        return new CouldNotListWalletsFromAccountIdError(`AccountId: ${accountId}}`)
       }
       return result.map(resultToWallet)
     } catch (err) {
@@ -167,7 +165,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 
 const resultToWallet = (result: WalletRecord): Wallet => {
   const id = result.id as WalletId
-  const accountId = fromObjectId<AccountId>(result._accountId)
+  const accountId = result.accountId as AccountId
   const type = result.type as WalletType
   const currency = result.currency as WalletCurrency
   const onChain = result.onchain || []

@@ -111,7 +111,7 @@ describe("intraLedgerPay", () => {
 
     // Lock sender account
     const updatedAccount = await Accounts.updateAccountStatus({
-      id: senderAccount.id,
+      accountId: senderAccount.id,
       status: AccountStatus.Locked,
       updatedByPrivilegedClientId,
     })
@@ -145,7 +145,7 @@ describe("intraLedgerPay", () => {
 
     // Lock recipient account
     const updatedAccount = await Accounts.updateAccountStatus({
-      id: recipientAccount.id,
+      accountId: recipientAccount.id,
       status: AccountStatus.Locked,
       updatedByPrivilegedClientId,
     })

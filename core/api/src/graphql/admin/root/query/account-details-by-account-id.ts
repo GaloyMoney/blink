@@ -7,7 +7,6 @@ import { Admin } from "@/app"
 
 const AccountDetailsByAccountId = GT.Field({
   args: {
-    // TODO: type for AccountId when AccountId / AccountUuid are properly exposed
     accountId: { type: GT.NonNullID },
   },
   type: GT.NonNull(AuditedAccount),
@@ -16,7 +15,7 @@ const AccountDetailsByAccountId = GT.Field({
       throw accountId
     }
 
-    const account = await Admin.getAccountByAccountUuid(accountId)
+    const account = await Admin.getAccountByAccountId(accountId)
     if (account instanceof Error) {
       throw mapError(account)
     }

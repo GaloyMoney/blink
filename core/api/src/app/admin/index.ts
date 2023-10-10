@@ -1,7 +1,7 @@
 export * from "./update-user-phone"
 export * from "./send-admin-push-notification"
 
-import { checkedToAccountUuid, checkedToUsername } from "@/domain/accounts"
+import { checkedToAccountId, checkedToUsername } from "@/domain/accounts"
 import { IdentityRepository } from "@/services/kratos"
 import { AccountsRepository, UsersRepository } from "@/services/mongoose"
 
@@ -32,10 +32,9 @@ export const getAccountByUserEmail = async (email: EmailAddress) => {
   return accounts.findByUserId(userId)
 }
 
-export const getAccountByAccountUuid = async (accountUuid: AccountUuid) => {
-  const accountUuidValid = checkedToAccountUuid(accountUuid)
-  if (accountUuidValid instanceof Error) return accountUuidValid
-
+export const getAccountByAccountId = async (accountIdRaw: string) => {
+  const accountId = checkedToAccountId(accountIdRaw)
+  if (accountId instanceof Error) return accountId
   const accounts = AccountsRepository()
-  return accounts.findByUuid(accountUuidValid)
+  return accounts.findById(accountId)
 }

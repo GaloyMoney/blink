@@ -14,7 +14,10 @@ export const AccountValidator = (
   ): true | ValidationError => {
     if (wallet.accountId !== account.id)
       return new InvalidWalletId(
-        JSON.stringify({ accountId: account.id, accountIdFromWallet: wallet.accountId }),
+        JSON.stringify({
+          accountId: account.id,
+          AccountIdFromWallet: wallet.accountId,
+        }),
       )
 
     return true

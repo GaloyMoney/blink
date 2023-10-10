@@ -84,8 +84,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
-    case "CouldNotFindAccountFromUuidError":
-      message = `Account does not exist for uuid ${error.message}`
+    case "CouldNotFindAccountFromIdError":
+      message = `Account does not exist for id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "CouldNotFindAccountFromUsernameError":

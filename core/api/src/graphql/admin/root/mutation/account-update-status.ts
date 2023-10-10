@@ -24,7 +24,11 @@ const AccountUpdateStatusMutation = GT.Field<
   null,
   GraphQLAdminContext,
   {
-    input: { uid: string; status: AccountStatus | Error; comment: string }
+    input: {
+      uid: string
+      status: AccountStatus | Error
+      comment: string
+    }
   }
 >({
   extensions: {
@@ -36,16 +40,11 @@ const AccountUpdateStatusMutation = GT.Field<
   },
   resolve: async (_, args, { privilegedClientId }) => {
     const { uid, status, comment } = args.input
-    for (const input of [uid, status, comment]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
-    }
 
     if (status instanceof Error) return { errors: [{ message: status.message }] }
 
     const account = await Accounts.updateAccountStatus({
-      id: uid,
+      accountId: uid,
       status,
       updatedByPrivilegedClientId: privilegedClientId,
       comment,

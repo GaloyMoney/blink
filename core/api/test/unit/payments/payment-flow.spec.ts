@@ -88,7 +88,7 @@ describe("LightningPaymentFlowFromLedgerTransaction", <S extends WalletCurrency,
   WalletCurrency>() => {
   const paymentFlowState: PaymentFlowState<S, R> = {
     senderWalletId: "walletId" as WalletId,
-    senderAccountId: "accountId" as AccountId,
+    senderAccountId: "AccountId" as AccountId,
     settlementMethod: SettlementMethod.Lightning,
     paymentInitiationMethod: PaymentInitiationMethod.Lightning,
 
@@ -124,7 +124,7 @@ describe("OnChainPaymentFlowFromLedgerTransaction", <S extends WalletCurrency, R
   WalletCurrency>() => {
   const onChainPaymentFlowState: OnChainPaymentFlowState<S, R> = {
     senderWalletId: "walletId" as WalletId,
-    senderAccountId: "accountId" as AccountId,
+    senderAccountId: "AccountId" as AccountId,
     settlementMethod: SettlementMethod.Lightning,
     paymentInitiationMethod: PaymentInitiationMethod.Lightning,
 

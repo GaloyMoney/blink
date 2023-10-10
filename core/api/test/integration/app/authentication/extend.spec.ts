@@ -13,7 +13,7 @@ it("maybe extend session", async () => {
     const expiresAt = new Date()
     expiresAt.setMonth(expiresAt.getMonth() + 9)
 
-    const sessionId = "uuid"
+    const sessionId = "id"
 
     await maybeExtendSession({
       sessionId,
@@ -28,7 +28,7 @@ it("maybe extend session", async () => {
     const expiresAt = new Date()
     expiresAt.setMonth(expiresAt.getMonth() + 13)
 
-    const sessionId = "uuid"
+    const sessionId = "id"
 
     await maybeExtendSession({
       sessionId,

@@ -399,7 +399,7 @@ const updatePendingInvoiceBeforeFinally = async ({
     ) {
       const callbackService = CallbackService(getCallbackServiceConfig())
       callbackService.sendMessage({
-        accountUuid: recipientAccount.uuid,
+        accountId: recipientAccount.id,
         eventType: CallbackEventType.ReceiveLightning,
         payload: {
           // FIXME: [0] might not be correct

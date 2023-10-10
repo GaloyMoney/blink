@@ -35,7 +35,7 @@ const BusinessAccount = GT.Object({
   fields: () => ({
     id: {
       type: GT.NonNullID,
-      resolve: (source) => source.uuid,
+      resolve: (source) => source.id,
     },
 
     wallets: {

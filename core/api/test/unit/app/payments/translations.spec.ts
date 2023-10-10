@@ -18,7 +18,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
 
   const timestamp = new Date()
 
-  const senderAccountId = "accountId" as AccountId
+  const senderAccountId = "AccountId" as AccountId
 
   const ledgerTxnBase = {
     walletId: "walletId" as WalletId,

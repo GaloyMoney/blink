@@ -189,7 +189,7 @@ describe("initiated via lightning", () => {
 
       // Lock sender account
       const updatedAccount = await Accounts.updateAccountStatus({
-        id: newAccount.id,
+        accountId: newAccount.id,
         status: AccountStatus.Locked,
         updatedByPrivilegedClientId,
       })
@@ -517,7 +517,7 @@ describe("initiated via lightning", () => {
 
       // Lock recipient account
       const updatedAccount = await Accounts.updateAccountStatus({
-        id: recipientAccount.id,
+        accountId: recipientAccount.id,
         status: AccountStatus.Locked,
         updatedByPrivilegedClientId,
       })

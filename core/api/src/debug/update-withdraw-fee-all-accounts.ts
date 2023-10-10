@@ -19,10 +19,10 @@ const updateFee = async (fee: number) => {
   if (accounts instanceof Error) return accounts
 
   for await (const account of accounts) {
-    const { id } = account
-    const updateResult = await updateAccountWithdrawFee({ id, fee })
+    const { id: accountId } = account
+    const updateResult = await updateAccountWithdrawFee({ accountId, fee })
     if (updateResult instanceof Error) {
-      console.error(`Could not set fee for: ${id}`, { updateResult })
+      console.error(`Could not set fee for: ${accountId}`, { updateResult })
       continue
     }
   }

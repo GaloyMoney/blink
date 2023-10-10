@@ -4,29 +4,29 @@ import { getOnChainWalletConfig } from "@/config"
 
 import {
   addPendingTransaction,
-  removePendingTransaction,
   addSettledTransaction,
   getLastOnChainAddress,
   registerBroadcastedPayout,
+  removePendingTransaction,
 } from "@/app/wallets"
 
-import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@/domain/shared"
-import { UnknownLedgerError, toLiabilitiesWalletId } from "@/domain/ledger"
-import { DisplayPriceRatio, WalletPriceRatio } from "@/domain/payments"
 import {
   DisplayAmountsConverter,
   UsdDisplayCurrency,
   displayAmountFromNumber,
 } from "@/domain/fiat"
+import { UnknownLedgerError, toLiabilitiesWalletId } from "@/domain/ledger"
+import { DisplayPriceRatio, WalletPriceRatio } from "@/domain/payments"
+import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@/domain/shared"
 
-import { WalletOnChainPendingReceive } from "@/services/mongoose/schema"
-import { Transaction } from "@/services/ledger/schema"
-import * as LedgerFacade from "@/services/ledger/facade"
 import { getBankOwnerWalletId } from "@/services/ledger/caching"
+import * as LedgerFacade from "@/services/ledger/facade"
+import { Transaction } from "@/services/ledger/schema"
+import { WalletOnChainPendingReceive } from "@/services/mongoose/schema"
 
 import { LessThanDustThresholdError } from "@/domain/errors"
 
-import { generateHash, createRandomUserAndBtcWallet } from "test/helpers"
+import { createRandomUserAndBtcWallet, generateHash } from "test/helpers"
 
 const calc = AmountCalculator()
 
@@ -457,7 +457,11 @@ describe("Bria Event Handlers", () => {
           usd: usdTotalAmount,
         },
         bankFee: { btc: btcBankFee, usd: usdBankFee },
-        senderWalletDescriptor: { id: walletId, currency: WalletCurrency.Btc, accountId },
+        senderWalletDescriptor: {
+          id: walletId,
+          currency: WalletCurrency.Btc,
+          accountId,
+        },
         metadata,
         additionalDebitMetadata: debitAccountAdditionalMetadata,
         additionalInternalMetadata: internalAccountsAdditionalMetadata,

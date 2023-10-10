@@ -98,8 +98,8 @@ const WalletSchema = new Schema<WalletRecord>({
     required: true,
     default: () => crypto.randomUUID(),
   },
-  _accountId: {
-    type: Schema.Types.ObjectId,
+  accountId: {
+    type: String,
     ref: "Account",
     index: true,
     required: true,
@@ -325,8 +325,8 @@ const AccountIpsSchema = new Schema<AccountIpsRecord>({
     default: Date.now,
   },
   lastConnection: Date,
-  _accountId: {
-    type: Schema.Types.ObjectId,
+  accountId: {
+    type: String,
     ref: "Account",
     index: true,
     required: true,
@@ -336,7 +336,7 @@ const AccountIpsSchema = new Schema<AccountIpsRecord>({
 export const AccountIps = mongoose.model<AccountIpsRecord>("AccountIp", AccountIpsSchema)
 
 AccountIpsSchema.index({
-  _accountId: 1,
+  accountId: 1,
   ip: 1,
 })
 

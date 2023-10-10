@@ -1,4 +1,4 @@
-import { checkedToAccountUuid } from "@/domain/accounts"
+import { checkedToAccountId } from "@/domain/accounts"
 import {
   GaloyNotificationCategories,
   checkedToNotificationCategory,
@@ -26,11 +26,11 @@ export const sendAdminPushNotification = async ({
 
   if (checkedNotificationCategory instanceof Error) return checkedNotificationCategory
 
-  const accountId = checkedToAccountUuid(accountIdRaw)
+  const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
   const accountsRepo = AccountsRepository()
-  const account = await accountsRepo.findByUuid(accountId)
+  const account = await accountsRepo.findById(accountId)
   if (account instanceof Error) return account
   const kratosUserId = account.kratosUserId
 

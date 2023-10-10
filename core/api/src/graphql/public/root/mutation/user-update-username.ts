@@ -30,7 +30,10 @@ const UserUpdateUsernameMutation = GT.Field({
       return { errors: [{ message: username.message }] }
     }
 
-    const result = await Accounts.setUsername({ username, id: domainAccount.id })
+    const result = await Accounts.setUsername({
+      username,
+      accountId: domainAccount.id,
+    })
 
     if (result instanceof Error) {
       return {

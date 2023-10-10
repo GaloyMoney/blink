@@ -24,7 +24,7 @@ import { GaloyNotificationCategories } from "@/domain/notifications"
 let spy
 let displayPriceRatios: Record<string, DisplayPriceRatio<"BTC", DisplayCurrency>>
 
-const accountId = "accountId" as AccountId
+const accountId = "AccountId" as AccountId
 const walletId = "walletId" as WalletId
 const paymentHash = "paymentHash" as PaymentHash
 const txHash = "txHash" as OnChainTxHash

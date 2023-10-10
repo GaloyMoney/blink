@@ -16,7 +16,6 @@ import {
 import { WalletCurrency } from "@/domain/shared"
 import { lazyLoadLedgerAdmin } from "@/services/ledger"
 import { WalletsRepository } from "@/services/mongoose"
-import { fromObjectId } from "@/services/mongoose/utils"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {
@@ -25,34 +24,30 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     return result.defaultWalletId
   },
   dealerBtcWalletResolver: async () => {
-    const user: AccountRecord | null = await Account.findOne(
+    const account: AccountRecord | null = await Account.findOne(
       { role: "dealer" },
       { id: 1 },
     )
-    if (!user) throw new MissingDealerAccountConfigError()
-    // FIXME remove the use of AccountRecord when role if part of the AccountRepository
-    const accountId = fromObjectId<AccountId>(user._id)
-    const wallets = await WalletsRepository().listByAccountId(accountId)
+    if (!account) throw new MissingDealerAccountConfigError()
+    const wallets = await WalletsRepository().listByAccountId(account.id as AccountId)
     if (wallets instanceof Error) {
       baseLogger.error({ err: wallets }, "Error while listing wallets for dealer")
-      throw new UnknownConfigError("Couldn't load dealer wallets")
+      throw new UnknownConfigError("Couldn't load btc dealer wallets")
     }
     const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Btc)
     if (wallet === undefined) throw new MissingBtcDealerWalletConfigError()
     return wallet.id
   },
   dealerUsdWalletResolver: async () => {
-    const user: AccountRecord | null = await Account.findOne(
+    const account: AccountRecord | null = await Account.findOne(
       { role: "dealer" },
       { id: 1 },
     )
-    if (!user) throw new MissingDealerAccountConfigError()
-    // FIXME remove the use of AccountRecord when role if part of the AccountRepository
-    const accountId = fromObjectId<AccountId>(user._id)
-    const wallets = await WalletsRepository().listByAccountId(accountId)
+    if (!account) throw new MissingDealerAccountConfigError()
+    const wallets = await WalletsRepository().listByAccountId(account.id as AccountId)
     if (wallets instanceof Error) {
       baseLogger.error({ err: wallets }, "Error while listing wallets for dealer")
-      throw new UnknownConfigError("Couldn't load dealer wallets")
+      throw new UnknownConfigError("Couldn't load usd dealer wallets")
     }
     const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Usd)
     if (wallet === undefined) throw new MissingUsdDealerWalletConfigError()

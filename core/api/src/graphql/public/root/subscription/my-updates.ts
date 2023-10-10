@@ -148,7 +148,7 @@ const MeSubscription = {
   resolve: (
     source: MeResolveSource | undefined,
     _args: unknown,
-    ctx: GraphQLPublicContextAuth,
+    ctx: GraphQLPublicContextAuth | GraphQLPublicContext,
   ) => {
     if (source === undefined) {
       throw new UnknownClientError({
@@ -187,7 +187,7 @@ const MeSubscription = {
       })
     }
 
-    if (!ctx.domainAccount) {
+    if (!("domainAccount" in ctx) || !ctx.domainAccount) {
       throw new AuthenticationError({
         message: "Not Authenticated for subscription",
         logger: baseLogger,

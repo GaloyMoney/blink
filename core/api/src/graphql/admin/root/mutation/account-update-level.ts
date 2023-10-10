@@ -22,7 +22,7 @@ const AccountUpdateLevelMutation = GT.Field<
   GraphQLAdminContext,
   {
     input: {
-      uid: string
+      uid: string | Error
       level: AccountLevel | Error
     }
   }
@@ -35,18 +35,12 @@ const AccountUpdateLevelMutation = GT.Field<
     input: { type: GT.NonNull(AccountUpdateLevelInput) },
   },
   resolve: async (_, args) => {
-    // FIXME: should be account id
     const { uid, level } = args.input
 
-    for (const input of [uid, level]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
-    }
-
     if (level instanceof Error) return { errors: [{ message: level.message }] }
+    if (uid instanceof Error) return { errors: [{ message: uid.message }] }
 
-    const account = await Accounts.updateAccountLevel({ id: uid, level })
+    const account = await Accounts.updateAccountLevel({ accountId: uid, level })
 
     if (account instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(account)] }

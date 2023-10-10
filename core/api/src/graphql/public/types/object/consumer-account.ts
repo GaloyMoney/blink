@@ -45,13 +45,13 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
   fields: () => ({
     id: {
       type: GT.NonNullID,
-      resolve: (source) => source.uuid,
+      resolve: (source) => source.id,
     },
 
     callbackEndpoints: {
       type: GT.NonNullList(CallbackEndpoint),
       resolve: async (source, args, { domainAccount }) => {
-        return listEndpoints(domainAccount.uuid)
+        return listEndpoints(domainAccount.id)
       },
     },
 

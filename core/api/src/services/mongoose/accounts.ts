@@ -1,4 +1,4 @@
-import { fromObjectId, parseRepositoryError, toObjectId } from "./utils"
+import { parseRepositoryError } from "./utils"
 
 import { OnboardingEarn } from "@/config"
 
@@ -7,7 +7,7 @@ import {
   CouldNotFindAccountError,
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
-  CouldNotFindAccountFromUuidError,
+  CouldNotFindAccountFromIdError,
   RepositoryError,
 } from "@/domain/errors"
 import { UsdDisplayCurrency } from "@/domain/fiat"
@@ -39,23 +39,9 @@ export const AccountsRepository = (): IAccountsRepository => {
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
       const result = await Account.findOne({
-        _id: toObjectId<AccountId>(accountId),
+        id: accountId,
       })
-      if (!result) return new CouldNotFindAccountError()
-      return translateToAccount(result)
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
-  const findByUuid = async (
-    accountUuid: AccountUuid,
-  ): Promise<Account | RepositoryError> => {
-    try {
-      const result = await Account.findOne({
-        id: accountUuid,
-      })
-      if (!result) return new CouldNotFindAccountFromUuidError(accountUuid)
+      if (!result) return new CouldNotFindAccountFromIdError(accountId)
       return translateToAccount(result)
     } catch (err) {
       return parseRepositoryError(err)
@@ -124,7 +110,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await Account.findOneAndUpdate(
-        { _id: toObjectId<AccountId>(id) },
+        { id },
         {
           level,
           statusHistory,
@@ -192,7 +178,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     findByUserId,
     listUnlockedAccounts,
     findById,
-    findByUuid,
     findByUsername,
     listBusinessesForMap,
     update,
@@ -200,8 +185,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 }
 
 const translateToAccount = (result: AccountRecord): Account => ({
-  id: fromObjectId<AccountId>(result._id),
-  uuid: result.id as AccountUuid,
+  id: result.id as AccountId,
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,

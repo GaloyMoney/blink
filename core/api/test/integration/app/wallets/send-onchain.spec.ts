@@ -280,7 +280,7 @@ describe("onChainPay", () => {
 
       // Lock sender account
       const updatedAccount = await Accounts.updateAccountStatus({
-        id: newAccount.id,
+        accountId: newAccount.id,
         status: AccountStatus.Locked,
         updatedByPrivilegedClientId,
       })
@@ -535,7 +535,7 @@ describe("onChainPay", () => {
 
       // Lock recipient account
       const updatedAccount = await Accounts.updateAccountStatus({
-        id: recipientAccount.id,
+        accountId: recipientAccount.id,
         status: AccountStatus.Locked,
         updatedByPrivilegedClientId,
       })

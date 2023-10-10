@@ -2,22 +2,22 @@ import { checkedAccountStatus, checkedToAccountId } from "@/domain/accounts"
 import { AccountsRepository } from "@/services/mongoose"
 
 export const updateAccountStatus = async ({
-  id: idRaw,
+  accountId: accountIdRaw,
   status,
   updatedByPrivilegedClientId,
   comment,
 }: {
-  id: string
+  accountId: string
   status: string
   updatedByPrivilegedClientId: PrivilegedClientId
   comment?: string
 }): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()
 
-  const id = checkedToAccountId(idRaw)
-  if (id instanceof Error) return id
+  const accountId = checkedToAccountId(accountIdRaw)
+  if (accountId instanceof Error) return accountId
 
-  const account = await accountsRepo.findById(id)
+  const account = await accountsRepo.findById(accountId)
   if (account instanceof Error) return account
 
   const statusChecked = checkedAccountStatus(status)

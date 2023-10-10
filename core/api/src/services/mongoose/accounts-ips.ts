@@ -1,4 +1,4 @@
-import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
+import { parseRepositoryError } from "./utils"
 
 import { AccountIps } from "@/services/mongoose/schema"
 
@@ -31,7 +31,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
 
     try {
       const result = await AccountIps.updateOne(
-        { _accountId: toObjectId<AccountId>(accountIp.accountId), ip: accountIp.ip },
+        { accountId: accountIp.accountId, ip: accountIp.ip },
         updateQuery,
         { upsert: true },
       )
@@ -52,7 +52,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
   }: FindByAccountIdAndIpArgs): Promise<AccountIP | RepositoryError> => {
     try {
       const result = await AccountIps.findOne({
-        _accountId: toObjectId<AccountId>(accountId),
+        accountId,
         ip,
       })
       if (!result) {
@@ -70,7 +70,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
   ): Promise<AccountIP | RepositoryError> => {
     try {
       const result = await AccountIps.findOne({
-        _accountId: toObjectId<AccountId>(accountId),
+        accountId,
       }).sort({ lastConnection: -1 })
 
       if (!result) {
@@ -92,7 +92,7 @@ export const AccountsIpsRepository = (): IAccountsIPsRepository => {
 
 const accountIPFromRaw = (result: AccountIpsRecord): AccountIP => {
   return {
-    accountId: fromObjectId<AccountId>(result._accountId),
+    accountId: result.accountId as AccountId,
     ip: result.ip as IpAddress,
     metadata: result.metadata as IPType,
   }

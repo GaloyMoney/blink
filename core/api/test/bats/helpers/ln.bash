@@ -283,6 +283,7 @@ get_from_transaction_by_ln_hash_and_status() {
     | select(.node.initiationVia.paymentHash == $payment_hash)
     | select(.node.status == $expected_status)
     .node'
+
   echo $output \
     | jq -r \
       --arg payment_hash "$payment_hash" \

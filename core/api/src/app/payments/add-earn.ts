@@ -21,14 +21,18 @@ import {
   UsersRepository,
 } from "@/services/mongoose"
 import { AccountsIpsRepository } from "@/services/mongoose/accounts-ips"
+import { checkedToAccountId } from "@/domain/accounts"
 
 export const addEarn = async ({
   quizQuestionId: quizQuestionIdString,
-  accountId,
+  accountId: accountIdRaw,
 }: {
   quizQuestionId: string
-  accountId: AccountId /* AccountId: aid validation */
+  accountId: string
 }): Promise<QuizQuestion | ApplicationError> => {
+  const accountId = checkedToAccountId(accountIdRaw)
+  if (accountId instanceof Error) return accountId
+
   const rewardsConfig = getRewardsConfig()
 
   // TODO: quizQuestionId checkedFor

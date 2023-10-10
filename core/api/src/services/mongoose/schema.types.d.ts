@@ -66,7 +66,6 @@ interface WalletInvoiceRecord {
 }
 
 interface AccountRecord {
-  _id: ObjectId
   id: string
   kratosUserId: string
 
@@ -108,7 +107,7 @@ interface AccountIpsRecord {
   }
   firstConnection: Date
   lastConnection: Date
-  _accountId: ObjectId
+  accountId: string
 }
 
 interface UserRecord {

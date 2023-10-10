@@ -35,7 +35,7 @@ it("change default walletId of account", async () => {
   if (newWallet instanceof Error) throw newWallet
 
   const newAccount = await Accounts.updateDefaultWalletId({
-    accountId: accountId,
+    accountId,
     walletId: newWallet.id,
   })
 

@@ -4,12 +4,13 @@ import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
 import { Admin } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
 import Phone from "@/graphql/shared/types/scalar/phone"
+import AccountId from "@/graphql/shared/types/scalar/account-id"
 
 const UserUpdatePhoneInput = GT.Input({
   name: "UserUpdatePhoneInput",
   fields: () => ({
-    accountUuid: {
-      type: GT.NonNullID,
+    accountId: {
+      type: GT.NonNull(AccountId),
     },
     phone: {
       type: GT.NonNull(Phone),
@@ -21,7 +22,7 @@ const UserUpdatePhoneMutation = GT.Field<
   null,
   GraphQLAdminContext,
   {
-    input: { accountUuid: string; phone: PhoneNumber | Error }
+    input: { accountId: string; phone: PhoneNumber | Error }
   }
 >({
   extensions: {
@@ -32,8 +33,8 @@ const UserUpdatePhoneMutation = GT.Field<
     input: { type: GT.NonNull(UserUpdatePhoneInput) },
   },
   resolve: async (_, args, { privilegedClientId }) => {
-    const { accountUuid, phone } = args.input
-    for (const input of [accountUuid, phone]) {
+    const { accountId, phone } = args.input
+    for (const input of [accountId, phone]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -42,7 +43,7 @@ const UserUpdatePhoneMutation = GT.Field<
     if (phone instanceof Error) return { errors: [{ message: phone.message }] }
 
     const account = await Admin.updateUserPhone({
-      accountUuid,
+      accountId,
       phone,
       updatedByPrivilegedClientId: privilegedClientId,
     })

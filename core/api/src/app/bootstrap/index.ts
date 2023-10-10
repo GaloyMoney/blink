@@ -7,14 +7,13 @@ import { ConfigError, getAdminAccounts, getDefaultAccountsConfig } from "@/confi
 import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
 
+import { initialStaticAccountIds } from "@/services/ledger/facade"
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
 } from "@/services/mongoose"
 import { Account } from "@/services/mongoose/schema"
-import { toObjectId } from "@/services/mongoose/utils"
-import { initialStaticAccountIds } from "@/services/ledger/facade"
 
 export const randomUserId = () => randomUUID() as UserId
 
@@ -75,10 +74,7 @@ export const bootstrap = async () => {
     }
     if (account instanceof Error) return account
 
-    await Account.findOneAndUpdate(
-      { _id: toObjectId<AccountId>(account.id) },
-      { role, contactEnabled: false },
-    )
+    await Account.findOneAndUpdate({ id: account.id }, { role, contactEnabled: false })
 
     const wallet = await WalletsRepository().findById(account.defaultWalletId)
     if (wallet instanceof Error) return wallet

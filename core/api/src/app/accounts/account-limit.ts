@@ -52,7 +52,10 @@ export const checkIntraledgerLimits = async ({
   const accountLimits = getAccountLimits({ level: account.level })
   const accountLimitsChecker = AccountTxVolumeLimitChecker(accountLimits)
 
-  const volumeRemaining = await remainingIntraLedgerLimit({ accountId, priceRatio })
+  const volumeRemaining = await remainingIntraLedgerLimit({
+    accountId,
+    priceRatio,
+  })
   if (volumeRemaining instanceof Error) return volumeRemaining
 
   return accountLimitsChecker.checkIntraledger({
@@ -155,7 +158,10 @@ export const checkTradeIntraAccountLimits = async ({
   const accountLimits = getAccountLimits({ level: account.level })
   const accountLimitsChecker = AccountTxVolumeLimitChecker(accountLimits)
 
-  const volumeRemaining = await remainingTradeIntraAccountLimit({ accountId, priceRatio })
+  const volumeRemaining = await remainingTradeIntraAccountLimit({
+    accountId,
+    priceRatio,
+  })
   if (volumeRemaining instanceof Error) return volumeRemaining
 
   return accountLimitsChecker.checkTradeIntraAccount({

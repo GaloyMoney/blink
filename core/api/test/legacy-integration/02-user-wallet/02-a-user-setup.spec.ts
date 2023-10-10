@@ -54,64 +54,64 @@ describe("UserWallet", () => {
   describe("setUsername", () => {
     it("does not set username if length is less than 3", async () => {
       await expect(
-        setUsername({ username: "ab", id: accountIdA }),
+        setUsername({ username: "ab", accountId: accountIdA }),
       ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("does not set username if contains invalid characters", async () => {
       await expect(
-        setUsername({ username: "ab+/", id: accountIdA }),
+        setUsername({ username: "ab+/", accountId: accountIdA }),
       ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("does not allow non english characters", async () => {
       await expect(
-        setUsername({ username: "ñ_user1", id: accountIdA }),
+        setUsername({ username: "ñ_user1", accountId: accountIdA }),
       ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("does not set username starting with 1, 3, bc1, lnbc1", async () => {
       await expect(
-        setUsername({ username: "1ab", id: accountIdA }),
+        setUsername({ username: "1ab", accountId: accountIdA }),
       ).resolves.toBeInstanceOf(ValidationError)
       await expect(
-        setUsername({ username: "3basd", id: accountIdA }),
+        setUsername({ username: "3basd", accountId: accountIdA }),
       ).resolves.toBeInstanceOf(ValidationError)
       await expect(
-        setUsername({ username: "bc1be", id: accountIdA }),
+        setUsername({ username: "bc1be", accountId: accountIdA }),
       ).resolves.toBeInstanceOf(ValidationError)
       await expect(
-        setUsername({ username: "lnbc1qwe1", id: accountIdA }),
+        setUsername({ username: "lnbc1qwe1", accountId: accountIdA }),
       ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("allows set username", async () => {
-      let result = await setUsername({ username: "userA", id: accountIdA })
+      let result = await setUsername({ username: "userA", accountId: accountIdA })
       expect(result).not.toBeInstanceOf(Error)
-      result = await setUsername({ username: "userB", id: accountIdB })
+      result = await setUsername({ username: "userB", accountId: accountIdB })
       expect(result).not.toBeInstanceOf(Error)
     })
 
     it("does not allow set username if already taken", async () => {
       const username = "userA"
-      await expect(setUsername({ username, id: accountIdC })).resolves.toBeInstanceOf(
-        UsernameNotAvailableError,
-      )
+      await expect(
+        setUsername({ username, accountId: accountIdC }),
+      ).resolves.toBeInstanceOf(UsernameNotAvailableError)
     })
 
     it("does not allow set username with only case difference", async () => {
       await expect(
-        setUsername({ username: "UserA", id: accountIdC }),
+        setUsername({ username: "UserA", accountId: accountIdC }),
       ).resolves.toBeInstanceOf(UsernameNotAvailableError)
 
       // set username for accountC
-      const result = await setUsername({ username: "lily", id: accountIdC })
+      const result = await setUsername({ username: "lily", accountId: accountIdC })
       expect(result).not.toBeInstanceOf(Error)
     })
 
     it("does not allow re-setting username", async () => {
       await expect(
-        setUsername({ username: "abc", id: accountIdA }),
+        setUsername({ username: "abc", accountId: accountIdA }),
       ).resolves.toBeInstanceOf(UsernameIsImmutableError)
     })
   })
@@ -164,7 +164,7 @@ describe("UserWallet", () => {
       const updatedByPrivilegedClientId = randomUUID() as PrivilegedClientId
 
       account = await Accounts.updateAccountStatus({
-        id: accountIdC,
+        accountId: accountIdC,
         status: "pending",
         updatedByPrivilegedClientId,
       })
@@ -174,7 +174,7 @@ describe("UserWallet", () => {
       expect(account.status).toEqual("pending")
 
       account = await Accounts.updateAccountStatus({
-        id: account.id,
+        accountId: account.id,
         status: "locked",
         updatedByPrivilegedClientId,
         comment: "Looks spammy",
@@ -190,7 +190,7 @@ describe("UserWallet", () => {
       expect(account.status).toEqual("locked")
 
       account = await Accounts.updateAccountStatus({
-        id: account.id,
+        accountId: account.id,
         status: "active",
         updatedByPrivilegedClientId,
       })

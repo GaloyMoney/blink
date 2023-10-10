@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import {
   CouldNotFindWalletFromAccountIdAndCurrencyError,
   MultipleWalletsFoundForAccountIdAndCurrency,
@@ -6,14 +8,13 @@ import {
 import { WalletCurrency } from "@/domain/shared"
 import { WalletsRepository } from "@/services/mongoose"
 import { Wallet } from "@/services/mongoose/schema"
-import { toObjectId } from "@/services/mongoose/utils"
 
 const wallets = WalletsRepository()
-const accountId = "00112233445566778899aabb" as AccountId
+const accountId = randomUUID() as AccountId
 
 const newWallet = async (currency: string) => {
   const wallet = new Wallet({
-    _accountId: toObjectId<AccountId>(accountId),
+    accountId,
     type: "checking",
     currency,
   })
@@ -21,7 +22,7 @@ const newWallet = async (currency: string) => {
 }
 
 afterEach(async () => {
-  await Wallet.deleteMany({ _accountId: toObjectId<AccountId>(accountId) })
+  await Wallet.deleteMany({ accountId })
 })
 
 describe("WalletsRepository", () => {
