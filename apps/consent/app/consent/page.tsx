@@ -98,7 +98,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
   const { client, requested_scope } = body;
 
   if (!user || !client || !requested_scope) {
-   throw new Error("Invalid Request ")
+    throw new Error("Invalid Request ");
   }
 
   return (
@@ -185,6 +185,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
             </SecondaryButton>
 
             <PrimaryButton
+              data-testid="submit_consent_btn"
               type="submit"
               id="accept"
               name="submit"

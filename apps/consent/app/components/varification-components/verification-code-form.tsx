@@ -43,8 +43,14 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({
         id="code"
         name="code"
         placeholder="Enter code here"
+        data-testid="verification_code_input"
       />
-      <PrimaryButtonComponent type="submit">Submit</PrimaryButtonComponent>
+      <PrimaryButtonComponent
+        data-testid="verification_code_submit_btn"
+        type="submit"
+      >
+        Submit
+      </PrimaryButtonComponent>
     </form>
   </>
 );

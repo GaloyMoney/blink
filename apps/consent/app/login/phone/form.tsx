@@ -12,12 +12,19 @@ import Separator from "@/app/components/separator";
 // @ts-ignore-next-line no-implicit-any error
 import { experimental_useFormState as useFormState } from "react-dom";
 import { GetCaptchaChallengeResponse } from "./phone-login.types";
+import { AuthChannels } from "@/app/graphql/queries/get-supported-countries";
+import PhoneInput from "react-phone-number-input";
 
 interface LoginFormProps {
   login_challenge: string;
+  countryCodes: any;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ login_challenge }) => {
+// TODO need to add country call codes
+const LoginForm: React.FC<LoginFormProps> = ({
+  login_challenge,
+  countryCodes,
+}) => {
   //TODO useFormState is not giving type suggestions/errors i.e: not typed
   const [state, formAction] = useFormState<GetCaptchaChallengeResponse>(
     getCaptchaChallenge,
@@ -40,7 +47,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge }) => {
     toast.error(state.message);
   }
 
-
   return (
     <>
       {state.message === "success" ? (
@@ -53,6 +59,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge }) => {
       <FormComponent action={formAction}>
         <input type="hidden" name="login_challenge" value={login_challenge} />
         <InputComponent
+          data-testid="phone_number_input"
           label="Phone"
           type="tel"
           id="phone"
@@ -93,6 +100,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge }) => {
             Cancel
           </SecondaryButton>
           <PrimaryButton
+            data-testid="phone_login_next_btn"
             type="submit"
             id="accept"
             name="submit"

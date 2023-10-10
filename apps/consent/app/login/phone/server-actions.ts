@@ -26,6 +26,7 @@ export const getCaptchaChallenge = async (
     throw new Error("Phone not provided");
   }
 
+
   const formattedPhone = phone.replace(/\s+/g, "");
   if (/[^0-9+]/.test(formattedPhone)) {
     return {

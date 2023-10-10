@@ -1790,12 +1790,54 @@ export const WalletCurrency = {
 } as const;
 
 export type WalletCurrency = typeof WalletCurrency[keyof typeof WalletCurrency];
+export type CountryCodesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CountryCodesQuery = { readonly __typename: 'Query', readonly globals?: { readonly __typename: 'Globals', readonly supportedCountries: ReadonlyArray<{ readonly __typename: 'Country', readonly id: string, readonly supportedAuthChannels: ReadonlyArray<PhoneCodeChannelType> }> } | null };
+
 export type GetUserIdQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetUserIdQuery = { readonly __typename: 'Query', readonly me?: { readonly __typename: 'User', readonly id: string } | null };
 
 
+export const CountryCodesDocument = gql`
+    query CountryCodes {
+  globals {
+    supportedCountries {
+      id
+      supportedAuthChannels
+    }
+  }
+}
+    `;
+
+/**
+ * __useCountryCodesQuery__
+ *
+ * To run a query within a React component, call `useCountryCodesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCountryCodesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCountryCodesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCountryCodesQuery(baseOptions?: Apollo.QueryHookOptions<CountryCodesQuery, CountryCodesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CountryCodesQuery, CountryCodesQueryVariables>(CountryCodesDocument, options);
+      }
+export function useCountryCodesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CountryCodesQuery, CountryCodesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CountryCodesQuery, CountryCodesQueryVariables>(CountryCodesDocument, options);
+        }
+export type CountryCodesQueryHookResult = ReturnType<typeof useCountryCodesQuery>;
+export type CountryCodesLazyQueryHookResult = ReturnType<typeof useCountryCodesLazyQuery>;
+export type CountryCodesQueryResult = Apollo.QueryResult<CountryCodesQuery, CountryCodesQueryVariables>;
 export const GetUserIdDocument = gql`
     query getUserId {
   me {

@@ -19,9 +19,7 @@ export default function RootLayout({
   return (
     <>
       <html lang="en">
-        <head>
-          <Script src="/gt.js" strategy="beforeInteractive" />
-        </head>
+        <Script src="/gt.js"/>
         <body className={inter.className}>
           <ToastContainer
             position="top-center"

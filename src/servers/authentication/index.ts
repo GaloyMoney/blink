@@ -245,8 +245,8 @@ authRouter.post("/email/code", async (req: Request, res: Response) => {
 
 authRouter.post("/email/login", async (req: Request, res: Response) => {
   const ip = req.originalIp
-
   const emailLoginIdRaw = req.body.emailLoginId
+
   if (!emailLoginIdRaw) {
     return res.status(422).send({ error: "Missing input" })
   }
@@ -426,14 +426,14 @@ authRouter.post("/phone/captcha", async (req: Request, res: Response) => {
 
   const { success, gt, challenge, newCaptcha } = result
 
-  return {
+  res.send( {
     result: {
       id: gt,
       challengeCode: challenge,
       newCaptcha,
       failbackMode: success === 0,
     },
-  }
+  })
 })
 
 authRouter.post("/phone/code", async (req: Request, res: Response) => {
@@ -493,7 +493,7 @@ authRouter.post("/phone/login", async (req: Request, res: Response) => {
     return res.status(500).send({ error: mapError(loginResp).message })
   }
 
-  const { authToken, totpRequired } = loginResp
+  const { authToken, totpRequired , id } = loginResp
 
   return res.send({
     authToken,

@@ -57,7 +57,18 @@ async function submitForm(
     throw new Error("Invalid Email Value");
   }
 
-  const emailCodeRequest = await authApi.requestEmailCode(email);
+  let emailCodeRequest;
+  try {
+    emailCodeRequest = await authApi.requestEmailCode(email);
+  } catch (err) {
+    console.error("error while calling emailRequest Code", err);
+  }
+
+  
+  if (!emailCodeRequest) {
+    throw new Error("Request failed to get email code");
+  }
+
   // TODO: manage error on ip rate limit
   // TODO: manage error when trying the same email too often
 
@@ -114,6 +125,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
         <FormComponent action={submitForm}>
           <input type="hidden" name="login_challenge" value={login_challenge} />
           <InputComponent
+            data-testid="email_id_input"
             label="Email"
             type="email"
             id="email"
@@ -138,6 +150,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
           <div className="flex justify-center mb-4">
             <div className="text-center text-sm w-60">
               <Link
+                data-testid="sign_in_with_phone_text"
                 href={`/login/phone?login_challenge=${login_challenge}`}
                 replace
               >
@@ -159,6 +172,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
               id="accept"
               name="submit"
               value="Log in"
+              data-testid="email_login_next_btn"
             >
               Next
             </PrimaryButton>

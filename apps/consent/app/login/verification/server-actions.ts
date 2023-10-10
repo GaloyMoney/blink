@@ -71,10 +71,18 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
   const remember = form.get("remember") === "true";
   const loginType = form.get("loginType");
   const value = form.get("value");
+  const loginId = form.get("loginId");
 
   let authToken;
   let totpRequired;
   let userId;
+
+  if (
+    (loginType === LoginType.phone && !loginId) ||
+    typeof loginId !== "string"
+  ) {
+    throw new Error("Invalid Values");
+  }
 
   if (
     !login_challenge ||
@@ -98,7 +106,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
     }
   } else if (loginType === LoginType.email) {
     try {
-      const loginResponse = await authApi.loginWithEmail(value, code);
+      const loginResponse = await authApi.loginWithEmail(code, loginId);
       authToken = loginResponse.authToken;
       totpRequired = loginResponse.totpRequired;
       userId = loginResponse.id;

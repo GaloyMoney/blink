@@ -30,11 +30,11 @@ const authApi = {
 
   loginWithEmail: async (
     code: string,
-    loginId: string
+    emailLoginId: string
   ): Promise<LoginResult> => {
     const response = await axiosInstance.post("/auth/email/login", {
       code,
-      loginId,
+      emailLoginId,
     });
     return response.data.result;
   },

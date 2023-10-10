@@ -16,6 +16,7 @@ const CaptchaChallengeComponent: React.FC<{
 
   const captchaHandler = useCallback(
     (captchaObj: any) => {
+      console.log("---------", captchaObj);
       const onSuccess = async () => {
         const result = captchaObj.getValidate();
         const res = await sendPhoneCode(result, formData);
@@ -51,6 +52,6 @@ const CaptchaChallengeComponent: React.FC<{
     );
   }, [captchaHandler, id, challenge]);
 
-  return <div id="captcha"></div>;
+  return <div data-testid="captcha_container" id="captcha"></div>;
 };
 export const CaptchaChallenge = memo(CaptchaChallengeComponent);
