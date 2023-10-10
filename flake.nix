@@ -82,8 +82,8 @@
             export HOME="$(dirname $(pwd))/home"
             buck2 build "$buck2_target" --verbose 8
 
-            deps_result=$(buck2 build --show-simple-output "$buck2_target:runnable_build")
-            bin_result=$(buck2 build --show-simple-output "$buck2_target:bin")
+            deps_result=$(buck2 build --show-simple-output "$buck2_target:runnable_build" 2> /dev/null)
+            bin_result=$(buck2 build --show-simple-output "$buck2_target:api" 2> /dev/null)
 
             mkdir -p build/$name-$system
 
