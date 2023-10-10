@@ -274,7 +274,7 @@ _tsc_build = rule(
 )
 
 def runnable_tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
-    out = ctx.actions.declare_output("runnable_tsc_dist", dir = True)
+    out = ctx.actions.declare_output("lib", dir = True)
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
     package_dir = cmd_args(ctx.label.package).relative_to(ctx.label.cell_root)
