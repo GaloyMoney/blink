@@ -680,6 +680,8 @@ jobs:
             - name: repo
             - name: pipeline-tasks
             - name: edge-image
+            - name: trigger-edge-image
+            - name: exporter-edge-image
             - name: migrate-edge-image
             - name: websocket-edge-image
             - name: charts-repo
