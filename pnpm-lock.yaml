@@ -102,12 +102,6 @@ importers:
       body-parser:
         specifier: ^1.20.1
         version: 1.20.2
-      cookie:
-        specifier: ^0.5.0
-        version: 0.5.0
-      cookie-parser:
-        specifier: ^1.4.6
-        version: 1.4.6
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -246,9 +240,6 @@ importers:
       redlock:
         specifier: ^5.0.0-beta.2
         version: 5.0.0-beta.2
-      set-cookie-parser:
-        specifier: ^2.6.0
-        version: 2.6.0
       subscriptions-transport-ws:
         specifier: ^0.11.0
         version: 0.11.0(graphql@16.8.1)
@@ -5451,21 +5442,8 @@ packages:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
     dev: true
 
-  /cookie-parser@1.4.6:
-    resolution: {integrity: sha512-z3IzaNjdwUC2olLIB5/ITd0/setiaFMLYiZJle7xg5Fe9KWAceil7xszYfHHBtDFYLSgJduS2Ty0P1uJdPDJeA==}
-    engines: {node: '>= 0.8.0'}
-    dependencies:
-      cookie: 0.4.1
-      cookie-signature: 1.0.6
-    dev: false
-
   /cookie-signature@1.0.6:
     resolution: {integrity: sha512-QADzlaHc8icV8I7vbaJXJwod9HWYp8uCqf1xa4OfNu1T7JVxQIrUgOWtHdNDtPiywmFbiS12VjotIXLrKM3orQ==}
-    dev: false
-
-  /cookie@0.4.1:
-    resolution: {integrity: sha512-ZwrFkGJxUR3EIoXtO+yVE69Eb7KlixbaeAWfBQB9vVsNn/o+Yw69gBWSSDK825hQNdN+wF8zELf3dFNl/kxkUA==}
-    engines: {node: '>= 0.6'}
     dev: false
 
   /cookie@0.5.0:
@@ -11778,10 +11756,6 @@ packages:
   /set-blocking@2.0.0:
     resolution: {integrity: sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==}
     dev: true
-
-  /set-cookie-parser@2.6.0:
-    resolution: {integrity: sha512-RVnVQxTXuerk653XfuliOxBP81Sf0+qfQE73LIYKcyMYHG94AuH0kgrQpRDuTZnSmjpysHmzxJXKNfa6PjFhyQ==}
-    dev: false
 
   /set-function-name@2.0.1:
     resolution: {integrity: sha512-tMNCiqYVkXIZgc2Hnoy2IvC/f8ezc5koaRFkCjrpWzGpCd3qbZXPzVy9MAZzK1ch/X0jvSkojys3oqJN0qCmdA==}
