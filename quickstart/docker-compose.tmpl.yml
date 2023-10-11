@@ -1,6 +1,7 @@
 #@ load("@ytt:data", "data")
 
-#@ galoy_image_digest = "sha256@e54f54dfb6ceb890731811ed234e03c5118ab32a4e3634296733b881fa5e244f"
+#@ galoy_api_image_digest = "sha256@e54f54dfb6ceb890731811ed234e03c5118ab32a4e3634296733b881fa5e244f"
+#@ galoy_trigger_image_digest = "sha256@e54f54dfb6ceb890731811ed234e03c5118ab32a4e3634296733b881fa5e244f"
 #@ mongodb_migrate_image_digest = "sha256@be098eb4f75c4805340949f010c580e2f9d47658ab5ae2984df4c4d9c66bfeb3"
 
 version: #@ data.values.version
@@ -43,14 +44,14 @@ services:
   postgresdhydra: #@ data.values.services["postgresdhydra"]
 
   galoy:
-#@ if galoy_image_digest == "local":
+#@ if galoy_api_image_digest == "local":
     build:
       context: ..
       dockerfile: core/api/Dockerfile
-#@ elif galoy_image_digest.startswith("sha256@"):
-    image: #@ "us.gcr.io/galoy-org/galoy-app@" + galoy_image_digest.replace("@",":")
+#@ elif galoy_api_image_digest.startswith("sha256@"):
+    image: #@ "us.gcr.io/galoy-org/galoy-api@" + galoy_api_image_digest.replace("@",":")
 #@ else:
-    image: #@ "us.gcr.io/galoy-org/galoy-app:" + galoy_image_digest
+    image: #@ "us.gcr.io/galoy-org/galoy-api:" + galoy_api_image_digest
 #@ end
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
@@ -69,14 +70,14 @@ services:
         aliases:
         - bats-tests
   trigger:
-#@ if galoy_image_digest == "local":
+#@ if galoy_trigger_image_digest == "local":
     build:
       context: ..
       dockerfile: core/api-trigger/Dockerfile
-#@ elif galoy_image_digest.startswith("sha256@"):
-    image: #@ "us.gcr.io/galoy-org/galoy-app@" + galoy_image_digest.replace("@",":")
+#@ elif galoy_trigger_image_digest.startswith("sha256@"):
+    image: #@ "us.gcr.io/galoy-org/galoy-api-trigger@" + galoy_trigger_image_digest.replace("@",":")
 #@ else:
-    image: #@ "us.gcr.io/galoy-org/galoy-app:" + galoy_image_digest
+    image: #@ "us.gcr.io/galoy-org/galoy-api-trigger:" + galoy_trigger_image_digest
 #@ end
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
