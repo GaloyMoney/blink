@@ -34,14 +34,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # root_dir = args.bin_out_path
     dist_path = os.path.join(
         os.path.abspath(args.runnable_dist_path),
         args.package_dir,
         "dist",
     )
 
-    # node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js"
     preload_path = os.path.join(dist_path, args.preload_file)
     js_path = os.path.join(dist_path, args.run_file)
     binary_content = [

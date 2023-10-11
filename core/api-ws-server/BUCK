@@ -1,0 +1,15 @@
+load(
+  "@toolchains//workspace-pnpm:macros.bzl",
+  "runnable_tsc_build_bin",
+)
+
+alias(
+    name = "runnable_build",
+    actual = "//core/api:runnable_build",
+)
+
+runnable_tsc_build_bin(
+  name = "api-ws-server",
+  preload_file = "services/tracing.js",
+  run_file = "servers/ws-server.js",
+)

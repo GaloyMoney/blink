@@ -273,7 +273,12 @@ _tsc_build = rule(
     },
 )
 
-def runnable_tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
+RunnableBuildInfo = provider(fields = [
+  "build",
+  "build_package_dir",
+])
+
+def runnable_tsc_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunnableBuildInfo]]:
     out = ctx.actions.declare_output("lib", dir = True)
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
@@ -295,7 +300,12 @@ def runnable_tsc_build_impl(ctx: AnalysisContext) -> list[DefaultInfo]:
 
     ctx.actions.run(cmd, category = "runnable_tsc_build")
 
-    return [DefaultInfo(default_output = out)]
+    return [
+      DefaultInfo(default_output = out),
+      RunnableBuildInfo(
+        build = out,
+        build_package_dir = ctx.label.package,
+      )]
 
 def runnable_tsc_build(
         tsc_build = ":build",
@@ -328,20 +338,20 @@ _runnable_tsc_build = rule(
 )
 
 def runnable_tsc_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    bin_name = ctx.attrs.bin_out_path + "/run"
+    bin_name = "bin/run"
     out = ctx.actions.declare_output(bin_name)
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
     package_dir = cmd_args(ctx.label.package).relative_to(ctx.label.cell_root)
-
+    runnable_build = ctx.attrs.runnable_tsc_build[RunnableBuildInfo]
 
     cmd = cmd_args(
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         pnpm_toolchain.package_runnable_tsc_build_bin[DefaultInfo].default_outputs,
-        "--package-dir",
-        package_dir,
         "--runnable-dist-path",
-        ctx.attrs.runnable_tsc_build,
+        runnable_build.build,
+        "--package-dir",
+        runnable_build.build_package_dir,
         "--preload-file",
         ctx.attrs.preload_file,
         "--run-file",
@@ -376,8 +386,9 @@ _runnable_tsc_build_bin = rule(
             default = None,
             doc = """File relative path for produced binary (default: None).""",
         ),
-        "runnable_tsc_build": attrs.source(
-            doc = """Target which builds `runnable dist`.""",
+        "runnable_tsc_build": attrs.dep(
+            doc = """Target which builds `runnable build`.""",
+            providers = [RunnableBuildInfo]
         ),
         "_python_toolchain": attrs.toolchain_dep(
             default = "toolchains//:python",

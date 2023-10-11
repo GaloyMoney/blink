@@ -54,10 +54,11 @@
 
       buck2Version = pkgs.buck2.version;
 
-      api = pkgs.stdenv.mkDerivation rec {
-        pathPrefix = "core";
-        pkgName = "api";
-        bin_target = "bin";
+      coreDerivation =  {
+        pkgName,
+        pathPrefix ? "core",
+      }: pkgs.stdenv.mkDerivation {
+        bin_target = pkgName;
         deps_target = "runnable_build";
 
         name = pkgName;
@@ -110,7 +111,7 @@
     in
       with pkgs; {
         packages = {
-          api = api;
+          api = coreDerivation { pkgName = "api"; };
         };
 
         devShells.default = mkShell {
