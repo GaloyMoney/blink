@@ -438,6 +438,7 @@ jobs:
             - build-migrate-edge-image
             - build-edge-image
             - build-websocket-edge-image
+            - build-trigger-edge-image
         - get: pipeline-tasks
         - get: edge-image
           passed: [build-edge-image]
@@ -449,6 +450,10 @@ jobs:
             format: oci
         - get: websocket-edge-image
           passed: [build-websocket-edge-image]
+          params:
+            format: oci
+        - get: trigger-edge-image
+          passed: [build-trigger-edge-image]
           params:
             format: oci
         - get: version
