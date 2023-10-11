@@ -1,0 +1,12 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: Augment command execution detail information to test run and test
+        discovery events...
+      sha: 67ef396223dc8d86990bc082f8df57c1f862ec02
+      tags:
+      - "2023-10-01"
+    path: .
+  path: prelude
+kind: LockConfig

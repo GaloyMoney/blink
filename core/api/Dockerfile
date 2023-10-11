@@ -1,33 +1,32 @@
-FROM node:20-alpine AS BUILD_IMAGE
+FROM nixos/nix:latest AS builder
+ARG APP=api
 
-WORKDIR /app
+COPY . /workdir
+WORKDIR /workdir
 
-RUN apk update && apk add git
+RUN set -eux; \
+    nix \
+        --extra-experimental-features "nix-command flakes impure-derivations ca-derivations" \
+        --option filter-syscalls false \
+        build \
+        ".#$APP";
 
-COPY ./*.json ./yarn.lock ./
+RUN mkdir -p /tmp/nix-store-closure /tmp/local-bin
+RUN cp -R $(nix-store --query --requisites result/) /tmp/nix-store-closure
+RUN ln -snf $(nix-store --query result/)/bin/* /tmp/local-bin/
 
-RUN yarn install --frozen-lockfile
+FROM gcr.io/distroless/static-debian11 AS final
+ARG APP=api
 
-COPY ./src ./src
-
-RUN yarn build
-
-RUN yarn install --frozen-lockfile --production
-
-RUN touch .env
-
-FROM gcr.io/distroless/nodejs20-debian11
-COPY --from=BUILD_IMAGE /app/.env /app/.env
-COPY --from=BUILD_IMAGE /app/lib /app/lib
-COPY --from=BUILD_IMAGE /app/src/config/locales /app/lib/config/locales
-COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
-
-WORKDIR /app
-COPY ./*.js ./package.json ./tsconfig.json ./yarn.lock ./
+WORKDIR /app/$APP
+COPY --from=builder /tmp/nix-store-closure /nix/store
+COPY --from=builder /tmp/local-bin/* /usr/local/bin/
 
 USER 1000
 
 ARG COMMITHASH
 ENV COMMITHASH ${COMMITHASH}
 
-CMD ["lib/servers/graphql-main-server.js"]
+CMD [ \
+  "/usr/local/bin/run" \
+]

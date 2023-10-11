@@ -7,6 +7,7 @@ files.extend-exclude = [
   "quickstart/*.yml",
   "quickstart/galoy",
   "quickstart/dev",
+  "prelude",
 ]
 
 default.extend-ignore-identifiers-re = [

@@ -1,0 +1,17 @@
+name: "Buck2 build"
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  buck2-build:
+    name: Buck2 Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v22
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Buck2 build
+        run: nix develop -c buck2 build //core/api:api

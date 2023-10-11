@@ -1,0 +1,11 @@
+load( ":tilt.bzl", "tilt_down", "tilt_up",)
+
+# Bring up the full set of services for development
+tilt_up(
+    name = "up",
+)
+
+# Bring down any remaining/running services
+tilt_down(
+    name = "down",
+)

@@ -45,16 +45,13 @@ services:
   galoy:
 #@ if galoy_image_digest == "local":
     build:
-      context: ../core/api/
+      context: ..
+      dockerfile: core/api/Dockerfile
 #@ elif galoy_image_digest.startswith("sha256@"):
     image: #@ "us.gcr.io/galoy-org/galoy-app@" + galoy_image_digest.replace("@",":")
 #@ else:
     image: #@ "us.gcr.io/galoy-org/galoy-app:" + galoy_image_digest
 #@ end
-    command:
-      - "-r"
-      - "/app/lib/services/tracing.js"
-      - "lib/servers/graphql-main-server.js"
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - trigger
@@ -74,16 +71,13 @@ services:
   trigger:
 #@ if galoy_image_digest == "local":
     build:
-      context: ../core/api/
+      context: ..
+      dockerfile: core/api-trigger/Dockerfile
 #@ elif galoy_image_digest.startswith("sha256@"):
     image: #@ "us.gcr.io/galoy-org/galoy-app@" + galoy_image_digest.replace("@",":")
 #@ else:
     image: #@ "us.gcr.io/galoy-org/galoy-app:" + galoy_image_digest
 #@ end
-    command:
-      - "-r"
-      - "/app/lib/services/tracing.js"
-      - "lib/servers/trigger.js"
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - lnd1

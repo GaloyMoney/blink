@@ -1,0 +1,56 @@
+load(
+  "@toolchains//workspace-pnpm:macros.bzl",
+  "build_node_modules",
+  "tsc_build",
+  "runnable_tsc_build",
+  "runnable_tsc_build_bin",
+)
+
+export_file(
+  name = "package.json",
+  visibility = ["PUBLIC"],
+)
+
+build_node_modules(
+  name = "node_modules",
+)
+
+build_node_modules(
+  name = "node_modules_prod",
+  prod_only = True,
+)
+
+filegroup(
+    name = "src",
+    srcs = glob([
+        "src/**",
+        "tsconfig.json",
+        "tsconfig-build.json",
+    ]),
+)
+
+filegroup(
+  name = "protos",
+  srcs = glob([
+    "src/services/**/protos/**",
+    "src/services/**/proto/**"
+  ])
+)
+
+tsc_build(
+  name = "build",
+  tsconfig = "tsconfig-build.json",
+  srcs = [":src"],
+  additional_dist_files = [":protos"]
+)
+
+runnable_tsc_build(
+  name = "runnable_build",
+  visibility = ["PUBLIC"],
+)
+
+runnable_tsc_build_bin(
+  name = "api",
+  preload_file = "services/tracing.js",
+  run_file = "servers/graphql-main-server.js",
+)
