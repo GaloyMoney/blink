@@ -44,7 +44,13 @@ junit.xml
 
 .next
 
-.direnv
 .env.local
 
-buck-out
+# Buck
+/buck-out/
+
+# Nix builds
+/result
+
+# direnv
+.direnv
