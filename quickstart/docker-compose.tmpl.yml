@@ -46,7 +46,7 @@ services:
 #@ if galoy_image_digest == "local":
     build:
       context: ..
-      dockerfile: ../core/api/Dockerfile
+      dockerfile: core/api/Dockerfile
 #@ elif galoy_image_digest.startswith("sha256@"):
     image: #@ "us.gcr.io/galoy-org/galoy-app@" + galoy_image_digest.replace("@",":")
 #@ else:
@@ -72,7 +72,7 @@ services:
 #@ if galoy_image_digest == "local":
     build:
       context: ..
-      dockerfile: ../core/api-trigger/Dockerfile
+      dockerfile: core/api-trigger/Dockerfile
 #@ elif galoy_image_digest.startswith("sha256@"):
     image: #@ "us.gcr.io/galoy-org/galoy-app@" + galoy_image_digest.replace("@",":")
 #@ else:
