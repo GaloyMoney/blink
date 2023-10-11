@@ -44,7 +44,7 @@
 #@ end
 
 #@ def cron_galoy_image():
-#@   return data.values.docker_registry + "/galoy-cron"
+#@   return data.values.docker_registry + "/galoy-api-cron"
 #@ end
 
 #@ def release_pipeline_image():
