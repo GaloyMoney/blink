@@ -57,6 +57,8 @@
       api = pkgs.stdenv.mkDerivation rec {
         pathPrefix = "core";
         pkgName = "api";
+        bin_target = "bin";
+        deps_target = "runnable_build";
 
         name = pkgName;
         buck2_target = "//${pathPrefix}/${pkgName}";
@@ -82,8 +84,8 @@
             export HOME="$(dirname $(pwd))/home"
             buck2 build "$buck2_target" --verbose 8
 
-            deps_result=$(buck2 build --show-simple-output "$buck2_target:runnable_build" 2> /dev/null)
-            bin_result=$(buck2 build --show-simple-output "$buck2_target:api" 2> /dev/null)
+            deps_result=$(buck2 build --show-simple-output "$buck2_target:$deps_target" 2> /dev/null)
+            bin_result=$(buck2 build --show-simple-output "$buck2_target:$bin_target" 2> /dev/null)
 
             mkdir -p build/$name-$system/bin
 
@@ -99,9 +101,7 @@
            cp -rpv "build/$name-$system/lib" "$out/"
            cp -rpv "build/$name-$system/bin" "$out/"
 
-           mv -v "$out/bin/run" "$out/bin/.run"
-
-           substituteInPlace "$out/bin/.run" \
+           substituteInPlace "$out/bin/run" \
              --replace "#!${pkgs.coreutils}/bin/env sh" "#!${pkgs.bash}/bin/sh" \
              --replace "$(cat build/$name-$system/buck2-deps-path)" "$out/lib" \
              --replace "exec node" "exec ${pkgs.nodejs}/bin/node"
