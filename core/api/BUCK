@@ -54,15 +54,3 @@ runnable_tsc_build_bin(
   preload_file = "services/tracing.js",
   run_file = "servers/graphql-main-server.js",
 )
-
-# // install deps
-# // ^^ simple toolchain
-# // compile via tsc
-# // ^^ tsc_bin
-# // ^^ tsc_compile
-# // run via node
-# // ^^ exec via pnpm toolchain?
-
-# npm_bin(
-#   name = "api"
-# )
