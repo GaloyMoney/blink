@@ -509,6 +509,7 @@ jobs:
             - name: repo
             - name: edge-image
             - name: migrate-edge-image
+            - name: trigger-edge-image
             - name: pipeline-tasks
           outputs:
             - name: repo
@@ -632,6 +633,12 @@ jobs:
           - get: websocket-edge-image
             passed: [release]
             params: { skip_download: true }
+          - get: trigger-edge-image
+            passed: [release]
+            params: { skip_download: true }
+          - get: exporter-edge-image
+            passed: [release]
+            params: { skip_download: true }
           - get: repo
             trigger: true
             passed:
@@ -650,6 +657,8 @@ jobs:
             - name: edge-image
             - name: migrate-edge-image
             - name: websocket-edge-image
+            - name: trigger-edge-image
+            - name: exporter-edge-image
             - name: pipeline-tasks
             - name: charts-repo
             - name: version
