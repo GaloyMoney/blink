@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"
 fi
