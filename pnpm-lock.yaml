@@ -155,7 +155,7 @@ importers:
         version: 5.14.1(graphql@16.8.1)
       gt3-server-node-express-sdk:
         specifier: https://github.com/GaloyMoney/gt3-server-node-express-bypass#master
-        version: github.com/GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e
+        version: git@github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e
       i18n:
         specifier: ^0.15.1
         version: 0.15.1
@@ -317,8 +317,8 @@ importers:
         specifier: ^3.15.6
         version: 3.15.7
       '@types/i18n':
-        specifier: ^0.13.5
-        version: 0.13.6
+        specifier: ^0.13.7
+        version: 0.13.7
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.5
@@ -3517,8 +3517,8 @@ packages:
   /@types/http-errors@2.0.1:
     resolution: {integrity: sha512-/K3ds8TRAfBvi5vfjuz8y6+GiAYBZ0x4tXv1Av6CWBWn0IlADc+ZX9pMq7oU0fNQPnBwIZl3rmeLp6SBApbxSQ==}
 
-  /@types/i18n@0.13.6:
-    resolution: {integrity: sha512-LLbimAA0oQilgP4PJBFH7sRdBUjWLo6R1rf46SUgVzsUZeXH3PT1piXj4LNX5ECDi0bLg9RmQMmY1K2qawqJqA==}
+  /@types/i18n@0.13.7:
+    resolution: {integrity: sha512-3JOksmYodSgDgQU+6JzS8+ezdBvAdl6dHHW3kVr5x6Bu7gLScPF7HGaqF/aI3W8p6ByE9mvD/+3IpbcAJiGC6w==}
     dev: true
 
   /@types/ioredis@4.28.10:
@@ -13302,8 +13302,8 @@ packages:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: false
 
-  github.com/GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e:
-    resolution: {tarball: https://codeload.github.com/GaloyMoney/gt3-server-node-express-bypass/tar.gz/6559a1a39ef408de3aefa6321934c831edac001e}
+  git@github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e:
+    resolution: {commit: 6559a1a39ef408de3aefa6321934c831edac001e, repo: git@github.com:GaloyMoney/gt3-server-node-express-bypass.git, type: git}
     name: gt3-server-node-express-sdk
     version: 3.1.0
     dependencies:
