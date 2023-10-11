@@ -22,17 +22,17 @@ jobs:
         with:
           node-version: 20
       - run: yarn install --frozen-lockfile
-        working-directory: main
+        working-directory: main/core/api
       - uses: vmware-tanzu/carvel-setup-action@v1
         with:
           only: ytt
       - run: ytt -f spectaql/TUTORIAL.md -f spectaql/spectaql-config-template.yml > spectaql-config.yml
-        working-directory: main
+        working-directory: main/core/api
       - name: Build docs
         run: yarn run build-docs
-        working-directory: main
-      - run: cp main/public/index.html docs
-      - run: cp main/public/logo.png docs/images
+        working-directory: main/core/api
+      - run: cp main/core/api/public/index.html docs
+      - run: cp main/core/api/public/logo.png docs/images
       - name: Deploy docs
         working-directory: docs
         run: |
