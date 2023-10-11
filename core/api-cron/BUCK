@@ -9,7 +9,7 @@ alias(
 )
 
 runnable_tsc_build_bin(
-  name = "api-ws-server",
+  name = "api-cron",
   preload_file = "services/tracing.js",
   run_file = "servers/cron.js",
 )
