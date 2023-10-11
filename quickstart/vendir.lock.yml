@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: remove --inspector on node invocation'
-      sha: 55145b69e3a9de4b916f4937722f6b44cf4e60b3
+      commitTitle: 'fix: api-cron target'
+      sha: d4019e61db57a31d6743c52d010799f3eb724732
       tags:
-      - 0.14.5-3-g55145b69e
+      - 0.14.6-4-gd4019e61d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: remove --inspector on node invocation'
-      sha: 55145b69e3a9de4b916f4937722f6b44cf4e60b3
+      commitTitle: 'fix: api-cron target'
+      sha: d4019e61db57a31d6743c52d010799f3eb724732
       tags:
-      - 0.14.5-3-g55145b69e
+      - 0.14.6-4-gd4019e61d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: remove --inspector on node invocation'
-      sha: 55145b69e3a9de4b916f4937722f6b44cf4e60b3
+      commitTitle: 'fix: api-cron target'
+      sha: d4019e61db57a31d6743c52d010799f3eb724732
       tags:
-      - 0.14.5-3-g55145b69e
+      - 0.14.6-4-gd4019e61d
     path: ./
   path: ./graphql
 kind: LockConfig
