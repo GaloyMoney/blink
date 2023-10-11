@@ -112,6 +112,8 @@
       with pkgs; {
         packages = {
           api = coreDerivation { pkgName = "api"; };
+          api-trigger = coreDerivation { pkgName = "api-trigger"; };
+          api-ws-server = coreDerivation { pkgName = "api-ws-server"; };
         };
 
         devShells.default = mkShell {
