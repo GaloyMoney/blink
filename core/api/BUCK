@@ -30,6 +30,13 @@ filegroup(
 )
 
 filegroup(
+  name = "locales",
+  srcs = glob([
+    "src/config/locales/*.json"
+  ])
+)
+
+filegroup(
   name = "protos",
   srcs = glob([
     "src/services/**/protos/**",
@@ -41,7 +48,7 @@ tsc_build(
   name = "build",
   tsconfig = "tsconfig-build.json",
   srcs = [":src"],
-  additional_dist_files = [":protos"]
+  additional_dist_files = [":protos", ":locales"]
 )
 
 runnable_tsc_build(
