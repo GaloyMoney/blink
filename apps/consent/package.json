@@ -9,8 +9,8 @@
     "lint": "next lint",
     "codegen": "graphql-codegen --config codegen.yml",
     "cypress:setup": "bash ./dev/get-url.sh && echo 'Environment setup complete.'",
-    "cypress:open": "yarn cypress:setup && cypress open",
-    "cypress:run": "yarn cypress:setup && cypress run"
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "dependencies": {
     "@apollo/client": "^3.8.0-rc.2",

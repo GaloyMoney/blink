@@ -7,7 +7,8 @@ import Logo from "../components/logo";
 import ScopeItem from "../components/scope-item/scope-item";
 import PrimaryButton from "../components/button/primary-button-component";
 import SecondaryButton from "../components/button/secondary-button-component";
-import { cookies } from "next/headers";
+import Heading from "../components/heading";
+import { SubmitValue } from "../index.types";
 
 interface ConsentProps {
   consent_challenge: string;
@@ -18,6 +19,7 @@ const submitForm = async (form: FormData) => {
   const consent_challenge = form.get("consent_challenge");
   const submitValue = form.get("submit");
   const remember = form.get("remember") === "1";
+
   const grantScope = form
     .getAll("grant_scope")
     .map((value) => value.toString());
@@ -27,7 +29,7 @@ const submitForm = async (form: FormData) => {
     return;
   }
 
-  if (submitValue === "Deny access") {
+  if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access");
     let response;
     response = await hydraClient.rejectOAuth2ConsentRequest({
@@ -76,12 +78,6 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
     throw new Error("Login Challenge Not Found");
   }
 
-  const cookieStore = cookies().get(login_challenge);
-
-  if (!cookieStore) {
-    throw new Error("Cannot find cookies");
-  }
-
   if (body.client?.skip_consent) {
     let response;
     response = await hydraClient.acceptOAuth2ConsentRequest({
@@ -106,11 +102,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
       <Card>
         <Logo />
 
-        <div className="flex items-center justify-center">
-          <p className="text-center mb-4 text-xl w-60 font-semibold">
-            An application requests access to your data!
-          </p>
-        </div>
+        <Heading>An application requests access to your data!</Heading>
 
         <form action={submitForm} className="flex flex-col">
           <input
@@ -119,10 +111,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
             value={consent_challenge}
           />
 
-          <p className="mb-4 text-gray-700 text-center  font-semibold">
-            Hi {user}{" "}
-          </p>
-          <p className="mb-4 text-gray-700 ">
+          <p className="mb-4 text-gray-700  text-center ">
             Application{" "}
             <strong>{client.client_name || client.client_id}</strong> wants
             access resources on your behalf and to:
@@ -179,7 +168,8 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
               type="submit"
               id="reject"
               name="submit"
-              value="Deny access"
+              value={SubmitValue.denyAccess}
+              formNoValidate
             >
               Deny
             </SecondaryButton>
@@ -189,7 +179,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
               type="submit"
               id="accept"
               name="submit"
-              value="Allow access"
+              value={SubmitValue.allowAccess}
             >
               Allow
             </PrimaryButton>

@@ -1,6 +1,9 @@
-# login-consent-provider
+## Overview
 
-This is the User Login and Consent flow for the Galoy stack over the OAuth2 service (Hydra) in NextJs.
+This application facilitates users to sign in using OAuth 2.0 via their blink account credentials, similar to signing in via Google or GitHub on other platforms. It also enables the definition of scopes, which represent the permissions the application requires, such as reading account details or initiating payments. This application is built on top of Hydra.
+
+
+
 
 ## Local set up:
 Install dependencies using 

@@ -7,31 +7,46 @@ import {
   GetCaptchaChallengeResponse,
   SendPhoneCodeResponse,
 } from "./phone-login.types";
-import { LoginType } from "@/app/index.types";
+import { LoginType, SubmitValue } from "@/app/index.types";
+import { isValidPhoneNumber } from "libphonenumber-js";
+import { hydraClient } from "@/services/hydra";
+
 
 export const getCaptchaChallenge = async (
   _prevState: unknown,
   form: FormData
 ): Promise<GetCaptchaChallengeResponse> => {
-  const phone = form.get("phone");
+  let phone = form.get("phone");
   const login_challenge = form.get("login_challenge");
-  const remember = form.get("remember") === "true";
+  const remember = form.get("remember") === "1";
+  const submitValue = form.get("submit");
 
-  if (
-    !phone ||
-    !login_challenge ||
-    typeof phone !== "string" ||
-    typeof login_challenge !== "string"
-  ) {
+
+  if (!submitValue || !login_challenge || typeof login_challenge !== "string") {
+    throw new Error("submitValue not provided");
+  }
+
+  if (submitValue === SubmitValue.denyAccess) {
+    console.log("User denied access");
+    const response = await hydraClient.rejectOAuth2LoginRequest({
+      loginChallenge: login_challenge,
+      rejectOAuth2Request: {
+        error: "access_denied",
+        error_description: "The resource owner denied the request",
+      },
+    });
+    redirect(response.data.redirect_to);
+  }
+
+  if (!phone || typeof phone !== "string") {
     throw new Error("Phone not provided");
   }
 
-
-  const formattedPhone = phone.replace(/\s+/g, "");
-  if (/[^0-9+]/.test(formattedPhone)) {
+  phone = phone.replace(/\s+/g, "");
+  if (!isValidPhoneNumber(phone)) {
     return {
       error: true,
-      message: "Invalid characters in Phone number",
+      message: "Invalid Phone number",
       responsePayload: {
         id: null,
         challenge: null,

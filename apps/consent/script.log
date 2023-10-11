@@ -1,0 +1,12 @@
+Step 1 Response: {"authToken":"ory_st_Ey7G757rTbeoJLToqtrLFWdQYoRIR8S1","totpRequired":false,"id":"32014eff-e8f1-4b5d-b8b5-639690c764ee"}
+Step 2 Response: {"data":{"userEmailRegistrationInitiate":{"emailRegistrationId":null,"errors":[{"code":"EMAIL_ALREADY_ATTACHED_ERROR","message":"An email is already attached to this account. It's only possible to attach one email per account","path":null}],"me":null}}}
+Step 3 Response:  Hi,                                                                         +
+                                                                             +
+ You can confirm access to your blink account by entering the following code:+
+                                                                             +
+ 437950                                                                      +
+                                                                             +
+ Don't share this code with anyone. Our employee will never ask for this code+
+ 
+Email Code: 437950
+Step 4 Response: {"data":{"userEmailRegistrationValidate":{"errors":[{"code":"UNEXPECTED_CLIENT_ERROR","message":"Unexpected error occurred, please try again or contact support if it persists (code: UnknownKratosError: Request failed with status code 400)","path":null}]}}}

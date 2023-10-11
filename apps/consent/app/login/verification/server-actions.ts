@@ -1,8 +1,6 @@
 "use server";
 import { getUserId } from "@/app/graphql/queries/me-query";
 import { LoginType } from "@/app/index.types";
-import { oidcConformityMaybeFakeAcr } from "@/app/oidc-cert";
-import { env } from "@/env";
 import authApi from "@/services/galoy-auth";
 import { hydraClient } from "@/services/hydra";
 import axios from "axios";
@@ -59,7 +57,7 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
       subject: userId,
       remember: remember,
       remember_for: 3600,
-      acr: oidcConformityMaybeFakeAcr(loginRequest, "0"),
+      acr: "2",
     },
   });
   redirect(response2.data.redirect_to);
@@ -78,7 +76,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
   let userId;
 
   if (
-    (loginType === LoginType.phone && !loginId) ||
+    (loginType === LoginType.email && !loginId) ||
     typeof loginId !== "string"
   ) {
     throw new Error("Invalid Values");
@@ -148,7 +146,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
       subject: userId,
       remember: remember,
       remember_for: 3600,
-      acr: oidcConformityMaybeFakeAcr(loginRequest, "0"),
+      acr: "2"
     },
   });
 

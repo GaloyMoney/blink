@@ -38,4 +38,3 @@ email_reg_validate_response=$(curl -s -X POST $GRAPHQL_ENDPOINT \
 echo "Step 4 Response: $email_reg_validate_response" >> $LOG_FILE
 
 echo $email_reg_validate_response
-

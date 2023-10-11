@@ -9,7 +9,6 @@ import LoginForm from "./form";
 import Heading from "@/app/components/heading";
 import SubHeading from "@/app/components/sub-heading";
 import { getSupportedCountryCodes } from "@/app/graphql/queries/get-supported-countries";
-import { CountryCode, getCountryCallingCode } from "libphonenumber-js";
 
 interface LoginProps {
   login_challenge: string;
@@ -45,7 +44,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
     throw new Error("Unable to get Countries");
   }
 
-const countryCodes = countries.map((country) => country.id);
+  const countryCodes = countries.map((country) => country.id);
 
   return (
     <MainContent>
