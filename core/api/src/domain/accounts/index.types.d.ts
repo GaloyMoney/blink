@@ -97,7 +97,7 @@ type AccountStatusHistory = Array<{
 type Account = {
   readonly id: AccountId
   readonly createdAt: Date
-  username: Username
+  username?: Username | undefined
   defaultWalletId: WalletId
   withdrawFee: Satoshis // TODO: make it optional. only save when not default value from yaml
   level: AccountLevel
