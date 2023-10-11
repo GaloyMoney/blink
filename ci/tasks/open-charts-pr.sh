@@ -18,6 +18,10 @@ old_ref=$(yq e '.galoy.images.app.git_ref' charts/galoy/values.yaml)
 cat <<EOF >> ../body.md
 # Bump galoy image
 
+Code diff contained in this image:
+
+https://github.com/GaloyMoney/galoy/compare/${old_ref}...${ref}
+
 The galoy api image will be bumped to digest:
 \`\`\`
 ${digest}
@@ -47,10 +51,6 @@ The websocket image will be bumped to digest:
 \`\`\`
 ${websocket_digest}
 \`\`\`
-
-Code diff contained in this image:
-
-https://github.com/GaloyMoney/galoy/compare/${old_ref}...${ref}
 EOF
 
 pushd ../repo
