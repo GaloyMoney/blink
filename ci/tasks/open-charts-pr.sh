@@ -5,6 +5,7 @@ set -eu
 export digest=$(cat ./edge-image/digest)
 export exporter_digest=$(cat ./exporter-edge-image/digest)
 export trigger_digest=$(cat ./trigger-edge-image/digest)
+export cron_digest=$(cat ./cron-edge-image/digest)
 export migrate_digest=$(cat ./migrate-edge-image/digest)
 export websocket_digest=$(cat ./websocket-edge-image/digest)
 
@@ -30,6 +31,11 @@ ${trigger_digest}
 The galoy exporter image will be bumped to digest:
 \`\`\`
 ${exporter_digest}
+\`\`\`
+
+The galoy cron image will be bumped to digest:
+\`\`\`
+${cron_digest}
 \`\`\`
 
 The mongodbMigrate image will be bumped to digest:
