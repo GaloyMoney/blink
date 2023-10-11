@@ -3,6 +3,8 @@
 set -eu
 
 export digest=$(cat ./edge-image/digest)
+export exporter_digest=$(cat ./exporter-edge-image/digest)
+export trigger_digest=$(cat ./trigger-edge-image/digest)
 export migrate_digest=$(cat ./migrate-edge-image/digest)
 export websocket_digest=$(cat ./websocket-edge-image/digest)
 
@@ -15,9 +17,19 @@ old_ref=$(yq e '.galoy.images.app.git_ref' charts/galoy/values.yaml)
 cat <<EOF >> ../body.md
 # Bump galoy image
 
-The galoy image will be bumped to digest:
+The galoy api image will be bumped to digest:
 \`\`\`
 ${digest}
+\`\`\`
+
+The galoy trigger image will be bumped to digest:
+\`\`\`
+${trigger_digest}
+\`\`\`
+
+The galoy exporter image will be bumped to digest:
+\`\`\`
+${exporter_digest}
 \`\`\`
 
 The mongodbMigrate image will be bumped to digest:
