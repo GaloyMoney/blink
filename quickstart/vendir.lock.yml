@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: api-cron target'
-      sha: d4019e61db57a31d6743c52d010799f3eb724732
+      commitTitle: 'fix: include locales in nix build (#3334)'
+      sha: 5ea3ba5e8a5b18da44b985ab223c8161156a8f16
       tags:
-      - 0.14.6-4-gd4019e61d
+      - 0.14.7-2-g5ea3ba5e8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: api-cron target'
-      sha: d4019e61db57a31d6743c52d010799f3eb724732
+      commitTitle: 'fix: include locales in nix build (#3334)'
+      sha: 5ea3ba5e8a5b18da44b985ab223c8161156a8f16
       tags:
-      - 0.14.6-4-gd4019e61d
+      - 0.14.7-2-g5ea3ba5e8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: api-cron target'
-      sha: d4019e61db57a31d6743c52d010799f3eb724732
+      commitTitle: 'fix: include locales in nix build (#3334)'
+      sha: 5ea3ba5e8a5b18da44b985ab223c8161156a8f16
       tags:
-      - 0.14.6-4-gd4019e61d
+      - 0.14.7-2-g5ea3ba5e8
     path: ./
   path: ./graphql
 kind: LockConfig
