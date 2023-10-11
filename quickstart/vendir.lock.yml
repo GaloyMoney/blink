@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removing use of cookie from kratos (#3274)...'
-      sha: 49ab68187785b708610c37d1abd7c95c287c4488
+      commitTitle: 'chore: unused env variable (#3322)...'
+      sha: a11e5489626930c093e69b8ceefd0badcd930ab6
       tags:
-      - 0.14.1-1-g49ab68187
+      - 0.14.2-1-ga11e54896
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removing use of cookie from kratos (#3274)...'
-      sha: 49ab68187785b708610c37d1abd7c95c287c4488
+      commitTitle: 'chore: unused env variable (#3322)...'
+      sha: a11e5489626930c093e69b8ceefd0badcd930ab6
       tags:
-      - 0.14.1-1-g49ab68187
+      - 0.14.2-1-ga11e54896
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: removing use of cookie from kratos (#3274)...'
-      sha: 49ab68187785b708610c37d1abd7c95c287c4488
+      commitTitle: 'chore: unused env variable (#3322)...'
+      sha: a11e5489626930c093e69b8ceefd0badcd930ab6
       tags:
-      - 0.14.1-1-g49ab68187
+      - 0.14.2-1-ga11e54896
     path: ./
   path: ./graphql
 kind: LockConfig
