@@ -20,7 +20,7 @@
 #@   "slack_resource_type")
 
 #@ def galoy_image():
-#@   return data.values.docker_registry + "/galoy-app"
+#@   return data.values.docker_registry + "/galoy-api"
 #@ end
 
 #@ def debug_galoy_image():
@@ -32,7 +32,11 @@
 #@ end
 
 #@ def websocket_galoy_image():
-#@   return data.values.docker_registry + "/galoy-app-websocket"
+#@   return data.values.docker_registry + "/galoy-ws-server"
+#@ end
+
+#@ def trigger_galoy_image():
+#@   return data.values.docker_registry + "/galoy-api-trigger"
 #@ end
 
 #@ def release_pipeline_image():
@@ -59,6 +63,7 @@ groups:
       - build-debug-edge-image
       - build-migrate-edge-image
       - build-websocket-edge-image
+      - build-trigger-edge-image
       - install-deps
       - bump-image-in-chart
       - quickstart
@@ -257,8 +262,9 @@ jobs:
           outputs:
             - name: image
           params:
-            CONTEXT: repo/core/api
-            BUILD_ARGS_FILE: repo/core/api/.build-args
+            CONTEXT: repo
+            DOCKERFILE: "repo/core/api/Dockerfile"
+            BUILD_ARGS_FILE: repo/.build-args
           run:
             path: build
       - put: edge-image
@@ -296,7 +302,7 @@ jobs:
             - name: image
           params:
             CONTEXT: repo/core/api
-            BUILD_ARGS_FILE: repo/core/api/.build-args
+            BUILD_ARGS_FILE: repo/.build-args
             DOCKERFILE: "repo/core/api/Dockerfile-debug"
           run:
             path: build
@@ -335,7 +341,7 @@ jobs:
             - name: image
           params:
             CONTEXT: repo/core/api
-            BUILD_ARGS_FILE: repo/core/api/.build-args
+            BUILD_ARGS_FILE: repo/.build-args
             DOCKERFILE: "repo/core/api/Dockerfile-migrate"
           run:
             path: build
@@ -373,12 +379,51 @@ jobs:
           outputs:
             - name: image
           params:
-            CONTEXT: repo/core/api
-            BUILD_ARGS_FILE: repo/core/api/.build-args
-            DOCKERFILE: "repo/core/api/Dockerfile-websocket"
+            CONTEXT: repo
+            BUILD_ARGS_FILE: repo/.build-args
+            DOCKERFILE: "repo/core/api-ws-server/Dockerfile"
           run:
             path: build
       - put: websocket-edge-image
+        params:
+          image: image/image.tar
+
+  - name: build-trigger-edge-image
+    serial: true
+    plan:
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+      - task: prepare-docker-build
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          outputs:
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
+      - task: build
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+          inputs:
+            - name: repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: repo
+            BUILD_ARGS_FILE: repo/.build-args
+            DOCKERFILE: "repo/core/api-trigger/Dockerfile"
+          run:
+            path: build
+      - put: trigger-edge-image
         params:
           image: image/image.tar
 
@@ -866,6 +911,14 @@ resources:
       username: #@ data.values.docker_registry_user
       password: #@ data.values.docker_registry_password
       repository: #@ websocket_galoy_image()
+
+  - name: trigger-edge-image
+    type: registry-image
+    source:
+      tag: edge
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ trigger_galoy_image()
 
   - name: version
     type: semver
