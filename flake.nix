@@ -115,6 +115,7 @@
           api-trigger = coreDerivation { pkgName = "api-trigger"; };
           api-ws-server = coreDerivation { pkgName = "api-ws-server"; };
           api-exporter = coreDerivation { pkgName = "api-exporter"; };
+          api-cron = coreDerivation { pkgName = "api-cron"; };
         };
 
         devShells.default = mkShell {

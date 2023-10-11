@@ -43,6 +43,10 @@
 #@   return data.values.docker_registry + "/galoy-api-trigger"
 #@ end
 
+#@ def cron_galoy_image():
+#@   return data.values.docker_registry + "/galoy-cron"
+#@ end
+
 #@ def release_pipeline_image():
 #@   return data.values.docker_registry + "/release-pipeline"
 #@ end
@@ -69,6 +73,7 @@ groups:
       - build-websocket-edge-image
       - build-exporter-edge-image
       - build-trigger-edge-image
+      - build-cron-edge-image
       - install-deps
       - bump-image-in-chart
       - quickstart
@@ -432,6 +437,45 @@ jobs:
         params:
           image: image/image.tar
 
+  - name: build-cron-edge-image
+    serial: true
+    plan:
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+      - task: prepare-docker-build
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          outputs:
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
+      - task: build
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+          inputs:
+            - name: repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: repo
+            BUILD_ARGS_FILE: repo/.build-args
+            DOCKERFILE: "repo/core/api-cron/Dockerfile"
+          run:
+            path: build
+      - put: cron-edge-image
+        params:
+          image: image/image.tar
+
   - name: build-trigger-edge-image
     serial: true
     plan:
@@ -562,6 +606,7 @@ jobs:
               - build-migrate-edge-image
               - build-edge-image
               - build-trigger-edge-image
+              - build-cron-edge-image
               - build-exporter-edge-image
               - build-websocket-edge-image
           - get: pipeline-tasks
@@ -579,6 +624,10 @@ jobs:
               format: oci
           - get: trigger-edge-image
             passed: [build-trigger-edge-image]
+            params:
+              format: oci
+          - get: cron-edge-image
+            passed: [build-cron-edge-image]
             params:
               format: oci
           - get: websocket-edge-image
@@ -636,6 +685,9 @@ jobs:
           - get: trigger-edge-image
             passed: [release]
             params: { skip_download: true }
+          - get: cron-edge-image
+            passed: [release]
+            params: { skip_download: true }
           - get: exporter-edge-image
             passed: [release]
             params: { skip_download: true }
@@ -658,6 +710,7 @@ jobs:
             - name: migrate-edge-image
             - name: websocket-edge-image
             - name: trigger-edge-image
+            - name: cron-edge-image
             - name: exporter-edge-image
             - name: pipeline-tasks
             - name: charts-repo
@@ -989,6 +1042,14 @@ resources:
       username: #@ data.values.docker_registry_user
       password: #@ data.values.docker_registry_password
       repository: #@ trigger_galoy_image()
+
+  - name: cron-edge-image
+    type: registry-image
+    source:
+      tag: edge
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ cron_galoy_image()
 
   - name: exporter-edge-image
     type: registry-image
