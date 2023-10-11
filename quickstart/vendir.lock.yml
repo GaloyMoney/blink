@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add api-exporter to flake'
-      sha: 415e8c34114690288cdf6c28ff2c97c93062ee80
+      commitTitle: 'fix: remove --inspector on node invocation'
+      sha: 55145b69e3a9de4b916f4937722f6b44cf4e60b3
       tags:
-      - 0.14.4-5-g415e8c341
+      - 0.14.5-3-g55145b69e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add api-exporter to flake'
-      sha: 415e8c34114690288cdf6c28ff2c97c93062ee80
+      commitTitle: 'fix: remove --inspector on node invocation'
+      sha: 55145b69e3a9de4b916f4937722f6b44cf4e60b3
       tags:
-      - 0.14.4-5-g415e8c341
+      - 0.14.5-3-g55145b69e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: add api-exporter to flake'
-      sha: 415e8c34114690288cdf6c28ff2c97c93062ee80
+      commitTitle: 'fix: remove --inspector on node invocation'
+      sha: 55145b69e3a9de4b916f4937722f6b44cf4e60b3
       tags:
-      - 0.14.4-5-g415e8c341
+      - 0.14.5-3-g55145b69e
     path: ./
   path: ./graphql
 kind: LockConfig
