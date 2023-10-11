@@ -44,7 +44,7 @@ if __name__ == "__main__":
     js_path = os.path.join(dist_path, args.run_file)
     binary_content = [
         "#!/usr/bin/env sh",
-        f"exec node --inspect -r \"{preload_path}\" \"{js_path}\" \"$@\"",
+        f"exec node -r \"{preload_path}\" \"{js_path}\" \"$@\"",
     ]
 
     binary = args.bin
