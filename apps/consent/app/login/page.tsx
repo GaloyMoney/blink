@@ -15,9 +15,9 @@ import FormComponent from "../components/form-component";
 import Separator from "../components/separator";
 import PrimaryButton from "../components/button/primary-button-component";
 import SecondaryButton from "../components/button/secondary-button-component";
-import { LoginType } from "../index.types";
+import { LoginType, SubmitValue } from "../index.types";
 import { LoginEmailResponse } from "./email-login.types";
-
+//  this page is for login via email
 interface LoginProps {
   login_challenge: string;
 }
@@ -40,7 +40,7 @@ async function submitForm(
     throw new Error("Invalid Value");
   }
 
-  if (submitValue === "Deny access") {
+  if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access");
     const response = await hydraClient.rejectOAuth2LoginRequest({
       loginChallenge: login_challenge,
@@ -163,7 +163,8 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
               type="submit"
               id="reject"
               name="submit"
-              value="Deny access"
+              value={SubmitValue.denyAccess}
+              formNoValidate
             >
               Cancel
             </SecondaryButton>

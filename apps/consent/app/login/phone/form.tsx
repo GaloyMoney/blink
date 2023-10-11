@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import InputComponent from "@/app/components/input-component";
 import PrimaryButton from "@/app/components/button/primary-button-component";
 import SecondaryButton from "@/app/components/button/secondary-button-component";
 import Link from "next/link";
@@ -12,8 +11,11 @@ import Separator from "@/app/components/separator";
 // @ts-ignore-next-line no-implicit-any error
 import { experimental_useFormState as useFormState } from "react-dom";
 import { GetCaptchaChallengeResponse } from "./phone-login.types";
-import { AuthChannels } from "@/app/graphql/queries/get-supported-countries";
 import PhoneInput from "react-phone-number-input";
+import { E164Number } from "libphonenumber-js/types";
+import { SubmitValue } from "@/app/index.types";
+import "react-phone-number-input/style.css";
+import "./phone-input-styles.css";
 
 interface LoginFormProps {
   login_challenge: string;
@@ -25,6 +27,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
   login_challenge,
   countryCodes,
 }) => {
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
   //TODO useFormState is not giving type suggestions/errors i.e: not typed
   const [state, formAction] = useFormState<GetCaptchaChallengeResponse>(
     getCaptchaChallenge,
@@ -45,7 +48,16 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   if (state.error) {
     toast.error(state.message);
+    state.error = null
   }
+
+  const handlePhoneNumberChange = (value?: E164Number | undefined) => {
+    if (value) {
+      setPhoneNumber(value.toString());
+    } else {
+      setPhoneNumber("");
+    }
+  };
 
   return (
     <>
@@ -58,15 +70,25 @@ const LoginForm: React.FC<LoginFormProps> = ({
       ) : null}
       <FormComponent action={formAction}>
         <input type="hidden" name="login_challenge" value={login_challenge} />
-        <InputComponent
+        <label
+          htmlFor="phone"
+          className="block mb-2 text-sm font-medium text-gray-900"
+        >
+          Phone
+        </label>
+
+        <PhoneInput
+          international
+          countries={countryCodes}
           data-testid="phone_number_input"
-          label="Phone"
-          type="tel"
-          id="phone"
-          name="phone"
+          value={phoneNumber}
           required
           placeholder="Phone Number"
+          id="phone"
+          name="phone"
+          onChange={handlePhoneNumberChange}
         />
+
         <div className="flex items-center mb-4">
           <label className="text-gray-700 text-sm flex items-center">
             <input
@@ -92,10 +114,11 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
         <div className="flex flex-col md:flex-row w-full gap-2">
           <SecondaryButton
-            type="button"
+            type="submit"
             id="reject"
             name="submit"
-            value="Deny access"
+            value={SubmitValue.denyAccess}
+            formNoValidate
           >
             Cancel
           </SecondaryButton>
@@ -105,7 +128,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
             id="accept"
             name="submit"
             value="Log in"
-            className="flex-1 bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-700"
           >
             Next
           </PrimaryButton>

@@ -23,9 +23,7 @@ const Verification = async ({
 }) => {
   
   const { login_challenge } = searchParams;
-  console.log(login_challenge);
   const cookieStore = cookies().get(login_challenge);
-  console.log("-------------  ", cookieStore, login_challenge);
 
   if (!cookieStore) {
     throw new Error("Cannot find cookies");

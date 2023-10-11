@@ -12,11 +12,9 @@ const CaptchaChallengeComponent: React.FC<{
     remember: string;
   };
 }> = ({ id, challenge, formData }) => {
-  console.log({ id, challenge, formData });
 
   const captchaHandler = useCallback(
     (captchaObj: any) => {
-      console.log("---------", captchaObj);
       const onSuccess = async () => {
         const result = captchaObj.getValidate();
         const res = await sendPhoneCode(result, formData);

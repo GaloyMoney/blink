@@ -14,10 +14,11 @@ describe("Account ID Test", () => {
   });
 
   it("Verification Test", () => {
+    cy.log("login challenge : " , login_challenge)
     cy.get("[data-testid=sign_in_with_phone_text]").click();
     cy.get("[data-testid=phone_number_input]").type(testData.PHONE_NUMBER);
     cy.get("[data-testid=phone_login_next_btn]").click();
-    
+
     //testing if captcha comes up will need to add geetest Vars
     // cy.get(".geetest_holder.geetest_mobile.geetest_ant.geetest_embed").should(
     //   "exist"
@@ -39,8 +40,6 @@ describe("Account ID Test", () => {
       testData.VERIFICATION_CODE
     );
     cy.get("[data-testid=verification_code_submit_btn]").click();
-
-    // ---------------------
     cy.get("[data-testid=submit_consent_btn]").click();
   });
 });

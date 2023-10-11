@@ -1,4 +1,4 @@
-import { generateRandomEmail, testData } from "../../support/test-config";
+import { testData } from "../../support/test-config";
 describe("Account ID Test", () => {
   let login_challenge: string | null;
 
@@ -14,8 +14,8 @@ describe("Account ID Test", () => {
   });
 
   it("Login email Test", () => {
-    // const email = generateRandomEmail()
-    const email = "test@galoy.com";
+    cy.log("login challenge : ", login_challenge);
+    const email = testData.EMAIL;
     cy.get("[data-testid=email_id_input]").type(email);
     cy.get("[data-testid=email_login_next_btn]").click();
     cy.getOTP(email).then((otp) => {
