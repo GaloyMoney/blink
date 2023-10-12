@@ -12,7 +12,6 @@ const CaptchaChallengeComponent: React.FC<{
     remember: string;
   };
 }> = ({ id, challenge, formData }) => {
-
   const captchaHandler = useCallback(
     (captchaObj: any) => {
       const onSuccess = async () => {

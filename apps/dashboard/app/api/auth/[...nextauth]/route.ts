@@ -1,3 +1,4 @@
+import { fetchUserData } from "@/services/graphql/queries/me-data";
 import NextAuth from "next-auth"
 
 const type = "oauth" as const // as ProviderType
@@ -41,10 +42,11 @@ export const authOptions = {
       return token;
     },
     async session({ session, token, user }) {
-      console.log({ session, token, user }, "session12");
+      const userData = await fetchUserData(token.accessToken); 
       // Send properties to the client, like an access_token from a provider.
       session.sub = token.sub;
       session.accessToken = token.accessToken;
+      session.userData = userData;
       return session;
     },
   },
