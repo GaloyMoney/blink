@@ -4,6 +4,7 @@ load(
   "tsc_build",
   "runnable_tsc_build",
   "runnable_tsc_build_bin",
+  "eslint",
 )
 
 export_file(
@@ -60,4 +61,10 @@ runnable_tsc_build_bin(
   name = "api",
   preload_file = "services/tracing.js",
   run_file = "servers/graphql-main-server.js",
+)
+
+eslint(
+    name = "check-lint-typescript",
+    tsconfig = "tsconfig-build.json",
+    srcs = [":src"] + glob([".eslint*"]),
 )
