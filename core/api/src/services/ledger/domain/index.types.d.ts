@@ -79,7 +79,7 @@ type EntryBuilderDebit<M extends MediciEntry> = {
     accountDescriptor: LedgerAccountDescriptor<D>
     additionalMetadata: TxMetadata
   }) => EntryBuilderCredit<M>
-  debitLnd: () => EntryBuilderCredit<M>
+  debitOffChain: () => EntryBuilderCredit<M>
   debitOnChain: () => EntryBuilderCredit<M>
   debitColdStorage: () => EntryBuilderCredit<M>
 }
