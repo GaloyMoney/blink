@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: record paymentRequest with WalletInvoice (#3333)'
-      sha: 3ab5ca89fdc91636b185dd8a54a3c34b9e2bfd46
+      commitTitle: 'fix: crash if scope is undefined (#3341)...'
+      sha: 35584a12f7eabeaa63d942a227d99041f8c11a43
       tags:
-      - 0.14.12-2-g3ab5ca89f
+      - 0.14.13-2-g35584a12f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: record paymentRequest with WalletInvoice (#3333)'
-      sha: 3ab5ca89fdc91636b185dd8a54a3c34b9e2bfd46
+      commitTitle: 'fix: crash if scope is undefined (#3341)...'
+      sha: 35584a12f7eabeaa63d942a227d99041f8c11a43
       tags:
-      - 0.14.12-2-g3ab5ca89f
+      - 0.14.14
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: record paymentRequest with WalletInvoice (#3333)'
-      sha: 3ab5ca89fdc91636b185dd8a54a3c34b9e2bfd46
+      commitTitle: 'fix: crash if scope is undefined (#3341)...'
+      sha: 35584a12f7eabeaa63d942a227d99041f8c11a43
       tags:
-      - 0.14.12-2-g3ab5ca89f
+      - 0.14.14
     path: ./
   path: ./graphql
 kind: LockConfig
