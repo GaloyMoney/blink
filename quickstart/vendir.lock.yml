@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: match debit entry name with credit (#3337)...'
-      sha: ae92dcdde6af86ebf068b935396af6dcadb2e0c5
+      commitTitle: 'feat: added userid in response of auth-login apis (#3317)...'
+      sha: d35aae0476999db00c6ff45f7ad813ea1847f28f
       tags:
-      - 0.14.9-2-gae92dcdde
+      - 0.14.10-1-gd35aae047
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: match debit entry name with credit (#3337)...'
-      sha: ae92dcdde6af86ebf068b935396af6dcadb2e0c5
+      commitTitle: 'feat: added userid in response of auth-login apis (#3317)...'
+      sha: d35aae0476999db00c6ff45f7ad813ea1847f28f
       tags:
-      - 0.14.9-2-gae92dcdde
+      - 0.14.10-1-gd35aae047
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: match debit entry name with credit (#3337)...'
-      sha: ae92dcdde6af86ebf068b935396af6dcadb2e0c5
+      commitTitle: 'feat: added userid in response of auth-login apis (#3317)...'
+      sha: d35aae0476999db00c6ff45f7ad813ea1847f28f
       tags:
-      - 0.14.9-2-gae92dcdde
+      - 0.14.10-1-gd35aae047
     path: ./
   path: ./graphql
 kind: LockConfig
