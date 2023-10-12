@@ -345,7 +345,7 @@ describe("EntryBuilder", () => {
         const result = builder
           .withTotalAmount(amount)
           .withBankFee(ZERO_BANK_FEE)
-          .debitLnd()
+          .debitOffChain()
           .creditAccount({
             accountDescriptor: btcCreditorAccountDescriptor,
             additionalMetadata: additionalUserEurMetadata,
@@ -375,7 +375,7 @@ describe("EntryBuilder", () => {
         const result = builder
           .withTotalAmount(amount)
           .withBankFee(bankFee)
-          .debitLnd()
+          .debitOffChain()
           .creditAccount({
             accountDescriptor: btcCreditorAccountDescriptor,
             additionalMetadata: additionalUserEurMetadata,
@@ -623,7 +623,7 @@ describe("EntryBuilder", () => {
           const result = builder
             .withTotalAmount(amount)
             .withBankFee(ZERO_BANK_FEE)
-            .debitLnd()
+            .debitOffChain()
             .creditAccount({
               accountDescriptor: usdCreditorAccountDescriptor,
               additionalMetadata: additionalUserEurMetadata,
@@ -683,7 +683,7 @@ describe("EntryBuilder", () => {
           const result = builder
             .withTotalAmount(amount)
             .withBankFee(ZERO_BANK_FEE)
-            .debitLnd()
+            .debitOffChain()
             .creditAccount({
               accountDescriptor: usdCreditorAccountDescriptor,
               additionalMetadata: additionalUserEurMetadata,
@@ -726,7 +726,7 @@ describe("EntryBuilder", () => {
         const result = builder
           .withTotalAmount(amount)
           .withBankFee(bankFee)
-          .debitLnd()
+          .debitOffChain()
           .creditAccount({
             accountDescriptor: usdCreditorAccountDescriptor,
             additionalMetadata: additionalUserEurMetadata,

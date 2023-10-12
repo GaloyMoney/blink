@@ -39,7 +39,7 @@ export const recordReceiveOffChain = async ({
   entry = builder
     .withTotalAmount(amountWithFees)
     .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
-    .debitLnd()
+    .debitOffChain()
     .creditAccount({
       accountDescriptor: toLedgerAccountDescriptor(recipientWalletDescriptor),
       additionalMetadata: additionalCreditMetadata,
