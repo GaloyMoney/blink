@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: dashboard and consent app skeletons (#3339)...'
-      sha: 59150be0e049a28d432c9c3200f4f649bfbf8b83
+      commitTitle: 'chore: record paymentRequest with WalletInvoice (#3333)'
+      sha: 3ab5ca89fdc91636b185dd8a54a3c34b9e2bfd46
       tags:
-      - 0.14.11-2-g59150be0e
+      - 0.14.12-2-g3ab5ca89f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: dashboard and consent app skeletons (#3339)...'
-      sha: 59150be0e049a28d432c9c3200f4f649bfbf8b83
+      commitTitle: 'chore: record paymentRequest with WalletInvoice (#3333)'
+      sha: 3ab5ca89fdc91636b185dd8a54a3c34b9e2bfd46
       tags:
-      - 0.14.12
+      - 0.14.12-2-g3ab5ca89f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: dashboard and consent app skeletons (#3339)...'
-      sha: 59150be0e049a28d432c9c3200f4f649bfbf8b83
+      commitTitle: 'chore: record paymentRequest with WalletInvoice (#3333)'
+      sha: 3ab5ca89fdc91636b185dd8a54a3c34b9e2bfd46
       tags:
-      - 0.14.12
+      - 0.14.12-2-g3ab5ca89f
     path: ./
   path: ./graphql
 kind: LockConfig
