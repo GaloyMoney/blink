@@ -1,0 +1,6 @@
+core:
+  - core/**/*
+
+ci:
+  - ci/**/*
+  - .github/**/*
