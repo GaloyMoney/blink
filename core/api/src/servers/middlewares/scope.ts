@@ -20,8 +20,10 @@ const readTransactionsAuthorize = async (
     return resolve(parent, args, context, info)
   }
 
-  if (scope === undefined) {
-    return mapError(new AuthorizationError("appId is defined but scope is undefined"))
+  if (scope === undefined || scope.length === 0) {
+    return mapError(
+      new AuthorizationError("appId is defined but scope is undefined or empty"),
+    )
   }
 
   if (scope.find((s) => s === ScopesOauth2.TransactionsRead) !== undefined) {

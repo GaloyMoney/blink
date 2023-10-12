@@ -25,7 +25,7 @@ export const sessionPublicContext = async ({
 
   const sessionId = tokenPayload?.session_id
   const expiresAt = tokenPayload?.expires_at
-  const scope = tokenPayload?.scope.split(" ")
+  const scope = tokenPayload?.scope?.split(" ") ?? []
   const sub = tokenPayload?.sub
   const appId = tokenPayload?.client_id
 
