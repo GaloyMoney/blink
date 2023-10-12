@@ -143,7 +143,7 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
       return new InvalidWalletInvoiceBuilderStateError()
     }
 
-    const walletInvoice: WalletInvoice = {
+    const walletInvoice = {
       paymentHash,
       secret,
       selfGenerated: state.selfGenerated,
@@ -152,6 +152,7 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
       recipientWalletDescriptor: state.recipientWalletDescriptor,
       paid: false,
       createdAt: new Date(),
+      paymentRequest: registeredInvoice.invoice.paymentRequest,
     }
     return {
       walletInvoice,

@@ -79,6 +79,10 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
     type: Boolean,
     default: false,
   },
+
+  paymentRequest: {
+    type: String,
+  },
 })
 
 walletInvoiceSchema.index({ walletId: 1, paid: 1 })

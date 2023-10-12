@@ -512,6 +512,7 @@ describe("initiated via lightning", () => {
         pubkey: destination,
         recipientWalletDescriptor,
         paid: false,
+        paymentRequest: lnInvoice.paymentRequest,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -561,6 +562,7 @@ describe("initiated via lightning", () => {
         pubkey: lnInvoice.destination,
         recipientWalletDescriptor: newWalletDescriptor,
         paid: false,
+        paymentRequest: lnInvoice.paymentRequest,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -632,6 +634,7 @@ describe("initiated via lightning", () => {
         recipientWalletDescriptor: usdWalletDescriptor,
         paid: false,
         usdAmount,
+        paymentRequest: lnInvoice.paymentRequest,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -652,6 +655,7 @@ describe("initiated via lightning", () => {
         pubkey: noAmountLnInvoice.destination,
         recipientWalletDescriptor: usdWalletDescriptor,
         paid: false,
+        paymentRequest: lnInvoice.paymentRequest,
       })
       if (noAmountPersisted instanceof Error) throw noAmountPersisted
 
@@ -710,6 +714,7 @@ describe("initiated via lightning", () => {
         pubkey: largeWithAmountLnInvoice.destination,
         recipientWalletDescriptor: otherWalletDescriptor,
         paid: false,
+        paymentRequest: lnInvoice.paymentRequest,
       })
       if (persisted instanceof Error) throw persisted
 
@@ -730,6 +735,7 @@ describe("initiated via lightning", () => {
         pubkey: noAmountLnInvoice.destination,
         recipientWalletDescriptor: otherWalletDescriptor,
         paid: false,
+        paymentRequest: lnInvoice.paymentRequest,
       })
       if (noAmountPersisted instanceof Error) throw noAmountPersisted
 
@@ -782,6 +788,7 @@ describe("initiated via lightning", () => {
         pubkey: noAmountLnInvoice.destination,
         recipientWalletDescriptor: usdWalletDescriptor,
         paid: false,
+        paymentRequest: lnInvoice.paymentRequest,
       })
       if (persisted instanceof Error) throw persisted
 

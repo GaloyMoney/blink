@@ -63,6 +63,7 @@ interface WalletInvoiceRecord {
   selfGenerated: boolean
   pubkey: string
   paid: boolean
+  paymentRequest?: string // optional because we historically did not store it
 }
 
 interface AccountRecord {

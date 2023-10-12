@@ -18,6 +18,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     pubkey,
     paid,
     usdAmount,
+    paymentRequest,
   }: WalletInvoicesPersistNewArgs): Promise<WalletInvoice | RepositoryError> => {
     try {
       const walletInvoice = await new WalletInvoice({
@@ -29,6 +30,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         paid,
         cents: usdAmount ? Number(usdAmount.amount) : undefined,
         currency: recipientWalletDescriptor.currency,
+        paymentRequest,
       }).save()
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
@@ -135,4 +137,5 @@ const walletInvoiceFromRaw = (result: WalletInvoiceRecord): WalletInvoice => ({
   paid: result.paid as boolean,
   usdAmount: result.cents ? UsdPaymentAmount(BigInt(result.cents)) : undefined,
   createdAt: new Date(result.timestamp.getTime()),
+  paymentRequest: result.paymentRequest as EncodedPaymentRequest,
 })
