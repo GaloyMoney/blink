@@ -63,7 +63,7 @@ export const loginWithPhoneToken = async ({
   phone: PhoneNumber
   code: PhoneCode
   ip: IpAddress
-}): Promise<LoginWithPhoneResult | ApplicationError> => {
+}): Promise<LoginWithPhoneTokenResult | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -103,7 +103,11 @@ export const loginWithPhoneToken = async ({
     })
     if (kratosResult instanceof Error) return kratosResult
 
-    return { authToken: kratosResult.authToken, totpRequired: false }
+    return {
+      authToken: kratosResult.authToken,
+      totpRequired: false,
+      id: kratosResult.kratosUserId,
+    }
   }
 
   if (userId instanceof Error) return userId
@@ -114,7 +118,9 @@ export const loginWithPhoneToken = async ({
   // if kratosUserId is not returned, it means that 2fa is required
   const totpRequired = !kratosResult.kratosUserId
 
-  return { authToken: kratosResult.authToken, totpRequired }
+  const id = kratosResult.kratosUserId as UserId
+
+  return { authToken: kratosResult.authToken, id, totpRequired }
 }
 
 export const loginWithEmailToken = async ({
@@ -153,7 +159,7 @@ export const loginWithEmailToken = async ({
 
   const res = await authServiceEmail.loginToken({ email })
   if (res instanceof Error) return res
-  return { authToken: res.authToken, totpRequired }
+  return { authToken: res.authToken, totpRequired, id: res.kratosUserId }
 }
 
 export const loginDeviceUpgradeWithPhone = async ({

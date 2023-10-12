@@ -68,7 +68,7 @@ mutators:
     config:
       jwks_url: file:///home/ory/jwks.json
       issuer_url: "galoy.io"
-      claims: '{"sub": "{{ print .Subject }}" }'
+      claims: '{"sub": "{{ print .Subject }}"}'
 
   noop:
     enabled: true
