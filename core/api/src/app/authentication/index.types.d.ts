@@ -24,7 +24,7 @@ type LoginWithEmailResult = {
   id?: UserId
 }
 
-type LoginWithPhoneResult = {
+type LoginWithPhoneTokenResult = {
   authToken: AuthToken
   totpRequired: boolean
   id?: UserId
