@@ -8,12 +8,12 @@ interface LoginResult {
 
 const authApi = {
   requestEmailCode: async (email: string): Promise<string> => {
-    const result = await axiosInstance.post("/auth/email/code", { email });
+    const result = await axiosInstance.post("/email/code", { email });
     return result.data.result;
   },
 
   validateTotp: async (totpCode: string, authToken: string): Promise<any> => {
-    const response = await axiosInstance.post("/auth/totp/validate", {
+    const response = await axiosInstance.post("/totp/validate", {
       totpCode,
       authToken,
     });
@@ -21,7 +21,7 @@ const authApi = {
   },
 
   loginWithPhone: async (value: string, code: string): Promise<LoginResult> => {
-    const response = await axiosInstance.post("/auth/phone/login", {
+    const response = await axiosInstance.post("/phone/login", {
       phone: value,
       code,
     });
@@ -32,7 +32,7 @@ const authApi = {
     code: string,
     emailLoginId: string
   ): Promise<LoginResult> => {
-    const response = await axiosInstance.post("/auth/email/login", {
+    const response = await axiosInstance.post("/email/login", {
       code,
       emailLoginId,
     });
@@ -45,7 +45,7 @@ const authApi = {
     validationCode: string,
     secCode: string
   ): Promise<any> => {
-    const response = await axiosInstance.post("/auth/phone/code", {
+    const response = await axiosInstance.post("/phone/code", {
       phone,
       challengeCode,
       validationCode,
@@ -59,7 +59,7 @@ const authApi = {
     id: string;
     challengeCode: string;
   }> => {
-    const response = await axiosInstance.post("/auth/phone/captcha");
+    const response = await axiosInstance.post("/phone/captcha");
     return response.data.result;
   },
 };

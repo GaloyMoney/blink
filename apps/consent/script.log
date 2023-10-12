@@ -1,0 +1,12 @@
+Step 1 Response: {"authToken":"ory_st_ZZOBNMMA7RGdMYeSePotQJWyNyPq3xuM","totpRequired":false,"id":"784c2993-87fe-488f-8336-bcca25191764"}
+Step 2 Response: {"data":{"userEmailRegistrationInitiate":{"emailRegistrationId":"df03c6a4-f80e-40a5-a749-6a3b946f61ff","errors":[],"me":{"createdAt":1697097105,"id":"784c2993-87fe-488f-8336-bcca25191764","language":"","phone":"+16505554350","totpEnabled":false,"username":null}}}}
+Step 3 Response:  Hi,                                                                         +
+                                                                             +
+ You can confirm access to your blink account by entering the following code:+
+                                                                             +
+ 446749                                                                      +
+                                                                             +
+ Don't share this code with anyone. Our employee will never ask for this code+
+ 
+Email Code: 446749
+Step 4 Response: {"data":{"userEmailRegistrationValidate":{"errors":[]}}}

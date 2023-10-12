@@ -6,7 +6,7 @@ This application facilitates users to sign in using OAuth 2.0 via their blink ac
 
 
 ## Local set up:
-Install dependencies using 
+Install dependencies using
 ```
   yarn install
 ```
@@ -22,6 +22,6 @@ Run next.js app in dev mode
 
 ###Environment variables
 ```
-  AUTH_URL
+  CORE_AUTH_URL
   HYDRA_ADMIN_URL
 ```
