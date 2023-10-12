@@ -63,7 +63,7 @@ export const loginWithPhoneToken = async ({
   phone: PhoneNumber
   code: PhoneCode
   ip: IpAddress
-}): Promise<LoginWithPhoneResult | ApplicationError> => {
+}): Promise<LoginWithPhoneTokenResult | ApplicationError> => {
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
     if (limitOk instanceof Error) return limitOk
@@ -103,7 +103,11 @@ export const loginWithPhoneToken = async ({
     })
     if (kratosResult instanceof Error) return kratosResult
 
-    return { authToken: kratosResult.authToken, totpRequired: false }
+    return {
+      authToken: kratosResult.authToken,
+      totpRequired: false,
+      id: kratosResult.kratosUserId,
+    }
   }
 
   if (userId instanceof Error) return userId
