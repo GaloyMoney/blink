@@ -250,6 +250,10 @@ interface ILightningService {
     args: ListLnInvoicesArgs,
   ): Promise<LnInvoiceLookup[] | LightningServiceError>
 
+  listAllInvoices(args: {
+    pubkey: Pubkey
+  }): AsyncGenerator<LnInvoiceLookup> | LightningServiceError
+
   deletePaymentByHash({
     paymentHash,
     pubkey,

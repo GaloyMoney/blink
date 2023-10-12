@@ -636,6 +636,32 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const listAllInvoices = async function* ({
+    pubkey,
+  }: {
+    pubkey: Pubkey
+  }): AsyncGenerator<LnInvoiceLookup> | LightningServiceError {
+    try {
+      const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lnd instanceof Error) return lnd
+
+      let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
+      while (after !== false) {
+        const pagingArgs: {
+          token?: PagingStartToken | PagingContinueToken
+        } = after ? { token: after } : {}
+        const { invoices, next } = await getInvoices({ lnd, ...pagingArgs })
+
+        for (const invoice of invoices) {
+          yield translateLnInvoiceLookup(invoice)
+        }
+        after = (next as PagingContinueToken) || false
+      }
+    } catch (err) {
+      return handleCommonLightningServiceErrors(err)
+    }
+  }
+
   const deletePaymentByHash = async ({
     paymentHash,
     pubkey,
@@ -884,6 +910,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       listPendingPayments: listPaymentsFactory(getPendingPayments),
       listFailedPayments,
       listInvoices,
+      listAllInvoices,
       deletePaymentByHash,
       settleInvoice,
       cancelInvoice,
