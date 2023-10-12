@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: added userid in response of auth-login apis (#3317)...'
-      sha: d35aae0476999db00c6ff45f7ad813ea1847f28f
+      commitTitle: 'feat: dashboard and consent app skeletons (#3339)...'
+      sha: 59150be0e049a28d432c9c3200f4f649bfbf8b83
       tags:
-      - 0.14.10-1-gd35aae047
+      - 0.14.11-2-g59150be0e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: added userid in response of auth-login apis (#3317)...'
-      sha: d35aae0476999db00c6ff45f7ad813ea1847f28f
+      commitTitle: 'feat: dashboard and consent app skeletons (#3339)...'
+      sha: 59150be0e049a28d432c9c3200f4f649bfbf8b83
       tags:
-      - 0.14.10-1-gd35aae047
+      - 0.14.12
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: added userid in response of auth-login apis (#3317)...'
-      sha: d35aae0476999db00c6ff45f7ad813ea1847f28f
+      commitTitle: 'feat: dashboard and consent app skeletons (#3339)...'
+      sha: 59150be0e049a28d432c9c3200f4f649bfbf8b83
       tags:
-      - 0.14.10-1-gd35aae047
+      - 0.14.12
     path: ./
   path: ./graphql
 kind: LockConfig

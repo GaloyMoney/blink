@@ -95,7 +95,7 @@ services:
     - POSTGRES_PASSWORD=secret
     - POSTGRES_DB=hydra
   galoy:
-    image: us.gcr.io/galoy-org/galoy-api@sha256:b17f18bf81d1242bbe79acb55a735cdfa3e02935c250f686bf72c9a369e136bc
+    image: us.gcr.io/galoy-org/galoy-api@sha256:8e5b60fdb06873b12be7b2571342b717457ed601965a899f10dedff2a34d1ae2
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - trigger
@@ -113,7 +113,7 @@ services:
         aliases:
         - bats-tests
   trigger:
-    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:6983b93b722fafb50ca32e6b778ee484aefad81366c007ed348764aabf9a0bc4
+    image: us.gcr.io/galoy-org/galoy-api-trigger@sha256:9d24d5e1c616e01b7ae6c96cc24e7f3326d6a4ef555493ba0af7f952abc19870
     env_file: ${HOST_PROJECT_PATH:-.}/${GALOY_QUICKSTART_PATH:-vendor/galoy-quickstart}/.env.galoy
     depends_on:
     - lnd1
@@ -134,7 +134,7 @@ services:
     - MONGO_INITDB_DATABASE=galoy
     - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
   mongodb-migrate:
-    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:d9af1deea2f9dae2259fc21450e9845f34fc349437e687609646add02d2192e2
+    image: us.gcr.io/galoy-org/galoy-app-migrate@sha256:c05d8401247b47e8ae00af6489d105653eeb1bf3528c05e7ea71a14dfc51b39d
     depends_on:
     - mongodb
     environment:
