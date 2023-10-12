@@ -113,8 +113,13 @@ export const loginWithPhoneToken = async ({
 
   // if kratosUserId is not returned, it means that 2fa is required
   const totpRequired = !kratosResult.kratosUserId
+  const id = kratosResult.kratosUserId as UserId
 
-  return { authToken: kratosResult.authToken, totpRequired }
+  return {
+    authToken: kratosResult.authToken,
+    totpRequired,
+    id,
+  }
 }
 
 export const loginWithEmailToken = async ({
@@ -153,7 +158,7 @@ export const loginWithEmailToken = async ({
 
   const res = await authServiceEmail.loginToken({ email })
   if (res instanceof Error) return res
-  return { authToken: res.authToken, totpRequired }
+  return { authToken: res.authToken, totpRequired, id: res.kratosUserId }
 }
 
 export const loginDeviceUpgradeWithPhone = async ({
