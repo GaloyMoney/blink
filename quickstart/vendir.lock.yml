@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: add labeler action (#3336)'
-      sha: 9291a74304e2a1e45eaedb58c24ec6b12df3a74c
+      commitTitle: 'chore: match debit entry name with credit (#3337)...'
+      sha: ae92dcdde6af86ebf068b935396af6dcadb2e0c5
       tags:
-      - 0.14.8-3-g9291a7430
+      - 0.14.9-2-gae92dcdde
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: add labeler action (#3336)'
-      sha: 9291a74304e2a1e45eaedb58c24ec6b12df3a74c
+      commitTitle: 'chore: match debit entry name with credit (#3337)...'
+      sha: ae92dcdde6af86ebf068b935396af6dcadb2e0c5
       tags:
-      - 0.14.8-3-g9291a7430
+      - 0.14.9-2-gae92dcdde
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: add labeler action (#3336)'
-      sha: 9291a74304e2a1e45eaedb58c24ec6b12df3a74c
+      commitTitle: 'chore: match debit entry name with credit (#3337)...'
+      sha: ae92dcdde6af86ebf068b935396af6dcadb2e0c5
       tags:
-      - 0.14.8-3-g9291a7430
+      - 0.14.9-2-gae92dcdde
     path: ./
   path: ./graphql
 kind: LockConfig
