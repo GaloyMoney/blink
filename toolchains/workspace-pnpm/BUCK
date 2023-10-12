@@ -37,3 +37,8 @@ export_file(
   name = "package_next_bin.py",
   visibility = ["PUBLIC"],
 )
+
+export_file(
+  name = "run_in_dir.py",
+  visibility = ["PUBLIC"],
+)
