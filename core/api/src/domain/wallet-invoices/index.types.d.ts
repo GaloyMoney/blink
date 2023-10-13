@@ -82,7 +82,7 @@ type WIBWithAmount = {
   registerInvoice: () => Promise<LnAndWalletInvoice | LightningServiceError>
 }
 
-type WalletInvoice = {
+type WalletInvoiceWithOptionalPaymentRequest = {
   paymentHash: PaymentHash
   secret: SecretPreImage
   selfGenerated: boolean
@@ -91,7 +91,11 @@ type WalletInvoice = {
   recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
   paid: boolean
   createdAt: Date
-  paymentRequest?: EncodedPaymentRequest
+  paymentRequest?: EncodedPaymentRequest // Payment request is optional because some older invoices don't have it
+}
+
+type WalletInvoice = WalletInvoiceWithOptionalPaymentRequest & {
+  paymentRequest: EncodedPaymentRequest
 }
 
 type WalletAddress<S extends WalletCurrency> = {
@@ -140,7 +144,7 @@ type WalletInvoiceReceiverArgs = {
   receivedBtc: BtcPaymentAmount
   satsFee?: BtcPaymentAmount
 
-  walletInvoice: WalletInvoice
+  walletInvoice: WalletInvoiceWithOptionalPaymentRequest
   recipientWalletDescriptors: AccountWalletDescriptors
 }
 
@@ -157,20 +161,20 @@ type WalletAddressReceiverArgs<S extends WalletCurrency> = {
   walletAddress: WalletAddress<S>
 }
 
-type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt"> & {
-  paymentRequest: EncodedPaymentRequest
-}
+type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt">
 
 interface IWalletInvoicesRepository {
   persistNew: (
     invoice: WalletInvoicesPersistNewArgs,
   ) => Promise<WalletInvoice | RepositoryError>
 
-  markAsPaid: (paymentHash: PaymentHash) => Promise<WalletInvoice | RepositoryError>
+  markAsPaid: (
+    paymentHash: PaymentHash,
+  ) => Promise<WalletInvoiceWithOptionalPaymentRequest | RepositoryError>
 
   findByPaymentHash: (
     paymentHash: PaymentHash,
-  ) => Promise<WalletInvoice | RepositoryError>
+  ) => Promise<WalletInvoiceWithOptionalPaymentRequest | RepositoryError>
 
   yieldPending: () => AsyncGenerator<WalletInvoice> | RepositoryError
 

@@ -1,4 +1,6 @@
+import { decodeInvoice } from "@/domain/bitcoin/lightning"
 import { CouldNotFindWalletInvoiceError } from "@/domain/errors"
+import { ensureWalletInvoiceHasPaymentRequest } from "@/domain/wallet-invoices"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 
 export const getInvoiceForWalletByHash = async ({
@@ -7,16 +9,26 @@ export const getInvoiceForWalletByHash = async ({
 }: {
   walletId: WalletId
   paymentHash: PaymentHash
-}): Promise<WalletInvoice | ApplicationError> => {
+}): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepository = WalletInvoicesRepository()
 
-  const walletInvoice = await walletInvoicesRepository.findByPaymentHash(paymentHash)
+  const walletInvoiceWithOptionalPaymentRequest =
+    await walletInvoicesRepository.findByPaymentHash(paymentHash)
 
-  if (walletInvoice instanceof Error) return walletInvoice
+  if (walletInvoiceWithOptionalPaymentRequest instanceof Error)
+    return walletInvoiceWithOptionalPaymentRequest
 
-  if (walletInvoice.recipientWalletDescriptor.id !== walletId) {
+  if (walletInvoiceWithOptionalPaymentRequest.recipientWalletDescriptor.id !== walletId) {
     return new CouldNotFindWalletInvoiceError()
   }
 
-  return walletInvoice
+  const walletInvoice = ensureWalletInvoiceHasPaymentRequest(
+    walletInvoiceWithOptionalPaymentRequest,
+  )
+
+  if (walletInvoice instanceof Error) return walletInvoice
+
+  const lnInvoice = decodeInvoice(walletInvoice.paymentRequest)
+
+  return lnInvoice
 }

@@ -63,6 +63,7 @@ describe("WalletInvoiceReceiver", () => {
       paid: false,
       recipientWalletDescriptor: partialRecipientBtcWalletDescriptor,
       createdAt: new Date(),
+      paymentRequest: "paymentRequest" as EncodedPaymentRequest,
     }
 
     it("returns correct amounts", async () => {
@@ -103,6 +104,7 @@ describe("WalletInvoiceReceiver", () => {
         usdAmount: UsdPaymentAmount(BigInt(100)),
         paid: false,
         createdAt: new Date(),
+        paymentRequest: "paymentRequest" as EncodedPaymentRequest,
       }
 
       it("returns correct amounts", async () => {
@@ -136,6 +138,7 @@ describe("WalletInvoiceReceiver", () => {
         pubkey: "pubkey" as Pubkey,
         paid: false,
         createdAt: new Date(),
+        paymentRequest: "paymentRequest" as EncodedPaymentRequest,
       }
 
       it("returns correct amounts", async () => {

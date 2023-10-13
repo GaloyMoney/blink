@@ -173,7 +173,7 @@ const updatePendingInvoiceBeforeFinally = async ({
   walletInvoice,
   logger,
 }: {
-  walletInvoice: WalletInvoice
+  walletInvoice: WalletInvoiceWithOptionalPaymentRequest
   logger: Logger
 }): Promise<boolean | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -419,7 +419,7 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
     walletInvoice,
     logger,
   }: {
-    walletInvoice: WalletInvoice
+    walletInvoice: WalletInvoiceWithOptionalPaymentRequest
     logger: Logger
   }): Promise<boolean | ApplicationError> => {
     const result = await updatePendingInvoiceBeforeFinally({
