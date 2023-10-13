@@ -1,0 +1,34 @@
+load("@toolchains//workspace-pnpm:macros.bzl", "build_node_modules", "next_build", "next_build_bin")
+
+export_file(
+  name = "package.json",
+  visibility = ["PUBLIC"],
+)
+
+build_node_modules(
+  name = "node_modules",
+)
+
+filegroup(
+    name = "src",
+    srcs = glob([
+    "app/**",
+    "public/**",
+    "services/**",
+    "components/**",
+    "env.ts",
+    "tailwind.config.ts",
+    "postcss.config.js",
+    "next.config.js",
+    "tsconfig.json",
+    ]),
+)
+
+next_build(
+    name = "build",
+    srcs = [":src"],
+)
+
+next_build_bin(
+    name = "dashboard",
+)
