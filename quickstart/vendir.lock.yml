@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: add production build for apps/consent (#3350)...'
-      sha: fcc3df211422aeb7befc341a30bc05730a8a9040
+      commitTitle: 'fix: proxycheck timeout (#3351)'
+      sha: 4ff3d32ba9f8b6592462b419714f455478fb5a3b
       tags:
-      - 0.14.18-2-gfcc3df211
+      - 0.14.19-2-g4ff3d32ba
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: add production build for apps/consent (#3350)...'
-      sha: fcc3df211422aeb7befc341a30bc05730a8a9040
+      commitTitle: 'fix: proxycheck timeout (#3351)'
+      sha: 4ff3d32ba9f8b6592462b419714f455478fb5a3b
       tags:
-      - 0.14.18-2-gfcc3df211
+      - 0.14.19-2-g4ff3d32ba
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: add production build for apps/consent (#3350)...'
-      sha: fcc3df211422aeb7befc341a30bc05730a8a9040
+      commitTitle: 'fix: proxycheck timeout (#3351)'
+      sha: 4ff3d32ba9f8b6592462b419714f455478fb5a3b
       tags:
-      - 0.14.18-2-gfcc3df211
+      - 0.14.19-2-g4ff3d32ba
     path: ./
   path: ./graphql
 kind: LockConfig
