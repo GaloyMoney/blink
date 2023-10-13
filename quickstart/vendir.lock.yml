@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove [*] section from .editorconfig (#3346)'
-      sha: 31c584325d9e7ec9db66ac5ffaa4436148106050
+      commitTitle: 'chore: add debug script to settle bankowner debt (#3300)...'
+      sha: b27192aacf9bdde511ac2db0bfc74e8b7fa454aa
       tags:
-      - 0.14.14-2-g31c584325
+      - 0.14.15-2-gb27192aac
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove [*] section from .editorconfig (#3346)'
-      sha: 31c584325d9e7ec9db66ac5ffaa4436148106050
+      commitTitle: 'chore: add debug script to settle bankowner debt (#3300)...'
+      sha: b27192aacf9bdde511ac2db0bfc74e8b7fa454aa
       tags:
-      - 0.14.14-2-g31c584325
+      - 0.14.15-2-gb27192aac
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove [*] section from .editorconfig (#3346)'
-      sha: 31c584325d9e7ec9db66ac5ffaa4436148106050
+      commitTitle: 'chore: add debug script to settle bankowner debt (#3300)...'
+      sha: b27192aacf9bdde511ac2db0bfc74e8b7fa454aa
       tags:
-      - 0.14.14-2-g31c584325
+      - 0.14.15-2-gb27192aac
     path: ./
   path: ./graphql
 kind: LockConfig
