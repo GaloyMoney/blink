@@ -53,35 +53,36 @@
         ++ buck2NativeBuildInputs;
 
       buck2Version = pkgs.buck2.version;
+      postPatch = with pkgs; ''
+        rg -l '#!(/usr/bin/env|/bin/bash|/bin/sh)' prelude toolchains \
+          | while read -r file; do
+            patchShebangs --build "$file"
+          done
 
-      coreDerivation =  {
+        rg -l '(/usr/bin/env|/bin/bash)' prelude toolchains \
+          | while read -r file; do
+            substituteInPlace "$file" \
+              --replace /usr/bin/env "${coreutils}/bin/env" \
+              --replace /bin/bash "${bash}/bin/bash"
+          done
+      '';
+
+      tscDerivation = {
         pkgName,
         pathPrefix ? "core",
-      }: pkgs.stdenv.mkDerivation {
-        bin_target = pkgName;
-        deps_target = "runnable_build";
+      }:
+        pkgs.stdenv.mkDerivation {
+          bin_target = pkgName;
+          deps_target = "runnable_build";
 
-        name = pkgName;
-        buck2_target = "//${pathPrefix}/${pkgName}";
-        __impure = true;
-        src = ./.;
-        nativeBuildInputs = buck2NativeBuildInputs;
-        postPatch = with pkgs; ''
-          rg -l '#!(/usr/bin/env|/bin/bash|/bin/sh)' prelude toolchains \
-            | while read -r file; do
-              patchShebangs --build "$file"
-            done
+          name = pkgName;
+          buck2_target = "//${pathPrefix}/${pkgName}";
+          __impure = true;
+          src = ./.;
+          nativeBuildInputs = buck2NativeBuildInputs;
+          inherit postPatch;
 
-          rg -l '(/usr/bin/env|/bin/bash)' prelude toolchains \
-            | while read -r file; do
-              substituteInPlace "$file" \
-                --replace /usr/bin/env "${coreutils}/bin/env" \
-                --replace /bin/bash "${bash}/bin/bash"
-            done
-        '';
-
-        buildPhase =
-          ''
+          buildPhase = ''
             export HOME="$(dirname $(pwd))/home"
             buck2 build "$buck2_target" --verbose 8
 
@@ -96,26 +97,67 @@
             cp -rpv $bin_result build/$name-$system/bin/
           '';
 
-       installPhase =
-         ''
-           mkdir -pv "$out"
-           cp -rpv "build/$name-$system/lib" "$out/"
-           cp -rpv "build/$name-$system/bin" "$out/"
+          installPhase = ''
+            mkdir -pv "$out"
+            cp -rpv "build/$name-$system/lib" "$out/"
+            cp -rpv "build/$name-$system/bin" "$out/"
 
-           substituteInPlace "$out/bin/run" \
-             --replace "#!${pkgs.coreutils}/bin/env sh" "#!${pkgs.bash}/bin/sh" \
-             --replace "$(cat build/$name-$system/buck2-deps-path)" "$out/lib" \
-             --replace "exec node" "exec ${pkgs.nodejs}/bin/node"
-         '';
-      };
+            substituteInPlace "$out/bin/run" \
+              --replace "#!${pkgs.coreutils}/bin/env sh" "#!${pkgs.bash}/bin/sh" \
+              --replace "$(cat build/$name-$system/buck2-deps-path)" "$out/lib" \
+              --replace "exec node" "exec ${pkgs.nodejs}/bin/node"
+          '';
+        };
+
+      nextDerivation = {
+        pkgName,
+        pathPrefix ? "apps",
+      }:
+        pkgs.stdenv.mkDerivation {
+          bin_target = pkgName;
+          name = pkgName;
+          buck2_target = "//${pathPrefix}/${pkgName}";
+          __impure = true;
+          src = ./.;
+          nativeBuildInputs = buck2NativeBuildInputs;
+          inherit postPatch;
+
+          buildPhase = ''
+            export HOME="$(dirname $(pwd))/home"
+            mkdir -p build
+
+            buck2 build "$buck2_target" --verbose 8
+
+            result=$(buck2 build --show-simple-output "$buck2_target" 2> /dev/null)
+
+            mkdir -p "build/$name-$system"
+            cp -rpv "$result" "build/$name-$system/"
+          '';
+
+          installPhase = ''
+            mkdir -pv "$out"
+            cp -rpv build/$name-$system/app/* "$out/"
+
+            # Need to escape this shell variable which should not be
+            # iterpreted in Nix as a variable nor a shell variable when run
+            # but rather a literal string which happens to be a shell
+            # variable. Nuclear arms race of quoting and escaping special
+            # characters to make this work...
+            substituteInPlace "$out/bin/run" \
+              --replace "#!${pkgs.coreutils}/bin/env sh" "#!${pkgs.bash}/bin/sh" \
+              --replace "\''${0%/*}/../lib/" "$out/lib/" \
+              --replace "exec node" "exec ${pkgs.nodejs}/bin/node"
+          '';
+        };
     in
       with pkgs; {
         packages = {
-          api = coreDerivation { pkgName = "api"; };
-          api-trigger = coreDerivation { pkgName = "api-trigger"; };
-          api-ws-server = coreDerivation { pkgName = "api-ws-server"; };
-          api-exporter = coreDerivation { pkgName = "api-exporter"; };
-          api-cron = coreDerivation { pkgName = "api-cron"; };
+          api = tscDerivation {pkgName = "api";};
+          api-trigger = tscDerivation {pkgName = "api-trigger";};
+          api-ws-server = tscDerivation {pkgName = "api-ws-server";};
+          api-exporter = tscDerivation {pkgName = "api-exporter";};
+          api-cron = tscDerivation {pkgName = "api-cron";};
+          consent = nextDerivation {pkgName = "consent";};
         };
 
         devShells.default = mkShell {

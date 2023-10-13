@@ -356,7 +356,7 @@ def runnable_tsc_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunI
         ctx.attrs.preload_file,
         "--run-file",
         ctx.attrs.run_file,
-        cmd_args(out.as_output()),
+        out.as_output(),
     )
 
     ctx.actions.run(cmd, category = "runnable_tsc_build_bin", identifier = ctx.label.package + " " + bin_name)
@@ -409,11 +409,127 @@ def runnable_tsc_build_bin(
         **kwargs,
     )
 
+def next_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+    build_context = prepare_build_context(ctx)
+
+    out = ctx.actions.declare_output("dist", dir = True)
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.build_next_build[DefaultInfo].default_outputs,
+        "--package-dir",
+        cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
+        out.as_output()
+    )
+
+    ctx.actions.run(cmd, category = "next", identifier = "build " + ctx.label.package)
+
+    run_cmd = cmd_args(ctx.attrs.next[RunInfo], "start", out)
+
+    return [
+        DefaultInfo(default_output = out),
+        RunInfo(run_cmd),
+    ]
+
+def next_build(**kwargs):
+    next_bin = "next_bin"
+    if not rule_exists(next_bin):
+        npm_bin(
+            name = next_bin,
+            bin_name = "next",
+        )
+    _next_build(
+        next = ":{}".format(next_bin),
+        node_modules = ":node_modules", **kwargs)
+
+_next_build = rule(
+    impl = next_build_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "next": attrs.dep(
+            providers = [RunInfo],
+            doc = """Target which builds `next build`.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds `node_modules`.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def next_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+    out = ctx.actions.declare_output("app")
+
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+
+    cmd = cmd_args(
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.package_next_bin[DefaultInfo].default_outputs,
+        "--next-build",
+        ctx.attrs.next_build,
+        "--package-dir",
+        ctx.label.package,
+        out.as_output(),
+    )
+
+    ctx.actions.run(cmd, category = "next_build_bin", identifier = ctx.label.package)
+
+    run_cmd = cmd_args([out, "bin", "run"], delimiter = "/")
+
+    return [
+        DefaultInfo(default_output = out),
+        RunInfo(run_cmd),
+    ]
+
+def next_build_bin(**kwargs):
+    next_bin = "next_bin"
+    if not rule_exists(next_bin):
+        npm_bin(
+            name = next_bin,
+            bin_name = "next",
+        )
+    _next_build_bin(
+        next = ":{}".format(next_bin),
+        next_build = ":build",
+        **kwargs,
+    )
+
+_next_build_bin = rule(
+    impl = next_build_bin_impl,
+    attrs = {
+        "next_build": attrs.source(
+            doc = """Target which builds `next build`.""",
+        ),
+        "next": attrs.dep(
+            providers = [RunInfo],
+            doc = """Target which builds `next build`.""",
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
 
 BuildContext = record(
     workspace_root = field(Artifact),
 )
-
 
 def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
     workspace_root = ctx.actions.declare_output("__workspace", dir = True)
@@ -432,13 +548,6 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
     for src in ctx.attrs.srcs:
         cmd.add("--src")
         cmd.add(cmd_args(src, format = ctx.label.package + "={}"))
-    # needed when we have workspace level dependencies
-    # for (name, src) in ctx.attrs.prod_deps_srcs.items():
-    #     cmd.add("--src")
-    #     cmd.add(cmd_args(src, format = name + "={}"))
-    # for (name, src) in ctx.attrs.dev_deps_srcs.items():
-    #     cmd.add("--src")
-    #     cmd.add(cmd_args(src, format = name + "={}"))
     cmd.add(workspace_root.as_output())
 
     ctx.actions.run(cmd, category = "prepare_build_context", identifier = ctx.label.package)

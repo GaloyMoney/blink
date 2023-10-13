@@ -27,3 +27,13 @@ export_file(
   name = "package_runnable_tsc_build_bin.py",
   visibility = ["PUBLIC"],
 )
+
+export_file(
+  name = "build_next_build.py",
+  visibility = ["PUBLIC"],
+)
+
+export_file(
+  name = "package_next_bin.py",
+  visibility = ["PUBLIC"],
+)
