@@ -164,6 +164,11 @@ type ListLnInvoicesArgs = {
   createdAfter?: Date
 }
 
+type YieldLnInvoicesArgs = {
+  pubkey: Pubkey
+  createdAfter?: Date
+}
+
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
@@ -250,9 +255,9 @@ interface ILightningService {
     args: ListLnInvoicesArgs,
   ): Promise<LnInvoiceLookup[] | LightningServiceError>
 
-  listAllInvoices(args: {
-    pubkey: Pubkey
-  }): AsyncGenerator<LnInvoiceLookup> | LightningServiceError
+  yieldInvoices(
+    args: YieldLnInvoicesArgs,
+  ): AsyncGenerator<LnInvoiceLookup> | LightningServiceError
 
   deletePaymentByHash({
     paymentHash,

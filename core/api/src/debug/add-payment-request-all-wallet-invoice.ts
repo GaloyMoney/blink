@@ -20,7 +20,7 @@ import {
 import { WalletInvoice } from "@/services/mongoose/schema"
 
 const main = async () => {
-  asyncRunInSpan(
+  return asyncRunInSpan(
     "debug.addPaymentRequestAllWalletInvoices",
     {
       attributes: {
@@ -29,6 +29,15 @@ const main = async () => {
       },
     },
     async () => {
+      const initialNumberOfLnInvoicesMissingPaymentRequest =
+        await WalletInvoice.countDocuments({
+          paymentRequest: { $exists: false },
+        })
+
+      console.log(
+        `Number of wallet invoices missing payment request: ${initialNumberOfLnInvoicesMissingPaymentRequest}`,
+      )
+
       const lndService = LndService()
       if (lndService instanceof Error) return lndService
       const pubkeys = lndService.listActivePubkeys()
@@ -39,6 +48,20 @@ const main = async () => {
         })
         console.log(`Finished adding payment requests for pubkey: ${pubkey}`)
       }
+
+      const finalNumberOfLnInvoicesMissingPaymentRequest =
+        await WalletInvoice.countDocuments({
+          paymentRequest: { $exists: false },
+        })
+      console.log(
+        `Number of wallet invoices missing payment request: ${finalNumberOfLnInvoicesMissingPaymentRequest}`,
+      )
+      console.log(
+        `Number of invoices that were modified: ${
+          initialNumberOfLnInvoicesMissingPaymentRequest -
+          finalNumberOfLnInvoicesMissingPaymentRequest
+        }`,
+      )
     },
   )
 }
@@ -50,7 +73,7 @@ const addPaymentRequestAllWalletInvoicesForPubkey = wrapAsyncToRunInSpan({
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
 
-    const invoices = await lndService.listAllInvoices({ pubkey })
+    const invoices = await lndService.yieldInvoices({ pubkey })
 
     if (invoices instanceof Error) return invoices
 
@@ -117,5 +140,6 @@ setupMongoConnection(false)
     await Promise.all(lndsConnect.map((lndParams) => isUp(lndParams)))
     await main()
     if (mongoose) await mongoose.connection.close()
+    console.log("Done!")
   })
   .catch((err) => console.log(err))
