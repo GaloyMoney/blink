@@ -358,7 +358,7 @@ importers:
         version: 5.14.1(graphql@16.8.1)
       gt3-server-node-express-sdk:
         specifier: https://github.com/GaloyMoney/gt3-server-node-express-bypass#master
-        version: github.com/GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e
+        version: git@github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e
       i18n:
         specifier: ^0.15.1
         version: 0.15.1
@@ -604,8 +604,8 @@ importers:
         specifier: ^27.4.0
         version: 27.4.2(@typescript-eslint/eslint-plugin@6.7.4)(eslint@8.50.0)(jest@29.7.0)(typescript@5.2.2)
       eslint-plugin-prettier:
-        specifier: ^5.0.0
-        version: 5.0.0(@types/eslint@8.44.3)(eslint-config-prettier@9.0.0)(eslint@8.50.0)(prettier@3.0.3)
+        specifier: ^5.0.1
+        version: 5.0.1(@types/eslint@8.44.3)(eslint-config-prettier@9.0.0)(eslint@8.50.0)(prettier@3.0.3)
       graphql-subscriptions:
         specifier: ^2.0.0
         version: 2.0.0(graphql@16.8.1)
@@ -9331,8 +9331,8 @@ packages:
       semver: 6.3.1
     dev: true
 
-  /eslint-plugin-prettier@5.0.0(@types/eslint@8.44.3)(eslint-config-prettier@9.0.0)(eslint@8.50.0)(prettier@3.0.3):
-    resolution: {integrity: sha512-AgaZCVuYDXHUGxj/ZGu1u8H8CYgDY3iG6w5kUFw4AzMVXzB7VvbKgYR4nATIN+OvUrghMbiDLeimVjVY5ilq3w==}
+  /eslint-plugin-prettier@5.0.1(@types/eslint@8.44.3)(eslint-config-prettier@9.0.0)(eslint@8.50.0)(prettier@3.0.3):
+    resolution: {integrity: sha512-m3u5RnR56asrwV/lDC4GHorlW75DsFfmUcjfCYylTUs85dBRnB7VM6xG8eCMJdeDRnppzmxZVf1GEPJvl1JmNg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       '@types/eslint': '>=8.0.0'
@@ -17729,8 +17729,8 @@ packages:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: false
 
-  github.com/GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e:
-    resolution: {tarball: https://codeload.github.com/GaloyMoney/gt3-server-node-express-bypass/tar.gz/6559a1a39ef408de3aefa6321934c831edac001e}
+  git@github.com+GaloyMoney/gt3-server-node-express-bypass/6559a1a39ef408de3aefa6321934c831edac001e:
+    resolution: {commit: 6559a1a39ef408de3aefa6321934c831edac001e, repo: git@github.com:GaloyMoney/gt3-server-node-express-bypass.git, type: git}
     name: gt3-server-node-express-sdk
     version: 3.1.0
     dependencies:
