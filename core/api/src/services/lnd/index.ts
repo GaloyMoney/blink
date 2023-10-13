@@ -610,36 +610,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listInvoices = async ({
+  const listInvoices = async function* ({
     pubkey,
     createdAfter,
-  }: ListLnInvoicesArgs): Promise<LnInvoiceLookup[] | LightningServiceError> => {
-    try {
-      const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
-      if (lnd instanceof Error) return lnd
-
-      let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
-      let rawInvoices = [] as GetInvoicesResult["invoices"]
-      const created_after = createdAfter?.toISOString()
-      while (after !== false) {
-        const pagingArgs: {
-          token?: PagingStartToken | PagingContinueToken
-          created_after?: string
-        } = after ? { token: after, created_after } : { created_after }
-        const { invoices, next } = await getInvoices({ lnd, ...pagingArgs })
-        rawInvoices = [...rawInvoices, ...invoices]
-        after = (next as PagingContinueToken) || false
-      }
-      return rawInvoices.map(translateLnInvoiceLookup)
-    } catch (err) {
-      return handleCommonLightningServiceErrors(err)
-    }
-  }
-
-  const yieldInvoices = async function* ({
-    pubkey,
-    createdAfter,
-  }: YieldLnInvoicesArgs): AsyncGenerator<LnInvoiceLookup> | LightningServiceError {
+  }: ListLnInvoicesArgs): AsyncGenerator<LnInvoiceLookup> | LightningServiceError {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
@@ -915,7 +889,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
       listPendingPayments: listPaymentsFactory(getPendingPayments),
       listFailedPayments,
       listInvoices,
-      yieldInvoices,
       deletePaymentByHash,
       settleInvoice,
       cancelInvoice,

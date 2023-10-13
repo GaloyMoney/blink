@@ -281,10 +281,10 @@ const listenerExistingHodlInvoices = async ({
   const { delay } = DEFAULT_EXPIRATIONS[WalletCurrency.Btc]
   const createdAfter = new Date(new Date().getTime() - delay * 2 * 1000)
 
-  const invoices = await lndService.listInvoices({ pubkey, createdAfter })
+  const invoices = lndService.listInvoices({ pubkey, createdAfter })
   if (invoices instanceof Error) return invoices
 
-  for (const lnInvoice of invoices) {
+  for await (const lnInvoice of invoices) {
     if (lnInvoice.isSettled || lnInvoice.isCanceled) {
       continue
     }

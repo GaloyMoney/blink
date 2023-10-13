@@ -73,7 +73,7 @@ const addPaymentRequestAllWalletInvoicesForPubkey = wrapAsyncToRunInSpan({
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
 
-    const invoices = await lndService.yieldInvoices({ pubkey })
+    const invoices = lndService.listInvoices({ pubkey })
 
     if (invoices instanceof Error) return invoices
 

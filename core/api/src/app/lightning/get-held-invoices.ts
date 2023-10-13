@@ -13,10 +13,16 @@ export const getHeldInvoicesCount = async (): Promise<number | ApplicationError>
 
   const invoices = await Promise.all(
     offChainService.listActivePubkeys().map(async (pubkey) => {
-      const result = await offChainService.listInvoices({ pubkey, createdAfter })
-      if (result instanceof Error) {
+      const result: LnInvoiceLookup[] = []
+      const invoices = offChainService.listInvoices({ pubkey, createdAfter })
+
+      if (invoices instanceof Error) {
         recordExceptionInCurrentSpan({ error: result, level: ErrorLevel.Critical })
         return []
+      }
+
+      for await (const invoice of invoices) {
+        result.push(invoice)
       }
       return result
     }),
