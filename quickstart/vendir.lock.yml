@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add debug script to settle bankowner debt (#3300)...'
-      sha: b27192aacf9bdde511ac2db0bfc74e8b7fa454aa
+      commitTitle: 'chore: increase timeout for quickstart (#3349)...'
+      sha: 9082d1d700c5c6d41076ff8701e62a0b28388bf8
       tags:
-      - 0.14.15-2-gb27192aac
+      - 0.14.16-2-g9082d1d70
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add debug script to settle bankowner debt (#3300)...'
-      sha: b27192aacf9bdde511ac2db0bfc74e8b7fa454aa
+      commitTitle: 'chore: increase timeout for quickstart (#3349)...'
+      sha: 9082d1d700c5c6d41076ff8701e62a0b28388bf8
       tags:
-      - 0.14.15-2-gb27192aac
+      - 0.14.16-2-g9082d1d70
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add debug script to settle bankowner debt (#3300)...'
-      sha: b27192aacf9bdde511ac2db0bfc74e8b7fa454aa
+      commitTitle: 'chore: increase timeout for quickstart (#3349)...'
+      sha: 9082d1d700c5c6d41076ff8701e62a0b28388bf8
       tags:
-      - 0.14.15-2-gb27192aac
+      - 0.14.16-2-g9082d1d70
     path: ./
   path: ./graphql
 kind: LockConfig
