@@ -3,7 +3,7 @@
 module.exports = {
   experimental: {
     serverActions: true,
+    outputFileTracingRoot: require('path').join(__dirname, '../../'),
   },
   output: 'standalone',
-  outputFileTracingRoot: path.join(__dirname, '../../'),
 };

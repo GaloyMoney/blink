@@ -470,8 +470,7 @@ _next_build = rule(
 )
 
 def next_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    bin_name = "bin/run"
-    out = ctx.actions.declare_output(bin_name)
+    out = ctx.actions.declare_output("app")
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
 
@@ -480,14 +479,14 @@ def next_build_bin_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
         pnpm_toolchain.package_next_bin[DefaultInfo].default_outputs,
         "--next-build",
         ctx.attrs.next_build,
-        "--next",
-        ctx.attrs.next[RunInfo],
+        "--package-dir",
+        ctx.label.package,
         out.as_output(),
     )
 
-    ctx.actions.run(cmd, category = "next_build_bin", identifier = ctx.label.package + " " + bin_name)
+    ctx.actions.run(cmd, category = "next_build_bin", identifier = ctx.label.package)
 
-    run_cmd = cmd_args(out)
+    run_cmd = cmd_args([out, "bin", "run"], delimiter = "/")
 
     return [
         DefaultInfo(default_output = out),

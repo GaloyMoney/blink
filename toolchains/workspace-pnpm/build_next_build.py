@@ -34,4 +34,18 @@ if __name__ == "__main__":
         dirs_exist_ok=True,
         )
 
+    shutil.copytree(
+        os.path.join(args.package_dir,"public"),
+        os.path.join(args.out_path, ".next", "standalone", "public"),
+        symlinks=True,
+        dirs_exist_ok=True,
+        )
+
+    shutil.copytree(
+        os.path.join(args.package_dir,".next", "static"),
+        os.path.join(args.out_path, ".next", "standalone", "static"),
+        symlinks=True,
+        dirs_exist_ok=True,
+        )
+
     sys.exit(exit_code)

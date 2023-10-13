@@ -15,23 +15,31 @@ if __name__ == "__main__":
         help="Path to build",
     )
     parser.add_argument(
-        "--next",
-        help="Path to next",
+        "--package-dir",
+        help="Directory of the package",
     )
     parser.add_argument(
-        "bin",
+        "out",
         help="Path to output binary file",
     )
 
     args = parser.parse_args()
 
+    shutil.copytree(
+        os.path.join(args.next_build, ".next", "standalone"),
+        os.path.join(args.out, "lib"),
+        symlinks=True,
+        dirs_exist_ok=True,
+        )
+
+    js_path = '${0%/*}/../lib/' + args.package_dir + '/server.js'
     binary_content = [
         "#!/usr/bin/env sh",
-        f"exec {args.next} start \"{args.next_build}\" \"$@\"",
+        f"exec node \"{js_path}\" \"$@\"",
     ]
 
-    binary = args.bin
-    os.makedirs(os.path.dirname(args.bin), exist_ok=True)
+    binary = os.path.join(args.out, "bin", "run")
+    os.makedirs(os.path.dirname(binary), exist_ok=True)
     with open(binary, "w") as f:
         f.write("\n".join(binary_content) + "\n")
     os.chmod(
