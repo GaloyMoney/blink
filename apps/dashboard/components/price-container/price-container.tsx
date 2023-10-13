@@ -2,69 +2,78 @@ import React from "react";
 import Card from "@mui/joy/Card";
 import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
-import { Box, Chip } from "@mui/joy";
+import { Box } from "@mui/joy";
+
+interface WalletData {
+    id: string;
+    walletCurrency: string;
+    balance: number;
+    pendingIncomingBalance: number;
+}
 
 interface PriceContainerProps {
-  DefaultAccountId: string;
-  AccountDetails: any;
+    DefaultAccountId: string;
+    AccountDetails: WalletData[];
 }
 
 export default function PriceContainer({
-  DefaultAccountId,
-  AccountDetails,
+    DefaultAccountId,
+    AccountDetails,
 }: PriceContainerProps) {
-  console.log(DefaultAccountId);
+    console.log(DefaultAccountId);
 
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: "1em",
-          marginTop: "5em",
-          flexWrap: "wrap",
-        }}
-      >
-        {AccountDetails.map((walletData) => (
-          <Card
-            key={walletData.id}
+    return (
+        <Box
             sx={{
-              minWidth: "30em",
+                display: "flex",
+                flexDirection: "column",
             }}
-          >
-            <CardContent orientation="horizontal">
-              <CardContent>
-                <Typography
-                  level="body-md"
-                  sx={{
+        >
+            <Box
+                sx={{
                     display: "flex",
                     flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <p>{walletData.walletCurrency}</p>
-                  {DefaultAccountId === walletData.accountId ? (
-                    <>
-                      <Chip variant="outlined">Default Account</Chip>
-                    </>
-                  ) : null}
-                </Typography>
-                <Typography level="h2">$ {walletData.balance}</Typography>
-                <p>Pending Amount {walletData.pendingIncomingBalance}</p>
-              </CardContent>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
-    </Box>
-  );
+                    gap: "1em",
+                    flexWrap: "wrap",
+                }}
+            >
+                {AccountDetails.map((walletData) => (
+                    <Card
+                        key={walletData.id}
+                        sx={{
+                            minWidth: { xs: "100%", md: "48%" },
+                            boxShadow: "md",
+                            backgroundColor: "white",
+                            border: "0.124em solid orange",
+                        }}
+                    >
+                        <CardContent orientation="horizontal">
+                            <CardContent>
+                                <Typography
+                                    level="body-md"
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Typography>
+                                        {walletData.walletCurrency}
+                                    </Typography>
+                                </Typography>
+                                <Typography level="h1">
+                                    $ {walletData.balance}
+                                </Typography>
+                                <Typography level="body-sm">
+                                    Pending Amount{" "}
+                                    {walletData.pendingIncomingBalance}
+                                </Typography>
+                            </CardContent>
+                        </CardContent>
+                    </Card>
+                ))}
+            </Box>
+        </Box>
+    );
 }

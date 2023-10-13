@@ -42,7 +42,7 @@ export const authOptions = {
       return token;
     },
     async session({ session, token, user }) {
-      const userData = await fetchUserData(token.accessToken); 
+      const userData = await fetchUserData(token.accessToken);
       // Send properties to the client, like an access_token from a provider.
       session.sub = token.sub;
       session.accessToken = token.accessToken;

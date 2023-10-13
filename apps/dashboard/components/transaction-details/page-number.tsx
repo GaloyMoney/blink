@@ -1,0 +1,57 @@
+"use client";
+import * as React from "react";
+import Box from "@mui/joy/Box";
+import Button from "@mui/joy/Button";
+import { iconButtonClasses } from "@mui/joy/IconButton";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import { useRouter } from "next/navigation";
+function PageNumber({ pageInfo }: any) {
+    const router = useRouter();
+    const endCursor = pageInfo.endCursor;
+    const startCursor = pageInfo.startCursor;
+    const hasNextPage = pageInfo.hasNextPage;
+    const hasPreviousPage = pageInfo.hasPreviousPage;
+
+    return (
+        <Box
+            className="Pagination-laptopUp"
+            sx={{
+                pt: 2,
+                gap: 1,
+                [`& .${iconButtonClasses.root}`]: { borderRadius: "50%" },
+                display: "flex",
+            }}
+        >
+            <Button
+                size="sm"
+                // disabled={!hasPreviousPage} //FIXME  for now until pagination fix
+                variant="outlined"
+                color="neutral"
+                startDecorator={<KeyboardArrowLeftIcon />}
+                onClick={(e) => {
+                    router.push(`/transaction`);
+                }}
+            >
+                Previous
+            </Button>
+
+            <Button
+                size="sm"
+                disabled={!hasNextPage}
+                variant="outlined"
+                color="neutral"
+                endDecorator={<KeyboardArrowRightIcon />}
+                onClick={(e) => {
+                    router.push(
+                        `/transaction?cursor=${endCursor}&direction=next`
+                    );
+                }}
+            >
+                Next
+            </Button>
+        </Box>
+    );
+}
+
+export default PageNumber;
