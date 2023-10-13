@@ -144,7 +144,7 @@ export const sendPhoneCode = async (
       value: phone,
       remember: remember,
     }),
-    { secure: true }
+    { secure: true, sameSite: "lax" }
   );
 
   let params = new URLSearchParams({

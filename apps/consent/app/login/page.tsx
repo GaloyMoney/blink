@@ -18,10 +18,12 @@ import { LoginType, SubmitValue } from "../index.types";
 import { LoginEmailResponse } from "./email-login.types";
 import { headers } from "next/headers";
 import { cookies } from "next/headers";
+import { env } from "@/env";
+import axios from "axios";
 
 //  this page is for login via email
 interface LoginProps {
-  login_challenge: string;
+  login_challenge: string
 }
 
 async function submitForm(
@@ -46,7 +48,7 @@ async function submitForm(
     typeof login_challenge !== "string" ||
     typeof submitValue !== "string"
   ) {
-    throw new Error("Invalid Value");
+    throw new Error("Invalid Value")
   }
 
   if (submitValue === SubmitValue.denyAccess) {
@@ -69,19 +71,19 @@ async function submitForm(
   }
 
   if (!email || typeof email !== "string") {
-    console.error("Invalid Values for email");
-    throw new Error("Invalid Email Value");
+    console.error("Invalid Values for email")
+    throw new Error("Invalid Email Value")
   }
 
-  let emailCodeRequest;
+  let emailCodeRequest
   try {
     emailCodeRequest = await authApi.requestEmailCode(email, customHeaders);
   } catch (err) {
-    console.error("error while calling emailRequest Code", err);
+    console.error("error while calling emailRequest Code", err)
   }
 
   if (!emailCodeRequest) {
-    throw new Error("Request failed to get email code");
+    throw new Error("Request failed to get email code")
   }
 
   // TODO: manage error on ip rate limit
@@ -95,21 +97,21 @@ async function submitForm(
       value: email,
       remember,
     }),
-    { secure: true }
-  );
+    { secure: true, sameSite: "lax" },
+  )
 
   let params = new URLSearchParams({
     login_challenge,
-  });
-  redirect(`/login/verification?${params}`);
+  })
+  redirect(`/login/verification?${params}`)
 }
 
 const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
-  const { login_challenge } = searchParams;
-  let body: OAuth2LoginRequest;
+  const { login_challenge } = searchParams
+  let body: OAuth2LoginRequest
 
   if (!login_challenge) {
-    throw new Error("Invalid Request");
+    throw new Error("Invalid Request")
   }
 
   const { data } = await hydraClient.getOAuth2LoginRequest(
@@ -123,7 +125,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
     }
   );
 
-  body = data;
+  body = data
   if (body.skip) {
     let response: OAuth2RedirectTo;
     const { data } = await hydraClient.acceptOAuth2LoginRequest(
@@ -141,6 +143,34 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
     );
     response = data;
     redirect(String(response.redirect_to));
+  }
+
+  const useSecureCookies = env.DASHBOARD_URL.startsWith("https://")
+  const cookiePrefix = useSecureCookies ? "__Secure-" : ""
+  const cookieNameSession = `${cookiePrefix}next-auth.session-token`
+  const cookie = cookies().get(cookieNameSession)
+
+  if (cookie) {
+    const response = await axios(`${env.DASHBOARD_URL}/api/auth/session`, {
+      method: "GET",
+      headers: {
+        Cookie: cookies().toString(),
+      },
+    })
+    const userId = response?.data?.userData?.data?.me?.id
+    console.log(userId)
+
+    if (userId) {
+      const response2 = await hydraClient.acceptOAuth2LoginRequest({
+        loginChallenge: login_challenge,
+        acceptOAuth2LoginRequest: {
+          subject: userId,
+          remember: false,
+          acr: "2", // FIXME
+        },
+      })
+      redirect(response2.data.redirect_to)
+    }
   }
 
   return (
@@ -210,6 +240,6 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
         </FormComponent>
       </Card>
     </MainContent>
-  );
-};
-export default Login;
+  )
+}
+export default Login
