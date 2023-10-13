@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: increase timeout for quickstart (#3349)...'
-      sha: 9082d1d700c5c6d41076ff8701e62a0b28388bf8
+      commitTitle: 'fix: phone metadata null validation (#3323)'
+      sha: 6541f66c0397dca8fbcaafbe5023388d94a2d49c
       tags:
-      - 0.14.16-2-g9082d1d70
+      - 0.14.17-2-g6541f66c0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: increase timeout for quickstart (#3349)...'
-      sha: 9082d1d700c5c6d41076ff8701e62a0b28388bf8
+      commitTitle: 'fix: phone metadata null validation (#3323)'
+      sha: 6541f66c0397dca8fbcaafbe5023388d94a2d49c
       tags:
-      - 0.14.16-2-g9082d1d70
+      - 0.14.17-2-g6541f66c0
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: increase timeout for quickstart (#3349)...'
-      sha: 9082d1d700c5c6d41076ff8701e62a0b28388bf8
+      commitTitle: 'fix: phone metadata null validation (#3323)'
+      sha: 6541f66c0397dca8fbcaafbe5023388d94a2d49c
       tags:
-      - 0.14.16-2-g9082d1d70
+      - 0.14.18
     path: ./
   path: ./graphql
 kind: LockConfig
