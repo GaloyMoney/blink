@@ -36,7 +36,7 @@ export const IpFetcher = (): IIpFetcherService => {
       const { data } = await axios.request({
         url: `https://proxycheck.io/v2/${ip}`,
         params,
-        timeout: 500, // ms
+        timeout: 2000, // ms
       })
 
       const proxy = !!(data[ip] && data[ip].proxy && data[ip].proxy === "yes")
