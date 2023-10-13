@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: phone metadata null validation (#3323)'
-      sha: 6541f66c0397dca8fbcaafbe5023388d94a2d49c
+      commitTitle: 'build: add production build for apps/consent (#3350)...'
+      sha: fcc3df211422aeb7befc341a30bc05730a8a9040
       tags:
-      - 0.14.17-2-g6541f66c0
+      - 0.14.18-2-gfcc3df211
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: phone metadata null validation (#3323)'
-      sha: 6541f66c0397dca8fbcaafbe5023388d94a2d49c
+      commitTitle: 'build: add production build for apps/consent (#3350)...'
+      sha: fcc3df211422aeb7befc341a30bc05730a8a9040
       tags:
-      - 0.14.17-2-g6541f66c0
+      - 0.14.18-2-gfcc3df211
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: phone metadata null validation (#3323)'
-      sha: 6541f66c0397dca8fbcaafbe5023388d94a2d49c
+      commitTitle: 'build: add production build for apps/consent (#3350)...'
+      sha: fcc3df211422aeb7befc341a30bc05730a8a9040
       tags:
-      - 0.14.18
+      - 0.14.18-2-gfcc3df211
     path: ./
   path: ./graphql
 kind: LockConfig
