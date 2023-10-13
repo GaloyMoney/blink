@@ -610,27 +610,32 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listInvoices = async ({
+  const listInvoices = async function* ({
     pubkey,
     createdAfter,
-  }: ListLnInvoicesArgs): Promise<LnInvoiceLookup[] | LightningServiceError> => {
+  }: ListLnInvoicesArgs): AsyncGenerator<LnInvoiceLookup> | LightningServiceError {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
 
-      let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
-      let rawInvoices = [] as GetInvoicesResult["invoices"]
+      let paginationToken: PagingStartToken | PagingContinueToken | PagingStopToken =
+        undefined
       const created_after = createdAfter?.toISOString()
-      while (after !== false) {
+      while (paginationToken !== false) {
         const pagingArgs: {
           token?: PagingStartToken | PagingContinueToken
-          created_after?: string
-        } = after ? { token: after, created_after } : { created_after }
-        const { invoices, next } = await getInvoices({ lnd, ...pagingArgs })
-        rawInvoices = [...rawInvoices, ...invoices]
-        after = (next as PagingContinueToken) || false
+        } = paginationToken ? { token: paginationToken } : {}
+        const { invoices, next } = await getInvoices({
+          lnd,
+          ...pagingArgs,
+          created_after,
+        })
+
+        for (const invoice of invoices) {
+          yield translateLnInvoiceLookup(invoice)
+        }
+        paginationToken = (next as PagingContinueToken) || false
       }
-      return rawInvoices.map(translateLnInvoiceLookup)
     } catch (err) {
       return handleCommonLightningServiceErrors(err)
     }

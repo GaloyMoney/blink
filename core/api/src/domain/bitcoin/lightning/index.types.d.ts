@@ -248,7 +248,7 @@ interface ILightningService {
 
   listInvoices(
     args: ListLnInvoicesArgs,
-  ): Promise<LnInvoiceLookup[] | LightningServiceError>
+  ): AsyncGenerator<LnInvoiceLookup> | LightningServiceError
 
   deletePaymentByHash({
     paymentHash,
