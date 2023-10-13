@@ -8,12 +8,6 @@ import sys
 import os
 import shutil
 
-def compute_path(arg: str, cwd: str) -> str:
-    return os.path.relpath(
-        os.path.abspath(arg),
-        cwd,
-        )
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
