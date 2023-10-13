@@ -31,6 +31,14 @@ type RecordReceiveArgs = {
   }
 }
 
+type RecordBankownerReconciliationArgs = {
+  description: string
+  amount: {
+    usd: UsdPaymentAmount
+    btc: BtcPaymentAmount
+  }
+}
+
 type RecordIntraledgerArgs = {
   description: string
   senderWalletDescriptor: WalletDescriptor<WalletCurrency>

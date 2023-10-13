@@ -404,6 +404,7 @@ describe("Volumes", () => {
       ToHotWallet: () => testExternalTxSendWLE({ recordTx: recordColdStorageTxSend }),
       ToColdStorage: () =>
         testExternalTxSendWLE({ recordTx: recordColdStorageTxReceive }),
+      Reconciliation: () => true, // no volume check needed
     }
 
     // Setting up all 'it' tests for each txn type, to check volume is NOT affected
@@ -420,6 +421,7 @@ describe("Volumes", () => {
       RoutingRevenue: () => testExternalTxNLE({ recordTx: recordLnRoutingRevenue }),
       ToHotWallet: () => testExternalTxNLE({ recordTx: recordColdStorageTxSend }),
       ToColdStorage: () => testExternalTxNLE({ recordTx: recordColdStorageTxReceive }),
+      Reconciliation: () => true, // no volume check needed
       IntraLedgerSend: () =>
         testInternalTxSendNLE({
           recordTx: recordWalletIdIntraLedgerPayment,
