@@ -1,25 +1,25 @@
 import React from "react";
-import Card from "@mui/joy/Card";
-import CardContent from "@mui/joy/CardContent";
-import Typography from "@mui/joy/Typography";
 import { Box } from "@mui/joy";
-
-interface WalletData {
+import PriceContainerCard from "./price-card-container";
+export interface WalletData {
   id: string;
   walletCurrency: string;
   balance: number;
   pendingIncomingBalance: number;
 }
 
-interface PriceContainerProps {
+export interface PriceContainerProps {
   defaultAccountId: string;
   accountDetails: WalletData[];
 }
 
-export default function PriceContainer({
-  defaultAccountId,
-  accountDetails,
-}: PriceContainerProps) {
+const PriceContainer: React.FC<PriceContainerProps> = ({ accountDetails }) => {
+  const btcWallet = accountDetails.find(
+    (wallet) => wallet.walletCurrency === "BTC"
+  );
+  const usdWallet = accountDetails.find(
+    (wallet) => wallet.walletCurrency === "USD"
+  );
 
   return (
     <Box
@@ -36,38 +36,29 @@ export default function PriceContainer({
           flexWrap: "wrap",
         }}
       >
-        {accountDetails.map((walletData) => (
-          <Card
-            key={walletData.id}
-            sx={{
-              minWidth: { xs: "100%", md: "48%" },
-              boxShadow: "md",
-              backgroundColor: "white",
-              border: "0.124em solid orange",
-            }}
-          >
-            <CardContent orientation="horizontal">
-              <CardContent>
-                <Typography
-                  level="body-md"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography>{walletData.walletCurrency}</Typography>
-                </Typography>
-                <Typography level="h1">$ {walletData.balance}</Typography>
-                <Typography level="body-sm">
-                  Pending Amount {walletData.pendingIncomingBalance}
-                </Typography>
-              </CardContent>
-            </CardContent>
-          </Card>
-        ))}
+        {btcWallet && (
+          <PriceContainerCard
+            id={btcWallet.id}
+            walletCurrency={btcWallet.walletCurrency}
+            balance={btcWallet.balance}
+            pendingIncomingBalance={
+              btcWallet.pendingIncomingBalance / 100000000
+            }
+            currencySymbol="BTC"
+          />
+        )}
+        {usdWallet && (
+          <PriceContainerCard
+            id={usdWallet.id}
+            walletCurrency={usdWallet.walletCurrency}
+            balance={usdWallet.balance}
+            pendingIncomingBalance={usdWallet.pendingIncomingBalance / 100}
+            currencySymbol="USD"
+          />
+        )}
       </Box>
     </Box>
   );
-}
+};
+
+export default PriceContainer;

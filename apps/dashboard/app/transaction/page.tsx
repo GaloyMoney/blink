@@ -28,7 +28,7 @@ export default async function page({
   const isAuthed = session?.sub ?? false;
   const token = session?.accessToken;
   if (!isAuthed) {
-    redirect("/sign-in");
+    redirect("/api/auth/signin");
   }
 
   let response;
