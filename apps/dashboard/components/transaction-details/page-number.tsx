@@ -7,14 +7,18 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import { useRouter } from "next/navigation";
 interface PageInfo {
-  endCursor: string;
-  startCursor: string;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
+  readonly __typename?: "PageInfo";
+  readonly endCursor?: string | null;
+  readonly hasNextPage: boolean;
+  readonly hasPreviousPage: boolean;
+  readonly startCursor?: string | null;
 }
 
-function PageNumber({ pageInfo }: { pageInfo: PageInfo }) {
+function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
   const router = useRouter();
+  if (!pageInfo) {
+    return null;
+  }
   const endCursor = pageInfo.endCursor;
   const startCursor = pageInfo.startCursor;
   const hasNextPage = pageInfo.hasNextPage;

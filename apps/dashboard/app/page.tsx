@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { authOptions } from "./api/auth/[...nextauth]/route";
@@ -12,7 +11,7 @@ export default async function Home(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const isAuthed = session?.sub ?? false;
   if (!isAuthed) {
-    redirect("/sign-in");
+    redirect("/api/auth/signin");
   }
 
   const accountDetails = session.userData.data.me.defaultAccount.wallets;

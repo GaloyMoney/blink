@@ -7,7 +7,7 @@ import Chip from "@mui/joy/Chip";
 
 import { TransactionDetailsProps, colorMap } from "./index.types";
 
-import { getStatusColor } from "@/app/helper";
+import { getStatusColor } from "@/app/helpers";
 
 export default function CardComponent({ rows }: TransactionDetailsProps) {
   return (
