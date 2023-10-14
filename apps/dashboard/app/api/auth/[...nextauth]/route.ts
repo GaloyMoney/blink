@@ -1,7 +1,8 @@
-import { fetchUserData } from "@/services/graphql/queries/me-data";
-import NextAuth from "next-auth"
+import NextAuth from "next-auth";
 
-const type = "oauth" as const // as ProviderType
+import { fetchUserData } from "@/services/graphql/queries/me-data";
+
+const type = "oauth" as const; // as ProviderType
 
 export const authOptions = {
   // Configure one or more authentication providers
@@ -52,6 +53,6 @@ export const authOptions = {
   },
 };
 
-const handler = NextAuth(authOptions)
+const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };
