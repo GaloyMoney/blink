@@ -126,8 +126,8 @@ gql_admin_file() {
   variables=$(
     jq -n \
     --arg level "TWO" \
-    --arg uid "$id" \
-    '{input: {level: $level, uid: $uid}}'
+    --arg accountId "$id" \
+    '{input: {level: $level, accountId: $accountId}}'
   )
 
   exec_admin_graphql "$admin_token" 'account-status-level-update' "$variables"
@@ -139,9 +139,9 @@ gql_admin_file() {
   variables=$(
     jq -n \
     --arg account_status "LOCKED" \
-    --arg uid "$id" \
+    --arg accountId "$id" \
     --arg comment "Test lock of the account" \
-    '{input: {status: $account_status, uid: $uid, comment: $comment}}'
+    '{input: {status: $account_status, accountId: $accountId, comment: $comment}}'
   )
 
   exec_admin_graphql "$admin_token" 'account-update-status' "$variables"

@@ -4,12 +4,13 @@ import AccountDetailPayload from "@/graphql/admin/types/payload/account-detail"
 import AccountStatus from "@/graphql/admin/types/scalar/account-status"
 import { Accounts } from "@/app"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import AccountId from "@/graphql/shared/types/scalar/account-id"
 
 const AccountUpdateStatusInput = GT.Input({
   name: "AccountUpdateStatusInput",
   fields: () => ({
-    uid: {
-      type: GT.NonNullID,
+    accountId: {
+      type: GT.NonNull(AccountId),
     },
     status: {
       type: GT.NonNull(AccountStatus),
@@ -25,7 +26,7 @@ const AccountUpdateStatusMutation = GT.Field<
   GraphQLAdminContext,
   {
     input: {
-      uid: string
+      accountId: AccountId | Error
       status: AccountStatus | Error
       comment: string
     }
@@ -39,12 +40,13 @@ const AccountUpdateStatusMutation = GT.Field<
     input: { type: GT.NonNull(AccountUpdateStatusInput) },
   },
   resolve: async (_, args, { privilegedClientId }) => {
-    const { uid, status, comment } = args.input
+    const { accountId, status, comment } = args.input
 
     if (status instanceof Error) return { errors: [{ message: status.message }] }
+    if (accountId instanceof Error) return { errors: [{ message: accountId.message }] }
 
     const account = await Accounts.updateAccountStatus({
-      accountId: uid,
+      accountId,
       status,
       updatedByPrivilegedClientId: privilegedClientId,
       comment,
