@@ -15,16 +15,16 @@ export default async function Home(req: NextRequest) {
     redirect("/sign-in");
   }
 
-  const AccountDetails = session.userData.data.me.defaultAccount.wallets;
-  const DefaultAccountId = session.userData.data.me.defaultAccount.id;
+  const accountDetails = session.userData.data.me.defaultAccount.wallets;
+  const defaultAccountId = session.userData.data.me.defaultAccount.id;
 
   return (
     <main>
       {isAuthed && (
         <ContentContainer>
           <PriceContainer
-            DefaultAccountId={DefaultAccountId}
-            AccountDetails={AccountDetails}
+            defaultAccountId={defaultAccountId}
+            accountDetails={accountDetails}
           ></PriceContainer>
         </ContentContainer>
       )}

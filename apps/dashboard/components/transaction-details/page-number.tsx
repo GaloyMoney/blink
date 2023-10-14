@@ -6,7 +6,14 @@ import { iconButtonClasses } from "@mui/joy/IconButton";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import { useRouter } from "next/navigation";
-function PageNumber({ pageInfo }: any) {
+interface PageInfo {
+  endCursor: string;
+  startCursor: string;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+function PageNumber({ pageInfo }: { pageInfo: PageInfo }) {
   const router = useRouter();
   const endCursor = pageInfo.endCursor;
   const startCursor = pageInfo.startCursor;

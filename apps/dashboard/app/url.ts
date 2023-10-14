@@ -12,7 +12,6 @@ export function getTitle(path: string): string {
   const urlInfo = URLS[path];
   if (urlInfo) {
     return urlInfo.title;
-  } else {
-    return "Path not found";
   }
+  return "Path not found";
 }

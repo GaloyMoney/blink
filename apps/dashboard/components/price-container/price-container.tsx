@@ -12,15 +12,14 @@ interface WalletData {
 }
 
 interface PriceContainerProps {
-  DefaultAccountId: string;
-  AccountDetails: WalletData[];
+  defaultAccountId: string;
+  accountDetails: WalletData[];
 }
 
 export default function PriceContainer({
-  DefaultAccountId,
-  AccountDetails,
+  defaultAccountId,
+  accountDetails,
 }: PriceContainerProps) {
-  console.log(DefaultAccountId);
 
   return (
     <Box
@@ -37,7 +36,7 @@ export default function PriceContainer({
           flexWrap: "wrap",
         }}
       >
-        {AccountDetails.map((walletData) => (
+        {accountDetails.map((walletData) => (
           <Card
             key={walletData.id}
             sx={{

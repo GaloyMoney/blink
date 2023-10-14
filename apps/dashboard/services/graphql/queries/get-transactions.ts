@@ -143,7 +143,7 @@ gql`
 
 export async function fetchFirstTransactions(
   token: string,
-  first: number = 10,
+  first: number = 10
 ) {
   const client = apollo(token).getClient();
 
@@ -153,13 +153,12 @@ export async function fetchFirstTransactions(
       variables: { first },
     });
     return data.data.me?.defaultAccount.transactions;
-  } catch (e) {
-    console.error("error", e);
-    if (e instanceof Error) {
-      throw new Error(e.message);
-    } else {
-      throw new Error("Unknown error");
+  } catch (err) {
+    console.error("error in getting Transaction details", err);
+    if (err instanceof Error) {
+      throw new Error(err.message);
     }
+    throw new Error("Unknown error");
   }
 }
 
@@ -167,7 +166,7 @@ export async function fetchPaginatedTransactions(
   token: string,
   direction: "next" | "previous",
   cursor: string | null = null,
-  first: number = 10,
+  first: number = 10
 ) {
   const client = apollo(token).getClient();
 
@@ -195,8 +194,7 @@ export async function fetchPaginatedTransactions(
     console.error("error", e);
     if (e instanceof Error) {
       throw new Error(e.message);
-    } else {
-      throw new Error("Unknown error");
     }
+    throw new Error("Unknown error");
   }
 }
