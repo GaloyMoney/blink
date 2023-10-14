@@ -1,14 +1,9 @@
 import SessionProvider from "@/components/session-provider";
-
 import "./globals.css";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { Inter_Tight } from "next/font/google";
-
-import { redirect } from "next/navigation";
-
 import { authOptions } from "./api/auth/[...nextauth]/route";
-
 import Header from "@/components/header";
 import Sidebar from "@/components/side-bar";
 

@@ -11,7 +11,6 @@ export const apollo = (token: string) =>
       cache: new InMemoryCache(),
       link: new HttpLink({
         headers: {
-          // authorization: `Bearer ${token}`,
           ["Oauth2-Token"]: token,
         },
         uri: coreUrl,
