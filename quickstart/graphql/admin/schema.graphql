@@ -21,14 +21,14 @@ enum AccountStatus {
 }
 
 input AccountUpdateLevelInput {
+  accountId: AccountId!
   level: AccountLevel!
-  uid: ID!
 }
 
 input AccountUpdateStatusInput {
+  accountId: AccountId!
   comment: String
   status: AccountStatus!
-  uid: ID!
 }
 
 input AdminPushNotificationSendInput {

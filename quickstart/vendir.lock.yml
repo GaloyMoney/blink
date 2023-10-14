@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: proxycheck timeout (#3351)'
-      sha: 4ff3d32ba9f8b6592462b419714f455478fb5a3b
+      commitTitle: 'chore!: remove some legacy uid argument in admin api (#3353)...'
+      sha: a1867f9ad6dd3ec047d2804a46b8a3cfc5deb680
       tags:
-      - 0.14.19-2-g4ff3d32ba
+      - 0.14.19-4-ga1867f9ad
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: proxycheck timeout (#3351)'
-      sha: 4ff3d32ba9f8b6592462b419714f455478fb5a3b
+      commitTitle: 'chore!: remove some legacy uid argument in admin api (#3353)...'
+      sha: a1867f9ad6dd3ec047d2804a46b8a3cfc5deb680
       tags:
-      - 0.14.19-2-g4ff3d32ba
+      - 0.14.19-4-ga1867f9ad
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: proxycheck timeout (#3351)'
-      sha: 4ff3d32ba9f8b6592462b419714f455478fb5a3b
+      commitTitle: 'chore!: remove some legacy uid argument in admin api (#3353)...'
+      sha: a1867f9ad6dd3ec047d2804a46b8a3cfc5deb680
       tags:
-      - 0.14.19-2-g4ff3d32ba
+      - 0.14.19-4-ga1867f9ad
     path: ./
   path: ./graphql
 kind: LockConfig
