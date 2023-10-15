@@ -31,6 +31,13 @@ filegroup(
 )
 
 filegroup(
+    name = "test",
+    srcs = glob([
+        "test/**",
+    ]),
+)
+
+filegroup(
   name = "locales",
   srcs = glob([
     "src/config/locales/*.json"
@@ -66,5 +73,5 @@ runnable_tsc_build_bin(
 eslint(
     name = "check-lint-typescript",
     tsconfig = "tsconfig-build.json",
-    srcs = [":src"] + glob([".eslint*"]),
+    srcs = [":src"] + [":test"] + glob([".eslint*"]),
 )

@@ -632,7 +632,7 @@ _eslint = rule(
         ),
         "directories": attrs.list(
             attrs.string(),
-            default = ["src", "test"],
+            default = [],
             doc = """Directories under which to check.""",
         ),
         "extensions": attrs.list(
@@ -679,7 +679,7 @@ _eslint = rule(
 
 def eslint(
         eslint_bin = "eslint",
-        directories = ["src"],
+        directories = ["src", "test"],
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
