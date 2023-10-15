@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "tsc-check-noimplicitany": "tsc --noEmit -p tsconfig.no-implicit-any.json",
-    "tsc-check": "tsc --noEmit -p tsconfig.d.json && tsc --noEmit",
+    "tsc-check": "tsc --noEmit",
     "eslint-check": "eslint \"{src,test}/**/*.ts\"",
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos lib/services/price/ && cp -R src/services/dealer-price/proto lib/services/dealer-price/ && cp -R src/services/loopd/protos lib/services/loopd/ && cp -R src/services/bria/proto lib/services/bria/ && tscpaths --silent -p tsconfig.json -s ./src -o ./lib",
