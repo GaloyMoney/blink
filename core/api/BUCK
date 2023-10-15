@@ -5,6 +5,7 @@ load(
   "runnable_tsc_build",
   "runnable_tsc_build_bin",
   "eslint",
+  "typescript_check",
 )
 
 export_file(
@@ -73,4 +74,9 @@ runnable_tsc_build_bin(
 eslint(
     name = "check-lint-typescript",
     srcs = [":src"] + [":test"] + glob([".eslint*"]),
+)
+
+typescript_check(
+    name = "check-type",
+    srcs = [":src"] + [":test"],
 )
