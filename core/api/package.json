@@ -3,7 +3,7 @@
   "scripts": {
     "tsc-check-noimplicitany": "tsc --noEmit -p tsconfig.no-implicit-any.json",
     "tsc-check": "tsc --noEmit",
-    "madge-check": "yarn madge --circular lib/servers/graphql-main-server.js",
+    "madge-check": "madge --circular lib/servers/graphql-main-server.js",
     "eslint-check": "eslint src test --ext .ts",
     "eslint-fix": "eslint src test --ext .ts --fix",
     "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos lib/services/price/ && cp -R src/services/dealer-price/proto lib/services/dealer-price/ && cp -R src/services/loopd/protos lib/services/loopd/ && cp -R src/services/bria/proto lib/services/bria/ && tscpaths --silent -p tsconfig.json -s ./src -o ./lib",

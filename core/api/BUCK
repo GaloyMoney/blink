@@ -7,6 +7,7 @@ load(
   "eslint",
   "typescript_check",
   "yaml_check",
+  "madge_check",
 )
 
 export_file(
@@ -90,4 +91,9 @@ yaml_check(
         "*.yml",
         "*.yaml",
     ]),
+)
+
+madge_check(
+    name = "check-circular-dependencies",
+    target_file = "servers/graphql-main-server.js",
 )

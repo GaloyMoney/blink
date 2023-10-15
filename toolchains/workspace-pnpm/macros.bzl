@@ -581,6 +581,45 @@ def _npm_test_impl(
         cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
         "--bin",
         cmd_args(program_run_info),
+        "--",
+        program_args,
+    ])
+
+    args_file = ctx.actions.write("args.txt", run_cmd_args)
+
+    return inject_test_run_info(
+        ctx,
+        ExternalRunnerTestInfo(
+            type = test_info_type,
+            command = [run_cmd_args],
+        ),
+    ) + [
+        DefaultInfo(default_output = args_file),
+    ]
+
+def _npm_build_and_test_impl(
+    ctx: AnalysisContext,
+    program_run_info: RunInfo,
+    program_args: cmd_args,
+    test_info_type: str,
+) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+    runnable_build = ctx.attrs.runnable_tsc_build[RunnableBuildInfo]
+
+    run_cmd_args = cmd_args([
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.run_in_dir[DefaultInfo].default_outputs,
+        "--cwd",
+        runnable_build.build,
+        "--package-dir",
+        runnable_build.build_package_dir,
+        "--bin",
+        cmd_args(program_run_info),
+        "--",
         program_args,
     ])
 
@@ -811,6 +850,75 @@ def yaml_check(
     _yaml_check(
         prettier = ":{}".format(prettier_bin),
         node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
+
+def madge_check_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    args = cmd_args()
+    args.add("--circular")
+    args.add(ctx.attrs.target_file + "::absdistpath")
+
+    return _npm_build_and_test_impl(
+        ctx,
+        ctx.attrs.madge[RunInfo],
+        args,
+        "madge",
+    )
+
+_madge_check = rule(
+    impl = madge_check_impl,
+    attrs = {
+        "madge": attrs.dep(
+            providers = [RunInfo],
+            doc = """madge dependency.""",
+        ),
+        "target_file": attrs.option(
+            attrs.string(),
+            default = None,
+            doc = """File name and path for circular check (default: None).""",
+        ),
+        "runnable_tsc_build": attrs.dep(
+            doc = """Target which builds `runnable build`.""",
+            providers = [RunnableBuildInfo]
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def madge_check(
+        node_modules = ":node_modules",
+        runnable_tsc_build = ":runnable_build",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    madge_bin = "madge_bin"
+    if not rule_exists(madge_bin):
+        npm_bin(
+            name = madge_bin,
+            bin_name = "madge",
+        )
+
+    _madge_check(
+        madge = ":{}".format(madge_bin),
+        node_modules = node_modules,
+        runnable_tsc_build = runnable_tsc_build,
         visibility = visibility,
         **kwargs,
     )
