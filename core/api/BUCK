@@ -6,6 +6,7 @@ load(
   "runnable_tsc_build_bin",
   "eslint",
   "typescript_check",
+  "yaml_check",
 )
 
 export_file(
@@ -79,4 +80,14 @@ eslint(
 typescript_check(
     name = "check-type",
     srcs = [":src"] + [":test"],
+)
+
+yaml_check(
+    name = "check-yaml",
+    srcs = glob([
+        ".prettier*",
+        "prettier*",
+        "*.yml",
+        "*.yaml",
+    ]),
 )
