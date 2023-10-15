@@ -10,14 +10,14 @@ export interface WalletData {
 
 export interface PriceContainerProps {
   defaultAccountId: string;
-  accountDetails: WalletData[];
+  walletDetails: WalletData[];
 }
 
-const PriceContainer: React.FC<PriceContainerProps> = ({ accountDetails }) => {
-  const btcWallet = accountDetails.find(
+const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
+  const btcWallet = walletDetails.find(
     (wallet) => wallet.walletCurrency === "BTC"
   );
-  const usdWallet = accountDetails.find(
+  const usdWallet = walletDetails.find(
     (wallet) => wallet.walletCurrency === "USD"
   );
 
@@ -40,7 +40,7 @@ const PriceContainer: React.FC<PriceContainerProps> = ({ accountDetails }) => {
           <PriceContainerCard
             id={btcWallet.id}
             walletCurrency={btcWallet.walletCurrency}
-            balance={btcWallet.balance}
+            balance={btcWallet.balance / 100000000}
             pendingIncomingBalance={
               btcWallet.pendingIncomingBalance / 100000000
             }
@@ -51,7 +51,7 @@ const PriceContainer: React.FC<PriceContainerProps> = ({ accountDetails }) => {
           <PriceContainerCard
             id={usdWallet.id}
             walletCurrency={usdWallet.walletCurrency}
-            balance={usdWallet.balance}
+            balance={usdWallet.balance / 100}
             pendingIncomingBalance={usdWallet.pendingIncomingBalance / 100}
             currencySymbol="USD"
           />

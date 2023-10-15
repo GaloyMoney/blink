@@ -11,11 +11,8 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import { Typography } from "@mui/joy";
 import { usePathname } from "next/navigation";
-
 import Logo from "./logo";
 import { closeSidebar } from "./utils";
-
-import { getTitle } from "@/app/url";
 
 export default function Sidebar() {
   const path = usePathname();
@@ -43,7 +40,6 @@ export default function Sidebar() {
         gap: 2,
         borderRight: "1px solid",
         borderColor: "divider",
-        backgroundColor: "white",
       }}
     >
       <GlobalStyles
@@ -102,7 +98,9 @@ export default function Sidebar() {
         </Box>
         <Divider
           sx={{
-            marginBottom: "1em",
+            width: "85%",
+            alignItems: "center",
+            margin: "0 auto",
           }}
         />
         <List
@@ -125,6 +123,15 @@ export default function Sidebar() {
                   "&:hover": {
                     backgroundColor: "rgba(0, 0, 0, 0.08)",
                   },
+                  "&::before": {
+                    content: isCurrentPath("/") ? '""' : "none",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "4px",
+                    height: "100%",
+                    backgroundColor: "var(--primaryColor)",
+                  },
                 }}
               >
                 <HomeOutlinedIcon />
@@ -132,23 +139,32 @@ export default function Sidebar() {
               </ListItemButton>
             </ListItem>
           </Link>
-          <Link href={`/transaction`}>
+          <Link href={`/transactions`}>
             <ListItem>
               <ListItemButton
                 onClick={() => {
                   closeSidebar();
                 }}
                 sx={{
-                  backgroundColor: isCurrentPath("/transaction")
+                  backgroundColor: isCurrentPath("/transactions")
                     ? "rgba(0, 0, 0, 0.08)"
                     : "transparent",
                   "&:hover": {
                     backgroundColor: "rgba(0, 0, 0, 0.08)",
                   },
+                  "&::before": {
+                    content: isCurrentPath("/transactions") ? '""' : "none",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "4px",
+                    height: "100%",
+                    backgroundColor: "var(--primaryColor)",
+                  },
                 }}
               >
                 <ReceiptLongIcon />
-                <Typography level="title-md">Transaction</Typography>
+                <Typography level="title-md">Transactions</Typography>
               </ListItemButton>
             </ListItem>
           </Link>

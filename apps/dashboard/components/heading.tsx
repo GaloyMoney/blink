@@ -2,8 +2,16 @@
 import React from "react";
 import { Box, Typography } from "@mui/joy";
 import { usePathname } from "next/navigation";
+import { URLS } from "@/app/url";
 
-import { getTitle } from "@/app/url";
+export function getTitle(path: string): string {
+  const urlInfo = URLS[path];
+  if (urlInfo) {
+    return urlInfo.title;
+  }
+  return "Path not found";
+}
+
 
 const Heading = () => {
   const pathName = usePathname();

@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 
 import { fetchUserData } from "@/services/graphql/queries/me-data";
+import { env } from "@/env";
 
 const type = "oauth" as const; // as ProviderType
 
@@ -9,9 +10,9 @@ export const authOptions = {
   providers: [
     {
       id: "blink",
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      wellKnown: "http://127.0.0.1:4444/.well-known/openid-configuration",
+      clientId: env.CLIENT_ID,
+      clientSecret: env.CLIENT_SECRET,
+      wellKnown: env.WELL_KNOWN_OPENID_URL,
       useSecureCookies: false,
       authorization: {
         params: { scope: "offline transactions:read payments:send" },
@@ -30,7 +31,7 @@ export const authOptions = {
     // ...add more providers here
   ],
   debug: true,
-  secret: process.env.NEXTAUTH_SECRET as string,
+  secret: env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token and or the user id to the token right after signin

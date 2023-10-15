@@ -6,11 +6,20 @@ import Sheet from "@mui/joy/Sheet";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import { Avatar, Box, Menu, MenuItem, Dropdown, MenuButton } from "@mui/joy";
-import { useSession } from "next-auth/react";
+import {
+  Avatar,
+  Box,
+  Menu,
+  MenuItem,
+  Dropdown,
+  MenuButton,
+  Typography,
+} from "@mui/joy";
+import { signOut, useSession } from "next-auth/react";
 
-import Heading from "./Heading";
+import Heading from "./heading";
 import { toggleSidebar } from "./utils";
+import ColorSchemeToggle from "./color-toggle";
 
 export default function Header() {
   const session = useSession();
@@ -37,7 +46,6 @@ export default function Header() {
         gap: 1,
         borderBottom: "2px solid",
         borderColor: "background.level1",
-        backgroundColor: "white",
       }}
     >
       <GlobalStyles
@@ -57,7 +65,6 @@ export default function Header() {
         <IconButton
           onClick={() => toggleSidebar()}
           variant="outlined"
-          color="neutral"
           size="sm"
           sx={{ display: { xs: "block", md: "none" } }}
         >
@@ -79,6 +86,7 @@ export default function Header() {
         <Menu
           sx={{
             zIndex: 9999,
+            gap: "0.5em",
           }}
           placement="bottom-end"
         >
@@ -86,21 +94,47 @@ export default function Header() {
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: "1em",
               alignItems: "flex-start",
             }}
           >
-            <span>User Id</span>
-            <span> {userData?.id}</span>
+            <Typography
+              sx={{
+                fontWeight: "500",
+              }}
+            >
+              User ID
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "0.8em",
+                color: "text.secondary",
+              }}
+            >
+              {" "}
+              {userData?.id}
+            </Typography>
           </MenuItem>
           <MenuItem
+            onClick={() => signOut()}
             sx={{
               display: "flex",
               justifyContent: "space-between",
+              fontWeight: "500",
             }}
           >
             Logout
             <LogoutOutlinedIcon></LogoutOutlinedIcon>
+          </MenuItem>
+
+          <MenuItem
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontWeight: "500",
+            }}
+          >
+            Dark Mode
+            <ColorSchemeToggle></ColorSchemeToggle>
           </MenuItem>
         </Menu>
       </Dropdown>

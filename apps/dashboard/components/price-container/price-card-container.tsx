@@ -24,8 +24,6 @@ const PriceContainerCard: React.FC<PriceContainerCardProps> = ({
     sx={{
       minWidth: { xs: "100%", md: "48%" },
       boxShadow: "md",
-      backgroundColor: "white",
-      border: "0.124em solid orange",
     }}
   >
     <CardContent orientation="horizontal">
@@ -51,12 +49,12 @@ const PriceContainerCard: React.FC<PriceContainerCardProps> = ({
           sx={{
             display: "flex",
             flexDirection: "row",
-            alignItems:"center",
+            alignItems: "center",
             gap: "0.5em",
             justifyContent: "space-between",
-            backgroundColor: "var(--lighterGrey)",
             padding: "0.4em",
             borderRadius: "0.5em",
+            backgroundColor: "neutral.solidDisabledBg",
           }}
         >
           <Typography
@@ -72,7 +70,7 @@ const PriceContainerCard: React.FC<PriceContainerCardProps> = ({
           </Typography>
           <Typography
             sx={{
-              fontWeight: "700",
+              fontWeight: "560",
             }}
             level="body-sm"
           >
