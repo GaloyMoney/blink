@@ -753,3 +753,66 @@ def typescript_check(
         visibility = visibility,
         **kwargs,
     )
+
+def yaml_check_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    args = cmd_args()
+    args.add("--check")
+    args.add("**/*.(yaml|yml)")
+
+    return _npm_test_impl(
+        ctx,
+        ctx.attrs.prettier[RunInfo],
+        args,
+        "prettier",
+    )
+
+_yaml_check = rule(
+    impl = yaml_check_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "prettier": attrs.dep(
+            providers = [RunInfo],
+            doc = """prettier dependency.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def yaml_check(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    prettier_bin = "prettier_bin"
+    if not rule_exists(prettier_bin):
+        npm_bin(
+            name = prettier_bin,
+            bin_name = "prettier",
+        )
+
+    _yaml_check(
+        prettier = ":{}".format(prettier_bin),
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
