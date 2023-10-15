@@ -711,3 +711,71 @@ def eslint(
         visibility = visibility,
         **kwargs,
     )
+
+def typescript_check_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    args = cmd_args()
+    args.add("--noEmit")
+    args.add(ctx.attrs.args)
+
+    return _npm_test_impl(
+        ctx,
+        ctx.attrs.tsc[RunInfo],
+        args,
+        "tsc",
+    )
+
+_typescript_check = rule(
+    impl = typescript_check_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "tsc": attrs.dep(
+            providers = [RunInfo],
+            doc = """tsc dependency.""",
+        ),
+        "args": attrs.list(
+            attrs.string(),
+            default = [],
+            doc = """Extra arguments passed to tsc.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def typescript_check(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    tsc_bin = "tsc_bin"
+    if not rule_exists(tsc_bin):
+        npm_bin(
+            name = tsc_bin,
+            bin_name = "tsc",
+        )
+
+    _typescript_check(
+        tsc = ":{}".format(tsc_bin),
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )

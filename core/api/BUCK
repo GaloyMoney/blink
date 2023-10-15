@@ -5,6 +5,7 @@ load(
   "runnable_tsc_build",
   "runnable_tsc_build_bin",
   "eslint",
+  "typescript_check",
 )
 
 export_file(
@@ -74,4 +75,9 @@ eslint(
     name = "check-lint-typescript",
     tsconfig = "tsconfig-build.json",
     srcs = [":src"] + [":test"] + glob([".eslint*"]),
+)
+
+typescript_check(
+    name = "check-type",
+    srcs = [":src"] + [":test"],
 )

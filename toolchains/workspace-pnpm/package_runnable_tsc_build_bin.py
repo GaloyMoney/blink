@@ -5,9 +5,7 @@ production node_modules.
 """
 import argparse
 import os
-import shutil
 import stat
-import tempfile
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
