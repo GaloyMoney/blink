@@ -646,7 +646,7 @@ _eslint = rule(
             doc = """Extra arguments passed to eslint.""",
         ),
         "warnings": attrs.bool(
-            default = False,
+            default = True,
             doc = """If `False`, then exit non-zero (treat warnings as errors).""",
         ),
         "node_modules": attrs.source(
