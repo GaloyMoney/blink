@@ -1,9 +1,6 @@
 import { getServerSession } from "next-auth";
 import React from "react";
-import { redirect } from "next/navigation";
-
 import { authOptions } from "../api/auth/[...nextauth]/route";
-
 import TransactionDetails from "@/components/transaction-details/transaction-details";
 import ContentContainer from "@/components/content-container";
 import {
@@ -25,14 +22,9 @@ export default async function page({
 }) {
   const { cursor, direction } = searchParams;
   const session = await getServerSession(authOptions);
-  const isAuthed = session?.sub ?? false;
   const token = session?.accessToken;
-  if (!isAuthed) {
-    redirect("/api/auth/signin");
-  }
 
   let response;
-
   if (cursor && direction) {
     response = await fetchPaginatedTransactions(token, direction, cursor, 10);
   } else {
@@ -40,9 +32,7 @@ export default async function page({
   }
 
   const rows = response?.edges?.map((edge) => ({ node: edge.node })) ?? [];
-
   const pageInfo = response?.pageInfo;
-
   return (
     <ContentContainer>
       {rows.length > 0 ? (

@@ -1,13 +1,11 @@
 import SessionProvider from "@/components/session-provider";
 import "./globals.css";
 import type { Metadata } from "next";
-import { getServerSession } from "next-auth";
-import { Inter_Tight } from "next/font/google";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import Header from "@/components/header";
 import Sidebar from "@/components/side-bar";
-
-const inter = Inter_Tight({ subsets: ["latin"] });
+import { getServerSession } from "next-auth";
+import ThemeRegistry from "@/theme/theme-registry";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,20 +21,22 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <SessionProvider session={session}>
-          {session?.sub ? (
-            <div style={{ display: "flex", minHeight: "100vh" }}>
-              <Sidebar />
-              <div style={{ flexGrow: 1, overflow: "auto" }}>
-                <Header />
-                {children}
+      <body>
+        <ThemeRegistry>
+          <SessionProvider session={session}>
+            {session?.sub ? (
+              <div style={{ display: "flex", minHeight: "100vh" }}>
+                <Sidebar />
+                <div style={{ flexGrow: 1, overflow: "auto" }}>
+                  <Header />
+                  {children}
+                </div>
               </div>
-            </div>
-          ) : (
-            <>{children}</>
-          )}
-        </SessionProvider>
+            ) : (
+              <>{children}</>
+            )}
+          </SessionProvider>
+        </ThemeRegistry>
       </body>
     </html>
   );

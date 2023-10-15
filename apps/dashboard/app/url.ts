@@ -3,15 +3,8 @@ interface UrlInfo {
   protected: boolean;
 }
 
-const URLS: Record<string, UrlInfo> = {
+export const URLS: Record<string, UrlInfo> = {
   "/": { title: "Home", protected: true },
-  "/transaction": { title: "Transaction", protected: true },
+  "/transactions": { title: "Transactions", protected: true },
 };
 
-export function getTitle(path: string): string {
-  const urlInfo = URLS[path];
-  if (urlInfo) {
-    return urlInfo.title;
-  }
-  return "Path not found";
-}
