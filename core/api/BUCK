@@ -72,7 +72,7 @@ runnable_tsc_build_bin(
 )
 
 eslint(
-    name = "check-lint-typescript",
+    name = "check-lint",
     srcs = [":src"] + [":test"] + glob([".eslint*"]),
 )
 
