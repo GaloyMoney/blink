@@ -160,6 +160,21 @@ gql_admin_file() {
   returnedId="$(graphql_output '.data.accountDetailsByAccountId.id')"
   [[ "$returnedId" == "$id" ]] || exit 1
 
+  randomUUID="$(uuidgen)"
+
+  variables=$(
+    jq -n \
+    --arg accountId "$id" \
+    --arg externalId "$randomUUID" \
+    '{input: {accountId: $accountId, externalId: $externalId}}'
+  )
+
+  exec_admin_graphql "$admin_token" 'account-external-id-update' "$variables"
+  externalId="$(graphql_output '.data.accountUpdateExternalId.accountDetails.externalId')"
+
+  [[ "$externalId" == "$randomUUID" ]] || exit 1
+
+
   # TODO: add check by email
   
   # TODO: business update map info

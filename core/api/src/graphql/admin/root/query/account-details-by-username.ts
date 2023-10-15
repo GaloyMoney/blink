@@ -1,6 +1,6 @@
 import { GT } from "@/graphql/index"
 
-import AuditedAccount from "@/graphql/admin/types/object/account"
+import AuditedAccount from "@/graphql/admin/types/object/audited-account"
 import Username from "@/graphql/shared/types/scalar/username"
 import { mapError } from "@/graphql/error-map"
 

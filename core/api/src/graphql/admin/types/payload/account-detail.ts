@@ -1,4 +1,4 @@
-import GraphQLAccount from "../object/account"
+import GraphQLAccount from "../object/audited-account"
 
 import { GT } from "@/graphql/index"
 import IError from "@/graphql/shared/types/abstract/error"

@@ -111,6 +111,7 @@ type Account = {
   readonly quiz: Quiz[]
   notificationSettings: NotificationSettings
   kratosUserId: UserId
+  externalId?: ExternalId
   displayCurrency: DisplayCurrency
   // temp
   role?: string
@@ -158,6 +159,7 @@ interface IAccountsRepository {
   listUnlockedAccounts(): AsyncGenerator<Account> | RepositoryError
   findByUserId(kratosUserId: UserId): Promise<Account | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
+  findByExternalId(externalId: ExternalId): Promise<Account | RepositoryError>
 
   persistNew(kratosUserId: UserId): Promise<Account | RepositoryError>
 

@@ -2,7 +2,7 @@ import { GraphQLObjectType } from "graphql"
 
 import AccountStatus from "../scalar/account-status"
 
-import GraphQLUser from "./user"
+import GraphQLUser from "./audited-user"
 
 import { Wallets, Users } from "@/app"
 import { GT } from "@/graphql/index"
@@ -13,13 +13,15 @@ import Wallet from "@/graphql/shared/types/abstract/wallet"
 import { mapError } from "@/graphql/error-map"
 
 import AccountLevel from "@/graphql/shared/types/scalar/account-level"
+import ExternalId from "@/graphql/shared/types/scalar/external-id"
 
 const AuditedAccount: GraphQLObjectType<Account> = GT.Object<Account>({
   name: "AuditedAccount",
   description:
-    "Accounts are core to the Galoy architecture. they have users, and own wallets",
+    "AuditedAccount are core to the Admin Api. they are linked to wallets and an owner",
   fields: () => ({
     id: { type: GT.NonNullID },
+    externalId: { type: ExternalId },
     username: { type: Username },
     level: { type: GT.NonNull(AccountLevel) },
     status: { type: GT.NonNull(AccountStatus) },

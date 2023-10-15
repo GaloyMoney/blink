@@ -20,6 +20,11 @@ enum AccountStatus {
   PENDING
 }
 
+input AccountUpdateExternalIdInput {
+  accountId: AccountId!
+  externalId: ExternalId!
+}
+
 input AccountUpdateLevelInput {
   accountId: AccountId!
   level: AccountLevel!
@@ -45,7 +50,7 @@ type AdminPushNotificationSendPayload {
 }
 
 """
-Accounts are core to the Galoy architecture. they have users, and own wallets
+AuditedAccount are core to the Admin Api. they are linked to wallets and an owner
 """
 type AuditedAccount {
   """
@@ -53,6 +58,7 @@ type AuditedAccount {
   """
   coordinates: Coordinates
   createdAt: Timestamp!
+  externalId: ExternalId
   id: ID!
   level: AccountLevel!
   owner: AuditedUser!
@@ -151,6 +157,8 @@ interface Error {
   path: [String]
 }
 
+scalar ExternalId
+
 type GraphQLApplicationError implements Error {
   code: String
   message: String!
@@ -215,6 +223,7 @@ scalar LnPubkey
 scalar Memo
 
 type Mutation {
+  accountUpdateExternalId(input: AccountUpdateExternalIdInput!): AccountDetailPayload!
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   adminPushNotificationSend(input: AdminPushNotificationSendInput!): AdminPushNotificationSendPayload!

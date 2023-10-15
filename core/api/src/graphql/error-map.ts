@@ -88,6 +88,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `Account does not exist for id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindAccountFromExternalIdError":
+      message = `Account does not exist for external id ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "CouldNotFindAccountFromUsernameError":
       message = `Account does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
@@ -596,6 +600,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidNonHodlInvoiceError":
     case "InvalidAccountError":
     case "InvalidAccountIdError":
+    case "InvalidExternalIdError":
     case "InvalidMinutesError":
     case "InvalidWalletForAccountError":
     case "AuthenticationError":

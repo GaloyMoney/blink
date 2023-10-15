@@ -1,0 +1,33 @@
+mutation accountUpdateExternalId($input: AccountUpdateExternalIdInput!) {
+  accountUpdateExternalId(input: $input) {
+    errors {
+      message
+    }
+    accountDetails {
+      id
+      externalId
+      username
+      level
+      status
+      title
+      owner {
+        id
+        language
+        phone
+        createdAt
+      }
+      coordinates {
+        latitude
+        longitude
+      }
+      wallets {
+        id
+        walletCurrency
+        accountId
+        balance
+        pendingIncomingBalance
+      }
+      createdAt
+    }
+  }
+}

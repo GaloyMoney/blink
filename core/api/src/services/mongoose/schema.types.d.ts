@@ -69,6 +69,7 @@ interface WalletInvoiceRecord {
 interface AccountRecord {
   id: string
   kratosUserId: string
+  externalId?: string
 
   username: string | null
   role: string

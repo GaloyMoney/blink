@@ -1,6 +1,6 @@
 import { GT } from "@/graphql/index"
 
-import AuditedAccount from "@/graphql/admin/types/object/account"
+import AuditedAccount from "@/graphql/admin/types/object/audited-account"
 import { mapError } from "@/graphql/error-map"
 
 import { Admin } from "@/app"

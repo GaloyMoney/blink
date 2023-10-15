@@ -62,6 +62,7 @@ export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {
 }
 
 export class CouldNotFindAccountFromIdError extends CouldNotFindError {}
+export class CouldNotFindAccountFromExternalIdError extends CouldNotFindError {}
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindTransactionsForAccountError extends CouldNotFindError {}

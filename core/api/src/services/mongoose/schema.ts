@@ -185,6 +185,13 @@ const AccountSchema = new Schema<AccountRecord>(
       sparse: true,
     },
 
+    externalId: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+    },
+
     username: {
       type: String,
       match: [UsernameRegex, "Username can only have alphabets, numbers and underscores"],

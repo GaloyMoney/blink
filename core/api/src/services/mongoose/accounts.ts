@@ -9,6 +9,7 @@ import {
   CouldNotFindAccountFromUsernameError,
   CouldNotFindAccountFromIdError,
   RepositoryError,
+  CouldNotFindAccountFromExternalIdError,
 } from "@/domain/errors"
 import { UsdDisplayCurrency } from "@/domain/fiat"
 
@@ -42,6 +43,18 @@ export const AccountsRepository = (): IAccountsRepository => {
         id: accountId,
       })
       if (!result) return new CouldNotFindAccountFromIdError(accountId)
+      return translateToAccount(result)
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
+  const findByExternalId = async (
+    externalId: ExternalId,
+  ): Promise<Account | RepositoryError> => {
+    try {
+      const result = await Account.findOne({ externalId: { $eq: externalId } })
+      if (!result) return new CouldNotFindAccountFromExternalIdError(externalId)
       return translateToAccount(result)
     } catch (err) {
       return parseRepositoryError(err)
@@ -103,6 +116,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     defaultWalletId,
     withdrawFee,
     kratosUserId,
+    externalId,
     displayCurrency,
     notificationSettings,
 
@@ -130,6 +144,7 @@ export const AccountsRepository = (): IAccountsRepository => {
           kratosUserId,
           displayCurrency,
           notificationSettings,
+          externalId,
 
           role,
         },
@@ -178,6 +193,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     findByUserId,
     listUnlockedAccounts,
     findById,
+    findByExternalId,
     findByUsername,
     listBusinessesForMap,
     update,
@@ -237,5 +253,6 @@ const translateToAccount = (result: AccountRecord): Account => ({
   })),
 
   kratosUserId: result.kratosUserId as UserId,
+  externalId: result.externalId as ExternalId,
   displayCurrency: (result.displayCurrency || UsdDisplayCurrency) as DisplayCurrency,
 })

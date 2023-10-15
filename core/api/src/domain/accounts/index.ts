@@ -1,4 +1,4 @@
-import { InvalidAccountIdError } from "./errors"
+import { InvalidAccountIdError, InvalidExternalIdError } from "./errors"
 
 import { AccountLevel, AccountStatus } from "./primitives"
 
@@ -104,8 +104,16 @@ export const checkedToAccountId = (
   if (accountId.match(AccountIdRegex)) {
     return accountId as AccountId
   }
-  // InvalidAccountIdError
   return new InvalidAccountIdError(accountId)
+}
+
+export const checkedToExternalId = (
+  externalId: string,
+): ExternalId | InvalidExternalIdError => {
+  if (externalId.length < 64) {
+    return externalId as ExternalId
+  }
+  return new InvalidExternalIdError(externalId)
 }
 
 export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {

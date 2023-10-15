@@ -25,6 +25,7 @@ export * from "./disable-notification-category"
 export * from "./enable-notification-category"
 export * from "./enable-notification-channel"
 export * from "./disable-notification-channel"
+export * from "./update-account-external-id"
 
 const accounts = AccountsRepository()
 

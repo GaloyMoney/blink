@@ -4,6 +4,7 @@ import BusinessDeleteMapInfoMutation from "./root/mutation/delete-business-map"
 
 import AccountUpdateLevelMutation from "./root/mutation/account-update-level"
 import AccountUpdateStatusMutation from "./root/mutation/account-update-status"
+import AccountUpdateExternalIdMutation from "./root/mutation/account-update-external-id"
 import AdminPushNotificationSendMutation from "./root/mutation/admin-push-notification-send"
 import BusinessUpdateMapInfoMutation from "./root/mutation/business-update-map-info"
 
@@ -15,6 +16,7 @@ export const mutationFields = {
     userUpdatePhone: UserUpdatePhoneMutation,
     accountUpdateLevel: AccountUpdateLevelMutation,
     accountUpdateStatus: AccountUpdateStatusMutation,
+    accountUpdateExternalId: AccountUpdateExternalIdMutation,
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
     businessDeleteMapInfo: BusinessDeleteMapInfoMutation,
     adminPushNotificationSend: AdminPushNotificationSendMutation,
