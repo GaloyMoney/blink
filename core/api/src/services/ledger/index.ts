@@ -364,8 +364,8 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getWalletIdByTransactionHash = async (
-    hash: PaymentHash | OnChainTxHash,
+  const getWalletIdByPaymentHash = async (
+    hash: PaymentHash,
   ): Promise<WalletId | LedgerServiceError> => {
     const bankOwnerWalletId = await caching.getBankOwnerWalletId()
     const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
@@ -426,7 +426,7 @@ export const LedgerService = (): ILedgerService => {
       isOnChainReceiptTxRecordedForWallet,
       isOnChainTxHashRecorded,
       isLnTxRecorded,
-      getWalletIdByTransactionHash,
+      getWalletIdByPaymentHash,
       listWalletIdsWithPendingPayments,
       ...admin,
       ...send,

@@ -4,7 +4,7 @@ import { WalletTransactionHistory } from "@/domain/wallets"
 
 import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
 
-export const getTransactionForWalletByHash = async ({
+export const getTransactionForWalletByPaymentHash = async ({
   walletId,
   hash,
 }: {

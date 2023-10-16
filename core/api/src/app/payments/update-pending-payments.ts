@@ -97,7 +97,7 @@ export const updatePendingPaymentByHash = wrapAsyncToRunInSpan({
     paymentHash: PaymentHash
     logger: Logger
   }): Promise<void | ApplicationError> => {
-    const walletId = await LedgerService().getWalletIdByTransactionHash(paymentHash)
+    const walletId = await LedgerService().getWalletIdByPaymentHash(paymentHash)
     if (walletId instanceof Error) return walletId
 
     return updatePendingPaymentsByWalletId({

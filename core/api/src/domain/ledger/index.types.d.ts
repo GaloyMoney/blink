@@ -291,9 +291,7 @@ interface ILedgerService {
 
   revertOnChainPayment(args: RevertOnChainPaymentArgs): Promise<true | LedgerServiceError>
 
-  getWalletIdByTransactionHash(
-    hash: PaymentHash | OnChainTxHash,
-  ): Promise<WalletId | LedgerServiceError>
+  getWalletIdByPaymentHash(hash: PaymentHash): Promise<WalletId | LedgerServiceError>
 
   listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
 
