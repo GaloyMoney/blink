@@ -4,3 +4,9 @@ core:
 ci:
   - ci/**/*
   - .github/**/*
+
+dashboard:
+  - apps/dashboard/*
+
+consent:
+  - apps/consent/*

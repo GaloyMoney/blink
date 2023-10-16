@@ -1,0 +1,21 @@
+#@ load("@ytt:data", "data")
+
+#@ def public_docker_registry():
+#@  return "us.gcr.io/galoy-org"
+#@ end
+
+#@ def nodejs_concourse_image():
+#@   return public_docker_registry() + "/nodejs-concourse"
+#@ end
+
+#@ def release_concourse_image():
+#@   return public_docker_registry() + "/release-pipeline"
+#@ end
+
+#@ def task_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ nodejs_concourse_image()
+#@ end

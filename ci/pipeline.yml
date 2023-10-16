@@ -1,6 +1,6 @@
 #@ load("@ytt:data", "data")
 
-#@ load("vendor/pipeline-fragments.lib.yml",
+#@ load("pipeline-fragments.lib.yml",
 #@   "nodejs_task_image_config",
 #@   "rust_task_image_config",
 #@   "nodejs_concourse_image",
