@@ -80,9 +80,6 @@ export default function TransactionCardComponent({ rows }: TransactionDetailsPro
               </Typography>
               <Chip
                 color={getTransactionStatusColor(row.node.status)}
-                sx={{
-                  backgroundColor: getTransactionStatusColor(row.node.status),
-                }}
               >
                 {row.node.status.toLowerCase()}
               </Chip>
