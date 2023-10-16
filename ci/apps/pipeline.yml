@@ -1,0 +1,42 @@
+#@ load("@ytt:data", "data")
+
+#@ load("app-template.lib.yml",
+#@   "build_edge_image",
+#@   "build_edge_image_name",
+#@   "app_src_resource",
+#@   "app_edge_image")
+
+#@ def consent_image():
+#@   return data.values.docker_registry + "/galoy-consent"
+#@ end
+
+groups:
+  - name: all
+    jobs:
+    - #@ build_edge_image_name("consent")
+    - #@ build_edge_image_name("dashboard")
+  - name: consent
+    jobs:
+    - #@ build_edge_image_name("consent")
+  - name: dashboard
+    jobs:
+    - #@ build_edge_image_name("dashboard")
+
+jobs:
+  - #@ build_edge_image("consent")
+  - #@ build_edge_image("dashboard")
+
+resources:
+  - #@ app_src_resource("consent")
+  - #@ app_edge_image("consent")
+
+  - #@ app_src_resource("dashboard")
+  - #@ app_edge_image("dashboard")
+
+  - name: pipeline-tasks
+    type: git
+    source:
+      paths: [ci/apps/*]
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key

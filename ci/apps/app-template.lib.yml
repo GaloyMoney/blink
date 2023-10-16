@@ -1,0 +1,75 @@
+#@ load("@ytt:data", "data")
+
+#@ load("pipeline-fragments.lib.yml",
+#@   "task_image_config")
+
+#@ def build_edge_image_name(app):
+#@   return "build-" + app + "-edge-image"
+#@ end
+
+#@ def build_edge_image(app):
+name: #@ build_edge_image_name(app)
+serial: true
+plan:
+  - in_parallel:
+      - get: #@ app + "-src"
+        trigger: true
+      - { get: pipeline-tasks }
+  - task: prepare-docker-build
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: pipeline-tasks
+        - name: #@ app + "-src"
+          path: repo
+      outputs:
+        - name: repo
+      run:
+        path: pipeline-tasks/ci/apps/tasks/prepare-docker-build.sh
+  - task: build
+    attempts: 2
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+        - name: repo
+      outputs:
+        - name: image
+      params:
+        CONTEXT: repo
+        DOCKERFILE: #@ "repo/apps/" + app + "/Dockerfile"
+        BUILD_ARGS_FILE: repo/.build-args
+      run:
+        path: build
+  - put: #@ app + "-edge-image"
+    params:
+      image: image/image.tar
+#@ end
+
+#@ def app_src_resource(app):
+name: #@ app + "-src"
+type: git
+source:
+  paths:
+  - #@ "apps/" + app
+  fetch_tags: true
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+webhook_token: ((webhook.secret))
+#@ end
+
+#@ def app_edge_image(app):
+name: #@ app + "-edge-image"
+type: registry-image
+source:
+  tag: edge
+  username: #@ data.values.docker_registry_user
+  password: #@ data.values.docker_registry_password
+  repository: #@ data.values.docker_registry + "/galoy-" + app
+#@ end
