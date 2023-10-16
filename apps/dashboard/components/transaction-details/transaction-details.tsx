@@ -39,7 +39,7 @@ export default function TableComponent({ rows }: TransactionDetailsProps) {
                 padding: "12px 6px",
               }}
             >
-              Id
+              ID
             </th>
 
             <th

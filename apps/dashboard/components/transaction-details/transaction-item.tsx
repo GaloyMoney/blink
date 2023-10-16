@@ -1,6 +1,6 @@
 import * as React from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import Card from "@mui/joy/Card";
+import CardContent from "@mui/joy/CardContent";
 import Typography from "@mui/joy/Typography";
 import { Sheet } from "@mui/joy";
 import Chip from "@mui/joy/Chip";
@@ -31,7 +31,7 @@ export default function CardComponent({ rows }: TransactionDetailsProps) {
               }}
             >
               <Typography level="body-sm" fontWeight="bold">
-                Id
+                ID
               </Typography>
               <Typography level="body-md">{row.node.id}</Typography>
             </div>

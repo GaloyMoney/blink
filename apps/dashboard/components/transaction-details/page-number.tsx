@@ -41,7 +41,7 @@ function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
         color="neutral"
         startDecorator={<KeyboardArrowLeftIcon />}
         onClick={(e) => {
-          router.push(`/transaction`);
+          router.push(`/transactions`);
         }}
       >
         Previous
@@ -54,7 +54,7 @@ function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
         color="neutral"
         endDecorator={<KeyboardArrowRightIcon />}
         onClick={(e) => {
-          router.push(`/transaction?cursor=${endCursor}&direction=next`);
+          router.push(`/transactions?cursor=${endCursor}&direction=next`);
         }}
       >
         Next
