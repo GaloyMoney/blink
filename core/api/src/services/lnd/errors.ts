@@ -5,6 +5,7 @@ export const KnownLndErrorDetails = {
   InvoiceNotFound: /unable to locate invoice/,
   InvoiceAlreadyPaid: /invoice is already paid/,
   UnableToFindRoute: /PaymentPathfindingFailedToFindPossibleRoute/,
+  FailedToFindRoute: /FailedToFindPayableRouteToDestination/,
   UnknownNextPeer: /UnknownNextPeer/,
   LndDbCorruption: /payment isn't initiated/,
   PaymentRejectedByDestination: /PaymentRejectedByDestination/,

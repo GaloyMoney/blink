@@ -1112,6 +1112,7 @@ const handleSendPaymentLndErrors = ({
     case match(KnownLndErrorDetails.InvoiceAlreadyPaid):
       return new LnAlreadyPaidError()
     case match(KnownLndErrorDetails.UnableToFindRoute):
+    case match(KnownLndErrorDetails.FailedToFindRoute):
       return new RouteNotFoundError()
     case match(KnownLndErrorDetails.UnknownNextPeer):
       return new UnknownNextPeerError()
