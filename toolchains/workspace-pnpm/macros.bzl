@@ -574,17 +574,15 @@ def _npm_test_impl(
 
     pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
 
-    exec_cmd = cmd_args(program_run_info, format = "{}::abspath")
-
     run_cmd_args = cmd_args([
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         pnpm_toolchain.run_in_dir[DefaultInfo].default_outputs,
         "--cwd",
         cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
-        "--",
-        exec_cmd,
+        "--bin",
+        cmd_args(program_run_info),
+        program_args,
     ])
-    run_cmd_args.add(program_args)
 
     args_file = ctx.actions.write("args.txt", run_cmd_args)
 
