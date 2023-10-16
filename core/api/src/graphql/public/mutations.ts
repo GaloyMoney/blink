@@ -51,7 +51,6 @@ import UserLogoutMutation from "@/graphql/public/root/mutation/user-logout"
 import UserPhoneDeleteMutation from "@/graphql/public/root/mutation/user-phone-delete"
 import UserPhoneRegistrationInitiateMutation from "@/graphql/public/root/mutation/user-phone-registration-initiate"
 import UserPhoneRegistrationValidateMutation from "@/graphql/public/root/mutation/user-phone-registration-validate"
-import UserQuizQuestionUpdateCompletedMutation from "@/graphql/public/root/mutation/user-quiz-question-update-completed"
 import UserTotpDeleteMutation from "@/graphql/public/root/mutation/user-totp-delete"
 import UserTotpRegistrationInitiateMutation from "@/graphql/public/root/mutation/user-totp-registration-initiate"
 import UserTotpRegistrationValidateMutation from "@/graphql/public/root/mutation/user-totp-registration-validate"
@@ -89,7 +88,6 @@ export const mutationFields = {
       userTotpDelete: UserTotpDeleteMutation,
       userLogout: UserLogoutMutation,
 
-      userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
       quizCompleted: QuizCompletedMutation,
       deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
 
