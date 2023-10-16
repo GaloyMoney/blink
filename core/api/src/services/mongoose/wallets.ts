@@ -16,14 +16,6 @@ import {
   MultipleWalletsFoundForAccountIdAndCurrency,
 } from "@/domain/errors"
 
-export interface WalletRecord {
-  id: string
-  accountId: string
-  type: string
-  currency: string
-  onchain: OnChainMongooseType[]
-}
-
 export const WalletsRepository = (): IWalletsRepository => {
   const persistNew = async ({
     accountId,
