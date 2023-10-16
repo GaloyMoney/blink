@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore!: remove some legacy uid argument in admin api (#3353)...'
-      sha: a1867f9ad6dd3ec047d2804a46b8a3cfc5deb680
+      commitTitle: 'chore: remove legacy mutation (#3355)...'
+      sha: 4ff062683c3cc7a15214ec618380ec4cfa2ff012
       tags:
-      - 0.14.19-4-ga1867f9ad
+      - 0.15.1-1-g4ff062683
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore!: remove some legacy uid argument in admin api (#3353)...'
-      sha: a1867f9ad6dd3ec047d2804a46b8a3cfc5deb680
+      commitTitle: 'chore: remove legacy mutation (#3355)...'
+      sha: 4ff062683c3cc7a15214ec618380ec4cfa2ff012
       tags:
-      - 0.14.19-4-ga1867f9ad
+      - 0.15.1-1-g4ff062683
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore!: remove some legacy uid argument in admin api (#3353)...'
-      sha: a1867f9ad6dd3ec047d2804a46b8a3cfc5deb680
+      commitTitle: 'chore: remove legacy mutation (#3355)...'
+      sha: 4ff062683c3cc7a15214ec618380ec4cfa2ff012
       tags:
-      - 0.14.19-4-ga1867f9ad
+      - 0.15.1-1-g4ff062683
     path: ./
   path: ./graphql
 kind: LockConfig

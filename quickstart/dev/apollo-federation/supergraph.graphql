@@ -990,7 +990,6 @@ type Mutation
   userPhoneDelete: UserPhoneDeletePayload!
   userPhoneRegistrationInitiate(input: UserPhoneRegistrationInitiateInput!): SuccessPayload!
   userPhoneRegistrationValidate(input: UserPhoneRegistrationValidateInput!): UserPhoneRegistrationValidatePayload!
-  userQuizQuestionUpdateCompleted(input: UserQuizQuestionUpdateCompletedInput!): UserQuizQuestionUpdateCompletedPayload! @deprecated(reason: "Use QuizCompletedMutation instead")
   userTotpDelete(input: UserTotpDeleteInput!): UserTotpDeletePayload!
   userTotpRegistrationInitiate(input: UserTotpRegistrationInitiateInput!): UserTotpRegistrationInitiatePayload!
   userTotpRegistrationValidate(input: UserTotpRegistrationValidateInput!): UserTotpRegistrationValidatePayload!
@@ -1793,19 +1792,6 @@ type UserQuizQuestion
 {
   completed: Boolean!
   question: QuizQuestion!
-}
-
-input UserQuizQuestionUpdateCompletedInput
-  @join__type(graph: PUBLIC)
-{
-  id: ID!
-}
-
-type UserQuizQuestionUpdateCompletedPayload
-  @join__type(graph: PUBLIC)
-{
-  errors: [Error!]!
-  userQuizQuestion: UserQuizQuestion
 }
 
 input UserTotpDeleteInput
