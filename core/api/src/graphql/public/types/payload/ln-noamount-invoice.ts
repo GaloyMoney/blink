@@ -1,6 +1,6 @@
 import IError from "../../../shared/types/abstract/error"
 
-import LnNoAmountInvoice from "../object/ln-noamount-invoice"
+import LnNoAmountInvoice from "../../../shared/types/object/ln-noamount-invoice"
 
 import { GT } from "@/graphql/index"
 

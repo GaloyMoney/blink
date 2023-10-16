@@ -3,7 +3,7 @@ import { CouldNotFindWalletInvoiceError } from "@/domain/errors"
 import { ensureWalletInvoiceHasPaymentRequest } from "@/domain/wallet-invoices"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 
-export const getInvoiceForWalletByHash = async ({
+export const getInvoiceForWalletByPaymentHash = async ({
   walletId,
   paymentHash,
 }: {

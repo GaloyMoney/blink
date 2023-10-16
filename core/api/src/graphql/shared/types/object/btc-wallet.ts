@@ -139,7 +139,7 @@ const BtcWallet = GT.Object<Wallet>({
         const { paymentHash } = args
         if (paymentHash instanceof Error) throw paymentHash
 
-        const invoice = await Wallets.getInvoiceForWalletByHash({
+        const invoice = await Wallets.getInvoiceForWalletByPaymentHash({
           walletId: source.id,
           paymentHash,
         })

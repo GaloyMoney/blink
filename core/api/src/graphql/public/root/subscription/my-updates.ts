@@ -19,7 +19,7 @@ import RealtimePrice from "@/graphql/public/types/object/realtime-price"
 import OnChainTxHash from "@/graphql/shared/types/scalar/onchain-tx-hash"
 import { AuthenticationError, UnknownClientError } from "@/graphql/error"
 import TxNotificationType from "@/graphql/public/types/scalar/tx-notification-type"
-import InvoicePaymentStatus from "@/graphql/public/types/scalar/invoice-payment-status"
+import InvoicePaymentStatus from "@/graphql/shared/types/scalar/invoice-payment-status"
 
 import { baseLogger } from "@/services/logger"
 import { PubSubService } from "@/services/pubsub"

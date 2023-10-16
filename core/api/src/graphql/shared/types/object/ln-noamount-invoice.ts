@@ -1,13 +1,13 @@
 import LnPaymentRequest from "../scalar/ln-payment-request"
 import PaymentHash from "../scalar/payment-hash"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
-import SatAmount from "../scalar/sat-amount"
 
 import { GT } from "@/graphql/index"
+import InvoicePaymentStatus from "../scalar/invoice-payment-status"
 
-const LnInvoice = GT.Object<LnInvoice>({
-  name: "LnInvoice",
-  isTypeOf: (source) => !!source.amount,
+const LnNoAmountInvoice = GT.Object<LnInvoice>({
+  name: "LnNoAmountInvoice",
+  isTypeOf: (source) => !source.amount,
   fields: () => ({
     paymentRequest: {
       type: GT.NonNull(LnPaymentRequest),
@@ -18,11 +18,13 @@ const LnInvoice = GT.Object<LnInvoice>({
     paymentSecret: {
       type: GT.NonNull(LnPaymentSecret),
     },
-    satoshis: {
-      type: SatAmount,
-      resolve: (source) => source.amount,
-    },
+    status: {
+      type: GT.NonNull(InvoicePaymentStatus),
+      resolve: (source) => {
+        
+      }
+    }
   }),
 })
 
-export default LnInvoice
+export default LnNoAmountInvoice
