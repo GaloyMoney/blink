@@ -1,23 +1,28 @@
 import { memoSharingConfig } from "@/config"
-import { CouldNotFindTransactionError } from "@/domain/ledger"
 import { WalletTransactionHistory } from "@/domain/wallets"
 
 import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
 
 export const getTransactionForWalletByPaymentHash = async ({
   walletId,
-  hash,
+  paymentHash,
 }: {
   walletId: WalletId
-  hash: PaymentHash | OnChainTxHash
-}): Promise<WalletTransaction | ApplicationError> => {
-  const transactions = await getTransactionsByHash(hash)
-  if (transactions instanceof Error) return transactions
+  paymentHash: PaymentHash
+}): Promise<WalletTransaction | undefined | ApplicationError> => {
+  const ledger = LedgerService()
+  const ledgerTransactions = await ledger.getTransactionsByHash(paymentHash)
+  if (ledgerTransactions instanceof Error) return ledgerTransactions
+
+  const transactions = WalletTransactionHistory.fromLedger({
+    ledgerTransactions,
+    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+    memoSharingConfig,
+  }).transactions
+
   const transaction = transactions.find(
     (transaction) => transaction.walletId === walletId,
   )
-
-  if (!transaction) return new CouldNotFindTransactionError()
 
   return transaction
 }

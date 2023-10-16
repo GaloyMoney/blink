@@ -179,16 +179,12 @@ type BTCWallet implements Wallet
   """A balance stored in BTC."""
   balance: SignedAmount!
   id: ID!
-
-  """
-  The lightning invoice with the matching paymentHash belonging to this wallet.
-  """
-  invoiceByHash(paymentHash: PaymentHash!): LnInvoice!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): LnInvoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
-  transactionByHash(hash: PaymentHash!): Transaction!
   transactionById(transactionId: ID!): Transaction!
+  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction!
 
   """A list of BTC transactions associated with this wallet."""
   transactions(
@@ -1589,12 +1585,12 @@ type UsdWallet implements Wallet
   accountId: ID!
   balance: SignedAmount!
   id: ID!
-  invoiceByHash(paymentHash: PaymentHash!): LnInvoice!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): LnInvoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
-  transactionByHash(hash: PaymentHash!): Transaction!
   transactionById(transactionId: ID!): Transaction!
+  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction!
   transactions(
     """Returns the items in the list that come after the specified cursor."""
     after: String
@@ -1891,10 +1887,18 @@ interface Wallet
   accountId: ID!
   balance: SignedAmount!
   id: ID!
-  invoiceByHash(paymentHash: PaymentHash!): LnInvoice!
+  invoiceByPaymentHash(
+    """
+    The lightning invoice with the matching paymentHash belonging to this wallet.
+    """
+    paymentHash: PaymentHash!
+  ): LnInvoice!
   pendingIncomingBalance: SignedAmount!
-  transactionByHash(hash: PaymentHash!): Transaction!
   transactionById(transactionId: ID!): Transaction!
+  transactionByPaymentHash(
+    """The payment hash of the lightning invoice paid in this transaction."""
+    paymentHash: PaymentHash!
+  ): Transaction!
 
   """
   Transactions are ordered anti-chronologically,

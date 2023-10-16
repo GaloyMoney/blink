@@ -47,19 +47,23 @@ const IWallet = GT.Interface({
         },
       },
     },
-    invoiceByHash: {
+    invoiceByPaymentHash: {
       type: GT.NonNull(LnInvoice),
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),
+          description:
+            "The lightning invoice with the matching paymentHash belonging to this wallet.",
         },
       },
     },
-    transactionByHash: {
+    transactionByPaymentHash: {
       type: GT.NonNull(Transaction),
       args: {
-        hash: {
-          type: GT.NonNull(PaymentHash) || GT.NonNull(OnChainAddress),
+        paymentHash: {
+          type: GT.NonNull(PaymentHash),
+          description:
+            "The payment hash of the lightning invoice paid in this transaction.",
         },
       },
     },

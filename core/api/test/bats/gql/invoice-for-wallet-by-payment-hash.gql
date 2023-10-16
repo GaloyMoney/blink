@@ -4,7 +4,7 @@ query me($walletId: WalletId!, $paymentHash: PaymentHash!) {
       id
       walletById(walletId: $walletId) {
         id
-        invoiceByHash(paymentHash: $paymentHash) {
+        invoiceByPaymentHash(paymentHash: $paymentHash) {
           paymentHash
         }
       }

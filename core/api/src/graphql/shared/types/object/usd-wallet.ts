@@ -126,7 +126,7 @@ const UsdWallet = GT.Object<Wallet>({
         )
       },
     },
-    invoiceByHash: {
+    invoiceByPaymentHash: {
       type: GT.NonNull(LnInvoice),
       args: {
         paymentHash: {
@@ -149,20 +149,20 @@ const UsdWallet = GT.Object<Wallet>({
         return invoice
       },
     },
-    transactionByHash: {
+    transactionByPaymentHash: {
       type: GT.NonNull(Transaction),
       args: {
-        hash: {
-          type: GT.NonNull(PaymentHash) || GT.NonNull(OnChainAddress),
+        paymentHash: {
+          type: GT.NonNull(PaymentHash),
         },
       },
       resolve: async (source, args) => {
-        const { hash } = args
-        if (hash instanceof Error) throw hash
+        const { paymentHash } = args
+        if (paymentHash instanceof Error) throw paymentHash
 
-        const transaction = await Wallets.getTransactionForWalletByHash({
+        const transaction = await Wallets.getTransactionForWalletByPaymentHash({
           walletId: source.id,
-          hash,
+          paymentHash,
         })
 
         if (transaction instanceof Error) {

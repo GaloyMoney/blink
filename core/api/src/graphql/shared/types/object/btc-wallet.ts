@@ -128,15 +128,13 @@ const BtcWallet = GT.Object<Wallet>({
         )
       },
     },
-    invoiceByHash: {
+    invoiceByPaymentHash: {
       type: GT.NonNull(LnInvoice),
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),
         },
       },
-      description:
-        "The lightning invoice with the matching paymentHash belonging to this wallet.",
       resolve: async (source, args) => {
         const { paymentHash } = args
         if (paymentHash instanceof Error) throw paymentHash
@@ -153,20 +151,20 @@ const BtcWallet = GT.Object<Wallet>({
         return invoice
       },
     },
-    transactionByHash: {
+    transactionByPaymentHash: {
       type: GT.NonNull(Transaction),
       args: {
-        hash: {
-          type: GT.NonNull(PaymentHash) || GT.NonNull(OnChainAddress),
+        paymentHash: {
+          type: GT.NonNull(PaymentHash),
         },
       },
       resolve: async (source, args) => {
-        const { hash } = args
-        if (hash instanceof Error) throw hash
+        const { paymentHash } = args
+        if (paymentHash instanceof Error) throw paymentHash
 
-        const transaction = await Wallets.getTransactionForWalletByHash({
+        const transaction = await Wallets.getTransactionForWalletByPaymentHash({
           walletId: source.id,
-          hash,
+          paymentHash,
         })
 
         if (transaction instanceof Error) {

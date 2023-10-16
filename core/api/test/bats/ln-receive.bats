@@ -79,8 +79,8 @@ usd_amount=50
     --arg payment_hash "$payment_hash" \
     '{walletId: $wallet_id, paymentHash: $payment_hash}'
   )
-  exec_graphql "$token_name" 'invoice-for-wallet-by-hash' "$variables"
-  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.invoiceByHash.paymentHash')"
+  exec_graphql "$token_name" 'invoice-for-wallet-by-payment-hash' "$variables"
+  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.invoiceByPaymentHash.paymentHash')"
   [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
 
   # Receive payment
@@ -98,13 +98,13 @@ usd_amount=50
     jq -n \
     --arg wallet_id "$(read_value $btc_wallet_name)" \
     --arg payment_hash "$payment_hash" \
-    '{walletId: $wallet_id, hash: $payment_hash}'
+    '{walletId: $wallet_id, paymentHash: $payment_hash}'
   )
 
-  exec_graphql "$token_name" 'transaction-for-wallet-by-hash' "$variables"
-  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.transactionByHash.initiationVia.paymentHash')"
+  exec_graphql "$token_name" 'transaction-for-wallet-by-payment-hash' "$variables"
+  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.transactionByPaymentHash.initiationVia.paymentHash')"
   [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
-  transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionByHash.id')"
+  transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionByPaymentHash.id')"
 
   # Get invoice by tx id
   variables=$(
