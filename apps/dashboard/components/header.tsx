@@ -23,7 +23,7 @@ import ColorSchemeToggle from "./color-toggle";
 
 export default function Header() {
   const session = useSession();
-  const userData = session?.data?.userData?.data?.me;
+  const userData = session?.data?.userData?.data.me;
 
   if (!userData) {
     return null;

@@ -190,10 +190,10 @@ export async function fetchPaginatedTransactions(
       variables,
     });
     return data.data.me?.defaultAccount.transactions;
-  } catch (e) {
-    console.error("error", e);
-    if (e instanceof Error) {
-      throw new Error(e.message);
+  } catch (err) {
+    console.error("error in fetchPaginatedTransactions ", err);
+    if (err instanceof Error) {
+      throw new Error(err.message);
     }
     throw new Error("Unknown error");
   }

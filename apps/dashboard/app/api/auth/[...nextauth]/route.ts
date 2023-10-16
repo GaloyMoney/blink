@@ -1,19 +1,28 @@
-import NextAuth from "next-auth";
-
+import NextAuth, { AuthOptions } from "next-auth";
 import { fetchUserData } from "@/services/graphql/queries/me-data";
 import { env } from "@/env";
+import { ApolloQueryResult } from "@apollo/client";
+import { MeQuery } from "@/services/graphql/generated";
 
-const type = "oauth" as const; // as ProviderType
+declare module "next-auth" {
+  interface Profile {
+    id: string;
+  }
+  interface Session {
+    sub: string | null;
+    accessToken: string;
+    userData: ApolloQueryResult<MeQuery>;
+  }
+}
 
-export const authOptions = {
-  // Configure one or more authentication providers
+const type = "oauth" as const;
+export const authOptions: AuthOptions = {
   providers: [
     {
       id: "blink",
       clientId: env.CLIENT_ID,
       clientSecret: env.CLIENT_SECRET,
-      wellKnown: env.WELL_KNOWN_OPENID_URL,
-      useSecureCookies: false,
+      wellKnown: env.HYDRA_PUBLIC,
       authorization: {
         params: { scope: "offline transactions:read payments:send" },
       },
@@ -21,14 +30,11 @@ export const authOptions = {
       name: "Blink",
       type,
       profile(profile) {
-        console.log({ profile }, "profile123");
         return {
           id: profile.sub,
-          // email: profile.email,
         };
       },
     },
-    // ...add more providers here
   ],
   debug: true,
   secret: env.NEXTAUTH_SECRET,
@@ -39,15 +45,14 @@ export const authOptions = {
         token.accessToken = account.access_token;
         token.expiresAt = account.expires_at;
         token.refreshToken = account.refresh_token;
-        token.id = profile.id;
+        token.id = profile?.id;
       }
       return token;
     },
     async session({ session, token, user }) {
-      const userData = await fetchUserData(token.accessToken);
-      // Send properties to the client, like an access_token from a provider.
-      session.sub = token.sub;
-      session.accessToken = token.accessToken;
+      const userData = await fetchUserData(token.accessToken as string);
+      session.sub = token?.sub || null;
+      session.accessToken = token.accessToken as string;
       session.userData = userData;
       return session;
     },

@@ -6,7 +6,7 @@ import Chip from "@mui/joy/Chip";
 import { TransactionDetailsProps } from "./index.types";
 import { getTransactionStatusColor } from "@/components/utils";
 
-export default function TableComponent({ rows }: TransactionDetailsProps) {
+export default function TransactionTableComponent({ rows }: TransactionDetailsProps) {
   return (
     <Sheet
       variant="outlined"
@@ -110,7 +110,6 @@ export default function TableComponent({ rows }: TransactionDetailsProps) {
 
               <td style={{ padding: "12px 6px" }}>
                 <Chip
-                  // @ts-ignore
                   color={getTransactionStatusColor(row.node.status)}
                 >
                   {row.node.status.toLowerCase()}

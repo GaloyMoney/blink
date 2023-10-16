@@ -1,4 +1,3 @@
-import { colorMap } from "@/components/transaction-details/index.types";
 
 export const openSidebar = () => {
   if (typeof document !== "undefined") {
@@ -27,7 +26,16 @@ export const toggleSidebar = () => {
   }
 };
 
-export const getTransactionStatusColor = (status: string): string => {
+
+type ColorType = "success" | "danger" | "neutral";
+
+export const colorMap: Record<string, ColorType> = {
+  success: "success",
+  danger: "danger",
+  neutral: "neutral",
+};
+
+export const getTransactionStatusColor = (status: string): ColorType => {
   switch (status) {
     case "ALREADY_PAID":
     case "SUCCESS":

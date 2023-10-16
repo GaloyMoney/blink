@@ -2,18 +2,20 @@ import React from "react";
 import { Box } from "@mui/joy";
 import PriceContainerCard from "./price-card-container";
 export interface WalletData {
-  id: string;
-  walletCurrency: string;
+  __typename: string;
+  accountId: string;
   balance: number;
+  id: string;
   pendingIncomingBalance: number;
+  walletCurrency: "BTC" | "USD" ; 
 }
+
 
 export interface PriceContainerProps {
-  defaultAccountId: string;
-  walletDetails: WalletData[];
+  walletDetails:ReadonlyArray<WalletData>;
 }
 
-const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
+const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails  }) => {
   const btcWallet = walletDetails.find(
     (wallet) => wallet.walletCurrency === "BTC"
   );

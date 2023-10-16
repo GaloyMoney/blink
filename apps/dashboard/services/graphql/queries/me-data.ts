@@ -35,10 +35,10 @@ export async function fetchUserData(token: string) {
       query: MeDocument,
     });
     return data;
-  } catch (e) {
-    if (e instanceof Error) {
-      console.error("error", e);
-      throw new Error(e.message);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("error", err);
+      throw new Error(err.message);
     } else {
       console.error("Unknown error");
       throw new Error("Unknown error");

@@ -7,7 +7,7 @@ import Chip from "@mui/joy/Chip";
 import { TransactionDetailsProps } from "./index.types";
 import { getTransactionStatusColor } from "@/components/utils";
 
-export default function CardComponent({ rows }: TransactionDetailsProps) {
+export default function TransactionCardComponent({ rows }: TransactionDetailsProps) {
   return (
     <Sheet
       variant="outlined"
@@ -79,7 +79,6 @@ export default function CardComponent({ rows }: TransactionDetailsProps) {
                 Status
               </Typography>
               <Chip
-                // @ts-ignore
                 color={getTransactionStatusColor(row.node.status)}
                 sx={{
                   backgroundColor: getTransactionStatusColor(row.node.status),
