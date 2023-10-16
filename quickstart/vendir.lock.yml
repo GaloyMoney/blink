@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: remove legacy mutation (#3355)...'
-      sha: 4ff062683c3cc7a15214ec618380ec4cfa2ff012
+      commitTitle: 'ci: initial apps pipeline (building of images) (#3361)...'
+      sha: c7068822ea6907a9158ef58e7f43630f9d21ba34
       tags:
-      - 0.15.1-1-g4ff062683
+      - 0.15.2-2-gc7068822e
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: remove legacy mutation (#3355)...'
-      sha: 4ff062683c3cc7a15214ec618380ec4cfa2ff012
+      commitTitle: 'ci: initial apps pipeline (building of images) (#3361)...'
+      sha: c7068822ea6907a9158ef58e7f43630f9d21ba34
       tags:
-      - 0.15.1-1-g4ff062683
+      - 0.15.2-2-gc7068822e
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: remove legacy mutation (#3355)...'
-      sha: 4ff062683c3cc7a15214ec618380ec4cfa2ff012
+      commitTitle: 'ci: initial apps pipeline (building of images) (#3361)...'
+      sha: c7068822ea6907a9158ef58e7f43630f9d21ba34
       tags:
-      - 0.15.1-1-g4ff062683
+      - 0.15.2-2-gc7068822e
     path: ./
   path: ./graphql
 kind: LockConfig
