@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: initial apps pipeline (building of images) (#3361)...'
-      sha: c7068822ea6907a9158ef58e7f43630f9d21ba34
+      commitTitle: 'fix: bump @babel/core to fix vulnerability (#3364)...'
+      sha: a45720f859c9e29a1330a8dd611eede6073d95ab
       tags:
-      - 0.15.2-2-gc7068822e
+      - 0.15.3-2-ga45720f85
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: initial apps pipeline (building of images) (#3361)...'
-      sha: c7068822ea6907a9158ef58e7f43630f9d21ba34
+      commitTitle: 'fix: bump @babel/core to fix vulnerability (#3364)...'
+      sha: a45720f859c9e29a1330a8dd611eede6073d95ab
       tags:
-      - 0.15.2-2-gc7068822e
+      - 0.15.3-2-ga45720f85
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: initial apps pipeline (building of images) (#3361)...'
-      sha: c7068822ea6907a9158ef58e7f43630f9d21ba34
+      commitTitle: 'fix: bump @babel/core to fix vulnerability (#3364)...'
+      sha: a45720f859c9e29a1330a8dd611eede6073d95ab
       tags:
-      - 0.15.2-2-gc7068822e
+      - 0.15.3-2-ga45720f85
     path: ./
   path: ./graphql
 kind: LockConfig
