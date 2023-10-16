@@ -9,7 +9,7 @@
     "eslint-fix": "eslint src test --ext .ts --fix",
     "build": "tsc -p tsconfig-build.json && cp -R src/services/price/protos dist/services/price/ && cp -R src/services/dealer-price/proto dist/services/dealer-price/ && cp -R src/services/loopd/protos dist/services/loopd/ && cp -R src/services/bria/proto dist/services/bria/ && tscpaths --silent -p tsconfig.json -s ./src -o ./dist",
     "trigger": "yarn build && node dist/servers/trigger.js | pino-pretty -c -l",
-    "check:sdl": "yarn write-sdl && if git diff --name-only | grep -q 'core/api/src/graphql/admin/schema.graphql'; then echo 'Error: core/api/src/graphql/admin/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi && if git diff --name-only | grep -q 'core/api/src/graphql/public/schema.graphql'; then echo 'Error: core/api/src/graphql/public/schema.graphql has changes, run `make codegen` and re-recommit' >&2; exit 1; fi",
+    "check:sdl": "yarn write-sdl && for FILE in core/api/src/graphql/admin/schema.graphql core/api/src/graphql/public/schema.graphql; do if git diff --name-only | grep -q \"$FILE\"; then echo \"Error: $FILE has changes, run 'make codegen' and re-recommit\" >&2; exit 1; fi; done",
     "write-sdl": ". ../../.env && yarn build && node dist/servers/write-sdl.js && rover supergraph compose --config dev/apollo-federation/supergraph-config.yaml --elv2-license accept > dev/apollo-federation/supergraph.graphql",
     "ws": "yarn build && node dist/servers/ws-server.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
