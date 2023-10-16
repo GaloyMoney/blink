@@ -35,7 +35,7 @@ import {
 
 import { upgradeAccountFromDeviceToPhone } from "@/app/accounts"
 import { checkedToEmailCode } from "@/domain/authentication"
-import { isPhoneCodeValid, TwilioClient } from "@/services/twilio"
+import { isPhoneCodeValid, TwilioClient } from "@/services/twilio-service"
 
 import { IPMetadataAuthorizer } from "@/domain/accounts-ips/ip-metadata-authorizer"
 
