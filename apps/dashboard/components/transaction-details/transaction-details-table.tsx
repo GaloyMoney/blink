@@ -6,7 +6,9 @@ import Chip from "@mui/joy/Chip";
 import { TransactionDetailsProps } from "./index.types";
 import { getTransactionStatusColor } from "@/components/utils";
 
-export default function TransactionTableComponent({ rows }: TransactionDetailsProps) {
+export default function TransactionTableComponent({
+  rows,
+}: TransactionDetailsProps) {
   return (
     <Sheet
       variant="outlined"
@@ -80,11 +82,7 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr
-              key={index}
-              style={{
-              }}
-            >
+            <tr key={index} style={{}}>
               <td style={{ padding: "12px 6px" }}>
                 <Typography level="body-md">{row.node.id}</Typography>
               </td>
@@ -109,9 +107,7 @@ export default function TransactionTableComponent({ rows }: TransactionDetailsPr
               </td>
 
               <td style={{ padding: "12px 6px" }}>
-                <Chip
-                  color={getTransactionStatusColor(row.node.status)}
-                >
+                <Chip color={getTransactionStatusColor(row.node.status)}>
                   {row.node.status.toLowerCase()}
                 </Chip>
               </td>

@@ -143,7 +143,7 @@ gql`
 
 export async function fetchFirstTransactions(
   token: string,
-  first: number = 10
+  first: number = 10,
 ) {
   const client = apollo(token).getClient();
 
@@ -166,7 +166,7 @@ export async function fetchPaginatedTransactions(
   token: string,
   direction: "next" | "previous",
   cursor: string | null = null,
-  first: number = 10
+  first: number = 10,
 ) {
   const client = apollo(token).getClient();
 

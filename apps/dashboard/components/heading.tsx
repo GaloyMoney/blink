@@ -12,7 +12,6 @@ export function getTitle(path: string): string {
   return "Path not found";
 }
 
-
 const Heading = () => {
   const pathName = usePathname();
   const title = getTitle(pathName);

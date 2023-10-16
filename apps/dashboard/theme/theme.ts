@@ -9,7 +9,7 @@ const theme = extendTheme({
   fontFamily: {
     body: inter.style.fontFamily,
     display: inter.style.fontFamily,
-    code: inter.style.fontFamily
+    code: inter.style.fontFamily,
   },
 });
 

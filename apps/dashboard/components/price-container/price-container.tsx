@@ -7,20 +7,19 @@ export interface WalletData {
   balance: number;
   id: string;
   pendingIncomingBalance: number;
-  walletCurrency: "BTC" | "USD" ; 
+  walletCurrency: "BTC" | "USD";
 }
-
 
 export interface PriceContainerProps {
-  walletDetails:ReadonlyArray<WalletData>;
+  walletDetails: ReadonlyArray<WalletData>;
 }
 
-const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails  }) => {
+const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
   const btcWallet = walletDetails.find(
-    (wallet) => wallet.walletCurrency === "BTC"
+    (wallet) => wallet.walletCurrency === "BTC",
   );
   const usdWallet = walletDetails.find(
-    (wallet) => wallet.walletCurrency === "USD"
+    (wallet) => wallet.walletCurrency === "USD",
   );
 
   return (

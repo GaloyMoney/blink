@@ -32,14 +32,12 @@
   --warning: #f59e0b;
 }
 
-
 [data-joy-color-scheme="light"] {
   --inputColor: var(--black);
-  --primaryColor: var(--primary)
+  --primaryColor: var(--primary);
 }
 
 [data-joy-color-scheme="dark"] {
   --inputColor: var(--white);
-  --primaryColor: var(--primary4)
-
+  --primaryColor: var(--primary4);
 }

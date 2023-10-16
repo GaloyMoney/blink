@@ -1,4 +1,3 @@
-
 export const openSidebar = () => {
   if (typeof document !== "undefined") {
     document.body.style.overflow = "hidden";
@@ -25,7 +24,6 @@ export const toggleSidebar = () => {
     }
   }
 };
-
 
 type ColorType = "success" | "danger" | "neutral";
 

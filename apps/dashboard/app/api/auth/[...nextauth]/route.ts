@@ -22,7 +22,7 @@ export const authOptions: AuthOptions = {
       id: "blink",
       clientId: env.CLIENT_ID,
       clientSecret: env.CLIENT_SECRET,
-      wellKnown: env.HYDRA_PUBLIC,
+      wellKnown: `${env.HYDRA_PUBLIC}/.well-known/openid-configuration`,
       authorization: {
         params: { scope: "offline transactions:read payments:send" },
       },
@@ -50,9 +50,18 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token, user }) {
-      const userData = await fetchUserData(token.accessToken as string);
-      session.sub = token?.sub || null;
-      session.accessToken = token.accessToken as string;
+      if (
+        !token.accessToken ||
+        !token.sub ||
+        typeof token.accessToken !== "string" ||
+        typeof token.sub !== "string"
+      ) {
+        throw new Error("Invalid token");
+      }
+
+      const userData = await fetchUserData(token.accessToken);
+      session.sub = token.sub;
+      session.accessToken = token.accessToken;
       session.userData = userData;
       return session;
     },

@@ -11,4 +11,3 @@ export interface RowNode {
 export interface TransactionDetailsProps {
   rows: ReadonlyArray<{ node: RowNode }>;
 }
-

@@ -22,11 +22,20 @@ export default async function page({
 }) {
   const { cursor, direction } = searchParams;
   const session = await getServerSession(authOptions);
-  const token = session?.accessToken as string;  
-  const numberOfTransactions = 50 
+  const token = session?.accessToken;
+  if (!token || typeof token !== "string") {
+    throw new Error("invalid token");
+  }
+
+  const numberOfTransactions = 50;
   let response;
   if (cursor && direction) {
-    response = await fetchPaginatedTransactions(token, direction, cursor, numberOfTransactions);
+    response = await fetchPaginatedTransactions(
+      token,
+      direction,
+      cursor,
+      numberOfTransactions,
+    );
   } else {
     response = await fetchFirstTransactions(token, numberOfTransactions);
   }

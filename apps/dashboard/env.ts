@@ -6,9 +6,7 @@ export const env = createEnv({
     CORE_URL: z.string().default("http://localhost:4002/graphql"),
     CLIENT_ID: z.string().default("CLIENT_ID"),
     CLIENT_SECRET: z.string().default("CLIENT_SECRET"),
-    HYDRA_PUBLIC: z
-      .string()
-      .default("http://127.0.0.1:4444/.well-known/openid-configuration"),
+    HYDRA_PUBLIC: z.string().default("http://127.0.0.1:4444"),
     NEXTAUTH_URL: z.string().default(""),
     NEXTAUTH_SECRET: z.string().default("thisismysecret"),
   },
