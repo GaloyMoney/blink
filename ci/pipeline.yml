@@ -163,7 +163,7 @@ jobs:
       - { get: pipeline-tasks }
     - task: #@ container
       attempts: 2
-      timeout: 15m
+      timeout: 18m
       tags: ["galoy-staging"]
       config:
         platform: linux
@@ -201,7 +201,7 @@ jobs:
       - { get: pipeline-tasks }
     - task: #@ container
       attempts: 2
-      timeout: 15m
+      timeout: 18m
       tags: ["galoy-staging"]
       config:
         platform: linux
@@ -260,6 +260,7 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
+        attempts: 2
         privileged: true
         config:
           platform: linux
@@ -299,6 +300,7 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
+        attempts: 2
         privileged: true
         config:
           platform: linux
@@ -338,6 +340,7 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
+        attempts: 2
         privileged: true
         config:
           platform: linux
@@ -377,6 +380,7 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
+        attempts: 2
         privileged: true
         config:
           platform: linux
@@ -416,6 +420,7 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
+        attempts: 2
         privileged: true
         config:
           platform: linux
@@ -455,6 +460,7 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
+        attempts: 2
         privileged: true
         config:
           platform: linux
@@ -494,6 +500,7 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
       - task: build
+        attempts: 2
         privileged: true
         config:
           platform: linux
@@ -562,7 +569,7 @@ jobs:
       - { put: docker-host, params: { acquire: true } }
       - task: test-on-docker-host
         attempts: 2
-        timeout: 15m
+        timeout: 18m
         tags: ["galoy-staging"]
         config:
           platform: linux
