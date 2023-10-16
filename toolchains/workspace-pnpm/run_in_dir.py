@@ -21,23 +21,18 @@ if __name__ == "__main__":
         help="Directory under which to run the program",
     )
     parser.add_argument(
+        "--bin",
+        help="Binary to execute program with",
+    )
+    parser.add_argument(
         "args",
         help="Program and arguments",
         nargs=argparse.REMAINDER,
     )
 
     args = parser.parse_args()
-    args.args.pop(0) # pops the '--' separator off
+    cmd = [os.path.abspath(args.bin), *args.args]
 
-    cwd = args.cwd
-
-    cmd = []
-    for arg in args.args:
-        cmd.append(compute_path(arg))
-
-    exit_code = subprocess.call(cmd, cwd=cwd)
+    exit_code = subprocess.call(cmd, cwd=args.cwd)
 
     sys.exit(exit_code)
-
-
-
