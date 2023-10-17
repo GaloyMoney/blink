@@ -5,11 +5,9 @@ query me($walletId: WalletId!, $paymentHash: PaymentHash!) {
       walletById(walletId: $walletId) {
         id
         invoiceByPaymentHash(paymentHash: $paymentHash) {
+          paymentHash
           ... on LnInvoice {
-            paymentHash
-          }
-          ... on LnNoAmountInvoice {
-            paymentHash
+            satoshis
           }
         }
       }

@@ -86,7 +86,7 @@ type BTCWallet implements Wallet {
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction!
+  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction
 
   """A list of BTC transactions associated with this wallet."""
   transactions(
@@ -175,7 +175,17 @@ type InitiationViaOnChain {
   address: OnChainAddress!
 }
 
-union Invoice = LnInvoice | LnNoAmountInvoice
+"""A lightning invoice."""
+interface Invoice {
+  """The payment hash of the lightning invoice."""
+  paymentHash: PaymentHash!
+
+  """The bolt11 invoice to be paid."""
+  paymentRequest: LnPaymentRequest!
+
+  """The payment secret of the lightning invoice."""
+  paymentSecret: LnPaymentSecret!
+}
 
 scalar Language
 
@@ -199,19 +209,6 @@ type LightningPayment {
   revealedPreImage: LnPaymentPreImage
   roundedUpFee: SatAmount
   status: LnPaymentStatus
-}
-
-type LnInvoice {
-  paymentHash: PaymentHash!
-  paymentRequest: LnPaymentRequest!
-  paymentSecret: LnPaymentSecret!
-  satoshis: SatAmount
-}
-
-type LnNoAmountInvoice {
-  paymentHash: PaymentHash!
-  paymentRequest: LnPaymentRequest!
-  paymentSecret: LnPaymentSecret!
 }
 
 scalar LnPaymentPreImage
@@ -417,7 +414,7 @@ type UsdWallet implements Wallet {
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction!
+  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction
   transactions(
     """Returns the items in the list that come after the specified cursor."""
     after: String
@@ -476,7 +473,7 @@ interface Wallet {
   transactionByPaymentHash(
     """The payment hash of the lightning invoice paid in this transaction."""
     paymentHash: PaymentHash!
-  ): Transaction!
+  ): Transaction
 
   """
   Transactions are ordered anti-chronologically,

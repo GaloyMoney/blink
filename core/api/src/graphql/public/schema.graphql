@@ -127,7 +127,7 @@ type BTCWallet implements Wallet {
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction!
+  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction
 
   """A list of BTC transactions associated with this wallet."""
   transactions(
@@ -420,7 +420,17 @@ input IntraLedgerUsdPaymentSendInput {
   walletId: WalletId!
 }
 
-union Invoice = LnInvoice | LnNoAmountInvoice
+"""A lightning invoice."""
+interface Invoice {
+  """The payment hash of the lightning invoice."""
+  paymentHash: PaymentHash!
+
+  """The bolt11 invoice to be paid."""
+  paymentRequest: LnPaymentRequest!
+
+  """The payment secret of the lightning invoice."""
+  paymentSecret: LnPaymentSecret!
+}
 
 enum InvoicePaymentStatus {
   EXPIRED
@@ -430,7 +440,7 @@ enum InvoicePaymentStatus {
 
 scalar Language
 
-type LnInvoice {
+type LnInvoice implements Invoice {
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -498,7 +508,7 @@ type LnInvoicePaymentStatusPayload {
   status: InvoicePaymentStatus
 }
 
-type LnNoAmountInvoice {
+type LnNoAmountInvoice implements Invoice {
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
@@ -1253,7 +1263,7 @@ type UsdWallet implements Wallet {
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction!
+  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction
   transactions(
     """Returns the items in the list that come after the specified cursor."""
     after: String
@@ -1497,7 +1507,7 @@ interface Wallet {
   transactionByPaymentHash(
     """The payment hash of the lightning invoice paid in this transaction."""
     paymentHash: PaymentHash!
-  ): Transaction!
+  ): Transaction
 
   """
   Transactions are ordered anti-chronologically,

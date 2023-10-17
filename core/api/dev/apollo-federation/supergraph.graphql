@@ -184,7 +184,7 @@ type BTCWallet implements Wallet
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction!
+  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction
 
   """A list of BTC transactions associated with this wallet."""
   transactions(
@@ -550,11 +550,19 @@ input IntraLedgerUsdPaymentSendInput
   walletId: WalletId!
 }
 
-union Invoice
+"""A lightning invoice."""
+interface Invoice
   @join__type(graph: PUBLIC)
-  @join__unionMember(graph: PUBLIC, member: "LnInvoice")
-  @join__unionMember(graph: PUBLIC, member: "LnNoAmountInvoice")
- = LnInvoice | LnNoAmountInvoice
+{
+  """The payment hash of the lightning invoice."""
+  paymentHash: PaymentHash!
+
+  """The bolt11 invoice to be paid."""
+  paymentRequest: LnPaymentRequest!
+
+  """The payment secret of the lightning invoice."""
+  paymentSecret: LnPaymentSecret!
+}
 
 enum InvoicePaymentStatus
   @join__type(graph: PUBLIC)
@@ -587,7 +595,8 @@ enum link__Purpose {
   EXECUTION
 }
 
-type LnInvoice
+type LnInvoice implements Invoice
+  @join__implements(graph: PUBLIC, interface: "Invoice")
   @join__type(graph: PUBLIC)
 {
   paymentHash: PaymentHash!
@@ -671,7 +680,8 @@ type LnInvoicePaymentStatusPayload
   status: InvoicePaymentStatus
 }
 
-type LnNoAmountInvoice
+type LnNoAmountInvoice implements Invoice
+  @join__implements(graph: PUBLIC, interface: "Invoice")
   @join__type(graph: PUBLIC)
 {
   paymentHash: PaymentHash!
@@ -1596,7 +1606,7 @@ type UsdWallet implements Wallet
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction!
+  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction
   transactions(
     """Returns the items in the list that come after the specified cursor."""
     after: String
@@ -1904,7 +1914,7 @@ interface Wallet
   transactionByPaymentHash(
     """The payment hash of the lightning invoice paid in this transaction."""
     paymentHash: PaymentHash!
-  ): Transaction!
+  ): Transaction
 
   """
   Transactions are ordered anti-chronologically,

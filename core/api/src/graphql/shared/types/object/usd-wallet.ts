@@ -8,7 +8,7 @@ import OnChainAddress from "../scalar/on-chain-address"
 
 import PaymentHash from "../scalar/payment-hash"
 
-import Invoice from "../abstract/invoice"
+import IInvoice from "../abstract/invoice"
 
 import Transaction, { TransactionConnection } from "./transaction"
 
@@ -128,7 +128,7 @@ const UsdWallet = GT.Object<Wallet>({
       },
     },
     invoiceByPaymentHash: {
-      type: GT.NonNull(Invoice),
+      type: GT.NonNull(IInvoice),
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),
@@ -151,7 +151,7 @@ const UsdWallet = GT.Object<Wallet>({
       },
     },
     transactionByPaymentHash: {
-      type: GT.NonNull(Transaction),
+      type: Transaction,
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),

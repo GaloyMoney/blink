@@ -3,10 +3,13 @@ import PaymentHash from "../scalar/payment-hash"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 import SatAmount from "../scalar/sat-amount"
 
+import IInvoice from "../abstract/invoice"
+
 import { GT } from "@/graphql/index"
 
 const LnInvoice = GT.Object<WalletInvoice>({
   name: "LnInvoice",
+  interfaces: () => [IInvoice],
   isTypeOf: (source) => !!source.lnInvoice.amount,
   fields: () => ({
     paymentRequest: {

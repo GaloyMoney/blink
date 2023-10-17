@@ -6,7 +6,7 @@ import SignedAmount from "../scalar/signed-amount"
 import OnChainAddress from "../scalar/on-chain-address"
 import PaymentHash from "../scalar/payment-hash"
 
-import Invoice from "./invoice"
+import IInvoice from "./invoice"
 
 import { connectionArgs } from "@/graphql/connections"
 import { GT } from "@/graphql/index"
@@ -49,7 +49,7 @@ const IWallet = GT.Interface({
       },
     },
     invoiceByPaymentHash: {
-      type: GT.NonNull(Invoice),
+      type: GT.NonNull(IInvoice),
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),
@@ -59,7 +59,7 @@ const IWallet = GT.Interface({
       },
     },
     transactionByPaymentHash: {
-      type: GT.NonNull(Transaction),
+      type: Transaction,
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),
