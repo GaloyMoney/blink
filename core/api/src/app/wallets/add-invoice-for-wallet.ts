@@ -27,7 +27,7 @@ const addInvoiceForSelf = async ({
   walletAmount,
   memo = "",
   expiresIn,
-}: AddInvoiceForSelfArgs): Promise<LnInvoice | ApplicationError> =>
+}: AddInvoiceForSelfArgs): Promise<WalletInvoice | ApplicationError> =>
   addInvoice({
     walletId,
     limitCheckFn: checkSelfWalletIdRateLimits,
@@ -45,7 +45,7 @@ const addInvoiceForSelf = async ({
 
 export const addInvoiceForSelfForBtcWallet = async (
   args: AddInvoiceForSelfForBtcWalletArgs,
-): Promise<LnInvoice | ApplicationError> => {
+): Promise<WalletInvoice | ApplicationError> => {
   const walletId = checkedToWalletId(args.walletId)
   if (walletId instanceof Error) return walletId
 
@@ -63,7 +63,7 @@ export const addInvoiceForSelfForBtcWallet = async (
 
 export const addInvoiceForSelfForUsdWallet = async (
   args: AddInvoiceForSelfForUsdWalletArgs,
-): Promise<LnInvoice | ApplicationError> => {
+): Promise<WalletInvoice | ApplicationError> => {
   const walletId = checkedToWalletId(args.walletId)
   if (walletId instanceof Error) return walletId
 
@@ -83,7 +83,7 @@ export const addInvoiceNoAmountForSelf = async ({
   walletId,
   memo = "",
   expiresIn,
-}: AddInvoiceNoAmountForSelfArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceNoAmountForSelfArgs): Promise<WalletInvoice | ApplicationError> => {
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
@@ -118,7 +118,7 @@ const addInvoiceForRecipient = async ({
   memo = "",
   descriptionHash,
   expiresIn,
-}: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> =>
+}: AddInvoiceForRecipientArgs): Promise<WalletInvoice | ApplicationError> =>
   addInvoice({
     walletId: recipientWalletId,
     limitCheckFn: checkRecipientWalletIdRateLimits,
@@ -136,7 +136,7 @@ const addInvoiceForRecipient = async ({
 
 export const addInvoiceForRecipientForBtcWallet = async (
   args: AddInvoiceForRecipientForBtcWalletArgs,
-): Promise<LnInvoice | ApplicationError> => {
+): Promise<WalletInvoice | ApplicationError> => {
   const recipientWalletId = checkedToWalletId(args.recipientWalletId)
   if (recipientWalletId instanceof Error) return recipientWalletId
 
@@ -160,7 +160,7 @@ export const addInvoiceForRecipientForBtcWallet = async (
 
 export const addInvoiceForRecipientForUsdWallet = async (
   args: AddInvoiceForRecipientForUsdWalletArgs,
-): Promise<LnInvoice | ApplicationError> => {
+): Promise<WalletInvoice | ApplicationError> => {
   const recipientWalletId = checkedToWalletId(args.recipientWalletId)
   if (recipientWalletId instanceof Error) return recipientWalletId
 
@@ -184,7 +184,7 @@ export const addInvoiceForRecipientForUsdWallet = async (
 
 export const addInvoiceForRecipientForUsdWalletAndBtcAmount = async (
   args: AddInvoiceForRecipientForUsdWalletArgs,
-): Promise<LnInvoice | ApplicationError> => {
+): Promise<WalletInvoice | ApplicationError> => {
   const recipientWalletId = checkedToWalletId(args.recipientWalletId)
   if (recipientWalletId instanceof Error) return recipientWalletId
 
@@ -210,7 +210,7 @@ export const addInvoiceNoAmountForRecipient = async ({
   recipientWalletId,
   memo = "",
   expiresIn,
-}: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceNoAmountForRecipientArgs): Promise<WalletInvoice | ApplicationError> => {
   const walletId = checkedToWalletId(recipientWalletId)
   if (walletId instanceof Error) return walletId
 
@@ -243,7 +243,7 @@ const addInvoice = async ({
   walletId,
   limitCheckFn,
   buildWIBWithAmountFn,
-}: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceArgs): Promise<WalletInvoice | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
   const account = await AccountsRepository().findById(wallet.accountId)
@@ -275,12 +275,11 @@ const addInvoice = async ({
 
   const invoice = await walletIBWithAmount.registerInvoice()
   if (invoice instanceof Error) return invoice
-  const { walletInvoice, lnInvoice } = invoice
 
-  const persistedInvoice = await WalletInvoicesRepository().persistNew(walletInvoice)
+  const persistedInvoice = await WalletInvoicesRepository().persistNew(invoice)
   if (persistedInvoice instanceof Error) return persistedInvoice
 
-  return lnInvoice
+  return invoice
 }
 
 const checkSelfWalletIdRateLimits = async (

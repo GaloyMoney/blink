@@ -73,16 +73,11 @@ type WIBWithAmountState = WIBWithExpirationState & {
   usdAmount?: UsdPaymentAmount
 }
 
-type LnAndWalletInvoice = {
-  walletInvoice: WalletInvoice & { paymentRequest: EncodedPaymentRequest }
-  lnInvoice: LnInvoice
-}
-
 type WIBWithAmount = {
-  registerInvoice: () => Promise<LnAndWalletInvoice | LightningServiceError>
+  registerInvoice: () => Promise<WalletInvoice | LightningServiceError>
 }
 
-type WalletInvoiceWithOptionalPaymentRequest = {
+type WalletInvoiceWithOptionalLnInvoice = {
   paymentHash: PaymentHash
   secret: SecretPreImage
   selfGenerated: boolean
@@ -91,11 +86,11 @@ type WalletInvoiceWithOptionalPaymentRequest = {
   recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
   paid: boolean
   createdAt: Date
-  paymentRequest?: EncodedPaymentRequest // Payment request is optional because some older invoices don't have it
+  lnInvoice?: LnInvoice // LnInvoice is optional because some older invoices don't have it
 }
 
-type WalletInvoice = WalletInvoiceWithOptionalPaymentRequest & {
-  paymentRequest: EncodedPaymentRequest
+type WalletInvoice = WalletInvoiceWithOptionalLnInvoice & {
+  lnInvoice: LnInvoice
 }
 
 type WalletAddress<S extends WalletCurrency> = {
@@ -144,7 +139,7 @@ type WalletInvoiceReceiverArgs = {
   receivedBtc: BtcPaymentAmount
   satsFee?: BtcPaymentAmount
 
-  walletInvoice: WalletInvoiceWithOptionalPaymentRequest
+  walletInvoice: WalletInvoiceWithOptionalLnInvoice
   recipientWalletDescriptors: AccountWalletDescriptors
 }
 
@@ -170,13 +165,13 @@ interface IWalletInvoicesRepository {
 
   markAsPaid: (
     paymentHash: PaymentHash,
-  ) => Promise<WalletInvoiceWithOptionalPaymentRequest | RepositoryError>
+  ) => Promise<WalletInvoiceWithOptionalLnInvoice | RepositoryError>
 
   findByPaymentHash: (
     paymentHash: PaymentHash,
-  ) => Promise<WalletInvoiceWithOptionalPaymentRequest | RepositoryError>
+  ) => Promise<WalletInvoice | RepositoryError>
 
-  yieldPending: () => AsyncGenerator<WalletInvoice> | RepositoryError
+  yieldPending: () => AsyncGenerator<WalletInvoiceWithOptionalLnInvoice> | RepositoryError
 
   deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 

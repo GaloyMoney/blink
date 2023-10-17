@@ -45,19 +45,19 @@ const LnNoAmountInvoiceCreateMutation = GT.Field({
       }
     }
 
-    const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+    const invoice = await Wallets.addInvoiceNoAmountForSelf({
       walletId,
       memo,
       expiresIn,
     })
 
-    if (lnInvoice instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
+    if (invoice instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(invoice)] }
     }
 
     return {
       errors: [],
-      invoice: lnInvoice,
+      invoice,
     }
   },
 })

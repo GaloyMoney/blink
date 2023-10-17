@@ -133,15 +133,15 @@ const getUsdEquivalentForWithAmountInvoiceSendToBtc = async ({
   accountAndWallets: AccountAndWallets
 }): Promise<CurrencyBaseAmount> => {
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
-  const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+  const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
     walletId: newBtcWallet.id,
     amount: toSats(btcPaymentAmount.amount),
   })
-  if (lnInvoice instanceof Error) throw lnInvoice
+  if (invoice instanceof Error) throw invoice
 
   const beforeUsd = await getBalanceHelper(newUsdWallet.id)
   const result = await Payments.payInvoiceByWalletId({
-    uncheckedPaymentRequest: lnInvoice.paymentRequest,
+    uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
     memo: null,
     senderWalletId: newUsdWallet.id,
     senderAccount: newAccount,
@@ -160,20 +160,20 @@ const getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc = async ({
 }): Promise<CurrencyBaseAmount> => {
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
-  const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+  const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
     walletId: newBtcWallet.id,
     amount: toSats(btcPaymentAmount.amount),
   })
-  if (lnInvoice instanceof Error) throw lnInvoice
+  if (invoice instanceof Error) throw invoice
 
   const beforeUsd = await getBalanceHelper(newUsdWallet.id)
   const probeResult = await Payments.getLightningFeeEstimationForUsdWallet({
-    uncheckedPaymentRequest: lnInvoice.paymentRequest,
+    uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
     walletId: newUsdWallet.id,
   })
   if (probeResult instanceof Error) throw probeResult
   const payResult = await Payments.payInvoiceByWalletId({
-    uncheckedPaymentRequest: lnInvoice.paymentRequest,
+    uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
     memo: null,
     senderWalletId: newUsdWallet.id,
     senderAccount: newAccount,
@@ -193,15 +193,15 @@ const getBtcEquivalentForNoAmountInvoiceSendToUsd = async ({
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
   const beforeRecipientUsd = await getBalanceHelper(newUsdWallet.id)
-  const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+  const invoice = await Wallets.addInvoiceNoAmountForSelf({
     walletId: newUsdWallet.id,
   })
-  if (lnInvoice instanceof Error) throw lnInvoice
+  if (invoice instanceof Error) throw invoice
 
   const beforeBtc = await getBalanceHelper(newBtcWallet.id)
   const result = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
     amount: Number(btcPaymentAmount.amount),
-    uncheckedPaymentRequest: lnInvoice.paymentRequest,
+    uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
     memo: null,
     senderWalletId: newBtcWallet.id,
     senderAccount: newAccount,
@@ -230,16 +230,16 @@ const getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd = async ({
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
   const beforeRecipientUsd = await getBalanceHelper(newUsdWallet.id)
-  const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+  const invoice = await Wallets.addInvoiceNoAmountForSelf({
     walletId: newUsdWallet.id,
   })
-  if (lnInvoice instanceof Error) throw lnInvoice
+  if (invoice instanceof Error) throw invoice
 
   const beforeBtc = await getBalanceHelper(newBtcWallet.id)
 
   const probe = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
     amount: Number(btcPaymentAmount.amount),
-    uncheckedPaymentRequest: lnInvoice.paymentRequest,
+    uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
     walletId: newBtcWallet.id,
   })
   if (probe instanceof SubOneCentSatAmountForUsdSelfSendError) {
@@ -249,7 +249,7 @@ const getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd = async ({
 
   const result = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
     amount: Number(btcPaymentAmount.amount),
-    uncheckedPaymentRequest: lnInvoice.paymentRequest,
+    uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
     memo: null,
     senderWalletId: newBtcWallet.id,
     senderAccount: newAccount,
@@ -421,15 +421,15 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -437,14 +437,14 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with $0.01 invoice
-          const lnInvoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
+          const invoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
             walletId: newUsdWallet.id,
             amount: toCents(1),
           })
-          if (lnInvoiceUsd instanceof Error) throw lnInvoiceUsd
+          if (invoiceUsd instanceof Error) throw invoiceUsd
 
           const resultUsd = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoiceUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceUsd.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -485,15 +485,15 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -501,20 +501,20 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with $0.01 invoice
-          const lnInvoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
+          const invoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
             walletId: newUsdWallet.id,
             amount: toCents(1),
           })
-          if (lnInvoiceUsd instanceof Error) throw lnInvoiceUsd
+          if (invoiceUsd instanceof Error) throw invoiceUsd
 
           const probe = await Payments.getLightningFeeEstimationForBtcWallet({
-            uncheckedPaymentRequest: lnInvoiceUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceUsd.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const resultUsd = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoiceUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceUsd.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -566,15 +566,15 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -638,15 +638,15 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -654,14 +654,14 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-          const lnInvoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoiceNoAmountUsd instanceof Error) throw lnInvoiceNoAmountUsd
+          if (invoiceNoAmountUsd instanceof Error) throw invoiceNoAmountUsd
 
           const repaid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: toSats(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountUsd.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -710,15 +710,15 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -726,21 +726,21 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-          const lnInvoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoiceNoAmountUsd instanceof Error) throw lnInvoiceNoAmountUsd
+          if (invoiceNoAmountUsd instanceof Error) throw invoiceNoAmountUsd
 
           const probe = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
             amount: toSats(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountUsd.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const repaid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: toSats(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountUsd.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -785,21 +785,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const probe = await Payments.getLightningFeeEstimationForUsdWallet({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -807,14 +807,14 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with $0.01 invoice
-          const lnInvoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
+          const invoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
             walletId: newUsdWallet.id,
             amount: toCents(1),
           })
-          if (lnInvoiceUsd instanceof Error) throw lnInvoiceUsd
+          if (invoiceUsd instanceof Error) throw invoiceUsd
 
           const resultUsd = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoiceUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceUsd.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -855,21 +855,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const probe = await Payments.getLightningFeeEstimationForUsdWallet({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -877,20 +877,20 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with $0.01 invoice
-          const lnInvoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
+          const invoiceUsd = await Wallets.addInvoiceForSelfForUsdWallet({
             walletId: newUsdWallet.id,
             amount: toCents(1),
           })
-          if (lnInvoiceUsd instanceof Error) throw lnInvoiceUsd
+          if (invoiceUsd instanceof Error) throw invoiceUsd
 
           const probeUsd = await Payments.getLightningFeeEstimationForBtcWallet({
-            uncheckedPaymentRequest: lnInvoiceUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceUsd.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probeUsd instanceof Error) throw probeUsd
 
           const resultUsd = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoiceUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceUsd.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -942,21 +942,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const probeResult = await Payments.getLightningFeeEstimationForUsdWallet({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probeResult instanceof Error) throw probeResult
 
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1020,21 +1020,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const probe = await Payments.getLightningFeeEstimationForUsdWallet({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1042,14 +1042,14 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-          const lnInvoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoiceNoAmountUsd instanceof Error) throw lnInvoiceNoAmountUsd
+          if (invoiceNoAmountUsd instanceof Error) throw invoiceNoAmountUsd
 
           const repaid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: toSats(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountUsd.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1098,21 +1098,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-          const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           // Step 2: Pay invoice from USD wallet at favourable rate
           const probe = await Payments.getLightningFeeEstimationForUsdWallet({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const result = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1120,21 +1120,21 @@ describe("arbitrage strategies", () => {
           if (result instanceof Error) throw result
 
           // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-          const lnInvoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoiceNoAmountUsd instanceof Error) throw lnInvoiceNoAmountUsd
+          if (invoiceNoAmountUsd instanceof Error) throw invoiceNoAmountUsd
 
           const probeUsd = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
             amount: toSats(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountUsd.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probeUsd instanceof Error) throw probeUsd
 
           const repaid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: toSats(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountUsd.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1239,14 +1239,14 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1293,14 +1293,14 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1308,14 +1308,14 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Replenish BTC from USD wallet with $0.01
-          const lnInvoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newBtcWallet.id,
           })
-          if (lnInvoiceNoAmountBtc instanceof Error) throw lnInvoiceNoAmountBtc
+          if (invoiceNoAmountBtc instanceof Error) throw invoiceNoAmountBtc
 
           const repaid = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
             amount: toCents(1),
-            uncheckedPaymentRequest: lnInvoiceNoAmountBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountBtc.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1352,14 +1352,14 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1367,21 +1367,21 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Replenish BTC from USD wallet with $0.01
-          const lnInvoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newBtcWallet.id,
           })
-          if (lnInvoiceNoAmountBtc instanceof Error) throw lnInvoiceNoAmountBtc
+          if (invoiceNoAmountBtc instanceof Error) throw invoiceNoAmountBtc
 
           const probeBtc = await Payments.getNoAmountLightningFeeEstimationForUsdWallet({
             amount: toCents(1),
-            uncheckedPaymentRequest: lnInvoiceNoAmountBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountBtc.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probeBtc instanceof Error) throw probeBtc
 
           const repaid = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
             amount: toCents(1),
-            uncheckedPaymentRequest: lnInvoiceNoAmountBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountBtc.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1432,14 +1432,14 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1447,14 +1447,14 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Pay back $0.01 from USD to BTC wallet
-          const lnInvoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoiceBtc instanceof Error) throw lnInvoiceBtc
+          if (invoiceBtc instanceof Error) throw invoiceBtc
 
           const repaid = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoiceBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceBtc.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1503,14 +1503,14 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1518,20 +1518,20 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Pay back $0.01 from USD to BTC wallet
-          const lnInvoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoiceBtc instanceof Error) throw lnInvoiceBtc
+          if (invoiceBtc instanceof Error) throw invoiceBtc
 
           const probeUsd = await Payments.getLightningFeeEstimationForUsdWallet({
-            uncheckedPaymentRequest: lnInvoiceBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceBtc.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probeUsd instanceof Error) throw probeUsd
 
           const repaid = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoiceBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceBtc.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1572,21 +1572,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const probe = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1633,21 +1633,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const probe = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1655,14 +1655,14 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Replenish BTC from USD wallet with $0.01
-          const lnInvoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newBtcWallet.id,
           })
-          if (lnInvoiceNoAmountBtc instanceof Error) throw lnInvoiceNoAmountBtc
+          if (invoiceNoAmountBtc instanceof Error) throw invoiceNoAmountBtc
 
           const repaid = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
             amount: toCents(1),
-            uncheckedPaymentRequest: lnInvoiceNoAmountBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountBtc.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1699,21 +1699,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const probe = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1721,21 +1721,21 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Replenish BTC from USD wallet with $0.01
-          const lnInvoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
+          const invoiceNoAmountBtc = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newBtcWallet.id,
           })
-          if (lnInvoiceNoAmountBtc instanceof Error) throw lnInvoiceNoAmountBtc
+          if (invoiceNoAmountBtc instanceof Error) throw invoiceNoAmountBtc
 
           const probeBtc = await Payments.getNoAmountLightningFeeEstimationForUsdWallet({
             amount: toCents(1),
-            uncheckedPaymentRequest: lnInvoiceNoAmountBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountBtc.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probeBtc instanceof Error) throw probeBtc
 
           const repaid = await Payments.payNoAmountInvoiceByWalletIdForUsdWallet({
             amount: toCents(1),
-            uncheckedPaymentRequest: lnInvoiceNoAmountBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceNoAmountBtc.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1786,21 +1786,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const probe = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1808,14 +1808,14 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Pay back $0.01 from USD to BTC wallet
-          const lnInvoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoiceBtc instanceof Error) throw lnInvoiceBtc
+          if (invoiceBtc instanceof Error) throw invoiceBtc
 
           const repaid = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoiceBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceBtc.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,
@@ -1864,21 +1864,21 @@ describe("arbitrage strategies", () => {
           const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
           // Step 1: Pay min sats via no-amount invoice to USD wallet
-          const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+          const invoice = await Wallets.addInvoiceNoAmountForSelf({
             walletId: newUsdWallet.id,
           })
-          if (lnInvoice instanceof Error) throw lnInvoice
+          if (invoice instanceof Error) throw invoice
 
           const probe = await Payments.getNoAmountLightningFeeEstimationForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             walletId: newBtcWallet.id,
           })
           if (probe instanceof Error) throw probe
 
           const paid = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
             amount: Number(minBtcAmountToSpend.amount),
-            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            uncheckedPaymentRequest: invoice.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newBtcWallet.id,
             senderAccount: newAccount,
@@ -1886,20 +1886,20 @@ describe("arbitrage strategies", () => {
           if (paid instanceof Error) throw paid
 
           // Step 2: Pay back $0.01 from USD to BTC wallet
-          const lnInvoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
+          const invoiceBtc = await Wallets.addInvoiceForSelfForBtcWallet({
             walletId: newBtcWallet.id,
             amount: toSats(maxBtcAmountToEarn.amount),
           })
-          if (lnInvoiceBtc instanceof Error) throw lnInvoiceBtc
+          if (invoiceBtc instanceof Error) throw invoiceBtc
 
           const probeUsd = await Payments.getLightningFeeEstimationForUsdWallet({
-            uncheckedPaymentRequest: lnInvoiceBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceBtc.lnInvoice.paymentRequest,
             walletId: newUsdWallet.id,
           })
           if (probeUsd instanceof Error) throw probeUsd
 
           const repaid = await Payments.payInvoiceByWalletId({
-            uncheckedPaymentRequest: lnInvoiceBtc.paymentRequest,
+            uncheckedPaymentRequest: invoiceBtc.lnInvoice.paymentRequest,
             memo: null,
             senderWalletId: newUsdWallet.id,
             senderAccount: newAccount,

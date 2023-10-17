@@ -27,6 +27,7 @@ export class DbConnectionClosedError extends RepositoryError {
   level = ErrorLevel.Critical
 }
 export class MultipleWalletsFoundForAccountIdAndCurrency extends RepositoryError {}
+export class WalletInvoiceMissingLnInvoiceError extends RepositoryError {}
 
 export class CouldNotUnsetPhoneFromUserError extends CouldNotUpdateError {}
 

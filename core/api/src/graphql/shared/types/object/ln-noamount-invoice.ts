@@ -3,27 +3,24 @@ import PaymentHash from "../scalar/payment-hash"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 
 import { GT } from "@/graphql/index"
-import InvoicePaymentStatus from "../scalar/invoice-payment-status"
+// import InvoicePaymentStatus from "../scalar/invoice-payment-status"
 
-const LnNoAmountInvoice = GT.Object<LnInvoice>({
+const LnNoAmountInvoice = GT.Object<WalletInvoice>({
   name: "LnNoAmountInvoice",
-  isTypeOf: (source) => !source.amount,
+  isTypeOf: (source) => !source.lnInvoice.amount,
   fields: () => ({
     paymentRequest: {
       type: GT.NonNull(LnPaymentRequest),
+      resolve: (source) => source.lnInvoice.paymentRequest,
     },
     paymentHash: {
       type: GT.NonNull(PaymentHash),
+      resolve: (source) => source.lnInvoice.paymentHash,
     },
     paymentSecret: {
       type: GT.NonNull(LnPaymentSecret),
+      resolve: (source) => source.lnInvoice.paymentSecret,
     },
-    status: {
-      type: GT.NonNull(InvoicePaymentStatus),
-      resolve: (source) => {
-        
-      }
-    }
   }),
 })
 

@@ -37,13 +37,13 @@ describe("UserWallet - Lightning", () => {
     const sats = 500_000
     const memo = "myMemo"
 
-    const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+    const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
       walletId: walletIdB,
       amount: toSats(sats),
       memo,
     })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest, paymentHash } = lnInvoice
+    if (invoice instanceof Error) throw invoice
+    const { paymentRequest, paymentHash } = invoice.lnInvoice
 
     const balanceBefore = await getBalanceHelper(walletIdB)
     const updateInvoice = async () => {

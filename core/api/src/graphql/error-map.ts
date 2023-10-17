@@ -92,8 +92,8 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = `Account does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
-    case "WalletInvoiceMissingPaymentRequestError":
-      message = `Invoice is missing its 'paymentRequest' value likely becuase it is an older invoice`
+    case "WalletInvoiceMissingLnInvoiceError":
+      message = `The associated lightning invoice could not be found.`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "CouldNotFindTransactionsForAccountError":

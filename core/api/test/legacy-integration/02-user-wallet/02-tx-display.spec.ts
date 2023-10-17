@@ -212,16 +212,16 @@ describe("Display properties on transactions", () => {
         // Receive payment
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+        const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
           walletId: recipientWalletId,
           amount: amountInvoice,
           memo,
         })
-        if (lnInvoice instanceof Error) throw lnInvoice
-        const { paymentRequest: invoice, paymentHash } = lnInvoice
+        if (invoice instanceof Error) throw invoice
+        const { paymentRequest, paymentHash } = invoice.lnInvoice
 
         const [outsideLndpayResult, updateResult] = await Promise.all([
-          safePay({ lnd: lndOutside1, request: invoice }),
+          safePay({ lnd: lndOutside1, request: paymentRequest }),
           (async () => {
             // TODO: we could use event instead of a sleep to lower test latency
             await sleep(500)
@@ -285,16 +285,16 @@ describe("Display properties on transactions", () => {
         // Send payment
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const lnInvoice = await Wallets.addInvoiceForSelfForBtcWallet({
+        const invoice = await Wallets.addInvoiceForSelfForBtcWallet({
           walletId: recipientWalletId,
           amount: amountInvoice,
           memo,
         })
-        if (lnInvoice instanceof Error) throw lnInvoice
-        const { paymentRequest: invoice } = lnInvoice
+        if (invoice instanceof Error) throw invoice
+        const { paymentRequest } = invoice.lnInvoice
 
         const paymentResult = await Payments.payInvoiceByWalletId({
-          uncheckedPaymentRequest: invoice,
+          uncheckedPaymentRequest: paymentRequest,
           memo: null,
           senderWalletId: senderWalletId,
           senderAccount,
@@ -302,7 +302,7 @@ describe("Display properties on transactions", () => {
         if (paymentResult instanceof Error) throw paymentResult
 
         // Check entries
-        const txns = await getAllTransactionsByHash(lnInvoice.paymentHash)
+        const txns = await getAllTransactionsByHash(invoice.paymentHash)
         if (txns instanceof Error) throw txns
 
         const senderTxn = txns.find(({ walletId }) => walletId === senderWalletId)
@@ -347,12 +347,12 @@ describe("Display properties on transactions", () => {
         // Send payment
         const memo = "invoiceMemo #" + (Math.random() * 1_000_000).toFixed()
 
-        const request = await Wallets.addInvoiceNoAmountForSelf({
+        const invoice = await Wallets.addInvoiceNoAmountForSelf({
           walletId: recipientWalletId,
           memo,
         })
-        if (request instanceof Error) throw request
-        const { paymentRequest: uncheckedPaymentRequest, paymentHash } = request
+        if (invoice instanceof Error) throw invoice
+        const { paymentRequest: uncheckedPaymentRequest, paymentHash } = invoice.lnInvoice
 
         const paymentResult = await Payments.payNoAmountInvoiceByWalletIdForBtcWallet({
           uncheckedPaymentRequest,

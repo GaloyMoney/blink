@@ -45,25 +45,19 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       }
     }
 
-    const result = await Wallets.addInvoiceNoAmountForRecipient({
+    const invoice = await Wallets.addInvoiceNoAmountForRecipient({
       recipientWalletId,
       memo,
       expiresIn,
     })
 
-    if (result instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(result)] }
+    if (invoice instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(invoice)] }
     }
-
-    const { paymentRequest, paymentHash, paymentSecret } = result
 
     return {
       errors: [],
-      invoice: {
-        paymentRequest,
-        paymentHash,
-        paymentSecret,
-      },
+      invoice,
     }
   },
 })

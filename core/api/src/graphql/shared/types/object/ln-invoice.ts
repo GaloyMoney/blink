@@ -5,22 +5,25 @@ import SatAmount from "../scalar/sat-amount"
 
 import { GT } from "@/graphql/index"
 
-const LnInvoice = GT.Object<LnInvoice>({
+const LnInvoice = GT.Object<WalletInvoice>({
   name: "LnInvoice",
-  isTypeOf: (source) => !!source.amount,
+  isTypeOf: (source) => !!source.lnInvoice.amount,
   fields: () => ({
     paymentRequest: {
       type: GT.NonNull(LnPaymentRequest),
+      resolve: (source) => source.lnInvoice.paymentRequest,
     },
     paymentHash: {
       type: GT.NonNull(PaymentHash),
+      resolve: (source) => source.lnInvoice.paymentHash,
     },
     paymentSecret: {
       type: GT.NonNull(LnPaymentSecret),
+      resolve: (source) => source.lnInvoice.paymentSecret,
     },
     satoshis: {
       type: SatAmount,
-      resolve: (source) => source.amount,
+      resolve: (source) => source.lnInvoice.amount,
     },
   }),
 })

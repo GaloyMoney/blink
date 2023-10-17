@@ -340,20 +340,20 @@ export const fundWallet = async ({
     wallet.currency === WalletCurrency.Btc
       ? Wallets.addInvoiceForSelfForBtcWallet
       : Wallets.addInvoiceForSelfForUsdWallet
-  const lnInvoice = await addInvoiceFn({
+  const invoice = await addInvoiceFn({
     walletId: wallet.id,
     amount: Number(balanceAmount.amount),
     memo: `Fund new wallet ${wallet.id}`,
   })
-  if (lnInvoice instanceof Error) throw lnInvoice
-  const { paymentRequest: invoice, paymentHash } = lnInvoice
+  if (invoice instanceof Error) throw invoice
+  const { paymentRequest, paymentHash } = invoice.lnInvoice
   const updateInvoice = () =>
     Wallets.updatePendingInvoiceByPaymentHash({
       paymentHash,
       logger: baseLogger,
     })
   const promises = Promise.all([
-    safePay({ lnd: lndOutside1, request: invoice }),
+    safePay({ lnd: lndOutside1, request: paymentRequest }),
     (async () => {
       // TODO: we could use event instead of a sleep to lower test latency
       await sleep(500)
