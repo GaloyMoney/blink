@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add eslint/tsc/yaml/madge checks to buck (#3347)...'
-      sha: 61443c078bcf8e33111bd3b3dc7c25a9a4e367e0
+      commitTitle: 'build(dashboard): fix next.config.js (#3373)'
+      sha: ca4a7d8f13fbac314f80ab2d3f8be859bd53b031
       tags:
-      - 0.15.8-2-g61443c078
+      - 0.15.9-3-gca4a7d8f1
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add eslint/tsc/yaml/madge checks to buck (#3347)...'
-      sha: 61443c078bcf8e33111bd3b3dc7c25a9a4e367e0
+      commitTitle: 'build(dashboard): fix next.config.js (#3373)'
+      sha: ca4a7d8f13fbac314f80ab2d3f8be859bd53b031
       tags:
-      - 0.15.8-2-g61443c078
+      - 0.15.9-3-gca4a7d8f1
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add eslint/tsc/yaml/madge checks to buck (#3347)...'
-      sha: 61443c078bcf8e33111bd3b3dc7c25a9a4e367e0
+      commitTitle: 'build(dashboard): fix next.config.js (#3373)'
+      sha: ca4a7d8f13fbac314f80ab2d3f8be859bd53b031
       tags:
-      - 0.15.8-2-g61443c078
+      - 0.15.9-3-gca4a7d8f1
     path: ./
   path: ./graphql
 kind: LockConfig
