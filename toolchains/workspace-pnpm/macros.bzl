@@ -815,3 +815,68 @@ def yaml_check(
         visibility = visibility,
         **kwargs,
     )
+
+def madge_check_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    args = cmd_args()
+    args.add("--circular")
+    args.add("--extensions")
+    args.add("ts")
+    args.add("src")
+
+    return _npm_test_impl(
+        ctx,
+        ctx.attrs.madge[RunInfo],
+        args,
+        "madge",
+    )
+
+_madge_check = rule(
+    impl = madge_check_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "madge": attrs.dep(
+            providers = [RunInfo],
+            doc = """madge dependency.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def madge_check(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    madge_bin = "madge_bin"
+    if not rule_exists(madge_bin):
+        npm_bin(
+            name = madge_bin,
+            bin_name = "madge",
+        )
+
+    _madge_check(
+        madge = ":{}".format(madge_bin),
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
