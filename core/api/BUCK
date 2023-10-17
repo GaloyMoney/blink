@@ -176,5 +176,6 @@ test_suite(
         ":check-circular-dependencies",
         ":public-schema-diff",
         ":admin-schema-diff",
+        ":unit-tests",
     ],
 )
