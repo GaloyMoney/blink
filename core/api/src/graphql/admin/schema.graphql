@@ -81,7 +81,7 @@ type BTCWallet implements Wallet {
   """A balance stored in BTC."""
   balance: SignedAmount!
   id: ID!
-  invoiceByPaymentHash(paymentHash: PaymentHash!): LnInvoice!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
@@ -175,6 +175,8 @@ type InitiationViaOnChain {
   address: OnChainAddress!
 }
 
+union Invoice = LnInvoice | LnNoAmountInvoice
+
 scalar Language
 
 type LightningInvoice {
@@ -204,6 +206,12 @@ type LnInvoice {
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
   satoshis: SatAmount
+}
+
+type LnNoAmountInvoice {
+  paymentHash: PaymentHash!
+  paymentRequest: LnPaymentRequest!
+  paymentSecret: LnPaymentSecret!
 }
 
 scalar LnPaymentPreImage
@@ -404,7 +412,7 @@ type UsdWallet implements Wallet {
   accountId: ID!
   balance: SignedAmount!
   id: ID!
-  invoiceByPaymentHash(paymentHash: PaymentHash!): LnInvoice!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
@@ -462,7 +470,7 @@ interface Wallet {
     The lightning invoice with the matching paymentHash belonging to this wallet.
     """
     paymentHash: PaymentHash!
-  ): LnInvoice!
+  ): Invoice!
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
   transactionByPaymentHash(

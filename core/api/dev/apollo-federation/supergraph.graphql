@@ -179,7 +179,7 @@ type BTCWallet implements Wallet
   """A balance stored in BTC."""
   balance: SignedAmount!
   id: ID!
-  invoiceByPaymentHash(paymentHash: PaymentHash!): LnInvoice!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
@@ -549,6 +549,12 @@ input IntraLedgerUsdPaymentSendInput
   """The wallet ID of the sender."""
   walletId: WalletId!
 }
+
+union Invoice
+  @join__type(graph: PUBLIC)
+  @join__unionMember(graph: PUBLIC, member: "LnInvoice")
+  @join__unionMember(graph: PUBLIC, member: "LnNoAmountInvoice")
+ = LnInvoice | LnNoAmountInvoice
 
 enum InvoicePaymentStatus
   @join__type(graph: PUBLIC)
@@ -1585,7 +1591,7 @@ type UsdWallet implements Wallet
   accountId: ID!
   balance: SignedAmount!
   id: ID!
-  invoiceByPaymentHash(paymentHash: PaymentHash!): LnInvoice!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
@@ -1892,7 +1898,7 @@ interface Wallet
     The lightning invoice with the matching paymentHash belonging to this wallet.
     """
     paymentHash: PaymentHash!
-  ): LnInvoice!
+  ): Invoice!
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
   transactionByPaymentHash(
