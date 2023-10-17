@@ -31,7 +31,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    cmd = [os.path.abspath(args.bin), *args.args]
+    bin_args = args.args[1:] # ignore '--' separator
+    cmd = [os.path.abspath(args.bin), *bin_args]
 
     exit_code = subprocess.call(cmd, cwd=args.cwd)
 

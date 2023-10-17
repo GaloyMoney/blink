@@ -581,6 +581,7 @@ def _npm_test_impl(
         cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
         "--bin",
         cmd_args(program_run_info),
+        "--",
         program_args,
     ])
 
