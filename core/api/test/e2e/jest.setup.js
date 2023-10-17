@@ -9,7 +9,7 @@ jest.mock("@/services/lnd/auth", () => {
 
 let mongoose
 
-jest.mock("@/services/twilio", () => require("test/mocks/twilio"))
+jest.mock("@/services/twilio-service", () => require("test/mocks/twilio"))
 
 beforeAll(async () => {
   mongoose = await setupMongoConnection(true)

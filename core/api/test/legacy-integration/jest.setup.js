@@ -8,7 +8,7 @@ jest.mock("@/services/lnd/auth", () => {
 })
 
 jest.mock("@/app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-jest.mock("@/services/twilio", () => require("test/mocks/twilio"))
+jest.mock("@/services/twilio-service", () => require("test/mocks/twilio"))
 jest.mock("@/services/price", () => require("test/mocks/price"))
 
 

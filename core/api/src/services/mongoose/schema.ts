@@ -2,8 +2,6 @@ import crypto from "crypto"
 
 import mongoose from "mongoose"
 
-import { WalletRecord } from "./wallets"
-
 import { getDefaultAccountsConfig, getFeesConfig, Levels } from "@/config"
 import { AccountStatus, UsernameRegex } from "@/domain/accounts"
 import { WalletIdRegex, WalletType } from "@/domain/wallets"

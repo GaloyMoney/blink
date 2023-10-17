@@ -53,6 +53,14 @@ interface DbMetadataRecord {
   routingFeeLastEntry: Date
 }
 
+interface WalletRecord {
+  id: string
+  accountId: string
+  type: string
+  currency: string
+  onchain: OnChainMongooseType[]
+}
+
 interface WalletInvoiceRecord {
   _id: string
   walletId: string

@@ -13,7 +13,7 @@ import Geetest from "@/services/geetest"
 import { AuthWithEmailPasswordlessService } from "@/services/kratos"
 import { baseLogger } from "@/services/logger"
 import { consumeLimiter } from "@/services/rate-limit"
-import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@/services/twilio"
+import { TWILIO_ACCOUNT_TEST, TwilioClient } from "@/services/twilio-service"
 
 export const requestPhoneCodeWithCaptcha = async ({
   phone,
