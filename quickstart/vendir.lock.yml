@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: added transaction and balance in basboard (#3352)...'
-      sha: 5562bc6acd341cd2dae4f9453ad6b8d86151b35a
+      commitTitle: 'refactor: switch madge circular deps check to ts files (#3368)...'
+      sha: 19b94c1027808e47103af80438349c0f87975fa5
       tags:
-      - 0.15.4-1-g5562bc6ac
+      - 0.15.5-4-g19b94c102
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: added transaction and balance in basboard (#3352)...'
-      sha: 5562bc6acd341cd2dae4f9453ad6b8d86151b35a
+      commitTitle: 'refactor: switch madge circular deps check to ts files (#3368)...'
+      sha: 19b94c1027808e47103af80438349c0f87975fa5
       tags:
-      - 0.15.4-1-g5562bc6ac
+      - 0.15.5-4-g19b94c102
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: added transaction and balance in basboard (#3352)...'
-      sha: 5562bc6acd341cd2dae4f9453ad6b8d86151b35a
+      commitTitle: 'refactor: switch madge circular deps check to ts files (#3368)...'
+      sha: 19b94c1027808e47103af80438349c0f87975fa5
       tags:
-      - 0.15.4-1-g5562bc6ac
+      - 0.15.5-4-g19b94c102
     path: ./
   path: ./graphql
 kind: LockConfig
