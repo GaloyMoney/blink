@@ -1,0 +1,36 @@
+name: Buck2 test
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, labeled, unlabeled]
+
+jobs:
+  buck2-test:
+    name: Buck2 Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v22
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare Buck2 test args from labels
+        id: prepare_args
+        run: |
+          ARGS=""
+          cat <<EOF > labels.json
+          ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          EOF
+          for LABEL in $(jq -r '.[]' < labels.json); do
+            case "$LABEL" in
+              dashboard|consent)
+                ARGS+=" //apps/$LABEL:test"
+                ;;
+              core)
+                ARGS+=" //core/api:test"
+                ;;
+            esac
+          done
+          echo "Prepared args: $ARGS"
+          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+      - name: Buck2 test
+        run: nix develop -c buck2 test ${{ steps.prepare_args.outputs.args }}

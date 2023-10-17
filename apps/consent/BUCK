@@ -32,3 +32,8 @@ next_build(
 next_build_bin(
     name = "consent",
 )
+
+test_suite(
+    name = "test",
+    tests = [],
+)

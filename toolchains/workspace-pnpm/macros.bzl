@@ -6,6 +6,10 @@ load(
     "@prelude//:paths.bzl",
     "paths",
 )
+load(
+    "@prelude//test/inject_test_run_info.bzl",
+    "inject_test_run_info",
+)
 
 load("@prelude//python:toolchain.bzl", "PythonToolchainInfo",)
 load(":toolchain.bzl", "WorkspacePnpmToolchainInfo",)
@@ -554,4 +558,317 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
 
     return BuildContext(
         workspace_root = workspace_root,
+    )
+
+def _npm_test_impl(
+    ctx: AnalysisContext,
+    program_run_info: RunInfo,
+    program_args: cmd_args,
+    test_info_type: str,
+) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    build_context = prepare_build_context(ctx)
+
+    pnpm_toolchain = ctx.attrs._workspace_pnpm_toolchain[WorkspacePnpmToolchainInfo]
+
+    run_cmd_args = cmd_args([
+        ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
+        pnpm_toolchain.run_in_dir[DefaultInfo].default_outputs,
+        "--cwd",
+        cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
+        "--bin",
+        cmd_args(program_run_info),
+        "--",
+        program_args,
+    ])
+
+    args_file = ctx.actions.write("args.txt", run_cmd_args)
+
+    return inject_test_run_info(
+        ctx,
+        ExternalRunnerTestInfo(
+            type = test_info_type,
+            command = [run_cmd_args],
+        ),
+    ) + [
+        DefaultInfo(default_output = args_file),
+    ]
+
+def eslint_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    args = cmd_args()
+    args.add(ctx.attrs.directories)
+    args.add("--ext")
+    args.add(",".join(ctx.attrs.extensions))
+    if ctx.attrs.allow_warnings == False:
+        args.add("--max-warnings=0")
+
+    return _npm_test_impl(
+        ctx,
+        ctx.attrs.eslint[RunInfo],
+        args,
+        "eslint",
+    )
+
+_eslint = rule(
+    impl = eslint_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "eslint": attrs.dep(
+            providers = [RunInfo],
+            doc = """eslint dependency.""",
+        ),
+        "directories": attrs.list(
+            attrs.string(),
+            default = [],
+            doc = """Directories under which to check.""",
+        ),
+        "extensions": attrs.list(
+            attrs.string(),
+            default = [],
+            doc = """File extensions to search for.""",
+        ),
+        "allow_warnings": attrs.bool(
+            default = False,
+            doc = """If `False`, then exit non-zero (treat warnings as errors).""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def eslint(
+        eslint_bin = "eslint",
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    if not rule_exists(eslint_bin):
+        npm_bin(
+            name = eslint_bin,
+            bin_name="eslint"
+        )
+
+    _eslint(
+        eslint = ":{}".format(eslint_bin),
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
+
+def typescript_check_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    args = cmd_args()
+    args.add("--noEmit")
+    args.add(ctx.attrs.args)
+
+    return _npm_test_impl(
+        ctx,
+        ctx.attrs.tsc[RunInfo],
+        args,
+        "tsc",
+    )
+
+_typescript_check = rule(
+    impl = typescript_check_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "tsc": attrs.dep(
+            providers = [RunInfo],
+            doc = """tsc dependency.""",
+        ),
+        "args": attrs.list(
+            attrs.string(),
+            default = [],
+            doc = """Extra arguments passed to tsc.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def typescript_check(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    tsc_bin = "tsc_bin"
+    if not rule_exists(tsc_bin):
+        npm_bin(
+            name = tsc_bin,
+            bin_name = "tsc",
+        )
+
+    _typescript_check(
+        tsc = ":{}".format(tsc_bin),
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
+
+def yaml_check_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    args = cmd_args()
+    args.add("--check")
+    args.add("**/*.(yaml|yml)")
+
+    return _npm_test_impl(
+        ctx,
+        ctx.attrs.prettier[RunInfo],
+        args,
+        "prettier",
+    )
+
+_yaml_check = rule(
+    impl = yaml_check_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "prettier": attrs.dep(
+            providers = [RunInfo],
+            doc = """prettier dependency.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def yaml_check(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    prettier_bin = "prettier_bin"
+    if not rule_exists(prettier_bin):
+        npm_bin(
+            name = prettier_bin,
+            bin_name = "prettier",
+        )
+
+    _yaml_check(
+        prettier = ":{}".format(prettier_bin),
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
+    )
+
+def madge_check_impl(ctx: AnalysisContext) -> list[[
+    DefaultInfo,
+    RunInfo,
+    ExternalRunnerTestInfo,
+]]:
+    args = cmd_args()
+    args.add("--circular")
+    args.add("--extensions")
+    args.add("ts")
+    args.add("src")
+
+    return _npm_test_impl(
+        ctx,
+        ctx.attrs.madge[RunInfo],
+        args,
+        "madge",
+    )
+
+_madge_check = rule(
+    impl = madge_check_impl,
+    attrs = {
+        "srcs": attrs.list(
+            attrs.source(),
+            default = [],
+            doc = """List of package source files to track.""",
+        ),
+        "madge": attrs.dep(
+            providers = [RunInfo],
+            doc = """madge dependency.""",
+        ),
+        "node_modules": attrs.source(
+            doc = """Target which builds package `node_modules`.""",
+        ),
+        "_inject_test_env": attrs.default_only(
+            attrs.dep(default = "prelude//test/tools:inject_test_env"),
+        ),
+        "_python_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:python",
+            providers = [PythonToolchainInfo],
+        ),
+        "_workspace_pnpm_toolchain": attrs.toolchain_dep(
+            default = "toolchains//:workspace_pnpm",
+            providers = [WorkspacePnpmToolchainInfo],
+        ),
+    },
+)
+
+def madge_check(
+        node_modules = ":node_modules",
+        visibility = ["PUBLIC"],
+        **kwargs):
+    madge_bin = "madge_bin"
+    if not rule_exists(madge_bin):
+        npm_bin(
+            name = madge_bin,
+            bin_name = "madge",
+        )
+
+    _madge_check(
+        madge = ":{}".format(madge_bin),
+        node_modules = node_modules,
+        visibility = visibility,
+        **kwargs,
     )

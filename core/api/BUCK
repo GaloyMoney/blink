@@ -4,6 +4,10 @@ load(
   "tsc_build",
   "runnable_tsc_build",
   "runnable_tsc_build_bin",
+  "eslint",
+  "typescript_check",
+  "yaml_check",
+  "madge_check",
 )
 
 export_file(
@@ -26,6 +30,13 @@ filegroup(
         "src/**",
         "tsconfig.json",
         "tsconfig-build.json",
+    ]),
+)
+
+filegroup(
+    name = "test_src",
+    srcs = glob([
+        "test/**",
     ]),
 )
 
@@ -60,4 +71,43 @@ runnable_tsc_build_bin(
   name = "api",
   preload_file = "services/tracing.js",
   run_file = "servers/graphql-main-server.js",
+)
+
+eslint(
+    name = "check-lint",
+    srcs = [":src"] + [":test_src"] + glob([".eslint*"]),
+    directories = ["src", "test"],
+    extensions = [".ts"],
+    allow_warnings = True,
+)
+
+typescript_check(
+    name = "check-type",
+    srcs = [":src"] + [":test_src"],
+)
+
+yaml_check(
+    name = "check-yaml",
+    srcs = glob([
+        ".prettier*",
+        "prettier*",
+        "*.yml",
+        "*.yaml",
+    ]),
+)
+
+madge_check(
+    name = "check-circular-dependencies",
+    srcs = [":src"],
+)
+
+test_suite(
+    name = "test",
+    tests = [
+        ":check-lint",
+        ":check-type",
+        ":check-yaml",
+        ":check-circular-dependencies",
+        # ":check-sdl",
+    ],
 )
