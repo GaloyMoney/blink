@@ -34,7 +34,7 @@ filegroup(
 )
 
 filegroup(
-    name = "test",
+    name = "test_src",
     srcs = glob([
         "test/**",
     ]),
@@ -75,12 +75,12 @@ runnable_tsc_build_bin(
 
 eslint(
     name = "check-lint",
-    srcs = [":src"] + [":test"] + glob([".eslint*"]),
+    srcs = [":src"] + [":test_src"] + glob([".eslint*"]),
 )
 
 typescript_check(
     name = "check-type",
-    srcs = [":src"] + [":test"],
+    srcs = [":src"] + [":test_src"],
 )
 
 yaml_check(
@@ -99,7 +99,7 @@ madge_check(
 )
 
 test_suite(
-    name = "check-code",
+    name = "test",
     tests = [
         ":check-lint",
         ":check-type",
