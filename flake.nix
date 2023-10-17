@@ -158,6 +158,7 @@
           api-exporter = tscDerivation {pkgName = "api-exporter";};
           api-cron = tscDerivation {pkgName = "api-cron";};
           consent = nextDerivation {pkgName = "consent";};
+          dashboard = nextDerivation {pkgName = "dashboard";};
         };
 
         devShells.default = mkShell {
