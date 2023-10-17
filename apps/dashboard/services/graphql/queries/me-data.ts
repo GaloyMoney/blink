@@ -1,4 +1,5 @@
 import { gql } from "@apollo/client";
+
 import { apollo } from "..";
 import { MeDocument, MeQuery } from "../generated";
 
@@ -33,11 +34,11 @@ export async function fetchUserData(token: string) {
     const data = await client.query<MeQuery>({
       query: MeDocument,
     });
-    return data
-  } catch (e) {
-    if (e instanceof Error) {
-      console.error("error", e);
-      throw new Error(e.message);
+    return data;
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("error", err);
+      throw new Error(err.message);
     } else {
       console.error("Unknown error");
       throw new Error("Unknown error");

@@ -5,14 +5,18 @@ import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import ListItemButton, { listItemButtonClasses } from "@mui/joy/ListItemButton";
 import Sheet from "@mui/joy/Sheet";
-import Divider from "@mui/material/Divider"; // Import Divider
+import Divider from "@mui/material/Divider";
 import Link from "next/link";
-import { closeSidebar } from "./utils";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import HomeIcon from "@mui/icons-material/Home";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import { Typography } from "@mui/joy";
+import { usePathname } from "next/navigation";
 import Logo from "./logo";
+import { closeSidebar } from "./utils";
 
 export default function Sidebar() {
+  const path = usePathname();
+  const isCurrentPath = (href: string) => path === href;
   return (
     <Sheet
       className="Sidebar"
@@ -30,7 +34,6 @@ export default function Sidebar() {
         height: "100dvh",
         width: "var(--Sidebar-width)",
         top: 0,
-        p: 2,
         flexShrink: 0,
         display: "flex",
         flexDirection: "column",
@@ -46,6 +49,9 @@ export default function Sidebar() {
             [theme.breakpoints.up("lg")]: {
               "--Sidebar-width": "240px",
             },
+          },
+          ".Sidebar-overlay": {
+            backdropFilter: "blur(10px)",
           },
         })}
       />
@@ -65,6 +71,7 @@ export default function Sidebar() {
             xs: "translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1) + var(--SideNavigation-slideIn, 0) * var(--Sidebar-width, 0px)))",
             lg: "translateX(-100%)",
           },
+          backdropFilter: "blur(10px)",
         }}
         onClick={() => closeSidebar()}
       />
@@ -76,46 +83,88 @@ export default function Sidebar() {
           display: "flex",
           flexDirection: "column",
           [`& .${listItemButtonClasses.root}`]: {
-            gap: 2,
+            gap: 1,
           },
         }}
       >
         <Box
           sx={{
-            alignItems: "flex-start", 
+            alignItems: "flex-start",
             display: "flex",
-            padding:"0.1em"
+            padding: "1.2em 1em 0 1em",
           }}
         >
           <Logo />
         </Box>
-        <Divider 
-        sx={{
-          marginBottom : '1em'
-
-        }}
-        /> 
+        <Divider
+          sx={{
+            width: "85%",
+            alignItems: "center",
+            margin: "0 auto",
+          }}
+        />
         <List
           sx={{
             "& .MuiListItem-root": {
-              mb: 2,
+              mb: 1,
             },
           }}
         >
           <Link href={`/`}>
-            <ListItem  
-            >
-              <ListItemButton>
-                <HomeIcon />
-                Home
+            <ListItem>
+              <ListItemButton
+                onClick={() => {
+                  closeSidebar();
+                }}
+                sx={{
+                  backgroundColor: isCurrentPath("/")
+                    ? "rgba(0, 0, 0, 0.08)"
+                    : "transparent",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.08)",
+                  },
+                  "&::before": {
+                    content: isCurrentPath("/") ? '""' : "none",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "4px",
+                    height: "100%",
+                    backgroundColor: "var(--primaryColor)",
+                  },
+                }}
+              >
+                <HomeOutlinedIcon />
+                <Typography level="title-md">Home</Typography>
               </ListItemButton>
             </ListItem>
           </Link>
-          <Link href={`/transaction`}>
-            <ListItem sx={{}}>
-              <ListItemButton>
+          <Link href={`/transactions`}>
+            <ListItem>
+              <ListItemButton
+                onClick={() => {
+                  closeSidebar();
+                }}
+                sx={{
+                  backgroundColor: isCurrentPath("/transactions")
+                    ? "rgba(0, 0, 0, 0.08)"
+                    : "transparent",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.08)",
+                  },
+                  "&::before": {
+                    content: isCurrentPath("/transactions") ? '""' : "none",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "4px",
+                    height: "100%",
+                    backgroundColor: "var(--primaryColor)",
+                  },
+                }}
+              >
                 <ReceiptLongIcon />
-                Transaction
+                <Typography level="title-md">Transactions</Typography>
               </ListItemButton>
             </ListItem>
           </Link>

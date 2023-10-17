@@ -1,17 +1,28 @@
+import NextAuth, { AuthOptions } from "next-auth";
 import { fetchUserData } from "@/services/graphql/queries/me-data";
-import NextAuth from "next-auth"
+import { env } from "@/env";
+import { ApolloQueryResult } from "@apollo/client";
+import { MeQuery } from "@/services/graphql/generated";
 
-const type = "oauth" as const // as ProviderType
+declare module "next-auth" {
+  interface Profile {
+    id: string;
+  }
+  interface Session {
+    sub: string | null;
+    accessToken: string;
+    userData: ApolloQueryResult<MeQuery>;
+  }
+}
 
-export const authOptions = {
-  // Configure one or more authentication providers
+const type = "oauth" as const;
+export const authOptions: AuthOptions = {
   providers: [
     {
       id: "blink",
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      wellKnown: "http://127.0.0.1:4444/.well-known/openid-configuration",
-      useSecureCookies: false,
+      clientId: env.CLIENT_ID,
+      clientSecret: env.CLIENT_SECRET,
+      wellKnown: `${env.HYDRA_PUBLIC}/.well-known/openid-configuration`,
       authorization: {
         params: { scope: "offline transactions:read payments:send" },
       },
@@ -19,17 +30,14 @@ export const authOptions = {
       name: "Blink",
       type,
       profile(profile) {
-        console.log({ profile }, "profile123");
         return {
           id: profile.sub,
-          // email: profile.email,
         };
       },
     },
-    // ...add more providers here
   ],
   debug: true,
-  secret: process.env.NEXTAUTH_SECRET as string,
+  secret: env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token and or the user id to the token right after signin
@@ -37,13 +45,21 @@ export const authOptions = {
         token.accessToken = account.access_token;
         token.expiresAt = account.expires_at;
         token.refreshToken = account.refresh_token;
-        token.id = profile.id;
+        token.id = profile?.id;
       }
       return token;
     },
     async session({ session, token, user }) {
-      const userData = await fetchUserData(token.accessToken); 
-      // Send properties to the client, like an access_token from a provider.
+      if (
+        !token.accessToken ||
+        !token.sub ||
+        typeof token.accessToken !== "string" ||
+        typeof token.sub !== "string"
+      ) {
+        throw new Error("Invalid token");
+      }
+
+      const userData = await fetchUserData(token.accessToken);
       session.sub = token.sub;
       session.accessToken = token.accessToken;
       session.userData = userData;
@@ -52,6 +68,6 @@ export const authOptions = {
   },
 };
 
-const handler = NextAuth(authOptions)
+const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };

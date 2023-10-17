@@ -1,9 +1,6 @@
-import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client"
-import { registerApolloClient } from "@apollo/experimental-nextjs-app-support/rsc"
-
-import { loadDevMessages, loadErrorMessages } from "@apollo/client/dev"
-
-import { coreUrl } from "./config"
+import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
+import { registerApolloClient } from "@apollo/experimental-nextjs-app-support/rsc";
+import { env } from "@/env";
 
 export const apollo = (token: string) =>
   registerApolloClient(() => {
@@ -13,14 +10,8 @@ export const apollo = (token: string) =>
         headers: {
           ["Oauth2-Token"]: token,
         },
-        uri: coreUrl,
-        // you can disable result caching here if you want to
-        // (this does not work if you are rendering your page with `export const dynamic = "force-static"`)
+        uri: env.CORE_URL,
         fetchOptions: { cache: "no-store" },
       }),
-    })
-  })
-
-// TODO: Adds messages only in a dev environment
-loadDevMessages()
-loadErrorMessages()
+    });
+  });
