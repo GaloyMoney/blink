@@ -57,6 +57,8 @@ type: git
 source:
   paths:
   - #@ "apps/" + app
+  - #@ "apps/" + app + "/*"
+  - #@ "apps/" + app + "/**/*"
   - flake.nix
   - flake.lock
   fetch_tags: true
