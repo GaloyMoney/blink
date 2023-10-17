@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build(dashboard): fix next.config.js (#3373)'
-      sha: ca4a7d8f13fbac314f80ab2d3f8be859bd53b031
+      commitTitle: 'chore: bump core/api dependencies (#3362)'
+      sha: 6164b10d343aed0e1c0bcc7ee915917da688304c
       tags:
-      - 0.15.9-3-gca4a7d8f1
+      - 0.15.10-3-g6164b10d3
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build(dashboard): fix next.config.js (#3373)'
-      sha: ca4a7d8f13fbac314f80ab2d3f8be859bd53b031
+      commitTitle: 'chore: bump core/api dependencies (#3362)'
+      sha: 6164b10d343aed0e1c0bcc7ee915917da688304c
       tags:
-      - 0.15.9-3-gca4a7d8f1
+      - 0.15.10-3-g6164b10d3
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build(dashboard): fix next.config.js (#3373)'
-      sha: ca4a7d8f13fbac314f80ab2d3f8be859bd53b031
+      commitTitle: 'chore: bump core/api dependencies (#3362)'
+      sha: 6164b10d343aed0e1c0bcc7ee915917da688304c
       tags:
-      - 0.15.9-3-gca4a7d8f1
+      - 0.15.11
     path: ./
   path: ./graphql
 kind: LockConfig
