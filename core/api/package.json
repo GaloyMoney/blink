@@ -155,7 +155,7 @@
     "@types/nodemon": "^1.19.2",
     "@types/react": "^18.2.21",
     "@types/set-cookie-parser": "^2.4.2",
-    "@types/ws": "^8.5.6",
+    "@types/ws": "^8.5.7",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.2",
     "@xascode/tscpaths": "0.1.4",
