@@ -592,10 +592,14 @@ def _npm_test_impl(
         cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
         "--bin",
         cmd_args(program_run_info),
-        "--",
-        program_args,
     ])
 
+    if hasattr(ctx.attrs, 'env_file'):
+        run_cmd_args.add("--env-file")
+        run_cmd_args.add(ctx.attrs.env_file)
+
+    run_cmd_args.add("--")
+    run_cmd_args.add(program_args)
     args_file = ctx.actions.write("args.txt", run_cmd_args)
 
     return inject_test_run_info(
@@ -1090,6 +1094,10 @@ _test_unit = rule(
         "config_file": attrs.option(
             attrs.string(),
             doc = """File name and relative path for jest config.""",
+        ),
+        "env_file": attrs.option(
+            attrs.string(),
+            doc = """File name and relative path for env variables required.""",
         ),
         "env": attrs.dict(
             key = attrs.string(),

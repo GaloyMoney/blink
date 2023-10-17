@@ -158,8 +158,9 @@ madge_check(
 
 test_unit(
     name = "unit-tests",
-    srcs = [":src"] + [":test_src"] + glob["galoy.yaml"],
+    srcs = [":src"] + [":test_src"] + glob([".env", "galoy.yaml"]),
     config_file = "test/unit/jest.config.js",
+    env_file = ".env",
     env = {
         "LOGLEVEL": "warn",
     }
