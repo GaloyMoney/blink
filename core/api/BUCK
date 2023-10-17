@@ -76,7 +76,6 @@ runnable_tsc_build_bin(
 eslint(
     name = "check-lint",
     srcs = [":src"] + [":test_src"] + glob([".eslint*"]),
-    directories = ["src", "test"],
     extensions = [".ts"],
     allow_warnings = True,
 )

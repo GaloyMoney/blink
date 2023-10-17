@@ -603,7 +603,7 @@ def eslint_impl(ctx: AnalysisContext) -> list[[
     ExternalRunnerTestInfo,
 ]]:
     args = cmd_args()
-    args.add(ctx.attrs.directories)
+    args.add(".")
     args.add("--ext")
     args.add(",".join(ctx.attrs.extensions))
     if ctx.attrs.allow_warnings == False:
@@ -627,11 +627,6 @@ _eslint = rule(
         "eslint": attrs.dep(
             providers = [RunInfo],
             doc = """eslint dependency.""",
-        ),
-        "directories": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Directories under which to check.""",
         ),
         "extensions": attrs.list(
             attrs.string(),
