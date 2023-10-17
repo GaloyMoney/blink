@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: switch madge circular deps check to ts files (#3368)...'
-      sha: 19b94c1027808e47103af80438349c0f87975fa5
+      commitTitle: 'ci: dynamically build apps in github action (#3370)'
+      sha: 8c94ccdedf7f59e7ddc2f46c64142794eeb06135
       tags:
-      - 0.15.5-4-g19b94c102
+      - 0.15.7-1-g8c94ccded
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: switch madge circular deps check to ts files (#3368)...'
-      sha: 19b94c1027808e47103af80438349c0f87975fa5
+      commitTitle: 'ci: dynamically build apps in github action (#3370)'
+      sha: 8c94ccdedf7f59e7ddc2f46c64142794eeb06135
       tags:
-      - 0.15.5-4-g19b94c102
+      - 0.15.7-1-g8c94ccded
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: switch madge circular deps check to ts files (#3368)...'
-      sha: 19b94c1027808e47103af80438349c0f87975fa5
+      commitTitle: 'ci: dynamically build apps in github action (#3370)'
+      sha: 8c94ccdedf7f59e7ddc2f46c64142794eeb06135
       tags:
-      - 0.15.5-4-g19b94c102
+      - 0.15.8
     path: ./
   path: ./graphql
 kind: LockConfig
