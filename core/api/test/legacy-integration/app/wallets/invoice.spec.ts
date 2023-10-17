@@ -385,14 +385,14 @@ const testPastSelfInvoiceLimits = async ({
     recipientWalletId: walletId,
     amount: 1000,
   })
-  expect(lnRecipientInvoice).not.toBeInstanceOf(Error)
-  expect(lnRecipientInvoice).toHaveProperty("paymentRequest")
+  if (lnRecipientInvoice instanceof Error) throw lnRecipientInvoice
+  expect(lnRecipientInvoice.lnInvoice).toHaveProperty("paymentRequest")
 
   const lnNoAmountRecipientInvoice = await Wallets.addInvoiceNoAmountForRecipient({
     recipientWalletId: walletId,
   })
-  expect(lnNoAmountRecipientInvoice).not.toBeInstanceOf(Error)
-  expect(lnNoAmountRecipientInvoice).toHaveProperty("paymentRequest")
+  if (lnNoAmountRecipientInvoice instanceof Error) throw lnNoAmountRecipientInvoice
+  expect(lnNoAmountRecipientInvoice.lnInvoice).toHaveProperty("paymentRequest")
 
   // Reset limits when done for other tests
   let resetOk = await resetSelfAccountIdLimits(accountId)
@@ -429,14 +429,14 @@ const testPastRecipientInvoiceLimits = async ({
     walletId,
     amount: 1000,
   })
-  expect(invoice).not.toBeInstanceOf(Error)
-  expect(invoice).toHaveProperty("paymentRequest")
+  if (invoice instanceof Error) throw invoice
+  expect(invoice.lnInvoice).toHaveProperty("paymentRequest")
 
   const lnNoAmountInvoice = await Wallets.addInvoiceNoAmountForSelf({
     walletId,
   })
-  expect(lnNoAmountInvoice).not.toBeInstanceOf(Error)
-  expect(lnNoAmountInvoice).toHaveProperty("paymentRequest")
+  if (lnNoAmountInvoice instanceof Error) throw lnNoAmountInvoice
+  expect(lnNoAmountInvoice.lnInvoice).toHaveProperty("paymentRequest")
 
   // Reset limits when done for other tests
   let resetOk = await resetSelfAccountIdLimits(accountId)
