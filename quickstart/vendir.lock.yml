@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: bump @babel/core to fix vulnerability (#3364)...'
-      sha: a45720f859c9e29a1330a8dd611eede6073d95ab
+      commitTitle: 'feat: added transaction and balance in basboard (#3352)...'
+      sha: 5562bc6acd341cd2dae4f9453ad6b8d86151b35a
       tags:
-      - 0.15.3-2-ga45720f85
+      - 0.15.4-1-g5562bc6ac
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: bump @babel/core to fix vulnerability (#3364)...'
-      sha: a45720f859c9e29a1330a8dd611eede6073d95ab
+      commitTitle: 'feat: added transaction and balance in basboard (#3352)...'
+      sha: 5562bc6acd341cd2dae4f9453ad6b8d86151b35a
       tags:
-      - 0.15.3-2-ga45720f85
+      - 0.15.4-1-g5562bc6ac
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: bump @babel/core to fix vulnerability (#3364)...'
-      sha: a45720f859c9e29a1330a8dd611eede6073d95ab
+      commitTitle: 'feat: added transaction and balance in basboard (#3352)...'
+      sha: 5562bc6acd341cd2dae4f9453ad6b8d86151b35a
       tags:
-      - 0.15.3-2-ga45720f85
+      - 0.15.4-1-g5562bc6ac
     path: ./
   path: ./graphql
 kind: LockConfig
