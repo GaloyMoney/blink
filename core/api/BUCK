@@ -97,3 +97,14 @@ madge_check(
     name = "check-circular-dependencies",
     srcs = [":src"],
 )
+
+test_suite(
+    name = "check-code",
+    tests = [
+        ":check-lint",
+        ":check-type",
+        ":check-yaml",
+        ":check-circular-dependencies",
+        # ":check-sdl",
+    ],
+)
