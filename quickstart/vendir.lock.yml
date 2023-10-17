@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: dynamically build apps in github action (#3370)'
-      sha: 8c94ccdedf7f59e7ddc2f46c64142794eeb06135
+      commitTitle: 'feat: add eslint/tsc/yaml/madge checks to buck (#3347)...'
+      sha: 61443c078bcf8e33111bd3b3dc7c25a9a4e367e0
       tags:
-      - 0.15.7-1-g8c94ccded
+      - 0.15.8-2-g61443c078
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: dynamically build apps in github action (#3370)'
-      sha: 8c94ccdedf7f59e7ddc2f46c64142794eeb06135
+      commitTitle: 'feat: add eslint/tsc/yaml/madge checks to buck (#3347)...'
+      sha: 61443c078bcf8e33111bd3b3dc7c25a9a4e367e0
       tags:
-      - 0.15.7-1-g8c94ccded
+      - 0.15.8-2-g61443c078
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: dynamically build apps in github action (#3370)'
-      sha: 8c94ccdedf7f59e7ddc2f46c64142794eeb06135
+      commitTitle: 'feat: add eslint/tsc/yaml/madge checks to buck (#3347)...'
+      sha: 61443c078bcf8e33111bd3b3dc7c25a9a4e367e0
       tags:
-      - 0.15.8
+      - 0.15.8-2-g61443c078
     path: ./
   path: ./graphql
 kind: LockConfig
