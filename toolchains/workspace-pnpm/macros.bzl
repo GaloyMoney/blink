@@ -606,9 +606,8 @@ def eslint_impl(ctx: AnalysisContext) -> list[[
     args.add(ctx.attrs.directories)
     args.add("--ext")
     args.add(",".join(ctx.attrs.extensions))
-    if ctx.attrs.warnings == False:
+    if ctx.attrs.allow_warnings == False:
         args.add("--max-warnings=0")
-    args.add(ctx.attrs.args)
 
     return _npm_test_impl(
         ctx,
@@ -636,16 +635,11 @@ _eslint = rule(
         ),
         "extensions": attrs.list(
             attrs.string(),
-            default = [".ts"],
+            default = [],
             doc = """File extensions to search for.""",
         ),
-        "args": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Extra arguments passed to eslint.""",
-        ),
-        "warnings": attrs.bool(
-            default = True,
+        "allow_warnings": attrs.bool(
+            default = False,
             doc = """If `False`, then exit non-zero (treat warnings as errors).""",
         ),
         "node_modules": attrs.source(
@@ -667,7 +661,6 @@ _eslint = rule(
 
 def eslint(
         eslint_bin = "eslint",
-        directories = ["src", "test"],
         node_modules = ":node_modules",
         visibility = ["PUBLIC"],
         **kwargs):
@@ -679,7 +672,6 @@ def eslint(
 
     _eslint(
         eslint = ":{}".format(eslint_bin),
-        directories = directories,
         node_modules = node_modules,
         visibility = visibility,
         **kwargs,
