@@ -1,0 +1,103 @@
+"use client";
+import React from "react";
+import Box from "@mui/joy/Box";
+import List from "@mui/joy/List";
+import Sheet from "@mui/joy/Sheet";
+import Divider from "@mui/material/Divider";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import { usePathname } from "next/navigation";
+import Logo from "./../logo";
+import { SidebarStyles } from "./side-bar-style";
+import { SidebarOverlay } from "./side-bar-overlay";
+import { NavigationLink } from "./navigation-links";
+import SettingsIcon from "@mui/icons-material/Settings";
+
+const Sidebar: React.FC = () => {
+  const path = usePathname();
+  const isCurrentPath = (href: string): boolean => path === href;
+
+  return (
+    <Sheet
+      className="Sidebar"
+      sx={{
+        position: {
+          xs: "fixed",
+          md: "sticky",
+        },
+        transform: {
+          xs: "translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))",
+          md: "none",
+        },
+        transition: "transform 0.4s, width 0.4s",
+        zIndex: 10000,
+        height: "100dvh",
+        width: "var(--Sidebar-width)",
+        top: 0,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        borderRight: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <SidebarStyles />
+      <SidebarOverlay />
+      <Box
+        sx={{
+          minHeight: 0,
+          overflow: "hidden auto",
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Box
+          sx={{
+            alignItems: "flex-start",
+            display: "flex",
+            padding: "1.2em 1em 0 1em",
+          }}
+        >
+          <Logo />
+        </Box>
+        <Divider
+          sx={{
+            width: "85%",
+            alignItems: "center",
+            margin: "0 auto",
+          }}
+        />
+        <List
+          sx={{
+            "& .MuiListItem-root": {
+              mb: 1,
+            },
+          }}
+        >
+          <NavigationLink
+            href="/"
+            icon={<HomeOutlinedIcon />}
+            label="Home"
+            isCurrentPath={isCurrentPath}
+          />
+          <NavigationLink
+            href="/transactions"
+            icon={<ReceiptLongIcon />}
+            label="Transactions"
+            isCurrentPath={isCurrentPath}
+          />
+          <NavigationLink
+            href="/profile"
+            icon={<SettingsIcon />}
+            label="Profile"
+            isCurrentPath={isCurrentPath}
+          />
+        </List>
+      </Box>
+    </Sheet>
+  );
+};
+
+export default Sidebar;

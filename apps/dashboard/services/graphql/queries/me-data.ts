@@ -23,6 +23,12 @@ gql`
           walletCurrency
         }
       }
+      totpEnabled
+      username
+      email {
+        address
+        verified
+      }
     }
   }
 `
