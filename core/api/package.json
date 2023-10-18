@@ -138,7 +138,7 @@
     "@types/google-protobuf": "^3.15.7",
     "@types/i18n": "^0.13.7",
     "@types/jest": "^29.5.5",
-    "@types/js-yaml": "^4.0.7",
+    "@types/js-yaml": "^4.0.8",
     "@types/jsonwebtoken": "^9.0.3",
     "@types/lodash.debounce": "^4.0.7",
     "@types/lodash.difference": "^4.5.6",
