@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: preparing next build with correct dirs (#3380)'
-      sha: aae461f98277a53dcaf0fee5c0f142f7d49a252f
+      commitTitle: 'fix: otel exporter propagation (#3382)'
+      sha: 4ca052efde8c39c412ef39b0f9ead454d62a9e62
       tags:
-      - 0.15.13-1-gaae461f98
+      - 0.15.14-2-g4ca052efd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: preparing next build with correct dirs (#3380)'
-      sha: aae461f98277a53dcaf0fee5c0f142f7d49a252f
+      commitTitle: 'fix: otel exporter propagation (#3382)'
+      sha: 4ca052efde8c39c412ef39b0f9ead454d62a9e62
       tags:
-      - 0.15.13-1-gaae461f98
+      - 0.15.14-2-g4ca052efd
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: preparing next build with correct dirs (#3380)'
-      sha: aae461f98277a53dcaf0fee5c0f142f7d49a252f
+      commitTitle: 'fix: otel exporter propagation (#3382)'
+      sha: 4ca052efde8c39c412ef39b0f9ead454d62a9e62
       tags:
-      - 0.15.13-1-gaae461f98
+      - 0.15.14-2-g4ca052efd
     path: ./
   path: ./graphql
 kind: LockConfig
