@@ -150,7 +150,7 @@
     "@types/lodash.sortby": "^4.7.6",
     "@types/lodash.sumby": "^4.6.6",
     "@types/migrate-mongo": "^10.0.2",
-    "@types/node": "^20.8.6",
+    "@types/node": "^20.8.7",
     "@types/node-jose": "^1.1.11",
     "@types/nodemon": "^1.19.3",
     "@types/react": "^18.2.28",
