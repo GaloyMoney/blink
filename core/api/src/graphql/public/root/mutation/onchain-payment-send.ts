@@ -18,7 +18,7 @@ const OnChainPaymentSendInput = GT.Input({
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(SatAmount) },
     speed: {
-      type: PayoutSpeed,
+      type: GT.NonNull(PayoutSpeed),
       defaultValue: DomainPayoutSpeed.Fast,
     },
     memo: { type: Memo },

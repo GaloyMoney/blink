@@ -21,7 +21,7 @@ const OnChainUsdTxFeeQuery = GT.Field<null, GraphQLPublicContextAuth>({
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(CentAmount) },
     speed: {
-      type: PayoutSpeed,
+      type: GT.NonNull(PayoutSpeed),
       defaultValue: DomainPayoutSpeed.Fast,
     },
   },
