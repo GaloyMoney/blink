@@ -10,6 +10,7 @@ import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-inv
 import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
 import { UnknownClientError } from "@/graphql/error"
 import { mapAndParseErrorForGqlResponse } from "@/graphql/error-map"
+import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 
 const pubsub = PubSubService()
 
@@ -82,17 +83,19 @@ const LnInvoicePaymentStatusSubscription = {
     }
 
     if (paid) {
-      pubsub.publishDelayed({ trigger, payload: { status: "PAID" } })
+      pubsub.publishDelayed({ trigger, payload: { status: WalletInvoiceStatus.Paid } })
       return pubsub.createAsyncIterator({ trigger })
     }
 
-    const status = paymentStatusChecker.isExpired ? "EXPIRED" : "PENDING"
+    const status = paymentStatusChecker.isExpired
+      ? WalletInvoiceStatus.Expired
+      : WalletInvoiceStatus.Pending
     pubsub.publishDelayed({ trigger, payload: { status } })
 
     if (!paymentStatusChecker.isExpired) {
       const timeout = Math.max(paymentStatusChecker.expiresAt.getTime() - Date.now(), 0)
       setTimeout(() => {
-        pubsub.publish({ trigger, payload: { status: "EXPIRED" } })
+        pubsub.publish({ trigger, payload: { status: WalletInvoiceStatus.Expired } })
       }, timeout + 1000)
     }
 

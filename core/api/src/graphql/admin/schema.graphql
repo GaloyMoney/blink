@@ -183,8 +183,19 @@ interface Invoice {
   """The bolt11 invoice to be paid."""
   paymentRequest: LnPaymentRequest!
 
-  """The payment secret of the lightning invoice."""
+  """
+  The payment secret of the lightning invoice. This is not the preimage of the payment hash.
+  """
   paymentSecret: LnPaymentSecret!
+
+  """The payment status of the invoice."""
+  paymentStatus: InvoicePaymentStatus!
+}
+
+enum InvoicePaymentStatus {
+  EXPIRED
+  PAID
+  PENDING
 }
 
 scalar Language

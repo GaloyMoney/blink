@@ -5,7 +5,8 @@ import LnPaymentSecret from "../scalar/ln-payment-secret"
 import IInvoice from "../abstract/invoice"
 
 import { GT } from "@/graphql/index"
-// import InvoicePaymentStatus from "../scalar/invoice-payment-status"
+import InvoicePaymentStatus from "@/graphql/shared/types/scalar/invoice-payment-status"
+import { WalletInvoiceStatusChecker } from "@/domain/wallet-invoices/wallet-invoice-status-checker"
 
 const LnNoAmountInvoice = GT.Object<WalletInvoice>({
   name: "LnNoAmountInvoice",
@@ -23,6 +24,14 @@ const LnNoAmountInvoice = GT.Object<WalletInvoice>({
     paymentSecret: {
       type: GT.NonNull(LnPaymentSecret),
       resolve: (source) => source.lnInvoice.paymentSecret,
+    },
+    paymentStatus: {
+      type: GT.NonNull(InvoicePaymentStatus),
+      resolve: (source) => {
+        const statusCheker = WalletInvoiceStatusChecker(source)
+        const status = statusCheker.status(new Date())
+        return status
+      },
     },
   }),
 })

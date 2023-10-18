@@ -6,6 +6,7 @@ query me($walletId: WalletId!, $paymentHash: PaymentHash!) {
         id
         invoiceByPaymentHash(paymentHash: $paymentHash) {
           paymentHash
+          paymentStatus
           ... on LnInvoice {
             satoshis
           }

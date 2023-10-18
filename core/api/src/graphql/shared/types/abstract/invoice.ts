@@ -3,6 +3,8 @@ import LnPaymentRequest from "../scalar/ln-payment-request"
 
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 
+import InvoicePaymentStatus from "../scalar/invoice-payment-status"
+
 import { GT } from "@/graphql/index"
 
 const IInvoice = GT.Interface({
@@ -19,7 +21,12 @@ const IInvoice = GT.Interface({
     },
     paymentSecret: {
       type: GT.NonNull(LnPaymentSecret),
-      description: "The payment secret of the lightning invoice. This is not the preimage of the payment hash.",
+      description:
+        "The payment secret of the lightning invoice. This is not the preimage of the payment hash.",
+    },
+    paymentStatus: {
+      type: GT.NonNull(InvoicePaymentStatus),
+      description: "The payment status of the invoice.",
     },
   }),
 })

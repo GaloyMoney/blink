@@ -428,8 +428,13 @@ interface Invoice {
   """The bolt11 invoice to be paid."""
   paymentRequest: LnPaymentRequest!
 
-  """The payment secret of the lightning invoice."""
+  """
+  The payment secret of the lightning invoice. This is not the preimage of the payment hash.
+  """
   paymentSecret: LnPaymentSecret!
+
+  """The payment status of the invoice."""
+  paymentStatus: InvoicePaymentStatus!
 }
 
 enum InvoicePaymentStatus {
@@ -444,6 +449,7 @@ type LnInvoice implements Invoice {
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
+  paymentStatus: InvoicePaymentStatus!
   satoshis: SatAmount
 }
 
@@ -512,6 +518,7 @@ type LnNoAmountInvoice implements Invoice {
   paymentHash: PaymentHash!
   paymentRequest: LnPaymentRequest!
   paymentSecret: LnPaymentSecret!
+  paymentStatus: InvoicePaymentStatus!
 }
 
 input LnNoAmountInvoiceCreateInput {

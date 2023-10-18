@@ -10,6 +10,13 @@ type WalletInvoiceChecker = {
   shouldDecline: () => boolean
 }
 
+type WalletInvoiceStatus =
+  (typeof import("./index").WalletInvoiceStatus)[keyof typeof import("./index").WalletInvoiceStatus]
+
+type WalletInvoiceStatusChecker = {
+  status: (currentTime: Date) => WalletInvoiceStatus
+}
+
 type WalletInvoiceBuilderConfig = {
   dealerBtcFromUsd: BtcFromUsdFn
   dealerUsdFromBtc: UsdFromBtcFn
