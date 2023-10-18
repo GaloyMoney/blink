@@ -2,7 +2,6 @@ import { GT } from "@/graphql/index"
 
 import MeQuery from "@/graphql/public/root/query/me"
 import GlobalsQuery from "@/graphql/public/root/query/globals"
-import BtcPriceQuery from "@/graphql/public/root/query/btc-price"
 import CurrencyListQuery from "@/graphql/public/root/query/currency-list"
 import BtcPriceListQuery from "@/graphql/public/root/query/btc-price-list"
 import QuizQuestionsQuery from "@/graphql/public/root/query/quiz-questions"
@@ -27,7 +26,6 @@ export const queryFields = {
     currencyList: CurrencyListQuery,
     mobileVersions: MobileVersionsQuery,
     quizQuestions: QuizQuestionsQuery,
-    btcPrice: BtcPriceQuery,
     realtimePrice: RealtimePriceQuery,
     btcPriceList: BtcPriceListQuery,
     lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
