@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump core/api dependencies (#3362)'
-      sha: 6164b10d343aed0e1c0bcc7ee915917da688304c
+      commitTitle: 'ci: run buck build/test on dependencies bump (#3374)'
+      sha: 0426bd66433ef9f32469810509723fda8ee05157
       tags:
-      - 0.15.10-3-g6164b10d3
+      - 0.15.11-2-g0426bd664
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump core/api dependencies (#3362)'
-      sha: 6164b10d343aed0e1c0bcc7ee915917da688304c
+      commitTitle: 'ci: run buck build/test on dependencies bump (#3374)'
+      sha: 0426bd66433ef9f32469810509723fda8ee05157
       tags:
-      - 0.15.10-3-g6164b10d3
+      - 0.15.11-2-g0426bd664
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump core/api dependencies (#3362)'
-      sha: 6164b10d343aed0e1c0bcc7ee915917da688304c
+      commitTitle: 'ci: run buck build/test on dependencies bump (#3374)'
+      sha: 0426bd66433ef9f32469810509723fda8ee05157
       tags:
-      - 0.15.11
+      - 0.15.11-2-g0426bd664
     path: ./
   path: ./graphql
 kind: LockConfig
