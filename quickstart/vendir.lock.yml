@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: removing deprecated endpoint (#3379)...'
-      sha: 54554e7d8ad146f97ed1aba61aeca220a272e807
+      commitTitle: 'fix: preparing next build with correct dirs (#3380)'
+      sha: aae461f98277a53dcaf0fee5c0f142f7d49a252f
       tags:
-      - 0.15.12-2-g54554e7d8
+      - 0.15.13-1-gaae461f98
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: removing deprecated endpoint (#3379)...'
-      sha: 54554e7d8ad146f97ed1aba61aeca220a272e807
+      commitTitle: 'fix: preparing next build with correct dirs (#3380)'
+      sha: aae461f98277a53dcaf0fee5c0f142f7d49a252f
       tags:
-      - 0.15.12-2-g54554e7d8
+      - 0.15.13-1-gaae461f98
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: removing deprecated endpoint (#3379)...'
-      sha: 54554e7d8ad146f97ed1aba61aeca220a272e807
+      commitTitle: 'fix: preparing next build with correct dirs (#3380)'
+      sha: aae461f98277a53dcaf0fee5c0f142f7d49a252f
       tags:
-      - 0.15.12-2-g54554e7d8
+      - 0.15.13-1-gaae461f98
     path: ./
   path: ./graphql
 kind: LockConfig
