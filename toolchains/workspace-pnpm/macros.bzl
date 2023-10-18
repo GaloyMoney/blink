@@ -422,8 +422,10 @@ def next_build_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
     cmd = cmd_args(
         ctx.attrs._python_toolchain[PythonToolchainInfo].interpreter,
         pnpm_toolchain.build_next_build[DefaultInfo].default_outputs,
+        "--root-dir",
+        build_context.workspace_root,
         "--package-dir",
-        cmd_args([build_context.workspace_root, ctx.label.package], delimiter = "/"),
+        ctx.label.package,
         out.as_output()
     )
 
