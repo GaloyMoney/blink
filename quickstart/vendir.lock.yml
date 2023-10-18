@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: run buck build/test on dependencies bump (#3374)'
-      sha: 0426bd66433ef9f32469810509723fda8ee05157
+      commitTitle: 'chore: removing deprecated endpoint (#3379)...'
+      sha: 54554e7d8ad146f97ed1aba61aeca220a272e807
       tags:
-      - 0.15.11-2-g0426bd664
+      - 0.15.12-2-g54554e7d8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: run buck build/test on dependencies bump (#3374)'
-      sha: 0426bd66433ef9f32469810509723fda8ee05157
+      commitTitle: 'chore: removing deprecated endpoint (#3379)...'
+      sha: 54554e7d8ad146f97ed1aba61aeca220a272e807
       tags:
-      - 0.15.11-2-g0426bd664
+      - 0.15.12-2-g54554e7d8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: run buck build/test on dependencies bump (#3374)'
-      sha: 0426bd66433ef9f32469810509723fda8ee05157
+      commitTitle: 'chore: removing deprecated endpoint (#3379)...'
+      sha: 54554e7d8ad146f97ed1aba61aeca220a272e807
       tags:
-      - 0.15.11-2-g0426bd664
+      - 0.15.12-2-g54554e7d8
     path: ./
   path: ./graphql
 kind: LockConfig
