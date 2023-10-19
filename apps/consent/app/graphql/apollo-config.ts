@@ -29,6 +29,6 @@ export const graphQlClient = (authToken?: string, request?: Request) => {
   const link = ApolloLink.from([headerSettingLink, httpLink]);
   return new ApolloClient({
     cache: new InMemoryCache(),
-    link: link,
+    link,
   });
 };
