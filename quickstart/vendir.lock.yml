@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: rate limit in dashboard and consent (#3393)...'
-      sha: f502035fd69a73884bf9d51591b288cf6b32e43f
+      commitTitle: 'build: genericize eslint and add to apps/dashboard tests (#3394)...'
+      sha: 1739e6c96ec5f4bdad267ad049663c8f84cf06f7
       tags:
-      - 0.15.18-7-gf502035fd
+      - 0.15.20-2-g1739e6c96
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: rate limit in dashboard and consent (#3393)...'
-      sha: f502035fd69a73884bf9d51591b288cf6b32e43f
+      commitTitle: 'build: genericize eslint and add to apps/dashboard tests (#3394)...'
+      sha: 1739e6c96ec5f4bdad267ad049663c8f84cf06f7
       tags:
-      - 0.15.18-7-gf502035fd
+      - 0.15.20-2-g1739e6c96
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: rate limit in dashboard and consent (#3393)...'
-      sha: f502035fd69a73884bf9d51591b288cf6b32e43f
+      commitTitle: 'build: genericize eslint and add to apps/dashboard tests (#3394)...'
+      sha: 1739e6c96ec5f4bdad267ad049663c8f84cf06f7
       tags:
-      - 0.15.18-7-gf502035fd
+      - 0.15.20-2-g1739e6c96
     path: ./
   path: ./graphql
 kind: LockConfig
