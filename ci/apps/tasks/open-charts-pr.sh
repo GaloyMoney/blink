@@ -9,7 +9,7 @@ pushd charts-repo
 
 git checkout "${BRANCH}"
 
-old_digest=$(yq -i e "${YAML_PATH}" "./charts/${CHART}/values.yaml")
+old_digest=$(yq e "${YAML_PATH}" "./charts/${CHART}/values.yaml")
 
 github_url=$(grep "digest: \"${old_digest}\"" "./charts/${CHART}/values.yaml" \
   | sed 's|digest:.*:: repository=\(.*\);.*$|\1|' | tr -d ' \n')
