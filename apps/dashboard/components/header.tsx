@@ -41,7 +41,7 @@ export default function Header() {
       }}
     >
       <GlobalStyles
-        styles={(theme) => ({
+        styles={() => ({
           ":root": {
             "--Header-height": "4em",
           },

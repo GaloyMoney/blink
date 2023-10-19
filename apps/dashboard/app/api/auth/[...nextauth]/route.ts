@@ -51,7 +51,7 @@ export const authOptions: AuthOptions = {
       }
       return token
     },
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       if (
         !token.accessToken ||
         !token.sub ||

@@ -20,9 +20,7 @@ function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
     return null
   }
   const endCursor = pageInfo.endCursor
-  const startCursor = pageInfo.startCursor
   const hasNextPage = pageInfo.hasNextPage
-  const hasPreviousPage = pageInfo.hasPreviousPage
 
   return (
     <Box
@@ -40,7 +38,7 @@ function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
         variant="outlined"
         color="neutral"
         startDecorator={<KeyboardArrowLeftIcon />}
-        onClick={(e) => {
+        onClick={() => {
           router.push(`/transactions`)
         }}
       >
@@ -53,7 +51,7 @@ function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
         variant="outlined"
         color="neutral"
         endDecorator={<KeyboardArrowRightIcon />}
-        onClick={(e) => {
+        onClick={() => {
           router.push(`/transactions?cursor=${endCursor}&direction=next`)
         }}
       >

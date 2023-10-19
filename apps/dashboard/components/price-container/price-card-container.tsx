@@ -2,7 +2,7 @@ import React from "react"
 import Card from "@mui/joy/Card"
 import CardContent from "@mui/joy/CardContent"
 import Typography from "@mui/joy/Typography"
-import { Box, Chip } from "@mui/joy"
+import { Box } from "@mui/joy"
 
 export interface PriceContainerCardProps {
   id: string
