@@ -4,34 +4,41 @@
 #@   "build_edge_image",
 #@   "build_edge_image_name",
 #@   "app_src_resource",
-#@   "app_edge_image")
+#@   "app_edge_image",
+#@   "bump_image_in_chart_name",
+#@   "bump_image_in_chart")
 
 #@ def consent_image():
 #@   return data.values.docker_registry + "/galoy-consent"
 #@ end
 
+#@ apps = ["consent", "dashboard"]
+
 groups:
   - name: all
     jobs:
-    - #@ build_edge_image_name("consent")
-    - #@ build_edge_image_name("dashboard")
-  - name: consent
+#@ for app in apps:
+    - #@ build_edge_image_name(app)
+    - #@ bump_image_in_chart_name(app)
+#@ end
+#@ for app in apps:
+  - name: #@ app
     jobs:
-    - #@ build_edge_image_name("consent")
-  - name: dashboard
-    jobs:
-    - #@ build_edge_image_name("dashboard")
+    - #@ build_edge_image_name(app)
+    - #@ bump_image_in_chart_name(app)
+#@ end
 
 jobs:
-  - #@ build_edge_image("consent")
-  - #@ build_edge_image("dashboard")
+#@ for app in apps:
+  - #@ build_edge_image(app)
+  - #@ bump_image_in_chart(app)
+#@ end
 
 resources:
-  - #@ app_src_resource("consent")
-  - #@ app_edge_image("consent")
-
-  - #@ app_src_resource("dashboard")
-  - #@ app_edge_image("dashboard")
+#@ for app in apps:
+  - #@ app_src_resource(app)
+  - #@ app_edge_image(app)
+#@ end
 
   - name: pipeline-tasks
     type: git
@@ -39,4 +46,18 @@ resources:
       paths: [ci/apps/*]
       uri: #@ data.values.git_uri
       branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key
+
+  - name: charts-repo
+    type: git
+    source:
+      uri: #@ data.values.git_charts_uri
+      branch: #@ data.values.git_charts_branch
+      private_key: #@ data.values.github_private_key
+
+  - name: charts-repo-out
+    type: git
+    source:
+      uri: #@ data.values.git_charts_uri
+      branch: "image-bump-bot-branch"
       private_key: #@ data.values.github_private_key

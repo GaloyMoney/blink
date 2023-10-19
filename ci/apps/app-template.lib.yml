@@ -12,7 +12,7 @@ name: #@ build_edge_image_name(app)
 serial: true
 plan:
   - in_parallel:
-      - get: #@ app + "-src"
+      - get: #@ app_src_resource_name(app)
         trigger: true
       - { get: pipeline-tasks }
   - task: prepare-docker-build
@@ -21,7 +21,7 @@ plan:
       image_resource: #@ task_image_config()
       inputs:
         - name: pipeline-tasks
-        - name: #@ app + "-src"
+        - name: #@ app_src_resource_name(app)
           path: repo
       outputs:
         - name: repo
@@ -46,13 +46,96 @@ plan:
         BUILD_ARGS_FILE: repo/.build-args
       run:
         path: build
-  - put: #@ app + "-edge-image"
+  - put: #@ edge_image_resource_name(app)
     params:
       image: image/image.tar
 #@ end
 
+#@ def bump_image_in_chart_name(app):
+#@   return "bump-" + app + "-in-chart"
+#@ end
+
+#@ def bump_image_in_chart(app):
+#@ app_lookup = {
+#@   "consent": {
+#@     "YAML_PATH": ".galoy.images.consent.digest",
+#@     "CHART": "galoy"
+#@   },
+#@   "dashboard": {
+#@     "YAML_PATH": ".image.digest",
+#@     "CHART": "api-dashboard"
+#@   }
+#@ }
+name: #@ bump_image_in_chart_name(app)
+serial: true
+plan:
+  - in_parallel:
+      - get: #@ app_src_resource_name(app)
+        trigger: true
+        passed:
+          - #@ build_edge_image_name(app)
+      - get: #@ edge_image_resource_name(app)
+        passed:
+          - #@ build_edge_image_name(app)
+        params: { skip_download: true }
+      - get: charts-repo
+        params:
+          branch: #@ data.values.git_charts_branch
+      - get: pipeline-tasks
+  - task: bump-image-digest-in-values
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: #@ app_src_resource_name(app)
+          path: repo
+        - name: #@ edge_image_resource_name(app)
+          path: edge-image
+        - name: charts-repo
+        - name: pipeline-tasks
+      outputs:
+        - name: charts-repo
+      params:
+        BRANCH: #@ data.values.git_charts_branch
+        APP: #@ app
+        YAML_PATH: #@ app_lookup[app]["YAML_PATH"]
+        CHART: #@ app_lookup[app]["CHART"]
+      run:
+        path: pipeline-tasks/ci/apps/tasks/bump-image-digest.sh
+  - put: charts-repo-out
+    params:
+      repository: charts-repo
+      force: true
+      branch: #@ "bump-" + app + "-app"
+  - task: open-charts-pr
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: #@ app_src_resource_name(app)
+          path: repo
+        - name: #@ edge_image_resource_name(app)
+          path: edge-image
+        - name: charts-repo
+        - name: pipeline-tasks
+      params:
+        GH_APP_ID: #@ data.values.github_app_id
+        GH_APP_PRIVATE_KEY: #@ data.values.github_app_private_key
+        APP: #@ app
+        BRANCH: #@ data.values.git_charts_branch
+        BOT_BRANCH: #@ "bump-" + app + "-app"
+        YAML_PATH: #@ app_lookup[app]["YAML_PATH"]
+        CHART: #@ app_lookup[app]["CHART"]
+      run:
+        path: pipeline-tasks/ci/tasks/apps/open-charts-pr.sh
+#@ end
+
+#@ def app_src_resource_name(app):
+#@   return app + "-src"
+#@ end
+
 #@ def app_src_resource(app):
-name: #@ app + "-src"
+name: #@ app_src_resource_name(app)
 type: git
 source:
   paths:
@@ -61,15 +144,22 @@ source:
   - #@ "apps/" + app + "/**/*"
   - flake.nix
   - flake.lock
+  - toolchains/
+  - toolchains/*
+  - toolchains/**/*
+  - pnpm-lock.yaml
   fetch_tags: true
   uri: #@ data.values.git_uri
   branch: #@ data.values.git_branch
   private_key: #@ data.values.github_private_key
-webhook_token: ((webhook.secret))
+#@ end
+
+#@ def edge_image_resource_name(app):
+#@   return app + "-edge-image"
 #@ end
 
 #@ def app_edge_image(app):
-name: #@ app + "-edge-image"
+name: #@ edge_image_resource_name(app)
 type: registry-image
 source:
   tag: edge
