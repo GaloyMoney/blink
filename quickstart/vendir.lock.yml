@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump /core/api types packages (#3383)'
-      sha: 4c3b4245313c6d1547aa3e3d9ce5ef426b5828b4
+      commitTitle: 'fix: add middleware.ts to dashboard build (#3391)'
+      sha: 708266a2623678372101348d3671bc090b08a1e3
       tags:
-      - 0.15.15-1-g4c3b42453
+      - 0.15.16-2-g708266a26
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump /core/api types packages (#3383)'
-      sha: 4c3b4245313c6d1547aa3e3d9ce5ef426b5828b4
+      commitTitle: 'fix: add middleware.ts to dashboard build (#3391)'
+      sha: 708266a2623678372101348d3671bc090b08a1e3
       tags:
-      - 0.15.16
+      - 0.15.16-2-g708266a26
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump /core/api types packages (#3383)'
-      sha: 4c3b4245313c6d1547aa3e3d9ce5ef426b5828b4
+      commitTitle: 'fix: add middleware.ts to dashboard build (#3391)'
+      sha: 708266a2623678372101348d3671bc090b08a1e3
       tags:
-      - 0.15.16
+      - 0.15.16-2-g708266a26
     path: ./
   path: ./graphql
 kind: LockConfig
