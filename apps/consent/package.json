@@ -27,7 +27,7 @@
     "react-dom": "latest",
     "react-phone-number-input": "^3.3.6",
     "react-toastify": "^9.1.3",
-    "zod": "^3.22.2"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "@graphql-codegen/add": "^5.0.0",
