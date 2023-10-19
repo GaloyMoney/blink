@@ -1,7 +1,7 @@
 "use server";
 import authApi from "@/services/galoy-auth";
 import axios from "axios";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   GetCaptchaChallengeResponse,
@@ -11,16 +11,19 @@ import { LoginType, SubmitValue } from "@/app/index.types";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import { hydraClient } from "@/services/hydra";
 
-
 export const getCaptchaChallenge = async (
   _prevState: unknown,
   form: FormData
 ): Promise<GetCaptchaChallengeResponse> => {
+  const headersList = headers();
+  const customHeaders = {
+    "x-real-ip": headersList.get("x-real-ip"),
+    "x-forwarded-for": headersList.get("x-forwarded-for"),
+  };
   let phone = form.get("phone");
   const login_challenge = form.get("login_challenge");
   const remember = form.get("remember") === "1";
   const submitValue = form.get("submit");
-
 
   if (!submitValue || !login_challenge || typeof login_challenge !== "string") {
     throw new Error("submitValue not provided");
@@ -59,7 +62,7 @@ export const getCaptchaChallenge = async (
     };
   }
 
-  const res = await authApi.requestPhoneCaptcha();
+  const res = await authApi.requestPhoneCaptcha(customHeaders);
   const id = res.id;
   const challenge = res.challengeCode;
   return {
@@ -89,6 +92,11 @@ export const sendPhoneCode = async (
     remember: string;
   }
 ): Promise<SendPhoneCodeResponse> => {
+  const headersList = headers();
+  const customHeaders = {
+    "x-real-ip": headersList.get("x-real-ip"),
+    "x-forwarded-for": headersList.get("x-forwarded-for"),
+  };
   const login_challenge = formData.login_challenge;
   const phone = formData.phone;
   const remember = String(formData.remember) === "true";
@@ -99,7 +107,8 @@ export const sendPhoneCode = async (
       phone,
       result.geetest_challenge,
       result.geetest_validate,
-      result.geetest_seccode
+      result.geetest_seccode,
+      customHeaders
     );
   } catch (err) {
     if (axios.isAxiosError(err) && err.response) {

@@ -17,6 +17,7 @@ import PrimaryButton from "../components/button/primary-button-component";
 import SecondaryButton from "../components/button/secondary-button-component";
 import { LoginType, SubmitValue } from "../index.types";
 import { LoginEmailResponse } from "./email-login.types";
+import { headers } from "next/headers";
 //  this page is for login via email
 interface LoginProps {
   login_challenge: string;
@@ -26,6 +27,13 @@ async function submitForm(
   formData: FormData
 ): Promise<LoginEmailResponse | void> {
   "use server";
+
+  const headersList = headers();
+  const customHeaders = {
+    "x-real-ip": headersList.get("x-real-ip"),
+    "x-forwarded-for": headersList.get("x-forwarded-for"),
+  };
+
   const login_challenge = formData.get("login_challenge");
   const submitValue = formData.get("submit");
   const email = formData.get("email");
@@ -59,12 +67,11 @@ async function submitForm(
 
   let emailCodeRequest;
   try {
-    emailCodeRequest = await authApi.requestEmailCode(email);
+    emailCodeRequest = await authApi.requestEmailCode(email, customHeaders);
   } catch (err) {
     console.error("error while calling emailRequest Code", err);
   }
 
-  
   if (!emailCodeRequest) {
     throw new Error("Request failed to get email code");
   }
