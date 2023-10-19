@@ -35,13 +35,13 @@ start: start-deps
 	make start-main & make start-trigger & make start-ws
 
 start-main-ci:
-	node lib/servers/graphql-main-server.js
+	node dist/servers/graphql-main-server.js
 
 start-trigger-ci:
-	node lib/servers/trigger.js
+	node dist/servers/trigger.js
 
 start-ws-ci:
-	node lib/servers/ws-server.js
+	node dist/servers/ws-server.js
 
 exporter: start-deps
 	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
