@@ -554,6 +554,10 @@ def prepare_build_context(ctx: AnalysisContext) -> BuildContext:
     for src in ctx.attrs.srcs:
         cmd.add("--src")
         cmd.add(cmd_args(src, format = ctx.label.package + "={}"))
+    if hasattr(ctx.attrs, 'dev_deps_srcs'):
+        for (name, src) in ctx.attrs.dev_deps_srcs.items():
+            cmd.add("--src")
+            cmd.add(cmd_args(src, format = name + "={}"))
     cmd.add(workspace_root.as_output())
 
     ctx.actions.run(cmd, category = "prepare_build_context", identifier = ctx.label.package)
@@ -625,6 +629,12 @@ _eslint = rule(
             attrs.source(),
             default = [],
             doc = """List of package source files to track.""",
+        ),
+        "dev_deps_srcs": attrs.dict(
+            attrs.string(),
+            attrs.source(allow_directory = True),
+            default = {},
+            doc = """Mapping of dependent dev package paths to source files from to track.""",
         ),
         "eslint": attrs.dep(
             providers = [RunInfo],

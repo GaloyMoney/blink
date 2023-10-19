@@ -1,0 +1,11 @@
+export_file(
+    name = "package.json",
+)
+
+filegroup(
+    name = "src",
+    srcs = [
+        ".eslintrc.base.js",
+    ],
+    visibility = ["PUBLIC"],
+)
