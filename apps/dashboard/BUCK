@@ -53,5 +53,7 @@ eslint(
 
 test_suite(
     name = "test",
-    tests = [],
+    tests = [
+        ":check-lint",
+    ],
 )
