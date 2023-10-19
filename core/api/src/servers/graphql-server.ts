@@ -1,29 +1,31 @@
 import { createServer } from "http"
 
+import { ApolloServer } from "@apollo/server"
+import { unwrapResolverError } from "@apollo/server/errors"
+import { expressMiddleware } from "@apollo/server/express4"
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
+import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
-
-import { ApolloServerPluginDrainHttpServer } from "apollo-server-core"
-import { ApolloError, ApolloServer } from "apollo-server-express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
-import { GraphQLError, GraphQLSchema } from "graphql"
+import { GraphQLSchema } from "graphql"
+// import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
+// import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 import jsonwebtoken from "jsonwebtoken"
+import jwksRsa from "jwks-rsa"
 import PinoHttp from "pino-http"
 
-import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
-
-import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
-
-import jwksRsa from "jwks-rsa"
-
-import kratosCallback from "./event-handlers/kratos"
-import healthzHandler from "./middlewares/healthz"
-import { idempotencyMiddleware } from "./middlewares/idempotency"
 import authRouter from "./authorization"
 
-import { parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
+import kratosCallback from "./event-handlers/kratos"
+
+import healthzHandler from "./middlewares/healthz"
+
+import { idempotencyMiddleware } from "./middlewares/idempotency"
+
+import { getJwksArgs } from "@/config"
+import { DomainError, parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
 import { mapError } from "@/graphql/error-map"
 import { baseLogger } from "@/services/logger"
-import { getJwksArgs } from "@/config"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -46,40 +48,34 @@ export const startApolloServer = async ({
   const httpServer = createServer(app)
 
   const apolloPlugins = [
-    createComplexityPlugin({
-      schema,
-      estimators: [fieldExtensionsEstimator(), simpleEstimator({ defaultComplexity: 1 })],
-      maximumComplexity: 200,
-      onComplete: (complexity) => {
-        // TODO(telemetry): add complexity value to span
-        baseLogger.debug({ complexity }, "queryComplexity")
-      },
-    }),
+    // createComplexityPlugin({
+    //   schema,
+    //   estimators: [fieldExtensionsEstimator(), simpleEstimator({ defaultComplexity: 1 })],
+    //   maximumComplexity: 200,
+    //   onComplete: (complexity) => {
+    //     // TODO(telemetry): add complexity value to span
+    //     baseLogger.debug({ complexity }, "queryComplexity")
+    //   },
+    // }),
     ApolloServerPluginDrainHttpServer({ httpServer }),
   ]
 
-  const apolloServer = new ApolloServer({
+  const apolloServer = new ApolloServer<GraphQLContext>({
     schema,
     cache: "bounded",
     plugins: apolloPlugins,
-    context: (context) => {
-      return context.req.gqlContext
-    },
-    formatError: (err) => {
+    formatError: (formattedError, error) => {
       try {
-        const reportErrorToClient =
-          err instanceof ApolloError || err instanceof GraphQLError
-
-        const reportedError = {
-          message: err.message,
-          locations: err.locations,
-          path: err.path,
-          code: err.extensions?.code,
+        if (unwrapResolverError(error) instanceof DomainError) {
+          return mapError(parseUnknownDomainErrorFromUnknown(error))
         }
 
-        return reportErrorToClient
-          ? reportedError
-          : { message: `Error processing GraphQL request ${reportedError.code}` }
+        return {
+          message: formattedError.message,
+          locations: formattedError.locations,
+          path: formattedError.path,
+          code: formattedError.extensions?.code,
+        }
       } catch (err) {
         throw mapError(parseUnknownDomainErrorFromUnknown(err))
       }
@@ -161,17 +157,18 @@ export const startApolloServer = async ({
 
   await apolloServer.start()
 
-  apolloServer.applyMiddleware({
-    app,
-    path: "/graphql",
-    cors: { credentials: true, origin: true },
-  })
+  app.use(
+    "/graphql",
+    cors<cors.CorsRequest>({ credentials: true, origin: true }),
+    express.json(),
+    expressMiddleware(apolloServer, {
+      context: async ({ req }) => req.gqlContext,
+    }),
+  )
 
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
-      console.log(
-        `🚀 "${type}" server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
-      )
+      console.log(`🚀 "${type}" server ready at http://localhost:${port}/graphql`)
 
       console.log(
         `in dev mode, ${type} server should be accessed through oathkeeper reverse proxy at ${

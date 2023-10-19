@@ -21,9 +21,9 @@ type PricePointType = {
 
 type LogFn = import("pino").LogFn
 
-type CustomApolloError = import("./error").CustomApolloError
+type CustomGraphQLError = import("./error").CustomGraphQLError
 
-type CustomApolloErrorData = {
+type CustomGraphQLErrorData = {
   message?: string
   logger: Logger
   level?: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent"

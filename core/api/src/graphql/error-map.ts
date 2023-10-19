@@ -40,7 +40,7 @@ const assertUnreachable = (x: never): never => {
   throw new Error(`This should never compile with ${x}`)
 }
 
-export const mapError = (error: ApplicationError): CustomApolloError => {
+export const mapError = (error: ApplicationError): CustomGraphQLError => {
   const errorName = error.name as ApplicationErrorKey
   let message = ""
   switch (errorName) {
@@ -714,6 +714,6 @@ export const mapAndParseErrorForGqlResponse = (err: ApplicationError): IError =>
   return {
     message: mappedError.message,
     path: mappedError.path,
-    code: mappedError.extensions.code,
+    code: `${mappedError.extensions.code}`,
   }
 }

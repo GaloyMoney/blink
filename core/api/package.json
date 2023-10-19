@@ -34,6 +34,7 @@
     "node": "20"
   },
   "dependencies": {
+    "@apollo/server": "^4.9.4",
     "@google-cloud/storage": "^7.3.0",
     "@grpc/grpc-js": "^1.9.6",
     "@grpc/proto-loader": "^0.7.10",
@@ -54,9 +55,6 @@
     "@ory/client": "^1.2.11",
     "@t3-oss/env-core": "^0.7.1",
     "ajv": "^8.12.0",
-    "apollo-server-core": "^3.12.1",
-    "apollo-server-errors": "^3.3.1",
-    "apollo-server-express": "^3.12.1",
     "axios": "^1.5.1",
     "basic-auth": "^2.0.1",
     "bip32": "^4.0.0",
