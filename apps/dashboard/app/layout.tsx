@@ -1,10 +1,14 @@
-import SessionProvider from "@/components/session-provider"
-import "./globals.css"
 import type { Metadata } from "next"
-import { authOptions } from "./api/auth/[...nextauth]/route"
-import Header from "@/components/header"
-import Sidebar from "@/components/side-bar"
 import { getServerSession } from "next-auth"
+
+import "./globals.css"
+
+import { authOptions } from "./api/auth/[...nextauth]/route"
+
+import Header from "@/components/header"
+import SessionProvider from "@/components/session-provider"
+import Sidebar from "@/components/side-bar"
+
 import ThemeRegistry from "@/theme/theme-registry"
 
 export const metadata: Metadata = {

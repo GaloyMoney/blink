@@ -1,5 +1,7 @@
 import { getServerSession } from "next-auth"
+
 import { authOptions } from "./api/auth/[...nextauth]/route"
+
 import PriceContainer from "@/components/price-container/price-container"
 import ContentContainer from "@/components/content-container"
 

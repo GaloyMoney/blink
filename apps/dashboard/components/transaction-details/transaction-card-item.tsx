@@ -4,7 +4,9 @@ import CardContent from "@mui/joy/CardContent"
 import Typography from "@mui/joy/Typography"
 import { Sheet } from "@mui/joy"
 import Chip from "@mui/joy/Chip"
+
 import { TransactionDetailsProps } from "./index.types"
+
 import { getTransactionStatusColor } from "@/components/utils"
 
 export default function TransactionCardComponent({ rows }: TransactionDetailsProps) {

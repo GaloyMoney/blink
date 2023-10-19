@@ -1,5 +1,6 @@
 import React from "react"
 import { Box } from "@mui/joy"
+
 import PriceContainerCard from "./price-card-container"
 export interface WalletData {
   __typename: string

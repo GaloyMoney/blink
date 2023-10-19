@@ -3,7 +3,9 @@ import Table from "@mui/joy/Table"
 import Typography from "@mui/joy/Typography"
 import { Sheet } from "@mui/joy"
 import Chip from "@mui/joy/Chip"
+
 import { TransactionDetailsProps } from "./index.types"
+
 import { getTransactionStatusColor } from "@/components/utils"
 
 export default function TransactionTableComponent({ rows }: TransactionDetailsProps) {

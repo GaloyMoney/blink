@@ -1,7 +1,9 @@
 import NextAuth, { AuthOptions } from "next-auth"
+
+import { ApolloQueryResult } from "@apollo/client"
+
 import { fetchUserData } from "@/services/graphql/queries/me-data"
 import { env } from "@/env"
-import { ApolloQueryResult } from "@apollo/client"
 import { MeQuery } from "@/services/graphql/generated"
 
 declare module "next-auth" {

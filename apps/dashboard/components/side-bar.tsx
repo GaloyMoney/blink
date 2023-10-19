@@ -11,6 +11,7 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined"
 import { Typography } from "@mui/joy"
 import { usePathname } from "next/navigation"
+
 import Logo from "./logo"
 import { closeSidebar } from "./utils"
 
