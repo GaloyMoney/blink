@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add middleware.ts to dashboard build (#3391)'
-      sha: 708266a2623678372101348d3671bc090b08a1e3
+      commitTitle: 'fix: dependencies tag (#3392)'
+      sha: 03a7d7091b8eccc666abe1463c96b62e1e2470e0
       tags:
-      - 0.15.16-2-g708266a26
+      - 0.15.17-2-g03a7d7091
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add middleware.ts to dashboard build (#3391)'
-      sha: 708266a2623678372101348d3671bc090b08a1e3
+      commitTitle: 'fix: dependencies tag (#3392)'
+      sha: 03a7d7091b8eccc666abe1463c96b62e1e2470e0
       tags:
-      - 0.15.16-2-g708266a26
+      - 0.15.17-2-g03a7d7091
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: add middleware.ts to dashboard build (#3391)'
-      sha: 708266a2623678372101348d3671bc090b08a1e3
+      commitTitle: 'fix: dependencies tag (#3392)'
+      sha: 03a7d7091b8eccc666abe1463c96b62e1e2470e0
       tags:
-      - 0.15.16-2-g708266a26
+      - 0.15.17-2-g03a7d7091
     path: ./
   path: ./graphql
 kind: LockConfig
