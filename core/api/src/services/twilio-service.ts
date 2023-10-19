@@ -168,7 +168,7 @@ const handleCommonErrors = (err: Error | string | unknown) => {
 }
 export const KnownTwilioErrorMessages = {
   InvalidPhoneNumber: /not a valid phone number/,
-  InvalidMobileNumber: /not a mobile number/,
+  InvalidMobileNumber: /not a .*mobile number/,
   InvalidPhoneNumberParameter: /Invalid parameter `To`/,
   InvalidCodeParameter: /Invalid parameter: Code/,
   RestrictedRegion: /has not been enabled for the region/,
