@@ -14,7 +14,7 @@ old_digest=$(yq e "${YAML_PATH}" "./charts/${CHART}/values.yaml")
 github_url=$(grep "digest: \"${old_digest}\"" "./charts/${CHART}/values.yaml" \
   | sed 's|digest:.*:: repository=\(.*\);.*$|\1|' | tr -d ' \n')
 old_ref=$(grep "digest: \"${old_digest}\"" "./charts/${CHART}/values.yaml" \
-  | sed 's|digest:.*:: ;commit_ref=\(.*\)$|\1|' | tr -d ' \n')
+  | sed 's|digest:.*::.*;commit_ref=\(.*\)$|\1|' | tr -d ' \n')
 
 cat <<EOF >> ../body.md
 # Bump ${APP} image
