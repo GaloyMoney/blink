@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: otel exporter propagation (#3382)'
-      sha: 4ca052efde8c39c412ef39b0f9ead454d62a9e62
+      commitTitle: 'chore: bump /core/api types packages (#3383)'
+      sha: 4c3b4245313c6d1547aa3e3d9ce5ef426b5828b4
       tags:
-      - 0.15.14-2-g4ca052efd
+      - 0.15.15-1-g4c3b42453
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: otel exporter propagation (#3382)'
-      sha: 4ca052efde8c39c412ef39b0f9ead454d62a9e62
+      commitTitle: 'chore: bump /core/api types packages (#3383)'
+      sha: 4c3b4245313c6d1547aa3e3d9ce5ef426b5828b4
       tags:
-      - 0.15.14-2-g4ca052efd
+      - 0.15.16
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: otel exporter propagation (#3382)'
-      sha: 4ca052efde8c39c412ef39b0f9ead454d62a9e62
+      commitTitle: 'chore: bump /core/api types packages (#3383)'
+      sha: 4c3b4245313c6d1547aa3e3d9ce5ef426b5828b4
       tags:
-      - 0.15.14-2-g4ca052efd
+      - 0.15.16
     path: ./
   path: ./graphql
 kind: LockConfig
