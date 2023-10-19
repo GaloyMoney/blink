@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { getServerSession } from "next-auth"
 
+// eslint-disable-next-line import/no-unassigned-import
 import "./globals.css"
 
 import { authOptions } from "./api/auth/[...nextauth]/route"
