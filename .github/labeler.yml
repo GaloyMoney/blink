@@ -4,9 +4,12 @@ ci:
 
 dashboard:
   - apps/dashboard/*
+  - pnpm-lock.yaml
 
 consent:
   - apps/consent/*
+  - pnpm-lock.yaml
 
 core:
   - core/**/*
+  - pnpm-lock.yaml

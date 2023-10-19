@@ -22,10 +22,10 @@ jobs:
           EOF
           for LABEL in $(jq -r '.[]' < labels.json); do
             case "$LABEL" in
-              dashboard|consent|dependencies)
+              dashboard|consent)
                 ARGS+=" //apps/$LABEL:$LABEL"
                 ;;
-              core|dependencies)
+              core)
                 ARGS+=" //core/api:api"
                 ;;
             esac
