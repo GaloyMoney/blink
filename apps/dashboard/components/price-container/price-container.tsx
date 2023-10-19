@@ -1,26 +1,23 @@
-import React from "react";
-import { Box } from "@mui/joy";
-import PriceContainerCard from "./price-card-container";
+import React from "react"
+import { Box } from "@mui/joy"
+
+import PriceContainerCard from "./price-card-container"
 export interface WalletData {
-  __typename: string;
-  accountId: string;
-  balance: number;
-  id: string;
-  pendingIncomingBalance: number;
-  walletCurrency: "BTC" | "USD";
+  __typename: string
+  accountId: string
+  balance: number
+  id: string
+  pendingIncomingBalance: number
+  walletCurrency: "BTC" | "USD"
 }
 
 export interface PriceContainerProps {
-  walletDetails: ReadonlyArray<WalletData>;
+  walletDetails: ReadonlyArray<WalletData>
 }
 
 const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
-  const btcWallet = walletDetails.find(
-    (wallet) => wallet.walletCurrency === "BTC",
-  );
-  const usdWallet = walletDetails.find(
-    (wallet) => wallet.walletCurrency === "USD",
-  );
+  const btcWallet = walletDetails.find((wallet) => wallet.walletCurrency === "BTC")
+  const usdWallet = walletDetails.find((wallet) => wallet.walletCurrency === "USD")
 
   return (
     <Box
@@ -42,9 +39,7 @@ const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
             id={btcWallet.id}
             walletCurrency={btcWallet.walletCurrency}
             balance={btcWallet.balance / 100000000}
-            pendingIncomingBalance={
-              btcWallet.pendingIncomingBalance / 100000000
-            }
+            pendingIncomingBalance={btcWallet.pendingIncomingBalance / 100000000}
             currencySymbol="BTC"
           />
         )}
@@ -59,7 +54,7 @@ const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
         )}
       </Box>
     </Box>
-  );
-};
+  )
+}
 
-export default PriceContainer;
+export default PriceContainer

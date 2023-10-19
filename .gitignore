@@ -1,5 +1,5 @@
 ## Compiled JavaScript files
-lib/**/*.js
+dist/**/*.js
 **/*.js.map
 
 # Typescript v1 declaration files
@@ -26,7 +26,7 @@ public/*
 !public/logo.png
 
 coverage
-lib
+dist
 artifacts
 
 generated.gql

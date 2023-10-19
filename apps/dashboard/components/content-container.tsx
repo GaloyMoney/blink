@@ -1,8 +1,8 @@
-import { Box } from "@mui/joy";
-import React from "react";
+import { Box } from "@mui/joy"
+import React from "react"
 
 interface ContentContainerProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 function ContentContainer({ children }: ContentContainerProps) {
@@ -34,7 +34,7 @@ function ContentContainer({ children }: ContentContainerProps) {
     >
       {children}
     </Box>
-  );
+  )
 }
 
-export default ContentContainer;
+export default ContentContainer

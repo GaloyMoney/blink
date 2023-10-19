@@ -1,13 +1,13 @@
 export interface RowNode {
-  __typename: "Transaction";
-  id: string;
-  createdAt: number;
-  settlementDisplayAmount: string;
-  settlementDisplayCurrency: string;
-  status: string;
-  settlementFee: number;
+  __typename: "Transaction"
+  id: string
+  createdAt: number
+  settlementDisplayAmount: string
+  settlementDisplayCurrency: string
+  status: string
+  settlementFee: number
 }
 
 export interface TransactionDetailsProps {
-  rows: ReadonlyArray<{ node: RowNode }>;
+  rows: ReadonlyArray<{ node: RowNode }>
 }

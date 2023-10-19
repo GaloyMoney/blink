@@ -1,15 +1,15 @@
-import * as React from "react";
-import Card from "@mui/joy/Card";
-import CardContent from "@mui/joy/CardContent";
-import Typography from "@mui/joy/Typography";
-import { Sheet } from "@mui/joy";
-import Chip from "@mui/joy/Chip";
-import { TransactionDetailsProps } from "./index.types";
-import { getTransactionStatusColor } from "@/components/utils";
+import * as React from "react"
+import Card from "@mui/joy/Card"
+import CardContent from "@mui/joy/CardContent"
+import Typography from "@mui/joy/Typography"
+import { Sheet } from "@mui/joy"
+import Chip from "@mui/joy/Chip"
 
-export default function TransactionCardComponent({
-  rows,
-}: TransactionDetailsProps) {
+import { TransactionDetailsProps } from "./index.types"
+
+import { getTransactionStatusColor } from "@/components/utils"
+
+export default function TransactionCardComponent({ rows }: TransactionDetailsProps) {
   return (
     <Sheet
       variant="outlined"
@@ -66,8 +66,7 @@ export default function TransactionCardComponent({
                 Settle Amount
               </Typography>
               <Typography level="body-md">
-                {row.node.settlementDisplayAmount}{" "}
-                {row.node.settlementDisplayCurrency}
+                {row.node.settlementDisplayAmount} {row.node.settlementDisplayCurrency}
               </Typography>
             </div>
             <div
@@ -99,13 +98,11 @@ export default function TransactionCardComponent({
               <Typography level="body-sm" fontWeight="bold">
                 Fees
               </Typography>
-              <Typography level="body-md">
-                {row.node.settlementFee} stats
-              </Typography>
+              <Typography level="body-md">{row.node.settlementFee} stats</Typography>
             </div>
           </CardContent>
         </Card>
       ))}
     </Sheet>
-  );
+  )
 }

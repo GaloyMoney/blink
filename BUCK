@@ -5,7 +5,8 @@ pnpm_workspace(
   child_packages = [
     "//core/api:package.json",
     "//apps/consent:package.json",
-    "//apps/dashboard:package.json"
+    "//apps/dashboard:package.json",
+    "//lib/eslint-config:package.json"
   ],
   visibility = ["PUBLIC"],
 )

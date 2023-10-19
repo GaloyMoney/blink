@@ -1,12 +1,12 @@
-import { gql } from "@apollo/client";
+import { gql } from "@apollo/client"
 
-import { apollo } from "..";
+import { apollo } from ".."
 import {
   GetFirstTransactionsDocument,
   GetFirstTransactionsQuery,
   GetPaginatedTransactionsDocument,
   GetPaginatedTransactionsQuery,
-} from "../generated";
+} from "../generated"
 
 // TODO remove not used fields
 gql`
@@ -73,7 +73,7 @@ gql`
       }
     }
   }
-`;
+`
 
 gql`
   query GetFirstTransactions($first: Int) {
@@ -139,26 +139,23 @@ gql`
       }
     }
   }
-`;
+`
 
-export async function fetchFirstTransactions(
-  token: string,
-  first: number = 10,
-) {
-  const client = apollo(token).getClient();
+export async function fetchFirstTransactions(token: string, first: number = 10) {
+  const client = apollo(token).getClient()
 
   try {
     const data = await client.query<GetFirstTransactionsQuery>({
       query: GetFirstTransactionsDocument,
       variables: { first },
-    });
-    return data.data.me?.defaultAccount.transactions;
+    })
+    return data.data.me?.defaultAccount.transactions
   } catch (err) {
-    console.error("error in getting Transaction details", err);
+    console.error("error in getting Transaction details", err)
     if (err instanceof Error) {
-      throw new Error(err.message);
+      throw new Error(err.message)
     }
-    throw new Error("Unknown error");
+    throw new Error("Unknown error")
   }
 }
 
@@ -168,33 +165,33 @@ export async function fetchPaginatedTransactions(
   cursor: string | null = null,
   first: number = 10,
 ) {
-  const client = apollo(token).getClient();
+  const client = apollo(token).getClient()
 
   let variables: {
-    first: number;
-    after?: string | null;
-    before?: string | null;
-  };
+    first: number
+    after?: string | null
+    before?: string | null
+  }
 
   if (direction === "next") {
-    variables = { first, after: cursor };
+    variables = { first, after: cursor }
   } else if (direction === "previous") {
-    variables = { first, before: cursor };
+    variables = { first, before: cursor }
   } else {
-    throw new Error("Invalid direction provided. Use 'next' or 'previous'.");
+    throw new Error("Invalid direction provided. Use 'next' or 'previous'.")
   }
 
   try {
     const data = await client.query<GetPaginatedTransactionsQuery>({
       query: GetPaginatedTransactionsDocument,
       variables,
-    });
-    return data.data.me?.defaultAccount.transactions;
+    })
+    return data.data.me?.defaultAccount.transactions
   } catch (err) {
-    console.error("error in fetchPaginatedTransactions ", err);
+    console.error("error in fetchPaginatedTransactions ", err)
     if (err instanceof Error) {
-      throw new Error(err.message);
+      throw new Error(err.message)
     }
-    throw new Error("Unknown error");
+    throw new Error("Unknown error")
   }
 }

@@ -1,14 +1,14 @@
-import * as React from "react";
-import Table from "@mui/joy/Table";
-import Typography from "@mui/joy/Typography";
-import { Sheet } from "@mui/joy";
-import Chip from "@mui/joy/Chip";
-import { TransactionDetailsProps } from "./index.types";
-import { getTransactionStatusColor } from "@/components/utils";
+import * as React from "react"
+import Table from "@mui/joy/Table"
+import Typography from "@mui/joy/Typography"
+import { Sheet } from "@mui/joy"
+import Chip from "@mui/joy/Chip"
 
-export default function TransactionTableComponent({
-  rows,
-}: TransactionDetailsProps) {
+import { TransactionDetailsProps } from "./index.types"
+
+import { getTransactionStatusColor } from "@/components/utils"
+
+export default function TransactionTableComponent({ rows }: TransactionDetailsProps) {
   return (
     <Sheet
       variant="outlined"
@@ -101,8 +101,7 @@ export default function TransactionTableComponent({
               </td>
               <td style={{ padding: "12px 6px" }}>
                 <Typography level="body-md">
-                  {row.node.settlementDisplayAmount}{" "}
-                  {row.node.settlementDisplayCurrency}
+                  {row.node.settlementDisplayAmount} {row.node.settlementDisplayCurrency}
                 </Typography>
               </td>
 
@@ -112,14 +111,12 @@ export default function TransactionTableComponent({
                 </Chip>
               </td>
               <td style={{ padding: "12px 6px" }}>
-                <Typography level="body-md">
-                  {row.node.settlementFee} stats
-                </Typography>
+                <Typography level="body-md">{row.node.settlementFee} stats</Typography>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
     </Sheet>
-  );
+  )
 }

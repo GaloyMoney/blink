@@ -1,22 +1,23 @@
-"use client";
-import GlobalStyles from "@mui/joy/GlobalStyles";
-import Box from "@mui/joy/Box";
-import List from "@mui/joy/List";
-import ListItem from "@mui/joy/ListItem";
-import ListItemButton, { listItemButtonClasses } from "@mui/joy/ListItemButton";
-import Sheet from "@mui/joy/Sheet";
-import Divider from "@mui/material/Divider";
-import Link from "next/link";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import { Typography } from "@mui/joy";
-import { usePathname } from "next/navigation";
-import Logo from "./logo";
-import { closeSidebar } from "./utils";
+"use client"
+import GlobalStyles from "@mui/joy/GlobalStyles"
+import Box from "@mui/joy/Box"
+import List from "@mui/joy/List"
+import ListItem from "@mui/joy/ListItem"
+import ListItemButton, { listItemButtonClasses } from "@mui/joy/ListItemButton"
+import Sheet from "@mui/joy/Sheet"
+import Divider from "@mui/material/Divider"
+import Link from "next/link"
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined"
+import { Typography } from "@mui/joy"
+import { usePathname } from "next/navigation"
+
+import Logo from "./logo"
+import { closeSidebar } from "./utils"
 
 export default function Sidebar() {
-  const path = usePathname();
-  const isCurrentPath = (href: string) => path === href;
+  const path = usePathname()
+  const isCurrentPath = (href: string) => path === href
   return (
     <Sheet
       className="Sidebar"
@@ -114,10 +115,10 @@ export default function Sidebar() {
             <ListItem>
               <ListItemButton
                 onClick={() => {
-                  closeSidebar();
+                  closeSidebar()
                 }}
                 sx={{
-                  backgroundColor: isCurrentPath("/")
+                  "backgroundColor": isCurrentPath("/")
                     ? "rgba(0, 0, 0, 0.08)"
                     : "transparent",
                   "&:hover": {
@@ -143,10 +144,10 @@ export default function Sidebar() {
             <ListItem>
               <ListItemButton
                 onClick={() => {
-                  closeSidebar();
+                  closeSidebar()
                 }}
                 sx={{
-                  backgroundColor: isCurrentPath("/transactions")
+                  "backgroundColor": isCurrentPath("/transactions")
                     ? "rgba(0, 0, 0, 0.08)"
                     : "transparent",
                   "&:hover": {
@@ -171,5 +172,5 @@ export default function Sidebar() {
         </List>
       </Box>
     </Sheet>
-  );
+  )
 }

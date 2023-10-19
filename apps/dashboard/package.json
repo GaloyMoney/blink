@@ -12,9 +12,9 @@
   "dependencies": {
     "@apollo/client": "^3.8.4",
     "@apollo/experimental-nextjs-app-support": "^0.4.3",
+    "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@emotion/cache": "^11.11.0",
     "@mui/icons-material": "^5.14.13",
     "@mui/joy": "^5.0.0-beta.10",
     "@mui/material": "^5.14.13",
@@ -28,6 +28,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@galoy/eslint-config": "workspace:^",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/client-preset": "^4.1.0",

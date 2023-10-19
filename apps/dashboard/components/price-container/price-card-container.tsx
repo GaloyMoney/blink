@@ -1,15 +1,15 @@
-import React from "react";
-import Card from "@mui/joy/Card";
-import CardContent from "@mui/joy/CardContent";
-import Typography from "@mui/joy/Typography";
-import { Box, Chip } from "@mui/joy";
+import React from "react"
+import Card from "@mui/joy/Card"
+import CardContent from "@mui/joy/CardContent"
+import Typography from "@mui/joy/Typography"
+import { Box } from "@mui/joy"
 
 export interface PriceContainerCardProps {
-  id: string;
-  walletCurrency: string;
-  balance: number;
-  pendingIncomingBalance: number;
-  currencySymbol: string;
+  id: string
+  walletCurrency: string
+  balance: number
+  pendingIncomingBalance: number
+  currencySymbol: string
 }
 
 const PriceContainerCard: React.FC<PriceContainerCardProps> = ({
@@ -42,9 +42,7 @@ const PriceContainerCard: React.FC<PriceContainerCardProps> = ({
         <Typography level="h2">
           {balance} {currencySymbol}
         </Typography>
-        <Typography level="body-sm">
-          Pending Amount {pendingIncomingBalance}
-        </Typography>
+        <Typography level="body-sm">Pending Amount {pendingIncomingBalance}</Typography>
         <Box
           sx={{
             display: "flex",
@@ -81,6 +79,6 @@ const PriceContainerCard: React.FC<PriceContainerCardProps> = ({
       </CardContent>
     </CardContent>
   </Card>
-);
+)
 
-export default PriceContainerCard;
+export default PriceContainerCard

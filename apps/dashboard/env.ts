@@ -1,5 +1,5 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { createEnv } from "@t3-oss/env-nextjs"
+import { z } from "zod"
 
 export const env = createEnv({
   server: {
@@ -18,4 +18,4 @@ export const env = createEnv({
     CLIENT_SECRET: process.env.CLIENT_SECRET,
     HYDRA_PUBLIC: process.env.HYDRA_PUBLIC,
   },
-});
+})

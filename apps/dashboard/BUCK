@@ -1,4 +1,10 @@
-load("@toolchains//workspace-pnpm:macros.bzl", "build_node_modules", "next_build", "next_build_bin")
+load(
+  "@toolchains//workspace-pnpm:macros.bzl",
+  "build_node_modules",
+  "next_build",
+  "next_build_bin",
+  "eslint"
+)
 
 export_file(
   name = "package.json",
@@ -33,7 +39,21 @@ next_build_bin(
     name = "dashboard",
 )
 
+dev_deps_srcs = {
+    "lib/eslint-config": "//lib/eslint-config:src",
+}
+
+eslint(
+    name = "check-lint",
+    srcs = [":src"] + glob([".eslint*"]),
+    extensions = [".ts", ".tsx"],
+    allow_warnings = True,
+    dev_deps_srcs = dev_deps_srcs,
+)
+
 test_suite(
     name = "test",
-    tests = [],
+    tests = [
+        ":check-lint",
+    ],
 )

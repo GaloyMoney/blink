@@ -1,6 +1,7 @@
-import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
-import { registerApolloClient } from "@apollo/experimental-nextjs-app-support/rsc";
-import { env } from "@/env";
+import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client"
+import { registerApolloClient } from "@apollo/experimental-nextjs-app-support/rsc"
+
+import { env } from "@/env"
 
 export const apollo = (token: string) =>
   registerApolloClient(() => {
@@ -13,5 +14,5 @@ export const apollo = (token: string) =>
         uri: env.CORE_URL,
         fetchOptions: { cache: "no-store" },
       }),
-    });
-  });
+    })
+  })

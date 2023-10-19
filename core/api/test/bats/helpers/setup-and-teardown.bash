@@ -25,7 +25,7 @@ mongo_cli() {
 start_server() {
   stop_server > /dev/null 2>&1 || true
 
-  background node lib/servers/graphql-main-server.js > .e2e-server.log
+  background node dist/servers/graphql-main-server.js > .e2e-server.log
   echo $! > $SERVER_PID_FILE
 
   server_is_up() {
@@ -71,25 +71,25 @@ add_callback() {
 start_ws_server() {
   stop_ws_server > /dev/null 2>&1 || true
 
-  background node lib/servers/ws-server.js > .e2e-ws-server.log
+  background node dist/servers/ws-server.js > .e2e-ws-server.log
   echo $! > $WS_SERVER_PID_FILE
 }
 
 start_trigger() {
   stop_trigger > /dev/null 2>&1 || true
 
-  background node lib/servers/trigger.js > .e2e-trigger.log
+  background node dist/servers/trigger.js > .e2e-trigger.log
   echo $! > $TRIGGER_PID_FILE
 }
 
 run_cron() {
-  node lib/servers/cron.js > .e2e-cron.log
+  node dist/servers/cron.js > .e2e-cron.log
 }
 
 start_exporter() {
   stop_exporter > /dev/null 2>&1 || true
 
-  background node lib/servers/exporter.js > .e2e-exporter.log
+  background node dist/servers/exporter.js > .e2e-exporter.log
   echo $! > $EXPORTER_PID_FILE
 }
 
