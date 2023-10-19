@@ -4,10 +4,18 @@ import { LoginType } from "@/app/index.types";
 import authApi from "@/services/galoy-auth";
 import { hydraClient } from "@/services/hydra";
 import axios from "axios";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
+  const headersList = headers();
+  const customHeaders = {
+    "x-real-ip": headersList.get("x-real-ip"),
+    "x-forwarded-for": headersList.get("x-forwarded-for"),
+  };
+
   const login_challenge = form.get("login_challenge");
+
   const remember = form.get("remember") === "true";
   const totpCode = form.get("totpCode");
   const authToken = form.get("authToken");
@@ -24,7 +32,11 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
   }
 
   try {
-    twoFAResponse = await authApi.validateTotp(totpCode, authToken);
+    twoFAResponse = await authApi.validateTotp(
+      totpCode,
+      authToken,
+      customHeaders
+    );
   } catch (err) {
     console.error("error in 'totp/validate' ", err);
     if (axios.isAxiosError(err) && err.response) {
@@ -64,6 +76,12 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
 };
 
 export const submitForm = async (_prevState: unknown, form: FormData) => {
+  const headersList = headers();
+  const customHeaders = {
+    "x-real-ip": headersList.get("x-real-ip"),
+    "x-forwarded-for": headersList.get("x-forwarded-for"),
+  };
+
   const login_challenge = form.get("login_challenge");
   const code = form.get("code");
   const remember = form.get("remember") === "true";
@@ -95,7 +113,11 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
 
   if (loginType === LoginType.phone) {
     try {
-      const loginResponse = await authApi.loginWithPhone(value, code);
+      const loginResponse = await authApi.loginWithPhone(
+        value,
+        code,
+        customHeaders
+      );
       authToken = loginResponse.authToken;
       totpRequired = loginResponse.totpRequired;
       userId = loginResponse.id;
@@ -104,7 +126,11 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
     }
   } else if (loginType === LoginType.email) {
     try {
-      const loginResponse = await authApi.loginWithEmail(code, loginId);
+      const loginResponse = await authApi.loginWithEmail(
+        code,
+        loginId,
+        customHeaders
+      );
       authToken = loginResponse.authToken;
       totpRequired = loginResponse.totpRequired;
       userId = loginResponse.id;
@@ -146,7 +172,7 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
       subject: userId,
       remember: remember,
       remember_for: 3600,
-      acr: "2"
+      acr: "2",
     },
   });
 

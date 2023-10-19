@@ -7,35 +7,63 @@ interface LoginResult {
 }
 
 const authApi = {
-  requestEmailCode: async (email: string): Promise<string> => {
-    const result = await axiosInstance.post("/email/code", { email });
+  requestEmailCode: async (
+    email: string,
+    customHeaders?: object
+  ): Promise<string> => {
+    const result = await axiosInstance.post(
+      "/email/code",
+      { email },
+      customHeaders ? { headers: customHeaders } : undefined
+    );
     return result.data.result;
   },
 
-  validateTotp: async (totpCode: string, authToken: string): Promise<any> => {
-    const response = await axiosInstance.post("/totp/validate", {
-      totpCode,
-      authToken,
-    });
+  validateTotp: async (
+    totpCode: string,
+    authToken: string,
+    customHeaders?: object
+  ): Promise<any> => {
+    const response = await axiosInstance.post(
+      "/totp/validate",
+      {
+        totpCode,
+        authToken,
+      },
+      customHeaders ? { headers: customHeaders } : undefined
+    );
     return response;
   },
 
-  loginWithPhone: async (value: string, code: string): Promise<LoginResult> => {
-    const response = await axiosInstance.post("/phone/login", {
-      phone: value,
-      code,
-    });
+  loginWithPhone: async (
+    value: string,
+    code: string,
+    customHeaders?: object
+  ): Promise<LoginResult> => {
+    const response = await axiosInstance.post(
+      "/phone/login",
+      {
+        phone: value,
+        code,
+      },
+      customHeaders ? { headers: customHeaders } : undefined
+    );
     return response.data;
   },
 
   loginWithEmail: async (
     code: string,
-    emailLoginId: string
+    emailLoginId: string,
+    customHeaders?: object
   ): Promise<LoginResult> => {
-    const response = await axiosInstance.post("/email/login", {
-      code,
-      emailLoginId,
-    });
+    const response = await axiosInstance.post(
+      "/email/login",
+      {
+        code,
+        emailLoginId,
+      },
+      customHeaders ? { headers: customHeaders } : undefined
+    );
     return response.data.result;
   },
 
@@ -43,23 +71,34 @@ const authApi = {
     phone: string,
     challengeCode: string,
     validationCode: string,
-    secCode: string
+    secCode: string,
+    customHeaders?: object
   ): Promise<any> => {
-    const response = await axiosInstance.post("/phone/code", {
-      phone,
-      challengeCode,
-      validationCode,
-      secCode,
-    });
+    const response = await axiosInstance.post(
+      "/phone/code",
+      {
+        phone,
+        challengeCode,
+        validationCode,
+        secCode,
+      },
+      customHeaders ? { headers: customHeaders } : undefined
+    );
 
     return response;
   },
 
-  requestPhoneCaptcha: async (): Promise<{
+  requestPhoneCaptcha: async (
+    customHeaders?: object
+  ): Promise<{
     id: string;
     challengeCode: string;
   }> => {
-    const response = await axiosInstance.post("/phone/captcha");
+    const response = await axiosInstance.post(
+      "/phone/captcha",
+      {},
+      customHeaders ? { headers: customHeaders } : undefined
+    );
     return response.data.result;
   },
 };
