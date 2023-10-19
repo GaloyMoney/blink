@@ -9,7 +9,7 @@ pushd charts-repo
 
 yq -i e "${YAML_PATH} = strenv(digest)" "./charts/${CHART}/values.yaml"
 
-sed -i "s|\(${YAML_PATH##*.}: \"${digest}\"\)|\1 # METADATA:: repository=https://github.com/GaloyMoney/galoy;commit_ref=${ref}|g" "./charts/${CHART}/values.yaml"
+sed -i "s|\(${YAML_PATH##*.}: \"${digest}\"\).*$|\1 # METADATA:: repository=https://github.com/GaloyMoney/galoy;commit_ref=${ref}|g" "./charts/${CHART}/values.yaml"
 
 
 if [[ -z $(git config --global user.email) ]]; then

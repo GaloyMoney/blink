@@ -19,3 +19,15 @@ source:
   password: ((docker-creds.password))
   repository: #@ nodejs_concourse_image()
 #@ end
+
+#@ def release_pipeline_image():
+#@   return data.values.docker_registry + "/release-pipeline"
+#@ end
+
+#@ def release_task_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ release_pipeline_image()
+#@ end
