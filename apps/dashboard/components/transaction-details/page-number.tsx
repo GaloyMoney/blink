@@ -1,28 +1,28 @@
-"use client";
-import * as React from "react";
-import Box from "@mui/joy/Box";
-import Button from "@mui/joy/Button";
-import { iconButtonClasses } from "@mui/joy/IconButton";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-import { useRouter } from "next/navigation";
+"use client"
+import * as React from "react"
+import Box from "@mui/joy/Box"
+import Button from "@mui/joy/Button"
+import { iconButtonClasses } from "@mui/joy/IconButton"
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight"
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft"
+import { useRouter } from "next/navigation"
 interface PageInfo {
-  readonly __typename?: "PageInfo";
-  readonly endCursor?: string | null;
-  readonly hasNextPage: boolean;
-  readonly hasPreviousPage: boolean;
-  readonly startCursor?: string | null;
+  readonly __typename?: "PageInfo"
+  readonly endCursor?: string | null
+  readonly hasNextPage: boolean
+  readonly hasPreviousPage: boolean
+  readonly startCursor?: string | null
 }
 
 function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
-  const router = useRouter();
+  const router = useRouter()
   if (!pageInfo) {
-    return null;
+    return null
   }
-  const endCursor = pageInfo.endCursor;
-  const startCursor = pageInfo.startCursor;
-  const hasNextPage = pageInfo.hasNextPage;
-  const hasPreviousPage = pageInfo.hasPreviousPage;
+  const endCursor = pageInfo.endCursor
+  const startCursor = pageInfo.startCursor
+  const hasNextPage = pageInfo.hasNextPage
+  const hasPreviousPage = pageInfo.hasPreviousPage
 
   return (
     <Box
@@ -41,7 +41,7 @@ function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
         color="neutral"
         startDecorator={<KeyboardArrowLeftIcon />}
         onClick={(e) => {
-          router.push(`/transactions`);
+          router.push(`/transactions`)
         }}
       >
         Previous
@@ -54,13 +54,13 @@ function PageNumber({ pageInfo }: { pageInfo?: PageInfo }) {
         color="neutral"
         endDecorator={<KeyboardArrowRightIcon />}
         onClick={(e) => {
-          router.push(`/transactions?cursor=${endCursor}&direction=next`);
+          router.push(`/transactions?cursor=${endCursor}&direction=next`)
         }}
       >
         Next
       </Button>
     </Box>
-  );
+  )
 }
 
-export default PageNumber;
+export default PageNumber

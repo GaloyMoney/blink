@@ -1,21 +1,21 @@
-import NextAuth, { AuthOptions } from "next-auth";
-import { fetchUserData } from "@/services/graphql/queries/me-data";
-import { env } from "@/env";
-import { ApolloQueryResult } from "@apollo/client";
-import { MeQuery } from "@/services/graphql/generated";
+import NextAuth, { AuthOptions } from "next-auth"
+import { fetchUserData } from "@/services/graphql/queries/me-data"
+import { env } from "@/env"
+import { ApolloQueryResult } from "@apollo/client"
+import { MeQuery } from "@/services/graphql/generated"
 
 declare module "next-auth" {
   interface Profile {
-    id: string;
+    id: string
   }
   interface Session {
-    sub: string | null;
-    accessToken: string;
-    userData: ApolloQueryResult<MeQuery>;
+    sub: string | null
+    accessToken: string
+    userData: ApolloQueryResult<MeQuery>
   }
 }
 
-const type = "oauth" as const;
+const type = "oauth" as const
 export const authOptions: AuthOptions = {
   providers: [
     {
@@ -32,7 +32,7 @@ export const authOptions: AuthOptions = {
       profile(profile) {
         return {
           id: profile.sub,
-        };
+        }
       },
     },
   ],
@@ -42,12 +42,12 @@ export const authOptions: AuthOptions = {
     async jwt({ token, account, profile }) {
       // Persist the OAuth access_token and or the user id to the token right after signin
       if (account) {
-        token.accessToken = account.access_token;
-        token.expiresAt = account.expires_at;
-        token.refreshToken = account.refresh_token;
-        token.id = profile?.id;
+        token.accessToken = account.access_token
+        token.expiresAt = account.expires_at
+        token.refreshToken = account.refresh_token
+        token.id = profile?.id
       }
-      return token;
+      return token
     },
     async session({ session, token, user }) {
       if (
@@ -56,18 +56,18 @@ export const authOptions: AuthOptions = {
         typeof token.accessToken !== "string" ||
         typeof token.sub !== "string"
       ) {
-        throw new Error("Invalid token");
+        throw new Error("Invalid token")
       }
 
-      const userData = await fetchUserData(token.accessToken);
-      session.sub = token.sub;
-      session.accessToken = token.accessToken;
-      session.userData = userData;
-      return session;
+      const userData = await fetchUserData(token.accessToken)
+      session.sub = token.sub
+      session.accessToken = token.accessToken
+      session.userData = userData
+      return session
     },
   },
-};
+}
 
-const handler = NextAuth(authOptions);
+const handler = NextAuth(authOptions)
 
-export { handler as GET, handler as POST };
+export { handler as GET, handler as POST }

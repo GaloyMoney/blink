@@ -1,7 +1,7 @@
-import { gql } from "@apollo/client";
+import { gql } from "@apollo/client"
 
-import { apollo } from "..";
-import { MeDocument, MeQuery } from "../generated";
+import { apollo } from ".."
+import { MeDocument, MeQuery } from "../generated"
 
 gql`
   query me {
@@ -25,23 +25,23 @@ gql`
       }
     }
   }
-`;
+`
 
 export async function fetchUserData(token: string) {
-  const client = apollo(token).getClient();
+  const client = apollo(token).getClient()
 
   try {
     const data = await client.query<MeQuery>({
       query: MeDocument,
-    });
-    return data;
+    })
+    return data
   } catch (err) {
     if (err instanceof Error) {
-      console.error("error", err);
-      throw new Error(err.message);
+      console.error("error", err)
+      throw new Error(err.message)
     } else {
-      console.error("Unknown error");
-      throw new Error("Unknown error");
+      console.error("Unknown error")
+      throw new Error("Unknown error")
     }
   }
 }
