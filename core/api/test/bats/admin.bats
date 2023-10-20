@@ -160,6 +160,20 @@ gql_admin_file() {
   returnedId="$(graphql_output '.data.accountDetailsByAccountId.id')"
   [[ "$returnedId" == "$id" ]] || exit 1
 
+  userId="$(graphql_output '.data.accountDetailsByAccountId.owner.id')"
+  echo "userId: $userId"
+  
+  variables=$(
+    jq -n \
+    --arg userId "$userId" \
+    '{userId: $userId}'
+  )
+
+  exec_admin_graphql "$admin_token" 'account-details-by-user-id' "$variables"
+  returnedId="$(graphql_output '.data.accountDetailsByUserId.owner.id')"
+  [[ "$returnedId" == "$userId" ]] || exit 1
+
+
   # TODO: add check by email
   
   # TODO: business update map info

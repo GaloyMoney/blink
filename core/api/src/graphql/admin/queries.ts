@@ -9,6 +9,7 @@ import AccountDetailsByUserEmailQuery from "./root/query/account-details-by-emai
 import ListWalletIdsQuery from "./root/query/all-walletids"
 import WalletQuery from "./root/query/wallet"
 import AccountDetailsByAccountId from "./root/query/account-details-by-account-id"
+import AccountDetailsByUserId from "./root/query/account-details-by-user-id"
 
 import { GT } from "@/graphql/index"
 
@@ -20,6 +21,7 @@ export const queryFields = {
     accountDetailsByUsername: AccountDetailsByUsernameQuery,
     accountDetailsByEmail: AccountDetailsByUserEmailQuery,
     accountDetailsByAccountId: AccountDetailsByAccountId,
+    accountDetailsByUserId: AccountDetailsByUserId,
     transactionById: TransactionByIdQuery,
     transactionsByHash: TransactionsByHashQuery,
     lightningInvoice: LightningInvoiceQuery,
