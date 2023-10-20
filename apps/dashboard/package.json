@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint",
+    "lint:fix": "eslint --fix --ext .ts,.tsx .",
     "codegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
@@ -42,6 +42,7 @@
     "@types/react-dom": "latest",
     "autoprefixer": "latest",
     "eslint": "latest",
+    "eslint_d": "latest",
     "eslint-config-next": "latest",
     "postcss": "latest",
     "tailwindcss": "latest",

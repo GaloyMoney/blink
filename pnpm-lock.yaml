@@ -209,6 +209,9 @@ importers:
       eslint-config-next:
         specifier: latest
         version: 13.5.4(eslint@8.51.0)(typescript@5.2.2)
+      eslint_d:
+        specifier: latest
+        version: 13.0.0
       postcss:
         specifier: latest
         version: 8.4.31
@@ -8035,6 +8038,12 @@ packages:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     dev: true
 
+  /core_d@6.0.0:
+    resolution: {integrity: sha512-r0d8vUgwRyf6Ln45YrJUYXBTrEdrj5XrljmdY5DpLuN+xQ2I5SKZ3iSTnnxEfSxnrhUmyiPIRr6WfRYqVT2huA==}
+    dependencies:
+      supports-color: 8.1.1
+    dev: true
+
   /cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
     engines: {node: '>= 0.10'}
@@ -9428,6 +9437,18 @@ packages:
       optionator: 0.9.3
       strip-ansi: 6.0.1
       text-table: 0.2.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /eslint_d@13.0.0:
+    resolution: {integrity: sha512-j9QABrJYIIm2hheAs5PbyTYtONP1dOYOJ1Nn007XxyEmsw1oplR0c+S8SxxIcL87UEAFB+q0/IiwFKm37oUnFQ==}
+    hasBin: true
+    dependencies:
+      core_d: 6.0.0
+      eslint: 8.51.0
+      nanolru: 1.0.0
+      optionator: 0.9.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -13630,6 +13651,11 @@ packages:
     resolution: {integrity: sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  /nanolru@1.0.0:
+    resolution: {integrity: sha512-GyQkE8M32pULhQk7Sko5raoIbPalAk90ICG+An4fq6fCsFHsP6fB2K46WGXVdoJpy4SGMnZ/EKbo123fZJomWg==}
+    engines: {node: '>= 0.4.0'}
+    dev: true
 
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
