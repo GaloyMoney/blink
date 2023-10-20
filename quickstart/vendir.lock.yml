@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: adding a fetchByUserId admin endpoint (#3401)...'
-      sha: 58eb8d1a8d2bf69ac2d5a2fed89500fbe917f9f3
+      commitTitle: 'fix: setting up cookie forwarding (#3403)...'
+      sha: ba9e54017fc371c8863c8a217bb77888fab0f402
       tags:
-      - 0.15.24-2-g58eb8d1a8
+      - 0.15.26-1-gba9e54017
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: adding a fetchByUserId admin endpoint (#3401)...'
-      sha: 58eb8d1a8d2bf69ac2d5a2fed89500fbe917f9f3
+      commitTitle: 'fix: setting up cookie forwarding (#3403)...'
+      sha: ba9e54017fc371c8863c8a217bb77888fab0f402
       tags:
-      - 0.15.24-2-g58eb8d1a8
+      - 0.15.26-1-gba9e54017
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: adding a fetchByUserId admin endpoint (#3401)...'
-      sha: 58eb8d1a8d2bf69ac2d5a2fed89500fbe917f9f3
+      commitTitle: 'fix: setting up cookie forwarding (#3403)...'
+      sha: ba9e54017fc371c8863c8a217bb77888fab0f402
       tags:
-      - 0.15.24-2-g58eb8d1a8
+      - 0.15.26-1-gba9e54017
     path: ./
   path: ./graphql
 kind: LockConfig
