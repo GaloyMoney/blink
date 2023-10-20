@@ -6,7 +6,6 @@ import InputComponent from "../components/input-component";
 import Card from "../components/card";
 import MainContent from "../components/main-container";
 import Logo from "../components/logo";
-import { cookies } from "next/headers";
 import Link from "next/link";
 import authApi from "@/services/galoy-auth";
 import Heading from "../components/heading";
@@ -18,6 +17,8 @@ import SecondaryButton from "../components/button/secondary-button-component";
 import { LoginType, SubmitValue } from "../index.types";
 import { LoginEmailResponse } from "./email-login.types";
 import { headers } from "next/headers";
+import { cookies } from "next/headers";
+
 //  this page is for login via email
 interface LoginProps {
   login_challenge: string;
@@ -50,13 +51,20 @@ async function submitForm(
 
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access");
-    const response = await hydraClient.rejectOAuth2LoginRequest({
-      loginChallenge: login_challenge,
-      rejectOAuth2Request: {
-        error: "access_denied",
-        error_description: "The resource owner denied the request",
+    const response = await hydraClient.rejectOAuth2LoginRequest(
+      {
+        loginChallenge: login_challenge,
+        rejectOAuth2Request: {
+          error: "access_denied",
+          error_description: "The resource owner denied the request",
+        },
       },
-    }, { withCredentials: true });
+      {
+        headers: {
+          Cookie: cookies().toString(),
+        },
+      }
+    );
     redirect(response.data.redirect_to);
   }
 
@@ -104,19 +112,33 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
     throw new Error("Invalid Request");
   }
 
-  const { data } = await hydraClient.getOAuth2LoginRequest({
-    loginChallenge: login_challenge,
-  }, { withCredentials: true });
+  const { data } = await hydraClient.getOAuth2LoginRequest(
+    {
+      loginChallenge: login_challenge,
+    },
+    {
+      headers: {
+        Cookie: cookies().toString(),
+      },
+    }
+  );
 
   body = data;
   if (body.skip) {
     let response: OAuth2RedirectTo;
-    const { data } = await hydraClient.acceptOAuth2LoginRequest({
-      loginChallenge: login_challenge,
-      acceptOAuth2LoginRequest: {
-        subject: String(body.subject),
+    const { data } = await hydraClient.acceptOAuth2LoginRequest(
+      {
+        loginChallenge: login_challenge,
+        acceptOAuth2LoginRequest: {
+          subject: String(body.subject),
+        },
       },
-    }, { withCredentials: true });
+      {
+        headers: {
+          Cookie: cookies().toString(),
+        },
+      }
+    );
     response = data;
     redirect(String(response.redirect_to));
   }

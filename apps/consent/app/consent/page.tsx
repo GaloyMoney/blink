@@ -9,6 +9,7 @@ import PrimaryButton from "../components/button/primary-button-component";
 import SecondaryButton from "../components/button/secondary-button-component";
 import Heading from "../components/heading";
 import { SubmitValue } from "../index.types";
+import { cookies } from "next/headers";
 
 interface ConsentProps {
   consent_challenge: string;
@@ -32,31 +33,52 @@ const submitForm = async (form: FormData) => {
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access");
     let response;
-    response = await hydraClient.rejectOAuth2ConsentRequest({
-      consentChallenge: consent_challenge,
-      rejectOAuth2Request: {
-        error: "access_denied",
-        error_description: "The resource owner denied the request",
+    response = await hydraClient.rejectOAuth2ConsentRequest(
+      {
+        consentChallenge: consent_challenge,
+        rejectOAuth2Request: {
+          error: "access_denied",
+          error_description: "The resource owner denied the request",
+        },
       },
-    }, { withCredentials: true });
+      {
+        headers: {
+          Cookie: cookies().toString(),
+        },
+      }
+    );
     redirect(response.data.redirect_to);
   }
 
   let responseConfirm;
-  const responseInit = await hydraClient.getOAuth2ConsentRequest({
-    consentChallenge: consent_challenge,
-  }, { withCredentials: true });
+  const responseInit = await hydraClient.getOAuth2ConsentRequest(
+    {
+      consentChallenge: consent_challenge,
+    },
+    {
+      headers: {
+        Cookie: cookies().toString(),
+      },
+    }
+  );
 
   const body = responseInit.data;
-  responseConfirm = await hydraClient.acceptOAuth2ConsentRequest({
-    consentChallenge: consent_challenge,
-    acceptOAuth2ConsentRequest: {
-      grant_scope: grantScope,
-      grant_access_token_audience: body.requested_access_token_audience,
-      remember: remember,
-      remember_for: 3600,
+  responseConfirm = await hydraClient.acceptOAuth2ConsentRequest(
+    {
+      consentChallenge: consent_challenge,
+      acceptOAuth2ConsentRequest: {
+        grant_scope: grantScope,
+        grant_access_token_audience: body.requested_access_token_audience,
+        remember: remember,
+        remember_for: 3600,
+      },
     },
-  }, { withCredentials: true });
+    {
+      headers: {
+        Cookie: cookies().toString(),
+      },
+    }
+  );
   redirect(responseConfirm.data.redirect_to);
 };
 
@@ -69,7 +91,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
 
   const data = await hydraClient.getOAuth2ConsentRequest({
     consentChallenge: consent_challenge,
-  }, { withCredentials: true });
+  });
 
   const body = data.data;
   const login_challenge = data.data.login_challenge;
@@ -80,13 +102,20 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
 
   if (body.client?.skip_consent) {
     let response;
-    response = await hydraClient.acceptOAuth2ConsentRequest({
-      consentChallenge: consent_challenge,
-      acceptOAuth2ConsentRequest: {
-        grant_scope: body.requested_scope,
-        grant_access_token_audience: body.requested_access_token_audience,
+    response = await hydraClient.acceptOAuth2ConsentRequest(
+      {
+        consentChallenge: consent_challenge,
+        acceptOAuth2ConsentRequest: {
+          grant_scope: body.requested_scope,
+          grant_access_token_audience: body.requested_access_token_audience,
+        },
       },
-    }, { withCredentials: true });
+      {
+        headers: {
+          Cookie: cookies().toString(),
+        },
+      }
+    );
     redirect(String(response.data.redirect_to));
   }
 
