@@ -8,6 +8,7 @@ files.extend-exclude = [
   "quickstart/galoy",
   "quickstart/dev",
   "prelude",
+  "core/api/test/e2e/servers/kratos.spec.ts",
 ]
 
 default.extend-ignore-identifiers-re = [
