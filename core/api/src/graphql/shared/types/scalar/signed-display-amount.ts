@@ -27,7 +27,7 @@ const SignedDisplayMajorAmount = GT.Scalar({
 
 function validSignedDisplayMajorAmount(
   value: string | number,
-): string | CustomApolloError {
+): string | CustomGraphQLError {
   const numberValue = typeof value === "number" ? `${value}` : value
 
   if (isNumber(numberValue)) {

@@ -1,4 +1,4 @@
-import { ApolloError } from "apollo-server-errors"
+import { GraphQLError } from "graphql"
 
 import { getOnChainWalletConfig } from "@/config"
 
@@ -6,7 +6,7 @@ import { baseLogger } from "@/services/logger"
 
 const onChainWalletConfig = getOnChainWalletConfig()
 
-export class CustomApolloError extends ApolloError {
+export class CustomGraphQLError extends GraphQLError {
   log: LogFn
   forwardToClient: boolean
 
@@ -17,33 +17,35 @@ export class CustomApolloError extends ApolloError {
     logger,
     level,
     ...metadata
-  }: CustomApolloErrorData & { code: string }) {
-    super(message ?? code, code, metadata)
+  }: CustomGraphQLErrorData & { code: string }) {
+    const options = { ...metadata }
+    options["extensions"] = { ...(options["extensions"] || {}), code }
+    super(message ?? code, options)
     this.log = logger[level || "warn"].bind(logger)
     this.forwardToClient = forwardToClient || false
   }
 }
 
-export class TransactionRestrictedError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class TransactionRestrictedError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({ code: "TRANSACTION_RESTRICTED", forwardToClient: true, ...errData })
   }
 }
 
-export class UnknownClientError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class UnknownClientError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({ code: "UNKNOWN_CLIENT_ERROR", forwardToClient: true, ...errData })
   }
 }
 
-export class UnexpectedClientError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class UnexpectedClientError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({ code: "UNEXPECTED_CLIENT_ERROR", forwardToClient: true, ...errData })
   }
 }
 
-export class InsufficientBalanceError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class InsufficientBalanceError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       code: "INSUFFICIENT_BALANCE",
       message: "balance is too low",
@@ -53,8 +55,8 @@ export class InsufficientBalanceError extends CustomApolloError {
   }
 }
 
-export class SelfPaymentError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class SelfPaymentError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       code: "CANT_PAY_SELF",
       message: "User tried to pay themselves",
@@ -64,14 +66,14 @@ export class SelfPaymentError extends CustomApolloError {
   }
 }
 
-export class ValidationInternalError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class ValidationInternalError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({ code: "INVALID_INPUT", forwardToClient: true, ...errData })
   }
 }
 
-export class InputValidationError extends CustomApolloError {
-  constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
+export class InputValidationError extends CustomGraphQLError {
+  constructor(errData: PartialBy<CustomGraphQLErrorData, "logger" | "forwardToClient">) {
     super({
       code: "INVALID_INPUT",
       forwardToClient: true,
@@ -81,14 +83,14 @@ export class InputValidationError extends CustomApolloError {
   }
 }
 
-export class NotFoundError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class NotFoundError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({ code: "NOT_FOUND", forwardToClient: true, ...errData })
   }
 }
 
-export class NewAccountWithdrawalError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class NewAccountWithdrawalError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       code: "NEW_ACCOUNT_WITHDRAWAL_RESTRICTED",
       forwardToClient: true,
@@ -97,8 +99,8 @@ export class NewAccountWithdrawalError extends CustomApolloError {
   }
 }
 
-export class TooManyRequestError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class TooManyRequestError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       code: "TOO_MANY_REQUEST",
       message: "Too many requests",
@@ -108,26 +110,26 @@ export class TooManyRequestError extends CustomApolloError {
   }
 }
 
-export class DbError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class DbError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({ code: "DB_ERROR", forwardToClient: true, ...errData })
   }
 }
 
-export class LightningPaymentError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class LightningPaymentError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({ code: "LIGHTNING_PAYMENT_ERROR", forwardToClient: true, ...errData })
   }
 }
 
-export class OnChainPaymentError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class OnChainPaymentError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({ code: "ONCHAIN_PAYMENT_ERROR", forwardToClient: true, ...errData })
   }
 }
 
-export class RouteFindingError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class RouteFindingError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       code: "ROUTE_FINDING_ERROR",
       message: "Unable to find a route for payment",
@@ -137,8 +139,8 @@ export class RouteFindingError extends CustomApolloError {
   }
 }
 
-export class DustAmountError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class DustAmountError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       code: "ENTERED_DUST_AMOUNT",
       message: `Use lightning to send amounts less than ${onChainWalletConfig.dustThreshold} sats`,
@@ -148,14 +150,14 @@ export class DustAmountError extends CustomApolloError {
   }
 }
 
-export class LndOfflineError extends CustomApolloError {
-  constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
+export class LndOfflineError extends CustomGraphQLError {
+  constructor(errData: PartialBy<CustomGraphQLErrorData, "logger" | "forwardToClient">) {
     super({ code: "LND_OFFLINE", forwardToClient: true, ...errData, logger: baseLogger })
   }
 }
 
-export class DealerError extends CustomApolloError {
-  constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
+export class DealerError extends CustomGraphQLError {
+  constructor(errData: PartialBy<CustomGraphQLErrorData, "logger" | "forwardToClient">) {
     super({
       code: "DEALER_ERROR",
       forwardToClient: true,
@@ -165,8 +167,8 @@ export class DealerError extends CustomApolloError {
   }
 }
 
-export class DealerOfflineError extends CustomApolloError {
-  constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
+export class DealerOfflineError extends CustomGraphQLError {
+  constructor(errData: PartialBy<CustomGraphQLErrorData, "logger" | "forwardToClient">) {
     super({
       code: "DEALER_OFFLINE",
       forwardToClient: true,
@@ -176,8 +178,8 @@ export class DealerOfflineError extends CustomApolloError {
   }
 }
 
-export class CaptchaFailedError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class CaptchaFailedError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Unable to estimate onchain fee",
       forwardToClient: true,
@@ -187,8 +189,8 @@ export class CaptchaFailedError extends CustomApolloError {
   }
 }
 
-export class OnChainFeeEstimationError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class OnChainFeeEstimationError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Unable to estimate onchain fee",
       forwardToClient: true,
@@ -198,8 +200,8 @@ export class OnChainFeeEstimationError extends CustomApolloError {
   }
 }
 
-export class InvoiceDecodeError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class InvoiceDecodeError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Unable to decode invoice",
       forwardToClient: true,
@@ -209,8 +211,8 @@ export class InvoiceDecodeError extends CustomApolloError {
   }
 }
 
-export class VerificationCodeError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class VerificationCodeError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Incorrect phone code",
       forwardToClient: true,
@@ -220,8 +222,8 @@ export class VerificationCodeError extends CustomApolloError {
   }
 }
 
-export class PhoneProviderError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class PhoneProviderError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Issue with phone provider",
       forwardToClient: true,
@@ -231,8 +233,8 @@ export class PhoneProviderError extends CustomApolloError {
   }
 }
 
-export class InvalidCoordinatesError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class InvalidCoordinatesError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Latitude must be between -90 and 90 and longitude between -180 and 180",
       forwardToClient: true,
@@ -242,8 +244,8 @@ export class InvalidCoordinatesError extends CustomApolloError {
   }
 }
 
-export class InvalidBusinessTitleLengthError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class InvalidBusinessTitleLengthError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Title should be between 3 and 100 characters long",
       forwardToClient: true,
@@ -253,8 +255,8 @@ export class InvalidBusinessTitleLengthError extends CustomApolloError {
   }
 }
 
-export class UsernameError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class UsernameError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Username issue",
       forwardToClient: true,
@@ -264,8 +266,8 @@ export class UsernameError extends CustomApolloError {
   }
 }
 
-export class InsufficientLiquidityError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class InsufficientLiquidityError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Temporary funds offline issue",
       forwardToClient: true,
@@ -275,8 +277,8 @@ export class InsufficientLiquidityError extends CustomApolloError {
   }
 }
 
-export class AuthenticationError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class AuthenticationError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Not authenticated",
       forwardToClient: true,
@@ -286,8 +288,8 @@ export class AuthenticationError extends CustomApolloError {
   }
 }
 
-export class AuthorizationError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class AuthorizationError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Not authorized",
       forwardToClient: true,
@@ -297,8 +299,8 @@ export class AuthorizationError extends CustomApolloError {
   }
 }
 
-export class PhoneAccountAlreadyExistsError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class PhoneAccountAlreadyExistsError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message:
         "Phone Account already exists. Please logout and log back in with your phone account",
@@ -309,8 +311,8 @@ export class PhoneAccountAlreadyExistsError extends CustomApolloError {
   }
 }
 
-export class EmailAlreadyExistsError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class EmailAlreadyExistsError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message:
         "Email account already exists. Please logout and log back in with your email account",
@@ -321,8 +323,8 @@ export class EmailAlreadyExistsError extends CustomApolloError {
   }
 }
 
-export class CodeExpiredError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class CodeExpiredError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Code has expired. please ask for a new code and try again",
       forwardToClient: true,
@@ -332,8 +334,8 @@ export class CodeExpiredError extends CustomApolloError {
   }
 }
 
-export class SessionRefreshRequiredError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class SessionRefreshRequiredError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Session refresh required.",
       forwardToClient: true,
@@ -343,8 +345,8 @@ export class SessionRefreshRequiredError extends CustomApolloError {
   }
 }
 
-export class UnauthorizedIPForOnboardingError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class UnauthorizedIPForOnboardingError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "This IP address is not allowed to onboard.",
       forwardToClient: true,
@@ -354,8 +356,8 @@ export class UnauthorizedIPForOnboardingError extends CustomApolloError {
   }
 }
 
-export class InvalidPhoneForOnboardingError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class InvalidPhoneForOnboardingError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "This phone number is not allowed to onboard.",
       forwardToClient: true,
@@ -365,8 +367,8 @@ export class InvalidPhoneForOnboardingError extends CustomApolloError {
   }
 }
 
-export class UnauthorizedIPMetadataCountryError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class UnauthorizedIPMetadataCountryError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Country not not authorized for rewards.",
       forwardToClient: true,
@@ -376,8 +378,8 @@ export class UnauthorizedIPMetadataCountryError extends CustomApolloError {
   }
 }
 
-export class UnauthorizedIPMetadataProxyError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class UnauthorizedIPMetadataProxyError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "VPN ips are not authorized for rewards.",
       forwardToClient: true,
@@ -387,8 +389,8 @@ export class UnauthorizedIPMetadataProxyError extends CustomApolloError {
   }
 }
 
-export class UnauthorizedIPError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class UnauthorizedIPError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "This ip is unauthorized for rewards.",
       forwardToClient: true,
@@ -398,8 +400,8 @@ export class UnauthorizedIPError extends CustomApolloError {
   }
 }
 
-export class InvalidPhoneMetadataForOnboardingError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class InvalidPhoneMetadataForOnboardingError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Error fetching phone information.",
       forwardToClient: true,
@@ -409,8 +411,8 @@ export class InvalidPhoneMetadataForOnboardingError extends CustomApolloError {
   }
 }
 
-export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message:
         "Error phone account already exists. You need to manually sweep funds to your phone account",
@@ -421,8 +423,8 @@ export class PhoneAccountAlreadyExistsNeedToSweepFundsError extends CustomApollo
   }
 }
 
-export class EmailUnverifiedError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class EmailUnverifiedError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message: "Email is not verified. Please verify your email and try again",
       forwardToClient: true,
@@ -432,8 +434,8 @@ export class EmailUnverifiedError extends CustomApolloError {
   }
 }
 
-export class AccountAlreadyHasEmailError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class AccountAlreadyHasEmailError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message:
         "An email is already attached to this account. It's only possible to attach one email per account",
@@ -444,8 +446,8 @@ export class AccountAlreadyHasEmailError extends CustomApolloError {
   }
 }
 
-export class PhoneAlreadyExistsError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
+export class PhoneAlreadyExistsError extends CustomGraphQLError {
+  constructor(errData: CustomGraphQLErrorData) {
     super({
       message:
         "A phone is already attached to this account. It's only possible to attach one phone per account",

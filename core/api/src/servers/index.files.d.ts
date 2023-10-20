@@ -26,12 +26,17 @@ type GraphQLAdminContext = {
   privilegedClientId: PrivilegedClientId
 }
 
+type GraphQLContext =
+  | GraphQLPublicContext
+  | GraphQLPublicContextAuth
+  | GraphQLAdminContext
+
 // globally used types
 type Logger = import("pino").Logger
 
 declare namespace Express {
   interface Request {
     token: import("jsonwebtoken").JwtPayload
-    gqlContext: GraphQLPublicContext | GraphQLPublicContextAuth | GraphQLAdminContext
+    gqlContext: GraphQLContext
   }
 }
