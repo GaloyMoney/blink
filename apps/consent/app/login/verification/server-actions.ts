@@ -21,7 +21,6 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
   const remember = form.get("remember") === "true"
   const totpCode = form.get("totpCode")
   const authToken = form.get("authToken")
-  let twoFAResponse
   if (
     !login_challenge ||
     !totpCode ||
@@ -34,7 +33,7 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
   }
 
   try {
-    twoFAResponse = await authApi.validateTotp(totpCode, authToken, customHeaders)
+    await authApi.validateTotp(totpCode, authToken, customHeaders)
   } catch (err) {
     console.error("error in 'totp/validate' ", err)
     if (axios.isAxiosError(err) && err.response) {
@@ -56,11 +55,11 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
     throw new Error("UserId not found")
   }
 
-  const response = await hydraClient.getOAuth2LoginRequest({
+  // TODO: check if this 1st call is necessary
+  await hydraClient.getOAuth2LoginRequest({
     loginChallenge: login_challenge,
   })
 
-  const loginRequest = response.data
   const response2 = await hydraClient.acceptOAuth2LoginRequest({
     loginChallenge: login_challenge,
     acceptOAuth2LoginRequest: {
@@ -148,11 +147,11 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
     throw new Error("Invalid userId")
   }
 
-  const response = await hydraClient.getOAuth2LoginRequest({
+  // TODO: check if this 1st call is necessary
+  await hydraClient.getOAuth2LoginRequest({
     loginChallenge: login_challenge,
   })
 
-  const loginRequest = response.data
   const response2 = await hydraClient.acceptOAuth2LoginRequest({
     loginChallenge: login_challenge,
     acceptOAuth2LoginRequest: {

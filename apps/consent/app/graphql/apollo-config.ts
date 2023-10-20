@@ -13,7 +13,7 @@ const headerSettingLink = new ApolloLink((operation, forward) => {
   return forward(operation)
 })
 
-export const graphQlClient = (authToken?: string, request?: Request) => {
+export const graphQlClient = (authToken?: string) => {
   const httpLink = new HttpLink({
     uri: env.GRAPHQL_ENDPOINT,
     fetchOptions: { cache: "no-store" },

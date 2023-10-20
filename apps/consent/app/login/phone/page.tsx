@@ -1,4 +1,3 @@
-import { OAuth2LoginRequest, OAuth2RedirectTo } from "@ory/hydra-client"
 import { redirect } from "next/navigation"
 import React from "react"
 

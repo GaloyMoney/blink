@@ -3,7 +3,7 @@
 import Card from "./components/card"
 import MainContent from "./components/main-container"
 
-export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
     <MainContent>
       <Card>
