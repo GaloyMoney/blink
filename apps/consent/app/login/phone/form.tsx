@@ -24,7 +24,9 @@ import FormComponent from "@/app/components/form-component"
 import Separator from "@/app/components/separator"
 
 import { SubmitValue } from "@/app/index.types"
+// eslint-disable-next-line import/no-unassigned-import
 import "react-phone-number-input/style.css"
+// eslint-disable-next-line import/no-unassigned-import
 import "./phone-input-styles.css"
 
 interface LoginFormProps {
