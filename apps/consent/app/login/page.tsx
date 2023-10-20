@@ -56,7 +56,7 @@ async function submitForm(
         error: "access_denied",
         error_description: "The resource owner denied the request",
       },
-    });
+    }, { withCredentials: true });
     redirect(response.data.redirect_to);
   }
 
@@ -106,7 +106,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
 
   const { data } = await hydraClient.getOAuth2LoginRequest({
     loginChallenge: login_challenge,
-  });
+  }, { withCredentials: true });
 
   body = data;
   if (body.skip) {
@@ -116,7 +116,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
       acceptOAuth2LoginRequest: {
         subject: String(body.subject),
       },
-    });
+    }, { withCredentials: true });
     response = data;
     redirect(String(response.redirect_to));
   }
