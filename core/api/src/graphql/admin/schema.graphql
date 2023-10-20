@@ -271,6 +271,7 @@ type PriceOfOneSettlementMinorUnitInDisplayMinorUnit implements PriceInterface {
 type Query {
   accountDetailsByAccountId(accountId: ID!): AuditedAccount!
   accountDetailsByEmail(email: EmailAddress!): AuditedAccount!
+  accountDetailsByUserId(userId: ID!): AuditedAccount!
   accountDetailsByUserPhone(phone: Phone!): AuditedAccount!
   accountDetailsByUsername(username: Username!): AuditedAccount!
   allLevels: [AccountLevel!]!
