@@ -1,7 +1,8 @@
 "use client"
 import React, { ButtonHTMLAttributes } from "react"
 // ts-ignore because experimental_useFormStatus is not in the types
-// @ts-ignore
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line error
 import { experimental_useFormStatus as useFormStatus } from "react-dom"
 
 interface SecondaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

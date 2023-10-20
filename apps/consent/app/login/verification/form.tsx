@@ -1,6 +1,7 @@
 "use client"
 import React from "react"
-// @ts-ignore
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line error
 import { experimental_useFormState as useFormState } from "react-dom"
 
 import { toast } from "react-toastify"

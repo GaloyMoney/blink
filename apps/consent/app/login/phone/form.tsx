@@ -4,6 +4,8 @@ import Link from "next/link"
 
 import { toast } from "react-toastify"
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line error
 import { experimental_useFormState as useFormState } from "react-dom"
 
 import PhoneInput from "react-phone-number-input"
@@ -20,8 +22,6 @@ import { CaptchaChallenge } from "@/app/components/captcha-challenge"
 
 import FormComponent from "@/app/components/form-component"
 import Separator from "@/app/components/separator"
-
-// @ts-ignore-next-line no-implicit-any error
 
 import { SubmitValue } from "@/app/index.types"
 import "react-phone-number-input/style.css"

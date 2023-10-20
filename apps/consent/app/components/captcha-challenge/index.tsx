@@ -36,7 +36,8 @@ const CaptchaChallengeComponent: React.FC<{
   )
 
   useEffect(() => {
-    // @ts-ignore
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // @ts-ignore-next-line error
     window.initGeetest(
       {
         gt: id,
