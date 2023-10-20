@@ -75,6 +75,23 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
+  const findForWalletByPaymentHash = async ({
+    walletId,
+    paymentHash,
+  }: WalletInvoiceFindForWalletByPaymentHashArgs): Promise<
+    WalletInvoice | RepositoryError
+  > => {
+    try {
+      const walletInvoice = await WalletInvoice.findOne({ _id: paymentHash, walletId })
+      if (!walletInvoice) {
+        return new CouldNotFindWalletInvoiceError(paymentHash)
+      }
+      return ensureWalletInvoiceHasLnInvoice(walletInvoiceFromRaw(walletInvoice))
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   async function* yieldPending():
     | AsyncGenerator<WalletInvoiceWithOptionalLnInvoice>
     | RepositoryError {
@@ -124,6 +141,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     persistNew,
     markAsPaid,
     findByPaymentHash,
+    findForWalletByPaymentHash,
     yieldPending,
     deleteByPaymentHash,
     deleteUnpaidOlderThan,

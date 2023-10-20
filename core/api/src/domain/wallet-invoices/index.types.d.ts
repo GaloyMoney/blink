@@ -165,6 +165,11 @@ type WalletAddressReceiverArgs<S extends WalletCurrency> = {
 
 type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt">
 
+type WalletInvoiceFindForWalletByPaymentHashArgs = {
+  walletId: WalletId
+  paymentHash: PaymentHash
+}
+
 interface IWalletInvoicesRepository {
   persistNew: (
     invoice: WalletInvoicesPersistNewArgs,
@@ -176,6 +181,10 @@ interface IWalletInvoicesRepository {
 
   findByPaymentHash: (
     paymentHash: PaymentHash,
+  ) => Promise<WalletInvoice | RepositoryError>
+
+  findForWalletByPaymentHash: (
+    args: WalletInvoiceFindForWalletByPaymentHashArgs,
   ) => Promise<WalletInvoice | RepositoryError>
 
   yieldPending: () => AsyncGenerator<WalletInvoiceWithOptionalLnInvoice> | RepositoryError

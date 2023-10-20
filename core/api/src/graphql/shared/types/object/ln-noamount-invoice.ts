@@ -28,8 +28,8 @@ const LnNoAmountInvoice = GT.Object<WalletInvoice>({
     paymentStatus: {
       type: GT.NonNull(InvoicePaymentStatus),
       resolve: (source) => {
-        const statusCheker = WalletInvoiceStatusChecker(source)
-        const status = statusCheker.status(new Date())
+        const statusChecker = WalletInvoiceStatusChecker(source)
+        const status = statusChecker.status(new Date())
         return status
       },
     },

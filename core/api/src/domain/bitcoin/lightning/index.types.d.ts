@@ -110,7 +110,7 @@ type LnInvoice = {
   readonly paymentSecret: PaymentIdentifyingSecret | null
   readonly features: LnInvoiceFeature[]
   readonly expiresAt: Date
-  readonly isExpired: boolean // Should we remove this because it can become stale?
+  readonly isExpired: boolean
 }
 
 type RegisterInvoiceArgs = {

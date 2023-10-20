@@ -1,7 +1,6 @@
-import { CouldNotFindWalletInvoiceError } from "@/domain/errors"
 import { WalletInvoicesRepository } from "@/services/mongoose"
 
-export const getInvoiceForWalletByPaymentHash = async ({
+export const getInvoiceForWalletByPaymentHash = ({
   walletId,
   paymentHash,
 }: {
@@ -10,13 +9,8 @@ export const getInvoiceForWalletByPaymentHash = async ({
 }): Promise<WalletInvoice | ApplicationError> => {
   const walletInvoicesRepository = WalletInvoicesRepository()
 
-  const walletInvoice = await walletInvoicesRepository.findByPaymentHash(paymentHash)
-
-  if (walletInvoice instanceof Error) return walletInvoice
-
-  if (walletInvoice.recipientWalletDescriptor.id !== walletId) {
-    return new CouldNotFindWalletInvoiceError()
-  }
-
-  return walletInvoice
+  return walletInvoicesRepository.findForWalletByPaymentHash({
+    walletId,
+    paymentHash,
+  })
 }

@@ -11,20 +11,18 @@ export const getTransactionForWalletByPaymentHash = async ({
   paymentHash: PaymentHash
 }): Promise<WalletTransaction | undefined | ApplicationError> => {
   const ledger = LedgerService()
-  const ledgerTransactions = await ledger.getTransactionsByHash(paymentHash)
-  if (ledgerTransactions instanceof Error) return ledgerTransactions
+  const ledgerTransaction = await ledger.getTransactionForWalletByPaymentHash({
+    walletId,
+    paymentHash,
+  })
 
-  const transactions = WalletTransactionHistory.fromLedger({
-    ledgerTransactions,
+  if (ledgerTransaction instanceof Error) return ledgerTransaction
+
+  return WalletTransactionHistory.fromLedger({
+    ledgerTransactions: [ledgerTransaction],
     nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
     memoSharingConfig,
-  }).transactions
-
-  const transaction = transactions.find(
-    (transaction) => transaction.walletId === walletId,
-  )
-
-  return transaction
+  }).transactions[0]
 }
 
 export const getTransactionsByHash = async (
