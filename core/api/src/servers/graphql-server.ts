@@ -1,28 +1,32 @@
 import { createServer } from "http"
 
-import { ApolloServer } from "@apollo/server"
+import { ApolloServer, ApolloServerPlugin } from "@apollo/server"
 import { unwrapResolverError } from "@apollo/server/errors"
 import { expressMiddleware } from "@apollo/server/express4"
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
 import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
-import { GraphQLSchema } from "graphql"
-import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
+import { GraphQLError, GraphQLSchema, separateOperations } from "graphql"
+import {
+  ComplexityEstimator,
+  fieldExtensionsEstimator,
+  getComplexity,
+  simpleEstimator,
+} from "graphql-query-complexity"
 import jsonwebtoken from "jsonwebtoken"
 import jwksRsa from "jwks-rsa"
 import PinoHttp from "pino-http"
 
-import { ApolloServerPluginGraphQLQueryComplexity } from "./apollo-plugins"
 import authRouter from "./authorization"
 import kratosCallback from "./event-handlers/kratos"
 import healthzHandler from "./middlewares/healthz"
 import { idempotencyMiddleware } from "./middlewares/idempotency"
 
-import { baseLogger } from "@/services/logger"
-import { mapError } from "@/graphql/error-map"
-import { DomainError, parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
 import { getJwksArgs } from "@/config"
+import { DomainError, parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
+import { mapError } from "@/graphql/error-map"
+import { baseLogger } from "@/services/logger"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -183,4 +187,46 @@ export const startApolloServer = async ({
       reject(err)
     })
   })
+}
+
+const ApolloServerPluginGraphQLQueryComplexity = ({
+  schema,
+  maximumComplexity,
+  estimators,
+  onComplete,
+  createError = (max, actual) =>
+    new GraphQLError(`Query too complex. Value of ${actual} is over the maximum ${max}.`),
+}: {
+  schema: GraphQLSchema
+  maximumComplexity: number
+  estimators: Array<ComplexityEstimator>
+  onComplete?: (complexity: number) => Promise<void> | void
+  createError?: (max: number, actual: number) => Promise<GraphQLError> | GraphQLError
+}): ApolloServerPlugin => {
+  return {
+    async requestDidStart() {
+      return {
+        async didResolveOperation({ request, document }) {
+          const query = request.operationName
+            ? separateOperations(document)[request.operationName]
+            : document
+
+          const complexity = getComplexity({
+            schema,
+            query,
+            variables: request.variables,
+            estimators,
+          })
+
+          if (complexity >= maximumComplexity) {
+            throw await createError(maximumComplexity, complexity)
+          }
+
+          if (onComplete) {
+            await onComplete(complexity)
+          }
+        },
+      }
+    },
+  }
 }
