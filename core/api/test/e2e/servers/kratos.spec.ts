@@ -11,7 +11,7 @@ import {
   AuthWithUsernamePasswordDeviceIdService,
   IdentityRepository,
   extendSession,
-  getNextPage,
+  getNextPageToken,
   listSessions,
   validateKratosToken,
   AuthenticationKratosError,
@@ -545,17 +545,17 @@ describe("phone+email schema", () => {
 
 describe("decoding link header", () => {
   const withNext =
-    '<http://0.0.0.0:4434/identities?page=1&page_size=1&page_token=eyJvZmZzZXQiOiIxIiwidiI6Mn0&per_page=1>; rel="next",<http://0.0.0.0:4434/identities?page=1&page_size=1&page_token=eyJvZmZzZXQiOiIxIiwidiI6Mn0&per_page=1>; rel="last"'
+    '</admin/clients?page_size=5&page_token=euKoY1BqY3J8GVax>; rel="first",</admin/clients?page_size=5&page_token=h9LfEKUiFoLH2R0A>; rel="next"'
 
   const withoutNext =
-    '<http://0.0.0.0:4434/identities?page=0&page_size=1&page_token=eyJvZmZzZXQiOiIwIiwidiI6Mn0&per_page=1>; rel="first",<http://0.0.0.0:4434/identities?page=0&page_size=1&page_token=eyJvZmZzZXQiOiIwIiwidiI6Mn0&per_page=1>; rel="prev"'
+    '</admin/clients?page_size=5&page_token=euKoY1BqY3J8GVax>; rel="first"'
 
   it("try decoding link successfully", () => {
-    expect(getNextPage(withNext)).toBe(1)
+    expect(getNextPageToken(withNext)).toBe("h9LfEKUiFoLH2R0A")
   })
 
   it("should be undefined when no more next is present", () => {
-    expect(getNextPage(withoutNext)).toBe(undefined)
+    expect(getNextPageToken(withoutNext)).toBe(undefined)
   })
 })
 

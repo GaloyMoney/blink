@@ -146,6 +146,7 @@ interface IAuthWithUsernamePasswordDeviceIdService {
 
 interface IIdentityRepository {
   getIdentity(id: UserId): Promise<AnyIdentity | KratosError>
+  listIdentities(): AsyncGenerator<AnyIdentity | KratosError>
   deleteIdentity(id: UserId): Promise<void | KratosError>
   getUserIdFromIdentifier(identifier: string): Promise<UserId | KratosError>
 }
