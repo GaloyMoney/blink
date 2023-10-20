@@ -23,6 +23,7 @@ import {
   getPendingChannels,
   getPendingPayments,
   getWalletInfo,
+  LightningError as LnError,
   payViaPaymentDetails,
   payViaRoutes,
   settleHodlInvoice,
@@ -78,11 +79,7 @@ import {
 import { IncomingOnChainTransaction } from "@/domain/bitcoin/onchain"
 import { CacheKeys } from "@/domain/cache"
 import { LnFees } from "@/domain/payments"
-import {
-  WalletCurrency,
-  parseErrorMessageFromUnknown,
-  paymentAmountFromNumber,
-} from "@/domain/shared"
+import { WalletCurrency, paymentAmountFromNumber } from "@/domain/shared"
 
 import { LocalCacheService } from "@/services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
@@ -1146,11 +1143,7 @@ const handleCommonLightningServiceErrors = (err: Error | unknown) => {
     case match(KnownLndErrorDetails.ConnectionRefused):
       return new OffChainServiceBusyError()
     default:
-      return new UnknownLightningServiceError(
-        msgForUnknown({
-          message: parseErrorMessageFromUnknown(err),
-        } as Error),
-      )
+      return new UnknownLightningServiceError(msgForUnknown(err as LnError))
   }
 }
 
@@ -1166,15 +1159,11 @@ const handleCommonRouteNotFoundErrors = (err: Error | unknown) => {
       return new DestinationMissingDependentFeatureError()
 
     default:
-      return new UnknownRouteNotFoundError(
-        msgForUnknown({
-          message: parseErrorMessageFromUnknown(err),
-        } as Error),
-      )
+      return new UnknownRouteNotFoundError(msgForUnknown(err as LnError))
   }
 }
 
-const msgForUnknown = (err: Error) =>
+const msgForUnknown = (err: LnError) =>
   JSON.stringify({
     parsedLndErrorDetails: parseLndErrorDetails(err),
     detailsFromLnd: err,
