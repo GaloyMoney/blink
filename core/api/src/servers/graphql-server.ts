@@ -8,24 +8,21 @@ import cors from "cors"
 import express, { NextFunction, Request, Response } from "express"
 import { GetVerificationKey, expressjwt } from "express-jwt"
 import { GraphQLSchema } from "graphql"
-// import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
-// import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
+import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
 import jsonwebtoken from "jsonwebtoken"
 import jwksRsa from "jwks-rsa"
 import PinoHttp from "pino-http"
 
+import { ApolloServerPluginGraphQLQueryComplexity } from "./apollo-plugins"
 import authRouter from "./authorization"
-
 import kratosCallback from "./event-handlers/kratos"
-
 import healthzHandler from "./middlewares/healthz"
-
 import { idempotencyMiddleware } from "./middlewares/idempotency"
 
-import { getJwksArgs } from "@/config"
-import { DomainError, parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
-import { mapError } from "@/graphql/error-map"
 import { baseLogger } from "@/services/logger"
+import { mapError } from "@/graphql/error-map"
+import { DomainError, parseUnknownDomainErrorFromUnknown } from "@/domain/shared"
+import { getJwksArgs } from "@/config"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -48,15 +45,15 @@ export const startApolloServer = async ({
   const httpServer = createServer(app)
 
   const apolloPlugins = [
-    // createComplexityPlugin({
-    //   schema,
-    //   estimators: [fieldExtensionsEstimator(), simpleEstimator({ defaultComplexity: 1 })],
-    //   maximumComplexity: 200,
-    //   onComplete: (complexity) => {
-    //     // TODO(telemetry): add complexity value to span
-    //     baseLogger.debug({ complexity }, "queryComplexity")
-    //   },
-    // }),
+    ApolloServerPluginGraphQLQueryComplexity({
+      schema,
+      estimators: [fieldExtensionsEstimator(), simpleEstimator({ defaultComplexity: 1 })],
+      maximumComplexity: 200,
+      onComplete: (complexity) => {
+        // TODO(telemetry): add complexity value to span
+        baseLogger.debug({ complexity }, "queryComplexity")
+      },
+    }),
     ApolloServerPluginDrainHttpServer({ httpServer }),
   ]
 

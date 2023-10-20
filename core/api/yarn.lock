@@ -6415,11 +6415,6 @@ graphql-middleware@^6.1.33:
     "@graphql-tools/delegate" "^8.8.1"
     "@graphql-tools/schema" "^8.5.1"
 
-graphql-query-complexity-apollo-plugin@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/graphql-query-complexity-apollo-plugin/-/graphql-query-complexity-apollo-plugin-1.0.2.tgz#1eff2eb4ea455a3577c9a2f3580561a5e19b394a"
-  integrity sha512-TjDzIuAILNI0+wemtTpl47Vj/wCi8TGhq8tVcJQOsHUkiflrVhrHwKHiBX7V5KC5rgUAJtnsqSgVBDJqsAvwjg==
-
 graphql-query-complexity@^0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/graphql-query-complexity/-/graphql-query-complexity-0.12.0.tgz#5f636ccc54da82225f31e898e7f27192fe074b4c"
