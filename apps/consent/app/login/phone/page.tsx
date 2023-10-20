@@ -17,27 +17,23 @@ interface LoginProps {
 }
 
 const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
-  let body: OAuth2LoginRequest
   const { login_challenge } = searchParams
 
   if (!login_challenge) {
     throw new Error("Invalid Request")
   }
 
-  const { data } = await hydraClient.getOAuth2LoginRequest({
+  const { data: body } = await hydraClient.getOAuth2LoginRequest({
     loginChallenge: login_challenge,
   })
 
-  body = data
   if (body.skip) {
-    let response: OAuth2RedirectTo
-    const { data } = await hydraClient.acceptOAuth2LoginRequest({
+    const { data: response } = await hydraClient.acceptOAuth2LoginRequest({
       loginChallenge: login_challenge,
       acceptOAuth2LoginRequest: {
         subject: String(body.subject),
       },
     })
-    response = data
     redirect(String(response.redirect_to))
   }
 

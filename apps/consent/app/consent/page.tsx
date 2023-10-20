@@ -31,8 +31,7 @@ const submitForm = async (form: FormData) => {
 
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access")
-    let response
-    response = await hydraClient.rejectOAuth2ConsentRequest(
+    const response = await hydraClient.rejectOAuth2ConsentRequest(
       {
         consentChallenge: consent_challenge,
         rejectOAuth2Request: {
@@ -49,7 +48,6 @@ const submitForm = async (form: FormData) => {
     redirect(response.data.redirect_to)
   }
 
-  let responseConfirm
   const responseInit = await hydraClient.getOAuth2ConsentRequest(
     {
       consentChallenge: consent_challenge,
@@ -62,7 +60,7 @@ const submitForm = async (form: FormData) => {
   )
 
   const body = responseInit.data
-  responseConfirm = await hydraClient.acceptOAuth2ConsentRequest(
+  const responseConfirm = await hydraClient.acceptOAuth2ConsentRequest(
     {
       consentChallenge: consent_challenge,
       acceptOAuth2ConsentRequest: {
@@ -100,8 +98,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
   }
 
   if (body.client?.skip_consent) {
-    let response
-    response = await hydraClient.acceptOAuth2ConsentRequest(
+    const response = await hydraClient.acceptOAuth2ConsentRequest(
       {
         consentChallenge: consent_challenge,
         acceptOAuth2ConsentRequest: {

@@ -106,13 +106,12 @@ async function submitForm(formData: FormData): Promise<LoginEmailResponse | void
 
 const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
   const { login_challenge } = searchParams
-  let body: OAuth2LoginRequest
 
   if (!login_challenge) {
     throw new Error("Invalid Request")
   }
 
-  const { data } = await hydraClient.getOAuth2LoginRequest(
+  const { data: body } = await hydraClient.getOAuth2LoginRequest(
     {
       loginChallenge: login_challenge,
     },
@@ -123,10 +122,8 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
     },
   )
 
-  body = data
   if (body.skip) {
-    let response: OAuth2RedirectTo
-    const { data } = await hydraClient.acceptOAuth2LoginRequest(
+    const { data: response } = await hydraClient.acceptOAuth2LoginRequest(
       {
         loginChallenge: login_challenge,
         acceptOAuth2LoginRequest: {
@@ -139,7 +136,6 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
         },
       },
     )
-    response = data
     redirect(String(response.redirect_to))
   }
 
