@@ -36,7 +36,9 @@
 //   }
 // }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace Cypress {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Chainable<Subject> {
     getOTP(email: string): Chainable<string>
     requestEmailCode(email: string): Chainable<string>
