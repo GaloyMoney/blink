@@ -38,14 +38,14 @@ const submitForm = async (form: FormData) => {
         error: "access_denied",
         error_description: "The resource owner denied the request",
       },
-    });
+    }, { withCredentials: true });
     redirect(response.data.redirect_to);
   }
 
   let responseConfirm;
   const responseInit = await hydraClient.getOAuth2ConsentRequest({
     consentChallenge: consent_challenge,
-  });
+  }, { withCredentials: true });
 
   const body = responseInit.data;
   responseConfirm = await hydraClient.acceptOAuth2ConsentRequest({
@@ -56,7 +56,7 @@ const submitForm = async (form: FormData) => {
       remember: remember,
       remember_for: 3600,
     },
-  });
+  }, { withCredentials: true });
   redirect(responseConfirm.data.redirect_to);
 };
 
@@ -69,7 +69,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
 
   const data = await hydraClient.getOAuth2ConsentRequest({
     consentChallenge: consent_challenge,
-  });
+  }, { withCredentials: true });
 
   const body = data.data;
   const login_challenge = data.data.login_challenge;
@@ -86,7 +86,7 @@ const Consent = async ({ searchParams }: { searchParams: ConsentProps }) => {
         grant_scope: body.requested_scope,
         grant_access_token_audience: body.requested_access_token_audience,
       },
-    });
+    }, { withCredentials: true });
     redirect(String(response.data.redirect_to));
   }
 
