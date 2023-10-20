@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: update apollo server (#3385)...'
-      sha: b1629e8a94dc954c3b358c846b613c16b3642cfd
+      commitTitle: 'fix: add axios option withCredentials to acceptOAuth2LoginRequest
+        (#3400)'
+      sha: 4f0e3a9a8baca3176dca7eda71b0c6c58f52b062
       tags:
-      - 0.15.22-2-gb1629e8a9
+      - 0.15.23-2-g4f0e3a9a8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: update apollo server (#3385)...'
-      sha: b1629e8a94dc954c3b358c846b613c16b3642cfd
+      commitTitle: 'fix: add axios option withCredentials to acceptOAuth2LoginRequest
+        (#3400)'
+      sha: 4f0e3a9a8baca3176dca7eda71b0c6c58f52b062
       tags:
-      - 0.15.22-2-gb1629e8a9
+      - 0.15.23-2-g4f0e3a9a8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: update apollo server (#3385)...'
-      sha: b1629e8a94dc954c3b358c846b613c16b3642cfd
+      commitTitle: 'fix: add axios option withCredentials to acceptOAuth2LoginRequest
+        (#3400)'
+      sha: 4f0e3a9a8baca3176dca7eda71b0c6c58f52b062
       tags:
-      - 0.15.22-2-gb1629e8a9
+      - 0.15.23-2-g4f0e3a9a8
     path: ./
   path: ./graphql
 kind: LockConfig
