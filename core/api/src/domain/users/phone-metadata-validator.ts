@@ -43,11 +43,11 @@ export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
     if (type instanceof Error) return type
 
     if (typeof error_code !== "string") {
-      return new InvalidErrorCodeForPhoneMetadataError(countryCode)
+      return new InvalidErrorCodeForPhoneMetadataError(error_code)
     }
 
     if (typeof mobile_country_code !== "string") {
-      return new InvalidMobileCountryCodeForPhoneMetadataError(countryCode)
+      return new InvalidMobileCountryCodeForPhoneMetadataError(mobile_country_code)
     }
 
     if (typeof countryCode !== "string") {
