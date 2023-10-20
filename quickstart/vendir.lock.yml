@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add axios option withCredentials to acceptOAuth2LoginRequest
-        (#3400)'
-      sha: 4f0e3a9a8baca3176dca7eda71b0c6c58f52b062
+      commitTitle: 'feat: adding a fetchByUserId admin endpoint (#3401)...'
+      sha: 58eb8d1a8d2bf69ac2d5a2fed89500fbe917f9f3
       tags:
-      - 0.15.23-2-g4f0e3a9a8
+      - 0.15.24-2-g58eb8d1a8
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add axios option withCredentials to acceptOAuth2LoginRequest
-        (#3400)'
-      sha: 4f0e3a9a8baca3176dca7eda71b0c6c58f52b062
+      commitTitle: 'feat: adding a fetchByUserId admin endpoint (#3401)...'
+      sha: 58eb8d1a8d2bf69ac2d5a2fed89500fbe917f9f3
       tags:
-      - 0.15.23-2-g4f0e3a9a8
+      - 0.15.24-2-g58eb8d1a8
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: add axios option withCredentials to acceptOAuth2LoginRequest
-        (#3400)'
-      sha: 4f0e3a9a8baca3176dca7eda71b0c6c58f52b062
+      commitTitle: 'feat: adding a fetchByUserId admin endpoint (#3401)...'
+      sha: 58eb8d1a8d2bf69ac2d5a2fed89500fbe917f9f3
       tags:
-      - 0.15.23-2-g4f0e3a9a8
+      - 0.15.24-2-g58eb8d1a8
     path: ./
   path: ./graphql
 kind: LockConfig
