@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: genericize eslint and add to apps/dashboard tests (#3394)...'
-      sha: 1739e6c96ec5f4bdad267ad049663c8f84cf06f7
+      commitTitle: 'chore: update apollo server (#3385)...'
+      sha: b1629e8a94dc954c3b358c846b613c16b3642cfd
       tags:
-      - 0.15.20-2-g1739e6c96
+      - 0.15.22-2-gb1629e8a9
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: genericize eslint and add to apps/dashboard tests (#3394)...'
-      sha: 1739e6c96ec5f4bdad267ad049663c8f84cf06f7
+      commitTitle: 'chore: update apollo server (#3385)...'
+      sha: b1629e8a94dc954c3b358c846b613c16b3642cfd
       tags:
-      - 0.15.20-2-g1739e6c96
+      - 0.15.22-2-gb1629e8a9
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: genericize eslint and add to apps/dashboard tests (#3394)...'
-      sha: 1739e6c96ec5f4bdad267ad049663c8f84cf06f7
+      commitTitle: 'chore: update apollo server (#3385)...'
+      sha: b1629e8a94dc954c3b358c846b613c16b3642cfd
       tags:
-      - 0.15.20-2-g1739e6c96
+      - 0.15.22-2-gb1629e8a9
     path: ./
   path: ./graphql
 kind: LockConfig
