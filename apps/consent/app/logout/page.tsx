@@ -1,15 +1,16 @@
-import { redirect } from "next/navigation";
-import React from "react";
-import { hydraClient } from "../../services/hydra";
+import { redirect } from "next/navigation"
+import React from "react"
+
+import { hydraClient } from "../../services/hydra"
 
 interface logOutProps {
-  logout_challenge: string;
+  logout_challenge: string
 }
 
 const submitForm = async (form: FormData) => {
-  "use server";
-  const logout_challenge = form.get("logout_challenge");
-  const submitValue = form.get("submit");
+  "use server"
+  const logout_challenge = form.get("logout_challenge")
+  const submitValue = form.get("submit")
 
   if (
     typeof logout_challenge === "string" &&
@@ -20,29 +21,25 @@ const submitForm = async (form: FormData) => {
     if (submitValue === "No") {
       await hydraClient.rejectOAuth2LogoutRequest({
         logoutChallenge: logout_challenge,
-      });
-      redirect("https://www.blink.sh/");
+      })
+      redirect("https://www.blink.sh/")
     }
     const response = await hydraClient.acceptOAuth2LogoutRequest({
       logoutChallenge: logout_challenge,
-    });
-    redirect(String(response.data.redirect_to));
+    })
+    redirect(String(response.data.redirect_to))
   }
-};
+}
 
 const Logout = async ({ searchParams }: { searchParams: logOutProps }) => {
-  const { logout_challenge } = searchParams;
+  const { logout_challenge } = searchParams
 
   return (
     <main>
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-10 rounded-lg shadow-lg w-1/3">
           <form action={submitForm} className="flex flex-col">
-            <input
-              type="hidden"
-              name="logout_challenge"
-              value={logout_challenge}
-            />
+            <input type="hidden" name="logout_challenge" value={logout_challenge} />
             <p className="mb-4 text-gray-700 text-center">
               Are you sure you want to logout?
             </p>
@@ -70,7 +67,7 @@ const Logout = async ({ searchParams }: { searchParams: logOutProps }) => {
         </div>
       </div>
     </main>
-  );
-};
+  )
+}
 
-export default Logout;
+export default Logout

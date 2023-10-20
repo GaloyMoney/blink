@@ -1,9 +1,10 @@
-import { env } from "../../env";
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance } from "axios"
+
+import { env } from "../../env"
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: env.CORE_AUTH_URL,
   headers: { "Content-Type": "application/json" },
-});
+})
 
-export default axiosInstance;
+export default axiosInstance

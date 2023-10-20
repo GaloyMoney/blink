@@ -9,7 +9,7 @@ export enum SubmitValue {
 }
 
 export interface ServerActionResponse<ResponseBody> {
-  error: boolean;
-  message: string;
-  responsePayload: ResponseBody;
+  error: boolean
+  message: string
+  responsePayload: ResponseBody
 }

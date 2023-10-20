@@ -1,7 +1,7 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode } from "react"
 
 interface SeparatorProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 const Separator: React.FC<SeparatorProps> = ({ children }) => {
@@ -17,7 +17,7 @@ const Separator: React.FC<SeparatorProps> = ({ children }) => {
         <div className="h-px bg-gray-300 w-full"></div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Separator;
+export default Separator

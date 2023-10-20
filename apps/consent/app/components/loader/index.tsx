@@ -1,8 +1,9 @@
-import React from "react";
-import styles from "./loader.module.css";
+import React from "react"
+
+import styles from "./loader.module.css"
 
 interface loaderProps {
-  size?: string;
+  size?: string
 }
 
 export default function loader({ size = "38px" }: loaderProps) {
@@ -14,5 +15,5 @@ export default function loader({ size = "38px" }: loaderProps) {
       }}
       className={styles.loader}
     ></span>
-  );
+  )
 }

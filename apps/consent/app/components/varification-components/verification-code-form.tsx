@@ -1,14 +1,15 @@
-import React from "react";
-import InputComponent from "@/app/components/input-component";
-import PrimaryButtonComponent from "@/app/components/button/primary-button-component";
+import React from "react"
+
+import InputComponent from "@/app/components/input-component"
+import PrimaryButtonComponent from "@/app/components/button/primary-button-component"
 
 interface VerificationCodeFormProps {
-  formAction: any;
-  login_challenge: string;
-  loginId: string;
-  remember: string;
-  loginType: string;
-  value: string;
+  formAction: any
+  login_challenge: string
+  loginId: string
+  remember: string
+  loginType: string
+  value: string
 }
 
 const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({
@@ -20,10 +21,7 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({
   value,
 }) => (
   <>
-    <h1
-      id="verification-title"
-      className="text-center mb-4 text-xl font-semibold"
-    >
+    <h1 id="verification-title" className="text-center mb-4 text-xl font-semibold">
       Enter Verification Code
     </h1>
     <form action={formAction} className="flex flex-col">
@@ -45,14 +43,11 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({
         placeholder="Enter code here"
         data-testid="verification_code_input"
       />
-      <PrimaryButtonComponent
-        data-testid="verification_code_submit_btn"
-        type="submit"
-      >
+      <PrimaryButtonComponent data-testid="verification_code_submit_btn" type="submit">
         Submit
       </PrimaryButtonComponent>
     </form>
   </>
-);
+)
 
-export default VerificationCodeForm;
+export default VerificationCodeForm
