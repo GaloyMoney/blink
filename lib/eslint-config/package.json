@@ -7,7 +7,7 @@
   },
   "exports": {
     "./base": "./.eslintrc.base.js",
-    "./prettier": "./.prettier.config.js"
+    "./prettier": "./.prettierrc.js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.8.0",

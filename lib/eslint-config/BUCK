@@ -7,7 +7,7 @@ filegroup(
     name = "src",
     srcs = [
         ".eslintrc.base.js",
-        ".prettier.config.js",
+        ".prettierrc.js",
     ],
     visibility = ["PUBLIC"],
 )
