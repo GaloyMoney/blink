@@ -14,6 +14,8 @@ const CaptchaChallengeComponent: React.FC<{
   }
 }> = ({ id, challenge, formData }) => {
   const captchaHandler = useCallback(
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (captchaObj: any) => {
       const onSuccess = async () => {
         const result = captchaObj.getValidate()
@@ -36,7 +38,6 @@ const CaptchaChallengeComponent: React.FC<{
   )
 
   useEffect(() => {
-    /* eslint @typescript-eslint/ban-ts-comment: "off" */
     // @ts-ignore-next-line error
     window.initGeetest(
       {

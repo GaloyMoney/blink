@@ -4,6 +4,8 @@ import InputComponent from "@/app/components/input-component"
 import PrimaryButtonComponent from "@/app/components/button/primary-button-component"
 
 interface TwoFaVerificationFormProps {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formActionTwoFA: any
   login_challenge: string
   authToken: string

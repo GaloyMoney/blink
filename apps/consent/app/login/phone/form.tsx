@@ -31,6 +31,7 @@ import "./phone-input-styles.css"
 
 interface LoginFormProps {
   login_challenge: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   countryCodes: any
 }
 
