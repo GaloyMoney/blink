@@ -1,7 +1,7 @@
-import { defineConfig } from "cypress";
-import dotenv from "dotenv";
-dotenv.config();
-dotenv.config({ path: ".env.test" });
+import { defineConfig } from "cypress"
+import dotenv from "dotenv"
+dotenv.config()
+dotenv.config({ path: ".env.test" })
 
 export default defineConfig({
   e2e: {
@@ -20,4 +20,4 @@ export default defineConfig({
   },
   screenshotOnRunFailure: false,
   video: false,
-});
+})

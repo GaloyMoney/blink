@@ -1,41 +1,35 @@
-"use server";
-import MainContent from "@/app/components/main-container";
-import Card from "@/app/components/card";
-import Logo from "@/app/components/logo";
-import VerificationForm from "./form";
-import { cookies } from "next/headers";
-import { LoginType } from "@/app/index.types";
+"use server"
+import { cookies } from "next/headers"
 
+import VerificationForm from "./form"
+
+import MainContent from "@/app/components/main-container"
+import Card from "@/app/components/card"
+import Logo from "@/app/components/logo"
+import { LoginType } from "@/app/index.types"
 
 interface VerificationProps {
-  login_challenge: string;
-  email: string;
-  loginId: string;
-  remember: string;
+  login_challenge: string
+  email: string
+  loginId: string
+  remember: string
 }
 
-
-
-const Verification = async ({
-  searchParams,
-}: {
-  searchParams: VerificationProps;
-}) => {
-  
-  const { login_challenge } = searchParams;
-  const cookieStore = cookies().get(login_challenge);
+const Verification = async ({ searchParams }: { searchParams: VerificationProps }) => {
+  const { login_challenge } = searchParams
+  const cookieStore = cookies().get(login_challenge)
 
   if (!cookieStore) {
-    throw new Error("Cannot find cookies");
+    throw new Error("Cannot find cookies")
   }
 
-  const { loginType, value, remember, loginId } = JSON.parse(cookieStore.value);
+  const { loginType, value, remember, loginId } = JSON.parse(cookieStore.value)
   if (!login_challenge || !value || !loginType) {
-    throw new Error("Invalid Request");
+    throw new Error("Invalid Request")
   }
 
   if (loginType === LoginType.email && !loginId) {
-    throw new Error("Invalid Request for Email");
+    throw new Error("Invalid Request for Email")
   }
 
   return (
@@ -51,7 +45,7 @@ const Verification = async ({
         />
       </Card>
     </MainContent>
-  );
-};
+  )
+}
 
-export default Verification;
+export default Verification

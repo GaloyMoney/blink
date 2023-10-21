@@ -1,13 +1,14 @@
-"use client";
-import React, { ButtonHTMLAttributes } from "react";
+"use client"
+import React, { ButtonHTMLAttributes } from "react"
 // ts-ignore because experimental_useFormStatus is not in the types
-// @ts-ignore
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line error
+import { experimental_useFormStatus as useFormStatus } from "react-dom"
 
 interface SecondaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  label?: string;
-  children: React.ReactNode;
-  disabled?: boolean;
+  label?: string
+  children: React.ReactNode
+  disabled?: boolean
 }
 
 const SecondaryButton: React.FC<SecondaryButtonProps> = ({
@@ -15,7 +16,7 @@ const SecondaryButton: React.FC<SecondaryButtonProps> = ({
   disabled = false,
   ...buttonProps
 }) => {
-  const { pending } = useFormStatus();
+  const { pending } = useFormStatus()
   return (
     <button
       disabled={pending || disabled}
@@ -24,7 +25,7 @@ const SecondaryButton: React.FC<SecondaryButtonProps> = ({
     >
       {children}
     </button>
-  );
-};
+  )
+}
 
-export default SecondaryButton;
+export default SecondaryButton

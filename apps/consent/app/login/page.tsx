@@ -1,44 +1,43 @@
-import { OAuth2LoginRequest, OAuth2RedirectTo } from "@ory/hydra-client";
-import { redirect } from "next/navigation";
-import React from "react";
-import { hydraClient } from "../../services/hydra";
-import InputComponent from "../components/input-component";
-import Card from "../components/card";
-import MainContent from "../components/main-container";
-import Logo from "../components/logo";
-import Link from "next/link";
-import authApi from "@/services/galoy-auth";
-import Heading from "../components/heading";
-import SubHeading from "../components/sub-heading";
-import FormComponent from "../components/form-component";
-import Separator from "../components/separator";
-import PrimaryButton from "../components/button/primary-button-component";
-import SecondaryButton from "../components/button/secondary-button-component";
-import { LoginType, SubmitValue } from "../index.types";
-import { LoginEmailResponse } from "./email-login.types";
-import { headers } from "next/headers";
-import { cookies } from "next/headers";
+import { redirect } from "next/navigation"
+import React from "react"
+import Link from "next/link"
+import { headers, cookies } from "next/headers"
+
+import { hydraClient } from "../../services/hydra"
+import InputComponent from "../components/input-component"
+import Card from "../components/card"
+import MainContent from "../components/main-container"
+import Logo from "../components/logo"
+import Heading from "../components/heading"
+import SubHeading from "../components/sub-heading"
+import FormComponent from "../components/form-component"
+import Separator from "../components/separator"
+import PrimaryButton from "../components/button/primary-button-component"
+import SecondaryButton from "../components/button/secondary-button-component"
+import { LoginType, SubmitValue } from "../index.types"
+
+import { LoginEmailResponse } from "./email-login.types"
+
+import authApi from "@/services/galoy-auth"
 
 //  this page is for login via email
 interface LoginProps {
-  login_challenge: string;
+  login_challenge: string
 }
 
-async function submitForm(
-  formData: FormData
-): Promise<LoginEmailResponse | void> {
-  "use server";
+async function submitForm(formData: FormData): Promise<LoginEmailResponse | void> {
+  "use server"
 
-  const headersList = headers();
+  const headersList = headers()
   const customHeaders = {
     "x-real-ip": headersList.get("x-real-ip"),
     "x-forwarded-for": headersList.get("x-forwarded-for"),
-  };
+  }
 
-  const login_challenge = formData.get("login_challenge");
-  const submitValue = formData.get("submit");
-  const email = formData.get("email");
-  const remember = String(formData.get("remember") === "1");
+  const login_challenge = formData.get("login_challenge")
+  const submitValue = formData.get("submit")
+  const email = formData.get("email")
+  const remember = String(formData.get("remember") === "1")
   if (
     !login_challenge ||
     !submitValue ||
@@ -46,11 +45,11 @@ async function submitForm(
     typeof login_challenge !== "string" ||
     typeof submitValue !== "string"
   ) {
-    throw new Error("Invalid Value");
+    throw new Error("Invalid Value")
   }
 
   if (submitValue === SubmitValue.denyAccess) {
-    console.log("User denied access");
+    console.log("User denied access")
     const response = await hydraClient.rejectOAuth2LoginRequest(
       {
         loginChallenge: login_challenge,
@@ -63,25 +62,25 @@ async function submitForm(
         headers: {
           Cookie: cookies().toString(),
         },
-      }
-    );
-    redirect(response.data.redirect_to);
+      },
+    )
+    redirect(response.data.redirect_to)
   }
 
   if (!email || typeof email !== "string") {
-    console.error("Invalid Values for email");
-    throw new Error("Invalid Email Value");
+    console.error("Invalid Values for email")
+    throw new Error("Invalid Email Value")
   }
 
-  let emailCodeRequest;
+  let emailCodeRequest
   try {
-    emailCodeRequest = await authApi.requestEmailCode(email, customHeaders);
+    emailCodeRequest = await authApi.requestEmailCode(email, customHeaders)
   } catch (err) {
-    console.error("error while calling emailRequest Code", err);
+    console.error("error while calling emailRequest Code", err)
   }
 
   if (!emailCodeRequest) {
-    throw new Error("Request failed to get email code");
+    throw new Error("Request failed to get email code")
   }
 
   // TODO: manage error on ip rate limit
@@ -95,24 +94,23 @@ async function submitForm(
       value: email,
       remember,
     }),
-    { secure: true }
-  );
+    { secure: true },
+  )
 
-  let params = new URLSearchParams({
+  const params = new URLSearchParams({
     login_challenge,
-  });
-  redirect(`/login/verification?${params}`);
+  })
+  redirect(`/login/verification?${params}`)
 }
 
 const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
-  const { login_challenge } = searchParams;
-  let body: OAuth2LoginRequest;
+  const { login_challenge } = searchParams
 
   if (!login_challenge) {
-    throw new Error("Invalid Request");
+    throw new Error("Invalid Request")
   }
 
-  const { data } = await hydraClient.getOAuth2LoginRequest(
+  const { data: body } = await hydraClient.getOAuth2LoginRequest(
     {
       loginChallenge: login_challenge,
     },
@@ -120,13 +118,11 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
       headers: {
         Cookie: cookies().toString(),
       },
-    }
-  );
+    },
+  )
 
-  body = data;
   if (body.skip) {
-    let response: OAuth2RedirectTo;
-    const { data } = await hydraClient.acceptOAuth2LoginRequest(
+    const { data: response } = await hydraClient.acceptOAuth2LoginRequest(
       {
         loginChallenge: login_challenge,
         acceptOAuth2LoginRequest: {
@@ -137,10 +133,9 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
         headers: {
           Cookie: cookies().toString(),
         },
-      }
-    );
-    response = data;
-    redirect(String(response.redirect_to));
+      },
+    )
+    redirect(String(response.redirect_to))
   }
 
   return (
@@ -210,6 +205,6 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
         </FormComponent>
       </Card>
     </MainContent>
-  );
-};
-export default Login;
+  )
+}
+export default Login

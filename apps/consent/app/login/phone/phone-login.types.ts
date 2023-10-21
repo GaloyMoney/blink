@@ -1,16 +1,16 @@
-import { ServerActionResponse } from "../../index.types";
+import { ServerActionResponse } from "../../index.types"
 
 interface GetCaptchaChallengeBody {
-  id: string | null;
-  challenge: string | null;
+  id: string | null
+  challenge: string | null
   formData: {
-    login_challenge: string | null;
-    phone: string | null;
-    remember: boolean | null;
-  };
+    login_challenge: string | null
+    phone: string | null
+    remember: boolean | null
+  }
 }
 
-type SendPhoneCodeBody = null;
+type SendPhoneCodeBody = null
 
 export interface GetCaptchaChallengeResponse
   extends ServerActionResponse<GetCaptchaChallengeBody | null> {}

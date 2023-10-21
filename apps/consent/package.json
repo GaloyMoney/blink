@@ -30,6 +30,7 @@
     "zod": "^3.22.2"
   },
   "devDependencies": {
+    "@galoy/eslint-config": "workspace:^",
     "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/client-preset": "^4.1.0",

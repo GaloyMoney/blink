@@ -1,14 +1,16 @@
-"use client";
-import React, { ButtonHTMLAttributes } from "react";
+"use client"
+import React, { ButtonHTMLAttributes } from "react"
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
 // ts-ignore because experimental_useFormStatus is not in the types
-// @ts-ignore
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
-import Loader from "../loader";
+// @ts-ignore-next-line error
+import { experimental_useFormStatus as useFormStatus } from "react-dom"
+
+import Loader from "../loader"
 
 interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  label?: string;
-  children: React.ReactNode;
-  disabled?: boolean;
+  label?: string
+  children: React.ReactNode
+  disabled?: boolean
 }
 
 const PrimaryButton: React.FC<PrimaryButtonProps> = ({
@@ -16,8 +18,8 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   disabled = false,
   ...buttonProps
 }) => {
-  const { pending } = useFormStatus();
-  const loadOrDisable = pending || disabled;
+  const { pending } = useFormStatus()
+  const loadOrDisable = pending || disabled
   return (
     <button
       disabled={loadOrDisable}
@@ -28,7 +30,7 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
     >
       {loadOrDisable ? <Loader size="15px" /> : children}
     </button>
-  );
-};
+  )
+}
 
-export default PrimaryButton;
+export default PrimaryButton

@@ -36,25 +36,27 @@
 //   }
 // }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace Cypress {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Chainable<Subject> {
-    getOTP(email: string): Chainable<string>;
-    requestEmailCode(email: string): Chainable<string>;
+    getOTP(email: string): Chainable<string>
+    requestEmailCode(email: string): Chainable<string>
   }
 }
 
 Cypress.Commands.add("getOTP", (email) => {
-  const query = `docker exec -i api-kratos-pg-1 psql -U dbuser -d default -t -c "SELECT body FROM courier_messages WHERE recipient='${email}' ORDER BY created_at DESC LIMIT 1;"`;
+  const query = `docker exec -i api-kratos-pg-1 psql -U dbuser -d default -t -c "SELECT body FROM courier_messages WHERE recipient='${email}' ORDER BY created_at DESC LIMIT 1;"`
   cy.exec(query).then((result) => {
-    const rawMessage = result.stdout;
-    const otpMatch = rawMessage.match(/(\d{6})/);
+    const rawMessage = result.stdout
+    const otpMatch = rawMessage.match(/(\d{6})/)
     if (otpMatch && otpMatch[1]) {
-      return otpMatch[1];
+      return otpMatch[1]
     } else {
-      throw new Error("OTP not found in the message");
+      throw new Error("OTP not found in the message")
     }
-  });
-});
+  })
+})
 
 Cypress.Commands.add("requestEmailCode", (email) => {
   return cy
@@ -66,6 +68,6 @@ Cypress.Commands.add("requestEmailCode", (email) => {
       },
     })
     .then((response) => {
-      return response.body.result;
-    });
-});
+      return response.body.result
+    })
+})

@@ -1,41 +1,44 @@
-"use client";
-import { sendPhoneCode } from "@/app/login/phone/server-actions";
-import { memo, useCallback, useEffect } from "react";
-import { toast } from "react-toastify";
+"use client"
+import { memo, useCallback, useEffect } from "react"
+import { toast } from "react-toastify"
+
+import { sendPhoneCode } from "@/app/login/phone/server-actions"
 
 const CaptchaChallengeComponent: React.FC<{
-  id: string;
-  challenge: string;
+  id: string
+  challenge: string
   formData: {
-    login_challenge: string;
-    phone: string;
-    remember: string;
-  };
+    login_challenge: string
+    phone: string
+    remember: string
+  }
 }> = ({ id, challenge, formData }) => {
   const captchaHandler = useCallback(
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (captchaObj: any) => {
       const onSuccess = async () => {
-        const result = captchaObj.getValidate();
-        const res = await sendPhoneCode(result, formData);
+        const result = captchaObj.getValidate()
+        const res = await sendPhoneCode(result, formData)
         if (res?.error) {
-          toast.error(res.message);
+          toast.error(res.message)
         }
-      };
-      captchaObj.appendTo("#captcha");
+      }
+      captchaObj.appendTo("#captcha")
       captchaObj
         .onReady(() => {
-          captchaObj.verify();
+          captchaObj.verify()
         })
         .onSuccess(onSuccess)
         .onError((err: unknown) => {
-          console.debug("[Captcha error]:", err);
-        });
+          console.debug("[Captcha error]:", err)
+        })
     },
-    [formData]
-  );
+    [formData],
+  )
 
   useEffect(() => {
-    // @ts-ignore
+    // @ts-ignore-next-line error
     window.initGeetest(
       {
         gt: id,
@@ -45,10 +48,10 @@ const CaptchaChallengeComponent: React.FC<{
         product: "bind",
         lang: "en",
       },
-      captchaHandler
-    );
-  }, [captchaHandler, id, challenge]);
+      captchaHandler,
+    )
+  }, [captchaHandler, id, challenge])
 
-  return <div data-testid="captcha_container" id="captcha"></div>;
-};
-export const CaptchaChallenge = memo(CaptchaChallengeComponent);
+  return <div data-testid="captcha_container" id="captcha"></div>
+}
+export const CaptchaChallenge = memo(CaptchaChallengeComponent)

@@ -1,33 +1,43 @@
-"use client";
-import React, { useState } from "react";
-import PrimaryButton from "@/app/components/button/primary-button-component";
-import SecondaryButton from "@/app/components/button/secondary-button-component";
-import Link from "next/link";
-import { CaptchaChallenge } from "@/app/components/captcha-challenge";
-import { getCaptchaChallenge } from "./server-actions";
-import { toast } from "react-toastify";
-import FormComponent from "@/app/components/form-component";
-import Separator from "@/app/components/separator";
-// @ts-ignore-next-line no-implicit-any error
-import { experimental_useFormState as useFormState } from "react-dom";
-import { GetCaptchaChallengeResponse } from "./phone-login.types";
-import PhoneInput from "react-phone-number-input";
-import { E164Number } from "libphonenumber-js/types";
-import { SubmitValue } from "@/app/index.types";
-import "react-phone-number-input/style.css";
-import "./phone-input-styles.css";
+"use client"
+import React, { useState } from "react"
+import Link from "next/link"
+
+import { toast } from "react-toastify"
+
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line error
+import { experimental_useFormState as useFormState } from "react-dom"
+
+import PhoneInput from "react-phone-number-input"
+
+import { E164Number } from "libphonenumber-js/types"
+
+import { getCaptchaChallenge } from "./server-actions"
+
+import { GetCaptchaChallengeResponse } from "./phone-login.types"
+
+import PrimaryButton from "@/app/components/button/primary-button-component"
+import SecondaryButton from "@/app/components/button/secondary-button-component"
+import { CaptchaChallenge } from "@/app/components/captcha-challenge"
+
+import FormComponent from "@/app/components/form-component"
+import Separator from "@/app/components/separator"
+
+import { SubmitValue } from "@/app/index.types"
+// eslint-disable-next-line import/no-unassigned-import
+import "react-phone-number-input/style.css"
+// eslint-disable-next-line import/no-unassigned-import
+import "./phone-input-styles.css"
 
 interface LoginFormProps {
-  login_challenge: string;
-  countryCodes: any;
+  login_challenge: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  countryCodes: any
 }
 
 // TODO need to add country call codes
-const LoginForm: React.FC<LoginFormProps> = ({
-  login_challenge,
-  countryCodes,
-}) => {
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
+const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) => {
+  const [phoneNumber, setPhoneNumber] = useState<string>("")
   //TODO useFormState is not giving type suggestions/errors i.e: not typed
   const [state, formAction] = useFormState<GetCaptchaChallengeResponse>(
     getCaptchaChallenge,
@@ -43,21 +53,21 @@ const LoginForm: React.FC<LoginFormProps> = ({
           remember: null,
         },
       },
-    }
-  );
+    },
+  )
 
   if (state.error) {
-    toast.error(state.message);
+    toast.error(state.message)
     state.error = null
   }
 
   const handlePhoneNumberChange = (value?: E164Number | undefined) => {
     if (value) {
-      setPhoneNumber(value.toString());
+      setPhoneNumber(value.toString())
     } else {
-      setPhoneNumber("");
+      setPhoneNumber("")
     }
-  };
+  }
 
   return (
     <>
@@ -70,10 +80,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       ) : null}
       <FormComponent action={formAction}>
         <input type="hidden" name="login_challenge" value={login_challenge} />
-        <label
-          htmlFor="phone"
-          className="block mb-2 text-sm font-medium text-gray-900"
-        >
+        <label htmlFor="phone" className="block mb-2 text-sm font-medium text-gray-900">
           Phone
         </label>
 
@@ -134,7 +141,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         </div>
       </FormComponent>
     </>
-  );
-};
+  )
+}
 
-export default LoginForm;
+export default LoginForm

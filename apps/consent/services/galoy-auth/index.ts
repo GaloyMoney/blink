@@ -1,28 +1,27 @@
-import axiosInstance from "./auth-instance";
+import axiosInstance from "./auth-instance"
 
 interface LoginResult {
-  authToken: string;
-  totpRequired: boolean;
-  id: string;
+  authToken: string
+  totpRequired: boolean
+  id: string
 }
 
 const authApi = {
-  requestEmailCode: async (
-    email: string,
-    customHeaders?: object
-  ): Promise<string> => {
+  requestEmailCode: async (email: string, customHeaders?: object): Promise<string> => {
     const result = await axiosInstance.post(
       "/email/code",
       { email },
-      customHeaders ? { headers: customHeaders } : undefined
-    );
-    return result.data.result;
+      customHeaders ? { headers: customHeaders } : undefined,
+    )
+    return result.data.result
   },
 
   validateTotp: async (
     totpCode: string,
     authToken: string,
-    customHeaders?: object
+    customHeaders?: object,
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> => {
     const response = await axiosInstance.post(
       "/totp/validate",
@@ -30,15 +29,15 @@ const authApi = {
         totpCode,
         authToken,
       },
-      customHeaders ? { headers: customHeaders } : undefined
-    );
-    return response;
+      customHeaders ? { headers: customHeaders } : undefined,
+    )
+    return response
   },
 
   loginWithPhone: async (
     value: string,
     code: string,
-    customHeaders?: object
+    customHeaders?: object,
   ): Promise<LoginResult> => {
     const response = await axiosInstance.post(
       "/phone/login",
@@ -46,15 +45,15 @@ const authApi = {
         phone: value,
         code,
       },
-      customHeaders ? { headers: customHeaders } : undefined
-    );
-    return response.data;
+      customHeaders ? { headers: customHeaders } : undefined,
+    )
+    return response.data
   },
 
   loginWithEmail: async (
     code: string,
     emailLoginId: string,
-    customHeaders?: object
+    customHeaders?: object,
   ): Promise<LoginResult> => {
     const response = await axiosInstance.post(
       "/email/login",
@@ -62,9 +61,9 @@ const authApi = {
         code,
         emailLoginId,
       },
-      customHeaders ? { headers: customHeaders } : undefined
-    );
-    return response.data.result;
+      customHeaders ? { headers: customHeaders } : undefined,
+    )
+    return response.data.result
   },
 
   requestPhoneCode: async (
@@ -72,7 +71,8 @@ const authApi = {
     challengeCode: string,
     validationCode: string,
     secCode: string,
-    customHeaders?: object
+    customHeaders?: object,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> => {
     const response = await axiosInstance.post(
       "/phone/code",
@@ -82,25 +82,25 @@ const authApi = {
         validationCode,
         secCode,
       },
-      customHeaders ? { headers: customHeaders } : undefined
-    );
+      customHeaders ? { headers: customHeaders } : undefined,
+    )
 
-    return response;
+    return response
   },
 
   requestPhoneCaptcha: async (
-    customHeaders?: object
+    customHeaders?: object,
   ): Promise<{
-    id: string;
-    challengeCode: string;
+    id: string
+    challengeCode: string
   }> => {
     const response = await axiosInstance.post(
       "/phone/captcha",
       {},
-      customHeaders ? { headers: customHeaders } : undefined
-    );
-    return response.data.result;
+      customHeaders ? { headers: customHeaders } : undefined,
+    )
+    return response.data.result
   },
-};
+}
 
-export default authApi;
+export default authApi
