@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: setting up cookie forwarding (#3403)...'
-      sha: ba9e54017fc371c8863c8a217bb77888fab0f402
+      commitTitle: 'chore: add eslint buck checks to apps/consent (#3404)...'
+      sha: 660503cae95cd7e908d6c14a83563b49ecd9464c
       tags:
-      - 0.15.26-1-gba9e54017
+      - 0.15.28-1-g660503cae
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: setting up cookie forwarding (#3403)...'
-      sha: ba9e54017fc371c8863c8a217bb77888fab0f402
+      commitTitle: 'chore: add eslint buck checks to apps/consent (#3404)...'
+      sha: 660503cae95cd7e908d6c14a83563b49ecd9464c
       tags:
-      - 0.15.26-1-gba9e54017
+      - 0.15.28-1-g660503cae
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: setting up cookie forwarding (#3403)...'
-      sha: ba9e54017fc371c8863c8a217bb77888fab0f402
+      commitTitle: 'chore: add eslint buck checks to apps/consent (#3404)...'
+      sha: 660503cae95cd7e908d6c14a83563b49ecd9464c
       tags:
-      - 0.15.26-1-gba9e54017
+      - 0.15.28-1-g660503cae
     path: ./
   path: ./graphql
 kind: LockConfig
