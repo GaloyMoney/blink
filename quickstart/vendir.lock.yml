@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add eslint buck checks to apps/consent (#3404)...'
-      sha: 660503cae95cd7e908d6c14a83563b49ecd9464c
+      commitTitle: 'chore: add debug script to clean kratos identities (#3398)...'
+      sha: d7d1c45daa4d56675f8ca83099c8e19615a3d44e
       tags:
-      - 0.15.28-1-g660503cae
+      - 0.15.29-2-gd7d1c45da
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add eslint buck checks to apps/consent (#3404)...'
-      sha: 660503cae95cd7e908d6c14a83563b49ecd9464c
+      commitTitle: 'chore: add debug script to clean kratos identities (#3398)...'
+      sha: d7d1c45daa4d56675f8ca83099c8e19615a3d44e
       tags:
-      - 0.15.28-1-g660503cae
+      - 0.15.29-2-gd7d1c45da
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add eslint buck checks to apps/consent (#3404)...'
-      sha: 660503cae95cd7e908d6c14a83563b49ecd9464c
+      commitTitle: 'chore: add debug script to clean kratos identities (#3398)...'
+      sha: d7d1c45daa4d56675f8ca83099c8e19615a3d44e
       tags:
-      - 0.15.28-1-g660503cae
+      - 0.15.29-2-gd7d1c45da
     path: ./
   path: ./graphql
 kind: LockConfig
