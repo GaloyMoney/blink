@@ -5,19 +5,6 @@ import { kratosAdmin, toDomainIdentity } from "./private"
 
 import { IdentifierNotFoundError } from "@/domain/authentication/errors"
 
-export const getNextPage = (link: string): number | undefined => {
-  const links = link.split(",")
-  const next = links.find((l) => l.includes('rel="next"'))
-  if (!next) return undefined
-
-  const nextSplit = next.split("page=")
-  const splittingOnNumber = nextSplit[1].match(/^\d+&/)
-  if (splittingOnNumber === null) return undefined
-
-  const page = +splittingOnNumber[0].slice(0, -1)
-  return page
-}
-
 export const IdentityRepository = (): IIdentityRepository => {
   const getIdentity = async (
     kratosUserId: UserId,
@@ -32,6 +19,27 @@ export const IdentityRepository = (): IIdentityRepository => {
     }
 
     return toDomainIdentity(data)
+  }
+
+  const listIdentities = async function* (): AsyncGenerator<AnyIdentity | KratosError> {
+    try {
+      const pageSize = 200
+      let hasNext = true
+      let pageToken: string | undefined = undefined
+
+      while (hasNext) {
+        const res = await kratosAdmin.listIdentities({ pageSize, pageToken })
+
+        for (const identity of res.data) {
+          yield toDomainIdentity(identity)
+        }
+
+        pageToken = getNextPageToken(res.headers.link)
+        hasNext = !!pageToken && res.data.length > 0
+      }
+    } catch (err) {
+      yield new UnknownKratosError(err)
+    }
   }
 
   const getUserIdFromIdentifier = async (identifier: PhoneNumber | EmailAddress) => {
@@ -59,7 +67,22 @@ export const IdentityRepository = (): IIdentityRepository => {
 
   return {
     getIdentity,
+    listIdentities,
     getUserIdFromIdentifier,
     deleteIdentity,
   }
+}
+
+export const getNextPageToken = (link: string): string | undefined => {
+  const links = link.split(",")
+  const nextLink = links.find((link) => link.includes('rel="next"'))
+
+  if (nextLink) {
+    const matches = nextLink.match(/page_token=([^;&>]+)/)
+    if (matches) {
+      return matches[1]
+    }
+  }
+
+  return undefined
 }
