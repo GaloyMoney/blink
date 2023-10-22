@@ -1,5 +1,4 @@
 "use server"
-import { isAxiosError } from "axios"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { isValidPhoneNumber } from "libphonenumber-js"
@@ -10,6 +9,9 @@ import { LoginType, SubmitValue } from "@/app/index.types"
 import authApi from "@/services/galoy-auth"
 import { hydraClient } from "@/services/hydra"
 import { env } from "@/env"
+;("use server")
+
+import { handleAxiosError } from "@/app/error-handler"
 
 export const getCaptchaChallenge = async (
   _prevState: unknown,
@@ -24,11 +26,18 @@ export const getCaptchaChallenge = async (
   const login_challenge = form.get("login_challenge")
   const remember = form.get("remember") === "1"
   const submitValue = form.get("submit")
+  let channel = form.get("channel")
 
-  if (!submitValue || !login_challenge || typeof login_challenge !== "string") {
-    throw new Error("submitValue not provided")
+  if (
+    !submitValue ||
+    !login_challenge ||
+    !channel ||
+    typeof channel !== "string" ||
+    typeof login_challenge !== "string"
+  ) {
+    throw new Error("Invalid Values provided")
   }
-
+  channel = channel.toUpperCase()
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access")
     const response = await hydraClient.rejectOAuth2LoginRequest({
@@ -62,7 +71,22 @@ export const getCaptchaChallenge = async (
     }
   }
 
-  const res = await authApi.requestPhoneCaptcha(customHeaders)
+  let res
+  try {
+    res = await authApi.requestPhoneCaptcha(customHeaders)
+  } catch (err) {
+    console.error("error in requestPhoneCaptcha", err)
+    return handleAxiosError(err)
+  }
+
+  if (!res) {
+    return {
+      error: true,
+      message: "Cannot get Captcha",
+      responsePayload: null,
+    }
+  }
+
   const id = res.id
   const challenge = res.challengeCode
 
@@ -107,6 +131,7 @@ export const sendPhoneCode = async (
     login_challenge: string
     phone: string
     remember: string
+    channel: string
   },
 ): Promise<SendPhoneCodeResponse> => {
   const headersList = headers()
@@ -117,32 +142,21 @@ export const sendPhoneCode = async (
   const login_challenge = formData.login_challenge
   const phone = formData.phone
   const remember = String(formData.remember) === "true"
-
+  const channel = formData.channel ?? "SMS"
   let res
+
   try {
     res = await authApi.requestPhoneCode(
       phone,
       result.geetest_challenge,
       result.geetest_validate,
       result.geetest_seccode,
+      channel,
       customHeaders,
     )
   } catch (err) {
-    if (isAxiosError(err) && err.response) {
-      console.error("Error in 'phone/code' action", err.response.data)
-      return {
-        error: true,
-        message: err.response.data.error || "An unknown error occurred",
-        responsePayload: null,
-      }
-    } else {
-      console.error("An unknown error occurred", err)
-      return {
-        error: true,
-        message: "An unknown error occurred",
-        responsePayload: null,
-      }
-    }
+    console.error("error in requestPhoneCode", err)
+    return handleAxiosError(err)
   }
 
   if (res?.data?.success !== true) {

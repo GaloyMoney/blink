@@ -20,7 +20,9 @@ import { LoginEmailResponse } from "./email-login.types"
 
 import authApi from "@/services/galoy-auth"
 
-//  this page is for login via email
+import { OAuth2LoginRequest, OAuth2RedirectTo } from "@ory/hydra-client";
+import EmailLoginForm from "./email-login-form";
+
 interface LoginProps {
   login_challenge: string
 }
@@ -104,6 +106,7 @@ async function submitForm(formData: FormData): Promise<LoginEmailResponse | void
   redirect(`/login/verification?${params}`)
 }
 
+
 const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
   const { login_challenge } = searchParams
 
@@ -147,63 +150,7 @@ const Login = async ({ searchParams }: { searchParams: LoginProps }) => {
         <SubHeading>
           Enter your Blink Account ID to sign in to this application.
         </SubHeading>
-        <FormComponent action={submitForm}>
-          <input type="hidden" name="login_challenge" value={login_challenge} />
-          <InputComponent
-            data-testid="email_id_input"
-            label="Email"
-            type="email"
-            id="email"
-            name="email"
-            required
-            placeholder="Email Id"
-          />
-          <div className="flex items-center mb-4">
-            <label className="text-[var(--inputColor)] text-sm flex items-center">
-              <input
-                type="checkbox"
-                id="remember"
-                name="remember"
-                value="1"
-                className="mr-2"
-                style={{ width: "14px", height: "14px" }}
-              />
-              Remember me
-            </label>
-          </div>
-          <Separator>or</Separator>
-          <div className="flex justify-center mb-4">
-            <div className="text-center text-sm w-60">
-              <Link
-                data-testid="sign_in_with_phone_text"
-                href={`/login/phone?login_challenge=${login_challenge}`}
-                replace
-              >
-                <p className="font-semibold text-sm">Sign in with phone</p>
-              </Link>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row-reverse w-full gap-2">
-            <PrimaryButton
-              type="submit"
-              id="accept"
-              name="submit"
-              value="Log in"
-              data-testid="email_login_next_btn"
-            >
-              Next
-            </PrimaryButton>
-            <SecondaryButton
-              type="submit"
-              id="reject"
-              name="submit"
-              value={SubmitValue.denyAccess}
-              formNoValidate
-            >
-              Cancel
-            </SecondaryButton>
-          </div>
-        </FormComponent>
+        <EmailLoginForm login_challenge={login_challenge}></EmailLoginForm>
       </Card>
     </MainContent>
   )

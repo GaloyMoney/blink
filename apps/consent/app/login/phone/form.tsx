@@ -28,6 +28,12 @@ import { SubmitValue } from "@/app/index.types"
 import "react-phone-number-input/style.css"
 // eslint-disable-next-line import/no-unassigned-import
 import "./phone-input-styles.css"
+"use client";
+// @ts-ignore-next-line no-implicit-any error
+import { experimental_useFormState as useFormState } from "react-dom";
+import "react-phone-number-input/style.css";
+import "./phone-input-styles.css";
+import SelectComponent from "@/app/components/select";
 
 interface LoginFormProps {
   login_challenge: string
@@ -51,14 +57,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
           login_challenge: null,
           phone: null,
           remember: null,
+          channel: null,
         },
       },
     },
   )
 
   if (state.error) {
-    toast.error(state.message)
-    state.error = null
+    toast.error(state.message);
+    state.error = null;
   }
 
   const handlePhoneNumberChange = (value?: E164Number | undefined) => {
@@ -98,6 +105,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ login_challenge, countryCodes }) 
           name="phone"
           onChange={handlePhoneNumberChange}
         />
+        <SelectComponent
+          id="channel"
+          label="Channel"
+          name="channel"
+          options={["SMS", "WhatsApp"]}
+        ></SelectComponent>
 
         <div className="flex items-center mb-4">
           <label className="text-[var(--inputColor)] text-sm flex items-center">

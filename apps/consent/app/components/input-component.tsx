@@ -1,8 +1,8 @@
-import React, { InputHTMLAttributes } from "react"
+import React, { InputHTMLAttributes } from "react";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  id: string
+  label?: string;
+  id: string;
 }
 
 const InputComponent: React.FC<InputProps> = ({ label, id, ...inputProps }) => {
@@ -31,7 +31,7 @@ const InputComponent: React.FC<InputProps> = ({ label, id, ...inputProps }) => {
                   focus-within:bg-[var(--inputBackground)] "
       />
     </div>
-  )
-}
+  );
+};
 
-export default InputComponent
+export default InputComponent;

@@ -71,8 +71,8 @@ const authApi = {
     challengeCode: string,
     validationCode: string,
     secCode: string,
-    customHeaders?: object,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    channel: string,
+    customHeaders?: object
   ): Promise<any> => {
     const response = await axiosInstance.post(
       "/phone/code",
@@ -81,6 +81,7 @@ const authApi = {
         challengeCode,
         validationCode,
         secCode,
+        channel,
       },
       customHeaders ? { headers: customHeaders } : undefined,
     )
