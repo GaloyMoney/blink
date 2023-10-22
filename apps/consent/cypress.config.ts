@@ -5,6 +5,7 @@ dotenv.config({ path: "../../dev/.envs/consent.env" })
 export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:3000",
+    // setupNodeEvents(on, config) {},
   },
   defaultCommandTimeout: 60000,
   env: {

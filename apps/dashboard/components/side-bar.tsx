@@ -169,6 +169,35 @@ export default function Sidebar() {
               </ListItemButton>
             </ListItem>
           </Link>
+          <Link href={`/keys`}>
+            <ListItem>
+              <ListItemButton
+                onClick={() => {
+                  closeSidebar()
+                }}
+                sx={{
+                  "backgroundColor": isCurrentPath("/keys")
+                    ? "rgba(0, 0, 0, 0.08)"
+                    : "transparent",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.08)",
+                  },
+                  "&::before": {
+                    content: isCurrentPath("/keys") ? '""' : "none",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "4px",
+                    height: "100%",
+                    backgroundColor: "var(--primaryColor)",
+                  },
+                }}
+              >
+                <ReceiptLongIcon />
+                <Typography level="title-md">Keys</Typography>
+              </ListItemButton>
+            </ListItem>
+          </Link>
         </List>
       </Box>
     </Sheet>

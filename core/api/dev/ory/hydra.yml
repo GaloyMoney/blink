@@ -20,3 +20,8 @@ oidc:
       - public
     pairwise:
       salt: youReallyNeedToChangeThis
+
+ttl:
+  access_token: 30000h
+  refresh_token: 30000h
+  id_token: 30000h

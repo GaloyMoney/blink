@@ -6,4 +6,5 @@ interface UrlInfo {
 export const URLS: Record<string, UrlInfo> = {
   "/": { title: "Home", protected: true },
   "/transactions": { title: "Transactions", protected: true },
+  "/keys": { title: "Keys", protected: true },
 }

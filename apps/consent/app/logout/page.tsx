@@ -18,21 +18,30 @@ const submitForm = async (form: FormData) => {
     logout_challenge &&
     submitValue
   ) {
+    console.log("Logout: No")
+    
     if (submitValue === "No") {
       await hydraClient.rejectOAuth2LogoutRequest({
         logoutChallenge: logout_challenge,
       })
       redirect("/")
     }
+    console.log("Logout: Yes")
     const response = await hydraClient.acceptOAuth2LogoutRequest({
       logoutChallenge: logout_challenge,
     })
     redirect(String(response.data.redirect_to))
   }
+
+  console.error({logout_challenge, submitValue}, "INVALID PARAMS")
 }
 
 const Logout = async ({ searchParams }: { searchParams: logOutProps }) => {
   const { logout_challenge } = searchParams
+
+  const res = await hydraClient.getOAuth2LogoutRequest({
+    logoutChallenge: logout_challenge,
+  })
 
   return (
     <main>
