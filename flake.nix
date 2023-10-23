@@ -3,15 +3,18 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs = {
     self,
     nixpkgs,
+    nixpkgs-stable,
     flake-utils,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
+      pkgsStable = import nixpkgs-stable { system = system; };
       overlays = [
         (self: super: {
           nodejs = super.nodejs_20;
@@ -19,6 +22,7 @@
           yarn = super.yarn.override {
             nodejs = super.nodejs_20;
           };
+          tilt = pkgsStable.tilt;
         })
       ];
       pkgs = import nixpkgs {inherit overlays system;};

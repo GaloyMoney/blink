@@ -61,6 +61,7 @@ load(":apple_bundle_utility.bzl", "get_bundle_infos_from_graph", "merge_bundle_l
 load(":apple_code_signing_types.bzl", "AppleEntitlementsInfo")
 load(":apple_dsym.bzl", "DSYM_SUBTARGET", "get_apple_dsym")
 load(":apple_frameworks.bzl", "get_framework_search_path_flags")
+load(":apple_genrule_deps.bzl", "get_apple_build_genrule_deps_attr_value", "get_apple_genrule_deps_outputs")
 load(":apple_sdk_metadata.bzl", "IPhoneSimulatorSdkMetadata", "MacOSXCatalystSdkMetadata")
 load(":apple_target_sdk_version.bzl", "get_min_deployment_version_for_node", "get_min_deployment_version_target_linker_flags", "get_min_deployment_version_target_preprocessor_flags")
 load(":apple_toolchain_types.bzl", "AppleToolchainInfo")
@@ -108,11 +109,16 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
             swift_compile,
         )
 
+        genrule_deps_outputs = []
+        if get_apple_build_genrule_deps_attr_value(ctx):
+            genrule_deps_outputs = get_apple_genrule_deps_outputs(cxx_attr_deps(ctx))
+
         stripped = get_apple_stripped_attr_value_with_default_fallback(ctx)
         constructor_params = CxxRuleConstructorParams(
             rule_type = "apple_binary",
             headers_layout = get_apple_cxx_headers_layout(ctx),
             extra_link_flags = extra_link_flags,
+            extra_hidden = genrule_deps_outputs,
             srcs = cxx_srcs,
             additional = CxxRuleAdditionalParams(
                 srcs = swift_srcs,
@@ -122,6 +128,14 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
                 # follow.
                 static_external_debug_info = swift_debug_info.static,
                 shared_external_debug_info = swift_debug_info.shared,
+                subtargets = {
+                    "swift-compilation-database": [
+                        DefaultInfo(
+                            default_output = swift_compile.compilation_database.db if swift_compile else None,
+                            other_outputs = [swift_compile.compilation_database.other_outputs] if swift_compile else [],
+                        ),
+                    ],
+                },
             ),
             extra_link_input = swift_object_files,
             extra_link_input_has_external_debug_info = True,
@@ -144,9 +158,10 @@ def apple_binary_impl(ctx: AnalysisContext) -> [list[Provider], Promise]:
                 unstripped_binary = None
             expect(unstripped_binary != None, "Expect to save unstripped_binary when stripped is enabled")
             unstripped_binary = cxx_output.unstripped_binary
-            cxx_output.sub_targets["unstripped"] = [DefaultInfo(default_output = unstripped_binary)]
         else:
             unstripped_binary = cxx_output.binary
+        cxx_output.sub_targets["unstripped"] = [DefaultInfo(default_output = unstripped_binary)]
+
         dsym_artifact = get_apple_dsym(
             ctx = ctx,
             executable = unstripped_binary,

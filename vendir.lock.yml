@@ -2,11 +2,10 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Augment command execution detail information to test run and test
-        discovery events...
-      sha: 67ef396223dc8d86990bc082f8df57c1f862ec02
+      commitTitle: 'prelude/rust: Process CARGO_MANIFEST_DIR during rustdoc test...'
+      sha: 98a6e7b70dc82a62784f80897d72fefdfb54d70f
       tags:
-      - "2023-10-01"
+      - "2023-10-15"
     path: .
   path: prelude
 kind: LockConfig

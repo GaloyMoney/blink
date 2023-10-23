@@ -209,7 +209,9 @@ def generate_rustdoc_test(
         link_style: LinkStyle,
         library: RustLinkStyleInfo,
         params: BuildParams,
-        default_roots: list[str]) -> cmd_args:
+        default_roots: list[str]) -> (cmd_args, dict[str, cmd_args]):
+    exec_is_windows = ctx.attrs._exec_os_type[OsLookup].platform == "windows"
+
     toolchain_info = compile_ctx.toolchain_info
 
     resources = create_resource_db(
@@ -272,7 +274,7 @@ def generate_rustdoc_test(
         allow_args = True,
     )
 
-    if ctx.attrs._exec_os_type[OsLookup].platform == "windows":
+    if exec_is_windows:
         runtool = ["--runtool=cmd.exe", "--runtool-arg=/V:OFF", "--runtool-arg=/C"]
     else:
         runtool = ["--runtool=/usr/bin/env"]
@@ -297,12 +299,25 @@ def generate_rustdoc_test(
 
     rustdoc_cmd.hidden(compile_ctx.symlinked_srcs, link_args_output.hidden, runtime_files)
 
-    return _long_command(
+    rustdoc_cmd = _long_command(
         ctx = ctx,
         exe = toolchain_info.rustdoc,
         args = rustdoc_cmd,
         argfile_name = "{}.args".format(common_args.subdir),
     )
+
+    plain_env, path_env = _process_env(compile_ctx, ctx.attrs.env, exec_is_windows)
+    rustdoc_env = plain_env | path_env
+
+    # Pass everything in env + doc_env, except ones with value None in doc_env.
+    for k, v in ctx.attrs.doc_env.items():
+        if v == None:
+            rustdoc_env.pop(k, None)
+        else:
+            rustdoc_env[k] = cmd_args(v)
+    rustdoc_env["RUSTC_BOOTSTRAP"] = cmd_args("1")  # for `-Zunstable-options`
+
+    return (rustdoc_cmd, rustdoc_env)
 
 # Generate multiple compile artifacts so that distinct sets of artifacts can be
 # generated concurrently.
@@ -1117,6 +1132,9 @@ def _long_command(
     argfile, hidden = ctx.actions.write(argfile_name, args, allow_args = True)
     return cmd_args(exe, cmd_args(argfile, format = "@{}")).hidden(args, hidden)
 
+_DOUBLE_ESCAPED_NEWLINE_RE = regex("\\\\n")
+_ESCAPED_NEWLINE_RE = regex("\\n")
+
 # Separate env settings into "plain" and "with path". Path env vars are often
 # used in Rust `include!()` and similar directives, which always interpret the
 # path relative to the source file containing the directive. Since paths in env
@@ -1144,7 +1162,7 @@ def _process_env(
             # Will be unescaped in rustc_action.
             # Variable may have "\\n" as well.
             # Example: \\n\n -> \\\n\n -> \\\\n\\n
-            plain_env[k] = v.replace_regex("\\\\n", "\\\n").replace_regex("\\n", "\\n")
+            plain_env[k] = v.replace_regex(_DOUBLE_ESCAPED_NEWLINE_RE, "\\\n").replace_regex(_ESCAPED_NEWLINE_RE, "\\n")
 
     # If CARGO_MANIFEST_DIR is not already expressed in terms of $(location ...)
     # of some target, then interpret it as a relative path inside of the crate's

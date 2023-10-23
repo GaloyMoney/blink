@@ -304,7 +304,6 @@ def _python_executable_attrs():
         "anonymous_link_groups": attrs.bool(default = False),
         "binary_linker_flags": attrs.list(attrs.arg(anon_target_compatible = True), default = []),
         "bolt_flags": attrs.list(attrs.arg(), default = []),
-        "bolt_gdb_index": attrs.option(attrs.source(), default = None),
         "bolt_profile": attrs.option(attrs.source(), default = None),
         "compiler_flags": attrs.list(attrs.arg(), default = []),
         "constraint_overrides": attrs.list(attrs.string(), default = []),
@@ -321,11 +320,13 @@ def _python_executable_attrs():
             attrs.string(),
             default = None,
             doc = """
-            Fully qualified name of a Python function that will serve as the main entry point of the binary.
-
-            This should usually be a function defined within one of the
-            dependencies of this target. This attribute should be preferred over
-            `main_module` or `main`, and it is an error to specify more than one of these.
+            Name of a Python function that will serve as the main entry point of
+            the binary. The name is either a fully qualified name like
+            `foo.bar.baz` or it starts with a `.` like `.bar.baz`, in which case
+            it is relative to the package containing the target. This should
+            usually be a function defined within one of the dependencies of this
+            target. This attribute should be preferred over `main_module` or
+            `main`, and it is an error to specify more than one of these.
         """,
         ),
         "make_py_package": attrs.option(attrs.exec_dep(providers = [RunInfo]), default = None),
@@ -341,6 +342,7 @@ def _python_executable_attrs():
         "package_split_dwarf_dwp": attrs.bool(default = False),
         "par_style": attrs.option(attrs.string(), default = None),
         "resources": attrs.named_set(attrs.one_of(attrs.dep(), attrs.source(allow_directory = True)), sorted = True, default = []),
+        "runtime_env": attrs.option(attrs.dict(key = attrs.string(), value = attrs.string()), default = None),
         "standalone_build_args": attrs.list(attrs.arg(), default = []),
         "static_extension_finder": attrs.source(default = "prelude//python/tools:static_extension_finder.py"),
         "static_extension_utils": attrs.source(default = "prelude//python/tools:static_extension_utils.cpp"),
@@ -370,7 +372,6 @@ def _cxx_binary_and_test_attrs():
         # top-level binary context.
         "binary_linker_flags": attrs.list(attrs.arg(anon_target_compatible = True), default = []),
         "bolt_flags": attrs.list(attrs.arg(), default = []),
-        "bolt_gdb_index": attrs.option(attrs.source(), default = None),
         "bolt_profile": attrs.option(attrs.source(), default = None),
         "enable_distributed_thinlto": attrs.bool(default = False),
         "link_execution_preference": link_execution_preference_attr(),

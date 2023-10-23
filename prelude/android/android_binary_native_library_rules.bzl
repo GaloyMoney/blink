@@ -5,9 +5,6 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-# no support for "regex" type
-# @starlark-rust: allow_string_literals_in_type_expr
-
 load("@prelude//:paths.bzl", "paths")
 load(
     "@prelude//android:android_providers.bzl",
@@ -60,7 +57,7 @@ load(
     "traverse_shared_library_info",
 )
 load("@prelude//linking:strip.bzl", "strip_object")
-load("@prelude//utils:graph_utils.bzl", "breadth_first_traversal_by", "post_order_traversal", "topo_sort", "topo_sort_by")
+load("@prelude//utils:graph_utils.bzl", "breadth_first_traversal_by", "post_order_traversal", "pre_order_traversal", "pre_order_traversal_by")
 load("@prelude//utils:set.bzl", "set_type")  # @unused Used as a type
 load("@prelude//utils:utils.bzl", "dedupe_by_value", "expect")
 
@@ -175,7 +172,6 @@ def get_android_binary_native_library_info(
         native_merge_debug = ctx.actions.declare_output("native_merge.debug")
         dynamic_outputs.append(native_merge_debug)
 
-    if native_library_merge_sequence:
         # We serialize info about the linkable graph and the apk module mapping and pass that to an
         # external subcommand to apply a merge sequence algorithm and return us the merge mapping.
         for platform, deps in deps_by_platform.items():
@@ -184,7 +180,9 @@ def get_android_binary_native_library_info(
             linkables_debug = ctx.actions.write("linkables." + platform, list(graph_node_map.keys()))
             enhance_ctx.debug_output("linkables." + platform, linkables_debug)
 
-            flattened_linkable_graphs_by_platform[platform] = graph_node_map  # _get_flattened_linkable_graph(ctx, graph_node_map)
+            flattened_linkable_graphs_by_platform[platform] = graph_node_map
+
+    if native_library_merge_sequence:
         native_library_merge_input_file = ctx.actions.write_json("mergemap.input", {
             "linkable_graphs_by_platform": encode_linkable_graph_for_mergemap(flattened_linkable_graphs_by_platform),
             "native_library_merge_sequence": ctx.attrs.native_library_merge_sequence,
@@ -201,8 +199,6 @@ def get_android_binary_native_library_info(
         enhance_ctx.debug_output("compute_merge_sequence", native_library_merge_dir)
 
         dynamic_inputs.append(native_library_merge_map)
-    elif has_native_merging:
-        flattened_linkable_graphs_by_platform = {platform: {} for platform in platform_to_original_native_linkables.keys()}
 
     mergemap_gencode_jar = None
     if has_native_merging and ctx.attrs.native_library_merge_code_generator:
@@ -243,12 +239,12 @@ def get_android_binary_native_library_info(
                         raw_target = str(target.raw_target())
                         merge_result = None
                         for merge_lib, patterns in ctx.attrs.native_library_merge_map.items():
-                            if merge_result:
-                                break
                             for pattern in patterns:
-                                if pattern.match(raw_target):
+                                if regex(pattern).match(raw_target):
                                     merge_result = merge_lib
                                     break
+                            if merge_result:
+                                break
                         if merge_result:
                             merge_map[str(target)] = merge_result
                 merge_map = ctx.actions.write_json("merge.map", merge_map_by_platform)
@@ -260,7 +256,7 @@ def get_android_binary_native_library_info(
                 ctx,
                 {
                     platform: LinkableMergeData(
-                        glue_linkable = glue_linkables[platform],
+                        glue_linkable = glue_linkables[platform] if glue_linkables else None,
                         default_shared_libs = platform_to_original_native_linkables[platform],
                         linkable_nodes = flattened_linkable_graphs_by_platform[platform],
                         merge_map = merge_map_by_platform[platform],
@@ -679,7 +675,7 @@ MergedLinkablesDebugInfo = record(
 # may be just one constituent)
 MergedSharedLibrary = record(
     soname = str,
-    lib = SharedLibrary.type,
+    lib = SharedLibrary,
     apk_module = str,
     # this only includes solib constituents that are included in the android merge map
     solib_constituents = list[str],
@@ -691,7 +687,7 @@ MergedSharedLibrary = record(
 MergedLinkables = record(
     # dict[platform, dict[final_soname, MergedSharedLibrary]]
     shared_libs_by_platform = dict[str, dict[str, MergedSharedLibrary]],
-    debug_info = dict[str, MergedLinkablesDebugInfo.type],
+    debug_info = dict[str, MergedLinkablesDebugInfo],
 )
 
 # Input data to the linkables merge process
@@ -828,7 +824,7 @@ def _get_merged_linkables(
         linkable_nodes = merge_data.linkable_nodes
 
         linkable_nodes_graph = {k: dedupe(v.deps + v.exported_deps) for k, v in linkable_nodes.items()}
-        topo_sorted_targets = topo_sort(linkable_nodes_graph)
+        topo_sorted_targets = pre_order_traversal(linkable_nodes_graph)
 
         # first we collect basic information about each link group, this will populate the fields in LinkGroupData and
         # map target labels to their link group name.
@@ -839,7 +835,7 @@ def _get_merged_linkables(
             expect(target not in target_to_link_group, "prelude internal error, target seen twice?")
             target_apk_module = merge_data.apk_module_graph(str(target.raw_target()))
 
-            link_group = merge_data.merge_map[str(target)]
+            link_group = merge_data.merge_map.get(str(target), None)
             if not link_group:
                 link_group = str(target)
                 link_groups[link_group] = LinkGroupData(
@@ -938,8 +934,8 @@ def _get_merged_linkables(
                         len(node_data.shared_libs) == 1,
                         "unexpected shared_libs length for somerge of {} ({})".format(target, node_data.shared_libs),
                     )
-                    expect(not node_data.deps, "prebuilt shared libs with deps not supported by somerge")
-                    expect(not node_data.exported_deps, "prebuilt shared libs with exported_deps not supported by somerge")
+                    expect(not node_data.deps, "prebuilt shared library `{}` with deps not supported by somerge".format(target))
+                    expect(not node_data.exported_deps, "prebuilt shared library `{}` with exported_deps not supported by somerge".format(target))
                     soname, shlib = node_data.shared_libs.items()[0]
                     shared_lib = SharedLibrary(
                         lib = shlib,
@@ -1034,7 +1030,7 @@ def _get_merged_linkables(
 
             solib_constituents = []
             link_group_deps = []
-            ordered_group_constituents = topo_sort_by(group_data.constituents, get_merged_graph_traversal(group, False))
+            ordered_group_constituents = pre_order_traversal_by(group_data.constituents, get_merged_graph_traversal(group, False))
             representative_label = ordered_group_constituents[0]
             for key in ordered_group_constituents:
                 real_constituents.append(key)
@@ -1187,7 +1183,7 @@ def relink_libraries(ctx: AnalysisContext, libraries_by_platform: dict[str, dict
                     shlib_graph[soname].append(dep)
                     rev_shlib_graph.setdefault(dep, []).append(soname)
         needed_symbols_files = {}
-        for soname in topo_sort(shlib_graph):
+        for soname in pre_order_traversal(shlib_graph):
             if soname in unsupported_libs:
                 relinked_libraries[soname] = shared_libraries[soname]
                 continue
@@ -1201,7 +1197,7 @@ def relink_libraries(ctx: AnalysisContext, libraries_by_platform: dict[str, dict
             create_relinker_version_script(
                 ctx.actions,
                 output = relinker_version_script,
-                relinker_blocklist = [experimental_regex(s) for s in ctx.attrs.relinker_whitelist],
+                relinker_blocklist = [regex(s) for s in ctx.attrs.relinker_whitelist],
                 provided_symbols = provided_symbols_file,
                 needed_symbols = needed_symbols_for_this,
             )
@@ -1229,7 +1225,7 @@ def relink_libraries(ctx: AnalysisContext, libraries_by_platform: dict[str, dict
 def extract_provided_symbols(ctx: AnalysisContext, toolchain: CxxToolchainInfo, lib: Artifact) -> Artifact:
     return extract_global_syms(ctx, toolchain, lib, "relinker_extract_provided_symbols")
 
-def create_relinker_version_script(actions: AnalysisActions, relinker_blocklist: list["regex"], output: Artifact, provided_symbols: Artifact, needed_symbols: list[Artifact]):
+def create_relinker_version_script(actions: AnalysisActions, relinker_blocklist: list[regex], output: Artifact, provided_symbols: Artifact, needed_symbols: list[Artifact]):
     def create_version_script(ctx, artifacts, outputs):
         all_needed_symbols = {}
         for symbols_file in needed_symbols:

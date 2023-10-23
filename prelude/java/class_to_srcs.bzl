@@ -5,8 +5,6 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
-# @starlark-rust: allow_string_literals_in_type_expr
-
 load(
     "@prelude//java:java_toolchain.bzl",
     "JavaTestToolchainInfo",  # @unused Used as a type
@@ -98,8 +96,9 @@ def maybe_create_class_to_source_map_debuginfo(
     cmd = cmd_args(java_toolchain.gen_class_to_source_map_debuginfo[RunInfo])
     cmd.add("gen")
     cmd.add("-o", output.as_output())
-    for src in srcs:
-        cmd.add(cmd_args(src))
+    inputs_file = actions.write("sourcefiles.txt", srcs)
+    cmd.add(cmd_args(inputs_file, format = "@{}"))
+    cmd.hidden(srcs)
     actions.run(cmd, category = "class_to_srcs_map_debuginfo")
     return output
 
@@ -108,7 +107,7 @@ def merge_class_to_source_map_from_jar(
         name: str,
         java_test_toolchain: JavaTestToolchainInfo,
         mapping: [Artifact, None] = None,
-        relative_to: ["cell_root", None] = None,
+        relative_to: [CellRoot, None] = None,
         # TODO(nga): I think this meant to be type, not default value.
         deps = [JavaClassToSourceMapInfo.type]) -> Artifact:
     output = actions.declare_output(name)
@@ -142,7 +141,9 @@ def _create_merged_debug_info(
         JavaClassToSourceMapTset,
         children = [tset_debuginfo],
     )
-    class_to_source_files = tset.project_as_args("class_to_src_map")
-    cmd.add(class_to_source_files)
+    input_files = tset.project_as_args("class_to_src_map")
+    input_list_file = actions.write("debuginfo_list.txt", input_files)
+    cmd.add(cmd_args(input_list_file, format = "@{}"))
+    cmd.hidden(input_files)
     actions.run(cmd, category = "merged_debuginfo")
     return output

@@ -307,7 +307,6 @@ def rust_library_impl(ctx: AnalysisContext) -> list[Provider]:
     providers = []
 
     providers += _default_providers(
-        ctx = ctx,
         lang_style_param = lang_style_param,
         param_artifact = rust_param_artifact,
         rustdoc = rustdoc,
@@ -463,11 +462,10 @@ def _handle_rust_artifact(
         )
 
 def _default_providers(
-        ctx: AnalysisContext,
         lang_style_param: dict[(LinkageLang, LinkStyle), BuildParams],
         param_artifact: dict[BuildParams, RustLinkStyleInfo],
         rustdoc: Artifact,
-        rustdoc_test: [cmd_args, None],
+        rustdoc_test: [(cmd_args, dict[str, cmd_args]), None],
         check_artifacts: dict[str, Artifact],
         expand: Artifact,
         sources: Artifact) -> list[Provider]:
@@ -486,7 +484,7 @@ def _default_providers(
         link_style_info = param_artifact[lang_style_param[(LinkageLang("rust"), link_style)]]
         nested_sub_targets = {}
         if link_style_info.pdb:
-            nested_sub_targets[PDB_SUB_TARGET] = get_pdb_providers(link_style_info.pdb)
+            nested_sub_targets[PDB_SUB_TARGET] = get_pdb_providers(pdb = link_style_info.pdb, binary = link_style_info.rlib)
         sub_targets[link_style.value] = [DefaultInfo(
             default_output = link_style_info.rlib,
             sub_targets = nested_sub_targets,
@@ -495,20 +493,12 @@ def _default_providers(
     providers = []
 
     if rustdoc_test:
-        # Pass everything in env + doc_env, except ones with value None in doc_env.
-        doc_env = dict(ctx.attrs.env)
-        for k, v in ctx.attrs.doc_env.items():
-            if v == None:
-                doc_env.pop(k, None)
-            else:
-                doc_env[k] = v
-        doc_env["RUSTC_BOOTSTRAP"] = "1"  # for `-Zunstable-options`
-
+        (rustdoc_cmd, rustdoc_env) = rustdoc_test
         rustdoc_test_info = ExternalRunnerTestInfo(
             type = "rustdoc",
-            command = [rustdoc_test],
+            command = [rustdoc_cmd],
             run_from_project_root = True,
-            env = doc_env,
+            env = rustdoc_env,
         )
 
         # Run doc test as part of `buck2 test :crate`

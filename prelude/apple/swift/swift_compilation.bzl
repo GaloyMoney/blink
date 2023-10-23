@@ -72,6 +72,11 @@ SwiftDependencyInfo = provider(fields = {
     "exported_swiftmodules": provider_field(SwiftCompiledModuleTset),
 })
 
+SwiftCompilationDatabase = record(
+    db = field(Artifact),
+    other_outputs = field(ArgLike),
+)
+
 SwiftCompilationOutput = record(
     # The object file output from compilation.
     object_file = field(Artifact),
@@ -92,6 +97,8 @@ SwiftCompilationOutput = record(
     swift_debug_info = field(ArtifactTSet),
     # A tset of PCM artifacts used to compile a Swift module.
     clang_debug_info = field(ArtifactTSet),
+    # Info required for `[swift-compilation-database]` subtarget.
+    compilation_database = field(SwiftCompilationDatabase),
 )
 
 SwiftDebugInfo = record(
@@ -134,7 +141,10 @@ def get_swift_anonymous_targets(ctx: AnalysisContext, get_apple_library_provider
         ctx,
         direct_uncompiled_sdk_deps,
     )
-    return ctx.actions.anon_targets(pcm_targets + sdk_pcm_targets + swift_interface_anon_targets).map(get_apple_library_providers)
+    return ctx.actions.anon_targets(pcm_targets + sdk_pcm_targets + swift_interface_anon_targets).promise.map(get_apple_library_providers)
+
+def _get_explicit_modules_forwards_warnings_as_errors() -> bool:
+    return read_root_config("swift", "explicit_modules_forwards_warnings_as_errors", "false").lower() == "true"
 
 def get_swift_cxx_flags(ctx: AnalysisContext) -> list[str]:
     """Iterates through `swift_compiler_flags` and returns a list of flags that might affect Clang compilation"""
@@ -148,7 +158,11 @@ def get_swift_cxx_flags(ctx: AnalysisContext) -> list[str]:
         if next:
             gather.append("-Xcc")
             gather.append(str(f).replace('\"', ""))
-        next = str(f) == "\"-Xcc\""
+            next = False
+        elif str(f) == "\"-Xcc\"":
+            next = True
+        elif _get_explicit_modules_forwards_warnings_as_errors() and str(f) == "\"-warnings-as-errors\"":
+            gather.append("-warnings-as-errors")
 
     if ctx.attrs.enable_cxx_interop:
         gather += ["-Xfrontend", "-enable-cxx-interop"]
@@ -263,6 +277,7 @@ def compile_swift(
         argsfiles = argsfiles,
         swift_debug_info = extract_and_merge_swift_debug_infos(ctx, deps_providers, [output_swiftmodule]),
         clang_debug_info = extract_and_merge_clang_debug_infos(ctx, deps_providers),
+        compilation_database = _create_compilation_database(ctx, srcs, argsfiles.absolute[SWIFT_EXTENSION]),
     )
 
 # Swift headers are postprocessed to make them compatible with Objective-C
@@ -349,12 +364,12 @@ def _compile_with_argsfile(
     shell_quoted_args = cmd_args(shared_flags, quote = "shell")
     argsfile, _ = ctx.actions.write(extension + ".argsfile", shell_quoted_args, allow_args = True)
     input_args = [shared_flags]
-    cmd_form = cmd_args(argsfile, format = "@{}", delimiter = "").hidden(input_args)
+    cmd_form = cmd_args(cmd_args(argsfile, format = "@{}", delimiter = "")).hidden(input_args)
+    cmd_form.add([s.file for s in srcs])
 
     cmd = cmd_args(toolchain.compiler)
     cmd.add(additional_flags)
     cmd.add(cmd_form)
-    cmd.add([s.file for s in srcs])
 
     # If we prefer to execute locally (e.g., for perf reasons), ensure we upload to the cache,
     # so that CI builds populate caches used by developer machines.
@@ -737,3 +752,29 @@ def get_swift_debug_infos(
 
 def _get_swift_shared_debug_info(swift_dependency_info: SwiftDependencyInfo) -> list[ArtifactTSet]:
     return [swift_dependency_info.debug_info_tset] if swift_dependency_info.debug_info_tset else []
+
+def _get_project_root_file(ctx) -> Artifact:
+    content = cmd_args(ctx.label.project_root)
+    return ctx.actions.write("project_root_file", content, absolute = True)
+
+def _create_compilation_database(
+        ctx: AnalysisContext,
+        srcs: list[CxxSrcWithFlags],
+        argfile: CompileArgsfile) -> SwiftCompilationDatabase:
+    module_name = get_module_name(ctx)
+
+    swift_toolchain = ctx.attrs._apple_toolchain[AppleToolchainInfo].swift_toolchain_info
+    mk_comp_db = swift_toolchain.mk_swift_comp_db[RunInfo]
+
+    indentifier = module_name + ".swift_comp_db.json"
+    cdb_artifact = ctx.actions.declare_output(indentifier)
+    cmd = cmd_args(mk_comp_db)
+    cmd.add(cmd_args(cdb_artifact.as_output(), format = "--output={}"))
+    cmd.add(cmd_args(_get_project_root_file(ctx), format = "--project-root-file={}"))
+    cmd.add(["--files"] + [s.file for s in srcs])
+
+    cmd.add("--")
+    cmd.add(argfile.cmd_form)
+    ctx.actions.run(cmd, category = "swift_compilation_database", identifier = indentifier)
+
+    return SwiftCompilationDatabase(db = cdb_artifact, other_outputs = argfile.cmd_form)

@@ -8,7 +8,7 @@ directories:
         git:
           url: https://github.com/facebook/buck2.git
           # Need to update to $BUCK2_VERSION when new buck2 gets updated via `nix flake update`
-          ref: '2023-10-01'
+          ref: '2023-10-15'
         includePaths:
           - prelude/**/*
         newRootPath: prelude
