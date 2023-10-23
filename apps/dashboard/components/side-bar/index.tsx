@@ -11,7 +11,7 @@ import Logo from "./../logo";
 import { SidebarStyles } from "./side-bar-style";
 import { SidebarOverlay } from "./side-bar-overlay";
 import { NavigationLink } from "./navigation-links";
-import SettingsIcon from "@mui/icons-material/Settings";
+import SecurityIcon from "@mui/icons-material/Security";
 
 const Sidebar: React.FC = () => {
   const path = usePathname();
@@ -89,9 +89,9 @@ const Sidebar: React.FC = () => {
             isCurrentPath={isCurrentPath}
           />
           <NavigationLink
-            href="/profile"
-            icon={<SettingsIcon />}
-            label="Profile"
+            href="/security"
+            icon={<SecurityIcon />}
+            label="security"
             isCurrentPath={isCurrentPath}
           />
         </List>

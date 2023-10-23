@@ -34,28 +34,30 @@ export const emailRegisterInitiateServerAction = async (
     };
   }
 
-  if (
-    session?.userData.data.me?.email?.address &&
-    !session?.userData.data.me?.email?.verified
-  ) {
-    await deleteEmail(token);
-  }
-
-  const data = await emailRegistrationInitiate(email, token);
-  if (data instanceof Error) {
+  let data;
+  try {
+    data = await emailRegistrationInitiate(email, token);
+  } catch (err) {
+    console.log("error in emailRegistrationInitiate ", err);
     return {
       error: true,
-      message: data.message,
+      message:
+        "Something went wrong Please try again and if error persist contact support",
       data: null,
     };
   }
 
-  revalidatePath("/");
-  return {
-    error: false,
-    message: "success",
-    data: data,
-  };
+  if (data?.userEmailRegistrationInitiate.errors.length) {
+    return {
+      error: true,
+      message: data?.userEmailRegistrationInitiate.errors[0],
+      data: null,
+    };
+  }
+
+  const emailRegistrationId =
+    data?.userEmailRegistrationInitiate.emailRegistrationId;
+  redirect(`/security/email/verify?emailRegistrationId=${emailRegistrationId}`);
 };
 
 export const emailRegisterValidateServerAction = async (
@@ -64,10 +66,11 @@ export const emailRegisterValidateServerAction = async (
 ) => {
   const code = form.get("code");
   const emailRegistrationId = form.get("emailRegistrationId");
+
   if (
     !code ||
-    !emailRegistrationId ||
     typeof code !== "string" ||
+    !emailRegistrationId ||
     typeof emailRegistrationId !== "string"
   ) {
     return {
@@ -79,7 +82,8 @@ export const emailRegisterValidateServerAction = async (
 
   const session = await getServerSession(authOptions);
   const token = session?.accessToken;
-  if (!token && typeof token !== "string") {
+
+  if (!token || typeof token !== "string") {
     return {
       error: true,
       message: "Invalid Token",
@@ -87,18 +91,31 @@ export const emailRegisterValidateServerAction = async (
     };
   }
 
-  const data = await emailRegistrationValidate(
-    code,
-    emailRegistrationId,
-    token
-  );
-  if (data instanceof Error) {
+  let codeVerificationResponse;
+  try {
+    codeVerificationResponse = await emailRegistrationValidate(
+      code,
+      emailRegistrationId,
+      token
+    );
+  } catch (err) {
+    console.log("error in emailRegistrationValidate ", err);
     return {
       error: true,
-      message: data.message,
+      message:
+        "Something went wrong Please try again and if error persist contact support",
+      data: null,
+    };
+  }
+  
+  if (codeVerificationResponse?.userEmailRegistrationValidate.errors.length) {
+    return {
+      error: true,
+      message:
+        codeVerificationResponse?.userEmailRegistrationValidate.errors[0],
       data: null,
     };
   }
 
-  redirect("/profile");
+  redirect("/security");
 };

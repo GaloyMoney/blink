@@ -51,24 +51,15 @@ gql`
 export async function emailRegistrationInitiate(email: string, token: string) {
   const client = apollo(token).getClient();
   try {
-    let errorMessages;
     const { data } = await client.mutate<UserEmailRegistrationInitiateMutation>(
       {
         mutation: UserEmailRegistrationInitiateDocument,
         variables: { input: { email } },
       }
     );
-    if (data?.userEmailRegistrationInitiate.errors.length) {
-      errorMessages = data?.userEmailRegistrationInitiate.errors.map(
-        (err) => err.message
-      );
-      console.error(errorMessages);
-      throw new Error("Error Initiating Totp Request");
-    }
-
     return data;
   } catch (error) {
-    console.error("Error executing mutation:", error);
+    console.error("Error executing mutation: emailRegistrationInitiate ==> ", error);
     throw new Error("Error in emailRegistrationInitiate");
   }
 }
@@ -80,7 +71,6 @@ export async function emailRegistrationValidate(
 ) {
   const client = apollo(token).getClient();
   try {
-    let errorMessages;
     const { data } = await client.mutate<UserEmailRegistrationValidateMutation>(
       {
         mutation: UserEmailRegistrationValidateDocument,
@@ -92,39 +82,23 @@ export async function emailRegistrationValidate(
         },
       }
     );
-    if (data?.userEmailRegistrationValidate.errors.length) {
-      errorMessages = data?.userEmailRegistrationValidate.errors.map(
-        (err) => err.message
-      );
-      console.error(errorMessages);
-      throw new Error("Error Validating Totp Request");
-    }
-
     return data;
   } catch (error) {
-    console.error("Error executing mutation:", error);
+    console.error(
+      "Error executing mutation: UserTotpRegistrationValidate ==> ",
+      error
+    );
     throw new Error("Error in UserTotpRegistrationValidate");
   }
 }
 
-
-export async function deleteEmail(
-  token: string
-) {
+export async function deleteEmail(token: string) {
   const client = apollo(token).getClient();
   try {
     let errorMessages;
-    const { data } = await client.mutate<UserEmailDeleteMutation>(
-      {
-        mutation: UserEmailDeleteDocument,
-      }
-    );
-    if (data?.userEmailDelete.errors.length) {
-      errorMessages = data?.userEmailDelete.errors.map((err) => err.message);
-      console.error(errorMessages);
-      throw new Error("Error userEmailDelete Request");
-    }
-
+    const { data } = await client.mutate<UserEmailDeleteMutation>({
+      mutation: UserEmailDeleteDocument,
+    });
     return data;
   } catch (error) {
     console.error("Error executing userEmailDelete mutation:", error);
