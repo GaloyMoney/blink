@@ -152,8 +152,8 @@ const BtcWallet = GT.Object<Wallet>({
         return invoice
       },
     },
-    transactionByPaymentHash: {
-      type: Transaction,
+    transactionsByPaymentHash: {
+      type: GT.NonNullList(Transaction),
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),
@@ -163,16 +163,16 @@ const BtcWallet = GT.Object<Wallet>({
         const { paymentHash } = args
         if (paymentHash instanceof Error) throw paymentHash
 
-        const transaction = await Wallets.getTransactionForWalletByPaymentHash({
+        const transactions = await Wallets.getTransactionsForWalletByPaymentHash({
           walletId: source.id,
           paymentHash,
         })
 
-        if (transaction instanceof Error) {
-          throw mapError(transaction)
+        if (transactions instanceof Error) {
+          throw mapError(transactions)
         }
 
-        return transaction
+        return transactions
       },
     },
     transactionById: {

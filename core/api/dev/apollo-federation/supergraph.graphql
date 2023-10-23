@@ -184,7 +184,6 @@ type BTCWallet implements Wallet
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction
 
   """A list of BTC transactions associated with this wallet."""
   transactions(
@@ -216,6 +215,7 @@ type BTCWallet implements Wallet
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+  transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
@@ -1613,7 +1613,6 @@ type UsdWallet implements Wallet
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(paymentHash: PaymentHash!): Transaction
   transactions(
     """Returns the items in the list that come after the specified cursor."""
     after: String
@@ -1643,6 +1642,7 @@ type UsdWallet implements Wallet
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+  transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
@@ -1918,10 +1918,6 @@ interface Wallet
   ): Invoice!
   pendingIncomingBalance: SignedAmount!
   transactionById(transactionId: ID!): Transaction!
-  transactionByPaymentHash(
-    """The payment hash of the lightning invoice paid in this transaction."""
-    paymentHash: PaymentHash!
-  ): Transaction
 
   """
   Transactions are ordered anti-chronologically,
@@ -1961,6 +1957,14 @@ interface Wallet
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+
+  """
+  Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment.
+  """
+  transactionsByPaymentHash(
+    """The payment hash of the lightning invoice paid in this transaction."""
+    paymentHash: PaymentHash!
+  ): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 

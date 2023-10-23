@@ -1,10 +1,13 @@
-query transactionForWalletByPaymentHash($walletId: WalletId!, $paymentHash: PaymentHash!) {
+query transactionsForWalletByPaymentHash(
+  $walletId: WalletId!
+  $paymentHash: PaymentHash!
+) {
   me {
     defaultAccount {
       displayCurrency
       walletById(walletId: $walletId) {
         id
-        transactionByPaymentHash(paymentHash: $paymentHash) {
+        transactionsByPaymentHash(paymentHash: $paymentHash) {
           __typename
           id
           status

@@ -58,8 +58,10 @@ const IWallet = GT.Interface({
         },
       },
     },
-    transactionByPaymentHash: {
-      type: Transaction,
+    transactionsByPaymentHash: {
+      type: GT.NonNullList(Transaction),
+      description:
+        "Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment.",
       args: {
         paymentHash: {
           type: GT.NonNull(PaymentHash),

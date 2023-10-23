@@ -127,23 +127,23 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getTransactionForWalletByPaymentHash = async ({
+  const getTransactionsForWalletByPaymentHash = async ({
     walletId,
     paymentHash,
   }: {
     walletId: WalletId
     paymentHash: PaymentHash
-  }): Promise<LedgerTransaction<WalletCurrency> | LedgerError> => {
+  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { results } = await MainBook.ledger({
         account: liabilitiesWalletId,
         hash: paymentHash,
       })
-      if (results.length === 1) {
-        return translateToLedgerTx(results[0])
-      }
-      return new CouldNotFindTransactionError()
+
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
+      return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -461,7 +461,7 @@ export const LedgerService = (): ILedgerService => {
       getTransactionById,
       getTransactionForWalletById,
       getTransactionsByHash,
-      getTransactionForWalletByPaymentHash,
+      getTransactionsForWalletByPaymentHash,
       getTransactionsByWalletId,
       getTransactionsByWalletIds,
       getTransactionsByWalletIdAndContactUsername,

@@ -3,26 +3,26 @@ import { WalletTransactionHistory } from "@/domain/wallets"
 
 import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
 
-export const getTransactionForWalletByPaymentHash = async ({
+export const getTransactionsForWalletByPaymentHash = async ({
   walletId,
   paymentHash,
 }: {
   walletId: WalletId
   paymentHash: PaymentHash
-}): Promise<WalletTransaction | undefined | ApplicationError> => {
+}): Promise<WalletTransaction[] | ApplicationError> => {
   const ledger = LedgerService()
-  const ledgerTransaction = await ledger.getTransactionForWalletByPaymentHash({
+  const ledgerTransactions = await ledger.getTransactionsForWalletByPaymentHash({
     walletId,
     paymentHash,
   })
 
-  if (ledgerTransaction instanceof Error) return ledgerTransaction
+  if (ledgerTransactions instanceof Error) return ledgerTransactions
 
   return WalletTransactionHistory.fromLedger({
-    ledgerTransactions: [ledgerTransaction],
+    ledgerTransactions,
     nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
     memoSharingConfig,
-  }).transactions[0]
+  }).transactions
 }
 
 export const getTransactionsByHash = async (

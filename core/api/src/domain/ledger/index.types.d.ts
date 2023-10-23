@@ -245,10 +245,10 @@ interface ILedgerService {
     paymentHash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
-  getTransactionForWalletByPaymentHash(args: {
+  getTransactionsForWalletByPaymentHash(args: {
     walletId: WalletId
     paymentHash: PaymentHash
-  }): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError>
+  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   getTransactionsByWalletId(
     walletId: WalletId,

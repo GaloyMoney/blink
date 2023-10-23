@@ -103,10 +103,10 @@ usd_amount=50
     '{walletId: $wallet_id, paymentHash: $payment_hash}'
   )
 
-  exec_graphql "$token_name" 'transaction-for-wallet-by-payment-hash' "$variables"
-  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.transactionByPaymentHash.initiationVia.paymentHash')"
+  exec_graphql "$token_name" 'transactions-for-wallet-by-payment-hash' "$variables"
+  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.transactionsByPaymentHash[0].initiationVia.paymentHash')"
   [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
-  transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionByPaymentHash.id')"
+  transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionsByPaymentHash[0].id')"
 
   # Get transaction by tx id
   variables=$(
