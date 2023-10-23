@@ -1,8 +1,14 @@
 "use client"
+import { sendPhoneCode } from "@/app/login/phone/server-actions"
+import { env } from "@/env"
 import { memo, useCallback, useEffect } from "react"
 import { toast } from "react-toastify"
 
-import { sendPhoneCode } from "@/app/login/phone/server-actions"
+declare global {
+  interface Window {
+    initGeetest: (options: any, callback: (captchaObj: any) => void) => void
+  }
+}
 
 const CaptchaChallengeComponent: React.FC<{
   id: string
@@ -11,11 +17,22 @@ const CaptchaChallengeComponent: React.FC<{
     login_challenge: string
     phone: string
     remember: string
+    channel: string
   }
 }> = ({ id, challenge, formData }) => {
+  const sendMockData = async () => {
+    const mockCaptchaResult = {
+      geetest_challenge: "mockChallenge",
+      geetest_validate: "mockValidate",
+      geetest_seccode: "mockSecCode",
+    }
+    const res = await sendPhoneCode(mockCaptchaResult, formData)
+    if (res?.error) {
+      toast.error(res.message)
+    }
+  }
+
   const captchaHandler = useCallback(
-    /* eslint @typescript-eslint/ban-ts-comment: "off" */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (captchaObj: any) => {
       const onSuccess = async () => {
         const result = captchaObj.getValidate()
@@ -38,18 +55,21 @@ const CaptchaChallengeComponent: React.FC<{
   )
 
   useEffect(() => {
-    // @ts-ignore-next-line error
-    window.initGeetest(
-      {
-        gt: id,
-        challenge: challenge,
-        offline: false,
-        new_captcha: true,
-        product: "bind",
-        lang: "en",
-      },
-      captchaHandler,
-    )
+    if (env.NODE_ENV === "development") {
+      sendMockData()
+    } else {
+      window.initGeetest(
+        {
+          gt: id,
+          challenge: challenge,
+          offline: false,
+          new_captcha: true,
+          product: "bind",
+          lang: "en",
+        },
+        captchaHandler,
+      )
+    }
   }, [captchaHandler, id, challenge])
 
   return <div data-testid="captcha_container" id="captcha"></div>
