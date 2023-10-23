@@ -58,6 +58,7 @@ CxxExtension = enum(
     ".hpp",
     ".hh",
     ".h++",
+    ".hxx",
 )
 
 # File types for dep files
@@ -139,6 +140,11 @@ CxxCompileOutput = record(
     clang_remarks = field([Artifact, None], None),
     clang_trace = field([Artifact, None], None),
 )
+
+_ABSOLUTE_ARGSFILE_SUBSTITUTIONS = [
+    (regex("-filter-error=.+"), "-fcolor-diagnostics"),
+    (regex("-filter-ignore=.+"), "-fcolor-diagnostics"),
+]
 
 def create_compile_cmds(
         ctx: AnalysisContext,
@@ -364,12 +370,13 @@ def compile_cxx(
         )
 
         # If we're building with split debugging, where the debug info is in the
-        # original object, then add the object as external debug info, *unless*
-        # we're doing LTO, which generates debug info at link time (*except* for
-        # fat LTO, which still generates native code and, therefore, debug info).
+        # original object, then add the object as external debug info
+        # FIXME: ThinLTO generates debug info in a separate dwo dir, but we still
+        # need to track object files if the object file is not compiled to bitcode.
+        # We should track whether ThinLTO is used on a per-object basis rather than
+        # globally on a toolchain level.
         object_has_external_debug_info = (
-            toolchain.split_debug_mode == SplitDebugMode("single") and
-            linker_info.lto_mode in (LtoMode("none"), LtoMode("fat"))
+            toolchain.split_debug_mode == SplitDebugMode("single")
         )
 
         # .S extension is native assembly code (machine level, processor specific)
@@ -405,7 +412,7 @@ def _validate_target_headers(ctx: AnalysisContext, preprocessor: list[CPreproces
 
 def _get_compiler_info(toolchain: CxxToolchainInfo, ext: CxxExtension) -> typing.Any:
     compiler_info = None
-    if ext.value in (".cpp", ".cc", ".mm", ".cxx", ".c++", ".h", ".hpp"):
+    if ext.value in (".cpp", ".cc", ".mm", ".cxx", ".c++", ".h", ".hpp", ".hh", ".h++", ".hxx"):
         compiler_info = toolchain.cxx_compiler_info
     elif ext.value in (".c", ".m"):
         compiler_info = toolchain.c_compiler_info
@@ -427,7 +434,7 @@ def _get_compiler_info(toolchain: CxxToolchainInfo, ext: CxxExtension) -> typing
     return compiler_info
 
 def _get_category(ext: CxxExtension) -> str:
-    if ext.value in (".cpp", ".cc", ".cxx", ".c++", ".h", ".hpp"):
+    if ext.value in (".cpp", ".cc", ".cxx", ".c++", ".h", ".hpp", ".hh", ".h++", ".hxx"):
         return "cxx_compile"
     if ext.value == ".c":
         return "c_compile"
@@ -464,7 +471,7 @@ def _dep_file_type(ext: CxxExtension) -> [DepFileType, None]:
         return None
 
     # Return the file type aswell
-    if ext.value in (".cpp", ".cc", ".mm", ".cxx", ".c++", ".h", ".hpp"):
+    if ext.value in (".cpp", ".cc", ".mm", ".cxx", ".c++", ".h", ".hpp", ".hh", ".h++", ".hxx"):
         return DepFileType("cpp")
     elif ext.value in (".c", ".m"):
         return DepFileType("c")
@@ -528,6 +535,11 @@ def _mk_argsfile(
     # to avoid "argument too long" errors
     if use_absolute_paths:
         args.add(cmd_args(preprocessor.set.project_as_args("abs_file_prefix_args")))
+
+        # HACK: Replace Xcode clang incompatible flags with compatible ones.
+        # TODO: Refactor this to be a true Xcode argsfile generating flow.
+        for re, sub in _ABSOLUTE_ARGSFILE_SUBSTITUTIONS:
+            args.replace_regex(re, sub)
     else:
         args.add(headers_tag.tag_artifacts(cmd_args(preprocessor.set.project_as_args("file_prefix_args"))))
 

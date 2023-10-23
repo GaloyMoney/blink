@@ -4,12 +4,15 @@ ci:
 
 dashboard:
   - apps/dashboard/*
+  - flake.lock
   - pnpm-lock.yaml
 
 consent:
   - apps/consent/*
+  - flake.lock
   - pnpm-lock.yaml
 
 core:
   - core/**/*
+  - flake.lock
   - pnpm-lock.yaml

@@ -10,10 +10,11 @@
 load("@prelude//:cache_mode.bzl", "CacheModeInfo")
 load("@prelude//:genrule_local_labels.bzl", "genrule_labels_require_local")
 load("@prelude//:genrule_toolchain.bzl", "GenruleToolchainInfo")
+load("@prelude//:genrule_types.bzl", "GENRULE_MARKER_SUBTARGET_NAME", "GenruleMarkerInfo")
 load("@prelude//:is_full_meta_repo.bzl", "is_full_meta_repo")
 load("@prelude//android:build_only_native_code.bzl", "is_build_only_native_code")
 load("@prelude//os_lookup:defs.bzl", "OsLookup")
-load("@prelude//utils:utils.bzl", "flatten", "value_or")
+load("@prelude//utils:utils.bzl", "expect", "flatten", "value_or")
 
 GENRULE_OUT_DIR = "out"
 
@@ -47,6 +48,14 @@ _BUILD_ROOT_LABELS = {label: True for label in [
 # that behavior.
 _NO_SRCS_ENVIRONMENT_LABEL = "no_srcs_environment"
 
+_WINDOWS_ENV_SUBSTITUTIONS = [
+    # Replace $OUT and ${OUT}
+    (regex("\\$(OUT\\b|\\{OUT\\})"), "%OUT%"),
+    (regex("\\$(SRCDIR\\b|\\{SRCDIR\\})"), "%SRCDIR%"),
+    (regex("\\$(SRCS\\b|\\{SRCS\\})"), "%SRCS%"),
+    (regex("\\$(TMP\\b|\\{TMP\\})"), "%TMP%"),
+]
+
 def _requires_build_root(ctx: AnalysisContext) -> bool:
     for label in ctx.attrs.labels:
         if label in _BUILD_ROOT_LABELS:
@@ -68,6 +77,7 @@ _USE_CACHE_MODE = is_full_meta_repo()
 # Extra attributes required by every genrule based on genrule_impl
 def genrule_attributes() -> dict[str, Attr]:
     attributes = {
+        "always_print_stderr": attrs.bool(default = False),
         "metadata_env_var": attrs.option(attrs.string(), default = None),
         "metadata_path": attrs.option(attrs.string(), default = None),
         "no_outputs_cleanup": attrs.bool(default = False),
@@ -167,13 +177,11 @@ def process_genrule(
 
     # For backwards compatibility with Buck1.
     if is_windows:
-        # Replace $OUT and ${OUT}
-        cmd.replace_regex("\\$(OUT\\b|\\{OUT\\})", "%OUT%")
-        cmd.replace_regex("\\$(SRCDIR\\b|\\{SRCDIR\\})", "%SRCDIR%")
-        cmd.replace_regex("\\$(SRCS\\b|\\{SRCS\\})", "%SRCS%")
-        cmd.replace_regex("\\$(TMP\\b|\\{TMP\\})", "%TMP%")
+        for re, sub in _WINDOWS_ENV_SUBSTITUTIONS:
+            cmd.replace_regex(re, sub)
+
         for extra_env_var in extra_env_vars:
-            cmd.replace_regex("\\$(%s\\b|\\{%s\\})" % (extra_env_var, extra_env_var), "%%%s%%" % extra_env_var)
+            cmd.replace_regex(regex("\\$(%s\\b|\\{%s\\})" % (extra_env_var, extra_env_var)), "%%%s%%" % extra_env_var)
 
     if _ignore_artifacts(ctx):
         cmd = cmd.ignore_artifacts()
@@ -328,12 +336,21 @@ def process_genrule(
         category = category,
         identifier = identifier,
         no_outputs_cleanup = ctx.attrs.no_outputs_cleanup,
+        always_print_stderr = ctx.attrs.always_print_stderr,
         **metadata_args
     )
 
+    # Use a subtarget to insert a marker, as callsites make assumptions about
+    # the providers of `process_genrule()`. We want to have the marker in
+    # `DefaultInfo` rather than in `genrule_impl()` because we want to identify
+    # all classes of genrule-like rules.
+    sub_targets = {k: [DefaultInfo(default_outputs = v)] for (k, v) in named_outputs.items()}
+    expect(GENRULE_MARKER_SUBTARGET_NAME not in sub_targets, "Conflicting private `{}` subtarget and named output".format(GENRULE_MARKER_SUBTARGET_NAME))
+    sub_targets[GENRULE_MARKER_SUBTARGET_NAME] = [GenruleMarkerInfo()]
+
     providers = [DefaultInfo(
         default_outputs = default_outputs,
-        sub_targets = {k: [DefaultInfo(default_outputs = v)] for (k, v) in named_outputs.items()},
+        sub_targets = sub_targets,
     )]
 
     # The cxx_genrule also forwards here, and that doesn't have .executable, so use getattr

@@ -472,6 +472,13 @@ def cxx_executable(ctx: AnalysisContext, impl_params: CxxRuleConstructorParams, 
         dep_links,
     ] + impl_params.extra_link_args
 
+    # If there are hidden dependencies to this target then add them as
+    # hidden link args.
+    if impl_params.extra_hidden:
+        links.append(
+            LinkArgs(flags = cmd_args().hidden(impl_params.extra_hidden)),
+        )
+
     link_result = _link_into_executable(
         ctx,
         # If shlib lib tree generation is enabled, pass in the shared libs (which
@@ -594,7 +601,7 @@ def cxx_executable(ctx: AnalysisContext, impl_params: CxxRuleConstructorParams, 
 
     if binary.pdb:
         # A `pdb` sub-target which generates the `.pdb` file for this binary.
-        sub_targets[PDB_SUB_TARGET] = get_pdb_providers(binary.pdb)
+        sub_targets[PDB_SUB_TARGET] = get_pdb_providers(pdb = binary.pdb, binary = binary.output)
 
     if toolchain_info.dumpbin_toolchain_path:
         sub_targets[DUMPBIN_SUB_TARGET] = get_dumpbin_providers(ctx, binary.output, toolchain_info.dumpbin_toolchain_path)
@@ -644,6 +651,9 @@ def cxx_executable(ctx: AnalysisContext, impl_params: CxxRuleConstructorParams, 
     sub_targets["debuginfo"] = [DefaultInfo(
         default_output = materialize_external_debug_info,
     )]
+
+    for additional_subtarget, subtarget_providers in impl_params.additional.subtargets.items():
+        sub_targets[additional_subtarget] = subtarget_providers
 
     return CxxExecutableOutput(
         binary = binary.output,

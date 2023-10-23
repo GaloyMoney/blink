@@ -5,7 +5,11 @@
 # License, Version 2.0 found in the LICENSE-APACHE file in the root directory
 # of this source tree.
 
+load(":apple_bundle_config.bzl", "apple_bundle_config")
+load(":apple_genrule_deps.bzl", "get_apple_build_genrule_deps_default_kwargs")
+load(":apple_info_plist_substitutions_parsing.bzl", "parse_codesign_entitlements")
 load(":apple_package_config.bzl", "apple_package_config")
+load(":apple_resource_bundle.bzl", "make_resource_bundle_rule")
 load(
     ":apple_rules_impl_utility.bzl",
     "APPLE_ARCHIVE_OBJECTS_LOCALLY_OVERRIDE_ATTR_NAME",
@@ -48,6 +52,10 @@ _APPLE_BINARY_LOCAL_EXECUTION_OVERRIDES = [
     ),
 ]
 
+_APPLE_TEST_LOCAL_EXECUTION_OVERRIDES = [
+    APPLE_LINK_LIBRARIES_LOCALLY_OVERRIDE,
+]
+
 def apple_macro_layer_set_bool_override_attrs_from_config(overrides: list[AppleBuckConfigAttributeOverride]) -> dict[str, Select]:
     attribs = {}
     for override in overrides:
@@ -63,6 +71,27 @@ def apple_macro_layer_set_bool_override_attrs_from_config(overrides: list[AppleB
             })
     return attribs
 
+def apple_test_macro_impl(apple_test_rule, apple_resource_bundle_rule, **kwargs):
+    kwargs.update(apple_bundle_config())
+    kwargs.update(apple_macro_layer_set_bool_override_attrs_from_config(_APPLE_TEST_LOCAL_EXECUTION_OVERRIDES))
+
+    # `extension` is used both by `apple_test` and `apple_resource_bundle`, so provide default here
+    kwargs["extension"] = kwargs.pop("extension", "xctest")
+    apple_test_rule(
+        _resource_bundle = make_resource_bundle_rule(apple_resource_bundle_rule, **kwargs),
+        **kwargs
+    )
+
+def apple_bundle_macro_impl(apple_bundle_rule, apple_resource_bundle_rule, **kwargs):
+    info_plist_substitutions = kwargs.get("info_plist_substitutions")
+    kwargs.update(apple_bundle_config())
+    kwargs.update(get_apple_build_genrule_deps_default_kwargs())
+    apple_bundle_rule(
+        _codesign_entitlements = parse_codesign_entitlements(info_plist_substitutions),
+        _resource_bundle = make_resource_bundle_rule(apple_resource_bundle_rule, **kwargs),
+        **kwargs
+    )
+
 def apple_library_macro_impl(apple_library_rule = None, **kwargs):
     kwargs.update(apple_macro_layer_set_bool_override_attrs_from_config(_APPLE_LIBRARY_LOCAL_EXECUTION_OVERRIDES))
     kwargs.update(apple_macro_layer_set_bool_override_attrs_from_config([APPLE_STRIPPED_DEFAULT]))
@@ -71,6 +100,7 @@ def apple_library_macro_impl(apple_library_rule = None, **kwargs):
 def apple_binary_macro_impl(apple_binary_rule = None, apple_universal_executable = None, **kwargs):
     kwargs.update(apple_macro_layer_set_bool_override_attrs_from_config(_APPLE_BINARY_LOCAL_EXECUTION_OVERRIDES))
     kwargs.update(apple_macro_layer_set_bool_override_attrs_from_config([APPLE_STRIPPED_DEFAULT]))
+    kwargs.update(get_apple_build_genrule_deps_default_kwargs())
 
     binary_name = kwargs.pop("name")
 

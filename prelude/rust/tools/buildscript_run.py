@@ -15,7 +15,14 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, IO, NamedTuple
+from typing import Any, Dict, IO, NamedTuple
+
+
+IS_WINDOWS: bool = os.name == "nt"
+
+
+def eprint(*args: Any, **kwargs: Any) -> None:
+    print(*args, end="\n", file=sys.stderr, flush=True, **kwargs)
 
 
 def cfg_env(rustc_cfg: Path) -> Dict[str, str]:
@@ -111,23 +118,41 @@ def ensure_rustc_available(
     assert rustc is not None, "RUSTC env is missing"
     assert target is not None, "TARGET env is missing"
 
-    if os.path.dirname(rustc) != "":
-        rustc = os.path.join(cwd, rustc)
-
     # NOTE: `HOST` is optional.
     host = env.get("HOST")
 
     try:
-        subprocess.check_output([rustc, "--version"])
+        # Run through cmd.exe on Windows so if rustc is a batch script
+        # (like the command_alias trampoline is), it is found relative to
+        # cwd.
+        #
+        # Executing `os.path.join(cwd, rustc)` would also work, but because
+        # of `../` in the path, it's possible to hit path length limits.
+        # Resolving it would remove the `..` but then sometimes things
+        # fail with exit code `3221225725` ("out of stack memory").
+        # I suspect it's some infinite loop brought about by the trampoline
+        # and symlinks.
+        subprocess.check_output(  # noqa: P204
+            [rustc, "--version"],
+            cwd=cwd,
+            shell=IS_WINDOWS,
+        )
         # A multiplexed sysroot may involve another fetch,
         # so pass `--target` to check that too.
         if host != target:
-            subprocess.check_output([rustc, f"--target={target}", "--version"])
+            subprocess.check_output(  # noqa: P204
+                [rustc, f"--target={target}", "--version"],
+                cwd=cwd,
+                shell=IS_WINDOWS,
+            )
     except OSError as ex:
-        print(f"Failed to run {rustc} because {ex}", file=sys.stderr)
+        eprint(f"Failed to run {rustc} because {ex}")
         sys.exit(1)
     except subprocess.CalledProcessError as ex:
-        print(f"Failed to run {ex.cmd}: {ex.stderr}", file=sys.stderr)
+        eprint(f"Command failed with exit code {ex.returncode}")
+        eprint(f"Command: {ex.cmd}")
+        if ex.stdout:
+            eprint(f"Stdout: {ex.stdout}")
         sys.exit(1)
 
 
@@ -195,7 +220,7 @@ def main() -> None:  # noqa: C901
         if cargo_rustc_cfg_match:
             flags += "--cfg={}\n".format(cargo_rustc_cfg_match.group(1))
         else:
-            print(line)
+            print(line, end="\n")
     args.outfile.write(flags)
 
 
