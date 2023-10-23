@@ -77,7 +77,7 @@
       }:
         pkgs.stdenv.mkDerivation {
           bin_target = pkgName;
-          deps_target = "runnable_build";
+          deps_target = "prod_build";
 
           name = pkgName;
           buck2_target = "//${pathPrefix}/${pkgName}";
