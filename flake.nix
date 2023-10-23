@@ -168,6 +168,7 @@
         devShells.default = mkShell {
           inherit nativeBuildInputs;
           BUCK2_VERSION = buck2Version;
+          COMPOSE_PROJECT_NAME = "galoy-dev";
         };
 
         formatter = alejandra;

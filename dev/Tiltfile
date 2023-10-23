@@ -1,7 +1,26 @@
-api_target = "//core/api:api"
+docker_compose("./docker-compose.deps.yml", ".env","galoy-dev")
+
+groups = {
+    "bitcoin": [
+        "bitcoind",
+        "bitcoind-signer",
+        "postgres-bria",
+        "fulcrum",
+        "bria",
+    ],
+    "tracing": [
+      "otel-agent",
+    ],
+}
+for service in groups["bitcoin"]:
+    dc_resource(service, labels = ["bitcoin"])
+
 local_resource(
-    "api",
-    labels = ["frontend"],
-    cmd = "buck2 build {}".format(api_target),
-    serve_cmd = "buck2 run {}".format(api_target),
+  name='init-onchain',
+  labels = ['bitcoin'],
+  cmd='bin/init-onchain.sh',
+  resource_deps = [
+    "bitcoind",
+    "bria",
+  ]
 )
