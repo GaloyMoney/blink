@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add debug script to clean kratos identities (#3398)...'
-      sha: d7d1c45daa4d56675f8ca83099c8e19615a3d44e
+      commitTitle: 'chore: bump flake (#3411)'
+      sha: ab462fb8d9601bce9f9f15c30a0e48fd4b7b281e
       tags:
-      - 0.15.29-2-gd7d1c45da
+      - 0.15.30-2-gab462fb8d
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add debug script to clean kratos identities (#3398)...'
-      sha: d7d1c45daa4d56675f8ca83099c8e19615a3d44e
+      commitTitle: 'chore: bump flake (#3411)'
+      sha: ab462fb8d9601bce9f9f15c30a0e48fd4b7b281e
       tags:
-      - 0.15.29-2-gd7d1c45da
+      - 0.15.30-2-gab462fb8d
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add debug script to clean kratos identities (#3398)...'
-      sha: d7d1c45daa4d56675f8ca83099c8e19615a3d44e
+      commitTitle: 'chore: bump flake (#3411)'
+      sha: ab462fb8d9601bce9f9f15c30a0e48fd4b7b281e
       tags:
-      - 0.15.29-2-gd7d1c45da
+      - 0.15.30-2-gab462fb8d
     path: ./
   path: ./graphql
 kind: LockConfig
