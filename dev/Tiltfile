@@ -2,11 +2,12 @@ docker_compose("./docker-compose.deps.yml", ".env","galoy-dev")
 
 groups = {
     "bitcoin": [
-        "bitcoind",
-        "bitcoind-signer",
+        "lnd1",
+        "bria",
         "postgres-bria",
         "fulcrum",
-        "bria",
+        "bitcoind-signer",
+        "bitcoind",
     ],
     "tracing": [
       "otel-agent",
