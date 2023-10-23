@@ -1,6 +1,13 @@
 ---
 version: "3"
 services:
+  redis:
+    image: redis:7.0.8
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
   mongodb:
     image: mongo:7.0.2
     ports:

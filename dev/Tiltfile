@@ -1,6 +1,8 @@
-docker_compose("./docker-compose.deps.yml", ".env","galoy-dev")
-
 groups = {
+    "core": [
+        "mongodb",
+        "redis",
+    ],
     "bitcoin": [
         "lnd1",
         "bria",
@@ -13,8 +15,35 @@ groups = {
       "otel-agent",
     ],
 }
+
+api_target = "//core/api:api"
+local_resource(
+    "api",
+    labels = ["core"],
+    cmd = "buck2 build {}".format(api_target),
+    serve_cmd = "buck2 run {}".format(api_target),
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 4012,
+        ),
+    ),
+    resource_deps = [
+        "init-onchain",
+        "lnd1",
+    ]
+)
+
+docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
+
 for service in groups["bitcoin"]:
     dc_resource(service, labels = ["bitcoin"])
+for service in groups["tracing"]:
+    dc_resource(service, labels = ["tracing"])
+for service in groups["core"]:
+    dc_resource(service, labels = ["core"])
 
 local_resource(
   name='init-onchain',
