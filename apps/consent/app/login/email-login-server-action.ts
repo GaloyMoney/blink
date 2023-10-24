@@ -34,16 +34,23 @@ export async function submitForm(
   ) {
     throw new Error("Invalid Value")
   }
-
+  
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access")
-    const response = await hydraClient.rejectOAuth2LoginRequest({
-      loginChallenge: login_challenge,
-      rejectOAuth2Request: {
-        error: "access_denied",
-        error_description: "The resource owner denied the request",
+    const response = await hydraClient.rejectOAuth2LoginRequest(
+      {
+        loginChallenge: login_challenge,
+        rejectOAuth2Request: {
+          error: "access_denied",
+          error_description: "The resource owner denied the request",
+        },
       },
-    })
+      {
+        headers: {
+          Cookie: cookies().toString(),
+        },
+      },
+    )
     redirect(response.data.redirect_to)
   }
 
