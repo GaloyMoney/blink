@@ -1,10 +1,13 @@
-import "./globals.css";
-import "react-toastify/dist/ReactToastify.css";
-import Script from "next/script";
-import type { Metadata } from "next";
-import { Inter_Tight } from "next/font/google";
-import { ToastContainer } from "react-toastify";
-import Theme from "./components/next-themes-provider";
+// eslint-disable-next-line import/no-unassigned-import
+import "./globals.css"
+// eslint-disable-next-line import/no-unassigned-import
+import "react-toastify/dist/ReactToastify.css"
+import Script from "next/script"
+import type { Metadata } from "next"
+import { Inter_Tight } from "next/font/google"
+import { ToastContainer } from "react-toastify"
+
+import Theme from "./components/next-themes-provider"
 
 const inter = Inter_Tight({ subsets: ["latin"] })
 export const metadata: Metadata = {

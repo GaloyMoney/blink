@@ -1,30 +1,33 @@
-"use client";
-import React from "react";
-// @ts-ignore-next-line no-implicit-any error
-import { experimental_useFormState as useFormState } from "react-dom";
-import InputComponent from "../components/input-component";
-import Link from "next/link";
-import FormComponent from "../components/form-component";
-import Separator from "../components/separator";
-import PrimaryButton from "../components/button/primary-button-component";
-import SecondaryButton from "../components/button/secondary-button-component";
-import { SubmitValue } from "../index.types";
-import { submitForm } from "./email-login-server-action";
-import { toast } from "react-toastify";
+"use client"
+import React from "react"
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line error
+import { experimental_useFormState as useFormState } from "react-dom"
+import Link from "next/link"
+import { toast } from "react-toastify"
+
+import InputComponent from "../components/input-component"
+import FormComponent from "../components/form-component"
+import Separator from "../components/separator"
+import PrimaryButton from "../components/button/primary-button-component"
+import SecondaryButton from "../components/button/secondary-button-component"
+import { SubmitValue } from "../index.types"
+
+import { submitForm } from "./email-login-server-action"
 //  this page is for login via email
 interface LoginProps {
-  login_challenge: string;
+  login_challenge: string
 }
 
 const EmailLoginForm = ({ login_challenge }: LoginProps) => {
   const [state, formAction] = useFormState(submitForm, {
     error: null,
     message: null,
-  });
+  })
 
   if (state.error) {
-    toast.error(state.message);
-    state.error = null;
+    toast.error(state.message)
+    state.error = null
   }
 
   return (
@@ -85,6 +88,6 @@ const EmailLoginForm = ({ login_challenge }: LoginProps) => {
         </SecondaryButton>
       </div>
     </FormComponent>
-  );
-};
-export default EmailLoginForm;
+  )
+}
+export default EmailLoginForm

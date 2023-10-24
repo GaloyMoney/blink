@@ -1,28 +1,30 @@
-"use server";
-import { redirect } from "next/navigation";
-import { hydraClient } from "../../services/hydra";
-import { cookies } from "next/headers";
-import authApi from "@/services/galoy-auth";
-import { LoginType, SubmitValue } from "../index.types";
-import { LoginEmailResponse } from "./email-login.types";
-import { headers } from "next/headers";
-import { handleAxiosError } from "@/app/error-handler";
+"use server"
+import { redirect } from "next/navigation"
+import { cookies, headers } from "next/headers"
+
+import { hydraClient } from "../../services/hydra"
+import { LoginType, SubmitValue } from "../index.types"
+
+import { LoginEmailResponse } from "./email-login.types"
+
+import authApi from "@/services/galoy-auth"
+import { handleAxiosError } from "@/app/error-handler"
 //  this page is for login via email
 
 export async function submitForm(
   _prevState: unknown,
-  formData: FormData
+  formData: FormData,
 ): Promise<LoginEmailResponse | void> {
-  const headersList = headers();
+  const headersList = headers()
   const customHeaders = {
     "x-real-ip": headersList.get("x-real-ip"),
     "x-forwarded-for": headersList.get("x-forwarded-for"),
-  };
+  }
 
-  const login_challenge = formData.get("login_challenge");
-  const submitValue = formData.get("submit");
-  const email = formData.get("email");
-  const remember = String(formData.get("remember") === "1");
+  const login_challenge = formData.get("login_challenge")
+  const submitValue = formData.get("submit")
+  const email = formData.get("email")
+  const remember = String(formData.get("remember") === "1")
   if (
     !login_challenge ||
     !submitValue ||
@@ -30,32 +32,32 @@ export async function submitForm(
     typeof login_challenge !== "string" ||
     typeof submitValue !== "string"
   ) {
-    throw new Error("Invalid Value");
+    throw new Error("Invalid Value")
   }
 
   if (submitValue === SubmitValue.denyAccess) {
-    console.log("User denied access");
+    console.log("User denied access")
     const response = await hydraClient.rejectOAuth2LoginRequest({
       loginChallenge: login_challenge,
       rejectOAuth2Request: {
         error: "access_denied",
         error_description: "The resource owner denied the request",
       },
-    });
-    redirect(response.data.redirect_to);
+    })
+    redirect(response.data.redirect_to)
   }
 
   if (!email || typeof email !== "string") {
-    console.error("Invalid Values for email");
-    throw new Error("Invalid Email Value");
+    console.error("Invalid Values for email")
+    throw new Error("Invalid Email Value")
   }
 
-  let emailCodeRequest;
+  let emailCodeRequest
   try {
-    emailCodeRequest = await authApi.requestEmailCode(email, customHeaders);
+    emailCodeRequest = await authApi.requestEmailCode(email, customHeaders)
   } catch (err) {
-    console.error("Error in requestEmailCode", err);
-    return handleAxiosError(err);
+    console.error("Error in requestEmailCode", err)
+    return handleAxiosError(err)
   }
 
   // TODO: manage error on ip rate limit
@@ -65,7 +67,7 @@ export async function submitForm(
       error: true,
       message: "Internal Server Error",
       responsePayload: null,
-    };
+    }
   }
 
   cookies().set(
@@ -76,11 +78,11 @@ export async function submitForm(
       value: email,
       remember,
     }),
-    { secure: true }
-  );
+    { secure: true },
+  )
 
-  let params = new URLSearchParams({
+  const params = new URLSearchParams({
     login_challenge,
-  });
-  redirect(`/login/verification?${params}`);
+  })
+  redirect(`/login/verification?${params}`)
 }

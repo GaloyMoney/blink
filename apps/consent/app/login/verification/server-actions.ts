@@ -1,11 +1,13 @@
-"use server";
-import { handleAxiosError } from "@/app/error-handler";
-import { getUserId } from "@/app/graphql/queries/me-query";
-import { LoginType } from "@/app/index.types";
-import authApi from "@/services/galoy-auth";
-import { hydraClient } from "@/services/hydra";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+"use server"
+import { headers } from "next/headers"
+
+import { redirect } from "next/navigation"
+
+import { handleAxiosError } from "@/app/error-handler"
+import { getUserId } from "@/app/graphql/queries/me-query"
+import { LoginType } from "@/app/index.types"
+import authApi from "@/services/galoy-auth"
+import { hydraClient } from "@/services/hydra"
 
 export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
   const headersList = headers()
@@ -33,8 +35,8 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
   try {
     await authApi.validateTotp(totpCode, authToken, customHeaders)
   } catch (err) {
-    console.error("error in 'totp/validate' ", err);
-    return handleAxiosError(err);
+    console.error("error in 'totp/validate' ", err)
+    return handleAxiosError(err)
   }
 
   const userId = await getUserId(authToken)
@@ -99,8 +101,8 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
       totpRequired = loginResponse.totpRequired
       userId = loginResponse.id
     } catch (err) {
-      console.error("error in 'phone/login' ", err);
-      return handleAxiosError(err);
+      console.error("error in 'phone/login' ", err)
+      return handleAxiosError(err)
     }
   } else if (loginType === LoginType.email) {
     try {
@@ -109,8 +111,8 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
       totpRequired = loginResponse.totpRequired
       userId = loginResponse.id
     } catch (err) {
-      console.error("error in 'email/login' ", err);
-      return handleAxiosError(err);
+      console.error("error in 'email/login' ", err)
+      return handleAxiosError(err)
     }
   } else {
     throw new Error("Invalid Value")

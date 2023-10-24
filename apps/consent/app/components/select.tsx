@@ -1,9 +1,9 @@
-import React, { SelectHTMLAttributes } from "react";
+import React, { SelectHTMLAttributes } from "react"
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  id: string;
-  options: string[];
+  label?: string
+  id: string
+  options: string[]
 }
 
 const SelectComponent: React.FC<SelectProps> = ({
@@ -41,7 +41,7 @@ const SelectComponent: React.FC<SelectProps> = ({
         ))}
       </select>
     </div>
-  );
-};
+  )
+}
 
-export default SelectComponent;
+export default SelectComponent
