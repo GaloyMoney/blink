@@ -38,6 +38,11 @@ export const BriaPayloadType = {
 
 const eventRepo = BriaEventRepo()
 
+const assertUnreachable = (payloadCase: never): Error => {
+  // This should never compile if 'payloadCase' is not never
+  return new UnknownPayloadTypeReceivedError(payloadCase)
+}
+
 export const eventDataHandler =
   (eventHandler: BriaEventHandler) =>
   async (stream: Stream<RawBriaEvent, SubscribeAllRequest>, data: RawBriaEvent) => {
@@ -110,7 +115,8 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
   let proportionalFee: BtcPaymentAmount | ValidationError
   let payload: BriaPayload | undefined
   let rawPayload
-  switch (rawEvent.getPayloadCase()) {
+  const payloadCase = rawEvent.getPayloadCase()
+  switch (payloadCase) {
     case RawBriaEvent.PayloadCase.PAYLOAD_NOT_SET:
       return new NoPayloadFoundError()
     case RawBriaEvent.PayloadCase.UTXO_DETECTED:
@@ -267,7 +273,7 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
       }
       break
     default:
-      return new UnknownPayloadTypeReceivedError()
+      return assertUnreachable(payloadCase)
   }
 
   return {
