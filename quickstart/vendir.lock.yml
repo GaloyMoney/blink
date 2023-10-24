@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: rename ''runnable'' to ''prod'' in buck builds (#3413)'
-      sha: d632440749a22f4c43c4f2391aa2c6a6a09959e5
+      commitTitle: 'feat: better expose invoices through gql api (#3313)...'
+      sha: fe7f716b0b78b8ef2e7fbd7f5cf469dceac11c1f
       tags:
-      - 0.15.34-1-gd63244074
+      - 0.15.35-1-gfe7f716b0
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: rename ''runnable'' to ''prod'' in buck builds (#3413)'
-      sha: d632440749a22f4c43c4f2391aa2c6a6a09959e5
+      commitTitle: 'feat: better expose invoices through gql api (#3313)...'
+      sha: fe7f716b0b78b8ef2e7fbd7f5cf469dceac11c1f
       tags:
-      - 0.15.34-1-gd63244074
+      - 0.15.35-1-gfe7f716b0
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: rename ''runnable'' to ''prod'' in buck builds (#3413)'
-      sha: d632440749a22f4c43c4f2391aa2c6a6a09959e5
+      commitTitle: 'feat: better expose invoices through gql api (#3313)...'
+      sha: fe7f716b0b78b8ef2e7fbd7f5cf469dceac11c1f
       tags:
-      - 0.15.34-1-gd63244074
+      - 0.15.35-1-gfe7f716b0
     path: ./
   path: ./graphql
 kind: LockConfig

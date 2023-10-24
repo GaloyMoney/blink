@@ -81,9 +81,11 @@ type BTCWallet implements Wallet {
   """A balance stored in BTC."""
   balance: SignedAmount!
   id: ID!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
+  transactionById(transactionId: ID!): Transaction!
 
   """A list of BTC transactions associated with this wallet."""
   transactions(
@@ -115,6 +117,7 @@ type BTCWallet implements Wallet {
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+  transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
@@ -170,6 +173,29 @@ type InitiationViaLn {
 
 type InitiationViaOnChain {
   address: OnChainAddress!
+}
+
+"""A lightning invoice."""
+interface Invoice {
+  """The payment hash of the lightning invoice."""
+  paymentHash: PaymentHash!
+
+  """The bolt11 invoice to be paid."""
+  paymentRequest: LnPaymentRequest!
+
+  """
+  The payment secret of the lightning invoice. This is not the preimage of the payment hash.
+  """
+  paymentSecret: LnPaymentSecret!
+
+  """The payment status of the invoice."""
+  paymentStatus: InvoicePaymentStatus!
+}
+
+enum InvoicePaymentStatus {
+  EXPIRED
+  PAID
+  PENDING
 }
 
 scalar Language
@@ -394,9 +420,11 @@ type UsdWallet implements Wallet {
   accountId: ID!
   balance: SignedAmount!
   id: ID!
+  invoiceByPaymentHash(paymentHash: PaymentHash!): Invoice!
 
   """An unconfirmed incoming onchain balance."""
   pendingIncomingBalance: SignedAmount!
+  transactionById(transactionId: ID!): Transaction!
   transactions(
     """Returns the items in the list that come after the specified cursor."""
     after: String
@@ -426,6 +454,7 @@ type UsdWallet implements Wallet {
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+  transactionsByPaymentHash(paymentHash: PaymentHash!): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
@@ -444,7 +473,14 @@ interface Wallet {
   accountId: ID!
   balance: SignedAmount!
   id: ID!
+  invoiceByPaymentHash(
+    """
+    The lightning invoice with the matching paymentHash belonging to this wallet.
+    """
+    paymentHash: PaymentHash!
+  ): Invoice!
   pendingIncomingBalance: SignedAmount!
+  transactionById(transactionId: ID!): Transaction!
 
   """
   Transactions are ordered anti-chronologically,
@@ -484,6 +520,14 @@ interface Wallet {
     """Returns the last n items from the list."""
     last: Int
   ): TransactionConnection
+
+  """
+  Returns the transactions that include this paymentHash. This should be a list of size one for a received lightning payment. This can be more that one transaction for a sent lightning payment.
+  """
+  transactionsByPaymentHash(
+    """The payment hash of the lightning invoice paid in this transaction."""
+    paymentHash: PaymentHash!
+  ): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
