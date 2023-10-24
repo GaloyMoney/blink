@@ -6,7 +6,11 @@ import WalletCurrency from "../scalar/wallet-currency"
 
 import OnChainAddress from "../scalar/on-chain-address"
 
-import { TransactionConnection } from "./transaction"
+import PaymentHash from "../scalar/payment-hash"
+
+import IInvoice from "../abstract/invoice"
+
+import Transaction, { TransactionConnection } from "./transaction"
 
 import { GT } from "@/graphql/index"
 import { normalizePaymentAmount } from "@/graphql/shared/root/mutation"
@@ -123,6 +127,75 @@ const BtcWallet = GT.Object<Wallet>({
           result.total,
           paginationArgs,
         )
+      },
+    },
+    invoiceByPaymentHash: {
+      type: GT.NonNull(IInvoice),
+      args: {
+        paymentHash: {
+          type: GT.NonNull(PaymentHash),
+        },
+      },
+      resolve: async (source, args) => {
+        const { paymentHash } = args
+        if (paymentHash instanceof Error) throw paymentHash
+
+        const invoice = await Wallets.getInvoiceForWalletByPaymentHash({
+          walletId: source.id,
+          paymentHash,
+        })
+
+        if (invoice instanceof Error) {
+          throw mapError(invoice)
+        }
+
+        return invoice
+      },
+    },
+    transactionsByPaymentHash: {
+      type: GT.NonNullList(Transaction),
+      args: {
+        paymentHash: {
+          type: GT.NonNull(PaymentHash),
+        },
+      },
+      resolve: async (source, args) => {
+        const { paymentHash } = args
+        if (paymentHash instanceof Error) throw paymentHash
+
+        const transactions = await Wallets.getTransactionsForWalletByPaymentHash({
+          walletId: source.id,
+          paymentHash,
+        })
+
+        if (transactions instanceof Error) {
+          throw mapError(transactions)
+        }
+
+        return transactions
+      },
+    },
+    transactionById: {
+      type: GT.NonNull(Transaction),
+      args: {
+        transactionId: {
+          type: GT.NonNullID,
+        },
+      },
+      resolve: async (source, args) => {
+        const { transactionId } = args
+        if (transactionId instanceof Error) throw transactionId
+
+        const transaction = await Wallets.getTransactionForWalletById({
+          walletId: source.id,
+          transactionId,
+        })
+
+        if (transaction instanceof Error) {
+          throw mapError(transaction)
+        }
+
+        return transaction
       },
     },
   }),

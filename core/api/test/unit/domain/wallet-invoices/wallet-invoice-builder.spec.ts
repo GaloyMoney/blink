@@ -76,8 +76,8 @@ describe("WalletInvoiceBuilder", () => {
     lnRegisterInvoice: registerInvoice,
   })
 
-  const checkSecretAndHash = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
-    const { secret } = walletInvoice
+  const checkSecretAndHash = (walletInvoice: WalletInvoice) => {
+    const { secret, lnInvoice } = walletInvoice
     const hashFromSecret = sha256(Buffer.from(secret, "hex"))
     expect(hashFromSecret).toEqual(walletInvoice.paymentHash)
     expect(walletInvoice.paymentHash).toEqual(lnInvoice.paymentHash)
@@ -88,14 +88,14 @@ describe("WalletInvoiceBuilder", () => {
   const WIBWithDescription = WIB.withDescription({
     description: testDescription,
   })
-  const checkDescription = ({ lnInvoice }: LnAndWalletInvoice) => {
+  const checkDescription = ({ lnInvoice }: WalletInvoice) => {
     expect(lnInvoice.description).toEqual(testDescription)
   }
 
   const expirationInMinutes = checkedToMinutes(3)
   if (expirationInMinutes instanceof Error) throw expirationInMinutes
   const testExpiration = new Date("2000-01-01T00:03:00.000Z")
-  const checkExpiration = ({ lnInvoice }: LnAndWalletInvoice) => {
+  const checkExpiration = ({ lnInvoice }: WalletInvoice) => {
     expect(lnInvoice.expiresAt).toEqual(testExpiration)
   }
 
@@ -110,13 +110,13 @@ describe("WalletInvoiceBuilder", () => {
 
   describe("generated for self", () => {
     const WIBWithCreator = WIBWithDescription.generatedForSelf()
-    const checkCreator = ({ walletInvoice }: LnAndWalletInvoice) => {
+    const checkCreator = (walletInvoice: WalletInvoice) => {
       expect(walletInvoice.selfGenerated).toEqual(true)
     }
 
     describe("with btc recipient wallet", () => {
       const WIBWithRecipient = WIBWithCreator.withRecipientWallet(recipientBtcWallet)
-      const checkRecipientWallet = ({ walletInvoice }: LnAndWalletInvoice) => {
+      const checkRecipientWallet = (walletInvoice: WalletInvoice) => {
         expect(walletInvoice.recipientWalletDescriptor).toEqual(recipientBtcWallet)
       }
 
@@ -130,8 +130,8 @@ describe("WalletInvoiceBuilder", () => {
             )
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
-          const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
-            expect(lnInvoice).toEqual(
+          const checkAmount = (walletInvoice: WalletInvoice) => {
+            expect(walletInvoice.lnInvoice).toEqual(
               expect.objectContaining({
                 amount: uncheckedAmount as Satoshis,
                 paymentAmount: btcCheckedAmount,
@@ -174,8 +174,8 @@ describe("WalletInvoiceBuilder", () => {
             await WIBWithRecipient.withExpiration(expirationInMinutes).withoutAmount()
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
-          const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
-            expect(lnInvoice).toEqual(
+          const checkAmount = (walletInvoice: WalletInvoice) => {
+            expect(walletInvoice.lnInvoice).toEqual(
               expect.objectContaining({
                 amount: 0 as Satoshis,
                 paymentAmount: BtcPaymentAmount(BigInt(0)),
@@ -205,7 +205,7 @@ describe("WalletInvoiceBuilder", () => {
 
     describe("with usd recipient wallet", () => {
       const WIBWithRecipient = WIBWithCreator.withRecipientWallet(recipientUsdWallet)
-      const checkRecipientWallet = ({ walletInvoice }: LnAndWalletInvoice) => {
+      const checkRecipientWallet = (walletInvoice: WalletInvoice) => {
         expect(walletInvoice.recipientWalletDescriptor).toEqual(recipientUsdWallet)
       }
 
@@ -219,9 +219,9 @@ describe("WalletInvoiceBuilder", () => {
             )
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
-          const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
+          const checkAmount = (walletInvoice: WalletInvoice) => {
             const convertedAmount = BigInt(uncheckedAmount) * dealerPriceRatio
-            expect(lnInvoice).toEqual(
+            expect(walletInvoice.lnInvoice).toEqual(
               expect.objectContaining({
                 amount: Number(convertedAmount) as Satoshis,
                 paymentAmount: BtcPaymentAmount(convertedAmount),
@@ -256,8 +256,8 @@ describe("WalletInvoiceBuilder", () => {
             )
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
-          const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
-            expect(lnInvoice).toEqual(
+          const checkAmount = (walletInvoice: WalletInvoice) => {
+            expect(walletInvoice.lnInvoice).toEqual(
               expect.objectContaining({
                 amount: Number(uncheckedAmount) as Satoshis,
                 paymentAmount: btcCheckedAmount,
@@ -303,8 +303,8 @@ describe("WalletInvoiceBuilder", () => {
             await WIBWithRecipient.withExpiration(expirationInMinutes).withoutAmount()
 
           if (WIBWithAmount instanceof Error) throw WIBWithAmount
-          const checkAmount = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
-            expect(lnInvoice).toEqual(
+          const checkAmount = (walletInvoice: WalletInvoice) => {
+            expect(walletInvoice.lnInvoice).toEqual(
               expect.objectContaining({
                 amount: 0 as Satoshis,
                 paymentAmount: BtcPaymentAmount(BigInt(0)),

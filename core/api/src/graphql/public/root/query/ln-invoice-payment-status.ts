@@ -4,6 +4,7 @@ import { GT } from "@/graphql/index"
 import { mapError } from "@/graphql/error-map"
 import LnInvoicePaymentStatusPayload from "@/graphql/public/types/payload/ln-invoice-payment-status"
 import LnInvoicePaymentStatusInput from "@/graphql/public/types/object/ln-invoice-payment-status-input"
+import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 
 const LnInvoicePaymentStatusQuery = GT.Field({
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
@@ -20,9 +21,11 @@ const LnInvoicePaymentStatusQuery = GT.Field({
     const paid = await paymentStatusChecker.invoiceIsPaid()
     if (paid instanceof Error) throw mapError(paid)
 
-    if (paid) return { errors: [], status: "PAID" }
+    if (paid) return { errors: [], status: WalletInvoiceStatus.Paid }
 
-    const status = paymentStatusChecker.isExpired ? "EXPIRED" : "PENDING"
+    const status = paymentStatusChecker.isExpired
+      ? WalletInvoiceStatus.Expired
+      : WalletInvoiceStatus.Pending
     return { errors: [], status }
   },
 })

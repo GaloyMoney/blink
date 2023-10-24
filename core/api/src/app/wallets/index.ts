@@ -16,12 +16,28 @@ export * from "./settle-payout-txn"
 export * from "./update-legacy-on-chain-receipt"
 export * from "./update-pending-invoices"
 export * from "./validate"
+export * from "./get-invoice-for-wallet-by-hash"
 
 import { WalletsRepository } from "@/services/mongoose"
 
 export const getWallet = async (walletId: WalletId) => {
   const wallets = WalletsRepository()
   return wallets.findById(walletId)
+}
+
+export const getWalletForAccountById = ({
+  accountId,
+  walletId,
+}: {
+  accountId: AccountId
+  walletId: WalletId
+}): Promise<Wallet | ApplicationError> => {
+  const wallets = WalletsRepository()
+
+  return wallets.findForAccountById({
+    accountId,
+    walletId,
+  })
 }
 
 export const listWalletsByAccountId = async (

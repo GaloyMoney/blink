@@ -178,6 +178,10 @@ interface IWalletsRepository {
     currency,
   }: NewWalletInfo): Promise<Wallet | RepositoryError>
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
+  findForAccountById(args: {
+    accountId: AccountId
+    walletId: WalletId
+  }): Promise<Wallet | RepositoryError>
   listByAccountId(accountId: AccountId): Promise<Wallet[] | RepositoryError>
   findAccountWalletsByAccountId(
     accountId: AccountId,

@@ -72,6 +72,19 @@ usd_amount=50
   payment_hash="$(echo $invoice | jq -r '.paymentHash')"
   [[ "${payment_hash}" != "null" ]] || exit 1
 
+  # Get invoice by hash
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_hash "$payment_hash" \
+    '{walletId: $wallet_id, paymentHash: $payment_hash}'
+  )
+  exec_graphql "$token_name" 'invoice-for-wallet-by-payment-hash' "$variables"
+  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.invoiceByPaymentHash.paymentHash')"
+  invoice_status="$(graphql_output '.data.me.defaultAccount.walletById.invoiceByPaymentHash.paymentStatus')"
+  [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
+  [[ "${invoice_status}" == "PENDING" ]] || exit 1
+
   # Receive payment
   lnd_outside_cli payinvoice -f \
     --pay_req "$payment_request"
@@ -81,6 +94,42 @@ usd_amount=50
 
   # Check for subscriber event
   check_for_ln_update "$payment_hash" || exit 1
+
+  # Get transaction by hash
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_hash "$payment_hash" \
+    '{walletId: $wallet_id, paymentHash: $payment_hash}'
+  )
+
+  exec_graphql "$token_name" 'transactions-for-wallet-by-payment-hash' "$variables"
+  query_payment_hash="$(graphql_output '.data.me.defaultAccount.walletById.transactionsByPaymentHash[0].initiationVia.paymentHash')"
+  [[ "${query_payment_hash}" == "${payment_hash}" ]] || exit 1
+  transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionsByPaymentHash[0].id')"
+
+  # Get transaction by tx id
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg transaction_id "$transaction_id" \
+    '{walletId: $wallet_id, transactionId: $transaction_id}'
+  )
+  exec_graphql "$token_name" 'transaction-for-wallet-by-id' "$variables"
+  query_transaction_id="$(graphql_output '.data.me.defaultAccount.walletById.transactionById.id')"
+  [[ "${query_transaction_id}" == "${transaction_id}" ]] || exit 1
+
+  # Ensure invoice status is paid
+  variables=$(
+    jq -n \
+    --arg wallet_id "$(read_value $btc_wallet_name)" \
+    --arg payment_hash "$payment_hash" \
+    '{walletId: $wallet_id, paymentHash: $payment_hash}'
+  )
+  exec_graphql "$token_name" 'invoice-for-wallet-by-payment-hash' "$variables"
+  invoice_status="$(graphql_output '.data.me.defaultAccount.walletById.invoiceByPaymentHash.paymentStatus')"
+  [[ "${invoice_status}" == "PAID" ]] || exit 1
+
 
   # Check for callback
   num_callback_events_after=$(cat .e2e-callback.log | grep "$account_id" | wc -l)

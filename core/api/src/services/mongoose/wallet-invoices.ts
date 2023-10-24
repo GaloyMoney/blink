@@ -2,10 +2,13 @@ import { WalletInvoice } from "./schema"
 
 import { parseRepositoryError } from "./utils"
 
+import { decodeInvoice } from "@/domain/bitcoin/lightning"
+
 import {
   CouldNotFindWalletInvoiceError,
   RepositoryError,
   UnknownRepositoryError,
+  WalletInvoiceMissingLnInvoiceError,
 } from "@/domain/errors"
 import { UsdPaymentAmount } from "@/domain/shared"
 
@@ -18,7 +21,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     pubkey,
     paid,
     usdAmount,
-    paymentRequest,
+    lnInvoice,
   }: WalletInvoicesPersistNewArgs): Promise<WalletInvoice | RepositoryError> => {
     try {
       const walletInvoice = await new WalletInvoice({
@@ -30,9 +33,9 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         paid,
         cents: usdAmount ? Number(usdAmount.amount) : undefined,
         currency: recipientWalletDescriptor.currency,
-        paymentRequest,
+        paymentRequest: lnInvoice.paymentRequest,
       }).save()
-      return walletInvoiceFromRaw(walletInvoice)
+      return ensureWalletInvoiceHasLnInvoice(walletInvoiceFromRaw(walletInvoice))
     } catch (err) {
       return parseRepositoryError(err)
     }
@@ -40,7 +43,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
   const markAsPaid = async (
     paymentHash: PaymentHash,
-  ): Promise<WalletInvoice | RepositoryError> => {
+  ): Promise<WalletInvoiceWithOptionalLnInvoice | RepositoryError> => {
     try {
       const walletInvoice = await WalletInvoice.findOneAndUpdate(
         { _id: paymentHash },
@@ -66,13 +69,32 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       if (!walletInvoice) {
         return new CouldNotFindWalletInvoiceError(paymentHash)
       }
-      return walletInvoiceFromRaw(walletInvoice)
+      return ensureWalletInvoiceHasLnInvoice(walletInvoiceFromRaw(walletInvoice))
     } catch (err) {
       return parseRepositoryError(err)
     }
   }
 
-  async function* yieldPending(): AsyncGenerator<WalletInvoice> | RepositoryError {
+  const findForWalletByPaymentHash = async ({
+    walletId,
+    paymentHash,
+  }: WalletInvoiceFindForWalletByPaymentHashArgs): Promise<
+    WalletInvoice | RepositoryError
+  > => {
+    try {
+      const walletInvoice = await WalletInvoice.findOne({ _id: paymentHash, walletId })
+      if (!walletInvoice) {
+        return new CouldNotFindWalletInvoiceError(paymentHash)
+      }
+      return ensureWalletInvoiceHasLnInvoice(walletInvoiceFromRaw(walletInvoice))
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
+  async function* yieldPending():
+    | AsyncGenerator<WalletInvoiceWithOptionalLnInvoice>
+    | RepositoryError {
     let pending
     try {
       pending = WalletInvoice.find({ paid: false }).cursor({
@@ -119,23 +141,44 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     persistNew,
     markAsPaid,
     findByPaymentHash,
+    findForWalletByPaymentHash,
     yieldPending,
     deleteByPaymentHash,
     deleteUnpaidOlderThan,
   }
 }
 
-const walletInvoiceFromRaw = (result: WalletInvoiceRecord): WalletInvoice => ({
-  paymentHash: result._id as PaymentHash,
-  secret: result.secret as SecretPreImage,
-  recipientWalletDescriptor: {
-    id: result.walletId as WalletId,
-    currency: result.currency as WalletCurrency,
-  },
-  selfGenerated: result.selfGenerated,
-  pubkey: result.pubkey as Pubkey,
-  paid: result.paid as boolean,
-  usdAmount: result.cents ? UsdPaymentAmount(BigInt(result.cents)) : undefined,
-  createdAt: new Date(result.timestamp.getTime()),
-  paymentRequest: result.paymentRequest as EncodedPaymentRequest,
-})
+const walletInvoiceFromRaw = (
+  result: WalletInvoiceRecord,
+): WalletInvoiceWithOptionalLnInvoice => {
+  const lnInvoice = result.paymentRequest
+    ? decodeInvoice(result.paymentRequest)
+    : undefined
+
+  if (lnInvoice instanceof Error) throw new Error("Corrupt payment request in db")
+
+  return {
+    paymentHash: result._id as PaymentHash,
+    secret: result.secret as SecretPreImage,
+    recipientWalletDescriptor: {
+      id: result.walletId as WalletId,
+      currency: result.currency as WalletCurrency,
+    },
+    selfGenerated: result.selfGenerated,
+    pubkey: result.pubkey as Pubkey,
+    paid: result.paid as boolean,
+    usdAmount: result.cents ? UsdPaymentAmount(BigInt(result.cents)) : undefined,
+    createdAt: new Date(result.timestamp.getTime()),
+    lnInvoice,
+  }
+}
+
+const ensureWalletInvoiceHasLnInvoice = (
+  walletInvoiceWithOptionalLnInvoice: WalletInvoiceWithOptionalLnInvoice,
+) => {
+  if (!walletInvoiceWithOptionalLnInvoice.lnInvoice) {
+    return new WalletInvoiceMissingLnInvoiceError()
+  }
+
+  return walletInvoiceWithOptionalLnInvoice as WalletInvoice
+}

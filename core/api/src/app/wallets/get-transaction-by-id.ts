@@ -4,6 +4,31 @@ import { checkedToLedgerTransactionId } from "@/domain/ledger"
 
 import { getNonEndUserWalletIds, LedgerService } from "@/services/ledger"
 
+export const getTransactionForWalletById = async ({
+  walletId,
+  transactionId: uncheckedTransactionId,
+}: {
+  walletId: WalletId
+  transactionId: string
+}): Promise<WalletTransaction | ApplicationError> => {
+  const ledger = LedgerService()
+
+  const ledgerTransactionId = checkedToLedgerTransactionId(uncheckedTransactionId)
+  if (ledgerTransactionId instanceof Error) return ledgerTransactionId
+
+  const ledgerTransaction = await ledger.getTransactionForWalletById({
+    walletId,
+    transactionId: ledgerTransactionId,
+  })
+  if (ledgerTransaction instanceof Error) return ledgerTransaction
+
+  return WalletTransactionHistory.fromLedger({
+    ledgerTransactions: [ledgerTransaction],
+    nonEndUserWalletIds: Object.values(await getNonEndUserWalletIds()),
+    memoSharingConfig,
+  }).transactions[0]
+}
+
 export const getTransactionById = async (
   id: string,
 ): Promise<WalletTransaction | ApplicationError> => {

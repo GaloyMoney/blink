@@ -10,6 +10,13 @@ type WalletInvoiceChecker = {
   shouldDecline: () => boolean
 }
 
+type WalletInvoiceStatus =
+  (typeof import("./index").WalletInvoiceStatus)[keyof typeof import("./index").WalletInvoiceStatus]
+
+type WalletInvoiceStatusChecker = {
+  status: (currentTime: Date) => WalletInvoiceStatus
+}
+
 type WalletInvoiceBuilderConfig = {
   dealerBtcFromUsd: BtcFromUsdFn
   dealerUsdFromBtc: UsdFromBtcFn
@@ -73,16 +80,11 @@ type WIBWithAmountState = WIBWithExpirationState & {
   usdAmount?: UsdPaymentAmount
 }
 
-type LnAndWalletInvoice = {
-  walletInvoice: WalletInvoice & { paymentRequest: EncodedPaymentRequest }
-  lnInvoice: LnInvoice
-}
-
 type WIBWithAmount = {
-  registerInvoice: () => Promise<LnAndWalletInvoice | LightningServiceError>
+  registerInvoice: () => Promise<WalletInvoice | LightningServiceError>
 }
 
-type WalletInvoice = {
+type WalletInvoiceWithOptionalLnInvoice = {
   paymentHash: PaymentHash
   secret: SecretPreImage
   selfGenerated: boolean
@@ -91,7 +93,11 @@ type WalletInvoice = {
   recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
   paid: boolean
   createdAt: Date
-  paymentRequest?: EncodedPaymentRequest
+  lnInvoice?: LnInvoice // LnInvoice is optional because some older invoices don't have it
+}
+
+type WalletInvoice = WalletInvoiceWithOptionalLnInvoice & {
+  lnInvoice: LnInvoice
 }
 
 type WalletAddress<S extends WalletCurrency> = {
@@ -140,7 +146,7 @@ type WalletInvoiceReceiverArgs = {
   receivedBtc: BtcPaymentAmount
   satsFee?: BtcPaymentAmount
 
-  walletInvoice: WalletInvoice
+  walletInvoice: WalletInvoiceWithOptionalLnInvoice
   recipientWalletDescriptors: AccountWalletDescriptors
 }
 
@@ -157,8 +163,11 @@ type WalletAddressReceiverArgs<S extends WalletCurrency> = {
   walletAddress: WalletAddress<S>
 }
 
-type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt"> & {
-  paymentRequest: EncodedPaymentRequest
+type WalletInvoicesPersistNewArgs = Omit<WalletInvoice, "createdAt">
+
+type WalletInvoiceFindForWalletByPaymentHashArgs = {
+  walletId: WalletId
+  paymentHash: PaymentHash
 }
 
 interface IWalletInvoicesRepository {
@@ -166,13 +175,19 @@ interface IWalletInvoicesRepository {
     invoice: WalletInvoicesPersistNewArgs,
   ) => Promise<WalletInvoice | RepositoryError>
 
-  markAsPaid: (paymentHash: PaymentHash) => Promise<WalletInvoice | RepositoryError>
+  markAsPaid: (
+    paymentHash: PaymentHash,
+  ) => Promise<WalletInvoiceWithOptionalLnInvoice | RepositoryError>
 
   findByPaymentHash: (
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoice | RepositoryError>
 
-  yieldPending: () => AsyncGenerator<WalletInvoice> | RepositoryError
+  findForWalletByPaymentHash: (
+    args: WalletInvoiceFindForWalletByPaymentHashArgs,
+  ) => Promise<WalletInvoice | RepositoryError>
+
+  yieldPending: () => AsyncGenerator<WalletInvoiceWithOptionalLnInvoice> | RepositoryError
 
   deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 

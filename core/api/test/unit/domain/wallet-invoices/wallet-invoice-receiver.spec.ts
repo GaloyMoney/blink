@@ -53,6 +53,22 @@ describe("WalletInvoiceReceiver", () => {
     [WalletCurrency.Usd]: recipientUsdWalletDescriptor,
   }
 
+  const mockLnInvoice: LnInvoice = {
+    destination: "destination" as Pubkey,
+    paymentHash: "paymentHash" as PaymentHash,
+    paymentRequest: "paymentRequest" as EncodedPaymentRequest,
+    paymentSecret: "paymentSecret" as PaymentIdentifyingSecret,
+    milliSatsAmount: 0 as MilliSatoshis,
+    description: "description",
+    routeHints: [] as Hop[][],
+    features: [] as LnInvoiceFeature[],
+    expiresAt: new Date(),
+    isExpired: false,
+    cltvDelta: null,
+    amount: null,
+    paymentAmount: null,
+  }
+
   describe("for btc invoice", () => {
     const btcInvoice: WalletInvoice = {
       paymentHash: "paymentHash" as PaymentHash,
@@ -63,6 +79,7 @@ describe("WalletInvoiceReceiver", () => {
       paid: false,
       recipientWalletDescriptor: partialRecipientBtcWalletDescriptor,
       createdAt: new Date(),
+      lnInvoice: mockLnInvoice,
     }
 
     it("returns correct amounts", async () => {
@@ -103,6 +120,7 @@ describe("WalletInvoiceReceiver", () => {
         usdAmount: UsdPaymentAmount(BigInt(100)),
         paid: false,
         createdAt: new Date(),
+        lnInvoice: mockLnInvoice,
       }
 
       it("returns correct amounts", async () => {
@@ -136,6 +154,7 @@ describe("WalletInvoiceReceiver", () => {
         pubkey: "pubkey" as Pubkey,
         paid: false,
         createdAt: new Date(),
+        lnInvoice: mockLnInvoice,
       }
 
       it("returns correct amounts", async () => {

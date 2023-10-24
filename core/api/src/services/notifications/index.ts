@@ -17,6 +17,7 @@ import {
 
 import { PubSubService } from "@/services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@/services/tracing"
+import { WalletInvoiceStatus } from "@/domain/wallet-invoices"
 
 export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
@@ -40,7 +41,7 @@ export const NotificationsService = (): INotificationsService => {
       })
       pubsub.publish({
         trigger: lnPaymentStatusTrigger,
-        payload: { status: "PAID" },
+        payload: { status: WalletInvoiceStatus.Paid },
       })
 
       // Notify the recipient (via GraphQL subscription if any)
@@ -54,7 +55,7 @@ export const NotificationsService = (): INotificationsService => {
           invoice: {
             walletId: recipientWalletId,
             paymentHash,
-            status: "PAID",
+            status: WalletInvoiceStatus.Paid,
           },
         },
       })

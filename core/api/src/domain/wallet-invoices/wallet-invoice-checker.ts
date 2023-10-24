@@ -3,7 +3,7 @@ import { CouldNotFindWalletInvoiceError } from "@/domain/errors"
 import { WalletCurrency } from "@/domain/shared"
 
 export const WalletInvoiceChecker = (
-  walletInvoice: WalletInvoice | RepositoryError,
+  walletInvoice: WalletInvoiceWithOptionalLnInvoice | RepositoryError,
 ): WalletInvoiceChecker => {
   const shouldDecline = (): boolean => {
     if (walletInvoice instanceof CouldNotFindWalletInvoiceError) {

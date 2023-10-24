@@ -51,7 +51,10 @@ export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   await runInParallel({
     iterator: pendingInvoices,
     logger,
-    processor: async (walletInvoice: WalletInvoice, index: number) => {
+    processor: async (
+      walletInvoice: WalletInvoiceWithOptionalLnInvoice,
+      index: number,
+    ) => {
       logger.trace("updating pending invoices %s in worker %d", index)
 
       return updateOrDeclinePendingInvoice({
@@ -158,7 +161,7 @@ const updateOrDeclinePendingInvoice = async ({
   walletInvoice,
   logger,
 }: {
-  walletInvoice: WalletInvoice
+  walletInvoice: WalletInvoiceWithOptionalLnInvoice
   logger: Logger
 }): Promise<boolean | ApplicationError> =>
   WalletInvoiceChecker(walletInvoice).shouldDecline()
@@ -173,7 +176,7 @@ const updatePendingInvoiceBeforeFinally = async ({
   walletInvoice,
   logger,
 }: {
-  walletInvoice: WalletInvoice
+  walletInvoice: WalletInvoiceWithOptionalLnInvoice
   logger: Logger
 }): Promise<boolean | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -419,7 +422,7 @@ export const updatePendingInvoice = wrapAsyncToRunInSpan({
     walletInvoice,
     logger,
   }: {
-    walletInvoice: WalletInvoice
+    walletInvoice: WalletInvoiceWithOptionalLnInvoice
     logger: Logger
   }): Promise<boolean | ApplicationError> => {
     const result = await updatePendingInvoiceBeforeFinally({

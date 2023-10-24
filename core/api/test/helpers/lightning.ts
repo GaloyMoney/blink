@@ -470,12 +470,12 @@ export const fundWalletIdFromLightning = async ({
       : await Wallets.addInvoiceForSelfForUsdWallet({ walletId, amount })
   if (invoice instanceof Error) return invoice
 
-  safePay({ lnd: lndOutside1, request: invoice.paymentRequest })
+  safePay({ lnd: lndOutside1, request: invoice.lnInvoice.paymentRequest })
 
   // TODO: we could use an event instead of a sleep
   await sleep(500)
 
-  const hash = getHash(invoice.paymentRequest)
+  const hash = getHash(invoice.lnInvoice.paymentRequest)
 
   expect(
     await Wallets.updatePendingInvoiceByPaymentHash({

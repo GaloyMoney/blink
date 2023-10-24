@@ -88,6 +88,29 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const getTransactionForWalletById = async ({
+    walletId,
+    transactionId,
+  }: {
+    walletId: WalletId
+    transactionId: LedgerTransactionId
+  }): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    try {
+      const _id = toObjectId<LedgerTransactionId>(transactionId)
+      const { results } = await MainBook.ledger({
+        account: liabilitiesWalletId,
+        _id,
+      })
+      if (results.length === 1) {
+        return translateToLedgerTx(results[0])
+      }
+      return new CouldNotFindTransactionError()
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const getTransactionsByHash = async (
     hash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
@@ -96,6 +119,28 @@ export const LedgerService = (): ILedgerService => {
         hash,
         account: liabilitiesMainAccount,
       })
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
+      return results.map((tx) => translateToLedgerTx(tx))
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const getTransactionsForWalletByPaymentHash = async ({
+    walletId,
+    paymentHash,
+  }: {
+    walletId: WalletId
+    paymentHash: PaymentHash
+  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    try {
+      const { results } = await MainBook.ledger({
+        account: liabilitiesWalletId,
+        hash: paymentHash,
+      })
+
       /* eslint @typescript-eslint/ban-ts-comment: "off" */
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
@@ -364,8 +409,8 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getWalletIdByTransactionHash = async (
-    hash: PaymentHash | OnChainTxHash,
+  const getWalletIdByPaymentHash = async (
+    hash: PaymentHash,
   ): Promise<WalletId | LedgerServiceError> => {
     const bankOwnerWalletId = await caching.getBankOwnerWalletId()
     const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
@@ -414,7 +459,9 @@ export const LedgerService = (): ILedgerService => {
     fns: {
       updateMetadataByHash,
       getTransactionById,
+      getTransactionForWalletById,
       getTransactionsByHash,
+      getTransactionsForWalletByPaymentHash,
       getTransactionsByWalletId,
       getTransactionsByWalletIds,
       getTransactionsByWalletIdAndContactUsername,
@@ -426,7 +473,7 @@ export const LedgerService = (): ILedgerService => {
       isOnChainReceiptTxRecordedForWallet,
       isOnChainTxHashRecorded,
       isLnTxRecorded,
-      getWalletIdByTransactionHash,
+      getWalletIdByPaymentHash,
       listWalletIdsWithPendingPayments,
       ...admin,
       ...send,
