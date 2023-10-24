@@ -12,8 +12,15 @@ import { NoTransactionToSettleError } from "@/services/ledger/domain/errors"
 import * as LedgerFacade from "@/services/ledger/facade"
 import { baseLogger } from "@/services/logger"
 import { BriaPayloadType } from "@/services/bria"
-import { EventAugmentationMissingError } from "@/services/bria/errors"
+import {
+  EventAugmentationMissingError,
+  UnknownPayloadTypeReceivedError,
+} from "@/services/bria/errors"
 import { addAttributesToCurrentSpan } from "@/services/tracing"
+
+// This should never compile if 'payloadType' is not never
+const assertUnreachable = (payloadType: never): Error =>
+  new UnknownPayloadTypeReceivedError(payloadType)
 
 export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainError> => {
   baseLogger.info(
@@ -25,7 +32,8 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
     ["event.type"]: event.payload.type,
   })
 
-  switch (event.payload.type) {
+  const payloadType = event.payload.type
+  switch (payloadType) {
     case BriaPayloadType.UtxoDetected:
       return utxoDetectedEventHandler({
         event: event.payload,
@@ -46,6 +54,9 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
         payoutInfo: event.augmentation.payoutInfo,
       })
 
+    case BriaPayloadType.PayoutCommitted:
+      return true
+
     case BriaPayloadType.PayoutCancelled:
       return payoutCancelledEventHandler({ event: event.payload })
 
@@ -62,7 +73,7 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
       return payoutSettledEventHandler({ event: event.payload })
 
     default:
-      return true
+      return assertUnreachable(payloadType)
   }
 }
 
