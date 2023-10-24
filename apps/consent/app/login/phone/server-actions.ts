@@ -12,6 +12,7 @@ import { env } from "@/env"
 ;("use server")
 
 import { handleAxiosError } from "@/app/error-handler"
+import { env } from "@/env"
 
 export const getCaptchaChallenge = async (
   _prevState: unknown,
