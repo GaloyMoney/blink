@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: adding otel in dashboard (#3416)...'
-      sha: 2c885fc3be23118777fed39d84249b60ee86b4c2
+      commitTitle: 'chore: rename ''runnable'' to ''prod'' in buck builds (#3413)'
+      sha: d632440749a22f4c43c4f2391aa2c6a6a09959e5
       tags:
-      - 0.15.33-2-g2c885fc3b
+      - 0.15.34-1-gd63244074
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: adding otel in dashboard (#3416)...'
-      sha: 2c885fc3be23118777fed39d84249b60ee86b4c2
+      commitTitle: 'chore: rename ''runnable'' to ''prod'' in buck builds (#3413)'
+      sha: d632440749a22f4c43c4f2391aa2c6a6a09959e5
       tags:
-      - 0.15.33-2-g2c885fc3b
+      - 0.15.34-1-gd63244074
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: adding otel in dashboard (#3416)...'
-      sha: 2c885fc3be23118777fed39d84249b60ee86b4c2
+      commitTitle: 'chore: rename ''runnable'' to ''prod'' in buck builds (#3413)'
+      sha: d632440749a22f4c43c4f2391aa2c6a6a09959e5
       tags:
-      - 0.15.33-2-g2c885fc3b
+      - 0.15.34-1-gd63244074
     path: ./
   path: ./graphql
 kind: LockConfig
