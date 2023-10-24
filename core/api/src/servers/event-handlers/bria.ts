@@ -21,9 +21,17 @@ import { addAttributesToCurrentSpan } from "@/services/tracing"
 const assertUnreachable = (payloadType: never): Error =>
   new UnknownPayloadTypeReceivedError(payloadType)
 
+const isBriaPayoutEvent = (payload: BriaPayload): payload is BriaPayoutPayload => {
+  return (payload as BriaPayoutPayload).id !== undefined
+}
+
 export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainError> => {
   baseLogger.info(
-    { sequence: event.sequence, type: event.payload.type },
+    {
+      sequence: event.sequence,
+      type: event.payload.type,
+      ...(isBriaPayoutEvent(event.payload) ? { id: event.payload.id } : {}),
+    },
     "bria event handler",
   )
   addAttributesToCurrentSpan({
