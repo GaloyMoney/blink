@@ -47,7 +47,7 @@ export const env = createEnv({
     KRATOS_CALLBACK_API_KEY: z.string().min(1),
 
     BRIA_HOST: z.string().min(1),
-    BRIA_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()),
+    BRIA_PORT: z.number().min(1).or(z.string()).pipe(z.coerce.number()).default(2742),
     BRIA_API_KEY: z.string().min(1),
 
     GEETEST_ID: z.string().min(1).optional(),
