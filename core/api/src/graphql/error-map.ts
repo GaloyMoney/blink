@@ -613,6 +613,7 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "ExpectedPayoutCommittedPayloadNotFoundError":
     case "ExpectedPayoutBroadcastPayloadNotFoundError":
     case "ExpectedPayoutSettledPayloadNotFoundError":
+    case "ExpectedPayoutCancelledPayloadNotFoundError":
     case "UnknownPayloadTypeReceivedError":
     case "ExpectedAddressInfoMissingInEventError":
     case "MissingCreatedAtKratosError":

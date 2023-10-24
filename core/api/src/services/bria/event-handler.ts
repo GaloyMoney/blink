@@ -2,6 +2,7 @@ import {
   EventAugmentationMissingError,
   ExpectedAddressInfoMissingInEventError,
   ExpectedPayoutBroadcastPayloadNotFoundError,
+  ExpectedPayoutCancelledPayloadNotFoundError,
   ExpectedPayoutCommittedPayloadNotFoundError,
   ExpectedPayoutSettledPayloadNotFoundError,
   ExpectedPayoutSubmittedPayloadNotFoundError,
@@ -32,6 +33,7 @@ export const BriaPayloadType = {
   PayoutCommitted: "payout_committed",
   PayoutBroadcast: "payout_broadcast",
   PayoutSettled: "payout_settled",
+  PayoutCancelled: "payout_cancelled",
 } as const
 
 const eventRepo = BriaEventRepo()
@@ -245,6 +247,22 @@ export const translate = (rawEvent: RawBriaEvent): BriaEvent | BriaEventError =>
         },
         txId: rawPayload.getTxId() as OnChainTxHash,
         vout: rawPayload.getVout() as OnChainTxVout,
+        address: rawPayload.getOnchainAddress() as OnChainAddress,
+      }
+      break
+    case RawBriaEvent.PayloadCase.PAYOUT_CANCELLED:
+      rawPayload = rawEvent.getPayoutCancelled()
+      if (rawPayload === undefined) {
+        return new ExpectedPayoutCancelledPayloadNotFoundError()
+      }
+
+      payload = {
+        type: BriaPayloadType.PayoutCancelled,
+        id: rawPayload.getId() as PayoutId,
+        satoshis: {
+          amount: BigInt(rawPayload.getSatoshis()),
+          currency: WalletCurrency.Btc,
+        },
         address: rawPayload.getOnchainAddress() as OnChainAddress,
       }
       break

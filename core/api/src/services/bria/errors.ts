@@ -16,6 +16,7 @@ export class ExpectedPayoutSubmittedPayloadNotFoundError extends BriaPayloadErro
 export class ExpectedPayoutCommittedPayloadNotFoundError extends BriaPayloadError {}
 export class ExpectedPayoutBroadcastPayloadNotFoundError extends BriaPayloadError {}
 export class ExpectedPayoutSettledPayloadNotFoundError extends BriaPayloadError {}
+export class ExpectedPayoutCancelledPayloadNotFoundError extends BriaPayloadError {}
 export class UnknownPayloadTypeReceivedError extends BriaPayloadError {}
 export class ExpectedAddressInfoMissingInEventError extends BriaPayloadError {}
 

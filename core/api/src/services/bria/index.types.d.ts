@@ -77,6 +77,14 @@ type PayoutSettled = {
   vout: OnChainTxVout
   address: OnChainAddress
 }
+
+type PayoutCancelled = {
+  type: "payout_cancelled"
+  id: PayoutId
+  satoshis: BtcPaymentAmount
+  address: OnChainAddress
+}
+
 type BriaPayload =
   | UtxoDetected
   | UtxoDropped
@@ -85,6 +93,7 @@ type BriaPayload =
   | PayoutCommitted
   | PayoutBroadcast
   | PayoutSettled
+  | PayoutCancelled
 
 type BriaEvent = {
   payload: BriaPayload
