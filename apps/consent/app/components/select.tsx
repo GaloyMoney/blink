@@ -26,7 +26,7 @@ const SelectComponent: React.FC<SelectProps> = ({
         {...selectProps}
         id={id}
         className="p-2 
-                  border-2 
+                  border-1 
                   border-solid 
                   border-gray-300 
                   rounded-sm 

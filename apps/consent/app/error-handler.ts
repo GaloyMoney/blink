@@ -6,12 +6,21 @@ interface ErrorResponse {
   responsePayload: null;
 }
 
+const errorMessages: { [key: string]: string } = {
+  UserCodeAttemptIpRateLimiterExceededError: "Your rate limit exceeded",
+};
+
 export const handleAxiosError = (err: any): ErrorResponse => {
   if (axios.isAxiosError(err) && err.response) {
-    console.error("Error:", err.response.data.error);
+    const errorCode = err.response?.data?.error?.name;
+    const errorMessage =
+      errorCode && errorMessages.hasOwnProperty(errorCode)
+        ? errorMessages[errorCode as keyof typeof errorMessages]
+        : errorCode || err?.response?.data?.error;
+    console.error("Error:", errorMessage);
     return {
       error: true,
-      message: err.response?.data?.error?.name || err?.response?.data?.error,
+      message: errorMessage,
       responsePayload: null,
     };
   }
