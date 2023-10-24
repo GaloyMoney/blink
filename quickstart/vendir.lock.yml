@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add payout cancelled event handler (#3414)...'
-      sha: 1bd48ea2a45af842a22a58d2f0045bbd78cc3666
+      commitTitle: 'chore: introduce bria event switch type guard (#3415)'
+      sha: 17fb5a9ce447e9154643b9e5690cc3fd4287a4e8
       tags:
-      - 0.15.31-2-g1bd48ea2a
+      - 0.15.32-1-g17fb5a9ce
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: add payout cancelled event handler (#3414)...'
-      sha: 1bd48ea2a45af842a22a58d2f0045bbd78cc3666
+      commitTitle: 'chore: introduce bria event switch type guard (#3415)'
+      sha: 17fb5a9ce447e9154643b9e5690cc3fd4287a4e8
       tags:
-      - 0.15.31-2-g1bd48ea2a
+      - 0.15.32-1-g17fb5a9ce
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: add payout cancelled event handler (#3414)...'
-      sha: 1bd48ea2a45af842a22a58d2f0045bbd78cc3666
+      commitTitle: 'chore: introduce bria event switch type guard (#3415)'
+      sha: 17fb5a9ce447e9154643b9e5690cc3fd4287a4e8
       tags:
-      - 0.15.31-2-g1bd48ea2a
+      - 0.15.32-1-g17fb5a9ce
     path: ./
   path: ./graphql
 kind: LockConfig
