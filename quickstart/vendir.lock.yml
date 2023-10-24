@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: bump flake (#3411)'
-      sha: ab462fb8d9601bce9f9f15c30a0e48fd4b7b281e
+      commitTitle: 'feat: add payout cancelled event handler (#3414)...'
+      sha: 1bd48ea2a45af842a22a58d2f0045bbd78cc3666
       tags:
-      - 0.15.30-2-gab462fb8d
+      - 0.15.31-2-g1bd48ea2a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: bump flake (#3411)'
-      sha: ab462fb8d9601bce9f9f15c30a0e48fd4b7b281e
+      commitTitle: 'feat: add payout cancelled event handler (#3414)...'
+      sha: 1bd48ea2a45af842a22a58d2f0045bbd78cc3666
       tags:
-      - 0.15.30-2-gab462fb8d
+      - 0.15.31-2-g1bd48ea2a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: bump flake (#3411)'
-      sha: ab462fb8d9601bce9f9f15c30a0e48fd4b7b281e
+      commitTitle: 'feat: add payout cancelled event handler (#3414)...'
+      sha: 1bd48ea2a45af842a22a58d2f0045bbd78cc3666
       tags:
-      - 0.15.30-2-gab462fb8d
+      - 0.15.31-2-g1bd48ea2a
     path: ./
   path: ./graphql
 kind: LockConfig
