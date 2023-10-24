@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: introduce bria event switch type guard (#3415)'
-      sha: 17fb5a9ce447e9154643b9e5690cc3fd4287a4e8
+      commitTitle: 'feat: adding otel in dashboard (#3416)...'
+      sha: 2c885fc3be23118777fed39d84249b60ee86b4c2
       tags:
-      - 0.15.32-1-g17fb5a9ce
+      - 0.15.33-2-g2c885fc3b
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: introduce bria event switch type guard (#3415)'
-      sha: 17fb5a9ce447e9154643b9e5690cc3fd4287a4e8
+      commitTitle: 'feat: adding otel in dashboard (#3416)...'
+      sha: 2c885fc3be23118777fed39d84249b60ee86b4c2
       tags:
-      - 0.15.32-1-g17fb5a9ce
+      - 0.15.33-2-g2c885fc3b
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: introduce bria event switch type guard (#3415)'
-      sha: 17fb5a9ce447e9154643b9e5690cc3fd4287a4e8
+      commitTitle: 'feat: adding otel in dashboard (#3416)...'
+      sha: 2c885fc3be23118777fed39d84249b60ee86b4c2
       tags:
-      - 0.15.32-1-g17fb5a9ce
+      - 0.15.33-2-g2c885fc3b
     path: ./
   path: ./graphql
 kind: LockConfig
