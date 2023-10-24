@@ -21,7 +21,7 @@
     "dotenv": "^16.3.1",
     "edge-csrf": "^1.0.4",
     "graphql": "^16.8.1",
-    "libphonenumber-js": "^1.10.47",
+    "libphonenumber-js": "^1.10.48",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
