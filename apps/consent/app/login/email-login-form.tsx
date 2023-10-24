@@ -14,7 +14,6 @@ import SecondaryButton from "../components/button/secondary-button-component"
 import { SubmitValue } from "../index.types"
 
 import { submitForm } from "./email-login-server-action"
-//  this page is for login via email
 interface LoginProps {
   login_challenge: string
 }

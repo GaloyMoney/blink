@@ -9,7 +9,6 @@ import { LoginEmailResponse } from "./email-login.types"
 
 import authApi from "@/services/galoy-auth"
 import { handleAxiosError } from "@/app/error-handler"
-//  this page is for login via email
 
 export async function submitForm(
   _prevState: unknown,
