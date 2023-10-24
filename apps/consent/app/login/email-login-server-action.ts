@@ -34,7 +34,7 @@ export async function submitForm(
   ) {
     throw new Error("Invalid Value")
   }
-  
+
   if (submitValue === SubmitValue.denyAccess) {
     console.log("User denied access")
     const response = await hydraClient.rejectOAuth2LoginRequest(
