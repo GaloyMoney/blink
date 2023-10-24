@@ -19,12 +19,12 @@ export_file(
 )
 
 export_file(
-  name = "package_runnable_tsc_build.py",
+  name = "package_prod_tsc_build.py",
   visibility = ["PUBLIC"],
 )
 
 export_file(
-  name = "package_runnable_tsc_build_bin.py",
+  name = "package_prod_tsc_build_bin.py",
   visibility = ["PUBLIC"],
 )
 

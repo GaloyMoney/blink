@@ -14,7 +14,7 @@ if __name__ == "__main__":
         help="Path to the workspace member package",
     )
     parser.add_argument(
-        "--runnable-dist-path",
+        "--prod-dist-path",
         help="Path to the workspace member package",
     )
     parser.add_argument(
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dist_path = os.path.join(
-        os.path.abspath(args.runnable_dist_path),
+        os.path.abspath(args.prod_dist_path),
         args.package_dir,
         "dist",
     )

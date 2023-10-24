@@ -2,8 +2,8 @@ load(
   "@toolchains//workspace-pnpm:macros.bzl",
   "build_node_modules",
   "tsc_build",
-  "runnable_tsc_build",
-  "runnable_tsc_build_bin",
+  "prod_tsc_build",
+  "prod_tsc_build_bin",
   "eslint",
   "typescript_check",
   "yaml_check",
@@ -62,12 +62,12 @@ tsc_build(
   additional_dist_files = [":protos", ":locales"]
 )
 
-runnable_tsc_build(
-  name = "runnable_build",
+prod_tsc_build(
+  name = "prod_build",
   visibility = ["PUBLIC"],
 )
 
-runnable_tsc_build_bin(
+prod_tsc_build_bin(
   name = "api",
   preload_file = "services/tracing.js",
   run_file = "servers/graphql-main-server.js",
