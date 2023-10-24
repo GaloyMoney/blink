@@ -9,6 +9,7 @@ export const env = createEnv({
     HYDRA_PUBLIC: z.string().default("http://127.0.0.1:4444"),
     NEXTAUTH_URL: z.string().default(""),
     NEXTAUTH_SECRET: z.string().default("thisismysecret"),
+    OTEL_EXPORTER_OTLP_ENDPOINT: z.string().default("http://localhost:4318"),
   },
   runtimeEnv: {
     CORE_URL: process.env.CORE_URL,
@@ -17,5 +18,6 @@ export const env = createEnv({
     CLIENT_ID: process.env.CLIENT_ID,
     CLIENT_SECRET: process.env.CLIENT_SECRET,
     HYDRA_PUBLIC: process.env.HYDRA_PUBLIC,
+    OTEL_EXPORTER_OTLP_ENDPOINT: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
   },
 })
