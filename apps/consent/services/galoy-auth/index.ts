@@ -72,8 +72,8 @@ const authApi = {
     validationCode: string,
     secCode: string,
     channel: string,
-    customHeaders?: object
-  ): Promise<any> => {
+    customHeaders?: object,
+  ) => {
     const response = await axiosInstance.post(
       "/phone/code",
       {
