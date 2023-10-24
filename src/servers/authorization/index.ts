@@ -204,7 +204,7 @@ authRouter.post("/create/device-account", async (req: Request, res: Response) =>
       username,
       password,
       ip,
-      deviceId: deviceIdRaw,
+      deviceId,
     })
     if (authToken instanceof Error) {
       recordExceptionInCurrentSpan({ error: authToken })

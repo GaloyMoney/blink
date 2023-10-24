@@ -30,6 +30,10 @@ import {
   wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
 
+// FLASH FORK: import ibex dependencies
+import { IbexRoutes } from "../IbexHelper/Routes"
+import { requestIBexPlugin } from "../IbexHelper/IbexHelper"
+
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
 import { MainBook, Transaction } from "./books"
@@ -226,9 +230,11 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<Satoshis | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
-      const { balance } = await MainBook.balance({
+      console.log("USD getWalletBalance starting")
+      let { balance } = await MainBook.balance({
         account: liabilitiesWalletId,
       })
+      console.log("USD MainBook.balance ran")
       if (balance < 0) {
         const dealerUsdWalletId = await caching.getDealerUsdWalletId()
         const dealerBtcWalletId = await caching.getDealerBtcWalletId()
@@ -243,6 +249,30 @@ export const LedgerService = (): ILedgerService => {
           })
         }
       }
+      console.log(
+        "URL String being sent to Ibex",
+        `${IbexRoutes.API_GetAccount}${walletId}`,
+      )
+      const GetIbexWalletBalance = await requestIBexPlugin(
+        "GET",
+        `${IbexRoutes.API_GetAccount}${walletId}`,
+        {},
+        {},
+      )
+      if (
+        GetIbexWalletBalance &&
+        GetIbexWalletBalance.data &&
+        GetIbexWalletBalance.data["data"]["balance"]
+      ) {
+        balance = GetIbexWalletBalance.data["data"]["balance"] * 100
+      } else {
+        console.log(
+          "USD getWalletBalance error",
+          JSON.stringify(GetIbexWalletBalance, null, 2),
+        )
+        console.log("Ibex balance", GetIbexWalletBalance?.data?.["data"]?.["balance"])
+      }
+      console.log("USD getWalletBalance returning", balance)
       return toSats(balance)
     } catch (err) {
       return new UnknownLedgerError(err)

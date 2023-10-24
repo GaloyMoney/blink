@@ -9,7 +9,14 @@ import PayoutSpeed from "@graphql/public/types/scalar/payout-speed"
 import SatsAmount from "@graphql/shared/types/scalar/sat-amount"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
 
-import { Wallets } from "@app"
+// import { Wallets } from "@app"
+
+// FLASH FORK: import ibex dependencies
+import { toCents } from "@domain/fiat"
+
+import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
+
+import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
 
 const OnChainUsdPaymentSendAsBtcDenominatedInput = GT.Input({
   name: "OnChainUsdPaymentSendAsBtcDenominatedInput",
@@ -64,22 +71,44 @@ const OnChainUsdPaymentSendAsBtcDenominatedMutation = GT.Field<
       return { errors: [{ message: speed.message }] }
     }
 
-    const result = await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount({
-      senderAccount: domainAccount,
-      senderWalletId: walletId,
-      amount,
-      address,
-      speed,
-      memo,
-    })
+    // FLASH FORK: use IBEX to send on-chain payment
+    // const result = await Wallets.payOnChainByWalletIdForUsdWalletAndBtcAmount({
+    //   senderAccount: domainAccount,
+    //   senderWalletId: walletId,
+    //   amount,
+    //   address,
+    //   speed,
+    //   memo,
+    // })
+    if (!domainAccount) throw new Error("Authentication required")
+    const PayOnChainAddress = await requestIBexPlugin(
+      "POST",
+      IbexRoutes.OnChainPayment,
+      {},
+      {
+        accountId: walletId,
+        address,
+        amount: toCents(amount),
+      },
+    )
+    if (
+      PayOnChainAddress &&
+      PayOnChainAddress.data &&
+      PayOnChainAddress.data["data"]["status"]
+    ) {
+      const result: PayOnChainByWalletIdResult = {
+        status: { value: PayOnChainAddress.data["data"]["status"] },
+        payoutId: PayOnChainAddress.data["data"]["transactionHub"]["id"],
+      }
 
-    if (result instanceof Error) {
-      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
-    }
+      if (result instanceof Error) {
+        return { status: "failed", errors: [mapAndParseErrorForGqlResponse(result)] }
+      }
 
-    return {
-      errors: [],
-      status: result.status.value,
+      return {
+        errors: [],
+        status: result.status.value,
+      }
     }
   },
 })

@@ -1,4 +1,4 @@
-import { Payments } from "@app"
+// import { Payments } from "@app"
 import { InputValidationError } from "@graphql/error"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
@@ -7,6 +7,13 @@ import LnPaymentRequest from "@graphql/shared/types/scalar/ln-payment-request"
 import Memo from "@graphql/shared/types/scalar/memo"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
 import dedent from "dedent"
+
+// FLASH FORK: import ibex dependencies
+import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+
+import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
+
+import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
 
 const LnInvoicePaymentInput = GT.Input({
   name: "LnInvoicePaymentInput",
@@ -60,20 +67,57 @@ const LnInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    const status = await Payments.payInvoiceByWalletId({
-      senderWalletId: walletId,
-      uncheckedPaymentRequest: paymentRequest,
-      memo: memo ?? null,
-      senderAccount: domainAccount,
-    })
+    // FLASH FORK: create IBEX invoice instead of Galoy invoice
+    // const status = await Payments.payInvoiceByWalletId({
+    //   senderWalletId: walletId,
+    //   uncheckedPaymentRequest: paymentRequest,
+    //   memo: memo ?? null,
+    //   senderAccount: domainAccount,
+    // })
 
-    if (status instanceof Error) {
-      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
-    }
+    if (!domainAccount) throw new Error("Authentication required")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let status: PaymentSendStatus | undefined = undefined
+    const PayLightningInvoice = await requestIBexPlugin(
+      "POST",
+      IbexRoutes.LightningInvoicePayment,
+      {},
+      {
+        bolt11: paymentRequest,
+        accountId: walletId,
+      },
+    )
 
-    return {
-      errors: [],
-      status: status.value,
+    if (
+      PayLightningInvoice &&
+      PayLightningInvoice.data &&
+      PayLightningInvoice.data["data"]["transaction"] &&
+      PayLightningInvoice.data["data"]["transaction"]["payment"] &&
+      PayLightningInvoice.data["data"]["transaction"]["payment"]["status"]
+    ) {
+      switch (
+        PayLightningInvoice.data["data"]["transaction"]["payment"]["status"]["id"]
+      ) {
+        case 1:
+          status = PaymentSendStatus.Pending
+          break
+        case 2:
+          status = PaymentSendStatus.Success
+          break
+        case 3:
+          status = PaymentSendStatus.Failure
+          break
+        default:
+          status = PaymentSendStatus.Pending
+          break
+      }
+      if (status instanceof Error) {
+        return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
+      }
+      return {
+        errors: [],
+        status: status.value,
+      }
     }
   },
 })

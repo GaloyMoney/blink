@@ -1,6 +1,6 @@
 import { InvalidFeeProbeStateError } from "@domain/bitcoin/lightning"
 
-import { Payments } from "@app"
+// import { Payments } from "@app"
 
 import { GT } from "@graphql/index"
 import WalletId from "@graphql/shared/types/scalar/wallet-id"
@@ -11,6 +11,11 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { checkedToWalletId } from "@domain/wallets"
 
 import { normalizePaymentAmount } from "../../../shared/root/mutation"
+
+// FLASH FORK: import ibex dependencies
+import { IbexRoutes } from "../../../../services/IbexHelper/Routes"
+
+import { requestIBexPlugin } from "../../../../services/IbexHelper/IbexHelper"
 
 const LnUsdInvoiceFeeProbeInput = GT.Input({
   name: "LnUsdInvoiceFeeProbeInput",
@@ -52,11 +57,33 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<
     if (walletIdChecked instanceof Error)
       return { errors: [mapAndParseErrorForGqlResponse(walletIdChecked)] }
 
-    const { result: feeSatAmount, error } =
-      await Payments.getLightningFeeEstimationForUsdWallet({
-        walletId,
-        uncheckedPaymentRequest: paymentRequest,
-      })
+    // FLASH FORK: create IBEX fee estimation instead of Galoy fee estimation
+    // const { result: feeSatAmount, error } =
+    //   await Payments.getLightningFeeEstimationForUsdWallet({
+    //     walletId,
+    //     uncheckedPaymentRequest: paymentRequest,
+    //   })
+    const feeSatAmount: PaymentAmount<WalletCurrency> = {
+      amount: BigInt(0),
+      currency: "BTC",
+    }
+    let error: Error | null = new Error("Unknown error")
+
+    const feeEndpoint = `${IbexRoutes.LightningInvoicePaymentFee}${paymentRequest}`
+
+    const PayLightningFeeInfo = await requestIBexPlugin("GET", feeEndpoint, {}, {})
+
+    console.log("FeeInfo", PayLightningFeeInfo)
+    if (
+      PayLightningFeeInfo.data &&
+      PayLightningFeeInfo.data["data"] &&
+      PayLightningFeeInfo.data["data"]["amount"]
+    ) {
+      feeSatAmount.amount = BigInt(
+        Math.round(PayLightningFeeInfo.data["data"]["amount"] / 1000),
+      )
+      error = null
+    }
 
     if (feeSatAmount !== null && error instanceof Error) {
       return {

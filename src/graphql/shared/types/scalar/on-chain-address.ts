@@ -21,7 +21,8 @@ const OnChainAddress = GT.Scalar({
 })
 
 function validOnChainAddressValue(value: string): OnChainAddress | InputValidationError {
-  const address = checkedToOnChainAddress({ network: NETWORK, value })
+  // TODO: this is a temporary hack to allow for mainnet addresses to be used in testnet
+  const address = checkedToOnChainAddress({ network: "mainnet", value })
   if (address instanceof Error)
     return new InputValidationError({ message: "Invalid value for OnChainAddress" })
   return address

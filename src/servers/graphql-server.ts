@@ -22,6 +22,8 @@ import jwksRsa from "jwks-rsa"
 
 import { parseUnknownDomainErrorFromUnknown } from "@domain/shared"
 
+import isValidSignature from "@services/IbexHelper/Signatures"
+
 import authRouter from "./authorization"
 import kratosCallback from "./event-handlers/kratos"
 import healthzHandler from "./middlewares/healthz"
@@ -102,6 +104,25 @@ export const startApolloServer = async ({
 
   app.use("/auth", authRouter)
   app.use("/kratos", kratosCallback)
+
+  // FLASH FORK: add IBEX webhook endpoint
+  app.post("/ibex-endpoint", (req, res) => {
+    console.log("Received webhook payload:", req.body)
+    const signature = req.headers["signature"] // Assuming the service sends a signature header
+    const payload = req.body
+
+    // Verify the webhook (for example, using the webhookSecret)
+    if (!isValidSignature(signature, payload, "secret")) {
+      res.status(403).send("Invalid signature")
+      return
+    }
+
+    // Handle the received data
+    console.log("Received webhook:", payload)
+
+    // Send a 200 OK response to acknowledge receipt
+    res.send("Received")
+  })
 
   // Health check
   app.get(

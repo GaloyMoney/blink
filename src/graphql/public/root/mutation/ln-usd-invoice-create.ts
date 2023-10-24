@@ -71,28 +71,19 @@ const LnUsdInvoiceCreateMutation = GT.Field({
         accountId: walletId,
         memo,
         expiration: expiresIn,
+        webhookUrl: "http://development.flashapp.me:4002/ibex-endpoint", // TODO: get from env
+        webhookSecret: "secret",
       },
     )
-    // FLASH FORK DEBUGGING -----------------------------------------------
-    console.log(
-      "DEBUGGING: CreateLightningInvoice from IBEX",
-      JSON.stringify(CreateLightningInvoice, null, 2),
-    )
-    // FLASH FORK DEBUGGING -----------------------------------------------
 
     if (
       CreateLightningInvoice &&
       CreateLightningInvoice.data &&
       CreateLightningInvoice.data["data"]["invoice"]
     ) {
-      // FLASH FORK DEBUGGING -----------------------------------------------
-      console.log("DEBUGGING: Starting formatting of CreateLightningInvoice.data")
-      // FLASH FORK DEBUGGING -----------------------------------------------
-
       const invoiceString = CreateLightningInvoice.data["data"]["invoice"]["bolt11"]
       const decodedInvoice = decodeInvoice(invoiceString)
       if (decodedInvoice instanceof Error) {
-        console.log("DEBUGGING: decodedInvoice instanceof Error", decodedInvoice)
         return { errors: [mapAndParseErrorForGqlResponse(decodedInvoice)] }
       }
       const lnInvoice = {
@@ -110,13 +101,7 @@ const LnUsdInvoiceCreateMutation = GT.Field({
         expiresAt: decodedInvoice.expiresAt,
         isExpired: decodedInvoice.isExpired,
       }
-
-      // FLASH FORK DEBUGGING -----------------------------------------------
-      console.log("DEBUGGING: lnInvoice", JSON.stringify(lnInvoice, null, 2))
-      // FLASH FORK DEBUGGING -----------------------------------------------
-
       if (lnInvoice instanceof Error) {
-        console.log("DEBUGGING: lnInvoice instanceof Error", lnInvoice)
         return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
       }
       return {
