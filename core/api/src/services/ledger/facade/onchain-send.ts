@@ -1,3 +1,5 @@
+import { JournalNotFoundError } from "medici"
+
 import { MainBook, Transaction } from "../books"
 
 import { getBankOwnerWalletId, getNonEndUserWalletIds } from "../caching"
@@ -7,7 +9,8 @@ import {
   toLedgerAccountDescriptor,
 } from "../domain"
 import { NoTransactionToSettleError, UnknownLedgerError } from "../domain/errors"
-import { persistAndReturnEntry } from "../helpers"
+import { persistAndReturnEntry, translateToLedgerJournal } from "../helpers"
+import { TransactionsMetadataRepository } from "../services"
 
 import { translateToLedgerTx } from ".."
 
@@ -96,6 +99,34 @@ export const setOnChainTxPayoutId = async ({
     }
     return true
   } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+}
+
+export const recordOnChainSendRevert = async ({
+  journalId,
+  payoutId,
+}: SetOnChainTxPayoutIdArgs): Promise<true | LedgerServiceError> => {
+  const reason = "Payment canceled"
+  try {
+    if (!isValidObjectId(journalId)) {
+      return new NoTransactionToUpdateError(JSON.stringify({ journalId }))
+    }
+
+    const savedEntry = await MainBook.void(journalId, reason)
+
+    const journalEntry = translateToLedgerJournal(savedEntry)
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
+    }))
+    await TransactionsMetadataRepository().persistAll(txsMetadataToPersist)
+
+    return true
+  } catch (err) {
+    if (err instanceof JournalNotFoundError) {
+      return new NoTransactionToUpdateError(JSON.stringify({ journalId, payoutId }))
+    }
+
     return new UnknownLedgerError(err)
   }
 }

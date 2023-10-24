@@ -5,7 +5,6 @@ import {
   CouldNotFindWalletFromOnChainAddressError,
   LessThanDustThresholdError,
   NoTransactionToUpdateError,
-  NotImplementedError,
 } from "@/domain/errors"
 
 import { NoTransactionToSettleError } from "@/services/ledger/domain/errors"
@@ -58,7 +57,13 @@ export const briaEventHandler = async (event: BriaEvent): Promise<true | DomainE
       return true
 
     case BriaPayloadType.PayoutCancelled:
-      return payoutCancelledEventHandler({ event: event.payload })
+      if (event.augmentation.payoutInfo === undefined) {
+        return new EventAugmentationMissingError()
+      }
+      return payoutCancelledEventHandler({
+        event: event.payload,
+        payoutInfo: event.augmentation.payoutInfo,
+      })
 
     case BriaPayloadType.PayoutBroadcast:
       if (event.augmentation.payoutInfo === undefined) {
@@ -148,18 +153,20 @@ export const payoutSubmittedEventHandler = async ({
 
 export const payoutCancelledEventHandler = async ({
   event,
+  payoutInfo,
 }: {
   event: PayoutCancelled
+  payoutInfo: PayoutAugmentation
 }): Promise<true | ApplicationError> => {
-  const txns = await LedgerFacade.getTransactionsByPayoutId(event.id)
-  if (txns instanceof Error) return txns
+  const res = await LedgerFacade.recordOnChainSendRevert({
+    journalId: payoutInfo.externalId as LedgerJournalId,
+    payoutId: event.id,
+  })
+  if (res instanceof NoTransactionToUpdateError) {
+    return true
+  }
 
-  if (txns.length !== 0)
-    return new NotImplementedError(
-      `Payout cancels not implemented as yet for PayoutId: ${event.id}`,
-    )
-
-  return true
+  return res
 }
 
 export const payoutBroadcastEventHandler = async ({
