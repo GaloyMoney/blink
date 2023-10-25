@@ -21,7 +21,7 @@ const OnChainUsdTxFeeAsBtcDenominatedQuery = GT.Field<null, GraphQLPublicContext
     address: { type: GT.NonNull(OnChainAddress) },
     amount: { type: GT.NonNull(SatAmount) },
     speed: {
-      type: PayoutSpeed,
+      type: GT.NonNull(PayoutSpeed),
       defaultValue: DomainPayoutSpeed.Fast,
     },
   },
