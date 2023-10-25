@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: better expose invoices through gql api (#3313)...'
-      sha: fe7f716b0b78b8ef2e7fbd7f5cf469dceac11c1f
+      commitTitle: 'fix: speed null in onchain queries/mutations (#3384)'
+      sha: fb70de99958d9aa3dd7650d98b2e0448da12ae26
       tags:
-      - 0.15.35-1-gfe7f716b0
+      - 0.15.36-2-gfb70de999
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: better expose invoices through gql api (#3313)...'
-      sha: fe7f716b0b78b8ef2e7fbd7f5cf469dceac11c1f
+      commitTitle: 'fix: speed null in onchain queries/mutations (#3384)'
+      sha: fb70de99958d9aa3dd7650d98b2e0448da12ae26
       tags:
-      - 0.15.35-1-gfe7f716b0
+      - 0.15.36-2-gfb70de999
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: better expose invoices through gql api (#3313)...'
-      sha: fe7f716b0b78b8ef2e7fbd7f5cf469dceac11c1f
+      commitTitle: 'fix: speed null in onchain queries/mutations (#3384)'
+      sha: fb70de99958d9aa3dd7650d98b2e0448da12ae26
       tags:
-      - 0.15.35-1-gfe7f716b0
+      - 0.15.36-2-gfb70de999
     path: ./
   path: ./graphql
 kind: LockConfig

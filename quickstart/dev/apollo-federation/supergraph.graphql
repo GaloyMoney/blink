@@ -1092,7 +1092,7 @@ input OnChainPaymentSendAllInput
 {
   address: OnChainAddress!
   memo: Memo
-  speed: PayoutSpeed = FAST
+  speed: PayoutSpeed! = FAST
   walletId: WalletId!
 }
 
@@ -1102,7 +1102,7 @@ input OnChainPaymentSendInput
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  speed: PayoutSpeed = FAST
+  speed: PayoutSpeed! = FAST
   walletId: WalletId!
 }
 
@@ -1132,7 +1132,7 @@ input OnChainUsdPaymentSendAsBtcDenominatedInput
   address: OnChainAddress!
   amount: SatAmount!
   memo: Memo
-  speed: PayoutSpeed = FAST
+  speed: PayoutSpeed! = FAST
   walletId: WalletId!
 }
 
@@ -1142,7 +1142,7 @@ input OnChainUsdPaymentSendInput
   address: OnChainAddress!
   amount: CentAmount!
   memo: Memo
-  speed: PayoutSpeed = FAST
+  speed: PayoutSpeed! = FAST
   walletId: WalletId!
 }
 
@@ -1340,9 +1340,9 @@ type Query
   lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): LnInvoicePaymentStatusPayload!
   me: User
   mobileVersions: [MobileVersions]
-  onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, walletId: WalletId!): OnChainTxFee!
-  onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed = FAST, walletId: WalletId!): OnChainUsdTxFee!
-  onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed = FAST, walletId: WalletId!): OnChainUsdTxFee!
+  onChainTxFee(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainTxFee!
+  onChainUsdTxFee(address: OnChainAddress!, amount: CentAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee!
+  onChainUsdTxFeeAsBtcDenominated(address: OnChainAddress!, amount: SatAmount!, speed: PayoutSpeed! = FAST, walletId: WalletId!): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion] @deprecated(reason: "TODO: remove. we don't need a non authenticated version of this query. the users can only do the query while authenticated")
 
   """Returns 1 Sat and 1 Usd Cent price for the given currency"""
