@@ -11,4 +11,4 @@ jobs:
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Tilt CI
-      run: nix develop -c bash -c "cd dev && xvfb-run tilt ci -- -test consent | tee tilt.log | grep test"
+      run: nix develop -c bash -c "cd dev && xvfb-run tilt ci -- --test consent"
