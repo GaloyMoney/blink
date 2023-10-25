@@ -1,8 +1,25 @@
 load("@toolchains//workspace-pnpm:macros.bzl",
+"dev_pnpm_task_binary",
+"dev_pnpm_task_test",
 "build_node_modules",
 "next_build",
 "next_build_bin",
 "eslint"
+)
+
+dev_pnpm_task_binary(
+  name = "dev",
+  command = "dev",
+)
+
+dev_pnpm_task_binary(
+  name = "open-cypress",
+  command = "cypress:open",
+)
+
+dev_pnpm_task_test(
+  name = "cypress",
+  command = "cypress:run",
 )
 
 export_file(

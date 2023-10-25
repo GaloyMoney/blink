@@ -72,6 +72,8 @@ services:
     image: ghcr.io/apollographql/router:v1.25.0
     ports:
     - 4004:4004
+    extra_hosts:
+      - "bats-tests:host-gateway"
     environment:
     - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/apollo-federation/supergraph.graphql
     - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/apollo-federation/router.yaml

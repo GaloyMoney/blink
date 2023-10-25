@@ -2,8 +2,8 @@
 
 set -e
 
-DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-source "${DIR}/helpers.sh"
+DEV_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
+source "${DEV_DIR}/helpers/cli.sh"
 
 echo "Seeding some regtest blocks..."
 

@@ -46,7 +46,7 @@ declare namespace Cypress {
 }
 
 Cypress.Commands.add("getOTP", (email) => {
-  const query = `docker exec -i api-kratos-pg-1 psql -U dbuser -d default -t -c "SELECT body FROM courier_messages WHERE recipient='${email}' ORDER BY created_at DESC LIMIT 1;"`
+  const query = `docker exec -i galoy-dev-kratos-pg-1 psql -U dbuser -d default -t -c "SELECT body FROM courier_messages WHERE recipient='${email}' ORDER BY created_at DESC LIMIT 1;"`
   cy.exec(query).then((result) => {
     const rawMessage = result.stdout
     const otpMatch = rawMessage.match(/(\d{6})/)

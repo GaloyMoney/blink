@@ -4,10 +4,10 @@ import { z } from "zod"
 export const env = createEnv({
   server: {
     HYDRA_ADMIN_URL: z.string().default("http://localhost:4445"),
-    CORE_AUTH_URL: z.string().default("http://localhost:4002/auth"),
+    CORE_AUTH_URL: z.string().default("http://localhost:4455/auth"),
   },
   shared: {
-    GRAPHQL_ENDPOINT: z.string().default("http://localhost:4002/graphql"),
+    GRAPHQL_ENDPOINT: z.string().default("http://localhost:4455/graphql"),
   },
   runtimeEnv: {
     CORE_AUTH_URL: process.env.CORE_AUTH_URL,

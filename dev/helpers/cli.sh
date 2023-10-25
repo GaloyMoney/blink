@@ -13,3 +13,14 @@ bitcoin_signer_cli() {
 bria_cli() {
   docker exec "${COMPOSE_PROJECT_NAME}-bria-1" bria "$@"
 }
+
+hydra_cli() {
+  docker exec "${COMPOSE_PROJECT_NAME}-hydra-1" hydra "$@"
+}
+
+kratos_pg() {
+  DB_USER="dbuser"
+  DB_NAME="default"
+
+  docker exec "${COMPOSE_PROJECT_NAME}-kratos-pg-1" psql -U $DB_USER -d $DB_NAME -t -c "$@"
+}
