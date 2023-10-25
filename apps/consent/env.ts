@@ -10,7 +10,7 @@ export const env = createEnv({
     GRAPHQL_ENDPOINT: z.string().default("http://localhost:4455/graphql"),
     OTEL_EXPORTER_OTLP_ENDPOINT: z.string().default("http://localhost:4318"),
     TRACING_SERVICE_NAME: z.string().default("consent"),
-    NODE_ENV: z.string().default("development"),
+    NODE_ENV: z.string(),
   },
   runtimeEnv: {
     CORE_AUTH_URL: process.env.CORE_AUTH_URL,
