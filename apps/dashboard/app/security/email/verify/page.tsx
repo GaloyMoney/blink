@@ -6,23 +6,22 @@ import {
   deleteEmail,
   emailRegistrationInitiate,
 } from "@/services/graphql/mutations/email";
+import { useFormStatus } from "react-dom";
 
 type VerifyEmailProp = {
   emailRegistrationId: string | null | undefined;
 };
 
-export default async function VerfiyEmail({
+export default async function VerifyEmail({
   searchParams,
 }: {
   searchParams: VerifyEmailProp;
 }) {
   let { emailRegistrationId } = searchParams;
-
   const session = await getServerSession(authOptions);
   const token = session?.accessToken;
 
-
-  // this is if user has address but not verified 
+  // this is if user has address but not verified
   if (!emailRegistrationId || typeof emailRegistrationId !== "string") {
     const email = session?.userData.data.me?.email?.address;
     if (!email || typeof email !== "string" || !token) {

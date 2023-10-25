@@ -4,6 +4,8 @@ import { authOptions } from "../../../api/auth/[...nextauth]/route";
 import ContentContainer from "@/components/content-container";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 // @ts-ignore-next-line no-implicit-any error
+import { experimental_useFormStatus as useFormStatus } from "react-dom";
+// @ts-ignore-next-line no-implicit-any error
 import { experimental_useFormState as useFormState } from "react-dom";
 import { emailRegisterValidateServerAction } from "../../server-actions";
 
@@ -21,12 +23,14 @@ import InfoOutlined from "@mui/icons-material/InfoOutlined";
 import { CheckBox } from "@mui/icons-material";
 import Link from "next/link";
 
-type VerfiyEmailFormProps = {
+type VerifyEmailFormProps = {
   emailRegistrationId: string;
 };
-export default function VerfiyEmailForm({
+export default function VerifyEmailForm({
   emailRegistrationId,
-}: VerfiyEmailFormProps) {
+}: VerifyEmailFormProps) {
+  const { pending } = useFormStatus();
+
   const [state, formAction] = useFormState(emailRegisterValidateServerAction, {
     error: null,
     message: null,
@@ -78,7 +82,7 @@ export default function VerfiyEmailForm({
             {state.error ? (
               <FormHelperText>
                 <InfoOutlined />
-                {state.message}
+                {state.message.message}
               </FormHelperText>
             ) : null}
 
@@ -93,14 +97,13 @@ export default function VerfiyEmailForm({
             >
               <Link href={"/security"}>Cancel</Link>
               <Button
+                loading={pending}
                 type="submit"
                 name="submit"
                 sx={{
                   marginTop: "2em",
                   display: "flex",
                   gap: "1em",
-                  backgroundColor: "orange",
-                  color: "black",
                 }}
               >
                 Confirm <ArrowForwardIcon></ArrowForwardIcon>

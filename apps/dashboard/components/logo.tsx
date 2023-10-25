@@ -13,7 +13,7 @@ const Logo: React.FC = () => {
         marginBottom: "1em",
       }}
     >
-      <style>{".st1{fill:var(--inputColor)}"}</style>
+      <style>{".st1{fill:var(--logoInputColor)}"}</style>
       <linearGradient
         id="SVGID_1_"
         x1={44.737}

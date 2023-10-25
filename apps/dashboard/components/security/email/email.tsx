@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+
+"use client"
 import { Button, Typography, Card } from "@mui/joy";
 import { Box } from "@mui/joy";
-import EmailIcon from "@mui/icons-material/Email";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Link from "next/link";
 
@@ -11,9 +12,13 @@ type EmailDataProps = {
   readonly verified?: boolean | null | undefined;
 };
 
-function EmailSettings(emailData: EmailDataProps) {
+type EmailSettingsProps = {
+  emailData: EmailDataProps;
+};
+
+function EmailSettings({ emailData }: EmailSettingsProps) {
   return (
-    <Card
+    <Box
       sx={{
         display: "flex",
         flexDirection: "row",
@@ -35,32 +40,53 @@ function EmailSettings(emailData: EmailDataProps) {
             gap: "0.5em",
           }}
         >
-          <EmailIcon />
-          <Typography>Email</Typography>
+          <MailOutlineIcon
+            sx={{
+              fontSize: "1.8rem",
+            }}
+          />
+          <Typography level="h4">Email</Typography>
         </Box>
-        <Typography>Use email to login in your Account</Typography>
+        <Typography>Use email to login in your Account </Typography>
+        <Box
+          sx={{
+            display: { xs: "block", md: "none" },
+          }}
+        >
+          <Typography>{emailData?.address}</Typography>
+        </Box>
       </Box>
 
-      <Box>
+      <Box
+        sx={{
+          display: { xs: "none", md: "block" },
+        }}
+      >
         <Typography>{emailData?.address}</Typography>
       </Box>
 
       <Box>
         {emailData?.verified ? (
           <Link href={""}>
-            <Button color="danger">{<DeleteIcon />}</Button>
+            <Button variant="outlined" color="danger">
+              {<DeleteIcon />}
+            </Button>
           </Link>
         ) : emailData?.address ? (
           <Link href={"/security/email/verify"}>
-            <Button color="success">Verify</Button>
+            <Button variant="outlined" color="success">
+              Verify
+            </Button>
           </Link>
         ) : (
           <Link href={"/security/email/add"}>
-            <Button color="primary">Add</Button>
+            <Button variant="outlined" color="primary">
+              Add
+            </Button>
           </Link>
         )}
       </Box>
-    </Card>
+    </Box>
   );
 }
 

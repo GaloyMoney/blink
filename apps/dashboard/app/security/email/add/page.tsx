@@ -3,6 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../../api/auth/[...nextauth]/route";
 import ContentContainer from "@/components/content-container";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+
+// @ts-ignore-next-line no-implicit-any error
+import { experimental_useFormStatus as useFormStatus } from "react-dom";
 // @ts-ignore-next-line no-implicit-any error
 import { experimental_useFormState as useFormState } from "react-dom";
 import { emailRegisterInitiateServerAction } from "../../server-actions";
@@ -27,7 +30,7 @@ export default function AddEmail() {
     message: null,
     responsePayload: {},
   });
-
+    const { pending } = useFormStatus();
   return (
     <main
       style={{
@@ -44,9 +47,11 @@ export default function AddEmail() {
           justifyContent: "center",
           alignItems: "center",
           width: "30em",
+          gap: "1em",
         }}
       >
-        <Typography level="h3">Add Email Address</Typography>
+        <Typography level="h4">Add Email Address</Typography>
+
         <FormControl
           sx={{
             width: "90%",
@@ -82,14 +87,13 @@ export default function AddEmail() {
             >
               <Link href={"/security"}> Cancel</Link>
               <Button
+                loading={pending}
                 type="submit"
                 name="submit"
                 sx={{
                   marginTop: "2em",
                   display: "flex",
                   gap: "1em",
-                  backgroundColor: "orange",
-                  color: "black",
                 }}
               >
                 Send Code <ArrowForwardIcon></ArrowForwardIcon>
