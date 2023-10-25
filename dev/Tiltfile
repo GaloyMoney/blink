@@ -1,5 +1,14 @@
 groups = {
+    "auth": [
+        "oathkeeper",
+        "hydra",
+        "hydra-migrate",
+        "hydra-pg",
+        "kratos",
+        "kratos-pg",
+    ],
     "core": [
+        "apollo-router",
         "mongodb",
         "redis",
     ],
@@ -65,6 +74,8 @@ for service in groups["tracing"]:
     dc_resource(service, labels = ["tracing"])
 for service in groups["core"]:
     dc_resource(service, labels = ["core"])
+for service in groups["auth"]:
+    dc_resource(service, labels = ["auth"])
 
 local_resource(
   name='init-onchain',

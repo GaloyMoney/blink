@@ -1,6 +1,82 @@
 ---
 version: "3"
 services:
+  oathkeeper:
+    image: oryd/oathkeeper:v0.40.6-distroless
+    ports:
+      - "4455:4455"
+      - "4456:4456"
+    extra_hosts:
+      - "bats-tests:host-gateway"
+    command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+  hydra:
+    image: oryd/hydra:v2.1.2
+    ports:
+      - "4444:4444" #! Public port
+      - "4445:4445" #! Admin port
+    command: serve -c /home/ory/hydra.yml all --dev
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+    environment:
+      - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    restart: unless-stopped
+    depends_on:
+      - hydra-migrate
+      - hydra-pg
+
+  hydra-migrate:
+    image: oryd/hydra:v2.1.2
+    environment:
+      - DSN=postgres://hydra:secret@hydra-pg:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: migrate -c /home/ory/hydra.yml sql -e --yes
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+
+    restart: on-failure
+    depends_on:
+      - hydra-pg
+
+  hydra-pg:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=hydra
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=hydra
+  kratos:
+    image: oryd/kratos:v1.0.0
+    extra_hosts:
+      - "bats-tests:host-gateway"
+    ports:
+      - "4433:4433" #! public
+      - "4434:4434" #! admin
+    entrypoint: sh -c
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
+    environment:
+      DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+    links:
+      - kratos-pg:kratos-pg
+    volumes:
+      - ${HOST_PROJECT_PATH:-.}/config/ory:/home/ory
+  kratos-pg:
+    image: postgres:14.1
+    ports: []
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=default
+  apollo-router:
+    image: ghcr.io/apollographql/router:v1.25.0
+    ports:
+    - 4004:4004
+    environment:
+    - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/apollo-federation/supergraph.graphql
+    - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/apollo-federation/router.yaml
+    volumes:
+    - ${HOST_PROJECT_PATH:-.}/../core/api/dev:/repo/dev
   redis:
     image: redis:7.0.8
     ports:
