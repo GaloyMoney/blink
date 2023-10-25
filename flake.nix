@@ -3,18 +3,24 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.05";
     flake-utils.url = "github:numtide/flake-utils";
+
+    # Pin Tilt to version 0.33.5 until an updated build of Nix's upstream
+    # unstable pkgs addresses a build error.
+    #
+    # References: https://github.com/tilt-dev/tilt/pull/6214
+    # References: https://github.com/NixOS/nixpkgs/issues/260411
+    # See: https://lazamar.co.uk/nix-versions/?channel=nixos-unstable&package=tilt
+    tilt-pin-pkgs.url = "https://github.com/NixOS/nixpkgs/archive/e1ee359d16a1886f0771cc433a00827da98d861c.tar.gz";
   };
 
   outputs = {
     self,
     nixpkgs,
-    nixpkgs-stable,
     flake-utils,
+    tilt-pin-pkgs,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
-      pkgsStable = import nixpkgs-stable { system = system; };
       overlays = [
         (self: super: {
           nodejs = super.nodejs_20;
@@ -22,10 +28,10 @@
           yarn = super.yarn.override {
             nodejs = super.nodejs_20;
           };
-          tilt = pkgsStable.tilt;
         })
       ];
       pkgs = import nixpkgs {inherit overlays system;};
+      tilt-pin = import tilt-pin-pkgs {inherit system;};
 
       buck2NativeBuildInputs = with pkgs; [
         buck2
@@ -40,7 +46,7 @@
         [
           envsubst
           nodejs
-          tilt
+          tilt-pin.tilt
           yarn
           typescript
           bats
