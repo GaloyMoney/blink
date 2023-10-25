@@ -54,7 +54,11 @@
           jq
           ytt
         ]
-        ++ buck2NativeBuildInputs;
+        ++ buck2NativeBuildInputs
+        ++ lib.optionals pkgs.stdenv.isLinux [
+          xvfb-run
+          cypress
+        ];
 
       buck2Version = pkgs.buck2.version;
       postPatch = with pkgs; ''
