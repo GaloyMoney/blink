@@ -85,15 +85,14 @@ type PayoutCancelled = {
   address: OnChainAddress
 }
 
-type BriaPayload =
-  | UtxoDetected
-  | UtxoDropped
-  | UtxoSettled
+type BriaPayoutPayload =
   | PayoutSubmitted
   | PayoutCommitted
   | PayoutBroadcast
   | PayoutSettled
   | PayoutCancelled
+
+type BriaPayload = UtxoDetected | UtxoDropped | UtxoSettled | BriaPayoutPayload
 
 type BriaEvent = {
   payload: BriaPayload

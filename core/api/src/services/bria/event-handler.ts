@@ -38,10 +38,9 @@ export const BriaPayloadType = {
 
 const eventRepo = BriaEventRepo()
 
-const assertUnreachable = (payloadCase: never): Error => {
-  // This should never compile if 'payloadCase' is not never
-  return new UnknownPayloadTypeReceivedError(payloadCase)
-}
+// This should never compile if 'payloadCase' is not never
+const assertUnreachable = (payloadCase: never): Error =>
+  new UnknownPayloadTypeReceivedError(payloadCase)
 
 export const eventDataHandler =
   (eventHandler: BriaEventHandler) =>
