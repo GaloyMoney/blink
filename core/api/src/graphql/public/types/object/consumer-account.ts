@@ -10,7 +10,7 @@ import CallbackEndpoint from "./callback-endpoint"
 
 import { NotificationSettings } from "./notification-settings"
 
-import { Accounts, Prices, Wallets } from "@/app"
+import { Accounts, Payments, Prices, Wallets } from "@/app"
 
 import {
   majorToMinorUnit,
@@ -158,6 +158,20 @@ const ConsumerAccount = GT.Object<Account, GraphQLPublicContextAuth>({
       resolve: (source) => source.quiz,
     },
 
+    quizRewardsEnabled: {
+      type: GT.NonNull(GT.Boolean),
+      resolve: async (source) => {
+        const rewardsEnabled = await Payments.isAccountEligibleForEarnPayment({
+          accountId: source.id,
+        })
+
+        if (rewardsEnabled instanceof Error) {
+          throw mapError(rewardsEnabled)
+        }
+
+        return rewardsEnabled
+      },
+    },
     transactions: {
       description:
         "A list of all transactions associated with walletIds optionally passed.",

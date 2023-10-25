@@ -29,7 +29,13 @@ export const addEarn = async ({
 }: {
   quizQuestionId: string
   accountId: string
-}): Promise<QuizQuestion | ApplicationError> => {
+}): Promise<
+  | {
+      quizQuestion: Quiz
+      rewardPaymentError?: ApplicationError
+    }
+  | ApplicationError
+> => {
   const accountId = checkedToAccountId(accountIdRaw)
   if (accountId instanceof Error) return accountId
 
@@ -53,12 +59,25 @@ export const addEarn = async ({
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
 
+  const isFirstTimeAnsweringQuestion =
+    await RewardsRepository(accountId).add(quizQuestionId)
+  if (isFirstTimeAnsweringQuestion instanceof Error) return isFirstTimeAnsweringQuestion
+
+  const quizQuestion: Quiz = {
+    id: quizQuestionId,
+    amount: amount,
+    completed: true,
+  }
+
   const validatedPhoneMetadata = PhoneMetadataAuthorizer(
     rewardsConfig.phoneMetadataValidationSettings,
   ).authorize(user.phoneMetadata)
 
   if (validatedPhoneMetadata instanceof Error) {
-    return new InvalidPhoneForRewardError(validatedPhoneMetadata.name)
+    return {
+      quizQuestion,
+      rewardPaymentError: new InvalidPhoneForRewardError(validatedPhoneMetadata.name),
+    }
   }
 
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
@@ -67,26 +86,43 @@ export const addEarn = async ({
   const validatedIPMetadata = IPMetadataAuthorizer(
     rewardsConfig.ipMetadataValidationSettings,
   ).authorize(accountIP.metadata)
+
   if (validatedIPMetadata instanceof Error) {
     if (validatedIPMetadata instanceof MissingIPMetadataError)
-      return new InvalidIpMetadataError(validatedIPMetadata)
+      return {
+        quizQuestion,
+        rewardPaymentError: new InvalidIpMetadataError(validatedIPMetadata),
+      }
 
-    if (validatedIPMetadata instanceof UnauthorizedIPError) return validatedIPMetadata
+    if (validatedIPMetadata instanceof UnauthorizedIPError)
+      return {
+        quizQuestion,
+        rewardPaymentError: validatedIPMetadata,
+      }
 
-    return new UnknownRepositoryError("add earn error")
+    return {
+      quizQuestion,
+      rewardPaymentError: new UnknownRepositoryError("add earn error"),
+    }
   }
 
   const recipientWallets = await WalletsRepository().listByAccountId(accountId)
-  if (recipientWallets instanceof Error) return recipientWallets
+  if (recipientWallets instanceof Error)
+    return {
+      quizQuestion,
+      rewardPaymentError: recipientWallets,
+    }
 
   const recipientBtcWallet = recipientWallets.find(
     (wallet) => wallet.currency === WalletCurrency.Btc,
   )
-  if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
-  const recipientWalletId = recipientBtcWallet.id
+  if (recipientBtcWallet === undefined)
+    return {
+      quizQuestion,
+      rewardPaymentError: new NoBtcWalletExistsForAccountError(),
+    }
 
-  const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
-  if (shouldGiveReward instanceof Error) return shouldGiveReward
+  const recipientWalletId = recipientBtcWallet.id
 
   const payment = await intraledgerPaymentSendWalletIdForBtcWallet({
     senderWalletId: funderWalletId,
@@ -95,7 +131,42 @@ export const addEarn = async ({
     memo: quizQuestionId,
     senderAccount: funderAccount,
   })
-  if (payment instanceof Error) return payment
 
-  return { id: quizQuestionId, earnAmount: amount }
+  return {
+    quizQuestion,
+    rewardPaymentError: payment instanceof Error ? payment : undefined,
+  }
+}
+
+export const isAccountEligibleForEarnPayment = async ({
+  accountId,
+}: {
+  accountId: AccountId
+}): Promise<boolean | ApplicationError> => {
+  const recipientAccount = await AccountsRepository().findById(accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
+  const user = await UsersRepository().findById(recipientAccount.kratosUserId)
+  if (user instanceof Error) return user
+
+  const rewardsConfig = getRewardsConfig()
+
+  const validatedPhoneMetadata = PhoneMetadataAuthorizer(
+    rewardsConfig.phoneMetadataValidationSettings,
+  ).authorize(user.phoneMetadata)
+
+  if (validatedPhoneMetadata instanceof Error) {
+    return false
+  }
+
+  const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
+  if (accountIP instanceof Error) return accountIP
+
+  const validatedIPMetadata = IPMetadataAuthorizer(
+    rewardsConfig.ipMetadataValidationSettings,
+  ).authorize(accountIP.metadata)
+
+  if (validatedIPMetadata instanceof Error) return false
+
+  return true
 }
