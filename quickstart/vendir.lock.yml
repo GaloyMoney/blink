@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: speed null in onchain queries/mutations (#3384)'
-      sha: fb70de99958d9aa3dd7650d98b2e0448da12ae26
+      commitTitle: 'refactor: complete PayoutCancelled handler implementation (#3418)...'
+      sha: 8a4a441fd3a164fac99fe1bbb168afe550ddd2d1
       tags:
-      - 0.15.36-2-gfb70de999
+      - 0.15.37-1-g8a4a441fd
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: speed null in onchain queries/mutations (#3384)'
-      sha: fb70de99958d9aa3dd7650d98b2e0448da12ae26
+      commitTitle: 'refactor: complete PayoutCancelled handler implementation (#3418)...'
+      sha: 8a4a441fd3a164fac99fe1bbb168afe550ddd2d1
       tags:
-      - 0.15.36-2-gfb70de999
+      - 0.15.37-1-g8a4a441fd
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: speed null in onchain queries/mutations (#3384)'
-      sha: fb70de99958d9aa3dd7650d98b2e0448da12ae26
+      commitTitle: 'refactor: complete PayoutCancelled handler implementation (#3418)...'
+      sha: 8a4a441fd3a164fac99fe1bbb168afe550ddd2d1
       tags:
-      - 0.15.36-2-gfb70de999
+      - 0.15.37-1-g8a4a441fd
     path: ./
   path: ./graphql
 kind: LockConfig
