@@ -113,6 +113,26 @@
           '';
         };
 
+      tscDockerImage = args:
+        pkgs.dockerTools.buildImage {
+          name = "${args.pkgName}";
+          tag = "latest";
+
+          fromImage =  "gcr.io/distroless/static-debian11";
+          # fromImageName = null;
+          # fromImageTag = "latest";
+
+          copyToRoot = pkgs.buildEnv {
+            name = "image-root";
+            paths = [ (tscDerivation args) ];  # <-- Here's the change!
+            pathsToLink = [ "/bin" "/lib" ];
+          };
+
+          config = {
+            Cmd = [ "/bin/run" ];
+          };
+        };
+
       nextDerivation = {
         pkgName,
         pathPrefix ? "apps",
@@ -157,6 +177,7 @@
       with pkgs; {
         packages = {
           api = tscDerivation {pkgName = "api";};
+          apiDocker = tscDockerImage {pkgName = "api";};
           api-trigger = tscDerivation {pkgName = "api-trigger";};
           api-ws-server = tscDerivation {pkgName = "api-ws-server";};
           api-exporter = tscDerivation {pkgName = "api-exporter";};
