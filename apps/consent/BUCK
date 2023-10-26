@@ -13,6 +13,11 @@ dev_pnpm_task_binary(
 )
 
 dev_pnpm_task_binary(
+  name = "lint-fix",
+  command = "lint:fix",
+)
+
+dev_pnpm_task_binary(
   name = "open-cypress",
   command = "cypress:open",
 )
@@ -60,7 +65,7 @@ dev_deps_srcs = {
 }
 
 eslint(
-    name = "check-lint",
+    name = "lint",
     srcs = [":src"] + glob([".eslint*"]),
     extensions = [".ts", ".tsx"],
     allow_warnings = True,
@@ -70,6 +75,6 @@ eslint(
 test_suite(
     name = "test-unit",
     tests = [
-        ":check-lint",
+        ":lint",
     ],
 )

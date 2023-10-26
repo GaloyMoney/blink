@@ -9,7 +9,7 @@ source "${DEV_DIR}/helpers/auth.sh"
 source "${DEV_DIR}/helpers/gql.sh"
 
 user_phone="+16505554350"
-email="test@galoy.com"  
+email="test@galoy.io"
 
 auth_token="$(login_user "${user_phone}")"
 
