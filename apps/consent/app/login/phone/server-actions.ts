@@ -72,14 +72,16 @@ export const getCaptchaChallenge = async (
     }
   }
 
-  let res
+  let res: {
+    id: string
+    challengeCode: string
+  } | null
   try {
     res = await authApi.requestPhoneCaptcha(customHeaders)
   } catch (err) {
     console.error("error in requestPhoneCaptcha", err)
     return handleAxiosError(err)
   }
-
   if (!res) {
     return {
       error: true,
@@ -144,8 +146,14 @@ export const sendPhoneCode = async (
   const phone = formData.phone
   const remember = String(formData.remember) === "true"
   const channel = formData.channel ?? "SMS"
-  let res
 
+  let res: {
+    data?: {
+      success?: boolean
+    }
+    status?: number
+  } | null
+  
   try {
     res = await authApi.requestPhoneCode(
       phone,

@@ -75,9 +75,9 @@ export const submitForm = async (_prevState: unknown, form: FormData) => {
   const value = form.get("value")
   const loginId = form.get("loginId")
 
-  let authToken
-  let totpRequired
-  let userId
+  let authToken: string | null
+  let totpRequired: boolean | null
+  let userId: string | null
 
   if ((loginType === LoginType.email && !loginId) || typeof loginId !== "string") {
     throw new Error("Invalid Values")

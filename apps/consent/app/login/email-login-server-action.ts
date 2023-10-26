@@ -58,7 +58,7 @@ export async function submitForm(
     throw new Error("Invalid Email Value")
   }
 
-  let emailCodeRequest
+  let emailCodeRequest: string | null
   try {
     emailCodeRequest = await authApi.requestEmailCode(email, customHeaders)
   } catch (err) {

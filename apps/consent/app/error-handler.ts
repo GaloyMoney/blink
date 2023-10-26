@@ -13,9 +13,7 @@ const errorMessages: { [key: string]: string } = {
     "Your rate limit exceeded, please try after some time.",
 }
 
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const handleAxiosError = (err: any): ErrorResponse => {
+export const handleAxiosError = (err: unknown): ErrorResponse => {
   if (axios.isAxiosError(err) && err.response) {
     const errorCode = err.response?.data?.error?.name
     const errorMessage =
