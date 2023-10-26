@@ -153,7 +153,6 @@ export const sendPhoneCode = async (
     }
     status?: number
   } | null
-  
   try {
     res = await authApi.requestPhoneCode(
       phone,
