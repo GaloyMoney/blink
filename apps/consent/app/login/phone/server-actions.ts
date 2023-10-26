@@ -143,8 +143,8 @@ export const sendPhoneCode = async (
       value: phone,
       remember: remember,
     }),
-    { secure: true },
-  )
+    { secure: true, sameSite: "lax" }
+  );
 
   const params = new URLSearchParams({
     login_challenge,

@@ -22,7 +22,7 @@ const submitForm = async (form: FormData) => {
       await hydraClient.rejectOAuth2LogoutRequest({
         logoutChallenge: logout_challenge,
       })
-      redirect("https://www.blink.sh/")
+      redirect("/")
     }
     const response = await hydraClient.acceptOAuth2LogoutRequest({
       logoutChallenge: logout_challenge,

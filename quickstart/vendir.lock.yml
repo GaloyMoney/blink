@@ -5,7 +5,7 @@ directories:
       commitTitle: 'chore: initial Tiltfile (#3412)...'
       sha: 808208e6a870fe276262d501b511329af49b6fab
       tags:
-      - 0.15.40-3-g808208e6a
+      - 0.15.41
     path: ./
   path: dev
 - contents:
@@ -13,7 +13,7 @@ directories:
       commitTitle: 'chore: initial Tiltfile (#3412)...'
       sha: 808208e6a870fe276262d501b511329af49b6fab
       tags:
-      - 0.15.40-3-g808208e6a
+      - 0.15.41
     path: ./
   path: ./galoy
 - contents:
@@ -21,7 +21,7 @@ directories:
       commitTitle: 'chore: initial Tiltfile (#3412)...'
       sha: 808208e6a870fe276262d501b511329af49b6fab
       tags:
-      - 0.15.40-3-g808208e6a
+      - 0.15.41
     path: ./
   path: ./graphql
 kind: LockConfig
