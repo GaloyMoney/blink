@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'docs: update dev docs with buck / nix info (#3430)...'
-      sha: 4870bf44f4298582ff3d28856b38084ea1a43ab6
+      commitTitle: 'chore: making it possible to use localhost instead of ngrok (#3429)...'
+      sha: 95b394034da74fe13bffae16723403af8e6be4ba
       tags:
-      - 0.15.41-2-g4870bf44f
+      - 0.15.42-1-g95b394034
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'docs: update dev docs with buck / nix info (#3430)...'
-      sha: 4870bf44f4298582ff3d28856b38084ea1a43ab6
+      commitTitle: 'chore: making it possible to use localhost instead of ngrok (#3429)...'
+      sha: 95b394034da74fe13bffae16723403af8e6be4ba
       tags:
-      - 0.15.41-2-g4870bf44f
+      - 0.15.42-1-g95b394034
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'docs: update dev docs with buck / nix info (#3430)...'
-      sha: 4870bf44f4298582ff3d28856b38084ea1a43ab6
+      commitTitle: 'chore: making it possible to use localhost instead of ngrok (#3429)...'
+      sha: 95b394034da74fe13bffae16723403af8e6be4ba
       tags:
-      - 0.15.41-2-g4870bf44f
+      - 0.15.42-1-g95b394034
     path: ./
   path: ./graphql
 kind: LockConfig
