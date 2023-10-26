@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: pin to Tilt 0.33.5 until upstream Nix pkg is fixed (#3423)...'
-      sha: 95ab63e5cfc2a133ce4671597d1585c22427acc6
+      commitTitle: 'build: add dockerImage dev env package to nix flake (#3424)...'
+      sha: d57a231f7c7c36fe921d2d594a1e7be902ea82fb
       tags:
-      - 0.15.38-1-g95ab63e5c
+      - 0.15.39-1-gd57a231f7
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: pin to Tilt 0.33.5 until upstream Nix pkg is fixed (#3423)...'
-      sha: 95ab63e5cfc2a133ce4671597d1585c22427acc6
+      commitTitle: 'build: add dockerImage dev env package to nix flake (#3424)...'
+      sha: d57a231f7c7c36fe921d2d594a1e7be902ea82fb
       tags:
-      - 0.15.38-1-g95ab63e5c
+      - 0.15.39-1-gd57a231f7
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: pin to Tilt 0.33.5 until upstream Nix pkg is fixed (#3423)...'
-      sha: 95ab63e5cfc2a133ce4671597d1585c22427acc6
+      commitTitle: 'build: add dockerImage dev env package to nix flake (#3424)...'
+      sha: d57a231f7c7c36fe921d2d594a1e7be902ea82fb
       tags:
-      - 0.15.38-1-g95ab63e5c
+      - 0.15.39-1-gd57a231f7
     path: ./
   path: ./graphql
 kind: LockConfig
