@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: making it possible to use localhost instead of ngrok (#3429)...'
-      sha: 95b394034da74fe13bffae16723403af8e6be4ba
+      commitTitle: 'build: switch nix docker image to ''buildImage'' (#3432)...'
+      sha: b0acbd83addbb0b8e6169a5d7adeb22444123dfd
       tags:
-      - 0.15.42-1-g95b394034
+      - 0.15.43-1-gb0acbd83a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: making it possible to use localhost instead of ngrok (#3429)...'
-      sha: 95b394034da74fe13bffae16723403af8e6be4ba
+      commitTitle: 'build: switch nix docker image to ''buildImage'' (#3432)...'
+      sha: b0acbd83addbb0b8e6169a5d7adeb22444123dfd
       tags:
-      - 0.15.42-1-g95b394034
+      - 0.15.43-1-gb0acbd83a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: making it possible to use localhost instead of ngrok (#3429)...'
-      sha: 95b394034da74fe13bffae16723403af8e6be4ba
+      commitTitle: 'build: switch nix docker image to ''buildImage'' (#3432)...'
+      sha: b0acbd83addbb0b8e6169a5d7adeb22444123dfd
       tags:
-      - 0.15.42-1-g95b394034
+      - 0.15.43-1-gb0acbd83a
     path: ./
   path: ./graphql
 kind: LockConfig
