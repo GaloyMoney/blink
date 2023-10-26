@@ -179,8 +179,6 @@
             name = "galoy-dev";
             tag = "latest";
 
-            # TODO: confirm if we want to stick with this example base image, do none,
-            #       or switch to another base image.
             fromImage = pkgs.dockerTools.pullImage {
               imageName = "nixos/nix";
               imageDigest = "sha256:85299d86263a3059cf19f419f9d286cc9f06d3c13146a8ebbb21b3437f598357";
@@ -189,9 +187,7 @@
               finalImageName = "nix";
             };
 
-            # Configuration
             config = {
-              # The default entrypoint when running image for local debugging
               Cmd = ["bash"];
             };
 
