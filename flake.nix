@@ -179,12 +179,13 @@
             name = "galoy-dev";
             tag = "latest";
 
+            # Optional base image to bring in extra binaries for debugging etc.
             fromImage = pkgs.dockerTools.pullImage {
-              imageName = "nixos/nix";
-              imageDigest = "sha256:85299d86263a3059cf19f419f9d286cc9f06d3c13146a8ebbb21b3437f598357";
-              sha256 = "19fw0n3wmddahzr20mhdqv6jkjn1kanh6n2mrr08ai53dr8ph5n7";
-              finalImageTag = "2.2.1";
-              finalImageName = "nix";
+              imageName = "ubuntu";
+              imageDigest = "sha256:4c32aacd0f7d1d3a29e82bee76f892ba9bb6a63f17f9327ca0d97c3d39b9b0ee";
+              sha256 = "f1661f16a23427d0eda033ffbf7df647a6f71673b78ee24961fae27978691d4f";
+              finalImageTag = "mantic-20231011";
+              finalImageName = "ubuntu";
             };
 
             config = {
@@ -193,7 +194,7 @@
 
             copyToRoot = pkgs.buildEnv {
               name = "image-root";
-              paths = nativeBuildInputs ++ [ pkgs.bash ];
+              paths = nativeBuildInputs;
               pathsToLink = [ "/bin" ];
             };
           };
