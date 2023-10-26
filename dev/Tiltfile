@@ -1,7 +1,148 @@
+is_ci=sys.argv[1] == "ci"
+
+config.define_string_list("test")
+cfg = config.parse()
+
+groups = {
+    "auth": [
+        "oathkeeper",
+        "hydra",
+        "hydra-migrate",
+        "hydra-pg",
+        "kratos",
+        "kratos-pg",
+    ],
+    "core": [
+        "apollo-router",
+        "mongodb",
+        "redis",
+    ],
+    "bitcoin": [
+        "lnd1",
+        "bria",
+        "postgres-bria",
+        "fulcrum",
+        "bitcoind-signer",
+        "bitcoind",
+    ],
+    "tracing": [
+      "otel-agent",
+    ],
+}
+
+consent_test_target = "//apps/consent:cypress"
+local_resource(
+  "consent-test",
+  labels = ["test"],
+  auto_init = is_ci and "consent" in cfg.get("test", []),
+  cmd = "buck2 test {}".format(consent_test_target),
+  resource_deps = [
+    "consent",
+    "init-test-user",
+    "hydra-consent"
+  ],
+)
+
+local_resource(
+  name='init-test-user',
+  labels = ['test'],
+  cmd='bin/init-user.sh',
+  resource_deps = [
+    "oathkeeper",
+    "kratos",
+    "api",
+  ]
+)
+
+consent_target = "//apps/consent:dev"
+if is_ci:
+  consent_target = '//apps/consent:consent'
+local_resource(
+    "consent",
+    labels = ["auth"],
+    cmd = "buck2 build {}".format(consent_target),
+    serve_cmd = "buck2 run {}".format(consent_target),
+    resource_deps = [
+        "apollo-router",
+        "hydra",
+        "api",
+    ],
+    links = [
+        link("http://localhost:3000", "consent"),
+    ],
+)
+
+local_resource(
+  name='hydra-consent',
+  labels = ['auth'],
+  cmd=['bin/setup-hydra-client.sh', 'consent', 'http://localhost:3000'],
+  resource_deps = [
+    "hydra",
+  ]
+)
+
 api_target = "//core/api:api"
 local_resource(
     "api",
-    labels = ["frontend"],
+    labels = ["core"],
     cmd = "buck2 build {}".format(api_target),
     serve_cmd = "buck2 run {}".format(api_target),
+    serve_env = {
+        "HELMREVISION": "dev",
+        "NETWORK": "regtest",
+        "OATHKEEPER_DECISION_ENDPOINT": "http://localhost:4456",
+        "TWILIO_ACCOUNT_SID": "AC_twilio_id",
+        "TWILIO_AUTH_TOKEN": "AC_twilio_auth_token",
+        "TWILIO_VERIFY_SERVICE_ID": "VA_twilio_service",
+        "KRATOS_PG_CON": "postgres://dbuser:secret@localhost:5433/default?sslmode=disable",
+        "KRATOS_PUBLIC_API": "http://localhost:4433",
+        "KRATOS_ADMIN_API": "http://localhost:4434",
+        "KRATOS_MASTER_USER_PASSWORD": "passwordHardtoFindWithNumber123",
+        "KRATOS_CALLBACK_API_KEY": "The-Value-of-My-Key",
+        "BRIA_HOST": "localhost",
+        "BRIA_API_KEY": "bria_dev_000000000000000000000",
+        "MONGODB_CON": "mongodb://localhost:27017/galoy",
+        "REDIS_MASTER_NAME": "mymaster",
+        "REDIS_PASSWORD": "",
+        "REDIS_0_DNS": "localhost",
+        "REDIS_0_PORT": "6379",
+        "REDIS_TYPE": "standalone",
+        "UNSECURE_IP_FROM_REQUEST_OBJECT": "true",
+        "UNSECURE_DEFAULT_LOGIN_CODE": "000000",
+        "GEETEST_ID": "geetest_id",
+        "GEETEST_KEY": "geetest_key"
+    },
+    allow_parallel = True,
+    readiness_probe = probe(
+        period_secs  = 5,
+        http_get = http_get_action(
+            path = "healthz",
+            port = 4012,
+        ),
+    ),
+    resource_deps = [
+        "init-onchain",
+        "lnd1",
+    ]
 )
+
+local_resource(
+  name='init-onchain',
+  labels = ['bitcoin'],
+  cmd='bin/init-onchain.sh',
+  resource_deps = [
+    "bitcoind",
+    "bria",
+  ]
+)
+
+docker_compose("./docker-compose.deps.yml", project_name = "galoy-dev")
+
+for service in groups["bitcoin"]:
+    dc_resource(service, labels = ["bitcoin"])
+for service in groups["tracing"]:
+    dc_resource(service, labels = ["tracing"])
+for service in groups["core"]:
+    dc_resource(service, labels = ["core"])
+for service in groups["auth"]:
+    dc_resource(service, labels = ["auth"])

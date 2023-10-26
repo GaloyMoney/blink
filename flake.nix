@@ -61,7 +61,11 @@
           jq
           ytt
         ]
-        ++ buck2NativeBuildInputs;
+        ++ buck2NativeBuildInputs
+        ++ lib.optionals pkgs.stdenv.isLinux [
+          xvfb-run
+          cypress
+        ];
 
       buck2Version = pkgs.buck2.version;
       postPatch = with pkgs; ''
@@ -183,6 +187,7 @@
         devShells.default = mkShell {
           inherit nativeBuildInputs;
           BUCK2_VERSION = buck2Version;
+          COMPOSE_PROJECT_NAME = "galoy-dev";
         };
 
         formatter = alejandra;

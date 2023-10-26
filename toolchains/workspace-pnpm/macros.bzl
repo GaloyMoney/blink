@@ -879,3 +879,59 @@ def madge_check(
         visibility = visibility,
         **kwargs,
     )
+
+def pnpm_task_binary_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+    script = ctx.actions.write("pnpm-run.sh", """\
+#!/usr/bin/env bash
+set -euo pipefail
+
+rootpath="$(git rev-parse --show-toplevel)"
+install_node_modules="$1"
+npm_package_path="$2"
+npm_run_command="$3"
+
+cd "$rootpath/$npm_package_path"
+if [ "$install_node_modules" = "True" ]; then
+    pnpm install
+fi
+pnpm run --report-summary "$npm_run_command"
+""", is_executable = True)
+    args = cmd_args([script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])
+    args.hidden([ctx.attrs.deps])
+    args.hidden([ctx.attrs.srcs])
+    return [DefaultInfo(), RunInfo(args = args)]
+
+dev_pnpm_task_binary = rule(impl = pnpm_task_binary_impl, attrs = {
+    "command": attrs.string(doc = """pnpm command to run"""),
+    "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
+    "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
+    "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
+})
+
+def pnpm_task_test_impl(ctx: AnalysisContext) -> list[[DefaultInfo, ExternalRunnerTestInfo]]:
+    script = ctx.actions.write("pnpm-run.sh", """\
+#!/usr/bin/env bash
+set -euo pipefail
+
+rootpath="$(git rev-parse --show-toplevel)"
+install_node_modules="$1"
+npm_package_path="$2"
+npm_run_command="$3"
+
+cd "$rootpath/$npm_package_path"
+if [ "$install_node_modules" = "True" ]; then
+    pnpm install
+fi
+pnpm run --report-summary "$npm_run_command"
+""", is_executable = True)
+    args = cmd_args([script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])
+    args.hidden([ctx.attrs.deps])
+    args.hidden([ctx.attrs.srcs])
+    return [DefaultInfo(), ExternalRunnerTestInfo(type = "integration", command = [script, str(ctx.attrs.local_node_modules), ctx.label.package, ctx.attrs.command])]
+
+dev_pnpm_task_test = rule(impl = pnpm_task_test_impl, attrs = {
+    "command": attrs.string(default = "start", doc = """pnpm command to run"""),
+    "local_node_modules": attrs.bool(default = True, doc = """Need to run pnpm install first?"""),
+    "srcs": attrs.list(attrs.source(), default = [], doc = """List of sources we require"""),
+    "deps": attrs.list(attrs.source(), default = [], doc = """List of dependencies we require"""),
+})

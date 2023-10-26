@@ -1,16 +1,14 @@
 import { defineConfig } from "cypress"
 import dotenv from "dotenv"
-dotenv.config()
-dotenv.config({ path: ".env.test" })
+dotenv.config({ path: "../../dev/.envs/consent.env" })
 
 export default defineConfig({
   e2e: {
-    baseUrl: "http://127.0.0.1:3000",
-    // setupNodeEvents(on, config) {},
+    baseUrl: "http://localhost:3000",
   },
   defaultCommandTimeout: 60000,
   env: {
-    ...process.env,
+    AUTHORIZATION_URL: process.env.AUTHORIZATION_URL,
   },
   component: {
     devServer: {
