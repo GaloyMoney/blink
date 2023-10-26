@@ -101,7 +101,7 @@ madge_check(
 )
 
 test_suite(
-    name = "test",
+    name = "test-unit",
     tests = [
         ":check-lint",
         ":check-type",
