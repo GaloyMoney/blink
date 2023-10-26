@@ -27,3 +27,11 @@ workspace_pnpm_toolchain(
   name = "workspace_pnpm",
   visibility = ["PUBLIC"],
 )
+
+load("@toolchains//rust:toolchain.bzl", "rust_toolchain")
+
+rust_toolchain(
+  name = "rust",
+  command = "rustc",
+  visibility = ["PUBLIC"],
+)
