@@ -50,9 +50,6 @@ export class DestinationMissingDependentFeatureError extends LightningServiceErr
 export class LookupPaymentTimedOutError extends LightningServiceError {
   level = ErrorLevel.Critical
 }
-export class InvalidFeeProbeStateError extends LightningServiceError {
-  level = ErrorLevel.Critical
-}
 
 export class UnknownRouteNotFoundError extends LightningServiceError {
   level = ErrorLevel.Critical

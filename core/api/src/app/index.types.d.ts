@@ -1,8 +1,22 @@
-type PartialResult<T> = {
-  result: T | null
-  error?: ApplicationError
-  partialResult: true
-}
+type PartialResultType =
+  (typeof import("./partial-result").PartialResultType)[keyof typeof import("./partial-result").PartialResultType]
+
+type PartialResult<T> =
+  | {
+      result: T
+      error?: undefined
+      type: typeof import("./partial-result").PartialResultType.Ok
+    }
+  | {
+      result: T
+      error: ApplicationError
+      type: typeof import("./partial-result").PartialResultType.Partial
+    }
+  | {
+      result: null
+      error: ApplicationError
+      type: typeof import("./partial-result").PartialResultType.Err
+    }
 
 type ValueOf<T> = T[keyof T]
 

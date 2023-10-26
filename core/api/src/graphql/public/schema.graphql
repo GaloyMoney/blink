@@ -1080,6 +1080,7 @@ input QuizCompletedInput {
 type QuizCompletedPayload {
   errors: [Error!]!
   quiz: Quiz
+  rewardPaid: Boolean
 }
 
 type QuizQuestion {

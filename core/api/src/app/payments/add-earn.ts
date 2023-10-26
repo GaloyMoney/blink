@@ -1,3 +1,5 @@
+import { PartialResult } from "../partial-result"
+
 import { intraledgerPaymentSendWalletIdForBtcWallet } from "./send-intraledger"
 
 import { getRewardsConfig, OnboardingEarn } from "@/config"
@@ -30,14 +32,13 @@ export const addEarn = async ({
   quizQuestionId: string
   accountId: string
 }): Promise<
-  | {
-      quizQuestion: Quiz
-      rewardPaymentError?: ApplicationError
-    }
-  | ApplicationError
+  PartialResult<{
+    quiz: Quiz
+    rewardPaid: boolean
+  }>
 > => {
   const accountId = checkedToAccountId(accountIdRaw)
-  if (accountId instanceof Error) return accountId
+  if (accountId instanceof Error) return PartialResult.err(accountId)
 
   const rewardsConfig = getRewardsConfig()
 
@@ -45,25 +46,26 @@ export const addEarn = async ({
   const quizQuestionId = quizQuestionIdString as QuizQuestionId
 
   const amount = OnboardingEarn[quizQuestionId]
-  if (!amount) return new InvalidQuizQuestionIdError()
+  if (!amount) return PartialResult.err(new InvalidQuizQuestionIdError())
 
   const funderWalletId = await getFunderWalletId()
   const funderWallet = await WalletsRepository().findById(funderWalletId)
-  if (funderWallet instanceof Error) return funderWallet
+  if (funderWallet instanceof Error) return PartialResult.err(funderWallet)
   const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
-  if (funderAccount instanceof Error) return funderAccount
+  if (funderAccount instanceof Error) return PartialResult.err(funderAccount)
 
   const recipientAccount = await AccountsRepository().findById(accountId)
-  if (recipientAccount instanceof Error) return recipientAccount
+  if (recipientAccount instanceof Error) return PartialResult.err(recipientAccount)
 
   const user = await UsersRepository().findById(recipientAccount.kratosUserId)
-  if (user instanceof Error) return user
+  if (user instanceof Error) return PartialResult.err(user)
 
   const isFirstTimeAnsweringQuestion =
     await RewardsRepository(accountId).add(quizQuestionId)
-  if (isFirstTimeAnsweringQuestion instanceof Error) return isFirstTimeAnsweringQuestion
+  if (isFirstTimeAnsweringQuestion instanceof Error)
+    return PartialResult.err(isFirstTimeAnsweringQuestion)
 
-  const quizQuestion: Quiz = {
+  const quiz: Quiz = {
     id: quizQuestionId,
     amount: amount,
     completed: true,
@@ -74,14 +76,24 @@ export const addEarn = async ({
   ).authorize(user.phoneMetadata)
 
   if (validatedPhoneMetadata instanceof Error) {
-    return {
-      quizQuestion,
-      rewardPaymentError: new InvalidPhoneForRewardError(validatedPhoneMetadata.name),
-    }
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      new InvalidPhoneForRewardError(validatedPhoneMetadata.name),
+    )
   }
 
   const accountIP = await AccountsIpsRepository().findLastByAccountId(recipientAccount.id)
-  if (accountIP instanceof Error) return accountIP
+  if (accountIP instanceof Error)
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      new InvalidPhoneForRewardError(accountIP),
+    )
 
   const validatedIPMetadata = IPMetadataAuthorizer(
     rewardsConfig.ipMetadataValidationSettings,
@@ -89,38 +101,53 @@ export const addEarn = async ({
 
   if (validatedIPMetadata instanceof Error) {
     if (validatedIPMetadata instanceof MissingIPMetadataError)
-      return {
-        quizQuestion,
-        rewardPaymentError: new InvalidIpMetadataError(validatedIPMetadata),
-      }
+      return PartialResult.partial(
+        {
+          quiz,
+          rewardPaid: false,
+        },
+        new InvalidIpMetadataError(validatedIPMetadata),
+      )
 
     if (validatedIPMetadata instanceof UnauthorizedIPError)
-      return {
-        quizQuestion,
-        rewardPaymentError: validatedIPMetadata,
-      }
+      return PartialResult.partial(
+        {
+          quiz,
+          rewardPaid: false,
+        },
+        validatedIPMetadata,
+      )
 
-    return {
-      quizQuestion,
-      rewardPaymentError: new UnknownRepositoryError("add earn error"),
-    }
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      new UnknownRepositoryError("add earn error"),
+    )
   }
 
   const recipientWallets = await WalletsRepository().listByAccountId(accountId)
   if (recipientWallets instanceof Error)
-    return {
-      quizQuestion,
-      rewardPaymentError: recipientWallets,
-    }
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      recipientWallets,
+    )
 
   const recipientBtcWallet = recipientWallets.find(
     (wallet) => wallet.currency === WalletCurrency.Btc,
   )
   if (recipientBtcWallet === undefined)
-    return {
-      quizQuestion,
-      rewardPaymentError: new NoBtcWalletExistsForAccountError(),
-    }
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      new NoBtcWalletExistsForAccountError(),
+    )
 
   const recipientWalletId = recipientBtcWallet.id
 
@@ -132,10 +159,19 @@ export const addEarn = async ({
     senderAccount: funderAccount,
   })
 
-  return {
-    quizQuestion,
-    rewardPaymentError: payment instanceof Error ? payment : undefined,
-  }
+  if (payment instanceof Error)
+    return PartialResult.partial(
+      {
+        quiz,
+        rewardPaid: false,
+      },
+      payment,
+    )
+
+  return PartialResult.ok({
+    quiz,
+    rewardPaid: true,
+  })
 }
 
 export const isAccountEligibleForEarnPayment = async ({

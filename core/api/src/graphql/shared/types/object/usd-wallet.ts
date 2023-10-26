@@ -24,6 +24,7 @@ import { mapError } from "@/graphql/error-map"
 import { Wallets } from "@/app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@/domain/shared"
+import { PartialResultType } from "@/app/partial-result"
 
 const UsdWallet = GT.Object<Wallet>({
   name: "UsdWallet",
@@ -72,16 +73,14 @@ const UsdWallet = GT.Object<Wallet>({
           throw paginationArgs
         }
 
-        const { result, error } = await Wallets.getTransactionsForWallets({
+        const { result, error, type } = await Wallets.getTransactionsForWallets({
           wallets: [source],
           paginationArgs,
         })
-        if (error instanceof Error) {
+
+        if (type !== PartialResultType.Ok) {
           throw mapError(error)
         }
-
-        // Non-null signal to type checker; consider fixing in PartialResult type
-        if (!result?.slice) throw error
 
         return connectionFromPaginatedArray<WalletTransaction>(
           result.slice,
@@ -108,17 +107,16 @@ const UsdWallet = GT.Object<Wallet>({
         const { address } = args
         if (address instanceof Error) throw address
 
-        const { result, error } = await Wallets.getTransactionsForWalletsByAddresses({
-          wallets: [source],
-          addresses: [address],
-          paginationArgs,
-        })
-        if (error instanceof Error) {
+        const { result, error, type } =
+          await Wallets.getTransactionsForWalletsByAddresses({
+            wallets: [source],
+            addresses: [address],
+            paginationArgs,
+          })
+
+        if (type !== PartialResultType.Ok) {
           throw mapError(error)
         }
-
-        // Non-null signal to type checker; consider fixing in PartialResult type
-        if (!result?.slice) throw error
 
         return connectionFromPaginatedArray<WalletTransaction>(
           result.slice,

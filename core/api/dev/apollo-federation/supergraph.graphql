@@ -1372,6 +1372,7 @@ type QuizCompletedPayload
 {
   errors: [Error!]!
   quiz: Quiz
+  rewardPaid: Boolean
 }
 
 type QuizQuestion

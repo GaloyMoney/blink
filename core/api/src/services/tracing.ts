@@ -430,8 +430,7 @@ export const wrapToRunInSpan = <
         const ret = fn(...args)
         if (ret instanceof Error) recordException(span, ret)
         const partialRet = ret as PartialResult<unknown>
-        if (partialRet?.partialResult && partialRet?.error)
-          recordException(span, partialRet.error)
+        if (partialRet?.error) recordException(span, partialRet.error)
         span.end()
         return ret
       } catch (error) {
@@ -487,8 +486,7 @@ export const wrapAsyncToRunInSpan = <
         const ret = await fn(...args)
         if (ret instanceof Error) recordException(span, ret)
         const partialRet = ret as PartialResult<unknown>
-        if (partialRet?.partialResult && partialRet?.error)
-          recordException(span, partialRet.error)
+        if (partialRet?.error) recordException(span, partialRet.error)
         span.end()
         return ret
       } catch (error) {

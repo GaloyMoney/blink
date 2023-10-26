@@ -96,10 +96,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
       message = `The associated lightning invoice could not be found.`
       return new NotFoundError({ message, logger: baseLogger })
 
-    case "CouldNotFindTransactionsForAccountError":
-      message = "No transactions found for your account."
-      return new NotFoundError({ message, logger: baseLogger })
-
     case "CouldNotFindUserFromPhoneError":
       message = `User does not exist for phone ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
@@ -591,7 +587,6 @@ export const mapError = (error: ApplicationError): CustomGraphQLError => {
     case "BigIntConversionError":
     case "BigIntFloatConversionError":
     case "SafeWrapperError":
-    case "InvalidFeeProbeStateError":
     case "LookupPaymentTimedOutError":
     case "InvalidPubKeyError":
     case "SkipProbeForPubkeyError":
