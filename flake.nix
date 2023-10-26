@@ -175,11 +175,30 @@
           consent = nextDerivation {pkgName = "consent";};
           dashboard = nextDerivation {pkgName = "dashboard";};
 
-          dockerImage = pkgs.dockerTools.buildNixShellImage {
+          dockerImage = pkgs.dockerTools.buildImage {
+            name = "galoy-dev";
             tag = "latest";
-            drv = pkgs.stdenv.mkDerivation {
-              name = "galoy-dev";
-              inherit nativeBuildInputs;
+
+            # TODO: confirm if we want to stick with this example base image, do none,
+            #       or switch to another base image.
+            fromImage = pkgs.dockerTools.pullImage {
+              imageName = "nixos/nix";
+              imageDigest = "sha256:85299d86263a3059cf19f419f9d286cc9f06d3c13146a8ebbb21b3437f598357";
+              sha256 = "19fw0n3wmddahzr20mhdqv6jkjn1kanh6n2mrr08ai53dr8ph5n7";
+              finalImageTag = "2.2.1";
+              finalImageName = "nix";
+            };
+
+            # Configuration
+            config = {
+              # The default entrypoint when running image for local debugging
+              Cmd = ["bash"];
+            };
+
+            copyToRoot = pkgs.buildEnv {
+              name = "image-root";
+              paths = nativeBuildInputs ++ [ pkgs.bash ];
+              pathsToLink = [ "/bin" ];
             };
           };
         };
