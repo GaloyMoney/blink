@@ -4,8 +4,91 @@
 #@   "task_image_config",
 #@   "release_task_image_config")
 
+#@ def galoy_dev_image():
+#@   return data.values.docker_registry + "/galoy-dev"
+#@ end
+
+#@ def galoy_dev_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ galoy_dev_image()
+#@ end
+
+#@ def buck_test_name(app):
+#@   return "buck-test-" + app
+#@ end
+
+#@ def buck_test(app):
+name: #@ buck_test_name(app)
+serial: true
+plan:
+  - in_parallel:
+      - get: #@ app_src_resource_name(app)
+        trigger: true
+      - { get: pipeline-tasks }
+  - task: prepare-docker-build
+    config:
+      platform: linux
+      image_resource: #@ galoy_dev_image_config()
+      inputs:
+        - name: pipeline-tasks
+        - name: #@ app_src_resource_name(app)
+          path: repo
+      params:
+        BUCK_TARGET: #@ "//apps/" + app
+        BUCK_CMD: test
+      run:
+        path: pipeline-tasks/ci/apps/tasks/buck-task.sh
+#@ end
+
 #@ def build_edge_image_name(app):
 #@   return "build-" + app + "-edge-image"
+#@ end
+
+#@ def build_edge_image(app):
+name: #@ build_edge_image_name(app)
+serial: true
+plan:
+  - in_parallel:
+      - get: #@ app_src_resource_name(app)
+        trigger: true
+      - { get: pipeline-tasks }
+  - task: prepare-docker-build
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+        - name: pipeline-tasks
+        - name: #@ app_src_resource_name(app)
+          path: repo
+      outputs:
+        - name: repo
+      run:
+        path: pipeline-tasks/ci/apps/tasks/prepare-docker-build.sh
+  - task: build
+    attempts: 2
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+        - name: repo
+      outputs:
+        - name: image
+      params:
+        CONTEXT: repo
+        DOCKERFILE: #@ "repo/apps/" + app + "/Dockerfile"
+        BUILD_ARGS_FILE: repo/.build-args
+      run:
+        path: build
+  - put: #@ edge_image_resource_name(app)
+    params:
+      image: image/image.tar
 #@ end
 
 #@ def build_edge_image(app):

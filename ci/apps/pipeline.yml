@@ -1,16 +1,15 @@
 #@ load("@ytt:data", "data")
 
 #@ load("app-template.lib.yml",
+#@   "galoy_dev_image",
 #@   "build_edge_image",
 #@   "build_edge_image_name",
+#@   "buck_test_name",
+#@   "buck_test",
 #@   "app_src_resource",
 #@   "app_edge_image",
 #@   "bump_image_in_chart_name",
 #@   "bump_image_in_chart")
-
-#@ def galoy_dev_image():
-#@   return data.values.docker_registry + "/galoy-dev"
-#@ end
 
 #@ apps = ["consent", "dashboard"]
 
@@ -19,12 +18,14 @@ groups:
     jobs:
 #@ for app in apps:
     - #@ build_edge_image_name(app)
+    - #@ buck_test_name(app)
     - #@ bump_image_in_chart_name(app)
 #@ end
 #@ for app in apps:
   - name: #@ app
     jobs:
     - #@ build_edge_image_name(app)
+    - #@ buck_test_name(app)
     - #@ bump_image_in_chart_name(app)
 #@ end
   - name: dev-image
@@ -34,6 +35,7 @@ groups:
 jobs:
 #@ for app in apps:
   - #@ build_edge_image(app)
+  - #@ buck_test(app)
   - #@ bump_image_in_chart(app)
 #@ end
   - name: build-galoy-dev-image
@@ -108,7 +110,7 @@ resources:
   - name: galoy-dev-image
     type: registry-image
     source:
-      tag: edge
+      tag: latest
       username: #@ data.values.docker_registry_user
       password: #@ data.values.docker_registry_password
       repository: #@ galoy_dev_image()
