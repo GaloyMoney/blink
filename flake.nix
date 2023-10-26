@@ -4,6 +4,13 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
 
     # Pin Tilt to version 0.33.5 until an updated build of Nix's upstream
     # unstable pkgs addresses a build error.
@@ -19,6 +26,7 @@
     nixpkgs,
     flake-utils,
     tilt-pin-pkgs,
+    rust-overlay,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       overlays = [
@@ -29,9 +37,16 @@
             nodejs = super.nodejs_20;
           };
         })
+        (import rust-overlay)
       ];
       pkgs = import nixpkgs {inherit overlays system;};
       tilt-pin = import tilt-pin-pkgs {inherit system;};
+
+      # rust-toolchain = pkgs.rust-bin.stable.latest.default;
+      rustVersion = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
+      rust-toolchain = rustVersion.override {
+        extensions = ["rust-analyzer" "rust-src"];
+      };
 
       buck2NativeBuildInputs = with pkgs; [
         buck2
@@ -40,6 +55,8 @@
         python3
         ripgrep
         cacert
+        clang
+        rust-toolchain
       ];
 
       nativeBuildInputs = with pkgs;
