@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'refactor: complete PayoutCancelled handler implementation (#3418)...'
-      sha: 8a4a441fd3a164fac99fe1bbb168afe550ddd2d1
+      commitTitle: 'chore: pin to Tilt 0.33.5 until upstream Nix pkg is fixed (#3423)...'
+      sha: 95ab63e5cfc2a133ce4671597d1585c22427acc6
       tags:
-      - 0.15.37-1-g8a4a441fd
+      - 0.15.38-1-g95ab63e5c
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'refactor: complete PayoutCancelled handler implementation (#3418)...'
-      sha: 8a4a441fd3a164fac99fe1bbb168afe550ddd2d1
+      commitTitle: 'chore: pin to Tilt 0.33.5 until upstream Nix pkg is fixed (#3423)...'
+      sha: 95ab63e5cfc2a133ce4671597d1585c22427acc6
       tags:
-      - 0.15.37-1-g8a4a441fd
+      - 0.15.38-1-g95ab63e5c
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'refactor: complete PayoutCancelled handler implementation (#3418)...'
-      sha: 8a4a441fd3a164fac99fe1bbb168afe550ddd2d1
+      commitTitle: 'chore: pin to Tilt 0.33.5 until upstream Nix pkg is fixed (#3423)...'
+      sha: 95ab63e5cfc2a133ce4671597d1585c22427acc6
       tags:
-      - 0.15.37-1-g8a4a441fd
+      - 0.15.38-1-g95ab63e5c
     path: ./
   path: ./graphql
 kind: LockConfig
