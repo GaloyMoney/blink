@@ -18,7 +18,7 @@ dev_pnpm_task_binary(
 )
 
 dev_pnpm_task_test(
-  name = "cypress",
+  name = "test-integration",
   command = "cypress:run",
 )
 
@@ -68,7 +68,7 @@ eslint(
 )
 
 test_suite(
-    name = "test",
+    name = "test-unit",
     tests = [
         ":check-lint",
     ],

@@ -9,3 +9,9 @@ tilt_up(
 tilt_down(
     name = "down",
 )
+
+python_bootstrap_binary(
+    name = "healthcheck",
+    main = "healthcheck.py",
+    visibility = ["PUBLIC"],
+)
