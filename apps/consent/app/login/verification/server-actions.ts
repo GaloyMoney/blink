@@ -64,7 +64,7 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
     loginChallenge: login_challenge,
     acceptOAuth2LoginRequest: {
       subject: userId,
-      remember: remember,
+      remember,
       remember_for: 3600,
       acr: "2",
     },

@@ -15,7 +15,7 @@ brew install ory-hydra
 Follow the instructions below
 
 
-On console 1: 
+On console 1:
 
 launch the hydra login consent node, which will provide the authentication (interactive with kratos API) and consent page.
 
@@ -42,38 +42,63 @@ The client is concourse in this example.
 For the galoy stack, some examples of clients could be Alby, a boltcard service, a nostr wallet connect service, an accountant that access the wallet in read only.
 
 
+from :dashboard
 ```sh
-dashboard $ . ./.env
+
+. ./.env
 
 code_client=$(hydra create client \
-    --endpoint http://127.0.0.1:4445 \
+    --name "dashboard" \
+    --endpoint http://localhost:4445 \
     --grant-type authorization_code,refresh_token \
     --response-type code,id_token \
     --format json \
-    --scope offline --scope transactions:read --scope payments:send \
+    --scope offline \
+    --scope transactions:read \
+    --scope payments:send \
     --redirect-uri $NEXTAUTH_URL/api/auth/callback/blink \
+    --skip-consent
 )
 
 export CLIENT_ID=$(echo $code_client | jq -r '.client_id')
 export CLIENT_SECRET=$(echo $code_client | jq -r '.client_secret')
 
-dashboard $ bun next
+code_client_app_=$(hydra create client \
+    --name "api" \
+    --endpoint http://localhost:4445 \
+    --grant-type authorization_code \
+    --response-type code,id_token \
+    --format json \
+    --scope transactions:read \
+    --scope payments:send \
+    --scope openid \
+    --redirect-uri http://localhost:3001/keys/create/callback \
+    --skip-consent
+)
+
+export CLIENT_ID_APP_API_KEY=$(echo $code_client_app_ | jq -r '.client_id')
+export CLIENT_SECRET_APP_API_KEY=$(echo $code_client_app_ | jq -r '.client_secret')
+
+pnpm next
 ```
+
+note: skip consent should be true for trust client, ie: dashboard, but not for third party clients
+
 
 to do a PKCE session:
 
 ```sh
 code_client=$(hydra create client \
-    --endpoint http://127.0.0.1:4445 \
-    --grant-type authorization_code,refresh_token \
+    --endpoint http://localhost:4445 \
+    --grant-type authorization_code \
     --response-type code,id_token \
     --format json \
     --scope offline --scope transactions:read --scope payments:send \
-    --redirect-uri http://127.0.0.1:5555/callback \
+    --redirect-uri http://localhost:5555/callback \
     --token-endpoint-auth-method none \
 )
 
-code_client_id=$(echo $code_client | jq -r '.client_id')
+CLIENT_ID=$(echo $code_client | jq -r '.client_id')
 ```
 
 ## Initiate the request (if not using Dashboard)
@@ -83,9 +108,9 @@ would be mobile app for adding a boltcard
 
 ```sh
 hydra perform authorization-code \
-    --client-id $code_client_id \
-    --client-secret $code_client_secret \
-    --endpoint http://127.0.0.1:4444/ \
+    --client-id $CLIENT_ID \
+    --client-secret $CLIENT_SECRET \
+    --endpoint http://localhost:4444/ \
     --port 5555 \
     --scope offline --scope transactions:read --scope payments:send
 ```
@@ -94,14 +119,14 @@ do the login and consent
 
 copy the Access token to the mobile app.
 
-you are now connect as the user when you add the Header `Oauth2-Token: {token}`. (not that Bearer should not be present, unlike for the Authorization header. seems to a oathkeeper quirks)
+you are now connect as the user when you add the Header `Oauth2-Token: {token}`. (note that Bearer should not be present, unlike for the Authorization header. seems to a oathkeeper quirks)
 
 ### debug
 
 ```sh
 hydra introspect token \
   --format json-pretty \
-  --endpoint http://127.0.0.1:4445/ \
+  --endpoint http://localhost:4445/ \
   $ory_at_TOKEN
 ```
 
@@ -125,38 +150,61 @@ curl --location 'http://localhost:4002/graphql' \
 
 ```sh
 client=$(hydra create client \
-    --endpoint http://127.0.0.1:4445/ \
+    --endpoint http://localhost:4445/ \
     --format json \
     --grant-type client_credentials \
     --scope editor \
     )
-client_id=$(echo $client | jq -r '.client_id')
-client_secret=$(echo $client | jq -r '.client_secret')
+export client_id=$(echo $client | jq -r '.client_id')
+export client_secret=$(echo $client | jq -r '.client_secret')
 ```
 
 #### get token for client
 
 ```sh
 hydra perform client-credentials \
-  --endpoint http://127.0.0.1:4444/ \
+  --endpoint http://localhost:4444/ \
   --client-id $client_id \
   --client-secret $client_secret \
-  --scope editor
+  --scope editor \
+  --format json
 ```
 
 note: this could be a great option to use oauth2_client_credentials oathkeeper authentication
 but the response is not returning the scope in the jwt
 
 ```sh
-curl -s -I -X POST http://localhost:4456/decisions/graphql --user $client_id:$client_secret 
+curl -s -I -X POST http://localhost:4456/decisions/graphql --user $client_id:$client_secret
 ```
 
 
 ## list OAuth 2.0 consent
 
 ```sh
-export subject=092fbf63-0b3a-422f-8260-b6f0720bf4ad
-curl http://localhost:4445/admin/oauth2/auth/sessions/consent?subject=$subject
+export subject="9818ea5e-30a8-4b52-879d-d34590e7250e"
+curl "http://localhost:4445/admin/oauth2/auth/sessions/consent?subject=$subject"
 
-curl 'http://localhost:4445/admin/oauth2/auth/sessions/consent?subject=092fbf63-0b3a-422f-8260-b6f0720bf4ad'
 ```
+login_session_id (optional): The login session id to list the consent sessions for.
+
+
+## change client token lifespans
+
+https://www.ory.sh/docs/reference/api#tag/oAuth2/operation/setOAuth2ClientLifespans
+
+
+## delete token by session id
+
+export session_id="b3fc4e84-4f73-4229-acdd-9bbaba00ca60"
+curl -v -X DELETE "http://localhost:4445/admin/oauth2/auth/sessions/login?sid=$session_id"
+
+export subject=9818ea5e-30a8-4b52-879d-d34590e7250e
+curl -v -X DELETE "http://localhost:4445/admin/oauth2/auth/sessions/login?subject=$subject"
+
+
+# delete all
+curl -v -X DELETE "http://localhost:4445/admin/oauth2/auth/sessions/consent?subject=$subject&client=$CLIENT_ID_APP_API_KEY"
+
+
+
+curl http://localhost:4445/admin/oauth2/auth/requests/logout
