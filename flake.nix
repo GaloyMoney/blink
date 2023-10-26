@@ -47,6 +47,7 @@
           postgresql
           alejandra
           gnumake
+          docker
           docker-compose
           shellcheck
           shfmt

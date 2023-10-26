@@ -8,8 +8,8 @@
 #@   "bump_image_in_chart_name",
 #@   "bump_image_in_chart")
 
-#@ def consent_image():
-#@   return data.values.docker_registry + "/galoy-consent"
+#@ def galoy_dev_image():
+#@   return data.values.docker_registry + "/galoy-dev"
 #@ end
 
 #@ apps = ["consent", "dashboard"]
@@ -27,12 +27,47 @@ groups:
     - #@ build_edge_image_name(app)
     - #@ bump_image_in_chart_name(app)
 #@ end
+  - name: dev-image
+    jobs:
+    - build-galoy-dev-image
 
 jobs:
 #@ for app in apps:
   - #@ build_edge_image(app)
   - #@ bump_image_in_chart(app)
 #@ end
+  - name: build-galoy-dev-image
+    serial: true
+    plan:
+      - in_parallel:
+          - { get: galoy-dev-image-def, trigger: true }
+      - task: build
+        attempts: 2
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: nixos/nix
+          inputs:
+            - name: galoy-dev-image-def
+              path: repo
+          outputs:
+            - name: repo
+          run:
+            path: bash
+            args:
+            - -c
+            - |
+              cd repo && \
+                nix \
+                    --extra-experimental-features "nix-command flakes impure-derivations ca-derivations" \
+                    build \
+                    ".#dockerImage"
+      - put: galoy-dev-image
+        params:
+          image: repo/result
 
 resources:
 #@ for app in apps:
@@ -61,3 +96,19 @@ resources:
       uri: #@ data.values.git_charts_uri
       branch: "image-bump-bot-branch"
       private_key: #@ data.values.github_private_key
+
+  - name: galoy-dev-image-def
+    type: git
+    source:
+      paths: [flake.*]
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key
+
+  - name: galoy-dev-image
+    type: registry-image
+    source:
+      tag: edge
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ galoy_dev_image()
