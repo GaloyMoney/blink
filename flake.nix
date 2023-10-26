@@ -53,6 +53,7 @@
           postgresql
           alejandra
           gnumake
+          docker
           docker-compose
           shellcheck
           shfmt
@@ -169,6 +170,14 @@
           api-cron = tscDerivation {pkgName = "api-cron";};
           consent = nextDerivation {pkgName = "consent";};
           dashboard = nextDerivation {pkgName = "dashboard";};
+
+          dockerImage = pkgs.dockerTools.buildNixShellImage {
+            tag = "latest";
+            drv = pkgs.stdenv.mkDerivation {
+              name = "galoy-dev";
+              inherit nativeBuildInputs;
+            };
+          };
         };
 
         devShells.default = mkShell {
