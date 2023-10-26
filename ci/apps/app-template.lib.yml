@@ -28,7 +28,7 @@ plan:
       - get: #@ app_src_resource_name(app)
         trigger: true
       - { get: pipeline-tasks }
-  - task: prepare-docker-build
+  - task: buck-test-unit
     config:
       platform: linux
       image_resource: #@ galoy_dev_image_config()
@@ -37,7 +37,7 @@ plan:
         - name: #@ app_src_resource_name(app)
           path: repo
       params:
-        BUCK_TARGET: #@ "//apps/" + app
+        BUCK_TARGET: #@ "//apps/" + app + ":test-unit"
         BUCK_CMD: test
       run:
         path: pipeline-tasks/ci/apps/tasks/buck-task.sh
@@ -158,6 +158,7 @@ plan:
         trigger: true
         passed:
           - #@ build_edge_image_name(app)
+          - #@ buck_test_name(app)
       - get: #@ edge_image_resource_name(app)
         passed:
           - #@ build_edge_image_name(app)

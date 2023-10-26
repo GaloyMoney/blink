@@ -18,7 +18,7 @@ dev_pnpm_task_binary(
 )
 
 dev_pnpm_task_binary(
-  name = "open-cypress",
+  name = "cypress-open",
   command = "cypress:open",
 )
 
