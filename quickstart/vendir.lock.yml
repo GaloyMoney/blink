@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: initial Tiltfile (#3412)...'
-      sha: 808208e6a870fe276262d501b511329af49b6fab
+      commitTitle: 'docs: update dev docs with buck / nix info (#3430)...'
+      sha: 4870bf44f4298582ff3d28856b38084ea1a43ab6
       tags:
-      - 0.15.40-3-g808208e6a
+      - 0.15.41-2-g4870bf44f
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: initial Tiltfile (#3412)...'
-      sha: 808208e6a870fe276262d501b511329af49b6fab
+      commitTitle: 'docs: update dev docs with buck / nix info (#3430)...'
+      sha: 4870bf44f4298582ff3d28856b38084ea1a43ab6
       tags:
-      - 0.15.40-3-g808208e6a
+      - 0.15.41-2-g4870bf44f
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: initial Tiltfile (#3412)...'
-      sha: 808208e6a870fe276262d501b511329af49b6fab
+      commitTitle: 'docs: update dev docs with buck / nix info (#3430)...'
+      sha: 4870bf44f4298582ff3d28856b38084ea1a43ab6
       tags:
-      - 0.15.40-3-g808208e6a
+      - 0.15.41-2-g4870bf44f
     path: ./
   path: ./graphql
 kind: LockConfig
