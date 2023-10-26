@@ -6,7 +6,7 @@ interface ScopeItemProps {
   scope: string
 }
 
-export const ScopeItem: React.FC<ScopeItemProps> = ({ scope }) => (
+const ScopeItem: React.FC<ScopeItemProps> = ({ scope }) => (
   <label className={styles.item_container} htmlFor={scope}>
     <span className={styles.custom_label}>{scope}</span>
     <input

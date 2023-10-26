@@ -30,7 +30,7 @@ groups = {
     ],
 }
 
-consent_test_target = "//apps/consent:cypress"
+consent_test_target = "//apps/consent:test-integration"
 local_resource(
   "consent-test",
   labels = ["test"],

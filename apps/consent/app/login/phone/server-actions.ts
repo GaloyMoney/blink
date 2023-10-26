@@ -1,5 +1,5 @@
 "use server"
-import axios from "axios"
+import { isAxiosError } from "axios"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { isValidPhoneNumber } from "libphonenumber-js"
@@ -110,7 +110,7 @@ export const sendPhoneCode = async (
       customHeaders,
     )
   } catch (err) {
-    if (axios.isAxiosError(err) && err.response) {
+    if (isAxiosError(err) && err.response) {
       console.error("Error in 'phone/code' action", err.response.data)
       return {
         error: true,

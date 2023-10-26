@@ -1,5 +1,5 @@
 "use server"
-import axios from "axios"
+import { isAxiosError } from "axios"
 import { headers } from "next/headers"
 
 import { redirect } from "next/navigation"
@@ -36,7 +36,7 @@ export const submitFormTotp = async (_prevState: unknown, form: FormData) => {
     await authApi.validateTotp(totpCode, authToken, customHeaders)
   } catch (err) {
     console.error("error in 'totp/validate' ", err)
-    if (axios.isAxiosError(err) && err.response) {
+    if (isAxiosError(err) && err.response) {
       console.error("error in 'totp/validate' ", err.response.data.error)
       return {
         error: true,
