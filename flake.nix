@@ -40,6 +40,8 @@
         python3
         ripgrep
         cacert
+        clang
+        lld
       ];
 
       nativeBuildInputs = with pkgs;
