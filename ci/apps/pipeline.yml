@@ -58,16 +58,16 @@ jobs:
           run:
             path: bash
             args:
-            - -c
-            - |
-              cd repo && \
-                nix \
-                    --extra-experimental-features "nix-command flakes impure-derivations ca-derivations" \
-                    build \
-                    ".#dockerImage"
+              - -c
+              - |
+                set -eux
+                cd repo
+                nix --extra-experimental-features "nix-command flakes impure-derivations ca-derivations" build .#dockerImage
+                gunzip ./result -c > image.tar
+
       - put: galoy-dev-image
         params:
-          image: repo/result
+          image: repo/image.tar
 
 resources:
 #@ for app in apps:
