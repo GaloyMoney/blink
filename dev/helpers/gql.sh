@@ -13,7 +13,7 @@ register_email_to_user() {
   variables="{\"input\": {\"email\": \"$email\"}}"
   registration_id=$(exec_graphql $token 'user-email-registration-initiate' "${variables}" '.data.userEmailRegistrationInitiate.emailRegistrationId')
 
-  email_code_response=$(kratos_pg "SELECT body FROM courier_messages WHERE recipient='$email' ORDER BY created_at DESC LIMIT 1;")
+  email_code_response=$(kratos_pg -c "SELECT body FROM courier_messages WHERE recipient='$email' ORDER BY created_at DESC LIMIT 1;")
   email_code=$(echo "$email_code_response" | grep -oP '\d{6}')
 
   variables="{\"input\": {\"code\": \"$email_code\", \"emailRegistrationId\": \"$registration_id\"}}"

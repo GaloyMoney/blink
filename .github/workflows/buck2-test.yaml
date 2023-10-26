@@ -20,7 +20,7 @@ jobs:
           cat <<EOF > labels.json
           ${{ toJSON(github.event.pull_request.labels.*.name) }}
           EOF
-          for LABEL in $(jq -r '.[]' < labels.json); do
+          for LABEL in dashboard consent core; do
             case "$LABEL" in
               dashboard|consent)
                 ARGS+=" //apps/$LABEL:test-unit"

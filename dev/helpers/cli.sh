@@ -22,5 +22,5 @@ kratos_pg() {
   DB_USER="dbuser"
   DB_NAME="default"
 
-  docker exec "${COMPOSE_PROJECT_NAME}-kratos-pg-1" psql -U $DB_USER -d $DB_NAME -t -c "$@"
+  docker exec "${COMPOSE_PROJECT_NAME}-kratos-pg-1" psql -U $DB_USER -d $DB_NAME -t "$@"
 }

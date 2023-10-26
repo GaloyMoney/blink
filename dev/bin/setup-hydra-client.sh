@@ -8,8 +8,8 @@ source "${DEV_DIR}/helpers/cli.sh"
 hydra_client_name="${1}"
 redirect_uri="${2}"
 
-HYDRA_CLIENT_JSON="${DEV_DIR}/../.${hydra_client_name}-hydra-client.json"
-HYDRA_CLIENT_ENV="${DEV_DIR}/../.${hydra_client_name}-hydra-client.env"
+HYDRA_CLIENT_JSON="${DEV_DIR}/.${hydra_client_name}-hydra-client.json"
+HYDRA_CLIENT_ENV="${DEV_DIR}/.${hydra_client_name}-hydra-client.env"
 HYDRA_ADMIN_API="http://localhost:4445"
 HYDRA_PUBLIC_API="http://localhost:4444"
 
