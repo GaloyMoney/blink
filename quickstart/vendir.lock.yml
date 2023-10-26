@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: add dockerImage dev env package to nix flake (#3424)...'
-      sha: d57a231f7c7c36fe921d2d594a1e7be902ea82fb
+      commitTitle: 'chore: initial Tiltfile (#3412)...'
+      sha: 808208e6a870fe276262d501b511329af49b6fab
       tags:
-      - 0.15.39-1-gd57a231f7
+      - 0.15.40-3-g808208e6a
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: add dockerImage dev env package to nix flake (#3424)...'
-      sha: d57a231f7c7c36fe921d2d594a1e7be902ea82fb
+      commitTitle: 'chore: initial Tiltfile (#3412)...'
+      sha: 808208e6a870fe276262d501b511329af49b6fab
       tags:
-      - 0.15.39-1-gd57a231f7
+      - 0.15.40-3-g808208e6a
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: add dockerImage dev env package to nix flake (#3424)...'
-      sha: d57a231f7c7c36fe921d2d594a1e7be902ea82fb
+      commitTitle: 'chore: initial Tiltfile (#3412)...'
+      sha: 808208e6a870fe276262d501b511329af49b6fab
       tags:
-      - 0.15.39-1-gd57a231f7
+      - 0.15.40-3-g808208e6a
     path: ./
   path: ./graphql
 kind: LockConfig
