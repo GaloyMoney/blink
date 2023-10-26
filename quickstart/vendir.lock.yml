@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'build: switch nix docker image to ''buildImage'' (#3432)...'
-      sha: b0acbd83addbb0b8e6169a5d7adeb22444123dfd
+      commitTitle: 'chore: add dashboard to tilt (#3431)'
+      sha: 76fbe92af08c0737f9e09b92ae01e8bd557336e8
       tags:
-      - 0.15.43-1-gb0acbd83a
+      - 0.15.44-1-g76fbe92af
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'build: switch nix docker image to ''buildImage'' (#3432)...'
-      sha: b0acbd83addbb0b8e6169a5d7adeb22444123dfd
+      commitTitle: 'chore: add dashboard to tilt (#3431)'
+      sha: 76fbe92af08c0737f9e09b92ae01e8bd557336e8
       tags:
-      - 0.15.43-1-gb0acbd83a
+      - 0.15.44-1-g76fbe92af
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'build: switch nix docker image to ''buildImage'' (#3432)...'
-      sha: b0acbd83addbb0b8e6169a5d7adeb22444123dfd
+      commitTitle: 'chore: add dashboard to tilt (#3431)'
+      sha: 76fbe92af08c0737f9e09b92ae01e8bd557336e8
       tags:
-      - 0.15.43-1-gb0acbd83a
+      - 0.15.44-1-g76fbe92af
     path: ./
   path: ./graphql
 kind: LockConfig
