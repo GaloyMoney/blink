@@ -1,4 +1,5 @@
 import { ApolloClient, HttpLink, InMemoryCache, ApolloLink } from "@apollo/client"
+import { propagation, context } from "@opentelemetry/api"
 
 import { env } from "../../env"
 
@@ -17,6 +18,14 @@ export const graphQlClient = (authToken?: string) => {
   const httpLink = new HttpLink({
     uri: env.GRAPHQL_ENDPOINT,
     fetchOptions: { cache: "no-store" },
+    fetch: (uri, options) => {
+      const headersWithTrace = options?.headers || {}
+      propagation.inject(context.active(), headersWithTrace)
+      return fetch(uri, {
+        ...options,
+        headers: headersWithTrace,
+      })
+    },
     headers: {
       ...(authToken ? { authorization: `Bearer ${authToken}` } : undefined),
     },
