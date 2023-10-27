@@ -78,13 +78,13 @@ del-containers:
 
 legacy-integration:
 	pnpm run build && \
-	. ./.env pnpm run test:legacy-integration
+	pnpm run test:legacy-integration
 
 reset-legacy-integration: reset-deps-integration legacy-integration
 
 integration:
 	pnpm run build && \
-	. ./.env pnpm run test:integration
+	. ./.env && pnpm run test:integration
 
 reset-integration: reset-deps-integration integration
 
@@ -102,7 +102,12 @@ bats-in-ci:
 
 integration-in-ci:
 	pnpm install --frozen-lockfile && \
-	$(MAKE) reset-all-integration
+	SVIX_ENDPOINT= \
+	SVIX_SECRET= \
+	NODE_OPTIONS="--max-old-space-size=6144" \
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/legacy-integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
+	NODE_OPTIONS="--max-old-space-size=6144" \
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/integration/jest.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 unit-in-ci:
 	. ./.env && \
