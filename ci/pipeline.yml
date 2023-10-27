@@ -5,14 +5,10 @@
 #@   "rust_task_image_config",
 #@   "nodejs_concourse_image",
 #@   "slack_failure_notification",
-#@   "install_yarn_deps",
 #@   "nodejs_check_code",
 #@   "nodejs_audit",
 #@   "test_on_docker_host",
 #@   "docker_host_pool",
-#@   "nodejs_deps_resource",
-#@   "deps_version_resource",
-#@   "bundled_deps_resource",
 #@   "repo_resource",
 #@   "pipeline_tasks_resource",
 #@   "slack_resource",
@@ -59,6 +55,18 @@ source:
   repository: #@ release_pipeline_image()
 #@ end
 
+#@ def galoy_dev_image():
+#@   return data.values.docker_registry + "/galoy-dev"
+#@ end
+
+#@ def galoy_dev_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ galoy_dev_image()
+#@ end
+
 groups:
   - name: galoy
     jobs:
@@ -74,7 +82,6 @@ groups:
       - build-exporter-edge-image
       - build-trigger-edge-image
       - build-cron-edge-image
-      - install-deps
       - bump-image-in-chart
       - quickstart
       - release
@@ -86,41 +93,17 @@ groups:
       - sync-bria-api-proto
 
 jobs:
-  - name: install-deps
-    plan:
-    - in_parallel:
-      - {get: deps, trigger: true}
-      - {get: pipeline-tasks}
-      - {put: deps-version, params: {bump: patch}}
-    - task: install-deps
-      config:
-        platform: linux
-        image_resource: #@ nodejs_task_image_config()
-        inputs:
-        - name: pipeline-tasks
-        - name: deps
-        - name: deps-version
-        outputs:
-        - name: bundled-deps
-        run:
-          path: pipeline-tasks/ci/tasks/install-deps.sh
-    - put: bundled-deps
-      params:
-        file: bundled-deps/bundled-deps-*.tgz
-    on_failure: #@ slack_failure_notification()
   - name: check-code
     serial: true
     plan:
     - in_parallel:
       - { get: repo, trigger: true }
       - { get: pipeline-tasks }
-      - { get: bundled-deps, trigger: true}
     - task: check-code
       config:
         platform: linux
-        image_resource: #@ nodejs_task_image_config()
+        image_resource: #@ galoy_dev_image_config()
         inputs:
-        - name: bundled-deps
         - name: pipeline-tasks
         - name: repo
         run:
@@ -229,13 +212,11 @@ jobs:
       - in_parallel:
           - { get: repo, trigger: true }
           - { get: pipeline-tasks }
-          - { get: bundled-deps, trigger: true }
       - task: test-unit
         config:
           platform: linux
-          image_resource: #@ nodejs_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
-            - name: bundled-deps
             - name: pipeline-tasks
             - name: repo
           run:
@@ -251,7 +232,7 @@ jobs:
       - task: prepare-docker-build
         config:
           platform: linux
-          image_resource: #@ nodejs_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
             - name: pipeline-tasks
             - name: repo
@@ -291,7 +272,7 @@ jobs:
       - task: prepare-docker-build
         config:
           platform: linux
-          image_resource: #@ nodejs_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
             - name: pipeline-tasks
             - name: repo
@@ -331,7 +312,7 @@ jobs:
       - task: prepare-docker-build
         config:
           platform: linux
-          image_resource: #@ nodejs_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
             - name: pipeline-tasks
             - name: repo
@@ -371,7 +352,7 @@ jobs:
       - task: prepare-docker-build
         config:
           platform: linux
-          image_resource: #@ nodejs_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
             - name: pipeline-tasks
             - name: repo
@@ -411,7 +392,7 @@ jobs:
       - task: prepare-docker-build
         config:
           platform: linux
-          image_resource: #@ nodejs_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
             - name: pipeline-tasks
             - name: repo
@@ -451,7 +432,7 @@ jobs:
       - task: prepare-docker-build
         config:
           platform: linux
-          image_resource: #@ nodejs_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
             - name: pipeline-tasks
             - name: repo
@@ -491,7 +472,7 @@ jobs:
       - task: prepare-docker-build
         config:
           platform: linux
-          image_resource: #@ nodejs_task_image_config()
+          image_resource: #@ galoy_dev_image_config()
           inputs:
             - name: pipeline-tasks
             - name: repo
@@ -943,16 +924,6 @@ resources:
       private_key: #@ data.values.github_private_key
   -  #@ pipeline_tasks_resource()
 
-  - name: deps
-    type: git
-    source:
-      paths: [core/api/yarn.lock]
-      uri: #@ data.values.git_uri
-      branch: #@ data.values.git_branch
-      private_key: #@ data.values.github_private_key
-    webhook_token: ((webhook.secret))
-  -  #@ deps_version_resource()
-  -  #@ bundled_deps_resource()
   -  #@ slack_resource()
 
   - name: charts-repo-bot-branch
