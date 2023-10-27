@@ -136,7 +136,7 @@ create-tmp-env-ci:
 
 # 16 is exit code for critical https://classic.yarnpkg.com/lang/en/docs/cli/audit
 audit:
-	bash -c 'yarn audit --level critical; [[ $$? -ge 16 ]] && exit 1 || exit 0'
+	bash -c 'pnpm audit --audit-level critical; [[ $$? -ge 16 ]] && exit 1 || exit 0'
 
 mine-block:
 	container_id=$$(docker ps -q -f status=running -f name="bitcoind-1"); \
