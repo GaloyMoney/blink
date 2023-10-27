@@ -4,10 +4,10 @@ set -eu
 
 export CI_ROOT=$(pwd)
 
-host_name=$(cat docker-host/metadata | jq -r '.docker_host_name')
+host_name=$(cat nix-host/metadata | jq -r '.docker_host_name')
 echo "Running on host: ${host_name}"
-host_zone=$(cat docker-host/metadata | jq -r '.docker_host_zone')
-gcp_project=$(cat docker-host/metadata | jq -r '.docker_host_project')
+host_zone=$(cat nix-host/metadata | jq -r '.docker_host_zone')
+gcp_project=$(cat nix-host/metadata | jq -r '.docker_host_project')
 
 gcloud_ssh() {
   gcloud compute ssh ${host_name} \
