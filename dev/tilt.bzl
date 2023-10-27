@@ -9,16 +9,6 @@ tilt = rule(
             default = "Tiltfile",
             doc = """The Tiltfile to run.""",
         ),
-        "args": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Additional arguments passed as <Tiltfile args>.""",
-        ),
-        "tilt_args": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Additional arguments passed as `tilt` arguments.""",
-        ),
     },
 )
 
@@ -28,15 +18,22 @@ def _invoke_tilt(ctx: AnalysisContext, subcmd: str) -> list[[DefaultInfo, RunInf
         ctx.attrs.tiltfile,
     )
 
+    script = ctx.actions.write("tilt-run.sh", """\
+#!/usr/bin/env bash
+set -euo pipefail
+
+rootpath="$(git rev-parse --show-toplevel)"
+subcmd="$1"
+tiltfile="$2"
+
+tilt "$subcmd" --file "$rootpath"/"$tiltfile"
+""", is_executable = True)
+
     run_cmd_args = cmd_args([
-        "tilt",
+        script,
         subcmd,
-        "--file",
         tiltfile,
     ])
-    run_cmd_args.add(ctx.attrs.tilt_args)
-    run_cmd_args.add("--")
-    run_cmd_args.add(ctx.attrs.args)
 
     args_file = ctx.actions.write("tilt-args.txt", run_cmd_args)
 
