@@ -78,13 +78,13 @@ del-containers:
 
 legacy-integration:
 	pnpm run build && \
-	pnpm run test:legacy-integration
+	. ./.env pnpm run test:legacy-integration
 
 reset-legacy-integration: reset-deps-integration legacy-integration
 
 integration:
 	pnpm run build && \
-	pnpm run test:integration
+	. ./.env pnpm run test:integration
 
 reset-integration: reset-deps-integration integration
 
@@ -92,7 +92,7 @@ reset-all-integration: reset-deps-integration legacy-integration integration
 
 bats:
 	pnpm run build && \
-	bats -t test/bats
+	. ./.env && bats -t test/bats
 
 reset-bats: reset-deps bats
 
