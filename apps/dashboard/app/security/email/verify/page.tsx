@@ -1,57 +1,53 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import VerfiyEmailForm from "./verify-form";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+
+import VerifyEmailForm from "./verify-form"
+
 import {
   deleteEmail,
   emailRegistrationInitiate,
-} from "@/services/graphql/mutations/email";
-import { useFormStatus } from "react-dom";
+} from "@/services/graphql/mutations/email"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 type VerifyEmailProp = {
-  emailRegistrationId: string | null | undefined;
-};
+  emailRegistrationId: string | null | undefined
+}
 
 export default async function VerifyEmail({
   searchParams,
 }: {
-  searchParams: VerifyEmailProp;
+  searchParams: VerifyEmailProp
 }) {
-  let { emailRegistrationId } = searchParams;
-  const session = await getServerSession(authOptions);
-  const token = session?.accessToken;
+  let { emailRegistrationId } = searchParams
+  const session = await getServerSession(authOptions)
+  const token = session?.accessToken
 
   // this is if user has address but not verified
   if (!emailRegistrationId || typeof emailRegistrationId !== "string") {
-    const email = session?.userData.data.me?.email?.address;
+    const email = session?.userData.data.me?.email?.address
     if (!email || typeof email !== "string" || !token) {
-      redirect("/security");
+      redirect("/security")
     }
 
-    await deleteEmail(token);
-    let data;
+    await deleteEmail(token)
+    let data
     try {
-      data = await emailRegistrationInitiate(email, token);
+      data = await emailRegistrationInitiate(email, token)
     } catch (err) {
-      console.log("error in emailRegistrationInitiate ", err);
-      redirect("/security");
+      console.log("error in emailRegistrationInitiate ", err)
+      redirect("/security")
     }
 
     if (data?.userEmailRegistrationInitiate.errors.length) {
-      redirect("/security");
+      redirect("/security")
     }
 
-    emailRegistrationId =
-      data?.userEmailRegistrationInitiate.emailRegistrationId;
+    emailRegistrationId = data?.userEmailRegistrationInitiate.emailRegistrationId
   }
 
   if (!emailRegistrationId && typeof emailRegistrationId !== "string") {
-    redirect("/security");
+    redirect("/security")
   }
 
-  return (
-    <VerfiyEmailForm
-      emailRegistrationId={emailRegistrationId}
-    ></VerfiyEmailForm>
-  );
+  return <VerifyEmailForm emailRegistrationId={emailRegistrationId}></VerifyEmailForm>
 }

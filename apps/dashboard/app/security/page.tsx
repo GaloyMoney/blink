@@ -1,13 +1,13 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import ContentContainer from "@/components/content-container";
-import EmailSettings from "@/components/security/email/email";
-import { Box } from "@mui/joy";
+import { getServerSession } from "next-auth"
+import { Box } from "@mui/joy"
+
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import ContentContainer from "@/components/content-container"
+import EmailSettings from "@/components/security/email/email"
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
-  const totpEnabled = session?.userData.data.me?.totpEnabled;
-  const email = session?.userData.data.me?.email;
+  const session = await getServerSession(authOptions)
+  const email = session?.userData.data.me?.email
   return (
     <ContentContainer>
       <Box
@@ -23,5 +23,5 @@ export default async function Home() {
         {email ? <EmailSettings emailData={email}></EmailSettings> : null}
       </Box>
     </ContentContainer>
-  );
+  )
 }

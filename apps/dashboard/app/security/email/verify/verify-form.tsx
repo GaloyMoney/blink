@@ -1,13 +1,14 @@
-"use client";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../api/auth/[...nextauth]/route";
-import ContentContainer from "@/components/content-container";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-// @ts-ignore-next-line no-implicit-any error
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
-// @ts-ignore-next-line no-implicit-any error
-import { experimental_useFormState as useFormState } from "react-dom";
-import { emailRegisterValidateServerAction } from "../../server-actions";
+"use client"
+
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
+import {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore-next-line no-implicit-any error
+  experimental_useFormStatus as useFormStatus,
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore-next-line no-implicit-any error
+  experimental_useFormState as useFormState,
+} from "react-dom"
 
 import {
   Box,
@@ -18,24 +19,23 @@ import {
   FormHelperText,
   Card,
   Typography,
-} from "@mui/joy";
-import InfoOutlined from "@mui/icons-material/InfoOutlined";
-import { CheckBox } from "@mui/icons-material";
-import Link from "next/link";
+} from "@mui/joy"
+import InfoOutlined from "@mui/icons-material/InfoOutlined"
+import Link from "next/link"
+
+import { emailRegisterValidateServerAction } from "../../server-actions"
 
 type VerifyEmailFormProps = {
-  emailRegistrationId: string;
-};
-export default function VerifyEmailForm({
-  emailRegistrationId,
-}: VerifyEmailFormProps) {
-  const { pending } = useFormStatus();
+  emailRegistrationId: string
+}
+export default function VerifyEmailForm({ emailRegistrationId }: VerifyEmailFormProps) {
+  const { pending } = useFormStatus()
 
   const [state, formAction] = useFormState(emailRegisterValidateServerAction, {
     error: null,
     message: null,
     responsePayload: {},
-  });
+  })
 
   return (
     <main
@@ -64,11 +64,7 @@ export default function VerifyEmailForm({
         >
           <form action={formAction}>
             <FormLabel>Code</FormLabel>
-            <input
-              type="hidden"
-              name="emailRegistrationId"
-              value={emailRegistrationId}
-            />
+            <input type="hidden" name="emailRegistrationId" value={emailRegistrationId} />
             <Input
               name="code"
               type="code"
@@ -113,5 +109,5 @@ export default function VerifyEmailForm({
         </FormControl>
       </Card>
     </main>
-  );
+  )
 }

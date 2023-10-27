@@ -1,20 +1,18 @@
-
 "use client"
-import { Button, Typography, Card } from "@mui/joy";
-import { Box } from "@mui/joy";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Link from "next/link";
+import { Button, Typography, Box } from "@mui/joy"
+import MailOutlineIcon from "@mui/icons-material/MailOutline"
+import DeleteIcon from "@mui/icons-material/Delete"
+import Link from "next/link"
 
 type EmailDataProps = {
-  readonly __typename: "Email";
-  readonly address?: string | null | undefined;
-  readonly verified?: boolean | null | undefined;
-};
+  readonly __typename: "Email"
+  readonly address?: string | null | undefined
+  readonly verified?: boolean | null | undefined
+}
 
 type EmailSettingsProps = {
-  emailData: EmailDataProps;
-};
+  emailData: EmailDataProps
+}
 
 function EmailSettings({ emailData }: EmailSettingsProps) {
   return (
@@ -87,7 +85,7 @@ function EmailSettings({ emailData }: EmailSettingsProps) {
         )}
       </Box>
     </Box>
-  );
+  )
 }
 
-export default EmailSettings;
+export default EmailSettings

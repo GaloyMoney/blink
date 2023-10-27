@@ -11,6 +11,6 @@ const theme = extendTheme({
     display: inter.style.fontFamily,
     code: inter.style.fontFamily,
   },
-});
+})
 
 export default theme

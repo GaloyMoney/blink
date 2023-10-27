@@ -1,14 +1,15 @@
-"use client";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../api/auth/[...nextauth]/route";
-import ContentContainer from "@/components/content-container";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+"use client"
 
-// @ts-ignore-next-line no-implicit-any error
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
-// @ts-ignore-next-line no-implicit-any error
-import { experimental_useFormState as useFormState } from "react-dom";
-import { emailRegisterInitiateServerAction } from "../../server-actions";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
+
+import {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore-next-line no-implicit-any error
+  experimental_useFormStatus as useFormStatus,
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore-next-line no-implicit-any error
+  experimental_useFormState as useFormState,
+} from "react-dom"
 
 import {
   Box,
@@ -19,18 +20,19 @@ import {
   FormHelperText,
   Card,
   Typography,
-  Link as MuiLink,
-} from "@mui/joy";
-import InfoOutlined from "@mui/icons-material/InfoOutlined";
-import { CheckBox } from "@mui/icons-material";
-import Link from "next/link";
+} from "@mui/joy"
+import InfoOutlined from "@mui/icons-material/InfoOutlined"
+import Link from "next/link"
+
+import { emailRegisterInitiateServerAction } from "../../server-actions"
+
 export default function AddEmail() {
   const [state, formAction] = useFormState(emailRegisterInitiateServerAction, {
     error: null,
     message: null,
     responsePayload: {},
-  });
-    const { pending } = useFormStatus();
+  })
+  const { pending } = useFormStatus()
   return (
     <main
       style={{
@@ -72,7 +74,7 @@ export default function AddEmail() {
             {state.error ? (
               <FormHelperText>
                 <InfoOutlined />
-                Opps! something is wrong.
+                Oops! something is wrong.
               </FormHelperText>
             ) : null}
 
@@ -103,5 +105,5 @@ export default function AddEmail() {
         </FormControl>
       </Card>
     </main>
-  );
+  )
 }

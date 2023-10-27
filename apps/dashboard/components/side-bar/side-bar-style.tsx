@@ -1,5 +1,5 @@
-import React from "react";
-import GlobalStyles from "@mui/joy/GlobalStyles";
+import React from "react"
+import GlobalStyles from "@mui/joy/GlobalStyles"
 
 export const SidebarStyles: React.FC = () => (
   <GlobalStyles
@@ -15,4 +15,4 @@ export const SidebarStyles: React.FC = () => (
       },
     })}
   />
-);
+)

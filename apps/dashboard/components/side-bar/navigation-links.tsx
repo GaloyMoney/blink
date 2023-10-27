@@ -1,15 +1,16 @@
-import React from "react";
-import Link from "next/link";
-import ListItem from "@mui/joy/ListItem";
-import ListItemButton from "@mui/joy/ListItemButton";
-import { Typography } from "@mui/joy";
-import { closeSidebar } from "./../utils";
+import React from "react"
+import Link from "next/link"
+import ListItem from "@mui/joy/ListItem"
+import ListItemButton from "@mui/joy/ListItemButton"
+import { Typography } from "@mui/joy"
+
+import { closeSidebar } from "./../utils"
 
 interface NavigationLinkProps {
-  href: string;
-  icon: React.ReactElement;
-  label: string;
-  isCurrentPath: (href: string) => boolean;
+  href: string
+  icon: React.ReactElement
+  label: string
+  isCurrentPath: (href: string) => boolean
 }
 
 export const NavigationLink: React.FC<NavigationLinkProps> = ({
@@ -22,12 +23,10 @@ export const NavigationLink: React.FC<NavigationLinkProps> = ({
     <ListItem>
       <ListItemButton
         onClick={() => {
-          closeSidebar();
+          closeSidebar()
         }}
         sx={{
-          backgroundColor: isCurrentPath(href)
-            ? "rgba(0, 0, 0, 0.08)"
-            : "transparent",
+          "backgroundColor": isCurrentPath(href) ? "rgba(0, 0, 0, 0.08)" : "transparent",
           "&:hover": {
             backgroundColor: "rgba(0, 0, 0, 0.08)",
           },
@@ -47,4 +46,4 @@ export const NavigationLink: React.FC<NavigationLinkProps> = ({
       </ListItemButton>
     </ListItem>
   </Link>
-);
+)

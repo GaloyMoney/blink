@@ -1,21 +1,22 @@
-"use client";
-import React from "react";
-import Box from "@mui/joy/Box";
-import List from "@mui/joy/List";
-import Sheet from "@mui/joy/Sheet";
-import Divider from "@mui/material/Divider";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import { usePathname } from "next/navigation";
-import Logo from "./../logo";
-import { SidebarStyles } from "./side-bar-style";
-import { SidebarOverlay } from "./side-bar-overlay";
-import { NavigationLink } from "./navigation-links";
-import SecurityIcon from "@mui/icons-material/Security";
+"use client"
+import React from "react"
+import Box from "@mui/joy/Box"
+import List from "@mui/joy/List"
+import Sheet from "@mui/joy/Sheet"
+import Divider from "@mui/material/Divider"
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong"
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined"
+import { usePathname } from "next/navigation"
+import SecurityIcon from "@mui/icons-material/Security"
+
+import Logo from "./../logo"
+import { SidebarStyles } from "./side-bar-style"
+import { SidebarOverlay } from "./side-bar-overlay"
+import { NavigationLink } from "./navigation-links"
 
 const Sidebar: React.FC = () => {
-  const path = usePathname();
-  const isCurrentPath = (href: string): boolean => path === href;
+  const path = usePathname()
+  const isCurrentPath = (href: string): boolean => path === href
 
   return (
     <Sheet
@@ -97,7 +98,7 @@ const Sidebar: React.FC = () => {
         </List>
       </Box>
     </Sheet>
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar

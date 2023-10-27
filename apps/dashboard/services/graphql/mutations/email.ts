@@ -1,19 +1,17 @@
-import { gql } from "@apollo/client";
-import { apollo } from "..";
+import { gql } from "@apollo/client"
+
+import { apollo } from ".."
 import {
   UserEmailDeleteDocument,
   UserEmailDeleteMutation,
   UserEmailRegistrationInitiateDocument,
   UserEmailRegistrationInitiateMutation,
   UserEmailRegistrationValidateDocument,
-  UserEmailRegistrationValidateInput,
   UserEmailRegistrationValidateMutation,
-} from "../generated";
+} from "../generated"
 
 gql`
-  mutation UserEmailRegistrationInitiate(
-    $input: UserEmailRegistrationInitiateInput!
-  ) {
+  mutation UserEmailRegistrationInitiate($input: UserEmailRegistrationInitiateInput!) {
     userEmailRegistrationInitiate(input: $input) {
       emailRegistrationId
       errors {
@@ -22,12 +20,10 @@ gql`
       }
     }
   }
-`;
+`
 
 gql`
-  mutation UserEmailRegistrationValidate(
-    $input: UserEmailRegistrationValidateInput!
-  ) {
+  mutation UserEmailRegistrationValidate($input: UserEmailRegistrationValidateInput!) {
     userEmailRegistrationValidate(input: $input) {
       errors {
         message
@@ -35,7 +31,7 @@ gql`
       }
     }
   }
-`;
+`
 
 gql`
   mutation UserEmailDelete {
@@ -46,62 +42,54 @@ gql`
       }
     }
   }
-`;
+`
 
 export async function emailRegistrationInitiate(email: string, token: string) {
-  const client = apollo(token).getClient();
+  const client = apollo(token).getClient()
   try {
-    const { data } = await client.mutate<UserEmailRegistrationInitiateMutation>(
-      {
-        mutation: UserEmailRegistrationInitiateDocument,
-        variables: { input: { email } },
-      }
-    );
-    return data;
+    const { data } = await client.mutate<UserEmailRegistrationInitiateMutation>({
+      mutation: UserEmailRegistrationInitiateDocument,
+      variables: { input: { email } },
+    })
+    return data
   } catch (error) {
-    console.error("Error executing mutation: emailRegistrationInitiate ==> ", error);
-    throw new Error("Error in emailRegistrationInitiate");
+    console.error("Error executing mutation: emailRegistrationInitiate ==> ", error)
+    throw new Error("Error in emailRegistrationInitiate")
   }
 }
 
 export async function emailRegistrationValidate(
   code: string,
   emailRegistrationId: string,
-  token: string
+  token: string,
 ) {
-  const client = apollo(token).getClient();
+  const client = apollo(token).getClient()
   try {
-    const { data } = await client.mutate<UserEmailRegistrationValidateMutation>(
-      {
-        mutation: UserEmailRegistrationValidateDocument,
-        variables: {
-          input: {
-            code,
-            emailRegistrationId,
-          },
+    const { data } = await client.mutate<UserEmailRegistrationValidateMutation>({
+      mutation: UserEmailRegistrationValidateDocument,
+      variables: {
+        input: {
+          code,
+          emailRegistrationId,
         },
-      }
-    );
-    return data;
+      },
+    })
+    return data
   } catch (error) {
-    console.error(
-      "Error executing mutation: UserTotpRegistrationValidate ==> ",
-      error
-    );
-    throw new Error("Error in UserTotpRegistrationValidate");
+    console.error("Error executing mutation: UserTotpRegistrationValidate ==> ", error)
+    throw new Error("Error in UserTotpRegistrationValidate")
   }
 }
 
 export async function deleteEmail(token: string) {
-  const client = apollo(token).getClient();
+  const client = apollo(token).getClient()
   try {
-    let errorMessages;
     const { data } = await client.mutate<UserEmailDeleteMutation>({
       mutation: UserEmailDeleteDocument,
-    });
-    return data;
+    })
+    return data
   } catch (error) {
-    console.error("Error executing userEmailDelete mutation:", error);
-    throw new Error("Error in userEmailDelete");
+    console.error("Error executing userEmailDelete mutation:", error)
+    throw new Error("Error in userEmailDelete")
   }
 }

@@ -1,6 +1,7 @@
-import React from "react";
-import Box from "@mui/joy/Box";
-import { closeSidebar } from "./../utils";
+import React from "react"
+import Box from "@mui/joy/Box"
+
+import { closeSidebar } from "./../utils"
 
 export const SidebarOverlay: React.FC = () => (
   <Box
@@ -23,4 +24,4 @@ export const SidebarOverlay: React.FC = () => (
     }}
     onClick={() => closeSidebar()}
   />
-);
+)

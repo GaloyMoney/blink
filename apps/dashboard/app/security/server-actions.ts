@@ -1,50 +1,47 @@
-"use server";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+"use server"
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+
 import {
-  deleteEmail,
   emailRegistrationInitiate,
   emailRegistrationValidate,
-} from "@/services/graphql/mutations/email";
-import { from } from "@apollo/client";
-import { getServerSession } from "next-auth";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { useFormState } from "react-dom";
+} from "@/services/graphql/mutations/email"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export const emailRegisterInitiateServerAction = async (
   _prevState: unknown,
-  form: FormData
+  form: FormData,
 ) => {
-  const email = form.get("email");
+  const email = form.get("email")
   if (!email || typeof email !== "string") {
     return {
       error: true,
       message: "Invalid Email",
       data: null,
-    };
+    }
   }
 
-  const session = await getServerSession(authOptions);
-  const token = session?.accessToken;
+  const session = await getServerSession(authOptions)
+  const token = session?.accessToken
   if (!token && typeof token !== "string") {
     return {
       error: true,
       message: "Invalid Token",
       data: null,
-    };
+    }
   }
 
-  let data;
+  let data
   try {
-    data = await emailRegistrationInitiate(email, token);
+    data = await emailRegistrationInitiate(email, token)
   } catch (err) {
-    console.log("error in emailRegistrationInitiate ", err);
+    console.log("error in emailRegistrationInitiate ", err)
     return {
       error: true,
       message:
         "Something went wrong Please try again and if error persist contact support",
       data: null,
-    };
+    }
   }
 
   if (data?.userEmailRegistrationInitiate.errors.length) {
@@ -52,20 +49,19 @@ export const emailRegisterInitiateServerAction = async (
       error: true,
       message: data?.userEmailRegistrationInitiate.errors[0],
       data: null,
-    };
+    }
   }
 
-  const emailRegistrationId =
-    data?.userEmailRegistrationInitiate.emailRegistrationId;
-  redirect(`/security/email/verify?emailRegistrationId=${emailRegistrationId}`);
-};
+  const emailRegistrationId = data?.userEmailRegistrationInitiate.emailRegistrationId
+  redirect(`/security/email/verify?emailRegistrationId=${emailRegistrationId}`)
+}
 
 export const emailRegisterValidateServerAction = async (
   _prevState: unknown,
-  form: FormData
+  form: FormData,
 ) => {
-  const code = form.get("code");
-  const emailRegistrationId = form.get("emailRegistrationId");
+  const code = form.get("code")
+  const emailRegistrationId = form.get("emailRegistrationId")
 
   if (
     !code ||
@@ -77,45 +73,44 @@ export const emailRegisterValidateServerAction = async (
       error: true,
       message: "Invalid values",
       data: null,
-    };
+    }
   }
 
-  const session = await getServerSession(authOptions);
-  const token = session?.accessToken;
+  const session = await getServerSession(authOptions)
+  const token = session?.accessToken
 
   if (!token || typeof token !== "string") {
     return {
       error: true,
       message: "Invalid Token",
       data: null,
-    };
+    }
   }
 
-  let codeVerificationResponse;
+  let codeVerificationResponse
   try {
     codeVerificationResponse = await emailRegistrationValidate(
       code,
       emailRegistrationId,
-      token
-    );
+      token,
+    )
   } catch (err) {
-    console.log("error in emailRegistrationValidate ", err);
+    console.log("error in emailRegistrationValidate ", err)
     return {
       error: true,
       message:
         "Something went wrong Please try again and if error persist contact support",
       data: null,
-    };
+    }
   }
-  
+
   if (codeVerificationResponse?.userEmailRegistrationValidate.errors.length) {
     return {
       error: true,
-      message:
-        codeVerificationResponse?.userEmailRegistrationValidate.errors[0],
+      message: codeVerificationResponse?.userEmailRegistrationValidate.errors[0],
       data: null,
-    };
+    }
   }
 
-  redirect("/security");
-};
+  redirect("/security")
+}
