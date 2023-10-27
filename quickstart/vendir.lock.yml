@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'ci: get Tilt working in concourse'
-      sha: 3ce2b86e7b4760329ad5f863528eb90a26951e2d
+      commitTitle: 'fix: add gitMinimal to flake'
+      sha: a80918e24ee5d52fbc510d62a48e3dc38f417c64
       tags:
-      - 0.15.49-3-g3ce2b86e7
+      - 0.15.51-2-ga80918e24
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'ci: get Tilt working in concourse'
-      sha: 3ce2b86e7b4760329ad5f863528eb90a26951e2d
+      commitTitle: 'fix: add gitMinimal to flake'
+      sha: a80918e24ee5d52fbc510d62a48e3dc38f417c64
       tags:
-      - 0.15.49-3-g3ce2b86e7
+      - 0.15.51-2-ga80918e24
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'ci: get Tilt working in concourse'
-      sha: 3ce2b86e7b4760329ad5f863528eb90a26951e2d
+      commitTitle: 'fix: add gitMinimal to flake'
+      sha: a80918e24ee5d52fbc510d62a48e3dc38f417c64
       tags:
-      - 0.15.49-3-g3ce2b86e7
+      - 0.15.51-2-ga80918e24
     path: ./
   path: ./graphql
 kind: LockConfig
