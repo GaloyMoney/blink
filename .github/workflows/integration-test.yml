@@ -19,6 +19,4 @@ jobs:
       - name: Run integration tests
         run: |
           cd core/api/
-          nix develop -c make integration-in-ci
-          container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-integration-tests-")
-          exit $(docker inspect $container_id --format='{{.State.ExitCode}}')
+          nix develop -c make reset-integration
