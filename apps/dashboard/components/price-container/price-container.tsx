@@ -23,7 +23,6 @@ const formatBalance = (
   if (walletCurrency === "BTC") {
     const btcBalance = balance / 100000000
     if (btcBalance < 0.00001) {
-      // Set your own threshold
       return [balance, "sats"]
     } else {
       return [btcBalance, "BTC"]
