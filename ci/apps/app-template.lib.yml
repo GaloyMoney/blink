@@ -117,7 +117,7 @@ plan:
 #@ params["GOOGLE_CREDENTIALS"] = "((staging-gcp-creds.creds_json))"
 #@ params["SSH_PRIVATE_KEY"] = "((staging-ssh.ssh_private_key))"
 #@ params["SSH_PUB_KEY"] = "((staging-ssh.ssh_public_key))"
-#@ params["CMD"] = "cd dev && xvfb-run tilt ci -- --test " + app
+#@ params["CMD"] = "xvfb-run tilt --file dev/Tiltfile ci -- --test " + app
 name: #@ tilt_integration_test_name(app)
 serial: true
 plan:
@@ -138,9 +138,6 @@ plan:
     - name: nix-host
     - name: #@ app_src_resource_name(app)
       path: #@ data.values.gh_repository + "-" + app
-    caches:
-    - path: cargo-home
-    - path: cargo-target-dir
     params: #@ params
     run:
       path: pipeline-tasks/ci/apps/tasks/run-on-nix-host.sh

@@ -29,4 +29,4 @@ jobs:
         echo "Prepared args: $ARGS"
         echo "args=$ARGS" >> "$GITHUB_OUTPUT"
     - name: Tilt CI
-      run: nix develop -c bash -c "cd dev && xvfb-run tilt ci -- ${{ steps.prepare_args.outputs.args }}"
+      run: nix develop -c xvfb-run tilt --file dev/Tiltfile ci -- ${{ steps.prepare_args.outputs.args }}

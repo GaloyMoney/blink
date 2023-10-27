@@ -1,4 +1,4 @@
-is_ci=sys.argv[1] == "ci"
+is_ci=("ci" in sys.argv)
 
 config.define_string_list("test")
 cfg = config.parse()
