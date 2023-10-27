@@ -8,7 +8,7 @@ jobs:
   integration:
     name: Integration test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v4
