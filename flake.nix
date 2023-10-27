@@ -58,6 +58,7 @@
           shellcheck
           shfmt
           vendir
+          gitMinimal
           jq
           ytt
         ]
