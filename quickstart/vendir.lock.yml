@@ -2,29 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: fix dashboard bug for invalid token, added dev mode for
-        captcha (#3410)...'
-      sha: 35c071126ae6d2486db2162dc57afeb46647c702
+      commitTitle: 'fix: add bash to /bin/bash in image (#3440)'
+      sha: 92024b8de3e59ab115bf534bd948c220c14b84cf
       tags:
-      - 0.15.47-1-g35c071126
+      - 0.15.48-1-g92024b8de
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: fix dashboard bug for invalid token, added dev mode for
-        captcha (#3410)...'
-      sha: 35c071126ae6d2486db2162dc57afeb46647c702
+      commitTitle: 'fix: add bash to /bin/bash in image (#3440)'
+      sha: 92024b8de3e59ab115bf534bd948c220c14b84cf
       tags:
-      - 0.15.47-1-g35c071126
+      - 0.15.48-1-g92024b8de
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: fix dashboard bug for invalid token, added dev mode for
-        captcha (#3410)...'
-      sha: 35c071126ae6d2486db2162dc57afeb46647c702
+      commitTitle: 'fix: add bash to /bin/bash in image (#3440)'
+      sha: 92024b8de3e59ab115bf534bd948c220c14b84cf
       tags:
-      - 0.15.47-1-g35c071126
+      - 0.15.48-1-g92024b8de
     path: ./
   path: ./graphql
 kind: LockConfig
