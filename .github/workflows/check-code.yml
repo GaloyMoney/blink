@@ -12,6 +12,10 @@ jobs:
     name: Check Code
     runs-on: ubuntu-latest
     steps:
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
       - run: cd core/api && nix develop -c pnpm install
       - name: Run check code
