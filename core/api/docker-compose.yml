@@ -49,7 +49,6 @@ services:
       - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/apollo-federation/router.yaml
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev:/repo/dev
-    extra_hosts: []
   otel-agent:
     ports:
       - "4318:4318" #! http receiver
