@@ -25,9 +25,6 @@
         (self: super: {
           nodejs = super.nodejs_20;
           pnpm = super.nodePackages.pnpm;
-          yarn = super.yarn.override {
-            nodejs = super.nodejs_20;
-          };
         })
       ];
       pkgs = import nixpkgs {inherit overlays system;};
@@ -47,7 +44,6 @@
           envsubst
           nodejs
           tilt-pin.tilt
-          yarn
           typescript
           bats
           postgresql

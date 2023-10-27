@@ -10,23 +10,23 @@ update-price-history:
 	docker compose run price-history node servers/history/cron.js
 
 start-main:
-	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
-		src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
+	. ./.env && pnpm tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/graphql-main-server.ts | pnpm pino-pretty -c -l
 
 start-main-fast:
-	yarn run watch-main | yarn pino-pretty -c -l
+	pnpm run watch-main | pnpm pino-pretty -c -l
 
 start-trigger:
-	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
-		src/servers/trigger.ts | yarn pino-pretty -c -l
+	. ./.env && pnpm tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/trigger.ts | pnpm pino-pretty -c -l
 
 start-cron: start-deps
-	. ./.env && yarn tsnd --files -r tsconfig-paths/register -r src/services/tracing.ts \
-		src/servers/cron.ts | yarn pino-pretty -c -l
+	. ./.env && pnpm tsnd --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/cron.ts | pnpm pino-pretty -c -l
 
 start-ws:
-	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
-		src/servers/ws-server.ts | yarn pino-pretty -c -l
+	. ./.env && pnpm tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/ws-server.ts | pnpm pino-pretty -c -l
 
 start-loopd:
 	./dev/bin/start-loopd.sh
@@ -44,11 +44,11 @@ start-ws-ci:
 	node dist/servers/ws-server.js
 
 exporter: start-deps
-	. ./.env && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
-		src/servers/exporter.ts | yarn pino-pretty -c -l
+	. ./.env && pnpm tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/exporter.ts | pnpm pino-pretty -c -l
 
 watch:
-	yarn nodemon -V -e ts,graphql -w ./src -x make start
+	pnpm nodemon -V -e ts,graphql -w ./src -x make start
 
 clean-deps:
 	docker compose down -t 3
@@ -64,7 +64,7 @@ test-migrate:
 	docker compose -f docker-compose.yml up mongodb-migrate --exit-code-from mongodb-migrate
 
 unit:
-	yarn test:unit
+	pnpm run test:unit
 
 watch-unit:
 	$(BIN_DIR)/jest --config ./test/unit/jest.config.js --clearCache
@@ -77,27 +77,27 @@ del-containers:
 	docker compose rm -sfv
 
 legacy-integration:
-	yarn build && \
-	yarn test:legacy-integration
+	pnpm run build && \
+	pnpm run test:legacy-integration
 
 reset-legacy-integration: reset-deps-integration legacy-integration
 
 integration:
-	yarn build && \
-	yarn test:integration
+	pnpm run build && \
+	pnpm run test:integration
 
 reset-integration: reset-deps-integration integration
 
 bats:
-	yarn build && \
+	pnpm run build && \
 	bats -t test/bats
 
 reset-bats: reset-deps bats
 
 execute-bats-from-within-container:
 	git config --global --add safe.directory /repo # otherwise bats complains
-	yarn install && \
-	yarn build && \
+	pnpm install --frozen-lockfile && \
+	pnpm run build && \
 	bats -t test/bats
 
 integration-in-ci:
@@ -107,7 +107,7 @@ integration-in-ci:
 # NODE_OPTIONS line should be removed whenever we upgrade yarn.lock to see if
 # heap allocation issue has been resolved in dependencies (fails at 2048).
 execute-integration-from-within-container:
-	yarn install && \
+	pnpm run install --frozen-lockfile && \
 	SVIX_ENDPOINT= \
 	SVIX_SECRET= \
 	NODE_OPTIONS="--max-old-space-size=6144" \
@@ -120,7 +120,7 @@ unit-in-ci:
 		LOGLEVEL=warn $(BIN_DIR)/jest --config ./test/unit/jest.config.js --ci --bail --maxWorkers=50%
 
 check-implicit:
-	yarn tsc-check-noimplicitany
+	pnpm run tsc-check-noimplicitany
 
 check-code: check-implicit
 	pnpm run tsc-check
@@ -159,7 +159,7 @@ redis-flush:
 	docker-compose exec redis redis-cli FLUSHDB
 
 codegen:
-	yarn write-sdl
+	pnpm run write-sdl
 
 gen-test-jwt:
-	yarn gen-test-jwt
+	pnpm run gen-test-jwt
