@@ -9,10 +9,11 @@ jobs:
     name: Buck2 Test
     runs-on: ubuntu-latest
     steps:
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v22
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Prepare Buck2 test args from labels
         id: prepare_args
         run: |
