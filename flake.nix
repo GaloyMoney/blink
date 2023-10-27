@@ -60,6 +60,7 @@
           vendir
           gitMinimal
           jq
+          yq-go
           ytt
         ]
         ++ buck2NativeBuildInputs
