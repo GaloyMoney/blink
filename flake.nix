@@ -76,6 +76,9 @@
           vendir
           jq
           ytt
+          cargo-nextest
+          cargo-audit
+          cargo-watch
         ]
         ++ buck2NativeBuildInputs
         ++ lib.optionals pkgs.stdenv.isLinux [
