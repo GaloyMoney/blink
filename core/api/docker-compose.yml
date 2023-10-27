@@ -40,7 +40,10 @@ services:
     restart: on-failure:10
   apollo-router:
     image: ghcr.io/apollographql/router:v1.25.0
-    ports: []
+    ports:
+      - "4004:4004"
+    extra_hosts:
+      - "bats-tests:host-gateway"
     environment:
       - APOLLO_ROUTER_SUPERGRAPH_PATH=/repo/dev/apollo-federation/supergraph.graphql
       - APOLLO_ROUTER_CONFIG_PATH=/repo/dev/apollo-federation/router.yaml
@@ -48,7 +51,8 @@ services:
       - ${HOST_PROJECT_PATH:-.}/dev:/repo/dev
     extra_hosts: []
   otel-agent:
-    ports: []
+    ports:
+      - "4318:4318" #! http receiver
     image: otel/opentelemetry-collector-contrib:0.84.0
     command: ["--config=/etc/otel-agent-config.yaml"]
     environment:
@@ -58,10 +62,13 @@ services:
       - ${HOST_PROJECT_PATH:-.}/dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   price:
     image: us.gcr.io/galoy-org/price:edge
-    ports: []
+    ports:
+      - "50051:50051"
+      - "9464:9464"
   price-history:
     image: us.gcr.io/galoy-org/price-history:edge
-    ports: []
+    ports:
+      - "50052:50052"
     command: ./scripts/run-servers-dev.sh
     environment:
       - DB_HOST=postgres-price-history
@@ -90,7 +97,8 @@ services:
     depends_on: [postgres-price-history]
   redis:
     image: redis:7.0.8
-    ports: []
+    ports:
+      - "6379:6379"
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
@@ -103,24 +111,29 @@ services:
       - MONGODB_ADDRESS=mongodb
   mongodb:
     image: mongo:${MONGODB_VERSION:-7.0.2}
-    ports: []
+    ports:
+      - "27017:27017"
     environment:
+      - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
       - MONGO_INITDB_DATABASE=galoy
   postgres-price-history:
     image: postgres:14.1
-    ports: []
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_USER=galoy-price-usr
       - POSTGRES_PASSWORD=galoy-price-pwd
       - POSTGRES_DB=galoy-price-history
   bitcoind:
     image: lncm/bitcoind:v24.0.1
-    ports: []
+    ports:
+      - "18443:18443"
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   bitcoind-signer:
     image: lncm/bitcoind:v24.0.1
-    ports: []
+    ports:
+      - "18543:18443"
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
     depends_on: [bitcoind]
@@ -130,7 +143,8 @@ services:
         bitcoind -connect=bitcoind:18444
   lnd1:
     image: lightninglabs/lnd:v0.16.2-beta
-    ports: []
+    ports:
+      - "10009:10009"
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -149,7 +163,8 @@ services:
         /bin/lnd
   lnd2:
     image: lightninglabs/lnd:v0.16.2-beta
-    ports: []
+    ports:
+      - "10010:10009"
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -168,7 +183,8 @@ services:
         /bin/lnd
   lnd-outside-1:
     image: lightninglabs/lnd:v0.16.2-beta
-    ports: []
+    ports:
+      - "10012:10009"
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -187,7 +203,8 @@ services:
     depends_on: [bitcoind]
   lnd-outside-2:
     image: lightninglabs/lnd:v0.16.2-beta
-    ports: []
+    ports:
+      - "10013:10009"
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -206,7 +223,8 @@ services:
     depends_on: [bitcoind]
   loopserver:
     image: lightninglabs/loopserver:v0.9.52-beta
-    ports: []
+    ports:
+      - "11009:11009"
     restart: unless-stopped
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
@@ -223,7 +241,9 @@ services:
       - "--lnd.tlspath=/root/.lnd/tls.cert"
   loopd1:
     image: lightninglabs/loop:v0.20.1-beta
-    ports: []
+    ports:
+      - "8081:8081"
+      - "11010:11010"
     restart: unless-stopped
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
@@ -255,7 +275,9 @@ services:
       --rpclisten=0.0.0.0:11010"
   loopd2:
     image: lightninglabs/loop:v0.20.1-beta
-    ports: []
+    ports:
+      - "8082:8081"
+      - "11011:11010"
     restart: unless-stopped
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
@@ -287,7 +309,8 @@ services:
       --rpclisten=0.0.0.0:11010"
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:latest
-    ports: []
+    ports:
+      - "3325:3325"
     command: ["stablesats", "run"]
     working_dir: /repo/dev
     depends_on:
@@ -297,7 +320,9 @@ services:
       - ${HOST_PROJECT_PATH:-.}/:/repo
   bria:
     image: us.gcr.io/galoy-org/bria:latest
-    ports: []
+    ports:
+      - "2743:2743"
+      - "2742:2742"
     environment:
       - PG_CON=postgres://user:password@postgres-bria:5432/pg
       - BITCOIND_SIGNER_ENDPOINT=https://bitcoind-signer:18443
@@ -336,15 +361,21 @@ services:
       retries: 5
   oathkeeper:
     image: oryd/oathkeeper:v0.40.6-distroless
-    ports: []
-    extra_hosts: []
+    ports:
+      - "4002:4455"
+      - "4456:4456"
+    extra_hosts:
+      - "bats-tests:host-gateway"
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/ory:/home/ory
   kratos:
     image: oryd/kratos:v1.0.0
-    ports: []
-    extra_hosts: []
+    extra_hosts:
+      - "bats-tests:host-gateway"
+    ports:
+      - "4433:4433" #! public
+      - "4434:4434" #! admin
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:
@@ -355,7 +386,8 @@ services:
       - ${HOST_PROJECT_PATH:-.}/dev/ory:/home/ory
   kratos-pg:
     image: postgres:14.1
-    ports: []
+    ports:
+      - "5433:5432"
     expose:
       - "5432"
     environment:
@@ -364,10 +396,13 @@ services:
       - POSTGRES_DB=default
   mailslurper:
     image: oryd/mailslurper:latest-smtps
-    ports: []
+    ports:
+      - "4436:4436"
+      - "4437:4437"
   fulcrum:
     image: cculianu/fulcrum:latest
-    ports: []
+    ports:
+      - "50001:50001"
     depends_on: [bitcoind]
     volumes:
       - ${HOST_PROJECT_PATH:-.}/dev/fulcrum/fulcrum.conf:/fulcrum.conf
@@ -390,8 +425,10 @@ services:
       SVIX_QUEUE_TYPE: "memory"
     depends_on:
       - svix-pg
-    ports: []
-    extra_hosts: []
+    ports:
+      - "8071:8071"
+    extra_hosts:
+      - "bats-tests:host-gateway"
 
   svix-pg:
     image: postgres:14.1
@@ -400,7 +437,9 @@ services:
 
   hydra:
     image: oryd/hydra:v2.1.2
-    ports: []
+    ports:
+      - "4444:4444" #! Public port
+      - "4445:4445" #! Admin port
     extra_hosts: []
     command: serve -c /home/ory/hydra.yml all --dev
     volumes:
@@ -430,4 +469,5 @@ services:
       - POSTGRES_USER=hydra
       - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=hydra
-    ports: []
+    ports:
+      - "5434:5432"
