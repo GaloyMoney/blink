@@ -11,6 +11,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
         with:
           path: main
@@ -18,18 +22,12 @@ jobs:
         with:
           ref: docs
           path: docs
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-      - run: yarn install --frozen-lockfile
+      - run: nix develop -c pnpm install --frozen-lockfile
         working-directory: main/core/api
-      - uses: vmware-tanzu/carvel-setup-action@v1
-        with:
-          only: ytt
-      - run: ytt -f spectaql/TUTORIAL.md -f spectaql/spectaql-config-template.yml > spectaql-config.yml
+      - run: nix develop -c ytt -f spectaql/TUTORIAL.md -f spectaql/spectaql-config-template.yml > spectaql-config.yml
         working-directory: main/core/api
       - name: Build docs
-        run: yarn run build-docs
+        run: nix develop -c pnpm run build-docs
         working-directory: main/core/api
       - run: cp main/core/api/public/index.html docs
       - run: cp main/core/api/public/logo.png docs/images

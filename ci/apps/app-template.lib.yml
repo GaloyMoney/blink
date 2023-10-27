@@ -1,30 +1,13 @@
 #@ load("@ytt:data", "data")
 
-
-#@ def public_docker_registry():
-#@  return "us.gcr.io/galoy-org"
-#@ end
-#@ def rust_concourse_image():
-#@   return public_docker_registry() + "/rust-concourse"
-#@ end
-
-
-#@ def rust_task_image_config():
-type: registry-image
-source:
-  username: ((docker-creds.username))
-  password: ((docker-creds.password))
-  repository: #@ rust_concourse_image()
-#@ end
 #@ load("pipeline-fragments.lib.yml",
-#@   "task_image_config",
 #@   "release_task_image_config")
 
 #@ def galoy_dev_image():
 #@   return data.values.docker_registry + "/galoy-dev"
 #@ end
 
-#@ def galoy_dev_image_config():
+#@ def task_image_config():
 type: registry-image
 source:
   username: ((docker-creds.username))
@@ -47,7 +30,7 @@ plan:
   - task: buck-test-unit
     config:
       platform: linux
-      image_resource: #@ galoy_dev_image_config()
+      image_resource: #@ task_image_config()
       inputs:
         - name: pipeline-tasks
         - name: #@ app_src_resource_name(app)
@@ -132,7 +115,7 @@ plan:
   tags: ["galoy-staging"]
   config:
     platform: linux
-    image_resource: #@ rust_task_image_config()
+    image_resource: #@ task_image_config()
     inputs:
     - name: pipeline-tasks
     - name: nix-host

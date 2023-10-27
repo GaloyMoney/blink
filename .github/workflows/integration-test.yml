@@ -8,18 +8,15 @@ jobs:
   integration:
     name: Integration test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: "yarn"
-          cache-dependency-path: core/api/yarn.lock
-      - run: cd core/api && yarn install --frozen-lockfile
+      - run: cd core/api && nix develop -c pnpm install --frozen-lockfile
       - name: Run integration tests
         run: |
           cd core/api/
-          make integration-in-ci
-          container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-integration-tests-")
-          exit $(docker inspect $container_id --format='{{.State.ExitCode}}')
+          nix develop -c make reset-all-integration

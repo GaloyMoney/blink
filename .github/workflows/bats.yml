@@ -8,19 +8,15 @@ jobs:
   integration:
     name: Bats tests
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 20
     steps:
-      - name: Setup BATS
-        uses: mig4/setup-bats@v1
-        with:
-          bats-version: 1.9.0
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: "yarn"
-          cache-dependency-path: core/api/yarn.lock
-      - run: cd core/api && yarn install --frozen-lockfile
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+      - uses: actions/checkout@v3
+      - run: cd core/api && nix develop -c pnpm install --frozen-lockfile
       - name: Run bats tests
         run: |
-          . ./.env && cd core/api && make reset-bats
+          . ./.env && cd core/api && nix develop -c make reset-bats

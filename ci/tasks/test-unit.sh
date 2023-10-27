@@ -2,10 +2,7 @@
 
 set -eu
 
-. pipeline-tasks/ci/tasks/helpers.sh
-
-unpack_deps
-
 pushd repo/core/api
 
+pnpm install --frozen-lockfile
 make unit-in-ci
