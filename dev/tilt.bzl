@@ -1,32 +1,10 @@
-def tilt_up_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    return _invoke_tilt(ctx, "up")
+def tilt_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
+    return _invoke_tilt(ctx, ctx.attrs.subcmd)
 
-tilt_up = rule(
-    impl = tilt_up_impl,
+tilt = rule(
+    impl = tilt_impl,
     attrs = {
-        "tiltfile": attrs.string(
-            default = "Tiltfile",
-            doc = """The Tiltfile to run.""",
-        ),
-        "args": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Additional arguments passed as <Tiltfile args>.""",
-        ),
-        "tilt_args": attrs.list(
-            attrs.string(),
-            default = [],
-            doc = """Additional arguments passed as `tilt` arguments.""",
-        ),
-    },
-)
-
-def tilt_down_impl(ctx: AnalysisContext) -> list[[DefaultInfo, RunInfo]]:
-    return _invoke_tilt(ctx, "down")
-
-tilt_down = rule(
-    impl = tilt_down_impl,
-    attrs = {
+        "subcmd": attrs.enum(["up", "down"]),
         "tiltfile": attrs.string(
             default = "Tiltfile",
             doc = """The Tiltfile to run.""",
