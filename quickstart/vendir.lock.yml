@@ -2,26 +2,29 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: adding otel in consent (#3417)...'
-      sha: adc1aff66a4cc3db441205f46238056adfc88a0d
+      commitTitle: 'chore: fix dashboard bug for invalid token, added dev mode for
+        captcha (#3410)...'
+      sha: 35c071126ae6d2486db2162dc57afeb46647c702
       tags:
-      - 0.15.46-1-gadc1aff66
+      - 0.15.47-1-g35c071126
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'feat: adding otel in consent (#3417)...'
-      sha: adc1aff66a4cc3db441205f46238056adfc88a0d
+      commitTitle: 'chore: fix dashboard bug for invalid token, added dev mode for
+        captcha (#3410)...'
+      sha: 35c071126ae6d2486db2162dc57afeb46647c702
       tags:
-      - 0.15.46-1-gadc1aff66
+      - 0.15.47-1-g35c071126
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'feat: adding otel in consent (#3417)...'
-      sha: adc1aff66a4cc3db441205f46238056adfc88a0d
+      commitTitle: 'chore: fix dashboard bug for invalid token, added dev mode for
+        captcha (#3410)...'
+      sha: 35c071126ae6d2486db2162dc57afeb46647c702
       tags:
-      - 0.15.46-1-gadc1aff66
+      - 0.15.47-1-g35c071126
     path: ./
   path: ./graphql
 kind: LockConfig
