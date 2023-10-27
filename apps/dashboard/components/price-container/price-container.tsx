@@ -2,6 +2,7 @@ import React from "react"
 import { Box } from "@mui/joy"
 
 import PriceContainerCard from "./price-card-container"
+
 export interface WalletData {
   __typename: string
   accountId: string
@@ -13,6 +14,23 @@ export interface WalletData {
 
 export interface PriceContainerProps {
   walletDetails: ReadonlyArray<WalletData>
+}
+
+const formatBalance = (
+  balance: number,
+  walletCurrency: "BTC" | "USD",
+): [number, string] => {
+  if (walletCurrency === "BTC") {
+    const btcBalance = balance / 100000000
+    if (btcBalance < 0.00001) {
+      return [balance, "sats"]
+    } else {
+      return [btcBalance, "BTC"]
+    }
+  } else {
+    const usdBalance = balance / 100
+    return [usdBalance, "USD"]
+  }
 }
 
 const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
@@ -34,24 +52,46 @@ const PriceContainer: React.FC<PriceContainerProps> = ({ walletDetails }) => {
           flexWrap: "wrap",
         }}
       >
-        {btcWallet && (
-          <PriceContainerCard
-            id={btcWallet.id}
-            walletCurrency={btcWallet.walletCurrency}
-            balance={btcWallet.balance / 100000000}
-            pendingIncomingBalance={btcWallet.pendingIncomingBalance / 100000000}
-            currencySymbol="BTC"
-          />
-        )}
-        {usdWallet && (
-          <PriceContainerCard
-            id={usdWallet.id}
-            walletCurrency={usdWallet.walletCurrency}
-            balance={usdWallet.balance / 100}
-            pendingIncomingBalance={usdWallet.pendingIncomingBalance / 100}
-            currencySymbol="USD"
-          />
-        )}
+        {btcWallet &&
+          (() => {
+            const [balance, currencySymbol] = formatBalance(
+              btcWallet.balance,
+              btcWallet.walletCurrency,
+            )
+            const [pendingBalance] = formatBalance(
+              btcWallet.pendingIncomingBalance,
+              btcWallet.walletCurrency,
+            )
+            return (
+              <PriceContainerCard
+                id={btcWallet.id}
+                walletCurrency={btcWallet.walletCurrency}
+                balance={balance}
+                pendingIncomingBalance={pendingBalance}
+                currencySymbol={currencySymbol}
+              />
+            )
+          })()}
+        {usdWallet &&
+          (() => {
+            const [balance, currencySymbol] = formatBalance(
+              usdWallet.balance,
+              usdWallet.walletCurrency,
+            )
+            const [pendingBalance] = formatBalance(
+              usdWallet.pendingIncomingBalance,
+              usdWallet.walletCurrency,
+            )
+            return (
+              <PriceContainerCard
+                id={usdWallet.id}
+                walletCurrency={usdWallet.walletCurrency}
+                balance={balance}
+                pendingIncomingBalance={pendingBalance}
+                currencySymbol={currencySymbol}
+              />
+            )
+          })()}
       </Box>
     </Box>
   )

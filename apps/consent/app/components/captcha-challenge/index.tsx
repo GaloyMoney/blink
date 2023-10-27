@@ -1,8 +1,15 @@
 "use client"
 import { memo, useCallback, useEffect } from "react"
+
 import { toast } from "react-toastify"
 
 import { sendPhoneCode } from "@/app/login/phone/server-actions"
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    initGeetest: (options: any, callback: (captchaObj: any) => void) => void
+  }
+}
 
 const CaptchaChallengeComponent: React.FC<{
   id: string
@@ -14,7 +21,6 @@ const CaptchaChallengeComponent: React.FC<{
   }
 }> = ({ id, challenge, formData }) => {
   const captchaHandler = useCallback(
-    /* eslint @typescript-eslint/ban-ts-comment: "off" */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (captchaObj: any) => {
       const onSuccess = async () => {
@@ -38,7 +44,6 @@ const CaptchaChallengeComponent: React.FC<{
   )
 
   useEffect(() => {
-    // @ts-ignore-next-line error
     window.initGeetest(
       {
         gt: id,

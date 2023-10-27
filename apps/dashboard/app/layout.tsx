@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation"
 import type { Metadata } from "next"
 import { getServerSession } from "next-auth"
 
@@ -19,7 +20,9 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
-
+  if (!session || !session?.userData || !session?.accessToken) {
+    redirect("/api/auth/signin")
+  }
   return (
     <html lang="en">
       <body>

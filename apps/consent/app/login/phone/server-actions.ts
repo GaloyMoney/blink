@@ -9,6 +9,7 @@ import { GetCaptchaChallengeResponse, SendPhoneCodeResponse } from "./phone-logi
 import { LoginType, SubmitValue } from "@/app/index.types"
 import authApi from "@/services/galoy-auth"
 import { hydraClient } from "@/services/hydra"
+import { env } from "@/env"
 
 export const getCaptchaChallenge = async (
   _prevState: unknown,
@@ -64,6 +65,23 @@ export const getCaptchaChallenge = async (
   const res = await authApi.requestPhoneCaptcha(customHeaders)
   const id = res.id
   const challenge = res.challengeCode
+
+  if (env.NODE_ENV === "development") {
+    const params = new URLSearchParams({
+      login_challenge,
+    })
+    cookies().set(
+      login_challenge,
+      JSON.stringify({
+        loginType: LoginType.phone,
+        value: phone,
+        remember: remember,
+      }),
+      { secure: true },
+    )
+    redirect(`/login/verification?${params}`)
+  }
+
   return {
     error: false,
     message: "success",
