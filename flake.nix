@@ -175,12 +175,12 @@
           consent = nextDerivation {pkgName = "consent";};
           dashboard = nextDerivation {pkgName = "dashboard";};
 
-          dockerImage = pkgs.dockerTools.buildImage {
+          dockerImage = dockerTools.buildImage {
             name = "galoy-dev";
             tag = "latest";
 
             # Optional base image to bring in extra binaries for debugging etc.
-            fromImage = pkgs.dockerTools.pullImage {
+            fromImage = dockerTools.pullImage {
               imageName = "ubuntu";
               imageDigest = "sha256:4c32aacd0f7d1d3a29e82bee76f892ba9bb6a63f17f9327ca0d97c3d39b9b0ee";
               sha256 = "f1661f16a23427d0eda033ffbf7df647a6f71673b78ee24961fae27978691d4f";
@@ -190,11 +190,16 @@
 
             config = {
               Cmd = ["bash"];
+              Env =
+                [
+                  "GIT_SSL_CAINFO=${cacert}/etc/ssl/certs/ca-bundle.crt"
+                  "SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt"
+                ];
             };
 
-            copyToRoot = pkgs.buildEnv {
+            copyToRoot = buildEnv {
               name = "image-root";
-              paths = nativeBuildInputs ++ [ pkgs.bash ];
+              paths = nativeBuildInputs ++ [ bash ];
               pathsToLink = [ "/bin" ];
             };
           };
