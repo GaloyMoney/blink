@@ -6,6 +6,8 @@
 #@   "build_edge_image_name",
 #@   "buck_test_name",
 #@   "buck_test",
+#@   "tilt_integration_test_name",
+#@   "tilt_integration_test",
 #@   "app_src_resource",
 #@   "app_edge_image",
 #@   "bump_image_in_chart_name",
@@ -19,6 +21,8 @@ groups:
 #@ for app in apps:
     - #@ build_edge_image_name(app)
     - #@ buck_test_name(app)
+    - #@ tilt_integration_test_name(app)
+    - #@ bump_image_in_chart_name(app)
     - #@ bump_image_in_chart_name(app)
 #@ end
 #@ for app in apps:
@@ -26,6 +30,7 @@ groups:
     jobs:
     - #@ build_edge_image_name(app)
     - #@ buck_test_name(app)
+    - #@ tilt_integration_test_name(app)
     - #@ bump_image_in_chart_name(app)
 #@ end
   - name: dev-image
@@ -36,6 +41,7 @@ jobs:
 #@ for app in apps:
   - #@ build_edge_image(app)
   - #@ buck_test(app)
+  - #@ tilt_integration_test(app)
   - #@ bump_image_in_chart(app)
 #@ end
   - name: build-galoy-dev-image
@@ -114,3 +120,11 @@ resources:
       username: #@ data.values.docker_registry_user
       password: #@ data.values.docker_registry_password
       repository: #@ galoy_dev_image()
+
+  - name: nix-host
+    type: pool
+    source:
+      uri: git@github.com:GaloyMoney/concourse-locks.git
+      branch: main
+      pool: docker-hosts
+      private_key: #@ data.values.github_private_key
