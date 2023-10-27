@@ -4,5 +4,5 @@ set -eu
 
 pushd repo/core/api
 
-pnpm install
+pnpm install --frozen-lockfile
 make check-code

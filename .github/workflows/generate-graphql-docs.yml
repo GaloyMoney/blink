@@ -22,7 +22,7 @@ jobs:
         with:
           ref: docs
           path: docs
-      - run: pnpm install --frozen-lockfile
+      - run: nix develop -c pnpm install --frozen-lockfile
         working-directory: main/core/api
       - run: nix develop -c ytt -f spectaql/TUTORIAL.md -f spectaql/spectaql-config-template.yml > spectaql-config.yml
         working-directory: main/core/api
