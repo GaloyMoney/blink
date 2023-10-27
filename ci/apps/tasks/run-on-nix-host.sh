@@ -2,6 +2,7 @@
 
 set -eu
 
+export PACKAGE_DIR="${PACKAGE_DIR:-$(pwd)}"
 export CI_ROOT=$(pwd)
 
 host_name=$(cat nix-host/metadata | jq -r '.docker_host_name')
@@ -40,4 +41,4 @@ gcloud compute scp --ssh-key-file="${CI_ROOT}/login.ssh" \
   --zone="${host_zone}" \
   --project="${gcp_project}" > /dev/null
 
-gcloud_ssh "cd ${REPO_PATH}; nix develop -c ${CMD}"
+gcloud_ssh "cd ${REPO_PATH}; cd ${PACKAGE_DIR}; nix develop -c ${CMD}"
