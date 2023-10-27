@@ -123,12 +123,12 @@ check-implicit:
 	yarn tsc-check-noimplicitany
 
 check-code: check-implicit
-	yarn tsc-check
-	yarn eslint-check
-	yarn build
-	yarn check:sdl
-	yarn check-yaml
-	yarn madge-check
+	pnpm run tsc-check
+	pnpm run eslint-check
+	pnpm run build
+	pnpm run check:sdl
+	pnpm run check-yaml
+	pnpm run madge-check
 
 create-tmp-env-ci:
 	. ./.env && \
