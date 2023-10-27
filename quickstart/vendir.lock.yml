@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: add dashboard to tilt (#3431)'
-      sha: 76fbe92af08c0737f9e09b92ae01e8bd557336e8
+      commitTitle: 'fix: gt3 pnpm install (#3425)'
+      sha: fba1f46a491e0a88d1bba9aa7bc5646741433ba3
       tags:
-      - 0.15.44-1-g76fbe92af
+      - 0.15.45-5-gfba1f46a4
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'chore: add dashboard to tilt (#3431)'
-      sha: 76fbe92af08c0737f9e09b92ae01e8bd557336e8
+      commitTitle: 'fix: gt3 pnpm install (#3425)'
+      sha: fba1f46a491e0a88d1bba9aa7bc5646741433ba3
       tags:
-      - 0.15.44-1-g76fbe92af
+      - 0.15.45-5-gfba1f46a4
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'chore: add dashboard to tilt (#3431)'
-      sha: 76fbe92af08c0737f9e09b92ae01e8bd557336e8
+      commitTitle: 'fix: gt3 pnpm install (#3425)'
+      sha: fba1f46a491e0a88d1bba9aa7bc5646741433ba3
       tags:
-      - 0.15.44-1-g76fbe92af
+      - 0.15.45-5-gfba1f46a4
     path: ./
   path: ./graphql
 kind: LockConfig
