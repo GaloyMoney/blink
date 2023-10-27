@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add gitMinimal to flake'
-      sha: a80918e24ee5d52fbc510d62a48e3dc38f417c64
+      commitTitle: 'ci: add yq-go to flake'
+      sha: 5a524516269984084b58f3fab6a09bdee6baa890
       tags:
-      - 0.15.51-2-ga80918e24
+      - 0.15.52-1-g5a5245162
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: add gitMinimal to flake'
-      sha: a80918e24ee5d52fbc510d62a48e3dc38f417c64
+      commitTitle: 'ci: add yq-go to flake'
+      sha: 5a524516269984084b58f3fab6a09bdee6baa890
       tags:
-      - 0.15.51-2-ga80918e24
+      - 0.15.52-1-g5a5245162
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: add gitMinimal to flake'
-      sha: a80918e24ee5d52fbc510d62a48e3dc38f417c64
+      commitTitle: 'ci: add yq-go to flake'
+      sha: 5a524516269984084b58f3fab6a09bdee6baa890
       tags:
-      - 0.15.51-2-ga80918e24
+      - 0.15.52-1-g5a5245162
     path: ./
   path: ./graphql
 kind: LockConfig
