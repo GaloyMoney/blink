@@ -2,26 +2,26 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: gt3 pnpm install (#3425)'
-      sha: fba1f46a491e0a88d1bba9aa7bc5646741433ba3
+      commitTitle: 'feat: adding otel in consent (#3417)...'
+      sha: adc1aff66a4cc3db441205f46238056adfc88a0d
       tags:
-      - 0.15.45-5-gfba1f46a4
+      - 0.15.46-1-gadc1aff66
     path: ./
   path: dev
 - contents:
   - git:
-      commitTitle: 'fix: gt3 pnpm install (#3425)'
-      sha: fba1f46a491e0a88d1bba9aa7bc5646741433ba3
+      commitTitle: 'feat: adding otel in consent (#3417)...'
+      sha: adc1aff66a4cc3db441205f46238056adfc88a0d
       tags:
-      - 0.15.45-5-gfba1f46a4
+      - 0.15.46-1-gadc1aff66
     path: ./
   path: ./galoy
 - contents:
   - git:
-      commitTitle: 'fix: gt3 pnpm install (#3425)'
-      sha: fba1f46a491e0a88d1bba9aa7bc5646741433ba3
+      commitTitle: 'feat: adding otel in consent (#3417)...'
+      sha: adc1aff66a4cc3db441205f46238056adfc88a0d
       tags:
-      - 0.15.45-5-gfba1f46a4
+      - 0.15.46-1-gadc1aff66
     path: ./
   path: ./graphql
 kind: LockConfig
