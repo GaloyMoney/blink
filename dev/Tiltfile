@@ -44,9 +44,7 @@ local_resource(
       "PORT": "3001",
     },
     resource_deps = [
-        "consent",
         "hydra-dashboard",
-        "init-test-user",
     ],
     links = [
         link("http://localhost:3001", "dashboard"),
